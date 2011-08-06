@@ -67,10 +67,17 @@ gen r _ _ =
 {- The urls for a key are stored in remote/web/hash/key.log 
  - in the git-annex branch. -}
 urlLog :: Key -> FilePath
-urlLog key = "remote/web" </> hashDirLower key </> show key ++ ".log"
+urlLog key = "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
+oldurlLog :: Key -> FilePath
+{- A bug used to store the urls elsewhere. -}
+oldurlLog key = "remote/web" </> hashDirLower key </> show key ++ ".log"
 
 getUrls :: Key -> Annex [URLString]
-getUrls key = currentLog (urlLog key)
+getUrls key = do
+	us <- currentLog (urlLog key)
+	if null us
+		then currentLog (oldurlLog key)
+		else return us
 
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()
