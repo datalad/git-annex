@@ -65,7 +65,7 @@ orderedList = do
 genKey :: FilePath -> Maybe (Backend Annex) -> Annex (Maybe (Key, Backend Annex))
 genKey file trybackend = do
 	bs <- orderedList
-	let bs' = maybe bs (:bs) trybackend
+	let bs' = maybe bs (: bs) trybackend
 	genKey' bs' file
 genKey' :: [Backend Annex] -> FilePath -> Annex (Maybe (Key, Backend Annex))
 genKey' [] _ = return Nothing
