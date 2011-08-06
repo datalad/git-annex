@@ -8,6 +8,7 @@
 module Command.Add where
 
 import Control.Monad.State (liftIO)
+import Control.Monad (when)
 import System.Posix.Files
 import System.Directory
 import Control.Exception.Control (handle)
@@ -52,7 +53,7 @@ perform (file, backend) = do
 		Nothing -> stop
 		Just (key, _) -> do
 			handle (undo file key) $ moveAnnex key file
-			next $ cleanup file key
+			next $ cleanup file key True
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
@@ -72,18 +73,20 @@ undo file key e = do
 			g <- Annex.gitRepo
 			liftIO $ renameFile (gitAnnexLocation g key) file
 
-cleanup :: FilePath -> Key -> CommandCleanup
-cleanup file key = do
+cleanup :: FilePath -> Key -> Bool -> CommandCleanup
+cleanup file key hascontent = do
 	handle (undo file key) $ do
 		link <- calcGitLink file key
 		liftIO $ createSymbolicLink link file
-		logStatus key InfoPresent
+
+		when hascontent $ do
+			logStatus key InfoPresent
 	
-		-- touch the symlink to have the same mtime as the
-		-- file it points to
-		s <- liftIO $ getFileStatus file
-		let mtime = modificationTime s
-		liftIO $ touch file (TimeSpec mtime) False
+			-- touch the symlink to have the same mtime as the
+			-- file it points to
+			s <- liftIO $ getFileStatus file
+			let mtime = modificationTime s
+			liftIO $ touch file (TimeSpec mtime) False
 
 	force <- Annex.getState Annex.force
 	if force

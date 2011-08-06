@@ -72,7 +72,7 @@ perform file oldkey newbackend = do
 				then do
 					-- Update symlink to use the new key.
 					liftIO $ removeFile file
-					next $ Command.Add.cleanup file newkey
+					next $ Command.Add.cleanup file newkey True
 				else stop
 	where
 		cleantmp t = whenM (doesFileExist t) $ removeFile t

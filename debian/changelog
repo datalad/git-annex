@@ -1,6 +1,7 @@
 git-annex (3.20110720) UNRELEASED; urgency=low
 
   * Fix shell escaping in rsync special remote.
+  * addurl: --fast can be used to avoid immediately downloading the url.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 29 Jul 2011 15:27:30 +0200
 

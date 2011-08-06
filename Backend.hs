@@ -32,9 +32,10 @@ import Messages
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.WORM
 import qualified Backend.SHA
+import qualified Backend.URL
 
 list :: [Backend Annex]
-list = Backend.WORM.backends ++ Backend.SHA.backends
+list = Backend.WORM.backends ++ Backend.SHA.backends ++ Backend.URL.backends
 
 {- List of backends in the order to try them when storing a new key. -}
 orderedList :: Annex [Backend Annex]
