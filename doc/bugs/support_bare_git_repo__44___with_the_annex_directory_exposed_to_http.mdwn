@@ -6,7 +6,7 @@ The repo is also a git annex remote, created using the following commands:
 * git push alsuren --all
 * git annex copy --to=alsuren
 
-so http://people.collabora.com/~alsuren/git/fate-suite.git/annex is a valid git annex (though
+so http://people.collabora.com/~alsuren/git/fate-suite.git/annex is a valid git annex (though listing dirs is forbidden, so you need to know the filenames ahead of time).
 
 I would like to be able to use the following commands to get a clone of the repo:
 
