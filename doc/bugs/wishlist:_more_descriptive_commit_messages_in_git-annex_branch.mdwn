@@ -24,3 +24,13 @@ in my opinion, the messages should at least contain
 * which files or directories they affected (not necessarily all files, but what was given on command line or implicitly from the working directory)
 
 --[[chrysn]]
+
+> The implementation of the git-annex branch precludes more descriptive
+> commit messages, since a single commit can include changes that were
+> previously staged to the branch's index file, or spooled to its journal
+> by other git-annex commands (either concurrently running or
+> interrupted commands, or even changes needed to automatically merge
+> other git-annex branches).
+> 
+> It would be possible to make it *less* verbose, with an empty commit
+> message. :) --[[Joey]] 
