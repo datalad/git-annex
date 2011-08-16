@@ -17,6 +17,7 @@ module Git (
 	localToUrl,
 	repoIsUrl,
 	repoIsSsh,
+	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
 	repoLocation,
@@ -205,6 +206,13 @@ repoIsSsh Repo { location = Url url }
 	| uriScheme url == "ssh+git:" = True
 	| otherwise = False
 repoIsSsh _ = False
+
+repoIsHttp :: Repo -> Bool
+repoIsHttp Repo { location = Url url } 
+	| uriScheme url == "http:" = True
+	| uriScheme url == "https:" = True
+	| otherwise = False
+repoIsHttp _ = False
 
 configAvail ::Repo -> Bool
 configAvail Repo { config = c } = c /= M.empty
