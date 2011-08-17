@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-08-17T04:56:30Z"
+ content="""
+Finally got a chance to try to reproduce this. I followed your recipe exactly in a clean squeeze chroot. monadIO was not installed, but git-annex built ok, using monad-control.
+"""]]
