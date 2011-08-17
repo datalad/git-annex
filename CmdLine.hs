@@ -19,13 +19,14 @@ import Control.Monad (when)
 import qualified Annex
 import qualified AnnexQueue
 import qualified Git
+import qualified Branch
 import Content
 import Types
 import Command
 import Version
 import Options
 import Messages
-import UUID
+import Init
 
 {- Runs the passed command line. -}
 dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
@@ -45,7 +46,7 @@ parseCmd argv header cmds options = do
 		[] -> error $ "unknown command" ++ usagemsg
 		[command] -> do
 			_ <- sequence flags
-			when (cmdusesrepo command) checkVersion
+			checkCmdEnviron command
 			prepCommand command (drop 1 params)
 		_ -> error "internal error: multiple matching commands"
 	where
@@ -56,6 +57,19 @@ parseCmd argv header cmds options = do
 				ioError (userError (concat errs ++ usagemsg))
 		lookupCmd cmd = filter (\c -> cmd  == cmdname c) cmds
 		usagemsg = "\n\n" ++ usage header cmds options
+
+{- Checks that the command can be run in the current environment. -}
+checkCmdEnviron :: Command -> Annex ()
+checkCmdEnviron command = do
+	when (cmdusesrepo command) $ checkVersion $ do
+		{- Automatically initialize if there is already a git-annex
+		   branch from somewhere. Otherwise, require a manual init
+		   to avoid git-annex accidentially being run in git
+		   repos that did not intend to use it. -}
+		annexed <- Branch.hasSomeBranch
+		if annexed
+			then initialize
+			else error "First run: git-annex init"
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String
@@ -95,9 +109,7 @@ tryRun' errnum _ [] = when (errnum > 0) $ error $ show errnum ++ " failed"
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool
-startup = do
-	prepUUID
-	return True
+startup = return True
 
 {- Cleanup actions. -}
 shutdown :: Annex Bool

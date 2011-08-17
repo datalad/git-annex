@@ -12,13 +12,11 @@ import System.Directory
 import System.Exit
 
 import Command
-import Messages
-import Types
 import Utility
 import qualified Git
 import qualified Annex
 import qualified Command.Unannex
-import qualified Command.Init
+import Init
 import qualified Branch
 import Content
 import Locations
@@ -47,7 +45,7 @@ perform = next cleanup
 cleanup :: CommandCleanup
 cleanup = do
 	g <- Annex.gitRepo
-	gitPreCommitHookUnWrite g
+	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
 	liftIO $ removeDirectoryRecursive (gitAnnexDir g)
 	-- avoid normal shutdown
@@ -55,14 +53,3 @@ cleanup = do
 	liftIO $ do
 		Git.run g "branch" [Param "-D", Param Branch.name]
 		exitSuccess
-
-gitPreCommitHookUnWrite :: Git.Repo -> Annex ()
-gitPreCommitHookUnWrite repo = do
-	let hook = Command.Init.preCommitHook repo
-	whenM (liftIO $ doesFileExist hook) $ do
-		c <- liftIO $ readFile hook
-		if c == Command.Init.preCommitScript
-			then liftIO $ removeFile hook
-			else warning $ "pre-commit hook (" ++ hook ++ 
-				") contents modified; not deleting." ++
-				" Edit it to remove call to git annex."

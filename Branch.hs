@@ -14,6 +14,7 @@ module Branch (
 	files,
 	refExists,
 	hasOrigin,
+	hasSomeBranch,
 	name	
 ) where
 
@@ -124,7 +125,7 @@ getCache file = getState >>= handle
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = unlessM (refExists fullname) $ do
+create = unlessM hasBranch $ do
 	g <- Annex.gitRepo
 	e <- hasOrigin
 	if e
@@ -154,18 +155,13 @@ update = do
 		 -}
 		staged <- stageJournalFiles
 
-		g <- Annex.gitRepo
-		r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
-		let refs = map (last . words) (lines r)
+		refs <- siblingBranches
 		updated <- catMaybes `liftM` mapM updateRef refs
+		g <- Annex.gitRepo
 		unless (null updated && not staged) $ liftIO $
 			Git.commit g "update" fullname (fullname:updated)
 		Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 		invalidateCache
-
-{- Does origin/git-annex exist? -}
-hasOrigin :: Annex Bool
-hasOrigin = refExists originname
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
@@ -173,6 +169,26 @@ refExists ref = do
 	g <- Annex.gitRepo
 	liftIO $ Git.runBool g "show-ref"
 		[Param "--verify", Param "-q", Param ref]
+
+{- Does the main git-annex branch exist? -}
+hasBranch :: Annex Bool
+hasBranch = refExists fullname
+
+{- Does origin/git-annex exist? -}
+hasOrigin :: Annex Bool
+hasOrigin = refExists originname
+
+{- Does the git-annex branch or a foo/git-annex branch exist? -}
+hasSomeBranch :: Annex Bool
+hasSomeBranch = liftM (not . null) siblingBranches
+
+{- List of all git-annex branches, including the main one and any
+ - from remotes. -}
+siblingBranches :: Annex [String]
+siblingBranches = do
+	g <- Annex.gitRepo
+	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
+	return $ map (last . words) (lines r)
 
 {- Ensures that a given ref has been merged into the index. -}
 updateRef :: GitRef -> Annex (Maybe String)

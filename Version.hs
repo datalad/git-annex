@@ -39,10 +39,10 @@ getVersion = do
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion
 
-checkVersion :: Annex ()
-checkVersion = getVersion >>= handle
+checkVersion :: Annex () -> Annex ()
+checkVersion initaction = getVersion >>= handle
 	where
-		handle Nothing = error "First run: git-annex init"
+		handle Nothing = initaction
 		handle (Just v) = unless (v `elem` supportedVersions) $
 			error $ "Repository version " ++ v ++ 
 				" is not supported. " ++
