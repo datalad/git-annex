@@ -19,7 +19,6 @@ import Control.Monad (when)
 import qualified Annex
 import qualified AnnexQueue
 import qualified Git
-import qualified Branch
 import Content
 import Types
 import Command
@@ -60,16 +59,7 @@ parseCmd argv header cmds options = do
 
 {- Checks that the command can be run in the current environment. -}
 checkCmdEnviron :: Command -> Annex ()
-checkCmdEnviron command = do
-	when (cmdusesrepo command) $ checkVersion $ do
-		{- Automatically initialize if there is already a git-annex
-		   branch from somewhere. Otherwise, require a manual init
-		   to avoid git-annex accidentially being run in git
-		   repos that did not intend to use it. -}
-		annexed <- Branch.hasSomeBranch
-		if annexed
-			then initialize
-			else error "First run: git-annex init"
+checkCmdEnviron command = when (cmdusesrepo command) $ checkVersion $ initializeSafe
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String

@@ -28,6 +28,7 @@ import Utility.RsyncFile
 import Remote.Helper.Ssh
 import qualified Remote.Helper.Url as Url
 import Config
+import Init
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -79,7 +80,9 @@ tryGitConfigRead r
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
 	| Git.repoIsHttp r = store $ safely $ geturlconfig
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ Git.configRead r
+	| otherwise = store $ safely $ do
+		onLocal r initializeSafe
+		Git.configRead r
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
@@ -124,11 +127,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = safely checklocal
 	where
-		checklocal = do
-			-- run a local check inexpensively,
-			-- by making an Annex monad using the remote
-			a <- Annex.new r
-			Annex.eval a (Content.inAnnex key)
+		checklocal = onLocal r (Content.inAnnex key)
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
@@ -136,6 +135,13 @@ inAnnex r key
 			return $ Right inannex
 		checkhttp = Url.exists $ keyUrl r key
 		safely a = liftIO (try a ::IO (Either IOException Bool))
+
+{- Runs an action on a local repository inexpensively, by making an annex
+ - monad using that repository. -}
+onLocal :: Git.Repo -> Annex a -> IO a
+onLocal r a = do
+	annex <- Annex.new r
+	Annex.eval annex a
 
 keyUrl :: Git.Repo -> Key -> String
 keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
@@ -163,13 +169,11 @@ copyToRemote r key
 		g <- Annex.gitRepo
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
-		liftIO $ do
-			a <- Annex.new r
-			Annex.eval a $ do
-				ok <- Content.getViaTmp key $
-					rsyncOrCopyFile r keysrc
-				Content.saveState
-				return ok
+		liftIO $ onLocal r $ do
+			ok <- Content.getViaTmp key $
+				rsyncOrCopyFile r keysrc
+			Content.saveState
+			return ok
 	| Git.repoIsSsh r = do
 		g <- Annex.gitRepo
 		let keysrc = gitAnnexLocation g key
