@@ -23,6 +23,7 @@ module Utility (
 	unsetFileMode,
 	readMaybe,
 	viaTmp,
+	withTempFile,
 	dirContains,
 	dirContents,
 	myHomeDir,
@@ -38,6 +39,7 @@ module Utility (
 	prop_relPathDirToFile_basics
 ) where
 
+import IO (bracket)
 import System.IO
 import System.Exit
 import qualified System.Posix.Process
@@ -252,6 +254,18 @@ viaTmp a file content = do
 	createDirectoryIfMissing True (parentDir file)
 	a tmpfile content
 	renameFile tmpfile file
+
+{- Runs an action with a temp file, then removes the file. -}
+withTempFile :: String -> (FilePath -> Handle -> IO a) -> IO a
+withTempFile template action = bracket create remove use
+	where
+		create = do
+			tmpdir <- catch getTemporaryDirectory (const $ return ".")
+			openTempFile tmpdir template
+		remove (name, handle) = do
+			hClose handle
+			catchBool (removeFile name >> return True)
+		use (name, handle) = action name handle
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
