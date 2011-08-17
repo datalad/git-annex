@@ -119,9 +119,10 @@ tryGitConfigRead r
  - If the remote cannot be accessed, returns a Left error.
  -}
 inAnnex :: Git.Repo -> Key -> Annex (Either IOException Bool)
-inAnnex r key = if Git.repoIsUrl r
-		then checkremote
-		else liftIO (try checklocal ::IO (Either IOException Bool))
+inAnnex r key
+	| Git.repoIsHttp r = safely checkhttp
+	| Git.repoIsUrl r = checkremote
+	| otherwise = safely checklocal
 	where
 		checklocal = do
 			-- run a local check inexpensively,
@@ -133,7 +134,12 @@ inAnnex r key = if Git.repoIsUrl r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
 				[Param (show key)]
 			return $ Right inannex
-	
+		checkhttp = Url.exists $ keyUrl r key
+		safely a = liftIO (try a ::IO (Either IOException Bool))
+
+keyUrl :: Git.Repo -> Key -> String
+keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
+
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key = 
 	onRemote r (boolSystem, False) "dropkey"
@@ -146,8 +152,9 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = rsyncOrCopyFile r (gitAnnexLocation r key) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| otherwise = error "copying from non-ssh repo not supported"
-		
+	| Git.repoIsHttp r = Url.download (keyUrl r key) file
+	| otherwise = error "copying from non-ssh, non-http repo not supported"
+
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
