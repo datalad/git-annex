@@ -121,8 +121,14 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * init description
 
-  Initializes git-annex with a description of the git repository,
-  and sets up the pre-commit hook.
+  Initializes git-annex with a description of the git repository.
+
+  Until a repository (or one of its remotes) has been initialized,
+  git-annex will refuse to operate on it, to avoid accidentially
+  using it in a repository that was not intended to have an annex.
+
+  It's useful, but not mandatory, to initialize each new clone
+  of a repository with its own description.
 
 * describe repository description
 
