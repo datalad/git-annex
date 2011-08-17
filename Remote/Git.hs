@@ -12,6 +12,7 @@ import Control.Monad.State (liftIO)
 import qualified Data.Map as M
 import System.Cmd.Utils
 import System.Posix.Files
+import System.IO
 
 import Types
 import Types.Remote
@@ -24,7 +25,8 @@ import qualified Content
 import Messages
 import Utility.CopyFile
 import Utility.RsyncFile
-import Remote.Ssh
+import Remote.Helper.Ssh
+import qualified Remote.Helper.Url as Url
 import Config
 
 remote :: RemoteType Annex
@@ -75,6 +77,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.configMap r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
+	| Git.repoIsHttp r = store $ safely $ geturlconfig
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ Git.configRead r
 	where
@@ -85,9 +88,19 @@ tryGitConfigRead r
 			case result of
 				Left _ -> return r
 				Right r' -> return r'
+
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
 				Git.hConfigRead r
+
+		geturlconfig = do
+			s <- Url.get (Git.repoLocation r ++ "/config")
+			withTempFile "git-annex.tmp" $ \tmpfile -> \h -> do
+				hPutStr h s
+				hClose h
+				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
+					Git.hConfigRead r
+
 		store a = do
 			r' <- a
 			g <- Annex.gitRepo
@@ -95,6 +108,7 @@ tryGitConfigRead r
 			let g' = Git.remotesAdd g $ exchange l r'
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 			return r'
+
 		exchange [] _ = []
 		exchange (old:ls) new =
 			if Git.repoRemoteName old == Git.repoRemoteName new
