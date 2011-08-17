@@ -29,14 +29,11 @@ initialize = do
 	prepUUID
 	Branch.create
 	setVersion
-	g <- Annex.gitRepo
-	unless (Git.repoIsLocalBare g) $
-		gitPreCommitHookWrite g
+	gitPreCommitHookWrite
 
 uninitialize :: Annex ()
 uninitialize = do
-	g <- Annex.gitRepo
-	gitPreCommitHookUnWrite g
+	gitPreCommitHookUnWrite
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init
@@ -52,8 +49,9 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 				else error "First run: git-annex init"
 
 {- set up a git pre-commit hook, if one is not already present -}
-gitPreCommitHookWrite :: Git.Repo -> Annex ()
-gitPreCommitHookWrite repo = do
+gitPreCommitHookWrite :: Annex ()
+gitPreCommitHookWrite = unlessBare $ do
+	hook <- preCommitHook
 	exists <- liftIO $ doesFileExist hook
 	if exists
 		then warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
@@ -61,12 +59,10 @@ gitPreCommitHookWrite repo = do
 			viaTmp writeFile hook preCommitScript
 			p <- getPermissions hook
 			setPermissions hook $ p {executable = True}
-	where
-		hook = preCommitHook repo
 
-gitPreCommitHookUnWrite :: Git.Repo -> Annex ()
-gitPreCommitHookUnWrite repo = do
-	let hook = preCommitHook repo
+gitPreCommitHookUnWrite :: Annex ()
+gitPreCommitHookUnWrite = unlessBare $ do
+	hook <- preCommitHook
 	whenM (liftIO $ doesFileExist hook) $ do
 		c <- liftIO $ readFile hook
 		if c == preCommitScript
@@ -75,9 +71,15 @@ gitPreCommitHookUnWrite repo = do
 				") contents modified; not deleting." ++
 				" Edit it to remove call to git annex."
 
-preCommitHook :: Git.Repo -> FilePath
-preCommitHook repo = 
-	Git.workTree repo ++ "/" ++ Git.gitDir repo ++ "/hooks/pre-commit"
+unlessBare :: Annex () -> Annex ()
+unlessBare a = do
+	g <- Annex.gitRepo
+	unless (Git.repoIsLocalBare g) a
+
+preCommitHook :: Annex FilePath
+preCommitHook = do
+	g <- Annex.gitRepo
+	return $ Git.workTree g ++ "/" ++ Git.gitDir g ++ "/hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 
