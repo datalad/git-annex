@@ -1,4 +1,4 @@
-git-annex (3.20110719) unstable; urgency=low
+git-annex (3.20110719~bpo60+1) squeeze-backports; urgency=low
 
   * add: Be even more robust to avoid ever leaving the file seemingly deleted.
     Closes: #634233
