@@ -141,8 +141,9 @@ keyUrl :: Git.Repo -> Key -> String
 keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
 
 dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = 
-	onRemote r (boolSystem, False) "dropkey"
+dropKey r key
+	| Git.repoIsHttp r = error "dropping from http repo not supported"
+	| otherwise = onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
 		, Param $ show key
 		]
