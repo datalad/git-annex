@@ -8,13 +8,15 @@
 module GitAnnex where
 
 import System.Console.GetOpt
+import Control.Monad.State (liftIO)
 
-import qualified GitRepo as Git
+import qualified Git
 import CmdLine
 import Command
 import Options
 import Utility
-import TrustLevel
+import Types
+import Types.TrustLevel
 import qualified Annex
 import qualified Remote
 
@@ -39,12 +41,14 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.Whereis
+import qualified Command.Merge
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
+import qualified Command.AddUrl
 import qualified Command.Map
 import qualified Command.Upgrade
 import qualified Command.Version
@@ -67,6 +71,7 @@ cmds = concat
 	, Command.Trust.command
 	, Command.Untrust.command
 	, Command.Semitrust.command
+	, Command.AddUrl.command
 	, Command.FromKey.command
 	, Command.DropKey.command
 	, Command.SetKey.command
@@ -76,6 +81,7 @@ cmds = concat
 	, Command.DropUnused.command
 	, Command.Find.command
 	, Command.Whereis.command
+	, Command.Merge.command
 	, Command.Status.command
 	, Command.Migrate.command
 	, Command.Map.command
@@ -98,9 +104,11 @@ options = commonOptions ++
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
 		"override trust setting"
 	, Option [] ["semitrust"] (ReqArg (Remote.forceTrust SemiTrusted) paramRemote)
-		"override trust setting back to default value"
+		"override trust setting back to default"
 	, Option [] ["untrust"] (ReqArg (Remote.forceTrust UnTrusted) paramRemote)
 		"override trust setting to untrusted"
+	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
+		"override git configuration setting"
 	]
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
@@ -108,6 +116,11 @@ options = commonOptions ++
 		addexclude v = Annex.changeState $ \s -> s { Annex.exclude = v:Annex.exclude s }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
+		setgitconfig :: String -> Annex ()
+		setgitconfig v = do
+			g <- Annex.gitRepo
+			g' <- liftIO $ Git.configStore g v
+			Annex.changeState $ \s -> s { Annex.repo = g' }
 
 header :: String
 header = "Usage: git-annex command [option ..]"

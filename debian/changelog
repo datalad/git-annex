@@ -1,3 +1,79 @@
+git-annex (3.20110719) unstable; urgency=low
+
+  * add: Be even more robust to avoid ever leaving the file seemingly deleted.
+    Closes: #634233
+  * Bugfix: Make add ../ work.
+  * Support the standard git -c name=value
+  * unannex: Clean up use of git commit -a.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 19 Jul 2011 23:39:53 -0400
+
+git-annex (3.20110707) unstable; urgency=low
+
+  * Fix sign bug in disk free space checking.
+  * Bugfix: Forgot to de-escape keys when upgrading. Could result in
+    bad location log data for keys that contain [&:%] in their names.
+    (A workaround for this problem is to run git annex fsck.)
+  * add: Avoid a failure mode that resulted in the file seemingly being
+    deleted (content put in the annex but no symlink present).
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 07 Jul 2011 19:29:39 -0400
+
+git-annex (3.20110705) unstable; urgency=low
+
+  * uninit: Delete the git-annex branch and .git/annex/
+  * unannex: In --fast mode, file content is left in the annex, and a
+    hard link made to it.
+  * uninit: Use unannex in --fast mode, to support unannexing multiple
+    files that link to the same content.
+  * Drop the dependency on the haskell curl bindings, use regular haskell HTTP.
+  * Fix a pipeline stall when upgrading (caused by #624389).
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 05 Jul 2011 14:37:39 -0400
+
+git-annex (3.20110702) unstable; urgency=low
+
+  * Now the web can be used as a special remote. 
+    This feature replaces the old URL backend.
+  * addurl: New command to download an url and store it in the annex.
+  * Sped back up fsck, copy --from, and other commands that often
+    have to read a lot of information from the git-annex branch. Such
+    commands are now faster than they were before introduction of the
+    git-annex branch.
+  * Always ensure git-annex branch exists.
+  * Modify location log parser to allow future expansion.
+  * --force will cause add, etc, to operate on ignored files.
+  * Avoid mangling encoding when storing the description of repository
+    and other content.
+  * cabal can now be used to build git-annex. This is substantially
+    slower than using make, does not build or install documentation,
+    does not run the test suite, and is not particularly recommended,
+    but could be useful to some.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 02 Jul 2011 15:00:18 -0400
+
+git-annex (3.20110624) experimental; urgency=low
+
+  * New repository format, annex.version=3. Use `git annex upgrade` to migrate.
+  * git-annex now stores its logs in a git-annex branch.
+  * merge: New subcommand. Auto-merges the new git-annex branch.
+  * Improved handling of bare git repos with annexes. Many more commands will
+    work in them.
+  * git-annex is now more robust; it will never leave state files
+    uncommitted when some other git process comes along and locks the index
+    at an inconvenient time.
+  * rsync is now used when copying files from repos on other filesystems.
+    cp is still used when copying file from repos on the same filesystem,
+    since --reflink=auto can make it significantly faster on filesystems
+    such as btrfs.
+  * Allow --trust etc to specify a repository by name, for temporarily 
+    trusting repositories that are not configured remotes.
+  * unlock: Made atomic.
+  * git-union-merge: New git subcommand, that does a generic union merge
+    operation, and operates efficiently without touching the working tree.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 24 Jun 2011 14:32:18 -0400
+
 git-annex (0.20110610~bpo60+1) squeeze-backports; urgency=low
 
   * Add --numcopies option.

@@ -9,36 +9,52 @@ module Command.Uninit where
 
 import Control.Monad.State (liftIO)
 import System.Directory
+import System.Exit
 
 import Command
 import Messages
 import Types
 import Utility
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import qualified Command.Unannex
 import qualified Command.Init
+import qualified Branch
+import Content
+import Locations
 
 command :: [Command]
 command = [repoCommand "uninit" paramPath seek 
         "de-initialize git-annex and clean out repository"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit Command.Unannex.start, withNothing start]
+seek = [withFilesInGit startUnannex, withNothing start]
+
+startUnannex :: CommandStartString
+startUnannex file = do
+	-- Force fast mode before running unannex. This way, if multiple
+	-- files link to a key, it will be left in the annex and hardlinked
+	-- to by each.
+	Annex.changeState $ \s -> s { Annex.fast = True }
+	Command.Unannex.start file
 
 start :: CommandStartNothing
-start = do
-	showStart "uninit" ""
-	next perform
+start = next perform
 
 perform :: CommandPerform
-perform = do
+perform = next cleanup
+
+cleanup :: CommandCleanup
+cleanup = do
 	g <- Annex.gitRepo
-
 	gitPreCommitHookUnWrite g
-	liftIO $ gitAttributesUnWrite g
-
-	next $ return True
+	mapM_ removeAnnex =<< getKeysPresent
+	liftIO $ removeDirectoryRecursive (gitAnnexDir g)
+	-- avoid normal shutdown
+	saveState
+	liftIO $ do
+		Git.run g "branch" [Param "-D", Param Branch.name]
+		exitSuccess
 
 gitPreCommitHookUnWrite :: Git.Repo -> Annex ()
 gitPreCommitHookUnWrite repo = do
@@ -50,11 +66,3 @@ gitPreCommitHookUnWrite repo = do
 			else warning $ "pre-commit hook (" ++ hook ++ 
 				") contents modified; not deleting." ++
 				" Edit it to remove call to git annex."
-
-gitAttributesUnWrite :: Git.Repo -> IO ()
-gitAttributesUnWrite repo = do
-	let attributes = Git.attributes repo
-	whenM (doesFileExist attributes) $ do
-		c <- readFileStrict attributes
-		safeWriteFile attributes $ unlines $
-			filter (\l -> not $ l `elem` Command.Init.attrLines) $ lines c

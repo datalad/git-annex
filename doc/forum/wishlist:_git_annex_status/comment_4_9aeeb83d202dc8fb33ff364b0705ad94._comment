@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="status of other remotes?"
+ date="2011-06-15T08:39:24Z"
+ content="""
+using the location tracking information, it should be possible to show the status of other remotes as well. what about supporting `--from=...` or `--all`? (thus, among other things, one could determine if a remote has a complete checkout.)
+"""]]

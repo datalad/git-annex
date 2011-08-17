@@ -17,14 +17,14 @@ module Annex (
 ) where
 
 import Control.Monad.State
-	(liftIO, StateT, runStateT, evalStateT, liftM, get, put)
 
-import qualified GitRepo as Git
-import GitQueue
+import qualified Git
+import Git.Queue
 import Types.Backend
 import Types.Remote
 import Types.Crypto
-import TrustLevel
+import Types.BranchState
+import Types.TrustLevel
 import Types.UUID
 
 -- git-annex's monad
@@ -34,12 +34,12 @@ type Annex = StateT AnnexState IO
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [Backend Annex]
-	, supportedBackends :: [Backend Annex]
 	, remotes :: [Remote Annex]
 	, repoqueue :: Queue
 	, quiet :: Bool
 	, force :: Bool
 	, fast :: Bool
+	, branchstate :: BranchState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, defaultkey :: Maybe String
@@ -47,19 +47,20 @@ data AnnexState = AnnexState
 	, fromremote :: Maybe String
 	, exclude :: [String]
 	, forcetrust :: [(UUID, TrustLevel)]
+	, trustmap :: Maybe TrustMap
 	, cipher :: Maybe Cipher
 	}
 
-newState :: Git.Repo -> [Backend Annex] -> AnnexState
-newState gitrepo allbackends = AnnexState
+newState :: Git.Repo -> AnnexState
+newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, supportedBackends = allbackends
 	, repoqueue = empty
 	, quiet = False
 	, force = False
 	, fast = False
+	, branchstate = startBranchState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, defaultkey = Nothing
@@ -67,32 +68,31 @@ newState gitrepo allbackends = AnnexState
 	, fromremote = Nothing
 	, exclude = []
 	, forcetrust = []
+	, trustmap = Nothing
 	, cipher = Nothing
 	}
 
 {- Create and returns an Annex state object for the specified git repo. -}
-new :: Git.Repo -> [Backend Annex] -> IO AnnexState
-new gitrepo allbackends = do
-	gitrepo' <- liftIO $ Git.configRead gitrepo
-	return $ newState gitrepo' allbackends
+new :: Git.Repo -> IO AnnexState
+new gitrepo = newState `liftM` (liftIO . Git.configRead) gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run state action = runStateT action state
+run = flip runStateT
 eval :: AnnexState -> Annex a -> IO a
-eval state action = evalStateT action state
+eval = flip evalStateT
 
 {- Gets a value from the internal state, selected by the passed value
  - constructor. -}
 getState :: (AnnexState -> a) -> Annex a
-getState c = liftM c get
+getState = gets
 
 {- Applies a state mutation function to change the internal state. 
  -
- - Example: changeState (\s -> s { quiet = True })
+ - Example: changeState $ \s -> s { quiet = True }
  -}
 changeState :: (AnnexState -> AnnexState) -> Annex ()
-changeState a = put . a =<< get
+changeState = modify
 
 {- Returns the git repository being acted on -}
 gitRepo :: Annex Git.Repo

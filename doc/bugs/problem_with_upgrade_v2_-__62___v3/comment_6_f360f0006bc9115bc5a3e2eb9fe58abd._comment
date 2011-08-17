@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://lithitux.org/openidserver/users/pavel"
+ nickname="pavel"
+ subject="comment 6"
+ date="2011-07-06T08:14:26Z"
+ content="""
+Ah, great, thanks very much for the quick fix!
+
+Yes, when I mentioned three defunct git processes, there were three processes shown as \"git [defunct]\", plus the three git processes I listed, plus two \"git-annex\" processes. Upon cancel/resume, there were no defunct git processes when I checked, but by the time I found the bug report on the forum and commented I'd already successfully upgraded by annex (by repeatedly attaching strace) and couldn't really easily get at either additional 'ps' info or a fuller strace than what I posted (that was just the log from one of the attach/detach cycles), so it's a relief you managed to pinpoint the problem.
+"""]]

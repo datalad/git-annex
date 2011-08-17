@@ -1,0 +1,8 @@
+git-annex 3.20110707 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix sign bug in disk free space checking.
+   * Bugfix: Forgot to de-escape keys when upgrading. Could result in
+     bad location log data for keys that contain [&amp;:%] in their names.
+     (A workaround for this problem is to run git annex fsck.)
+   * add: Avoid a failure mode that resulted in the file seemingly being
+     deleted (content put in the annex but no symlink present)."""]]

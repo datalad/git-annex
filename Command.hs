@@ -21,8 +21,8 @@ import Types
 import qualified Backend
 import Messages
 import qualified Annex
-import qualified GitRepo as Git
-import Locations
+import qualified Git
+import qualified Git.LsFiles as LsFiles
 import Utility
 import Types.Key
 
@@ -96,10 +96,15 @@ prepCommand Command { cmdseek = seek } params = do
 doCommand :: CommandStart -> CommandCleanup
 doCommand = start
 	where
-		start   = stage $ maybe (return True) perform
-		perform = stage $ maybe (showEndFail >> return False) cleanup
+		start   = stage $ maybe success perform
+		perform = stage $ maybe failure cleanup
 		cleanup = stage $ \r -> showEndResult r >> return r
 		stage a b = b >>= a
+		success = return True
+		failure = do
+			showOutput -- avoid clutter around error message
+			showEndFail
+			return False
 
 notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
@@ -110,7 +115,7 @@ isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do
 	g <- Annex.gitRepo
-	when (Git.repoIsLocalBare g) $ do
+	when (Git.repoIsLocalBare g) $
 		error "You cannot run this subcommand in a bare repository."
 	a
 
@@ -119,17 +124,17 @@ notBareRepo a = do
 withFilesInGit :: CommandSeekStrings
 withFilesInGit a params = do
 	repo <- Annex.gitRepo
-	files <- liftIO $ runPreserveOrder (Git.inRepo repo) params
+	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	liftM (map a) $ filterFiles files
 withAttrFilesInGit :: String -> CommandSeekAttrFiles
 withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
-	files <- liftIO $ runPreserveOrder (Git.inRepo repo) params
+	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	liftM (map a) $ liftIO $ Git.checkAttr repo attr files
 withBackendFilesInGit :: CommandSeekBackendFiles
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo
-	files <- liftIO $ runPreserveOrder (Git.inRepo repo) params
+	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	files' <- filterFiles files
 	backendPairs a files'
 withFilesMissing :: CommandSeekStrings
@@ -143,7 +148,8 @@ withFilesMissing a params = do
 withFilesNotInGit :: CommandSeekBackendFiles
 withFilesNotInGit a params = do
 	repo <- Annex.gitRepo
-	newfiles <- liftIO $ runPreserveOrder (Git.notInRepo repo) params
+	force <- Annex.getState Annex.force
+	newfiles <- liftIO $ runPreserveOrder (LsFiles.notInRepo repo force) params
 	newfiles' <- filterFiles newfiles
 	backendPairs a newfiles'
 withWords :: CommandSeekWords
@@ -153,12 +159,12 @@ withStrings a params = return $ map a params
 withFilesToBeCommitted :: CommandSeekStrings
 withFilesToBeCommitted a params = do
 	repo <- Annex.gitRepo
-	tocommit <- liftIO $ runPreserveOrder (Git.stagedFilesNotDeleted repo) params
+	tocommit <- liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
 	liftM (map a) $ filterFiles tocommit
 withFilesUnlocked :: CommandSeekBackendFiles
-withFilesUnlocked = withFilesUnlocked' Git.typeChangedFiles
+withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: CommandSeekBackendFiles
-withFilesUnlockedToBeCommitted = withFilesUnlocked' Git.typeChangedStagedFiles
+withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: (Git.Repo -> [FilePath] -> IO [FilePath]) -> CommandSeekBackendFiles
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
@@ -169,9 +175,9 @@ withFilesUnlocked' typechanged a params = do
 	unlockedfiles' <- filterFiles unlockedfiles
 	backendPairs a unlockedfiles'
 withKeys :: CommandSeekKeys
-withKeys a params = return $ map a $ map parse params
+withKeys a params = return $ map (a . parse) params
 	where
-		parse p = maybe (error "bad key") id $ readKey p
+		parse p = fromMaybe (error "bad key") $ readKey p
 withTempFile :: CommandSeekStrings
 withTempFile a params = return $ map a params
 withNothing :: CommandSeekNothing
@@ -181,17 +187,15 @@ withNothing _ _ = error "This command takes no parameters."
 backendPairs :: CommandSeekBackendFiles
 backendPairs a files = liftM (map a) $ Backend.chooseBackends files
 
-{- Filter out files from the state directory, and those matching the
- - exclude glob pattern, if it was specified. -}
+{- Filter out files those matching the exclude glob pattern,
+ - if it was specified. -}
 filterFiles :: [FilePath] -> Annex [FilePath]
 filterFiles l = do
-	let l' = filter notState l
 	exclude <- Annex.getState Annex.exclude
 	if null exclude
-		then return l'
-		else return $ filter (notExcluded $ wildsRegex exclude) l'
+		then return l
+		else return $ filter (notExcluded $ wildsRegex exclude) l
 	where
-		notState f = not $ stateDir `isPrefixOf` f
 		notExcluded r f = isNothing $ match r f []
 
 wildsRegex :: [String] -> Regex

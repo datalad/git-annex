@@ -11,7 +11,7 @@ However, that is not currently supported. Problems include:
   a git repo at all!)
 * `.git-annex/` needs to have state recorded to it and committed, and that
   is not possible with a bare repo. (If [[todo/branching]] were done,
-  that might be fixed.)
+  that might be fixed.) (now fixed)
 
 ----
 

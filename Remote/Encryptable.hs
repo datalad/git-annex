@@ -56,10 +56,10 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 	where
 		store k = cip k >>= maybe
 			(storeKey r k)
-			(\x -> storeKeyEncrypted x k)
+			(`storeKeyEncrypted` k)
 		retrieve k f = cip k >>= maybe
 			(retrieveKeyFile r k f)
-			(\x -> retrieveKeyFileEncrypted x f)
+			(`retrieveKeyFileEncrypted` f)
 		withkey a k = cip k >>= maybe (a k) (a . snd)
 		cip = cipherKey c
 

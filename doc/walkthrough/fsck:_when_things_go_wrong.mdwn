@@ -5,7 +5,7 @@ might say about a badly messed up annex:
 	# git annex fsck
 	fsck my_cool_big_file (checksum...)
 	git-annex: Bad file content; moved to .git/annex/bad/SHA1:7da006579dd64330eb2456001fd01948430572f2
-	git-annex: ** No known copies of the file exist!
+	git-annex: ** No known copies exist of my_cool_big_file
 	failed
 	fsck important_file
 	git-annex: Only 1 of 2 copies exist. Run git annex get somewhere else to back it up.

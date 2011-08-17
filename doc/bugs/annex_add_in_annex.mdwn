@@ -2,3 +2,5 @@ I accidentally annexed some files in the .git-annex directory and it cause git-a
 
 > There is a guard against `git annex add .git-annex/foo`, but it doesn't
 > notice `cd .git-annex; git annex add foo`. --[[Joey]]
+
+> Now fixed, by removing the .git-annex directory. [[done]] --[[Joey]] 

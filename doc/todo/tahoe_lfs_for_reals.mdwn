@@ -19,10 +19,3 @@ location log:
 
 This way, each remote can store its own key-specfic data in the same place
 as other key-specific data, with minimal overhead.
-
-Unfortunatly, the current location log parser throws out lines that it 
-cannot parse, so making this change would involve something of a flag day
-upgrade. Also unfortunatly, the location log and other .git-annex/ data
-does not have its own version that can be checked to force an upgrade
-across all clones. It might be best to deal with this at the same time
-the ideas in [[branching]] are done. --[[Joey]]

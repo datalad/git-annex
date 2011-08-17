@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-06-13T16:58:52Z"
+ content="""
+And, maybe, a way to start a fsck from remote? At least when the other side is a ssh or git annex shell, this would work.
+"""]]

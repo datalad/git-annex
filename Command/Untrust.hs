@@ -21,7 +21,7 @@ seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: CommandStartWords
-start ws = notBareRepo $ do
+start ws = do
 	let name = unwords ws
 	showStart "untrust" name
 	u <- Remote.nameToUUID name

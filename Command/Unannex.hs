@@ -10,17 +10,20 @@ module Command.Unannex where
 import Control.Monad.State (liftIO)
 import Control.Monad (unless)
 import System.Directory
+import System.Posix.Files
 
 import Command
+import qualified Command.Drop
 import qualified Annex
 import qualified AnnexQueue
 import Utility
-import qualified Backend
 import LocationLog
 import Types
 import Content
-import qualified GitRepo as Git
+import qualified Git
+import qualified Git.LsFiles as LsFiles
 import Messages
+import Locations
 
 command :: [Command]
 command = [repoCommand "unannex" paramPath seek "undo accidential add command"]
@@ -30,26 +33,25 @@ seek = [withFilesInGit start]
 
 {- The unannex subcommand undoes an add. -}
 start :: CommandStartString
-start file = isAnnexed file $ \(key, backend) -> do
+start file = isAnnexed file $ \(key, _) -> do
 	ishere <- inAnnex key
 	if ishere
 		then do
 			force <- Annex.getState Annex.force
 			unless force $ do
 				g <- Annex.gitRepo
-				staged <- liftIO $ Git.stagedFiles g [Git.workTree g]
+				staged <- liftIO $ LsFiles.staged g [Git.workTree g]
 				unless (null staged) $
 					error "This command cannot be run when there are already files staged for commit."
 				Annex.changeState $ \s -> s { Annex.force = True }
 
 			showStart "unannex" file
-			next $ perform file key backend
+			next $ perform file key
 		else stop
 
-perform :: FilePath -> Key -> Backend Annex -> CommandPerform
-perform file key backend = do
-	-- force backend to always remove
-	ok <- Backend.removeKey backend key (Just 0)
+perform :: FilePath -> Key -> CommandPerform
+perform file key = do
+	ok <- Command.Drop.dropKey key (Just 0) -- always remove
 	if ok
 		then next $ cleanup file key
 		else stop
@@ -63,12 +65,19 @@ cleanup file key = do
 	-- git rm deletes empty directories; put them back
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 
-	fromAnnex key file
-	logStatus key ValueMissing
+	fast <- Annex.getState Annex.fast
+	if fast
+		then liftIO $ do
+			-- fast mode: hard link to content in annex
+			createLink (gitAnnexLocation g key) file
+			allowWrite file
+		else do
+			fromAnnex key file
+			logStatus key InfoMissing
 	
 	-- Commit staged changes at end to avoid confusing the
 	-- pre-commit hook if this file is later added back to
 	-- git as a normal, non-annexed file.
-	AnnexQueue.add "commit" [Params "-a -m", Param "content removed from git annex"] "-a"
+	AnnexQueue.add "commit" [Param "-m", Param "content removed from git annex"] []
 	
 	return True

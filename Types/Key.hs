@@ -48,7 +48,7 @@ instance Show Key where
 			"" +++ y = y
 			x +++ "" = x
 			x +++ y = x ++ fieldSep:y
-			c ?: (Just v) = c:(show v)
+			c ?: (Just v) = c : show v
 			_ ?: _ = ""
 
 readKey :: String -> Maybe Key
@@ -73,4 +73,4 @@ readKey s = if key == Just stubKey then Nothing else key
 		addfield _ _ _ = Nothing
 
 prop_idempotent_key_read_show :: Key -> Bool
-prop_idempotent_key_read_show k = Just k == (readKey $ show k)
+prop_idempotent_key_read_show k = Just k == (readKey . show) k

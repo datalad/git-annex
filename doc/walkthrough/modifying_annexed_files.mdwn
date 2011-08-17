@@ -26,8 +26,7 @@ and this symlink is what gets committed to git in the end.
 	# git commit my_cool_big_file -m "changed an annexed file"
 	add my_cool_big_file ok
 	[master 64cda67] changed an annexed file
-	 2 files changed, 2 insertions(+), 1 deletions(-)
-	 create mode 100644 .git-annex/WORM-s30-m1289672605--file.log
+	 1 files changed, 1 insertions(+), 1 deletions(-)
 
 There is one problem with using `git commit` like this: Git wants to first
 stage the entire contents of the file in its index. That can be slow for

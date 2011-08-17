@@ -44,21 +44,21 @@ start move file = do
 			fromStart src move file
 		(_ ,  _) -> error "only one of --from or --to can be specified"
 
-showAction :: Bool -> FilePath -> Annex ()
-showAction True file = showStart "move" file
-showAction False file = showStart "copy" file
+showMoveAction :: Bool -> FilePath -> Annex ()
+showMoveAction True file = showStart "move" file
+showMoveAction False file = showStart "copy" file
 
 {- Used to log a change in a remote's having a key. The change is logged
  - in the local repo, not on the remote. The process of transferring the
  - key to the remote, or removing the key from it *may* log the change
- - on the remote, but this cannot be relied on. For example, it's not done
- - for bare repos. -}
+ - on the remote, but this cannot be relied on. -}
 remoteHasKey :: Remote.Remote Annex -> Key -> Bool -> Annex ()
 remoteHasKey remote key present	= do
 	let remoteuuid = Remote.uuid remote
-	logStatusFor remoteuuid key status
+	g <- Annex.gitRepo
+	logChange g key remoteuuid status
 	where
-		status = if present then ValuePresent else ValueMissing
+		status = if present then InfoPresent else InfoMissing
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -
@@ -77,7 +77,7 @@ toStart dest move file = isAnnexed file $ \(key, _) -> do
 	if not ishere || u == Remote.uuid dest
 		then stop -- not here, so nothing to do
 		else do
-			showAction move file
+			showMoveAction move file
 			next $ toPerform dest move key
 toPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
 toPerform dest move key = do
@@ -89,7 +89,7 @@ toPerform dest move key = do
 	let fastcheck = fast && not move && not (Remote.hasKeyCheap dest)
 	isthere <- if fastcheck
 		then do
-			(remotes, _) <- Remote.keyPossibilities key
+			remotes <- Remote.keyPossibilities key
 			return $ Right $ dest `elem` remotes
 		else Remote.hasKey dest key
 	case isthere of
@@ -97,7 +97,7 @@ toPerform dest move key = do
 			showNote $ show err
 			stop
 		Right False -> do
-			showNote $ "to " ++ Remote.name dest ++ "..."
+			showAction $ "to " ++ Remote.name dest
 			ok <- Remote.storeKey dest key
 			if ok
 				then next $ toCleanup dest move key
@@ -123,11 +123,11 @@ fromStart :: Remote.Remote Annex -> Bool -> CommandStartString
 fromStart src move file = isAnnexed file $ \(key, _) -> do
 	g <- Annex.gitRepo
 	u <- getUUID g
-	(remotes, _) <- Remote.keyPossibilities key
-	if (u == Remote.uuid src) || (null $ filter (== src) remotes)
+	remotes <- Remote.keyPossibilities key
+	if u == Remote.uuid src || not (any (== src) remotes)
 		then stop
 		else do
-			showAction move file
+			showMoveAction move file
 			next $ fromPerform src move key
 fromPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
 fromPerform src move key = do
@@ -135,7 +135,7 @@ fromPerform src move key = do
 	if ishere
 		then next $ fromCleanup src move key
 		else do
-			showNote $ "from " ++ Remote.name src ++ "..."
+			showAction $ "from " ++ Remote.name src
 			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
 			if ok
 				then next $ fromCleanup src move key

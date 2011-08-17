@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-06-10T16:41:43Z"
+ content="""
+@ethan the reason that wouldn't work is because git would then see a file that was checked in and had its one line symlinkish content replaced with a huge binary blob. And git commit would try to commit that etc. The potential for foot-shooting is too high.
+"""]]

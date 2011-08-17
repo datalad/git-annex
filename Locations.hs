@@ -6,8 +6,6 @@
  -}
 
 module Locations (
-	gitStateDir,
-	stateDir,
 	keyFile,
 	fileKey,
 	gitAnnexLocation,
@@ -19,11 +17,10 @@ module Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
+	gitAnnexJournalDir,
 	isLinkToAnnex,
-	logFile,
-	logFileOld,
-	logFileKey,
 	hashDirMixed,
+	hashDirLower,
 
 	prop_idempotent_fileKey
 ) where
@@ -37,7 +34,7 @@ import Data.Hash.MD5
 
 import Types
 import Types.Key
-import qualified GitRepo as Git
+import qualified Git
 
 {- Conventions:
  -
@@ -52,17 +49,10 @@ import qualified GitRepo as Git
  - Everything else should use relative paths.
  -}
 
-{- Long-term, cross-repo state is stored in files inside the .git-annex
- - directory, in the git repository's working tree. -}
-stateDir :: FilePath
-stateDir = addTrailingPathSeparator $ ".git-annex"
-gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir
-
 {- The directory git annex uses for local state, relative to the .git
  - directory -}
 annexDir :: FilePath
-annexDir = addTrailingPathSeparator $ "annex"
+annexDir = addTrailingPathSeparator "annex"
 
 {- The directory git annex uses for locally available object content,
  - relative to the .git directory -}
@@ -94,7 +84,7 @@ gitAnnexObjectDir r
 	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> objectDir
 	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> objectDir
 
-{- .git-annex/tmp/ is used for temp files -}
+{- .git/annex/tmp/ is used for temp files -}
 gitAnnexTmpDir :: Git.Repo -> FilePath
 gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 
@@ -102,7 +92,7 @@ gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 gitAnnexTmpLocation :: Git.Repo -> Key -> FilePath
 gitAnnexTmpLocation r key = gitAnnexTmpDir r </> keyFile key
 
-{- .git-annex/bad/ is used for bad files found during fsck -}
+{- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath
 gitAnnexBadDir r = addTrailingPathSeparator $ gitAnnexDir r </> "bad"
 
@@ -114,32 +104,14 @@ gitAnnexBadLocation r key = gitAnnexBadDir r </> keyFile key
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
+{- .git/annex/journal/ is used to journal changes made to the git-annex
+ - branch -}
+gitAnnexJournalDir :: Git.Repo -> FilePath
+gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
+
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = ("/.git/" ++ objectDir) `isInfixOf` s
-
-{- The filename of the log file for a given key. -}
-logFile :: Git.Repo -> Key -> String
-logFile = logFile' hashDirLower
-
-{- The old filename of the log file for a key. These can have mixed
- - case, which turned out to be a bad idea for directories whose contents
- - are checked into git. There was no conversion, so these have to be checked
- - for and merged in at runtime. -}
-logFileOld :: Git.Repo -> Key -> String
-logFileOld = logFile' hashDirMixed
-
-logFile' :: (Key -> FilePath) -> Git.Repo -> Key -> String
-logFile' hasher repo key =
-	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
-
-{- Converts a log filename into a key. -}
-logFileKey :: FilePath -> Maybe Key
-logFileKey file
-	| end == ".log" = readKey beginning
-	| otherwise = Nothing
-	where
-		(beginning, end) = splitAt (length file - 4) file
 
 {- Converts a key into a filename fragment.
  -
@@ -195,8 +167,8 @@ display_32bits_as_dir w = trim $ swap_pairs cs
 		-- a real word, use letters that appear less frequently.
 		chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
 		cs = map (\x -> getc $ (shiftR w (6*x)) .&. 31) [0..7]
-		getc n = chars !! (fromIntegral n)
+		getc n = chars !! fromIntegral n
 		swap_pairs (x1:x2:xs) = x2:x1:swap_pairs xs
 		swap_pairs _ = []
 		-- Last 2 will always be 00, so omit.
-		trim s = take 6 s
+		trim = take 6

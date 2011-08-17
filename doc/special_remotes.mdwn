@@ -10,6 +10,7 @@ They cannot be used by other git commands though.
 * [[bup]]
 * [[directory]]
 * [[rsync]]
+* [[web]]
 * [[hook]]
 * [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]] - limited testing
 

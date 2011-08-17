@@ -27,7 +27,7 @@ import System.Posix.Env (setEnv)
 import Types
 import Types.Remote
 import Types.Key
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import UUID
 import Messages
@@ -37,7 +37,7 @@ import Remote.Special
 import Remote.Encryptable
 import Crypto
 import Content
-import Base64
+import Utility.Base64
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -52,7 +52,7 @@ gen r u c = do
 	cst <- remoteCost r expensiveRemoteCost
 	return $ gen' r u c cst
 gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote Annex
-gen' r u c cst = do
+gen' r u c cst =
 	encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
@@ -85,7 +85,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 		
 		handlehost Nothing = defaulthost
 		handlehost (Just h)
-			| ".archive.org" `isSuffixOf` (map toLower h) = archiveorg
+			| ".archive.org" `isSuffixOf` map toLower h = archiveorg
 			| otherwise = defaulthost
 
 		use fullconfig = do
@@ -99,7 +99,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 			use fullconfig
 
 		archiveorg = do
-			showNote $ "Internet Archive mode"
+			showNote "Internet Archive mode"
 			maybe (error "specify bucket=") (const $ return ()) $
 				M.lookup "bucket" archiveconfig
 			use archiveconfig
@@ -185,7 +185,7 @@ remove r k = s3Action r False $ \(conn, bucket) -> do
 
 checkPresent :: Remote Annex -> Key -> Annex (Either IOException Bool)
 checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
-	showNote ("checking " ++ name r ++ "...")
+	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
 	case res of
 		Right _ -> return $ Right True
@@ -203,10 +203,8 @@ s3Error :: ReqError -> a
 s3Error e = error $ prettyReqError e
 
 s3Bool :: AWSResult () -> Annex Bool
-s3Bool res = do
-	case res of
-		Right _ -> return True
-		Left e -> s3Warning e
+s3Bool (Right _) = return True
+s3Bool (Left e) = s3Warning e
 
 s3Action :: Remote Annex -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
 s3Action r noconn action = do
@@ -219,7 +217,7 @@ s3Action r noconn action = do
 		_ -> return noconn
 
 bucketFile :: Remote Annex -> Key -> FilePath
-bucketFile r k = (munge $ show k)
+bucketFile r = munge . show
 	where
 		munge s = case M.lookup "mungekeys" $ fromJust $ config r of
 			Just "ia" -> iaMunge s
@@ -243,13 +241,13 @@ iaMunge = (>>= munge)
 genBucket :: RemoteConfig -> Annex ()
 genBucket c = do
 	conn <- s3ConnectionRequired c
-	showNote "checking bucket"
+	showAction "checking bucket"
 	loc <- liftIO $ getBucketLocation conn bucket 
 	case loc of
 		Right _ -> return ()
 		Left err@(NetworkError _) -> s3Error err
 		Left (AWSError _ _) -> do
-			showNote $ "creating bucket in " ++ datacenter
+			showAction $ "creating bucket in " ++ datacenter
 			res <- liftIO $ createBucketIn conn bucket datacenter
 			case res of
 				Right _ -> return ()
@@ -271,8 +269,8 @@ s3Connection c = do
 			warning $ "Set both " ++ s3AccessKey ++ " and " ++ s3SecretKey  ++ " to use S3"
 			return Nothing
 	where
-		host = fromJust $ (M.lookup "host" c)
-		port = let s = fromJust $ (M.lookup "port" c) in
+		host = fromJust $ M.lookup "host" c
+		port = let s = fromJust $ M.lookup "port" c in
 			case reads s of
 			[(p, _)] -> p
 			_ -> error $ "bad S3 port value: " ++ s
@@ -283,7 +281,7 @@ s3GetCreds :: RemoteConfig -> Annex (Maybe (String, String))
 s3GetCreds c = do
 	ak <- getEnvKey s3AccessKey
 	sk <- getEnvKey s3SecretKey
-	if (null ak || null sk)
+	if null ak || null sk
 		then do
 			mcipher <- remoteCipher c
 			case (M.lookup "s3creds" c, mcipher) of
@@ -291,9 +289,7 @@ s3GetCreds c = do
 					s <- liftIO $ withDecryptedContent cipher
 						(return $ L.pack $ fromB64 encrypted)
 						(return . L.unpack)
-					let line = lines s
-					let ak' = line !! 0
-					let sk' = line !! 1
+					let [ak', sk', _rest] = lines s
 					liftIO $ do
 						setEnv s3AccessKey ak True
 						setEnv s3SecretKey sk True

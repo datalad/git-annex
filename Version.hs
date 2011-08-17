@@ -7,64 +7,46 @@
 
 module Version where
 
-import Control.Monad.State (liftIO)
 import Control.Monad (unless)
-import System.Directory
 
 import Types
 import qualified Annex
-import qualified GitRepo as Git
-import Locations
+import qualified Git
 import Config
 
 type Version = String
 
 defaultVersion :: Version
-defaultVersion = "2"
+defaultVersion = "3"
 
 supportedVersions :: [Version]
 supportedVersions = [defaultVersion]
 
 upgradableVersions :: [Version]
-upgradableVersions = ["0", "1"]
+upgradableVersions = ["0", "1", "2"]
 
 versionField :: String
 versionField = "annex.version"
 
-getVersion :: Annex Version
+getVersion :: Annex (Maybe Version)
 getVersion = do
 	g <- Annex.gitRepo
 	let v = Git.configGet g versionField ""
 	if not $ null v
-		then return v
-		else do
-			-- version 0 was not recorded in .git/config;
-			-- such a repo should have an gitAnnexDir but no
-			-- gitAnnexObjectDir.
-			--
-			-- version 1 may not be recorded if the user
-			-- forgot to init. Such a repo should have a
-			-- gitAnnexObjectDir already.
-			d <- liftIO $ doesDirectoryExist $ gitAnnexDir g
-			o <- liftIO $ doesDirectoryExist $ gitAnnexObjectDir g
-			case (d, o) of
-				(True, False) -> return "0"
-				(True, True) -> return "1"
-				_ -> do
-					setVersion
-					return defaultVersion
+		then return $ Just v
+		else return Nothing
 
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion
 
 checkVersion :: Annex ()
-checkVersion = do
-	v <- getVersion
-	unless (v `elem` supportedVersions) $ do
-		error $ "Repository version " ++ v ++ 
-			" is not supported. " ++
-			msg v
+checkVersion = getVersion >>= handle
 	where
+		handle Nothing = error "First run: git-annex init"
+		handle (Just v) = unless (v `elem` supportedVersions) $
+			error $ "Repository version " ++ v ++ 
+				" is not supported. " ++
+				msg v
 		msg v
 			| v `elem` upgradableVersions = "Upgrade this repository: git-annex upgrade"
 			| otherwise = "Upgrade git-annex."

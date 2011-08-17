@@ -11,8 +11,9 @@ module Types.Remote where
 
 import Control.Exception
 import Data.Map as M
+import Data.Ord
 
-import qualified GitRepo as Git
+import qualified Git
 import Types.Key
 
 type RemoteConfig = M.Map String String
@@ -62,4 +63,4 @@ instance Eq (Remote a) where
 
 -- order remotes by cost
 instance Ord (Remote a) where
-	compare x y = compare (cost x) (cost y)
+	compare = comparing cost

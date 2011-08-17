@@ -6,10 +6,12 @@ GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(IGNORE)
 endif
 GHCMAKE=ghc $(GHCFLAGS) --make
 
-bins=git-annex git-annex-shell
-mans=git-annex.1 git-annex-shell.1
+bins=git-annex git-annex-shell git-union-merge
+mans=git-annex.1 git-annex-shell.1 git-union-merge.1
 
 all: $(bins) $(mans) docs
+
+sources: SysConfig.hs StatFS.hs Touch.hs Remote/S3.hs
 
 SysConfig.hs: configure.hs TestConfig.hs
 	$(GHCMAKE) configure
@@ -19,8 +21,10 @@ SysConfig.hs: configure.hs TestConfig.hs
 	hsc2hs $<
 	perl -i -pe 's/^{-# INCLUDE.*//' $@
 
-Remote/S3.o:
+Remote/S3.hs:
 	@ln -sf S3real.hs Remote/S3.hs
+
+Remote/S3.o: Remote/S3.hs
 	@if ! $(GHCMAKE) Remote/S3.hs; then \
 		ln -sf S3stub.hs Remote/S3.hs; \
 		echo "** building without S3 support"; \
@@ -33,6 +37,8 @@ git-annex.1: doc/git-annex.mdwn
 	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
 git-annex-shell.1: doc/git-annex-shell.mdwn
 	./mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
+git-union-merge.1: doc/git-union-merge.mdwn
+	./mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin
@@ -45,7 +51,7 @@ install: all
 	fi
 
 test: $(bins)
-	if ! $(GHCMAKE) -O0 test; then \
+	@if ! $(GHCMAKE) -O0 test; then \
 		echo "** not running test suite" >&2; \
 	else \
 		./test; \
@@ -78,7 +84,15 @@ docs: $(mans)
 clean:
 	rm -rf build $(bins) $(mans) test configure  *.tix .hpc \
 		StatFS.hs Touch.hs SysConfig.hs Remote/S3.hs
-	rm -rf doc/.ikiwiki html
+	rm -rf doc/.ikiwiki html dist
 	find . \( -name \*.o -or -name \*.hi \) -exec rm {} \;
+
+# Workaround for cabal sdist not running Setup hooks, so I cannot
+# generate a file list there.
+sdist: clean
+	@if [ ! -e git-annex.cabal.orig ]; then cp git-annex.cabal git-annex.cabal.orig; fi
+	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
+	@cabal sdist
+	@mv git-annex.cabal.orig git-annex.cabal
 
 .PHONY: $(bins) test install

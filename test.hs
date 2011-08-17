@@ -19,41 +19,40 @@ import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
 import Control.Exception (throw)
-import Control.Monad.State (liftIO)
-import Maybe
+import Data.Maybe
 import qualified Data.Map as M
 import System.Path (recurseDir)
 import System.IO.HVFS (SystemFS(..))
 
 import qualified Annex
-import qualified BackendList
 import qualified Backend
-import qualified GitRepo as Git
+import qualified Git
 import qualified Locations
 import qualified Utility
-import qualified Type.Backend
+import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
 import qualified LocationLog
 import qualified UUID
 import qualified Trust
 import qualified Remote
+import qualified RemoteLog
 import qualified Content
 import qualified Command.DropUnused
-import qualified Type.Key
+import qualified Types.Key
 import qualified Config
 import qualified Crypto
 
 -- for quickcheck
-instance Arbitrary Key.Key where
+instance Arbitrary Types.Key.Key where
 	arbitrary = do
 		n <- arbitrary
 		b <- elements ['A'..'Z']
-		return $ Key.Key {
-			Key.keyName = n,
-			Key.keyBackendName = [b],
-			Key.keySize = Nothing,
-			Key.keyMtime = Nothing
+		return Types.Key.Key {
+			Types.Key.keyName = n,
+			Types.Key.keyBackendName = [b],
+			Types.Key.keySize = Nothing,
+			Types.Key.keyMtime = Nothing
 		}
 
 main :: IO ()
@@ -72,10 +71,10 @@ quickcheck :: Test
 quickcheck = TestLabel "quickcheck" $ TestList
 	[ qctest "prop_idempotent_deencode" Git.prop_idempotent_deencode
 	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, qctest "prop_idempotent_key_read_show" Key.prop_idempotent_key_read_show
+	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
 	, qctest "prop_idempotent_shellEscape" Utility.prop_idempotent_shellEscape
 	, qctest "prop_idempotent_shellEscape_multiword" Utility.prop_idempotent_shellEscape_multiword
-	, qctest "prop_idempotent_configEscape" Remote.prop_idempotent_configEscape
+	, qctest "prop_idempotent_configEscape" RemoteLog.prop_idempotent_configEscape
 	, qctest "prop_parentDir_basics" Utility.prop_parentDir_basics
 	, qctest "prop_relPathDirToFile_basics" Utility.prop_relPathDirToFile_basics
 	, qctest "prop_cost_sane" Config.prop_cost_sane
@@ -105,16 +104,11 @@ blackbox = TestLabel "blackbox" $ TestList
 test_init :: Test
 test_init = "git-annex init" ~: TestCase $ innewrepo $ do
 	git_annex "init" ["-q", reponame] @? "init failed"
-	e <- doesFileExist annexlog
-	e @? (annexlog ++ " not created")
-	c <- readFile annexlog
-	reponame `isInfixOf` c @? annexlog ++ " does not contain repo name"
 	where
-		annexlog = ".git-annex/uuid.log"
 		reponame = "test repo"
 
 test_add :: Test
-test_add = "git-annex add" ~: TestList [basic, sha1dup]
+test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 	where
 		-- this test case runs in the main repo, to set up a basic
 		-- annexed file that later tests will use
@@ -135,11 +129,19 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup]
 			git_annex "add" ["-q", sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
 			annexed_present sha1annexedfiledup
 			annexed_present sha1annexedfile
+		subdirs = TestCase $ intmpclonerepo $ do
+			createDirectory "dir"
+			writeFile "dir/foo" $ content annexedfile
+			git_annex "add" ["-q", "dir"] @? "add of subdir failed"
+			createDirectory "dir2"
+			writeFile "dir2/foo" $ content annexedfile
+			changeWorkingDirectory "dir"
+			git_annex "add" ["-q", "../dir2"] @? "add of ../subdir failed"
 
 test_setkey :: Test
 test_setkey = "git-annex setkey/fromkey" ~: TestCase $ inmainrepo $ do
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ BackendClass.getKey backendSHA1 tmp
+	r <- annexeval $ Types.Backend.getKey backendSHA1 tmp
 	let key = show $ fromJust r
 	git_annex "setkey" ["-q", "--key", key, tmp] @? "setkey failed"
 	git_annex "fromkey" ["-q", "--key", key, sha1annexedfile] @? "fromkey failed"
@@ -157,8 +159,6 @@ test_unannex = "git-annex unannex" ~: TestList [nocopy, withcopy]
 			annexed_notpresent annexedfile
 		withcopy = "with content" ~: intmpclonerepo $ do
 			git_annex "get" ["-q", annexedfile] @? "get failed"
-			Utility.boolSystem "git" [Utility.Params "commit -q -a -m statechanged"]
-				@? "git commit of state failed"
 			annexed_present annexedfile
 			git_annex "unannex" ["-q", annexedfile, sha1annexedfile] @? "unannex failed"
 			unannexed annexedfile
@@ -172,8 +172,6 @@ test_drop = "git-annex drop" ~: TestList [noremote, withremote, untrustedremote]
 	where
 		noremote = "no remotes" ~: TestCase $ intmpclonerepo $ do
 			git_annex "get" ["-q", annexedfile] @? "get failed"
-			Utility.boolSystem "git" [Utility.Params "commit -q -a -m statechanged"]
-				@? "git commit of state failed"
 			Utility.boolSystem "git" [Utility.Params "remote rm origin"]
 				@? "git remote rm origin failed"
 			r <- git_annex "drop" ["-q", annexedfile]
@@ -280,7 +278,7 @@ test_lock = "git-annex unlock/lock" ~: intmpclonerepo $ do
 	-- write different content, to verify that lock
 	-- throws it away
 	changecontent annexedfile
-	writeFile annexedfile $ (content annexedfile) ++ "foo"
+	writeFile annexedfile $ content annexedfile ++ "foo"
 	git_annex "lock" ["-q", annexedfile] @? "lock failed"
 	annexed_present annexedfile
 	git_annex "unlock" ["-q", annexedfile] @? "unlock failed"		
@@ -289,7 +287,7 @@ test_lock = "git-annex unlock/lock" ~: intmpclonerepo $ do
 	git_annex "add" ["-q", annexedfile] @? "add of modified file failed"
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
-	assertEqual ("content of modified file") c (changedcontent annexedfile)
+	assertEqual "content of modified file" c (changedcontent annexedfile)
 	r' <- git_annex "drop" ["-q", annexedfile]
 	not r' @? "drop wrongly succeeded with no known copy of modified file"
 
@@ -314,9 +312,9 @@ test_edit = "git-annex edit/commit" ~: TestList [t False, t True]
 					@? "git commit of edited file failed"
 		runchecks [checklink, checkunwritable] annexedfile
 		c <- readFile annexedfile
-		assertEqual ("content of modified file") c (changedcontent annexedfile)
+		assertEqual "content of modified file" c (changedcontent annexedfile)
 		r <- git_annex "drop" ["-q", annexedfile]
-		(not r) @? "drop wrongly succeeded with no known copy of modified file"
+		not r @? "drop wrongly succeeded with no known copy of modified file"
 
 test_fix :: Test
 test_fix = "git-annex fix" ~: intmpclonerepo $ do
@@ -333,7 +331,7 @@ test_fix = "git-annex fix" ~: intmpclonerepo $ do
 	git_annex "fix" ["-q", newfile] @? "fix of moved file failed"
 	runchecks [checklink, checkunwritable] newfile
 	c <- readFile newfile
-	assertEqual ("content of moved file") c (content annexedfile)
+	assertEqual "content of moved file" c (content annexedfile)
 	where
 		subdir = "s"
 		newfile = subdir ++ "/" ++ annexedfile
@@ -493,7 +491,7 @@ annexeval :: Types.Annex a -> IO a
 annexeval a = do
 	g <- Git.repoFromCwd
 	g' <- Git.configRead g
-	s <- Annex.new g' BackendList.allBackends
+	s <- Annex.new g'
 	Annex.eval s a
 
 innewrepo :: Assertion -> Assertion
@@ -609,26 +607,9 @@ checklocationlog f expected = do
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do
-			uuids <- annexeval $ do
-				g <- Annex.gitRepo
-				liftIO $ LocationLog.keyLocations g k
+			uuids <- annexeval $ LocationLog.keyLocations k
 			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ thisuuid)
 				expected (thisuuid `elem` uuids)
-
-			-- Location log files should always be checked
-			-- into git, and any modifications staged for
-			-- commit. This is a regression test, as some
-			-- commands forgot to.
-			(fs, ufs) <- annexeval $ do
-				g <- Annex.gitRepo
-				let lf = LocationLog.logFile g k
-				fs <- liftIO $ Git.inRepo g [lf]
-				ufs <- liftIO $ Git.changedUnstagedFiles g [lf]
-				return (fs, ufs)
-			when (null fs) $
-				assertFailure $ f ++ " logfile not added to git repo"
-			when (not $ null ufs) $
-				assertFailure $ f ++ " logfile changes not staged"
 		_ -> assertFailure $ f ++ " failed to look up key"
 
 inlocationlog :: FilePath -> Assertion
@@ -711,4 +692,4 @@ backendWORM :: Types.Backend Types.Annex
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend Types.Annex
-backend_ name = Backend.lookupBackendName BackendList.allBackends name
+backend_ name = Backend.lookupBackendName name

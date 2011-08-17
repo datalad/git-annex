@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="short answer: no"
+ date="2011-06-10T19:55:38Z"
+ content="""
+Long answer, quoting from a mail to someone else:
+
+Well, I can tell you that it assumes a POSIX system, both in available
+utilities and system calls, So you'd need to use cygwin or something
+like that. (Perhaps you already are for git, I think git also assumes a
+POSIX system.) So you need a Haskell that can target that. What this
+page refers to as \"GHC-Cygwin\":
+<http://www.haskell.org/ghc/docs/6.6/html/building/platforms.html>
+I don't know where to get one. Did find this:
+<http://copilotco.com/mail-archives/haskell-cafe.2007/msg00824.html>
+
+(There are probably also still some places where it assumes / as a path
+separator, although I fixed some.)
+
+FWIW, git-annex works fine on OS X and other fine proprietary unixen. ;P
+
+----
+
+Alternatively, windows versions of these functions could be found,
+which are all the ones that need POSIX, I think. A fair amount of this,
+the stuff to do with signals and users, could be empty stubs in windows.
+The file manipulation, particularly symlinks, would probably be the main
+challenge.
+
+<pre>
+addSignal
+blockSignals
+changeWorkingDirectory
+createLink
+createSymbolicLink
+emptySignalSet
+executeFile
+fileMode
+fileSize
+forkProcess
+getAnyProcessStatus
+getEffectiveUserID
+getEnvDefault
+getFileStatus
+getProcessID
+getProcessStatus
+getSignalMask
+getSymbolicLinkStatus
+getUserEntryForID
+getUserEntryForName
+groupWriteMode
+homeDirectory
+installHandler
+intersectFileModes
+isRegularFile
+isSymbolicLink
+modificationTime
+otherWriteMode
+ownerWriteMode
+readSymbolicLink
+setEnv
+setFileMode
+setSignalMask
+sigCHLD
+sigINT
+unionFileModes
+</pre>
+"""]]

@@ -1,0 +1,6 @@
+Is it possible to story ordinary files in the git repository, or is this going to confuse git-annex? In other words, can I safely run
+
+    git add .gitattributes
+    git commit -m 'remember attributes' .gitattributes
+
+..., or do I have to use `git-annex add` all time?

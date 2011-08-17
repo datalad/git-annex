@@ -1,0 +1,22 @@
+News for git-annex 3.20110702:
+
+The URL backend has been removed. Instead the new web remote can be used.
+
+git-annex 3.20110702 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Now the web can be used as a special remote.
+     This feature replaces the old URL backend.
+   * addurl: New command to download an url and store it in the annex.
+   * Sped back up fsck, copy --from, and other commands that often
+     have to read a lot of information from the git-annex branch. Such
+     commands are now faster than they were before introduction of the
+     git-annex branch.
+   * Always ensure git-annex branch exists.
+   * Modify location log parser to allow future expansion.
+   * --force will cause add, etc, to operate on ignored files.
+   * Avoid mangling encoding when storing the description of repository
+     and other content.
+   * cabal can now be used to build git-annex. This is substantially
+     slower than using make, does not build or install documentation,
+     does not run the test suite, and is not particularly recommended,
+     but could be useful to some."""]]

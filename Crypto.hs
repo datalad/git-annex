@@ -33,6 +33,7 @@ import Data.Digest.Pure.SHA
 import System.Cmd.Utils
 import Data.String.Utils
 import Data.List
+import Data.Maybe
 import System.IO
 import System.Posix.IO
 import System.Posix.Types
@@ -46,7 +47,7 @@ import Types
 import Types.Key
 import Types.Remote
 import Utility
-import Base64
+import Utility.Base64
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder
@@ -125,11 +126,11 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 	return $ EncryptedCipher encipher (KeyIds ks')
 	where
 		encrypt = [ Params "--encrypt" ]
-		recipients l = 
-			-- Force gpg to only encrypt to the specified
-			-- recipients, not configured defaults.
-			[ Params "--no-encrypt-to --no-default-recipient"] ++
-			(concat $ map (\k -> [Param "--recipient", Param k]) l)
+		recipients l = force_recipients :
+			concatMap (\k -> [Param "--recipient", Param k]) l
+		-- Force gpg to only encrypt to the specified
+		-- recipients, not configured defaults.
+		force_recipients = Params "--no-encrypt-to --no-default-recipient"
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: RemoteConfig -> EncryptedCipher -> IO Cipher
@@ -152,24 +153,24 @@ encryptKey c k =
 
 {- Runs an action, passing it a handle from which it can 
  - stream encrypted content. -}
-withEncryptedHandle :: Cipher -> (IO L.ByteString) -> (Handle -> IO a) -> IO a
+withEncryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
 withEncryptedHandle = gpgCipherHandle [Params "--symmetric --force-mdc"]
 
 {- Runs an action, passing it a handle from which it can
  - stream decrypted content. -}
-withDecryptedHandle :: Cipher -> (IO L.ByteString) -> (Handle -> IO a) -> IO a
+withDecryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
 withDecryptedHandle = gpgCipherHandle [Param "--decrypt"]
 
 {- Streams encrypted content to an action. -}
-withEncryptedContent :: Cipher -> (IO L.ByteString) -> (L.ByteString -> IO a) -> IO a
+withEncryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
 withEncryptedContent = pass withEncryptedHandle
 
 {- Streams decrypted content to an action. -}
-withDecryptedContent :: Cipher -> (IO L.ByteString) -> (L.ByteString -> IO a) -> IO a
+withDecryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
 withDecryptedContent = pass withDecryptedHandle
 
-pass :: (Cipher -> (IO L.ByteString) -> (Handle -> IO a) -> IO a) 
-      -> Cipher -> (IO L.ByteString) -> (L.ByteString -> IO a) -> IO a
+pass :: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
+      -> Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
 pass to c i a = to c i $ \h -> a =<< L.hGetContents h
 
 gpgParams :: [CommandParam] -> IO [String]
@@ -202,7 +203,7 @@ gpgPipeStrict params input = do
  -
  - Note that to avoid deadlock with the cleanup stage,
  - the action must fully consume gpg's input before returning. -}
-gpgCipherHandle :: [CommandParam] -> Cipher -> (IO L.ByteString) -> (Handle -> IO a) -> IO a
+gpgCipherHandle :: [CommandParam] -> Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
 gpgCipherHandle params c a b = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
@@ -235,10 +236,10 @@ configKeyIds c = do
 	where
 		parseWithColons s = map keyIdField $ filter pubKey $ lines s
 		pubKey = isPrefixOf "pub:"
-		keyIdField s = (split ":" s) !! 4
+		keyIdField s = split ":" s !! 4
 
 configGet :: RemoteConfig -> String -> String
-configGet c key = maybe missing id $ M.lookup key c
+configGet c key = fromMaybe missing $ M.lookup key c
 	where missing = error $ "missing " ++ key ++ " in remote config"
 
 hmacWithCipher :: Cipher -> String -> String

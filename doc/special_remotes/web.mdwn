@@ -1,0 +1,7 @@
+git-annex can use the WWW as a special remote, downloading urls to files.
+See [[walkthrough/using_web_web]] for usage examples.
+
+## notes
+
+Currently git-annex only supports downloading content from the web; 
+it cannot upload to it or remove content.

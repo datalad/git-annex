@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://peter-simons.myopenid.com/"
- ip="84.189.1.247"
- subject="Why isn't this package built with Cabal?"
- date="2011-03-23T11:31:06Z"
- content="""
-It would be a lot easier to compile this package, if it had a Cabal file to describe the build; especially the build-time dependencies. Why isn't Cabal used?
-"""]]

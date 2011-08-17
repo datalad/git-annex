@@ -5,7 +5,7 @@ A suppliment to the [[walkthrough]].
 [[!inline feeds=no show=0 template=walkthrough pagenames="""
 	walkthrough/using_Amazon_S3
 	walkthrough/using_bup
-	walkthrough/using_the_URL_backend
+	walkthrough/using_the_web
 	walkthrough/using_the_SHA1_backend
 	walkthrough/migrating_data_to_a_new_backend
 	walkthrough/untrusted_repositories

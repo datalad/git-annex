@@ -155,13 +155,13 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * unused
 
-  Checks the annex for data that does not correspond to any files currently
-  in the respository, and prints a numbered list of the data.
+  Checks the annex for data that does not correspond to any files present
+  in the currently checked out branch, and prints a numbered list of the data.
 
   To only show unused temp and bad files, specify --fast
 
-  To check data on a remote that does not correspond to any files currently
-  in the local repository, specify --from.
+  To check data on a remote that does not correspond to any files present
+  on the locally checked out branch, specify --from.
 
 * dropunused [number ...]
 
@@ -181,6 +181,13 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Displays a list of repositories known to contain the content of the
   specified file or files.
+
+* merge
+
+  Automatically merges any changes from remotes into the git-annex branch.
+  While git-annex mostly handles keeping the git-annex branch merged
+  automatically, if you find you are unable to push the git-annex branch
+  due non-fast-forward, this will fix it.
 
 * status
 
@@ -232,6 +239,9 @@ Many git-annex commands will stage changes for later `git commit` by you.
   file and don't want its contents any more. In that case you should use
   `git annex drop` instead, and you can also `git rm` the file.
 
+  In --fast mode, this command leaves content in the annex, simply making
+  a hard link to it.
+
 * uninit
 
   Use this to stop using git annex. It will unannex every file in the
@@ -268,15 +278,14 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Returns a repository to the default semi trusted state.
 
+* addurl [url ...]
+
+  Downloads each url to a file, which is added to the annex.
+
 * fromkey file
 
-  This can be used to manually set up a file to link to a specified key
-  in the key-value backend. How you determine an existing key in the backend
-  varies. For the URL backend, the key is based on an URL to the content.
-
-  Example:
-
-	git annex fromkey --key=URL--http://www.archive.org/somefile somefile
+  This plumbing-level command can be used to manually set up a file
+  to link to a specified key in the key-value backend.
 
 * dropkey [key ...]
 
@@ -292,8 +301,8 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * setkey file
 
-  This plumbing-level command sets the annexed data for a key to the content of
-  the specified file, and then removes the file.
+  This plumbing-level command sets the annexed data for a key to the
+  content of the specified file, and then removes the file.
 
   Example:
 
@@ -301,9 +310,7 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * upgrade
 
-  Upgrades the repository to current layout. Upgrades are done automatically
-  whenever a newer git annex encounters an old repository; this command
-  allows explcitly starting an upgrade.
+  Upgrades the repository to current layout.
 
 * version
 
@@ -314,7 +321,8 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * --force
 
   Force unsafe actions, such as dropping a file's content when no other
-  source of it can be verified to still exist. Use with care.
+  source of it can be verified to still exist, or adding ignored files.
+  Use with care.
 
 * --fast
 
@@ -365,7 +373,8 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Overrides trust settings for a repository. May be specified more than once.
   
-  The repository should be specified using the name of a configured remote.
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository.
 
 * --backend=name
 
@@ -377,6 +386,10 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * --key=name
 
   Specifies a key to operate on.
+
+* -c name=value
+
+  Used to override git configuration settings. May be specified multiple times.
 
 # CONFIGURATION
 
@@ -395,7 +408,6 @@ Here are all the supported configuration settings.
 
   Space-separated list of names of the key-value backends to use. 
   The first listed is used to store new files by default. 
-  (default: "WORM SHA1 URL")
 
 * `remote.<name>.annex-cost`
 
@@ -495,18 +507,6 @@ These files are used by git-annex, in your git repository:
 
 `.git/annex/objects/` contains the annexed file contents that are currently
 available. Annexed files in your git repository symlink to that content.
-
-`.git-annex/uuid.log` is used to map between repository UUID and
-descriptions.
-
-`.git-annex/trust.log` is used to indicate which repositories are trusted
-and untrusted.
-
-`.git-annex/*.log` is where git-annex records its content tracking
-information. These files should be committed to git.
-
-`.gitattributes` is configured to use git's union merge driver
-to avoid conflicts when merging files in the `.git-annex` directory.
 
 # SEE ALSO
 

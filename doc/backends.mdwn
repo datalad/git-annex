@@ -9,7 +9,7 @@ to retrieve the file's content (its value).
 Multiple pluggable backends are supported, and a single repository
 can use different backends for different files.
 
-These backends can transfer file contents in configured git remotes.
+These backends can transfer file contents between configured git remotes.
 It's also possible to use [[special_remotes]], such as Amazon S3 with
 these backends.
 
@@ -26,10 +26,6 @@ these backends.
 * `SHA1E`, `SHA512E`, etc -- Variants that preserve filename extension as
   part of the key. Useful for archival tasks where the filename extension
   contains metadata that should be preserved.
-
-These backends store file contents in other key/value stores.
-
-* `URL` -- This backend downloads the file's content from an external URL.
 
 The `annex.backends` git-config setting can be used to list the backends
 git-annex should use. The first one listed will be used by default when

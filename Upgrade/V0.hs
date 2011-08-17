@@ -23,7 +23,7 @@ import qualified Upgrade.V1
 
 upgrade :: Annex Bool
 upgrade = do
-	showNote "v0 to v1..."
+	showAction "v0 to v1"
 	g <- Annex.gitRepo
 
 	-- do the reorganisation of the key files
@@ -48,7 +48,7 @@ lookupFile0 = Upgrade.V1.lookupFile1
 getKeysPresent0 :: FilePath -> Annex [Key]
 getKeysPresent0 dir = do
 	exists <- liftIO $ doesDirectoryExist dir
-	if (not exists)
+	if not exists
 		then return []
 		else do
 			contents <- liftIO $ getDirectoryContents dir

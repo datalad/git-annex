@@ -14,16 +14,9 @@ Known to work ok:
 * `git annex drop` can check that a bare repository has a copy of data
   that is being dropped.
 * `git annex get` can transfer data from a bare repository.
+* Most other stuff (ie, init, describe, trust, etc.)
 
 There are a few caveats to keep in mind when using bare repositories:
 
-* `git annex init` can be run in a bare repository, but it cannot
-  store the name you gave the repository in .git-annex/uuid.log (because
-  the bare repository has no such file to commit to). Instead, it will
-  tell you a command to run in some non-bare clone of the repository.
-* Some subcommands, like `fsck`, `trust`, `unused` and `fromkey`, 
-  cannot be run in a bare repository. Those subcommands will
-  refuse to do anything.
-* `git annex setkey` is a plumbing-level command; using it manually
-  to add content to a bare repository is not recommended, since there
-  will be no record that the content is stored there.
+* A few subcommands, like `unused` cannot be run in a bare repository.
+  Those subcommands will refuse to do anything.

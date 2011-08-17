@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-07-07T21:04:23Z"
+ content="""
+What an evil little bug. In retrospect, this probably bit my own test upgrades, but I ran `git annex fsck` everywhere and so avoided the location log breakage.
+
+I've fixed the bug, which also involved files with other punctuation in their names [&:%] when using the WORM backend. 
+
+The only way I have to recover repos that have already been upgraded is to run `git annex fsck --fast` in each clone of such a repo, which will let it rebuild the location log information. I think that is the best way to recover; ie I can't think of a way to recover that doesn't need to do everything fsck does anyway.
+"""]]

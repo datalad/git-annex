@@ -4,8 +4,15 @@
 * [[Debian]]
 * [[Ubuntu]]
 * [[Fedora]]
+* [[FreeBSD]]
 
-## Generic instructions
+## Using cabal
+
+As a haskell package, git-annex can be built using cabal. For example:
+
+	cabal install git-annex --bindir=$HOME/bin
+
+## Installation by hand
 
 To build and use git-annex, you will need:
 
@@ -16,8 +23,10 @@ To build and use git-annex, you will need:
   * [utf8-string](http://hackage.haskell.org/package/utf8-string)
   * [SHA](http://hackage.haskell.org/package/SHA)
   * [dataenc](http://hackage.haskell.org/package/dataenc)
+  * [monad-control](http://hackage.haskell.org/package/monad-control)
   * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
+  * [HTTP](http://hackage.haskell.org/package/HTTP)
   * [hS3](http://hackage.haskell.org/package/hS3) (optional, but recommended)
 * Shell commands
   * [git](http://git-scm.com/)

@@ -1,5 +1,5 @@
 git-annex keeps track of in which repositories it last saw a file's content.
-This location tracking information is stored in `.git-annex/$key.log`.
+This location tracking information is stored in the git-annex branch.
 Repositories record their UUID and the date when they get or drop 
 a file's content. (Git is configured to use a union merge for this file,
 so the lines may be in arbitrary order, but it will never conflict.)

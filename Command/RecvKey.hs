@@ -14,7 +14,7 @@ import Command
 import CmdLine
 import Content
 import Utility
-import RsyncFile
+import Utility.RsyncFile
 
 command :: [Command]
 command = [repoCommand "recvkey" paramKey seek

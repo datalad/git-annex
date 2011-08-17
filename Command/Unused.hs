@@ -7,7 +7,7 @@
 
 module Command.Unused where
 
-import Control.Monad (filterM, unless, forM_, when)
+import Control.Monad (filterM, unless, forM_)
 import Control.Monad.State (liftIO)
 import qualified Data.Set as S
 import Data.Maybe
@@ -22,7 +22,8 @@ import Locations
 import Utility
 import LocationLog
 import qualified Annex
-import qualified GitRepo as Git
+import qualified Git
+import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import qualified Remote
 
@@ -54,7 +55,9 @@ checkUnused = do
 	where
 		list file msg l c = do
 			let unusedlist = number c l
-			when (not $ null l) $ showLongNote $ msg unusedlist
+			unless (null l) $ do
+				showLongNote $ msg unusedlist
+				showLongNote "\n"
 			writeUnusedFile file unusedlist
 			return $ c + length l
 
@@ -65,39 +68,36 @@ checkRemoteUnused name = do
 
 checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
 checkRemoteUnused' r = do
-	showNote $ "checking for unused data..."
-	g <- Annex.gitRepo
+	showAction "checking for unused data"
 	referenced <- getKeysReferenced
-	logged <- liftIO $ loggedKeys g
-	remotehas <- filterM isthere logged
+	remotehas <- filterM isthere =<< loggedKeys
 	let remoteunused = remotehas `exclude` referenced
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
 	unless (null remoteunused) $ do
 		showLongNote $ remoteUnusedMsg r list
-		showLongNote $ "\n"
+		showLongNote "\n"
 	where
 		isthere k = do
-			g <- Annex.gitRepo
-			us <- liftIO $ keyLocations g k
+			us <- keyLocations k
 			return $ uuid `elem` us
 		uuid = Remote.uuid r
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do
 	g <- Annex.gitRepo
-	liftIO $ safeWriteFile (gitAnnexUnusedLog prefix g) $
+	liftIO $ viaTmp writeFile (gitAnnexUnusedLog prefix g) $
 		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
 table :: [(Int, Key)] -> [String]
-table l = ["  NUMBER  KEY"] ++ map cols l
+table l = "  NUMBER  KEY" : map cols l
 	where
 		cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ show k
 		pad n s = s ++ replicate (n - length s) ' '
 
 number :: Int -> [a] -> [(Int, a)]
 number _ [] = []
-number n (x:xs) = (n+1, x):(number (n+1) xs)
+number n (x:xs) = (n+1, x) : number (n+1) xs
 
 staleTmpMsg :: [(Int, Key)] -> String
 staleTmpMsg t = unlines $ 
@@ -111,16 +111,18 @@ staleBadMsg t = unlines $
 
 unusedMsg :: [(Int, Key)] -> String
 unusedMsg u = unusedMsg' u
-	["Some annexed data is no longer used by any files in the repository:"]
-	[dropMsg Nothing]
+	["Some annexed data is no longer used by any files in the current branch:"]
+	[dropMsg Nothing,
+	"Please be cautious -- are you sure that another branch, or another",
+	"repository does not still use this data?"]
 
 remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
 remoteUnusedMsg r u = unusedMsg' u
 	["Some annexed data on " ++ name ++ 
-	 " is not used by any files in this repository."]
+	 " is not used by any files in the current branch:"]
 	[dropMsg $ Just r,
-	 "Please be cautious -- are you sure that the remote repository",
-	 "does not use this data?"]
+	 "Please be cautious -- Are you sure that the remote repository",
+	 "does not use this data? Or that it's not used by another branch?"]
 	where
 		name = Remote.name r 
 
@@ -135,7 +137,7 @@ dropMsg :: Maybe (Remote.Remote Annex) -> String
 dropMsg Nothing = dropMsg' ""
 dropMsg (Just r) = dropMsg' $ " --from " ++ Remote.name r
 dropMsg' :: String -> String
-dropMsg' s = "(To remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER)\n"
+dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\n"
 
 {- Finds keys whose content is present, but that do not seem to be used
  - by any files in the git repo, or that are only present as bad or tmp
@@ -150,7 +152,7 @@ unusedKeys = do
 			bad <- staleKeys gitAnnexBadDir
 			return ([], bad, tmp)
 		else do
-			showNote "checking for unused data..."
+			showAction "checking for unused data"
 			present <- getKeysPresent
 			referenced <- getKeysReferenced
 			let unused = present `exclude` referenced
@@ -174,7 +176,7 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 getKeysReferenced :: Annex [Key]
 getKeysReferenced = do
 	g <- Annex.gitRepo
-	files <- liftIO $ Git.inRepo g [Git.workTree g]
+	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	keypairs <- mapM Backend.lookupFile files
 	return $ map fst $ catMaybes keypairs
 
@@ -208,4 +210,4 @@ staleKeys dirspec = do
 			contents <- liftIO $ getDirectoryContents dir
 			files <- liftIO $ filterM doesFileExist $
 				map (dir </>) contents
-			return $ catMaybes $ map (fileKey . takeFileName) files
+			return $ mapMaybe (fileKey . takeFileName) files

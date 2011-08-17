@@ -17,7 +17,24 @@ This two-level structure is used because it allows the write bit to be removed
 from the subdirectories as well as from the files. That prevents accidentially
 deleting or changing the file contents.
 
-## `.git-annex/uuid.log`
+## The git-annex branch
+
+This branch is managed by git-annex, with the contents listed below.
+
+The file `.git/annex/index` is a separate git index file it uses
+to accumlate changes for the git-annex. Also, `.git/annex/journal/` is used
+to record changes before they are added to git.
+
+Note that for speed reasons, git-annex assumes only it will modify this
+branch. If you go in and make changes directly, it will probably revert
+your changes in its next commit to the branch.
+
+The best way to make changes to the git-annex branch is instead
+to create a branch of it, with a name like "my/git-annex", and then
+use "git annex merge" to automerge your branch into the main git-annex
+branch.
+
+### `uuid.log`
 
 Records the UUIDs of known repositories, and associates them with a
 description of the repository. This allows git-annex to display something
@@ -30,7 +47,7 @@ space and then the description through to the end of the line. Example:
 	e605dca6-446a-11e0-8b2a-002170d25c55 laptop
 	26339d22-446b-11e0-9101-002170d25c55 usb disk
 
-## `git-annex/remotes.log`
+## `remotes.log`
 
 Holds persistent configuration settings for [[special_remotes]] such as
 Amazon S3.
@@ -39,7 +56,7 @@ The file format is one line per remote, starting with the uuid of the
 remote, followed by a space, and then a series of key=value pairs,
 each separated by whitespace.
 
-## `.git-annex/trust.log`
+## `trust.log`
 
 Records the [[trust]] information for repositories. Does not exist unless
 [[trust]] values are configured.
@@ -53,9 +70,9 @@ Example:
 	e605dca6-446a-11e0-8b2a-002170d25c55 1
 	26339d22-446b-11e0-9101-002170d25c55 ?
 
-## `.git-annex/aaa/bbb/*.log`
+## `aaa/bbb/*.log`
 
-The remainder of the log files record [[location_tracking]] information
+These log files record [[location_tracking]] information
 for file contents. Again these are placed in two levels of subdirectories
 for hashing. The name of the key is the filename, and the content
 consists of a timestamp, either 1 (present) or 0 (not present), and
@@ -68,3 +85,9 @@ Example:
 
 These files are designed to be auto-merged using git's union merge driver.
 The timestamps allow the most recent information to be identified.
+
+## `remote/web/aaa/bbb/*.log`
+
+These log files record urls used by the
+[[web_special_remote|special_remotes/web]]. Their format is similar
+to the location tracking files, but with urls rather than UUIDs.

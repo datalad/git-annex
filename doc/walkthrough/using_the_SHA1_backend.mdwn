@@ -1,4 +1,4 @@
-Another handy alternative to the default [[backend|backends]] is the
+A handy alternative to the default [[backend|backends]] is the
 SHA1 backend. This backend provides more git-style assurance that your data
 has not been damaged. And the checksum means that when you add the same
 content to the annex twice, only one copy need be stored in the backend.

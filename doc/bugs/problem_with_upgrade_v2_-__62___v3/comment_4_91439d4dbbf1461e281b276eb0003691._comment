@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-07-05T18:37:21Z"
+ content="""
+I've managed to reproduce this and confirmed my fix works.
+"""]]

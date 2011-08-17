@@ -15,7 +15,6 @@ import Control.Monad (unless)
 import Command
 import qualified AnnexQueue
 import Utility
-import qualified Backend
 import Content
 import Messages
 import Types.Key
@@ -30,7 +29,7 @@ seek = [withFilesMissing start]
 start :: CommandStartString
 start file = notBareRepo $ do
 	key <- cmdlineKey
-	inbackend <- Backend.hasKey key
+	inbackend <- inAnnex key
 	unless inbackend $ error $
 		"key ("++keyName key++") is not present in backend"
 	showStart "fromkey" file
@@ -46,5 +45,5 @@ perform file = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	AnnexQueue.add "add" [Param "--"] file
+	AnnexQueue.add "add" [Param "--"] [file]
 	return True

@@ -10,7 +10,7 @@ module Config where
 import Data.Maybe
 import Control.Monad.State (liftIO)
 
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import Types
 import Utility
@@ -86,3 +86,16 @@ remoteNotIgnored r = do
 		match a = do
 			n <- Annex.getState a
 			return $ n == Git.repoRemoteName r
+
+{- If a value is specified, it is used; otherwise the default is looked up
+ - in git config. forcenumcopies overrides everything. -}
+getNumCopies :: Maybe Int -> Annex Int
+getNumCopies v = 
+	Annex.getState Annex.forcenumcopies >>= maybe (use v) (return . id)
+	where
+		use (Just n) = return n
+		use Nothing = do
+			g <- Annex.gitRepo
+			return $ read $ Git.configGet g config "1"
+		config = "annex.numcopies"
+

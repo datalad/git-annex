@@ -16,7 +16,7 @@ import Content
 import Messages
 
 command :: [Command]
-command = [repoCommand "setkey" (paramRepeating paramKey) seek
+command = [repoCommand "setkey" paramPath seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]
@@ -34,7 +34,7 @@ perform file = do
 	-- the file might be on a different filesystem, so mv is used
 	-- rather than simply calling moveToObjectDir; disk space is also
 	-- checked this way.
-	ok <- getViaTmp key $ \dest -> do
+	ok <- getViaTmp key $ \dest ->
 		if dest /= file
 			then liftIO $
 				boolSystem "mv" [File file, File dest]
@@ -46,5 +46,5 @@ perform file = do
 cleanup :: CommandCleanup
 cleanup = do
 	key <- cmdlineKey
-	logStatus key ValuePresent
+	logStatus key InfoPresent
 	return True

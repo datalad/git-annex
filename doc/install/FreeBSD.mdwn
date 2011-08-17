@@ -1,0 +1,2 @@
+git-annex is in FreeBSD ports in
+[devel/git-annex](http://www.freshports.org/devel/git-annex/)

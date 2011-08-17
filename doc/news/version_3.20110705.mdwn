@@ -1,0 +1,9 @@
+git-annex 3.20110705 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * uninit: Delete the git-annex branch and .git/annex/
+   * unannex: In --fast mode, file content is left in the annex, and a
+     hard link made to it.
+   * uninit: Use unannex in --fast mode, to support unannexing multiple
+     files that link to the same content.
+   * Drop the dependency on the haskell curl bindings, use regular haskell HTTP.
+   * Fix a pipeline stall when upgrading (caused by #624389)."""]]

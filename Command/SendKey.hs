@@ -15,7 +15,7 @@ import qualified Annex
 import Command
 import Content
 import Utility
-import RsyncFile
+import Utility.RsyncFile
 import Messages
 
 command :: [Command]

@@ -1,5 +1,0 @@
-git-annex 0.20110522 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Closer emulation of git's behavior when told to use "foo/.git" as a
-     git repository instead of just "foo". Closes: #[627563](http://bugs.debian.org/627563)
-   * Fix bug in --exclude introduced in 0.20110516."""]]

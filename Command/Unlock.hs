@@ -12,12 +12,11 @@ import System.Directory hiding (copyFile)
 
 import Command
 import qualified Annex
-import qualified Backend
 import Types
 import Messages
 import Locations
 import Content
-import CopyFile
+import Utility.CopyFile
 import Utility
 
 command :: [Command]
@@ -38,17 +37,21 @@ start file = isAnnexed file $ \(key, _) -> do
 
 perform :: FilePath -> Key -> CommandPerform
 perform dest key = do
-	unlessM (Backend.hasKey key) $ error "content not present"
+	unlessM (inAnnex key) $ error "content not present"
 	
 	checkDiskSpace key
 
 	g <- Annex.gitRepo
 	let src = gitAnnexLocation g key
-	liftIO $ removeFile dest
-	showNote "copying..."
-	ok <- liftIO $ copyFile src dest
+	let tmpdest = gitAnnexTmpLocation g key
+	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
+	showAction "copying"
+	ok <- liftIO $ copyFile src tmpdest
         if ok
                 then do
-			liftIO $ allowWrite dest
+			liftIO $ do
+				removeFile dest
+				renameFile tmpdest dest
+				allowWrite dest
 			next $ return True
                 else error "copy failed!"

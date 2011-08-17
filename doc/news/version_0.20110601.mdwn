@@ -1,9 +1,0 @@
-git-annex 0.20110601 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Minor bugfixes and error message improvements.
-   * Massively sped up `git annex lock` by avoiding use of the uber-slow
-     `git reset`, and only running `git checkout` once, even when many files
-     are being locked.
-   * Fix locking of files with staged changes.
-   * Somewhat sped up `git commit` of modifications to unlocked files.
-   * Build fix for older ghc."""]]

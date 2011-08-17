@@ -7,7 +7,9 @@ sudo cabal install pcre-light
 sudo cabal install quickcheck  
 sudo cabal install SHA
 sudo cabal install dataenc
-sudo cabal install hS3   # stub S3 class (used if you don't have hS3 installed) has a bug, so you want to install this
+sudo cabal install monad-control
+sudo cabal install HTTP
+sudo cabal install hS3 # optional
 
 # optional: this will enable the gnu tools, (to give sha224sum etc..., it does not override the BSD userland)
 export PATH=$PATH:/opt/local/libexec/gnubin

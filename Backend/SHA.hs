@@ -1,4 +1,4 @@
-{- git-annex SHA abstract backend
+{- git-annex SHA backend
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
@@ -16,7 +16,6 @@ import Data.Maybe
 import System.Posix.Files
 import System.FilePath
 
-import qualified Backend.File
 import Messages
 import qualified Annex
 import Locations
@@ -42,10 +41,10 @@ genBackend size
 	| shaCommand size == Nothing = Nothing
 	| otherwise = Just b
 	where
-		b = Backend.File.backend 
+		b = Types.Backend.Backend
 			{ name = shaName size
 			, getKey = keyValue size
-			, fsckKey = Backend.File.checkKey $ checkKeyChecksum size
+			, fsckKey = checkKeyChecksum size
 			}
 
 genBackendE :: SHASize -> Maybe (Backend Annex)
@@ -73,7 +72,7 @@ shaNameE size = shaName size ++ "E"
 
 shaN :: SHASize -> FilePath -> Annex String
 shaN size file = do
-	showNote "checksum..."
+	showAction "checksum"
 	liftIO $ pOpen ReadFromPipe command (toCommand [File file]) $ \h -> do
 		line <- hGetLine h
 		let bits = split " " line
@@ -115,7 +114,7 @@ checkKeyChecksum size key = do
 	fast <- Annex.getState Annex.fast
 	let file = gitAnnexLocation g key
 	present <- liftIO $ doesFileExist file
-	if (not present || fast)
+	if not present || fast
 		then return True
 		else do
 			s <- shaN size file

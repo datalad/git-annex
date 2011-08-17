@@ -7,4 +7,7 @@
 Whoops! You'd only told me O(N) twice before..
 
 So this is not too high priority. I think I would like to get the per-remote storage sorted out anyway, since probably it will be the thing needed to convert the URL backend into a special remote, which would then allow ripping out the otherwise unused pluggable backend infrastructure.
+
+Update: Per-remote storage is now sorted out, so this could be implemented
+if it actually made sense to do so.
 """]]

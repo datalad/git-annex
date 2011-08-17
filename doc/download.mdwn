@@ -8,7 +8,10 @@ Other mirrors of the git repository:
 * [at github](https://github.com/joeyh/git-annex)
 
 To download a tarball of a particular release, use an url like
-<http://git.kitenet.net/?p=git-annex.git;a=snapshot;sf=tgz;h=refs/tags/0.20110522>
+<http://git.kitenet.net/?p=git-annex.git;a=snapshot;sf=tgz;h=refs/tags/3.20110702>
+
+From time to time, releases of git-annex are uploaded
+[to hackage](http://hackage.haskell.org/package/git-annex).
 
 Some operating systems include git-annex in easily prepackaged form and
 others need some manual work. See [[install]] for details.

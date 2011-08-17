@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="ssqq"
+ ip="208.70.196.4"
+ subject="Still a problem on 0.20110523"
+ date="2011-06-02T20:31:55Z"
+ content="""
+Hi,
+
+(I'm new to git and git annex, so please forgive any mistakes I make...)
+
+My repo is messed up right now.  The fact that I copied the repo with rsync -a back and forth from a case insensitive filesystem to a case sensitive one, probably didn't help.
+
+I believe the annexed files in .git/annex/objects/ are still using a mixed case directory hashing scheme.  That's the problem I'm having.  The symlinks point to the wrong case and are now broken.  I don't think the latest versions of git-annex changed that (it only changed the hashing under .git-annex, right?).
+
+Even if I clean up my repo, I think I'm still going to have a problem because I have one repo on an OS X case insensitive filesystem and my other repos on case sensitive Linux filesystems.  Potentially the directory name under .git/annex/objects will have a different case.  Then the symlink might have a different case than my Linux FS.  Does git-annex track changes in git by the contents of the symlink?  In which case the case difference would show up as a change even though there is no change?
+
+Is it possible to change the directory hashing scheme under .git/annex/objects to use lowercase names?
+
+"""]]

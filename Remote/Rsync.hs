@@ -15,10 +15,11 @@ import System.FilePath
 import System.Directory
 import System.Posix.Files
 import System.Posix.Process
+import Data.Maybe
 
 import Types
 import Types.Remote
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import UUID
 import Locations
@@ -29,7 +30,7 @@ import Remote.Special
 import Remote.Encryptable
 import Crypto
 import Messages
-import RsyncFile
+import Utility.RsyncFile
 
 type RsyncUrl = String
 
@@ -82,7 +83,7 @@ genRsyncOpts r = do
 rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 rsyncSetup u c = do
 	-- verify configuration is sane
-	let url = maybe (error "Specify rsyncurl=") id $
+	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
 	c' <- encryptionSetup c
 
@@ -140,7 +141,7 @@ remove o k = withRsyncScratchDir $ \tmp -> do
 
 checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either IOException Bool)
 checkPresent r o k = do
-	showNote ("checking " ++ Git.repoDescribe r ++ "...")
+	showAction $ "checking " ++ Git.repoDescribe r
 	-- note: Does not currently differnetiate between rsync failing
 	-- to connect, and the file not being present.
 	res <- liftIO $ boolSystem "sh" [Param "-c", Param cmd]
@@ -160,10 +161,10 @@ partialParams = Params "--no-inplace --partial --partial-dir=.rsync-partial"
 withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
 	g <- Annex.gitRepo
-	pid <- liftIO $ getProcessID
+	pid <- liftIO getProcessID
 	let tmp = gitAnnexTmpDir g </> "rsynctmp" </> show pid
 	nuke tmp
-	liftIO $ createDirectoryIfMissing True $ tmp
+	liftIO $ createDirectoryIfMissing True tmp
 	res <- a tmp
 	nuke tmp
 	return res
@@ -173,7 +174,7 @@ withRsyncScratchDir a = do
 
 rsyncRemote :: RsyncOpts -> [CommandParam] -> Annex Bool
 rsyncRemote o params = do
-	showProgress -- make way for progress bar
+	showOutput -- make way for progress bar
 	res <- liftIO $ rsync $ rsyncOptions o ++ defaultParams ++ params
 	if res
 		then return res
@@ -189,15 +190,14 @@ rsyncRemote o params = do
 rsyncSend :: RsyncOpts -> Key -> FilePath -> Annex Bool
 rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> hashDirMixed k </> f </> f
-	liftIO $ createDirectoryIfMissing True $ parentDir $ dest
+	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	liftIO $ createLink src dest
-	res <- rsyncRemote o
+	rsyncRemote o
 		[ Param "--recursive"
 		, partialParams
  		  -- tmp/ to send contents of tmp dir
 		, Param $ addTrailingPathSeparator tmp
 		, Param $ rsyncUrl o
 		]
-	return res
 	where
 		f = keyFile k

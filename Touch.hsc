@@ -15,6 +15,7 @@ module Touch (
 
 import Foreign
 import Foreign.C
+import Control.Monad (when)
 
 newtype TimeSpec = TimeSpec CTime
 
@@ -66,9 +67,7 @@ touchBoth file atime mtime follow =
 	withCString file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- c_utimensat at_fdcwd f ptr flags
-		if (r /= 0)
-			then throwErrno "touchBoth"
-			else return ()
+		when (r /= 0) $ throwErrno "touchBoth"
 	where
 		flags = if follow
 			then 0

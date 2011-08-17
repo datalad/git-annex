@@ -1,0 +1,32 @@
+The web can be used as a [[special_remote|special_remotes]] too.
+
+	# git annex addurl http://example.com/video.mpeg
+	addurl video.mpeg (downloading http://example.com/video.mpeg)
+	########################################################## 100.0%
+	ok
+
+Now the file is downloaded, and has been added to the annex like any other
+file. So it can be copied to other repositories, and so on.
+
+Note that git-annex assumes that, if the web site does not 404, the file is
+still present on the web, and this counts as one [[copy|copies]] of the
+file. So it will let you remove your last copy, trusting it can be
+downloaded again:
+
+	# git annex drop video.mpeg
+	drop video.mpeg (checking http://example.com/video.mpeg) ok
+
+If you don't [[trust]] the web to this degree, just let git-annex know:
+
+	# git annex untrust web
+	untrust web ok
+
+With the result that it will hang onto files:
+
+	# git annex drop video.mpeg
+	drop video.mpeg (unsafe) 
+	  Could only verify the existence of 0 out of 1 necessary copies
+	  Also these untrusted repositories may contain the file:
+	  	00000000-0000-0000-0000-000000000001  -- web
+	  (Use --force to override this check, or adjust annex.numcopies.)
+	failed

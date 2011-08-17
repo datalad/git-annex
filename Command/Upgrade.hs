@@ -21,7 +21,7 @@ seek = [withNothing start]
 
 start :: CommandStartNothing
 start = do
-	showStart "upgrade" ""
+	showStart "upgrade" "."
 	r <- upgrade
-	checkVersion
+	setVersion
 	next $ next $ return r

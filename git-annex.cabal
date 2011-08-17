@@ -1,0 +1,44 @@
+Name: git-annex
+Version: 3.20110719
+Cabal-Version: >= 1.6
+License: GPL
+Maintainer: Joey Hess <joey@kitenet.net>
+Author: Joey Hess
+Stability: Stable
+Copyright: 2010-2011 Joey Hess
+License-File: GPL
+Extra-Source-Files: use-make-sdist-instead
+Homepage: http://git-annex.branchable.com/
+Build-type: Custom
+Category: Utility
+Synopsis: manage files with git, without checking their contents into git
+Description:
+ git-annex allows managing files with git, without checking the file
+ contents into git. While that may seem paradoxical, it is useful when
+ dealing with files larger than git can currently easily handle, whether due
+ to limitations in memory, checksumming time, or disk space.
+ .
+ Even without file content tracking, being able to manage files with git,
+ move files around and delete files with versioned directory trees, and use
+ branches and distributed clones, are all very handy reasons to use git. And
+ annexed files can co-exist in the same git repository with regularly
+ versioned files, which is convenient for maintaining documents, Makefiles,
+ etc that are associated with annexed files but that benefit from full
+ revision control.
+
+Executable git-annex
+  Main-Is: git-annex.hs
+  Build-Depends: haskell98, MissingH, hslogger, directory, filepath,
+   unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
+   pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, HTTP,
+   base < 5, monad-control
+
+Executable git-annex-shell
+  Main-Is: git-annex-shell.hs
+
+Executable git-union-merge
+  Main-Is: git-union-merge.hs
+
+source-repository head
+  type: git
+  location: git://git-annex.branchable.com/

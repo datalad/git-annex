@@ -25,12 +25,13 @@ import Locations
 import LocationLog
 import qualified Annex
 import qualified AnnexQueue
-import qualified GitRepo as Git
+import qualified Git
+import qualified Git.LsFiles as LsFiles
 import Backend
 import Messages
 import Version
 import Utility
-import qualified Command.Init
+import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.
 -- Key information is encoded in filenames differently, so
@@ -57,7 +58,7 @@ import qualified Command.Init
 
 upgrade :: Annex Bool
 upgrade = do
-	showNote "v1 to v2"
+	showAction "v1 to v2"
 
 	g <- Annex.gitRepo
 	if Git.repoIsLocalBare g
@@ -71,16 +72,12 @@ upgrade = do
 	
 			AnnexQueue.flush True
 			setVersion
-
-			-- add new line to auto-merge hashed location logs
-			-- this commits, so has to come after the upgrade
-			liftIO $ Command.Init.gitAttributesWrite g
-
-	return True
+	
+	Upgrade.V2.upgrade
 
 moveContent :: Annex ()
 moveContent = do
-	showNote "moving content..."
+	showAction "moving content"
 	files <- getKeyFilesPresent1
 	forM_ files move
 	where
@@ -94,10 +91,10 @@ moveContent = do
 
 updateSymlinks :: Annex ()
 updateSymlinks = do
-	showNote "updating symlinks..."
+	showAction "updating symlinks"
 	g <- Annex.gitRepo
-	files <- liftIO $ Git.inRepo g [Git.workTree g]
-	forM_ files $ fixlink
+	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
+	forM_ files fixlink
 	where
 		fixlink f = do
 			r <- lookupFile1 f
@@ -107,39 +104,39 @@ updateSymlinks = do
 					link <- calcGitLink f k
 					liftIO $ removeFile f
 					liftIO $ createSymbolicLink link f
-					AnnexQueue.add "add" [Param "--"] f
+					AnnexQueue.add "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
-	showNote "moving location logs..."
+	showAction "moving location logs"
 	logkeys <- oldlocationlogs
 	forM_ logkeys move
 		where
 			oldlocationlogs = do
 				g <- Annex.gitRepo
-				let dir = gitStateDir g
+				let dir = Upgrade.V2.gitStateDir g
 				exists <- liftIO $ doesDirectoryExist dir
 				if exists
 					then do
 						contents <- liftIO $ getDirectoryContents dir
-						return $ catMaybes $ map oldlog2key contents
+						return $ mapMaybe oldlog2key contents
 					else return []
 			move (l, k) = do
 				g <- Annex.gitRepo
-				let dest = logFile g k
-				let dir = gitStateDir g
+				let dest = logFile k
+				let dir = Upgrade.V2.gitStateDir g
 				let f = dir </> l
 				liftIO $ createDirectoryIfMissing True (parentDir dest)
 				-- could just git mv, but this way deals with
 				-- log files that are not checked into git,
 				-- as well as merging with already upgraded
 				-- logs that have been pulled from elsewhere
-				old <- liftIO $ readLog f
-				new <- liftIO $ readLog dest
-				liftIO $ writeLog dest (old++new)
-				AnnexQueue.add "add" [Param "--"] dest
-				AnnexQueue.add "add" [Param "--"] f
-				AnnexQueue.add "rm" [Param "--quiet", Param "-f", Param "--"] f
+				old <- readLog f
+				new <- readLog dest
+				writeLog dest (old++new)
+				AnnexQueue.add "add" [Param "--"] [dest]
+				AnnexQueue.add "add" [Param "--"] [f]
+				AnnexQueue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
 		
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l = 
@@ -190,27 +187,23 @@ fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
 logFile1 :: Git.Repo -> Key -> String
-logFile1 repo key = gitStateDir repo ++ keyFile1 key ++ ".log"
+logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend Annex))
 lookupFile1 file = do
-	bs <- Annex.getState Annex.supportedBackends
 	tl <- liftIO $ try getsymlink
 	case tl of
 		Left _ -> return Nothing
-		Right l -> makekey bs l
+		Right l -> makekey l
 	where
-		getsymlink = do
-			l <- readSymbolicLink file
-			return $ takeFileName l
-		makekey bs l = do
-			case maybeLookupBackendName bs bname of
-				Nothing -> do
-					unless (null kname || null bname ||
-					        not (isLinkToAnnex l)) $
-						warning skip
-					return Nothing
-				Just backend -> return $ Just (k, backend)
+		getsymlink = return . takeFileName =<< readSymbolicLink file
+		makekey l = case maybeLookupBackendName bname of
+			Nothing -> do
+				unless (null kname || null bname ||
+				        not (isLinkToAnnex l)) $
+					warning skip
+				return Nothing
+			Just backend -> return $ Just (k, backend)
 			where
 				k = fileKey1 l
 				bname = keyBackendName k
@@ -225,7 +218,7 @@ getKeyFilesPresent1  = do
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
 getKeyFilesPresent1' dir = do
 	exists <- liftIO $ doesDirectoryExist dir
-	if (not exists)
+	if not exists
 		then return []
 		else do
 			dirs <- liftIO $ getDirectoryContents dir

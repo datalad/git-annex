@@ -1,3 +1,5 @@
 Find a way to copy a file with a progress bar, while still preserving
 stat. Easiest way might be to use pv and fix up the permissions etc
 after?
+
+[[done]]

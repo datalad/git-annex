@@ -45,7 +45,7 @@ writeSysConfig config = writeFile "SysConfig.hs" body
 
 runTests :: [TestCase] -> IO [Config]
 runTests [] = return []
-runTests ((TestCase tname t):ts) = do
+runTests (TestCase tname t : ts) = do
 	testStart tname
 	c <- t
 	testEnd c
@@ -62,7 +62,7 @@ requireCmd k cmdline = do
 		handle r = do
 			testEnd r
 			error $ "** the " ++ c ++ " command is required"
-		c = (words cmdline) !! 0
+		c = head $ words cmdline
 
 {- Checks if a command is available by running a command line. -}
 testCmd :: ConfigKey -> String -> Test
@@ -74,7 +74,7 @@ testCmd k cmdline = do
  - turn. The Config is set to the first one found. -}
 selectCmd :: ConfigKey -> [String] -> String -> Test
 selectCmd k = searchCmd
-		(\match -> return $ Config k $ StringConfig match)
+		(return . Config k . StringConfig)
 		(\cmds -> do
 			testEnd $ Config k $ BoolConfig False
 			error $ "* need one of these commands, but none are available: " ++ show cmds
@@ -82,7 +82,7 @@ selectCmd k = searchCmd
 
 maybeSelectCmd :: ConfigKey -> [String] -> String -> Test
 maybeSelectCmd k = searchCmd
-		(\match -> return $ Config k $ MaybeStringConfig $ Just match)
+		(return . Config k . MaybeStringConfig . Just)
 		(\_ -> return $ Config k $ MaybeStringConfig Nothing)
 
 searchCmd :: (String -> Test) -> ([String] -> Test) -> [String] -> String -> Test
@@ -91,7 +91,7 @@ searchCmd success failure cmds param = search cmds
 		search [] = failure cmds
 		search (c:cs) = do
 			ret <- system $ quiet c ++ " " ++ param
-			if (ret == ExitSuccess)
+			if ret == ExitSuccess
 				then success c
 				else search cs
 
@@ -104,8 +104,11 @@ testStart s = do
 	hFlush stdout
 
 testEnd :: Config -> IO ()
-testEnd (Config _ (BoolConfig True)) = putStrLn $ " yes"
-testEnd (Config _ (BoolConfig False)) = putStrLn $ " no"
-testEnd (Config _ (StringConfig s)) = putStrLn $ " " ++ s
-testEnd (Config _ (MaybeStringConfig (Just s))) = putStrLn $ " " ++ s
-testEnd (Config _ (MaybeStringConfig Nothing)) = putStrLn $ " not available"
+testEnd (Config _ (BoolConfig True)) = status "yes"
+testEnd (Config _ (BoolConfig False)) = status "no"
+testEnd (Config _ (StringConfig s)) = status s
+testEnd (Config _ (MaybeStringConfig (Just s))) = status s
+testEnd (Config _ (MaybeStringConfig Nothing)) = status "not available"
+
+status :: String -> IO ()
+status s = putStrLn $ ' ':s

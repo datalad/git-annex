@@ -16,32 +16,32 @@ import Control.Monad (when, unless)
 
 import Annex
 import Messages
-import qualified GitQueue
+import qualified Git.Queue
 import Utility
 
 {- Adds a git command to the queue, possibly running previously queued
  - actions if enough have accumulated. -}
-add :: String -> [CommandParam] -> FilePath -> Annex ()
-add command params file = do
+add :: String -> [CommandParam] -> [FilePath] -> Annex ()
+add command params files = do
 	q <- getState repoqueue
-	store $ GitQueue.add q command params file
+	store $ Git.Queue.add q command params files
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()
 flushWhenFull = do
 	q <- getState repoqueue
-	when (GitQueue.full q) $ flush False
+	when (Git.Queue.full q) $ flush False
 
 {- Runs (and empties) the queue. -}
 flush :: Bool -> Annex ()
 flush silent = do
 	q <- getState repoqueue
-	unless (0 == GitQueue.size q) $ do
+	unless (0 == Git.Queue.size q) $ do
 		unless silent $
-			showSideAction "Recording state in git..."
+			showSideAction "Recording state in git"
 		g <- gitRepo
-		q' <- liftIO $ GitQueue.flush g q
+		q' <- liftIO $ Git.Queue.flush g q
 		store q'
 
-store :: GitQueue.Queue -> Annex ()
+store :: Git.Queue.Queue -> Annex ()
 store q = changeState $ \s -> s { repoqueue = q }

@@ -22,7 +22,7 @@ module Utility (
 	shellUnEscape,
 	unsetFileMode,
 	readMaybe,
-	safeWriteFile,
+	viaTmp,
 	dirContains,
 	dirContents,
 	myHomeDir,
@@ -108,7 +108,7 @@ boolSystemEnv command params env = do
 			executeFile command True (toCommand params) env
 
 {- executeFile with debug logging -}
-executeFile :: FilePath -> Bool -> [String] -> Maybe [(String, String)] -> IO a
+executeFile :: FilePath -> Bool -> [String] -> Maybe [(String, String)] -> IO ()
 executeFile c path p e = do
 	debugM "Utility.executeFile" $
 		"Running: " ++ c ++ " " ++ show p ++ " " ++ maybe "" show e
@@ -141,9 +141,9 @@ shellUnEscape s = word : shellUnEscape rest
 
 {- For quickcheck. -}
 prop_idempotent_shellEscape :: String -> Bool
-prop_idempotent_shellEscape s = [s] == (shellUnEscape $ shellEscape s)
+prop_idempotent_shellEscape s = [s] == (shellUnEscape . shellEscape) s
 prop_idempotent_shellEscape_multiword :: [String] -> Bool
-prop_idempotent_shellEscape_multiword s = s == (shellUnEscape $ unwords $ map shellEscape s)
+prop_idempotent_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -243,13 +243,14 @@ readMaybe s = case reads s of
 	((x,_):_) -> Just x
 	_ -> Nothing
 
-{- Writes a file using a temp file that is renamed atomically into place. -}
-safeWriteFile :: FilePath -> String -> IO ()
-safeWriteFile file content = do
+{- Runs an action like writeFile, writing to a tmp file first and
+ - then moving it into place. -}
+viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
+viaTmp a file content = do
 	pid <- getProcessID
         let tmpfile = file ++ ".tmp" ++ show pid
 	createDirectoryIfMissing True (parentDir file)
-	writeFile tmpfile content
+	a tmpfile content
 	renameFile tmpfile file
 
 {- Lists the contents of a directory.
@@ -287,6 +288,6 @@ unlessM c a = c >>= flip unless a
 (>>!) :: Monad m => m Bool -> m () -> m ()
 (>>!) = unlessM
 
--- low fixity allows eg, foo bar <|> error $ "failed " ++ meep
+-- low fixity allows eg, foo bar >>! error $ "failed " ++ meep
 infixr 0 >>?
 infixr 0 >>!

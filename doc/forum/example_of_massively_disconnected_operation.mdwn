@@ -1,0 +1,33 @@
+I found this archival drive that had been offline since October 26th 2010. Since I released git-annex 0.02 on October 27th, this must have been made using the very first release of git-annex, ever.
+
+So, I synced it back up! :) --[[Joey]]
+
+<pre>
+commit 4151f4595fe6205d4aed653617ab23eb3335130a
+Author: Joey Hess <joey@kitenet.net>
+Date:   Tue Oct 26 02:18:03 2010 -0400
+
+joey> git pull
+remote: Counting objects: 428782, done.
+remote: Compressing objects: 100% (280714/280714), done.
+remote: Total 416692 (delta 150923), reused 389593 (delta 125143)
+Receiving objects: 100% (416692/416692), 44.71 MiB | 495 KiB/s, done.
+Resolving deltas: 100% (150923/150923), completed with 818 local objects.
+ * [new branch]      git-annex  -> origin/git-annex
+   1893f9c..9ebcc0e  master     -> origin/master
+Updating 1893f9c..9ebcc0e
+Checking out files: 100% (76884/76884), done.
+joey> git annex version
+git-annex version: 3.20110611
+local repository version: unknown
+default repository version: 3
+supported repository versions: 3
+upgrade supported from repository versions: 0 1 2
+joey> git config annex.version 0
+joey> git annex upgrade
+upgrade . (v0 to v1...) (v1 to v2) (moving content...) (updating symlinks...)  (moving location logs...) (v2 to v3) (merging origin/git-annex into git-annex...)
+
+  git-annex branch created
+  Be sure to push this branch when pushing to remotes.
+ok
+</pre>

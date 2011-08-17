@@ -8,21 +8,22 @@
 module Remote.Directory (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import IO
+import System.IO.Error
 import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
 import Control.Monad (when)
 import Control.Monad.State (liftIO)
 import System.Directory hiding (copyFile)
 import System.FilePath
+import Data.Maybe
 
 import Types
 import Types.Remote
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import UUID
 import Locations
-import CopyFile
+import Utility.CopyFile
 import Config
 import Content
 import Utility
@@ -60,7 +61,7 @@ gen r u c = do
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 directorySetup u c = do
 	-- verify configuration is sane
-	let dir = maybe (error "Specify directory=") id $
+	let dir = fromMaybe (error "Specify directory=") $
 		M.lookup "directory" c
 	liftIO $ doesDirectoryExist dir
 		>>! error $ "Directory does not exist: " ++ dir

@@ -36,7 +36,7 @@ There does not seem to be much benefit to using the same cipher for
 two different encrypted remotes.
 
 So, the encrypted cipher could just be stored with the rest of a remote's
-configuration in `.git-annex/remotes.log` (see [[internals]]). When `git
+configuration in `remotes.log` (see [[internals]]). When `git
 annex intiremote` makes a remote, it can generate a random symmetric
 cipher, and encrypt it with the specified gpg key. To allow another gpg
 public key access, update the encrypted cipher to be encrypted to both gpg

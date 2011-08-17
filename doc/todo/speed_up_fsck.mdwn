@@ -1,0 +1,40 @@
+moving to the git-annex branch has slowed down fsck worse than most
+commands. Actually, some commands have sped up, while others like get
+are slightly slower but are swamped by the normal runtime. 
+
+For fsck though, it has to pull each file's location log info out of git.
+And, it's typically run on the entire tree.
+
+Another slow one in `git annex copy --from`.
+
+It would be possible to run a single `git cat-file --batch` and pass it
+sha1s of location logs for file that is going to be fsked (gotten via
+`read-tree`). Then just read its output until the next requested sha1 to
+chunk it, and pass this in to fsck in a closure.
+
+The difficulty, besides writing that is that everything that works with
+location logs now reads them out of git, would need to find a way to
+provide the info on a side channel of some sort.
+
+If this is implemented, the same infrastructure could be used for other
+commands like whereis and add. --[[Joey]]
+
+> Updated plan:
+> 
+> Run `git ls-file --batch`, and cache its stdin and out handles in Branch
+> state.
+> 
+> To see a git-annex branch file, send it something like
+> "git-annex:uuid.log", and read the content fron stdout handle.
+> 
+> To detect the end of content, send "TOKEN\n", and look for 
+> "TOKEN missing" in its output. A good choice for TOKEN is anything
+> that will never exist in the repo; 40 0's would be a fairly good choice,
+> but even better seems to be something completely invalid and impossible
+> to have as a sha1 or filename or ref: "".
+> 
+> Hmm, except that's actually an error message sent to stderr. Unless
+> stderr is connected to stdout, it might be better to look for a known,
+> empty object. Could just add a git-annex:empty file to that end.
+
+[[done]] --[[Joey]] 

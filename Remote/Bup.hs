@@ -8,7 +8,8 @@
 module Remote.Bup (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import IO
+import System.IO
+import System.IO.Error
 import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
 import Control.Monad (when)
@@ -16,19 +17,20 @@ import Control.Monad.State (liftIO)
 import System.Process
 import System.Exit
 import System.FilePath
+import Data.Maybe
 import Data.List.Utils
 import System.Cmd.Utils
 
 import Types
 import Types.Remote
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import UUID
 import Locations
 import Config
 import Utility
 import Messages
-import Ssh
+import Remote.Ssh
 import Remote.Special
 import Remote.Encryptable
 import Crypto
@@ -68,13 +70,13 @@ gen r u c = do
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 bupSetup u c = do
 	-- verify configuration is sane
-	let buprepo = maybe (error "Specify buprepo=") id $
+	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
 	c' <- encryptionSetup c
 
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
-	showNote "bup init"
+	showAction "bup init"
 	bup "init" buprepo [] >>! error "bup init failed"
 
 	storeBupUUID u buprepo
@@ -87,11 +89,11 @@ bupSetup u c = do
 
 bupParams :: String -> BupRepo -> [CommandParam] -> [CommandParam]
 bupParams command buprepo params = 
-	(Param command) : [Param "-r", Param buprepo] ++ params
+	Param command : [Param "-r", Param buprepo] ++ params
 
 bup :: String -> BupRepo -> [CommandParam] -> Annex Bool
 bup command buprepo params = do
-	showProgress -- make way for bup output
+	showOutput -- make way for bup output
 	liftIO $ boolSystem "bup" $ bupParams command buprepo params
 
 pipeBup :: [CommandParam] -> Maybe Handle -> Maybe Handle -> IO Bool
@@ -107,7 +109,7 @@ bupSplitParams :: Git.Repo -> BupRepo -> Key -> CommandParam -> Annex [CommandPa
 bupSplitParams r buprepo k src = do
 	o <- getConfig r "bup-split-options" ""
 	let os = map Param $ words o
-	showProgress -- make way for bup output
+	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 
 		(os ++ [Param "-n", Param (show k), src])
 
@@ -123,8 +125,8 @@ storeEncrypted r buprepo (cipher, enck) k = do
 	g <- Annex.gitRepo
 	let src = gitAnnexLocation g k
 	params <- bupSplitParams r buprepo enck (Param "-")
-	liftIO $ catchBool $ do
-		withEncryptedHandle cipher (L.readFile src) $ \h -> do
+	liftIO $ catchBool $
+		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
@@ -155,7 +157,7 @@ remove _ = do
 checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either IOException Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
-		showNote ("checking " ++ Git.repoDescribe r ++ "...")
+		showAction $ "checking " ++ Git.repoDescribe r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
 	| otherwise = liftIO $ try $ boolSystem "git" $ Git.gitCommandLine bupr params
@@ -170,7 +172,7 @@ storeBupUUID u buprepo = do
 	r <- liftIO $ bup2GitRemote buprepo
 	if Git.repoIsUrl r
 		then do
-			showNote "storing uuid"
+			showAction "storing uuid"
 			onBupRemote r boolSystem "git"
 				[Params $ "config annex.uuid " ++ u]
 					>>! error "ssh failed"
@@ -184,7 +186,7 @@ onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [
 onBupRemote r a command params = do
 	let dir = shellEscape (Git.workTree r)
 	sshparams <- sshToRepo r [Param $
-			"cd " ++ dir ++ " && " ++ (unwords $ command : toCommand params)]
+			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
 
 {- Allow for bup repositories on removable media by checking
@@ -215,20 +217,20 @@ bup2GitRemote "" = do
 	Git.repoFromAbsPath $ h </> ".bup"
 bup2GitRemote r
 	| bupLocal r = 
-		if r !! 0 == '/'
+		if head r == '/'
 			then Git.repoFromAbsPath r
 			else error "please specify an absolute path"
 	| otherwise = Git.repoFromUrl $ "ssh://" ++ host ++ slash dir
 		where
 			bits = split ":" r
-			host = bits !! 0
+			host = head bits
 			dir = join ":" $ drop 1 bits
 			-- "host:~user/dir" is not supported specially by bup;
 			-- "host:dir" is relative to the home directory;
 			-- "host:" goes in ~/.bup
 			slash d
 				| d == "" = "/~/.bup"
-				| d !! 0 == '/' = d
+				| head d == '/' = d
 				| otherwise = "/~/" ++ d
 
 bupLocal :: BupRepo -> Bool

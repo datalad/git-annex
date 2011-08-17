@@ -23,7 +23,7 @@ The configuration for the S3 remote is stored in git. So to make another
 repository use the same S3 remote is easy:
 
 	# cd /media/usb/annex
-	# git pull laptop master
+	# git pull laptop
 	# git annex initremote cloud
 	initremote cloud (gpg) (checking bucket) ok
 

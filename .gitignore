@@ -5,8 +5,10 @@ configure
 SysConfig.hs
 git-annex
 git-annex-shell
+git-union-merge
 git-annex.1
 git-annex-shell.1
+git-union-merge.1
 doc/.ikiwiki
 html
 *.tix
@@ -14,3 +16,4 @@ html
 Touch.hs
 StatFS.hs
 Remote/S3.hs
+dist

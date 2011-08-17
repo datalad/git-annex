@@ -44,5 +44,5 @@ perform file link = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	AnnexQueue.add "add" [Param "--"] file
+	AnnexQueue.add "add" [Param "--"] [file]
 	return True

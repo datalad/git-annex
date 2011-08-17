@@ -40,5 +40,5 @@ perform key = do
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do
-	logStatus key ValueMissing
+	logStatus key InfoMissing
 	return True

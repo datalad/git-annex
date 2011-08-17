@@ -25,4 +25,4 @@ start key = do
 	present <- inAnnex key
 	if present
 		then stop
-		else liftIO $ exitFailure
+		else liftIO exitFailure

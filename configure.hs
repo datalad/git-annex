@@ -7,7 +7,7 @@ import TestConfig
 
 tests :: [TestCase]
 tests =
-	[ TestCase "version" $ getVersion
+	[ TestCase "version" getVersion
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_reflink_auto" "--reflink=auto"
@@ -17,7 +17,6 @@ tests =
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
-	, TestCase "unicode FilePath support" $ unicodeFilePath
 	] ++ shaTestCases [1, 256, 512, 224, 384]
 
 shaTestCases :: [Int] -> [TestCase]
@@ -40,28 +39,37 @@ testCp k option = TestCase cmd $ testCmd k run
 		cmd = "cp " ++ option
 		run = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
-{- Checks if FilePaths contain decoded unicode, or not. The testdata
- - directory contains a "unicode-test-ü" file; try to find the file,
- - and see if the "ü" is encoded correctly.
- -
- - Note that the file is shipped with git-annex, rather than created,
- - to avoid other potential unicode issues.
- -}
-unicodeFilePath :: Test
-unicodeFilePath = do
-	fs <- getDirectoryContents "testdata"
-	let file = head $ filter (isInfixOf "unicode-test") fs
-	return $ Config "unicodefilepath" (BoolConfig $ isInfixOf "ü" file)
-
 {- Pulls package version out of the changelog. -}
 getVersion :: Test
 getVersion = do
-	changelog <- readFile "debian/changelog"
-	let verline = head $ lines changelog
-	let version = middle (words verline !! 1)
+	version <- getVersionString
 	return $ Config "packageversion" (StringConfig version)
+	
+getVersionString :: IO String
+getVersionString = do
+	changelog <- readFile "CHANGELOG"
+	let verline = head $ lines changelog
+	return $ middle (words verline !! 1)
 	where
 		middle s = drop 1 $ take (length s - 1) s
+
+{- Set up cabal file with version. -}
+cabalSetup :: IO ()
+cabalSetup = do
+	version <- getVersionString
+	cabal <- readFile cabalfile
+	writeFile tmpcabalfile $ unlines $ 
+		map (setfield "Version" version) $
+		lines cabal
+	renameFile tmpcabalfile cabalfile
+	where
+		cabalfile = "git-annex.cabal"
+		tmpcabalfile = cabalfile++".tmp"
+		setfield field value s
+			| fullfield `isPrefixOf` s = fullfield ++ value
+			| otherwise = s
+			where
+				fullfield = field ++ ": "
 
 setup :: IO ()
 setup = do
@@ -69,8 +77,7 @@ setup = do
 	writeFile testFile "test file contents"
 
 cleanup :: IO ()
-cleanup = do
-	removeDirectoryRecursive tmpDir
+cleanup = removeDirectoryRecursive tmpDir
 
 main :: IO ()
 main = do
@@ -78,3 +85,4 @@ main = do
 	config <- runTests tests
 	writeSysConfig config
 	cleanup
+	cabalSetup

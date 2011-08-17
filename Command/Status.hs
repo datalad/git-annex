@@ -18,21 +18,22 @@ import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote
 import qualified Command.Unused
-import qualified GitRepo as Git
+import qualified Git
 import Command
 import Types
-import DataUnits
+import Utility.DataUnits
 import Content
 import Types.Key
 import Locations
+import Backend
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
 
 -- cached info that multiple Stats may need
 data StatInfo = StatInfo
-	{ keysPresentCache :: (Maybe (SizeList Key))
-	, keysReferencedCache :: (Maybe (SizeList Key))
+	{ keysPresentCache :: Maybe (SizeList Key)
+	, keysReferencedCache :: Maybe (SizeList Key)
 	}
 
 -- a state monad for running Stats in
@@ -47,7 +48,7 @@ sizeList :: [a] -> SizeList a
 sizeList l = (l, genericLength l)
 
 command :: [Command]
-command = [repoCommand "status" (paramNothing) seek
+command = [repoCommand "status" paramNothing seek
 	"shows status information about the annex"]
 
 seek :: [CommandSeek]
@@ -83,7 +84,7 @@ stat :: String -> StatState String -> Stat
 stat desc a = return $ Just (desc, a)
 
 nostat :: Stat
-nostat = return $ Nothing
+nostat = return Nothing
 
 showStat :: Stat -> StatState ()
 showStat s = calc =<< s
@@ -95,9 +96,8 @@ showStat s = calc =<< s
 		calc Nothing = return ()
 
 supported_backends :: Stat
-supported_backends = stat "supported backends" $
-	lift (Annex.getState Annex.supportedBackends) >>=
-		return . unwords . (map B.name)
+supported_backends = stat "supported backends" $ 
+	return $ unwords $ map B.name Backend.list
 
 supported_remote_types :: Stat
 supported_remote_types = stat "supported remote types" $
@@ -144,7 +144,7 @@ cachedKeysPresent = do
 	case keysPresentCache s of
 		Just v -> return v
 		Nothing -> do
-			keys <- lift $ getKeysPresent
+			keys <- lift getKeysPresent
 			let v = sizeList keys
 			put s { keysPresentCache = Just v }
 			return v
@@ -155,7 +155,7 @@ cachedKeysReferenced = do
 	case keysReferencedCache s of
 		Just v -> return v
 		Nothing -> do
-			keys <- lift $ Command.Unused.getKeysReferenced
+			keys <- lift Command.Unused.getKeysReferenced
 			-- A given key may be referenced repeatedly.
 			-- nub does not seem too slow (yet)..
 			let v = sizeList $ nub keys
@@ -164,9 +164,9 @@ cachedKeysReferenced = do
 
 keySizeSum :: SizeList Key -> StatState String
 keySizeSum (keys, len) = do
-	let knownsize = catMaybes $ map keySize keys
-	let total = roughSize storageUnits False $ foldl (+) 0 knownsize
-	let missing = len - genericLength knownsize
+	let knownsizes = mapMaybe keySize keys
+	let total = roughSize storageUnits False $ sum knownsizes
+	let missing = len - genericLength knownsizes
 	return $ total ++
 		if missing > 0
 			then aside $ "but " ++ show missing ++ " keys have unknown size"

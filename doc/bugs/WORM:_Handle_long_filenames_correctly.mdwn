@@ -1,1 +1,4 @@
 I have files with very long filenames on an xfs at home. On my laptop the annex should have been checked out on an encfs, but there filenames can't be as long as on the xfs. So perhaps it would be good to limit the keysize to a sane substring of the filename e.g. use only the first 120 characters.
+
+> Since there seems no strong argument for a WORM100, and better options
+> exist, closing. [[done]] --[[Joey]] 

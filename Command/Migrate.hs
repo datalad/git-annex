@@ -15,6 +15,7 @@ import System.FilePath
 import Command
 import qualified Annex
 import qualified Backend
+import qualified Types.Key
 import Locations
 import Types
 import Content
@@ -32,17 +33,19 @@ start :: CommandStartBackendFile
 start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
-	upgradable <- Backend.upgradableKey oldbackend key
-	if (newbackend /= oldbackend || upgradable) && exists
+	if (newbackend /= oldbackend || upgradableKey key) && exists
 		then do
 			showStart "migrate" file
 			next $ perform file key newbackend
 		else stop
 	where
-		choosebackend Nothing = do
-			backends <- Backend.list
-			return $ head backends
+		choosebackend Nothing = return . head =<< Backend.orderedList
 		choosebackend (Just backend) = return backend
+
+{- Checks if a key is upgradable to a newer representation. -}
+{- Ideally, all keys have file size metadata. Old keys may not. -}
+upgradableKey :: Key -> Bool
+upgradableKey key = Types.Key.keySize key == Nothing
 
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
@@ -55,9 +58,9 @@ perform file oldkey newbackend = do
 	let src = gitAnnexLocation g oldkey
 	let tmpfile = gitAnnexTmpDir g </> takeFileName file
 	liftIO $ createLink src tmpfile
-	stored <- Backend.storeFileKey tmpfile $ Just newbackend
+	k <- Backend.genKey tmpfile $ Just newbackend
 	liftIO $ cleantmp tmpfile
-	case stored of
+	case k of
 		Nothing -> stop
 		Just (newkey, _) -> do
 			ok <- getViaTmpUnchecked newkey $ \t -> do

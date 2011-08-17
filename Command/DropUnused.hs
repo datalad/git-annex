@@ -20,8 +20,7 @@ import qualified Annex
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Remote
-import qualified GitRepo as Git
-import Backend
+import qualified Git
 import Types.Key
 import Utility
 
@@ -50,7 +49,7 @@ start (unused, unusedbad, unusedtmp) s = notBareRepo $ search
 	]
 	where
 		search [] = stop
-		search ((m, a):rest) = do
+		search ((m, a):rest) =
 			case M.lookup s m of
 				Nothing -> search rest
 				Just key -> do
@@ -62,11 +61,9 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 	where
 		dropremote name = do
 			r <- Remote.byName name
-			showNote $ "from " ++ Remote.name r ++ "..."
+			showAction $ "from " ++ Remote.name r
 			next $ Command.Move.fromCleanup r True key
-		droplocal = do
-			backend <- keyBackend key
-			Command.Drop.perform key backend (Just 0) -- force drop
+		droplocal = Command.Drop.perform key (Just 0) -- force drop
 
 performOther :: (Git.Repo -> Key -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
@@ -81,10 +78,9 @@ readUnusedLog prefix = do
 	let f = gitAnnexUnusedLog prefix g
 	e <- liftIO $ doesFileExist f
 	if e
-		then do
-			l <- liftIO $ readFile f
-			return $ M.fromList $ map parse $ lines l
-		else return $ M.empty
+		then return . M.fromList . map parse . lines
+			=<< liftIO (readFile f)
+		else return M.empty
 	where
 		parse line = (head ws, fromJust $ readKey $ unwords $ tail ws)
 			where

@@ -9,6 +9,7 @@ module Command.Version where
 
 import Control.Monad.State (liftIO)
 import Data.String.Utils
+import Data.Maybe
 
 import Command
 import qualified SysConfig
@@ -24,10 +25,10 @@ start :: CommandStartNothing
 start = do
 	liftIO $ putStrLn $ "git-annex version: " ++ SysConfig.packageversion
 	v <- getVersion
-	liftIO $ putStrLn $ "local repository version: " ++ v
+	liftIO $ putStrLn $ "local repository version: " ++ fromMaybe "unknown" v
 	liftIO $ putStrLn $ "default repository version: " ++ defaultVersion
 	liftIO $ putStrLn $ "supported repository versions: " ++ vs supportedVersions
 	liftIO $ putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
 	stop
 	where
-		vs l = join " " l
+		vs = join " "

@@ -1,3 +1,5 @@
+[[done]] !!!
+
 The use of `.git-annex` to store logs means that if a repo has branches 
 and the user switched between them, git-annex will see different logs in
 the different branches, and so may miss info about what remotes have which
@@ -47,6 +49,8 @@ Let's use one branch per uuid, named git-annex/$UUID.
   branches?
 - A given repo only ever writes to its UUID branch. So no conflicts.
   - **problem**: git annex move needs to update log info for other repos!
+    (possibly solvable by having git-annex-shell update the log info
+    when content is moved using it)
 - (BTW, UUIDs probably don't compress well, and this reduces the bloat of having
   them repeated lots of times in the tree.)
 - Per UUID branches mean that if it wants to find a file's location
@@ -77,7 +81,7 @@ with a indication of the presense/absense of the key is found.
   or transfered.
 - It could get pretty slow when digging deeper.
 - Only 3 places in git-annex will be affected by any slowdown: move --from,
-  get and drop.
+  get and drop. (Update: Now also unused, whereis, fsck) 
 
 ## alternate
 
@@ -109,12 +113,19 @@ which could get expensive.
 ## way outside the box approach
 
 Another approach I have been mulling over is keeping the log file
-branch checked out in .git-annex/logs/ -- this would be a checkout of a git
+branch checked out in .git/annex/logs/ -- this would be a checkout of a git
 repository inside a git repository, using "git fake bare" techniques. This
 would solve the merge problem, since git auto merge could be used. It would
 still mean all the log files are on-disk, which annoys some. It would
 require some tighter integration with git, so that after a pull, the log
 repo is updated with the data pulled. --[[Joey]] 
+
+> Seems I can't use git fake bare exactly. Instead, the best option
+> seems to be `git clone --shared` to make a clone that uses
+> `.git/annex/logs/.git` to hold its index etc, but (mostly) uses
+> objects from the main repo. There would be some bloat,
+> as commits to the logs made in there would not be shared with the main
+> repo. Using `GIT_OBJECT_DIRECTORY` might be a way to avoid that bloat.
 
 ## notes
 
@@ -126,3 +137,23 @@ Problem: Notes are usually attached to git
 objects, and there are no git objects corresponding to git-annex keys.
 
 Problem: Notes are not normally copied when cloning.
+
+------
+
+## elminating the merge problem
+
+Most of the above options are complicated by the problem of how to merge
+changes from remotes. It should be possible to deal with the merge
+problem generically. Something like this:
+
+* We have a local branch `B`.
+* For remotes, there are also `origin/B`, `otherremote/B`, etc.
+* To merge two branches `B` and `foo/B`, construct a merge commit that
+  makes each file have all lines that were in either version of the file,
+  with duplicates removed (probably). Do this without checking out a tree.
+  -- now implemented as git-union-merge
+* As a `post-merge` hook, merge `*/B` into `B`. This will ensure `B`
+  is always up-to-date after a pull from a remote.
+* When pushing to a remote, nothing need to be done, except ensure
+  `B` is either successfully pushed, or the push fails (and a pull needs to
+  be done to get the remote's changes merged into `B`).

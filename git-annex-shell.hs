@@ -8,7 +8,7 @@
 import System.Environment
 import Data.List
 
-import qualified GitRepo as Git
+import qualified Git
 import CmdLine
 import Command
 import Utility
@@ -35,9 +35,7 @@ header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
 
 main :: IO ()
-main = do
-	args <- getArgs
-	main' args
+main = main' =<< getArgs
 
 main' :: [String] -> IO ()
 main' [] = failure
@@ -60,10 +58,10 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params =
 	Git.repoAbsPath dir >>= Git.repoFromAbsPath >>=
-		dispatch (cmd:(filterparams params)) cmds commonOptions header
+		dispatch (cmd : filterparams params) cmds commonOptions header
 
 external :: [String] -> IO ()
-external params = do
+external params =
 	unlessM (boolSystem "git-shell" $ map Param $ "-c":filterparams params) $
 		error "git-shell failed"
 

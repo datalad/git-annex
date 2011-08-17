@@ -17,10 +17,11 @@ import System.Posix.IO
 import System.IO
 import System.IO.Error (try)
 import System.Exit
+import Data.Maybe
 
 import Types
 import Types.Remote
-import qualified GitRepo as Git
+import qualified Git
 import qualified Annex
 import UUID
 import Locations
@@ -61,7 +62,7 @@ gen r u c = do
 
 hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 hookSetup u c = do
-	let hooktype = maybe (error "Specify hooktype=") id $
+	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c
 	c' <- encryptionSetup c
 	gitConfigSpecialRemote u c' "hooktype" hooktype
@@ -73,12 +74,13 @@ hookEnv k f = Just $ fileenv f ++ keyenv
 		env s v = ("ANNEX_" ++ s, v)
 		keyenv =
 			[ env "KEY" (show k)
-			, env "HASH_1" (hashbits !! 0)
-			, env "HASH_2" (hashbits !! 1)
+			, env "HASH_1" hash_1
+			, env "HASH_2" hash_2
 			]
 		fileenv Nothing = []
 		fileenv (Just file) =  [env "FILE" file]
-		hashbits = map takeDirectory $ splitPath $ hashDirMixed k
+		[hash_1, hash_2, _rest] =
+			map takeDirectory $ splitPath $ hashDirMixed k
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
@@ -96,7 +98,7 @@ runHook :: String -> String -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
 runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype hook
 	where
 		run command = do
-			showProgress -- make way for hook output
+			showOutput -- make way for hook output
 			res <- liftIO $ boolSystemEnv
 				"sh" [Param "-c", Param command] $ hookEnv k f
 			if res
@@ -127,15 +129,15 @@ retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->
 		return True
 
 remove :: String -> Key -> Annex Bool
-remove h k = runHook h "remove" k Nothing $ do return True
+remove h k = runHook h "remove" k Nothing $ return True
 
 checkPresent :: Git.Repo -> String -> Key -> Annex (Either IOException Bool)
 checkPresent r h k = do
-	showNote ("checking " ++ Git.repoDescribe r ++ "...")
+	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h "checkpresent"
 	liftIO (try (check v) ::IO (Either IOException Bool))
 	where
-		findkey s = (show k) `elem` (lines s)
+		findkey s = show k `elem` lines s
 		env = hookEnv k Nothing
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
@@ -150,5 +152,5 @@ checkPresent r h k = do
 			hClose fromh
 			s <- getProcessStatus True False pid
 			case s of
-				Just (Exited (ExitSuccess)) -> return $ findkey reply
+				Just (Exited ExitSuccess) -> return $ findkey reply
 				_ -> error "checkpresent hook failed"

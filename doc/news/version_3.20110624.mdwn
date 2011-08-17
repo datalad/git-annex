@@ -1,0 +1,33 @@
+News for git-annex 3.20110624:
+
+There has been another change to the git-annex data store.
+Use `git annex upgrade` to migrate your repositories to the new
+layout. See [[upgrades]].
+
+The significant change this time is that the .git-annex/ directory
+is gone; instead there is a git-annex branch that is automatically
+maintained by git-annex, and encapsulates all its state nicely out
+of your way.
+
+You should make sure you include the git-annex branch when
+git pushing and pulling.
+
+git-annex 3.20110624 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * New repository format, annex.version=3. Use `git annex upgrade` to migrate.
+   * git-annex now stores its logs in a git-annex branch.
+   * merge: New subcommand. Auto-merges the new git-annex branch.
+   * Improved handling of bare git repos with annexes. Many more commands will
+     work in them.
+   * git-annex is now more robust; it will never leave state files
+     uncommitted when some other git process comes along and locks the index
+     at an inconvenient time.
+   * rsync is now used when copying files from repos on other filesystems.
+     cp is still used when copying file from repos on the same filesystem,
+     since --reflink=auto can make it significantly faster on filesystems
+     such as btrfs.
+   * Allow --trust etc to specify a repository by name, for temporarily
+     trusting repositories that are not configured remotes.
+   * unlock: Made atomic.
+   * git-union-merge: New git subcommand, that does a generic union merge
+     operation, and operates efficiently without touching the working tree."""]]
