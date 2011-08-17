@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -43,11 +43,9 @@ uninitialize = do
    to avoid git-annex accidentially being run in git
    repos that did not intend to use it. -}
 ensureInitialized :: Annex ()
-ensureInitialized = do
-	v <- getVersion
-	case v of
-		Just version -> checkVersion version
-		Nothing -> do
+ensureInitialized = getVersion >>= maybe needsinit checkVersion
+	where
+		needsinit = do
 			annexed <- Branch.hasSomeBranch
 			if annexed
 				then initialize
