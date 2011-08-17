@@ -15,3 +15,6 @@ I would like to be able to use the following commands to get a clone of the repo
 * git annex get
 
 This would allow contributors to quickly get a copy of our upstream repo and start contributing with minimal bandwidth/effort.
+
+> This is now supported.. I look forward to seeing your project using it!
+> --[[Joey]] [[!tag done]]

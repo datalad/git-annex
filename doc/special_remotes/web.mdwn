@@ -5,3 +5,7 @@ See [[walkthrough/using_the_web]] for usage examples.
 
 Currently git-annex only supports downloading content from the web; 
 it cannot upload to it or remove content.
+
+This special remote uses arbitrary urls on the web as the source for content.
+git-annex can also download content from a normal git remote, accessible by
+http.
