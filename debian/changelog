@@ -1,19 +1,10 @@
 git-annex (3.20110719~bpo60+1) squeeze-backports; urgency=low
 
-  * Remove code that needs monad-control, which is not available in squeeze.
-    This makes the add command slightly less robust, but only in an unusual
-    edge case.
-
- -- Joey Hess <joeyh@debian.org>  Wed, 17 Aug 2011 01:06:03 -0400
-
-git-annex (3.20110719) unstable; urgency=low
-
-  * add: Be even more robust to avoid ever leaving the file seemingly deleted.
   * Bugfix: Make add ../ work.
   * Support the standard git -c name=value
   * unannex: Clean up use of git commit -a.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 19 Jul 2011 23:39:53 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 17 Aug 2011 01:06:03 -0400
 
 git-annex (3.20110707) unstable; urgency=low
 
