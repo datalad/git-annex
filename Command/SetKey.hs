@@ -20,7 +20,7 @@ command = [repoCommand "setkey" paramPath seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]
-seek = [withTempFile start]
+seek = [withStrings start]
 
 {- Sets cached content for a key. -}
 start :: CommandStartString

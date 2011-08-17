@@ -178,8 +178,6 @@ withKeys :: CommandSeekKeys
 withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
-withTempFile :: CommandSeekStrings
-withTempFile a params = return $ map a params
 withNothing :: CommandSeekNothing
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
