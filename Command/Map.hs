@@ -22,7 +22,7 @@ import Types
 import Utility
 import UUID
 import Trust
-import Remote.Ssh
+import Remote.Helper.Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)

@@ -33,8 +33,8 @@ import UUID
 import Messages
 import Locations
 import Config
-import Remote.Special
-import Remote.Encryptable
+import Remote.Helper.Special
+import Remote.Helper.Encryptable
 import Crypto
 import Content
 import Utility.Base64

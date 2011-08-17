@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Special where
+module Remote.Helper.Special where
 
 import qualified Data.Map as M
 import Data.Maybe

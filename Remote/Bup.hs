@@ -30,9 +30,9 @@ import Locations
 import Config
 import Utility
 import Messages
-import Remote.Ssh
-import Remote.Special
-import Remote.Encryptable
+import Remote.Helper.Ssh
+import Remote.Helper.Special
+import Remote.Helper.Encryptable
 import Crypto
 
 type BupRepo = String

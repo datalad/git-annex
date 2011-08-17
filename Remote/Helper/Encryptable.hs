@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Encryptable where
+module Remote.Helper.Encryptable where
 
 import qualified Data.Map as M
 import Control.Monad.State (liftIO)
