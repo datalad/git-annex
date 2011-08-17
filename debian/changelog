@@ -1,11 +1,11 @@
-git-annex (3.20110720) UNRELEASED; urgency=low
+git-annex (3.20110817) unstable; urgency=low
 
   * Fix shell escaping in rsync special remote.
   * addurl: --fast can be used to avoid immediately downloading the url.
   * Added support for getting content from git remotes using http (and https).
   * Added curl to Debian package dependencies.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 29 Jul 2011 15:27:30 +0200
+ -- Joey Hess <joeyh@debian.org>  Wed, 17 Aug 2011 01:29:02 -0400
 
 git-annex (3.20110719) unstable; urgency=low
 
