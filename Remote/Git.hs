@@ -81,7 +81,7 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = store $ safely $ geturlconfig
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ do
-		onLocal r initializeSafe
+		onLocal r ensureInitialized
 		Git.configRead r
 	where
 		-- Reading config can fail due to IO error or

@@ -22,7 +22,6 @@ import qualified Git
 import Content
 import Types
 import Command
-import Version
 import Options
 import Messages
 import Init
@@ -59,7 +58,7 @@ parseCmd argv header cmds options = do
 
 {- Checks that the command can be run in the current environment. -}
 checkCmdEnviron :: Command -> Annex ()
-checkCmdEnviron command = when (cmdusesrepo command) $ checkVersion $ initializeSafe
+checkCmdEnviron command = when (cmdusesrepo command) ensureInitialized
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String

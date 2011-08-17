@@ -6,8 +6,8 @@
  -}
 
 module Init (
+	ensureInitialized,
 	initialize,
-	initializeSafe,
 	uninitialize
 ) where
 
@@ -38,16 +38,20 @@ uninitialize = do
 	g <- Annex.gitRepo
 	gitPreCommitHookUnWrite g
 
-{- Call to automatically initialize if there is already a git-annex
+{- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init
    to avoid git-annex accidentially being run in git
    repos that did not intend to use it. -}
-initializeSafe :: Annex ()
-initializeSafe = do
-	annexed <- Branch.hasSomeBranch
-	if annexed
-		then initialize
-		else error "First run: git-annex init"
+ensureInitialized :: Annex ()
+ensureInitialized = do
+	v <- getVersion
+	case v of
+		Just version -> checkVersion version
+		Nothing -> do
+			annexed <- Branch.hasSomeBranch
+			if annexed
+				then initialize
+				else error "First run: git-annex init"
 
 {- set up a git pre-commit hook, if one is not already present -}
 gitPreCommitHookWrite :: Git.Repo -> Annex ()
