@@ -122,7 +122,7 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * init description
 
   Initializes git-annex with a description of the git repository,
-  and sets up `.gitattributes` and the pre-commit hook.
+  and sets up the pre-commit hook.
 
 * describe repository description
 
