@@ -7,28 +7,24 @@
 
 module Remote.Web (
 	remote,
-	setUrl,
-	download
+	setUrl
 ) where
 
 import Control.Monad.State (liftIO)
 import Control.Exception
 import System.FilePath
-import Network.Browser
-import Network.HTTP
-import Network.URI
 
 import Types
 import Types.Remote
 import qualified Git
 import qualified Annex
 import Messages
-import Utility
 import UUID
 import Config
 import PresenceLog
 import LocationLog
 import Locations
+import qualified Remote.Helper.Url as Url
 
 type URLString = String
 
@@ -90,9 +86,12 @@ setUrl key url status = do
 	logChange g key webUUID (if null us then InfoMissing else InfoPresent)
 
 downloadKey :: Key -> FilePath -> Annex Bool
-downloadKey key file = do
-	us <- getUrls key
-	download us file
+downloadKey key file = iter =<< getUrls key
+	where
+		iter [] = return False
+		iter (url:urls) = do
+			ok <- Url.download url file
+			if ok then return ok else iter urls
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do
@@ -114,28 +113,5 @@ checkKey' :: [URLString] -> Annex Bool
 checkKey' [] = return False
 checkKey' (u:us) = do
 	showAction $ "checking " ++ u
-	e <- liftIO $ urlexists u
+	e <- liftIO $ Url.exists u
 	if e then return e else checkKey' us
-
-urlexists :: URLString -> IO Bool
-urlexists url =
-	case parseURI url of
-		Nothing -> return False
-		Just u -> do
-			(_, r) <- Network.Browser.browse $ do
-				setErrHandler ignore
-				setOutHandler ignore
-				setAllowRedirects True
-				request (mkRequest HEAD u :: Request_String)
-			case rspCode r of
-				(2,_,_) -> return True
-				_ -> return False
-	where
-		ignore = const $ return ()
-
-download :: [URLString] -> FilePath -> Annex Bool
-download [] _ = return False
-download (url:us) file = do
-	showOutput -- make way for curl progress bar
-	ok <- liftIO $ boolSystem "curl" [Params "-L -C - -# -o", File file, File url]
-	if ok then return ok else download us file
