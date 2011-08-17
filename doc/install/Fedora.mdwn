@@ -9,7 +9,6 @@ sudo cabal install pcre-light
 sudo cabal install quickcheck
 sudo cabal install SHA
 sudo cabal install dataenc
-sudo cabal install monad-control
 sudo cabal install HTTP
 sudo cabal install hS3
 
