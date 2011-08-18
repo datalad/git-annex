@@ -424,6 +424,12 @@ Here are all the supported configuration settings.
   The default cost is 100 for local repositories, and 200 for remote
   repositories.
 
+* `remote.<name>.annex-cost-command`
+
+  If set, the command is run, and the number it outputs is used as the cost.
+  This allows varying the cost based on eg, the current network. The
+  cost-command can be any shell command line.
+
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex

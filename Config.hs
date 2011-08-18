@@ -9,6 +9,8 @@ module Config where
 
 import Data.Maybe
 import Control.Monad.State (liftIO)
+import Control.Monad (liftM)
+import System.Cmd.Utils
 
 import qualified Git
 import qualified Annex
@@ -40,14 +42,23 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex
 {- Calculates cost for a remote.
  -
  - The default cost is 100 for local repositories, and 200 for remote
- - repositories; it can also be configured by remote.<name>.annex-cost
+ - repositories; it can also be configured by remote.<name>.annex-cost,
+ - or if remote.<name>.annex-cost-command is set and prints a number, that
+ - is used.
  -}
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
-	c <- getConfig r "cost" ""
-	if not $ null c
-		then return $ read c
-		else return def
+	cmd <- getConfig r "cost-command" ""
+	return . safeparse =<< if not $ null cmd
+			then liftM snd $ liftIO $ pipeFrom "sh" ["-c", cmd]
+			else getConfig r "cost" ""
+	where
+		safeparse v
+			| null ws || null ps = def
+			| otherwise = (fst . head) ps
+			where
+				ws = words v
+				ps = reads $ head ws
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
