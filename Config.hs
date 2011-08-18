@@ -39,12 +39,9 @@ getConfig r key def = do
 remoteConfig :: Git.Repo -> ConfigKey -> String
 remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-" ++ key
 
-{- Calculates cost for a remote.
- -
- - The default cost is 100 for local repositories, and 200 for remote
- - repositories; it can also be configured by remote.<name>.annex-cost,
- - or if remote.<name>.annex-cost-command is set and prints a number, that
- - is used.
+{- Calculates cost for a remote. Either the default, or as configured 
+ - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
+ - is set and prints a number, that is used.
  -}
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
