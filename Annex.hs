@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Annex (
 	Annex,
 	AnnexState(..),
@@ -17,6 +19,7 @@ module Annex (
 ) where
 
 import Control.Monad.State
+import Control.Monad.IO.Control
 
 import qualified Git
 import Git.Queue
@@ -28,7 +31,14 @@ import Types.TrustLevel
 import Types.UUID
 
 -- git-annex's monad
-type Annex = StateT AnnexState IO
+newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
+	deriving (
+		Functor,
+		Monad,
+		MonadIO,
+		MonadControlIO,
+		MonadState AnnexState
+	)
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -78,9 +88,9 @@ new gitrepo = newState `liftM` (liftIO . Git.configRead) gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run = flip runStateT
+run s a = runStateT (runAnnex a) s
 eval :: AnnexState -> Annex a -> IO a
-eval = flip evalStateT
+eval s a = evalStateT (runAnnex a) s
 
 {- Gets a value from the internal state, selected by the passed value
  - constructor. -}
