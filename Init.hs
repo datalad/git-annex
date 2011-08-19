@@ -79,7 +79,7 @@ unlessBare a = do
 preCommitHook :: Annex FilePath
 preCommitHook = do
 	g <- Annex.gitRepo
-	return $ Git.workTree g ++ "/" ++ Git.gitDir g ++ "/hooks/pre-commit"
+	return $ Git.gitDir g ++ "/hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 

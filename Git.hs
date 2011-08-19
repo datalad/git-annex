@@ -247,11 +247,11 @@ attributes repo
 	| configBare repo = workTree repo ++ "/info/.gitattributes"
 	| otherwise = workTree repo ++ "/.gitattributes"
 
-{- Path to a repository's .git directory, relative to its workTree. -}
+{- Path to a repository's .git directory. -}
 gitDir :: Repo -> String
 gitDir repo
-	| configBare repo = ""
-	| otherwise = ".git"
+	| configBare repo = workTree repo
+	| otherwise = workTree repo </> ".git"
 
 {- Path to a repository's --work-tree, that is, its top.
  -
@@ -345,10 +345,10 @@ urlAuthPart _ repo = assertUrl repo $ error "internal"
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: Repo -> [CommandParam] -> [CommandParam]
-gitCommandLine repo@(Repo { location = Dir d} ) params =
+gitCommandLine repo@(Repo { location = Dir _ } ) params =
 	-- force use of specified repo via --git-dir and --work-tree
-	[ Param ("--git-dir=" ++ d ++ "/" ++ gitDir repo)
-	, Param ("--work-tree=" ++ d)
+	[ Param ("--git-dir=" ++ gitDir repo)
+	, Param ("--work-tree=" ++ workTree repo)
 	] ++ params
 gitCommandLine repo _ = assertLocal repo $ error "internal"
 
