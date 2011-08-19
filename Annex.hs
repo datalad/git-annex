@@ -84,7 +84,7 @@ newState gitrepo = AnnexState
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState `liftM` (liftIO . Git.configRead) gitrepo
+new gitrepo = newState `liftM` Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
