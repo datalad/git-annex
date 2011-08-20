@@ -1,4 +1,4 @@
-git-annex (3.20110818) UNRELEASED; urgency=low
+git-annex (3.20110819) unstable; urgency=low
 
   * Now "git annex init" only has to be run once, when a git repository
     is first being created. Clones will automatically notice that git-annex
@@ -8,7 +8,7 @@ git-annex (3.20110818) UNRELEASED; urgency=low
     cost of a remote based on the output of a shell command.
   * Fix broken upgrade from V1 repository. Closes: #638584
 
- -- Joey Hess <joeyh@debian.org>  Wed, 17 Aug 2011 13:44:44 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Aug 2011 20:34:09 -0400
 
 git-annex (3.20110817) unstable; urgency=low
 
