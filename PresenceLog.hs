@@ -15,10 +15,12 @@ module PresenceLog (
 	LogStatus(..),
 	addLog,
 	readLog,
+	parseLog,
 	writeLog,
 	logNow,
 	compactLog,
-	currentLog
+	currentLog,
+	LogLine
 ) where
 
 import Data.Time.Clock.POSIX
