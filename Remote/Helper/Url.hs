@@ -39,6 +39,10 @@ exists url =
 download :: URLString -> FilePath -> Annex Bool
 download url file = do
 	showOutput -- make way for curl progress bar
+	-- Uses the -# progress display, because the normal one is very
+	-- confusing when resuming, showing the remainder to download
+	-- as the whole file, and not indicating how much percent was
+	-- downloaded before the resume.
 	liftIO $ boolSystem "curl" [Params "-L -C - -# -o", File file, File url]
 
 {- Downloads a small file. -}
