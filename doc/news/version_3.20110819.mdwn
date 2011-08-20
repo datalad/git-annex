@@ -1,0 +1,9 @@
+git-annex 3.20110819 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Now "git annex init" only has to be run once, when a git repository
+     is first being created. Clones will automatically notice that git-annex
+     is in use and automatically perform a basic initalization. It's
+     still recommended to run "git annex init" in any clones, to describe them.
+   * Added annex-cost-command configuration, which can be used to vary the
+     cost of a remote based on the output of a shell command.
+   * Fix broken upgrade from V1 repository. Closes: #[638584](http://bugs.debian.org/638584)"""]]
