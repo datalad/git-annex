@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Helper.Ssh where
+module Utility.Ssh where
 
 import Control.Monad.State (liftIO)
 

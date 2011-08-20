@@ -10,7 +10,7 @@ module Utility.CopyFile (copyFile) where
 import System.Directory (doesFileExist, removeFile)
 
 import Utility
-import qualified SysConfig
+import qualified Build.SysConfig as SysConfig
 
 {- The cp command is used, because I hate reinventing the wheel,
  - and because this allows easy access to features like cp --reflink. -}

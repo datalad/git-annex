@@ -45,7 +45,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
 
 
-module StatFS ( FileSystemStats(..), getFileSystemStats ) where
+module Utility.StatFS ( FileSystemStats(..), getFileSystemStats ) where
 
 import Foreign
 import Foreign.C.Types

@@ -25,8 +25,8 @@ import qualified Content
 import Messages
 import Utility.CopyFile
 import Utility.RsyncFile
-import Remote.Helper.Ssh
-import qualified Remote.Helper.Url as Url
+import Utility.Ssh
+import qualified Utility.Url as Url
 import Config
 import Init
 

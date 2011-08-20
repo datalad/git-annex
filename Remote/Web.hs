@@ -24,7 +24,7 @@ import Config
 import PresenceLog
 import LocationLog
 import Locations
-import qualified Remote.Helper.Url as Url
+import qualified Utility.Url as Url
 
 type URLString = String
 

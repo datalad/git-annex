@@ -30,7 +30,7 @@ import Locations
 import Config
 import Utility
 import Messages
-import Remote.Helper.Ssh
+import Utility.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto

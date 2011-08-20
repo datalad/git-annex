@@ -8,12 +8,11 @@ GHCMAKE=ghc $(GHCFLAGS) --make
 
 bins=git-annex git-annex-shell git-union-merge
 mans=git-annex.1 git-annex-shell.1 git-union-merge.1
+sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs Remote/S3.hs
 
 all: $(bins) $(mans) docs
 
-sources: SysConfig.hs StatFS.hs Touch.hs Remote/S3.hs
-
-SysConfig.hs: configure.hs TestConfig.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs
 	$(GHCMAKE) configure
 	./configure
 
@@ -30,7 +29,7 @@ Remote/S3.o: Remote/S3.hs
 		echo "** building without S3 support"; \
 	fi
 
-$(bins): SysConfig.hs Touch.hs StatFS.hs Remote/S3.o
+$(bins): $(sources)
 	$(GHCMAKE) $@
 
 git-annex.1: doc/git-annex.mdwn
@@ -82,8 +81,7 @@ docs: $(mans)
 		--exclude='news/.*'
 
 clean:
-	rm -rf build $(bins) $(mans) test configure  *.tix .hpc \
-		StatFS.hs Touch.hs SysConfig.hs Remote/S3.hs
+	rm -rf build $(bins) $(mans) test configure  *.tix .hpc $(sources)
 	rm -rf doc/.ikiwiki html dist
 	find . \( -name \*.o -or -name \*.hi \) -exec rm {} \;
 

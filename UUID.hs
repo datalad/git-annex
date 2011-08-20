@@ -33,7 +33,7 @@ import qualified Branch
 import Types
 import Types.UUID
 import qualified Annex
-import qualified SysConfig
+import qualified Build.SysConfig as SysConfig
 import Config
 
 configkey :: String

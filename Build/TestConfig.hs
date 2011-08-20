@@ -1,6 +1,6 @@
-{- Tests the system and generates SysConfig.hs. -}
+{- Tests the system and generates Build.SysConfig.hs. -}
 
-module TestConfig where
+module Build.TestConfig where
 
 import System.IO
 import System.Cmd
@@ -33,12 +33,12 @@ instance Show Config where
 			valuetype (MaybeStringConfig _) = "Maybe String"
 
 writeSysConfig :: [Config] -> IO ()
-writeSysConfig config = writeFile "SysConfig.hs" body
+writeSysConfig config = writeFile "Build/SysConfig.hs" body
 	where
 		body = unlines $ header ++ map show config ++ footer
 		header = [
 			  "{- Automatically generated. -}"
-			, "module SysConfig where"
+			, "module Build.SysConfig where"
 			, ""
 			]
 		footer = []

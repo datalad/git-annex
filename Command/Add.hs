@@ -24,7 +24,7 @@ import Types
 import Content
 import Messages
 import Utility
-import Touch
+import Utility.Touch
 import Locations
 
 command :: [Command]

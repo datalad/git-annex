@@ -2,7 +2,7 @@
 *.o
 test
 configure
-SysConfig.hs
+Build/SysConfig.hs
 git-annex
 git-annex-shell
 git-union-merge

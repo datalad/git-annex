@@ -14,7 +14,7 @@ import System.Directory
 
 import Command
 import qualified Backend
-import qualified Remote.Helper.Url
+import qualified Utility.Url as Url
 import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
@@ -53,7 +53,7 @@ download url file = do
 	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	ok <- Remote.Helper.Url.download url tmp
+	ok <- Url.download url tmp
 	if ok
 		then do
 			[(_, backend)] <- Backend.chooseBackends [file]

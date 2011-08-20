@@ -1,11 +1,11 @@
-{- Url downloading for remotes.
+{- Url downloading.
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Helper.Url (
+module Utility.Url (
 	exists,
 	download,
 	get
