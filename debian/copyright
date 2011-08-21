@@ -8,7 +8,7 @@ License: GPL-3+
  this package's source, or in /usr/share/common-licenses/GPL-3 on
  Debian systems.
 
-Files: StatFS.hsc
+Files: Utility/StatFS.hsc
 Copyright: Jose A Ortega Ruiz <jao@gnu.org>
 License: BSD-3-clause
  -- All rights reserved.
