@@ -75,7 +75,7 @@ toCommand = (>>= unwrap)
 		unwrap (Params s) = filter (not . null) (split " " s)
 		-- Files that start with a dash are modified to avoid
 		-- the command interpreting them as options.
-		unwrap (File ('-':s)) = ["./-" ++ s]
+		unwrap (File s@('-':_)) = ["./" ++ s]
 		unwrap (File s) = [s]
 
 {- Run a system command, and returns True or False
@@ -257,7 +257,7 @@ viaTmp a file content = do
 
 {- Runs an action with a temp file, then removes the file. -}
 withTempFile :: String -> (FilePath -> Handle -> IO a) -> IO a
-withTempFile template action = bracket create remove use
+withTempFile template a = bracket create remove use
 	where
 		create = do
 			tmpdir <- catch getTemporaryDirectory (const $ return ".")
@@ -265,7 +265,7 @@ withTempFile template action = bracket create remove use
 		remove (name, handle) = do
 			hClose handle
 			catchBool (removeFile name >> return True)
-		use (name, handle) = action name handle
+		use (name, handle) = a name handle
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}

@@ -51,11 +51,10 @@ remoteCost r def = do
 			else getConfig r "cost" ""
 	where
 		safeparse v
-			| null ws || null ps = def
-			| otherwise = (fst . head) ps
+			| null ws = def
+			| otherwise = fromMaybe def $ readMaybe $ head ws
 			where
 				ws = words v
-				ps = reads $ head ws
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
