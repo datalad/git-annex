@@ -321,7 +321,7 @@ getJournalFile file = do
 
 {- List of journal files. -}
 getJournalFiles :: Annex [FilePath]
-getJournalFiles = fmap (map fileJournal) getJournalFilesRaw
+getJournalFiles = liftM (map fileJournal) getJournalFilesRaw
 
 getJournalFilesRaw :: Annex [FilePath]
 getJournalFilesRaw = do

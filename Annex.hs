@@ -33,7 +33,6 @@ import Types.UUID
 -- git-annex's monad
 newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 	deriving (
-		Functor,
 		Monad,
 		MonadIO,
 		MonadControlIO,
