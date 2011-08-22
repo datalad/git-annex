@@ -10,7 +10,7 @@ module Utility.Ssh where
 import Control.Monad.State (liftIO)
 
 import qualified Git
-import Utility
+import Utility.SafeCommand
 import Types
 import Config
 

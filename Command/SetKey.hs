@@ -10,7 +10,7 @@ module Command.SetKey where
 import Control.Monad.State (liftIO)
 
 import Command
-import Utility
+import Utility.SafeCommand
 import LocationLog
 import Content
 import Messages

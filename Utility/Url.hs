@@ -19,7 +19,7 @@ import Network.URI
 
 import Types
 import Messages
-import Utility
+import Utility.SafeCommand
 
 type URLString = String
 

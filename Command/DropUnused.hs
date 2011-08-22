@@ -22,7 +22,7 @@ import qualified Command.Move
 import qualified Remote
 import qualified Git
 import Types.Key
-import Utility
+import Utility.Conditional
 
 type UnusedMap = M.Map String Key
 

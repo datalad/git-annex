@@ -22,6 +22,7 @@ import Version
 import Messages
 import Types
 import Utility
+import Utility.Conditional
 import UUID
 
 initialize :: Annex ()

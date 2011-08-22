@@ -11,7 +11,7 @@ import Control.Monad.State (liftIO)
 
 import Command
 import Content
-import Utility
+import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "find" (paramOptional $ paramRepeating paramPath) seek

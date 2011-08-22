@@ -12,7 +12,7 @@ import System.Directory
 import System.Exit
 
 import Command
-import Utility
+import Utility.SafeCommand
 import qualified Git
 import qualified Annex
 import qualified Command.Unannex

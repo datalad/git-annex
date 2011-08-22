@@ -17,7 +17,7 @@ import Types.Remote
 import qualified Git
 import qualified Annex
 import UUID
-import Utility
+import Utility.SafeCommand
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different

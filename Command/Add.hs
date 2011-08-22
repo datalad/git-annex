@@ -23,8 +23,9 @@ import LocationLog
 import Types
 import Content
 import Messages
-import Utility
+import Utility.Conditional
 import Utility.Touch
+import Utility.SafeCommand
 import Locations
 
 command :: [Command]

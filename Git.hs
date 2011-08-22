@@ -85,6 +85,9 @@ import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 
 import Utility
+import Utility.Path
+import Utility.Conditional
+import Utility.SafeCommand
 
 {- There are two types of repositories; those on local disk and those
  - accessed via an URL. -}

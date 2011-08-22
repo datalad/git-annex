@@ -31,6 +31,8 @@ import Backend
 import Messages
 import Version
 import Utility
+import Utility.SafeCommand
+import Utility.Path
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.

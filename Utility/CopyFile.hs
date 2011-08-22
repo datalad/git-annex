@@ -9,7 +9,8 @@ module Utility.CopyFile (copyFile) where
 
 import System.Directory (doesFileExist, removeFile)
 
-import Utility
+import Utility.Conditional
+import Utility.SafeCommand
 import qualified Build.SysConfig as SysConfig
 
 {- The cp command is used, because I hate reinventing the wheel,

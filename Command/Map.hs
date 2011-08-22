@@ -19,7 +19,7 @@ import qualified Annex
 import qualified Git
 import Messages
 import Types
-import Utility
+import Utility.SafeCommand
 import UUID
 import Trust
 import Utility.Ssh

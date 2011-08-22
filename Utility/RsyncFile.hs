@@ -9,7 +9,7 @@ module Utility.RsyncFile where
 
 import Data.String.Utils
 
-import Utility
+import Utility.SafeCommand
 
 {- Generates parameters to make rsync use a specified command as its remote
  - shell. -}

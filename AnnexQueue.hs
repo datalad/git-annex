@@ -17,7 +17,7 @@ import Control.Monad (when, unless)
 import Annex
 import Messages
 import qualified Git.Queue
-import Utility
+import Utility.SafeCommand
 
 {- Adds a git command to the queue. -}
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()

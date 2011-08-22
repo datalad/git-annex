@@ -37,6 +37,8 @@ import qualified Git
 import qualified Git.UnionMerge
 import qualified Annex
 import Utility
+import Utility.Conditional
+import Utility.SafeCommand
 import Types
 import Messages
 import Locations

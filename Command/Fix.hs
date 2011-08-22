@@ -13,7 +13,8 @@ import System.Directory
 
 import Command
 import qualified AnnexQueue
-import Utility
+import Utility.Path
+import Utility.SafeCommand
 import Content
 import Messages
 

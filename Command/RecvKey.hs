@@ -13,8 +13,8 @@ import System.Exit
 import Command
 import CmdLine
 import Content
-import Utility
 import Utility.RsyncFile
+import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "recvkey" paramKey seek

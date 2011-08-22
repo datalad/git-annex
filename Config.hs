@@ -16,6 +16,7 @@ import qualified Git
 import qualified Annex
 import Types
 import Utility
+import Utility.SafeCommand
 
 type ConfigKey = String
 

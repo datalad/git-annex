@@ -23,7 +23,7 @@ import Messages
 import Content
 import PresenceLog
 import Locations
-import Utility
+import Utility.Path
 
 command :: [Command]
 command = [repoCommand "addurl" paramPath seek "add urls to annex"]

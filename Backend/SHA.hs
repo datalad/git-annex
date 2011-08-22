@@ -23,7 +23,7 @@ import Content
 import Types
 import Types.Backend
 import Types.Key
-import Utility
+import Utility.SafeCommand
 import qualified Build.SysConfig as SysConfig
 
 type SHASize = Int

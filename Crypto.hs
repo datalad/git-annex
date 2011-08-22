@@ -48,6 +48,7 @@ import Types.Key
 import Types.Remote
 import Utility
 import Utility.Base64
+import Utility.SafeCommand
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder

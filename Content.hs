@@ -41,7 +41,9 @@ import qualified Annex
 import qualified AnnexQueue
 import qualified Branch
 import Utility
+import Utility.Conditional
 import Utility.StatFS
+import Utility.Path
 import Types.Key
 import Utility.DataUnits
 import Config
