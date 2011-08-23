@@ -646,6 +646,9 @@ prepare = do
 	p <- getEnvDefault  "PATH" ""
 	setEnv "PATH" (cwd ++ ":" ++ p) True
 	setEnv "TOPDIR" cwd True
+	-- Avoid git complaining if it cannot determine the user's email
+	-- address.
+	setEnv "EMAIL" "git-annex test <test@example.com>" True
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do

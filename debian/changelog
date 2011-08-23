@@ -1,3 +1,10 @@
+git-annex (3.20110820) UNRELEASED; urgency=low
+
+  * Set EMAIL when running test suite so that git does not need to be
+    configured first. Closes: #638998
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 23 Aug 2011 13:41:01 -0400
+
 git-annex (3.20110819) unstable; urgency=low
 
   * Now "git annex init" only has to be run once, when a git repository
