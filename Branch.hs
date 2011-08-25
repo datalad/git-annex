@@ -20,6 +20,7 @@ module Branch (
 
 import Control.Monad (when, unless, liftM)
 import Control.Monad.State (liftIO)
+import Control.Applicative ((<$>))
 import System.FilePath
 import System.Directory
 import Data.String.Utils
@@ -158,7 +159,7 @@ update = do
 		staged <- stageJournalFiles
 
 		refs <- siblingBranches
-		updated <- catMaybes `liftM` mapM updateRef refs
+		updated <- catMaybes <$> mapM updateRef refs
 		g <- Annex.gitRepo
 		unless (null updated && not staged) $ liftIO $
 			Git.commit g "update" fullname (fullname:updated)
@@ -182,7 +183,7 @@ hasOrigin = refExists originname
 
 {- Does the git-annex branch or a foo/git-annex branch exist? -}
 hasSomeBranch :: Annex Bool
-hasSomeBranch = liftM (not . null) siblingBranches
+hasSomeBranch = not . null <$> siblingBranches
 
 {- List of all git-annex branches, including the main one and any
  - from remotes. -}
@@ -323,7 +324,7 @@ getJournalFile file = do
 
 {- List of journal files. -}
 getJournalFiles :: Annex [FilePath]
-getJournalFiles = liftM (map fileJournal) getJournalFilesRaw
+getJournalFiles = map fileJournal <$> getJournalFilesRaw
 
 getJournalFilesRaw :: Annex [FilePath]
 getJournalFilesRaw = do

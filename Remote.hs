@@ -29,11 +29,12 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad (filterM, liftM2)
+import Control.Monad (filterM)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
 import Data.Maybe
+import Control.Applicative
 
 import Types
 import Types.Remote
@@ -111,10 +112,10 @@ nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
-		Left e -> return . fromMaybe (error e) =<< byDescription
+		Left e -> fromMaybe (error e) <$> byDescription
 		Right r -> return $ uuid r
 	where
-		byDescription = return . M.lookup n . invertMap =<< uuidMap
+		byDescription = M.lookup n . invertMap <$> uuidMap
 		invertMap = M.fromList . map swap . M.toList
 		swap (a, b) = (b, a)
 
@@ -124,10 +125,10 @@ prettyPrintUUIDs uuids = do
 	here <- getUUID =<< Annex.gitRepo
 	-- Show descriptions from the uuid log, falling back to remote names,
 	-- as some remotes may not be in the uuid log
-	m <- liftM2 M.union uuidMap $
-		return . M.fromList . map (\r -> (uuid r, name r)) =<< genList
+	m <- M.union <$> uuidMap <*> availMap
 	return $ unwords $ map (\u -> "\t" ++ prettify m u here ++ "\n") uuids
 	where
+		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		prettify m u here = base ++ ishere
 			where
 				base = if not $ null $ findlog m u
@@ -147,7 +148,7 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
-keyPossibilities key = return . fst =<< keyPossibilities' False key
+keyPossibilities key = fst <$> keyPossibilities' False key
 
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -

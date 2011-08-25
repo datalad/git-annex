@@ -63,6 +63,7 @@ module Git (
 ) where
 
 import Control.Monad (unless, when)
+import Control.Applicative
 import System.Directory
 import System.FilePath
 import System.Posix.Directory
@@ -446,7 +447,7 @@ commit g message newref parentrefs = do
 		pipeWriteRead g (map Param $ ["commit-tree", tree] ++ ps) message
 	run g "update-ref" [Param newref, Param sha]
 	where
-		ignorehandle a = return . snd =<< a
+		ignorehandle a = snd <$> a
 		ps = concatMap (\r -> ["-p", r]) parentrefs
 
 {- Reads null terminated output of a git command (as enabled by the -z 

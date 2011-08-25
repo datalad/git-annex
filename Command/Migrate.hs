@@ -8,6 +8,7 @@
 module Command.Migrate where
 
 import Control.Monad.State (liftIO)
+import Control.Applicative
 import System.Posix.Files
 import System.Directory
 import System.FilePath
@@ -39,7 +40,7 @@ start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
 			next $ perform file key newbackend
 		else stop
 	where
-		choosebackend Nothing = return . head =<< Backend.orderedList
+		choosebackend Nothing = head <$> Backend.orderedList
 		choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation. -}

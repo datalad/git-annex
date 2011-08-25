@@ -9,7 +9,7 @@ module Config where
 
 import Data.Maybe
 import Control.Monad.State (liftIO)
-import Control.Monad (liftM)
+import Control.Applicative
 import System.Cmd.Utils
 
 import qualified Git
@@ -47,8 +47,8 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
 	cmd <- getConfig r "cost-command" ""
-	return . safeparse =<< if not $ null cmd
-			then liftM snd $ liftIO $ pipeFrom "sh" ["-c", cmd]
+	safeparse <$> if not $ null cmd
+			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
 			else getConfig r "cost" ""
 	where
 		safeparse v
