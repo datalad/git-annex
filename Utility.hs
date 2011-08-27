@@ -15,7 +15,8 @@ module Utility (
 	dirContains,
 	dirContents,
 	myHomeDir,
-	catchBool
+	catchBool,
+	inPath
 ) where
 
 import IO (bracket)
@@ -94,3 +95,12 @@ myHomeDir = do
 {- Catches IO errors and returns a Bool -}
 catchBool :: IO Bool -> IO Bool
 catchBool = flip catch (const $ return False)
+
+{- Checks if a command is available in PATH. -}
+inPath :: String -> IO Bool
+inPath command = search =<< getSearchPath
+	where
+		search [] = return False
+		search (d:ds) = do
+			e <- doesFileExist $ d </> command
+			if e then return True else search ds

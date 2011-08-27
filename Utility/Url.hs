@@ -20,6 +20,7 @@ import Network.URI
 import Types
 import Messages
 import Utility.SafeCommand
+import Utility
 
 type URLString = String
 
@@ -35,15 +36,24 @@ exists url =
 				_ -> return False
 
 {- Used to download large files, such as the contents of keys.
- - Uses curl program for its progress bar. -}
+ - Uses wget or curl program for its progress bar. (Wget has a better one,
+ - so is preferred.) -}
 download :: URLString -> FilePath -> Annex Bool
 download url file = do
-	showOutput -- make way for curl progress bar
-	-- Uses the -# progress display, because the normal one is very
-	-- confusing when resuming, showing the remainder to download
-	-- as the whole file, and not indicating how much percent was
-	-- downloaded before the resume.
-	liftIO $ boolSystem "curl" [Params "-L -C - -# -o", File file, File url]
+	showOutput -- make way for program's progress bar
+	e <- liftIO $ inPath "wget"
+	if e
+		then
+			liftIO $ boolSystem "wget"
+				[Params "-c -O", File file, File url]
+		else
+			-- Uses the -# progress display, because the normal
+			-- one is very confusing when resuming, showing
+			-- the remainder to download as the whole file,
+			-- and not indicating how much percent was
+			-- downloaded before the resume.
+			liftIO $ boolSystem "curl" 
+				[Params "-L -C - -# -o", File file, File url]
 
 {- Downloads a small file. -}
 get :: URLString -> IO String

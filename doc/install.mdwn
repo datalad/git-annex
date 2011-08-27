@@ -34,7 +34,7 @@ To build and use git-annex, you will need:
     (or `uuidgen` from util-linux)
   * [xargs](http://savannah.gnu.org/projects/findutils/)
   * [rsync](http://rsync.samba.org/)
-  * [curl](http://http://curl.haxx.se/) (optional, but recommended)
+  * [wget](http://www.gnu.org/software/wget/) or [curl](http://http://curl.haxx.se/) (optional, but recommended)
   * [sha1sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional, but recommended;
     a sha1 command will also do)
   * [gpg](http://gnupg.org/) (optional; needed for encryption)

@@ -2,6 +2,7 @@ git-annex (3.20110820) UNRELEASED; urgency=low
 
   * Set EMAIL when running test suite so that git does not need to be
     configured first. Closes: #638998
+  * The wget command will now be used in preference to curl, if available.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Aug 2011 13:41:01 -0400
 

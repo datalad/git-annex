@@ -31,7 +31,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	git | git-core,
 	uuid,
 	rsync,
-	curl,
+	wget | curl,
 	openssh-client
 Suggests: graphviz, bup, gnupg
 Description: manage files with git, without checking their contents into git
