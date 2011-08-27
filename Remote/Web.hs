@@ -86,8 +86,12 @@ setUrl key url status = do
 	logChange g key webUUID (if null us then InfoMissing else InfoPresent)
 
 downloadKey :: Key -> FilePath -> Annex Bool
-downloadKey key file = iter =<< getUrls key
+downloadKey key file = get =<< getUrls key
 	where
+		get [] = do
+			warning "no known url"
+			return False
+		get a = iter a
 		iter [] = return False
 		iter (url:urls) = do
 			ok <- Url.download url file
