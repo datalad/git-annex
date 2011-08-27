@@ -53,7 +53,9 @@ test: $(bins)
 	@if ! $(GHCMAKE) -O0 test; then \
 		echo "** not running test suite" >&2; \
 	else \
-		./test; \
+		if ! ./test; then \
+			echo "** test suite failed!" >&2; \
+		fi; \
 	fi
 
 testcoverage: $(bins)
