@@ -72,15 +72,15 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * get [path ...]
 
-  Makes the content of annexed files available in this repository. Depending
-  on the backend used, this will involve copying them from another repository,
-  or downloading them, or transferring them from some kind of key-value store.
+  Makes the content of annexed files available in this repository. This
+  will involve copying them from another repository, or downloading them,
+  or transferring them from some kind of key-value store.
 
 * drop [path ...]
 
   Drops the content of annexed files from this repository. 
 
-  git-annex may refuse to drop content if the backend does not think
+  git-annex may refuse to drop content if it does not think
   it is safe to do so, typically because of the setting of annex.numcopies.
 
 * move [path ...]
@@ -207,14 +207,14 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * migrate [path ...]
 
-  Changes the specified annexed files to store their content in the
-  default backend (or the one specified with --backend). Only files whose
-  content is currently available are migrated.
+  Changes the specified annexed files to use the default key-value backend
+  (or the one specified with --backend). Only files whose content
+  is currently available are migrated.
 
-  Note that the content is not removed from the backend it was previously in.
-  Use `git annex unused` to find and remove such content.
+  Note that the content is also still available using the old key after
+  migration. Use `git annex unused` to find and remove the old key.
 
-  Normally, nothing will be done to files already in the backend.
+  Normally, nothing will be done to files already using the new backend.
   However, if a backend changes the information it uses to construct a key,
   this can also be used to migrate files to use the new key format.
 
@@ -293,7 +293,7 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * fromkey file
 
   This plumbing-level command can be used to manually set up a file
-  to link to a specified key in the key-value backend.
+  in the git repository to link to a specified key.
 
 * dropkey [key ...]
 
@@ -500,8 +500,8 @@ Here are all the supported configuration settings.
 
 # CONFIGURATION VIA .gitattributes
 
-The backend used when adding a new file to the annex can be configured
-on a per-file-type basis via `.gitattributes` files. In the file,
+The key-value backend used when adding a new file to the annex can be
+configured on a per-file-type basis via `.gitattributes` files. In the file,
 the `annex.backend` attribute can be set to the name of the backend to
 use. For example, this here's how to use the WORM backend by default,
 but the SHA1 backend for ogg files:

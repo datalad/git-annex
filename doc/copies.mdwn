@@ -1,8 +1,8 @@
-The WORM and SHA1 key-value [[backends]] store data inside
-your git repository's `.git` directory, not in some external data store.
+Annexed data is stored inside  your git repository's `.git/annex` directory.
+Some [[special_remotes]] can store annexed data elsewhere.
 
 It's important that data not get lost by an ill-considered `git annex drop`
-command.  So, then using those backends, git-annex can be configured to try
+command.  So, git-annex can be configured to try
 to keep N copies of a file's content available across all repositories. 
 (Although [[untrusted_repositories|trust]] don't count toward this total.)
 
