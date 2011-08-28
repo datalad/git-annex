@@ -24,6 +24,7 @@ import Config
 import PresenceLog
 import LocationLog
 import Locations
+import Utility
 import qualified Utility.Url as Url
 
 type URLString = String
@@ -91,11 +92,7 @@ downloadKey key file = get =<< getUrls key
 		get [] = do
 			warning "no known url"
 			return False
-		get a = iter a
-		iter [] = return False
-		iter (url:urls) = do
-			ok <- Url.download url file
-			if ok then return ok else iter urls
+		get urls = anyM (`Url.download` file) urls
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

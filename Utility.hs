@@ -16,7 +16,9 @@ module Utility (
 	dirContents,
 	myHomeDir,
 	catchBool,
-	inPath
+	inPath,
+	firstM,
+	anyM
 ) where
 
 import IO (bracket)
@@ -29,6 +31,8 @@ import System.FilePath
 import System.Directory
 import Foreign (complement)
 import Utility.Path
+import Data.Maybe
+import Control.Monad (liftM)
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -96,11 +100,23 @@ myHomeDir = do
 catchBool :: IO Bool -> IO Bool
 catchBool = flip catch (const $ return False)
 
+{- Return the first value from a list, if any, satisfying the given
+ - predicate -}
+firstM :: (Monad m) => (a -> m Bool) -> [a] -> m (Maybe a)
+firstM _ [] = return Nothing
+firstM p (x:xs) = do
+	q <- p x
+	if q
+		then return (Just x)
+		else firstM p xs
+
+{- Returns true if any value in the list satisfies the preducate,
+ - stopping once one is found. -}
+anyM :: (Monad m) => (a -> m Bool) -> [a] -> m Bool
+anyM p = liftM isJust . firstM p
+
 {- Checks if a command is available in PATH. -}
 inPath :: String -> IO Bool
-inPath command = search =<< getSearchPath
+inPath command = getSearchPath >>= anyM indir
 	where
-		search [] = return False
-		search (d:ds) = do
-			e <- doesFileExist $ d </> command
-			if e then return True else search ds
+		indir d = doesFileExist $ d </> command
