@@ -7,7 +7,7 @@
 
 module Command.Init where
 
-import Control.Monad (when)
+import Control.Monad
 
 import Command
 import qualified Annex
@@ -17,15 +17,13 @@ import Init
 	
 command :: [Command]
 command = [standaloneCommand "init" paramDesc seek
-		"initialize git-annex with repository description"]
+		"initialize git-annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: CommandStartWords
 start ws = do
-	when (null description) $
-		error "please specify a description of this repository\n"
 	showStart "init" description
 	next $ perform description
 	where

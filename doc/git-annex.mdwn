@@ -119,9 +119,7 @@ Many git-annex commands will stage changes for later `git commit` by you.
   Use this to undo an unlock command if you don't want to modify
   the files, or have made modifications you want to discard.
 
-* init description
-
-  Initializes git-annex with a description of the git repository.
+* init [description]
 
   Until a repository (or one of its remotes) has been initialized,
   git-annex will refuse to operate on it, to avoid accidentially
