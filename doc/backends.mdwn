@@ -6,11 +6,11 @@ Multiple pluggable key-value backends are supported, and a single repository
 can use different ones for different files.
 
 * `WORM` ("Write Once, Read Many") This assumes that any file with
-  the same basename, size, and modification time has the same content. So
-  files can be moved around, but should never be added to
-  or changed. This is the default, and the least expensive backend.
+  the same basename, size, and modification time has the same content.
+  This is the default, and the least expensive backend.
 * `SHA1` -- This uses a key based on a sha1 checksum. This allows
-  modifications of files to be tracked. Its need to generate checksums
+  verifying that the file content is right, and can avoid duplicates of
+  files with the same content. Its need to generate checksums
   can make it slower for large files.
 * `SHA512`, `SHA384`, `SHA256`, `SHA224` -- Like SHA1, but larger
   checksums. Mostly useful for the very paranoid, or anyone who is
@@ -28,7 +28,7 @@ files, the `.gitattributes` file can be used. The `annex.backend`
 attribute can be set to the name of the backend to use for matching files.
 
 For example, to use the SHA1 backend for sound files, which tend to be
-smallish and might be modified over time, you could set in
+smallish and might be modified or copied over time, you could set in
 `.gitattributes`:
 
 	*.mp3 annex.backend=SHA1
