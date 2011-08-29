@@ -66,7 +66,7 @@ if the file is larger than some chunk size; tried with 500 mb file and
 saw a SIGPIPE.) This means unnecessary works needs to be done, 
 and it slows down *everything*, from `git status` to `git commit`.
 **showstopper** I have sent a patch to the git mailing list to address
-this.
+this. <http://marc.info/?l=git&m=131465033512157&w=2>
 
 #### smudge
 
