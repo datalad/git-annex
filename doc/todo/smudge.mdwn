@@ -19,6 +19,26 @@ add` files, and just being able to use `git add` or `git commit -a`,
 and have it use git-annex when .gitattributes says to. Also, annexed
 files can be directly modified without having to `git annex unlock`.
 
+### design
+
+In .gitattributes, the user would put something like "* filter=git-annex".
+This way they could control which files are annexed vs added normally.
+
+(git-annex could have further controls to allow eg, passing small files
+through to regular processing. At least .gitattributes is a special case,
+it should never be annexed...)
+
+For files not configured this way, git-annex could continue to use
+its symlink method -- this would preserve backwards compatability,
+and even allow mixing the two methods in a repo as desired.
+
+To find files in the repository that are annexed, git-annex would do
+`ls-files` as now, but would check if found files have the appropriate
+filter, rather than the current symlink checks. To determine the key
+of a file, rather than reading its symlink, git-annex would need to
+look up the git blob associated with the file -- this can be done
+efficiently using the existing code in `Branch.catFile`.
+
 ### efficiency
 
 The trick is doing it efficiently. Since git a2b665d, v1.7.4.1,
@@ -30,12 +50,16 @@ This avoids it needing to read all the current file content from stdin
 when doing eg, a git status or git commit. Instead it is passed the
 filename that git is operating on, in the working directory.
 
+(The smudge script can also be provided a filename with %f, but it
+cannot directly write to the file or git gets unhappy.)
+
 So, WORM could just look at that file and easily tell if it is one
 it already knows (same mtime and size). If so, it can short-circuit and
 do nothing, file content is already cached.
 
 SHA1 has a harder job. Would not want to re-sha1 the file every time,
-probably. So it'd need a cache of file stat info, mapped to known objects.
+probably. So it'd need a local cache of file stat info, mapped to known
+objects.
 
 ### dealing with partial content availability
 
@@ -59,9 +83,10 @@ huge-smudge:
 <pre>
 #!/bin/sh
 read sha1
+file="$1"
 echo "smudging $sha1" >&2
 if [ -e ~/$sha1 ]; then
-	cat ~/$sha1
+	cat ~/$sha1 # possibly expensive copy here
 else
 	echo "$sha1 not available"
 fi
@@ -71,16 +96,15 @@ huge-clean:
 
 <pre>
 #!/bin/sh
-cat >temp
-if grep -q 'not available' temp; then
-	awk '{print $1}' temp # provide what we would if the content were avail!
-	rm temp
+temp="$1"
+if grep -q 'not available' "$temp"; then
+	awk '{print $1}' "$temp" # provide what we would if the content were avail!
 	exit 0
 fi
-sha1=`sha1sum temp | cut -d' ' -f1`
+sha1=`sha1sum "$temp" | cut -d' ' -f1`
 echo "cleaning $sha1" >&2
-ls -l temp >&2
-mv temp ~/$sha1
+ls -l "$temp" >&2
+ln -f "$temp" ~/$sha1 # can't delete temp file
 echo $sha1
 </pre>
 
@@ -94,6 +118,6 @@ in .git/config:
 
 <pre>
 [filter "huge"]
-        clean = huge-clean
-        smudge = huge-smudge
+        clean = huge-clean %f
+        smudge = huge-smudge %f
 <pre>
