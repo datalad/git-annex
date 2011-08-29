@@ -41,17 +41,16 @@ efficiently using the existing code in `Branch.catFile`.
 
 ### efficiency
 
+#### clean
+
 The trick is doing it efficiently. Since git a2b665d, v1.7.4.1,
 something like this works to provide a filename to the clean script:
 
 	git config --global filter.huge.clean huge-clean %f
 
-This avoids it needing to read all the current file content from stdin
+This could avoid it needing to read all the current file content from stdin
 when doing eg, a git status or git commit. Instead it is passed the
 filename that git is operating on, in the working directory.
-
-(The smudge script can also be provided a filename with %f, but it
-cannot directly write to the file or git gets unhappy.)
 
 So, WORM could just look at that file and easily tell if it is one
 it already knows (same mtime and size). If so, it can short-circuit and
@@ -60,6 +59,21 @@ do nothing, file content is already cached.
 SHA1 has a harder job. Would not want to re-sha1 the file every time,
 probably. So it'd need a local cache of file stat info, mapped to known
 objects.
+
+But: Even with %f, git actually passes the full file content to the clean
+filter, and if it fails to consume it all, it will crash (may only happen
+if the file is larger than some chunk size; tried with 500 mb file and 
+saw a SIGPIPE.) This means unnecessary works needs to be done, 
+and it slows down *everything*, from `git status` to `git commit`.
+**showstopper** I have sent a patch to the git mailing list to address
+this.
+
+#### smudge
+
+The smudge script can also be provided a filename with %f, but it
+cannot directly write to the file or git gets unhappy.
+
+
 
 ### dealing with partial content availability
 
@@ -82,13 +96,13 @@ huge-smudge:
 
 <pre>
 #!/bin/sh
-read sha1
+read f
 file="$1"
-echo "smudging $sha1" >&2
-if [ -e ~/$sha1 ]; then
-	cat ~/$sha1 # possibly expensive copy here
+echo "smudging $f" >&2
+if [ -e ~/$f ]; then
+	cat ~/$f # possibly expensive copy here
 else
-	echo "$sha1 not available"
+	echo "$f not available"
 fi
 </pre>
 
@@ -96,16 +110,17 @@ huge-clean:
 
 <pre>
 #!/bin/sh
-temp="$1"
-if grep -q 'not available' "$temp"; then
-	awk '{print $1}' "$temp" # provide what we would if the content were avail!
+file="$1"
+# in real life, this should be done more efficiently, not trying to read
+# the whole file content!
+if grep -q 'not available' "$file"; then
+	awk '{print $1}' "$file" # provide what we would if the content were avail!
 	exit 0
 fi
-sha1=`sha1sum "$temp" | cut -d' ' -f1`
-echo "cleaning $sha1" >&2
-ls -l "$temp" >&2
-ln -f "$temp" ~/$sha1 # can't delete temp file
-echo $sha1
+echo "cleaning $file" >&2
+ls -l "$file" >&2
+ln -f "$file" ~/$file # can't delete temp file
+echo $file
 </pre>
 
 .gitattributes:
