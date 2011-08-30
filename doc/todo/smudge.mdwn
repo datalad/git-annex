@@ -1,5 +1,18 @@
 git-annex should use smudge/clean filters.
 
+----
+
+Update: Currently, this does not look likely to work. In particular,
+the clean filter needs to consume all stdin from git, which consists of the
+entire content of the file. It cannot optimise by directly accessing
+the file in the repository, because git may be cleaning a different
+version of the file during a merge. 
+
+So every `git status` would need to read the entire content of all
+available files, and checksum them, which is too expensive.
+
+----
+
 The clean filter is run when files are staged for commit. So a user could copy
 any file into the annex, git add it, and git-annex's clean filter causes
 the file's key to be staged, while its value is added to the annex.
@@ -8,7 +21,7 @@ The smudge filter is run when files are checked out. Since git annex
 repos have partial content, this would not git annex get the file content.
 Instead, if the content is not currently available, it would need to do
 something like return empty file content. (Sadly, it cannot create a
-symlink, as git still wants to write the file afterwards.
+symlink, as git still wants to write the file afterwards.)
 
 So the nice current behavior of unavailable files being clearly missing due
 to dangling symlinks, would be lost when using smudge/clean filters.
@@ -39,7 +52,13 @@ of a file, rather than reading its symlink, git-annex would need to
 look up the git blob associated with the file -- this can be done
 efficiently using the existing code in `Branch.catFile`.
 
-### efficiency
+The clean filter would inject the file's content into the annex, and hard
+link from the annex to the file. Avoiding duplication of data.
+
+The smudge filter can't do that, so to avoid duplication of data, it
+might always create an empty file. To get the content, `git annex get`
+could be used (which would hard link it). A `post-checkout` hook might
+be used to set up hard links for all currently available content.
 
 #### clean
 
@@ -51,6 +70,8 @@ something like this works to provide a filename to the clean script:
 This could avoid it needing to read all the current file content from stdin
 when doing eg, a git status or git commit. Instead it is passed the
 filename that git is operating on, in the working directory.
+(Update: No, doesn't work; git may be cleaning a different file content
+than is currently on disk, and git requires all stdin be consumed too.)
 
 So, WORM could just look at that file and easily tell if it is one
 it already knows (same mtime and size). If so, it can short-circuit and
@@ -66,14 +87,13 @@ if the file is larger than some chunk size; tried with 500 mb file and
 saw a SIGPIPE.) This means unnecessary works needs to be done, 
 and it slows down *everything*, from `git status` to `git commit`.
 **showstopper** I have sent a patch to the git mailing list to address
-this. <http://marc.info/?l=git&m=131465033512157&w=2>
+this. <http://marc.info/?l=git&m=131465033512157&w=2> (Update: apparently
+can't be fixed.)
 
 #### smudge
 
 The smudge script can also be provided a filename with %f, but it
 cannot directly write to the file or git gets unhappy.
-
-
 
 ### dealing with partial content availability
 
@@ -111,15 +131,15 @@ huge-clean:
 <pre>
 #!/bin/sh
 file="$1"
+cat >/tmp/file
 # in real life, this should be done more efficiently, not trying to read
 # the whole file content!
-if grep -q 'not available' "$file"; then
-	awk '{print $1}' "$file" # provide what we would if the content were avail!
+if grep -q 'not available' /tmp/file; then
+	awk '{print $1}' /tmp/file # provide what we would if the content were avail!
 	exit 0
 fi
 echo "cleaning $file" >&2
-ls -l "$file" >&2
-ln -f "$file" ~/$file # can't delete temp file
+# XXX store file content here
 echo $file
 </pre>
 
