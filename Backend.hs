@@ -122,8 +122,7 @@ lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
 	where
 		unknown = error $ "unknown backend " ++ s
 maybeLookupBackendName :: String -> Maybe (Backend Annex)
-maybeLookupBackendName s =
-	if 1 /= length matches
-		then Nothing
-		else Just $ head matches
+maybeLookupBackendName s
+	| length matches == 1 = Just $ head matches
+	| otherwise = Nothing
 	where matches = filter (\b -> s == B.name b) list

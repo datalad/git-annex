@@ -137,8 +137,7 @@ compareSizes units abbrev old new
 {- Parses strings like "10 kilobytes" or "0.5tb". -}
 readSize :: [Unit] -> String -> Maybe ByteSize
 readSize units input
-	| null parsednum = Nothing
-	| null parsedunit = Nothing
+	| null parsednum || null parsedunit = Nothing
 	| otherwise = Just $ round $ number * fromIntegral multiplier
 	where
 		(number, rest) = head parsednum
