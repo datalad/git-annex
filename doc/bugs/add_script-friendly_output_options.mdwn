@@ -1,0 +1,3 @@
+I have a need to use git-annex from a larger program. It'd be great if the information output by some of the commands that is descriptive (for example, whereis) could be sent to stdout in a machine-readable format like (preferably) JSON, or XML. That way I can simply read in the output of the command and use the data directly instead of having to parse it via regexes or other such string manipulation.
+
+This could perhaps be triggered by a --json or --xml flag to the relevant commands.
