@@ -254,15 +254,8 @@ getKeysPresent' dir = do
 			levela <- dirContents dir
 			levelb <- mapM dirContents levela
 			contents <- mapM dirContents (concat levelb)
-			files <- filterM present (concat contents)
+			let files = concat contents
 			return $ mapMaybe (fileKey . takeFileName) files
-	where
-		present d = do
-			result <- try $
-				getFileStatus $ d </> takeFileName d
-			case result of
-				Right s -> return $ isRegularFile s
-				Left _ -> return False
 
 {- Things to do to record changes to content. -}
 saveState :: Annex ()
