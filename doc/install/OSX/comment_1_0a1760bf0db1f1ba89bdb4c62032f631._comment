@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://www.schleptet.net/~cfm/"
+ ip="64.30.148.100"
+ subject="comment 1"
+ date="2011-08-30T14:31:36Z"
+ content="""
+You can also use Homebrew instead of MacPorts.  Homebrew's `haskell-platform` is up-to-date, too:
+
+    brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre
+    ln -s /usr/local/include/pcre.h /usr/include/pcre.h
+
+As of this writing, however, Homebrew's `md5sha1sum` has a broken mirror.  I wound up getting that from MacPorts anyway.
+"""]]
