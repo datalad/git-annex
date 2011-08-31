@@ -80,6 +80,8 @@ checkRemoteUnused' r = do
 		showLongNote $ remoteUnusedMsg r list
 		showLongNote "\n"
 	where
+		{- This should run strictly to avoid the filterM
+		 - building many thunks containing keyLocations data. -}
 		isthere k = do
 			us <- keyLocations k
 			let !there = uuid `elem` us
