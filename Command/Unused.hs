@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Command.Unused where
 
 import Control.Monad (filterM, unless, forM_)
@@ -80,7 +82,8 @@ checkRemoteUnused' r = do
 	where
 		isthere k = do
 			us <- keyLocations k
-			return $ uuid `elem` us
+			let !there = uuid `elem` us
+			return there
 		uuid = Remote.uuid r
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()

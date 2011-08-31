@@ -5,6 +5,7 @@ git-annex (3.20110820) UNRELEASED; urgency=low
   * The wget command will now be used in preference to curl, if available.
   * init: Make description an optional parameter.
   * unused, status: Sped up by avoiding unnecessary stats of annexed files.
+  * unused --remote: Reduced memory use to 1/4th what was used before.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Aug 2011 13:41:01 -0400
 
