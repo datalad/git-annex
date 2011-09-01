@@ -131,7 +131,7 @@ checkKeyNumCopies key file numcopies = do
 	let present = length safelocations
 	if present < needed
 		then do
-			ppuuids <- Remote.prettyPrintUUIDs untrustedlocations
+			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
 			warning $ missingNote (filename file key) present needed ppuuids
 			return False
 		else return True

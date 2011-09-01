@@ -30,11 +30,14 @@ module Remote (
 ) where
 
 import Control.Monad (filterM)
+import Control.Monad.State (liftIO)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
 import Data.Maybe
 import Control.Applicative
+import Text.JSON
+import Text.JSON.Generic
 
 import Types
 import Types.Remote
@@ -44,6 +47,7 @@ import Config
 import Trust
 import LocationLog
 import Messages
+import qualified Utility.JSONStream
 import RemoteLog
 
 import qualified Remote.Git
@@ -119,23 +123,34 @@ nameToUUID n = do
 		invertMap = M.fromList . map swap . M.toList
 		swap (a, b) = (b, a)
 
-{- Pretty-prints a list of UUIDs of remotes. -}
-prettyPrintUUIDs :: [UUID] -> Annex String
-prettyPrintUUIDs uuids = do
+{- Pretty-prints a list of UUIDs of remotes, for human display.
+ -
+ - Shows descriptions from the uuid log, falling back to remote names,
+ - as some remotes may not be in the uuid log.
+ -
+ - When JSON is enabled, also generates a machine-readable description
+ - of the UUIDs. -}
+prettyPrintUUIDs :: String -> [UUID] -> Annex String
+prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< Annex.gitRepo
-	-- Show descriptions from the uuid log, falling back to remote names,
-	-- as some remotes may not be in the uuid log
 	m <- M.union <$> uuidMap <*> availMap
-	return $ unwords $ map (\u -> "\t" ++ prettify m u here ++ "\n") uuids
+	liftIO . putStr $ Utility.JSONStream.add
+		[(desc, map (jsonify m here) uuids)]
+	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
 		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
-		prettify m u here = base ++ ishere
+		findlog m u = M.findWithDefault "" u m
+		prettify m here u = base ++ ishere
 			where
 				base = if not $ null $ findlog m u
 					then u ++ "  -- " ++ findlog m u
 					else u
 				ishere = if here == u then " <-- here" else ""
-		findlog m u = M.findWithDefault "" u m
+		jsonify m here u = toJSObject
+			[ ("uuid", toJSON u)
+			, ("description", toJSON $ findlog m u)
+			, ("here", toJSON $ here == u)
+			]
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
@@ -186,8 +201,8 @@ showLocations key exclude = do
 	untrusteduuids <- trustGet UnTrusted
 	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
-	ppuuidswanted <- Remote.prettyPrintUUIDs uuidswanted
-	ppuuidsskipped <- Remote.prettyPrintUUIDs uuidsskipped
+	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
+	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
 	where
 		filteruuids l x = filter (`notElem` x) l
