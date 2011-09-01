@@ -9,7 +9,6 @@ module Messages where
 
 import Control.Monad.State (liftIO)
 import System.IO
-import Control.Monad (unless)
 import Data.String.Utils
 
 import Types
@@ -17,8 +16,10 @@ import qualified Annex
 
 verbose :: Annex () -> Annex ()
 verbose a = do
-	q <- Annex.getState Annex.quiet
-	unless q a
+	output <- Annex.getState Annex.output
+	case output of
+		Annex.NormalOutput -> a
+		_ -> return ()
 
 showStart :: String -> String -> Annex ()
 showStart command file = verbose $ liftIO $ do

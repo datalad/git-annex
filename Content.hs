@@ -23,11 +23,10 @@ module Content (
 	saveState
 ) where
 
-import System.IO.Error (try)
 import System.Directory
 import Control.Monad.State (liftIO)
 import System.Path
-import Control.Monad (when, filterM)
+import Control.Monad
 import System.Posix.Files
 import System.FilePath
 import Data.Maybe

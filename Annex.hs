@@ -10,6 +10,7 @@
 module Annex (
 	Annex,
 	AnnexState(..),
+	OutputType(..),
 	new,
 	run,
 	eval,
@@ -48,7 +49,7 @@ data AnnexState = AnnexState
 	, backends :: [Backend Annex]
 	, remotes :: [Remote Annex]
 	, repoqueue :: Queue
-	, quiet :: Bool
+	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
 	, branchstate :: BranchState
@@ -63,13 +64,15 @@ data AnnexState = AnnexState
 	, cipher :: Maybe Cipher
 	}
 
+data OutputType = NormalOutput | QuietOutput
+
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
 	, repoqueue = empty
-	, quiet = False
+	, output = NormalOutput
 	, force = False
 	, fast = False
 	, branchstate = startBranchState

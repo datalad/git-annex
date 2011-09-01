@@ -7,8 +7,6 @@
 
 module Command.Init where
 
-import Control.Monad
-
 import Command
 import qualified Annex
 import UUID
