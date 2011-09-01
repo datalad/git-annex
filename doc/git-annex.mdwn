@@ -337,12 +337,18 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * --quiet
 
-  Avoid the default verbose logging of what is done; only show errors
+  Avoid the default verbose display of what is done; only show errors
   and progress displays.
 
 * --verbose
 
-  Enable verbose logging.
+  Enable verbose display.
+
+* --json
+
+  Rather than the normal output, generate JSON. This is intended to be
+  parsed by programs that use git-annex. Each line of output is a JSON
+  object.
 
 * --debug
 

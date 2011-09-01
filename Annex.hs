@@ -64,7 +64,7 @@ data AnnexState = AnnexState
 	, cipher :: Maybe Cipher
 	}
 
-data OutputType = NormalOutput | QuietOutput
+data OutputType = NormalOutput | QuietOutput | JSONOutput
 
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState

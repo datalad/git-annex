@@ -5,7 +5,22 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Messages where
+module Messages (
+	showStart,
+	showNote,
+	showAction,
+	showProgress,
+	showSideAction,
+	showOutput,
+	showLongNote,
+	showEndOk,
+	showEndFail,
+	showEndResult,
+	showErr,
+	warning,
+	indent,
+	setupConsole
+) where
 
 import Control.Monad.State (liftIO)
 import System.IO
@@ -13,21 +28,15 @@ import Data.String.Utils
 
 import Types
 import qualified Annex
-
-verbose :: Annex () -> Annex ()
-verbose a = do
-	output <- Annex.getState Annex.output
-	case output of
-		Annex.NormalOutput -> a
-		_ -> return ()
+import qualified Messages.JSON as JSON
 
 showStart :: String -> String -> Annex ()
-showStart command file = verbose $ liftIO $ do
+showStart command file = handle (JSON.start command file) $ do
 	putStr $ command ++ " " ++ file ++ " "
 	hFlush stdout
 
 showNote :: String -> Annex ()
-showNote s = verbose $ liftIO $ do
+showNote s = handle (JSON.note s) $ do
 	putStr $ "(" ++ s ++ ") "
 	hFlush stdout
 
@@ -35,28 +44,31 @@ showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
 
 showProgress :: Annex ()
-showProgress = verbose $ liftIO $ do
+showProgress = handle q $ do
 	putStr "."
 	hFlush stdout
 
 showSideAction :: String -> Annex ()
-showSideAction s = verbose $ liftIO $ putStrLn $ "(" ++ s ++ "...)"
+showSideAction s = handle q $ putStrLn $ "(" ++ s ++ "...)"
 
 showOutput :: Annex ()
-showOutput = verbose $ liftIO $ putStr "\n"
+showOutput = handle q $ putStr "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = verbose $ liftIO $ putStr $ '\n' : indent s
+showLongNote s = handle (JSON.note s) $ putStr $ '\n' : indent s
 
 showEndOk :: Annex ()
-showEndOk = verbose $ liftIO $ putStrLn "ok"
+showEndOk = showEndResult True
 
 showEndFail :: Annex ()
-showEndFail = verbose $ liftIO $ putStrLn "failed"
+showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult True = showEndOk
-showEndResult False = showEndFail
+showEndResult b = handle (JSON.end b) $ putStrLn msg
+	where
+		msg
+			| b = "ok"
+			| otherwise = "failed"
 
 showErr :: (Show a) => a -> Annex ()
 showErr e = liftIO $ do
@@ -65,7 +77,7 @@ showErr e = liftIO $ do
 
 warning :: String -> Annex ()
 warning w = do
-	verbose $ liftIO $ putStr "\n"
+	handle q $ putStr "\n"
 	liftIO $ do
 		hFlush stdout
 		hPutStrLn stderr $ indent w
@@ -85,3 +97,14 @@ setupConsole :: IO ()
 setupConsole = do
 	hSetBinaryMode stdout True
 	hSetBinaryMode stderr True
+
+handle :: IO () -> IO () -> Annex ()
+handle json normal = do
+	output <- Annex.getState Annex.output
+	case output of
+		Annex.NormalOutput -> liftIO normal
+		Annex.QuietOutput -> q
+		Annex.JSONOutput -> liftIO json
+
+q :: Monad m => m ()
+q = return ()

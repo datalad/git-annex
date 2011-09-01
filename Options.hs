@@ -30,6 +30,8 @@ commonOptions =
 		"avoid verbose output"
 	, Option ['v'] ["verbose"] (NoArg (setoutput Annex.NormalOutput))
 		"allow verbose output (default)"
+	, Option ['j'] ["json"] (NoArg (setoutput Annex.JSONOutput))
+		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg (setdebug))
 		"show debug messages"
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
