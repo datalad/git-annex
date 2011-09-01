@@ -13,6 +13,7 @@ This could perhaps be triggered by a --json or --xml flag to the relevant comman
 >    notes and are of course not machine readable, and subject to change.
 >  * Output of helper commands like rsync is not diverted away, and
 >    could clutter up the json output badly. Should only affect commands
->    that transfer data.
+>    that transfer data. And AFAICS, wget and rsync both output their
+>    progress displays to stderr, so shouldn't be a problem.
 > 
 > --[[Joey]] 
