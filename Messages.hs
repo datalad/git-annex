@@ -19,12 +19,14 @@ module Messages (
 	showErr,
 	warning,
 	indent,
+	maybeShowJSON,
 	setupConsole
 ) where
 
 import Control.Monad.State (liftIO)
 import System.IO
 import Data.String.Utils
+import Text.JSON
 
 import Types
 import qualified Annex
@@ -105,6 +107,10 @@ handle json normal = do
 		Annex.NormalOutput -> liftIO normal
 		Annex.QuietOutput -> q
 		Annex.JSONOutput -> liftIO json
+
+{- Shows a JSON value only when in json mode. -}
+maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
+maybeShowJSON v = handle (JSON.add v) q
 
 q :: Monad m => m ()
 q = return ()

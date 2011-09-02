@@ -8,8 +8,11 @@
 module Messages.JSON (
 	start,
 	end,
-	note
+	note,
+	add
 ) where
+
+import Text.JSON
 
 import qualified Utility.JSONStream as Stream
 
@@ -20,4 +23,7 @@ end :: Bool -> IO ()
 end b = putStr $ Stream.add [("success", b)] ++ Stream.end
 
 note :: String -> IO ()
-note s = putStr $ Stream.add [("note", s)]
+note s = add [("note", s)]
+
+add :: JSON a => [(String, a)] -> IO ()
+add v = putStr $ Stream.add v

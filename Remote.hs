@@ -30,7 +30,6 @@ module Remote (
 ) where
 
 import Control.Monad (filterM)
-import Control.Monad.State (liftIO)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
@@ -47,7 +46,6 @@ import Config
 import Trust
 import LocationLog
 import Messages
-import qualified Utility.JSONStream
 import RemoteLog
 
 import qualified Remote.Git
@@ -134,8 +132,7 @@ prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< Annex.gitRepo
 	m <- M.union <$> uuidMap <*> availMap
-	liftIO . putStr $ Utility.JSONStream.add
-		[(desc, map (jsonify m here) uuids)]
+	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
 		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
