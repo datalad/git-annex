@@ -1,4 +1,4 @@
-git-annex (3.20110820) UNRELEASED; urgency=low
+git-annex (3.20110902) unstable; urgency=low
 
   * Set EMAIL when running test suite so that git does not need to be
     configured first. Closes: #638998
@@ -8,7 +8,7 @@ git-annex (3.20110820) UNRELEASED; urgency=low
   * unused --remote: Reduced memory use to 1/4th what was used before.
   * Add --json switch, to produce machine-consumable output.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 23 Aug 2011 13:41:01 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Sep 2011 21:20:37 -0400
 
 git-annex (3.20110819) unstable; urgency=low
 
