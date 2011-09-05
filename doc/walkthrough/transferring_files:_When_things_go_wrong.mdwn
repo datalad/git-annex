@@ -15,4 +15,3 @@ it:
 	# sudo mount /media/usb
 	# git annex get video/hackity_hack_and_kaxxt.mov
 	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok
-	# git commit -a -m "got a video I want to rewatch on the plane"
