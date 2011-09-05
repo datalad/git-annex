@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="DavidEdmondson"
+ subject="Is it necessary to commit after the 'drop'?"
+ date="2011-09-05T15:43:25Z"
+ content="""
+In fact is it possible? Nothing changed as far as git is concerned.
+
+"""]]
