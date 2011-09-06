@@ -1,4 +1,4 @@
-git-annex (3.20110903) UNRELEASED; urgency=low
+git-annex (3.20110906) unstable; urgency=low
 
   * Improve display of newlines around error and warning messages.
   * Fix Makefile to work with cabal again.
