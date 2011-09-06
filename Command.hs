@@ -103,7 +103,6 @@ doCommand = start
 		stage a b = b >>= a
 		success = return True
 		failure = do
-			showOutput -- avoid clutter around error message
 			showEndFail
 			return False
 

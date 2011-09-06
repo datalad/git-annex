@@ -73,16 +73,17 @@ showEndResult b = handle (JSON.end b) $ putStrLn msg
 			| otherwise = "failed"
 
 showErr :: (Show a) => a -> Annex ()
-showErr e = liftIO $ do
-	hFlush stdout
-	hPutStrLn stderr $ "git-annex: " ++ show e
+showErr e = warning' $ "git-annex: " ++ show e
 
 warning :: String -> Annex ()
-warning w = do
+warning w = warning' (indent w)
+
+warning' :: String -> Annex ()
+warning' w = do
 	handle q $ putStr "\n"
 	liftIO $ do
 		hFlush stdout
-		hPutStrLn stderr $ indent w
+		hPutStrLn stderr w
 
 indent :: String -> String
 indent s = join "\n" $ map (\l -> "  " ++ l) $ lines s

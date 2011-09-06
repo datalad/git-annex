@@ -1,3 +1,9 @@
+git-annex (3.20110903) UNRELEASED; urgency=low
+
+  * Improve display of newlines around error and warning messages.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 13:45:16 -0400
+
 git-annex (3.20110902) unstable; urgency=low
 
   * Set EMAIL when running test suite so that git does not need to be
