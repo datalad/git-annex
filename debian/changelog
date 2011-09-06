@@ -1,3 +1,10 @@
+git-annex (3.20110907) UNRELEASED; urgency=low
+
+  * whereis: Show untrusted locations separately and do not include in
+    location count.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 16:59:15 -0400
+
 git-annex (3.20110906) unstable; urgency=low
 
   * Improve display of newlines around error and warning messages.

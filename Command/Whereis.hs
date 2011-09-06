@@ -7,11 +7,15 @@
 
 module Command.Whereis where
 
+import Control.Monad
+import Data.List
+
 import LocationLog
 import Command
 import Messages
 import Remote
 import Types
+import Trust
 
 command :: [Command]
 command = [repoCommand "whereis" (paramOptional $ paramRepeating paramPath) seek
@@ -27,16 +31,21 @@ start file = isAnnexed file $ \(key, _) -> do
 
 perform :: Key -> CommandPerform
 perform key = do
-	uuids <- keyLocations key
-	let num = length uuids
+	locations <- keyLocations key
+	untrusted <- trustGet UnTrusted
+	let untrustedlocations = intersect untrusted locations
+	let safelocations = filter (`notElem` untrusted) locations
+	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
-	if null uuids
-		then stop
-		else do
-			pp <- prettyPrintUUIDs "whereis" uuids
-			showLongNote pp
-			showOutput
-			next $ return True
+	pp <- prettyPrintUUIDs "whereis" safelocations
+	unless (null safelocations) $
+		showLongNote pp
+	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
+	unless (null untrustedlocations) $
+		showLongNote $ untrustedheader ++ pp'
+	unless (null locations) showOutput
+	if null safelocations then stop else next $ return True
 	where
 		copiesplural 1 = "copy"
 		copiesplural _ = "copies"
+		untrustedheader = "The following untrusted locations may also have copies:\n"
