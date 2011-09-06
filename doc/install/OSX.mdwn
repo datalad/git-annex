@@ -4,26 +4,12 @@ Install Haskel Platform from [[http://hackage.haskell.org/platform/mac.html]]. T
 sudo port install git-core ossp-uuid md5sha1sum coreutils pcre
 
 sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that allows pcre-light to find pcre
-sudo cabal update
-sudo cabal install missingh
-sudo cabal install utf8-string
-sudo cabal install pcre-light
-sudo cabal install quickcheck  
-sudo cabal install SHA
-sudo cabal install dataenc
-sudo cabal install monad-control
-sudo cabal install HTTP
-sudo cabal install json
-sudo cabal install hS3 # optional
 
 # optional: this will enable the gnu tools, (to give sha224sum etc..., it does not override the BSD userland)
 export PATH=$PATH:/opt/local/libexec/gnubin
 
-git clone  git://git-annex.branchable.com/
-
-cd git-annex
-make
-sudo make install
+sudo cabal update
+sudo cabal install git-annex
 </pre>
 
 Originally posted by Jon at <https://gist.github.com/671785> --[[Joey]], modified by [[kristianrumberg]]
