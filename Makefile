@@ -29,7 +29,9 @@ Remote/S3.o: Remote/S3.hs
 		echo "** building without S3 support"; \
 	fi
 
-$(bins): $(sources)
+sources: $(sources)
+
+$(bins): sources
 	$(GHCMAKE) $@
 
 git-annex.1: doc/git-annex.mdwn

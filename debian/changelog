@@ -1,6 +1,7 @@
 git-annex (3.20110903) UNRELEASED; urgency=low
 
   * Improve display of newlines around error and warning messages.
+  * Fix Makefile to work with cabal again.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 13:45:16 -0400
 
