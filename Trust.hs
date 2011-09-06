@@ -9,11 +9,13 @@ module Trust (
 	TrustLevel(..),
 	trustLog,
 	trustGet,
-	trustSet
+	trustSet,
+	trustPartition
 ) where
 
 import Control.Monad.State
 import qualified Data.Map as M
+import Data.List
 
 import Types.TrustLevel
 import qualified Branch
@@ -32,7 +34,7 @@ trustGet level = do
 	return $ M.keys $ M.filter (== level) m
 
 {- Read the trustLog into a map, overriding with any
- - values from forcetrust -}
+ - values from forcetrust. The map is cached for speed. -}
 trustMap :: Annex TrustMap
 trustMap = do
 	cached <- Annex.getState Annex.trustmap
@@ -70,3 +72,9 @@ trustSet uuid level = do
         where
                 serialize m = unlines $ map showpair $ M.toList m
 		showpair (u, t) = u ++ " " ++ show t
+
+{- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
+trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
+trustPartition level ls = do
+	candidates <- trustGet level
+	return $ partition (`elem` candidates) ls

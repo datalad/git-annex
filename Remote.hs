@@ -181,7 +181,7 @@ keyPossibilities' withtrusted key = do
 	let validuuids = filter (/= u) uuids
 
 	-- note that validuuids is assumed to not have dups
-	let validtrusteduuids = intersect validuuids trusted
+	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
 	allremotes <- genList

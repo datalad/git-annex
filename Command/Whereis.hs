@@ -8,7 +8,6 @@
 module Command.Whereis where
 
 import Control.Monad
-import Data.List
 
 import LocationLog
 import Command
@@ -32,9 +31,7 @@ start file = isAnnexed file $ \(key, _) -> do
 perform :: Key -> CommandPerform
 perform key = do
 	locations <- keyLocations key
-	untrusted <- trustGet UnTrusted
-	let untrustedlocations = intersect untrusted locations
-	let safelocations = filter (`notElem` untrusted) locations
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations
 	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
 	pp <- prettyPrintUUIDs "whereis" safelocations

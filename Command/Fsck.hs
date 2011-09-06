@@ -10,7 +10,6 @@ module Command.Fsck where
 import Control.Monad (when)
 import Control.Monad.State (liftIO)
 import System.Directory
-import Data.List
 import System.Posix.Files
 
 import Command
@@ -124,10 +123,7 @@ checkKeySize key = do
 checkKeyNumCopies :: Key -> Maybe FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
-	locations <- keyLocations key
-	untrusted <- trustGet UnTrusted
-	let untrustedlocations = intersect untrusted locations
-	let safelocations = filter (`notElem` untrusted) locations
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
 	let present = length safelocations
 	if present < needed
 		then do
