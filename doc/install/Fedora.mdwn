@@ -11,6 +11,7 @@ sudo cabal install SHA
 sudo cabal install dataenc
 sudo cabal install monad-control
 sudo cabal install HTTP
+sudo cabal install json
 sudo cabal install hS3
 
 git clone git://git-annex.branchable.com/

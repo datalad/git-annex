@@ -13,6 +13,7 @@ sudo cabal install SHA
 sudo cabal install dataenc
 sudo cabal install monad-control
 sudo cabal install HTTP
+sudo cabal install json
 sudo cabal install hS3 # optional
 
 # optional: this will enable the gnu tools, (to give sha224sum etc..., it does not override the BSD userland)
