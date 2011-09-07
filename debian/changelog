@@ -3,6 +3,8 @@ git-annex (3.20110907) UNRELEASED; urgency=low
   * whereis: Show untrusted locations separately and do not include in
     location count.
   * Fix build without S3.
+  * addurl: Always use whole url as destination filename, rather than
+    only its file component.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 16:59:15 -0400
 

@@ -7,9 +7,10 @@
 
 module Command.AddUrl where
 
-import Control.Monad.State (liftIO, when)
+import Control.Monad.State
 import Network.URI
 import Data.String.Utils
+import Data.Maybe
 import System.Directory
 
 import Command
@@ -24,6 +25,7 @@ import Content
 import PresenceLog
 import Locations
 import Utility.Path
+import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "addurl" paramPath seek "add urls to annex"]
@@ -75,20 +77,10 @@ nodownload url file = do
 
 url2file :: URI -> IO FilePath
 url2file url = do
-	let parts = filter safe $ split "/" $ uriPath url
-	if null parts
-		then fallback
-		else do
-			let file = last parts
-			e <- doesFileExist file
-			if e then fallback else return file
+	whenM (doesFileExist file) $
+		error $ "already have this url in " ++ file
+	return file
 	where
-		fallback = do
-			let file = replace "/" "_" $ show url
-			e <- doesFileExist file
-			when e $ error "already have this url"
-			return file
-		safe "" = False
-		safe "." = False
-		safe ".." = False
-		safe _ = True
+		file = escape $ uriRegName auth ++ uriPath url ++ uriQuery url
+		escape = replace "/?" $ repeat '_'
+		auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
