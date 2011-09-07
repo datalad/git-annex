@@ -2,6 +2,7 @@ git-annex (3.20110907) UNRELEASED; urgency=low
 
   * whereis: Show untrusted locations separately and do not include in
     location count.
+  * Fix build without S3.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 16:59:15 -0400
 
