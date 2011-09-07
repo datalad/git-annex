@@ -335,10 +335,8 @@ urlHostUser r = urlAuthPart uriUserInfo r ++ urlAuthPart uriRegName' r
 
 {- The full authority portion an URL repo. (ie, "user@host:port") -}
 urlAuthority :: Repo -> String
-urlAuthority Repo { location = Url u } = uriUserInfo a ++ uriRegName' a ++ uriPort a
-	where
-		a = fromMaybe (error $ "bad url " ++ show u) (uriAuthority u)
-urlAuthority repo = assertUrl repo $ error "internal"
+urlAuthority r = flip urlAuthPart r $ \a ->
+	uriUserInfo a ++ uriRegName' a ++ uriPort a
 
 {- Applies a function to extract part of the uriAuthority of an URL repo. -}
 urlAuthPart :: (URIAuth -> a) -> Repo -> a
