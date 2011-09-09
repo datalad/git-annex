@@ -57,7 +57,7 @@ showOutput :: Annex ()
 showOutput = handle q $ putStr "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handle (JSON.note s) $ putStr $ '\n' : indent s
+showLongNote s = handle (JSON.note s) $ putStrLn $ '\n' : indent s
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True

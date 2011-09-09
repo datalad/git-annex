@@ -57,9 +57,7 @@ checkUnused = do
 	where
 		list file msg l c = do
 			let unusedlist = number c l
-			unless (null l) $ do
-				showLongNote $ msg unusedlist
-				showLongNote "\n"
+			unless (null l) $ showLongNote $ msg unusedlist
 			writeUnusedFile file unusedlist
 			return $ c + length l
 
@@ -76,9 +74,7 @@ checkRemoteUnused' r = do
 	let remoteunused = remotehas `exclude` referenced
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
-	unless (null remoteunused) $ do
-		showLongNote $ remoteUnusedMsg r list
-		showLongNote "\n"
+	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
 	where
 		{- This should run strictly to avoid the filterM
 		 - building many thunks containing keyLocations data. -}

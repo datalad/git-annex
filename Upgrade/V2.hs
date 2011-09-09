@@ -123,7 +123,6 @@ push = do
 			showLongNote $
 				"git-annex branch created\n" ++
 				"Be sure to push this branch when pushing to remotes.\n"
-			showOutput
 
 {- Old .gitattributes contents, not needed anymore. -}
 attrLines :: [String]

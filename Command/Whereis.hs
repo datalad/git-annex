@@ -40,7 +40,6 @@ perform key = do
 	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
 	unless (null untrustedlocations) $
 		showLongNote $ untrustedheader ++ pp'
-	unless (null locations) showOutput
 	if null safelocations then stop else next $ return True
 	where
 		copiesplural 1 = "copy"
