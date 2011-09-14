@@ -34,10 +34,8 @@ start (file, attr) = isAnnexed file $ \(key, _) -> do
 	if present
 		then do
 			showStart "drop" file
-			next $ perform key numcopies
+			next $ perform key $ readMaybe attr
 		else stop
-	where
-		numcopies = readMaybe attr :: Maybe Int
 
 perform :: Key -> Maybe Int -> CommandPerform
 perform key numcopies = do

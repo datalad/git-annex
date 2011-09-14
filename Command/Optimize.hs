@@ -24,7 +24,7 @@ seek = [withNumCopies start]
 
 start :: CommandStartAttrFile
 start p@(file, attr) = notBareRepo $ isAnnexed file $ \(key, _) -> do
-	needed <- getNumCopies numcopies
+	needed <- getNumCopies $ readMaybe attr
 	(_, safelocations) <- trustPartition UnTrusted =<< keyLocations key
 	dispatch needed (length safelocations)
 	where
@@ -32,4 +32,3 @@ start p@(file, attr) = notBareRepo $ isAnnexed file $ \(key, _) -> do
 			| present < needed = Command.Get.start file
 			| present > needed = Command.Drop.start p
 			| otherwise = stop
-		numcopies = readMaybe attr :: Maybe Int

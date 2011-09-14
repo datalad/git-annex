@@ -39,9 +39,7 @@ seek = [withNumCopies start]
 start :: CommandStartAttrFile
 start (file, attr) = notBareRepo $ isAnnexed file $ \(key, backend) -> do
 	showStart "fsck" file
-	next $ perform key file backend numcopies
-	where
-		numcopies = readMaybe attr :: Maybe Int
+	next $ perform key file backend $ readMaybe attr
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
 perform key file backend numcopies = do
