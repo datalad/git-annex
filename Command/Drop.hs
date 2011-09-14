@@ -24,7 +24,7 @@ command = [repoCommand "drop" paramPath seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
-seek = [withAttrFilesInGit "annex.numcopies" start]
+seek = [withNumCopies start]
 
 {- Indicates a file's content is not wanted anymore, and should be removed
  - if it's safe to do so. -}
