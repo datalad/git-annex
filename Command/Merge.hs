@@ -13,7 +13,7 @@ import Messages
 
 command :: [Command]
 command = [repoCommand "merge" paramNothing seek
-		"auto-merges remote changes into the git-annex branch"]
+		"auto-merge remote changes into git-annex branch"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]
