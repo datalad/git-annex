@@ -34,7 +34,7 @@ command = [repoCommand "fsck" (paramOptional $ paramRepeating paramPath) seek
 	"check for problems"]
 
 seek :: [CommandSeek]
-seek = [withAttrFilesInGit "annex.numcopies" start]
+seek = [withNumCopies start]
 
 start :: CommandStartAttrFile
 start (file, attr) = notBareRepo $ isAnnexed file $ \(key, backend) -> do

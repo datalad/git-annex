@@ -157,6 +157,11 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   To avoid expensive checksum calculations, specify --fast
 
+* optimize [path ...]
+  
+  Either gets or drops file content, as needed, to work toward meeting the
+  configured numcopies setting.
+
 * unused
 
   Checks the annex for data that does not correspond to any files present

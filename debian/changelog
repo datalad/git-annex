@@ -5,6 +5,8 @@ git-annex (3.20110907) UNRELEASED; urgency=low
   * Fix build without S3.
   * addurl: Always use whole url as destination filename, rather than
     only its file component.
+  * optimize: A new subcommand that either gets or drops file content
+    as needed to work toward meeting the configured numcopies setting.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 16:59:15 -0400
 

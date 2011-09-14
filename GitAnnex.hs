@@ -34,6 +34,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.Fsck
+import qualified Command.Optimize
 import qualified Command.Unused
 import qualified Command.DropUnused
 import qualified Command.Unlock
@@ -77,6 +78,7 @@ cmds = concat
 	, Command.SetKey.command
 	, Command.Fix.command
 	, Command.Fsck.command
+	, Command.Optimize.command
 	, Command.Unused.command
 	, Command.DropUnused.command
 	, Command.Find.command

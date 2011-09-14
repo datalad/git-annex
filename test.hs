@@ -93,6 +93,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_unannex
 	, test_drop
 	, test_get
+	, test_optimize
 	, test_move
 	, test_copy
 	, test_lock
@@ -215,6 +216,17 @@ test_get = "git-annex get" ~: TestCase $ intmpclonerepo $ do
 	git_annex "get" ["-q", ingitfile] @? "get ingitfile should be no-op"
 	inmainrepo $ unannexed ingitfile
 	unannexed ingitfile
+
+test_optimize :: Test
+test_optimize = "git-annex optimize" ~: TestCase $ intmpclonerepo $ do
+	inmainrepo $ annexed_present annexedfile
+	annexed_notpresent annexedfile
+	git_annex "optimize" ["-q", annexedfile, "--numcopies=2"] @? "optimize of file failed"
+	inmainrepo $ annexed_present annexedfile
+	annexed_present annexedfile
+	git_annex "optimize" ["-q", annexedfile] @? "optimize of file failed"
+	inmainrepo $ annexed_present annexedfile
+	annexed_notpresent annexedfile
 
 test_move :: Test
 test_move = "git-annex move" ~: TestCase $ intmpclonerepo $ do

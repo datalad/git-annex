@@ -131,6 +131,8 @@ withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	liftM (map a) $ liftIO $ Git.checkAttr repo attr files
+withNumCopies :: CommandSeekAttrFiles
+withNumCopies = withAttrFilesInGit "annex.numcopies"
 withBackendFilesInGit :: CommandSeekBackendFiles
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo
