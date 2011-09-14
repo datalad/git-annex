@@ -30,8 +30,7 @@ start file = isAnnexed file $ \(key, _) -> do
 
 perform :: Key -> CommandPerform
 perform key = do
-	locations <- keyLocations key
-	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
 	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
 	pp <- prettyPrintUUIDs "whereis" safelocations
