@@ -34,6 +34,7 @@ start (file, attr) = isAnnexed file $ \(key, _) -> do
 			case from of
 				Nothing -> next $ perform key
 				Just name -> do
+					-- get --from = copy --from
 					src <- Remote.byName name
 					next $ Command.Move.fromPerform src False key
 	where
