@@ -59,9 +59,6 @@ type CommandStartKey = Key -> CommandStart
 type BackendFile = (FilePath, Maybe (Backend Annex))
 type CommandSeekBackendFiles = CommandStartBackendFile -> CommandSeek
 type CommandStartBackendFile = BackendFile -> CommandStart
-type AttrFile = (FilePath, String)
-type CommandSeekAttrFiles = CommandStartAttrFile -> CommandSeek
-type CommandStartAttrFile = AttrFile -> CommandStart
 type CommandSeekNothing = CommandStart -> CommandSeek
 type CommandStartNothing = CommandStart
 
@@ -129,14 +126,18 @@ withFilesInGit a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	liftM (map a) $ filterFiles files
-withAttrFilesInGit :: String -> CommandSeekAttrFiles
+withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandSeek
 withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	files' <- filterFiles files
 	liftM (map a) $ liftIO $ Git.checkAttr repo attr files'
-withNumCopies :: CommandSeekAttrFiles
-withNumCopies = withAttrFilesInGit "annex.numcopies"
+withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
+withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
+	where
+		go (file, v) = do
+			let numcopies = readMaybe v
+			a file numcopies
 withBackendFilesInGit :: CommandSeekBackendFiles
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo

@@ -13,7 +13,6 @@ import qualified Remote
 import Types
 import Content
 import Messages
-import Utility
 import qualified Command.Move
 
 command :: [Command]
@@ -23,8 +22,8 @@ command = [repoCommand "get" paramPaths seek
 seek :: [CommandSeek]
 seek = [withNumCopies start]
 
-start :: CommandStartAttrFile
-start (file, attr) = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = isAnnexed file $ \(key, _) -> do
 	inannex <- inAnnex key
 	if inannex
 		then stop
@@ -37,8 +36,6 @@ start (file, attr) = isAnnexed file $ \(key, _) -> do
 					-- get --from = copy --from
 					src <- Remote.byName name
 					next $ Command.Move.fromPerform src False key
-	where
-		numcopies = readMaybe attr
 
 perform :: Key -> CommandPerform
 perform key = do

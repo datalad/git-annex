@@ -20,7 +20,6 @@ import qualified Types.Key
 import UUID
 import Types
 import Messages
-import Utility
 import Content
 import LocationLog
 import Locations
@@ -35,10 +34,10 @@ command = [repoCommand "fsck" paramPaths seek "check for problems"]
 seek :: [CommandSeek]
 seek = [withNumCopies start]
 
-start :: CommandStartAttrFile
-start (file, attr) = notBareRepo $ isAnnexed file $ \(key, backend) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = notBareRepo $ isAnnexed file $ \(key, backend) -> do
 	showStart "fsck" file
-	next $ perform key file backend $ readMaybe attr
+	next $ perform key file backend numcopies
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
 perform key file backend numcopies = do

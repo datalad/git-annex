@@ -14,7 +14,6 @@ import LocationLog
 import Types
 import Content
 import Messages
-import Utility
 import Utility.Conditional
 import Trust
 import Config
@@ -28,16 +27,14 @@ seek = [withNumCopies start]
 
 {- Indicates a file's content is not wanted anymore, and should be removed
  - if it's safe to do so. -}
-start :: CommandStartAttrFile
-start (file, attr) = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = isAnnexed file $ \(key, _) -> do
 	present <- inAnnex key
 	if present
 		then autoCopies key (>) numcopies $ do
 			showStart "drop" file
 			next $ perform key numcopies
 		else stop
-	where
-		numcopies = readMaybe attr
 
 perform :: Key -> Maybe Int -> CommandPerform
 perform key numcopies = do
