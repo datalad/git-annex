@@ -36,3 +36,6 @@ work toward having two copies of your files.
 	whereis other_file (2 copies)
 		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
 		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
+
+The --auto option can also be used with the copy command,
+again this lets git-annex decide whether to actually copy content.
