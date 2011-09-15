@@ -29,13 +29,15 @@ seek = [withNumCopies start]
 {- Indicates a file's content is not wanted anymore, and should be removed
  - if it's safe to do so. -}
 start :: CommandStartAttrFile
-start (file, numcopies) = isAnnexed file $ \(key, _) -> do
+start (file, attr) = isAnnexed file $ \(key, _) -> do
 	present <- inAnnex key
 	if present
-		then do
+		then autoCopies key (>) numcopies $ do
 			showStart "drop" file
-			next $ perform key $ readMaybe numcopies
+			next $ perform key numcopies
 		else stop
+	where
+		numcopies = readMaybe attr
 
 perform :: Key -> Maybe Int -> CommandPerform
 perform key numcopies = do

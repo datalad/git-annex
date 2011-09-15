@@ -13,6 +13,7 @@ import qualified Remote
 import Types
 import Content
 import Messages
+import Utility
 import qualified Command.Move
 
 command :: [Command]
@@ -20,14 +21,14 @@ command = [repoCommand "get" paramPath seek
 		"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withNumCopies start]
 
-start :: CommandStartString
-start file = isAnnexed file $ \(key, _) -> do
+start :: CommandStartAttrFile
+start (file, attr) = isAnnexed file $ \(key, _) -> do
 	inannex <- inAnnex key
 	if inannex
 		then stop
-		else do
+		else autoCopies key (<) numcopies $ do
 			showStart "get" file
 			from <- Annex.getState Annex.fromremote
 			case from of
@@ -35,6 +36,8 @@ start file = isAnnexed file $ \(key, _) -> do
 				Just name -> do
 					src <- Remote.byName name
 					next $ Command.Move.fromPerform src False key
+	where
+		numcopies = readMaybe attr
 
 perform :: Key -> CommandPerform
 perform key = do

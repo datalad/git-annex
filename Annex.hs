@@ -52,6 +52,7 @@ data AnnexState = AnnexState
 	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
+	, auto :: Bool
 	, branchstate :: BranchState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
@@ -75,6 +76,7 @@ newState gitrepo = AnnexState
 	, output = NormalOutput
 	, force = False
 	, fast = False
+	, auto = False
 	, branchstate = startBranchState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing

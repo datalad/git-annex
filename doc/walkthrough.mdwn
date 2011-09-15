@@ -18,6 +18,6 @@ A walkthrough of the basic features of git-annex.
 	fsck:_verifying_your_data
 	fsck:_when_things_go_wrong
 	backups
-	optimizing_repositories
+	automatically_managing_content
 	more
 """]]

@@ -26,6 +26,8 @@ commonOptions =
 		"allow actions that may lose annexed data"
 	, Option ['F'] ["fast"] (NoArg (setfast True))
 		"avoid slow operations"
+	, Option ['a'] ["auto"] (NoArg (setauto True))
+		"automatic mode"
 	, Option ['q'] ["quiet"] (NoArg (setoutput Annex.QuietOutput))
 		"avoid verbose output"
 	, Option ['v'] ["verbose"] (NoArg (setoutput Annex.NormalOutput))
@@ -40,6 +42,7 @@ commonOptions =
 	where
 		setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 		setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
+		setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
 		setoutput v = Annex.changeState $ \s -> s { Annex.output = v }
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $

@@ -26,6 +26,9 @@ import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Utility
 import Types.Key
+import Trust
+import LocationLog
+import Config
 
 {- A command runs in four stages.
  -
@@ -276,3 +279,19 @@ preserveOrder orig new = collect orig new
  -}
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
 runPreserveOrder a files = preserveOrder files <$> a files
+
+{- Used for commands that have an auto mode that checks the number of known
+ - copies of a key.
+ -
+ - In auto mode, first checks that the number of known
+ - copies of the key is > or < than the numcopies setting, before running
+ - the action. -}
+autoCopies :: Key -> (Int -> Int -> Bool) -> Maybe Int -> CommandStart -> CommandStart
+autoCopies key vs numcopiesattr a = do
+	auto <- Annex.getState Annex.auto
+	if auto
+		then do
+			needed <- getNumCopies numcopiesattr
+			(_, have) <- trustPartition UnTrusted =<< keyLocations key
+			if length have `vs` needed then a else stop
+		else a
