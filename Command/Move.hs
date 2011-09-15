@@ -18,6 +18,7 @@ import Content
 import qualified Remote
 import UUID
 import Messages
+import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "move" paramPaths seek
@@ -32,6 +33,7 @@ seek = [withFilesInGit $ start True]
  - moving data in the key-value backend. -}
 start :: Bool -> CommandStartString
 start move file = do
+	noAuto
 	to <- Annex.getState Annex.toremote
 	from <- Annex.getState Annex.fromremote
 	case (from, to) of
@@ -43,6 +45,9 @@ start move file = do
 			src <- Remote.byName name
 			fromStart src move file
 		(_ ,  _) -> error "only one of --from or --to can be specified"
+	where
+		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
+			"--auto is not supported for move"
 
 showMoveAction :: Bool -> FilePath -> Annex ()
 showMoveAction True file = showStart "move" file
