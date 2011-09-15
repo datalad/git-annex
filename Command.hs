@@ -1,4 +1,4 @@
-{- git-annex commands
+{- git-annex command infrastructure
  -
  - Copyright 2010 Joey Hess <joey@kitenet.net>
  -
@@ -29,6 +29,7 @@ import Types.Key
 import Trust
 import LocationLog
 import Config
+import Backend
 
 {- A command runs in four stages.
  -
@@ -48,8 +49,6 @@ type CommandPerform = Annex (Maybe CommandCleanup)
 {- 3. The cleanup stage is run only if the perform stage succeeds, and it
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
-
-type BackendFile = (FilePath, Maybe (Backend Annex))
 
 data Command = Command {
 	cmdusesrepo :: Bool,

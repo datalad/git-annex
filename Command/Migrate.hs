@@ -23,6 +23,7 @@ import Content
 import Messages
 import Utility.Conditional
 import qualified Command.Add
+import Backend
 
 command :: [Command]
 command = [repoCommand "migrate" paramPaths seek
@@ -32,7 +33,7 @@ seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]
 
 start :: BackendFile -> CommandStart
-start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
+start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
 	if (newbackend /= oldbackend || upgradableKey key) && exists

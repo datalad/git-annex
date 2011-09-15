@@ -10,6 +10,7 @@ module Command.PreCommit where
 import Command
 import qualified Command.Add
 import qualified Command.Fix
+import Backend
 
 command :: [Command]
 command = [repoCommand "pre-commit" paramPaths seek "run by git pre-commit hook"]
@@ -24,7 +25,7 @@ start :: BackendFile -> CommandStart
 start p = next $ perform p
 
 perform :: BackendFile -> CommandPerform
-perform pair@(file, _) = do
+perform pair@(_, file) = do
 	ok <- doCommand $ Command.Add.start pair
 	if ok
 		then next $ return True

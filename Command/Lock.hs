@@ -14,6 +14,7 @@ import Command
 import Messages
 import qualified AnnexQueue
 import Utility.SafeCommand
+import Backend
 	
 command :: [Command]
 command = [repoCommand "lock" paramPaths seek "undo unlock command"]
@@ -23,7 +24,7 @@ seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
 
 {- Undo unlock -}
 start :: BackendFile -> CommandStart
-start (file, _) = do
+start (_, file) = do
 	showStart "lock" file
 	next $ perform file
 

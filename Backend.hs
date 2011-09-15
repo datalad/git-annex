@@ -6,6 +6,7 @@
  -}
 
 module Backend (
+	BackendFile,
 	list,
 	orderedList,
 	genKey,
@@ -101,20 +102,22 @@ lookupFile file = do
 				skip = "skipping " ++ file ++ 
 					" (unknown backend " ++ bname ++ ")"
 
+type BackendFile = (Maybe (Backend Annex), FilePath)
+
 {- Looks up the backends that should be used for each file in a list.
  - That can be configured on a per-file basis in the gitattributes file.
  -}
-chooseBackends :: [FilePath] -> Annex [(FilePath, Maybe (Backend Annex))]
+chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = do
 	g <- Annex.gitRepo
 	forced <- Annex.getState Annex.forcebackend
 	if forced /= Nothing
 		then do
 			l <- orderedList
-			return $ map (\f -> (f, Just $ head l)) fs
+			return $ map (\f -> (Just $ head l, f)) fs
 		else do
 			pairs <- liftIO $ Git.checkAttr g "annex.backend" fs
-			return $ map (\(f,b) -> (f, maybeLookupBackendName b)) pairs
+			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend Annex

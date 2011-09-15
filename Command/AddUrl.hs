@@ -59,7 +59,7 @@ download url file = do
 	ok <- Url.download url tmp
 	if ok
 		then do
-			[(_, backend)] <- Backend.chooseBackends [file]
+			[(backend, _)] <- Backend.chooseBackends [file]
 			k <- Backend.genKey tmp backend
 			case k of
 				Nothing -> stop
