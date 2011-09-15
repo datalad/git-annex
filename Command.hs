@@ -221,6 +221,8 @@ paramKey :: String
 paramKey = "KEY"
 paramDesc :: String
 paramDesc = "DESC"
+paramUrl :: String
+paramUrl = "URL"
 paramNumber :: String
 paramNumber = "NUMBER"
 paramRemote :: String

@@ -28,7 +28,8 @@ import Utility.Path
 import Utility.Conditional
 
 command :: [Command]
-command = [repoCommand "addurl" paramPath seek "add urls to annex"]
+command = [repoCommand "addurl" (paramRepeating $ paramUrl) seek
+	"add urls to annex"]
 
 seek :: [CommandSeek]
 seek = [withStrings start]
