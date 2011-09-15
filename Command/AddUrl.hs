@@ -34,7 +34,7 @@ command = [repoCommand "addurl" (paramRepeating $ paramUrl) seek
 seek :: [CommandSeek]
 seek = [withStrings start]
 
-start :: CommandStartString
+start :: String -> CommandStart
 start s = do
 	let u = parseURI s
 	case u of

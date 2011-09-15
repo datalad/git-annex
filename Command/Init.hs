@@ -20,7 +20,7 @@ command = [standaloneCommand "init" paramDesc seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	showStart "init" description
 	next $ perform description

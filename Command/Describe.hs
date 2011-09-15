@@ -19,7 +19,7 @@ command = [repoCommand "describe" (paramPair paramRemote paramDesc) seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	let (name, description) =
 		case ws of

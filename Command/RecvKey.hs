@@ -15,6 +15,7 @@ import CmdLine
 import Content
 import Utility.RsyncFile
 import Utility.Conditional
+import Types
 
 command :: [Command]
 command = [repoCommand "recvkey" paramKey seek
@@ -23,7 +24,7 @@ command = [repoCommand "recvkey" paramKey seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	whenM (inAnnex key) $ error "key is already present in annex"
 	

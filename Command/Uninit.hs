@@ -28,7 +28,7 @@ command = [repoCommand "uninit" paramPaths seek
 seek :: [CommandSeek]
 seek = [withFilesInGit startUnannex, withNothing start]
 
-startUnannex :: CommandStartString
+startUnannex :: FilePath -> CommandStart
 startUnannex file = do
 	-- Force fast mode before running unannex. This way, if multiple
 	-- files link to a key, it will be left in the annex and hardlinked
@@ -36,7 +36,7 @@ startUnannex file = do
 	Annex.changeState $ \s -> s { Annex.fast = True }
 	Command.Unannex.start file
 
-start :: CommandStartNothing
+start :: CommandStart
 start = next perform
 
 perform :: CommandPerform

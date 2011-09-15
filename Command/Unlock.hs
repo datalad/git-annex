@@ -31,7 +31,7 @@ seek = [withFilesInGit start]
 
 {- The unlock subcommand replaces the symlink with a copy of the file's
  - content. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	showStart "unlock" file
 	next $ perform file key

@@ -20,8 +20,8 @@ seek :: [CommandSeek]
 seek = [withFilesToBeCommitted Command.Fix.start,
 	withFilesUnlockedToBeCommitted start]
 
-start :: CommandStartBackendFile
-start pair = next $ perform pair
+start :: BackendFile -> CommandStart
+start p = next $ perform p
 
 perform :: BackendFile -> CommandPerform
 perform pair@(file, _) = do

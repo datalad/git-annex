@@ -23,7 +23,7 @@ seek :: [CommandSeek]
 seek = [withStrings start]
 
 {- Sets cached content for a key. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = do
 	showStart "setkey" file
 	next $ perform file

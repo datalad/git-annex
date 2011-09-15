@@ -20,7 +20,7 @@ command = [repoCommand "configlist" paramNothing seek
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	g <- Annex.gitRepo
 	u <- getUUID g

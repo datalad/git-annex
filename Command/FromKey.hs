@@ -27,7 +27,7 @@ command = [repoCommand "fromkey" paramPath seek
 seek :: [CommandSeek]
 seek = [withFilesMissing start]
 
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = notBareRepo $ do
 	key <- cmdlineKey
 	inbackend <- inAnnex key

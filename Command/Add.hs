@@ -38,14 +38,14 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
 {- The add subcommand annexes a file, storing it in a backend, and then
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
-start :: CommandStartBackendFile
-start pair@(file, _) = notAnnexed file $ do
+start :: BackendFile -> CommandStart
+start p@(file, _) = notAnnexed file $ do
 	s <- liftIO $ getSymbolicLinkStatus file
 	if isSymbolicLink s || not (isRegularFile s)
 		then stop
 		else do
 			showStart "add" file
-			next $ perform pair
+			next $ perform p
 
 perform :: BackendFile -> CommandPerform
 perform (file, backend) = do

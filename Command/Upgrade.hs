@@ -19,7 +19,7 @@ command = [standaloneCommand "upgrade" paramNothing seek
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	showStart "upgrade" "."
 	r <- upgrade

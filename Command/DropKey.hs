@@ -21,7 +21,7 @@ command = [repoCommand "dropkey" (paramRepeating paramKey) seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	present <- inAnnex key
 	force <- Annex.getState Annex.force

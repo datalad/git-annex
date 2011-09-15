@@ -48,19 +48,8 @@ type CommandPerform = Annex (Maybe CommandCleanup)
 {- 3. The cleanup stage is run only if the perform stage succeeds, and it
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
-{- Some helper functions are used to build up CommandSeek and CommandStart
- - functions. -}
-type CommandSeekStrings = CommandStartString -> CommandSeek
-type CommandStartString = String -> CommandStart
-type CommandSeekWords = CommandStartWords -> CommandSeek
-type CommandStartWords = [String] -> CommandStart
-type CommandSeekKeys = CommandStartKey -> CommandSeek
-type CommandStartKey = Key -> CommandStart
+
 type BackendFile = (FilePath, Maybe (Backend Annex))
-type CommandSeekBackendFiles = CommandStartBackendFile -> CommandSeek
-type CommandStartBackendFile = BackendFile -> CommandStart
-type CommandSeekNothing = CommandStart -> CommandSeek
-type CommandStartNothing = CommandStart
 
 data Command = Command {
 	cmdusesrepo :: Bool,
@@ -121,7 +110,7 @@ notBareRepo a = do
 
 {- These functions find appropriate files or other things based on a
    user's parameters, and run a specified action on them. -}
-withFilesInGit :: CommandSeekStrings
+withFilesInGit :: (String -> CommandStart) -> CommandSeek
 withFilesInGit a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
@@ -138,13 +127,13 @@ withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 		go (file, v) = do
 			let numcopies = readMaybe v
 			a file numcopies
-withBackendFilesInGit :: CommandSeekBackendFiles
+withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	files' <- filterFiles files
 	backendPairs a files'
-withFilesMissing :: CommandSeekStrings
+withFilesMissing :: (String -> CommandStart) -> CommandSeek
 withFilesMissing a params = do
 	files <- liftIO $ filterM missing params
 	liftM (map a) $ filterFiles files
@@ -152,27 +141,27 @@ withFilesMissing a params = do
 		missing f = do
 			e <- doesFileExist f
 			return $ not e
-withFilesNotInGit :: CommandSeekBackendFiles
+withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
 	repo <- Annex.gitRepo
 	force <- Annex.getState Annex.force
 	newfiles <- liftIO $ runPreserveOrder (LsFiles.notInRepo repo force) params
 	newfiles' <- filterFiles newfiles
 	backendPairs a newfiles'
-withWords :: CommandSeekWords
+withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = return [a params]
-withStrings :: CommandSeekStrings
+withStrings :: (String -> CommandStart) -> CommandSeek
 withStrings a params = return $ map a params
-withFilesToBeCommitted :: CommandSeekStrings
+withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
 withFilesToBeCommitted a params = do
 	repo <- Annex.gitRepo
 	tocommit <- liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
 	liftM (map a) $ filterFiles tocommit
-withFilesUnlocked :: CommandSeekBackendFiles
+withFilesUnlocked :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
-withFilesUnlockedToBeCommitted :: CommandSeekBackendFiles
+withFilesUnlockedToBeCommitted :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
-withFilesUnlocked' :: (Git.Repo -> [FilePath] -> IO [FilePath]) -> CommandSeekBackendFiles
+withFilesUnlocked' :: (Git.Repo -> [FilePath] -> IO [FilePath]) -> (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
 	repo <- Annex.gitRepo
@@ -181,15 +170,15 @@ withFilesUnlocked' typechanged a params = do
 		map (\f -> Git.workTree repo ++ "/" ++ f) typechangedfiles
 	unlockedfiles' <- filterFiles unlockedfiles
 	backendPairs a unlockedfiles'
-withKeys :: CommandSeekKeys
+withKeys :: (Key -> CommandStart) -> CommandSeek
 withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
-withNothing :: CommandSeekNothing
+withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-backendPairs :: CommandSeekBackendFiles
+backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
 backendPairs a files = map a <$> Backend.chooseBackends files
 
 {- Filter out files those matching the exclude glob pattern,

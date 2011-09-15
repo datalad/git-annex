@@ -34,7 +34,7 @@ command = [repoCommand "map" paramNothing seek "generate map of repositories"]
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	g <- Annex.gitRepo
 	rs <- spider g

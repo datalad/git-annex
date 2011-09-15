@@ -12,6 +12,7 @@ import System.Exit
 
 import Command
 import Content
+import Types
 
 command :: [Command]
 command = [repoCommand "inannex" (paramRepeating paramKey) seek
@@ -20,7 +21,7 @@ command = [repoCommand "inannex" (paramRepeating paramKey) seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	present <- inAnnex key
 	if present

@@ -20,7 +20,7 @@ seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
 {- Output a list of files. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	whenM (inAnnex key) $ liftIO $ putStrLn file
 	stop

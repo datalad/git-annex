@@ -41,7 +41,7 @@ withUnusedMaps params = do
 	unusedtmp <- readUnusedLog "tmp"
 	return $ map (start (unused, unusedbad, unusedtmp)) params
 
-start :: (UnusedMap, UnusedMap, UnusedMap) -> CommandStartString
+start :: (UnusedMap, UnusedMap, UnusedMap) -> FilePath -> CommandStart
 start (unused, unusedbad, unusedtmp) s = notBareRepo $ search
 	[ (unused, perform)
 	, (unusedbad, performOther gitAnnexBadLocation)

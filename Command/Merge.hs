@@ -18,7 +18,7 @@ command = [repoCommand "merge" paramNothing seek
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	showStart "merge" "."
 	next perform

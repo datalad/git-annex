@@ -26,7 +26,7 @@ seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
 {- Fixes the symlink to an annexed file. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	link <- calcGitLink file key
 	l <- liftIO $ readSymbolicLink file

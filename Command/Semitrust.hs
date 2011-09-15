@@ -20,7 +20,7 @@ command = [repoCommand "semitrust" (paramRepeating paramRemote) seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	let name = unwords ws
 	showStart "semitrust" name

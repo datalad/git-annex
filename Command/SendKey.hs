@@ -17,6 +17,7 @@ import Content
 import Utility.RsyncFile
 import Utility.Conditional
 import Messages
+import Types
 
 command :: [Command]
 command = [repoCommand "sendkey" paramKey seek
@@ -25,7 +26,7 @@ command = [repoCommand "sendkey" paramKey seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	g <- Annex.gitRepo
 	let file = gitAnnexLocation g key

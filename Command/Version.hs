@@ -21,7 +21,7 @@ command = [standaloneCommand "version" paramNothing seek "show version info"]
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	liftIO $ putStrLn $ "git-annex version: " ++ SysConfig.packageversion
 	v <- getVersion

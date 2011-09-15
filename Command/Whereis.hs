@@ -23,7 +23,7 @@ command = [repoCommand "whereis" paramPaths seek
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	showStart "whereis" file
 	next $ perform key

@@ -31,7 +31,7 @@ command = [repoCommand "migrate" paramPaths seek
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]
 
-start :: CommandStartBackendFile
+start :: BackendFile -> CommandStart
 start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
 	exists <- inAnnex key
 	newbackend <- choosebackend b

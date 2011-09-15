@@ -30,7 +30,7 @@ command = [repoCommand "initremote"
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	when (null ws) needname
 

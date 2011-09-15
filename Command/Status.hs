@@ -74,7 +74,7 @@ slowstats =
 	, backend_usage
 	]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	fast <- Annex.getState Annex.fast
 	let todo = if fast then faststats else faststats ++ slowstats

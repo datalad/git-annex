@@ -33,7 +33,7 @@ seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
 {- The unannex subcommand undoes an add. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	ishere <- inAnnex key
 	if ishere

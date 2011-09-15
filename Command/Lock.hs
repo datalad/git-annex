@@ -22,7 +22,7 @@ seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
 
 {- Undo unlock -}
-start :: CommandStartBackendFile
+start :: BackendFile -> CommandStart
 start (file, _) = do
 	showStart "lock" file
 	next $ perform file
