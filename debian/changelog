@@ -7,6 +7,7 @@ git-annex (3.20110907) UNRELEASED; urgency=low
     only its file component.
   * get, drop, copy: Added --auto option, which decides whether
     to get/drop content as needed to work toward the configured numcopies.
+  * bugfix: drop and fsck did not honor --exclude
 
  -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 16:59:15 -0400
 

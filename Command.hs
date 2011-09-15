@@ -133,7 +133,8 @@ withAttrFilesInGit :: String -> CommandSeekAttrFiles
 withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	liftM (map a) $ liftIO $ Git.checkAttr repo attr files
+	files' <- filterFiles files
+	liftM (map a) $ liftIO $ Git.checkAttr repo attr files'
 withNumCopies :: CommandSeekAttrFiles
 withNumCopies = withAttrFilesInGit "annex.numcopies"
 withBackendFilesInGit :: CommandSeekBackendFiles
