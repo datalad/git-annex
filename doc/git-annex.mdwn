@@ -76,9 +76,6 @@ Many git-annex commands will stage changes for later `git commit` by you.
   will involve copying them from another repository, or downloading them,
   or transferring them from some kind of key-value store.
 
-  When the --auto switch is used, only gets content of files if needed
-  to satisfy the setting of annex.numcopies
-
 * drop [path ...]
 
   Drops the content of annexed files from this repository. 
@@ -86,9 +83,6 @@ Many git-annex commands will stage changes for later `git commit` by you.
   git-annex will refuse to drop content if it cannot verify it is
   safe to do so. At least one copy of content needs to exist in another
   remote. This can be overridden with the --force switch.
-
-  When the --auto switch is used, only tries to drop content if
-  more than annex.numcopies copies exist.
 
 * move [path ...]
   
@@ -344,9 +338,8 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 * --auto
 
-  Enable automatic mode, in which git-annex decides whether to perform
-  actions on files. See descriptions of individual commands to see what
-  they do in automatic mode.
+  Enables automatic mode. Commands that get, drop, or move file contents
+  will only do so when needed to help satisfy the setting of annex.numcopies.
 
 * --quiet
 
