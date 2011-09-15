@@ -17,7 +17,7 @@ import Types
 import Trust
 
 command :: [Command]
-command = [repoCommand "whereis" (paramOptional $ paramRepeating paramPath) seek
+command = [repoCommand "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]

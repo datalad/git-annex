@@ -16,7 +16,7 @@ import qualified AnnexQueue
 import Utility.SafeCommand
 	
 command :: [Command]
-command = [repoCommand "lock" paramPath seek "undo unlock command"]
+command = [repoCommand "lock" paramPaths seek "undo unlock command"]
 
 seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]

@@ -29,7 +29,7 @@ import Utility.SafeCommand
 import Locations
 
 command :: [Command]
-command = [repoCommand "add" paramPath seek "add files to annex"]
+command = [repoCommand "add" paramPaths seek "add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files. -}
 seek :: [CommandSeek]

@@ -14,8 +14,7 @@ import Content
 import Utility.Conditional
 
 command :: [Command]
-command = [repoCommand "find" (paramOptional $ paramRepeating paramPath) seek
-	"lists available files"]
+command = [repoCommand "find" paramPaths seek "lists available files"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

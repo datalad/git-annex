@@ -212,12 +212,8 @@ notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
 
 {- Descriptions of params used in usage messages. -}
-paramRepeating :: String -> String
-paramRepeating s = s ++ " ..."
-paramOptional :: String -> String
-paramOptional s = "[" ++ s ++ "]"
-paramPair :: String -> String -> String
-paramPair a b = a ++ " " ++ b
+paramPaths :: String
+paramPaths = paramOptional $ paramRepeating paramPath -- most often used
 paramPath :: String
 paramPath = "PATH"
 paramKey :: String
@@ -240,6 +236,12 @@ paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String
 paramNothing = ""
+paramRepeating :: String -> String
+paramRepeating s = s ++ " ..."
+paramOptional :: String -> String
+paramOptional s = "[" ++ s ++ "]"
+paramPair :: String -> String -> String
+paramPair a b = a ++ " " ++ b
 
 {- The Key specified by the --key parameter. -}
 cmdlineKey :: Annex Key

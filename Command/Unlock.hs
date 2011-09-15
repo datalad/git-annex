@@ -22,8 +22,8 @@ import Utility.Path
 
 command :: [Command]
 command =
-	[ repoCommand "unlock" paramPath seek "unlock files for modification"
-	, repoCommand "edit" paramPath seek "same as unlock"
+	[ repoCommand "unlock" paramPaths seek "unlock files for modification"
+	, repoCommand "edit" paramPaths seek "same as unlock"
 	]
 
 seek :: [CommandSeek]

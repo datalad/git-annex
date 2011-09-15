@@ -19,7 +19,7 @@ import Content
 import Messages
 
 command :: [Command]
-command = [repoCommand "fix" paramPath seek
+command = [repoCommand "fix" paramPaths seek
 	"fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]

@@ -20,7 +20,7 @@ import UUID
 import Messages
 
 command :: [Command]
-command = [repoCommand "move" paramPath seek
+command = [repoCommand "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]

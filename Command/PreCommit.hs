@@ -12,7 +12,7 @@ import qualified Command.Add
 import qualified Command.Fix
 
 command :: [Command]
-command = [repoCommand "pre-commit" paramPath seek "run by git pre-commit hook"]
+command = [repoCommand "pre-commit" paramPaths seek "run by git pre-commit hook"]
 
 {- The pre-commit hook needs to fix symlinks to all files being committed.
  - And, it needs to inject unlocked files into the annex. -}

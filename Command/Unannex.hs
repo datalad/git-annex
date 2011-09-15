@@ -27,7 +27,7 @@ import Messages
 import Locations
 
 command :: [Command]
-command = [repoCommand "unannex" paramPath seek "undo accidential add command"]
+command = [repoCommand "unannex" paramPaths seek "undo accidential add command"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

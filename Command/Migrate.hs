@@ -25,7 +25,8 @@ import Utility.Conditional
 import qualified Command.Add
 
 command :: [Command]
-command = [repoCommand "migrate" paramPath seek "switch data to different backend"]
+command = [repoCommand "migrate" paramPaths seek
+	"switch data to different backend"]
 
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]

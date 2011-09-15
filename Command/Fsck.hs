@@ -30,8 +30,7 @@ import Utility.Path
 import Config
 
 command :: [Command]
-command = [repoCommand "fsck" (paramOptional $ paramRepeating paramPath) seek
-	"check for problems"]
+command = [repoCommand "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
 seek = [withNumCopies start]

@@ -22,7 +22,7 @@ import Content
 import Locations
 
 command :: [Command]
-command = [repoCommand "uninit" paramPath seek 
+command = [repoCommand "uninit" paramPaths seek 
         "de-initialize git-annex and clean out repository"]
 
 seek :: [CommandSeek]

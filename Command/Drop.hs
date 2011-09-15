@@ -20,7 +20,7 @@ import Trust
 import Config
 
 command :: [Command]
-command = [repoCommand "drop" paramPath seek
+command = [repoCommand "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
