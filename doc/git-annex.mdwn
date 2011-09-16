@@ -42,15 +42,12 @@ content from the key-value store.
 	# git remote add usbdrive /media/usb
 	# git annex get video/hackity_hack_and_kaxxt.mov
 	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok
-	# git commit -a -m "got a video I want to rewatch on the plane"
 	
 	# git annex add iso
 	add iso/Debian_5.0.iso ok
-	# git commit -a -m "saving Debian CD for later"
 	
 	# git annex drop iso/Debian_4.0.iso
 	drop iso/Debian_4.0.iso ok
-	# git commit -a -m "freed up space"
 	
 	# git annex move iso --to=usbdrive
 	move iso/Debian_5.0.iso (moving to usbdrive...) ok
@@ -62,8 +59,6 @@ is either a file or a directory. In the latter case it acts on all relevant
 files in the directory. If no path is specified, most git-annex commands
 default to acting on all relevant files in the current directory (and
 subdirectories).
-
-Many git-annex commands will stage changes for later `git commit` by you.
 
 * add [path ...]
 
