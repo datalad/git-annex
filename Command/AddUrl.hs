@@ -14,15 +14,16 @@ import System.Directory
 
 import Command
 import qualified Backend
+import qualified Utility.Url as Url
 import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
+import qualified Backend.URL
 import Messages
 import Content
 import PresenceLog
-import Types.Key
 import Locations
-import Utility
+import Utility.Path
 
 command :: [Command]
 command = [repoCommand "addurl" paramPath seek "add urls to annex"]
@@ -42,12 +43,17 @@ start s = do
 			
 perform :: String -> FilePath -> CommandPerform
 perform url file = do
+	fast <- Annex.getState Annex.fast
+	if fast then nodownload url file else download url file
+
+download :: String -> FilePath -> CommandPerform
+download url file = do
 	g <- Annex.gitRepo
 	showAction $ "downloading " ++ url ++ " "
-	let dummykey = stubKey { keyName = url, keyBackendName = "URL" }
+	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	ok <- Remote.Web.download [url] tmp
+	ok <- Url.download url tmp
 	if ok
 		then do
 			[(_, backend)] <- Backend.chooseBackends [file]
@@ -57,8 +63,15 @@ perform url file = do
 				Just (key, _) -> do
 					moveAnnex key tmp
 					Remote.Web.setUrl key url InfoPresent
-					next $ Command.Add.cleanup file key
+					next $ Command.Add.cleanup file key True
 		else stop
+
+nodownload :: String -> FilePath -> CommandPerform
+nodownload url file = do
+	let key = Backend.URL.fromUrl url
+	Remote.Web.setUrl key url InfoPresent
+	
+	next $ Command.Add.cleanup file key False
 
 url2file :: URI -> IO FilePath
 url2file url = do
@@ -75,8 +88,7 @@ url2file url = do
 			e <- doesFileExist file
 			when e $ error "already have this url"
 			return file
-		safe s
-			| null s = False
-			| s == "." = False
-			| s == ".." = False
-			| otherwise = True
+		safe "" = False
+		safe "." = False
+		safe ".." = False
+		safe _ = True

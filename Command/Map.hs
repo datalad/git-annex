@@ -19,10 +19,10 @@ import qualified Annex
 import qualified Git
 import Messages
 import Types
-import Utility
+import Utility.SafeCommand
 import UUID
 import Trust
-import Remote.Ssh
+import Utility.Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)

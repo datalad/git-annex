@@ -3,4 +3,3 @@ has the file before removing it.
 
 	# git annex drop iso/debian.iso
 	drop iso/Debian_5.0.iso ok
-	# git commit -a -m "freed up space"

@@ -12,7 +12,7 @@ To get a feel for it, see the [[walkthrough]].
 * [[forum]]
 * [[comments]]
 * [[contact]]
-* <a href="http://flattr.com/thing/84843/git-annex"><img src="http://api.flattr.com/button/button-compact-static-100x17.png" alt="Flattr this" title="Flattr this" /></a>
+* <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a>
 
 [[News]]:
 

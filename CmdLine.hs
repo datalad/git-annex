@@ -22,10 +22,9 @@ import qualified Git
 import Content
 import Types
 import Command
-import Version
 import Options
 import Messages
-import UUID
+import Init
 
 {- Runs the passed command line. -}
 dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
@@ -45,7 +44,7 @@ parseCmd argv header cmds options = do
 		[] -> error $ "unknown command" ++ usagemsg
 		[command] -> do
 			_ <- sequence flags
-			when (cmdusesrepo command) checkVersion
+			checkCmdEnviron command
 			prepCommand command (drop 1 params)
 		_ -> error "internal error: multiple matching commands"
 	where
@@ -56,6 +55,10 @@ parseCmd argv header cmds options = do
 				ioError (userError (concat errs ++ usagemsg))
 		lookupCmd cmd = filter (\c -> cmd  == cmdname c) cmds
 		usagemsg = "\n\n" ++ usage header cmds options
+
+{- Checks that the command can be run in the current environment. -}
+checkCmdEnviron :: Command -> Annex ()
+checkCmdEnviron command = when (cmdusesrepo command) ensureInitialized
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String
@@ -86,8 +89,8 @@ tryRun' errnum state (a:as) = do
 	case result of
 		Left err -> do
 			Annex.eval state $ do
-				showEndFail
 				showErr err
+				showEndFail
 			tryRun' (errnum + 1) state as
 		Right (True,state') -> tryRun' errnum state' as
 		Right (False,state') -> tryRun' (errnum + 1) state' as
@@ -95,9 +98,7 @@ tryRun' errnum _ [] = when (errnum > 0) $ error $ show errnum ++ " failed"
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool
-startup = do
-	prepUUID
-	return True
+startup = return True
 
 {- Cleanup actions. -}
 shutdown :: Annex Bool

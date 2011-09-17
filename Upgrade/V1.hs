@@ -11,6 +11,7 @@ import System.IO.Error (try)
 import System.Directory
 import Control.Monad.State (liftIO)
 import Control.Monad (filterM, forM_, unless)
+import Control.Applicative
 import System.Posix.Files
 import System.FilePath
 import Data.String.Utils
@@ -22,7 +23,7 @@ import Types.Key
 import Content
 import Types
 import Locations
-import LocationLog
+import PresenceLog
 import qualified Annex
 import qualified AnnexQueue
 import qualified Git
@@ -31,6 +32,8 @@ import Backend
 import Messages
 import Version
 import Utility
+import Utility.SafeCommand
+import Utility.Path
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.
@@ -123,7 +126,7 @@ moveLocationLogs = do
 					else return []
 			move (l, k) = do
 				g <- Annex.gitRepo
-				let dest = logFile k
+				let dest = logFile2 g k
 				let dir = Upgrade.V2.gitStateDir g
 				let f = dir </> l
 				liftIO $ createDirectoryIfMissing True (parentDir dest)
@@ -131,9 +134,9 @@ moveLocationLogs = do
 				-- log files that are not checked into git,
 				-- as well as merging with already upgraded
 				-- logs that have been pulled from elsewhere
-				old <- readLog f
-				new <- readLog dest
-				writeLog dest (old++new)
+				old <- liftIO $ readLog1 f
+				new <- liftIO $ readLog1 dest
+				liftIO $ writeLog1 dest (old++new)
 				AnnexQueue.add "add" [Param "--"] [dest]
 				AnnexQueue.add "add" [Param "--"] [f]
 				AnnexQueue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
@@ -186,8 +189,11 @@ fileKey1 :: FilePath -> Key
 fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
-logFile1 :: Git.Repo -> Key -> String
-logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
+writeLog1 :: FilePath -> [LogLine] -> IO ()
+writeLog1 file ls = viaTmp writeFile file (unlines $ map show ls)
+
+readLog1 :: FilePath -> IO [LogLine]
+readLog1 file = catch (parseLog <$> readFileStrict file) (const $ return [])
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend Annex))
 lookupFile1 file = do
@@ -196,7 +202,7 @@ lookupFile1 file = do
 		Left _ -> return Nothing
 		Right l -> makekey l
 	where
-		getsymlink = return . takeFileName =<< readSymbolicLink file
+		getsymlink = takeFileName <$> readSymbolicLink file
 		makekey l = case maybeLookupBackendName bname of
 			Nothing -> do
 				unless (null kname || null bname ||
@@ -230,3 +236,19 @@ getKeyFilesPresent1' dir = do
 			case result of
 				Right s -> return $ isRegularFile s
 				Left _ -> return False
+
+logFile1 :: Git.Repo -> Key -> String
+logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
+
+logFile2 :: Git.Repo -> Key -> String
+logFile2 = logFile' hashDirLower
+
+logFile' :: (Key -> FilePath) -> Git.Repo -> Key -> String
+logFile' hasher repo key =
+	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
+
+stateDir :: FilePath
+stateDir = addTrailingPathSeparator $ ".git-annex"
+
+gitStateDir :: Git.Repo -> FilePath
+gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir

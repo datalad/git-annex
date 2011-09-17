@@ -17,9 +17,3 @@ currently present in the repository (possibly using a bloom filter again),
 and that would yield a shortlist of keys that are probably not used. 
 Then scan thru all files in the repo to make sure that none point to keys
 on the shortlist.
-
-----
-
-`git annex unused --from remote` is much worse, using hundreds of mb of
-memory. It has not been profiled at all yet, and can probably be improved
-somewhat by fixing whatever memory leak it (probably) has.

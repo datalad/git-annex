@@ -28,8 +28,9 @@ import Locations
 import Config
 import Content
 import Utility
-import Remote.Special
-import Remote.Encryptable
+import Utility.SafeCommand
+import Remote.Helper.Special
+import Remote.Helper.Encryptable
 import Crypto
 import Messages
 

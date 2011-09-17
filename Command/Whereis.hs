@@ -33,7 +33,7 @@ perform key = do
 	if null uuids
 		then stop
 		else do
-			pp <- prettyPrintUUIDs uuids
+			pp <- prettyPrintUUIDs "whereis" uuids
 			showLongNote pp
 			showOutput
 			next $ return True

@@ -12,6 +12,7 @@ Build-Depends:
 	libghc6-http-dev,
 	libghc6-utf8-string-dev,
 	libghc6-testpack-dev [any-i386 any-amd64],
+	libghc6-json-dev,
 	ikiwiki,
 	perlmagick,
 	git | git-core,
@@ -29,6 +30,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	git | git-core,
 	uuid,
 	rsync,
+	wget | curl,
 	openssh-client
 Suggests: graphviz, bup, gnupg
 Description: manage files with git, without checking their contents into git

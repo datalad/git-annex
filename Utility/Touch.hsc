@@ -7,7 +7,7 @@
 
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Touch (
+module Utility.Touch (
 	TimeSpec(..),
 	touchBoth,
 	touch

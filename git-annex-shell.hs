@@ -11,7 +11,8 @@ import Data.List
 import qualified Git
 import CmdLine
 import Command
-import Utility
+import Utility.Conditional
+import Utility.SafeCommand
 import Options
 
 import qualified Command.ConfigList

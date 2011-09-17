@@ -16,8 +16,9 @@ import Types
 import Messages
 import Locations
 import Content
+import Utility.Conditional
 import Utility.CopyFile
-import Utility
+import Utility.Path
 
 command :: [Command]
 command =

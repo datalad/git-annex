@@ -17,6 +17,7 @@ module Git (
 	localToUrl,
 	repoIsUrl,
 	repoIsSsh,
+	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
 	repoLocation,
@@ -62,6 +63,7 @@ module Git (
 ) where
 
 import Control.Monad (unless, when)
+import Control.Applicative
 import System.Directory
 import System.FilePath
 import System.Posix.Directory
@@ -84,6 +86,9 @@ import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 
 import Utility
+import Utility.Path
+import Utility.Conditional
+import Utility.SafeCommand
 
 {- There are two types of repositories; those on local disk and those
  - accessed via an URL. -}
@@ -206,6 +211,13 @@ repoIsSsh Repo { location = Url url }
 	| otherwise = False
 repoIsSsh _ = False
 
+repoIsHttp :: Repo -> Bool
+repoIsHttp Repo { location = Url url } 
+	| uriScheme url == "http:" = True
+	| uriScheme url == "https:" = True
+	| otherwise = False
+repoIsHttp _ = False
+
 configAvail ::Repo -> Bool
 configAvail Repo { config = c } = c /= M.empty
 
@@ -239,11 +251,11 @@ attributes repo
 	| configBare repo = workTree repo ++ "/info/.gitattributes"
 	| otherwise = workTree repo ++ "/.gitattributes"
 
-{- Path to a repository's .git directory, relative to its workTree. -}
+{- Path to a repository's .git directory. -}
 gitDir :: Repo -> String
 gitDir repo
-	| configBare repo = ""
-	| otherwise = ".git"
+	| configBare repo = workTree repo
+	| otherwise = workTree repo </> ".git"
 
 {- Path to a repository's --work-tree, that is, its top.
  -
@@ -337,10 +349,10 @@ urlAuthPart _ repo = assertUrl repo $ error "internal"
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: Repo -> [CommandParam] -> [CommandParam]
-gitCommandLine repo@(Repo { location = Dir d} ) params =
+gitCommandLine repo@(Repo { location = Dir _ } ) params =
 	-- force use of specified repo via --git-dir and --work-tree
-	[ Param ("--git-dir=" ++ d ++ "/" ++ gitDir repo)
-	, Param ("--work-tree=" ++ d)
+	[ Param ("--git-dir=" ++ gitDir repo)
+	, Param ("--work-tree=" ++ workTree repo)
 	] ++ params
 gitCommandLine repo _ = assertLocal repo $ error "internal"
 
@@ -435,7 +447,7 @@ commit g message newref parentrefs = do
 		pipeWriteRead g (map Param $ ["commit-tree", tree] ++ ps) message
 	run g "update-ref" [Param newref, Param sha]
 	where
-		ignorehandle a = return . snd =<< a
+		ignorehandle a = snd <$> a
 		ps = concatMap (\r -> ["-p", r]) parentrefs
 
 {- Reads null terminated output of a git command (as enabled by the -z 

@@ -3,20 +3,5 @@ Installation recipe for Fedora 14.
 <pre>
 sudo yum install ghc cabal-install
 sudo cabal update
-sudo cabal install missingh
-sudo cabal install utf8-string
-sudo cabal install pcre-light
-sudo cabal install quickcheck
-sudo cabal install SHA
-sudo cabal install dataenc
-sudo cabal install HTTP
-sudo cabal install hS3
-
-git clone git://git-annex.branchable.com/
-
-cd git-annex
-sudo make   # For some reason you need to use sudo here as otherwise the cabal installed packages doesn't seem to be there...
-sudo install git-annex
+sudo cabal install git-annex
 </pre>
-
-Originally posted by Jon at <https://gist.github.com/997568> --[[Joey]]

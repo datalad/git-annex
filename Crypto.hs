@@ -38,6 +38,7 @@ import System.IO
 import System.Posix.IO
 import System.Posix.Types
 import System.Posix.Process
+import Control.Applicative
 import Control.Concurrent
 import Control.Exception (finally)
 import System.Exit
@@ -48,6 +49,7 @@ import Types.Key
 import Types.Remote
 import Utility
 import Utility.Base64
+import Utility.SafeCommand
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder
@@ -135,7 +137,7 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: RemoteConfig -> EncryptedCipher -> IO Cipher
 decryptCipher _ (EncryptedCipher encipher _) = 
-	return . Cipher =<< gpgPipeStrict decrypt encipher
+	Cipher <$> gpgPipeStrict decrypt encipher
 	where
 		decrypt = [ Param "--decrypt" ]
 

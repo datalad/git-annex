@@ -32,9 +32,10 @@ import Messages
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.WORM
 import qualified Backend.SHA
+import qualified Backend.URL
 
 list :: [Backend Annex]
-list = Backend.WORM.backends ++ Backend.SHA.backends
+list = Backend.WORM.backends ++ Backend.SHA.backends ++ Backend.URL.backends
 
 {- List of backends in the order to try them when storing a new key. -}
 orderedList :: Annex [Backend Annex]
@@ -65,7 +66,7 @@ orderedList = do
 genKey :: FilePath -> Maybe (Backend Annex) -> Annex (Maybe (Key, Backend Annex))
 genKey file trybackend = do
 	bs <- orderedList
-	let bs' = maybe bs (:bs) trybackend
+	let bs' = maybe bs (: bs) trybackend
 	genKey' bs' file
 genKey' :: [Backend Annex] -> FilePath -> Annex (Maybe (Key, Backend Annex))
 genKey' [] _ = return Nothing
@@ -121,8 +122,7 @@ lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
 	where
 		unknown = error $ "unknown backend " ++ s
 maybeLookupBackendName :: String -> Maybe (Backend Annex)
-maybeLookupBackendName s =
-	if 1 /= length matches
-		then Nothing
-		else Just $ head matches
+maybeLookupBackendName s
+	| length matches == 1 = Just $ head matches
+	| otherwise = Nothing
 	where matches = filter (\b -> s == B.name b) list

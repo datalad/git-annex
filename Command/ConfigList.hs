@@ -14,7 +14,7 @@ import Command
 import UUID
 
 command :: [Command]
-command = [standaloneCommand "configlist" paramNothing seek
+command = [repoCommand "configlist" paramNothing seek
 		"outputs relevant git configuration"]
 
 seek :: [CommandSeek]

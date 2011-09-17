@@ -8,6 +8,7 @@
 module Command.Add where
 
 import Control.Monad.State (liftIO)
+import Control.Monad (when)
 import System.Posix.Files
 
 import Command
@@ -18,8 +19,10 @@ import LocationLog
 import Types
 import Content
 import Messages
-import Utility
-import Touch
+import Utility.Conditional
+import Utility.Touch
+import Utility.SafeCommand
+import Locations
 
 command :: [Command]
 command = [repoCommand "add" paramPath seek "add files to annex"]

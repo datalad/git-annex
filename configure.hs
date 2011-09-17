@@ -3,7 +3,7 @@
 import System.Directory
 import Data.List
 
-import TestConfig
+import Build.TestConfig
 
 tests :: [TestCase]
 tests =

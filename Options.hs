@@ -26,10 +26,12 @@ commonOptions =
 		"allow actions that may lose annexed data"
 	, Option ['F'] ["fast"] (NoArg (setfast True))
 		"avoid slow operations"
-	, Option ['q'] ["quiet"] (NoArg (setquiet True))
+	, Option ['q'] ["quiet"] (NoArg (setoutput Annex.QuietOutput))
 		"avoid verbose output"
-	, Option ['v'] ["verbose"] (NoArg (setquiet False))
+	, Option ['v'] ["verbose"] (NoArg (setoutput Annex.NormalOutput))
 		"allow verbose output (default)"
+	, Option ['j'] ["json"] (NoArg (setoutput Annex.JSONOutput))
+		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg (setdebug))
 		"show debug messages"
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
@@ -38,7 +40,7 @@ commonOptions =
 	where
 		setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 		setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
-		setquiet v = Annex.changeState $ \s -> s { Annex.quiet = v }
+		setoutput v = Annex.changeState $ \s -> s { Annex.output = v }
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $
 			setLevel DEBUG

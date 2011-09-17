@@ -1,6 +1,0 @@
-git-annex 0.20110610 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Add --numcopies option.
-   * Add --trust, --untrust, and --semitrust options.
-   * get --from is the same as copy --from
-   * Bugfix: Fix fsck to not think all SHAnE keys are bad."""]]

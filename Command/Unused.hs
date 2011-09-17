@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Command.Unused where
 
 import Control.Monad (filterM, unless, forM_)
@@ -78,9 +80,12 @@ checkRemoteUnused' r = do
 		showLongNote $ remoteUnusedMsg r list
 		showLongNote "\n"
 	where
+		{- This should run strictly to avoid the filterM
+		 - building many thunks containing keyLocations data. -}
 		isthere k = do
 			us <- keyLocations k
-			return $ uuid `elem` us
+			let !there = uuid `elem` us
+			return there
 		uuid = Remote.uuid r
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()

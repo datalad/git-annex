@@ -1,0 +1,75 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmFgsNxmnGznb5bbmcoWhoQOoxZZ-io61s"
+ nickname="Thomas"
+ subject="comment 1"
+ date="2011-08-08T09:04:20Z"
+ content="""
+I use Debian Squeeze, I have the Debian package cabal-install 0.8.0-1 installed.
+
+    $ git clone git://git-annex.branchable.com/
+    $ cd git-annex.branchable.com
+    $ cabal update
+    $ cabal install cabal-install
+
+This installed: Cabal-1.10.2.0, zlib-0.5.3.1, cabal-install 0.10.2.
+No version of monad-control or monadIO installed.
+
+    $ ~/.cabal/bin/cabal install
+    Registering QuickCheck-2.4.1.1...
+    Registering Crypto-4.2.3...
+    Registering base-unicode-symbols-0.2.2.1...
+    Registering deepseq-1.1.0.2...
+    Registering hxt-charproperties-9.1.0...
+    Registering hxt-regex-xmlschema-9.0.0...
+    Registering hxt-unicode-9.0.1...
+    Registering hxt-9.1.2...
+    Registering stm-2.2.0.1...
+    Registering hS3-0.5.6...
+    Registering transformers-0.2.2.0...
+    Registering monad-control-0.2.0.1...
+    [1 of 1] Compiling Main             ( Setup.hs, dist/setup/Main.o )
+    Linking ./dist/setup/setup ...
+    ghc -O2 -Wall -ignore-package monads-fd -fspec-constr-count=5 --make configure
+    [1 of 2] Compiling TestConfig       ( TestConfig.hs, TestConfig.o )
+    [2 of 2] Compiling Main             ( configure.hs, configure.o )
+    Linking configure ...
+    ./configure
+      checking version... 3.20110720
+      checking cp -a... yes
+      checking cp -p... yes
+      checking cp --reflink=auto... yes
+      checking uuid generator... uuid
+      checking xargs -0... yes
+      checking rsync... yes
+      checking curl... yes
+      checking bup... yes
+      checking gpg... yes
+      checking sha1... sha1sum
+      checking sha256... sha256sum
+      checking sha512... sha512sum
+      checking sha224... sha224sum
+      checking sha384... sha384sum
+
+    ...
+
+    Command/Add.hs:54:3:
+        No instance for (Control.Monad.IO.Control.MonadControlIO
+                           (Control.Monad.State.Lazy.StateT Annex.AnnexState IO))
+          arising from a use of `handle' at Command/Add.hs:54:3-24
+        Possible fix:
+          add an instance declaration for
+          (Control.Monad.IO.Control.MonadControlIO
+             (Control.Monad.State.Lazy.StateT Annex.AnnexState IO))
+        In the first argument of `($)', namely `handle (undo file key)'
+        In a stmt of a 'do' expression:
+              handle (undo file key) $ moveAnnex key file
+        In the expression:
+            do { handle (undo file key) $ moveAnnex key file;
+                 next $ cleanup file key }
+    cabal: Error: some packages failed to install:
+    git-annex-3.20110719 failed during the building phase. The exception was:
+    ExitFailure 1
+
+After I added a depencency for monadIO to the git-annex.cabal file, it installed correctly.  
+-- Thomas
+"""]]

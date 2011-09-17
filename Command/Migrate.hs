@@ -8,6 +8,7 @@
 module Command.Migrate where
 
 import Control.Monad.State (liftIO)
+import Control.Applicative
 import System.Posix.Files
 import System.Directory
 import System.FilePath
@@ -20,7 +21,7 @@ import Locations
 import Types
 import Content
 import Messages
-import Utility
+import Utility.Conditional
 import qualified Command.Add
 
 command :: [Command]
@@ -39,7 +40,7 @@ start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
 			next $ perform file key newbackend
 		else stop
 	where
-		choosebackend Nothing = return . head =<< Backend.orderedList
+		choosebackend Nothing = head <$> Backend.orderedList
 		choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation. -}
@@ -72,7 +73,7 @@ perform file oldkey newbackend = do
 				then do
 					-- Update symlink to use the new key.
 					liftIO $ removeFile file
-					next $ Command.Add.cleanup file newkey
+					next $ Command.Add.cleanup file newkey True
 				else stop
 	where
 		cleantmp t = whenM (doesFileExist t) $ removeFile t

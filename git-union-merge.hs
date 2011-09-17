@@ -20,7 +20,7 @@ usage :: IO a
 usage = error $ "bad parameters\n\n" ++ header
 
 tmpIndex :: Git.Repo -> FilePath
-tmpIndex g = Git.workTree g </> Git.gitDir g </> "index.git-union-merge"
+tmpIndex g = Git.gitDir g </> "index.git-union-merge"
 
 setup :: Git.Repo -> IO ()
 setup g = cleanup g -- idempotency

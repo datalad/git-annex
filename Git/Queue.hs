@@ -19,15 +19,15 @@ import System.IO
 import System.Cmd.Utils
 import Data.String.Utils
 import Control.Monad (forM_)
-import Utility
+import Utility.SafeCommand
 
 import Git
 
 {- An action to perform in a git repository. The file to act on
  - is not included, and must be able to be appended after the params. -}
-data Action = Action {
-		getSubcommand :: String,
-		getParams :: [CommandParam]
+data Action = Action
+	{ getSubcommand :: String
+	, getParams :: [CommandParam]
 	} deriving (Show, Eq, Ord)
 
 {- A queue of actions to perform (in any order) on a git repository,

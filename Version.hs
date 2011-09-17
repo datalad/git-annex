@@ -7,8 +7,6 @@
 
 module Version where
 
-import Control.Monad (unless)
-
 import Types
 import qualified Annex
 import qualified Git
@@ -39,14 +37,11 @@ getVersion = do
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion
 
-checkVersion :: Annex ()
-checkVersion = getVersion >>= handle
+checkVersion :: Version -> Annex ()
+checkVersion v
+	| v `elem` supportedVersions = return ()
+	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
+	| otherwise = err "Upgrade git-annex."
 	where
-		handle Nothing = error "First run: git-annex init"
-		handle (Just v) = unless (v `elem` supportedVersions) $
-			error $ "Repository version " ++ v ++ 
-				" is not supported. " ++
-				msg v
-		msg v
-			| v `elem` upgradableVersions = "Upgrade this repository: git-annex upgrade"
-			| otherwise = "Upgrade git-annex."
+		err msg = error $ "Repository version " ++ v ++
+			" is not supported. " ++ msg

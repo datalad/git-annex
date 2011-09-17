@@ -12,6 +12,7 @@ import Control.Monad.State (liftIO)
 import qualified Data.Map as M
 import System.Cmd.Utils
 import System.Posix.Files
+import System.IO
 
 import Types
 import Types.Remote
@@ -24,8 +25,12 @@ import qualified Content
 import Messages
 import Utility.CopyFile
 import Utility.RsyncFile
-import Remote.Ssh
+import Utility.Ssh
+import Utility.SafeCommand
+import Utility.Path
+import qualified Utility.Url as Url
 import Config
+import Init
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -75,8 +80,11 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.configMap r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
+	| Git.repoIsHttp r = store $ safely $ geturlconfig
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ Git.configRead r
+	| otherwise = store $ safely $ do
+		onLocal r ensureInitialized
+		Git.configRead r
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
@@ -85,9 +93,19 @@ tryGitConfigRead r
 			case result of
 				Left _ -> return r
 				Right r' -> return r'
+
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
 				Git.hConfigRead r
+
+		geturlconfig = do
+			s <- Url.get (Git.repoLocation r ++ "/config")
+			withTempFile "git-annex.tmp" $ \tmpfile -> \h -> do
+				hPutStr h s
+				hClose h
+				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
+					Git.hConfigRead r
+
 		store a = do
 			r' <- a
 			g <- Annex.gitRepo
@@ -95,6 +113,7 @@ tryGitConfigRead r
 			let g' = Git.remotesAdd g $ exchange l r'
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 			return r'
+
 		exchange [] _ = []
 		exchange (old:ls) new =
 			if Git.repoRemoteName old == Git.repoRemoteName new
@@ -105,24 +124,34 @@ tryGitConfigRead r
  - If the remote cannot be accessed, returns a Left error.
  -}
 inAnnex :: Git.Repo -> Key -> Annex (Either IOException Bool)
-inAnnex r key = if Git.repoIsUrl r
-		then checkremote
-		else liftIO (try checklocal ::IO (Either IOException Bool))
+inAnnex r key
+	| Git.repoIsHttp r = safely checkhttp
+	| Git.repoIsUrl r = checkremote
+	| otherwise = safely checklocal
 	where
-		checklocal = do
-			-- run a local check inexpensively,
-			-- by making an Annex monad using the remote
-			a <- Annex.new r
-			Annex.eval a (Content.inAnnex key)
+		checklocal = onLocal r (Content.inAnnex key)
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
 				[Param (show key)]
 			return $ Right inannex
-	
+		checkhttp = Url.exists $ keyUrl r key
+		safely a = liftIO (try a ::IO (Either IOException Bool))
+
+{- Runs an action on a local repository inexpensively, by making an annex
+ - monad using that repository. -}
+onLocal :: Git.Repo -> Annex a -> IO a
+onLocal r a = do
+	annex <- Annex.new r
+	Annex.eval annex a
+
+keyUrl :: Git.Repo -> Key -> String
+keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
+
 dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = 
-	onRemote r (boolSystem, False) "dropkey"
+dropKey r key
+	| Git.repoIsHttp r = error "dropping from http repo not supported"
+	| otherwise = onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
 		, Param $ show key
 		]
@@ -132,8 +161,9 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = rsyncOrCopyFile r (gitAnnexLocation r key) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| otherwise = error "copying from non-ssh repo not supported"
-		
+	| Git.repoIsHttp r = Url.download (keyUrl r key) file
+	| otherwise = error "copying from non-ssh, non-http repo not supported"
+
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
@@ -141,13 +171,11 @@ copyToRemote r key
 		g <- Annex.gitRepo
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
-		liftIO $ do
-			a <- Annex.new r
-			Annex.eval a $ do
-				ok <- Content.getViaTmp key $
-					rsyncOrCopyFile r keysrc
-				Content.saveState
-				return ok
+		liftIO $ onLocal r $ do
+			ok <- Content.getViaTmp key $
+				rsyncOrCopyFile r keysrc
+			Content.saveState
+			return ok
 	| Git.repoIsSsh r = do
 		g <- Annex.gitRepo
 		let keysrc = gitAnnexLocation g key

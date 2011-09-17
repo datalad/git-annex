@@ -16,7 +16,8 @@ import Command
 import qualified Command.Drop
 import qualified Annex
 import qualified AnnexQueue
-import Utility
+import Utility.SafeCommand
+import Utility.Path
 import LocationLog
 import Types
 import Content

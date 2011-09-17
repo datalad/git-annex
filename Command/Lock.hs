@@ -13,7 +13,7 @@ import System.Directory
 import Command
 import Messages
 import qualified AnnexQueue
-import Utility
+import Utility.SafeCommand
 	
 command :: [Command]
 command = [repoCommand "lock" paramPath seek "undo unlock command"]

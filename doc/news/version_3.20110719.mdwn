@@ -1,0 +1,7 @@
+git-annex 3.20110719 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * add: Be even more robust to avoid ever leaving the file seemingly deleted.
+     Closes: #[634233](http://bugs.debian.org/634233)
+   * Bugfix: Make add ../ work.
+   * Support the standard git -c name=value
+   * unannex: Clean up use of git commit -a."""]]

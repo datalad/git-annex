@@ -1,0 +1,6 @@
+git-annex 3.20110817 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix shell escaping in rsync special remote.
+   * addurl: --fast can be used to avoid immediately downloading the url.
+   * Added support for getting content from git remotes using http (and https).
+   * Added curl to Debian package dependencies."""]]

@@ -1,3 +1,43 @@
+git-annex (3.20110906) unstable; urgency=low
+
+  * Improve display of newlines around error and warning messages.
+  * Fix Makefile to work with cabal again.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 06 Sep 2011 13:45:16 -0400
+
+git-annex (3.20110902) unstable; urgency=low
+
+  * Set EMAIL when running test suite so that git does not need to be
+    configured first. Closes: #638998
+  * The wget command will now be used in preference to curl, if available.
+  * init: Make description an optional parameter.
+  * unused, status: Sped up by avoiding unnecessary stats of annexed files.
+  * unused --remote: Reduced memory use to 1/4th what was used before.
+  * Add --json switch, to produce machine-consumable output.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Sep 2011 21:20:37 -0400
+
+git-annex (3.20110819) unstable; urgency=low
+
+  * Now "git annex init" only has to be run once, when a git repository
+    is first being created. Clones will automatically notice that git-annex
+    is in use and automatically perform a basic initalization. It's
+    still recommended to run "git annex init" in any clones, to describe them.
+  * Added annex-cost-command configuration, which can be used to vary the
+    cost of a remote based on the output of a shell command.
+  * Fix broken upgrade from V1 repository. Closes: #638584
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 19 Aug 2011 20:34:09 -0400
+
+git-annex (3.20110817) unstable; urgency=low
+
+  * Fix shell escaping in rsync special remote.
+  * addurl: --fast can be used to avoid immediately downloading the url.
+  * Added support for getting content from git remotes using http (and https).
+  * Added curl to Debian package dependencies.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 17 Aug 2011 01:29:02 -0400
+
 git-annex (3.20110719~bpo60+1) squeeze-backports; urgency=low
 
   * Bugfix: Make add ../ work.

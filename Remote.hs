@@ -29,11 +29,14 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad (filterM, liftM2)
+import Control.Monad (filterM)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
 import Data.Maybe
+import Control.Applicative
+import Text.JSON
+import Text.JSON.Generic
 
 import Types
 import Types.Remote
@@ -111,30 +114,40 @@ nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
-		Left e -> return . fromMaybe (error e) =<< byDescription
+		Left e -> fromMaybe (error e) <$> byDescription
 		Right r -> return $ uuid r
 	where
-		byDescription = return . M.lookup n . invertMap =<< uuidMap
+		byDescription = M.lookup n . invertMap <$> uuidMap
 		invertMap = M.fromList . map swap . M.toList
 		swap (a, b) = (b, a)
 
-{- Pretty-prints a list of UUIDs of remotes. -}
-prettyPrintUUIDs :: [UUID] -> Annex String
-prettyPrintUUIDs uuids = do
+{- Pretty-prints a list of UUIDs of remotes, for human display.
+ -
+ - Shows descriptions from the uuid log, falling back to remote names,
+ - as some remotes may not be in the uuid log.
+ -
+ - When JSON is enabled, also generates a machine-readable description
+ - of the UUIDs. -}
+prettyPrintUUIDs :: String -> [UUID] -> Annex String
+prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< Annex.gitRepo
-	-- Show descriptions from the uuid log, falling back to remote names,
-	-- as some remotes may not be in the uuid log
-	m <- liftM2 M.union uuidMap $
-		return . M.fromList . map (\r -> (uuid r, name r)) =<< genList
-	return $ unwords $ map (\u -> "\t" ++ prettify m u here ++ "\n") uuids
+	m <- M.union <$> uuidMap <*> availMap
+	maybeShowJSON [(desc, map (jsonify m here) uuids)]
+	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
-		prettify m u here = base ++ ishere
+		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+		findlog m u = M.findWithDefault "" u m
+		prettify m here u = base ++ ishere
 			where
 				base = if not $ null $ findlog m u
 					then u ++ "  -- " ++ findlog m u
 					else u
 				ishere = if here == u then " <-- here" else ""
-		findlog m u = M.findWithDefault "" u m
+		jsonify m here u = toJSObject
+			[ ("uuid", toJSON u)
+			, ("description", toJSON $ findlog m u)
+			, ("here", toJSON $ here == u)
+			]
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
@@ -147,7 +160,7 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
-keyPossibilities key = return . fst =<< keyPossibilities' False key
+keyPossibilities key = fst <$> keyPossibilities' False key
 
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -
@@ -185,8 +198,8 @@ showLocations key exclude = do
 	untrusteduuids <- trustGet UnTrusted
 	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
-	ppuuidswanted <- Remote.prettyPrintUUIDs uuidswanted
-	ppuuidsskipped <- Remote.prettyPrintUUIDs uuidsskipped
+	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
+	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
 	where
 		filteruuids l x = filter (`notElem` x) l

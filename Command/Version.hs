@@ -12,7 +12,7 @@ import Data.String.Utils
 import Data.Maybe
 
 import Command
-import qualified SysConfig
+import qualified Build.SysConfig as SysConfig
 import Version
 
 command :: [Command]

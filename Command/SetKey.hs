@@ -10,7 +10,7 @@ module Command.SetKey where
 import Control.Monad.State (liftIO)
 
 import Command
-import Utility
+import Utility.SafeCommand
 import LocationLog
 import Content
 import Messages
@@ -20,7 +20,7 @@ command = [repoCommand "setkey" paramPath seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]
-seek = [withTempFile start]
+seek = [withStrings start]
 
 {- Sets cached content for a key. -}
 start :: CommandStartString

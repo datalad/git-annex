@@ -14,10 +14,11 @@ import Control.Monad (unless)
 
 import Command
 import qualified AnnexQueue
-import Utility
+import Utility.SafeCommand
 import Content
 import Messages
 import Types.Key
+import Utility.Path
 
 command :: [Command]
 command = [repoCommand "fromkey" paramPath seek

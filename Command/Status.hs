@@ -8,6 +8,7 @@
 module Command.Status where
 
 import Control.Monad.State
+import Control.Applicative
 import Data.Maybe
 import System.IO
 import Data.List
@@ -112,12 +113,10 @@ total_annex_size = stat "total annex size" $
 	cachedKeysReferenced >>= keySizeSum
 
 local_annex_keys :: Stat
-local_annex_keys = stat "local annex keys" $ 
-	return . show . snd =<< cachedKeysPresent
+local_annex_keys = stat "local annex keys" $ show . snd <$> cachedKeysPresent
 
 total_annex_keys :: Stat
-total_annex_keys = stat "total annex keys" $
-	return . show . snd =<< cachedKeysReferenced
+total_annex_keys = stat "total annex keys" $ show . snd <$> cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -126,8 +125,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $
-	return . usage =<< cachedKeysReferenced
+backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced
 	where
 		usage (ks, _) = pp "" $ sort $ map swap $ splits ks
 		splits :: [Key] -> [(String, Integer)]

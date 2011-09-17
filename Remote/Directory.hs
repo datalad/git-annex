@@ -27,8 +27,10 @@ import Utility.CopyFile
 import Config
 import Content
 import Utility
-import Remote.Special
-import Remote.Encryptable
+import Utility.Conditional
+import Utility.Path
+import Remote.Helper.Special
+import Remote.Helper.Encryptable
 import Crypto
 
 remote :: RemoteType Annex

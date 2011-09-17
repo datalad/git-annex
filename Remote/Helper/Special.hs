@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Special where
+module Remote.Helper.Special where
 
 import qualified Data.Map as M
 import Data.Maybe
@@ -17,7 +17,7 @@ import Types.Remote
 import qualified Git
 import qualified Annex
 import UUID
-import Utility
+import Utility.SafeCommand
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different

@@ -23,8 +23,8 @@ import Content
 import Types
 import Types.Backend
 import Types.Key
-import Utility
-import qualified SysConfig
+import Utility.SafeCommand
+import qualified Build.SysConfig as SysConfig
 
 type SHASize = Int
 
@@ -32,7 +32,7 @@ sizes :: [Int]
 sizes = [1, 256, 512, 224, 384]
 
 backends :: [Backend Annex]
--- order is slightly significant; want sha1 first ,and more general
+-- order is slightly significant; want sha1 first, and more general
 -- sizes earlier
 backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
 
@@ -107,7 +107,7 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 				then "" -- probably not really an extension
 				else naiveextension
 
--- A key's checksum is checked during fsck.
+{- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
 	g <- Annex.gitRepo

@@ -2,7 +2,7 @@
 *.o
 test
 configure
-SysConfig.hs
+Build/SysConfig.hs
 git-annex
 git-annex-shell
 git-union-merge
@@ -13,7 +13,7 @@ doc/.ikiwiki
 html
 *.tix
 .hpc
-Touch.hs
-StatFS.hs
+Utility/Touch.hs
+Utility/StatFS.hs
 Remote/S3.hs
 dist

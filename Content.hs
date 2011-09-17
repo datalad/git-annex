@@ -23,11 +23,10 @@ module Content (
 	saveState
 ) where
 
-import System.IO.Error (try)
 import System.Directory
 import Control.Monad.State (liftIO)
 import System.Path
-import Control.Monad (when, filterM)
+import Control.Monad
 import System.Posix.Files
 import System.FilePath
 import Data.Maybe
@@ -41,7 +40,9 @@ import qualified Annex
 import qualified AnnexQueue
 import qualified Branch
 import Utility
-import StatFS
+import Utility.Conditional
+import Utility.StatFS
+import Utility.Path
 import Types.Key
 import Utility.DataUnits
 import Config
@@ -252,15 +253,8 @@ getKeysPresent' dir = do
 			levela <- dirContents dir
 			levelb <- mapM dirContents levela
 			contents <- mapM dirContents (concat levelb)
-			files <- filterM present (concat contents)
+			let files = concat contents
 			return $ mapMaybe (fileKey . takeFileName) files
-	where
-		present d = do
-			result <- try $
-				getFileStatus $ d </> takeFileName d
-			case result of
-				Right s -> return $ isRegularFile s
-				Left _ -> return False
 
 {- Things to do to record changes to content. -}
 saveState :: Annex ()

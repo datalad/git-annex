@@ -5,9 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Annex (
 	Annex,
 	AnnexState(..),
+	OutputType(..),
 	new,
 	run,
 	eval,
@@ -17,6 +20,8 @@ module Annex (
 ) where
 
 import Control.Monad.State
+import Control.Monad.IO.Control
+import Control.Applicative hiding (empty)
 
 import qualified Git
 import Git.Queue
@@ -28,7 +33,15 @@ import Types.TrustLevel
 import Types.UUID
 
 -- git-annex's monad
-type Annex = StateT AnnexState IO
+newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
+	deriving (
+		Monad,
+		MonadIO,
+		MonadControlIO,
+		MonadState AnnexState,
+		Functor,
+		Applicative
+	)
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -36,7 +49,7 @@ data AnnexState = AnnexState
 	, backends :: [Backend Annex]
 	, remotes :: [Remote Annex]
 	, repoqueue :: Queue
-	, quiet :: Bool
+	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
 	, branchstate :: BranchState
@@ -51,13 +64,15 @@ data AnnexState = AnnexState
 	, cipher :: Maybe Cipher
 	}
 
+data OutputType = NormalOutput | QuietOutput | JSONOutput
+
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
 	, repoqueue = empty
-	, quiet = False
+	, output = NormalOutput
 	, force = False
 	, fast = False
 	, branchstate = startBranchState
@@ -74,13 +89,13 @@ newState gitrepo = AnnexState
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState `liftM` (liftIO . Git.configRead) gitrepo
+new gitrepo = newState <$> Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run = flip runStateT
+run s a = runStateT (runAnnex a) s
 eval :: AnnexState -> Annex a -> IO a
-eval = flip evalStateT
+eval s a = evalStateT (runAnnex a) s
 
 {- Gets a value from the internal state, selected by the passed value
  - constructor. -}

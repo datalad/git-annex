@@ -17,10 +17,9 @@ import Control.Monad (when, unless)
 import Annex
 import Messages
 import qualified Git.Queue
-import Utility
+import Utility.SafeCommand
 
-{- Adds a git command to the queue, possibly running previously queued
- - actions if enough have accumulated. -}
+{- Adds a git command to the queue. -}
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()
 add command params files = do
 	q <- getState repoqueue

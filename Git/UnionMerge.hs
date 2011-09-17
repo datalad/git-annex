@@ -18,7 +18,7 @@ import Data.Maybe
 import Data.String.Utils
 
 import Git
-import Utility
+import Utility.SafeCommand
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.

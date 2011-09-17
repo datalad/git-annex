@@ -20,6 +20,8 @@ import qualified Git
 import qualified Branch
 import Messages
 import Utility
+import Utility.Conditional
+import Utility.SafeCommand
 import LocationLog
 import Content
 

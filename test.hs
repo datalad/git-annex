@@ -24,11 +24,12 @@ import qualified Data.Map as M
 import System.Path (recurseDir)
 import System.IO.HVFS (SystemFS(..))
 
+import Utility.SafeCommand
+
 import qualified Annex
 import qualified Backend
 import qualified Git
 import qualified Locations
-import qualified Utility
 import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
@@ -42,6 +43,7 @@ import qualified Command.DropUnused
 import qualified Types.Key
 import qualified Config
 import qualified Crypto
+import qualified Utility.Path
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -72,11 +74,12 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	[ qctest "prop_idempotent_deencode" Git.prop_idempotent_deencode
 	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
 	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
-	, qctest "prop_idempotent_shellEscape" Utility.prop_idempotent_shellEscape
-	, qctest "prop_idempotent_shellEscape_multiword" Utility.prop_idempotent_shellEscape_multiword
+	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
+	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, qctest "prop_idempotent_configEscape" RemoteLog.prop_idempotent_configEscape
-	, qctest "prop_parentDir_basics" Utility.prop_parentDir_basics
-	, qctest "prop_relPathDirToFile_basics" Utility.prop_relPathDirToFile_basics
+	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
+
+	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
 	]
@@ -117,8 +120,8 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 			git_annex "add" ["-q", annexedfile] @? "add failed"
 			annexed_present annexedfile
 			writeFile ingitfile $ content ingitfile
-			Utility.boolSystem "git" [Utility.Param "add", Utility.File ingitfile] @? "git add failed"
-			Utility.boolSystem "git" [Utility.Params "commit -q -a -m commit"] @? "git commit failed"
+			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
+			boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
 			git_annex "add" ["-q", ingitfile] @? "add ingitfile should be no-op"
 			unannexed ingitfile
 		sha1dup = TestCase $ intmpclonerepo $ do
@@ -145,7 +148,7 @@ test_setkey = "git-annex setkey/fromkey" ~: TestCase $ inmainrepo $ do
 	let key = show $ fromJust r
 	git_annex "setkey" ["-q", "--key", key, tmp] @? "setkey failed"
 	git_annex "fromkey" ["-q", "--key", key, sha1annexedfile] @? "fromkey failed"
-	Utility.boolSystem "git" [Utility.Params "commit -q -a -m commit"] @? "git commit failed"
+	boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
 	annexed_present sha1annexedfile
 	where
 		tmp = "tmpfile"
@@ -172,7 +175,7 @@ test_drop = "git-annex drop" ~: TestList [noremote, withremote, untrustedremote]
 	where
 		noremote = "no remotes" ~: TestCase $ intmpclonerepo $ do
 			git_annex "get" ["-q", annexedfile] @? "get failed"
-			Utility.boolSystem "git" [Utility.Params "remote rm origin"]
+			boolSystem "git" [Params "remote rm origin"]
 				@? "git remote rm origin failed"
 			r <- git_annex "drop" ["-q", annexedfile]
 			not r @? "drop wrongly succeeded with no known copy of file"
@@ -303,12 +306,12 @@ test_edit = "git-annex edit/commit" ~: TestList [t False, t True]
 			then do
 				-- pre-commit depends on the file being
 				-- staged, normally git commit does this
-				Utility.boolSystem "git" [Utility.Param "add", Utility.File annexedfile]
+				boolSystem "git" [Param "add", File annexedfile]
 					@? "git add of edited file failed"
 				git_annex "pre-commit" ["-q"]
 					@? "pre-commit failed"
 			else do
-				Utility.boolSystem "git" [Utility.Params "commit -q -a -m contentchanged"]
+				boolSystem "git" [Params "commit -q -a -m contentchanged"]
 					@? "git commit of edited file failed"
 		runchecks [checklink, checkunwritable] annexedfile
 		c <- readFile annexedfile
@@ -326,7 +329,7 @@ test_fix = "git-annex fix" ~: intmpclonerepo $ do
 	git_annex "fix" ["-q", annexedfile] @? "fix of present file failed"
 	annexed_present annexedfile
 	createDirectory subdir
-	Utility.boolSystem "git" [Utility.Param "mv", Utility.File annexedfile, Utility.File subdir]
+	boolSystem "git" [Param "mv", File annexedfile, File subdir]
 		@? "git mv failed"
 	git_annex "fix" ["-q", newfile] @? "fix of moved file failed"
 	runchecks [checklink, checkunwritable] newfile
@@ -364,9 +367,9 @@ test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withrem
 	where
 		basicfsck = TestCase $ intmpclonerepo $ do
 			git_annex "fsck" ["-q"] @? "fsck failed"
-			Utility.boolSystem "git" [Utility.Params "config annex.numcopies 2"] @? "git config failed"
+			boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
 			fsck_should_fail "numcopies unsatisfied"
-			Utility.boolSystem "git" [Utility.Params "config annex.numcopies 1"] @? "git config failed"
+			boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
 			corrupt annexedfile
 			corrupt sha1annexedfile
 		withlocaluntrusted = TestCase $ intmpclonerepo $ do
@@ -377,7 +380,7 @@ test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withrem
 			git_annex "trust" ["-q", "."] @? "trust of current repo failed"
 			git_annex "fsck" ["-q", annexedfile] @? "fsck failed on file present in trusted repo"
 		withremoteuntrusted = TestCase $ intmpclonerepo $ do
-			Utility.boolSystem "git" [Utility.Params "config annex.numcopies 2"] @? "git config failed"
+			boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
 			git_annex "get" ["-q", annexedfile] @? "get failed"
 			git_annex "get" ["-q", sha1annexedfile] @? "get failed"
 			git_annex "fsck" ["-q"] @? "fsck failed with numcopies=2 and 2 copies"
@@ -448,9 +451,9 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	git_annex "get" ["-q", annexedfile] @? "get of file failed"
 	git_annex "get" ["-q", sha1annexedfile] @? "get of file failed"
 	checkunused []
-	Utility.boolSystem "git" [Utility.Params "rm -q", Utility.File annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
 	checkunused [annexedfilekey]
-	Utility.boolSystem "git" [Utility.Params "rm -q", Utility.File sha1annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
 	checkunused [annexedfilekey, sha1annexedfilekey]
 
 	-- good opportunity to test dropkey also
@@ -526,10 +529,10 @@ setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
 	cleanup dir
 	ensuretmpdir
-	Utility.boolSystem "git" [Utility.Params "init -q", Utility.File dir] @? "git init failed"
+	boolSystem "git" [Params "init -q", File dir] @? "git init failed"
 	indir dir $ do
-		Utility.boolSystem "git" [Utility.Params "config user.name", Utility.Param "Test User"] @? "git config failed"
-		Utility.boolSystem "git" [Utility.Params "config user.email test@example.com"] @? "git config failed"
+		boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
+		boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
 	return dir
 
 -- clones are always done as local clones; we cannot test ssh clones
@@ -537,7 +540,7 @@ clonerepo :: FilePath -> FilePath -> IO FilePath
 clonerepo old new = do
 	cleanup new
 	ensuretmpdir
-	Utility.boolSystem "git" [Utility.Params "clone -q", Utility.File old, Utility.File new] @? "git clone failed"
+	boolSystem "git" [Params "clone -q", File old, File new] @? "git clone failed"
 	indir new $ git_annex "init" ["-q", new] @? "git annex init failed"
 	return new
 	
@@ -643,6 +646,9 @@ prepare = do
 	p <- getEnvDefault  "PATH" ""
 	setEnv "PATH" (cwd ++ ":" ++ p) True
 	setEnv "TOPDIR" cwd True
+	-- Avoid git complaining if it cannot determine the user's email
+	-- address.
+	setEnv "EMAIL" "git-annex test <test@example.com>" True
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
