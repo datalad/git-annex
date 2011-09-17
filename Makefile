@@ -31,7 +31,7 @@ Remote/S3.o: Remote/S3.hs
 
 sources: $(sources)
 
-$(bins): sources
+$(bins): sources Remote/S3.o
 	$(GHCMAKE) $@
 
 git-annex.1: doc/git-annex.mdwn
