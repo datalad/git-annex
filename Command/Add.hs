@@ -53,16 +53,18 @@ perform (file, backend) = do
 			next $ cleanup file key True
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
-cleanup file key _ = do
+cleanup file key hascontent = do
 	link <- calcGitLink file key
 	liftIO $ createSymbolicLink link file
 
-	logStatus key InfoPresent
+	when hascontent $ do
+		logStatus key InfoPresent
 
-	-- touch the symlink to have the same mtime as the file it points to
-	s <- liftIO $ getFileStatus file
-	let mtime = modificationTime s
-	liftIO $ touch file (TimeSpec mtime) False
+		-- touch the symlink to have the same mtime as the
+		-- file it points to
+		s <- liftIO $ getFileStatus file
+		let mtime = modificationTime s
+		liftIO $ touch file (TimeSpec mtime) False
 
 	force <- Annex.getState Annex.force
 	if force

@@ -19,7 +19,6 @@ import Data.List
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Char
-import Control.Applicative
 
 import qualified Branch
 import Types
@@ -41,7 +40,7 @@ configSet u c = do
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = remoteLogParse <$> Branch.get remoteLog
+readRemoteLog = return . remoteLogParse =<< Branch.get remoteLog
 
 remoteLogParse :: String -> M.Map UUID RemoteConfig
 remoteLogParse s =

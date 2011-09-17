@@ -13,7 +13,7 @@ import System.FilePath
 import System.Directory
 import Data.List
 import Data.Maybe
-import Control.Applicative
+import Control.Monad (liftM2)
 
 {- Returns the parent directory of a path. Parent of / is "" -}
 parentDir :: FilePath -> FilePath
@@ -65,7 +65,7 @@ absPathFrom cwd file = fromMaybe bad $ absNormPath cwd file
  -    relPathCwdToFile "/tmp/foo/bar" == "" 
  -}
 relPathCwdToFile :: FilePath -> IO FilePath
-relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
+relPathCwdToFile f = liftM2 relPathDirToFile getCurrentDirectory (absPath f)
 
 {- Constructs a relative path from a directory to a file.
  -

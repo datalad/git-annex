@@ -20,7 +20,6 @@ module Annex (
 ) where
 
 import Control.Monad.State
-import Control.Applicative hiding (empty)
 
 import qualified Git
 import Git.Queue
@@ -37,8 +36,7 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 		Monad,
 		MonadIO,
 		MonadState AnnexState,
-		Functor,
-		Applicative
+		Functor
 	)
 
 -- internal state storage
@@ -87,7 +85,7 @@ newState gitrepo = AnnexState
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState <$> Git.configRead gitrepo
+new gitrepo = newState `liftM` Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)

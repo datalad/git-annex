@@ -11,7 +11,6 @@ import Control.Monad.State (liftIO)
 import System.Directory
 import System.Posix.Files
 import Control.Monad (filterM, liftM, when)
-import Control.Applicative
 import System.Path.WildMatch
 import Text.Regex.PCRE.Light.Char8
 import Data.List
@@ -183,7 +182,7 @@ withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
 backendPairs :: CommandSeekBackendFiles
-backendPairs a files = map a <$> Backend.chooseBackends files
+backendPairs a files = liftM (map a) $ Backend.chooseBackends files
 
 {- Filter out files those matching the exclude glob pattern,
  - if it was specified. -}
@@ -204,7 +203,7 @@ wildsRegex ws = compile regex []
 
 {- filter out symlinks -}	
 notSymlink :: FilePath -> IO Bool
-notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
+notSymlink f = liftM (not . isSymbolicLink) $ liftIO $ getSymbolicLinkStatus f
 
 {- Descriptions of params used in usage messages. -}
 paramRepeating :: String -> String
@@ -271,4 +270,4 @@ preserveOrder orig new = collect orig new
  - of git file list commands, that assumption tends to hold.
  -}
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
-runPreserveOrder a files = preserveOrder files <$> a files
+runPreserveOrder a files = liftM (preserveOrder files) (a files)

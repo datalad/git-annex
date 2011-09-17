@@ -29,12 +29,11 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad (filterM)
+import Control.Monad (filterM, liftM2)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
 import Data.Maybe
-import Control.Applicative
 import Text.JSON
 import Text.JSON.Generic
 
@@ -114,10 +113,10 @@ nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
-		Left e -> fromMaybe (error e) <$> byDescription
+		Left e -> return . fromMaybe (error e) =<< byDescription
 		Right r -> return $ uuid r
 	where
-		byDescription = M.lookup n . invertMap <$> uuidMap
+		byDescription = return . M.lookup n . invertMap =<< uuidMap
 		invertMap = M.fromList . map swap . M.toList
 		swap (a, b) = (b, a)
 
@@ -131,11 +130,11 @@ nameToUUID n = do
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< Annex.gitRepo
-	m <- M.union <$> uuidMap <*> availMap
+	m <- liftM2 M.union uuidMap availMap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
-		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+		availMap = return . M.fromList . map (\r -> (uuid r, name r)) =<< genList
 		findlog m u = M.findWithDefault "" u m
 		prettify m here u = base ++ ishere
 			where
@@ -160,7 +159,7 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
-keyPossibilities key = fst <$> keyPossibilities' False key
+keyPossibilities key = return . fst =<< keyPossibilities' False key
 
 {- Cost ordered lists of remotes that the LocationLog indicate may have a key.
  -

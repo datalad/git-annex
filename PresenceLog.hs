@@ -28,7 +28,6 @@ import Data.Time
 import System.Locale
 import qualified Data.Map as Map
 import Control.Monad.State (liftIO)
-import Control.Applicative
 
 import qualified Branch
 import Types
@@ -82,7 +81,7 @@ addLog file line = do
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
 readLog :: FilePath -> Annex [LogLine]
-readLog file = parseLog <$> Branch.get file
+readLog file = return . parseLog =<< Branch.get file
 
 parseLog :: String -> [LogLine]
 parseLog s = filter parsable $ map read $ lines s

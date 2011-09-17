@@ -38,7 +38,6 @@ import System.IO
 import System.Posix.IO
 import System.Posix.Types
 import System.Posix.Process
-import Control.Applicative
 import Control.Concurrent
 import Control.Exception (finally)
 import System.Exit
@@ -137,7 +136,7 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: RemoteConfig -> EncryptedCipher -> IO Cipher
 decryptCipher _ (EncryptedCipher encipher _) = 
-	Cipher <$> gpgPipeStrict decrypt encipher
+	return . Cipher =<< gpgPipeStrict decrypt encipher
 	where
 		decrypt = [ Param "--decrypt" ]
 

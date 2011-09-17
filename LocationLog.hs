@@ -24,7 +24,6 @@ module LocationLog (
 
 import System.FilePath
 import Control.Monad (when)
-import Control.Applicative
 import Data.Maybe
 
 import qualified Git
@@ -50,7 +49,7 @@ keyLocations key = currentLog $ logFile key
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}
 loggedKeys :: Annex [Key]
-loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Branch.files
+loggedKeys = return . mapMaybe (logFileKey . takeFileName) =<< Branch.files
 
 {- The filename of the log file for a given key. -}
 logFile :: Key -> String
