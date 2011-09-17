@@ -20,7 +20,6 @@ module Annex (
 ) where
 
 import Control.Monad.State
-import Control.Monad.IO.Control
 import Control.Applicative hiding (empty)
 
 import qualified Git
@@ -37,7 +36,6 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 	deriving (
 		Monad,
 		MonadIO,
-		MonadControlIO,
 		MonadState AnnexState,
 		Functor,
 		Applicative
