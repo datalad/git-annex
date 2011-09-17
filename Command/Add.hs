@@ -50,10 +50,10 @@ perform (file, backend) = do
 		Nothing -> stop
 		Just (key, _) -> do
 			moveAnnex key file
-			next $ cleanup file key
+			next $ cleanup file key True
 
-cleanup :: FilePath -> Key -> CommandCleanup
-cleanup file key = do
+cleanup :: FilePath -> Key -> Bool -> CommandCleanup
+cleanup file key _ = do
 	link <- calcGitLink file key
 	liftIO $ createSymbolicLink link file
 
