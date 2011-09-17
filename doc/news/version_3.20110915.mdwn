@@ -1,0 +1,10 @@
+git-annex 3.20110915 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * whereis: Show untrusted locations separately and do not include in
+     location count.
+   * Fix build without S3.
+   * addurl: Always use whole url as destination filename, rather than
+     only its file component.
+   * get, drop, copy: Added --auto option, which decides whether
+     to get/drop content as needed to work toward the configured numcopies.
+   * bugfix: drop and fsck did not honor --exclude"""]]
