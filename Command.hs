@@ -12,11 +12,8 @@ import System.Directory
 import System.Posix.Files
 import Control.Monad (filterM, liftM, when)
 import Control.Applicative
-import System.Path.WildMatch
-import Text.Regex.PCRE.Light.Char8
 import Data.List
 import Data.Maybe
-import Data.String.Utils
 
 import Types
 import qualified Backend
@@ -30,6 +27,7 @@ import Trust
 import LocationLog
 import Config
 import Backend
+import Limit
 
 {- A command runs in four stages.
  -
@@ -179,23 +177,6 @@ withNothing _ _ = error "This command takes no parameters."
 
 backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
 backendPairs a files = map a <$> Backend.chooseBackends files
-
-{- Filter out files those matching the exclude glob pattern,
- - if it was specified. -}
-filterFiles :: [FilePath] -> Annex [FilePath]
-filterFiles l = do
-	exclude <- Annex.getState Annex.exclude
-	if null exclude
-		then return l
-		else return $ filter (notExcluded $ wildsRegex exclude) l
-	where
-		notExcluded r f = isNothing $ match r f []
-
-wildsRegex :: [String] -> Regex
-wildsRegex ws = compile regex []
-	where
-		regex = "^(" ++ alternatives ++ ")"
-		alternatives = join "|" $ map wildToRegex ws
 
 {- filter out symlinks -}	
 notSymlink :: FilePath -> IO Bool

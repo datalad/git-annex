@@ -31,6 +31,7 @@ import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
 import Types.UUID
+import qualified Utility.Matcher
 
 -- git-annex's monad
 newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
@@ -59,7 +60,7 @@ data AnnexState = AnnexState
 	, defaultkey :: Maybe String
 	, toremote :: Maybe String
 	, fromremote :: Maybe String
-	, exclude :: [String]
+	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
 	, forcetrust :: [(UUID, TrustLevel)]
 	, trustmap :: Maybe TrustMap
 	, cipher :: Maybe Cipher
@@ -83,7 +84,7 @@ newState gitrepo = AnnexState
 	, defaultkey = Nothing
 	, toremote = Nothing
 	, fromremote = Nothing
-	, exclude = []
+	, limit = Left []
 	, forcetrust = []
 	, trustmap = Nothing
 	, cipher = Nothing

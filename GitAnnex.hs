@@ -19,6 +19,7 @@ import Types
 import Types.TrustLevel
 import qualified Annex
 import qualified Remote
+import qualified Limit
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -97,7 +98,7 @@ options = commonOptions ++
 		"specify to where to transfer content"
 	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
 		"specify from where to transfer content"
-	, Option ['x'] ["exclude"] (ReqArg addexclude paramGlob)
+	, Option ['x'] ["exclude"] (ReqArg (Limit.exclude) paramGlob)
 		"skip files matching the glob pattern"
 	, Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
@@ -113,7 +114,6 @@ options = commonOptions ++
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
-		addexclude v = Annex.changeState $ \s -> s { Annex.exclude = v:Annex.exclude s }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
 		setgitconfig :: String -> Annex ()
