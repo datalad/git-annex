@@ -16,44 +16,39 @@
  -}
 
 module Matcher (
-	Operation(..),
 	Token(..),
-	toMatcher,
+	generate,
 	match,
-	runMatch	
+	run
 ) where
 
 import Control.Monad
 
-{- An Operation is a command and some parameters. -}
-data Operation = Operation String [String]
+{- A Token can either be a single word, or an Operation of an arbitrary type. -}
+data Token op = Token String | Operation op
 	deriving (Show, Eq)
 
-{- A Token can either be a single word, or an Operation. -}
-data Token = Token String | TokenOp Operation
-	deriving (Show, Eq)
-
-data Matcher = Any
-	| And Matcher Matcher
-	| Or Matcher Matcher
-	| Not Matcher
-	| Op Operation
+data Matcher op = Any
+	| And (Matcher op) (Matcher op)
+	| Or (Matcher op) (Matcher op)
+	| Not (Matcher op)
+	| Op op
 	deriving (Show, Eq)
 
 {- Converts a list of Tokens into a Matcher. -}
-toMatcher :: [Token] -> Matcher
-toMatcher ts = toMatcher' Any ts
-toMatcher' :: Matcher -> [Token] -> Matcher
-toMatcher' m [] = m
-toMatcher' m ts = toMatcher' m' rest
+generate :: [Token op] -> Matcher op
+generate ts = generate' Any ts
+generate' :: Matcher op -> [Token op] -> Matcher op
+generate' m [] = m
+generate' m ts = generate' m' rest
 	where
 		(m', rest) = consume m ts
 
-{- Consumes one or more tokens, constructs a new Matcher,
- - and returns unconsumed tokens. -}
-consume :: Matcher -> [Token] -> (Matcher, [Token])
+{- Consumes one or more Tokens, constructs a new Matcher,
+ - and returns unconsumed Tokens. -}
+consume :: Matcher op -> [Token op] -> (Matcher op, [Token op])
 consume m [] = (m, [])
-consume m ((TokenOp o):ts) = (m `And` Op o, ts)
+consume m ((Operation o):ts) = (m `And` Op o, ts)
 consume m ((Token t):ts)
 	| t == "and" = cont $ m `And` next
 	| t == "or" = cont $ m `Or` next
@@ -67,7 +62,7 @@ consume m ((Token t):ts)
 
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}
-match :: (Operation -> Bool) -> Matcher -> Bool
+match :: (op -> Bool) -> Matcher op -> Bool
 match a = go
 	where
 		go Any = True
@@ -76,13 +71,12 @@ match a = go
 		go (Not m1) = not (go m1)
 		go (Op v) = a v
 
-{- Runs a Matcher in an arbitrary monadic contex, using a supplied
- - action to evaluate Operations. -}
-runMatch :: Monad m => (Operation -> m Bool) -> Matcher -> m Bool
-runMatch a = go
+{- Runs a monadic Matcher, where Operations are actions in the monad. -}
+run :: Monad m => Matcher (m Bool) -> m Bool
+run = go
 	where
 		go Any = return True
 		go (And m1 m2) = liftM2 (&&) (go m1) (go m2)
 		go (Or m1 m2) =  liftM2 (||) (go m1) (go m2)
 		go (Not m1) = liftM not (go m1)
-		go (Op v) = a v
+		go (Op o) = o -- run o
