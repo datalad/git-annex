@@ -14,6 +14,7 @@ import Control.Monad.State (liftIO)
 import qualified Annex
 import Types
 import Command
+import Limit
 
 {- Each dashed command-line option results in generation of an action
  - in the Annex monad that performs the necessary setting.
@@ -47,3 +48,15 @@ commonOptions =
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $
 			setLevel DEBUG
+	
+matcherOptions :: [Option]
+matcherOptions =
+	[ longopt "not" "negate next option"
+	, longopt "and" "both previous and next option must match"
+	, longopt "or" "either previous or next option must match"
+	, shortopt "(" "open group of options"
+	, shortopt ")" "close group of options"
+	]
+	where
+		longopt o d = Option [] [o] (NoArg (token o)) d
+		shortopt o d = Option o [] (NoArg (token o)) d

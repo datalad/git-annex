@@ -35,7 +35,7 @@ getMatcher = do
 			Annex.changeState $ \s -> s { Annex.limit = Right matcher }
 			return matcher
 
-{- Adds something to the limit list. -}
+{- Adds something to the limit list, which is built up reversed. -}
 add :: Limit -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = append $ Annex.limit s }
 	where
@@ -43,16 +43,16 @@ add l = Annex.changeState $ \s -> s { Annex.limit = append $ Annex.limit s }
 		append _ = error "internal"
 
 {- Adds a new limit. -}
-addl :: (FilePath -> Annex Bool) -> Annex ()
-addl = add . Utility.Matcher.Operation
+addlimit :: (FilePath -> Annex Bool) -> Annex ()
+addlimit = add . Utility.Matcher.Operation
 
 {- Adds a new token. -}
-addt :: String -> Annex ()
-addt = add . Utility.Matcher.Token
+token :: String -> Annex ()
+token = add . Utility.Matcher.Token
 
 {- Add a limit to skip files that do not match the glob. -}
 exclude :: String -> Annex ()
-exclude glob = addl $ return . notExcluded
+exclude glob = addlimit $ return . notExcluded
 	where
 		notExcluded f = isNothing $ match cregex f []
 		cregex = compile regex []

@@ -98,8 +98,6 @@ options = commonOptions ++
 		"specify to where to transfer content"
 	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
 		"specify from where to transfer content"
-	, Option ['x'] ["exclude"] (ReqArg (Limit.exclude) paramGlob)
-		"skip files matching the glob pattern"
 	, Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
@@ -110,7 +108,9 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
-	]
+	, Option ['x'] ["exclude"] (ReqArg (Limit.exclude) paramGlob)
+		"skip files matching the glob pattern"
+	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
