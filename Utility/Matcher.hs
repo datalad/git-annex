@@ -17,9 +17,10 @@
 
 module Utility.Matcher (
 	Token(..),
+	Matcher,
 	generate,
 	match,
-	run
+	matchM
 ) where
 
 import Control.Monad
@@ -62,21 +63,21 @@ consume m ((Token t):ts)
 
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}
-match :: (op -> Bool) -> Matcher op -> Bool
-match a = go
+match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
+match a m v = go m
 	where
 		go Any = True
 		go (And m1 m2) = go m1 && go m2
 		go (Or m1 m2) = go m1 || go m2
 		go (Not m1) = not (go m1)
-		go (Op v) = a v
+		go (Op o) = a o v
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
-run :: Monad m => Matcher (m Bool) -> m Bool
-run = go
+matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
+matchM m v = go m
 	where
 		go Any = return True
 		go (And m1 m2) = liftM2 (&&) (go m1) (go m2)
 		go (Or m1 m2) =  liftM2 (||) (go m1) (go m2)
 		go (Not m1) = liftM not (go m1)
-		go (Op o) = o -- run o
+		go (Op o) = o v
