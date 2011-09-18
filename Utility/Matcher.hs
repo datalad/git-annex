@@ -15,7 +15,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Matcher (
+module Utility.Matcher (
 	Token(..),
 	generate,
 	match,
