@@ -379,13 +379,6 @@ subdirectories).
 
   It should be specified using the name of a configured remote.
 
-* --exclude=glob
-
-  Skips files matching the glob pattern. The glob is matched relative to
-  the current directory.
-
-  This option can be specified multiple times.
-
 * --numcopies=n
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
@@ -414,6 +407,54 @@ subdirectories).
 * -c name=value
 
   Used to override git configuration settings. May be specified multiple times.
+
+# FILE MATCHING OPTIONS
+
+These options can all be specified multiple times, and can be combined to
+limit which files git-annex acts on.
+
+Arbitrarily complicated expressions can be built using these options.
+For example:
+
+	--exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
+
+The above example prevents git-annex from working on mp3 files whose
+file contents are present at either of two repositories.
+
+* --exclude=glob
+
+  Skips files matching the glob pattern. The glob is matched relative to
+  the current directory. For example: --exclude='*.mp3' --exclude='subdir/*'
+
+* --in=repository
+
+  Matches only files that git-annex believes have their contents present
+  in a repository.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository.
+
+* --not
+
+  Inverts the next file matching option. For example, to only act on
+  mp3s, use: --not --exclude='*.mp3'
+
+* --and
+
+  Requires that both the previous and the next file matching option matches.
+  The default.
+
+* --or
+
+  Requires that either the previous, or the next file matching option matches.
+
+* -(
+
+  Opens a group of file matching options.
+
+* -)
+
+  Closes a group of file matching options.
 
 # CONFIGURATION
 
