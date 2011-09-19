@@ -1,3 +1,13 @@
+git-annex (3.20110916) UNRELEASED; urgency=low
+
+  * --in can be used to make git-annex only operate on files
+    believed to be present in a given repository.
+  * Arbitrarily complex expressions can be built to limit the files git-annex
+    operates on, by combining the options --not --and --or -( and -)
+    Example: git annex get --exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
+
 git-annex (3.20110915) unstable; urgency=low
 
   * whereis: Show untrusted locations separately and do not include in

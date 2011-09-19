@@ -108,8 +108,10 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
-	, Option ['x'] ["exclude"] (ReqArg (Limit.exclude) paramGlob)
+	, Option ['x'] ["exclude"] (ReqArg (Limit.addExclude) paramGlob)
 		"skip files matching the glob pattern"
+	, Option ['i'] ["in"] (ReqArg (Limit.addIn) paramRemote)
+		"skip files not present in a remote"
 	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }

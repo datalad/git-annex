@@ -14,6 +14,9 @@ import Data.Maybe
 
 import Annex
 import qualified Utility.Matcher
+import qualified Remote
+import qualified Backend
+import LocationLog
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 
@@ -51,9 +54,22 @@ token :: String -> Annex ()
 token = add . Utility.Matcher.Token
 
 {- Add a limit to skip files that do not match the glob. -}
-exclude :: String -> Annex ()
-exclude glob = addlimit $ return . notExcluded
+addExclude :: String -> Annex ()
+addExclude glob = addlimit $ return . notExcluded
 	where
 		notExcluded f = isNothing $ match cregex f []
 		cregex = compile regex []
 		regex = '^':wildToRegex glob
+
+{- Adds a limit to skip files not believed to be present
+ - on a specfied remote. -}
+addIn :: String -> Annex ()
+addIn name = do
+	u <- Remote.nameToUUID name
+	addlimit $ check u
+	where
+		check u f = Backend.lookupFile f >>= handle u
+		handle _ Nothing = return False
+		handle u (Just (key, _)) = do
+			us <- keyLocations key
+			return $ u `elem` us
