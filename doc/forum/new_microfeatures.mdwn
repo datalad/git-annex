@@ -33,9 +33,15 @@ Come to think of it, the inject --bare thing is probably not a microfeature. Sho
 
 > I've thought about such things before; does not seem really micro and I'm unsure how well it would work, but it would be worth a [[todo]]. --[[Joey]]
 
+>> Update: Done as --auto. --[[Joey]] 
+
 ---
 
 Along similar lines, it might be nice to have a mode where git-annex tries to fill up a disk up to the `annex.diskreserve` with files, preferring files that have relatively few copies. Then as storage prices continue to fall, new large drives could just be plopped in and git-annex used to fill it up in a way that improves the overall redundancy without needing to manually pick and choose.
+
+> Update: git annex get --auto basically does this; you can tune
+> --numcopies on the fly to make it get more files than needed by the
+> current numcopies setting. --[[Joey]] 
 
 ---
 
