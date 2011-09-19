@@ -107,17 +107,22 @@ notBareRepo a = do
 
 {- These functions find appropriate files or other things based on a
    user's parameters, and run a specified action on them. -}
-withFilesInGit :: (String -> CommandStart) -> CommandSeek
+withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = do
 	repo <- Annex.gitRepo
-	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	liftM (map a) $ filterFiles files
+	runFiltered a $ liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandSeek
 withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	files' <- filterFiles files
-	liftM (map a) $ liftIO $ Git.checkAttr repo attr files'
+	run $ liftIO $ Git.checkAttr repo attr files
+	where
+		run fs = do
+			matcher <- Limit.getMatcher
+			liftM (map $ proc matcher) fs
+		proc matcher p@(f, _) = do
+			ok <- matcher f
+			if ok then a p else stop
 withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 	where
@@ -128,23 +133,17 @@ withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	files' <- filterFiles files
-	backendPairs a files'
+	backendPairs a files
 withFilesMissing :: (String -> CommandStart) -> CommandSeek
-withFilesMissing a params = do
-	files <- liftIO $ filterM missing params
-	liftM (map a) $ filterFiles files
+withFilesMissing a params = runFiltered a $ liftIO $ filterM missing params
 	where
-		missing f = do
-			e <- doesFileExist f
-			return $ not e
+		missing = liftM not . doesFileExist
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
 	repo <- Annex.gitRepo
 	force <- Annex.getState Annex.force
 	newfiles <- liftIO $ runPreserveOrder (LsFiles.notInRepo repo force) params
-	newfiles' <- filterFiles newfiles
-	backendPairs a newfiles'
+	backendPairs a newfiles
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = return [a params]
 withStrings :: (String -> CommandStart) -> CommandSeek
@@ -152,8 +151,8 @@ withStrings a params = return $ map a params
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
 withFilesToBeCommitted a params = do
 	repo <- Annex.gitRepo
-	tocommit <- liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
-	liftM (map a) $ filterFiles tocommit
+	runFiltered a $
+		liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
 withFilesUnlocked :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: (BackendFile -> CommandStart) -> CommandSeek
@@ -165,8 +164,7 @@ withFilesUnlocked' typechanged a params = do
 	typechangedfiles <- liftIO $ runPreserveOrder (typechanged repo) params
 	unlockedfiles <- liftIO $ filterM notSymlink $
 		map (\f -> Git.workTree repo ++ "/" ++ f) typechangedfiles
-	unlockedfiles' <- filterFiles unlockedfiles
-	backendPairs a unlockedfiles'
+	backendPairs a unlockedfiles
 withKeys :: (Key -> CommandStart) -> CommandSeek
 withKeys a params = return $ map (a . parse) params
 	where
@@ -175,8 +173,23 @@ withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
+runFiltered :: (FilePath -> Annex (Maybe a)) -> Annex [FilePath] -> Annex [Annex (Maybe a)]
+runFiltered a fs = do
+	matcher <- Limit.getMatcher
+	liftM (map $ proc matcher) fs
+	where
+		proc matcher f = do
+			ok <- matcher f
+			if ok then a f else stop
+
 backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
-backendPairs a files = map a <$> Backend.chooseBackends files
+backendPairs a fs = do
+	matcher <- Limit.getMatcher
+	liftM (map $ proc matcher) (Backend.chooseBackends fs)
+	where
+		proc matcher p@(_, f) = do
+			ok <- matcher f
+			if ok then a p else stop
 
 {- filter out symlinks -}	
 notSymlink :: FilePath -> IO Bool

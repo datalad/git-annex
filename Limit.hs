@@ -22,20 +22,19 @@ import Utility
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 
-{- Filter out files not matching user-specified limits. -}
-filterFiles :: [FilePath] -> Annex [FilePath]
-filterFiles l = do
-	matcher <- getMatcher
-	filterM (Utility.Matcher.matchM matcher) l
-
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
-limited = (not . Utility.Matcher.matchesAny) <$> getMatcher
+limited = (not . Utility.Matcher.matchesAny) <$> getMatcher'
 
 {- Gets a matcher for the user-specified limits. The matcher is cached for
  - speed; once it's obtained the user-specified limits can't change. -}
-getMatcher :: Annex (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+getMatcher :: Annex (FilePath -> Annex Bool)
 getMatcher = do
+	m <- getMatcher'
+	return $ Utility.Matcher.matchM m
+
+getMatcher' :: Annex (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+getMatcher' = do
 	m <- Annex.getState Annex.limit
 	case m of
 		Right r -> return r
