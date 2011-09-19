@@ -18,6 +18,7 @@ import qualified Remote
 import qualified Backend
 import LocationLog
 import Utility
+import Content
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 
@@ -64,17 +65,19 @@ addExclude glob = addlimit $ return . notExcluded
 		regex = '^':wildToRegex glob
 
 {- Adds a limit to skip files not believed to be present
- - on a specfied remote. -}
+ - on a specfied repository. -}
 addIn :: String -> Annex ()
 addIn name = do
 	u <- Remote.nameToUUID name
-	addlimit $ check u
+	addlimit $ if name == "." then check local else check (remote u)
 	where
-		check u f = Backend.lookupFile f >>= handle u
+		check a f = Backend.lookupFile f >>= handle a
 		handle _ Nothing = return False
-		handle u (Just (key, _)) = do
+		handle a (Just (key, _)) = a key
+		remote u key = do
 			us <- keyLocations key
 			return $ u `elem` us
+		local key = inAnnex key
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
