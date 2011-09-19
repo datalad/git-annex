@@ -57,7 +57,7 @@ consume m ((Token t):ts)
 	| t == "not" = cont $ m `And` (Not next)
 	| t == "(" = let (n, r) = consume next rest in (m `And` n, r)
 	| t == ")" = (m, ts)
-	| otherwise = (m, ts) -- ignore unknown token
+	| otherwise = error $ "unknown token " ++ t
 	where
 		(next, rest) = consume Any ts
 		cont v = (v, rest)
