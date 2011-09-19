@@ -10,8 +10,8 @@ git-annex (3.20110916) UNRELEASED; urgency=low
   * find: Rather than only showing files whose contents are present,
     when used with --exclude --copies or --in, displays all files that
     match the specified conditions.
-  * Note that this is a behavior change for find --exclude! Old behavior
-    can be gotten with: find --in . --exclude=...
+  * Note that this is a behavior change for git-annex find! Old behavior
+    can be gotten by using: git-annex find --in .
 
  -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
 
