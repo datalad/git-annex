@@ -115,20 +115,11 @@ withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandS
 withAttrFilesInGit attr a params = do
 	repo <- Annex.gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	run $ liftIO $ Git.checkAttr repo attr files
-	where
-		run fs = do
-			matcher <- Limit.getMatcher
-			liftM (map $ proc matcher) fs
-		proc matcher p@(f, _) = do
-			ok <- matcher f
-			if ok then a p else stop
+	runFilteredGen a fst $ liftIO $ Git.checkAttr repo attr files
 withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 	where
-		go (file, v) = do
-			let numcopies = readMaybe v
-			a file numcopies
+		go (file, v) = a file (readMaybe v)
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do
 	repo <- Annex.gitRepo
@@ -174,22 +165,20 @@ withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
 runFiltered :: (FilePath -> Annex (Maybe a)) -> Annex [FilePath] -> Annex [Annex (Maybe a)]
-runFiltered a fs = do
+runFiltered a fs = runFilteredGen a id fs
+
+backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
+backendPairs a fs = runFilteredGen a snd (Backend.chooseBackends fs)
+
+runFilteredGen :: (a1 -> Annex (Maybe a)) -> (a1 -> FilePath) -> Annex [a1] -> Annex [Annex (Maybe a)]
+runFilteredGen a d fs = do
 	matcher <- Limit.getMatcher
 	liftM (map $ proc matcher) fs
 	where
-		proc matcher f = do
+		proc matcher v = do
+			let f = d v
 			ok <- matcher f
-			if ok then a f else stop
-
-backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
-backendPairs a fs = do
-	matcher <- Limit.getMatcher
-	liftM (map $ proc matcher) (Backend.chooseBackends fs)
-	where
-		proc matcher p@(_, f) = do
-			ok <- matcher f
-			if ok then a p else stop
+			if ok then a v else stop
 
 {- filter out symlinks -}	
 notSymlink :: FilePath -> IO Bool
