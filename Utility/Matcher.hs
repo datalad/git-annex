@@ -42,9 +42,7 @@ generate :: [Token op] -> Matcher op
 generate ts = generate' Any ts
 generate' :: Matcher op -> [Token op] -> Matcher op
 generate' m [] = m
-generate' m ts = generate' m' rest
-	where
-		(m', rest) = consume m ts
+generate' m ts = uncurry generate' $ consume m ts
 
 {- Consumes one or more Tokens, constructs a new Matcher,
  - and returns unconsumed Tokens. -}
