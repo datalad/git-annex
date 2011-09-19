@@ -9,7 +9,6 @@ module Limit where
 
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
-import Control.Monad (filterM)
 import Control.Applicative
 import Data.Maybe
 
@@ -29,9 +28,7 @@ limited = (not . Utility.Matcher.matchesAny) <$> getMatcher'
 {- Gets a matcher for the user-specified limits. The matcher is cached for
  - speed; once it's obtained the user-specified limits can't change. -}
 getMatcher :: Annex (FilePath -> Annex Bool)
-getMatcher = do
-	m <- getMatcher'
-	return $ Utility.Matcher.matchM m
+getMatcher = Utility.Matcher.matchM <$> getMatcher'
 
 getMatcher' :: Annex (Utility.Matcher.Matcher (FilePath -> Annex Bool))
 getMatcher' = do
