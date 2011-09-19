@@ -7,6 +7,11 @@ git-annex (3.20110916) UNRELEASED; urgency=low
     Example: git annex get --exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
   * --copies=N can be used to make git-annex only operate on files with
     the specified number of copies. (And --not --copies=N for the inverse.)
+  * find: Rather than only showing files whose contents are present,
+    when used with --exclude --copies or --in, displays all files that
+    match the specified conditions.
+  * Note that this is a behavior change for find --exclude! Old behavior
+    can be gotten with: find --in . --exclude=...
 
  -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
 

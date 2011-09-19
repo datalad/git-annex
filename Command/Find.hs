@@ -7,11 +7,12 @@
 
 module Command.Find where
 
-import Control.Monad.State (liftIO)
+import Control.Monad.State
 
 import Command
 import Content
 import Utility.Conditional
+import Limit
 
 command :: [Command]
 command = [repoCommand "find" paramPaths seek "lists available files"]
@@ -19,8 +20,10 @@ command = [repoCommand "find" paramPaths seek "lists available files"]
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
-{- Output a list of files. -}
 start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
-	whenM (inAnnex key) $ liftIO $ putStrLn file
+	-- only files inAnnex are shown, unless the user has requested
+	-- others via a limit
+	whenM (liftM2 (||) (inAnnex key) limited) $
+		liftIO $ putStrLn file
 	stop

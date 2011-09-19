@@ -20,7 +20,8 @@ module Utility.Matcher (
 	Matcher,
 	generate,
 	match,
-	matchM
+	matchM,
+	matchesAny
 ) where
 
 import Control.Monad
@@ -81,3 +82,10 @@ matchM m v = go m
 		go (Or m1 m2) =  liftM2 (||) (go m1) (go m2)
 		go (Not m1) = liftM not (go m1)
 		go (Op o) = o v
+
+{- Checks is a matcher contains no limits, and so (presumably) matches
+ - anything. Note that this only checks the trivial case; it is possible
+ - to construct matchers that match anything but are more complicated. -}
+matchesAny :: Matcher a -> Bool
+matchesAny Any = True
+matchesAny _ = False

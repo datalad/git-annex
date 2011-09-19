@@ -222,6 +222,8 @@ subdirectories).
 * find [path ...]
 
   Outputs a list of annexed files whose content is currently present.
+  Or, if a file matching option is specified, outputs a list of all
+  matching files, whether or not their content is currently present.
 
   With no parameters, defaults to finding all files in the current directory
   and its subdirectories.
@@ -432,7 +434,8 @@ file contents are present at either of two repositories.
   in a repository.
 
   The repository should be specified using the name of a configured remote,
-  or the UUID or description of a repository.
+  or the UUID or description of a repository. For the current repository,
+  use "--in=."
 
 * --copies=number
 
