@@ -43,10 +43,10 @@ getMatcher' = do
 
 {- Adds something to the limit list, which is built up reversed. -}
 add :: Limit -> Annex ()
-add l = Annex.changeState $ \s -> s { Annex.limit = append $ Annex.limit s }
+add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
 	where
-		append (Left ls) = Left $ l:ls
-		append _ = error "internal"
+		prepend (Left ls) = Left $ l:ls
+		prepend _ = error "internal"
 
 {- Adds a new limit. -}
 addlimit :: (FilePath -> Annex Bool) -> Annex ()
@@ -65,7 +65,7 @@ addExclude glob = addlimit $ return . notExcluded
 		regex = '^':wildToRegex glob
 
 {- Adds a limit to skip files not believed to be present
- - on a specfied repository. -}
+ - in a specfied repository. -}
 addIn :: String -> Annex ()
 addIn name = do
 	u <- Remote.nameToUUID name
