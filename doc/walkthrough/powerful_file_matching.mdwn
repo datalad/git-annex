@@ -9,7 +9,7 @@ information indicates are present in a given repository. For example,
 if you want to populate newarchive with files, but not those already
 on oldarchive, you could do it like this:
 
-	git annex copy --not -in oldarchive --to newarchive
+	git annex copy --not --in oldarchive --to newarchive
 
 Without the --not, --in makes it act on files that *are* in the specified
 repository. So, to remove files that are on oldarchive:
