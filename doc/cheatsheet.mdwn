@@ -12,4 +12,5 @@ A supplement to the [[walkthrough]].
 	walkthrough/what_to_do_when_you_lose_a_repository
 	walkthrough/recover_data_from_lost+found
 	walkthrough/Internet_Archive_via_S3
+	walkthrough/powerful_file_matching
 """]]

@@ -14,3 +14,5 @@ thought/known to be on A.
 	git annex drop --only-on A
 
 --[[Joey]] 
+
+[[done]]
