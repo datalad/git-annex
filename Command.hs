@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,9 +10,8 @@ module Command where
 import Control.Monad.State (liftIO)
 import System.Directory
 import System.Posix.Files
-import Control.Monad (filterM, liftM, when)
+import Control.Monad (filterM, liftM)
 import Control.Applicative
-import Data.List
 import Data.Maybe
 
 import Types
@@ -22,6 +21,8 @@ import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Utility
+import Utility.Conditional
+import Utility.Path
 import Types.Key
 import Trust
 import LocationLog
@@ -75,9 +76,8 @@ stop = return Nothing
 {- Prepares a list of actions to run to perform a command, based on
  - the parameters passed to it. -}
 prepCommand :: Command -> [String] -> Annex [Annex Bool]
-prepCommand Command { cmdseek = seek } params = do
-	lists <- mapM (\s -> s params) seek
-	return $ map doCommand $ concat lists
+prepCommand Command { cmdseek = seek } params =
+	return . map doCommand . concat =<< mapM (\s -> s params) seek
 
 {- Runs a command through the start, perform and cleanup stages -}
 doCommand :: CommandStart -> CommandCleanup
@@ -86,11 +86,9 @@ doCommand = start
 		start   = stage $ maybe success perform
 		perform = stage $ maybe failure cleanup
 		cleanup = stage $ \r -> showEndResult r >> return r
-		stage a b = b >>= a
+		stage = (=<<)
 		success = return True
-		failure = do
-			showEndFail
-			return False
+		failure = showEndFail >> return False
 
 notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
@@ -100,13 +98,12 @@ isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do
-	g <- Annex.gitRepo
-	when (Git.repoIsLocalBare g) $
+	whenM (Git.repoIsLocalBare <$> Annex.gitRepo) $
 		error "You cannot run this subcommand in a bare repository."
 	a
 
 {- These functions find appropriate files or other things based on a
-   user's parameters, and run a specified action on them. -}
+   user's parameters, and prepare actions operating on them. -}
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = do
 	repo <- Annex.gitRepo
@@ -170,7 +167,7 @@ runFiltered a fs = runFilteredGen a id fs
 backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
 backendPairs a fs = runFilteredGen a snd (Backend.chooseBackends fs)
 
-runFilteredGen :: (a1 -> Annex (Maybe a)) -> (a1 -> FilePath) -> Annex [a1] -> Annex [Annex (Maybe a)]
+runFilteredGen :: (b -> Annex (Maybe a)) -> (b -> FilePath) -> Annex [b] -> Annex [Annex (Maybe a)]
 runFilteredGen a d fs = do
 	matcher <- Limit.getMatcher
 	liftM (map $ proc matcher) fs
@@ -227,33 +224,6 @@ cmdlineKey  = do
 	where
 		nokey = error "please specify the key with --key"
 		badkey = error "bad key"
-
-{- Given an original list of files, and an expanded list derived from it,
- - ensures that the original list's ordering is preserved. 
- -
- - The input list may contain a directory, like "dir" or "dir/". Any
- - items in the expanded list that are contained in that directory will
- - appear at the same position as it did in the input list.
- -}
-preserveOrder :: [FilePath] -> [FilePath] -> [FilePath]
--- optimisation, only one item in original list, so no reordering needed
-preserveOrder [_] new = new
-preserveOrder orig new = collect orig new
-	where
-		collect [] n = n
-		collect [_] n = n -- optimisation
-		collect (l:ls) n = found ++ collect ls rest
-			where (found, rest)=partition (l `dirContains`) n
-
-{- Runs an action that takes a list of FilePaths, and ensures that 
- - its return list preserves order.
- -
- - This assumes that it's cheaper to call preserveOrder on the result,
- - than it would be to run the action separately with each param. In the case
- - of git file list commands, that assumption tends to hold.
- -}
-runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
-runPreserveOrder a files = preserveOrder files <$> a files
 
 {- Used for commands that have an auto mode that checks the number of known
  - copies of a key.
