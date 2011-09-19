@@ -112,6 +112,8 @@ options = commonOptions ++
 		"skip files matching the glob pattern"
 	, Option ['i'] ["in"] (ReqArg (Limit.addIn) paramRemote)
 		"skip files not present in a remote"
+	, Option ['C'] ["copies"] (ReqArg (Limit.addCopies) paramNumber)
+		"skip files with fewer copies"
 	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }

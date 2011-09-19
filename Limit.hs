@@ -17,6 +17,7 @@ import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
 import LocationLog
+import Utility
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 
@@ -73,3 +74,17 @@ addIn name = do
 		handle u (Just (key, _)) = do
 			us <- keyLocations key
 			return $ u `elem` us
+
+{- Adds a limit to skip files not believed to have the specified number
+ - of copies. -}
+addCopies :: String -> Annex ()
+addCopies num = do
+	case readMaybe num :: Maybe Int of
+		Nothing -> error "bad number for --copies"
+		Just n -> addlimit $ check n
+	where
+		check n f = Backend.lookupFile f >>= handle n
+		handle _ Nothing = return False
+		handle n (Just (key, _)) = do
+			us <- keyLocations key
+			return $ length us >= n

@@ -434,6 +434,11 @@ file contents are present at either of two repositories.
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
 
+* --copies=number
+
+  Matches only files that git-annex believes to have the specified number
+  of copies.
+
 * --not
 
   Inverts the next file matching option. For example, to only act on

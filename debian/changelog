@@ -5,6 +5,8 @@ git-annex (3.20110916) UNRELEASED; urgency=low
   * Arbitrarily complex expressions can be built to limit the files git-annex
     operates on, by combining the options --not --and --or -( and -)
     Example: git annex get --exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
+  * --copies=N can be used to make git-annex only operate on files with
+    the specified number of copies. (And --not --copies=N for the inverse.)
 
  -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
 
