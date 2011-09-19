@@ -66,7 +66,8 @@ gen r u c = do
 			removeKey = remove,
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
-			config = c
+			config = c,
+			repo = r
 		}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig

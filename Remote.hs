@@ -16,7 +16,6 @@ module Remote (
 	hasKeyCheap,
 
 	remoteTypes,
-	genList,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
@@ -29,7 +28,7 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad (filterM)
+import Control.Monad.State (filterM)
 import Data.List
 import qualified Data.Map as M
 import Data.String.Utils
@@ -83,7 +82,6 @@ genList = do
 	where
 		process m t = 
 			enumerate t >>=
-			filterM remoteNotIgnored >>=
 			mapM (gen m t)
 		gen m t r = do
 			u <- getUUID r
@@ -184,7 +182,7 @@ keyPossibilities' withtrusted key = do
 	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- genList
+	allremotes <- filterM (repoNotIgnored . repo) =<< genList
 	let validremotes = remotesWithUUID allremotes validuuids
 
 	return (sort validremotes, validtrusteduuids)

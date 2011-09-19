@@ -57,7 +57,8 @@ gen r u c = do
 			removeKey = remove dir,
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
-			config = Nothing
+			config = Nothing,
+			repo = r
 		}
 
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig

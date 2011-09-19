@@ -71,7 +71,8 @@ gen r u _ = do
 		removeKey = dropKey r',
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
-		config = Nothing
+		config = Nothing,
+		repo = r'
 	}
 
 {- Tries to read the config for a specified remote, updates state, and

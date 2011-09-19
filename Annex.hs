@@ -26,7 +26,7 @@ import Control.Applicative hiding (empty)
 import qualified Git
 import Git.Queue
 import Types.Backend
-import Types.Remote
+import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
@@ -48,7 +48,7 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [Backend Annex]
-	, remotes :: [Remote Annex]
+	, remotes :: [Types.Remote.Remote Annex]
 	, repoqueue :: Queue
 	, output :: OutputType
 	, force :: Bool

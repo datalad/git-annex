@@ -66,7 +66,8 @@ gen r u c = do
 			removeKey = remove o,
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
-			config = Nothing
+			config = Nothing,
+			repo = r
 		}
 
 genRsyncOpts :: Git.Repo -> Annex RsyncOpts

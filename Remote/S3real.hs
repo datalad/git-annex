@@ -67,7 +67,8 @@ gen' r u c cst =
 			removeKey = remove this,
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
-			config = c
+			config = c,
+			repo = r
 		}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig

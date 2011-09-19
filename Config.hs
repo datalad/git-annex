@@ -82,18 +82,10 @@ prop_cost_sane = False `notElem`
 {- Checks if a repo should be ignored, based either on annex-ignore
  - setting, or on command-line options. Allows command-line to override
  - annex-ignore. -}
-remoteNotIgnored :: Git.Repo -> Annex Bool
-remoteNotIgnored r = do
+repoNotIgnored :: Git.Repo -> Annex Bool
+repoNotIgnored r = do
 	ignored <- getConfig r "ignore" "false"
-	to <- match Annex.toremote
-	from <- match Annex.fromremote
-	if to || from
-		then return True
-		else return $ not $ Git.configTrue ignored
-	where
-		match a = do
-			n <- Annex.getState a
-			return $ n == Git.repoRemoteName r
+	return $ not $ Git.configTrue ignored
 
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}

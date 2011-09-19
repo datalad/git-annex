@@ -58,7 +58,8 @@ gen r _ _ =
 		removeKey = dropKey,
 		hasKey = checkKey,
 		hasKeyCheap = False,
-		config = Nothing
+		config = Nothing,
+		repo = r
 	}
 
 {- The urls for a key are stored in remote/web/hash/key.log 

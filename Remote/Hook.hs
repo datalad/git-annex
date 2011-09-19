@@ -58,7 +58,8 @@ gen r u c = do
 			removeKey = remove hooktype,
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
-			config = Nothing
+			config = Nothing,
+			repo = r
 		}
 
 hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
