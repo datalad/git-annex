@@ -18,6 +18,7 @@
 module Utility.Matcher (
 	Token(..),
 	Matcher,
+	token,
 	generate,
 	match,
 	matchM,
@@ -26,20 +27,30 @@ module Utility.Matcher (
 
 import Control.Monad
 
-{- A Token can either be a single word, or an Operation of an arbitrary type. -}
-data Token op = Token String | Operation op
+{- A Token can be an Operation of an arbitrary type, or one of a few
+ - predefined peices of syntax. -}
+data Token op = Operation op | And | Or | Not | Open | Close
 	deriving (Show, Eq)
 
-data Matcher op = Any
-	| And (Matcher op) (Matcher op)
-	| Or (Matcher op) (Matcher op)
-	| Not (Matcher op)
-	| Op op
+data Matcher op = MAny
+	| MAnd (Matcher op) (Matcher op)
+	| MOr (Matcher op) (Matcher op)
+	| MNot (Matcher op)
+	| MOp op
 	deriving (Show, Eq)
+
+{- Converts a word of syntax into a token. Doesn't handle operations. -}
+token :: String -> Token op
+token "and" = And
+token "or" = Or
+token "not" = Not
+token "(" = Open
+token ")" = Close
+token t = error $ "unknown token " ++ t
 
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op
-generate ts = generate' Any ts
+generate ts = generate' MAny ts
 generate' :: Matcher op -> [Token op] -> Matcher op
 generate' m [] = m
 generate' m ts = uncurry generate' $ consume m ts
@@ -48,16 +59,16 @@ generate' m ts = uncurry generate' $ consume m ts
  - and returns unconsumed Tokens. -}
 consume :: Matcher op -> [Token op] -> (Matcher op, [Token op])
 consume m [] = (m, [])
-consume m ((Operation o):ts) = (m `And` Op o, ts)
-consume m ((Token t):ts)
-	| t == "and" = cont $ m `And` next
-	| t == "or" = cont $ m `Or` next
-	| t == "not" = cont $ m `And` (Not next)
-	| t == "(" = let (n, r) = consume next rest in (m `And` n, r)
-	| t == ")" = (m, ts)
-	| otherwise = error $ "unknown token " ++ t
+consume m (t:ts) = go t
 	where
-		(next, rest) = consume Any ts
+		go And = cont $ m `MAnd` next
+		go Or = cont $ m `MOr` next
+		go Not = cont $ m `MAnd` (MNot next)
+		go Open = let (n, r) = consume next rest in (m `MAnd` n, r)
+		go Close = (m, ts)
+		go (Operation o) = (m `MAnd` MOp o, ts)
+
+		(next, rest) = consume MAny ts
 		cont v = (v, rest)
 
 {- Checks if a Matcher matches, using a supplied function to check
@@ -65,25 +76,25 @@ consume m ((Token t):ts)
 match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
 match a m v = go m
 	where
-		go Any = True
-		go (And m1 m2) = go m1 && go m2
-		go (Or m1 m2) = go m1 || go m2
-		go (Not m1) = not (go m1)
-		go (Op o) = a o v
+		go MAny = True
+		go (MAnd m1 m2) = go m1 && go m2
+		go (MOr m1 m2) = go m1 || go m2
+		go (MNot m1) = not (go m1)
+		go (MOp o) = a o v
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
 matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
 matchM m v = go m
 	where
-		go Any = return True
-		go (And m1 m2) = liftM2 (&&) (go m1) (go m2)
-		go (Or m1 m2) =  liftM2 (||) (go m1) (go m2)
-		go (Not m1) = liftM not (go m1)
-		go (Op o) = o v
+		go MAny = return True
+		go (MAnd m1 m2) = liftM2 (&&) (go m1) (go m2)
+		go (MOr m1 m2) =  liftM2 (||) (go m1) (go m2)
+		go (MNot m1) = liftM not (go m1)
+		go (MOp o) = o v
 
 {- Checks is a matcher contains no limits, and so (presumably) matches
  - anything. Note that this only checks the trivial case; it is possible
  - to construct matchers that match anything but are more complicated. -}
 matchesAny :: Matcher a -> Bool
-matchesAny Any = True
+matchesAny MAny = True
 matchesAny _ = False

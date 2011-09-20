@@ -58,5 +58,5 @@ matcherOptions =
 	, shortopt ")" "close group of options"
 	]
 	where
-		longopt o d = Option [] [o] (NoArg (token o)) d
-		shortopt o d = Option o [] (NoArg (token o)) d
+		longopt o d = Option [] [o] (NoArg (addToken o)) d
+		shortopt o d = Option o [] (NoArg (addToken o)) d

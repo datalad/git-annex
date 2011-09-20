@@ -48,17 +48,17 @@ add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
 		prepend (Left ls) = Left $ l:ls
 		prepend _ = error "internal"
 
-{- Adds a new limit. -}
-addlimit :: (FilePath -> Annex Bool) -> Annex ()
-addlimit = add . Utility.Matcher.Operation
-
 {- Adds a new token. -}
-token :: String -> Annex ()
-token = add . Utility.Matcher.Token
+addToken :: String -> Annex ()
+addToken = add . Utility.Matcher.token
+
+{- Adds a new limit. -}
+addLimit :: (FilePath -> Annex Bool) -> Annex ()
+addLimit = add . Utility.Matcher.Operation
 
 {- Add a limit to skip files that do not match the glob. -}
 addExclude :: String -> Annex ()
-addExclude glob = addlimit $ return . notExcluded
+addExclude glob = addLimit $ return . notExcluded
 	where
 		notExcluded f = isNothing $ match cregex f []
 		cregex = compile regex []
@@ -69,7 +69,7 @@ addExclude glob = addlimit $ return . notExcluded
 addIn :: String -> Annex ()
 addIn name = do
 	u <- Remote.nameToUUID name
-	addlimit $ if name == "." then check local else check (remote u)
+	addLimit $ if name == "." then check local else check (remote u)
 	where
 		check a f = Backend.lookupFile f >>= handle a
 		handle _ Nothing = return False
@@ -85,7 +85,7 @@ addCopies :: String -> Annex ()
 addCopies num = do
 	case readMaybe num :: Maybe Int of
 		Nothing -> error "bad number for --copies"
-		Just n -> addlimit $ check n
+		Just n -> addLimit $ check n
 	where
 		check n f = Backend.lookupFile f >>= handle n
 		handle _ Nothing = return False
