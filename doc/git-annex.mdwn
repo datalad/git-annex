@@ -238,11 +238,6 @@ subdirectories).
   Displays some statistics and other information, including how much data
   is in the annex.
 
-  Some of the statistics can take a while to generate, and those
-  come last. You can ctrl-c this command once it's displayed the
-  information you wanted to see. Or, use --fast to produce statistics
-  more quickly, but possibly less accurately.
-
 * map
 
   Helps you keep track of your repositories, and the connections between them,

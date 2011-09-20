@@ -13,8 +13,9 @@ import Data.Maybe
 import System.IO
 import Data.List
 import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.Set (Set)
 
-import qualified Annex
 import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote
@@ -23,32 +24,22 @@ import qualified Git
 import Command
 import Types
 import Utility.DataUnits
-import Utility.Conditional
 import Content
 import Types.Key
 import Locations
 import Backend
-import Messages
 
 -- a named computation that produces a statistic
-type Stat = StatState (Maybe (String, Bool, StatState String))
+type Stat = StatState (Maybe (String, StatState String))
 
 -- cached info that multiple Stats may need
 data StatInfo = StatInfo
-	{ keysPresentCache :: Maybe (SizeList Key)
-	, keysReferencedCache :: Maybe (SizeList Key)
+	{ keysPresentCache :: Maybe (Set Key)
+	, keysReferencedCache :: Maybe (Set Key)
 	}
 
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
-
--- a list with a known length
--- (Integer is used for the length to avoid
--- blowing up if someone annexed billions of files..)
-type SizeList a = ([a], Integer)
-
-sizeList :: [a] -> SizeList a
-sizeList l = (l, genericLength l)
 
 command :: [Command]
 command = [repoCommand "status" paramNothing seek
@@ -76,15 +67,10 @@ stats =
 start :: CommandStart
 start = do
 	evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
-	fastmode_note
 	stop
 
-fastmode_note :: Annex ()
-fastmode_note = whenM (Annex.getState Annex.fast) $
-	showLongNote "(*) approximate due to fast mode"
-
-stat :: String -> Bool -> StatState String -> Stat
-stat desc approx a = return $ Just (desc, approx, a)
+stat :: String -> StatState String -> Stat
+stat desc a = return $ Just (desc, a)
 
 nostat :: Stat
 nostat = return Nothing
@@ -92,37 +78,35 @@ nostat = return Nothing
 showStat :: Stat -> StatState ()
 showStat s = calc =<< s
 	where
-		calc (Just (desc, approx, a)) = do
-			fast <- lift $ Annex.getState Annex.fast
-			let star = if fast && approx then "(*)" else ""
-			liftIO $ putStr $ desc ++ star ++ ": "
+		calc (Just (desc, a)) = do
+			liftIO $ putStr $ desc ++ ": "
 			liftIO $ hFlush stdout
 			liftIO . putStrLn =<< a
 		calc Nothing = return ()
 
 supported_backends :: Stat
-supported_backends = stat "supported backends" False $ 
+supported_backends = stat "supported backends" $ 
 	return $ unwords $ map B.name Backend.list
 
 supported_remote_types :: Stat
-supported_remote_types = stat "supported remote types" False $
+supported_remote_types = stat "supported remote types" $
 	return $ unwords $ map R.typename Remote.remoteTypes
 
 local_annex_size :: Stat
-local_annex_size = stat "local annex size" False $
+local_annex_size = stat "local annex size" $
 	cachedKeysPresent >>= keySizeSum
 
 total_annex_size :: Stat
-total_annex_size = stat "total annex size" True $
+total_annex_size = stat "total annex size" $
 	cachedKeysReferenced >>= keySizeSum
 
 local_annex_keys :: Stat
-local_annex_keys = stat "local annex keys" False $
-	show . snd <$> cachedKeysPresent
+local_annex_keys = stat "local annex keys" $
+	show . S.size <$> cachedKeysPresent
 
 total_annex_keys :: Stat
-total_annex_keys = stat "total annex keys" True $
-	show . snd <$> cachedKeysReferenced
+total_annex_keys = stat "total annex keys" $
+	show . S.size <$> cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -131,9 +115,9 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" True $ usage <$> cachedKeysReferenced
+backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced
 	where
-		usage (ks, _) = pp "" $ sort $ map swap $ splits ks
+		usage ks = pp "" $ sort $ map swap $ splits $ S.toList ks
 		splits :: [Key] -> [(String, Integer)]
 		splits ks = M.toList $ M.fromListWith (+) $ map tcount ks
 		tcount k = (keyBackendName k, 1)
@@ -141,48 +125,44 @@ backend_usage = stat "backend usage" True $ usage <$> cachedKeysReferenced
 		pp c [] = c
 		pp c ((n, b):xs) = "\n\t" ++ b ++ ": " ++ show n ++ pp c xs
 
-cachedKeysPresent :: StatState (SizeList Key)
+cachedKeysPresent :: StatState (Set Key)
 cachedKeysPresent = do
 	s <- get
 	case keysPresentCache s of
 		Just v -> return v
 		Nothing -> do
-			keys <- lift getKeysPresent
-			let v = sizeList keys
-			put s { keysPresentCache = Just v }
-			return v
+			keys <- S.fromList <$> lift getKeysPresent
+			put s { keysPresentCache = Just keys }
+			return keys
 
-cachedKeysReferenced :: StatState (SizeList Key)
+cachedKeysReferenced :: StatState (Set Key)
 cachedKeysReferenced = do
 	s <- get
 	case keysReferencedCache s of
 		Just v -> return v
 		Nothing -> do
-			-- A given key may be referenced repeatedly,
-			-- so nub is needed for accuracy, but is slow.
-			keys <- lift Command.Unused.getKeysReferenced
-			fast <- lift $ Annex.getState Annex.fast
-			let v = sizeList $ if fast then keys else nub keys
-			put s { keysReferencedCache = Just v }
-			return v
+			keys <- S.fromList <$> lift Command.Unused.getKeysReferenced
+			put s { keysReferencedCache = Just keys }
+			return keys
 
-keySizeSum :: SizeList Key -> StatState String
-keySizeSum (keys, len) = do
-	let knownsizes = mapMaybe keySize keys
-	let total = roughSize storageUnits False $ sum knownsizes
-	let missing = len - genericLength knownsizes
+keySizeSum :: Set Key -> StatState String
+keySizeSum s = do
+	let (sizes, unknownsizes) = S.partition isJust $ S.map keySize s
+	let total = roughSize storageUnits False $
+		fromJust $ S.fold (liftM2 (+)) (Just 0) sizes
+	let num = S.size unknownsizes
 	return $ total ++
-		if missing > 0
-			then aside $ "but " ++ show missing ++ " keys have unknown size"
-			else ""
+		if num == 0
+			then ""
+			else aside $ "but " ++ show num ++ " keys have unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = do
 	keys <- lift (Command.Unused.staleKeys dirspec)
 	if null keys
 		then nostat
-		else stat label False $ do
-			s <- keySizeSum $ sizeList keys
+		else stat label $ do
+			s <- keySizeSum $ S.fromList keys
 			return $ s ++ aside "clean up with git-annex unused"
 
 aside :: String -> String
