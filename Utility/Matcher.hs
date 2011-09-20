@@ -50,10 +50,10 @@ token t = error $ "unknown token " ++ t
 
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op
-generate ts = generate' MAny ts
-generate' :: Matcher op -> [Token op] -> Matcher op
-generate' m [] = m
-generate' m ts = uncurry generate' $ consume m ts
+generate = go MAny
+	where
+		go m [] = m
+		go m ts = uncurry go $ consume m ts
 
 {- Consumes one or more Tokens, constructs a new Matcher,
  - and returns unconsumed Tokens. -}
