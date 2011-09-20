@@ -240,8 +240,8 @@ subdirectories).
 
   Some of the statistics can take a while to generate, and those
   come last. You can ctrl-c this command once it's displayed the
-  information you wanted to see. Or, use --fast to only display
-  the first, fast(ish) statistics.
+  information you wanted to see. Or, use --fast to produce statistics
+  more quickly, but possibly less accurately.
 
 * map
 

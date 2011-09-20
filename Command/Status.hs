@@ -23,13 +23,15 @@ import qualified Git
 import Command
 import Types
 import Utility.DataUnits
+import Utility.Conditional
 import Content
 import Types.Key
 import Locations
 import Backend
+import Messages
 
 -- a named computation that produces a statistic
-type Stat = StatState (Maybe (String, StatState String))
+type Stat = StatState (Maybe (String, Bool, StatState String))
 
 -- cached info that multiple Stats may need
 data StatInfo = StatInfo
@@ -58,16 +60,13 @@ seek = [withNothing start]
 {- Order is significant. Less expensive operations, and operations
  - that share data go together.
  -}
-faststats :: [Stat]
-faststats = 
+stats :: [Stat]
+stats = 
 	[ supported_backends
 	, supported_remote_types
 	, tmp_size
 	, bad_data_size
-	]
-slowstats :: [Stat]
-slowstats =
-	[ local_annex_keys
+	, local_annex_keys
 	, local_annex_size
 	, total_annex_keys
 	, total_annex_size
@@ -76,13 +75,16 @@ slowstats =
 
 start :: CommandStart
 start = do
-	fast <- Annex.getState Annex.fast
-	let todo = if fast then faststats else faststats ++ slowstats
-	evalStateT (mapM_ showStat todo) (StatInfo Nothing Nothing)
+	evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
+	fastmode_note
 	stop
 
-stat :: String -> StatState String -> Stat
-stat desc a = return $ Just (desc, a)
+fastmode_note :: Annex ()
+fastmode_note = whenM (Annex.getState Annex.fast) $
+	showLongNote "(*) approximate due to fast mode"
+
+stat :: String -> Bool -> StatState String -> Stat
+stat desc approx a = return $ Just (desc, approx, a)
 
 nostat :: Stat
 nostat = return Nothing
@@ -90,33 +92,37 @@ nostat = return Nothing
 showStat :: Stat -> StatState ()
 showStat s = calc =<< s
 	where
-		calc (Just (desc, a)) = do
-			liftIO $ putStr $ desc ++ ": "
+		calc (Just (desc, approx, a)) = do
+			fast <- lift $ Annex.getState Annex.fast
+			let star = if fast && approx then "(*)" else ""
+			liftIO $ putStr $ desc ++ star ++ ": "
 			liftIO $ hFlush stdout
 			liftIO . putStrLn =<< a
 		calc Nothing = return ()
 
 supported_backends :: Stat
-supported_backends = stat "supported backends" $ 
+supported_backends = stat "supported backends" False $ 
 	return $ unwords $ map B.name Backend.list
 
 supported_remote_types :: Stat
-supported_remote_types = stat "supported remote types" $
+supported_remote_types = stat "supported remote types" False $
 	return $ unwords $ map R.typename Remote.remoteTypes
 
 local_annex_size :: Stat
-local_annex_size = stat "local annex size" $
+local_annex_size = stat "local annex size" False $
 	cachedKeysPresent >>= keySizeSum
 
 total_annex_size :: Stat
-total_annex_size = stat "total annex size" $
+total_annex_size = stat "total annex size" True $
 	cachedKeysReferenced >>= keySizeSum
 
 local_annex_keys :: Stat
-local_annex_keys = stat "local annex keys" $ show . snd <$> cachedKeysPresent
+local_annex_keys = stat "local annex keys" False $
+	show . snd <$> cachedKeysPresent
 
 total_annex_keys :: Stat
-total_annex_keys = stat "total annex keys" $ show . snd <$> cachedKeysReferenced
+total_annex_keys = stat "total annex keys" True $
+	show . snd <$> cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -125,7 +131,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced
+backend_usage = stat "backend usage" True $ usage <$> cachedKeysReferenced
 	where
 		usage (ks, _) = pp "" $ sort $ map swap $ splits ks
 		splits :: [Key] -> [(String, Integer)]
@@ -134,7 +140,6 @@ backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced
 		swap (a, b) = (b, a)
 		pp c [] = c
 		pp c ((n, b):xs) = "\n\t" ++ b ++ ": " ++ show n ++ pp c xs
-
 
 cachedKeysPresent :: StatState (SizeList Key)
 cachedKeysPresent = do
@@ -153,10 +158,11 @@ cachedKeysReferenced = do
 	case keysReferencedCache s of
 		Just v -> return v
 		Nothing -> do
+			-- A given key may be referenced repeatedly,
+			-- so nub is needed for accuracy, but is slow.
 			keys <- lift Command.Unused.getKeysReferenced
-			-- A given key may be referenced repeatedly.
-			-- nub does not seem too slow (yet)..
-			let v = sizeList $ nub keys
+			fast <- lift $ Annex.getState Annex.fast
+			let v = sizeList $ if fast then keys else nub keys
 			put s { keysReferencedCache = Just v }
 			return v
 
@@ -175,7 +181,7 @@ staleSize label dirspec = do
 	keys <- lift (Command.Unused.staleKeys dirspec)
 	if null keys
 		then nostat
-		else stat label $ do
+		else stat label False $ do
 			s <- keySizeSum $ sizeList keys
 			return $ s ++ aside "clean up with git-annex unused"
 
