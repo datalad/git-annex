@@ -147,14 +147,13 @@ cachedKeysReferenced = do
 
 keySizeSum :: Set Key -> StatState String
 keySizeSum s = do
-	let (sizes, unknownsizes) = S.partition isJust $ S.map keySize s
-	let total = roughSize storageUnits False $
-		fromJust $ S.fold (liftM2 (+)) (Just 0) sizes
-	let num = S.size unknownsizes
+	let knownsizes = mapMaybe keySize $ S.toList s
+	let total = roughSize storageUnits False $ sum knownsizes
+	let missing = S.size s - genericLength knownsizes
 	return $ total ++
-		if num == 0
+		if missing == 0
 			then ""
-			else aside $ "but " ++ show num ++ " keys have unknown size"
+			else aside $ "but " ++ show missing ++ " keys have unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = do
