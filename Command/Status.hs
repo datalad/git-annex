@@ -94,11 +94,11 @@ supported_remote_types = stat "supported remote types" $
 
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
-	cachedKeysPresent >>= keySizeSum
+	cachedKeysPresent >>= return . keySizeSum
 
 total_annex_size :: Stat
 total_annex_size = stat "total annex size" $
-	cachedKeysReferenced >>= keySizeSum
+	cachedKeysReferenced >>= return . keySizeSum
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $
@@ -145,15 +145,17 @@ cachedKeysReferenced = do
 			put s { keysReferencedCache = Just keys }
 			return keys
 
-keySizeSum :: Set Key -> StatState String
-keySizeSum s = do
-	let knownsizes = mapMaybe keySize $ S.toList s
-	let total = roughSize storageUnits False $ sum knownsizes
-	let missing = S.size s - genericLength knownsizes
-	return $ total ++
-		if missing == 0
-			then ""
-			else aside $ "but " ++ show missing ++ " keys have unknown size"
+keySizeSum :: Set Key -> String
+keySizeSum s = total ++ missingnote
+	where
+		knownsizes = mapMaybe keySize $ S.toList s
+		total = roughSize storageUnits False $ sum knownsizes
+		missing = S.size s - genericLength knownsizes
+		missingnote
+			| missing == 0 = ""
+			| otherwise = aside $
+				"but " ++ show missing ++
+				" keys have unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = do
@@ -161,7 +163,7 @@ staleSize label dirspec = do
 	if null keys
 		then nostat
 		else stat label $ do
-			s <- keySizeSum $ S.fromList keys
+			let s = keySizeSum $ S.fromList keys
 			return $ s ++ aside "clean up with git-annex unused"
 
 aside :: String -> String
