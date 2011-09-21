@@ -51,7 +51,7 @@ getVersionString = do
 	let verline = head $ lines changelog
 	return $ middle (words verline !! 1)
 	where
-		middle s = drop 1 $ take (length s - 1) s
+		middle = drop 1 . init
 
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()

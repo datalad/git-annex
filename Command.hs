@@ -162,7 +162,7 @@ withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
 runFiltered :: (FilePath -> Annex (Maybe a)) -> Annex [FilePath] -> Annex [Annex (Maybe a)]
-runFiltered a fs = runFilteredGen a id fs
+runFiltered a = runFilteredGen a id
 
 backendPairs :: (BackendFile -> CommandStart) -> CommandSeek
 backendPairs a fs = runFilteredGen a snd (Backend.chooseBackends fs)

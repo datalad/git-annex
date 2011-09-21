@@ -108,11 +108,11 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
-	, Option ['x'] ["exclude"] (ReqArg (Limit.addExclude) paramGlob)
+	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
-	, Option ['i'] ["in"] (ReqArg (Limit.addIn) paramRemote)
+	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
 		"skip files not present in a remote"
-	, Option ['C'] ["copies"] (ReqArg (Limit.addCopies) paramNumber)
+	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
 	] ++ matcherOptions
 	where

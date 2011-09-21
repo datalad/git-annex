@@ -19,7 +19,7 @@ import Control.Applicative
 parentDir :: FilePath -> FilePath
 parentDir dir =
 	if not $ null dirs
-	then slash ++ join s (take (length dirs - 1) dirs)
+	then slash ++ join s (init dirs)
 	else ""
 		where
 			dirs = filter (not . null) $ split s dir

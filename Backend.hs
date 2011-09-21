@@ -111,7 +111,7 @@ chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = do
 	g <- Annex.gitRepo
 	forced <- Annex.getState Annex.forcebackend
-	if forced /= Nothing
+	if isJust forced
 		then do
 			l <- orderedList
 			return $ map (\f -> (Just $ head l, f)) fs

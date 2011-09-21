@@ -23,7 +23,7 @@ tmpIndex :: Git.Repo -> FilePath
 tmpIndex g = Git.gitDir g </> "index.git-union-merge"
 
 setup :: Git.Repo -> IO ()
-setup g = cleanup g -- idempotency
+setup = cleanup -- idempotency
 
 cleanup :: Git.Repo -> IO ()
 cleanup g = do

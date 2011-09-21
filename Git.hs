@@ -62,7 +62,7 @@ module Git (
 	prop_idempotent_deencode
 ) where
 
-import Control.Monad (unless, when)
+import Control.Monad (unless, when, liftM2)
 import Control.Applicative
 import System.Directory
 import System.FilePath
@@ -425,7 +425,7 @@ getSha :: String -> IO String -> IO String
 getSha subcommand a = do
 	t <- a
 	let t' = if last t == '\n'
-		then take (length t - 1) t
+		then init t
 		else t
 	when (length t' /= shaSize) $
 		error $ "failed to read sha from git " ++ subcommand ++ " (" ++ t' ++ ")"
@@ -576,7 +576,7 @@ decodeGitFile f@(c:s)
 	| otherwise = f
 	where
 		e = '\\'
-		middle = take (length s - 1) s
+		middle = init s
 		unescape (b, []) = b
 		-- look for escapes starting with '\'
 		unescape (b, v) = b ++ beginning ++ unescape (decode rest)
@@ -702,7 +702,6 @@ isRepoTop dir = do
 	where
 		isRepo = gitSignature ".git" ".git/config"
 		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = do
-			s <- (doesDirectoryExist (dir ++ "/" ++ subdir))
-			f <- (doesFileExist (dir ++ "/" ++ file))
-			return (s && f)
+		gitSignature subdir file = liftM2 (&&)
+			(doesDirectoryExist (dir ++ "/" ++ subdir))
+			(doesFileExist (dir ++ "/" ++ file))

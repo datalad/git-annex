@@ -38,7 +38,7 @@ backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
 
 genBackend :: SHASize -> Maybe (Backend Annex)
 genBackend size
-	| shaCommand size == Nothing = Nothing
+	| isNothing (shaCommand size) = Nothing
 	| otherwise = Just b
 	where
 		b = Types.Backend.Backend

@@ -173,7 +173,7 @@ readKey1 v =
 			then Just (read (bits !! 2) :: Integer)
 			else Nothing
 		wormy = head bits == "WORM"
-		mixup = wormy && (isUpper $ head $ bits !! 1)
+		mixup = wormy && isUpper (head $ bits !! 1)
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
@@ -248,7 +248,7 @@ logFile' hasher repo key =
 	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
 
 stateDir :: FilePath
-stateDir = addTrailingPathSeparator $ ".git-annex"
+stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
 gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir

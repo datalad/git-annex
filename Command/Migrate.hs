@@ -12,6 +12,7 @@ import Control.Applicative
 import System.Posix.Files
 import System.Directory
 import System.FilePath
+import Data.Maybe
 
 import Command
 import qualified Annex
@@ -48,7 +49,7 @@ start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
 {- Checks if a key is upgradable to a newer representation. -}
 {- Ideally, all keys have file size metadata. Old keys may not. -}
 upgradableKey :: Key -> Bool
-upgradableKey key = Types.Key.keySize key == Nothing
+upgradableKey key = isNothing $ Types.Key.keySize key
 
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do

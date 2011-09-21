@@ -94,11 +94,11 @@ supported_remote_types = stat "supported remote types" $
 
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
-	cachedKeysPresent >>= return . keySizeSum
+	keySizeSum <$> cachedKeysPresent
 
 total_annex_size :: Stat
 total_annex_size = stat "total annex size" $
-	cachedKeysReferenced >>= return . keySizeSum
+	keySizeSum <$> cachedKeysReferenced
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $

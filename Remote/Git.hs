@@ -81,7 +81,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.configMap r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
-	| Git.repoIsHttp r = store $ safely $ geturlconfig
+	| Git.repoIsHttp r = store $ safely geturlconfig
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ do
 		onLocal r ensureInitialized
@@ -101,7 +101,7 @@ tryGitConfigRead r
 
 		geturlconfig = do
 			s <- Url.get (Git.repoLocation r ++ "/config")
-			withTempFile "git-annex.tmp" $ \tmpfile -> \h -> do
+			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
 				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $

@@ -69,7 +69,7 @@ addExclude glob = addLimit $ return . notExcluded
 addIn :: String -> Annex ()
 addIn name = do
 	u <- Remote.nameToUUID name
-	addLimit $ if name == "." then check local else check (remote u)
+	addLimit $ if name == "." then check inAnnex else check (remote u)
 	where
 		check a f = Backend.lookupFile f >>= handle a
 		handle _ Nothing = return False
@@ -77,12 +77,11 @@ addIn name = do
 		remote u key = do
 			us <- keyLocations key
 			return $ u `elem` us
-		local key = inAnnex key
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
 addCopies :: String -> Annex ()
-addCopies num = do
+addCopies num =
 	case readMaybe num :: Maybe Int of
 		Nothing -> error "bad number for --copies"
 		Just n -> addLimit $ check n

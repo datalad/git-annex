@@ -35,7 +35,7 @@ start ws = do
 	when (null ws) needname
 
 	(u, c) <- findByName name
-	let fullconfig = M.union config c	
+	let fullconfig = config `M.union` c	
 	t <- findType fullconfig
 
 	showStart "initremote" name

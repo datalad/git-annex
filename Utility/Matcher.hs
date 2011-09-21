@@ -63,7 +63,7 @@ consume m (t:ts) = go t
 	where
 		go And = cont $ m `MAnd` next
 		go Or = cont $ m `MOr` next
-		go Not = cont $ m `MAnd` (MNot next)
+		go Not = cont $ m `MAnd` MNot next
 		go Open = let (n, r) = consume next rest in (m `MAnd` n, r)
 		go Close = (m, ts)
 		go (Operation o) = (m `MAnd` MOp o, ts)

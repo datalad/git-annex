@@ -95,7 +95,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 		defaulthost = do
 			c' <- encryptionSetup c
-			let fullconfig = M.union c' defaults
+			let fullconfig = c' `M.union` defaults
 			genBucket fullconfig
 			use fullconfig
 
@@ -209,7 +209,7 @@ s3Bool (Left e) = s3Warning e
 
 s3Action :: Remote Annex -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
 s3Action r noconn action = do
-	when (config r == Nothing) $
+	when (isNothing $ config r) $
 		error $ "Missing configuration for special remote " ++ name r
 	let bucket = M.lookup "bucket" $ fromJust $ config r
 	conn <- s3Connection $ fromJust $ config r

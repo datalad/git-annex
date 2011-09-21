@@ -33,8 +33,7 @@ initialize = do
 	gitPreCommitHookWrite
 
 uninitialize :: Annex ()
-uninitialize = do
-	gitPreCommitHookUnWrite
+uninitialize = gitPreCommitHookUnWrite
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init
