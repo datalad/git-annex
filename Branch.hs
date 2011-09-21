@@ -331,7 +331,7 @@ getJournalFilesRaw = do
 	g <- Annex.gitRepo
 	fs <- liftIO $ catch (getDirectoryContents $ gitAnnexJournalDir g)
 		(const $ return [])
-	return $ filter (\f -> f /= "." && f /= "..") fs
+	return $ filter (`notElem` [".", ".."]) fs
 
 {- Stages all journal files into the index, and returns True if the index
  - was modified. -}
