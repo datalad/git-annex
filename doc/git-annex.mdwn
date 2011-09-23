@@ -182,12 +182,11 @@ subdirectories).
 * unused
 
   Checks the annex for data that does not correspond to any files present
-  in the currently checked out branch, and prints a numbered list of the data.
+  in any tar or branch, and prints a numbered list of the data.
 
   To only show unused temp and bad files, specify --fast
 
-  To check data on a remote that does not correspond to any files present
-  on the locally checked out branch, specify --from.
+  To check for annexed data on a remote, specify --from.
 
 * dropunused [number ...]
 

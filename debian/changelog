@@ -13,6 +13,10 @@ git-annex (3.20110916) UNRELEASED; urgency=low
   * Note that this is a behavior change for git-annex find! Old behavior
     can be gotten by using: git-annex find --in .
   * status: Massively sped up; remove --fast mode.
+  * unused: File contents used by branches and tags are no longer
+    considered unused, even when not used by the current branch. This is
+    the final piece of the puzzle needed for git-annex to to play nicely
+    with branches.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
 

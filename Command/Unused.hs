@@ -112,27 +112,21 @@ staleBadMsg t = unlines $
 
 unusedMsg :: [(Int, Key)] -> String
 unusedMsg u = unusedMsg' u
-	["Some annexed data is no longer used by any files in the current branch:"]
-	[dropMsg Nothing,
-	"Please be cautious -- are you sure that another branch, or another",
-	"repository does not still use this data?"]
-
-remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
-remoteUnusedMsg r u = unusedMsg' u
-	["Some annexed data on " ++ name ++ 
-	 " is not used by any files in the current branch:"]
-	[dropMsg $ Just r,
-	 "Please be cautious -- Are you sure that the remote repository",
-	 "does not use this data? Or that it's not used by another branch?"]
-	where
-		name = Remote.name r 
-
+	["Some annexed data is no longer used by any files:"]
+	[dropMsg Nothing]
 unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
 unusedMsg' u header trailer = unlines $
 	header ++
 	table u ++
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
 	trailer
+
+remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
+remoteUnusedMsg r u = unusedMsg' u
+	["Some annexed data on " ++ name ++ " is not used by any files:"]
+	[dropMsg $ Just r]
+	where
+		name = Remote.name r 
 
 dropMsg :: Maybe (Remote.Remote Annex) -> String
 dropMsg Nothing = dropMsg' ""
