@@ -19,6 +19,7 @@ import Content
 import Utility.Conditional
 import Utility.CopyFile
 import Utility.Path
+import Utility.FileMode
 
 command :: [Command]
 command =

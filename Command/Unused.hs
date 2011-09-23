@@ -184,7 +184,7 @@ getKeysReferenced = do
 staleKeysPrune :: (Git.Repo -> FilePath) -> [Key] -> Annex [Key]
 staleKeysPrune dirspec present = do
 	contents <- staleKeys dirspec
-		
+	
 	let stale = contents `exclude` present
 	let dup = contents `exclude` stale
 

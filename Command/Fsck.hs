@@ -26,6 +26,7 @@ import Locations
 import Trust
 import Utility.DataUnits
 import Utility.Path
+import Utility.FileMode
 import Config
 
 command :: [Command]

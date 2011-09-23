@@ -8,7 +8,6 @@
 module Utility (
 	hGetContentsStrict,
 	readFileStrict,
-	unsetFileMode,
 	readMaybe,
 	viaTmp,
 	withTempFile,
@@ -24,12 +23,9 @@ module Utility (
 import IO (bracket)
 import System.IO
 import System.Posix.Process hiding (executeFile)
-import System.Posix.Files
-import System.Posix.Types
 import System.Posix.User
 import System.FilePath
 import System.Directory
-import Foreign (complement)
 import Utility.Path
 import Data.Maybe
 import Control.Monad (liftM)
@@ -42,13 +38,6 @@ hGetContentsStrict h  = hGetContents h >>= \s -> length s `seq` return s
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
 readFileStrict f = readFile f >>= \s -> length s `seq` return s
-
-{- Removes a FileMode from a file.
- - For example, call with otherWriteMode to chmod o-w -}
-unsetFileMode :: FilePath -> FileMode -> IO ()
-unsetFileMode f m = do
-	s <- getFileStatus f
-	setFileMode f $ fileMode s `intersectFileModes` complement m
 
 {- Attempts to read a value from a String. -}
 readMaybe :: (Read a) => String -> Maybe a

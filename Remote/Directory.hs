@@ -25,10 +25,10 @@ import UUID
 import Locations
 import Utility.CopyFile
 import Config
-import Content
 import Utility
 import Utility.Conditional
 import Utility.Path
+import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto

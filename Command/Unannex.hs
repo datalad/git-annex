@@ -18,6 +18,7 @@ import qualified Annex
 import qualified AnnexQueue
 import Utility.SafeCommand
 import Utility.Path
+import Utility.FileMode
 import LocationLog
 import Types
 import Content

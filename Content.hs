@@ -13,8 +13,6 @@ module Content (
 	getViaTmpUnchecked,
 	withTmp,
 	checkDiskSpace,
-	preventWrite,
-	allowWrite,
 	moveAnnex,
 	removeAnnex,
 	fromAnnex,
@@ -43,6 +41,7 @@ import Utility
 import Utility.Conditional
 import Utility.StatFS
 import Utility.Path
+import Utility.FileMode
 import Types.Key
 import Utility.DataUnits
 import Config
@@ -151,19 +150,6 @@ checkDiskSpace' adjustment key = do
 			error $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
 				" more (use --force to override this check or adjust annex.diskreserve)"
-
-{- Removes the write bits from a file. -}
-preventWrite :: FilePath -> IO ()
-preventWrite f = unsetFileMode f writebits
-	where
-		writebits = foldl unionFileModes ownerWriteMode
-					[groupWriteMode, otherWriteMode]
-
-{- Turns a file's write bit back on. -}
-allowWrite :: FilePath -> IO ()
-allowWrite f = do
-	s <- getFileStatus f
-	setFileMode f $ fileMode s `unionFileModes` ownerWriteMode
 
 {- Moves a file into .git/annex/objects/
  -

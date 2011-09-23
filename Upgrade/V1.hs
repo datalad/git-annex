@@ -32,6 +32,7 @@ import Backend
 import Messages
 import Version
 import Utility
+import Utility.FileMode
 import Utility.SafeCommand
 import Utility.Path
 import qualified Upgrade.V2
