@@ -8,7 +8,7 @@
 
 ## Using cabal
 
-As a haskell package, git-annex can be built using cabal. For example:
+As a haskell package, git-annex can be installed using cabal. For example:
 
 	cabal install git-annex --bindir=$HOME/bin
 
