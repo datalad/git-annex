@@ -1,4 +1,4 @@
-git-annex (3.20110916) UNRELEASED; urgency=low
+git-annex (3.20110928) unstable; urgency=low
 
   * --in can be used to make git-annex only operate on files
     believed to be present in a given repository.
@@ -18,7 +18,7 @@ git-annex (3.20110916) UNRELEASED; urgency=low
     the final piece of the puzzle needed for git-annex to to play nicely
     with branches.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 18 Sep 2011 18:25:51 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 28 Sep 2011 18:14:02 -0400
 
 git-annex (3.20110915) unstable; urgency=low
 
