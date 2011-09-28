@@ -185,7 +185,7 @@ subdirectories).
   Checks the annex for data that does not correspond to any files present
   in any tag or branch, and prints a numbered list of the data.
 
-  To only show unused temp and bad files, specify --fast
+  To only show unused temp and bad files, specify --fast.
 
   To check for annexed data on a remote, specify --from.
 
