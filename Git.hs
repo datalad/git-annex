@@ -20,6 +20,7 @@ module Git (
 	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
+	refDescribe,
 	repoLocation,
 	workTree,
 	workTreeFile,
@@ -170,6 +171,14 @@ repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
+
+{- Converts a fully qualified git ref into a user-visible version -}
+refDescribe :: String -> String
+refDescribe = remove "refs/heads/" . remove "refs/remotes/"
+	where
+		remove prefix s
+			| prefix `isPrefixOf` s = drop (length prefix) s
+			| otherwise = s
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String

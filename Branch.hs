@@ -26,7 +26,6 @@ import System.Directory
 import Data.String.Utils
 import System.Cmd.Utils
 import Data.Maybe
-import Data.List
 import System.IO
 import System.IO.Binary
 import System.Posix.Process
@@ -57,15 +56,6 @@ fullname = "refs/heads/" ++ name
 {- Branch's name in origin. -}
 originname :: GitRef
 originname = "origin/" ++ name
-
-{- Converts a fully qualified git ref into a short version for human
- - consumptiom. -}
-shortref :: GitRef -> String
-shortref = remove "refs/heads/" . remove "refs/remotes/"
-	where
-		remove prefix s
-			| prefix `isPrefixOf` s = drop (length prefix) s
-			| otherwise = s
 
 {- A separate index file for the branch. -}
 index :: Git.Repo -> FilePath
@@ -209,7 +199,7 @@ updateRef ref
 		if null diffs
 			then return Nothing
 			else do
-				showSideAction $ "merging " ++ shortref ref ++ " into " ++ name
+				showSideAction $ "merging " ++ Git.refDescribe ref ++ " into " ++ name
 				-- By passing only one ref, it is actually
 				-- merged into the index, preserving any
 				-- changes that may already be staged.

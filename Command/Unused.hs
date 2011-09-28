@@ -16,7 +16,6 @@ import Data.Maybe
 import System.FilePath
 import System.Directory
 import Data.List
-import Control.Applicative
 
 import Command
 import Types
@@ -76,9 +75,8 @@ checkRemoteUnused name = do
 checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
 checkRemoteUnused' r = do
 	showAction "checking for unused data"
-	referenced <- getKeysReferenced
 	remotehas <- filterM isthere =<< loggedKeys
-	let remoteunused = remotehas `exclude` referenced
+	remoteunused <- excludeReferenced remotehas
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
 	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
@@ -156,11 +154,39 @@ unusedKeys = do
 		else do
 			showAction "checking for unused data"
 			present <- getKeysPresent
-			referenced <- getKeysReferenced
-			let unused = present `exclude` referenced
+			unused <- excludeReferenced present
 			staletmp <- staleKeysPrune gitAnnexTmpDir present
 			stalebad <- staleKeysPrune gitAnnexBadDir present
 			return (unused, stalebad, staletmp)
+
+{- Finds keys in the list that are not referenced in the git repository. -}
+excludeReferenced :: [Key] -> Annex [Key]
+-- excludeReferenced [] = return [] -- optimisation
+excludeReferenced l = do
+	g <- Annex.gitRepo
+	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
+	excludeReferenced'
+		(getKeysReferenced : (map getKeysReferencedInGit $ refs c))
+		(S.fromList l)
+	where
+		-- Skip the git-annex branches, and get all other unique refs.
+		refs = map last .
+			nubBy cmpheads .
+			filter ourbranches .
+			map words . lines
+		cmpheads a b = head a == head b
+		ourbranchend = "/" ++ Branch.name
+		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
+excludeReferenced' :: ([Annex [Key]]) -> S.Set Key -> Annex [Key]
+excludeReferenced' [] s = return $ S.toList s
+excludeReferenced' (a:as) s
+	-- | s == S.empty = return [] -- optimisation
+	| otherwise = do
+		referenced <- a
+		let !s' = remove referenced
+		excludeReferenced' as s'
+	where
+		remove l = s `S.difference` S.fromList l
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -180,29 +206,24 @@ getKeysReferenced = do
 	g <- Annex.gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	keypairs <- mapM Backend.lookupFile files
-	ingit <- getKeysReferencedInGit
-	return $ concat [ingit, map fst $ catMaybes keypairs]
+	return $ map fst $ catMaybes keypairs
 
-{- List of keys referenced by symlinks in all git branches and tags. -}
-getKeysReferencedInGit :: Annex [Key]
-getKeysReferencedInGit = do
+{- List of keys referenced by symlinks in a git ref. -}
+getKeysReferencedInGit :: String -> Annex [Key]
+getKeysReferencedInGit ref = do
+	showAction $ "checking " ++ Git.refDescribe ref
 	g <- Annex.gitRepo
-	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
-	-- Skip the git-annex branches, and get all other unique refs.
-	let refs = nub $ map head $ filter ourbranches $ map words $ lines c
-	concat <$> mapM (\r -> findkeys r [] =<< liftIO (LsTree.lsTree g r)) refs
+	findkeys [] =<< liftIO (LsTree.lsTree g ref)
 	where
-		ourbranchend = "/" ++ Branch.name
-		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
-		findkeys _ c [] = return c
-		findkeys ref c (l:ls) = do
+		findkeys c [] = return c
+		findkeys c (l:ls) = do
 			if isSymLink (LsTree.mode l)
 				then do
 					content <- catFile ref $ LsTree.file l
 					case fileKey (takeFileName content) of
-						Nothing -> findkeys ref c ls
-						Just k -> findkeys ref (k:c) ls
-				else findkeys ref c ls
+						Nothing -> findkeys c ls
+						Just k -> findkeys (k:c) ls
+				else findkeys c ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable. 
