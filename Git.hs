@@ -451,11 +451,8 @@ commit g message newref parentrefs = do
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it into a list of files/lines/whatever. -}
 pipeNullSplit :: Repo -> [CommandParam] -> IO [FilePath]
-pipeNullSplit repo params = do
-	fs0 <- pipeRead repo params
-	return $ split0 fs0
-	where
-		split0 s = filter (not . null) $ split "\0" s
+pipeNullSplit repo params = filter (not . null) . split "\0" <$>
+	pipeRead repo params
 
 {- Runs git config and populates a repo with its config. -}
 configRead :: Repo -> IO Repo
