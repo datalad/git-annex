@@ -44,6 +44,7 @@ import qualified Types.Key
 import qualified Config
 import qualified Crypto
 import qualified Utility.Path
+import qualified Utility.FileMode
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -389,7 +390,7 @@ test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withrem
 
 		corrupt f = do
 			git_annex "get" ["-q", f] @? "get of file failed"
-			Content.allowWrite f
+			Utility.FileMode.allowWrite f
 			writeFile f (changedcontent f)
 			r <- git_annex "fsck" ["-q"]
 			not r @? "fsck failed to fail with corrupted file content"
@@ -558,7 +559,7 @@ cleanup dir = do
 		-- removed via directory permissions; undo
 		recurseDir SystemFS dir >>=
 			filterM doesDirectoryExist >>=
-			mapM_ Content.allowWrite
+			mapM_ Utility.FileMode.allowWrite
 		removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
