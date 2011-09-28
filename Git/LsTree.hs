@@ -12,6 +12,7 @@ module Git.LsTree (
 import Numeric
 import Control.Applicative
 import Data.Char
+import System.Posix.Types
 
 import Git
 import Utility.SafeCommand
@@ -19,7 +20,7 @@ import Utility.SafeCommand
 type Treeish = String
 
 data TreeItem = TreeItem
-	{ mode :: Int
+	{ mode :: FileMode
 	, objtype :: String
 	, sha :: String
 	, file :: FilePath
