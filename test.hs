@@ -38,7 +38,6 @@ import qualified UUID
 import qualified Trust
 import qualified Remote
 import qualified RemoteLog
-import qualified Content
 import qualified Command.DropUnused
 import qualified Types.Key
 import qualified Config
@@ -453,8 +452,14 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	git_annex "get" ["-q", sha1annexedfile] @? "get of file failed"
 	checkunused []
 	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
+	checkunused []
+	boolSystem "git" [Params "commit -m foo"] @? "git commit failed"
+	checkunused []
+	-- unused checks origin/master; once it's gone it is really unused
+	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey]
 	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "commit -m foo"] @? "git commit failed"
 	checkunused [annexedfilekey, sha1annexedfilekey]
 
 	-- good opportunity to test dropkey also
