@@ -161,7 +161,7 @@ unusedKeys = do
 
 {- Finds keys in the list that are not referenced in the git repository. -}
 excludeReferenced :: [Key] -> Annex [Key]
--- excludeReferenced [] = return [] -- optimisation
+excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
 	g <- Annex.gitRepo
 	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
@@ -180,7 +180,7 @@ excludeReferenced l = do
 excludeReferenced' :: ([Annex [Key]]) -> S.Set Key -> Annex [Key]
 excludeReferenced' [] s = return $ S.toList s
 excludeReferenced' (a:as) s
-	-- | s == S.empty = return [] -- optimisation
+	| s == S.empty = return [] -- optimisation
 	| otherwise = do
 		referenced <- a
 		let !s' = remove referenced
