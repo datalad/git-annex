@@ -183,7 +183,7 @@ subdirectories).
 * unused
 
   Checks the annex for data that does not correspond to any files present
-  in any tar or branch, and prints a numbered list of the data.
+  in any tag or branch, and prints a numbered list of the data.
 
   To only show unused temp and bad files, specify --fast
 
