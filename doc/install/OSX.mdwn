@@ -9,7 +9,7 @@ sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that al
 export PATH=$PATH:/opt/local/libexec/gnubin
 
 sudo cabal update
-sudo cabal install git-annex
+cabal install git-annex --bindir=$HOME/bin
 </pre>
 
 Originally posted by Jon at <https://gist.github.com/671785> --[[Joey]], modified by [[kristianrumberg]]

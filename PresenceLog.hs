@@ -26,7 +26,7 @@ module PresenceLog (
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-import qualified Data.Map as Map
+import qualified Data.Map as M
 import Control.Monad.State (liftIO)
 import Control.Applicative
 
@@ -85,7 +85,7 @@ readLog :: FilePath -> Annex [LogLine]
 readLog file = parseLog <$> Branch.get file
 
 parseLog :: String -> [LogLine]
-parseLog s = filter parsable $ map read $ lines s
+parseLog = filter parsable . map read . lines
 	where
 		-- some lines may be unparseable, avoid them
 		parsable l = status l /= Undefined
@@ -102,31 +102,27 @@ logNow s i = do
 
 {- Reads a log and returns only the info that is still in effect. -}
 currentLog :: FilePath -> Annex [String]
-currentLog file = do
-	ls <- readLog file
-	return $ map info $ filterPresent ls
+currentLog file = map info . filterPresent <$> readLog file
 
 {- Returns the info from LogLines that are in effect. -}
 filterPresent :: [LogLine] -> [LogLine]
-filterPresent ls = filter (\l -> InfoPresent == status l) $ compactLog ls
-
-type LogMap = Map.Map String LogLine
+filterPresent = filter (\l -> InfoPresent == status l) . compactLog
 
 {- Compacts a set of logs, returning a subset that contains the current
  - status. -}
 compactLog :: [LogLine] -> [LogLine]
-compactLog = compactLog' Map.empty
-compactLog' :: LogMap -> [LogLine] -> [LogLine]
-compactLog' m [] = Map.elems m
-compactLog' m (l:ls) = compactLog' (mapLog m l) ls
+compactLog = M.elems . foldr mapLog M.empty
+
+type LogMap = M.Map String LogLine
 
 {- Inserts a log into a map of logs, if the log has better (ie, newer)
  - information than the other logs in the map -}
-mapLog :: LogMap -> LogLine -> LogMap
-mapLog m l = 
+mapLog :: LogLine -> LogMap -> LogMap
+mapLog l m = 
 	if better
-		then Map.insert i l m
+		then M.insert i l m
 		else m
 	where
-		better = maybe True (\l' -> date l' <= date l) $ Map.lookup i m
+		better = maybe True newer $ M.lookup i m
+		newer l' = date l' <= date l
 		i = info l

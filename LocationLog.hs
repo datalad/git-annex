@@ -23,7 +23,6 @@ module LocationLog (
 ) where
 
 import System.FilePath
-import Control.Monad (when)
 import Control.Applicative
 import Data.Maybe
 
@@ -36,16 +35,16 @@ import PresenceLog
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Git.Repo -> Key -> UUID -> LogStatus -> Annex ()
-logChange repo key u s = do
-	when (null u) $
-		error $ "unknown UUID for " ++ Git.repoDescribe repo ++ 
-			" (have you run git annex init there?)"
-	addLog (logFile key) =<< logNow s u
+logChange repo key u s
+	| null u = error $
+		"unknown UUID for " ++ Git.repoDescribe repo ++ 
+		" (have you run git annex init there?)"
+	| otherwise = addLog (logFile key) =<< logNow s u
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
 keyLocations :: Key -> Annex [UUID]
-keyLocations key = currentLog $ logFile key
+keyLocations = currentLog . logFile
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

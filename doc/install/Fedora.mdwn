@@ -3,5 +3,5 @@ Installation recipe for Fedora 14.
 <pre>
 sudo yum install ghc cabal-install
 sudo cabal update
-sudo cabal install git-annex
+cabal install git-annex --bindir=$HOME/bin
 </pre>
