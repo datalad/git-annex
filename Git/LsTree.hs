@@ -6,6 +6,7 @@
  -}
 
 module Git.LsTree (
+	TreeItem(..),
 	lsTree
 ) where
 
@@ -43,7 +44,8 @@ parseLsTree l = TreeItem m o s f
 		(o, past_o) = splitAt 4 $ space past_m
 		(s, past_s) = splitAt shaSize $ space past_o
 		f = decodeGitFile $ space past_s
-		space s@(sp:rest)
+		space (sp:rest)
 			| isSpace sp = rest
-			| otherwise = error $
-				"ls-tree parse error at '" ++ s ++ "' in " ++ l
+			| otherwise = parseerr
+		space [] = parseerr
+		parseerr = "ls-tree parse error: " ++ l

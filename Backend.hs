@@ -17,6 +17,7 @@ module Backend (
 ) where
 
 import Control.Monad.State (liftIO, when)
+import Control.Applicative
 import System.IO.Error (try)
 import System.FilePath
 import System.Posix.Files
@@ -86,9 +87,7 @@ lookupFile file = do
 		Left _ -> return Nothing
 		Right l -> makekey l
 	where
-		getsymlink = do
-			l <- readSymbolicLink file
-			return $ takeFileName l
+		getsymlink = takeFileName <$> readSymbolicLink file
 		makekey l = maybe (return Nothing) (makeret l) (fileKey l)
 		makeret l k =
 			case maybeLookupBackendName bname of

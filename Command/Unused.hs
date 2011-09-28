@@ -15,6 +15,8 @@ import qualified Data.Set as S
 import Data.Maybe
 import System.FilePath
 import System.Directory
+import Data.List
+import Control.Applicative
 
 import Command
 import Types
@@ -22,12 +24,17 @@ import Content
 import Messages
 import Locations
 import Utility
+import Utility.FileMode
+import Utility.SafeCommand
 import LocationLog
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
+import qualified Git.LsTree as LsTree
 import qualified Backend
 import qualified Remote
+import qualified Branch
+import CatFile
 
 command :: [Command]
 command = [repoCommand "unused" paramNothing seek
@@ -173,7 +180,29 @@ getKeysReferenced = do
 	g <- Annex.gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	keypairs <- mapM Backend.lookupFile files
-	return $ map fst $ catMaybes keypairs
+	ingit <- getKeysReferencedInGit
+	return $ concat [ingit, map fst $ catMaybes keypairs]
+
+{- List of keys referenced by symlinks in all git branches and tags. -}
+getKeysReferencedInGit :: Annex [Key]
+getKeysReferencedInGit = do
+	g <- Annex.gitRepo
+	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
+	-- Skip the git-annex branches, and get all other unique refs.
+	let refs = nub $ map head $ filter ourbranches $ map words $ lines c
+	concat <$> mapM (\r -> findkeys r [] =<< liftIO (LsTree.lsTree g r)) refs
+	where
+		ourbranchend = "/" ++ Branch.name
+		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
+		findkeys _ c [] = return c
+		findkeys ref c (l:ls) = do
+			if isSymLink (LsTree.mode l)
+				then do
+					content <- catFile ref $ LsTree.file l
+					case fileKey (takeFileName content) of
+						Nothing -> findkeys ref c ls
+						Just k -> findkeys ref (k:c) ls
+				else findkeys ref c ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable. 

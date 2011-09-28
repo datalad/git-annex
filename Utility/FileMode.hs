@@ -30,3 +30,7 @@ allowWrite :: FilePath -> IO ()
 allowWrite f = do
 	s <- getFileStatus f
 	setFileMode f $ fileMode s `unionFileModes` ownerWriteMode
+
+{- Checks if a file mode indicates it's a symlink. -}
+isSymLink :: FileMode -> Bool
+isSymLink mode = symbolicLinkMode `intersectFileModes` mode == symbolicLinkMode
