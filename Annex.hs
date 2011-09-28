@@ -24,6 +24,7 @@ import Control.Monad.IO.Control
 import Control.Applicative hiding (empty)
 
 import qualified Git
+import Git.CatFile
 import Git.Queue
 import Types.Backend
 import qualified Types.Remote
@@ -55,6 +56,7 @@ data AnnexState = AnnexState
 	, fast :: Bool
 	, auto :: Bool
 	, branchstate :: BranchState
+	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, defaultkey :: Maybe String
@@ -79,6 +81,7 @@ newState gitrepo = AnnexState
 	, fast = False
 	, auto = False
 	, branchstate = startBranchState
+	, catfilehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, defaultkey = Nothing

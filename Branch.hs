@@ -18,7 +18,7 @@ module Branch (
 	name	
 ) where
 
-import Control.Monad (when, unless, liftM)
+import Control.Monad (unless, liftM)
 import Control.Monad.State (liftIO)
 import Control.Applicative ((<$>))
 import System.FilePath
@@ -31,7 +31,6 @@ import System.IO
 import System.IO.Binary
 import System.Posix.Process
 import System.Exit
-import qualified Data.ByteString.Char8 as B
 
 import Types.BranchState
 import qualified Git
@@ -43,6 +42,7 @@ import Utility.SafeCommand
 import Types
 import Messages
 import Locations
+import CatFile
 
 type GitRef = String
 
@@ -244,48 +244,9 @@ get file = do
 					setCache file content
 					return content
 				Nothing -> withIndexUpdate $ do
-					content <- catFile file
+					content <- catFile fullname file
 					setCache file content
 					return content
-
-{- Uses git cat-file in batch mode to read the content of a file.
- -
- - Only one process is run, and it persists and is used for all accesses. -}
-catFile :: FilePath -> Annex String
-catFile file = do
-	state <- getState
-	maybe (startup state) ask (catFileHandles state)
-	where
-		startup state = do
-			g <- Annex.gitRepo
-			(_, from, to) <- liftIO $ hPipeBoth "git" $
-				toCommand $ Git.gitCommandLine g
-					[Param "cat-file", Param "--batch"]
-			setState state { catFileHandles = Just (from, to) }
-			ask (from, to)
-		ask (from, to) = liftIO $ do
-			let want = fullname ++ ":" ++ file
-			hPutStrLn to want
-			hFlush to
-			header <- hGetLine from
-			case words header of
-				[sha, blob, size]
-					| length sha == Git.shaSize &&
-					  blob == "blob" -> handle from size
-					| otherwise -> empty
-				_
-					| header == want ++ " missing" -> empty
-					| otherwise -> error $ "unknown response from git cat-file " ++ header
-		handle from size = case reads size of
-			[(bytes, "")] -> readcontent from bytes
-			_ -> empty
-		readcontent from bytes = do
-			content <- B.hGet from bytes
-			c <- hGetChar from
-			when (c /= '\n') $
-				error "missing newline from git cat-file"
-			return $ B.unpack content
-		empty = return ""
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
