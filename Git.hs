@@ -59,6 +59,7 @@ module Git (
 	getSha,
 	shaSize,
 	commit,
+	assertLocal,
 
 	prop_idempotent_deencode
 ) where
@@ -458,8 +459,8 @@ commit g message newref parentrefs = do
 		ps = concatMap (\r -> ["-p", r]) parentrefs
 
 {- Reads null terminated output of a git command (as enabled by the -z 
- - parameter), and splits it into a list of files/lines/whatever. -}
-pipeNullSplit :: Repo -> [CommandParam] -> IO [FilePath]
+ - parameter), and splits it. -}
+pipeNullSplit :: Repo -> [CommandParam] -> IO [String]
 pipeNullSplit repo params = filter (not . null) . split "\0" <$>
 	pipeRead repo params
 

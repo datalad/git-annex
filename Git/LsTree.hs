@@ -7,22 +7,23 @@
 
 module Git.LsTree (
 	TreeItem(..),
-	lsTree
+	lsTree,
+	parseLsTree
 ) where
 
 import Numeric
 import Control.Applicative
-import Data.Char
 import System.Posix.Types
+import qualified Data.ByteString.Lazy.Char8 as L
 
-import Git
+import Git.ByteString
 import Utility.SafeCommand
 
 type Treeish = String
 
 data TreeItem = TreeItem
 	{ mode :: FileMode
-	, objtype :: String
+	, typeobj :: String
 	, sha :: String
 	, file :: FilePath
 	} deriving Show
@@ -34,18 +35,17 @@ lsTree repo t = map parseLsTree <$>
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}
-parseLsTree :: String -> TreeItem
-parseLsTree l = TreeItem m o s f
+parseLsTree :: L.ByteString -> TreeItem
+parseLsTree l = TreeItem
+		(fst $ head $ readOct $ L.unpack m)
+		(L.unpack t)
+		(L.unpack s)
+		(decodeGitFile $ L.unpack f)
 	where
 		-- l = <mode> SP <type> SP <sha> TAB <file>
-		-- Since everything until the file is fixed-width,
-		-- do not need to split on words.
-		(m, past_m) = head $ readOct l
-		(o, past_o) = splitAt 4 $ space past_m
-		(s, past_s) = splitAt shaSize $ space past_o
-		f = decodeGitFile $ space past_s
-		space (sp:rest)
-			| isSpace sp = rest
-			| otherwise = parseerr
-		space [] = parseerr
-		parseerr = "ls-tree parse error: " ++ l
+		-- All fields are fixed, so we can pull them out of
+		-- specific positions in the line.
+		(m, past_m) = L.splitAt 7 l
+		(t, past_t) = L.splitAt 4 past_m
+		(s, past_s) = L.splitAt 40 $ L.tail past_t
+		f = L.tail past_s

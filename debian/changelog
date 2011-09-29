@@ -1,3 +1,9 @@
+git-annex (3.20110929) UNRELEASED; urgency=low
+
+  * Sped up unused.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
+
 git-annex (3.20110928) unstable; urgency=low
 
   * --in can be used to make git-annex only operate on files
