@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -165,8 +165,7 @@ excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
 	g <- Annex.gitRepo
 	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
-	excludeReferenced'
-		(getKeysReferenced : (map getKeysReferencedInGit $ refs c))
+	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
 		(S.fromList l)
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
@@ -175,18 +174,15 @@ excludeReferenced l = do
 			filter ourbranches .
 			map words . lines
 		cmpheads a b = head a == head b
-		ourbranchend = "/" ++ Branch.name
+		ourbranchend = '/' : Branch.name
 		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
-excludeReferenced' :: ([Annex [Key]]) -> S.Set Key -> Annex [Key]
-excludeReferenced' [] s = return $ S.toList s
-excludeReferenced' (a:as) s
-	| s == S.empty = return [] -- optimisation
-	| otherwise = do
-		referenced <- a
-		let !s' = remove referenced
-		excludeReferenced' as s'
-	where
-		remove l = s `S.difference` S.fromList l
+		removewith [] s = return $ S.toList s
+		removewith (a:as) s
+			| s == S.empty = return [] -- optimisation
+			| otherwise = do
+				referenced <- a
+				let !s' = s `S.difference` S.fromList referenced
+				removewith as s'
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -216,14 +212,13 @@ getKeysReferencedInGit ref = do
 	findkeys [] =<< liftIO (LsTree.lsTree g ref)
 	where
 		findkeys c [] = return c
-		findkeys c (l:ls) = do
-			if isSymLink (LsTree.mode l)
-				then do
-					content <- catFile ref $ LsTree.file l
-					case fileKey (takeFileName content) of
-						Nothing -> findkeys c ls
-						Just k -> findkeys (k:c) ls
-				else findkeys c ls
+		findkeys c (l:ls)
+			| isSymLink (LsTree.mode l) = do
+				content <- catFile ref $ LsTree.file l
+				case fileKey (takeFileName content) of
+					Nothing -> findkeys c ls
+					Just k -> findkeys (k:c) ls
+			| otherwise = findkeys c ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable. 
