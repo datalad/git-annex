@@ -1,0 +1,17 @@
+When two git-annex processes are running and both modifying the git-annex
+branch, it's possible one will fail due to git's locking. When this
+happens, git-annex has already recorded its state in the journal (so no
+data is lost), but git-annex does crash, which can be surprising.
+
+I feel that, in general, multiple git-annex processes should be able to run
+concurrently. A big lock around all commands, or even all
+repository-modifying commands is a bad idea. Also, it's probably best to
+only worry about locking conflicts editing the git-annex branch. While `git
+annex add` and a few other commands make changes to the main git repo,
+and can have similar locking issues, so can any git commands that stage
+changes (I think.. check).
+
+Probably should KISS. Just add a lock file that is taken before changes to
+the git-annex branch, and if it's locked, wait. Changes to the git-annex
+branch tend to happen quickly (unless it's committing an enormous set of
+changes, and even that is relatively fast), so waiting seems ok. --[[Joey]] 
