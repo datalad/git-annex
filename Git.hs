@@ -55,7 +55,6 @@ module Git (
 	repoAbsPath,
 	reap,
 	useIndex,
-	hashObject,
 	getSha,
 	shaSize,
 	commit,
@@ -416,18 +415,6 @@ useIndex index = do
 		var = "GIT_INDEX_FILE"
 		reset (Right (Just v)) = setEnv var v True
 		reset _ = unsetEnv var
-
-{- Injects some content into git, returning its hash. -}
-hashObject :: Repo -> String -> IO String
-hashObject repo content = getSha subcmd $ do
-	(h, s) <- pipeWriteRead repo (map Param params) content
-	length s `seq` do
-		forceSuccess h
-		reap -- XXX unsure why this is needed
-		return s
-	where
-		subcmd = "hash-object"
-		params = [subcmd, "-w", "--stdin"]
 
 {- Runs an action that causes a git subcommand to emit a sha, and strips
    any trailing newline, returning the sha. -}

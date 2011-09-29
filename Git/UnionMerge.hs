@@ -16,8 +16,10 @@ import System.Cmd.Utils
 import Data.List
 import Data.Maybe
 import Data.String.Utils
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
+import qualified Git.ByteString as GitB
 import Utility.SafeCommand
 
 {- Performs a union merge between two branches, staging it in the index.
@@ -78,6 +80,18 @@ calc_merge g differ = do
 		pairs (_:[]) = error "calc_merge parse error"
 		pairs (a:b:rest) = (a,b):pairs rest
 
+{- Injects some content into git, returning its hash. -}
+hashObject :: Repo -> L.ByteString -> IO String
+hashObject repo content = getSha subcmd $ do
+	(h, s) <- GitB.pipeWriteRead repo (map Param params) content
+	L.length s `seq` do
+		forceSuccess h
+		reap -- XXX unsure why this is needed
+		return $ L.unpack s
+	where
+		subcmd = "hash-object"
+		params = [subcmd, "-w", "--stdin"]
+
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
@@ -86,10 +100,10 @@ mergeFile g (info, file) = case filter (/= nullsha) [asha, bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
 	shas -> do
-		content <- pipeRead g $ map Param ("show":shas)
+		content <- GitB.pipeRead g $ map Param ("show":shas)
 		sha <- hashObject g $ unionmerge content
 		return $ Just $ update_index_line sha file
 	where
 		[_colonamode, _bmode, asha, bsha, _status] = words info
 		nullsha = replicate shaSize '0'
-		unionmerge = unlines . nub . lines
+		unionmerge = L.unlines . nub . L.lines
