@@ -100,7 +100,4 @@ uuidMap = do
 	s <- Branch.get uuidLog
 	return $ M.fromList $ map pair $ lines s
 	where
-		pair l =
-			if 1 < length (words l)
-				then (head $ words l, unwords $ drop 1 $ words l)
-				else ("", "")
+		pair l = (head $ words l, unwords $ drop 1 $ words l)
