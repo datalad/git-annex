@@ -167,4 +167,4 @@ staleSize label dirspec = do
 			return $ s ++ aside "clean up with git-annex unused"
 
 aside :: String -> String
-aside s = "\t(" ++ s ++ ")"
+aside s = " (" ++ s ++ ")"
