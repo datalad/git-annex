@@ -119,11 +119,12 @@ nameToUUID n = do
 	where
 		byDescription = do
 			m <- uuidMap
-			case M.lookup n $ invertMap m of
+			case M.lookup n $ transform swap m of
 				Just u -> return $ Just u
-				Nothing -> return $ M.lookup n m
-		invertMap = M.fromList . map swap . M.toList
+				Nothing -> return $ M.lookup n $ transform double m
+		transform a = M.fromList . map a . M.toList
 		swap (a, b) = (b, a)
+		double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
