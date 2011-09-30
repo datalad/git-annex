@@ -2,6 +2,7 @@ git-annex (3.20110929) UNRELEASED; urgency=low
 
   * Various speed improvements gained by using ByteStrings.
   * Fix referring to remotes by uuid.
+  * status: List all known repositories.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 

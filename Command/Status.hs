@@ -28,6 +28,8 @@ import Content
 import Types.Key
 import Locations
 import Backend
+import UUID
+import Remote
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -55,6 +57,7 @@ stats :: [Stat]
 stats = 
 	[ supported_backends
 	, supported_remote_types
+	, remote_list
 	, tmp_size
 	, bad_data_size
 	, local_annex_keys
@@ -91,6 +94,11 @@ supported_backends = stat "supported backends" $
 supported_remote_types :: Stat
 supported_remote_types = stat "supported remote types" $
 	return $ unwords $ map R.typename Remote.remoteTypes
+
+remote_list :: Stat
+remote_list = stat "known repositories" $ lift $ do
+	s <- prettyPrintUUIDs "repos" =<< M.keys <$> uuidMap
+	return $ '\n':init s
 
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
@@ -154,8 +162,8 @@ keySizeSum s = total ++ missingnote
 		missingnote
 			| missing == 0 = ""
 			| otherwise = aside $
-				"but " ++ show missing ++
-				" keys have unknown size"
+				"+ " ++ show missing ++
+				" keys of unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = do
