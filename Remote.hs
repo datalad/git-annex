@@ -136,18 +136,25 @@ nameToUUID n = do
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< Annex.gitRepo
-	m <- M.union <$> uuidMap <*> availMap
+	m <- M.unionWith addname <$> uuidMap <*> remoteMap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
-		availMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+		addname d n
+			| d == n = d
+			| otherwise = n ++ " (" ++ d ++ ")"
+		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
-		prettify m here u = base ++ ishere
+		prettify m here u
+			| not (null d) = u ++ "  -- " ++ d
+			| otherwise = u
 			where
-				base = if not $ null $ findlog m u
-					then u ++ "  -- " ++ findlog m u
-					else u
-				ishere = if here == u then " <-- here" else ""
+				ishere = here == u
+				n = findlog m u
+				d
+					| null n && ishere = "here"
+					| ishere = addname n "here"
+					| otherwise = n
 		jsonify m here u = toJSObject
 			[ ("uuid", toJSON u)
 			, ("description", toJSON $ findlog m u)
