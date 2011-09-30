@@ -87,7 +87,8 @@ genList = do
 			u <- getUUID r
 			generate t r u (M.lookup u m)
 
-{- Looks up a remote by name. (Or by UUID.) -}
+{- Looks up a remote by name. (Or by UUID.) Only finds currently configured
+ - git remotes. -}
 byName :: String -> Annex (Remote Annex)
 byName n = do
 	res <- byName' n
@@ -106,7 +107,8 @@ byName' n = do
 		matching r = n == name r || n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
- - and returns its UUID. -}
+ - and returns its UUID. Finds even remotes that are not configured in
+ - .git/config. -}
 nameToUUID :: String -> Annex UUID
 nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
 nameToUUID n = do
@@ -115,7 +117,11 @@ nameToUUID n = do
 		Left e -> fromMaybe (error e) <$> byDescription
 		Right r -> return $ uuid r
 	where
-		byDescription = M.lookup n . invertMap <$> uuidMap
+		byDescription = do
+			m <- uuidMap
+			case M.lookup n $ invertMap m of
+				Just u -> return $ Just u
+				Nothing -> return $ M.lookup n m
 		invertMap = M.fromList . map swap . M.toList
 		swap (a, b) = (b, a)
 
