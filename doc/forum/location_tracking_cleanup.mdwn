@@ -1,0 +1,24 @@
+I recently started experimenting with git annex, adding files that I've had
+floating across several computers to repositories. During the testing I had
+a few occasions where I wrecked a repository somehow, and decided to wipe it
+and start anew (at this point there was no important files in them so I thought
+this is the easiest way). Well, as it turns out this interacts badly with location
+tracking, since now `git annex whereis` shows files residing in all those destroyed
+repositories, all having same names as some existing repositories. This makes it hard
+to follow whether a repo actually has a file, or was the file only seen in some dead
+repo with the same name.
+
+I planned on cleaning this up by looking up the UUIDs of the now stable, existing
+repos and untrusting all the dead copies (they should effectively disappear from
+git annex´s output then, right?), but I didn't find an easy way to look up the UUID
+of the current repository (maybe this could be included in `git annex status`?)
+I also noticed that untrust cannot remove the trust based on the UUID -- if I try
+it I simply get "there is no git remote named "11908472-...", so I guess untrust
+works with git remote names, which I find a bit confusing, since trust.log logs the
+trust levels based on the UUID. I could just write into trust.log manually, but I'm
+unsure how the changes would get propagated.
+
+What should I do? As a related wishlist item I would ask for some additional mechanisms
+for purging known-dead repositories from the location tracking database. And the ability
+to look up the UUID of the current repo, and to use the UUID to specify repositories when
+applicable (untrust and describe maybe).
