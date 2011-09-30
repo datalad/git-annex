@@ -453,13 +453,13 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	checkunused []
 	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
 	checkunused []
-	boolSystem "git" [Params "commit -m foo"] @? "git commit failed"
+	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
 	checkunused []
 	-- unused checks origin/master; once it's gone it is really unused
 	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey]
 	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
-	boolSystem "git" [Params "commit -m foo"] @? "git commit failed"
+	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
 	checkunused [annexedfilekey, sha1annexedfilekey]
 
 	-- good opportunity to test dropkey also
