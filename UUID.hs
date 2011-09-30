@@ -100,4 +100,8 @@ uuidMap = do
 	s <- Branch.get uuidLog
 	return $ M.fromList $ map pair $ lines s
 	where
-		pair l = (head $ words l, unwords $ drop 1 $ words l)
+		pair l
+			| null ws = ("", "")
+			| otherwise = (head ws, unwords $ drop 1 ws)
+			where
+				ws = words l
