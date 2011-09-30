@@ -30,6 +30,7 @@ import System.IO
 import System.IO.Binary
 import System.Posix.Process
 import System.Exit
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Types.BranchState
 import qualified Git
@@ -181,7 +182,7 @@ siblingBranches :: Annex [String]
 siblingBranches = do
 	g <- Annex.gitRepo
 	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
-	return $ map (last . words) (lines r)
+	return $ map (last . words . L.unpack) (L.lines r)
 
 {- Ensures that a given ref has been merged into the index. -}
 updateRef :: GitRef -> Annex (Maybe String)
@@ -196,7 +197,7 @@ updateRef ref
 			Param (name++".."++ref),
 			Params "--oneline -n1"
 			]
-		if null diffs
+		if L.null diffs
 			then return Nothing
 			else do
 				showSideAction $ "merging " ++ Git.refDescribe ref ++ " into " ++ name

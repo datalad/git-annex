@@ -19,7 +19,6 @@ import Data.String.Utils
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
-import qualified Git.ByteString as GitB
 import Utility.SafeCommand
 
 {- Performs a union merge between two branches, staging it in the index.
@@ -44,7 +43,7 @@ merge _ _ = error "wrong number of branches to merge"
 update_index :: Repo -> [String] -> IO ()
 update_index g l = togit ["update-index", "-z", "--index-info"] (join "\0" l)
 	where
-		togit ps content = pipeWrite g (map Param ps) content
+		togit ps content = pipeWrite g (map Param ps) (L.pack content)
 			>>= forceSuccess
 
 {- Generates a line suitable to be fed into update-index, to add
@@ -83,7 +82,7 @@ calc_merge g differ = do
 {- Injects some content into git, returning its hash. -}
 hashObject :: Repo -> L.ByteString -> IO String
 hashObject repo content = getSha subcmd $ do
-	(h, s) <- GitB.pipeWriteRead repo (map Param params) content
+	(h, s) <- pipeWriteRead repo (map Param params) content
 	L.length s `seq` do
 		forceSuccess h
 		reap -- XXX unsure why this is needed
@@ -100,7 +99,7 @@ mergeFile g (info, file) = case filter (/= nullsha) [asha, bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
 	shas -> do
-		content <- GitB.pipeRead g $ map Param ("show":shas)
+		content <- pipeRead g $ map Param ("show":shas)
 		sha <- hashObject g $ unionmerge content
 		return $ Just $ update_index_line sha file
 	where

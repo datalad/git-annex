@@ -16,7 +16,7 @@ import Control.Applicative
 import System.Posix.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import Git.ByteString
+import Git
 import Utility.SafeCommand
 
 type Treeish = String
@@ -31,7 +31,7 @@ data TreeItem = TreeItem
 {- Lists the contents of a Treeish -}
 lsTree :: Repo -> Treeish -> IO [TreeItem]
 lsTree repo t = map parseLsTree <$>
-	pipeNullSplit repo [Params "ls-tree --full-tree -z -r --", File t]
+	pipeNullSplitB repo [Params "ls-tree --full-tree -z -r --", File t]
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

@@ -44,6 +44,7 @@ module Git (
 	pipeWrite,
 	pipeWriteRead,
 	pipeNullSplit,
+	pipeNullSplitB,
 	attributes,
 	remotes,
 	remotesAdd,
@@ -85,6 +86,7 @@ import Text.Printf
 import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
 import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Utility
 import Utility.Path
@@ -379,22 +381,41 @@ run repo subcommand params = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: Repo -> [CommandParam] -> IO String
+pipeRead :: Repo -> [CommandParam] -> IO L.ByteString
 pipeRead repo params = assertLocal repo $ do
-	(_, s) <- pipeFrom "git" $ toCommand $ gitCommandLine repo params
-	return s
+	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine repo params
+	hSetBinaryMode h True
+	L.hGetContents h
 
 {- Runs a git subcommand, feeding it input.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: Repo -> [CommandParam] -> String -> IO PipeHandle
-pipeWrite repo params s = assertLocal repo $
-	pipeTo "git" (toCommand $ gitCommandLine repo params) s
+pipeWrite :: Repo -> [CommandParam] -> L.ByteString -> IO PipeHandle
+pipeWrite repo params s = assertLocal repo $ do
+	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine repo params)
+	L.hPut h s
+	hClose h
+	return p
 
 {- Runs a git subcommand, feeding it input, and returning its output.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: Repo -> [CommandParam] -> String -> IO (PipeHandle, String)
-pipeWriteRead repo params s = assertLocal repo $
-	pipeBoth "git" (toCommand $ gitCommandLine repo params) s
+pipeWriteRead :: Repo -> [CommandParam] -> L.ByteString -> IO (PipeHandle, L.ByteString)
+pipeWriteRead repo params s = assertLocal repo $ do
+	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine repo params)
+	hSetBinaryMode from True
+	L.hPut to s
+	hClose to
+	c <- L.hGetContents from
+	return (p, c)
+
+{- Reads null terminated output of a git command (as enabled by the -z 
+ - parameter), and splits it. -}
+pipeNullSplit :: Repo -> [CommandParam] -> IO [String]
+pipeNullSplit repo params = map L.unpack <$> pipeNullSplitB repo params
+
+{- For when Strings are not needed. -}
+pipeNullSplitB :: Repo -> [CommandParam] -> IO [L.ByteString]
+pipeNullSplitB repo params = filter (not . L.null) . L.split '\0' <$>
+	pipeRead repo params
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()
@@ -436,20 +457,17 @@ shaSize = 40
  - with the specified parent refs. -}
 commit :: Repo -> String -> String -> [String] -> IO ()
 commit g message newref parentrefs = do
-	tree <- getSha "write-tree" $
+	tree <- getSha "write-tree" $ asString $
 		pipeRead g [Param "write-tree"]
-	sha <- getSha "commit-tree" $ ignorehandle $
-		pipeWriteRead g (map Param $ ["commit-tree", tree] ++ ps) message
+	sha <- getSha "commit-tree" $ asString $
+		ignorehandle $ pipeWriteRead g
+			(map Param $ ["commit-tree", tree] ++ ps)
+			(L.pack message)
 	run g "update-ref" [Param newref, Param sha]
 	where
 		ignorehandle a = snd <$> a
+		asString a = L.unpack <$> a
 		ps = concatMap (\r -> ["-p", r]) parentrefs
-
-{- Reads null terminated output of a git command (as enabled by the -z 
- - parameter), and splits it. -}
-pipeNullSplit :: Repo -> [CommandParam] -> IO [String]
-pipeNullSplit repo params = filter (not . null) . split "\0" <$>
-	pipeRead repo params
 
 {- Runs git config and populates a repo with its config. -}
 configRead :: Repo -> IO Repo

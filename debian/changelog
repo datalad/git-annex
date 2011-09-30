@@ -1,6 +1,6 @@
 git-annex (3.20110929) UNRELEASED; urgency=low
 
-  * Sped up unused.
+  * Various speed improvements gained by using ByteStrings.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 

@@ -16,6 +16,7 @@ import Data.Maybe
 import System.FilePath
 import System.Directory
 import Data.List
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Command
 import Types
@@ -172,7 +173,7 @@ excludeReferenced l = do
 		refs = map last .
 			nubBy cmpheads .
 			filter ourbranches .
-			map words . lines
+			map words . lines . L.unpack
 		cmpheads a b = head a == head b
 		ourbranchend = '/' : Branch.name
 		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
