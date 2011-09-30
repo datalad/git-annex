@@ -36,11 +36,12 @@ lsTree repo t = map parseLsTree <$>
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}
 parseLsTree :: L.ByteString -> TreeItem
-parseLsTree l = TreeItem
-		(fst $ head $ readOct $ L.unpack m)
-		(L.unpack t)
-		(L.unpack s)
-		(decodeGitFile $ L.unpack f)
+parseLsTree l = TreeItem 
+	{ mode = fst $ head $ readOct $ L.unpack m
+	, typeobj = L.unpack t
+	, sha = L.unpack s
+	, file = decodeGitFile $ L.unpack f
+	}
 	where
 		-- l = <mode> SP <type> SP <sha> TAB <file>
 		-- All fields are fixed, so we can pull them out of
