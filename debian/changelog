@@ -5,6 +5,7 @@ git-annex (3.20110929) UNRELEASED; urgency=low
   * status: List all known repositories.
   * When displaying a list of repositories, show git remote names
     in addition to their descriptions.
+  * Contain the zombie hordes.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 
