@@ -218,7 +218,7 @@ gpgCipherHandle params c a b = do
 
 	params' <- gpgParams $ passphrase ++ params
 	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	_ <- forkProcess $ do
+	pid2 <- forkProcess $ do
 		L.hPut toh =<< a
 		hClose toh
 		exitSuccess
@@ -227,6 +227,7 @@ gpgCipherHandle params c a b = do
 
 	-- cleanup
 	forceSuccess pid
+	_ <- getProcessStatus True False pid2
 	closeFd frompipe
 	return ret
 

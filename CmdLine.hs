@@ -85,9 +85,7 @@ tryRun' :: Integer -> Annex.AnnexState -> [Annex Bool] -> IO ()
 tryRun' errnum state (a:as) = do
 	result <- try $ Annex.run state $ do
 		AnnexQueue.flushWhenFull
-		r <- a
-		liftIO Git.reap
-		return r
+		a
 	case result of
 		Left err -> do
 			Annex.eval state $ do
@@ -106,4 +104,5 @@ startup = return True
 shutdown :: Annex Bool
 shutdown = do
 	saveState
+	liftIO Git.reap -- zombies from long-running git processes
 	return True
