@@ -29,6 +29,8 @@ import Data.Maybe
 import System.IO
 import System.IO.Binary
 import System.Posix.Process
+import System.Posix.IO
+import System.Posix.Files
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 
@@ -129,16 +131,17 @@ create = unlessM hasBranch $ do
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = whenM stageJournalFiles $ do
-	g <- Annex.gitRepo
-	withIndex $ liftIO $ Git.commit g message fullname [fullname]
+commit message = lockJournal $
+	whenM stageJournalFiles $ do
+		g <- Annex.gitRepo
+		withIndex $ liftIO $ Git.commit g message fullname [fullname]
 
 {- Ensures that the branch is up-to-date; should be called before
  - data is read from it. Runs only once per git-annex run. -}
 update :: Annex ()
 update = do
 	state <- getState
-	unless (branchUpdated state) $ withIndex $ do
+	unless (branchUpdated state) $ withIndex $ lockJournal $ do
 		{- Since branches get merged into the index, it's important to
 		 - first stage the journal into the index. Otherwise, any
 		 - changes in the journal would later get staged, and might
@@ -154,6 +157,7 @@ update = do
 		g <- Annex.gitRepo
 		unless (null updated && not staged) $ liftIO $
 			Git.commit g "update" fullname (fullname:updated)
+
 		Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 		invalidateCache
 
@@ -215,13 +219,7 @@ updateRef ref
 
 {- Applies a function to modifiy the content of a file. -}
 change :: FilePath -> (String -> String) -> Annex ()
-change file a = do
-	lock
-	get file >>= return . a >>= set file
-	unlock
-	where
-		lock = return ()
-		unlock = return ()
+change file a = lockJournal $ get file >>= return . a >>= set file
 
 {- Records new content of a file into the journal. -}
 set :: FilePath -> String -> Annex ()
@@ -277,7 +275,7 @@ setJournalFile file content = do
 			writeBinaryFile tmpfile content
 			renameFile tmpfile jfile
 
-{- Gets journalled content for a file in the branch. -}
+{- Gets any journalled content for a file in the branch. -}
 getJournalFile :: FilePath -> Annex (Maybe String)
 getJournalFile file = do
 	g <- Annex.gitRepo
@@ -346,3 +344,14 @@ journalFile repo file = gitAnnexJournalDir repo </> concatMap mangle file
  - filename on the branch. -}
 fileJournal :: FilePath -> FilePath
 fileJournal = replace "//" "_" . replace "_" "/"
+
+{- Runs an action that modifies the journal, using locking to avoid
+ - contention with other git-annex processes. -}
+lockJournal :: Annex a -> Annex a
+lockJournal a = do
+	g <- Annex.gitRepo
+	h <- liftIO $ createFile (gitAnnexJournalLock g) stdFileMode
+	liftIO $ waitToSetLock h (WriteLock, AbsoluteSeek, 0, 0)
+	r <- a
+	liftIO $ closeFd h
+	return r

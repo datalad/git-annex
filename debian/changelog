@@ -6,6 +6,7 @@ git-annex (3.20110929) UNRELEASED; urgency=low
   * When displaying a list of repositories, show git remote names
     in addition to their descriptions.
   * Contain the zombie hordes.
+  * Add locking to avoid races when changing the git-annex branch.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 

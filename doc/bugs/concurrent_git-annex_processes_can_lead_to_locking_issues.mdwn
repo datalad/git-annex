@@ -49,3 +49,5 @@ Make Branch.change transactional, so it takes a lock, reads a file,
 applies a function to it, and writes the changed file.
 
 Make Branch.update hold the same lock.
+
+> [[Done]].
