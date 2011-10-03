@@ -18,14 +18,13 @@ module Branch (
 	name	
 ) where
 
-import Control.Monad (unless, liftM)
+import Control.Monad (unless, when, liftM, filterM)
 import Control.Monad.State (liftIO)
 import Control.Applicative ((<$>))
 import System.FilePath
 import System.Directory
 import Data.String.Utils
 import System.Cmd.Utils
-import Data.Maybe
 import System.IO
 import System.IO.Binary
 import System.Posix.Process
@@ -131,8 +130,10 @@ create = unlessM hasBranch $ do
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = lockJournal $
-	whenM stageJournalFiles $ do
+commit message = do
+	fs <- getJournalFiles
+	when (not $ null fs) $ lockJournal $ do
+		stageJournalFiles fs
 		g <- Annex.gitRepo
 		withIndex $ liftIO $ Git.commit g message fullname [fullname]
 
@@ -141,25 +142,54 @@ commit message = lockJournal $
 update :: Annex ()
 update = do
 	state <- getState
-	unless (branchUpdated state) $ withIndex $ lockJournal $ do
-		{- Since branches get merged into the index, it's important to
-		 - first stage the journal into the index. Otherwise, any
-		 - changes in the journal would later get staged, and might
-		 - overwrite changes made during the merge.
-		 -
-		 - It would be cleaner to handle the merge by updating the
-		 - journal, not the index, with changes from the branches.
-		 -}
-		staged <- stageJournalFiles
-
-		refs <- siblingBranches
-		updated <- catMaybes <$> mapM updateRef refs
-		g <- Annex.gitRepo
-		unless (null updated && not staged) $ liftIO $
-			Git.commit g "update" fullname (fullname:updated)
-
-		Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
-		invalidateCache
+	unless (branchUpdated state) $ do
+		-- check what needs updating before taking the lock
+		fs <- getJournalFiles
+		refs <- filterM checkref =<< siblingBranches
+		unless (null fs && null refs) $ withIndex $ lockJournal $ do
+			{- Before refs are merged into the index, it's
+			 - important to first stage the journal into the
+			 - index. Otherwise, any changes in the journal
+			 - would later get staged, and might overwrite
+			 - changes made during the merge.
+			 -
+			 - It would be cleaner to handle the merge by
+			 - updating the journal, not the index, with changes
+			 - from the branches.
+			 -}
+			unless (null fs) $ stageJournalFiles fs
+			mapM_ mergeref refs
+			g <- Annex.gitRepo
+			liftIO $ Git.commit g "update" fullname (fullname:refs)
+			Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
+			invalidateCache
+	where
+		checkref ref = do
+			g <- Annex.gitRepo
+			-- checking with log to see if there have been changes
+			-- is less expensive than always merging
+			diffs <- liftIO $ Git.pipeRead g [
+				Param "log",
+				Param (name++".."++ref),
+				Params "--oneline -n1"
+				]
+			return $ not $ L.null diffs
+		mergeref ref = do
+			showSideAction $ "merging " ++
+				Git.refDescribe ref ++ " into " ++ name
+			{- By passing only one ref, it is actually
+			 - merged into the index, preserving any
+			 - changes that may already be staged.
+			 -
+			 - However, any changes in the git-annex
+			 - branch that are *not* reflected in the
+			 - index will be removed. So, documentation
+			 - advises users not to directly modify the
+			 - branch.
+			 -}
+			g <- Annex.gitRepo
+			liftIO $ Git.UnionMerge.merge g [ref]
+			return $ Just ref
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
@@ -187,35 +217,6 @@ siblingBranches = do
 	g <- Annex.gitRepo
 	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
 	return $ map (last . words . L.unpack) (L.lines r)
-
-{- Ensures that a given ref has been merged into the index. -}
-updateRef :: GitRef -> Annex (Maybe String)
-updateRef ref
-	| ref == fullname = return Nothing
-	| otherwise = do
-		g <- Annex.gitRepo
-		-- checking with log to see if there have been changes
-		-- is less expensive than always merging
-		diffs <- liftIO $ Git.pipeRead g [
-			Param "log",
-			Param (name++".."++ref),
-			Params "--oneline -n1"
-			]
-		if L.null diffs
-			then return Nothing
-			else do
-				showSideAction $ "merging " ++ Git.refDescribe ref ++ " into " ++ name
-				-- By passing only one ref, it is actually
-				-- merged into the index, preserving any
-				-- changes that may already be staged.
-				--
-				-- However, any changes in the git-annex
-				-- branch that are *not* reflected in the
-				-- index will be removed. So, documentation
-				-- advises users not to directly modify the
-				-- branch.
-				liftIO $ Git.UnionMerge.merge g [ref]
-				return $ Just ref
 
 {- Applies a function to modifiy the content of a file. -}
 change :: FilePath -> (String -> String) -> Annex ()
@@ -253,7 +254,7 @@ files = withIndexUpdate $ do
 	g <- Annex.gitRepo
 	bfiles <- liftIO $ Git.pipeNullSplit g
 		[Params "ls-tree --name-only -r -z", Param fullname]
-	jfiles <- getJournalFiles
+	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles
 
 {- Records content for a file in the branch to the journal.
@@ -282,49 +283,43 @@ getJournalFile file = do
 	liftIO $ catch (liftM Just . readFileStrict $ journalFile g file)
 		(const $ return Nothing)
 
-{- List of journal files. -}
-getJournalFiles :: Annex [FilePath]
-getJournalFiles = map fileJournal <$> getJournalFilesRaw
+{- List of files that have updated content in the journal. -}
+getJournalledFiles :: Annex [FilePath]
+getJournalledFiles = map fileJournal <$> getJournalFiles
 
-getJournalFilesRaw :: Annex [FilePath]
-getJournalFilesRaw = do
+{- List of existing journal files. -}
+getJournalFiles :: Annex [FilePath]
+getJournalFiles = do
 	g <- Annex.gitRepo
 	fs <- liftIO $ catch (getDirectoryContents $ gitAnnexJournalDir g)
 		(const $ return [])
 	return $ filter (`notElem` [".", ".."]) fs
 
-{- Stages all journal files into the index, and returns True if the index
- - was modified. -}
-stageJournalFiles :: Annex Bool
-stageJournalFiles = do
-	l <- getJournalFilesRaw
-	if null l
-		then return False
-		else do
-			g <- Annex.gitRepo
-			withIndex $ liftIO $ stage g l
-			return True
-	where
-		stage g fs = do
-			let dir = gitAnnexJournalDir g
-			let paths = map (dir </>) fs
-			-- inject all the journal files directly into git
-			-- in one quick command
-			(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $
-				Git.gitCommandLine g [Param "hash-object", Param "-w", Param "--stdin-paths"]
-			_ <- forkProcess $ do
-				hPutStr toh $ unlines paths
-				hClose toh
-				exitSuccess
+{- Stages the specified journalfiles. -}
+stageJournalFiles :: [FilePath] -> Annex ()
+stageJournalFiles fs = do
+	g <- Annex.gitRepo
+	withIndex $ liftIO $ do
+		let dir = gitAnnexJournalDir g
+		let paths = map (dir </>) fs
+		-- inject all the journal files directly into git
+		-- in one quick command
+		(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $
+			Git.gitCommandLine g [Param "hash-object", Param "-w", Param "--stdin-paths"]
+		_ <- forkProcess $ do
+			hPutStr toh $ unlines paths
 			hClose toh
-			s <- hGetContents fromh
-			-- update the index, also in just one command
-			Git.UnionMerge.update_index g $
-				index_lines (lines s) $ map fileJournal fs
-			hClose fromh
-			forceSuccess pid
-			mapM_ removeFile paths
-		index_lines shas fs = map genline $ zip shas fs
+			exitSuccess
+		hClose toh
+		s <- hGetContents fromh
+		-- update the index, also in just one command
+		Git.UnionMerge.update_index g $
+			index_lines (lines s) $ map fileJournal fs
+		hClose fromh
+		forceSuccess pid
+		mapM_ removeFile paths
+	where
+		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
 
 {- Produces a filename to use in the journal for a file on the branch.
