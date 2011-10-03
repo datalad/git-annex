@@ -32,6 +32,8 @@ import System.Posix.IO
 import System.Posix.Files
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
+import Control.Monad.IO.Control (liftIOOp)
+import qualified Control.Exception.Base
 
 import Types.BranchState
 import qualified Git
@@ -345,8 +347,12 @@ fileJournal = replace "//" "_" . replace "_" "/"
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
 	g <- Annex.gitRepo
-	h <- liftIO $ createFile (gitAnnexJournalLock g) stdFileMode
-	liftIO $ waitToSetLock h (WriteLock, AbsoluteSeek, 0, 0)
-	r <- a
-	liftIO $ closeFd h
-	return r
+	let file = gitAnnexJournalLock g
+	liftIOOp (Control.Exception.Base.bracket (lock file) unlock) run
+	where
+		lock file = do
+			l <- createFile file stdFileMode
+			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
+			return l
+		unlock = closeFd
+		run _ = a
