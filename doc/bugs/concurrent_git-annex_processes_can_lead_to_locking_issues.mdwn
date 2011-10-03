@@ -15,3 +15,37 @@ Probably should KISS. Just add a lock file that is taken before changes to
 the git-annex branch, and if it's locked, wait. Changes to the git-annex
 branch tend to happen quickly (unless it's committing an enormous set of
 changes, and even that is relatively fast), so waiting seems ok. --[[Joey]] 
+
+----
+
+Commit 7981eb4cb512fbe3c49a3dd165c31be14ae4bc49 is more pessimistic, 
+describes some other potential issues. 
+
+* The journal needs to be emptied (done) and kept locked (not done) during
+  a merge, since a merge operates at a level below the journal, and any
+  changes that are journaled during a merge can overwrite changes merged
+  in from another branch.
+
+* Two git-annex processes can be doing conflicting things and inconsistent
+  information be written to the journal.
+
+  - One example would be concurrent get and drop of the same key.
+    But could this really race? If the key was already present, the get
+    would do nothing, so record no changes. If the key was not yet present,
+    the drop would do nothing, and record no changes.
+
+  - Instead, consider two copys of a key to different locations. If the
+    slower copy starts first and ends last, it could cache the location 
+    info, add the  new location, and lose the other location it was copied to.
+    Tested it and the location is not cached during the whole copy (logChange
+    reads the current log immediatly before writing), so this
+    race's window is very small -- but does exist.
+
+---- 
+
+## Updated plan
+
+Make Branch.change transactional, so it takes a lock, reads a file,
+applies a function to it, and writes the changed file.
+
+Make Branch.update hold the same lock.
