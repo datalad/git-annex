@@ -87,8 +87,8 @@ inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
 	g <- Annex.gitRepo
 	new <- liftIO (readFile $ olddir g </> source)
-	prev <- Branch.get dest
-	Branch.change dest $ unlines $ nub $ lines prev ++ lines new
+	Branch.change dest $ \prev -> 
+		unlines $ nub $ lines prev ++ lines new
 	showProgress
 
 logFiles :: FilePath -> Annex [FilePath]

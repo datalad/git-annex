@@ -16,7 +16,6 @@ module PresenceLog (
 	addLog,
 	readLog,
 	parseLog,
-	writeLog,
 	logNow,
 	compactLog,
 	currentLog,
@@ -75,9 +74,8 @@ instance Read LogLine where
 			ret v = [(v, "")]
 
 addLog :: FilePath -> LogLine -> Annex ()
-addLog file line = do
-	ls <- readLog file
-	writeLog file (compactLog $ line:ls)
+addLog file line = Branch.change file $ \s -> 
+	showLog $ compactLog (line : parseLog s)
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
@@ -90,9 +88,9 @@ parseLog = filter parsable . map read . lines
 		-- some lines may be unparseable, avoid them
 		parsable l = status l /= Undefined
 
-{- Stores a set of lines in a log file -}
-writeLog :: FilePath -> [LogLine] -> Annex ()
-writeLog file ls = Branch.change file (unlines $ map show ls)
+{- Generates a log file. -}
+showLog :: [LogLine] -> String
+showLog = unlines . map show
 
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine

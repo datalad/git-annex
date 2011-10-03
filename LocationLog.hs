@@ -15,7 +15,6 @@ module LocationLog (
 	LogStatus(..),
 	logChange,
 	readLog,
-	writeLog,
 	keyLocations,
 	loggedKeys,
 	logFile,

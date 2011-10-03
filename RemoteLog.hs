@@ -32,11 +32,10 @@ remoteLog = "remote.log"
 
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
-configSet u c = do
-	m <- readRemoteLog
-	Branch.change remoteLog $ unlines $ sort $
-		map toline $ M.toList $ M.insert u c m
+configSet u c = Branch.change remoteLog $
+	serialize . M.insert u c . remoteLogParse
 	where
+		serialize = unlines . sort . map toline . M.toList
 		toline (u', c') = u' ++ " " ++ unwords (configToKeyVal c')
 
 {- Map of remotes by uuid containing key/value config maps. -}

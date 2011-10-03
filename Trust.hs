@@ -64,11 +64,9 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid level = do
 	when (null uuid) $
 		error "unknown UUID; cannot modify trust level"
-        m <- trustMap
-	when (M.lookup uuid m /= Just level) $ do
-		let m' = M.insert uuid level m
-		Branch.change trustLog (serialize m')
-		Annex.changeState $ \s -> s { Annex.trustmap = Just m' }
+	Branch.change trustLog $
+		serialize . M.insert uuid level . M.fromList . trustMapParse
+	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
         where
                 serialize m = unlines $ map showpair $ M.toList m
 		showpair (u, t) = u ++ " " ++ show t

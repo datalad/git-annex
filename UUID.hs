@@ -23,6 +23,7 @@ module UUID (
 ) where
 
 import Control.Monad.State
+import Control.Applicative
 import System.Cmd.Utils
 import System.IO
 import qualified Data.Map as M
@@ -87,18 +88,17 @@ prepUUID = do
 
 {- Records a description for a uuid in the uuidLog. -}
 describeUUID :: UUID -> String -> Annex ()
-describeUUID uuid desc = do
-	m <- uuidMap
-	let m' = M.insert uuid desc m
-	Branch.change uuidLog (serialize m')
+describeUUID uuid desc = Branch.change uuidLog $
+	serialize . M.insert uuid desc . parse
 	where
 		serialize m = unlines $ map (\(u, d) -> u++" "++d) $ M.toList m
 
-{- Read and parse the uuidLog into a Map -}
+{- Read the uuidLog into a Map -}
 uuidMap :: Annex (M.Map UUID String)
-uuidMap = do
-	s <- Branch.get uuidLog
-	return $ M.fromList $ map pair $ lines s
+uuidMap = parse <$> Branch.get uuidLog
+
+parse :: String -> M.Map UUID String
+parse = M.fromList . map pair . lines
 	where
 		pair l
 			| null ws = ("", "")

@@ -213,9 +213,19 @@ updateRef ref
 				liftIO $ Git.UnionMerge.merge g [ref]
 				return $ Just ref
 
-{- Records changed content of a file into the journal. -}
-change :: FilePath -> String -> Annex ()
-change file content = do
+{- Applies a function to modifiy the content of a file. -}
+change :: FilePath -> (String -> String) -> Annex ()
+change file a = do
+	lock
+	get file >>= return . a >>= set file
+	unlock
+	where
+		lock = return ()
+		unlock = return ()
+
+{- Records new content of a file into the journal. -}
+set :: FilePath -> String -> Annex ()
+set file content = do
 	setJournalFile file content
 	setCache file content
 
