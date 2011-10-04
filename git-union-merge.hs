@@ -6,10 +6,8 @@
  -}
 
 import System.Environment
-import System.FilePath
-import System.Directory
-import Control.Monad (when)
 
+import Common
 import qualified Git.UnionMerge
 import qualified Git
 

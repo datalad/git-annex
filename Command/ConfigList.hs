@@ -7,9 +7,7 @@
 
 module Command.ConfigList where
 
-import Control.Monad.State (liftIO)
-
-import Annex
+import AnnexCommon
 import Command
 import UUID
 
@@ -22,7 +20,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	liftIO $ putStrLn $ "annex.uuid=" ++ u
 	stop

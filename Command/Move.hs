@@ -7,18 +7,14 @@
 
 module Command.Move where
 
-import Control.Monad (when)
-
+import AnnexCommon
 import Command
 import qualified Command.Drop
 import qualified Annex
 import LocationLog
-import Types
 import Content
 import qualified Remote
 import UUID
-import Messages
-import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "move" paramPaths seek
@@ -60,7 +56,7 @@ showMoveAction False file = showStart "copy" file
 remoteHasKey :: Remote.Remote Annex -> Key -> Bool -> Annex ()
 remoteHasKey remote key present	= do
 	let remoteuuid = Remote.uuid remote
-	g <- Annex.gitRepo
+	g <- gitRepo
 	logChange g key remoteuuid status
 	where
 		status = if present then InfoPresent else InfoMissing
@@ -76,7 +72,7 @@ remoteHasKey remote key present	= do
  -}
 toStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 toStart dest move file = isAnnexed file $ \(key, _) -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
@@ -126,7 +122,7 @@ toCleanup dest move key = do
  -}
 fromStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 fromStart src move file = isAnnexed file $ \(key, _) -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	remotes <- Remote.keyPossibilities key
 	if u == Remote.uuid src || not (any (== src) remotes)

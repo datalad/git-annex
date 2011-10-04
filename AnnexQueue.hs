@@ -11,13 +11,9 @@ module AnnexQueue (
 	flushWhenFull
 ) where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (when, unless)
-
+import AnnexCommon
 import Annex
-import Messages
 import qualified Git.Queue
-import Utility.SafeCommand
 
 {- Adds a git command to the queue. -}
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()

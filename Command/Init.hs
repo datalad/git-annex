@@ -7,10 +7,9 @@
 
 module Command.Init where
 
+import AnnexCommon
 import Command
-import qualified Annex
 import UUID
-import Messages
 import Init
 	
 command :: [Command]
@@ -30,7 +29,7 @@ start ws = do
 perform :: String -> CommandPerform
 perform description = do
 	initialize
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	describeUUID u description
 	next $ return True

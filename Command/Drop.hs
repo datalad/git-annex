@@ -7,14 +7,12 @@
 
 module Command.Drop where
 
+import AnnexCommon
 import Command
 import qualified Remote
 import qualified Annex
 import LocationLog
-import Types
 import Content
-import Messages
-import Utility.Conditional
 import Trust
 import Config
 
@@ -71,9 +69,9 @@ dropKey key numcopiesM = do
 			| length have >= need = return True
 			| otherwise = do
 				let u = Remote.uuid r
-				let dup = u `elem` have
+				let duplicate = u `elem` have
 				haskey <- Remote.hasKey r key
-				case (dup, haskey) of
+				case (duplicate, haskey) of
 					(False, Right True)	-> findcopies need (u:have) rs bad
 					(False, Left _)		-> findcopies need have rs (r:bad)
 					_			-> findcopies need have rs bad

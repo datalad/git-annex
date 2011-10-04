@@ -13,17 +13,14 @@ module CmdLine (
 
 import System.IO.Error (try)
 import System.Console.GetOpt
-import Control.Monad.State (liftIO)
-import Control.Monad (when)
 
+import AnnexCommon
 import qualified Annex
 import qualified AnnexQueue
 import qualified Git
 import Content
-import Types
 import Command
 import Options
-import Messages
 import Init
 
 {- Runs the passed command line. -}

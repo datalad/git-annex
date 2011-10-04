@@ -22,18 +22,12 @@ module UUID (
 	uuidLog
 ) where
 
-import Control.Monad.State
-import Control.Applicative
-import System.Cmd.Utils
-import System.IO
 import qualified Data.Map as M
-import Data.Maybe
 
+import AnnexCommon
 import qualified Git
 import qualified Branch
-import Types
 import Types.UUID
-import qualified Annex
 import qualified Build.SysConfig as SysConfig
 import Config
 
@@ -60,7 +54,7 @@ genUUID = liftIO $ pOpen ReadFromPipe command params $ \h -> hGetLine h
  -}
 getUUID :: Git.Repo -> Annex UUID
 getUUID r = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	let c = cached g
 	let u = getUncachedUUID r
@@ -81,7 +75,7 @@ getUncachedUUID r = Git.configGet r configkey ""
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
 prepUUID = do
-	u <- getUUID =<< Annex.gitRepo
+	u <- getUUID =<< gitRepo
 	when ("" == u) $ do
 		uuid <- liftIO genUUID
 		setConfig configkey uuid

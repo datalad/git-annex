@@ -7,12 +7,11 @@
 
 module Command.DropKey where
 
+import AnnexCommon
 import Command
 import qualified Annex
 import LocationLog
-import Types
 import Content
-import Messages
 
 command :: [Command]
 command = [repoCommand "dropkey" (paramRepeating paramKey) seek

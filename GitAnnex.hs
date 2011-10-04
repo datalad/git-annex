@@ -8,14 +8,12 @@
 module GitAnnex where
 
 import System.Console.GetOpt
-import Control.Monad.State (liftIO)
 
+import AnnexCommon
 import qualified Git
 import CmdLine
 import Command
 import Options
-import Utility
-import Types
 import Types.TrustLevel
 import qualified Annex
 import qualified Remote
@@ -122,7 +120,7 @@ options = commonOptions ++
 		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			g' <- liftIO $ Git.configStore g v
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 

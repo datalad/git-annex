@@ -8,18 +8,13 @@
 module Command.InitRemote where
 
 import qualified Data.Map as M
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
-import Data.Maybe
-import Data.String.Utils
 
+import AnnexCommon
 import Command
 import qualified Remote
 import qualified RemoteLog
 import qualified Types.Remote as R
-import Types
 import UUID
-import Messages
 
 command :: [Command]
 command = [repoCommand "initremote"

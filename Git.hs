@@ -64,34 +64,20 @@ module Git (
 	prop_idempotent_deencode
 ) where
 
-import Control.Monad (unless, when, liftM2)
-import Control.Applicative
-import System.Directory
-import System.FilePath
 import System.Posix.Directory
 import System.Posix.User
-import System.Posix.Process
-import System.Path
-import System.Cmd.Utils
 import IO (bracket_, try)
-import Data.String.Utils
-import System.IO
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
-import Data.Maybe
 import Data.Char
 import Data.Word (Word8)
 import Codec.Binary.UTF8.String (encode)
 import Text.Printf
-import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
 import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import Utility
-import Utility.Path
-import Utility.Conditional
-import Utility.SafeCommand
+import Common
 
 {- There are two types of repositories; those on local disk and those
  - accessed via an URL. -}

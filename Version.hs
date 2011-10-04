@@ -7,8 +7,7 @@
 
 module Version where
 
-import Types
-import qualified Annex
+import AnnexCommon
 import qualified Git
 import Config
 
@@ -28,7 +27,7 @@ versionField = "annex.version"
 
 getVersion :: Annex (Maybe Version)
 getVersion = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let v = Git.configGet g versionField ""
 	if not $ null v
 		then return $ Just v

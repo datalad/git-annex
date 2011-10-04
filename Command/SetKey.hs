@@ -7,13 +7,10 @@
 
 module Command.SetKey where
 
-import Control.Monad.State (liftIO)
-
+import AnnexCommon
 import Command
-import Utility.SafeCommand
 import LocationLog
 import Content
-import Messages
 
 command :: [Command]
 command = [repoCommand "setkey" paramPath seek

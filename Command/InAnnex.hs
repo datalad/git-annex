@@ -7,12 +7,9 @@
 
 module Command.InAnnex where
 
-import Control.Monad.State (liftIO)
-import System.Exit
-
+import AnnexCommon
 import Command
 import Content
-import Types
 
 command :: [Command]
 command = [repoCommand "inannex" (paramRepeating paramKey) seek

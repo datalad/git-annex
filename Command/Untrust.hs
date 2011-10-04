@@ -7,11 +7,11 @@
 
 module Command.Untrust where
 
+import AnnexCommon
 import Command
 import qualified Remote
 import UUID
 import Trust
-import Messages
 
 command :: [Command]
 command = [repoCommand "untrust" (paramRepeating paramRemote) seek

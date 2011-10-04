@@ -7,15 +7,11 @@
 
 module Command.RecvKey where
 
-import Control.Monad.State (liftIO)
-import System.Exit
-
+import AnnexCommon
 import Command
 import CmdLine
 import Content
 import Utility.RsyncFile
-import Utility.Conditional
-import Types
 
 command :: [Command]
 command = [repoCommand "recvkey" paramKey seek

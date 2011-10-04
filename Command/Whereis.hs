@@ -7,13 +7,10 @@
 
 module Command.Whereis where
 
-import Control.Monad
-
+import AnnexCommon
 import LocationLog
 import Command
-import Messages
 import Remote
-import Types
 import Trust
 
 command :: [Command]

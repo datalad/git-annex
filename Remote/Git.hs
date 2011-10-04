@@ -8,26 +8,17 @@
 module Remote.Git (remote) where
 
 import Control.Exception.Extensible
-import Control.Monad.State (liftIO)
 import qualified Data.Map as M
-import System.Cmd.Utils
-import System.Posix.Files
-import System.IO
 
-import Types
-import Types.Remote
-import qualified Git
-import qualified Annex
-import Locations
-import UUID
-import Utility
-import qualified Content
-import Messages
+import AnnexCommon
 import Utility.CopyFile
 import Utility.RsyncFile
 import Utility.Ssh
-import Utility.SafeCommand
-import Utility.Path
+import Types.Remote
+import qualified Git
+import qualified Annex
+import UUID
+import qualified Content
 import qualified Utility.Url as Url
 import Config
 import Init
@@ -42,7 +33,7 @@ remote = RemoteType {
 
 list :: Annex [Git.Repo]
 list = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	return $ Git.remotes g
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
@@ -109,7 +100,7 @@ tryGitConfigRead r
 
 		store a = do
 			r' <- a
-			g <- Annex.gitRepo
+			g <- gitRepo
 			let l = Git.remotes g
 			let g' = Git.remotesAdd g $ exchange l r'
 			Annex.changeState $ \s -> s { Annex.repo = g' }
@@ -169,7 +160,7 @@ copyFromRemote r key file
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
 	| not $ Git.repoIsUrl r = do
-		g <- Annex.gitRepo
+		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
@@ -178,7 +169,7 @@ copyToRemote r key
 			Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
-		g <- Annex.gitRepo
+		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
@@ -200,7 +191,7 @@ rsyncOrCopyFile r src dest = do
 	ss <- liftIO $ getFileStatus $ parentDir src
 	ds <- liftIO $ getFileStatus $ parentDir dest
 	if deviceID ss == deviceID ds
-		then liftIO $ copyFile src dest
+		then liftIO $ copyFileExternal src dest
 		else do
 			params <- rsyncParams r
 			rsyncHelper $ params ++ [Param src, Param dest]

@@ -8,23 +8,15 @@
 module Upgrade.V0 where
 
 import System.IO.Error (try)
-import System.Directory
-import Control.Monad.State (liftIO)
-import Control.Monad (filterM, forM_)
-import System.Posix.Files
-import System.FilePath
 
+import AnnexCommon
 import Content
-import Types
-import Locations
-import qualified Annex
-import Messages
 import qualified Upgrade.V1
 
 upgrade :: Annex Bool
 upgrade = do
 	showAction "v0 to v1"
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	-- do the reorganisation of the key files
 	let olddir = gitAnnexDir g

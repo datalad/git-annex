@@ -11,7 +11,6 @@ module Utility (
 	readMaybe,
 	viaTmp,
 	withTempFile,
-	dirContains,
 	dirContents,
 	myHomeDir,
 	catchBool,

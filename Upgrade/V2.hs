@@ -7,21 +7,9 @@
 
 module Upgrade.V2 where
 
-import System.Directory
-import System.FilePath
-import Control.Monad.State (unless, when, liftIO)
-import Data.List
-import Data.Maybe
-
-import Types.Key
-import Types
-import qualified Annex
+import AnnexCommon
 import qualified Git
 import qualified Branch
-import Messages
-import Utility
-import Utility.Conditional
-import Utility.SafeCommand
 import LocationLog
 import Content
 
@@ -48,7 +36,7 @@ olddir g
 upgrade :: Annex Bool
 upgrade = do
 	showAction "v2 to v3"
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let bare = Git.repoIsLocalBare g
 
 	Branch.create
@@ -85,7 +73,7 @@ locationLogs repo = liftIO $ do
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	new <- liftIO (readFile $ olddir g </> source)
 	Branch.change dest $ \prev -> 
 		unlines $ nub $ lines prev ++ lines new
@@ -114,7 +102,7 @@ push = do
 			Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
-			g <- Annex.gitRepo
+			g <- gitRepo
 			liftIO $ Git.run g "push" [Param "origin", Param Branch.name]
 		_ -> do
 			-- no origin exists, so just let the user

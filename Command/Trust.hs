@@ -7,11 +7,11 @@
 
 module Command.Trust where
 
+import AnnexCommon
 import Command
 import qualified Remote
 import Trust
 import UUID
-import Messages
 
 command :: [Command]
 command = [repoCommand "trust" (paramRepeating paramRemote) seek

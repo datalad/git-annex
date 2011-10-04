@@ -9,17 +9,15 @@ module CatFile (
 	catFile
 ) where
 
-import Control.Monad.State
-
+import AnnexCommon
 import qualified Git.CatFile
-import Types
 import qualified Annex
 
 catFile :: String -> FilePath -> Annex String
 catFile branch file = maybe startup go =<< Annex.getState Annex.catfilehandle
 	where
 		startup = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			h <- liftIO $ Git.CatFile.catFileStart g
 			Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
 			go h

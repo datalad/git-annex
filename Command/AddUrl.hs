@@ -7,12 +7,9 @@
 
 module Command.AddUrl where
 
-import Control.Monad.State
 import Network.URI
-import Data.String.Utils
-import Data.Maybe
-import System.Directory
 
+import AnnexCommon
 import Command
 import qualified Backend
 import qualified Utility.Url as Url
@@ -20,12 +17,8 @@ import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
-import Messages
 import Content
 import PresenceLog
-import Locations
-import Utility.Path
-import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "addurl" (paramRepeating paramUrl) seek
@@ -51,7 +44,7 @@ perform url file = do
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	showAction $ "downloading " ++ url ++ " "
 	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey

@@ -7,25 +7,16 @@
 
 module Command.Fsck where
 
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
-import System.Directory
-import System.Posix.Files
-
+import AnnexCommon
 import Command
-import qualified Annex
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
 import UUID
-import Types
-import Messages
 import Content
 import LocationLog
-import Locations
 import Trust
 import Utility.DataUnits
-import Utility.Path
 import Utility.FileMode
 import Config
 
@@ -54,7 +45,7 @@ perform key file backend numcopies = do
    in this repository only. -}
 verifyLocationLog :: Key -> FilePath -> Annex Bool
 verifyLocationLog key file = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	present <- inAnnex key
 	
 	-- Since we're checking that a key's file is present, throw
@@ -98,7 +89,7 @@ fsckKey backend key file numcopies = do
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let file = gitAnnexLocation g key
 	present <- liftIO $ doesFileExist file
 	case (present, Types.Key.keySize key) of

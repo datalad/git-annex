@@ -9,15 +9,13 @@ module Limit where
 
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
-import Control.Applicative
-import Data.Maybe
 
-import Annex
+import AnnexCommon
+import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
 import LocationLog
-import Utility
 import Content
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)

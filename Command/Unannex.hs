@@ -7,25 +7,16 @@
 
 module Command.Unannex where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (unless)
-import System.Directory
-import System.Posix.Files
-
+import AnnexCommon
 import Command
 import qualified Command.Drop
 import qualified Annex
 import qualified AnnexQueue
-import Utility.SafeCommand
-import Utility.Path
 import Utility.FileMode
 import LocationLog
-import Types
 import Content
 import qualified Git
 import qualified Git.LsFiles as LsFiles
-import Messages
-import Locations
 
 command :: [Command]
 command = [repoCommand "unannex" paramPaths seek "undo accidential add command"]
@@ -41,7 +32,7 @@ start file = isAnnexed file $ \(key, _) -> do
 		then do
 			force <- Annex.getState Annex.force
 			unless force $ do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				staged <- liftIO $ LsFiles.staged g [Git.workTree g]
 				unless (null staged) $
 					error "This command cannot be run when there are already files staged for commit."
@@ -60,7 +51,7 @@ perform file key = do
 
 cleanup :: FilePath -> Key -> CommandCleanup
 cleanup file key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	liftIO $ removeFile file
 	liftIO $ Git.run g "rm" [Params "--quiet --", File file]

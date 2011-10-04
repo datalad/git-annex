@@ -7,11 +7,9 @@
 
 module Command.Find where
 
-import Control.Monad.State
-
+import AnnexCommon
 import Command
 import Content
-import Utility.Conditional
 import Limit
 
 command :: [Command]

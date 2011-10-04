@@ -7,22 +7,16 @@
 
 module Command.DropUnused where
 
-import Control.Monad.State (liftIO)
 import qualified Data.Map as M
-import System.Directory
-import Data.Maybe
 
+import AnnexCommon
 import Command
-import Types
-import Messages
-import Locations
 import qualified Annex
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Remote
 import qualified Git
 import Types.Key
-import Utility.Conditional
 
 type UnusedMap = M.Map String Key
 
@@ -67,14 +61,14 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 
 performOther :: (Git.Repo -> Key -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let f = filespec g key
 	liftIO $ whenM (doesFileExist f) $ removeFile f
 	next $ return True
 
 readUnusedLog :: FilePath -> Annex UnusedMap
 readUnusedLog prefix = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let f = gitAnnexUnusedLog prefix g
 	e <- liftIO $ doesFileExist f
 	if e

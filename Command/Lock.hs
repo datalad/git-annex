@@ -7,13 +7,9 @@
 
 module Command.Lock where
 
-import Control.Monad.State (liftIO)
-import System.Directory
-
+import AnnexCommon
 import Command
-import Messages
 import qualified AnnexQueue
-import Utility.SafeCommand
 import Backend
 	
 command :: [Command]

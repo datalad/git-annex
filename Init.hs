@@ -11,18 +11,10 @@ module Init (
 	uninitialize
 ) where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (unless)
-import System.Directory
-
-import qualified Annex
+import AnnexCommon
 import qualified Git
 import qualified Branch
 import Version
-import Messages
-import Types
-import Utility
-import Utility.Conditional
 import UUID
 
 initialize :: Annex ()
@@ -73,12 +65,12 @@ gitPreCommitHookUnWrite = unlessBare $ do
 
 unlessBare :: Annex () -> Annex ()
 unlessBare a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	unless (Git.repoIsLocalBare g) a
 
 preCommitHook :: Annex FilePath
 preCommitHook = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	return $ Git.gitDir g ++ "/hooks/pre-commit"
 
 preCommitScript :: String

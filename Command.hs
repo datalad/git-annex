@@ -7,22 +7,11 @@
 
 module Command where
 
-import Control.Monad.State (liftIO)
-import System.Directory
-import System.Posix.Files
-import Control.Monad (filterM, liftM)
-import Control.Applicative
-import Data.Maybe
-
-import Types
+import AnnexCommon
 import qualified Backend
-import Messages
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
-import Utility
-import Utility.Conditional
-import Utility.Path
 import Types.Key
 import Trust
 import LocationLog
@@ -98,7 +87,7 @@ isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do
-	whenM (Git.repoIsLocalBare <$> Annex.gitRepo) $
+	whenM (Git.repoIsLocalBare <$> gitRepo) $
 		error "You cannot run this subcommand in a bare repository."
 	a
 
@@ -106,11 +95,11 @@ notBareRepo a = do
    user's parameters, and prepare actions operating on them. -}
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = do
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	runFiltered a $ liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandSeek
 withAttrFilesInGit attr a params = do
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	runFilteredGen a fst $ liftIO $ Git.checkAttr repo attr files
 withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
@@ -119,7 +108,7 @@ withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 		go (file, v) = a file (readMaybe v)
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
 	backendPairs a files
 withFilesMissing :: (String -> CommandStart) -> CommandSeek
@@ -128,7 +117,7 @@ withFilesMissing a params = runFiltered a $ liftIO $ filterM missing params
 		missing = liftM not . doesFileExist
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	force <- Annex.getState Annex.force
 	newfiles <- liftIO $ runPreserveOrder (LsFiles.notInRepo repo force) params
 	backendPairs a newfiles
@@ -138,7 +127,7 @@ withStrings :: (String -> CommandStart) -> CommandSeek
 withStrings a params = return $ map a params
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
 withFilesToBeCommitted a params = do
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	runFiltered a $
 		liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
 withFilesUnlocked :: (BackendFile -> CommandStart) -> CommandSeek
@@ -148,7 +137,7 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: (Git.Repo -> [FilePath] -> IO [FilePath]) -> (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
-	repo <- Annex.gitRepo
+	repo <- gitRepo
 	typechangedfiles <- liftIO $ runPreserveOrder (typechanged repo) params
 	unlockedfiles <- liftIO $ filterM notSymlink $
 		map (\f -> Git.workTree repo ++ "/" ++ f) typechangedfiles

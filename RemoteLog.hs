@@ -15,14 +15,11 @@ module RemoteLog (
 	prop_idempotent_configEscape
 ) where
 
-import Data.List
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Char
-import Control.Applicative
 
+import AnnexCommon
 import qualified Branch
-import Types
 import Types.Remote
 import UUID
 

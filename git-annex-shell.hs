@@ -6,13 +6,11 @@
  -}
 
 import System.Environment
-import Data.List
 
+import AnnexCommon
 import qualified Git
 import CmdLine
 import Command
-import Utility.Conditional
-import Utility.SafeCommand
 import Options
 
 import qualified Command.ConfigList

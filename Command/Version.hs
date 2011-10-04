@@ -7,10 +7,7 @@
 
 module Command.Version where
 
-import Control.Monad.State (liftIO)
-import Data.String.Utils
-import Data.Maybe
-
+import AnnexCommon
 import Command
 import qualified Build.SysConfig as SysConfig
 import Version

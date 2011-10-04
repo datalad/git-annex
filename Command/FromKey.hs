@@ -7,18 +7,11 @@
 
 module Command.FromKey where
 
-import Control.Monad.State (liftIO)
-import System.Posix.Files
-import System.Directory
-import Control.Monad (unless)
-
+import AnnexCommon
 import Command
 import qualified AnnexQueue
-import Utility.SafeCommand
 import Content
-import Messages
 import Types.Key
-import Utility.Path
 
 command :: [Command]
 command = [repoCommand "fromkey" paramPath seek

@@ -7,16 +7,10 @@
 
 module Command.Fix where
 
-import Control.Monad.State (liftIO)
-import System.Posix.Files
-import System.Directory
-
+import AnnexCommon
 import Command
 import qualified AnnexQueue
-import Utility.Path
-import Utility.SafeCommand
 import Content
-import Messages
 
 command :: [Command]
 command = [repoCommand "fix" paramPaths seek

@@ -28,23 +28,17 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad.State (filterM)
-import Data.List
 import qualified Data.Map as M
-import Data.String.Utils
-import Data.Maybe
-import Control.Applicative
 import Text.JSON
 import Text.JSON.Generic
 
-import Types
+import AnnexCommon
 import Types.Remote
 import UUID
 import qualified Annex
 import Config
 import Trust
 import LocationLog
-import Messages
 import RemoteLog
 
 import qualified Remote.Git
@@ -110,7 +104,7 @@ byName' n = do
  - and returns its UUID. Finds even remotes that are not configured in
  - .git/config. -}
 nameToUUID :: String -> Annex UUID
-nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
+nameToUUID "." = getUUID =<< gitRepo -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
@@ -135,7 +129,7 @@ nameToUUID n = do
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
-	here <- getUUID =<< Annex.gitRepo
+	here <- getUUID =<< gitRepo
 	m <- M.unionWith addname <$> uuidMap <*> remoteMap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
@@ -184,7 +178,7 @@ keyPossibilitiesTrusted = keyPossibilities' True
 
 keyPossibilities' :: Bool -> Key -> Annex ([Remote Annex], [UUID])
 keyPossibilities' withtrusted key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	trusted <- if withtrusted then trustGet Trusted else return []
 
@@ -204,7 +198,7 @@ keyPossibilities' withtrusted key = do
 {- Displays known locations of a key. -}
 showLocations :: Key -> [UUID] -> Annex ()
 showLocations key exclude = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	uuids <- keyLocations key
 	untrusteduuids <- trustGet UnTrusted

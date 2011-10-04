@@ -7,17 +7,10 @@
 
 module Command.SendKey where
 
-import Control.Monad.State (liftIO)
-import System.Exit
-
-import Locations
-import qualified Annex
+import AnnexCommon
 import Command
 import Content
 import Utility.RsyncFile
-import Utility.Conditional
-import Messages
-import Types
 
 command :: [Command]
 command = [repoCommand "sendkey" paramKey seek
@@ -28,7 +21,7 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let file = gitAnnexLocation g key
 	whenM (inAnnex key) $
 		liftIO $ rsyncServerSend file -- does not return

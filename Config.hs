@@ -7,23 +7,16 @@
 
 module Config where
 
-import Data.Maybe
-import Control.Monad.State (liftIO)
-import Control.Applicative
-import System.Cmd.Utils
-
+import AnnexCommon
 import qualified Git
 import qualified Annex
-import Types
-import Utility
-import Utility.SafeCommand
 
 type ConfigKey = String
 
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ Git.run g "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
 	g' <- liftIO $ Git.configRead g
@@ -33,7 +26,7 @@ setConfig k value = do
  - Failing that, tries looking for a global config option. -}
 getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
 getConfig r key def = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let def' = Git.configGet g ("annex." ++ key) def
 	return $ Git.configGet g (remoteConfig r key) def'
 
@@ -95,7 +88,7 @@ getNumCopies v =
 	where
 		use (Just n) = return n
 		use Nothing = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			return $ read $ Git.configGet g config "1"
 		config = "annex.numcopies"
 

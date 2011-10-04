@@ -9,23 +9,13 @@
 
 module Command.Unused where
 
-import Control.Monad (filterM, unless, forM_)
-import Control.Monad.State (liftIO)
 import qualified Data.Set as S
-import Data.Maybe
-import System.FilePath
-import System.Directory
-import Data.List
 import qualified Data.ByteString.Lazy.Char8 as L
 
+import AnnexCommon
 import Command
-import Types
 import Content
-import Messages
-import Locations
-import Utility
 import Utility.FileMode
-import Utility.SafeCommand
 import LocationLog
 import qualified Annex
 import qualified Git
@@ -92,7 +82,7 @@ checkRemoteUnused' r = do
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ viaTmp writeFile (gitAnnexUnusedLog prefix g) $
 		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
@@ -164,7 +154,7 @@ unusedKeys = do
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
 	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
 		(S.fromList l)
@@ -200,7 +190,7 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 {- List of keys referenced by symlinks in the git repo. -}
 getKeysReferenced :: Annex [Key]
 getKeysReferenced = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	keypairs <- mapM Backend.lookupFile files
 	return $ map fst $ catMaybes keypairs
@@ -209,7 +199,7 @@ getKeysReferenced = do
 getKeysReferencedInGit :: String -> Annex [Key]
 getKeysReferencedInGit ref = do
 	showAction $ "checking " ++ Git.refDescribe ref
-	g <- Annex.gitRepo
+	g <- gitRepo
 	findkeys [] =<< liftIO (LsTree.lsTree g ref)
 	where
 		findkeys c [] = return c
@@ -232,17 +222,17 @@ staleKeysPrune dirspec present = do
 	contents <- staleKeys dirspec
 	
 	let stale = contents `exclude` present
-	let dup = contents `exclude` stale
+	let dups = contents `exclude` stale
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let dir = dirspec g
-	liftIO $ forM_ dup $ \t -> removeFile $ dir </> keyFile t
+	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
 
 	return stale
 
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let dir = dirspec g
 	exists <- liftIO $ doesDirectoryExist dir
 	if not exists

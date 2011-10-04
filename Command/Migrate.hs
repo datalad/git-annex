@@ -7,22 +7,11 @@
 
 module Command.Migrate where
 
-import Control.Monad.State (liftIO)
-import Control.Applicative
-import System.Posix.Files
-import System.Directory
-import System.FilePath
-import Data.Maybe
-
+import AnnexCommon
 import Command
-import qualified Annex
 import qualified Backend
 import qualified Types.Key
-import Locations
-import Types
 import Content
-import Messages
-import Utility.Conditional
 import qualified Command.Add
 import Backend
 
@@ -53,7 +42,7 @@ upgradableKey key = isNothing $ Types.Key.keySize key
 
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	-- Store the old backend's cached key in the new backend
 	-- (the file can't be stored as usual, because it's already a symlink).

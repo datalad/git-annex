@@ -13,13 +13,11 @@ module Trust (
 	trustPartition
 ) where
 
-import Control.Monad.State
 import qualified Data.Map as M
-import Data.List
 
+import AnnexCommon
 import Types.TrustLevel
 import qualified Branch
-import Types
 import UUID
 import qualified Annex
 

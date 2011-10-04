@@ -8,31 +8,19 @@
 module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
-import Control.Monad.State (liftIO)
-import System.FilePath
-import System.Posix.Process hiding (executeFile)
-import System.Posix.IO
-import System.IO
 import System.IO.Error (try)
 import System.Exit
-import Data.Maybe
 
-import Types
+import AnnexCommon
 import Types.Remote
 import qualified Git
-import qualified Annex
 import UUID
-import Locations
 import Config
 import Content
-import Utility
-import Utility.SafeCommand
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
-import Messages
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -86,7 +74,7 @@ hookEnv k f = Just $ fileenv f ++ keyenv
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	command <- getConfig g hookname ""
 	if null command
 		then do
@@ -111,12 +99,12 @@ runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype h
 
 store :: String -> Key -> Annex Bool
 store h k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	runHook h "store" k (Just $ gitAnnexLocation g k) $ return True
 
 storeEncrypted :: String -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted h (cipher, enck) k = withTmp enck $ \tmp -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let f = gitAnnexLocation g k
 	liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
 	runHook h "store" enck (Just tmp) $ return True

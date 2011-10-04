@@ -8,16 +8,11 @@
 module Remote.Helper.Special where
 
 import qualified Data.Map as M
-import Data.Maybe
-import Data.String.Utils
-import Control.Monad.State (liftIO)
 
-import Types
+import AnnexCommon
 import Types.Remote
 import qualified Git
-import qualified Annex
 import UUID
-import Utility.SafeCommand
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different
@@ -25,7 +20,7 @@ import Utility.SafeCommand
  -}
 findSpecialRemotes :: String -> Annex [Git.Repo]
 findSpecialRemotes s = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	return $ map construct $ remotepairs g
 	where
 		remotepairs r = M.toList $ M.filterWithKey match $ Git.configMap r
@@ -35,7 +30,7 @@ findSpecialRemotes s = do
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()
 gitConfigSpecialRemote u c k v = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ do
 		Git.run g "config" [Param (configsetting $ "annex-"++k), Param v]
 		Git.run g "config" [Param (configsetting "annex-uuid"), Param u]

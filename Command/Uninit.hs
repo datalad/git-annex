@@ -7,19 +7,14 @@
 
 module Command.Uninit where
 
-import Control.Monad.State (liftIO)
-import System.Directory
-import System.Exit
-
+import AnnexCommon
 import Command
-import Utility.SafeCommand
 import qualified Git
 import qualified Annex
 import qualified Command.Unannex
 import Init
 import qualified Branch
 import Content
-import Locations
 
 command :: [Command]
 command = [repoCommand "uninit" paramPaths seek 
@@ -44,7 +39,7 @@ perform = next cleanup
 
 cleanup :: CommandCleanup
 cleanup = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
 	liftIO $ removeDirectoryRecursive (gitAnnexDir g)

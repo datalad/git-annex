@@ -19,10 +19,10 @@ module Annex (
 	gitRepo
 ) where
 
-import Control.Monad.State
 import Control.Monad.IO.Control
-import Control.Applicative hiding (empty)
+import Control.Monad.State
 
+import Common
 import qualified Git
 import Git.CatFile
 import Git.Queue
@@ -75,7 +75,7 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, repoqueue = empty
+	, repoqueue = Git.Queue.empty
 	, output = NormalOutput
 	, force = False
 	, fast = False

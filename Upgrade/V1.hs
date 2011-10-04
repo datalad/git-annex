@@ -8,33 +8,19 @@
 module Upgrade.V1 where
 
 import System.IO.Error (try)
-import System.Directory
-import Control.Monad.State (liftIO)
-import Control.Monad (filterM, forM_, unless)
-import Control.Applicative
-import System.Posix.Files
-import System.FilePath
-import Data.String.Utils
 import System.Posix.Types
-import Data.Maybe
 import Data.Char
 
+import AnnexCommon
 import Types.Key
 import Content
-import Types
-import Locations
 import PresenceLog
-import qualified Annex
 import qualified AnnexQueue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
-import Messages
 import Version
-import Utility
 import Utility.FileMode
-import Utility.SafeCommand
-import Utility.Path
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.
@@ -64,7 +50,7 @@ upgrade :: Annex Bool
 upgrade = do
 	showAction "v1 to v2"
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	if Git.repoIsLocalBare g
 		then do
 			moveContent
@@ -96,7 +82,7 @@ moveContent = do
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
-	g <- Annex.gitRepo
+	g <- gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	forM_ files fixlink
 	where
@@ -117,7 +103,7 @@ moveLocationLogs = do
 	forM_ logkeys move
 		where
 			oldlocationlogs = do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				let dir = Upgrade.V2.gitStateDir g
 				exists <- liftIO $ doesDirectoryExist dir
 				if exists
@@ -126,7 +112,7 @@ moveLocationLogs = do
 						return $ mapMaybe oldlog2key contents
 					else return []
 			move (l, k) = do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				let dest = logFile2 g k
 				let dir = Upgrade.V2.gitStateDir g
 				let f = dir </> l
@@ -220,7 +206,7 @@ lookupFile1 file = do
 
 getKeyFilesPresent1 :: Annex [FilePath]
 getKeyFilesPresent1  = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	getKeyFilesPresent1' $ gitAnnexObjectDir g
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
 getKeyFilesPresent1' dir = do

@@ -16,20 +16,14 @@ module Backend (
 	maybeLookupBackendName
 ) where
 
-import Control.Monad.State (liftIO, when)
-import Control.Applicative
 import System.IO.Error (try)
-import System.FilePath
 import System.Posix.Files
-import Data.Maybe
 
-import Locations
+import AnnexCommon
 import qualified Git
 import qualified Annex
-import Types
 import Types.Key
 import qualified Types.Backend as B
-import Messages
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.WORM
@@ -59,7 +53,7 @@ orderedList = do
 			Annex.changeState $ \state -> state { Annex.backends = l' }
 			return l'
 		getstandard = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			return $ parseBackendList $
 				Git.configGet g "annex.backends" ""
 
@@ -108,7 +102,7 @@ type BackendFile = (Maybe (Backend Annex), FilePath)
  -}
 chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	forced <- Annex.getState Annex.forcebackend
 	if isJust forced
 		then do

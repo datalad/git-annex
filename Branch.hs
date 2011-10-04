@@ -18,33 +18,17 @@ module Branch (
 	name	
 ) where
 
-import Control.Monad (unless, when, liftM, filterM)
-import Control.Monad.State (liftIO)
-import Control.Applicative ((<$>))
-import System.FilePath
-import System.Directory
-import Data.String.Utils
-import System.Cmd.Utils
-import System.IO
 import System.IO.Binary
-import System.Posix.Process
-import System.Posix.IO
-import System.Posix.Files
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Monad.IO.Control (liftIOOp)
-import qualified Control.Exception.Base
+import qualified Control.Exception
 
+import AnnexCommon
 import Types.BranchState
 import qualified Git
 import qualified Git.UnionMerge
 import qualified Annex
-import Utility
-import Utility.Conditional
-import Utility.SafeCommand
-import Types
-import Messages
-import Locations
 import CatFile
 
 type GitRef = String
@@ -79,7 +63,7 @@ withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let f = index g
 	reset <- liftIO $ Git.useIndex f
 
@@ -123,7 +107,7 @@ getCache file = getState >>= handle
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
 create = unlessM hasBranch $ do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	e <- hasOrigin
 	if e
 		then liftIO $ Git.run g "branch" [Param name, Param originname]
@@ -136,7 +120,7 @@ commit message = do
 	fs <- getJournalFiles
 	when (not $ null fs) $ lockJournal $ do
 		stageJournalFiles fs
-		g <- Annex.gitRepo
+		g <- gitRepo
 		withIndex $ liftIO $ Git.commit g message fullname [fullname]
 
 {- Ensures that the branch is up-to-date; should be called before
@@ -161,13 +145,13 @@ update = do
 			 -}
 			unless (null fs) $ stageJournalFiles fs
 			mapM_ mergeref refs
-			g <- Annex.gitRepo
+			g <- gitRepo
 			liftIO $ Git.commit g "update" fullname (fullname:refs)
 			Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 			invalidateCache
 	where
 		checkref ref = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			-- checking with log to see if there have been changes
 			-- is less expensive than always merging
 			diffs <- liftIO $ Git.pipeRead g [
@@ -189,14 +173,14 @@ update = do
 			 - advises users not to directly modify the
 			 - branch.
 			 -}
-			g <- Annex.gitRepo
+			g <- gitRepo
 			liftIO $ Git.UnionMerge.merge g [ref]
 			return $ Just ref
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
 refExists ref = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ Git.runBool g "show-ref"
 		[Param "--verify", Param "-q", Param ref]
 
@@ -216,7 +200,7 @@ hasSomeBranch = not . null <$> siblingBranches
  - from remotes. -}
 siblingBranches :: Annex [String]
 siblingBranches = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
 	return $ map (last . words . L.unpack) (L.lines r)
 
@@ -253,7 +237,7 @@ get file = do
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
 files = withIndexUpdate $ do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	bfiles <- liftIO $ Git.pipeNullSplit g
 		[Params "ls-tree --name-only -r -z", Param fullname]
 	jfiles <- getJournalledFiles
@@ -265,7 +249,7 @@ files = withIndexUpdate $ do
  - avoids git needing to rewrite the index after every change. -}
 setJournalFile :: FilePath -> String -> Annex ()
 setJournalFile file content = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ catch (write g) $ const $ do
 		createDirectoryIfMissing True $ gitAnnexJournalDir g
 		createDirectoryIfMissing True $ gitAnnexTmpDir g
@@ -281,7 +265,7 @@ setJournalFile file content = do
 {- Gets any journalled content for a file in the branch. -}
 getJournalFile :: FilePath -> Annex (Maybe String)
 getJournalFile file = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ catch (liftM Just . readFileStrict $ journalFile g file)
 		(const $ return Nothing)
 
@@ -292,7 +276,7 @@ getJournalledFiles = map fileJournal <$> getJournalFiles
 {- List of existing journal files. -}
 getJournalFiles :: Annex [FilePath]
 getJournalFiles = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	fs <- liftIO $ catch (getDirectoryContents $ gitAnnexJournalDir g)
 		(const $ return [])
 	return $ filter (`notElem` [".", ".."]) fs
@@ -300,7 +284,7 @@ getJournalFiles = do
 {- Stages the specified journalfiles. -}
 stageJournalFiles :: [FilePath] -> Annex ()
 stageJournalFiles fs = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	withIndex $ liftIO $ do
 		let dir = gitAnnexJournalDir g
 		let paths = map (dir </>) fs
@@ -346,9 +330,9 @@ fileJournal = replace "//" "_" . replace "_" "/"
  - contention with other git-annex processes. -}
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let file = gitAnnexJournalLock g
-	liftIOOp (Control.Exception.Base.bracket (lock file) unlock) run
+	liftIOOp (Control.Exception.bracket (lock file) unlock) run
 	where
 		lock file = do
 			l <- createFile file stdFileMode

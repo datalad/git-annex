@@ -9,23 +9,19 @@ import Test.HUnit
 import Test.HUnit.Tools
 import Test.QuickCheck
 
-import System.Directory
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import IO (bracket_, bracket)
-import Control.Monad (unless, when, filterM)
-import Data.List
 import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
 import Control.Exception (throw)
-import Data.Maybe
 import qualified Data.Map as M
-import System.Path (recurseDir)
 import System.IO.HVFS (SystemFS(..))
 
-import Utility.SafeCommand
+import Common
 
+import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Backend
 import qualified Git

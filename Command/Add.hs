@@ -7,26 +7,17 @@
 
 module Command.Add where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (when)
-import System.Posix.Files
-import System.Directory
 import Control.Exception.Control (handle)
 import Control.Exception.Base (throwIO)
-import Control.Exception.Extensible (IOException)
 
+import AnnexCommon
 import Command
 import qualified Annex
 import qualified AnnexQueue
 import qualified Backend
 import LocationLog
-import Types
 import Content
-import Messages
-import Utility.Conditional
 import Utility.Touch
-import Utility.SafeCommand
-import Locations
 import Backend
 
 command :: [Command]
@@ -72,7 +63,7 @@ undo file key e = do
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			liftIO $ renameFile (gitAnnexLocation g key) file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup

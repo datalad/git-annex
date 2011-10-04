@@ -9,10 +9,9 @@ module Options where
 
 import System.Console.GetOpt
 import System.Log.Logger
-import Control.Monad.State (liftIO)
 
+import AnnexCommon
 import qualified Annex
-import Types
 import Command
 import Limit
 

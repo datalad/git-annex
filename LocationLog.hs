@@ -21,15 +21,10 @@ module LocationLog (
 	logFileKey
 ) where
 
-import System.FilePath
-import Control.Applicative
-import Data.Maybe
-
+import AnnexCommon
 import qualified Git
 import qualified Branch
 import UUID
-import Types
-import Locations
 import PresenceLog
 
 {- Log a change in the presence of a key's value in a repository. -}

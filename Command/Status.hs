@@ -8,25 +8,20 @@
 module Command.Status where
 
 import Control.Monad.State
-import Control.Applicative
-import Data.Maybe
-import System.IO
-import Data.List
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
 
+import AnnexCommon
 import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote
 import qualified Command.Unused
 import qualified Git
 import Command
-import Types
 import Utility.DataUnits
 import Content
 import Types.Key
-import Locations
 import Backend
 import UUID
 import Remote

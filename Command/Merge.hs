@@ -7,9 +7,9 @@
 
 module Command.Merge where
 
+import AnnexCommon
 import Command
 import qualified Branch
-import Messages
 
 command :: [Command]
 command = [repoCommand "merge" paramNothing seek

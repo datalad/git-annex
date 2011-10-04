@@ -7,18 +7,10 @@
 
 module Command.Unlock where
 
-import Control.Monad.State (liftIO)
-import System.Directory hiding (copyFile)
-
+import AnnexCommon
 import Command
-import qualified Annex
-import Types
-import Messages
-import Locations
 import Content
-import Utility.Conditional
 import Utility.CopyFile
-import Utility.Path
 import Utility.FileMode
 
 command :: [Command]
@@ -43,12 +35,12 @@ perform dest key = do
 	
 	checkDiskSpace key
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g key
 	let tmpdest = gitAnnexTmpLocation g key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
-	ok <- liftIO $ copyFile src tmpdest
+	ok <- liftIO $ copyFileExternal src tmpdest
         if ok
                 then do
 			liftIO $ do

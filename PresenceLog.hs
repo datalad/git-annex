@@ -26,11 +26,9 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
-import Control.Monad.State (liftIO)
-import Control.Applicative
 
+import AnnexCommon
 import qualified Branch
-import Types
 
 data LogLine = LogLine {
 	date :: POSIXTime,
