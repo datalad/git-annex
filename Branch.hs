@@ -21,10 +21,9 @@ module Branch (
 import System.IO.Binary
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
-import Control.Monad.IO.Control (liftIOOp)
-import qualified Control.Exception
 
 import AnnexCommon
+import Annex.Exception
 import Types.BranchState
 import qualified Git
 import qualified Git.UnionMerge
@@ -66,7 +65,7 @@ withIndex' bootstrapping a = do
 	g <- gitRepo
 	let f = index g
 
-	bracket (Git.useIndex f) id $ do
+	bracketIO (Git.useIndex f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f
@@ -93,9 +92,9 @@ invalidateCache = do
 	setState state { cachedFile = Nothing, cachedContent = "" }
 
 getCache :: FilePath -> Annex (Maybe String)
-getCache file = getState >>= handle
+getCache file = getState >>= go
 	where
-		handle state
+		go state
 			| cachedFile state == Just file =
 				return $ Just $ cachedContent state
 			| otherwise = return Nothing
@@ -328,14 +327,10 @@ lockJournal :: Annex a -> Annex a
 lockJournal a = do
 	g <- gitRepo
 	let file = gitAnnexJournalLock g
-	bracket (lock file) unlock a
+	bracketIO (lock file) unlock a
 	where
 		lock file = do
 			l <- createFile file stdFileMode
 			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 			return l
 		unlock = closeFd
-
-bracket :: IO c -> (c -> IO b) -> Annex a -> Annex a
-bracket start cleanup go =
-	liftIOOp (Control.Exception.bracket start cleanup) (const go)

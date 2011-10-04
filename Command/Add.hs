@@ -7,10 +7,8 @@
 
 module Command.Add where
 
-import Control.Exception.Control (handle)
-import Control.Exception.Base (throwIO)
-
 import AnnexCommon
+import Annex.Exception
 import Command
 import qualified Annex
 import qualified AnnexQueue
@@ -58,7 +56,7 @@ undo file key e = do
 	logStatus key InfoMissing
 	rethrow
 	where
-		rethrow = liftIO $ throwIO e
+		rethrow = throw e
 
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
