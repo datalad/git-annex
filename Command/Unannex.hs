@@ -7,14 +7,14 @@
 
 module Command.Unannex where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Command.Drop
 import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import Utility.FileMode
 import LocationLog
-import Content
+import Annex.Content
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 
@@ -71,6 +71,6 @@ cleanup file key = do
 	-- Commit staged changes at end to avoid confusing the
 	-- pre-commit hook if this file is later added back to
 	-- git as a normal, non-annexed file.
-	AnnexQueue.add "commit" [Param "-m", Param "content removed from git annex"] []
+	Annex.Queue.add "commit" [Param "-m", Param "content removed from git annex"] []
 	
 	return True

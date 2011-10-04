@@ -7,11 +7,11 @@
 
 module Command.Migrate where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Backend
 import qualified Types.Key
-import Content
+import Annex.Content
 import qualified Command.Add
 import Backend
 

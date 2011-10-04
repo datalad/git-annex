@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Branch (
+module Annex.Branch (
 	create,
 	update,
 	get,
@@ -22,13 +22,13 @@ import System.IO.Binary
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import AnnexCommon
+import Annex.Common
 import Annex.Exception
 import Types.BranchState
 import qualified Git
 import qualified Git.UnionMerge
 import qualified Annex
-import CatFile
+import Annex.CatFile
 
 type GitRef = String
 

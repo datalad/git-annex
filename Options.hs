@@ -10,7 +10,7 @@ module Options where
 import System.Console.GetOpt
 import System.Log.Logger
 
-import AnnexCommon
+import Annex.Common
 import qualified Annex
 import Command
 import Limit

@@ -7,9 +7,9 @@
 
 module Command.Lock where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import qualified AnnexQueue
+import qualified Annex.Queue
 import Backend
 	
 command :: [Command]
@@ -30,5 +30,5 @@ perform file = do
 	-- Checkout from HEAD to get rid of any changes that might be 
 	-- staged in the index, and get back to the previous symlink to
 	-- the content.
-	AnnexQueue.add "checkout" [Param "HEAD", Param "--"] [file]
+	Annex.Queue.add "checkout" [Param "HEAD", Param "--"] [file]
 	next $ return True -- no cleanup needed

@@ -7,14 +7,14 @@
 
 module Command.Uninit where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Git
 import qualified Annex
 import qualified Command.Unannex
 import Init
-import qualified Branch
-import Content
+import qualified Annex.Branch
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "uninit" paramPaths seek 
@@ -46,5 +46,5 @@ cleanup = do
 	-- avoid normal shutdown
 	saveState
 	liftIO $ do
-		Git.run g "branch" [Param "-D", Param Branch.name]
+		Git.run g "branch" [Param "-D", Param Annex.Branch.name]
 		exitSuccess

@@ -11,15 +11,15 @@ import System.IO.Error (try)
 import System.Posix.Types
 import Data.Char
 
-import AnnexCommon
+import Annex.Common
 import Types.Key
-import Content
+import Annex.Content
 import PresenceLog
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
-import Version
+import Annex.Version
 import Utility.FileMode
 import qualified Upgrade.V2
 
@@ -60,7 +60,7 @@ upgrade = do
 			updateSymlinks
 			moveLocationLogs
 	
-			AnnexQueue.flush True
+			Annex.Queue.flush True
 			setVersion
 	
 	Upgrade.V2.upgrade
@@ -94,7 +94,7 @@ updateSymlinks = do
 					link <- calcGitLink f k
 					liftIO $ removeFile f
 					liftIO $ createSymbolicLink link f
-					AnnexQueue.add "add" [Param "--"] [f]
+					Annex.Queue.add "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
@@ -124,9 +124,9 @@ moveLocationLogs = do
 				old <- liftIO $ readLog1 f
 				new <- liftIO $ readLog1 dest
 				liftIO $ writeLog1 dest (old++new)
-				AnnexQueue.add "add" [Param "--"] [dest]
-				AnnexQueue.add "add" [Param "--"] [f]
-				AnnexQueue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
+				Annex.Queue.add "add" [Param "--"] [dest]
+				Annex.Queue.add "add" [Param "--"] [f]
+				Annex.Queue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
 		
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l = 

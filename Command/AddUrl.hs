@@ -9,7 +9,7 @@ module Command.AddUrl where
 
 import Network.URI
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Backend
 import qualified Utility.Url as Url
@@ -17,7 +17,7 @@ import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
-import Content
+import Annex.Content
 import PresenceLog
 
 command :: [Command]

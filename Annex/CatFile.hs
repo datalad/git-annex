@@ -5,11 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module CatFile (
+module Annex.CatFile (
 	catFile
 ) where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git.CatFile
 import qualified Annex
 

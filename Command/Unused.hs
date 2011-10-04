@@ -12,9 +12,9 @@ module Command.Unused where
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import AnnexCommon
+import Annex.Common
 import Command
-import Content
+import Annex.Content
 import Utility.FileMode
 import LocationLog
 import qualified Annex
@@ -23,8 +23,8 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import qualified Backend
 import qualified Remote
-import qualified Branch
-import CatFile
+import qualified Annex.Branch
+import Annex.CatFile
 
 command :: [Command]
 command = [repoCommand "unused" paramNothing seek
@@ -165,7 +165,7 @@ excludeReferenced l = do
 			filter ourbranches .
 			map words . lines . L.unpack
 		cmpheads a b = head a == head b
-		ourbranchend = '/' : Branch.name
+		ourbranchend = '/' : Annex.Branch.name
 		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
 		removewith [] s = return $ S.toList s
 		removewith (a:as) s

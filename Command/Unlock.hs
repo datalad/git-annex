@@ -7,9 +7,9 @@
 
 module Command.Unlock where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import Content
+import Annex.Content
 import Utility.CopyFile
 import Utility.FileMode
 

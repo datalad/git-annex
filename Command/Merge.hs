@@ -7,9 +7,9 @@
 
 module Command.Merge where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import qualified Branch
+import qualified Annex.Branch
 
 command :: [Command]
 command = [repoCommand "merge" paramNothing seek
@@ -25,5 +25,5 @@ start = do
 
 perform :: CommandPerform
 perform = do
-	Branch.update
+	Annex.Branch.update
 	next $ return True

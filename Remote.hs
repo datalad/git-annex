@@ -32,7 +32,7 @@ import qualified Data.Map as M
 import Text.JSON
 import Text.JSON.Generic
 
-import AnnexCommon
+import Annex.Common
 import Types.Remote
 import UUID
 import qualified Annex

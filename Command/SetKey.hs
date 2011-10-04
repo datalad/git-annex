@@ -7,10 +7,10 @@
 
 module Command.SetKey where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import LocationLog
-import Content
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "setkey" paramPath seek

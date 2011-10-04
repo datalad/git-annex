@@ -7,13 +7,13 @@
 
 module Command.Fsck where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
 import UUID
-import Content
+import Annex.Content
 import LocationLog
 import Trust
 import Utility.DataUnits

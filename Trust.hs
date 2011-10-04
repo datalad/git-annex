@@ -15,9 +15,9 @@ module Trust (
 
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import Types.TrustLevel
-import qualified Branch
+import qualified Annex.Branch
 import UUID
 import qualified Annex
 
@@ -40,7 +40,7 @@ trustMap = do
 		Just m -> return m
 		Nothing -> do
 			overrides <- Annex.getState Annex.forcetrust
-			l <- Branch.get trustLog
+			l <- Annex.Branch.get trustLog
 			let m = M.fromList $ trustMapParse l ++ overrides
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
@@ -62,7 +62,7 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid level = do
 	when (null uuid) $
 		error "unknown UUID; cannot modify trust level"
-	Branch.change trustLog $
+	Annex.Branch.change trustLog $
 		serialize . M.insert uuid level . M.fromList . trustMapParse
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
         where

@@ -7,10 +7,10 @@
 
 module Command.RecvKey where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import CmdLine
-import Content
+import Annex.Content
 import Utility.RsyncFile
 
 command :: [Command]

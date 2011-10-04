@@ -7,11 +7,11 @@
 
 module Command.Get where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Annex
 import qualified Remote
-import Content
+import Annex.Content
 import qualified Command.Move
 
 command :: [Command]

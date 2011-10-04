@@ -21,9 +21,9 @@ module LocationLog (
 	logFileKey
 ) where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
-import qualified Branch
+import qualified Annex.Branch
 import UUID
 import PresenceLog
 
@@ -43,7 +43,7 @@ keyLocations = currentLog . logFile
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}
 loggedKeys :: Annex [Key]
-loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Branch.files
+loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Annex.Branch.files
 
 {- The filename of the log file for a given key. -}
 logFile :: Key -> String

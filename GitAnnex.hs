@@ -9,7 +9,7 @@ module GitAnnex where
 
 import System.Console.GetOpt
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
 import CmdLine
 import Command

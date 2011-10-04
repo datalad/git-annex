@@ -7,7 +7,7 @@
 
 module Command.Whereis where
 
-import AnnexCommon
+import Annex.Common
 import LocationLog
 import Command
 import Remote

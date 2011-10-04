@@ -9,7 +9,7 @@ module Remote.Helper.Encryptable where
 
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import Types.Remote
 import Crypto
 import qualified Annex

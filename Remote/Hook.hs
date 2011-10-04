@@ -12,12 +12,12 @@ import qualified Data.Map as M
 import System.IO.Error (try)
 import System.Exit
 
-import AnnexCommon
+import Annex.Common
 import Types.Remote
 import qualified Git
 import UUID
 import Config
-import Content
+import Annex.Content
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Content (
+module Annex.Content (
 	inAnnex,
 	calcGitLink,
 	logStatus,
@@ -21,13 +21,13 @@ module Content (
 	saveState
 ) where
 
-import AnnexCommon
+import Annex.Common
 import LocationLog
 import UUID
 import qualified Git
 import qualified Annex
-import qualified AnnexQueue
-import qualified Branch
+import qualified Annex.Queue
+import qualified Annex.Branch
 import Utility.StatFS
 import Utility.FileMode
 import Types.Key
@@ -233,5 +233,5 @@ getKeysPresent' dir = do
 {- Things to do to record changes to content. -}
 saveState :: Annex ()
 saveState = do
-	AnnexQueue.flush False
-	Branch.commit "update"
+	Annex.Queue.flush False
+	Annex.Branch.commit "update"

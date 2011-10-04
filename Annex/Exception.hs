@@ -15,7 +15,7 @@ import Control.Exception.Control (handle)
 import Control.Monad.IO.Control (liftIOOp)
 import Control.Exception hiding (handle, throw)
 
-import AnnexCommon
+import Annex.Common
 
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO c -> (c -> IO b) -> Annex a -> Annex a

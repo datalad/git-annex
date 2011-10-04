@@ -7,7 +7,7 @@
 
 module Command.Untrust where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Remote
 import UUID

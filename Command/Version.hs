@@ -7,10 +7,10 @@
 
 module Command.Version where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Build.SysConfig as SysConfig
-import Version
+import Annex.Version
 
 command :: [Command]
 command = [standaloneCommand "version" paramNothing seek "show version info"]

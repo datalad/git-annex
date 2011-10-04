@@ -27,8 +27,8 @@ import Data.Time
 import System.Locale
 import qualified Data.Map as M
 
-import AnnexCommon
-import qualified Branch
+import Annex.Common
+import qualified Annex.Branch
 
 data LogLine = LogLine {
 	date :: POSIXTime,
@@ -72,13 +72,13 @@ instance Read LogLine where
 			ret v = [(v, "")]
 
 addLog :: FilePath -> LogLine -> Annex ()
-addLog file line = Branch.change file $ \s -> 
+addLog file line = Annex.Branch.change file $ \s -> 
 	showLog $ compactLog (line : parseLog s)
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
 readLog :: FilePath -> Annex [LogLine]
-readLog file = parseLog <$> Branch.get file
+readLog file = parseLog <$> Annex.Branch.get file
 
 parseLog :: String -> [LogLine]
 parseLog = filter parsable . map read . lines

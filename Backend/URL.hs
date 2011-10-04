@@ -10,7 +10,7 @@ module Backend.URL (
 	fromUrl
 ) where
 
-import AnnexCommon
+import Annex.Common
 import Types.Backend
 import Types.Key
 

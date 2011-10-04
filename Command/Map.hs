@@ -10,7 +10,7 @@ module Command.Map where
 import Control.Exception.Extensible
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Git
 import UUID

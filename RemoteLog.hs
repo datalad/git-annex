@@ -18,8 +18,8 @@ module RemoteLog (
 import qualified Data.Map as M
 import Data.Char
 
-import AnnexCommon
-import qualified Branch
+import Annex.Common
+import qualified Annex.Branch
 import Types.Remote
 import UUID
 
@@ -29,7 +29,7 @@ remoteLog = "remote.log"
 
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
-configSet u c = Branch.change remoteLog $
+configSet u c = Annex.Branch.change remoteLog $
 	serialize . M.insert u c . remoteLogParse
 	where
 		serialize = unlines . sort . map toline . M.toList
@@ -37,7 +37,7 @@ configSet u c = Branch.change remoteLog $
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = remoteLogParse <$> Branch.get remoteLog
+readRemoteLog = remoteLogParse <$> Annex.Branch.get remoteLog
 
 remoteLogParse :: String -> M.Map UUID RemoteConfig
 remoteLogParse s =

@@ -9,8 +9,8 @@ module Upgrade.V0 where
 
 import System.IO.Error (try)
 
-import AnnexCommon
-import Content
+import Annex.Common
+import Annex.Content
 import qualified Upgrade.V1
 
 upgrade :: Annex Bool

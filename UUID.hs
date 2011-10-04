@@ -24,9 +24,9 @@ module UUID (
 
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
-import qualified Branch
+import qualified Annex.Branch
 import Types.UUID
 import qualified Build.SysConfig as SysConfig
 import Config
@@ -82,14 +82,14 @@ prepUUID = do
 
 {- Records a description for a uuid in the uuidLog. -}
 describeUUID :: UUID -> String -> Annex ()
-describeUUID uuid desc = Branch.change uuidLog $
+describeUUID uuid desc = Annex.Branch.change uuidLog $
 	serialize . M.insert uuid desc . parse
 	where
 		serialize m = unlines $ map (\(u, d) -> u++" "++d) $ M.toList m
 
 {- Read the uuidLog into a Map -}
 uuidMap :: Annex (M.Map UUID String)
-uuidMap = parse <$> Branch.get uuidLog
+uuidMap = parse <$> Annex.Branch.get uuidLog
 
 parse :: String -> M.Map UUID String
 parse = M.fromList . map pair . lines

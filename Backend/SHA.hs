@@ -7,9 +7,9 @@
 
 module Backend.SHA (backends) where
 
-import AnnexCommon
+import Annex.Common
 import qualified Annex
-import Content
+import Annex.Content
 import Types.Backend
 import Types.Key
 import qualified Build.SysConfig as SysConfig

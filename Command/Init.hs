@@ -7,7 +7,7 @@
 
 module Command.Init where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import UUID
 import Init

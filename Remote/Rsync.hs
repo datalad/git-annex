@@ -10,12 +10,12 @@ module Remote.Rsync (remote) where
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import Types.Remote
 import qualified Git
 import UUID
 import Config
-import Content
+import Annex.Content
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto

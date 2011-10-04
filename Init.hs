@@ -11,16 +11,16 @@ module Init (
 	uninitialize
 ) where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
-import qualified Branch
-import Version
+import qualified Annex.Branch
+import Annex.Version
 import UUID
 
 initialize :: Annex ()
 initialize = do
 	prepUUID
-	Branch.create
+	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
 
@@ -35,7 +35,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
 	where
 		needsinit = do
-			annexed <- Branch.hasSomeBranch
+			annexed <- Annex.Branch.hasSomeBranch
 			if annexed
 				then initialize
 				else error "First run: git-annex init"

@@ -7,7 +7,7 @@
 
 module Command where
 
-import AnnexCommon
+import Annex.Common
 import qualified Backend
 import qualified Annex
 import qualified Git

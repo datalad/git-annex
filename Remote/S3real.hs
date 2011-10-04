@@ -17,7 +17,7 @@ import Data.Char
 import System.Environment
 import System.Posix.Env (setEnv)
 
-import AnnexCommon
+import Annex.Common
 import Types.Remote
 import Types.Key
 import qualified Git
@@ -26,7 +26,7 @@ import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
-import Content
+import Annex.Content
 import Utility.Base64
 
 remote :: RemoteType Annex

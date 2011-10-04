@@ -5,13 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module AnnexQueue (
+module Annex.Queue (
 	add,
 	flush,
 	flushWhenFull
 ) where
 
-import AnnexCommon
+import Annex.Common
 import Annex
 import qualified Git.Queue
 

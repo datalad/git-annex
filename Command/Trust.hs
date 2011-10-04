@@ -7,7 +7,7 @@
 
 module Command.Trust where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Remote
 import Trust

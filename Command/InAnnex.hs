@@ -7,9 +7,9 @@
 
 module Command.InAnnex where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import Content
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "inannex" (paramRepeating paramKey) seek

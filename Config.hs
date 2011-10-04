@@ -7,7 +7,7 @@
 
 module Config where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
 import qualified Annex
 

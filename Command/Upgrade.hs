@@ -7,10 +7,10 @@
 
 module Command.Upgrade where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import Upgrade
-import Version
+import Annex.Version
 
 command :: [Command]
 command = [standaloneCommand "upgrade" paramNothing seek

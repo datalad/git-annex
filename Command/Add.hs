@@ -7,14 +7,14 @@
 
 module Command.Add where
 
-import AnnexCommon
+import Annex.Common
 import Annex.Exception
 import Command
 import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Backend
 import LocationLog
-import Content
+import Annex.Content
 import Utility.Touch
 import Backend
 
@@ -81,6 +81,6 @@ cleanup file key hascontent = do
 
 	force <- Annex.getState Annex.force
 	if force
-		then AnnexQueue.add "add" [Param "-f", Param "--"] [file]
-		else AnnexQueue.add "add" [Param "--"] [file]
+		then Annex.Queue.add "add" [Param "-f", Param "--"] [file]
+		else Annex.Queue.add "add" [Param "--"] [file]
 	return True

@@ -7,10 +7,10 @@
 
 module Command.Fix where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import qualified AnnexQueue
-import Content
+import qualified Annex.Queue
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "fix" paramPaths seek
@@ -39,5 +39,5 @@ perform file link = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	AnnexQueue.add "add" [Param "--"] [file]
+	Annex.Queue.add "add" [Param "--"] [file]
 	return True

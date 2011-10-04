@@ -12,7 +12,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
 
-import AnnexCommon
+import Annex.Common
 import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote
@@ -20,7 +20,7 @@ import qualified Command.Unused
 import qualified Git
 import Command
 import Utility.DataUnits
-import Content
+import Annex.Content
 import Types.Key
 import Backend
 import UUID

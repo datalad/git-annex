@@ -7,12 +7,12 @@
 
 module Command.Move where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Command.Drop
 import qualified Annex
 import LocationLog
-import Content
+import Annex.Content
 import qualified Remote
 import UUID
 

@@ -7,12 +7,12 @@
 
 module Command.Drop where
 
-import AnnexCommon
+import Annex.Common
 import Command
 import qualified Remote
 import qualified Annex
 import LocationLog
-import Content
+import Annex.Content
 import Trust
 import Config
 

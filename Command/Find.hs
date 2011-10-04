@@ -7,9 +7,9 @@
 
 module Command.Find where
 
-import AnnexCommon
+import Annex.Common
 import Command
-import Content
+import Annex.Content
 import Limit
 
 command :: [Command]

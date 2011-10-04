@@ -7,11 +7,11 @@
 
 module Upgrade.V2 where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
-import qualified Branch
+import qualified Annex.Branch
 import LocationLog
-import Content
+import Annex.Content
 
 olddir :: Git.Repo -> FilePath
 olddir g
@@ -39,7 +39,7 @@ upgrade = do
 	g <- gitRepo
 	let bare = Git.repoIsLocalBare g
 
-	Branch.create
+	Annex.Branch.create
 	showProgress
 
 	e <- liftIO $ doesDirectoryExist (olddir g)
@@ -75,7 +75,7 @@ inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
 	g <- gitRepo
 	new <- liftIO (readFile $ olddir g </> source)
-	Branch.change dest $ \prev -> 
+	Annex.Branch.change dest $ \prev -> 
 		unlines $ nub $ lines prev ++ lines new
 	showProgress
 
@@ -85,8 +85,8 @@ logFiles dir = return . filter (".log" `isSuffixOf`)
 
 push :: Annex ()
 push = do
-	origin_master <- Branch.refExists "origin/master"
-	origin_gitannex <- Branch.hasOrigin
+	origin_master <- Annex.Branch.refExists "origin/master"
+	origin_gitannex <- Annex.Branch.hasOrigin
 	case (origin_master, origin_gitannex) of
 		(_, True) -> do
 			-- Merge in the origin's git-annex branch,
@@ -94,20 +94,20 @@ push = do
 			-- will immediately work. Not pushed here,
 			-- because it's less obnoxious to let the user
 			-- push.
-			Branch.update
+			Annex.Branch.update
 		(True, False) -> do
 			-- push git-annex to origin, so that
 			-- "git push" will from then on
 			-- automatically push it
-			Branch.update -- just in case
+			Annex.Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
 			g <- gitRepo
-			liftIO $ Git.run g "push" [Param "origin", Param Branch.name]
+			liftIO $ Git.run g "push" [Param "origin", Param Annex.Branch.name]
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch
-			Branch.update
+			Annex.Branch.update
 			showLongNote $
 				"git-annex branch created\n" ++
 				"Be sure to push this branch when pushing to remotes.\n"

@@ -10,13 +10,13 @@ module Limit where
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
 
-import AnnexCommon
+import Annex.Common
 import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
 import LocationLog
-import Content
+import Annex.Content
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 

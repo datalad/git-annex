@@ -14,11 +14,11 @@ module CmdLine (
 import System.IO.Error (try)
 import System.Console.GetOpt
 
-import AnnexCommon
+import Annex.Common
 import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Git
-import Content
+import Annex.Content
 import Command
 import Options
 import Init
@@ -81,7 +81,7 @@ tryRun = tryRun' 0
 tryRun' :: Integer -> Annex.AnnexState -> [Annex Bool] -> IO ()
 tryRun' errnum state (a:as) = do
 	result <- try $ Annex.run state $ do
-		AnnexQueue.flushWhenFull
+		Annex.Queue.flushWhenFull
 		a
 	case result of
 		Left err -> do

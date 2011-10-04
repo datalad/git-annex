@@ -10,7 +10,7 @@ module Remote.Git (remote) where
 import Control.Exception.Extensible
 import qualified Data.Map as M
 
-import AnnexCommon
+import Annex.Common
 import Utility.CopyFile
 import Utility.RsyncFile
 import Utility.Ssh
@@ -18,7 +18,7 @@ import Types.Remote
 import qualified Git
 import qualified Annex
 import UUID
-import qualified Content
+import qualified Annex.Content
 import qualified Utility.Url as Url
 import Config
 import Init
@@ -121,7 +121,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = safely checklocal
 	where
-		checklocal = onLocal r (Content.inAnnex key)
+		checklocal = onLocal r (Annex.Content.inAnnex key)
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
@@ -164,9 +164,9 @@ copyToRemote r key
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
-			ok <- Content.getViaTmp key $
+			ok <- Annex.Content.getViaTmp key $
 				rsyncOrCopyFile r keysrc
-			Content.saveState
+			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
 		g <- gitRepo

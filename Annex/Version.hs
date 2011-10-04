@@ -5,9 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Version where
+module Annex.Version where
 
-import AnnexCommon
+import Annex.Common
 import qualified Git
 import Config
 
