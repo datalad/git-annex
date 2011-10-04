@@ -65,17 +65,13 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	g <- gitRepo
 	let f = index g
-	reset <- liftIO $ Git.useIndex f
 
-	e <- liftIO $ doesFileExist f
-	unless e $ do
-		unless bootstrapping create
-		liftIO $ createDirectoryIfMissing True $ takeDirectory f
-		liftIO $ unless bootstrapping $ genIndex g
-
-	r <- a
-	liftIO reset
-	return r
+	bracket (Git.useIndex f) id $ do
+		unlessM (liftIO $ doesFileExist f) $ do
+			unless bootstrapping create
+			liftIO $ createDirectoryIfMissing True $ takeDirectory f
+			unless bootstrapping $ liftIO $ genIndex g
+		a
 
 withIndexUpdate :: Annex a -> Annex a
 withIndexUpdate a = update >> withIndex a
@@ -332,11 +328,14 @@ lockJournal :: Annex a -> Annex a
 lockJournal a = do
 	g <- gitRepo
 	let file = gitAnnexJournalLock g
-	liftIOOp (Control.Exception.bracket (lock file) unlock) run
+	bracket (lock file) unlock a
 	where
 		lock file = do
 			l <- createFile file stdFileMode
 			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 			return l
 		unlock = closeFd
-		run _ = a
+
+bracket :: IO c -> (c -> IO b) -> Annex a -> Annex a
+bracket start cleanup go =
+	liftIOOp (Control.Exception.bracket start cleanup) (const go)
