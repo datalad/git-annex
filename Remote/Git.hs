@@ -10,7 +10,7 @@ module Remote.Git (remote) where
 import Control.Exception.Extensible
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
 import Utility.Ssh

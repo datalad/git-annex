@@ -9,7 +9,7 @@ module Remote.Helper.Special where
 
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Types.Remote
 import qualified Git
 import UUID

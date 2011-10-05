@@ -7,7 +7,7 @@
 
 module Command.Fsck where
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Remote
 import qualified Types.Backend

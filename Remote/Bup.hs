@@ -12,7 +12,7 @@ import System.IO.Error
 import qualified Data.Map as M
 import System.Process
 
-import Annex.Common
+import Common.Annex
 import Types.Remote
 import qualified Git
 import UUID

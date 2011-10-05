@@ -7,7 +7,7 @@
 
 module Upgrade.V2 where
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import qualified Annex.Branch
 import LocationLog

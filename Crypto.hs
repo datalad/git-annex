@@ -37,7 +37,7 @@ import Control.Exception (finally)
 import System.Exit
 import System.Environment
 
-import Annex.Common
+import Common.Annex
 import Types.Key
 import Types.Remote
 import Utility.Base64

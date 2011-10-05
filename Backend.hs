@@ -19,7 +19,7 @@ module Backend (
 import System.IO.Error (try)
 import System.Posix.Files
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import qualified Annex
 import Types.Key

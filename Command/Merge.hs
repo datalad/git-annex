@@ -7,7 +7,7 @@
 
 module Command.Merge where
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Annex.Branch
 

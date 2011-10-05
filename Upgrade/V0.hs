@@ -9,7 +9,7 @@ module Upgrade.V0 where
 
 import System.IO.Error (try)
 
-import Annex.Common
+import Common.Annex
 import Annex.Content
 import qualified Upgrade.V1
 

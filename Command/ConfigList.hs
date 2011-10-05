@@ -7,7 +7,7 @@
 
 module Command.ConfigList where
 
-import Annex.Common
+import Common.Annex
 import Command
 import UUID
 

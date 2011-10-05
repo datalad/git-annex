@@ -7,7 +7,7 @@
 
 module Command.SetKey where
 
-import Annex.Common
+import Common.Annex
 import Command
 import LocationLog
 import Annex.Content

@@ -22,7 +22,7 @@ import System.IO.Binary
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import Annex.Common
+import Common.Annex
 import Annex.Exception
 import Types.BranchState
 import qualified Git

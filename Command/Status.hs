@@ -12,7 +12,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
 
-import Annex.Common
+import Common.Annex
 import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote

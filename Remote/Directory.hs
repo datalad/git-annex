@@ -11,7 +11,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import System.IO.Error
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Utility.CopyFile
 import Types.Remote
 import qualified Git

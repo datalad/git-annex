@@ -24,7 +24,7 @@ module UUID (
 
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import qualified Annex.Branch
 import Types.UUID

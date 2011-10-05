@@ -17,7 +17,7 @@ import Data.Char
 import System.Environment
 import System.Posix.Env (setEnv)
 
-import Annex.Common
+import Common.Annex
 import Types.Remote
 import Types.Key
 import qualified Git

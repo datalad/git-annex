@@ -9,7 +9,7 @@ module Command.DropUnused where
 
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Annex
 import qualified Command.Drop

@@ -11,7 +11,7 @@ module Annex.Queue (
 	flushWhenFull
 ) where
 
-import Annex.Common
+import Common.Annex
 import Annex
 import qualified Git.Queue
 

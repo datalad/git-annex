@@ -18,7 +18,7 @@ module RemoteLog (
 import qualified Data.Map as M
 import Data.Char
 
-import Annex.Common
+import Common.Annex
 import qualified Annex.Branch
 import Types.Remote
 import UUID

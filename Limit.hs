@@ -10,7 +10,7 @@ module Limit where
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
 
-import Annex.Common
+import Common.Annex
 import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote

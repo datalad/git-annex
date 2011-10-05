@@ -7,7 +7,7 @@
 
 import System.Environment
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import CmdLine
 import Command

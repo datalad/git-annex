@@ -27,7 +27,7 @@ import Data.Time
 import System.Locale
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import qualified Annex.Branch
 
 data LogLine = LogLine {

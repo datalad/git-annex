@@ -7,7 +7,7 @@
 
 module Command.InAnnex where
 
-import Annex.Common
+import Common.Annex
 import Command
 import Annex.Content
 

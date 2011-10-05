@@ -1,4 +1,4 @@
-module Annex.Common (
+module Common.Annex (
 	module Common,
 	module Types,
 	module Annex,

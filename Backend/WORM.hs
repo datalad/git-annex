@@ -7,7 +7,7 @@
 
 module Backend.WORM (backends) where
 
-import Annex.Common
+import Common.Annex
 import Types.Backend
 import Types.Key
 

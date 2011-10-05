@@ -7,7 +7,7 @@
 
 module Command.RecvKey where
 
-import Annex.Common
+import Common.Annex
 import Command
 import CmdLine
 import Annex.Content

@@ -10,7 +10,7 @@ module Remote.Web (
 	setUrl
 ) where
 
-import Annex.Common
+import Common.Annex
 import Types.Remote
 import qualified Git
 import UUID

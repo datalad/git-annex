@@ -14,7 +14,7 @@ module CmdLine (
 import System.IO.Error (try)
 import System.Console.GetOpt
 
-import Annex.Common
+import Common.Annex
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git

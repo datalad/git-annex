@@ -21,7 +21,7 @@ module LocationLog (
 	logFileKey
 ) where
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import qualified Annex.Branch
 import UUID

@@ -9,7 +9,7 @@ module Annex.CatFile (
 	catFile
 ) where
 
-import Annex.Common
+import Common.Annex
 import qualified Git.CatFile
 import qualified Annex
 

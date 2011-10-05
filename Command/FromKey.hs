@@ -7,7 +7,7 @@
 
 module Command.FromKey where
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Annex.Queue
 import Annex.Content

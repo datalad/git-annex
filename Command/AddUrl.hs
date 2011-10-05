@@ -9,7 +9,7 @@ module Command.AddUrl where
 
 import Network.URI
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Backend
 import qualified Utility.Url as Url

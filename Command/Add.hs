@@ -7,7 +7,7 @@
 
 module Command.Add where
 
-import Annex.Common
+import Common.Annex
 import Annex.Exception
 import Command
 import qualified Annex

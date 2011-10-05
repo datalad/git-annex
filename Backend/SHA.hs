@@ -7,7 +7,7 @@
 
 module Backend.SHA (backends) where
 
-import Annex.Common
+import Common.Annex
 import qualified Annex
 import Annex.Content
 import Types.Backend

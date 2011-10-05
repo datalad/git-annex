@@ -7,7 +7,7 @@
 
 module Annex.Version where
 
-import Annex.Common
+import Common.Annex
 import qualified Git
 import Config
 

@@ -15,7 +15,7 @@ module Trust (
 
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import UUID

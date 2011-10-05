@@ -12,7 +12,7 @@ module Command.Unused where
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy.Char8 as L
 
-import Annex.Common
+import Common.Annex
 import Command
 import Annex.Content
 import Utility.FileMode

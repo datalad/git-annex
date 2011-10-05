@@ -7,7 +7,7 @@
 
 module Command.Upgrade where
 
-import Annex.Common
+import Common.Annex
 import Command
 import Upgrade
 import Annex.Version

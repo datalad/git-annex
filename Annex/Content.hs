@@ -21,7 +21,7 @@ module Annex.Content (
 	saveState
 ) where
 
-import Annex.Common
+import Common.Annex
 import LocationLog
 import UUID
 import qualified Git

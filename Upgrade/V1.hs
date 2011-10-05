@@ -11,7 +11,7 @@ import System.IO.Error (try)
 import System.Posix.Types
 import Data.Char
 
-import Annex.Common
+import Common.Annex
 import Types.Key
 import Annex.Content
 import PresenceLog

@@ -9,7 +9,7 @@ module Command.InitRemote where
 
 import qualified Data.Map as M
 
-import Annex.Common
+import Common.Annex
 import Command
 import qualified Remote
 import qualified RemoteLog
