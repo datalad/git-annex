@@ -1,0 +1,17 @@
+Since uuid.log, trust.log and remote.log are union merged, it's possible
+for any given item in them to have multiple values after a merge.
+This would happen, for example, if the value was changed in different ways
+in two repos which were then merged. git-annex will use an arbitrary
+one of the multiple values.
+
+A workaround if this should happen to you is to use `git annex describe`
+or other commands to re-set the value you want. The process of setting
+the value will remove the multiple lines.
+
+To fix this the file format needs to be changed to include a timestamp
+as is done with the other log files, then git-annex can consistently
+pick the newest value -- which is as close to the "right" value as can be
+determined in this situation.
+
+(For backwards compatability, git-annex should
+treat lines with no timestamp as being timestamped with 0.)
