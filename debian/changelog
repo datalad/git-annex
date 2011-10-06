@@ -7,6 +7,11 @@ git-annex (3.20110929) UNRELEASED; urgency=low
     in addition to their descriptions.
   * Contain the zombie hordes.
   * Add locking to avoid races when changing the git-annex branch.
+  * New or changed repository descriptions in uuid.log now have a timestamp,
+    which is used to ensure the newest description is used when the uuid.log
+    has been merged.
+  * Note that older versions of git-annex will display the timestamp as part
+    of the repository description, which is ugly but otherwise harmless.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 

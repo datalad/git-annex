@@ -31,6 +31,7 @@ import qualified Types
 import qualified GitAnnex
 import qualified LocationLog
 import qualified UUID
+import qualified UUIDLog
 import qualified Trust
 import qualified Remote
 import qualified RemoteLog
@@ -78,6 +79,8 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
+	, qctest "prop_TimeStamp_sane" UUIDLog.prop_TimeStamp_sane
+	, qctest "prop_addLog_sane" UUIDLog.prop_addLog_sane
 	]
 
 blackbox :: Test

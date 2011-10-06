@@ -6,7 +6,9 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - uuid.log stores a list of known uuids, and their descriptions.
+ -
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,11 +20,11 @@ module UUID (
 	prepUUID,
 	genUUID,
 	describeUUID,
-	uuidMap,
-	uuidLog
+	uuidMap
 ) where
 
 import qualified Data.Map as M
+import Data.Time.Clock.POSIX
 
 import Common.Annex
 import qualified Git
@@ -30,13 +32,14 @@ import qualified Annex.Branch
 import Types.UUID
 import qualified Build.SysConfig as SysConfig
 import Config
+import UUIDLog
 
 configkey :: String
 configkey = "annex.uuid"
 
 {- Filename of uuid.log. -}
-uuidLog :: FilePath
-uuidLog = "uuid.log"
+logfile :: FilePath
+logfile = "uuid.log"
 
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
@@ -50,8 +53,7 @@ genUUID = liftIO $ pOpen ReadFromPipe command params $ \h -> hGetLine h
 			-- uuidgen generates random uuid by default
 			else []
 
-{- Looks up a repo's UUID. May return "" if none is known.
- -}
+{- Looks up a repo's UUID. May return "" if none is known. -}
 getUUID :: Git.Repo -> Annex UUID
 getUUID r = do
 	g <- gitRepo
@@ -76,26 +78,17 @@ getUncachedUUID r = Git.configGet r configkey ""
 prepUUID :: Annex ()
 prepUUID = do
 	u <- getUUID =<< gitRepo
-	when ("" == u) $ do
+	when (null u) $ do
 		uuid <- liftIO genUUID
 		setConfig configkey uuid
 
-{- Records a description for a uuid in the uuidLog. -}
+{- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> String -> Annex ()
-describeUUID uuid desc = Annex.Branch.change uuidLog $
-	serialize . M.insert uuid desc . parse
-	where
-		serialize m = unlines $ map (\(u, d) -> u++" "++d) $ M.toList m
+describeUUID uuid desc = do
+	ts <- liftIO $ getPOSIXTime
+	Annex.Branch.change logfile $
+		showLog id . changeLog ts uuid desc . parseLog Just
 
-{- Read the uuidLog into a Map -}
+{- Read the uuidLog into a simple Map -}
 uuidMap :: Annex (M.Map UUID String)
-uuidMap = parse <$> Annex.Branch.get uuidLog
-
-parse :: String -> M.Map UUID String
-parse = M.fromList . map pair . lines
-	where
-		pair l
-			| null ws = ("", "")
-			| otherwise = (head ws, unwords $ drop 1 ws)
-			where
-				ws = words l
+uuidMap = (simpleMap . parseLog Just) <$> Annex.Branch.get logfile

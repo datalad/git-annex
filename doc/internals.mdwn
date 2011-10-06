@@ -42,10 +42,10 @@ more useful than a UUID when it refers to a repository that does not have
 a configured git remote pointing at it.
 
 The file format is simply one line per repository, with the uuid followed by a
-space and then the description through to the end of the line. Example:
+space and then the description, followed by a timestamp. Example:
 
-	e605dca6-446a-11e0-8b2a-002170d25c55 laptop
-	26339d22-446b-11e0-9101-002170d25c55 usb disk
+	e605dca6-446a-11e0-8b2a-002170d25c55 laptop timestamp=1317929189.157237s
+	26339d22-446b-11e0-9101-002170d25c55 usb disk timestamp=1317929330.769997s
 
 ## `remotes.log`
 

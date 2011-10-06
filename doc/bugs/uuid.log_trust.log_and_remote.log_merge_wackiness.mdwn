@@ -21,6 +21,7 @@ would keep working, ignoring the timestamp.
 - uuid.log: "uuid description timestamp" would work; old git-annex 
   would just treat the timestamp as part of the description which would be
   ok
+  > update: converted! --[[Joey]] 
 - trust.log: "uuid trustlevel timestamp" would work; old git-annex
   ignores trailing words
 - remote.log: "uuid key=value ... timestamp" is on the edge but does work
