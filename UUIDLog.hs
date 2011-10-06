@@ -1,0 +1,110 @@
+{- git-annex uuid-based logs
+ -
+ - This is used to store information about a UUID in a way that can
+ - be union merged.
+ -
+ - A line of the log will look like: "UUID[ INFO[ timestamp=foo]]"
+ - The timestamp is last for backwards compatability reasons,
+ - and may not be present on old log lines.
+ - 
+ - Copyright 2011 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
+module UUIDLog (
+	Log,
+	LogEntry(..),
+	parseLog,
+	showLog,
+	changeLog,
+	addLog,
+	simpleMap,
+
+	prop_TimeStamp_sane,
+	prop_addLog_sane,
+) where
+
+import qualified Data.Map as M
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Locale
+
+import Common
+import Types.UUID
+
+data TimeStamp = Unknown | Date POSIXTime
+	deriving (Eq, Ord, Show)
+
+data LogEntry a = LogEntry
+	{ changed :: TimeStamp
+	, value :: a
+	} deriving (Eq, Show)
+
+type Log a = M.Map UUID (LogEntry a)
+
+tskey :: String
+tskey = "timestamp="
+
+showLog :: (a -> String) -> Log a -> String
+showLog shower = unlines . map showpair . M.toList
+	where
+		showpair (k, LogEntry (Date p) v) =
+			unwords [k, shower v, tskey ++ show p]
+		showpair (k, LogEntry Unknown v) =
+			unwords [k, shower v]
+
+parseLog :: (String -> Maybe a) -> String -> Log a
+parseLog parser = M.fromListWith best . catMaybes . map pair . lines
+	where
+		pair line
+			| null ws = Nothing
+			| otherwise = case parser $ unwords info of
+				Nothing -> Nothing
+				Just v -> Just (u, LogEntry c v)
+			where
+				ws = words line
+				u = head ws
+				end = last ws
+				c
+					| tskey `isPrefixOf` end =
+						pdate $ tail $ dropWhile (/= '=') end
+					| otherwise = Unknown
+				info
+					| c == Unknown = drop 1 ws
+					| otherwise = drop 1 $ init ws
+				pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
+					Nothing -> Unknown
+					Just d -> Date $ utcTimeToPOSIXSeconds d
+
+changeLog :: POSIXTime -> UUID -> a -> Log a -> Log a
+changeLog t u v = M.insert u $ LogEntry (Date t) v
+
+{- Only add an LogEntry if it's newer (or at least as new as) than any
+ - existing LogEntry for a UUID. -}
+addLog :: UUID -> LogEntry a -> Log a -> Log a
+addLog = M.insertWith best
+
+{- Converts a Log into a simple Map without the timestamp information.
+ - This is a one-way trip, but useful for code that never needs to change
+ - the log. -}
+simpleMap :: Log a -> M.Map UUID a
+simpleMap = M.map value
+
+best :: LogEntry a -> LogEntry a -> LogEntry a
+best new old
+	| changed old > changed new = old
+	| otherwise = new
+
+-- Unknown is oldest.
+prop_TimeStamp_sane :: Bool
+prop_TimeStamp_sane = Unknown < Date 1
+
+prop_addLog_sane :: Bool
+prop_addLog_sane = newWins && newestWins
+	where
+		newWins = addLog "foo" (LogEntry (Date 1) "new") l == l2
+		newestWins = addLog "foo" (LogEntry (Date 1) "newest") l2 /= l2
+
+		l = M.fromList [("foo", LogEntry (Date 0) "old")]
+		l2 = M.fromList [("foo", LogEntry (Date 1) "new")]
