@@ -10,9 +10,10 @@ module Command.PreCommit where
 import Command
 import qualified Command.Add
 import qualified Command.Fix
+import Backend
 
 command :: [Command]
-command = [repoCommand "pre-commit" paramPath seek "run by git pre-commit hook"]
+command = [repoCommand "pre-commit" paramPaths seek "run by git pre-commit hook"]
 
 {- The pre-commit hook needs to fix symlinks to all files being committed.
  - And, it needs to inject unlocked files into the annex. -}
@@ -20,11 +21,11 @@ seek :: [CommandSeek]
 seek = [withFilesToBeCommitted Command.Fix.start,
 	withFilesUnlockedToBeCommitted start]
 
-start :: CommandStartBackendFile
-start pair = next $ perform pair
+start :: BackendFile -> CommandStart
+start p = next $ perform p
 
 perform :: BackendFile -> CommandPerform
-perform pair@(file, _) = do
+perform pair@(_, file) = do
 	ok <- doCommand $ Command.Add.start pair
 	if ok
 		then next $ return True

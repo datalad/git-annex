@@ -8,17 +8,16 @@
 module GitAnnex where
 
 import System.Console.GetOpt
-import Control.Monad.State (liftIO)
 
+import Common.Annex
 import qualified Git
 import CmdLine
 import Command
 import Options
-import Utility
-import Types
 import Types.TrustLevel
 import qualified Annex
 import qualified Remote
+import qualified Limit
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -97,8 +96,6 @@ options = commonOptions ++
 		"specify to where to transfer content"
 	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
 		"specify from where to transfer content"
-	, Option ['x'] ["exclude"] (ReqArg addexclude paramGlob)
-		"skip files matching the glob pattern"
 	, Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
@@ -109,16 +106,21 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
-	]
+	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
+		"skip files matching the glob pattern"
+	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
+		"skip files not present in a remote"
+	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
+		"skip files with fewer copies"
+	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
-		addexclude v = Annex.changeState $ \s -> s { Annex.exclude = v:Annex.exclude s }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			g' <- liftIO $ Git.configStore g v
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 

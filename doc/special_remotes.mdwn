@@ -29,11 +29,5 @@ on special remotes, instead use `git annex unused --from`. Example:
 	    1       WORM-s3-m1301674316--foo
 	  (To see where data was previously used, try: git log --stat -S'KEY')
 	  (To remove unwanted data: git-annex dropunused --from mys3 NUMBER)
-	  Please be cautious -- are you sure that the remote repository
-	  does not use this data?
 	$ git annex dropunused --from mys3 1
 	dropunused 12948 (from mys3...) ok
-
-Do be cautious when using this; it cannot detect if content in a remote
-is used by that remote, or is the last copy of data that is used by
-some *other* remote.

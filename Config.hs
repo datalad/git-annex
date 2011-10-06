@@ -7,23 +7,16 @@
 
 module Config where
 
-import Data.Maybe
-import Control.Monad.State (liftIO)
-import Control.Monad (liftM)
-import System.Cmd.Utils
-
+import Common.Annex
 import qualified Git
 import qualified Annex
-import Types
-import Utility
-import Utility.SafeCommand
 
 type ConfigKey = String
 
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ Git.run g "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
 	g' <- liftIO $ Git.configRead g
@@ -33,7 +26,7 @@ setConfig k value = do
  - Failing that, tries looking for a global config option. -}
 getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
 getConfig r key def = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let def' = Git.configGet g ("annex." ++ key) def
 	return $ Git.configGet g (remoteConfig r key) def'
 
@@ -82,18 +75,10 @@ prop_cost_sane = False `notElem`
 {- Checks if a repo should be ignored, based either on annex-ignore
  - setting, or on command-line options. Allows command-line to override
  - annex-ignore. -}
-remoteNotIgnored :: Git.Repo -> Annex Bool
-remoteNotIgnored r = do
+repoNotIgnored :: Git.Repo -> Annex Bool
+repoNotIgnored r = do
 	ignored <- getConfig r "ignore" "false"
-	to <- match Annex.toremote
-	from <- match Annex.fromremote
-	if to || from
-		then return True
-		else return $ not $ Git.configTrue ignored
-	where
-		match a = do
-			n <- Annex.getState a
-			return $ n == Git.repoRemoteName r
+	return $ not $ Git.configTrue ignored
 
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
@@ -103,7 +88,7 @@ getNumCopies v =
 	where
 		use (Just n) = return n
 		use Nothing = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			return $ read $ Git.configGet g config "1"
 		config = "annex.numcopies"
 

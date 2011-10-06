@@ -7,36 +7,37 @@
 
 module Command.Whereis where
 
+import Common.Annex
 import LocationLog
 import Command
-import Messages
 import Remote
-import Types
+import Trust
 
 command :: [Command]
-command = [repoCommand "whereis" (paramOptional $ paramRepeating paramPath) seek
+command = [repoCommand "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	showStart "whereis" file
 	next $ perform key
 
 perform :: Key -> CommandPerform
 perform key = do
-	uuids <- keyLocations key
-	let num = length uuids
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
+	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
-	if null uuids
-		then stop
-		else do
-			pp <- prettyPrintUUIDs "whereis" uuids
-			showLongNote pp
-			showOutput
-			next $ return True
+	pp <- prettyPrintUUIDs "whereis" safelocations
+	unless (null safelocations) $
+		showLongNote pp
+	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
+	unless (null untrustedlocations) $
+		showLongNote $ untrustedheader ++ pp'
+	if null safelocations then stop else next $ return True
 	where
 		copiesplural 1 = "copy"
 		copiesplural _ = "copies"
+		untrustedheader = "The following untrusted locations may also have copies:\n"

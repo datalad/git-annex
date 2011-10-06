@@ -7,14 +7,11 @@
 
 module Command.RecvKey where
 
-import Control.Monad.State (liftIO)
-import System.Exit
-
+import Common.Annex
 import Command
 import CmdLine
-import Content
+import Annex.Content
 import Utility.RsyncFile
-import Utility.Conditional
 
 command :: [Command]
 command = [repoCommand "recvkey" paramKey seek
@@ -23,7 +20,7 @@ command = [repoCommand "recvkey" paramKey seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	whenM (inAnnex key) $ error "key is already present in annex"
 	

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-09-19T18:54:46Z"
+ content="""
+git annex get/copy/drop all now support a --auto flag, which makes them only act on files that have not enough or too many copies. This allows for some crude replication; it doesn't take into account which repositories should be filled up more (beyond honoring annex.diskreserve), nor does it try to optimally use bandwidth (beyond honoring configured annex-cost). You have to run it in every repository that you want to participate in the replication, too. But it's probably a Good Enough solution. See [[walkthrough/automatically_managing_content]].
+"""]]

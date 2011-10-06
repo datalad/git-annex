@@ -7,10 +7,10 @@
 
 module Command.Upgrade where
 
+import Common.Annex
 import Command
 import Upgrade
-import Version
-import Messages
+import Annex.Version
 
 command :: [Command]
 command = [standaloneCommand "upgrade" paramNothing seek
@@ -19,7 +19,7 @@ command = [standaloneCommand "upgrade" paramNothing seek
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	showStart "upgrade" "."
 	r <- upgrade

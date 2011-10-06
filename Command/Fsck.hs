@@ -7,42 +7,29 @@
 
 module Command.Fsck where
 
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
-import System.Directory
-import Data.List
-import System.Posix.Files
-
+import Common.Annex
 import Command
-import qualified Annex
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
 import UUID
-import Types
-import Messages
-import Utility
-import Content
+import Annex.Content
 import LocationLog
-import Locations
 import Trust
 import Utility.DataUnits
-import Utility.Path
+import Utility.FileMode
 import Config
 
 command :: [Command]
-command = [repoCommand "fsck" (paramOptional $ paramRepeating paramPath) seek
-	"check for problems"]
+command = [repoCommand "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
-seek = [withAttrFilesInGit "annex.numcopies" start]
+seek = [withNumCopies start]
 
-start :: CommandStartAttrFile
-start (file, attr) = notBareRepo $ isAnnexed file $ \(key, backend) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = notBareRepo $ isAnnexed file $ \(key, backend) -> do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
-	where
-		numcopies = readMaybe attr :: Maybe Int
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
 perform key file backend numcopies = do
@@ -58,7 +45,7 @@ perform key file backend numcopies = do
    in this repository only. -}
 verifyLocationLog :: Key -> FilePath -> Annex Bool
 verifyLocationLog key file = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	present <- inAnnex key
 	
 	-- Since we're checking that a key's file is present, throw
@@ -102,7 +89,7 @@ fsckKey backend key file numcopies = do
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let file = gitAnnexLocation g key
 	present <- liftIO $ doesFileExist file
 	case (present, Types.Key.keySize key) of
@@ -124,10 +111,7 @@ checkKeySize key = do
 checkKeyNumCopies :: Key -> Maybe FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
-	locations <- keyLocations key
-	untrusted <- trustGet UnTrusted
-	let untrustedlocations = intersect untrusted locations
-	let safelocations = filter (`notElem` untrusted) locations
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
 	let present = length safelocations
 	if present < needed
 		then do

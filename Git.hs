@@ -20,6 +20,7 @@ module Git (
 	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
+	refDescribe,
 	repoLocation,
 	workTree,
 	workTreeFile,
@@ -43,6 +44,7 @@ module Git (
 	pipeWrite,
 	pipeWriteRead,
 	pipeNullSplit,
+	pipeNullSplitB,
 	attributes,
 	remotes,
 	remotesAdd,
@@ -54,40 +56,28 @@ module Git (
 	repoAbsPath,
 	reap,
 	useIndex,
-	hashObject,
 	getSha,
 	shaSize,
 	commit,
+	assertLocal,
 
 	prop_idempotent_deencode
 ) where
 
-import Control.Monad (unless, when)
-import System.Directory
-import System.FilePath
 import System.Posix.Directory
 import System.Posix.User
-import System.Posix.Process
-import System.Path
-import System.Cmd.Utils
 import IO (bracket_, try)
-import Data.String.Utils
-import System.IO
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
-import Data.Maybe
 import Data.Char
 import Data.Word (Word8)
 import Codec.Binary.UTF8.String (encode)
 import Text.Printf
-import Data.List (isInfixOf, isPrefixOf, isSuffixOf)
 import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
+import qualified Data.ByteString.Lazy.Char8 as L
 
-import Utility
-import Utility.Path
-import Utility.Conditional
-import Utility.SafeCommand
+import Common
 
 {- There are two types of repositories; those on local disk and those
  - accessed via an URL. -}
@@ -169,6 +159,14 @@ repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
+
+{- Converts a fully qualified git ref into a user-visible version -}
+refDescribe :: String -> String
+refDescribe = remove "refs/heads/" . remove "refs/remotes/"
+	where
+		remove prefix s
+			| prefix `isPrefixOf` s = drop (length prefix) s
+			| otherwise = s
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
@@ -334,10 +332,8 @@ urlHostUser r = urlAuthPart uriUserInfo r ++ urlAuthPart uriRegName' r
 
 {- The full authority portion an URL repo. (ie, "user@host:port") -}
 urlAuthority :: Repo -> String
-urlAuthority Repo { location = Url u } = uriUserInfo a ++ uriRegName' a ++ uriPort a
-	where
-		a = fromMaybe (error $ "bad url " ++ show u) (uriAuthority u)
-urlAuthority repo = assertUrl repo $ error "internal"
+urlAuthority r = flip urlAuthPart r $ \a ->
+	uriUserInfo a ++ uriRegName' a ++ uriPort a
 
 {- Applies a function to extract part of the uriAuthority of an URL repo. -}
 urlAuthPart :: (URIAuth -> a) -> Repo -> a
@@ -371,22 +367,41 @@ run repo subcommand params = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: Repo -> [CommandParam] -> IO String
+pipeRead :: Repo -> [CommandParam] -> IO L.ByteString
 pipeRead repo params = assertLocal repo $ do
-	(_, s) <- pipeFrom "git" $ toCommand $ gitCommandLine repo params
-	return s
+	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine repo params
+	hSetBinaryMode h True
+	L.hGetContents h
 
 {- Runs a git subcommand, feeding it input.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: Repo -> [CommandParam] -> String -> IO PipeHandle
-pipeWrite repo params s = assertLocal repo $
-	pipeTo "git" (toCommand $ gitCommandLine repo params) s
+pipeWrite :: Repo -> [CommandParam] -> L.ByteString -> IO PipeHandle
+pipeWrite repo params s = assertLocal repo $ do
+	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine repo params)
+	L.hPut h s
+	hClose h
+	return p
 
 {- Runs a git subcommand, feeding it input, and returning its output.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: Repo -> [CommandParam] -> String -> IO (PipeHandle, String)
-pipeWriteRead repo params s = assertLocal repo $
-	pipeBoth "git" (toCommand $ gitCommandLine repo params) s
+pipeWriteRead :: Repo -> [CommandParam] -> L.ByteString -> IO (PipeHandle, L.ByteString)
+pipeWriteRead repo params s = assertLocal repo $ do
+	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine repo params)
+	hSetBinaryMode from True
+	L.hPut to s
+	hClose to
+	c <- L.hGetContents from
+	return (p, c)
+
+{- Reads null terminated output of a git command (as enabled by the -z 
+ - parameter), and splits it. -}
+pipeNullSplit :: Repo -> [CommandParam] -> IO [String]
+pipeNullSplit repo params = map L.unpack <$> pipeNullSplitB repo params
+
+{- For when Strings are not needed. -}
+pipeNullSplitB :: Repo -> [CommandParam] -> IO [L.ByteString]
+pipeNullSplitB repo params = filter (not . L.null) . L.split '\0' <$>
+	pipeRead repo params
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()
@@ -408,25 +423,13 @@ useIndex index = do
 		reset (Right (Just v)) = setEnv var v True
 		reset _ = unsetEnv var
 
-{- Injects some content into git, returning its hash. -}
-hashObject :: Repo -> String -> IO String
-hashObject repo content = getSha subcmd $ do
-	(h, s) <- pipeWriteRead repo (map Param params) content
-	length s `seq` do
-		forceSuccess h
-		reap -- XXX unsure why this is needed
-		return s
-	where
-		subcmd = "hash-object"
-		params = [subcmd, "-w", "--stdin"]
-
 {- Runs an action that causes a git subcommand to emit a sha, and strips
    any trailing newline, returning the sha. -}
 getSha :: String -> IO String -> IO String
 getSha subcommand a = do
 	t <- a
 	let t' = if last t == '\n'
-		then take (length t - 1) t
+		then init t
 		else t
 	when (length t' /= shaSize) $
 		error $ "failed to read sha from git " ++ subcommand ++ " (" ++ t' ++ ")"
@@ -440,23 +443,17 @@ shaSize = 40
  - with the specified parent refs. -}
 commit :: Repo -> String -> String -> [String] -> IO ()
 commit g message newref parentrefs = do
-	tree <- getSha "write-tree" $
+	tree <- getSha "write-tree" $ asString $
 		pipeRead g [Param "write-tree"]
-	sha <- getSha "commit-tree" $ ignorehandle $
-		pipeWriteRead g (map Param $ ["commit-tree", tree] ++ ps) message
+	sha <- getSha "commit-tree" $ asString $
+		ignorehandle $ pipeWriteRead g
+			(map Param $ ["commit-tree", tree] ++ ps)
+			(L.pack message)
 	run g "update-ref" [Param newref, Param sha]
 	where
-		ignorehandle a = return . snd =<< a
+		ignorehandle a = snd <$> a
+		asString a = L.unpack <$> a
 		ps = concatMap (\r -> ["-p", r]) parentrefs
-
-{- Reads null terminated output of a git command (as enabled by the -z 
- - parameter), and splits it into a list of files/lines/whatever. -}
-pipeNullSplit :: Repo -> [CommandParam] -> IO [FilePath]
-pipeNullSplit repo params = do
-	fs0 <- pipeRead repo params
-	return $ split0 fs0
-	where
-		split0 s = filter (not . null) $ split "\0" s
 
 {- Runs git config and populates a repo with its config. -}
 configRead :: Repo -> IO Repo
@@ -577,7 +574,7 @@ decodeGitFile f@(c:s)
 	| otherwise = f
 	where
 		e = '\\'
-		middle = take (length s - 1) s
+		middle = init s
 		unescape (b, []) = b
 		-- look for escapes starting with '\'
 		unescape (b, v) = b ++ beginning ++ unescape (decode rest)
@@ -703,7 +700,6 @@ isRepoTop dir = do
 	where
 		isRepo = gitSignature ".git" ".git/config"
 		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = do
-			s <- (doesDirectoryExist (dir ++ "/" ++ subdir))
-			f <- (doesFileExist (dir ++ "/" ++ file))
-			return (s && f)
+		gitSignature subdir file = liftM2 (&&)
+			(doesDirectoryExist (dir ++ "/" ++ subdir))
+			(doesFileExist (dir ++ "/" ++ file))

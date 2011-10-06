@@ -7,19 +7,21 @@
 
 module Trust (
 	TrustLevel(..),
-	trustLog,
 	trustGet,
-	trustSet
+	trustSet,
+	trustPartition
 ) where
 
-import Control.Monad.State
 import qualified Data.Map as M
+import Data.Time.Clock.POSIX
 
+import Common.Annex
 import Types.TrustLevel
-import qualified Branch
-import Types
-import UUID
+import qualified Annex.Branch
 import qualified Annex
+
+import UUID
+import UUIDLog
 
 {- Filename of trust.log. -}
 trustLog :: FilePath
@@ -27,46 +29,42 @@ trustLog = "trust.log"
 
 {- Returns a list of UUIDs at the specified trust level. -}
 trustGet :: TrustLevel -> Annex [UUID]
-trustGet level = do
-	m <- trustMap
-	return $ M.keys $ M.filter (== level) m
+trustGet level = M.keys . M.filter (== level) <$> trustMap
 
 {- Read the trustLog into a map, overriding with any
- - values from forcetrust -}
+ - values from forcetrust. The map is cached for speed. -}
 trustMap :: Annex TrustMap
 trustMap = do
 	cached <- Annex.getState Annex.trustmap
 	case cached of
 		Just m -> return m
 		Nothing -> do
-			overrides <- Annex.getState Annex.forcetrust
-			l <- Branch.get trustLog
-			let m = M.fromList $ trustMapParse l ++ overrides
+			overrides <- M.fromList <$> Annex.getState Annex.forcetrust
+			m <- (M.union overrides . simpleMap . parseLog parseTrust) <$>
+				Annex.Branch.get trustLog
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
 
-{- Trust map parser. -}
-trustMapParse :: String -> [(UUID, TrustLevel)]
-trustMapParse s = map pair $ filter (not . null) $ lines s
+parseTrust :: String -> Maybe TrustLevel
+parseTrust s
+	| length w > 0 = readMaybe $ head w
+	-- back-compat; the trust.log used to only list trusted repos
+	| otherwise = Just Trusted
 	where
-		pair l
-			| length w > 1 = (w !! 0, read (w !! 1) :: TrustLevel)
-			-- for back-compat; the trust log used to only
-			-- list trusted uuids
-			| otherwise = (w !! 0, Trusted)
-			where
-				w = words l
+		w = words s
 
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid level = do
 	when (null uuid) $
 		error "unknown UUID; cannot modify trust level"
-        m <- trustMap
-	when (M.lookup uuid m /= Just level) $ do
-		let m' = M.insert uuid level m
-		Branch.change trustLog (serialize m')
-		Annex.changeState $ \s -> s { Annex.trustmap = Just m' }
-        where
-                serialize m = unlines $ map showpair $ M.toList m
-		showpair (u, t) = u ++ " " ++ show t
+	ts <- liftIO $ getPOSIXTime
+	Annex.Branch.change trustLog $
+		showLog show . changeLog ts uuid level . parseLog parseTrust
+	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
+
+{- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
+trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
+trustPartition level ls = do
+	candidates <- trustGet level
+	return $ partition (`elem` candidates) ls

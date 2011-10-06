@@ -7,20 +7,17 @@
 
 module Command.Move where
 
-import Control.Monad (when)
-
+import Common.Annex
 import Command
 import qualified Command.Drop
 import qualified Annex
 import LocationLog
-import Types
-import Content
+import Annex.Content
 import qualified Remote
 import UUID
-import Messages
 
 command :: [Command]
-command = [repoCommand "move" paramPath seek
+command = [repoCommand "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]
@@ -30,8 +27,9 @@ seek = [withFilesInGit $ start True]
  -
  - This only operates on the cached file content; it does not involve
  - moving data in the key-value backend. -}
-start :: Bool -> CommandStartString
+start :: Bool -> FilePath -> CommandStart
 start move file = do
+	noAuto
 	to <- Annex.getState Annex.toremote
 	from <- Annex.getState Annex.fromremote
 	case (from, to) of
@@ -43,6 +41,9 @@ start move file = do
 			src <- Remote.byName name
 			fromStart src move file
 		(_ ,  _) -> error "only one of --from or --to can be specified"
+	where
+		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
+			"--auto is not supported for move"
 
 showMoveAction :: Bool -> FilePath -> Annex ()
 showMoveAction True file = showStart "move" file
@@ -55,7 +56,7 @@ showMoveAction False file = showStart "copy" file
 remoteHasKey :: Remote.Remote Annex -> Key -> Bool -> Annex ()
 remoteHasKey remote key present	= do
 	let remoteuuid = Remote.uuid remote
-	g <- Annex.gitRepo
+	g <- gitRepo
 	logChange g key remoteuuid status
 	where
 		status = if present then InfoPresent else InfoMissing
@@ -69,9 +70,9 @@ remoteHasKey remote key present	= do
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote.Remote Annex -> Bool -> CommandStartString
+toStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 toStart dest move file = isAnnexed file $ \(key, _) -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
@@ -119,9 +120,9 @@ toCleanup dest move key = do
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote.Remote Annex -> Bool -> CommandStartString
+fromStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 fromStart src move file = isAnnexed file $ \(key, _) -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	remotes <- Remote.keyPossibilities key
 	if u == Remote.uuid src || not (any (== src) remotes)

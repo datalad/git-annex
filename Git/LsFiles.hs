@@ -20,16 +20,17 @@ import Utility.SafeCommand
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: Repo -> [FilePath] -> IO [FilePath]
-inRepo repo l = pipeNullSplit repo $
-	Params "ls-files --cached -z --" : map File l
+inRepo repo l = pipeNullSplit repo $ Params "ls-files --cached -z --" : map File l
 
-{- Scans for files at the specified locations that are not checked into
- - git. -}
+{- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Repo -> Bool -> [FilePath] -> IO [FilePath]
-notInRepo repo include_ignored l =
-	pipeNullSplit repo $ [Params "ls-files --others"]++exclude++[Params "-z --"] ++ map File l
+notInRepo repo include_ignored l = pipeNullSplit repo $
+		[Params "ls-files --others"] ++ exclude ++
+		[Params "-z --"] ++ map File l
 	where
-		exclude = if include_ignored then [] else [Param "--exclude-standard"]
+		exclude
+			| include_ignored = []
+			| otherwise = [Param "--exclude-standard"]
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: Repo -> [FilePath] -> IO [FilePath]

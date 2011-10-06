@@ -5,10 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Version where
+module Annex.Version where
 
-import Types
-import qualified Annex
+import Common.Annex
 import qualified Git
 import Config
 
@@ -28,7 +27,7 @@ versionField = "annex.version"
 
 getVersion :: Annex (Maybe Version)
 getVersion = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let v = Git.configGet g versionField ""
 	if not $ null v
 		then return $ Just v

@@ -10,21 +10,13 @@ module Remote.Web (
 	setUrl
 ) where
 
-import Control.Monad.State (liftIO)
-import Control.Exception
-import System.FilePath
-
-import Types
+import Common.Annex
 import Types.Remote
 import qualified Git
-import qualified Annex
-import Messages
 import UUID
 import Config
 import PresenceLog
 import LocationLog
-import Locations
-import Utility
 import qualified Utility.Url as Url
 
 type URLString = String
@@ -58,7 +50,8 @@ gen r _ _ =
 		removeKey = dropKey,
 		hasKey = checkKey,
 		hasKeyCheap = False,
-		config = Nothing
+		config = Nothing,
+		repo = r
 	}
 
 {- The urls for a key are stored in remote/web/hash/key.log 
@@ -79,7 +72,7 @@ getUrls key = do
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()
 setUrl key url status = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	addLog (urlLog key) =<< logNow status url
 
 	-- update location log to indicate that the web has the key, or not

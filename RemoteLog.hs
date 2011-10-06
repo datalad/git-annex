@@ -6,7 +6,6 @@
  -}
 
 module RemoteLog (
-	remoteLog,
 	readRemoteLog,
 	configSet,
 	keyValToConfig,
@@ -15,15 +14,15 @@ module RemoteLog (
 	prop_idempotent_configEscape
 ) where
 
-import Data.List
 import qualified Data.Map as M
-import Data.Maybe
+import Data.Time.Clock.POSIX
 import Data.Char
 
-import qualified Branch
-import Types
+import Common.Annex
+import qualified Annex.Branch
 import Types.Remote
 import UUID
+import UUIDLog
 
 {- Filename of remote.log. -}
 remoteLog :: FilePath
@@ -32,27 +31,19 @@ remoteLog = "remote.log"
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u c = do
-	m <- readRemoteLog
-	Branch.change remoteLog $ unlines $ sort $
-		map toline $ M.toList $ M.insert u c m
-	where
-		toline (u', c') = u' ++ " " ++ unwords (configToKeyVal c')
+	ts <- liftIO $ getPOSIXTime
+	Annex.Branch.change remoteLog $
+		showLog showConfig . changeLog ts u c . parseLog parseConfig
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = return . remoteLogParse =<< Branch.get remoteLog
+readRemoteLog = return (simpleMap . parseLog parseConfig) =<< Annex.Branch.get remoteLog
 
-remoteLogParse :: String -> M.Map UUID RemoteConfig
-remoteLogParse s =
-	M.fromList $ mapMaybe parseline $ filter (not . null) $ lines s
-	where
-		parseline l
-			| length w > 2 = Just (u, c)
-			| otherwise = Nothing
-			where
-				w = words l
-				u = head w
-				c = keyValToConfig $ tail w
+parseConfig :: String -> Maybe RemoteConfig
+parseConfig = Just . keyValToConfig . words
+
+showConfig :: RemoteConfig -> String
+showConfig = unwords . configToKeyVal
 
 {- Given Strings like "key=value", generates a RemoteConfig. -}
 keyValToConfig :: [String] -> RemoteConfig

@@ -6,6 +6,7 @@
  -}
 
 module Backend (
+	BackendFile,
 	list,
 	orderedList,
 	genKey,
@@ -15,19 +16,14 @@ module Backend (
 	maybeLookupBackendName
 ) where
 
-import Control.Monad.State (liftIO, when)
 import System.IO.Error (try)
-import System.FilePath
 import System.Posix.Files
-import Data.Maybe
 
-import Locations
+import Common.Annex
 import qualified Git
 import qualified Annex
-import Types
 import Types.Key
 import qualified Types.Backend as B
-import Messages
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.WORM
@@ -57,7 +53,7 @@ orderedList = do
 			Annex.changeState $ \state -> state { Annex.backends = l' }
 			return l'
 		getstandard = do
-			g <- Annex.gitRepo
+			g <- gitRepo
 			return $ parseBackendList $
 				Git.configGet g "annex.backends" ""
 
@@ -85,9 +81,7 @@ lookupFile file = do
 		Left _ -> return Nothing
 		Right l -> makekey l
 	where
-		getsymlink = do
-			l <- readSymbolicLink file
-			return $ takeFileName l
+		getsymlink = takeFileName <$> readSymbolicLink file
 		makekey l = maybe (return Nothing) (makeret l) (fileKey l)
 		makeret l k =
 			case maybeLookupBackendName bname of
@@ -101,20 +95,22 @@ lookupFile file = do
 				skip = "skipping " ++ file ++ 
 					" (unknown backend " ++ bname ++ ")"
 
+type BackendFile = (Maybe (Backend Annex), FilePath)
+
 {- Looks up the backends that should be used for each file in a list.
  - That can be configured on a per-file basis in the gitattributes file.
  -}
-chooseBackends :: [FilePath] -> Annex [(FilePath, Maybe (Backend Annex))]
+chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	forced <- Annex.getState Annex.forcebackend
-	if forced /= Nothing
+	if isJust forced
 		then do
 			l <- orderedList
-			return $ map (\f -> (f, Just $ head l)) fs
+			return $ map (\f -> (Just $ head l, f)) fs
 		else do
 			pairs <- liftIO $ Git.checkAttr g "annex.backend" fs
-			return $ map (\(f,b) -> (f, maybeLookupBackendName b)) pairs
+			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend Annex

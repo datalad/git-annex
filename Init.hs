@@ -11,30 +11,21 @@ module Init (
 	uninitialize
 ) where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (unless)
-import System.Directory
-
-import qualified Annex
+import Common.Annex
 import qualified Git
-import qualified Branch
-import Version
-import Messages
-import Types
-import Utility
-import Utility.Conditional
+import qualified Annex.Branch
+import Annex.Version
 import UUID
 
 initialize :: Annex ()
 initialize = do
 	prepUUID
-	Branch.create
+	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
 
 uninitialize :: Annex ()
-uninitialize = do
-	gitPreCommitHookUnWrite
+uninitialize = gitPreCommitHookUnWrite
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init
@@ -44,7 +35,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
 	where
 		needsinit = do
-			annexed <- Branch.hasSomeBranch
+			annexed <- Annex.Branch.hasSomeBranch
 			if annexed
 				then initialize
 				else error "First run: git-annex init"
@@ -74,12 +65,12 @@ gitPreCommitHookUnWrite = unlessBare $ do
 
 unlessBare :: Annex () -> Annex ()
 unlessBare a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	unless (Git.repoIsLocalBare g) a
 
 preCommitHook :: Annex FilePath
 preCommitHook = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	return $ Git.gitDir g ++ "/hooks/pre-commit"
 
 preCommitScript :: String

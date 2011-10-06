@@ -9,23 +9,19 @@ import Test.HUnit
 import Test.HUnit.Tools
 import Test.QuickCheck
 
-import System.Directory
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import IO (bracket_, bracket)
-import Control.Monad (unless, when, filterM)
-import Data.List
 import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
 import Control.Exception (throw)
-import Data.Maybe
 import qualified Data.Map as M
-import System.Path (recurseDir)
 import System.IO.HVFS (SystemFS(..))
 
-import Utility.SafeCommand
+import Common
 
+import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Backend
 import qualified Git
@@ -35,15 +31,16 @@ import qualified Types
 import qualified GitAnnex
 import qualified LocationLog
 import qualified UUID
+import qualified UUIDLog
 import qualified Trust
 import qualified Remote
 import qualified RemoteLog
-import qualified Content
 import qualified Command.DropUnused
 import qualified Types.Key
 import qualified Config
 import qualified Crypto
 import qualified Utility.Path
+import qualified Utility.FileMode
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -82,6 +79,8 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
+	, qctest "prop_TimeStamp_sane" UUIDLog.prop_TimeStamp_sane
+	, qctest "prop_addLog_sane" UUIDLog.prop_addLog_sane
 	]
 
 blackbox :: Test
@@ -389,7 +388,7 @@ test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withrem
 
 		corrupt f = do
 			git_annex "get" ["-q", f] @? "get of file failed"
-			Content.allowWrite f
+			Utility.FileMode.allowWrite f
 			writeFile f (changedcontent f)
 			r <- git_annex "fsck" ["-q"]
 			not r @? "fsck failed to fail with corrupted file content"
@@ -452,8 +451,14 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	git_annex "get" ["-q", sha1annexedfile] @? "get of file failed"
 	checkunused []
 	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
+	checkunused []
+	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
+	checkunused []
+	-- unused checks origin/master; once it's gone it is really unused
+	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey]
 	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
 	checkunused [annexedfilekey, sha1annexedfilekey]
 
 	-- good opportunity to test dropkey also
@@ -558,7 +563,7 @@ cleanup dir = do
 		-- removed via directory permissions; undo
 		recurseDir SystemFS dir >>=
 			filterM doesDirectoryExist >>=
-			mapM_ Content.allowWrite
+			mapM_ Utility.FileMode.allowWrite
 		removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion

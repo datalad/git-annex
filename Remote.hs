@@ -16,7 +16,6 @@ module Remote (
 	hasKeyCheap,
 
 	remoteTypes,
-	genList,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
@@ -29,22 +28,17 @@ module Remote (
 	forceTrust
 ) where
 
-import Control.Monad (filterM, liftM2)
-import Data.List
 import qualified Data.Map as M
-import Data.String.Utils
-import Data.Maybe
 import Text.JSON
 import Text.JSON.Generic
 
-import Types
+import Common.Annex
 import Types.Remote
 import UUID
 import qualified Annex
 import Config
 import Trust
 import LocationLog
-import Messages
 import RemoteLog
 
 import qualified Remote.Git
@@ -82,13 +76,13 @@ genList = do
 	where
 		process m t = 
 			enumerate t >>=
-			filterM remoteNotIgnored >>=
 			mapM (gen m t)
 		gen m t r = do
 			u <- getUUID r
 			generate t r u (M.lookup u m)
 
-{- Looks up a remote by name. (Or by UUID.) -}
+{- Looks up a remote by name. (Or by UUID.) Only finds currently configured
+ - git remotes. -}
 byName :: String -> Annex (Remote Annex)
 byName n = do
 	res <- byName' n
@@ -107,18 +101,24 @@ byName' n = do
 		matching r = n == name r || n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
- - and returns its UUID. -}
+ - and returns its UUID. Finds even remotes that are not configured in
+ - .git/config. -}
 nameToUUID :: String -> Annex UUID
-nameToUUID "." = getUUID =<< Annex.gitRepo -- special case for current repo
+nameToUUID "." = getUUID =<< gitRepo -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
 		Left e -> return . fromMaybe (error e) =<< byDescription
 		Right r -> return $ uuid r
 	where
-		byDescription = return . M.lookup n . invertMap =<< uuidMap
-		invertMap = M.fromList . map swap . M.toList
+		byDescription = do
+			m <- uuidMap
+			case M.lookup n $ transform swap m of
+				Just u -> return $ Just u
+				Nothing -> return $ M.lookup n $ transform double m
+		transform a = M.fromList . map a . M.toList
 		swap (a, b) = (b, a)
+		double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
@@ -129,19 +129,26 @@ nameToUUID n = do
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
-	here <- getUUID =<< Annex.gitRepo
-	m <- liftM2 M.union uuidMap availMap
+	here <- getUUID =<< gitRepo
+	m <- M.unionWith addname <$> uuidMap <*> remoteMap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
-		availMap = return . M.fromList . map (\r -> (uuid r, name r)) =<< genList
+		addname d n
+			| d == n = d
+			| otherwise = n ++ " (" ++ d ++ ")"
+		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
-		prettify m here u = base ++ ishere
+		prettify m here u
+			| not (null d) = u ++ " -- " ++ d
+			| otherwise = u
 			where
-				base = if not $ null $ findlog m u
-					then u ++ "  -- " ++ findlog m u
-					else u
-				ishere = if here == u then " <-- here" else ""
+				ishere = here == u
+				n = findlog m u
+				d
+					| null n && ishere = "here"
+					| ishere = addname n "here"
+					| otherwise = n
 		jsonify m here u = toJSObject
 			[ ("uuid", toJSON u)
 			, ("description", toJSON $ findlog m u)
@@ -171,7 +178,7 @@ keyPossibilitiesTrusted = keyPossibilities' True
 
 keyPossibilities' :: Bool -> Key -> Annex ([Remote Annex], [UUID])
 keyPossibilities' withtrusted key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	trusted <- if withtrusted then trustGet Trusted else return []
 
@@ -180,10 +187,10 @@ keyPossibilities' withtrusted key = do
 	let validuuids = filter (/= u) uuids
 
 	-- note that validuuids is assumed to not have dups
-	let validtrusteduuids = intersect validuuids trusted
+	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- genList
+	allremotes <- filterM (repoNotIgnored . repo) =<< genList
 	let validremotes = remotesWithUUID allremotes validuuids
 
 	return (sort validremotes, validtrusteduuids)
@@ -191,7 +198,7 @@ keyPossibilities' withtrusted key = do
 {- Displays known locations of a key. -}
 showLocations :: Key -> [UUID] -> Annex ()
 showLocations key exclude = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	uuids <- keyLocations key
 	untrusteduuids <- trustGet UnTrusted

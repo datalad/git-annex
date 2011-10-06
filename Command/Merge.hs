@@ -7,23 +7,23 @@
 
 module Command.Merge where
 
+import Common.Annex
 import Command
-import qualified Branch
-import Messages
+import qualified Annex.Branch
 
 command :: [Command]
 command = [repoCommand "merge" paramNothing seek
-		"auto-merges remote changes into the git-annex branch"]
+		"auto-merge remote changes into git-annex branch"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	showStart "merge" "."
 	next perform
 
 perform :: CommandPerform
 perform = do
-	Branch.update
+	Annex.Branch.update
 	next $ return True

@@ -7,13 +7,10 @@
 
 module Command.Version where
 
-import Control.Monad.State (liftIO)
-import Data.String.Utils
-import Data.Maybe
-
+import Common.Annex
 import Command
 import qualified Build.SysConfig as SysConfig
-import Version
+import Annex.Version
 
 command :: [Command]
 command = [standaloneCommand "version" paramNothing seek "show version info"]
@@ -21,7 +18,7 @@ command = [standaloneCommand "version" paramNothing seek "show version info"]
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
 	liftIO $ putStrLn $ "git-annex version: " ++ SysConfig.packageversion
 	v <- getVersion

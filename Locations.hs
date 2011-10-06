@@ -18,6 +18,7 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexJournalDir,
+	gitAnnexJournalLock,
 	isLinkToAnnex,
 	hashDirMixed,
 	hashDirLower,
@@ -25,13 +26,11 @@ module Locations (
 	prop_idempotent_fileKey
 ) where
 
-import System.FilePath
-import Data.String.Utils
-import Data.List
 import Bits
 import Word
 import Data.Hash.MD5
 
+import Common
 import Types
 import Types.Key
 import qualified Git
@@ -108,6 +107,10 @@ gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
  - branch -}
 gitAnnexJournalDir :: Git.Repo -> FilePath
 gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
+
+{- Lock file for the journal. -}
+gitAnnexJournalLock :: Git.Repo -> FilePath
+gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool

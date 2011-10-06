@@ -7,23 +7,11 @@
 
 module Backend.SHA (backends) where
 
-import Control.Monad.State
-import Data.String.Utils
-import System.Cmd.Utils
-import System.IO
-import System.Directory
-import Data.Maybe
-import System.Posix.Files
-import System.FilePath
-
-import Messages
+import Common.Annex
 import qualified Annex
-import Locations
-import Content
-import Types
+import Annex.Content
 import Types.Backend
 import Types.Key
-import Utility.SafeCommand
 import qualified Build.SysConfig as SysConfig
 
 type SHASize = Int
@@ -38,7 +26,7 @@ backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
 
 genBackend :: SHASize -> Maybe (Backend Annex)
 genBackend size
-	| shaCommand size == Nothing = Nothing
+	| isNothing (shaCommand size) = Nothing
 	| otherwise = Just b
 	where
 		b = Types.Backend.Backend
@@ -110,7 +98,7 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	fast <- Annex.getState Annex.fast
 	let file = gitAnnexLocation g key
 	present <- liftIO $ doesFileExist file

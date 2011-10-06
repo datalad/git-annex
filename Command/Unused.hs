@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,25 +9,22 @@
 
 module Command.Unused where
 
-import Control.Monad (filterM, unless, forM_)
-import Control.Monad.State (liftIO)
 import qualified Data.Set as S
-import Data.Maybe
-import System.FilePath
-import System.Directory
+import qualified Data.ByteString.Lazy.Char8 as L
 
+import Common.Annex
 import Command
-import Types
-import Content
-import Messages
-import Locations
-import Utility
+import Annex.Content
+import Utility.FileMode
 import LocationLog
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
+import qualified Git.LsTree as LsTree
 import qualified Backend
 import qualified Remote
+import qualified Annex.Branch
+import Annex.CatFile
 
 command :: [Command]
 command = [repoCommand "unused" paramNothing seek
@@ -37,7 +34,7 @@ seek :: [CommandSeek]
 seek = [withNothing start]
 
 {- Finds unused content in the annex. -} 
-start :: CommandStartNothing
+start :: CommandStart
 start = notBareRepo $ do
 	from <- Annex.getState Annex.fromremote
 	let (name, action) = case from of
@@ -57,9 +54,7 @@ checkUnused = do
 	where
 		list file msg l c = do
 			let unusedlist = number c l
-			unless (null l) $ do
-				showLongNote $ msg unusedlist
-				showLongNote "\n"
+			unless (null l) $ showLongNote $ msg unusedlist
 			writeUnusedFile file unusedlist
 			return $ c + length l
 
@@ -71,14 +66,11 @@ checkRemoteUnused name = do
 checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
 checkRemoteUnused' r = do
 	showAction "checking for unused data"
-	referenced <- getKeysReferenced
 	remotehas <- filterM isthere =<< loggedKeys
-	let remoteunused = remotehas `exclude` referenced
+	remoteunused <- excludeReferenced remotehas
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
-	unless (null remoteunused) $ do
-		showLongNote $ remoteUnusedMsg r list
-		showLongNote "\n"
+	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
 	where
 		{- This should run strictly to avoid the filterM
 		 - building many thunks containing keyLocations data. -}
@@ -90,7 +82,7 @@ checkRemoteUnused' r = do
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	liftIO $ viaTmp writeFile (gitAnnexUnusedLog prefix g) $
 		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
@@ -116,27 +108,21 @@ staleBadMsg t = unlines $
 
 unusedMsg :: [(Int, Key)] -> String
 unusedMsg u = unusedMsg' u
-	["Some annexed data is no longer used by any files in the current branch:"]
-	[dropMsg Nothing,
-	"Please be cautious -- are you sure that another branch, or another",
-	"repository does not still use this data?"]
-
-remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
-remoteUnusedMsg r u = unusedMsg' u
-	["Some annexed data on " ++ name ++ 
-	 " is not used by any files in the current branch:"]
-	[dropMsg $ Just r,
-	 "Please be cautious -- Are you sure that the remote repository",
-	 "does not use this data? Or that it's not used by another branch?"]
-	where
-		name = Remote.name r 
-
+	["Some annexed data is no longer used by any files:"]
+	[dropMsg Nothing]
 unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
 unusedMsg' u header trailer = unlines $
 	header ++
 	table u ++
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
 	trailer
+
+remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
+remoteUnusedMsg r u = unusedMsg' u
+	["Some annexed data on " ++ name ++ " is not used by any files:"]
+	[dropMsg $ Just r]
+	where
+		name = Remote.name r 
 
 dropMsg :: Maybe (Remote.Remote Annex) -> String
 dropMsg Nothing = dropMsg' ""
@@ -159,11 +145,35 @@ unusedKeys = do
 		else do
 			showAction "checking for unused data"
 			present <- getKeysPresent
-			referenced <- getKeysReferenced
-			let unused = present `exclude` referenced
+			unused <- excludeReferenced present
 			staletmp <- staleKeysPrune gitAnnexTmpDir present
 			stalebad <- staleKeysPrune gitAnnexBadDir present
 			return (unused, stalebad, staletmp)
+
+{- Finds keys in the list that are not referenced in the git repository. -}
+excludeReferenced :: [Key] -> Annex [Key]
+excludeReferenced [] = return [] -- optimisation
+excludeReferenced l = do
+	g <- gitRepo
+	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
+	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
+		(S.fromList l)
+	where
+		-- Skip the git-annex branches, and get all other unique refs.
+		refs = map last .
+			nubBy cmpheads .
+			filter ourbranches .
+			map words . lines . L.unpack
+		cmpheads a b = head a == head b
+		ourbranchend = '/' : Annex.Branch.name
+		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
+		removewith [] s = return $ S.toList s
+		removewith (a:as) s
+			| s == S.empty = return [] -- optimisation
+			| otherwise = do
+				referenced <- a
+				let !s' = s `S.difference` S.fromList referenced
+				removewith as s'
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -180,10 +190,26 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 {- List of keys referenced by symlinks in the git repo. -}
 getKeysReferenced :: Annex [Key]
 getKeysReferenced = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	keypairs <- mapM Backend.lookupFile files
 	return $ map fst $ catMaybes keypairs
+
+{- List of keys referenced by symlinks in a git ref. -}
+getKeysReferencedInGit :: String -> Annex [Key]
+getKeysReferencedInGit ref = do
+	showAction $ "checking " ++ Git.refDescribe ref
+	g <- gitRepo
+	findkeys [] =<< liftIO (LsTree.lsTree g ref)
+	where
+		findkeys c [] = return c
+		findkeys c (l:ls)
+			| isSymLink (LsTree.mode l) = do
+				content <- catFile ref $ LsTree.file l
+				case fileKey (takeFileName content) of
+					Nothing -> findkeys c ls
+					Just k -> findkeys (k:c) ls
+			| otherwise = findkeys c ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable. 
@@ -194,19 +220,19 @@ getKeysReferenced = do
 staleKeysPrune :: (Git.Repo -> FilePath) -> [Key] -> Annex [Key]
 staleKeysPrune dirspec present = do
 	contents <- staleKeys dirspec
-		
+	
 	let stale = contents `exclude` present
-	let dup = contents `exclude` stale
+	let dups = contents `exclude` stale
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let dir = dirspec g
-	liftIO $ forM_ dup $ \t -> removeFile $ dir </> keyFile t
+	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
 
 	return stale
 
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let dir = dirspec g
 	exists <- liftIO $ doesDirectoryExist dir
 	if not exists

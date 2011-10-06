@@ -7,30 +7,23 @@
 
 module Command.Migrate where
 
-import Control.Monad.State (liftIO)
-import System.Posix.Files
-import System.Directory
-import System.FilePath
-
+import Common.Annex
 import Command
-import qualified Annex
 import qualified Backend
 import qualified Types.Key
-import Locations
-import Types
-import Content
-import Messages
-import Utility.Conditional
+import Annex.Content
 import qualified Command.Add
+import Backend
 
 command :: [Command]
-command = [repoCommand "migrate" paramPath seek "switch data to different backend"]
+command = [repoCommand "migrate" paramPaths seek
+	"switch data to different backend"]
 
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]
 
-start :: CommandStartBackendFile
-start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
+start :: BackendFile -> CommandStart
+start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
 	if (newbackend /= oldbackend || upgradableKey key) && exists
@@ -45,11 +38,11 @@ start (file, b) = isAnnexed file $ \(key, oldbackend) -> do
 {- Checks if a key is upgradable to a newer representation. -}
 {- Ideally, all keys have file size metadata. Old keys may not. -}
 upgradableKey :: Key -> Bool
-upgradableKey key = Types.Key.keySize key == Nothing
+upgradableKey key = isNothing $ Types.Key.keySize key
 
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	-- Store the old backend's cached key in the new backend
 	-- (the file can't be stored as usual, because it's already a symlink).

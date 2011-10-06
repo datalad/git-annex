@@ -8,18 +8,13 @@
 module Command.InitRemote where
 
 import qualified Data.Map as M
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
-import Data.Maybe
-import Data.String.Utils
 
+import Common.Annex
 import Command
 import qualified Remote
 import qualified RemoteLog
 import qualified Types.Remote as R
-import Types
 import UUID
-import Messages
 
 command :: [Command]
 command = [repoCommand "initremote"
@@ -30,12 +25,12 @@ command = [repoCommand "initremote"
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	when (null ws) needname
 
 	(u, c) <- findByName name
-	let fullconfig = M.union config c	
+	let fullconfig = config `M.union` c	
 	t <- findType fullconfig
 
 	showStart "initremote" name

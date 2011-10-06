@@ -7,28 +7,23 @@
 
 module Command.Uninit where
 
-import Control.Monad.State (liftIO)
-import System.Directory
-import System.Exit
-
+import Common.Annex
 import Command
-import Utility.SafeCommand
 import qualified Git
 import qualified Annex
 import qualified Command.Unannex
 import Init
-import qualified Branch
-import Content
-import Locations
+import qualified Annex.Branch
+import Annex.Content
 
 command :: [Command]
-command = [repoCommand "uninit" paramPath seek 
+command = [repoCommand "uninit" paramPaths seek 
         "de-initialize git-annex and clean out repository"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit startUnannex, withNothing start]
 
-startUnannex :: CommandStartString
+startUnannex :: FilePath -> CommandStart
 startUnannex file = do
 	-- Force fast mode before running unannex. This way, if multiple
 	-- files link to a key, it will be left in the annex and hardlinked
@@ -36,7 +31,7 @@ startUnannex file = do
 	Annex.changeState $ \s -> s { Annex.fast = True }
 	Command.Unannex.start file
 
-start :: CommandStartNothing
+start :: CommandStart
 start = next perform
 
 perform :: CommandPerform
@@ -44,12 +39,12 @@ perform = next cleanup
 
 cleanup :: CommandCleanup
 cleanup = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
 	liftIO $ removeDirectoryRecursive (gitAnnexDir g)
 	-- avoid normal shutdown
 	saveState
 	liftIO $ do
-		Git.run g "branch" [Param "-D", Param Branch.name]
+		Git.run g "branch" [Param "-D", Param Annex.Branch.name]
 		exitSuccess

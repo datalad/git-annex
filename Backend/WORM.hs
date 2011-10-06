@@ -7,12 +7,8 @@
 
 module Backend.WORM (backends) where
 
-import Control.Monad.State
-import System.FilePath
-import System.Posix.Files
-
+import Common.Annex
 import Types.Backend
-import Types
 import Types.Key
 
 backends :: [Backend Annex]

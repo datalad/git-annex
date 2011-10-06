@@ -8,26 +8,17 @@
 module Remote.Git (remote) where
 
 import Control.Exception.Extensible
-import Control.Monad.State (liftIO)
 import qualified Data.Map as M
-import System.Cmd.Utils
-import System.Posix.Files
-import System.IO
 
-import Types
-import Types.Remote
-import qualified Git
-import qualified Annex
-import Locations
-import UUID
-import Utility
-import qualified Content
-import Messages
+import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
 import Utility.Ssh
-import Utility.SafeCommand
-import Utility.Path
+import Types.Remote
+import qualified Git
+import qualified Annex
+import UUID
+import qualified Annex.Content
 import qualified Utility.Url as Url
 import Config
 import Init
@@ -42,7 +33,7 @@ remote = RemoteType {
 
 list :: Annex [Git.Repo]
 list = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	return $ Git.remotes g
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
@@ -71,7 +62,8 @@ gen r u _ = do
 		removeKey = dropKey r',
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
-		config = Nothing
+		config = Nothing,
+		repo = r'
 	}
 
 {- Tries to read the config for a specified remote, updates state, and
@@ -80,7 +72,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.configMap r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
-	| Git.repoIsHttp r = store $ safely $ geturlconfig
+	| Git.repoIsHttp r = store $ safely geturlconfig
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ do
 		onLocal r ensureInitialized
@@ -100,7 +92,7 @@ tryGitConfigRead r
 
 		geturlconfig = do
 			s <- Url.get (Git.repoLocation r ++ "/config")
-			withTempFile "git-annex.tmp" $ \tmpfile -> \h -> do
+			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
 				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
@@ -108,7 +100,7 @@ tryGitConfigRead r
 
 		store a = do
 			r' <- a
-			g <- Annex.gitRepo
+			g <- gitRepo
 			let l = Git.remotes g
 			let g' = Git.remotesAdd g $ exchange l r'
 			Annex.changeState $ \s -> s { Annex.repo = g' }
@@ -129,7 +121,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = safely checklocal
 	where
-		checklocal = onLocal r (Content.inAnnex key)
+		checklocal = onLocal r (Annex.Content.inAnnex key)
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
@@ -168,16 +160,16 @@ copyFromRemote r key file
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
 	| not $ Git.repoIsUrl r = do
-		g <- Annex.gitRepo
+		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
-			ok <- Content.getViaTmp key $
+			ok <- Annex.Content.getViaTmp key $
 				rsyncOrCopyFile r keysrc
-			Content.saveState
+			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
-		g <- Annex.gitRepo
+		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
@@ -199,7 +191,7 @@ rsyncOrCopyFile r src dest = do
 	ss <- liftIO $ getFileStatus $ parentDir src
 	ds <- liftIO $ getFileStatus $ parentDir dest
 	if deviceID ss == deviceID ds
-		then liftIO $ copyFile src dest
+		then liftIO $ copyFileExternal src dest
 		else do
 			params <- rsyncParams r
 			rsyncHelper $ params ++ [Param src, Param dest]

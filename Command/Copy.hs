@@ -11,9 +11,15 @@ import Command
 import qualified Command.Move
 
 command :: [Command]
-command = [repoCommand "copy" paramPath seek
+command = [repoCommand "copy" paramPaths seek
 	"copy content of files to/from another repository"]
 
--- A copy is just a move that does not delete the source file.
 seek :: [CommandSeek]
-seek = [withFilesInGit $ Command.Move.start False]
+seek = [withNumCopies start]
+
+-- A copy is just a move that does not delete the source file.
+-- However, --auto mode avoids unnecessary copies.
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = isAnnexed file $ \(key, _) ->
+	autoCopies key (<) numcopies $
+		Command.Move.start False file

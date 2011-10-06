@@ -7,36 +7,26 @@
 
 module Remote.S3 (remote) where
 
-import Control.Exception.Extensible (IOException)
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
 import Network.AWS.S3Bucket hiding (size)
 import Network.AWS.AWSResult
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
-import Data.Maybe
-import Data.List
 import Data.Char
-import Data.String.Utils
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
 import System.Environment
-import System.Posix.Files
 import System.Posix.Env (setEnv)
 
-import Types
+import Common.Annex
 import Types.Remote
 import Types.Key
 import qualified Git
-import qualified Annex
 import UUID
-import Messages
-import Locations
 import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
-import Content
+import Annex.Content
 import Utility.Base64
 
 remote :: RemoteType Annex
@@ -67,7 +57,8 @@ gen' r u c cst =
 			removeKey = remove this,
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
-			config = c
+			config = c,
+			repo = r
 		}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
@@ -94,7 +85,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 		defaulthost = do
 			c' <- encryptionSetup c
-			let fullconfig = M.union c' defaults
+			let fullconfig = c' `M.union` defaults
 			genBucket fullconfig
 			use fullconfig
 
@@ -122,7 +113,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 store :: Remote Annex -> Key -> Annex Bool
 store r k = s3Action r False $ \(conn, bucket) -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	res <- liftIO $ storeHelper (conn, bucket) r k $ gitAnnexLocation g k
 	s3Bool res
 
@@ -131,7 +122,7 @@ storeEncrypted r (cipher, enck) k = s3Action r False $ \(conn, bucket) ->
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
-		g <- Annex.gitRepo
+		g <- gitRepo
 		let f = gitAnnexLocation g k
 		liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
@@ -208,7 +199,7 @@ s3Bool (Left e) = s3Warning e
 
 s3Action :: Remote Annex -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
 s3Action r noconn action = do
-	when (config r == Nothing) $
+	when (isNothing $ config r) $
 		error $ "Missing configuration for special remote " ++ name r
 	let bucket = M.lookup "bucket" $ fromJust $ config r
 	conn <- s3Connection $ fromJust $ config r

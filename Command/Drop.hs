@@ -7,37 +7,32 @@
 
 module Command.Drop where
 
+import Common.Annex
 import Command
 import qualified Remote
 import qualified Annex
 import LocationLog
-import Types
-import Content
-import Messages
-import Utility
-import Utility.Conditional
+import Annex.Content
 import Trust
 import Config
 
 command :: [Command]
-command = [repoCommand "drop" paramPath seek
+command = [repoCommand "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
-seek = [withAttrFilesInGit "annex.numcopies" start]
+seek = [withNumCopies start]
 
 {- Indicates a file's content is not wanted anymore, and should be removed
  - if it's safe to do so. -}
-start :: CommandStartAttrFile
-start (file, attr) = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = isAnnexed file $ \(key, _) -> do
 	present <- inAnnex key
 	if present
-		then do
+		then autoCopies key (>) numcopies $ do
 			showStart "drop" file
 			next $ perform key numcopies
 		else stop
-	where
-		numcopies = readMaybe attr :: Maybe Int
 
 perform :: Key -> Maybe Int -> CommandPerform
 perform key numcopies = do
@@ -74,9 +69,9 @@ dropKey key numcopiesM = do
 			| length have >= need = return True
 			| otherwise = do
 				let u = Remote.uuid r
-				let dup = u `elem` have
+				let duplicate = u `elem` have
 				haskey <- Remote.hasKey r key
-				case (dup, haskey) of
+				case (duplicate, haskey) of
 					(False, Right True)	-> findcopies need (u:have) rs bad
 					(False, Left _)		-> findcopies need have rs (r:bad)
 					_			-> findcopies need have rs bad

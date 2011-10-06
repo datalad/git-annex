@@ -15,41 +15,35 @@ module LocationLog (
 	LogStatus(..),
 	logChange,
 	readLog,
-	writeLog,
 	keyLocations,
 	loggedKeys,
 	logFile,
 	logFileKey
 ) where
 
-import System.FilePath
-import Control.Monad (when)
-import Data.Maybe
-
+import Common.Annex
 import qualified Git
-import qualified Branch
+import qualified Annex.Branch
 import UUID
-import Types
-import Locations
 import PresenceLog
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Git.Repo -> Key -> UUID -> LogStatus -> Annex ()
-logChange repo key u s = do
-	when (null u) $
-		error $ "unknown UUID for " ++ Git.repoDescribe repo ++ 
-			" (have you run git annex init there?)"
-	addLog (logFile key) =<< logNow s u
+logChange repo key u s
+	| null u = error $
+		"unknown UUID for " ++ Git.repoDescribe repo ++ 
+		" (have you run git annex init there?)"
+	| otherwise = addLog (logFile key) =<< logNow s u
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
 keyLocations :: Key -> Annex [UUID]
-keyLocations key = currentLog $ logFile key
+keyLocations = currentLog . logFile
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}
 loggedKeys :: Annex [Key]
-loggedKeys = return . mapMaybe (logFileKey . takeFileName) =<< Branch.files
+loggedKeys = return . mapMaybe (logFileKey . takeFileName) =<< Annex.Branch.files
 
 {- The filename of the log file for a given key. -}
 logFile :: Key -> String

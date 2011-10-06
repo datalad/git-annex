@@ -7,26 +7,20 @@
 
 module Command.Fix where
 
-import Control.Monad.State (liftIO)
-import System.Posix.Files
-import System.Directory
-
+import Common.Annex
 import Command
-import qualified AnnexQueue
-import Utility.Path
-import Utility.SafeCommand
-import Content
-import Messages
+import qualified Annex.Queue
+import Annex.Content
 
 command :: [Command]
-command = [repoCommand "fix" paramPath seek
+command = [repoCommand "fix" paramPaths seek
 	"fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
 {- Fixes the symlink to an annexed file. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	link <- calcGitLink file key
 	l <- liftIO $ readSymbolicLink file
@@ -45,5 +39,5 @@ perform file link = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	AnnexQueue.add "add" [Param "--"] [file]
+	Annex.Queue.add "add" [Param "--"] [file]
 	return True

@@ -19,7 +19,7 @@ import Text.JSON
    later. -}
 start :: JSON a => [(String, a)] -> String
 start l
-	| last s == endchar = take (length s - 1)  s
+	| last s == endchar = init s
 	| otherwise = bad s
 	where
 		s = encodeStrict $ toJSObject l

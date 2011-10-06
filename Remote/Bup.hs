@@ -8,30 +8,15 @@
 module Remote.Bup (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import System.IO
 import System.IO.Error
-import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
 import System.Process
-import System.Exit
-import System.FilePath
-import Data.Maybe
-import Data.List.Utils
-import System.Cmd.Utils
 
-import Types
+import Common.Annex
 import Types.Remote
 import qualified Git
-import qualified Annex
 import UUID
-import Locations
 import Config
-import Utility
-import Utility.Conditional
-import Utility.SafeCommand
-import Messages
 import Utility.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
@@ -66,7 +51,8 @@ gen r u c = do
 			removeKey = remove,
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
-			config = c
+			config = c,
+			repo = r
 		}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
@@ -117,14 +103,14 @@ bupSplitParams r buprepo k src = do
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g k
 	params <- bupSplitParams r buprepo enck (Param "-")
 	liftIO $ catchBool $

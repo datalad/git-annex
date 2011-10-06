@@ -24,7 +24,7 @@ newtype TimeSpec = TimeSpec CTime
 touchBoth :: FilePath -> TimeSpec -> TimeSpec -> Bool -> IO ()
 
 touch :: FilePath -> TimeSpec -> Bool -> IO ()
-touch file mtime follow = touchBoth file mtime mtime follow
+touch file mtime = touchBoth file mtime mtime
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -23,11 +23,9 @@ module Messages (
 	setupConsole
 ) where
 
-import Control.Monad.State (liftIO)
-import System.IO
-import Data.String.Utils
 import Text.JSON
 
+import Common
 import Types
 import qualified Annex
 import qualified Messages.JSON as JSON
@@ -57,7 +55,7 @@ showOutput :: Annex ()
 showOutput = handle q $ putStr "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handle (JSON.note s) $ putStr $ '\n' : indent s
+showLongNote s = handle (JSON.note s) $ putStrLn $ '\n' : indent s
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True

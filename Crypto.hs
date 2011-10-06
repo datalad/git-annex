@@ -30,25 +30,17 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
-import System.Cmd.Utils
-import Data.String.Utils
-import Data.List
-import Data.Maybe
-import System.IO
-import System.Posix.IO
 import System.Posix.Types
-import System.Posix.Process
+import Control.Applicative
 import Control.Concurrent
 import Control.Exception (finally)
 import System.Exit
 import System.Environment
 
-import Types
+import Common.Annex
 import Types.Key
 import Types.Remote
-import Utility
 import Utility.Base64
-import Utility.SafeCommand
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder
@@ -96,9 +88,9 @@ updateCipher :: RemoteConfig -> EncryptedCipher -> IO EncryptedCipher
 updateCipher c encipher@(EncryptedCipher _ ks) = do
 	ks' <- configKeyIds c
 	cipher <- decryptCipher c encipher
-	encryptCipher cipher (combine ks ks')
+	encryptCipher cipher (merge ks ks')
 	where
-		combine (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
+		merge (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
 
 describeCipher :: EncryptedCipher -> String
 describeCipher (EncryptedCipher _ (KeyIds ks)) =
@@ -217,7 +209,7 @@ gpgCipherHandle params c a b = do
 
 	params' <- gpgParams $ passphrase ++ params
 	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	_ <- forkProcess $ do
+	pid2 <- forkProcess $ do
 		L.hPut toh =<< a
 		hClose toh
 		exitSuccess
@@ -226,6 +218,7 @@ gpgCipherHandle params c a b = do
 
 	-- cleanup
 	forceSuccess pid
+	_ <- getProcessStatus True False pid2
 	closeFd frompipe
 	return ret
 

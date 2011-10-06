@@ -7,25 +7,19 @@
 
 module Command.Add where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (when)
-import System.Posix.Files
-
+import Common.Annex
+import Annex.Exception
 import Command
 import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Backend
 import LocationLog
-import Types
-import Content
-import Messages
-import Utility.Conditional
+import Annex.Content
 import Utility.Touch
-import Utility.SafeCommand
-import Locations
+import Backend
 
 command :: [Command]
-command = [repoCommand "add" paramPath seek "add files to annex"]
+command = [repoCommand "add" paramPaths seek "add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files. -}
 seek :: [CommandSeek]
@@ -34,23 +28,41 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
 {- The add subcommand annexes a file, storing it in a backend, and then
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
-start :: CommandStartBackendFile
-start pair@(file, _) = notAnnexed file $ do
+start :: BackendFile -> CommandStart
+start p@(_, file) = notAnnexed file $ do
 	s <- liftIO $ getSymbolicLinkStatus file
 	if isSymbolicLink s || not (isRegularFile s)
 		then stop
 		else do
 			showStart "add" file
-			next $ perform pair
+			next $ perform p
 
 perform :: BackendFile -> CommandPerform
-perform (file, backend) = do
+perform (backend, file) = do
 	k <- Backend.genKey file backend
 	case k of
 		Nothing -> stop
 		Just (key, _) -> do
 			moveAnnex key file
 			next $ cleanup file key True
+
+{- On error, put the file back so it doesn't seem to have vanished.
+ - This can be called before or after the symlink is in place. -}
+undo :: FilePath -> Key -> IOException -> Annex a
+undo file key e = do
+	unlessM (inAnnex key) rethrow -- no cleanup to do
+	liftIO $ whenM (doesFileExist file) $ removeFile file
+	handle tryharder $ fromAnnex key file
+	logStatus key InfoMissing
+	rethrow
+	where
+		rethrow = throw e
+
+		-- fromAnnex could fail if the file ownership is weird
+		tryharder :: IOException -> Annex ()
+		tryharder _ = do
+			g <- gitRepo
+			liftIO $ renameFile (gitAnnexLocation g key) file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
@@ -68,6 +80,6 @@ cleanup file key hascontent = do
 
 	force <- Annex.getState Annex.force
 	if force
-		then AnnexQueue.add "add" [Param "-f", Param "--"] [file]
-		else AnnexQueue.add "add" [Param "--"] [file]
+		then Annex.Queue.add "add" [Param "-f", Param "--"] [file]
+		else Annex.Queue.add "add" [Param "--"] [file]
 	return True

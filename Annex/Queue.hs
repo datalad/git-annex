@@ -5,19 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module AnnexQueue (
+module Annex.Queue (
 	add,
 	flush,
 	flushWhenFull
 ) where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (when, unless)
-
+import Common.Annex
 import Annex
-import Messages
 import qualified Git.Queue
-import Utility.SafeCommand
 
 {- Adds a git command to the queue. -}
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()

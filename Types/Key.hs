@@ -15,8 +15,9 @@ module Types.Key (
 	prop_idempotent_key_read_show
 ) where
 
-import Utility
 import System.Posix.Types
+
+import Common
 
 {- A Key has a unique name, is associated with a key/value backend,
  - and may contain other optional metadata. -}

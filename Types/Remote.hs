@@ -51,7 +51,9 @@ data Remote a = Remote {
 	-- operation.
 	hasKeyCheap :: Bool,
 	-- a Remote can have a persistent configuration store
-	config :: Maybe RemoteConfig
+	config :: Maybe RemoteConfig,
+	-- git configuration for the remote
+	repo :: Git.Repo
 }
 
 instance Show (Remote a) where

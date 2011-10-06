@@ -7,23 +7,16 @@
 
 module Command.Unlock where
 
-import Control.Monad.State (liftIO)
-import System.Directory hiding (copyFile)
-
+import Common.Annex
 import Command
-import qualified Annex
-import Types
-import Messages
-import Locations
-import Content
-import Utility.Conditional
+import Annex.Content
 import Utility.CopyFile
-import Utility.Path
+import Utility.FileMode
 
 command :: [Command]
 command =
-	[ repoCommand "unlock" paramPath seek "unlock files for modification"
-	, repoCommand "edit" paramPath seek "same as unlock"
+	[ repoCommand "unlock" paramPaths seek "unlock files for modification"
+	, repoCommand "edit" paramPaths seek "same as unlock"
 	]
 
 seek :: [CommandSeek]
@@ -31,7 +24,7 @@ seek = [withFilesInGit start]
 
 {- The unlock subcommand replaces the symlink with a copy of the file's
  - content. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	showStart "unlock" file
 	next $ perform file key
@@ -42,12 +35,12 @@ perform dest key = do
 	
 	checkDiskSpace key
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g key
 	let tmpdest = gitAnnexTmpLocation g key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
-	ok <- liftIO $ copyFile src tmpdest
+	ok <- liftIO $ copyFileExternal src tmpdest
         if ok
                 then do
 			liftIO $ do

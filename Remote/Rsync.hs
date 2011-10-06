@@ -8,32 +8,18 @@
 module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
-import Control.Monad.State (liftIO)
-import System.FilePath
-import System.Directory
-import System.Posix.Files
-import System.Posix.Process
-import Data.Maybe
 
-import Types
+import Common.Annex
 import Types.Remote
 import qualified Git
-import qualified Annex
 import UUID
-import Locations
 import Config
-import Content
-import Utility
-import Utility.Conditional
+import Annex.Content
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
-import Messages
 import Utility.RsyncFile
-import Utility.SafeCommand
-import Utility.Path
 
 type RsyncUrl = String
 
@@ -66,7 +52,8 @@ gen r u c = do
 			removeKey = remove o,
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
-			config = Nothing
+			config = Nothing,
+			repo = r
 		}
 
 genRsyncOpts :: Git.Repo -> Annex RsyncOpts
@@ -105,12 +92,12 @@ rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> shellEscape (keyFile k)
 
 store :: RsyncOpts -> Key -> Annex Bool
 store o k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	rsyncSend o k (gitAnnexLocation g k)
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let f = gitAnnexLocation g k
 	liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
 	rsyncSend o enck tmp
@@ -165,7 +152,7 @@ partialParams = Params "--no-inplace --partial --partial-dir=.rsync-partial"
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	pid <- liftIO getProcessID
 	let tmp = gitAnnexTmpDir g </> "rsynctmp" </> show pid
 	nuke tmp

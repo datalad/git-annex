@@ -7,23 +7,20 @@
 
 module Command.Lock where
 
-import Control.Monad.State (liftIO)
-import System.Directory
-
+import Common.Annex
 import Command
-import Messages
-import qualified AnnexQueue
-import Utility.SafeCommand
+import qualified Annex.Queue
+import Backend
 	
 command :: [Command]
-command = [repoCommand "lock" paramPath seek "undo unlock command"]
+command = [repoCommand "lock" paramPaths seek "undo unlock command"]
 
 seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
 
 {- Undo unlock -}
-start :: CommandStartBackendFile
-start (file, _) = do
+start :: BackendFile -> CommandStart
+start (_, file) = do
 	showStart "lock" file
 	next $ perform file
 
@@ -33,5 +30,5 @@ perform file = do
 	-- Checkout from HEAD to get rid of any changes that might be 
 	-- staged in the index, and get back to the previous symlink to
 	-- the content.
-	AnnexQueue.add "checkout" [Param "HEAD", Param "--"] [file]
+	Annex.Queue.add "checkout" [Param "HEAD", Param "--"] [file]
 	next $ return True -- no cleanup needed

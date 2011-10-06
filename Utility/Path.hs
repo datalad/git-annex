@@ -19,7 +19,7 @@ import Control.Monad (liftM2)
 parentDir :: FilePath -> FilePath
 parentDir dir =
 	if not $ null dirs
-	then slash ++ join s (take (length dirs - 1) dirs)
+	then slash ++ join s (init dirs)
 	else ""
 		where
 			dirs = filter (not . null) $ split s dir
@@ -90,3 +90,30 @@ prop_relPathDirToFile_basics from to
 	| otherwise = not (null r)
 	where
 		r = relPathDirToFile from to 
+
+{- Given an original list of files, and an expanded list derived from it,
+ - ensures that the original list's ordering is preserved. 
+ -
+ - The input list may contain a directory, like "dir" or "dir/". Any
+ - items in the expanded list that are contained in that directory will
+ - appear at the same position as it did in the input list.
+ -}
+preserveOrder :: [FilePath] -> [FilePath] -> [FilePath]
+-- optimisation, only one item in original list, so no reordering needed
+preserveOrder [_] new = new
+preserveOrder orig new = collect orig new
+	where
+		collect [] n = n
+		collect [_] n = n -- optimisation
+		collect (l:ls) n = found ++ collect ls rest
+			where (found, rest)=partition (l `dirContains`) n
+
+{- Runs an action that takes a list of FilePaths, and ensures that 
+ - its return list preserves order.
+ -
+ - This assumes that it's cheaper to call preserveOrder on the result,
+ - than it would be to run the action separately with each param. In the case
+ - of git file list commands, that assumption tends to hold.
+ -}
+runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
+runPreserveOrder a files = preserveOrder files <$> a files

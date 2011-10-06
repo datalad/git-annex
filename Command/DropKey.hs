@@ -7,12 +7,11 @@
 
 module Command.DropKey where
 
+import Common.Annex
 import Command
 import qualified Annex
 import LocationLog
-import Types
-import Content
-import Messages
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "dropkey" (paramRepeating paramKey) seek
@@ -21,7 +20,7 @@ command = [repoCommand "dropkey" (paramRepeating paramKey) seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	present <- inAnnex key
 	force <- Annex.getState Annex.force

@@ -13,17 +13,14 @@ module CmdLine (
 
 import System.IO.Error (try)
 import System.Console.GetOpt
-import Control.Monad.State (liftIO)
-import Control.Monad (when)
 
+import Common.Annex
 import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Git
-import Content
-import Types
+import Annex.Content
 import Command
 import Options
-import Messages
 import Init
 
 {- Runs the passed command line. -}
@@ -84,7 +81,7 @@ tryRun = tryRun' 0
 tryRun' :: Integer -> Annex.AnnexState -> [Annex Bool] -> IO ()
 tryRun' errnum state (a:as) = do
 	result <- try $ Annex.run state $ do
-		AnnexQueue.flushWhenFull
+		Annex.Queue.flushWhenFull
 		a
 	case result of
 		Left err -> do
@@ -104,5 +101,5 @@ startup = return True
 shutdown :: Annex Bool
 shutdown = do
 	saveState
-	liftIO Git.reap
+	liftIO Git.reap -- zombies from long-running git processes
 	return True

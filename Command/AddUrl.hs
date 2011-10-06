@@ -7,11 +7,9 @@
 
 module Command.AddUrl where
 
-import Control.Monad.State (liftIO, when)
 import Network.URI
-import Data.String.Utils
-import System.Directory
 
+import Common.Annex
 import Command
 import qualified Backend
 import qualified Utility.Url as Url
@@ -19,19 +17,17 @@ import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
-import Messages
-import Content
+import Annex.Content
 import PresenceLog
-import Locations
-import Utility.Path
 
 command :: [Command]
-command = [repoCommand "addurl" paramPath seek "add urls to annex"]
+command = [repoCommand "addurl" (paramRepeating paramUrl) seek
+	"add urls to annex"]
 
 seek :: [CommandSeek]
 seek = [withStrings start]
 
-start :: CommandStartString
+start :: String -> CommandStart
 start s = do
 	let u = parseURI s
 	case u of
@@ -48,7 +44,7 @@ perform url file = do
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	showAction $ "downloading " ++ url ++ " "
 	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey
@@ -56,7 +52,7 @@ download url file = do
 	ok <- Url.download url tmp
 	if ok
 		then do
-			[(_, backend)] <- Backend.chooseBackends [file]
+			[(backend, _)] <- Backend.chooseBackends [file]
 			k <- Backend.genKey tmp backend
 			case k of
 				Nothing -> stop
@@ -75,20 +71,11 @@ nodownload url file = do
 
 url2file :: URI -> IO FilePath
 url2file url = do
-	let parts = filter safe $ split "/" $ uriPath url
-	if null parts
-		then fallback
-		else do
-			let file = last parts
-			e <- doesFileExist file
-			if e then fallback else return file
+	whenM (doesFileExist file) $
+		error $ "already have this url in " ++ file
+	liftIO $ print file
+	return file
 	where
-		fallback = do
-			let file = replace "/" "_" $ show url
-			e <- doesFileExist file
-			when e $ error "already have this url"
-			return file
-		safe "" = False
-		safe "." = False
-		safe ".." = False
-		safe _ = True
+		file = escape $ uriRegName auth ++ uriPath url ++ uriQuery url
+		escape = replace "/" "_" . replace "?" "_"
+		auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url

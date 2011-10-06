@@ -7,19 +7,12 @@
 
 module Command.Map where
 
-import Control.Monad.State (liftIO)
 import Control.Exception.Extensible
-import System.Cmd.Utils
 import qualified Data.Map as M
-import Data.List.Utils
-import Data.Maybe
 
+import Common.Annex
 import Command
-import qualified Annex
 import qualified Git
-import Messages
-import Types
-import Utility.SafeCommand
 import UUID
 import Trust
 import Utility.Ssh
@@ -34,9 +27,9 @@ command = [repoCommand "map" paramNothing seek "generate map of repositories"]
 seek :: [CommandSeek]
 seek = [withNothing start]
 
-start :: CommandStartNothing
+start :: CommandStart
 start = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	rs <- spider g
 
 	umap <- uuidMap

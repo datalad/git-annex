@@ -7,32 +7,32 @@
 
 module Command.Get where
 
+import Common.Annex
 import Command
 import qualified Annex
 import qualified Remote
-import Types
-import Content
-import Messages
+import Annex.Content
 import qualified Command.Move
 
 command :: [Command]
-command = [repoCommand "get" paramPath seek
+command = [repoCommand "get" paramPaths seek
 		"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withNumCopies start]
 
-start :: CommandStartString
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> Maybe Int -> CommandStart
+start file numcopies = isAnnexed file $ \(key, _) -> do
 	inannex <- inAnnex key
 	if inannex
 		then stop
-		else do
+		else autoCopies key (<) numcopies $ do
 			showStart "get" file
 			from <- Annex.getState Annex.fromremote
 			case from of
 				Nothing -> next $ perform key
 				Just name -> do
+					-- get --from = copy --from
 					src <- Remote.byName name
 					next $ Command.Move.fromPerform src False key
 

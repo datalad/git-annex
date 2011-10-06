@@ -6,10 +6,8 @@
  -}
 
 import System.Environment
-import System.FilePath
-import System.Directory
-import Control.Monad (when)
 
+import Common
 import qualified Git.UnionMerge
 import qualified Git
 
@@ -23,7 +21,7 @@ tmpIndex :: Git.Repo -> FilePath
 tmpIndex g = Git.gitDir g </> "index.git-union-merge"
 
 setup :: Git.Repo -> IO ()
-setup g = cleanup g -- idempotency
+setup = cleanup -- idempotency
 
 cleanup :: Git.Repo -> IO ()
 cleanup g = do

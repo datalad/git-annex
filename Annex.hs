@@ -21,14 +21,17 @@ module Annex (
 
 import Control.Monad.State
 
+import Common
 import qualified Git
+import Git.CatFile
 import Git.Queue
 import Types.Backend
-import Types.Remote
+import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
 import Types.UUID
+import qualified Utility.Matcher
 
 -- git-annex's monad
 newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
@@ -43,18 +46,20 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [Backend Annex]
-	, remotes :: [Remote Annex]
+	, remotes :: [Types.Remote.Remote Annex]
 	, repoqueue :: Queue
 	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
+	, auto :: Bool
 	, branchstate :: BranchState
+	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, defaultkey :: Maybe String
 	, toremote :: Maybe String
 	, fromremote :: Maybe String
-	, exclude :: [String]
+	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
 	, forcetrust :: [(UUID, TrustLevel)]
 	, trustmap :: Maybe TrustMap
 	, cipher :: Maybe Cipher
@@ -67,17 +72,19 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, repoqueue = empty
+	, repoqueue = Git.Queue.empty
 	, output = NormalOutput
 	, force = False
 	, fast = False
+	, auto = False
 	, branchstate = startBranchState
+	, catfilehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, defaultkey = Nothing
 	, toremote = Nothing
 	, fromremote = Nothing
-	, exclude = []
+	, limit = Left []
 	, forcetrust = []
 	, trustmap = Nothing
 	, cipher = Nothing

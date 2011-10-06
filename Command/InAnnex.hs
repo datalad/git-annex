@@ -7,11 +7,9 @@
 
 module Command.InAnnex where
 
-import Control.Monad.State (liftIO)
-import System.Exit
-
+import Common.Annex
 import Command
-import Content
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "inannex" (paramRepeating paramKey) seek
@@ -20,7 +18,7 @@ command = [repoCommand "inannex" (paramRepeating paramKey) seek
 seek :: [CommandSeek]
 seek = [withKeys start]
 
-start :: CommandStartKey
+start :: Key -> CommandStart
 start key = do
 	present <- inAnnex key
 	if present

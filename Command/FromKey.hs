@@ -7,18 +7,11 @@
 
 module Command.FromKey where
 
-import Control.Monad.State (liftIO)
-import System.Posix.Files
-import System.Directory
-import Control.Monad (unless)
-
+import Common.Annex
 import Command
-import qualified AnnexQueue
-import Utility.SafeCommand
-import Content
-import Messages
+import qualified Annex.Queue
+import Annex.Content
 import Types.Key
-import Utility.Path
 
 command :: [Command]
 command = [repoCommand "fromkey" paramPath seek
@@ -27,7 +20,7 @@ command = [repoCommand "fromkey" paramPath seek
 seek :: [CommandSeek]
 seek = [withFilesMissing start]
 
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = notBareRepo $ do
 	key <- cmdlineKey
 	inbackend <- inAnnex key
@@ -46,5 +39,5 @@ perform file = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	AnnexQueue.add "add" [Param "--"] [file]
+	Annex.Queue.add "add" [Param "--"] [file]
 	return True

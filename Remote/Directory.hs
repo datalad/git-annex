@@ -9,26 +9,15 @@ module Remote.Directory (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import System.IO.Error
-import Control.Exception.Extensible (IOException)
 import qualified Data.Map as M
-import Control.Monad (when)
-import Control.Monad.State (liftIO)
-import System.Directory hiding (copyFile)
-import System.FilePath
-import Data.Maybe
 
-import Types
+import Common.Annex
+import Utility.CopyFile
 import Types.Remote
 import qualified Git
-import qualified Annex
 import UUID
-import Locations
-import Utility.CopyFile
 import Config
-import Content
-import Utility
-import Utility.Conditional
-import Utility.Path
+import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
@@ -57,7 +46,8 @@ gen r u c = do
 			removeKey = remove dir,
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
-			config = Nothing
+			config = Nothing,
+			repo = r
 		}
 
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
@@ -81,14 +71,14 @@ dirKey d k = d </> hashDirMixed k </> f </> f
 
 store :: FilePath -> Key -> Annex Bool
 store d k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g k
 	let dest = dirKey d k
-	liftIO $ catchBool $ storeHelper dest $ copyFile src dest
+	liftIO $ catchBool $ storeHelper dest $ copyFileExternal src dest
 
 storeEncrypted :: FilePath -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d (cipher, enck) k = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g k
 	let dest = dirKey d enck
 	liftIO $ catchBool $ storeHelper dest $ encrypt src dest
@@ -109,7 +99,7 @@ storeHelper dest a = do
 	return ok
 
 retrieve :: FilePath -> Key -> FilePath -> Annex Bool
-retrieve d k f = liftIO $ copyFile (dirKey d k) f
+retrieve d k f = liftIO $ copyFileExternal (dirKey d k) f
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =

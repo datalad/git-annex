@@ -10,9 +10,9 @@ module Backend.URL (
 	fromUrl
 ) where
 
+import Common.Annex
 import Types.Backend
 import Types.Key
-import Types
 
 backends :: [Backend Annex]
 backends = [backend]

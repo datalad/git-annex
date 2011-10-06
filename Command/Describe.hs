@@ -7,10 +7,10 @@
 
 module Command.Describe where
 
+import Common.Annex
 import Command
 import qualified Remote
 import UUID
-import Messages
 
 command :: [Command]
 command = [repoCommand "describe" (paramPair paramRemote paramDesc) seek
@@ -19,7 +19,7 @@ command = [repoCommand "describe" (paramPair paramRemote paramDesc) seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	let (name, description) =
 		case ws of

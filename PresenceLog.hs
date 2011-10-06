@@ -16,7 +16,6 @@ module PresenceLog (
 	addLog,
 	readLog,
 	parseLog,
-	writeLog,
 	logNow,
 	compactLog,
 	currentLog,
@@ -26,11 +25,10 @@ module PresenceLog (
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-import qualified Data.Map as Map
-import Control.Monad.State (liftIO)
+import qualified Data.Map as M
 
-import qualified Branch
-import Types
+import Common.Annex
+import qualified Annex.Branch
 
 data LogLine = LogLine {
 	date :: POSIXTime,
@@ -74,24 +72,23 @@ instance Read LogLine where
 			ret v = [(v, "")]
 
 addLog :: FilePath -> LogLine -> Annex ()
-addLog file line = do
-	ls <- readLog file
-	writeLog file (compactLog $ line:ls)
+addLog file line = Annex.Branch.change file $ \s -> 
+	showLog $ compactLog (line : parseLog s)
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
 readLog :: FilePath -> Annex [LogLine]
-readLog file = return . parseLog =<< Branch.get file
+readLog file = return . parseLog =<< Annex.Branch.get file
 
 parseLog :: String -> [LogLine]
-parseLog s = filter parsable $ map read $ lines s
+parseLog = filter parsable . map read . lines
 	where
 		-- some lines may be unparseable, avoid them
 		parsable l = status l /= Undefined
 
-{- Stores a set of lines in a log file -}
-writeLog :: FilePath -> [LogLine] -> Annex ()
-writeLog file ls = Branch.change file (unlines $ map show ls)
+{- Generates a log file. -}
+showLog :: [LogLine] -> String
+showLog = unlines . map show
 
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine
@@ -101,31 +98,27 @@ logNow s i = do
 
 {- Reads a log and returns only the info that is still in effect. -}
 currentLog :: FilePath -> Annex [String]
-currentLog file = do
-	ls <- readLog file
-	return $ map info $ filterPresent ls
+currentLog file = map info . filterPresent <$> readLog file
 
 {- Returns the info from LogLines that are in effect. -}
 filterPresent :: [LogLine] -> [LogLine]
-filterPresent ls = filter (\l -> InfoPresent == status l) $ compactLog ls
-
-type LogMap = Map.Map String LogLine
+filterPresent = filter (\l -> InfoPresent == status l) . compactLog
 
 {- Compacts a set of logs, returning a subset that contains the current
  - status. -}
 compactLog :: [LogLine] -> [LogLine]
-compactLog = compactLog' Map.empty
-compactLog' :: LogMap -> [LogLine] -> [LogLine]
-compactLog' m [] = Map.elems m
-compactLog' m (l:ls) = compactLog' (mapLog m l) ls
+compactLog = M.elems . foldr mapLog M.empty
+
+type LogMap = M.Map String LogLine
 
 {- Inserts a log into a map of logs, if the log has better (ie, newer)
  - information than the other logs in the map -}
-mapLog :: LogMap -> LogLine -> LogMap
-mapLog m l = 
+mapLog :: LogLine -> LogMap -> LogMap
+mapLog l m = 
 	if better
-		then Map.insert i l m
+		then M.insert i l m
 		else m
 	where
-		better = maybe True (\l' -> date l' <= date l) $ Map.lookup i m
+		better = maybe True newer $ M.lookup i m
+		newer l' = date l' <= date l
 		i = info l

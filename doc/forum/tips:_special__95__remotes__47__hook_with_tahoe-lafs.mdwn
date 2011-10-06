@@ -12,7 +12,7 @@ The only quirk I've noticed is this...
 <pre>
 $ git annex whereis .
 whereis frink.jar (2 copies) 
-  	084603a8-7243-11e0-b1f5-83102bcd7953  -- testtest <-- here
+  	084603a8-7243-11e0-b1f5-83102bcd7953  -- here (testtest)
    	1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a
 ok
 </pre>

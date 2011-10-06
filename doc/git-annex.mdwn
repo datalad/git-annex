@@ -42,33 +42,29 @@ content from the key-value store.
 	# git remote add usbdrive /media/usb
 	# git annex get video/hackity_hack_and_kaxxt.mov
 	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok
-	# git commit -a -m "got a video I want to rewatch on the plane"
 	
 	# git annex add iso
 	add iso/Debian_5.0.iso ok
-	# git commit -a -m "saving Debian CD for later"
 	
 	# git annex drop iso/Debian_4.0.iso
 	drop iso/Debian_4.0.iso ok
-	# git commit -a -m "freed up space"
 	
 	# git annex move iso --to=usbdrive
 	move iso/Debian_5.0.iso (moving to usbdrive...) ok
 
-# COMMANDS
+# COMMONLY USED COMMANDS
 
 Like many git commands, git-annex can be passed a path that 
 is either a file or a directory. In the latter case it acts on all relevant
-files in the directory. If no path is specified, most git-annex commands
+files in the directory. When no path is specified, most git-annex commands
 default to acting on all relevant files in the current directory (and
 subdirectories).
-
-Many git-annex commands will stage changes for later `git commit` by you.
 
 * add [path ...]
 
   Adds files in the path to the annex. Files that are already checked into
   git, or that git has been configured to ignore will be silently skipped.
+  (Use --force to add ignored files.)
 
 * get [path ...]
 
@@ -80,8 +76,9 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Drops the content of annexed files from this repository. 
 
-  git-annex may refuse to drop content if it does not think
-  it is safe to do so, typically because of the setting of annex.numcopies.
+  git-annex will refuse to drop content if it cannot verify it is
+  safe to do so. At least one copy of content needs to exist in another
+  remote. This can be overridden with the --force switch.
 
 * move [path ...]
   
@@ -119,6 +116,14 @@ Many git-annex commands will stage changes for later `git commit` by you.
   Use this to undo an unlock command if you don't want to modify
   the files, or have made modifications you want to discard.
 
+* addurl [url ...]
+
+  Downloads each url to a file, which is added to the annex.
+
+  To avoid immediately downloading the url, specify --fast
+
+# REPOSITORY SETUP COMMANDS
+
 * init [description]
 
   Until a repository (or one of its remotes) has been initialized,
@@ -148,6 +153,24 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 	initremote mys3 type=S3 encryption=none datacenter=EU
 
+* trust [repository ...]
+
+  Records that a repository is trusted to not unexpectedly lose
+  content. Use with care.
+
+  To trust the current repository, use "."
+
+* untrust [repository ...]
+
+  Records that a repository is not trusted and could lose content
+  at any time.
+
+* semitrust [repository ...]
+
+  Returns a repository to the default semi trusted state.
+
+# REPOSITORY MAINTENANCE COMMANDS
+
 * fsck [path ...]
 
   With no parameters, this command checks the whole annex for consistency,
@@ -160,12 +183,11 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * unused
 
   Checks the annex for data that does not correspond to any files present
-  in the currently checked out branch, and prints a numbered list of the data.
+  in any tag or branch, and prints a numbered list of the data.
 
-  To only show unused temp and bad files, specify --fast
+  To only show unused temp and bad files, specify --fast.
 
-  To check data on a remote that does not correspond to any files present
-  on the locally checked out branch, specify --from.
+  To check for annexed data on a remote, specify --from.
 
 * dropunused [number ...]
 
@@ -174,9 +196,34 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   To drop the data from a remote, specify --from.
 
+* merge
+
+  Automatically merges any changes from remotes into the git-annex branch.
+  While git-annex mostly handles keeping the git-annex branch merged
+  automatically, if you find you are unable to push the git-annex branch
+  due non-fast-forward, this will fix it.
+
+* fix [path ...]
+
+  Fixes up symlinks that have become broken to again point to annexed content.
+  This is useful to run if you have been moving the symlinks around,
+  but is done automatically when committing a change with git too.
+
+* upgrade
+
+  Upgrades the repository to current layout.
+
+# QUERY COMMANDS
+
+* version
+
+  Shows the version of git-annex, as well as repository version information.
+
 * find [path ...]
 
   Outputs a list of annexed files whose content is currently present.
+  Or, if a file matching option is specified, outputs a list of all
+  matching files, whether or not their content is currently present.
 
   With no parameters, defaults to finding all files in the current directory
   and its subdirectories.
@@ -186,35 +233,10 @@ Many git-annex commands will stage changes for later `git commit` by you.
   Displays a list of repositories known to contain the content of the
   specified file or files.
 
-* merge
-
-  Automatically merges any changes from remotes into the git-annex branch.
-  While git-annex mostly handles keeping the git-annex branch merged
-  automatically, if you find you are unable to push the git-annex branch
-  due non-fast-forward, this will fix it.
-
 * status
 
   Displays some statistics and other information, including how much data
   is in the annex.
-
-  Some of the statistics can take a while to generate, and those
-  come last. You can ctrl-c this command once it's displayed the
-  information you wanted to see. Or, use --fast to only display
-  the first, fast(ish) statistics.
-
-* migrate [path ...]
-
-  Changes the specified annexed files to use the default key-value backend
-  (or the one specified with --backend). Only files whose content
-  is currently available are migrated.
-
-  Note that the content is also still available using the old key after
-  migration. Use `git annex unused` to find and remove the old key.
-
-  Normally, nothing will be done to files already using the new backend.
-  However, if a backend changes the information it uses to construct a key,
-  this can also be used to migrate files to use the new key format.
 
 * map
 
@@ -232,6 +254,21 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Note that this subcommand can be used to graph any git repository; it
   is not limited to git-annex repositories.
+
+# UTILITY COMMANDS
+
+* migrate [path ...]
+
+  Changes the specified annexed files to use the default key-value backend
+  (or the one specified with --backend). Only files whose content
+  is currently available are migrated.
+
+  Note that the content is also still available using the old key after
+  migration. Use `git annex unused` to find and remove the old key.
+
+  Normally, nothing will be done to files already using the new backend.
+  However, if a backend changes the information it uses to construct a key,
+  this can also be used to migrate files to use the new key format.
 
 * unannex [path ...]
 
@@ -252,10 +289,7 @@ Many git-annex commands will stage changes for later `git commit` by you.
   repository, and remove all of git-annex's other data, leaving you with a
   git repository plus the previously annexed files.
 
-* fix [path ...]
-
-  Fixes up symlinks that have become broken to again point to annexed content.
-  This is useful to run if you have been moving the symlinks around.
+# PLUMBING COMMANDS
 
 * pre-commit [path ...]
 
@@ -265,28 +299,6 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   This is meant to be called from git's pre-commit hook. `git annex init`
   automatically creates a pre-commit hook using this.
-
-* trust [repository ...]
-
-  Records that a repository is trusted to not unexpectedly lose
-  content. Use with care.
-
-  To trust the current repository, use "."
-
-* untrust [repository ...]
-
-  Records that a repository is not trusted and could lose content
-  at any time.
-
-* semitrust [repository ...]
-
-  Returns a repository to the default semi trusted state.
-
-* addurl [url ...]
-
-  Downloads each url to a file, which is added to the annex.
-
-  To avoid immediately downloading the url, specify --fast
 
 * fromkey file
 
@@ -314,14 +326,6 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
 	git annex setkey --key=WORM-s3-m1287765018--file /tmp/file
 
-* upgrade
-
-  Upgrades the repository to current layout.
-
-* version
-
-  Shows the version of git-annex, as well as repository version information.
-
 # OPTIONS
 
 * --force
@@ -334,6 +338,11 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   Enables less expensive, but also less thorough versions of some commands.
   What is avoided depends on the command.
+
+* --auto
+
+  Enables automatic mode. Commands that get, drop, or move file contents
+  will only do so when needed to help satisfy the setting of annex.numcopies.
 
 * --quiet
 
@@ -367,13 +376,6 @@ Many git-annex commands will stage changes for later `git commit` by you.
 
   It should be specified using the name of a configured remote.
 
-* --exclude=glob
-
-  Skips files matching the glob pattern. The glob is matched relative to
-  the current directory.
-
-  This option can be specified multiple times.
-
 * --numcopies=n
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
@@ -402,6 +404,60 @@ Many git-annex commands will stage changes for later `git commit` by you.
 * -c name=value
 
   Used to override git configuration settings. May be specified multiple times.
+
+# FILE MATCHING OPTIONS
+
+These options can all be specified multiple times, and can be combined to
+limit which files git-annex acts on.
+
+Arbitrarily complicated expressions can be built using these options.
+For example:
+
+	--exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
+
+The above example prevents git-annex from working on mp3 files whose
+file contents are present at either of two repositories.
+
+* --exclude=glob
+
+  Skips files matching the glob pattern. The glob is matched relative to
+  the current directory. For example: --exclude='*.mp3' --exclude='subdir/*'
+
+* --in=repository
+
+  Matches only files that git-annex believes have their contents present
+  in a repository.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository. For the current repository,
+  use "--in=."
+
+* --copies=number
+
+  Matches only files that git-annex believes to have the specified number
+  of copies.
+
+* --not
+
+  Inverts the next file matching option. For example, to only act on
+  mp3s, use: --not --exclude='*.mp3'
+
+* --and
+
+  Requires that both the previous and the next file matching option matches.
+  The default.
+
+* --or
+
+  Requires that either the previous, or the next file matching option matches.
+
+* -(
+
+  Opens a group of file matching options.
+
+* -)
+
+  Closes a group of file matching options.
 
 # CONFIGURATION
 

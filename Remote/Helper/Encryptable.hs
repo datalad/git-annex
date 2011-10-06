@@ -8,13 +8,11 @@
 module Remote.Helper.Encryptable where
 
 import qualified Data.Map as M
-import Control.Monad.State (liftIO)
 
-import Types
+import Common.Annex
 import Types.Remote
 import Crypto
 import qualified Annex
-import Messages
 import Config
 
 {- Encryption setup for a remote. The user must specify whether to use

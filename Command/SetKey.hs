@@ -7,13 +7,10 @@
 
 module Command.SetKey where
 
-import Control.Monad.State (liftIO)
-
+import Common.Annex
 import Command
-import Utility.SafeCommand
 import LocationLog
-import Content
-import Messages
+import Annex.Content
 
 command :: [Command]
 command = [repoCommand "setkey" paramPath seek
@@ -23,7 +20,7 @@ seek :: [CommandSeek]
 seek = [withStrings start]
 
 {- Sets cached content for a key. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = do
 	showStart "setkey" file
 	next $ perform file

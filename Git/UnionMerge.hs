@@ -16,6 +16,7 @@ import System.Cmd.Utils
 import Data.List
 import Data.Maybe
 import Data.String.Utils
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
 import Utility.SafeCommand
@@ -42,7 +43,7 @@ merge _ _ = error "wrong number of branches to merge"
 update_index :: Repo -> [String] -> IO ()
 update_index g l = togit ["update-index", "-z", "--index-info"] (join "\0" l)
 	where
-		togit ps content = pipeWrite g (map Param ps) content
+		togit ps content = pipeWrite g (map Param ps) (L.pack content)
 			>>= forceSuccess
 
 {- Generates a line suitable to be fed into update-index, to add
@@ -78,6 +79,18 @@ calc_merge g differ = do
 		pairs (_:[]) = error "calc_merge parse error"
 		pairs (a:b:rest) = (a,b):pairs rest
 
+{- Injects some content into git, returning its hash. -}
+hashObject :: Repo -> L.ByteString -> IO String
+hashObject repo content = getSha subcmd $ do
+	(h, s) <- pipeWriteRead repo (map Param params) content
+	L.length s `seq` do
+		forceSuccess h
+		reap -- XXX unsure why this is needed
+		return $ L.unpack s
+	where
+		subcmd = "hash-object"
+		params = [subcmd, "-w", "--stdin"]
+
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
@@ -92,4 +105,4 @@ mergeFile g (info, file) = case filter (/= nullsha) [asha, bsha] of
 	where
 		[_colonamode, _bmode, asha, bsha, _status] = words info
 		nullsha = replicate shaSize '0'
-		unionmerge = unlines . nub . lines
+		unionmerge = L.unlines . nub . L.lines

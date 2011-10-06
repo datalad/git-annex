@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Content (
+module Annex.Content (
 	inAnnex,
 	calcGitLink,
 	logStatus,
@@ -13,8 +13,6 @@ module Content (
 	getViaTmpUnchecked,
 	withTmp,
 	checkDiskSpace,
-	preventWrite,
-	allowWrite,
 	moveAnnex,
 	removeAnnex,
 	fromAnnex,
@@ -23,26 +21,15 @@ module Content (
 	saveState
 ) where
 
-import System.Directory
-import Control.Monad.State (liftIO)
-import System.Path
-import Control.Monad
-import System.Posix.Files
-import System.FilePath
-import Data.Maybe
-
-import Types
-import Locations
+import Common.Annex
 import LocationLog
 import UUID
 import qualified Git
 import qualified Annex
-import qualified AnnexQueue
-import qualified Branch
-import Utility
-import Utility.Conditional
+import qualified Annex.Queue
+import qualified Annex.Branch
 import Utility.StatFS
-import Utility.Path
+import Utility.FileMode
 import Types.Key
 import Utility.DataUnits
 import Config
@@ -50,14 +37,14 @@ import Config
 {- Checks if a given key is currently present in the gitAnnexLocation. -}
 inAnnex :: Key -> Annex Bool
 inAnnex key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	when (Git.repoIsUrl g) $ error "inAnnex cannot check remote repo"
 	liftIO $ doesFileExist $ gitAnnexLocation g key
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
 calcGitLink file key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	cwd <- liftIO getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPath cwd file
 	return $ relPathDirToFile (parentDir absfile) 
@@ -69,7 +56,7 @@ calcGitLink file key = do
  - repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
 logStatus key status = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	logChange g key u status
 
@@ -78,7 +65,7 @@ logStatus key status = do
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmp key action = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let tmp = gitAnnexTmpLocation g key
 
 	-- Check that there is enough free disk space.
@@ -97,7 +84,7 @@ getViaTmp key action = do
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let tmp = gitAnnexTmpLocation g key
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	return tmp
@@ -134,7 +121,7 @@ checkDiskSpace = checkDiskSpace' 0
 
 checkDiskSpace' :: Integer -> Key -> Annex ()
 checkDiskSpace' adjustment key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	r <- getConfig g "diskreserve" ""
 	let reserve = fromMaybe megabyte $ readSize dataUnits r
 	stats <- liftIO $ getFileSystemStats (gitAnnexDir g)
@@ -151,19 +138,6 @@ checkDiskSpace' adjustment key = do
 			error $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
 				" more (use --force to override this check or adjust annex.diskreserve)"
-
-{- Removes the write bits from a file. -}
-preventWrite :: FilePath -> IO ()
-preventWrite f = unsetFileMode f writebits
-	where
-		writebits = foldl unionFileModes ownerWriteMode
-					[groupWriteMode, otherWriteMode]
-
-{- Turns a file's write bit back on. -}
-allowWrite :: FilePath -> IO ()
-allowWrite f = do
-	s <- getFileStatus f
-	setFileMode f $ fileMode s `unionFileModes` ownerWriteMode
 
 {- Moves a file into .git/annex/objects/
  -
@@ -188,7 +162,7 @@ allowWrite f = do
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let dest = gitAnnexLocation g key
 	let dir = parentDir dest
 	e <- liftIO $ doesFileExist dest
@@ -203,7 +177,7 @@ moveAnnex key src = do
 
 withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
 withObjectLoc key a = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let file = gitAnnexLocation g key
 	let dir = parentDir file
 	a (dir, file)
@@ -227,7 +201,7 @@ fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	let src = gitAnnexLocation g key
 	let dest = gitAnnexBadDir g </> takeFileName src
 	liftIO $ do
@@ -241,7 +215,7 @@ moveBad key = do
 {- List of keys whose content exists in .git/annex/objects/ -}
 getKeysPresent :: Annex [Key]
 getKeysPresent = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	getKeysPresent' $ gitAnnexObjectDir g
 getKeysPresent' :: FilePath -> Annex [Key]
 getKeysPresent' dir = do
@@ -259,5 +233,5 @@ getKeysPresent' dir = do
 {- Things to do to record changes to content. -}
 saveState :: Annex ()
 saveState = do
-	AnnexQueue.flush False
-	Branch.commit "update"
+	Annex.Queue.flush False
+	Annex.Branch.commit "update"

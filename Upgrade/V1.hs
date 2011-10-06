@@ -8,31 +8,19 @@
 module Upgrade.V1 where
 
 import System.IO.Error (try)
-import System.Directory
-import Control.Monad.State (liftIO)
-import Control.Monad (filterM, forM_, unless)
-import System.Posix.Files
-import System.FilePath
-import Data.String.Utils
 import System.Posix.Types
-import Data.Maybe
 import Data.Char
 
+import Common.Annex
 import Types.Key
-import Content
-import Types
-import Locations
+import Annex.Content
 import PresenceLog
-import qualified Annex
-import qualified AnnexQueue
+import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
-import Messages
-import Version
-import Utility
-import Utility.SafeCommand
-import Utility.Path
+import Annex.Version
+import Utility.FileMode
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.
@@ -62,7 +50,7 @@ upgrade :: Annex Bool
 upgrade = do
 	showAction "v1 to v2"
 
-	g <- Annex.gitRepo
+	g <- gitRepo
 	if Git.repoIsLocalBare g
 		then do
 			moveContent
@@ -72,7 +60,7 @@ upgrade = do
 			updateSymlinks
 			moveLocationLogs
 	
-			AnnexQueue.flush True
+			Annex.Queue.flush True
 			setVersion
 	
 	Upgrade.V2.upgrade
@@ -94,7 +82,7 @@ moveContent = do
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
-	g <- Annex.gitRepo
+	g <- gitRepo
 	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
 	forM_ files fixlink
 	where
@@ -106,7 +94,7 @@ updateSymlinks = do
 					link <- calcGitLink f k
 					liftIO $ removeFile f
 					liftIO $ createSymbolicLink link f
-					AnnexQueue.add "add" [Param "--"] [f]
+					Annex.Queue.add "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
@@ -115,7 +103,7 @@ moveLocationLogs = do
 	forM_ logkeys move
 		where
 			oldlocationlogs = do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				let dir = Upgrade.V2.gitStateDir g
 				exists <- liftIO $ doesDirectoryExist dir
 				if exists
@@ -124,7 +112,7 @@ moveLocationLogs = do
 						return $ mapMaybe oldlog2key contents
 					else return []
 			move (l, k) = do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				let dest = logFile2 g k
 				let dir = Upgrade.V2.gitStateDir g
 				let f = dir </> l
@@ -136,9 +124,9 @@ moveLocationLogs = do
 				old <- liftIO $ readLog1 f
 				new <- liftIO $ readLog1 dest
 				liftIO $ writeLog1 dest (old++new)
-				AnnexQueue.add "add" [Param "--"] [dest]
-				AnnexQueue.add "add" [Param "--"] [f]
-				AnnexQueue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
+				Annex.Queue.add "add" [Param "--"] [dest]
+				Annex.Queue.add "add" [Param "--"] [f]
+				Annex.Queue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
 		
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l = 
@@ -172,7 +160,7 @@ readKey1 v =
 			then Just (read (bits !! 2) :: Integer)
 			else Nothing
 		wormy = head bits == "WORM"
-		mixup = wormy && (isUpper $ head $ bits !! 1)
+		mixup = wormy && isUpper (head $ bits !! 1)
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
@@ -218,7 +206,7 @@ lookupFile1 file = do
 
 getKeyFilesPresent1 :: Annex [FilePath]
 getKeyFilesPresent1  = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 	getKeyFilesPresent1' $ gitAnnexObjectDir g
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
 getKeyFilesPresent1' dir = do
@@ -247,7 +235,7 @@ logFile' hasher repo key =
 	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
 
 stateDir :: FilePath
-stateDir = addTrailingPathSeparator $ ".git-annex"
+stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
 gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir

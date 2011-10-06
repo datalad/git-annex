@@ -7,40 +7,32 @@
 
 module Command.Unannex where
 
-import Control.Monad.State (liftIO)
-import Control.Monad (unless)
-import System.Directory
-import System.Posix.Files
-
+import Common.Annex
 import Command
 import qualified Command.Drop
 import qualified Annex
-import qualified AnnexQueue
-import Utility.SafeCommand
-import Utility.Path
+import qualified Annex.Queue
+import Utility.FileMode
 import LocationLog
-import Types
-import Content
+import Annex.Content
 import qualified Git
 import qualified Git.LsFiles as LsFiles
-import Messages
-import Locations
 
 command :: [Command]
-command = [repoCommand "unannex" paramPath seek "undo accidential add command"]
+command = [repoCommand "unannex" paramPaths seek "undo accidential add command"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
 
 {- The unannex subcommand undoes an add. -}
-start :: CommandStartString
+start :: FilePath -> CommandStart
 start file = isAnnexed file $ \(key, _) -> do
 	ishere <- inAnnex key
 	if ishere
 		then do
 			force <- Annex.getState Annex.force
 			unless force $ do
-				g <- Annex.gitRepo
+				g <- gitRepo
 				staged <- liftIO $ LsFiles.staged g [Git.workTree g]
 				unless (null staged) $
 					error "This command cannot be run when there are already files staged for commit."
@@ -59,7 +51,7 @@ perform file key = do
 
 cleanup :: FilePath -> Key -> CommandCleanup
 cleanup file key = do
-	g <- Annex.gitRepo
+	g <- gitRepo
 
 	liftIO $ removeFile file
 	liftIO $ Git.run g "rm" [Params "--quiet --", File file]
@@ -79,6 +71,6 @@ cleanup file key = do
 	-- Commit staged changes at end to avoid confusing the
 	-- pre-commit hook if this file is later added back to
 	-- git as a normal, non-annexed file.
-	AnnexQueue.add "commit" [Param "-m", Param "content removed from git annex"] []
+	Annex.Queue.add "commit" [Param "-m", Param "content removed from git annex"] []
 	
 	return True

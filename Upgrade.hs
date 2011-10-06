@@ -7,8 +7,8 @@
 
 module Upgrade where
 
-import Types
-import Version
+import Common.Annex
+import Annex.Version
 import qualified Upgrade.V0
 import qualified Upgrade.V1
 import qualified Upgrade.V2

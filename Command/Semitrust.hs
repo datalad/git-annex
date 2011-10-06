@@ -7,11 +7,11 @@
 
 module Command.Semitrust where
 
+import Common.Annex
 import Command
 import qualified Remote
 import UUID
 import Trust
-import Messages
 
 command :: [Command]
 command = [repoCommand "semitrust" (paramRepeating paramRemote) seek
@@ -20,7 +20,7 @@ command = [repoCommand "semitrust" (paramRepeating paramRemote) seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	let name = unwords ws
 	showStart "semitrust" name

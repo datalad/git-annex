@@ -7,10 +7,9 @@
 
 module Command.Init where
 
+import Common.Annex
 import Command
-import qualified Annex
 import UUID
-import Messages
 import Init
 	
 command :: [Command]
@@ -20,7 +19,7 @@ command = [standaloneCommand "init" paramDesc seek
 seek :: [CommandSeek]
 seek = [withWords start]
 
-start :: CommandStartWords
+start :: [String] -> CommandStart
 start ws = do
 	showStart "init" description
 	next $ perform description
@@ -30,7 +29,7 @@ start ws = do
 perform :: String -> CommandPerform
 perform description = do
 	initialize
-	g <- Annex.gitRepo
+	g <- gitRepo
 	u <- getUUID g
 	describeUUID u description
 	next $ return True
