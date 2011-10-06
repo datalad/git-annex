@@ -6,12 +6,14 @@
  -}
 
 import System.Environment
+import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git
 import CmdLine
 import Command
 import Options
+import UUID
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -29,6 +31,16 @@ cmds = map adddirparam $ concat
 	]
 	where
 		adddirparam c = c { cmdparams = "DIRECTORY " ++ cmdparams c }
+
+options :: [OptDescr (Annex ())]
+options = uuid : commonOptions
+	where
+		uuid = Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
+		check expected = do
+			u <- getUUID =<< gitRepo
+			when (u /= expected) $ error $
+				"expected repository UUID " ++ expected
+					++ " but found UUID " ++ u
 
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
@@ -57,7 +69,7 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params =
 	Git.repoAbsPath dir >>= Git.repoFromAbsPath >>=
-		dispatch (cmd : filterparams params) cmds commonOptions header
+		dispatch (cmd : filterparams params) cmds options header
 
 external :: [String] -> IO ()
 external params =
@@ -72,4 +84,4 @@ filterparams ("--":_) = []
 filterparams (a:as) = a:filterparams as
 
 failure :: IO ()
-failure = error $ "bad parameters\n\n" ++ usage header cmds commonOptions
+failure = error $ "bad parameters\n\n" ++ usage header cmds options
