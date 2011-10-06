@@ -105,11 +105,11 @@ total_annex_size = stat "total annex size" $
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $
-	return (show . S.size) =<< cachedKeysPresent
+	return . show . S.size =<< cachedKeysPresent
 
 total_annex_keys :: Stat
 total_annex_keys = stat "total annex keys" $
-	return (show . S.size) =<< cachedKeysReferenced
+	return . show . S.size =<< cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir

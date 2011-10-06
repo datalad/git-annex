@@ -116,4 +116,4 @@ preserveOrder orig new = collect orig new
  - of git file list commands, that assumption tends to hold.
  -}
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
-runPreserveOrder a files = preserveOrder files <$> a files
+runPreserveOrder a files = return . preserveOrder files =<< a files

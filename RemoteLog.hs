@@ -37,7 +37,7 @@ configSet u c = do
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = return (simpleMap . parseLog parseConfig) =<< Annex.Branch.get remoteLog
+readRemoteLog = return . simpleMap . parseLog parseConfig =<< Annex.Branch.get remoteLog
 
 parseConfig :: String -> Maybe RemoteConfig
 parseConfig = Just . keyValToConfig . words

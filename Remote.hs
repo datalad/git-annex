@@ -130,7 +130,9 @@ nameToUUID n = do
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	here <- getUUID =<< gitRepo
-	m <- M.unionWith addname <$> uuidMap <*> remoteMap
+	umap <- uuidMap
+	rmap <- remoteMap
+	let m = M.unionWith addname umap rmap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
