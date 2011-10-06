@@ -57,6 +57,7 @@ test: $(bins)
 	else \
 		if ! ./test; then \
 			echo "** test suite failed!" >&2; \
+			exit 1; \
 		fi; \
 	fi
 
