@@ -28,6 +28,9 @@ would keep working, ignoring the timestamp.
 - remote.log: "uuid key=value ... timestamp" is on the edge but does work
   (old git-annex will include the timestamp in the key/value map it builds,
   but that should not break anything really)
+  > update: converted! --[[Joey]] 
 
 Appending "timestamp=xxxxx" would be good for clarity, and make
 it easier to parse the timestamp out from lines that have it.
+
+> [[done]] --[[Joey]] 
