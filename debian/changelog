@@ -12,6 +12,7 @@ git-annex (3.20110929) UNRELEASED; urgency=low
     has been merged.
   * Note that older versions of git-annex will display the timestamp as part
     of the repository description, which is ugly but otherwise harmless.
+  * Add timestamps to trust.log.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 
