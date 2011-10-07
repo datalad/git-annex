@@ -7,6 +7,7 @@
 
 module Git.UnionMerge (
 	merge,
+	merge_index,
 	update_index,
 	update_index_line,
 	ls_tree
@@ -18,24 +19,24 @@ import Data.Maybe
 import Data.String.Utils
 import qualified Data.ByteString.Lazy.Char8 as L
 
+import Common
 import Git
-import Utility.SafeCommand
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
  -
- - When only one branch is specified, it is merged into the index.
- - In this case, previously staged changes in the index are preserved.
- -
  - Should be run with a temporary index file configured by Git.useIndex.
  -}
-merge :: Repo -> [String] -> IO ()
-merge g (x:y:[]) = do
+merge :: Repo -> String -> String -> IO ()
+merge g x y = do
 	a <- ls_tree g x
 	b <- merge_trees g x y
 	update_index g (a++b)
-merge g [x] = merge_tree_index g x >>= update_index g
-merge _ _ = error "wrong number of branches to merge"
+
+{- Merges a list of branches into the index. Previously staged changed in
+ - the index are preserved (and participate in the merge). -}
+merge_index :: Repo -> [String] -> IO ()
+merge_index g bs = update_index g =<< concat <$> mapM (merge_tree_index g) bs
 
 {- Feeds a list into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of

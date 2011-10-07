@@ -189,6 +189,8 @@ paramGlob :: String
 paramGlob = "GLOB"
 paramName :: String
 paramName = "NAME"
+paramUUID :: String
+paramUUID = "UUID"
 paramType :: String
 paramType = "TYPE"
 paramKeyValue :: String

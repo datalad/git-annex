@@ -13,6 +13,7 @@ import qualified Git
 import Utility.SafeCommand
 import Types
 import Config
+import UUID
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
@@ -33,15 +34,20 @@ git_annex_shell :: Git.Repo -> String -> [CommandParam] -> Annex (Maybe (FilePat
 git_annex_shell r command params
 	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts)
 	| Git.repoIsSsh r = do
-		sshparams <- sshToRepo r [Param sshcmd]
+		uuid <- getUUID r
+		sshparams <- sshToRepo r [Param $ sshcmd uuid ]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
 	where
 		dir = Git.workTree r
 		shellcmd = "git-annex-shell"
 		shellopts = Param command : File dir : params
-		sshcmd = shellcmd ++ " " ++ 
-			unwords (map shellEscape $ toCommand shellopts)
+		sshcmd uuid = unwords $
+			shellcmd : (map shellEscape $ toCommand shellopts) ++
+			uuidcheck uuid
+		uuidcheck uuid
+			| null uuid = []
+			| otherwise = ["--uuid", uuid]
 
 {- Uses a supplied function (such as boolSystem) to run a git-annex-shell
  - command on a remote.
