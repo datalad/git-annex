@@ -121,40 +121,37 @@ commit message = do
 {- Ensures that the branch is up-to-date; should be called before
  - data is read from it. Runs only once per git-annex run. -}
 update :: Annex ()
-update = do
-	state <- getState
-	unless (branchUpdated state) $ do
-		-- check what needs updating before taking the lock
-		fs <- getJournalFiles
-		c <- filterM changedbranch =<< siblingBranches
-		let (refs, branches) = unzip c
-		unless (null fs && null refs) $ withIndex $ lockJournal $ do
-			{- Before refs are merged into the index, it's
-			 - important to first stage the journal into the
-			 - index. Otherwise, any changes in the journal
-			 - would later get staged, and might overwrite
-			 - changes made during the merge.
-			 -
-			 - It would be cleaner to handle the merge by
-			 - updating the journal, not the index, with changes
-			 - from the branches.
+update = onceonly $ do
+	-- check what needs updating before taking the lock
+	fs <- getJournalFiles
+	c <- filterM changedbranch =<< siblingBranches
+	let (refs, branches) = unzip c
+	unless (null fs && null refs) $ withIndex $ lockJournal $ do
+		{- Before refs are merged into the index, it's
+		 - important to first stage the journal into the
+		 - index. Otherwise, any changes in the journal
+		 - would later get staged, and might overwrite
+		 - changes made during the merge.
+		 -
+		 - It would be cleaner to handle the merge by
+		 - updating the journal, not the index, with changes
+		 - from the branches.
+		 -}
+		unless (null fs) $ stageJournalFiles fs
+		g <- gitRepo
+		unless (null branches) $ do
+			showSideAction $ "merging " ++
+				(unwords $ map Git.refDescribe branches) ++
+				" into " ++ name
+			{- Note: This merges the branches into the index.
+			 - Any unstaged changes in the git-annex branch
+			 - (if it's checked out) will be removed. So,
+			 - documentation advises users not to directly
+			 - modify the branch.
 			 -}
-			unless (null fs) $ stageJournalFiles fs
-			g <- gitRepo
-			unless (null branches) $ do
-				showSideAction $ "merging " ++
-					(unwords $ map Git.refDescribe branches) ++
-					" into " ++ name
-				{- Note: This merges the branches into the index.
-				 - Any unstaged changes in the git-annex branch
-				 - (if it's checked out) will be removed. So,
-				 - documentation advises users not to directly
-				 - modify the branch.
-				 -}
-				liftIO $ Git.UnionMerge.merge_index g branches
-			liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
-			invalidateCache
-		Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
+			liftIO $ Git.UnionMerge.merge_index g branches
+		liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
+		invalidateCache
 	where
 		changedbranch (_, branch) = do
 			g <- gitRepo
@@ -166,6 +163,14 @@ update = do
 				Params "--oneline -n1"
 				]
 			return $ not $ L.null diffs
+		onceonly a = unlessM (branchUpdated <$> getState) $ do
+			r <- a
+			Annex.changeState setupdated
+			return r
+		setupdated s = s { Annex.branchstate = new }
+			where
+				new = old { branchUpdated = True }
+				old = Annex.branchstate s
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
