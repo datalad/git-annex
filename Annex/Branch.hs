@@ -153,8 +153,8 @@ update = do
 				 -}
 				liftIO $ Git.UnionMerge.merge_index g branches
 			liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
-			Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 			invalidateCache
+		Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 	where
 		changedbranch (_, branch) = do
 			g <- gitRepo
