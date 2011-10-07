@@ -126,7 +126,8 @@ update = do
 	unless (branchUpdated state) $ do
 		-- check what needs updating before taking the lock
 		fs <- getJournalFiles
-		refs <- filterM checkref =<< siblingBranches
+		c <- filterM changedbranch =<< siblingBranches
+		let (refs, branches) = unzip c
 		unless (null fs && null refs) $ withIndex $ lockJournal $ do
 			{- Before refs are merged into the index, it's
 			 - important to first stage the journal into the
@@ -140,9 +141,9 @@ update = do
 			 -}
 			unless (null fs) $ stageJournalFiles fs
 			g <- gitRepo
-			unless (null refs) $ do
+			unless (null branches) $ do
 				showSideAction $ "merging " ++
-					(unwords $ map Git.refDescribe refs) ++
+					(unwords $ map Git.refDescribe branches) ++
 					" into " ++ name
 				{- Note: This merges the branches into the index.
 				 - Any unstaged changes in the git-annex branch
@@ -150,18 +151,18 @@ update = do
 				 - documentation advises users not to directly
 				 - modify the branch.
 				 -}
-				liftIO $ Git.UnionMerge.merge_index g refs
-			liftIO $ Git.commit g "update" fullname (fullname:refs)
+				liftIO $ Git.UnionMerge.merge_index g branches
+			liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
 			Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 			invalidateCache
 	where
-		checkref ref = do
+		changedbranch (_, branch) = do
 			g <- gitRepo
 			-- checking with log to see if there have been changes
 			-- is less expensive than always merging
 			diffs <- liftIO $ Git.pipeRead g [
 				Param "log",
-				Param (name++".."++ref),
+				Param (name ++ ".." ++ branch),
 				Params "--oneline -n1"
 				]
 			return $ not $ L.null diffs
@@ -185,13 +186,15 @@ hasOrigin = refExists originname
 hasSomeBranch :: Annex Bool
 hasSomeBranch = not . null <$> siblingBranches
 
-{- List of all git-annex branches, including the main one and any
+{- List of all git-annex (refs, branches), including the main one and any
  - from remotes. -}
-siblingBranches :: Annex [String]
+siblingBranches :: Annex [(String, String)]
 siblingBranches = do
 	g <- gitRepo
 	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
-	return $ map (last . words . L.unpack) (L.lines r)
+	return $ map (pair . words . L.unpack) (L.lines r)
+	where
+		pair l = (head l, last l)
 
 {- Applies a function to modifiy the content of a file. -}
 change :: FilePath -> (String -> String) -> Annex ()
