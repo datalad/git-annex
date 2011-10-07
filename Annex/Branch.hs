@@ -139,8 +139,18 @@ update = do
 			 - from the branches.
 			 -}
 			unless (null fs) $ stageJournalFiles fs
-			mapM_ mergeref refs
 			g <- gitRepo
+			unless (null refs) $ do
+				showSideAction $ "merging " ++
+					(unwords $ map Git.refDescribe refs) ++
+					" into " ++ name
+				{- Note: This merges the branches into the index.
+				 - Any unstaged changes in the git-annex branch
+				 - (if it's checked out) will be removed. So,
+				 - documentation advises users not to directly
+				 - modify the branch.
+				 -}
+				liftIO $ Git.UnionMerge.merge_index g refs
 			liftIO $ Git.commit g "update" fullname (fullname:refs)
 			Annex.changeState $ \s -> s { Annex.branchstate = state { branchUpdated = True } }
 			invalidateCache
@@ -155,22 +165,6 @@ update = do
 				Params "--oneline -n1"
 				]
 			return $ not $ L.null diffs
-		mergeref ref = do
-			showSideAction $ "merging " ++
-				Git.refDescribe ref ++ " into " ++ name
-			{- By passing only one ref, it is actually
-			 - merged into the index, preserving any
-			 - changes that may already be staged.
-			 -
-			 - However, any changes in the git-annex
-			 - branch that are *not* reflected in the
-			 - index will be removed. So, documentation
-			 - advises users not to directly modify the
-			 - branch.
-			 -}
-			g <- gitRepo
-			liftIO $ Git.UnionMerge.merge g [ref]
-			return $ Just ref
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
