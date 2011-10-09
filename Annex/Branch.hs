@@ -111,33 +111,32 @@ create = unlessM hasBranch $ do
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = do
-	fs <- getJournalFiles
-	when (not $ null fs) $ lockJournal $ do
-		stageJournalFiles fs
-		g <- gitRepo
-		withIndex $ liftIO $ Git.commit g message fullname [fullname]
+commit message = whenM journalDirty $ lockJournal $ do
+	stageJournalFiles
+	g <- gitRepo
+	withIndex $ liftIO $ Git.commit g message fullname [fullname]
 
 {- Ensures that the branch is up-to-date; should be called before
- - data is read from it. Runs only once per git-annex run. -}
+ - data is read from it. Runs only once per git-annex run.
+ -
+ - Before refs are merged into the index, it's
+ - important to first stage the journal into the
+ - index. Otherwise, any changes in the journal
+ - would later get staged, and might overwrite
+ - changes made during the merge.
+ -
+ - It would be cleaner to handle the merge by
+ - updating the journal, not the index, with changes
+ - from the branches.
+ -}
 update :: Annex ()
 update = onceonly $ do
 	-- check what needs updating before taking the lock
-	fs <- getJournalFiles
+	dirty <- journalDirty
 	c <- filterM changedbranch =<< siblingBranches
 	let (refs, branches) = unzip c
-	unless (null fs && null refs) $ withIndex $ lockJournal $ do
-		{- Before refs are merged into the index, it's
-		 - important to first stage the journal into the
-		 - index. Otherwise, any changes in the journal
-		 - would later get staged, and might overwrite
-		 - changes made during the merge.
-		 -
-		 - It would be cleaner to handle the merge by
-		 - updating the journal, not the index, with changes
-		 - from the branches.
-		 -}
-		unless (null fs) $ stageJournalFiles fs
+	unless (not dirty && null refs) $ withIndex $ lockJournal $ do
+		when dirty $ stageJournalFiles
 		g <- gitRepo
 		unless (null branches) $ do
 			showSideAction $ "merging " ++
@@ -279,8 +278,9 @@ getJournalFiles = do
 	return $ filter (`notElem` [".", ".."]) fs
 
 {- Stages the specified journalfiles. -}
-stageJournalFiles :: [FilePath] -> Annex ()
-stageJournalFiles fs = do
+stageJournalFiles :: Annex ()
+stageJournalFiles = do
+	fs <- getJournalFiles
 	g <- gitRepo
 	withIndex $ liftIO $ do
 		let dir = gitAnnexJournalDir g
@@ -304,6 +304,10 @@ stageJournalFiles fs = do
 	where
 		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
+
+{- Checks if there are changes in the journal. -}
+journalDirty :: Annex Bool
+journalDirty = not . null <$> getJournalFiles
 
 {- Produces a filename to use in the journal for a file on the branch.
  -
