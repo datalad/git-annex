@@ -496,15 +496,29 @@ configParse s = M.fromList $ map pair $ lines s
 configRemotes :: Repo -> IO [Repo]
 configRemotes repo = mapM construct remotepairs
 	where
-		remotepairs = M.toList $ filterremotes $ config repo
-		filterremotes = M.filterWithKey (\k _ -> isremote k)
+		filterconfig f = filter f $ M.toList $ config repo
+		filterkeys f = filterconfig (\(k,_) -> f k)
+		remotepairs = filterkeys isremote
 		isremote k = startswith "remote." k && endswith ".url" k
 		construct (k,v) = do
-			r <- gen v
+			r <- gen $ calcloc v
 			return $ repoRemoteNameSet r k
-		gen v	| scpstyle v = repoFromUrl $ scptourl v
+		gen v
+			| scpstyle v = repoFromUrl $ scptourl v
 			| isURI v = repoFromUrl v
 			| otherwise = repoFromRemotePath v repo
+		-- insteadof config can rewrite remote location
+		calcloc l
+			| null insteadofs = l
+			| otherwise = replacement ++ drop (length replacement) l
+			where
+				replacement = take (length bestkey - length prefix) bestkey
+				bestkey = fst $ maximumBy longestvalue insteadofs
+				longestvalue (_, a) (_, b) = compare b a
+				insteadofs = filterconfig $ \(k, v) -> 
+					endswith prefix k &&
+					startswith v l
+				prefix = ".insteadof"
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir

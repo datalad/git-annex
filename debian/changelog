@@ -18,6 +18,9 @@ git-annex (3.20110929) UNRELEASED; urgency=low
     the expected repository.
   * Note that this git-annex will not interoperate with remotes using 
     older versions of git-annex-shell.
+  * Now supports git's insteadOf configuration, to modify the url
+    used to access a remote. Note that pushInsteadOf is not used;
+    that and pushurl are reserved for actual git pushes. Closes: #644278
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 
