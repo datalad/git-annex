@@ -215,20 +215,16 @@ set file content = do
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
-get file = do
-	cached <- getCache file
-	case cached of
-		Just content -> return content
-		Nothing -> do
-			j <- getJournalFile file
-			case j of
-				Just content -> do
-					setCache file content
-					return content
-				Nothing -> withIndexUpdate $ do
-					content <- catFile fullname file
-					setCache file content
-					return content
+get file = fromcache =<< getCache file
+	where
+		fromcache (Just content) = return content
+		fromcache Nothing = fromjournal =<< getJournalFile file
+		fromjournal (Just content) = cache content
+		fromjournal Nothing = withIndexUpdate $
+			cache =<< catFile fullname file
+		cache content = do
+			setCache file content
+			return content
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
@@ -287,8 +283,7 @@ stageJournalFiles = do
 		let paths = map (dir </>) fs
 		-- inject all the journal files directly into git
 		-- in one quick command
-		(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $
-			Git.gitCommandLine g [Param "hash-object", Param "-w", Param "--stdin-paths"]
+		(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $ git_hash_object g
 		_ <- forkProcess $ do
 			hPutStr toh $ unlines paths
 			hClose toh
@@ -304,6 +299,9 @@ stageJournalFiles = do
 	where
 		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
+		git_hash_object g = Git.gitCommandLine g
+			[Param "hash-object", Param "-w", Param "--stdin-paths"]
+
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: Annex Bool
