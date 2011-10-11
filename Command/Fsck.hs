@@ -55,7 +55,7 @@ verifyLocationLog key file = do
 		preventWrite f
 		preventWrite (parentDir f)
 
-	u <- getUUID g
+	u <- getUUID
         uuids <- keyLocations key
 
 	case (present, u `elem` uuids) of

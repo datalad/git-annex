@@ -72,8 +72,7 @@ remoteHasKey remote key present	= do
  -}
 toStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 toStart dest move file = isAnnexed file $ \(key, _) -> do
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
 		then stop -- not here, so nothing to do
@@ -122,8 +121,7 @@ toCleanup dest move key = do
  -}
 fromStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
 fromStart src move file = isAnnexed file $ \(key, _) -> do
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	remotes <- Remote.keyPossibilities key
 	if u == Remote.uuid src || not (any (== src) remotes)
 		then stop

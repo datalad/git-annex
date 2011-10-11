@@ -17,10 +17,9 @@ import Control.Applicative
 
 {- Returns the parent directory of a path. Parent of / is "" -}
 parentDir :: FilePath -> FilePath
-parentDir dir =
-	if not $ null dirs
-	then slash ++ join s (init dirs)
-	else ""
+parentDir dir
+	| not $ null dirs = slash ++ join s (init dirs)
+	| otherwise = ""
 		where
 			dirs = filter (not . null) $ split s dir
 			slash = if isAbsolute dir then s else ""
@@ -72,7 +71,7 @@ relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
  - Both must be absolute, and normalized (eg with absNormpath).
  -}
 relPathDirToFile :: FilePath -> FilePath -> FilePath
-relPathDirToFile from to = path
+relPathDirToFile from to = join s $ dotdots ++ uncommon
 	where
 		s = [pathSeparator]
 		pfrom = split s from
@@ -82,7 +81,6 @@ relPathDirToFile from to = path
 		uncommon = drop numcommon pto
 		dotdots = replicate (length pfrom - numcommon) ".."
 		numcommon = length common
-		path = join s $ dotdots ++ uncommon
 
 prop_relPathDirToFile_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFile_basics from to
@@ -99,14 +97,11 @@ prop_relPathDirToFile_basics from to
  - appear at the same position as it did in the input list.
  -}
 preserveOrder :: [FilePath] -> [FilePath] -> [FilePath]
--- optimisation, only one item in original list, so no reordering needed
-preserveOrder [_] new = new
-preserveOrder orig new = collect orig new
+preserveOrder [] new = new
+preserveOrder [_] new = new -- optimisation
+preserveOrder (l:ls) new = found ++ preserveOrder ls rest
 	where
-		collect [] n = n
-		collect [_] n = n -- optimisation
-		collect (l:ls) n = found ++ collect ls rest
-			where (found, rest)=partition (l `dirContains`) n
+		(found, rest)=partition (l `dirContains`) new
 
 {- Runs an action that takes a list of FilePaths, and ensures that 
  - its return list preserves order.

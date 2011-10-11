@@ -104,11 +104,11 @@ checkKeyChecksum size key = do
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True
-		else do
-			s <- shaN size file
-			if s == dropExtension (keyName key)
-				then return True
-				else do
-					dest <- moveBad key
-					warning $ "Bad file content; moved to " ++ dest
-					return False
+		else check =<< shaN size file
+	where
+		check s
+			| s == dropExtension (keyName key) = return True
+			| otherwise = do
+				dest <- moveBad key
+				warning $ "Bad file content; moved to " ++ dest
+				return False

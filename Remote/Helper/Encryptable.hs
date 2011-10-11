@@ -78,8 +78,6 @@ remoteCipher c = maybe expensive cached =<< Annex.getState Annex.cipher
 {- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey Nothing _ = return Nothing
-cipherKey (Just c) k = remoteCipher c >>= maybe (return Nothing) encrypt
+cipherKey (Just c) k = maybe Nothing encrypt <$> remoteCipher c
 	where
-		encrypt ciphertext = do
-			k' <- liftIO $ encryptKey ciphertext k
-			return $ Just (ciphertext, k')
+		encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)

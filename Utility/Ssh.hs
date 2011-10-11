@@ -34,7 +34,7 @@ git_annex_shell :: Git.Repo -> String -> [CommandParam] -> Annex (Maybe (FilePat
 git_annex_shell r command params
 	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts)
 	| Git.repoIsSsh r = do
-		uuid <- getUUID r
+		uuid <- getRepoUUID r
 		sshparams <- sshToRepo r [Param $ sshcmd uuid ]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing

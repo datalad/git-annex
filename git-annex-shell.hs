@@ -37,7 +37,7 @@ options = uuid : commonOptions
 	where
 		uuid = Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
 		check expected = do
-			u <- getUUID =<< gitRepo
+			u <- getUUID
 			when (u /= expected) $ error $
 				"expected repository UUID " ++ expected
 					++ " but found UUID " ++ u

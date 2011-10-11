@@ -19,6 +19,7 @@ module Utility (
 	anyM
 ) where
 
+import Control.Applicative
 import IO (bracket)
 import System.IO
 import System.Posix.Process hiding (executeFile)
@@ -69,9 +70,7 @@ withTempFile template a = bracket create remove use
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
 dirContents :: FilePath -> IO [FilePath]
-dirContents d = do
-	c <- getDirectoryContents d
-	return $ map (d </>) $ filter notcruft c
+dirContents d = map (d </>) . filter notcruft <$> getDirectoryContents d
 	where
 		notcruft "." = False
 		notcruft ".." = False
@@ -79,10 +78,7 @@ dirContents d = do
 
 {- Current user's home directory. -}
 myHomeDir :: IO FilePath
-myHomeDir = do
-	uid <- getEffectiveUserID
-	u <- getUserEntryForID uid
-	return $ homeDirectory u
+myHomeDir = homeDirectory <$> (getUserEntryForID =<< getEffectiveUserID)
 
 {- Catches IO errors and returns a Bool -}
 catchBool :: IO Bool -> IO Bool
