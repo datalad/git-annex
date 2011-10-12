@@ -1,0 +1,30 @@
+git-annex 3.20111011 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * This version of git-annex only works with git 1.7.7 and newer.
+     The breakage with old versions is subtle, and affects the
+     annex.numcopies settings in .gitattributes, so be sure to upgrade git
+     to 1.7.7. (Debian package now depends on that version.)
+   * Don't pass absolute paths to git show-attr, as it started following
+     symlinks when that's done in 1.7.7. Instead, use relative paths,
+     which show-attr only handles 100% correctly in 1.7.7. Closes: #[645046](http://bugs.debian.org/645046)
+   * Fix referring to remotes by uuid.
+   * New or changed repository descriptions in uuid.log now have a timestamp,
+     which is used to ensure the newest description is used when the uuid.log
+     has been merged.
+   * Note that older versions of git-annex will display the timestamp as part
+     of the repository description, which is ugly but otherwise harmless.
+   * Add timestamps to trust.log and remote.log too.
+   * git-annex-shell: Added the --uuid option.
+   * git-annex now asks git-annex-shell to verify that it's operating in
+     the expected repository.
+   * Note that this git-annex will not interoperate with remotes using
+     older versions of git-annex-shell.
+   * Now supports git's insteadOf configuration, to modify the url
+     used to access a remote. Note that pushInsteadOf is not used;
+     that and pushurl are reserved for actual git pushes. Closes: #[644278](http://bugs.debian.org/644278)
+   * status: List all known repositories.
+   * When displaying a list of repositories, show git remote names
+     in addition to their descriptions.
+   * Add locking to avoid races when changing the git-annex branch.
+   * Various speed improvements gained by using ByteStrings.
+   * Contain the zombie hordes."""]]
