@@ -17,7 +17,7 @@ Build-Depends:
 	libghc-json-dev,
 	ikiwiki,
 	perlmagick,
-	git | git-core,
+	git,
 	uuid,
 	rsync,
 Maintainer: Joey Hess <joeyh@debian.org>

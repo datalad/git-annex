@@ -1,8 +1,8 @@
-git-annex (3.20110929) UNRELEASED; urgency=low
+git-annex (3.20111011) unstable; urgency=low
 
   * This version of git-annex only works with git 1.7.7 and newer.
-    The breakage with old versions is subtle, and affects
-    annex.numcopies .gitattributes settings, so be sure to upgrade git
+    The breakage with old versions is subtle, and affects the
+    annex.numcopies settings in .gitattributes, so be sure to upgrade git
     to 1.7.7. (Debian package now depends on that version.)
   * Don't pass absolute paths to git show-attr, as it started following
     symlinks when that's done in 1.7.7. Instead, use relative paths,
@@ -29,7 +29,7 @@ git-annex (3.20110929) UNRELEASED; urgency=low
   * Various speed improvements gained by using ByteStrings.
   * Contain the zombie hordes.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 11 Oct 2011 23:00:02 -0400
 
 git-annex (3.20110928) unstable; urgency=low
 
