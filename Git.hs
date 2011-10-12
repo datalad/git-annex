@@ -547,10 +547,12 @@ configMap = config
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
 checkAttr repo attr files = do
+	cwd <- getCurrentDirectory
+	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
-                hPutStr toh $ join "\0" files
+                hPutStr toh $ join "\0" relfiles
                 hClose toh
                 exitSuccess
         hClose toh
