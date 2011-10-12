@@ -1,4 +1,4 @@
-git-annex (3.20111011) unstable; urgency=low
+git-annex (3.20111011) UNRELEASED; urgency=low
 
   * Fix referring to remotes by uuid.
   * New or changed repository descriptions in uuid.log now have a timestamp,

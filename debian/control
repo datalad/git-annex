@@ -27,7 +27,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.7.7),
+	git | git-core,
 	uuid,
 	rsync,
 	wget | curl,

@@ -547,25 +547,36 @@ configMap = config
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
 checkAttr repo attr files = do
+	-- git check-attr wants files that are absolute (or relative to the
+	-- top of the repo). But we're passed files relative to the current
+	-- directory. Convert to absolute, and then convert the filenames
+	-- in its output back to relative.
 	cwd <- getCurrentDirectory
-	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
+	let top = workTree repo
+	let absfiles = map (absPathFrom cwd) files
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
-                hPutStr toh $ join "\0" relfiles
+                hPutStr toh $ join "\0" absfiles
                 hClose toh
                 exitSuccess
         hClose toh
-	(map topair . lines) <$> hGetContents fromh
+	s <- hGetContents fromh
+	return $ map (topair cwd top) $ lines s
 	where
 		params = gitCommandLine repo [Param "check-attr", Param attr, Params "-z --stdin"]
-		topair l = (file, value)
+		topair cwd top l = (relfile, value)
 			where 
+				relfile
+					| startswith cwd' file = drop (length cwd') file
+					| otherwise = relPathDirToFile top' file
 				file = decodeGitFile $ join sep $ take end bits
 				value = bits !! end
 				end = length bits - 1
 				bits = split sep l
 				sep = ": " ++ attr ++ ": "
+				cwd' = cwd ++ "/"
+				top' = top ++ "/"
 
 {- Some git commands output encoded filenames. Decode that (annoyingly
  - complex) encoding. -}
