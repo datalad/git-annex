@@ -1,12 +1,6 @@
-git-annex (3.20111006~bpo60+1) UNRELEASED; urgency=low
+git-annex (3.20110929) UNRELEASED; urgency=low
 
-  * Various speed improvements gained by using ByteStrings.
   * Fix referring to remotes by uuid.
-  * status: List all known repositories.
-  * When displaying a list of repositories, show git remote names
-    in addition to their descriptions.
-  * Contain the zombie hordes.
-  * Add locking to avoid races when changing the git-annex branch.
   * New or changed repository descriptions in uuid.log now have a timestamp,
     which is used to ensure the newest description is used when the uuid.log
     has been merged.
@@ -18,6 +12,15 @@ git-annex (3.20111006~bpo60+1) UNRELEASED; urgency=low
     the expected repository.
   * Note that this git-annex will not interoperate with remotes using 
     older versions of git-annex-shell.
+  * Now supports git's insteadOf configuration, to modify the url
+    used to access a remote. Note that pushInsteadOf is not used;
+    that and pushurl are reserved for actual git pushes. Closes: #644278
+  * status: List all known repositories.
+  * When displaying a list of repositories, show git remote names
+    in addition to their descriptions.
+  * Add locking to avoid races when changing the git-annex branch.
+  * Various speed improvements gained by using ByteStrings.
+  * Contain the zombie hordes.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 Sep 2011 18:58:53 -0400
 
