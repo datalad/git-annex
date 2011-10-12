@@ -4,7 +4,7 @@ git-annex (3.20110702) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Fri, 01 Jul 2011 15:40:51 -0400
 
-git-annex (3.20110624) exerimental; urgency=low
+git-annex (3.20110624) experimental; urgency=low
 
   There has been another change to the git-annex data store.
   Use `git annex upgrade` to migrate your repositories to the new
