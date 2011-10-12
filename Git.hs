@@ -547,6 +547,9 @@ configMap = config
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
 checkAttr repo attr files = do
+	-- git check-attr needs relative filenames input; it will choke
+	-- on some absolute filenames. This also means it will output
+	-- all relative filenames.
 	cwd <- getCurrentDirectory
 	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
