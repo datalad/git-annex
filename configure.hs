@@ -2,12 +2,16 @@
 
 import System.Directory
 import Data.List
+import Data.String.Utils
+import System.Cmd.Utils
 
 import Build.TestConfig
 
 tests :: [TestCase]
 tests =
 	[ TestCase "version" getVersion
+	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
+	, TestCase "git version" checkGitVersion
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_reflink_auto" "--reflink=auto"
@@ -52,6 +56,26 @@ getVersionString = do
 	return $ middle (words verline !! 1)
 	where
 		middle = drop 1 . init
+
+{- Checks for a new enough version of git. -}
+checkGitVersion :: Test
+checkGitVersion = do
+	(_, s) <- pipeFrom "git" ["--version"]
+	let version = last $ words $ head $ lines s
+	if dotted version < dotted need
+		then error $ "git version " ++ version ++ " too old; need " ++ need
+		else return $ Config "gitversion" (StringConfig version)
+	where
+		-- for git-check-attr behavior change
+		need = "1.7.7"
+		dotted = sum . mult 1 . reverse . extend 10 . map readi . split "." 
+		extend n l = l ++ take (n - length l) (repeat 0)
+		mult _ [] = []
+		mult n (x:xs) = (n*x) : (mult (n*100) xs)
+		readi :: String -> Integer
+		readi s = case reads s of
+			((x,_):_) -> x
+			_ -> 0
 
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()
