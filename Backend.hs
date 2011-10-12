@@ -39,23 +39,20 @@ orderedList = do
 	l <- Annex.getState Annex.backends -- list is cached here
 	if not $ null l
 		then return l
-		else do
-			s <- getstandard
-			d <- Annex.getState Annex.forcebackend
-			handle d s
+		else handle =<< Annex.getState Annex.forcebackend
 	where
-		parseBackendList [] = list
-		parseBackendList s = map lookupBackendName $ words s
-		handle Nothing s = return s
-		handle (Just "") s = return s
-		handle (Just name) s = do
-			let l' = lookupBackendName name : s
-			Annex.changeState $ \state -> state { Annex.backends = l' }
+		handle Nothing = standard
+		handle (Just "") = standard
+		handle (Just name) = do
+			l' <- (lookupBackendName name :) <$> standard
+			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		getstandard = do
+		standard = do
 			g <- gitRepo
 			return $ parseBackendList $
 				Git.configGet g "annex.backends" ""
+		parseBackendList [] = list
+		parseBackendList s = map lookupBackendName $ words s
 
 {- Generates a key for a file, trying each backend in turn until one
  - accepts it. -}
@@ -83,17 +80,15 @@ lookupFile file = do
 	where
 		getsymlink = takeFileName <$> readSymbolicLink file
 		makekey l = maybe (return Nothing) (makeret l) (fileKey l)
-		makeret l k =
+		makeret l k = let bname = keyBackendName k in
 			case maybeLookupBackendName bname of
-					Just backend -> return $ Just (k, backend)
-					Nothing -> do
-						when (isLinkToAnnex l) $
-							warning skip
-						return Nothing
-			where
-				bname = keyBackendName k
-				skip = "skipping " ++ file ++ 
-					" (unknown backend " ++ bname ++ ")"
+				Just backend -> return $ Just (k, backend)
+				Nothing -> do
+					when (isLinkToAnnex l) $ warning $
+						"skipping " ++ file ++
+						" (unknown backend " ++
+						bname ++ ")"
+					return Nothing
 
 type BackendFile = (Maybe (Backend Annex), FilePath)
 
@@ -121,4 +116,5 @@ maybeLookupBackendName :: String -> Maybe (Backend Annex)
 maybeLookupBackendName s
 	| length matches == 1 = Just $ head matches
 	| otherwise = Nothing
-	where matches = filter (\b -> s == B.name b) list
+	where
+		matches = filter (\b -> s == B.name b) list

@@ -29,7 +29,6 @@ start ws = do
 perform :: String -> CommandPerform
 perform description = do
 	initialize
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	describeUUID u description
 	next $ return True

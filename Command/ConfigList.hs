@@ -20,7 +20,6 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	liftIO $ putStrLn $ "annex.uuid=" ++ u
 	stop

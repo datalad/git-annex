@@ -16,6 +16,7 @@
 module UUID (
 	UUID,
 	getUUID,
+	getRepoUUID,
 	getUncachedUUID,
 	prepUUID,
 	genUUID,
@@ -44,7 +45,7 @@ logfile = "uuid.log"
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
 genUUID :: IO UUID
-genUUID = liftIO $ pOpen ReadFromPipe command params $ \h -> hGetLine h
+genUUID = pOpen ReadFromPipe command params hGetLine
 	where
 		command = SysConfig.uuid
 		params = if command == "uuid"
@@ -53,9 +54,12 @@ genUUID = liftIO $ pOpen ReadFromPipe command params $ \h -> hGetLine h
 			-- uuidgen generates random uuid by default
 			else []
 
+getUUID :: Annex UUID
+getUUID = getRepoUUID =<< gitRepo
+
 {- Looks up a repo's UUID. May return "" if none is known. -}
-getUUID :: Git.Repo -> Annex UUID
-getUUID r = do
+getRepoUUID :: Git.Repo -> Annex UUID
+getRepoUUID r = do
 	g <- gitRepo
 
 	let c = cached g
@@ -76,11 +80,8 @@ getUncachedUUID r = Git.configGet r configkey ""
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
-prepUUID = do
-	u <- getUUID =<< gitRepo
-	when (null u) $ do
-		uuid <- liftIO genUUID
-		setConfig configkey uuid
+prepUUID = whenM (null <$> getUUID) $
+	setConfig configkey =<< liftIO genUUID
 
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> String -> Annex ()

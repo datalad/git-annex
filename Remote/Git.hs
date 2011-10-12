@@ -48,7 +48,7 @@ gen r u _ = do
 		(False, "") -> tryGitConfigRead r
 		_ -> return r
 
-	u' <- getUUID r'
+	u' <- getRepoUUID r'
 
 	let defcst = if cheap then cheapRemoteCost else expensiveRemoteCost
 	cst <- remoteCost r' defcst

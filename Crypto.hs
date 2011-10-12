@@ -135,13 +135,12 @@ decryptCipher _ (EncryptedCipher encipher _) =
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
-encryptKey :: Cipher -> Key -> IO Key
-encryptKey c k =
-	return Key {
-		keyName = hmacWithCipher c (show k),
-		keyBackendName = "GPGHMACSHA1",
-		keySize = Nothing, -- size and mtime omitted
-		keyMtime = Nothing -- to avoid leaking data
+encryptKey :: Cipher -> Key -> Key
+encryptKey c k = Key
+	{ keyName = hmacWithCipher c (show k)
+	, keyBackendName = "GPGHMACSHA1"
+	, keySize = Nothing -- size and mtime omitted
+	, keyMtime = Nothing -- to avoid leaking data
 	}
 
 {- Runs an action, passing it a handle from which it can 
@@ -223,18 +222,18 @@ gpgCipherHandle params c a b = do
 	return ret
 
 configKeyIds :: RemoteConfig -> IO KeyIds
-configKeyIds c = do
-	let k = configGet c "encryption"
-	s <- gpgRead [Params "--with-colons --list-public-keys", Param k]
-	return $ KeyIds $ parseWithColons s
+configKeyIds c = parse <$> gpgRead params
 	where
-		parseWithColons s = map keyIdField $ filter pubKey $ lines s
+		params = [Params "--with-colons --list-public-keys",
+			Param $ configGet c "encryption"]
+		parse = KeyIds . map keyIdField . filter pubKey . lines
 		pubKey = isPrefixOf "pub:"
 		keyIdField s = split ":" s !! 4
 
 configGet :: RemoteConfig -> String -> String
 configGet c key = fromMaybe missing $ M.lookup key c
-	where missing = error $ "missing " ++ key ++ " in remote config"
+	where
+		missing = error $ "missing " ++ key ++ " in remote config"
 
 hmacWithCipher :: Cipher -> String -> String
 hmacWithCipher c = hmacWithCipher' (cipherHmac c) 

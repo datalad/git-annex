@@ -57,7 +57,7 @@ calcGitLink file key = do
 logStatus :: Key -> LogStatus -> Annex ()
 logStatus key status = do
 	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	logChange g key u status
 
 {- Runs an action, passing it a temporary filename to download,

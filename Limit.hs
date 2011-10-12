@@ -65,14 +65,13 @@ addExclude glob = addLimit $ return . notExcluded
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. -}
 addIn :: String -> Annex ()
-addIn name = do
-	u <- Remote.nameToUUID name
-	addLimit $ if name == "." then check inAnnex else check (remote u)
+addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
 	where
 		check a f = Backend.lookupFile f >>= handle a
 		handle _ Nothing = return False
 		handle a (Just (key, _)) = a key
-		remote u key = do
+		inremote key = do
+			u <- Remote.nameToUUID name
 			us <- keyLocations key
 			return $ u `elem` us
 

@@ -31,31 +31,31 @@ import qualified Annex
 import qualified Messages.JSON as JSON
 
 showStart :: String -> String -> Annex ()
-showStart command file = handle (JSON.start command file) $ do
-	putStr $ command ++ " " ++ file ++ " "
-	hFlush stdout
+showStart command file = handle (JSON.start command file) $
+	flushed $ putStr $ command ++ " " ++ file ++ " "
 
 showNote :: String -> Annex ()
-showNote s = handle (JSON.note s) $ do
-	putStr $ "(" ++ s ++ ") "
-	hFlush stdout
+showNote s = handle (JSON.note s) $
+	flushed $ putStr $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
 
 showProgress :: Annex ()
-showProgress = handle q $ do
-	putStr "."
-	hFlush stdout
+showProgress = handle q $
+	flushed $ putStr "."
 
 showSideAction :: String -> Annex ()
-showSideAction s = handle q $ putStrLn $ "(" ++ s ++ "...)"
+showSideAction s = handle q $
+	putStrLn $ "(" ++ s ++ "...)"
 
 showOutput :: Annex ()
-showOutput = handle q $ putStr "\n"
+showOutput = handle q $
+	putStr "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = handle (JSON.note s) $ putStrLn $ '\n' : indent s
+showLongNote s = handle (JSON.note s) $
+	putStrLn $ '\n' : indent s
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -113,3 +113,6 @@ maybeShowJSON v = handle (JSON.add v) q
 
 q :: Monad m => m ()
 q = return ()
+
+flushed :: IO () -> IO ()
+flushed a = a >> hFlush stdout

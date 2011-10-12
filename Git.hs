@@ -496,15 +496,29 @@ configParse s = M.fromList $ map pair $ lines s
 configRemotes :: Repo -> IO [Repo]
 configRemotes repo = mapM construct remotepairs
 	where
-		remotepairs = M.toList $ filterremotes $ config repo
-		filterremotes = M.filterWithKey (\k _ -> isremote k)
+		filterconfig f = filter f $ M.toList $ config repo
+		filterkeys f = filterconfig (\(k,_) -> f k)
+		remotepairs = filterkeys isremote
 		isremote k = startswith "remote." k && endswith ".url" k
 		construct (k,v) = do
-			r <- gen v
+			r <- gen $ calcloc v
 			return $ repoRemoteNameSet r k
-		gen v	| scpstyle v = repoFromUrl $ scptourl v
+		gen v
+			| scpstyle v = repoFromUrl $ scptourl v
 			| isURI v = repoFromUrl v
 			| otherwise = repoFromRemotePath v repo
+		-- insteadof config can rewrite remote location
+		calcloc l
+			| null insteadofs = l
+			| otherwise = replacement ++ drop (length replacement) l
+			where
+				replacement = take (length bestkey - length prefix) bestkey
+				bestkey = fst $ maximumBy longestvalue insteadofs
+				longestvalue (_, a) (_, b) = compare b a
+				insteadofs = filterconfig $ \(k, v) -> 
+					endswith prefix k &&
+					startswith v l
+				prefix = ".insteadof"
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
@@ -533,36 +547,25 @@ configMap = config
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
 checkAttr repo attr files = do
-	-- git check-attr wants files that are absolute (or relative to the
-	-- top of the repo). But we're passed files relative to the current
-	-- directory. Convert to absolute, and then convert the filenames
-	-- in its output back to relative.
 	cwd <- getCurrentDirectory
-	let top = workTree repo
-	let absfiles = map (absPathFrom cwd) files
+	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
-                hPutStr toh $ join "\0" absfiles
+                hPutStr toh $ join "\0" relfiles
                 hClose toh
                 exitSuccess
         hClose toh
-	s <- hGetContents fromh
-	return $ map (topair cwd top) $ lines s
+	(map topair . lines) <$> hGetContents fromh
 	where
 		params = gitCommandLine repo [Param "check-attr", Param attr, Params "-z --stdin"]
-		topair cwd top l = (relfile, value)
+		topair l = (file, value)
 			where 
-				relfile
-					| startswith cwd' file = drop (length cwd') file
-					| otherwise = relPathDirToFile top' file
 				file = decodeGitFile $ join sep $ take end bits
 				value = bits !! end
 				end = length bits - 1
 				bits = split sep l
 				sep = ": " ++ attr ++ ": "
-				cwd' = cwd ++ "/"
-				top' = top ++ "/"
 
 {- Some git commands output encoded filenames. Decode that (annoyingly
  - complex) encoding. -}

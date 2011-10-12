@@ -15,7 +15,7 @@ Build-Depends:
 	libghc6-json-dev,
 	ikiwiki,
 	perlmagick,
-	git | git-core,
+	git,
 	uuid,
 	rsync,
 Maintainer: Joey Hess <joeyh@debian.org>
@@ -27,7 +27,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git | git-core,
+	git (>= 1:1.7.7),
 	uuid,
 	rsync,
 	wget | curl,

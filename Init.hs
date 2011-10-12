@@ -75,6 +75,6 @@ preCommitHook = do
 
 preCommitScript :: String
 preCommitScript = 
-		"#!/bin/sh\n" ++
-		"# automatically configured by git-annex\n" ++ 
-		"git annex pre-commit .\n"
+	"#!/bin/sh\n" ++
+	"# automatically configured by git-annex\n" ++ 
+	"git annex pre-commit .\n"

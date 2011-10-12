@@ -609,9 +609,7 @@ checkdangling f = do
 
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
-	thisuuid <- annexeval $ do
-		g <- Annex.gitRepo
-		UUID.getUUID g
+	thisuuid <- annexeval UUID.getUUID
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do

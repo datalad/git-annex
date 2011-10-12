@@ -78,7 +78,7 @@ genList = do
 			enumerate t >>=
 			mapM (gen m t)
 		gen m t r = do
-			u <- getUUID r
+			u <- getRepoUUID r
 			generate t r u (M.lookup u m)
 
 {- Looks up a remote by name. (Or by UUID.) Only finds currently configured
@@ -104,7 +104,7 @@ byName' n = do
  - and returns its UUID. Finds even remotes that are not configured in
  - .git/config. -}
 nameToUUID :: String -> Annex UUID
-nameToUUID "." = getUUID =<< gitRepo -- special case for current repo
+nameToUUID "." = getUUID -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
@@ -129,7 +129,7 @@ nameToUUID n = do
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
-	here <- getUUID =<< gitRepo
+	here <- getUUID
 	umap <- uuidMap
 	rmap <- remoteMap
 	let m = M.unionWith addname umap rmap
@@ -180,8 +180,7 @@ keyPossibilitiesTrusted = keyPossibilities' True
 
 keyPossibilities' :: Bool -> Key -> Annex ([Remote Annex], [UUID])
 keyPossibilities' withtrusted key = do
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	trusted <- if withtrusted then trustGet Trusted else return []
 
 	-- get uuids of all remotes that are recorded to have the key
@@ -200,8 +199,7 @@ keyPossibilities' withtrusted key = do
 {- Displays known locations of a key. -}
 showLocations :: Key -> [UUID] -> Annex ()
 showLocations key exclude = do
-	g <- gitRepo
-	u <- getUUID g
+	u <- getUUID
 	uuids <- keyLocations key
 	untrusteduuids <- trustGet UnTrusted
 	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
