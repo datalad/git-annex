@@ -34,7 +34,18 @@ remote = RemoteType {
 list :: Annex [Git.Repo]
 list = do
 	g <- gitRepo
-	return $ Git.remotes g
+	let c = Git.configMap g
+	mapM (tweakurl c) $ Git.remotes g
+	where
+		annexurl n = "remote." ++ n ++ ".annexurl"
+		tweakurl c r = do
+			let n = fromJust $ Git.repoRemoteName r
+			case M.lookup (annexurl n) c of
+				Nothing -> return r
+				Just url -> do
+					g <- gitRepo
+					r' <- liftIO $ Git.genRemote g url
+					return $ Git.repoRemoteNameSet r' n
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do

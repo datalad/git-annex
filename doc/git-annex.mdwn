@@ -501,6 +501,12 @@ Here are all the supported configuration settings.
   Or, it could be used if the network connection between two
   repositories is too slow to be used normally.
 
+* `remote.<name>.annexUrl`
+
+  Can be used to specify a different url than the regular `remote.<name>.url`
+  for git-annex to use when talking with the remote. Similar to the `pushUrl`
+  used by git-push.
+
 * `remote.<name>.annex-uuid`
 
   git-annex caches UUIDs of remote repositories here.

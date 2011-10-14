@@ -24,7 +24,7 @@ findSpecialRemotes s = do
 	return $ map construct $ remotepairs g
 	where
 		remotepairs r = M.toList $ M.filterWithKey match $ Git.configMap r
-		construct (k,_) = Git.repoRemoteNameSet Git.repoFromUnknown k
+		construct (k,_) = Git.repoRemoteNameFromKey Git.repoFromUnknown k
 		match k _ = startswith "remote." k && endswith (".annex-"++s) k
 
 {- Sets up configuration for a special remote in .git/config. -}

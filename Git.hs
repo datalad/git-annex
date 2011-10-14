@@ -48,8 +48,10 @@ module Git (
 	attributes,
 	remotes,
 	remotesAdd,
+	genRemote,
 	repoRemoteName,
 	repoRemoteNameSet,
+	repoRemoteNameFromKey,
 	checkAttr,
 	decodeGitFile,
 	encodeGitFile,
@@ -185,10 +187,14 @@ repoRemoteName :: Repo -> Maybe String
 repoRemoteName Repo { remoteName = Just name } = Just name
 repoRemoteName _ = Nothing
 
+{- Sets the name of a remote. -}
+repoRemoteNameSet :: Repo -> String -> Repo
+repoRemoteNameSet r n = r { remoteName = Just n }
+
 {- Sets the name of a remote based on the git config key, such as
    "remote.foo.url". -}
-repoRemoteNameSet :: Repo -> String -> Repo
-repoRemoteNameSet r k = r { remoteName = Just basename }
+repoRemoteNameFromKey :: Repo -> String -> Repo
+repoRemoteNameFromKey r k = repoRemoteNameSet r basename
 	where
 		basename = join "." $ reverse $ drop 1 $
 				reverse $ drop 1 $ split "." k
@@ -501,9 +507,15 @@ configRemotes repo = mapM construct remotepairs
 		remotepairs = filterkeys isremote
 		isremote k = startswith "remote." k && endswith ".url" k
 		construct (k,v) = do
-			r <- gen $ calcloc v
-			return $ repoRemoteNameSet r k
-		gen v
+			r <- genRemote repo v
+			return $ repoRemoteNameFromKey r k
+
+{- Generates one of a repo's remotes using a given location (ie, an url). -}
+genRemote :: Repo -> String -> IO Repo
+genRemote repo = gen . calcloc
+	where
+		filterconfig f = filter f $ M.toList $ config repo
+		gen v	
 			| scpstyle v = repoFromUrl $ scptourl v
 			| isURI v = repoFromUrl v
 			| otherwise = repoFromRemotePath v repo
