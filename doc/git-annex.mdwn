@@ -477,6 +477,20 @@ Here are all the supported configuration settings.
   Space-separated list of names of the key-value backends to use. 
   The first listed is used to store new files by default. 
 
+* `annex.diskreserve`
+
+  Amount of disk space to reserve. Disk space is checked when transferring
+  content to avoid running out, and additional free space can be reserved
+  via this option, to make space for more important content (such as git
+  commit logs). Can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+  The default reserve is 1 megabyte.
+
+* `annex.version`
+
+  Automatically maintained, and used to automate upgrades between versions.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to
@@ -531,20 +545,6 @@ Here are all the supported configuration settings.
 
   Default ssh, rsync, and bup options to use if a remote does not have
   specific options.
-
-* `annex.diskreserve`
-
-  Amount of disk space to reserve. Disk space is checked when transferring
-  content to avoid running out, and additional free space can be reserved
-  via this option, to make space for more important content (such as git
-  commit logs). Can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
-
-  The default reserve is 1 megabyte.
-
-* `annex.version`
-
-  Automatically maintained, and used to automate upgrades between versions.
 
 * `remote.<name>.buprepo`
 
