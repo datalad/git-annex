@@ -32,3 +32,19 @@ I have posted an RFC for modifying gitolite to the
 
 As I don't write python, someone else is needed to work on gitosis.
 --[[Joey]] 
+
+## readonly commands
+
+* git-annex-shell configlist $directory
+* git-annex-shell inannex $directory [$key ...]
+* git-annex-shell sendkey $directory $key
+
+## read-write commands
+
+* git-annex-shell dropkey $directory [$key ...]
+* git-annex-shell recvkey $directory $key
+
+## other git-annex-shell parameters
+
+All parameters like --uuid=foo and --force are safe and need to be allowed
+through.
