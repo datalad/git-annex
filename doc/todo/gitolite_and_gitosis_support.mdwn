@@ -1,0 +1,14 @@
+gitosis and gitolite should support git-annex being used to send/receive
+files from the repositories they manage. Users with read-only access
+could only get files, while users with write access could also put and drop
+files.
+
+Doing this right requires modifying both programs, to add [[git-annex-shell]]
+to the list of things they can run, and only allow through appropriate
+git-annex-shell subcommands to read-only users.
+
+I have posted an RFC for modifying gitolite to the
+[gitolite mailing list](http://groups.google.com/group/gitolite?lnk=srg).
+
+As I don't write python, someone else is needed to work on gitosis.
+--[[Joey]] 
