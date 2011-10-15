@@ -338,8 +338,9 @@ urlHostUser r = urlAuthPart uriUserInfo r ++ urlAuthPart uriRegName' r
 
 {- The full authority portion an URL repo. (ie, "user@host:port") -}
 urlAuthority :: Repo -> String
-urlAuthority r = flip urlAuthPart r $ \a ->
-	uriUserInfo a ++ uriRegName' a ++ uriPort a
+urlAuthority = urlAuthPart combine
+	where
+		combine a = uriUserInfo a ++ uriRegName' a ++ uriPort a
 
 {- Applies a function to extract part of the uriAuthority of an URL repo. -}
 urlAuthPart :: (URIAuth -> a) -> Repo -> a
