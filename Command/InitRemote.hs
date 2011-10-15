@@ -12,9 +12,9 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Remote
-import qualified RemoteLog
+import qualified Logs.Remote
 import qualified Types.Remote as R
-import UUID
+import Logs.UUID
 
 command :: [Command]
 command = [repoCommand "initremote"
@@ -38,7 +38,7 @@ start ws = do
 
 	where
 		name = head ws
-		config = RemoteLog.keyValToConfig $ tail ws
+		config = Logs.Remote.keyValToConfig $ tail ws
 		needname = do
 			let err s = error $ "Specify a name for the remote. " ++ s
 			names <- remoteNames
@@ -54,13 +54,13 @@ perform t u c = do
 
 cleanup :: UUID -> R.RemoteConfig -> CommandCleanup
 cleanup u c = do
-	RemoteLog.configSet u c
+	Logs.Remote.configSet u c
         return True
 
 {- Look up existing remote's UUID and config by name, or generate a new one -}
 findByName :: String -> Annex (UUID, R.RemoteConfig)
 findByName name = do
-	m <- RemoteLog.readRemoteLog
+	m <- Logs.Remote.readRemoteLog
 	maybe generate return $ findByName' name m
 	where
 		generate = do
@@ -79,7 +79,7 @@ findByName' n m = if null matches then Nothing else Just $ head matches
 
 remoteNames :: Annex [String]
 remoteNames = do
-	m <- RemoteLog.readRemoteLog
+	m <- Logs.Remote.readRemoteLog
 	return $ mapMaybe (M.lookup nameKey . snd) $ M.toList m
 
 {- find the specified remote type -}

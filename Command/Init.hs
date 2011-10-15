@@ -9,7 +9,7 @@ module Command.Init where
 
 import Common.Annex
 import Command
-import UUID
+import Logs.UUID
 import Init
 	
 command :: [Command]

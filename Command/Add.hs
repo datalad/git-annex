@@ -13,7 +13,7 @@ import Command
 import qualified Annex
 import qualified Annex.Queue
 import qualified Backend
-import LocationLog
+import Logs.Location
 import Annex.Content
 import Utility.Touch
 import Backend

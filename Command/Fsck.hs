@@ -12,10 +12,10 @@ import Command
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
-import UUID
 import Annex.Content
-import LocationLog
-import Trust
+import Logs.Location
+import Logs.Trust
+import Logs.UUID
 import Utility.DataUnits
 import Utility.FileMode
 import Config

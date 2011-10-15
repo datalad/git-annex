@@ -10,7 +10,7 @@ module Upgrade.V2 where
 import Common.Annex
 import qualified Git
 import qualified Annex.Branch
-import LocationLog
+import Logs.Location
 import Annex.Content
 
 olddir :: Git.Repo -> FilePath

@@ -34,12 +34,12 @@ import Text.JSON.Generic
 
 import Common.Annex
 import Types.Remote
-import UUID
 import qualified Annex
 import Config
-import Trust
-import LocationLog
-import RemoteLog
+import Logs.UUID
+import Logs.Trust
+import Logs.Location
+import Logs.Remote
 
 import qualified Remote.Git
 import qualified Remote.S3
@@ -163,12 +163,12 @@ remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
 remotesWithoutUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
 remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 
-{- Cost ordered lists of remotes that the LocationLog indicate may have a key.
+{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
 keyPossibilities key = fst <$> keyPossibilities' False key
 
-{- Cost ordered lists of remotes that the LocationLog indicate may have a key.
+{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -
  - Also returns a list of UUIDs that are trusted to have the key
  - (some may not have configured remotes).

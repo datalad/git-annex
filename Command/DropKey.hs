@@ -10,7 +10,7 @@ module Command.DropKey where
 import Common.Annex
 import Command
 import qualified Annex
-import LocationLog
+import Logs.Location
 import Annex.Content
 
 command :: [Command]

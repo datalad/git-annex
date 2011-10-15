@@ -10,8 +10,8 @@ module Command.Trust where
 import Common.Annex
 import Command
 import qualified Remote
-import Trust
-import UUID
+import Logs.Trust
+import Logs.UUID
 
 command :: [Command]
 command = [repoCommand "trust" (paramRepeating paramRemote) seek

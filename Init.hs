@@ -15,7 +15,7 @@ import Common.Annex
 import qualified Git
 import qualified Annex.Branch
 import Annex.Version
-import UUID
+import Logs.UUID
 
 initialize :: Annex ()
 initialize = do

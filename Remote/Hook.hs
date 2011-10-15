@@ -15,7 +15,7 @@ import System.Exit
 import Common.Annex
 import Types.Remote
 import qualified Git
-import UUID
+import Logs.UUID
 import Config
 import Annex.Content
 import Remote.Helper.Special

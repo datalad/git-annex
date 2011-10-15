@@ -11,9 +11,9 @@ import Common.Annex
 import Command
 import qualified Remote
 import qualified Annex
-import LocationLog
+import Logs.Location
+import Logs.Trust
 import Annex.Content
-import Trust
 import Config
 
 command :: [Command]

@@ -11,10 +11,10 @@ import Common.Annex
 import Command
 import qualified Command.Drop
 import qualified Annex
-import LocationLog
+import Logs.Location
 import Annex.Content
 import qualified Remote
-import UUID
+import Logs.UUID
 
 command :: [Command]
 command = [repoCommand "move" paramPaths seek

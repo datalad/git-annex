@@ -13,10 +13,10 @@ module Remote.Web (
 import Common.Annex
 import Types.Remote
 import qualified Git
-import UUID
 import Config
-import PresenceLog
-import LocationLog
+import Logs.Presence
+import Logs.Location
+import Logs.UUID
 import qualified Utility.Url as Url
 
 type URLString = String

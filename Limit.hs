@@ -15,7 +15,7 @@ import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
-import LocationLog
+import Logs.Location
 import Annex.Content
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)

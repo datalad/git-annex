@@ -23,7 +23,7 @@ import Utility.DataUnits
 import Annex.Content
 import Types.Key
 import Backend
-import UUID
+import Logs.UUID
 import Remote
 
 -- a named computation that produces a statistic

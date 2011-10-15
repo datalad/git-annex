@@ -14,7 +14,7 @@ import Data.Char
 import Common.Annex
 import Types.Key
 import Annex.Content
-import PresenceLog
+import Logs.Presence
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles

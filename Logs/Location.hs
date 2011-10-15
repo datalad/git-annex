@@ -11,7 +11,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module LocationLog (
+module Logs.Location (
 	LogStatus(..),
 	logChange,
 	readLog,
@@ -24,8 +24,8 @@ module LocationLog (
 import Common.Annex
 import qualified Git
 import qualified Annex.Branch
-import UUID
-import PresenceLog
+import Logs.UUID
+import Logs.Presence
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Git.Repo -> Key -> UUID -> LogStatus -> Annex ()

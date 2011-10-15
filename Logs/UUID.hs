@@ -13,7 +13,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module UUID (
+module Logs.UUID (
 	UUID,
 	getUUID,
 	getRepoUUID,
@@ -33,7 +33,7 @@ import qualified Annex.Branch
 import Types.UUID
 import qualified Build.SysConfig as SysConfig
 import Config
-import UUIDLog
+import Logs.UUIDBased
 
 configkey :: String
 configkey = "annex.uuid"

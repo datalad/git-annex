@@ -13,7 +13,7 @@ import qualified Git
 import Utility.SafeCommand
 import Types
 import Config
-import UUID
+import Logs.UUID
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the

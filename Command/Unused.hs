@@ -16,7 +16,7 @@ import Common.Annex
 import Command
 import Annex.Content
 import Utility.FileMode
-import LocationLog
+import Logs.Location
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles

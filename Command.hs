@@ -13,8 +13,8 @@ import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Types.Key
-import Trust
-import LocationLog
+import Logs.Trust
+import Logs.Location
 import Config
 import Backend
 import Limit

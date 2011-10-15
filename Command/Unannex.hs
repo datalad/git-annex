@@ -13,7 +13,7 @@ import qualified Command.Drop
 import qualified Annex
 import qualified Annex.Queue
 import Utility.FileMode
-import LocationLog
+import Logs.Location
 import Annex.Content
 import qualified Git
 import qualified Git.LsFiles as LsFiles

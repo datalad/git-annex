@@ -10,7 +10,7 @@ module Command.Describe where
 import Common.Annex
 import Command
 import qualified Remote
-import UUID
+import Logs.UUID
 
 command :: [Command]
 command = [repoCommand "describe" (paramPair paramRemote paramDesc) seek

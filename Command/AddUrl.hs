@@ -18,7 +18,7 @@ import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
 import Annex.Content
-import PresenceLog
+import Logs.Presence
 
 command :: [Command]
 command = [repoCommand "addurl" (paramRepeating paramUrl) seek

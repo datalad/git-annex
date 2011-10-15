@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module RemoteLog (
+module Logs.Remote (
 	readRemoteLog,
 	configSet,
 	keyValToConfig,
@@ -21,8 +21,8 @@ import Data.Char
 import Common.Annex
 import qualified Annex.Branch
 import Types.Remote
-import UUID
-import UUIDLog
+import Logs.UUID
+import Logs.UUIDBased
 
 {- Filename of remote.log. -}
 remoteLog :: FilePath

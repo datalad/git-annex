@@ -13,8 +13,8 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
-import UUID
-import Trust
+import Logs.UUID
+import Logs.Trust
 import Utility.Ssh
 import qualified Utility.Dot as Dot
 

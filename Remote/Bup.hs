@@ -15,7 +15,7 @@ import System.Process
 import Common.Annex
 import Types.Remote
 import qualified Git
-import UUID
+import Logs.UUID
 import Config
 import Utility.Ssh
 import Remote.Helper.Special

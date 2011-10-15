@@ -9,7 +9,7 @@ module Command.SetKey where
 
 import Common.Annex
 import Command
-import LocationLog
+import Logs.Location
 import Annex.Content
 
 command :: [Command]
