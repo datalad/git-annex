@@ -16,7 +16,6 @@ module Logs.Web (
 import Common.Annex
 import Logs.Presence
 import Logs.Location
-import Logs.UUID
 
 type URLString = String
 

@@ -8,9 +8,11 @@
 module Types (
 	Annex,
 	Backend,
-	Key
+	Key,
+	UUID
 ) where
 
 import Annex
 import Types.Backend
 import Types.Key
+import Types.UUID

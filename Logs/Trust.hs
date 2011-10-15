@@ -19,8 +19,6 @@ import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
-
-import Logs.UUID
 import Logs.UUIDBased
 
 {- Filename of trust.log. -}

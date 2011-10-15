@@ -9,7 +9,7 @@ module Command.ConfigList where
 
 import Common.Annex
 import Command
-import Logs.UUID
+import Annex.UUID
 
 command :: [Command]
 command = [repoCommand "configlist" paramNothing seek

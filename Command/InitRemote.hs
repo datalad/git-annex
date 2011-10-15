@@ -14,7 +14,7 @@ import Command
 import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
-import Logs.UUID
+import Annex.UUID
 
 command :: [Command]
 command = [repoCommand "initremote"

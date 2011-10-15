@@ -21,7 +21,6 @@ import Data.Char
 import Common.Annex
 import qualified Annex.Branch
 import Types.Remote
-import Logs.UUID
 import Logs.UUIDBased
 
 {- Filename of remote.log. -}

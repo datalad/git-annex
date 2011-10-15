@@ -24,7 +24,6 @@ module Logs.Location (
 import Common.Annex
 import qualified Git
 import qualified Annex.Branch
-import Logs.UUID
 import Logs.Presence
 
 {- Log a change in the presence of a key's value in a repository. -}

@@ -11,7 +11,6 @@ import Common.Annex
 import Types.Remote
 import qualified Git
 import Config
-import Logs.UUID
 import Logs.Web
 import qualified Utility.Url as Url
 

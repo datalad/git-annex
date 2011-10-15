@@ -15,7 +15,6 @@ import Common.Annex
 import Utility.CopyFile
 import Types.Remote
 import qualified Git
-import Logs.UUID
 import Config
 import Utility.FileMode
 import Remote.Helper.Special

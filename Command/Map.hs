@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
+import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Utility.Ssh

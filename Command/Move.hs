@@ -14,7 +14,7 @@ import qualified Annex
 import Logs.Location
 import Annex.Content
 import qualified Remote
-import Logs.UUID
+import Annex.UUID
 
 command :: [Command]
 command = [repoCommand "move" paramPaths seek

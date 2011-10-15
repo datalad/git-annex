@@ -13,7 +13,7 @@ import qualified Git
 import CmdLine
 import Command
 import Options
-import Logs.UUID
+import Annex.UUID
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex

@@ -23,7 +23,7 @@ module Annex.Content (
 
 import Common.Annex
 import Logs.Location
-import Logs.UUID
+import Annex.UUID
 import qualified Git
 import qualified Annex
 import qualified Annex.Queue

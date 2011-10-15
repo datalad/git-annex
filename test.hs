@@ -23,6 +23,7 @@ import Common
 
 import qualified Utility.SafeCommand
 import qualified Annex
+import qualified Annex.UUID
 import qualified Backend
 import qualified Git
 import qualified Locations
@@ -609,7 +610,7 @@ checkdangling f = do
 
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
-	thisuuid <- annexeval Logs.UUID.getUUID
+	thisuuid <- annexeval Annex.UUID.getUUID
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do

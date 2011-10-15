@@ -17,7 +17,7 @@ import Utility.Ssh
 import Types.Remote
 import qualified Git
 import qualified Annex
-import Logs.UUID
+import Annex.UUID
 import qualified Annex.Content
 import qualified Utility.Url as Url
 import Config

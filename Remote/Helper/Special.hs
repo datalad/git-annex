@@ -12,7 +12,6 @@ import qualified Data.Map as M
 import Common.Annex
 import Types.Remote
 import qualified Git
-import Logs.UUID
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different

@@ -15,7 +15,7 @@ import qualified Types.Key
 import Annex.Content
 import Logs.Location
 import Logs.Trust
-import Logs.UUID
+import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode
 import Config

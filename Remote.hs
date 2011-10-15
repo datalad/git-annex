@@ -36,6 +36,7 @@ import Common.Annex
 import Types.Remote
 import qualified Annex
 import Config
+import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Logs.Location

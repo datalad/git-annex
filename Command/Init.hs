@@ -9,6 +9,7 @@ module Command.Init where
 
 import Common.Annex
 import Command
+import Annex.UUID
 import Logs.UUID
 import Init
 	

@@ -10,7 +10,6 @@ module Command.Semitrust where
 import Common.Annex
 import Command
 import qualified Remote
-import Logs.UUID
 import Logs.Trust
 
 command :: [Command]
