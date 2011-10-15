@@ -2,6 +2,7 @@ git-annex (3.20111012) UNRELEASED; urgency=low
 
   * A remote can have a annexUrl configured, that is used by git-annex
     instead of its usual url. (Similar to pushUrl.)
+  * migrate: Copy url logs for keys when migrating.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 14 Oct 2011 18:15:20 -0400
 

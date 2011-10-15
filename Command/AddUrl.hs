@@ -13,12 +13,11 @@ import Common.Annex
 import Command
 import qualified Backend
 import qualified Utility.Url as Url
-import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
 import Annex.Content
-import Logs.Presence
+import Logs.Web
 
 command :: [Command]
 command = [repoCommand "addurl" (paramRepeating paramUrl) seek
@@ -58,14 +57,14 @@ download url file = do
 				Nothing -> stop
 				Just (key, _) -> do
 					moveAnnex key tmp
-					Remote.Web.setUrl key url InfoPresent
+					setUrlPresent key url
 					next $ Command.Add.cleanup file key True
 		else stop
 
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
 	let key = Backend.URL.fromUrl url
-	Remote.Web.setUrl key url InfoPresent
+	setUrlPresent key url
 	
 	next $ Command.Add.cleanup file key False
 

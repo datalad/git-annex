@@ -9,6 +9,7 @@ module Logs.Web (
 	URLString,
 	webUUID,
 	setUrl,
+	setUrlPresent,
 	getUrls
 ) where
 
@@ -31,6 +32,7 @@ oldurlLog :: Key -> FilePath
 {- A bug used to store the urls elsewhere. -}
 oldurlLog key = "remote/web" </> hashDirLower key </> show key ++ ".log"
 
+{- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
 getUrls key = do
 	us <- currentLog (urlLog key)
@@ -47,3 +49,6 @@ setUrl key url status = do
 	-- update location log to indicate that the web has the key, or not
 	us <- getUrls key
 	logChange g key webUUID (if null us then InfoMissing else InfoPresent)
+
+setUrlPresent :: Key -> URLString -> Annex ()
+setUrlPresent key url = setUrl key url InfoPresent
