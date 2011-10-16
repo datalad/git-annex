@@ -13,7 +13,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
-import Utility.Ssh
+import Annex.Ssh
 import Types.Remote
 import qualified Git
 import qualified Annex
@@ -164,7 +164,7 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = rsyncOrCopyFile r (gitAnnexLocation r key) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = Url.download (keyUrl r key) file
+	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 
 {- Tries to copy a key's content to a remote's annex. -}

@@ -127,7 +127,7 @@ isLinkToAnnex s = ("/.git/" ++ objectDir) `isInfixOf` s
  -     is one to one.
  - ":" is escaped to "&c", because despite it being 2011, people still care
  -     about FAT.
- - -}
+ -}
 keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
 	replace "%" "&s" $ replace "&" "&a"  $ show key

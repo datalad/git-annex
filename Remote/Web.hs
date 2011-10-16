@@ -49,7 +49,9 @@ downloadKey key file = get =<< getUrls key
 		get [] = do
 			warning "no known url"
 			return False
-		get urls = anyM (`Url.download` file) urls
+		get urls = do
+			showOutput -- make way for download progress bar
+			liftIO $ anyM (`Url.download` file) urls
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

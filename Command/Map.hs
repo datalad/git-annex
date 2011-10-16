@@ -16,7 +16,7 @@ import qualified Git
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
-import Utility.Ssh
+import Annex.Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)

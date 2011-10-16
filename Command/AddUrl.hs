@@ -48,7 +48,7 @@ download url file = do
 	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	ok <- Url.download url tmp
+	ok <- liftIO $ Url.download url tmp
 	if ok
 		then do
 			[(backend, _)] <- Backend.chooseBackends [file]
