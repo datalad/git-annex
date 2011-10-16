@@ -17,7 +17,7 @@ import Network.HTTP
 import Network.URI
 
 import Utility.SafeCommand
-import Utility
+import Utility.Path
 
 type URLString = String
 

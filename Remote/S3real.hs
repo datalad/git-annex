@@ -21,7 +21,6 @@ import Common.Annex
 import Types.Remote
 import Types.Key
 import qualified Git
-import Logs.UUID
 import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable

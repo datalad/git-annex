@@ -20,6 +20,7 @@ import qualified Annex
 import Annex.UUID
 import qualified Annex.Content
 import qualified Utility.Url as Url
+import Utility.TempFile
 import Config
 import Init
 

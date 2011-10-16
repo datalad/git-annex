@@ -12,6 +12,7 @@ import qualified Git
 import qualified Annex.Branch
 import Logs.Location
 import Annex.Content
+import Utility.TempFile
 
 olddir :: Git.Repo -> FilePath
 olddir g

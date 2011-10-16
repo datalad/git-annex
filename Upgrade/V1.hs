@@ -21,6 +21,7 @@ import qualified Git.LsFiles as LsFiles
 import Backend
 import Annex.Version
 import Utility.FileMode
+import Utility.TempFile
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.

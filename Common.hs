@@ -15,7 +15,7 @@ module Common (
 	module System.Posix.IO,
 	module System.Posix.Process,
 	module System.Exit,
-	module Utility,
+	module Utility.Misc,
 	module Utility.Conditional,
 	module Utility.SafeCommand,
 	module Utility.Path,
@@ -40,7 +40,7 @@ import System.Posix.IO
 import System.Posix.Process hiding (executeFile)
 import System.Exit
 
-import Utility
+import Utility.Misc
 import Utility.Conditional
 import Utility.SafeCommand
 import Utility.Path
