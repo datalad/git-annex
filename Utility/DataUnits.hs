@@ -84,7 +84,7 @@ memoryUnits =
 	, Unit (p 6) "EiB" "exbibyte"
 	, Unit (p 5) "PiB" "pebibyte"
 	, Unit (p 4) "TiB" "tebibyte"
-	, Unit (p 3) "GiB" "gigabyte"
+	, Unit (p 3) "GiB" "gibibyte"
 	, Unit (p 2) "MiB" "mebibyte"
 	, Unit (p 1) "KiB" "kibibyte"
 	, Unit (p 0) "B" "byte"
