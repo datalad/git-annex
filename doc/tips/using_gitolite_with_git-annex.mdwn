@@ -47,7 +47,7 @@ ssh remote normally would be used. For example:
 Cloning into testing...
 Receiving objects: 100% (18/18), done.
 # cd testing
-# >git annex init
+# git annex init
 init  ok
 # cp /etc/passwd my-cool-big-file
 # git annex add my-cool-big-file
