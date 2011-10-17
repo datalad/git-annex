@@ -19,7 +19,7 @@ on Debian with apt-get, but the changes described can be made to any
 gitolite installation, just with different paths.
 
 Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
-   
+
 <pre>
 echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/;' >>~gitolite/.gitolite.rc
 </pre>
@@ -41,7 +41,7 @@ chmod +x git-annex-shell
 
 Now all gitolite repositories can be used with git-annex just as any
 ssh remote normally would be used. For example:
-   
+
 <pre>
 # git clone gitolite@localhost:testing
 Cloning into testing...
