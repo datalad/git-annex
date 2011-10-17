@@ -18,20 +18,20 @@ And here's how to set it up. The examples are for gitolite as installed
 on Debian with apt-get, but the changes described can be made to any
 gitolite installation, just with different paths.
 
-1. Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
+Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
    
 <pre>
 echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/;' >>~gitolite/.gitolite.rc
 </pre>
 
-2. Make the ADC directory, and a "ua" subdirectory.
+Make the ADC directory, and a "ua" subdirectory.
 
 <pre>   
 mkdir -p /usr/local/lib/gitolite/adc/ua
 </pre>
 
-3. Install the git-annex-shell ADC into the "ua" subdirectory and make it
-   executable.
+Install the git-annex-shell ADC into the "ua" subdirectory and make it
+executable.
 
 <pre>   
 cd /usr/local/lib/gitolite/adc/ua/
@@ -39,8 +39,8 @@ wget https://raw.github.com/sitaramc/gitolite/pu/contrib/adc/git-annex-shell
 chmod +x git-annex-shell
 </pre>
 
-4. Now all gitolite repositories can be used with git-annex just as any
-   ssh remote normally would be used. For example:
+Now all gitolite repositories can be used with git-annex just as any
+ssh remote normally would be used. For example:
    
 <pre>
 # git clone gitolite@localhost:testing
