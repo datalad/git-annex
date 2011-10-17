@@ -1,4 +1,3 @@
 So ends the walkthrough. By now you should be able to use git-annex.
 
-Want more? See the [[cheatsheet]] for info about all of git-annex's hidden
-features.
+Want more? See [[tips]] for lots more features and advice.
