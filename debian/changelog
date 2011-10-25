@@ -1,4 +1,4 @@
-git-annex (3.20111012) UNRELEASED; urgency=low
+git-annex (3.20111025) unstable; urgency=low
 
   * A remote can have a annexUrl configured, that is used by git-annex
     instead of its usual url. (Similar to pushUrl.)
@@ -7,7 +7,7 @@ git-annex (3.20111012) UNRELEASED; urgency=low
     environment variables can be set to limit what commands can be run.
     This is used by gitolite's new git-annex support!
 
- -- Joey Hess <joeyh@debian.org>  Fri, 14 Oct 2011 18:15:20 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 25 Oct 2011 13:03:08 -0700
 
 git-annex (3.20111011) unstable; urgency=low
 
