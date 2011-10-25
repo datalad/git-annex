@@ -1,9 +1,0 @@
-git-annex 3.20110902 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Set EMAIL when running test suite so that git does not need to be
-     configured first. Closes: #[638998](http://bugs.debian.org/638998)
-   * The wget command will now be used in preference to curl, if available.
-   * init: Make description an optional parameter.
-   * unused, status: Sped up by avoiding unnecessary stats of annexed files.
-   * unused --remote: Reduced memory use to 1/4th what was used before.
-   * Add --json switch, to produce machine-consumable output."""]]
