@@ -33,7 +33,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	wget | curl,
 	openssh-client
 Suggests: graphviz, bup, gnupg
-Conflicts: git >= 1:1.7.7
+Conflicts: git (>= 1:1.7.7)
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file
  contents into git. While that may seem paradoxical, it is useful when
