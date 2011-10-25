@@ -5,7 +5,7 @@ git-annex (3.20111012) UNRELEASED; urgency=low
   * migrate: Copy url logs for keys when migrating.
   * git-annex-shell: GIT_ANNEX_SHELL_READONLY and GIT_ANNEX_SHELL_LIMITED
     environment variables can be set to limit what commands can be run.
-    This could be used by eg, gitolite.
+    This is used by gitolite's new git-annex support!
 
  -- Joey Hess <joeyh@debian.org>  Fri, 14 Oct 2011 18:15:20 -0400
 
