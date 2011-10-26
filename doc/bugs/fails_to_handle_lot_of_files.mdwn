@@ -1,8 +1,8 @@
-git-annex version: 3.20111011
-local repository version: 3
-default repository version: 3
-supported repository versions: 3
-upgrade supported from repository versions: 0 1 2
+    git-annex version: 3.20111011
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
 
 I just created a new remote on a USB drive and wanted to copy my files over. git-annex wasn't too happy about that ;)
 I included a few OK transfers as there was an error before git-annex ran into a wall. As I could easily access that temp file after it aborted, I suspect something went wrong internally before git-annex started to throw those errors.
