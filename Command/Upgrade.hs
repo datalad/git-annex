@@ -13,7 +13,7 @@ import Upgrade
 import Annex.Version
 
 command :: [Command]
-command = [standaloneCommand "upgrade" paramNothing seek
+command = [Command "upgrade" paramNothing needsNothing seek
 	"upgrade repository layout"]
 
 seek :: [CommandSeek]

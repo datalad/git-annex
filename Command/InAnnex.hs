@@ -12,7 +12,7 @@ import Command
 import Annex.Content
 
 command :: [Command]
-command = [repoCommand "inannex" (paramRepeating paramKey) seek
+command = [Command "inannex" (paramRepeating paramKey) needsRepo seek
 		"checks if keys are present in the annex"]
 
 seek :: [CommandSeek]

@@ -15,7 +15,7 @@ import Annex.Content
 import qualified Command.Move
 
 command :: [Command]
-command = [repoCommand "get" paramPaths seek
+command = [Command "get" paramPaths needsRepo seek
 		"make content of annexed files available"]
 
 seek :: [CommandSeek]

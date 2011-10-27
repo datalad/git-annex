@@ -12,7 +12,7 @@ import Command
 import Annex.UUID
 
 command :: [Command]
-command = [repoCommand "configlist" paramNothing seek
+command = [Command "configlist" paramNothing needsRepo seek
 		"outputs relevant git configuration"]
 
 seek :: [CommandSeek]

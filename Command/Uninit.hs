@@ -19,24 +19,24 @@ import qualified Annex.Branch
 import Annex.Content
 
 command :: [Command]
-command = [repoCommand "uninit" paramPaths seek 
+command = [Command "uninit" paramPaths check seek 
         "de-initialize git-annex and clean out repository"]
 
-seek :: [CommandSeek]
-seek = [withNothing startCheck, withFilesInGit startUnannex, withNothing start]
-
-startCheck :: CommandStart
-startCheck = do
+check :: Annex ()
+check = do
+	needsRepo
 	b <- current_branch	
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ b ++ " branch is checked out"
-	stop
 	where
 		current_branch = do
 			g <- gitRepo
 			b <- liftIO $
 				Git.pipeRead g [Params "rev-parse --abbrev-ref HEAD"]
 			return $ head $ lines $ B.unpack b
+
+seek :: [CommandSeek]
+seek = [withFilesInGit startUnannex, withNothing start]
 
 startUnannex :: FilePath -> CommandStart
 startUnannex file = do

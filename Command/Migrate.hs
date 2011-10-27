@@ -17,7 +17,7 @@ import Backend
 import Logs.Web
 
 command :: [Command]
-command = [repoCommand "migrate" paramPaths seek
+command = [Command "migrate" paramPaths needsRepo seek
 	"switch data to different backend"]
 
 seek :: [CommandSeek]

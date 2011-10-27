@@ -13,7 +13,7 @@ import Logs.Location
 import Annex.Content
 
 command :: [Command]
-command = [repoCommand "setkey" paramPath seek
+command = [Command "setkey" paramPath needsRepo seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]

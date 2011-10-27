@@ -13,7 +13,7 @@ import Annex.Content
 import Limit
 
 command :: [Command]
-command = [repoCommand "find" paramPaths seek "lists available files"]
+command = [Command "find" paramPaths needsRepo seek "lists available files"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

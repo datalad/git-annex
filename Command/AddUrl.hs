@@ -20,7 +20,7 @@ import Annex.Content
 import Logs.Web
 
 command :: [Command]
-command = [repoCommand "addurl" (paramRepeating paramUrl) seek
+command = [Command "addurl" (paramRepeating paramUrl) needsRepo seek
 	"add urls to annex"]
 
 seek :: [CommandSeek]

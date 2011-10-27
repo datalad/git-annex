@@ -28,7 +28,7 @@ import qualified Annex.Branch
 import Annex.CatFile
 
 command :: [Command]
-command = [repoCommand "unused" paramNothing seek
+command = [Command "unused" paramNothing needsRepo seek
 	"look for unused file content"]
 
 seek :: [CommandSeek]

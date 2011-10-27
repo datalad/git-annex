@@ -11,7 +11,7 @@ import Command
 import qualified Command.Move
 
 command :: [Command]
-command = [repoCommand "copy" paramPaths seek
+command = [Command "copy" paramPaths needsRepo seek
 	"copy content of files to/from another repository"]
 
 seek :: [CommandSeek]

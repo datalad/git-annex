@@ -17,10 +17,9 @@ import qualified Types.Remote as R
 import Annex.UUID
 
 command :: [Command]
-command = [repoCommand "initremote"
-	(paramPair paramName $
-		paramOptional $ paramRepeating paramKeyValue) seek
-	"sets up a special (non-git) remote"]
+command = [Command "initremote"
+	(paramPair paramName $ 	paramOptional $ paramRepeating paramKeyValue)
+	needsRepo seek "sets up a special (non-git) remote"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

@@ -23,7 +23,8 @@ import qualified Utility.Dot as Dot
 data Link = Link Git.Repo Git.Repo
 
 command :: [Command]
-command = [repoCommand "map" paramNothing seek "generate map of repositories"]
+command = [Command "map" paramNothing needsNothing seek
+	"generate map of repositories"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

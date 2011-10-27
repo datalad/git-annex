@@ -14,7 +14,7 @@ import Annex.Content
 import Types.Key
 
 command :: [Command]
-command = [repoCommand "fromkey" paramPath seek
+command = [Command "fromkey" paramPath needsRepo seek
 	"adds a file using a specific key"]
 
 seek :: [CommandSeek]

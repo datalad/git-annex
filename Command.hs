@@ -18,41 +18,37 @@ import Logs.Location
 import Config
 import Backend
 import Limit
+import Init
 
-{- A command runs in four stages.
+{- A command runs in these stages.
  -
- - 0. The seek stage takes the parameters passed to the command,
+ - a. The check stage is run once and should error out if anything
+ -    prevents the command from running. -}
+type CommandCheck = Annex ()
+{- b. The seek stage takes the parameters passed to the command,
  -    looks through the repo to find the ones that are relevant
  -    to that command (ie, new files to add), and generates
  -    a list of start stage actions. -}
 type CommandSeek = [String] -> Annex [CommandStart]
-{- 1. The start stage is run before anything is printed about the
+{- c. The start stage is run before anything is printed about the
   -   command, is passed some input, and can early abort it
   -   if the input does not make sense. It should run quickly and
   -   should not modify Annex state. -}
 type CommandStart = Annex (Maybe CommandPerform)
-{- 2. The perform stage is run after a message is printed about the command
+{- d. The perform stage is run after a message is printed about the command
  -    being run, and it should be where the bulk of the work happens. -}
 type CommandPerform = Annex (Maybe CommandCleanup)
-{- 3. The cleanup stage is run only if the perform stage succeeds, and it
+{- e. The cleanup stage is run only if the perform stage succeeds, and it
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
 
 data Command = Command {
-	cmdusesrepo :: Bool,
 	cmdname :: String,
 	cmdparams :: String,
+	cmdcheck :: CommandCheck,
 	cmdseek :: [CommandSeek],
 	cmddesc :: String
 }
-
-{- Most commands operate on files in a git repo. -}
-repoCommand :: String -> String -> [CommandSeek] -> String -> Command
-repoCommand = Command True
-
-{- Others can run anywhere. -}
-standaloneCommand :: String -> String -> [CommandSeek] -> String -> Command
-standaloneCommand = Command False
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)
@@ -61,6 +57,18 @@ next a = return $ Just a
 {- Or to indicate nothing needs to be done. -}
 stop :: Annex (Maybe a)
 stop = return Nothing
+
+needsNothing :: CommandCheck
+needsNothing = return ()
+
+{- Most commands will check this, as they need to be run in an initialized
+ - repo. -}
+needsRepo :: CommandCheck
+needsRepo = ensureInitialized
+
+{- Checks that the command can be run in the current environment. -}
+checkCommand :: Command -> Annex ()
+checkCommand Command { cmdcheck = check } = check
 
 {- Prepares a list of actions to run to perform a command, based on
  - the parameters passed to it. -}

@@ -13,7 +13,7 @@ import Annex.Content
 import Utility.RsyncFile
 
 command :: [Command]
-command = [repoCommand "sendkey" paramKey seek
+command = [Command "sendkey" paramKey needsRepo seek
 	"runs rsync in server mode to send content"]
 
 seek :: [CommandSeek]

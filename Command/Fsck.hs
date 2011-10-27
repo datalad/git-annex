@@ -21,7 +21,7 @@ import Utility.FileMode
 import Config
 
 command :: [Command]
-command = [repoCommand "fsck" paramPaths seek "check for problems"]
+command = [Command "fsck" paramPaths needsRepo seek "check for problems"]
 
 seek :: [CommandSeek]
 seek = [withNumCopies start]

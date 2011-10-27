@@ -14,7 +14,7 @@ import Logs.Location
 import Annex.Content
 
 command :: [Command]
-command = [repoCommand "dropkey" (paramRepeating paramKey) seek
+command = [Command "dropkey" (paramRepeating paramKey) needsRepo seek
 	"drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]

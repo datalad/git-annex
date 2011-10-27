@@ -13,7 +13,7 @@ import qualified Remote
 import Logs.Trust
 
 command :: [Command]
-command = [repoCommand "untrust" (paramRepeating paramRemote) seek
+command = [Command "untrust" (paramRepeating paramRemote) needsRepo seek
 	"do not trust a repository"]
 
 seek :: [CommandSeek]

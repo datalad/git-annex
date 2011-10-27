@@ -17,7 +17,7 @@ import qualified Remote
 import Annex.UUID
 
 command :: [Command]
-command = [repoCommand "move" paramPaths seek
+command = [Command "move" paramPaths needsRepo seek
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]

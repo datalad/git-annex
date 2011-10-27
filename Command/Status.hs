@@ -39,7 +39,7 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 command :: [Command]
-command = [repoCommand "status" paramNothing seek
+command = [Command "status" paramNothing needsRepo seek
 	"shows status information about the annex"]
 
 seek :: [CommandSeek]

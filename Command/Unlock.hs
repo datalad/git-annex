@@ -15,9 +15,11 @@ import Utility.FileMode
 
 command :: [Command]
 command =
-	[ repoCommand "unlock" paramPaths seek "unlock files for modification"
-	, repoCommand "edit" paramPaths seek "same as unlock"
+	[ c "unlock" "unlock files for modification"
+	, c "edit" "same as unlock"
 	]
+	where
+		c n = Command n paramPaths needsRepo seek
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]
