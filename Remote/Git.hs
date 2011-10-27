@@ -190,8 +190,11 @@ copyToRemote r key
 		let keysrc = gitAnnexLocation g key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
-		liftIO $ onLocal r $ Annex.Content.getViaTmp key $
-			rsyncOrCopyFile params keysrc
+		liftIO $ onLocal r $ do
+			ok <- Annex.Content.getViaTmp key $
+				rsyncOrCopyFile params keysrc
+			Annex.Content.saveState
+			return ok
 	| Git.repoIsSsh r = do
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
