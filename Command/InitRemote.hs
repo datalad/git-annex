@@ -19,7 +19,7 @@ import Annex.UUID
 command :: [Command]
 command = [Command "initremote"
 	(paramPair paramName $ 	paramOptional $ paramRepeating paramKeyValue)
-	needsRepo seek "sets up a special (non-git) remote"]
+	defaultChecks seek "sets up a special (non-git) remote"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

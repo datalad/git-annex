@@ -19,7 +19,7 @@ import qualified Git
 import qualified Git.LsFiles as LsFiles
 
 command :: [Command]
-command = [Command "unannex" paramPaths needsRepo seek
+command = [Command "unannex" paramPaths defaultChecks seek
 	"undo accidential add command"]
 
 seek :: [CommandSeek]

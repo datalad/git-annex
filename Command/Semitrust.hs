@@ -13,7 +13,7 @@ import qualified Remote
 import Logs.Trust
 
 command :: [Command]
-command = [Command "semitrust" (paramRepeating paramRemote) needsRepo seek
+command = [Command "semitrust" (paramRepeating paramRemote) defaultChecks seek
 	"return repository to default trust level"]
 
 seek :: [CommandSeek]

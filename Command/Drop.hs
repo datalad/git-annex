@@ -17,7 +17,7 @@ import Annex.Content
 import Config
 
 command :: [Command]
-command = [Command "drop" paramPaths needsRepo seek
+command = [Command "drop" paramPaths defaultChecks seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]

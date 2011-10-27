@@ -14,7 +14,7 @@ import Annex.Content
 import Utility.RsyncFile
 
 command :: [Command]
-command = [Command "recvkey" paramKey needsRepo seek
+command = [Command "recvkey" paramKey defaultChecks seek
 	"runs rsync in server mode to receive content"]
 
 seek :: [CommandSeek]

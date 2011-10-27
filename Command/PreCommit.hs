@@ -13,7 +13,7 @@ import qualified Command.Fix
 import Backend
 
 command :: [Command]
-command = [Command "pre-commit" paramPaths needsRepo seek
+command = [Command "pre-commit" paramPaths defaultChecks seek
 	"run by git pre-commit hook"]
 
 {- The pre-commit hook needs to fix symlinks to all files being committed.

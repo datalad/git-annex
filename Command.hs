@@ -22,8 +22,8 @@ import Init
 
 {- A command runs in these stages.
  -
- - a. The check stage is run once and should error out if anything
- -    prevents the command from running. -}
+ - a. The check stage runs checks, that error out if
+ -    anything prevents the command from running. -}
 type CommandCheck = Annex ()
 {- b. The seek stage takes the parameters passed to the command,
  -    looks through the repo to find the ones that are relevant
@@ -57,14 +57,6 @@ next a = return $ Just a
 {- Or to indicate nothing needs to be done. -}
 stop :: Annex (Maybe a)
 stop = return Nothing
-
-needsNothing :: CommandCheck
-needsNothing = return ()
-
-{- Most commands will check this, as they need to be run in an initialized
- - repo. -}
-needsRepo :: CommandCheck
-needsRepo = ensureInitialized
 
 {- Checks that the command can be run in the current environment. -}
 checkCommand :: Command -> Annex ()
@@ -239,3 +231,23 @@ autoCopies key vs numcopiesattr a = do
 			(_, have) <- trustPartition UnTrusted =<< keyLocations key
 			if length have `vs` needed then a else stop
 		else a
+
+{- Checks -}
+defaultChecks :: CommandCheck
+defaultChecks = noFrom >> noTo >> needsRepo
+
+noChecks :: CommandCheck
+noChecks = return ()
+
+needsRepo :: CommandCheck
+needsRepo = ensureInitialized
+
+noFrom :: CommandCheck
+noFrom = do
+	v <- Annex.getState Annex.fromremote
+	unless (v == Nothing) $ error "cannot use --from with this command"
+
+noTo :: CommandCheck
+noTo = do
+	v <- Annex.getState Annex.toremote
+	unless (v == Nothing) $ error "cannot use --to with this command"

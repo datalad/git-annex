@@ -14,7 +14,7 @@ import Remote
 import Logs.Trust
 
 command :: [Command]
-command = [Command "whereis" paramPaths needsRepo seek
+command = [Command "whereis" paramPaths defaultChecks seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]

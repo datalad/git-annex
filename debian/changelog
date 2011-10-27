@@ -4,6 +4,7 @@ git-annex (3.20111026) UNRELEASED; urgency=low
   * copy --to: Fixed leak when copying many files to a remote on the same
     host.
   * uninit: Add guard against being run with the git-annex branch checked out.
+  * Fail if --from or --to is passed to commands that do not support them.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 

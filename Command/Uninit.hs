@@ -19,12 +19,11 @@ import qualified Annex.Branch
 import Annex.Content
 
 command :: [Command]
-command = [Command "uninit" paramPaths check seek 
+command = [Command "uninit" paramPaths (check >> defaultChecks) seek 
         "de-initialize git-annex and clean out repository"]
 
 check :: Annex ()
 check = do
-	needsRepo
 	b <- current_branch	
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ b ++ " branch is checked out"

@@ -19,7 +19,7 @@ command =
 	, c "edit" "same as unlock"
 	]
 	where
-		c n = Command n paramPaths needsRepo seek
+		c n = Command n paramPaths defaultChecks seek
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

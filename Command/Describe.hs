@@ -13,7 +13,7 @@ import qualified Remote
 import Logs.UUID
 
 command :: [Command]
-command = [Command "describe" (paramPair paramRemote paramDesc) needsRepo seek
+command = [Command "describe" (paramPair paramRemote paramDesc) defaultChecks seek
 	"change description of a repository"]
 
 seek :: [CommandSeek]

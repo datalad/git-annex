@@ -13,7 +13,7 @@ import qualified Build.SysConfig as SysConfig
 import Annex.Version
 
 command :: [Command]
-command = [Command "version" paramNothing needsNothing seek "show version info"]
+command = [Command "version" paramNothing noChecks seek "show version info"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

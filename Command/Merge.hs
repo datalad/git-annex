@@ -12,7 +12,7 @@ import Command
 import qualified Annex.Branch
 
 command :: [Command]
-command = [Command "merge" paramNothing needsRepo seek
+command = [Command "merge" paramNothing defaultChecks seek
 		"auto-merge remote changes into git-annex branch"]
 
 seek :: [CommandSeek]
