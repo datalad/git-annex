@@ -137,6 +137,7 @@ prettyPrintUUIDs desc uuids = do
 	where
 		addname d n
 			| d == n = d
+			| null d = n
 			| otherwise = n ++ " (" ++ d ++ ")"
 		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
