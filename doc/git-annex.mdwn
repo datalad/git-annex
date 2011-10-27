@@ -72,6 +72,9 @@ subdirectories).
   will involve copying them from another repository, or downloading them,
   or transferring them from some kind of key-value store.
 
+  Normally git-annex will choose which repository to copy the content from,
+  but you can override this using the --from option.
+
 * drop [path ...]
 
   Drops the content of annexed files from this repository. 
