@@ -8,6 +8,7 @@
 module Annex.Branch (
 	create,
 	update,
+	disableUpdate,
 	get,
 	change,
 	commit,
@@ -136,7 +137,7 @@ update = onceonly $ do
 	c <- filterM changedbranch =<< siblingBranches
 	let (refs, branches) = unzip c
 	unless (not dirty && null refs) $ withIndex $ lockJournal $ do
-		when dirty $ stageJournalFiles
+		when dirty stageJournalFiles
 		g <- gitRepo
 		unless (null branches) $ do
 			showSideAction $ "merging " ++
@@ -164,8 +165,15 @@ update = onceonly $ do
 			return $ not $ L.null diffs
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
 			r <- a
-			Annex.changeState setupdated
+			disableUpdate
 			return r
+
+{- Avoids updating the branch. A useful optimisation when the branc
+ - is known to have not changed, or git-annex won't be relying on info
+ - from it. -}
+disableUpdate :: Annex ()
+disableUpdate = Annex.changeState setupdated
+	where
 		setupdated s = s { Annex.branchstate = new }
 			where
 				new = old { branchUpdated = True }

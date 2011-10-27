@@ -19,6 +19,7 @@ import qualified Git
 import qualified Annex
 import Annex.UUID
 import qualified Annex.Content
+import qualified Annex.Branch
 import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
@@ -133,7 +134,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = safely checklocal
 	where
-		checklocal = onLocal r (Annex.Content.inAnnex key)
+		checklocal = onLocal r $ Annex.Content.inAnnex key
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
@@ -147,7 +148,11 @@ inAnnex r key
 onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
 	annex <- Annex.new r
-	Annex.eval annex a
+	Annex.eval annex $ do
+		-- No need to update the branch; its data is not used
+		-- for anything onLocal is used to do.
+		Annex.Branch.disableUpdate
+		a
 
 keyUrl :: Git.Repo -> Key -> String
 keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
@@ -175,11 +180,8 @@ copyToRemote r key
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
 		-- run copy from perspective of remote
-		liftIO $ onLocal r $ do
-			ok <- Annex.Content.getViaTmp key $
-				rsyncOrCopyFile r keysrc
-			Annex.Content.saveState
-			return ok
+		liftIO $ onLocal r $ Annex.Content.getViaTmp key $
+			rsyncOrCopyFile r keysrc
 	| Git.repoIsSsh r = do
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
