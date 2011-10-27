@@ -157,7 +157,9 @@ onLocal r a = do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.Branch.disableUpdate
-		a
+		ret <- a
+		liftIO $ Git.reap
+		return ret
 
 keyUrl :: Git.Repo -> Key -> String
 keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key

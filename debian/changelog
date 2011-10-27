@@ -1,6 +1,8 @@
 git-annex (3.20111026) UNRELEASED; urgency=low
 
   * Sped up some operations on remotes that are on the same host.
+  * copy --to: Fixed leak when ran on many files and a remote on the same
+    host.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 

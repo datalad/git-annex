@@ -439,3 +439,7 @@ Please note the "_n TIMES_" comments. It's how often I got the same error messag
     4455
     % find source -type f | wc -l
     13554
+
+> Fixed unreaped process leak.
+> (This has nothing to do with NTFS). Ran test with 10k files
+> [[done]] --[[Joey]] 
