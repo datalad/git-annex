@@ -168,7 +168,7 @@ update = onceonly $ do
 			disableUpdate
 			return r
 
-{- Avoids updating the branch. A useful optimisation when the branc
+{- Avoids updating the branch. A useful optimisation when the branch
  - is known to have not changed, or git-annex won't be relying on info
  - from it. -}
 disableUpdate :: Annex ()

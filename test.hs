@@ -31,7 +31,6 @@ import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
 import qualified Logs.Location
-import qualified Logs.UUID
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
