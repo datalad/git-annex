@@ -9,7 +9,6 @@ module Command.Unannex where
 
 import Common.Annex
 import Command
-import qualified Command.Drop
 import qualified Annex
 import qualified Annex.Queue
 import Utility.FileMode
@@ -44,11 +43,7 @@ start file = isAnnexed file $ \(key, _) -> do
 		else stop
 
 perform :: FilePath -> Key -> CommandPerform
-perform file key = do
-	ok <- Command.Drop.dropKey key (Just 0) -- always remove
-	if ok
-		then next $ cleanup file key
-		else stop
+perform file key = next $ cleanup file key
 
 cleanup :: FilePath -> Key -> CommandCleanup
 cleanup file key = do

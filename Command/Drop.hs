@@ -23,8 +23,6 @@ command = [Command "drop" paramPaths defaultChecks seek
 seek :: [CommandSeek]
 seek = [withNumCopies start]
 
-{- Indicates a file's content is not wanted anymore, and should be removed
- - if it's safe to do so. -}
 start :: FilePath -> Maybe Int -> CommandStart
 start file numcopies = isAnnexed file $ \(key, _) -> do
 	present <- inAnnex key
@@ -36,7 +34,7 @@ start file numcopies = isAnnexed file $ \(key, _) -> do
 
 perform :: Key -> Maybe Int -> CommandPerform
 perform key numcopies = do
-	success <- dropKey key numcopies
+	success <- canDropKey key numcopies
 	if success
 		then next $ cleanup key
 		else stop
@@ -48,10 +46,9 @@ cleanup key = do
 	return True
 
 {- Checks remotes to verify that enough copies of a key exist to allow
- - for a key to be safely removed (with no data loss), and fails with an
- - error if not. -}
-dropKey :: Key -> Maybe Int -> Annex Bool
-dropKey key numcopiesM = do
+ - for a key to be safely removed (with no data loss). -}
+canDropKey :: Key -> Maybe Int -> Annex Bool
+canDropKey key numcopiesM = do
 	force <- Annex.getState Annex.force
 	if force || numcopiesM == Just 0
 		then return True
