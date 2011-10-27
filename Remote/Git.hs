@@ -57,7 +57,8 @@ gen r u _ = do
 	 - cached UUID value. -}
 	let cheap = not $ Git.repoIsUrl r
 	r' <- case (cheap, u) of
-		(True, _) -> tryGitConfigRead r
+		(True, _) -> do
+			tryGitConfigRead r
 		(False, "") -> tryGitConfigRead r
 		_ -> return r
 
@@ -147,8 +148,12 @@ inAnnex r key
  - monad using that repository. -}
 onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
-	annex <- Annex.new r
-	Annex.eval annex $ do
+	-- Avoid re-reading the repository's configuration if it was
+	-- already read.
+	state <- if (M.null $ Git.configMap r)
+		then Annex.new r
+		else return $ Annex.newState r
+	Annex.eval state $ do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.Branch.disableUpdate
@@ -168,7 +173,9 @@ dropKey r key
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
-	| not $ Git.repoIsUrl r = rsyncOrCopyFile r (gitAnnexLocation r key) file
+	| not $ Git.repoIsUrl r = do
+		params <- rsyncParams r
+		rsyncOrCopyFile params (gitAnnexLocation r key) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
 	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
@@ -179,9 +186,10 @@ copyToRemote r key
 	| not $ Git.repoIsUrl r = do
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
+		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ Annex.Content.getViaTmp key $
-			rsyncOrCopyFile r keysrc
+			rsyncOrCopyFile params keysrc
 	| Git.repoIsSsh r = do
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
@@ -200,15 +208,13 @@ rsyncHelper p = do
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
-rsyncOrCopyFile :: Git.Repo -> FilePath -> FilePath -> Annex Bool
-rsyncOrCopyFile r src dest = do
+rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> Annex Bool
+rsyncOrCopyFile rsyncparams src dest = do
 	ss <- liftIO $ getFileStatus $ parentDir src
 	ds <- liftIO $ getFileStatus $ parentDir dest
 	if deviceID ss == deviceID ds
 		then liftIO $ copyFileExternal src dest
-		else do
-			params <- rsyncParams r
-			rsyncHelper $ params ++ [Param src, Param dest]
+		else rsyncHelper $ rsyncparams ++ [Param src, Param dest]
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}

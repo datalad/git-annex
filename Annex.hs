@@ -12,6 +12,7 @@ module Annex (
 	AnnexState(..),
 	OutputType(..),
 	new,
+	newState,
 	run,
 	eval,
 	getState,
