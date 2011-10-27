@@ -8,3 +8,5 @@ What is says on the tin:
     23:09:50 < joeyh_> oh, I think I have code that fsck could use on bare repos already.. just a matter of wiring it up
     23:10:42 < joeyh_> feel free to reopen a bug or whatever so I remember.. the unused command's branch content enumeration could be used in a bare repo
     23:14:51 < joeyh_> unused/dropunused could work in bare repos too btw
+
+> Also `status`'s total annex keys/size could be handled for bare repos. --[[Joey]] 
