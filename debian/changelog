@@ -6,6 +6,8 @@ git-annex (3.20111026) UNRELEASED; urgency=low
   * uninit: Add guard against being run with the git-annex branch checked out.
   * Fail if --from or --to is passed to commands that do not support them.
   * drop --from is now supported to remove file content from a remote.
+  * status: Now always shows the current repository, even when it does not
+    appear in uuid.log.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 

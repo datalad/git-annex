@@ -24,6 +24,7 @@ import Data.Time.Clock.POSIX
 import Common.Annex
 import qualified Annex.Branch
 import Logs.UUIDBased
+import qualified Annex.UUID
 
 {- Filename of uuid.log. -}
 logfile :: FilePath
@@ -36,6 +37,14 @@ describeUUID uuid desc = do
 	Annex.Branch.change logfile $
 		showLog id . changeLog ts uuid desc . parseLog Just
 
-{- Read the uuidLog into a simple Map -}
+{- Read the uuidLog into a simple Map.
+ -
+ - The UUID of the current repository is included explicitly, since
+ - it may not have been described and so otherwise would not appear. -}
 uuidMap :: Annex (M.Map UUID String)
-uuidMap = (simpleMap . parseLog Just) <$> Annex.Branch.get logfile
+uuidMap = do
+	m <- (simpleMap . parseLog Just) <$> Annex.Branch.get logfile
+	u <- Annex.UUID.getUUID
+	return $ M.insertWith' preferold u "" m
+	where
+		preferold = flip const
