@@ -25,7 +25,8 @@ module Remote (
 	nameToUUID,
 	showTriedRemotes,
 	showLocations,
-	forceTrust
+	forceTrust,
+	remoteHasKey
 ) where
 
 import qualified Data.Map as M
@@ -225,3 +226,15 @@ forceTrust level remotename = do
 	r <- nameToUUID remotename
 	Annex.changeState $ \s ->
 		s { Annex.forcetrust = (r, level):Annex.forcetrust s }
+
+{- Used to log a change in a remote's having a key. The change is logged
+ - in the local repo, not on the remote. The process of transferring the
+ - key to the remote, or removing the key from it *may* log the change
+ - on the remote, but this cannot always be relied on. -}
+remoteHasKey :: Remote Annex -> Key -> Bool -> Annex ()
+remoteHasKey remote key present	= do
+	let remoteuuid = uuid remote
+	g <- gitRepo
+	logChange g key remoteuuid status
+	where
+		status = if present then InfoPresent else InfoMissing

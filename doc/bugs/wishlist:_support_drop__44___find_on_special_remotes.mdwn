@@ -2,6 +2,7 @@ Currently there is no way to drop files, or list what files are available, on a 
 It would be good if "git annex drop" and "git annex find" supported the --from argument.
 
 > I agree, drop should support --from.
+>> [[done]] --[[Joey]] 
 > 
 > To find files *believed* to be present in a given remote, use
 > `git annex find --in remote`

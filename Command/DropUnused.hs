@@ -13,7 +13,6 @@ import Common.Annex
 import Command
 import qualified Annex
 import qualified Command.Drop
-import qualified Command.Move
 import qualified Remote
 import qualified Git
 import Types.Key
@@ -56,8 +55,8 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 		dropremote name = do
 			r <- Remote.byName name
 			showAction $ "from " ++ Remote.name r
-			next $ Command.Move.fromCleanup r True key
-		droplocal = Command.Drop.perform key (Just 0) -- force drop
+			next $ Command.Drop.cleanupRemote key r
+		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
 
 performOther :: (Git.Repo -> Key -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

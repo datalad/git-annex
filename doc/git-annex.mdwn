@@ -80,8 +80,9 @@ subdirectories).
   Drops the content of annexed files from this repository. 
 
   git-annex will refuse to drop content if it cannot verify it is
-  safe to do so. At least one copy of content needs to exist in another
-  remote. This can be overridden with the --force switch.
+  safe to do so. This can be overridden with the --force switch.
+
+  To drop content from a remote, specify --from.
 
 * move [path ...]
   
