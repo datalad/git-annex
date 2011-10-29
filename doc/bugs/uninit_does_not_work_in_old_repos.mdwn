@@ -1,0 +1,6 @@
+As uninit does not need to actually write out any data, just remove it, it should be possible to uninit in old stores.
+
+    % git annex uninit
+    git-annex: Repository version 2 is not supported. Upgrade this repository: git-annex upgrade
+
+If the repo happens to be broken, this essentially locks in data.
