@@ -1,0 +1,4 @@
+    (checksum...) failed
+    fsck foo (fixing location log) 
+      Only 1 of 2 trustworthy copies exist of foo
+      Back it up with git-annex copy.
