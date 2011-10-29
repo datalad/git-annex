@@ -12,4 +12,4 @@ What is says on the tin:
 
 >> Fsck is done. Rest not done yet. --[[Joey]]
 
-[[!meta title="support status, unused, dropunused in bare repos"]]
+[[!meta title="support unused, dropunused in bare repos"]]

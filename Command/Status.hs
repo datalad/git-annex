@@ -57,8 +57,8 @@ stats =
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, total_annex_keys
-	, total_annex_size
+	, visible_annex_keys
+	, visible_annex_size
 	, backend_usage
 	]
 
@@ -99,16 +99,16 @@ local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
 	keySizeSum <$> cachedKeysPresent
 
-total_annex_size :: Stat
-total_annex_size = stat "total annex size" $
-	keySizeSum <$> cachedKeysReferenced
-
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $
 	show . S.size <$> cachedKeysPresent
 
-total_annex_keys :: Stat
-total_annex_keys = stat "total annex keys" $
+visible_annex_size :: Stat
+visible_annex_size = stat "visible annex size" $
+	keySizeSum <$> cachedKeysReferenced
+
+visible_annex_keys :: Stat
+visible_annex_keys = stat "visible annex keys" $
 	show . S.size <$> cachedKeysReferenced
 
 tmp_size :: Stat
@@ -118,9 +118,9 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced
+backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced <*> cachedKeysPresent
 	where
-		usage ks = pp "" $ reverse . sort $ map swap $ splits $ S.toList ks
+		usage a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
 		splits :: [Key] -> [(String, Integer)]
 		splits ks = M.toList $ M.fromListWith (+) $ map tcount ks
 		tcount k = (keyBackendName k, 1)
