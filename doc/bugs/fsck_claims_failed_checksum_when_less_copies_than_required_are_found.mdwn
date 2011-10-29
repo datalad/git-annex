@@ -36,3 +36,9 @@
     git-annex: 11577 with too few copies
 
 >>>>>> In the end, it comes down to the distinction of different failure classes. -- Richard
+
+>>>>>>> For the third, and final time: 
+>>>>>>> # You are misreading the truncated output you posted
+>>>>>>> The "checksum" line is regarding **different** file than the 
+>>>>>>> not enough copies message. fsck does not attempt to checksum a file
+>>>>>>> that is not present. [[done]] --[[Joey]]
