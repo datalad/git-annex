@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,14 +32,17 @@ start file numcopies = notBareRepo $ isAnnexed file $ \(key, backend) -> do
 	next $ perform key file backend numcopies
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
-perform key file backend numcopies = do
-	-- the location log is checked first, so that if it has bad data
-	-- that gets corrected
-	locationlogok <- verifyLocationLog key file
-	backendok <- fsckKey backend key (Just file) numcopies
-	if locationlogok && backendok
-		then next $ return True
-		else stop
+perform key file backend numcopies = check =<< sequence
+	-- order matters
+	[ verifyLocationLog key file
+	, checkKeySize key
+	, checkKeyNumCopies key file numcopies
+	, (Types.Backend.fsckKey backend) key
+	]
+	where
+		check vs
+			| all (== True) vs = next $ return True
+			| otherwise = stop
 
 {- Checks that the location log reflects the current status of the key,
    in this repository only. -}
@@ -77,14 +80,6 @@ verifyLocationLog key file = do
 			showNote "fixing location log"
 			logChange g key u s
 
-{- Checks a key for problems. -}
-fsckKey :: Backend Annex -> Key -> Maybe FilePath -> Maybe Int -> Annex Bool
-fsckKey backend key file numcopies = do
-	size_ok <- checkKeySize key
-	copies_ok <- checkKeyNumCopies key file numcopies
-	backend_ok <- (Types.Backend.fsckKey backend) key
-	return $ size_ok && copies_ok && backend_ok
-
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
@@ -108,7 +103,7 @@ checkKeySize key = do
 					return False
 
 
-checkKeyNumCopies :: Key -> Maybe FilePath -> Maybe Int -> Annex Bool
+checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
@@ -116,12 +111,9 @@ checkKeyNumCopies key file numcopies = do
 	if present < needed
 		then do
 			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-			warning $ missingNote (filename file key) present needed ppuuids
+			warning $ missingNote file present needed ppuuids
 			return False
 		else return True
-	where
-		filename Nothing k = show k
-		filename (Just f) _ = f
 
 missingNote :: String -> Int -> Int -> String -> String
 missingNote file 0 _ [] = 
