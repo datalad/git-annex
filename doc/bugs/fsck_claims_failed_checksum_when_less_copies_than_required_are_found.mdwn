@@ -24,3 +24,15 @@
 >>>>> fsck considers not enough copies to be a failure condition; it prints
 >>>>> error messages about it etc. That has nothing to do with checksums.
 >>>>> --[[Joey]]
+
+>>>>>> I get that. Still, I think it would be _extremely_ useful to know what failures occurred, exactly. Not having enough copies is Not Good, yet not having enough copies and a locally correct file is _lot_ better than having not enough copies and a broken file. I.e. I would prefer:
+
+    (checksum...) OK
+    Not enough copies: Only 1 of 2 trustworthy copies exist of foo
+
+>>>>>> or similar and at the end
+
+    git-annex: 0 wrong checksums
+    git-annex: 11577 with too few copies
+
+>>>>>> In the end, it comes down to the distinction of different failure classes. -- Richard
