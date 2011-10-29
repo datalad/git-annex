@@ -5,4 +5,7 @@
 
 > You've given me severely partial output, and no test case, but until
 > it says "fsck foo", the output is pertaining to some other file than foo.
-> As far as I can see, there is no bug here. [[done]] --[[Joey]]
+> As far as I can see, there is no bug here. --[[Joey]]
+
+>> Sorry, I thought it would be obvious, but that's no excuse for not providing additional explanation.
+>> The problem is that fsck tells me a file's fsck has failed without printing extra details. In this case, the checksum is OK while I don't have enough copies to satisfy the fsck. The fact that I don't have enough copies is obviously relevant, but I would still like to know if the checksums are OK. -- Richard
