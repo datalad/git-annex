@@ -17,6 +17,7 @@ module Logs.Location (
 	readLog,
 	keyLocations,
 	loggedKeys,
+	loggedKeysFor,
 	logFile,
 	logFileKey
 ) where
@@ -43,6 +44,18 @@ keyLocations = currentLog . logFile
  - (There may be duplicate keys in the list.) -}
 loggedKeys :: Annex [Key]
 loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Annex.Branch.files
+
+{- Finds all keys that have location log information indicating
+ - they are present for the specified repository. -}
+loggedKeysFor :: UUID -> Annex [Key]
+loggedKeysFor u = filterM isthere =<< loggedKeys
+	where
+		{- This should run strictly to avoid the filterM
+		 - building many thunks containing keyLocations data. -}
+		isthere k = do
+			us <- keyLocations k
+			let !there = u `elem` us
+			return there
 
 {- The filename of the log file for a given key. -}
 logFile :: Key -> String

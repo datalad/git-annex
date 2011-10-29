@@ -81,18 +81,6 @@ doCommand = start
 		success = return True
 		failure = showEndFail >> return False
 
-notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
-notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
-
-isAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex (Maybe a)) -> Annex (Maybe a)
-isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
-
-notBareRepo :: Annex a -> Annex a
-notBareRepo a = do
-	whenM (Git.repoIsLocalBare <$> gitRepo) $
-		error "You cannot run this subcommand in a bare repository."
-	a
-
 {- These functions find appropriate files or other things based on a
    user's parameters, and prepare actions operating on them. -}
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
@@ -168,7 +156,18 @@ runFilteredGen a d fs = do
 			ok <- matcher f
 			if ok then a v else stop
 
-{- filter out symlinks -}	
+notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
+notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
+
+isAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex (Maybe a)) -> Annex (Maybe a)
+isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
+
+notBareRepo :: Annex a -> Annex a
+notBareRepo a = do
+	whenM (Git.repoIsLocalBare <$> gitRepo) $
+		error "You cannot run this subcommand in a bare repository."
+	a
+
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
 

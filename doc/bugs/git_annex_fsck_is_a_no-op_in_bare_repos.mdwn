@@ -17,3 +17,5 @@ See http://lists.madduck.net/pipermail/vcs-home/2011-June/000433.html
 >>> While storing the data is no longer an issue in bare repos, fsck would
 >>> need a special mode that examines all the location logs, since it
 >>> cannot run thru the checked out files. --[[Joey]] 
+
+>>>> [[done]]! --[[Joey]] 

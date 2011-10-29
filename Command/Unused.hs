@@ -67,19 +67,11 @@ checkRemoteUnused name = do
 checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
 checkRemoteUnused' r = do
 	showAction "checking for unused data"
-	remotehas <- filterM isthere =<< loggedKeys
+	remotehas <- loggedKeysFor (Remote.uuid r)
 	remoteunused <- excludeReferenced remotehas
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
 	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
-	where
-		{- This should run strictly to avoid the filterM
-		 - building many thunks containing keyLocations data. -}
-		isthere k = do
-			us <- keyLocations k
-			let !there = uuid `elem` us
-			return there
-		uuid = Remote.uuid r
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do

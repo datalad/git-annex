@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ import Command
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
+import qualified Backend
+import qualified Git
 import Annex.Content
 import Logs.Location
 import Logs.Trust
@@ -24,30 +26,61 @@ def :: [Command]
 def = [command "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start]
+seek = [withNumCopies start, withBarePresentKeys startBare]
 
 start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = notBareRepo $ isAnnexed file $ \(key, backend) -> do
+start file numcopies = isAnnexed file $ \(key, backend) -> do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
-perform key file backend numcopies = check =<< sequence
+perform key file backend numcopies = check
 	-- order matters
 	[ verifyLocationLog key file
 	, checkKeySize key
 	, checkKeyNumCopies key file numcopies
 	, (Types.Backend.fsckKey backend) key
 	]
+
+{- To fsck a bare repository, fsck each key in the location log. -}
+withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
+withBarePresentKeys a params = do
+	bare <- Git.repoIsLocalBare <$> gitRepo
+	if bare
+		then do
+			unless (null params) $ do
+				error "fsck should be run without parameters in a bare repository"
+			liftM (map a) loggedKeys
+		else return []
+
+startBare :: Key -> CommandStart
+startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+	Nothing -> stop
+	Just backend -> do
+		showStart "fsck" (show key)
+		next $ performBare key backend
+
+{- Note that numcopies cannot be checked in a bare repository, because
+ - getting the numcopies value requires a working copy with .gitattributes
+ - files. -}
+performBare :: Key -> Backend Annex -> CommandPerform
+performBare key backend = check
+	[ verifyLocationLog key (show key)
+	, checkKeySize key
+	, (Types.Backend.fsckKey backend) key
+	]
+
+check :: [Annex Bool] -> CommandPerform	
+check s = sequence s >>= dispatch
 	where
-		check vs
+		dispatch vs
 			| all (== True) vs = next $ return True
 			| otherwise = stop
 
 {- Checks that the location log reflects the current status of the key,
    in this repository only. -}
-verifyLocationLog :: Key -> FilePath -> Annex Bool
-verifyLocationLog key file = do
+verifyLocationLog :: Key -> String -> Annex Bool
+verifyLocationLog key desc = do
 	g <- gitRepo
 	present <- inAnnex key
 	
@@ -69,7 +102,7 @@ verifyLocationLog key file = do
 		(False, True) -> do
 				fix g u InfoMissing
 				warning $
-					"** Based on the location log, " ++ file
+					"** Based on the location log, " ++ desc
 					++ "\n** was expected to be present, " ++
 					"but its content is missing."
 				return False

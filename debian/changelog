@@ -8,6 +8,10 @@ git-annex (3.20111026) UNRELEASED; urgency=low
   * drop --from is now supported to remove file content from a remote.
   * status: Now always shows the current repository, even when it does not
     appear in uuid.log.
+  * fsck: Now works in bare repositories. Checks location log information,
+    and file contents. Does not check that numcopies is satisfied, as
+    .gitattributes information about numcopies is not available in a bare
+    repository.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 
