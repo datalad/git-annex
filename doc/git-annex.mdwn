@@ -542,7 +542,7 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.
-  For example, to limit the bandwidth to 100Kbye/s, set it to "--bwlimit 100"
+  For example, to limit the bandwidth to 100Kbye/s, set it to "--bwlimit 100k"
   (There is no corresponding option for bup join.)
 
 * `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`
