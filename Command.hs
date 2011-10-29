@@ -149,12 +149,15 @@ backendPairs a fs = runFilteredGen a snd (Backend.chooseBackends fs)
 runFilteredGen :: (b -> Annex (Maybe a)) -> (b -> FilePath) -> Annex [b] -> Annex [Annex (Maybe a)]
 runFilteredGen a d fs = do
 	matcher <- Limit.getMatcher
-	liftM (map $ proc matcher) fs
+	runActions (proc matcher) fs
 	where
 		proc matcher v = do
 			let f = d v
 			ok <- matcher f
 			if ok then a v else stop
+
+runActions :: (b -> Annex (Maybe a)) -> Annex [b] -> Annex [Annex (Maybe a)]
+runActions a fs = liftM (map a) fs
 
 notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
@@ -162,9 +165,12 @@ notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
 isAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex (Maybe a)) -> Annex (Maybe a)
 isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
 
+isBareRepo :: Annex Bool
+isBareRepo = Git.repoIsLocalBare <$> gitRepo
+
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do
-	whenM (Git.repoIsLocalBare <$> gitRepo) $
+	whenM isBareRepo $
 		error "You cannot run this subcommand in a bare repository."
 	a
 

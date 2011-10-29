@@ -13,7 +13,6 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
 import qualified Backend
-import qualified Git
 import Annex.Content
 import Logs.Location
 import Logs.Trust
@@ -44,14 +43,13 @@ perform key file backend numcopies = check
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
-withBarePresentKeys a params = do
-	bare <- Git.repoIsLocalBare <$> gitRepo
-	if bare
-		then do
+withBarePresentKeys a params = isBareRepo >>= go
+	where
+		go False = return []
+		go True = do
 			unless (null params) $ do
 				error "fsck should be run without parameters in a bare repository"
-			liftM (map a) loggedKeys
-		else return []
+			runActions a loggedKeys
 
 startBare :: Key -> CommandStart
 startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
