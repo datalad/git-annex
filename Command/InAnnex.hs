@@ -11,9 +11,9 @@ import Common.Annex
 import Command
 import Annex.Content
 
-command :: [Command]
-command = [Command "inannex" (paramRepeating paramKey) defaultChecks seek
-		"checks if keys are present in the annex"]
+def :: [Command]
+def = [command "inannex" (paramRepeating paramKey) seek
+	"checks if keys are present in the annex"]
 
 seek :: [CommandSeek]
 seek = [withKeys start]

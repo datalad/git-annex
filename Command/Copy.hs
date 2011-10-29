@@ -10,8 +10,9 @@ module Command.Copy where
 import Command
 import qualified Command.Move
 
-command :: [Command]
-command = [Command "copy" paramPaths needsRepo seek
+def :: [Command]
+def = [dontCheck toOpt $ dontCheck fromOpt $ 
+	command "copy" paramPaths seek
 	"copy content of files to/from another repository"]
 
 seek :: [CommandSeek]

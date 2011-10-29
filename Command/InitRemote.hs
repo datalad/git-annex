@@ -16,10 +16,10 @@ import qualified Logs.Remote
 import qualified Types.Remote as R
 import Annex.UUID
 
-command :: [Command]
-command = [Command "initremote"
-	(paramPair paramName $ 	paramOptional $ paramRepeating paramKeyValue)
-	defaultChecks seek "sets up a special (non-git) remote"]
+def :: [Command]
+def = [command "initremote"
+	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
+	seek "sets up a special (non-git) remote"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

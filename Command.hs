@@ -24,7 +24,9 @@ import Init
  -
  - a. The check stage runs checks, that error out if
  -    anything prevents the command from running. -}
-type CommandCheck = Annex ()
+data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
+instance Eq CommandCheck where
+	a == b = idCheck a == idCheck b
 {- b. The seek stage takes the parameters passed to the command,
  -    looks through the repo to find the ones that are relevant
  -    to that command (ie, new files to add), and generates
@@ -43,9 +45,9 @@ type CommandPerform = Annex (Maybe CommandCleanup)
 type CommandCleanup = Annex Bool
 
 data Command = Command {
+	cmdcheck :: [CommandCheck],
 	cmdname :: String,
 	cmdparams :: String,
-	cmdcheck :: CommandCheck,
 	cmdseek :: [CommandSeek],
 	cmddesc :: String
 }
@@ -58,9 +60,9 @@ next a = return $ Just a
 stop :: Annex (Maybe a)
 stop = return Nothing
 
-{- Checks that the command can be run in the current environment. -}
-checkCommand :: Command -> Annex ()
-checkCommand Command { cmdcheck = check } = check
+{- Generates a command with the common checks. -}
+command :: String -> String -> [CommandSeek] -> String -> Command
+command = Command commonChecks
 
 {- Prepares a list of actions to run to perform a command, based on
  - the parameters passed to it. -}
@@ -232,22 +234,33 @@ autoCopies key vs numcopiesattr a = do
 			if length have `vs` needed then a else stop
 		else a
 
-{- Checks -}
-defaultChecks :: CommandCheck
-defaultChecks = noFrom >> noTo >> needsRepo
+{- Common checks for commands, and an interface to selectively remove them,
+ - or add others. -}
+commonChecks :: [CommandCheck]
+commonChecks = [fromOpt, toOpt, repoExists]
 
-noChecks :: CommandCheck
-noChecks = return ()
+repoExists :: CommandCheck
+repoExists = CommandCheck 0 ensureInitialized
 
-needsRepo :: CommandCheck
-needsRepo = ensureInitialized
-
-noFrom :: CommandCheck
-noFrom = do
+fromOpt :: CommandCheck
+fromOpt = CommandCheck 1 $ do
 	v <- Annex.getState Annex.fromremote
 	unless (v == Nothing) $ error "cannot use --from with this command"
 
-noTo :: CommandCheck
-noTo = do
+toOpt :: CommandCheck
+toOpt = CommandCheck 2 $ do
 	v <- Annex.getState Annex.toremote
 	unless (v == Nothing) $ error "cannot use --to with this command"
+
+checkCommand :: Command -> Annex ()
+checkCommand Command { cmdcheck = c } = sequence_ $ map runCheck c
+
+dontCheck :: CommandCheck -> Command -> Command
+dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
+
+addCheck :: Annex () -> Command -> Command
+addCheck check cmd = mutateCheck cmd $
+	\c -> CommandCheck (length c + 100) check : c
+
+mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
+mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }

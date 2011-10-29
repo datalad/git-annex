@@ -38,10 +38,10 @@ parseCmd argv header cmds options = do
 	when (null params) $ error $ "missing command" ++ usagemsg
 	case lookupCmd (head params) of
 		[] -> error $ "unknown command" ++ usagemsg
-		[command] -> do
+		[cmd] -> do
 			_ <- sequence flags
-			checkCommand command
-			prepCommand command (drop 1 params)
+			checkCommand cmd
+			prepCommand cmd (drop 1 params)
 		_ -> error "internal error: multiple matching commands"
 	where
 		getopt = case getOpt Permute options argv of

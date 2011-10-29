@@ -38,8 +38,8 @@ data StatInfo = StatInfo
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
 
-command :: [Command]
-command = [Command "status" paramNothing defaultChecks seek
+def :: [Command]
+def = [command "status" paramNothing seek
 	"shows status information about the annex"]
 
 seek :: [CommandSeek]

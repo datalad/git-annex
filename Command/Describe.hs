@@ -12,8 +12,8 @@ import Command
 import qualified Remote
 import Logs.UUID
 
-command :: [Command]
-command = [Command "describe" (paramPair paramRemote paramDesc) defaultChecks seek
+def :: [Command]
+def = [command "describe" (paramPair paramRemote paramDesc) seek
 	"change description of a repository"]
 
 seek :: [CommandSeek]

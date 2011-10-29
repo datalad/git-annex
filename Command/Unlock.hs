@@ -13,13 +13,13 @@ import Annex.Content
 import Utility.CopyFile
 import Utility.FileMode
 
-command :: [Command]
-command =
+def :: [Command]
+def =
 	[ c "unlock" "unlock files for modification"
 	, c "edit" "same as unlock"
 	]
 	where
-		c n = Command n paramPaths defaultChecks seek
+		c n = command n paramPaths seek
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

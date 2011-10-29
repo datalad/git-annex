@@ -13,8 +13,8 @@ import Command
 import Remote
 import Logs.Trust
 
-command :: [Command]
-command = [Command "whereis" paramPaths defaultChecks seek
+def :: [Command]
+def = [command "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]

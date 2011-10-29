@@ -16,9 +16,8 @@ import qualified Command.Add
 import Backend
 import Logs.Web
 
-command :: [Command]
-command = [Command "migrate" paramPaths defaultChecks seek
-	"switch data to different backend"]
+def :: [Command]
+def = [command "migrate" paramPaths seek "switch data to different backend"]
 
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]

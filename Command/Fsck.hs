@@ -20,8 +20,8 @@ import Utility.DataUnits
 import Utility.FileMode
 import Config
 
-command :: [Command]
-command = [Command "fsck" paramPaths defaultChecks seek "check for problems"]
+def :: [Command]
+def = [command "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
 seek = [withNumCopies start]

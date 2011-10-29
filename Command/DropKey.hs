@@ -13,8 +13,8 @@ import qualified Annex
 import Logs.Location
 import Annex.Content
 
-command :: [Command]
-command = [Command "dropkey" (paramRepeating paramKey) defaultChecks seek
+def :: [Command]
+def = [command "dropkey" (paramRepeating paramKey) seek
 	"drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]

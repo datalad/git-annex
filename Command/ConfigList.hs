@@ -11,9 +11,9 @@ import Common.Annex
 import Command
 import Annex.UUID
 
-command :: [Command]
-command = [Command "configlist" paramNothing defaultChecks seek
-		"outputs relevant git configuration"]
+def :: [Command]
+def = [command "configlist" paramNothing seek
+	"outputs relevant git configuration"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

@@ -12,8 +12,8 @@ import Command
 import Logs.Location
 import Annex.Content
 
-command :: [Command]
-command = [Command "setkey" paramPath defaultChecks seek
+def :: [Command]
+def = [command "setkey" paramPath seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]

@@ -19,8 +19,8 @@ import Types.Key
 
 type UnusedMap = M.Map String Key
 
-command :: [Command]
-command = [Command "dropunused" (paramRepeating paramNumber) (noTo >> needsRepo)
+def :: [Command]
+def = [dontCheck fromOpt $ command "dropunused" (paramRepeating paramNumber)
 	seek "drop unused file content"]
 
 seek :: [CommandSeek]

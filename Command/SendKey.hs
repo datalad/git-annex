@@ -12,8 +12,8 @@ import Command
 import Annex.Content
 import Utility.RsyncFile
 
-command :: [Command]
-command = [Command "sendkey" paramKey defaultChecks seek
+def :: [Command]
+def = [command "sendkey" paramKey seek
 	"runs rsync in server mode to send content"]
 
 seek :: [CommandSeek]

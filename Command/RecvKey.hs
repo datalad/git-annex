@@ -13,8 +13,8 @@ import CmdLine
 import Annex.Content
 import Utility.RsyncFile
 
-command :: [Command]
-command = [Command "recvkey" paramKey defaultChecks seek
+def :: [Command]
+def = [command "recvkey" paramKey seek
 	"runs rsync in server mode to receive content"]
 
 seek :: [CommandSeek]

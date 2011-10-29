@@ -11,8 +11,8 @@ import Common.Annex
 import Command
 import qualified Annex.Branch
 
-command :: [Command]
-command = [Command "merge" paramNothing defaultChecks seek
+def :: [Command]
+def = [command "merge" paramNothing seek
 		"auto-merge remote changes into git-annex branch"]
 
 seek :: [CommandSeek]

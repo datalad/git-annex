@@ -23,15 +23,15 @@ import qualified Command.SendKey
 
 cmds_readonly :: [Command]
 cmds_readonly = concat
-	[ Command.ConfigList.command
-	, Command.InAnnex.command
-	, Command.SendKey.command
+	[ Command.ConfigList.def
+	, Command.InAnnex.def
+	, Command.SendKey.def
 	]
 
 cmds_notreadonly :: [Command]
 cmds_notreadonly = concat
-	[ Command.RecvKey.command
-	, Command.DropKey.command
+	[ Command.RecvKey.def
+	, Command.DropKey.def
 	]
 
 cmds :: [Command]

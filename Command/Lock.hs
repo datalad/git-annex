@@ -12,8 +12,8 @@ import Command
 import qualified Annex.Queue
 import Backend
 	
-command :: [Command]
-command = [Command "lock" paramPaths defaultChecks seek "undo unlock command"]
+def :: [Command]
+def = [command "lock" paramPaths seek "undo unlock command"]
 
 seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]

@@ -19,9 +19,8 @@ import qualified Backend.URL
 import Annex.Content
 import Logs.Web
 
-command :: [Command]
-command = [Command "addurl" (paramRepeating paramUrl) defaultChecks seek
-	"add urls to annex"]
+def :: [Command]
+def = [command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 seek :: [CommandSeek]
 seek = [withStrings start]

@@ -15,8 +15,9 @@ import Annex.Content
 import qualified Remote
 import Annex.UUID
 
-command :: [Command]
-command = [Command "move" paramPaths needsRepo seek
+def :: [Command]
+def = [dontCheck toOpt $ dontCheck fromOpt $
+	command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]

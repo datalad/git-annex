@@ -13,8 +13,9 @@ import Annex.UUID
 import Logs.UUID
 import Init
 	
-command :: [Command]
-command = [Command "init" paramDesc noChecks seek "initialize git-annex"]
+def :: [Command]
+def = [dontCheck repoExists $
+	command "init" paramDesc seek "initialize git-annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

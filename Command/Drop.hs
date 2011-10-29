@@ -17,8 +17,8 @@ import Logs.Trust
 import Annex.Content
 import Config
 
-command :: [Command]
-command = [Command "drop" paramPaths (noTo >> needsRepo) seek
+def :: [Command]
+def = [dontCheck fromOpt $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
