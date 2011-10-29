@@ -35,7 +35,7 @@ withUnusedMaps params = do
 	return $ map (start (unused, unusedbad, unusedtmp)) params
 
 start :: (UnusedMap, UnusedMap, UnusedMap) -> FilePath -> CommandStart
-start (unused, unusedbad, unusedtmp) s = notBareRepo $ search
+start (unused, unusedbad, unusedtmp) s = search
 	[ (unused, perform)
 	, (unusedbad, performOther gitAnnexBadLocation)
 	, (unusedtmp, performOther gitAnnexTmpLocation)

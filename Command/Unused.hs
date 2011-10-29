@@ -36,7 +36,7 @@ seek = [withNothing start]
 
 {- Finds unused content in the annex. -} 
 start :: CommandStart
-start = notBareRepo $ do
+start = do
 	from <- Annex.getState Annex.fromremote
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)

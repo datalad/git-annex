@@ -12,6 +12,7 @@ git-annex (3.20111026) UNRELEASED; urgency=low
     and file contents. Does not check that numcopies is satisfied, as
     .gitattributes information about numcopies is not available in a bare
     repository.
+  * unused, dropunused: Now work in bare repositories.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 
