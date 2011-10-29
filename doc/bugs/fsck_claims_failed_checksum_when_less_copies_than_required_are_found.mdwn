@@ -18,4 +18,9 @@
 >>> full output would make much more sense. --[[Joey]]
 
 >>>> No. I have a total of 14908 annex keys, 3333 of which are on a remote. The only message other than 'checksum OK' and the above is 'git-annex: 11577 failed'.
->>>> I checked several files manually, their checksums are OK so `git annex status` is reporting those files as completely failed when they "only" miss copies. -- Richard
+>>>> I checked several files manually, their checksums are OK so `git annex
+>>>> fsck` is reporting those files as completely failed when they "only" miss copies. -- Richard
+
+>>>>> fsck considers not enough copies to be a failure condition; it prints
+>>>>> error messages about it etc. That has nothing to do with checksums.
+>>>>> --[[Joey]]
