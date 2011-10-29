@@ -42,3 +42,16 @@
 >>>>>>> The "checksum" line is regarding **different** file than the 
 >>>>>>> not enough copies message. fsck does not attempt to checksum a file
 >>>>>>> that is not present. [[done]] --[[Joey]]
+
+
+>>>>>>>> I realized early on that I pasted the wrong cross-passage, but as there is a ton of the same output, I didn't think it would matter. I wasn't aware that it does not try to checksum when there aren't enough copies. To be fair, you only just mentioned that.
+>>>>>>>> Personally, I think that's a bug as it makes ensuring local correctness before copying a file to remotes impossible.
+>>>>>>>> Either way, I really didn't know it actually _skipped_ checksumming; that part was missing.
+>>>>>>>> For the benefit of anyone else who might read this, this is the correct order:
+
+    fsck foo (fixing location log) 
+      Only 1 of 2 trustworthy copies exist of foo
+      Back it up with git-annex copy.
+    (checksum...) failed
+
+>>>>>>>> If you would like to keep things this way, fine. I think it's less than ideal, but I don't want to argue, either. -- Richard
