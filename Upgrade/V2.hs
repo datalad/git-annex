@@ -78,7 +78,6 @@ inject source dest = do
 	new <- liftIO (readFile $ olddir g </> source)
 	Annex.Branch.change dest $ \prev -> 
 		unlines $ nub $ lines prev ++ lines new
-	showProgress
 
 logFiles :: FilePath -> Annex [FilePath]
 logFiles dir = return . filter (".log" `isSuffixOf`)

@@ -12,4 +12,4 @@ A whirly would be preferable, imo.
 > 
 > I'm not particularly interested in implementing a whirley that would only
 > be used in this one place, in code that very few users are going to run
-> again. I could remove the dots.. --[[Joey]]
+> again. I could remove the dots.. [[done]] --[[Joey]]
