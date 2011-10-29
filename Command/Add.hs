@@ -29,7 +29,7 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
 start :: BackendFile -> CommandStart
-start p@(_, file) = notAnnexed file $ do
+start p@(_, file) = notBareRepo $ notAnnexed file $ do
 	s <- liftIO $ getSymbolicLinkStatus file
 	if isSymbolicLink s || not (isRegularFile s)
 		then stop

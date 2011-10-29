@@ -16,3 +16,5 @@ as non-bare repositories. Except for these caveats:
   checkouts.
 * `git annex unused` in a bare repository only knows about keys used in
   branches that have been pushed to the bare repository. So use it with care..
+* Commands that need a work tree, like `git annex add` won't work in a bare
+  repository, of course.

@@ -26,7 +26,7 @@ seek :: [CommandSeek]
 seek = [withStrings start]
 
 start :: String -> CommandStart
-start s = do
+start s = notBareRepo $ do
 	let u = parseURI s
 	case u of
 		Nothing -> error $ "bad url " ++ s
