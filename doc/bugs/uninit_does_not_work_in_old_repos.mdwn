@@ -15,3 +15,6 @@ If the repo happens to be broken, this essentially locks in data.
 > quite a lot. I don't want to go there. --[[Joey]]
 
 >>Requiring a version upgrade for unannex is fine. Yet, I see a problem when a git repo is broken; you are stuck without being able to uninit. In this case an uninit that does nothing but undo the symlinking would be useful. -- Richard
+
+>>> As I said, version 2 of git-annex is still there for people who need
+>>> it for whatever reason. [[done]] --[[Joey]]
