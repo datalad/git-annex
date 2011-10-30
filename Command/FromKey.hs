@@ -12,6 +12,7 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 import Types.Key
+import Config
 
 def :: [Command]
 def = [command "fromkey" paramPath seek "adds a file using a specific key"]

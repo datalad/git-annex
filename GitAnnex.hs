@@ -13,7 +13,6 @@ import Common.Annex
 import qualified Git
 import CmdLine
 import Command
-import Options
 import Types.TrustLevel
 import qualified Annex
 import qualified Remote

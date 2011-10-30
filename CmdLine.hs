@@ -20,7 +20,6 @@ import qualified Annex.Queue
 import qualified Git
 import Annex.Content
 import Command
-import Options
 
 {- Runs the passed command line. -}
 dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()

@@ -12,7 +12,6 @@ import Common.Annex
 import qualified Git
 import CmdLine
 import Command
-import Options
 import Annex.UUID
 
 import qualified Command.ConfigList

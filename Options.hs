@@ -1,6 +1,6 @@
-{- git-annex dashed options
+{- git-annex command-line options
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,7 +12,6 @@ import System.Log.Logger
 
 import Common.Annex
 import qualified Annex
-import Command
 import Limit
 
 {- Each dashed command-line option results in generation of an action
@@ -59,3 +58,37 @@ matcherOptions =
 	where
 		longopt o = Option [] [o] $ NoArg $ addToken o
 		shortopt o = Option o [] $ NoArg $ addToken o
+
+{- Descriptions of params used in usage messages. -}
+paramPaths :: String
+paramPaths = paramOptional $ paramRepeating paramPath -- most often used
+paramPath :: String
+paramPath = "PATH"
+paramKey :: String
+paramKey = "KEY"
+paramDesc :: String
+paramDesc = "DESC"
+paramUrl :: String
+paramUrl = "URL"
+paramNumber :: String
+paramNumber = "NUMBER"
+paramRemote :: String
+paramRemote = "REMOTE"
+paramGlob :: String
+paramGlob = "GLOB"
+paramName :: String
+paramName = "NAME"
+paramUUID :: String
+paramUUID = "UUID"
+paramType :: String
+paramType = "TYPE"
+paramKeyValue :: String
+paramKeyValue = "K=V"
+paramNothing :: String
+paramNothing = ""
+paramRepeating :: String -> String
+paramRepeating s = s ++ " ..."
+paramOptional :: String -> String
+paramOptional s = "[" ++ s ++ "]"
+paramPair :: String -> String -> String
+paramPair a b = a ++ " " ++ b

@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content
+import Config
 
 def :: [Command]
 def = [command "setkey" paramPath seek
