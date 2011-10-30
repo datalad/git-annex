@@ -26,22 +26,25 @@ dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
 dispatch args cmds options header gitrepo = do
 	setupConsole
 	state <- Annex.new gitrepo
-	(actions, state') <- Annex.run state $ parseCmd args header cmds options
-	tryRun state' $ [startup] ++ actions ++ [shutdown]
+	((cmd, actions), state') <- Annex.run state $ parseCmd args header cmds options
+	tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
 
 {- Parses command line, stores configure flags, and returns a 
- - list of actions to be run in the Annex monad. -}
-parseCmd :: [String] -> String -> [Command] -> [Option] -> Annex [Annex Bool]
+ - list of actions to be run in the Annex monad and the Command
+ - being run. -}
+parseCmd :: [String] -> String -> [Command] -> [Option] -> Annex (Command, [Annex Bool])
 parseCmd argv header cmds options = do
 	(flags, params) <- liftIO getopt
 	when (null params) $ error $ "missing command" ++ usagemsg
-	case lookupCmd (head params) of
-		[] -> error $ "unknown command" ++ usagemsg
+	let (c:rest) = params
+	case lookupCmd c of
+		[] -> error $ "unknown command " ++ c ++ " " ++ usagemsg
 		[cmd] -> do
 			_ <- sequence flags
 			checkCommand cmd
-			prepCommand cmd (drop 1 params)
-		_ -> error "internal error: multiple matching commands"
+			as <- prepCommand cmd rest
+			return (cmd, as)
+		_ -> error $ "internal error: multiple matching commands for " ++ c
 	where
 		getopt = case getOpt Permute options argv of
 			(flags, params, []) ->
@@ -70,10 +73,10 @@ usage header cmds options =
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).
  -}
-tryRun :: Annex.AnnexState -> [Annex Bool] -> IO ()
+tryRun :: Annex.AnnexState -> Command -> [Annex Bool] -> IO ()
 tryRun = tryRun' 0
-tryRun' :: Integer -> Annex.AnnexState -> [Annex Bool] -> IO ()
-tryRun' errnum state (a:as) = do
+tryRun' :: Integer -> Annex.AnnexState -> Command -> [Annex Bool] -> IO ()
+tryRun' errnum state cmd (a:as) = do
 	result <- try $ Annex.run state $ do
 		Annex.Queue.flushWhenFull
 		a
@@ -82,10 +85,11 @@ tryRun' errnum state (a:as) = do
 			Annex.eval state $ do
 				showErr err
 				showEndFail
-			tryRun' (errnum + 1) state as
-		Right (True,state') -> tryRun' errnum state' as
-		Right (False,state') -> tryRun' (errnum + 1) state' as
-tryRun' errnum _ [] = when (errnum > 0) $ error $ show errnum ++ " failed"
+			tryRun' (errnum + 1) state cmd as
+		Right (True,state') -> tryRun' errnum state' cmd as
+		Right (False,state') -> tryRun' (errnum + 1) state' cmd as
+tryRun' errnum _ cmd [] = when (errnum > 0) $
+		error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool
