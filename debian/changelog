@@ -27,7 +27,7 @@ git-annex (3.20111025) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Tue, 25 Oct 2011 13:03:08 -0700
 
-git-annex (3.20111011~bpo60+1) unstable; urgency=low
+git-annex (3.20111011~bpo60+2) squeeze-backports; urgency=low
 
   * Fix referring to remotes by uuid.
   * New or changed repository descriptions in uuid.log now have a timestamp,
