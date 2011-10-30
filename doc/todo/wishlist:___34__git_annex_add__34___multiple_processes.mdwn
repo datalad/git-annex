@@ -5,3 +5,6 @@ i'm in the process of managing my music collection with git-annex. The initial "
 Anyway, thanks for this wonderful piece of software.
 
 Jean-Baptiste
+
+> closing as dup of [[parallel possibilities]] (also see comments below)
+> [[done]] --[[Joey]] 

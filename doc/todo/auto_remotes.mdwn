@@ -21,3 +21,9 @@ Question: When should git-annex update the remote.log?
 (If not just on init.) Whenever it reads in a repo's remotes?
 
 > This sounds useful and the log should be updated every time any remote is being accessed. A counter or timestamp (yes, distributed times may be wrong/different) could be used to auto-prune old entries via a global and per-remote config setting. -- RichiH
+
+---
+
+I no longer think I'd use this myself, I find that my repositories quickly
+grow the paths I actually use, somewhat organically. Unofficial paths
+across university quads come to mind. [[done]] --[[Joey]] 
