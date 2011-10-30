@@ -110,7 +110,7 @@ nameToUUID "." = getUUID -- special case for current repo
 nameToUUID n = do
 	res <- byName' n
 	case res of
-		Left e -> return . fromMaybe (error e) =<< byDescription
+		Left e -> fromMaybe (error e) <$> byDescription
 		Right r -> return $ uuid r
 	where
 		byDescription = do
@@ -132,9 +132,7 @@ nameToUUID n = do
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	here <- getUUID
-	umap <- uuidMap
-	rmap <- remoteMap
-	let m = M.unionWith addname umap rmap
+	m <- M.unionWith addname <$> uuidMap <*> remoteMap
 	maybeShowJSON [(desc, map (jsonify m here) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
 	where
@@ -171,7 +169,7 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 {- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
-keyPossibilities key = return . fst =<< keyPossibilities' False key
+keyPossibilities key = fst <$> keyPossibilities' False key
 
 {- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -

@@ -43,7 +43,7 @@ perform (backend, file) = do
 	case k of
 		Nothing -> stop
 		Just (key, _) -> do
-			moveAnnex key file
+			handle (undo file key) $ moveAnnex key file
 			next $ cleanup file key True
 
 {- On error, put the file back so it doesn't seem to have vanished.
@@ -66,17 +66,18 @@ undo file key e = do
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
-	link <- calcGitLink file key
-	liftIO $ createSymbolicLink link file
+	handle (undo file key) $ do
+		link <- calcGitLink file key
+		liftIO $ createSymbolicLink link file
 
-	when hascontent $ do
-		logStatus key InfoPresent
-
-		-- touch the symlink to have the same mtime as the
-		-- file it points to
-		s <- liftIO $ getFileStatus file
-		let mtime = modificationTime s
-		liftIO $ touch file (TimeSpec mtime) False
+		when hascontent $ do
+			logStatus key InfoPresent
+	
+			-- touch the symlink to have the same mtime as the
+			-- file it points to
+			s <- liftIO $ getFileStatus file
+			let mtime = modificationTime s
+			liftIO $ touch file (TimeSpec mtime) False
 
 	force <- Annex.getState Annex.force
 	if force

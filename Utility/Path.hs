@@ -67,7 +67,7 @@ absPathFrom cwd file = fromMaybe bad $ absNormPath cwd file
  -    relPathCwdToFile "/tmp/foo/bar" == "" 
  -}
 relPathCwdToFile :: FilePath -> IO FilePath
-relPathCwdToFile f = liftM2 relPathDirToFile getCurrentDirectory (absPath f)
+relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
 
 {- Constructs a relative path from a directory to a file.
  -

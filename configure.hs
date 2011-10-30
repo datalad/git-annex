@@ -11,7 +11,7 @@ tests :: [TestCase]
 tests =
 	[ TestCase "version" getVersion
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
-	, TestCase "git version" checkGitVersion
+	-- , TestCase "git version" checkGitVersion -- not in stable
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_reflink_auto" "--reflink=auto"

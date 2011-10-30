@@ -128,7 +128,7 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: RemoteConfig -> EncryptedCipher -> IO Cipher
 decryptCipher _ (EncryptedCipher encipher _) = 
-	return . Cipher =<< gpgPipeStrict decrypt encipher
+	Cipher <$> gpgPipeStrict decrypt encipher
 	where
 		decrypt = [ Param "--decrypt" ]
 

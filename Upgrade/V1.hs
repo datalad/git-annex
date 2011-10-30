@@ -181,7 +181,7 @@ writeLog1 :: FilePath -> [LogLine] -> IO ()
 writeLog1 file ls = viaTmp writeFile file (unlines $ map show ls)
 
 readLog1 :: FilePath -> IO [LogLine]
-readLog1 file = catch (return . parseLog =<< readFileStrict file) (const $ return [])
+readLog1 file = catch (parseLog <$> readFileStrict file) (const $ return [])
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend Annex))
 lookupFile1 file = do
@@ -190,7 +190,7 @@ lookupFile1 file = do
 		Left _ -> return Nothing
 		Right l -> makekey l
 	where
-		getsymlink = return . takeFileName =<< readSymbolicLink file
+		getsymlink = takeFileName <$> readSymbolicLink file
 		makekey l = case maybeLookupBackendName bname of
 			Nothing -> do
 				unless (null kname || null bname ||

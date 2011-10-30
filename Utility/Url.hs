@@ -70,7 +70,6 @@ request url requesttype = Browser.browse $ do
 	Browser.setErrHandler ignore
 	Browser.setOutHandler ignore
 	Browser.setAllowRedirects True
-	liftM snd $ Browser.request
-		(mkRequest requesttype url :: Request_String)
+	snd <$> Browser.request (mkRequest requesttype url :: Request_String)
 	where
 		ignore = const $ return ()

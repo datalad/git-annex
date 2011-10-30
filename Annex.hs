@@ -34,13 +34,19 @@ import Types.TrustLevel
 import Types.UUID
 import qualified Utility.Matcher
 
+-- needed for Debian stable's haskell to derive Applicative for StateT
+instance (Functor m, Monad m) => Applicative (StateT s m) where
+	pure = return
+	(<*>) = ap
+
 -- git-annex's monad
 newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 	deriving (
 		Monad,
 		MonadIO,
 		MonadState AnnexState,
-		Functor
+		Functor,
+		Applicative
 	)
 
 -- internal state storage
@@ -93,7 +99,7 @@ newState gitrepo = AnnexState
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState `liftM` Git.configRead gitrepo
+new gitrepo = newState <$> Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)

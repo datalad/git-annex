@@ -101,7 +101,7 @@ local_annex_size = stat "local annex size" $
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $
-	return . show . S.size =<< cachedKeysPresent
+	show . S.size <$> cachedKeysPresent
 
 visible_annex_size :: Stat
 visible_annex_size = stat "visible annex size" $

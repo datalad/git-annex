@@ -43,7 +43,7 @@ keyLocations = currentLog . logFile
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}
 loggedKeys :: Annex [Key]
-loggedKeys = return . mapMaybe (logFileKey . takeFileName) =<< Annex.Branch.files
+loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Annex.Branch.files
 
 {- Finds all keys that have location log information indicating
  - they are present for the specified repository. -}

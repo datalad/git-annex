@@ -196,7 +196,7 @@ hasOrigin = refExists originname
 
 {- Does the git-annex branch or a foo/git-annex branch exist? -}
 hasSomeBranch :: Annex Bool
-hasSomeBranch = liftM (not . null) siblingBranches
+hasSomeBranch = not . null <$> siblingBranches
 
 {- List of all git-annex (refs, branches), including the main one and any
  - from remotes. -}
@@ -271,7 +271,7 @@ getJournalFile file = do
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: Annex [FilePath]
-getJournalledFiles = return . map fileJournal =<< getJournalFiles
+getJournalledFiles = map fileJournal <$> getJournalFiles
 
 {- List of existing journal files. -}
 getJournalFiles :: Annex [FilePath]

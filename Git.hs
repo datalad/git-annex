@@ -560,9 +560,8 @@ configMap = config
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
 checkAttr repo attr files = do
-	-- git check-attr needs relative filenames input; it will choke
-	-- on some absolute filenames. This also means it will output
-	-- all relative filenames.
+	-- this code is for git < 1.7, which changed git acheck-attr
+	-- significantly!
 	cwd <- getCurrentDirectory
 	let top = workTree repo
 	let absfiles = map (absPathFrom cwd) files
@@ -573,8 +572,7 @@ checkAttr repo attr files = do
                 hClose toh
                 exitSuccess
         hClose toh
-	s <- hGetContents fromh
-	return $ map (topair cwd top) $ lines s
+	(map (topair cwd top) . lines) <$> hGetContents fromh
 	where
 		params = gitCommandLine repo [Param "check-attr", Param attr, Params "-z --stdin"]
 		topair cwd top l = (relfile, value)
