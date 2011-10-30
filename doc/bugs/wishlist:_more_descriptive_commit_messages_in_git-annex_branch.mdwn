@@ -34,3 +34,6 @@ in my opinion, the messages should at least contain
 > 
 > It would be possible to make it *less* verbose, with an empty commit
 > message. :) --[[Joey]] 
+
+>> Closing as this is literally impossible to do without making
+>> git-annex worse. [[done]] --[[Joey]] 
