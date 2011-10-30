@@ -13,16 +13,18 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
-import UUID
-import Trust
-import Utility.Ssh
+import Annex.UUID
+import Logs.UUID
+import Logs.Trust
+import Annex.Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)
 data Link = Link Git.Repo Git.Repo
 
-command :: [Command]
-command = [repoCommand "map" paramNothing seek "generate map of repositories"]
+def :: [Command]
+def = [dontCheck repoExists $
+	command "map" paramNothing seek "generate map of repositories"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

@@ -20,8 +20,6 @@ import qualified Annex.Queue
 import qualified Git
 import Annex.Content
 import Command
-import Options
-import Init
 
 {- Runs the passed command line. -}
 dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
@@ -39,10 +37,10 @@ parseCmd argv header cmds options = do
 	when (null params) $ error $ "missing command" ++ usagemsg
 	case lookupCmd (head params) of
 		[] -> error $ "unknown command" ++ usagemsg
-		[command] -> do
+		[cmd] -> do
 			_ <- sequence flags
-			checkCmdEnviron command
-			prepCommand command (drop 1 params)
+			checkCommand cmd
+			prepCommand cmd (drop 1 params)
 		_ -> error "internal error: multiple matching commands"
 	where
 		getopt = case getOpt Permute options argv of
@@ -52,10 +50,6 @@ parseCmd argv header cmds options = do
 				ioError (userError (concat errs ++ usagemsg))
 		lookupCmd cmd = filter (\c -> cmd  == cmdname c) cmds
 		usagemsg = "\n\n" ++ usage header cmds options
-
-{- Checks that the command can be run in the current environment. -}
-checkCmdEnviron :: Command -> Annex ()
-checkCmdEnviron command = when (cmdusesrepo command) ensureInitialized
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String

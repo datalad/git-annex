@@ -13,7 +13,6 @@ import Common.Annex
 import qualified Git
 import CmdLine
 import Command
-import Options
 import Types.TrustLevel
 import qualified Annex
 import qualified Remote
@@ -54,38 +53,38 @@ import qualified Command.Version
 
 cmds :: [Command]
 cmds = concat
-	[ Command.Add.command
-	, Command.Get.command
-	, Command.Drop.command
-	, Command.Move.command
-	, Command.Copy.command
-	, Command.Unlock.command
-	, Command.Lock.command
-	, Command.Init.command
-	, Command.Describe.command
-	, Command.InitRemote.command
-	, Command.Unannex.command
-	, Command.Uninit.command
-	, Command.PreCommit.command
-	, Command.Trust.command
-	, Command.Untrust.command
-	, Command.Semitrust.command
-	, Command.AddUrl.command
-	, Command.FromKey.command
-	, Command.DropKey.command
-	, Command.SetKey.command
-	, Command.Fix.command
-	, Command.Fsck.command
-	, Command.Unused.command
-	, Command.DropUnused.command
-	, Command.Find.command
-	, Command.Whereis.command
-	, Command.Merge.command
-	, Command.Status.command
-	, Command.Migrate.command
-	, Command.Map.command
-	, Command.Upgrade.command
-	, Command.Version.command
+	[ Command.Add.def
+	, Command.Get.def
+	, Command.Drop.def
+	, Command.Move.def
+	, Command.Copy.def
+	, Command.Unlock.def
+	, Command.Lock.def
+	, Command.Init.def
+	, Command.Describe.def
+	, Command.InitRemote.def
+	, Command.Unannex.def
+	, Command.Uninit.def
+	, Command.PreCommit.def
+	, Command.Trust.def
+	, Command.Untrust.def
+	, Command.Semitrust.def
+	, Command.AddUrl.def
+	, Command.FromKey.def
+	, Command.DropKey.def
+	, Command.SetKey.def
+	, Command.Fix.def
+	, Command.Fsck.def
+	, Command.Unused.def
+	, Command.DropUnused.def
+	, Command.Find.def
+	, Command.Whereis.def
+	, Command.Merge.def
+	, Command.Status.def
+	, Command.Migrate.def
+	, Command.Map.def
+	, Command.Upgrade.def
+	, Command.Version.def
 	]
 
 options :: [Option]

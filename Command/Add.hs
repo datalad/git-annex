@@ -13,13 +13,13 @@ import Command
 import qualified Annex
 import qualified Annex.Queue
 import qualified Backend
-import LocationLog
+import Logs.Location
 import Annex.Content
 import Utility.Touch
 import Backend
 
-command :: [Command]
-command = [repoCommand "add" paramPaths seek "add files to annex"]
+def :: [Command]
+def = [command "add" paramPaths seek "add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files. -}
 seek :: [CommandSeek]
@@ -29,7 +29,7 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
 start :: BackendFile -> CommandStart
-start p@(_, file) = notAnnexed file $ do
+start p@(_, file) = notBareRepo $ notAnnexed file $ do
 	s <- liftIO $ getSymbolicLinkStatus file
 	if isSymbolicLink s || not (isRegularFile s)
 		then stop

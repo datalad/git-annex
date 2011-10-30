@@ -11,79 +11,131 @@ import Common.Annex
 import Command
 import qualified Remote
 import qualified Annex
-import LocationLog
+import Annex.UUID
+import Logs.Location
+import Logs.Trust
 import Annex.Content
-import Trust
 import Config
 
-command :: [Command]
-command = [repoCommand "drop" paramPaths seek
+def :: [Command]
+def = [dontCheck fromOpt $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
 seek = [withNumCopies start]
 
-{- Indicates a file's content is not wanted anymore, and should be removed
- - if it's safe to do so. -}
 start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, _) -> do
+start file numcopies = isAnnexed file $ \(key, _) ->
+	autoCopies key (>) numcopies $ do
+		from <- Annex.getState Annex.fromremote
+		case from of
+			Nothing -> startLocal file numcopies key
+			Just name -> do
+				remote <- Remote.byName name
+				u <- getUUID
+				if Remote.uuid remote == u
+					then startLocal file numcopies key
+					else startRemote file numcopies key remote
+
+startLocal :: FilePath -> Maybe Int -> Key -> CommandStart
+startLocal file numcopies key = do
 	present <- inAnnex key
 	if present
-		then autoCopies key (>) numcopies $ do
+		then do
 			showStart "drop" file
-			next $ perform key numcopies
+			next $ performLocal key numcopies
 		else stop
 
-perform :: Key -> Maybe Int -> CommandPerform
-perform key numcopies = do
-	success <- dropKey key numcopies
+startRemote :: FilePath -> Maybe Int -> Key -> Remote.Remote Annex -> CommandStart
+startRemote file numcopies key remote = do
+	showStart "drop" file
+	next $ performRemote key numcopies remote
+
+performLocal :: Key -> Maybe Int -> CommandPerform
+performLocal key numcopies = do
+	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
+	untrusteduuids <- trustGet UnTrusted
+	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
+	success <- canDropKey key numcopies trusteduuids tocheck []
 	if success
-		then next $ cleanup key
+		then next $ cleanupLocal key
 		else stop
 
-cleanup :: Key -> CommandCleanup
-cleanup key = do
+performRemote :: Key -> Maybe Int -> Remote.Remote Annex -> CommandPerform
+performRemote key numcopies remote = do
+	-- Filter the remote it's being dropped from out of the lists of
+	-- places assumed to have the key, and places to check.
+	-- When the local repo has the key, that's one additional copy.
+	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
+	present <- inAnnex key
+	u <- getUUID
+	let have = filter (/= uuid) $
+		if present then u:trusteduuids else trusteduuids
+	untrusteduuids <- trustGet UnTrusted
+	let tocheck = filter (/= remote) $
+		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
+	success <- canDropKey key numcopies have tocheck [uuid]
+	if success
+		then next $ cleanupRemote key remote
+		else stop
+	where
+		uuid = Remote.uuid remote
+
+cleanupLocal :: Key -> CommandCleanup
+cleanupLocal key = do
 	whenM (inAnnex key) $ removeAnnex key
 	logStatus key InfoMissing
 	return True
 
-{- Checks remotes to verify that enough copies of a key exist to allow
- - for a key to be safely removed (with no data loss), and fails with an
- - error if not. -}
-dropKey :: Key -> Maybe Int -> Annex Bool
-dropKey key numcopiesM = do
+cleanupRemote :: Key -> Remote.Remote Annex -> CommandCleanup
+cleanupRemote key remote = do
+	ok <- Remote.removeKey remote key
+	-- better safe than sorry: assume the remote dropped the key
+	-- even if it seemed to fail; the failure could have occurred
+	-- after it really dropped it
+	Remote.remoteHasKey remote key False
+	return ok
+
+{- Checks specified remotes to verify that enough copies of a key exist to
+ - allow it to be safely removed (with no data loss). Can be provided with
+ - some locations where the key is known/assumed to be present. -}
+canDropKey :: Key -> Maybe Int -> [UUID] -> [Remote.Remote Annex] -> [UUID] -> Annex Bool
+canDropKey key numcopiesM have check skip = do
 	force <- Annex.getState Annex.force
 	if force || numcopiesM == Just 0
 		then return True
 		else do
-			(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
-			untrusteduuids <- trustGet UnTrusted
-			let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-			numcopies <- getNumCopies numcopiesM
-			findcopies numcopies trusteduuids tocheck []
+			need <- getNumCopies numcopiesM
+			findCopies key need skip have check
+
+findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote.Remote Annex] -> Annex Bool
+findCopies key need skip = helper []
 	where
-		findcopies need have [] bad
+		helper bad have []
 			| length have >= need = return True
-			| otherwise = notEnoughCopies need have bad
-		findcopies need have (r:rs) bad
+			| otherwise = notEnoughCopies key need have skip bad
+		helper bad have (r:rs)
 			| length have >= need = return True
 			| otherwise = do
 				let u = Remote.uuid r
 				let duplicate = u `elem` have
 				haskey <- Remote.hasKey r key
 				case (duplicate, haskey) of
-					(False, Right True)	-> findcopies need (u:have) rs bad
-					(False, Left _)		-> findcopies need have rs (r:bad)
-					_			-> findcopies need have rs bad
-		notEnoughCopies need have bad = do
-			unsafe
-			showLongNote $
-				"Could only verify the existence of " ++
-				show (length have) ++ " out of " ++ show need ++ 
-				" necessary copies"
-			Remote.showTriedRemotes bad
-			Remote.showLocations key have
-			hint
-			return False
+					(False, Right True) -> helper bad (u:have) rs
+					(False, Left _)     -> helper (r:bad) have rs
+					_                   -> helper bad have rs
+
+notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote.Remote Annex] -> Annex Bool
+notEnoughCopies key need have skip bad = do
+	unsafe
+	showLongNote $
+		"Could only verify the existence of " ++
+		show (length have) ++ " out of " ++ show need ++ 
+		" necessary copies"
+	Remote.showTriedRemotes bad
+	Remote.showLocations key (have++skip)
+	hint
+	return False
+	where
 		unsafe = showNote "unsafe"
 		hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"

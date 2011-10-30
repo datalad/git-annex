@@ -9,11 +9,12 @@ module Command.SetKey where
 
 import Common.Annex
 import Command
-import LocationLog
+import Logs.Location
 import Annex.Content
+import Config
 
-command :: [Command]
-command = [repoCommand "setkey" paramPath seek
+def :: [Command]
+def = [command "setkey" paramPath seek
 	"sets annexed content for a key using a temp file"]
 
 seek :: [CommandSeek]

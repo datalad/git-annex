@@ -5,21 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Web (
-	remote,
-	setUrl
-) where
+module Remote.Web (remote) where
 
 import Common.Annex
 import Types.Remote
 import qualified Git
-import UUID
 import Config
-import PresenceLog
-import LocationLog
+import Logs.Web
 import qualified Utility.Url as Url
-
-type URLString = String
+import Utility.Monad
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -33,11 +27,7 @@ remote = RemoteType {
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
 list :: Annex [Git.Repo]
-list = return [Git.repoRemoteNameSet Git.repoFromUnknown "remote.web.dummy"]
-
--- Dummy uuid for the whole web. Do not alter.
-webUUID :: UUID
-webUUID = "00000000-0000-0000-0000-000000000001"
+list = return [Git.repoRemoteNameSet Git.repoFromUnknown "web"]
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r _ _ = 
@@ -54,38 +44,15 @@ gen r _ _ =
 		repo = r
 	}
 
-{- The urls for a key are stored in remote/web/hash/key.log 
- - in the git-annex branch. -}
-urlLog :: Key -> FilePath
-urlLog key = "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
-oldurlLog :: Key -> FilePath
-{- A bug used to store the urls elsewhere. -}
-oldurlLog key = "remote/web" </> hashDirLower key </> show key ++ ".log"
-
-getUrls :: Key -> Annex [URLString]
-getUrls key = do
-	us <- currentLog (urlLog key)
-	if null us
-		then currentLog (oldurlLog key)
-		else return us
-
-{- Records a change in an url for a key. -}
-setUrl :: Key -> URLString -> LogStatus -> Annex ()
-setUrl key url status = do
-	g <- gitRepo
-	addLog (urlLog key) =<< logNow status url
-
-	-- update location log to indicate that the web has the key, or not
-	us <- getUrls key
-	logChange g key webUUID (if null us then InfoMissing else InfoPresent)
-
 downloadKey :: Key -> FilePath -> Annex Bool
 downloadKey key file = get =<< getUrls key
 	where
 		get [] = do
 			warning "no known url"
 			return False
-		get urls = anyM (`Url.download` file) urls
+		get urls = do
+			showOutput -- make way for download progress bar
+			liftIO $ anyM (`Url.download` file) urls
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

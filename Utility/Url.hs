@@ -11,16 +11,13 @@ module Utility.Url (
 	get
 ) where
 
-import Control.Monad (liftM)
-import Control.Monad.State (liftIO)
+import Control.Applicative
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
 
-import Types
-import Messages
 import Utility.SafeCommand
-import Utility
+import Utility.Path
 
 type URLString = String
 
@@ -38,13 +35,12 @@ exists url =
 {- Used to download large files, such as the contents of keys.
  - Uses wget or curl program for its progress bar. (Wget has a better one,
  - so is preferred.) -}
-download :: URLString -> FilePath -> Annex Bool
+download :: URLString -> FilePath -> IO Bool
 download url file = do
-	showOutput -- make way for program's progress bar
-	e <- liftIO $ inPath "wget"
+	e <- inPath "wget"
 	if e
 		then
-			liftIO $ boolSystem "wget"
+			boolSystem "wget"
 				[Params "-c -O", File file, File url]
 		else
 			-- Uses the -# progress display, because the normal
@@ -52,7 +48,7 @@ download url file = do
 			-- the remainder to download as the whole file,
 			-- and not indicating how much percent was
 			-- downloaded before the resume.
-			liftIO $ boolSystem "curl" 
+			boolSystem "curl" 
 				[Params "-L -C - -# -o", File file, File url]
 
 {- Downloads a small file. -}

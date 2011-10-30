@@ -14,13 +14,14 @@ import Data.Char
 import Common.Annex
 import Types.Key
 import Annex.Content
-import PresenceLog
+import Logs.Presence
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.LsFiles as LsFiles
 import Backend
 import Annex.Version
 import Utility.FileMode
+import Utility.TempFile
 import qualified Upgrade.V2
 
 -- v2 adds hashing of filenames of content and location log files.

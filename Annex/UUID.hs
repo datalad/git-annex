@@ -6,41 +6,26 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - uuid.log stores a list of known uuids, and their descriptions.
- -
  - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module UUID (
-	UUID,
+module Annex.UUID (
 	getUUID,
 	getRepoUUID,
 	getUncachedUUID,
 	prepUUID,
-	genUUID,
-	describeUUID,
-	uuidMap
+	genUUID
 ) where
-
-import qualified Data.Map as M
-import Data.Time.Clock.POSIX
 
 import Common.Annex
 import qualified Git
-import qualified Annex.Branch
-import Types.UUID
 import qualified Build.SysConfig as SysConfig
 import Config
-import UUIDLog
 
 configkey :: String
 configkey = "annex.uuid"
-
-{- Filename of uuid.log. -}
-logfile :: FilePath
-logfile = "uuid.log"
 
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
@@ -82,14 +67,3 @@ getUncachedUUID r = Git.configGet r configkey ""
 prepUUID :: Annex ()
 prepUUID = whenM (null <$> getUUID) $
 	setConfig configkey =<< liftIO genUUID
-
-{- Records a description for a uuid in the log. -}
-describeUUID :: UUID -> String -> Annex ()
-describeUUID uuid desc = do
-	ts <- liftIO $ getPOSIXTime
-	Annex.Branch.change logfile $
-		showLog id . changeLog ts uuid desc . parseLog Just
-
-{- Read the uuidLog into a simple Map -}
-uuidMap :: Annex (M.Map UUID String)
-uuidMap = (simpleMap . parseLog Just) <$> Annex.Branch.get logfile

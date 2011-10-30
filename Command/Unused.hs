@@ -16,7 +16,8 @@ import Common.Annex
 import Command
 import Annex.Content
 import Utility.FileMode
-import LocationLog
+import Utility.TempFile
+import Logs.Location
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
@@ -26,8 +27,8 @@ import qualified Remote
 import qualified Annex.Branch
 import Annex.CatFile
 
-command :: [Command]
-command = [repoCommand "unused" paramNothing seek
+def :: [Command]
+def = [dontCheck fromOpt $ command "unused" paramNothing seek
 	"look for unused file content"]
 
 seek :: [CommandSeek]
@@ -35,7 +36,7 @@ seek = [withNothing start]
 
 {- Finds unused content in the annex. -} 
 start :: CommandStart
-start = notBareRepo $ do
+start = do
 	from <- Annex.getState Annex.fromremote
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)
@@ -66,19 +67,11 @@ checkRemoteUnused name = do
 checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
 checkRemoteUnused' r = do
 	showAction "checking for unused data"
-	remotehas <- filterM isthere =<< loggedKeys
+	remotehas <- loggedKeysFor (Remote.uuid r)
 	remoteunused <- excludeReferenced remotehas
 	let list = number 0 remoteunused
 	writeUnusedFile "" list
 	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
-	where
-		{- This should run strictly to avoid the filterM
-		 - building many thunks containing keyLocations data. -}
-		isthere k = do
-			us <- keyLocations k
-			let !there = uuid `elem` us
-			return there
-		uuid = Remote.uuid r
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do

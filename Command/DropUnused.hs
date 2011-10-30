@@ -13,16 +13,15 @@ import Common.Annex
 import Command
 import qualified Annex
 import qualified Command.Drop
-import qualified Command.Move
 import qualified Remote
 import qualified Git
 import Types.Key
 
 type UnusedMap = M.Map String Key
 
-command :: [Command]
-command = [repoCommand "dropunused" (paramRepeating paramNumber) seek
-	"drop unused file content"]
+def :: [Command]
+def = [dontCheck fromOpt $ command "dropunused" (paramRepeating paramNumber)
+	seek "drop unused file content"]
 
 seek :: [CommandSeek]
 seek = [withUnusedMaps]
@@ -36,7 +35,7 @@ withUnusedMaps params = do
 	return $ map (start (unused, unusedbad, unusedtmp)) params
 
 start :: (UnusedMap, UnusedMap, UnusedMap) -> FilePath -> CommandStart
-start (unused, unusedbad, unusedtmp) s = notBareRepo $ search
+start (unused, unusedbad, unusedtmp) s = search
 	[ (unused, perform)
 	, (unusedbad, performOther gitAnnexBadLocation)
 	, (unusedtmp, performOther gitAnnexTmpLocation)
@@ -56,8 +55,8 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 		dropremote name = do
 			r <- Remote.byName name
 			showAction $ "from " ++ Remote.name r
-			next $ Command.Move.fromCleanup r True key
-		droplocal = Command.Drop.perform key (Just 0) -- force drop
+			next $ Command.Drop.cleanupRemote key r
+		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
 
 performOther :: (Git.Repo -> Key -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

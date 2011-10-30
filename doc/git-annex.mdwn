@@ -72,13 +72,17 @@ subdirectories).
   will involve copying them from another repository, or downloading them,
   or transferring them from some kind of key-value store.
 
+  Normally git-annex will choose which repository to copy the content from,
+  but you can override this using the --from option.
+
 * drop [path ...]
 
   Drops the content of annexed files from this repository. 
 
   git-annex will refuse to drop content if it cannot verify it is
-  safe to do so. At least one copy of content needs to exist in another
-  remote. This can be overridden with the --force switch.
+  safe to do so. This can be overridden with the --force switch.
+
+  To drop content from a remote, specify --from.
 
 * move [path ...]
   
@@ -477,6 +481,20 @@ Here are all the supported configuration settings.
   Space-separated list of names of the key-value backends to use. 
   The first listed is used to store new files by default. 
 
+* `annex.diskreserve`
+
+  Amount of disk space to reserve. Disk space is checked when transferring
+  content to avoid running out, and additional free space can be reserved
+  via this option, to make space for more important content (such as git
+  commit logs). Can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+  The default reserve is 1 megabyte.
+
+* `annex.version`
+
+  Automatically maintained, and used to automate upgrades between versions.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to
@@ -500,6 +518,12 @@ Here are all the supported configuration settings.
   without git-annex-shell. (For example, if it's on GitHub).
   Or, it could be used if the network connection between two
   repositories is too slow to be used normally.
+
+* `remote.<name>.annexUrl`
+
+  Can be used to specify a different url than the regular `remote.<name>.url`
+  for git-annex to use when talking with the remote. Similar to the `pushUrl`
+  used by git-push.
 
 * `remote.<name>.annex-uuid`
 
@@ -525,20 +549,6 @@ Here are all the supported configuration settings.
 
   Default ssh, rsync, and bup options to use if a remote does not have
   specific options.
-
-* `annex.diskreserve`
-
-  Amount of disk space to reserve. Disk space is checked when transferring
-  content to avoid running out, and additional free space can be reserved
-  via this option, to make space for more important content (such as git
-  commit logs). Can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
-
-  The default reserve is 1 megabyte.
-
-* `annex.version`
-
-  Automatically maintained, and used to automate upgrades between versions.
 
 * `remote.<name>.buprepo`
 

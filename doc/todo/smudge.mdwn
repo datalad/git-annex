@@ -11,6 +11,10 @@ version of the file during a merge.
 So every `git status` would need to read the entire content of all
 available files, and checksum them, which is too expensive.
 
+> Update from GitTogether: Peff thinks a new interface could be added to
+> git to handle this sort of case in an efficient way.. just needs someone
+> to do the work. --[[Joey]] 
+
 ----
 
 The clean filter is run when files are staged for commit. So a user could copy

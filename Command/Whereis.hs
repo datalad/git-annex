@@ -8,13 +8,13 @@
 module Command.Whereis where
 
 import Common.Annex
-import LocationLog
+import Logs.Location
 import Command
 import Remote
-import Trust
+import Logs.Trust
 
-command :: [Command]
-command = [repoCommand "whereis" paramPaths seek
+def :: [Command]
+def = [command "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]

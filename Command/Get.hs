@@ -14,9 +14,9 @@ import qualified Remote
 import Annex.Content
 import qualified Command.Move
 
-command :: [Command]
-command = [repoCommand "get" paramPaths seek
-		"make content of annexed files available"]
+def :: [Command]
+def = [dontCheck fromOpt $ command "get" paramPaths seek
+	"make content of annexed files available"]
 
 seek :: [CommandSeek]
 seek = [withNumCopies start]

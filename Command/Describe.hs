@@ -10,10 +10,10 @@ module Command.Describe where
 import Common.Annex
 import Command
 import qualified Remote
-import UUID
+import Logs.UUID
 
-command :: [Command]
-command = [repoCommand "describe" (paramPair paramRemote paramDesc) seek
+def :: [Command]
+def = [command "describe" (paramPair paramRemote paramDesc) seek
 	"change description of a repository"]
 
 seek :: [CommandSeek]

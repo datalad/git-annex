@@ -10,11 +10,10 @@ module Command.Untrust where
 import Common.Annex
 import Command
 import qualified Remote
-import UUID
-import Trust
+import Logs.Trust
 
-command :: [Command]
-command = [repoCommand "untrust" (paramRepeating paramRemote) seek
+def :: [Command]
+def = [command "untrust" (paramRepeating paramRemote) seek
 	"do not trust a repository"]
 
 seek :: [CommandSeek]

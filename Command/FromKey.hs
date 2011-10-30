@@ -12,10 +12,10 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 import Types.Key
+import Config
 
-command :: [Command]
-command = [repoCommand "fromkey" paramPath seek
-	"adds a file using a specific key"]
+def :: [Command]
+def = [command "fromkey" paramPath seek "adds a file using a specific key"]
 
 seek :: [CommandSeek]
 seek = [withFilesMissing start]

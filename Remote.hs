@@ -25,7 +25,8 @@ module Remote (
 	nameToUUID,
 	showTriedRemotes,
 	showLocations,
-	forceTrust
+	forceTrust,
+	remoteHasKey
 ) where
 
 import qualified Data.Map as M
@@ -34,12 +35,13 @@ import Text.JSON.Generic
 
 import Common.Annex
 import Types.Remote
-import UUID
 import qualified Annex
 import Config
-import Trust
-import LocationLog
-import RemoteLog
+import Annex.UUID
+import Logs.UUID
+import Logs.Trust
+import Logs.Location
+import Logs.Remote
 
 import qualified Remote.Git
 import qualified Remote.S3
@@ -138,6 +140,7 @@ prettyPrintUUIDs desc uuids = do
 	where
 		addname d n
 			| d == n = d
+			| null d = n
 			| otherwise = n ++ " (" ++ d ++ ")"
 		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
@@ -165,12 +168,12 @@ remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
 remotesWithoutUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
 remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 
-{- Cost ordered lists of remotes that the LocationLog indicate may have a key.
+{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote Annex]
 keyPossibilities key = return . fst =<< keyPossibilities' False key
 
-{- Cost ordered lists of remotes that the LocationLog indicate may have a key.
+{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -
  - Also returns a list of UUIDs that are trusted to have the key
  - (some may not have configured remotes).
@@ -225,3 +228,15 @@ forceTrust level remotename = do
 	r <- nameToUUID remotename
 	Annex.changeState $ \s ->
 		s { Annex.forcetrust = (r, level):Annex.forcetrust s }
+
+{- Used to log a change in a remote's having a key. The change is logged
+ - in the local repo, not on the remote. The process of transferring the
+ - key to the remote, or removing the key from it *may* log the change
+ - on the remote, but this cannot always be relied on. -}
+remoteHasKey :: Remote Annex -> Key -> Bool -> Annex ()
+remoteHasKey remote key present	= do
+	let remoteuuid = uuid remote
+	g <- gitRepo
+	logChange g key remoteuuid status
+	where
+		status = if present then InfoPresent else InfoMissing

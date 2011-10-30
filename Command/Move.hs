@@ -11,13 +11,13 @@ import Common.Annex
 import Command
 import qualified Command.Drop
 import qualified Annex
-import LocationLog
 import Annex.Content
 import qualified Remote
-import UUID
+import Annex.UUID
 
-command :: [Command]
-command = [repoCommand "move" paramPaths seek
+def :: [Command]
+def = [dontCheck toOpt $ dontCheck fromOpt $
+	command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]
@@ -48,18 +48,6 @@ start move file = do
 showMoveAction :: Bool -> FilePath -> Annex ()
 showMoveAction True file = showStart "move" file
 showMoveAction False file = showStart "copy" file
-
-{- Used to log a change in a remote's having a key. The change is logged
- - in the local repo, not on the remote. The process of transferring the
- - key to the remote, or removing the key from it *may* log the change
- - on the remote, but this cannot be relied on. -}
-remoteHasKey :: Remote.Remote Annex -> Key -> Bool -> Annex ()
-remoteHasKey remote key present	= do
-	let remoteuuid = Remote.uuid remote
-	g <- gitRepo
-	logChange g key remoteuuid status
-	where
-		status = if present then InfoPresent else InfoMissing
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -
@@ -108,9 +96,9 @@ toPerform dest move key = do
 		Right True -> next $ toCleanup dest move key
 toCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
 toCleanup dest move key = do
-	remoteHasKey dest key True
+	Remote.remoteHasKey dest key True
 	if move
-		then Command.Drop.cleanup key
+		then Command.Drop.cleanupLocal key
 		else return True
 
 {- Moves (or copies) the content of an annexed file from a remote
@@ -140,11 +128,5 @@ fromPerform src move key = do
 				then next $ fromCleanup src move key
 				else stop -- fail
 fromCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
-fromCleanup src True key = do
-	ok <- Remote.removeKey src key
-	-- better safe than sorry: assume the src dropped the key
-	-- even if it seemed to fail; the failure could have occurred
-	-- after it really dropped it
-	remoteHasKey src key False
-	return ok
+fromCleanup src True key = Command.Drop.cleanupRemote key src
 fromCleanup _ False _ = return True

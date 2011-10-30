@@ -13,7 +13,10 @@ import System.FilePath
 import System.Directory
 import Data.List
 import Data.Maybe
-import Control.Monad (liftM2)
+import Control.Applicative
+import System.Posix.User
+
+import Utility.Monad
 
 {- Returns the parent directory of a path. Parent of / is "" -}
 parentDir :: FilePath -> FilePath
@@ -111,4 +114,23 @@ preserveOrder (l:ls) new = found ++ preserveOrder ls rest
  - of git file list commands, that assumption tends to hold.
  -}
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
-runPreserveOrder a files = return . preserveOrder files =<< a files
+runPreserveOrder a files = preserveOrder files <$> a files
+
+{- Lists the contents of a directory.
+ - Unlike getDirectoryContents, paths are not relative to the directory. -}
+dirContents :: FilePath -> IO [FilePath]
+dirContents d = map (d </>) . filter notcruft <$> getDirectoryContents d
+	where
+		notcruft "." = False
+		notcruft ".." = False
+		notcruft _ = True
+
+{- Current user's home directory. -}
+myHomeDir :: IO FilePath
+myHomeDir = homeDirectory <$> (getUserEntryForID =<< getEffectiveUserID)
+
+{- Checks if a command is available in PATH. -}
+inPath :: String -> IO Bool
+inPath command = getSearchPath >>= anyM indir
+	where
+		indir d = doesFileExist $ d </> command

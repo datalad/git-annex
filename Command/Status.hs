@@ -23,7 +23,7 @@ import Utility.DataUnits
 import Annex.Content
 import Types.Key
 import Backend
-import UUID
+import Logs.UUID
 import Remote
 
 -- a named computation that produces a statistic
@@ -38,8 +38,8 @@ data StatInfo = StatInfo
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
 
-command :: [Command]
-command = [repoCommand "status" paramNothing seek
+def :: [Command]
+def = [command "status" paramNothing seek
 	"shows status information about the annex"]
 
 seek :: [CommandSeek]
@@ -57,8 +57,8 @@ stats =
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, total_annex_keys
-	, total_annex_size
+	, visible_annex_keys
+	, visible_annex_size
 	, backend_usage
 	]
 
@@ -99,17 +99,17 @@ local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
 	keySizeSum <$> cachedKeysPresent
 
-total_annex_size :: Stat
-total_annex_size = stat "total annex size" $
-	keySizeSum <$> cachedKeysReferenced
-
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $
 	return . show . S.size =<< cachedKeysPresent
 
-total_annex_keys :: Stat
-total_annex_keys = stat "total annex keys" $
-	return . show . S.size =<< cachedKeysReferenced
+visible_annex_size :: Stat
+visible_annex_size = stat "visible annex size" $
+	keySizeSum <$> cachedKeysReferenced
+
+visible_annex_keys :: Stat
+visible_annex_keys = stat "visible annex keys" $
+	show . S.size <$> cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -118,10 +118,9 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $
-	return . usage =<< cachedKeysReferenced
+backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced <*> cachedKeysPresent
 	where
-		usage ks = pp "" $ reverse . sort $ map swap $ splits $ S.toList ks
+		usage a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
 		splits :: [Key] -> [(String, Integer)]
 		splits ks = M.toList $ M.fromListWith (+) $ map tcount ks
 		tcount k = (keyBackendName k, 1)

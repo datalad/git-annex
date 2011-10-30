@@ -13,22 +13,20 @@ import Common.Annex
 import Command
 import qualified Backend
 import qualified Utility.Url as Url
-import qualified Remote.Web
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
 import Annex.Content
-import PresenceLog
+import Logs.Web
 
-command :: [Command]
-command = [repoCommand "addurl" (paramRepeating paramUrl) seek
-	"add urls to annex"]
+def :: [Command]
+def = [command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 seek :: [CommandSeek]
 seek = [withStrings start]
 
 start :: String -> CommandStart
-start s = do
+start s = notBareRepo $ do
 	let u = parseURI s
 	case u of
 		Nothing -> error $ "bad url " ++ s
@@ -49,7 +47,7 @@ download url file = do
 	let dummykey = Backend.URL.fromUrl url
 	let tmp = gitAnnexTmpLocation g dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	ok <- Url.download url tmp
+	ok <- liftIO $ Url.download url tmp
 	if ok
 		then do
 			[(backend, _)] <- Backend.chooseBackends [file]
@@ -58,14 +56,14 @@ download url file = do
 				Nothing -> stop
 				Just (key, _) -> do
 					moveAnnex key tmp
-					Remote.Web.setUrl key url InfoPresent
+					setUrlPresent key url
 					next $ Command.Add.cleanup file key True
 		else stop
 
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
 	let key = Backend.URL.fromUrl url
-	Remote.Web.setUrl key url InfoPresent
+	setUrlPresent key url
 	
 	next $ Command.Add.cleanup file key False
 

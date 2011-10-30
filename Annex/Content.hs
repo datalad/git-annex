@@ -22,8 +22,8 @@ module Annex.Content (
 ) where
 
 import Common.Annex
-import LocationLog
-import UUID
+import Logs.Location
+import Annex.UUID
 import qualified Git
 import qualified Annex
 import qualified Annex.Queue
@@ -52,7 +52,7 @@ calcGitLink file key = do
 	where
 		whoops = error $ "unable to normalize " ++ file
 
-{- Updates the LocationLog when a key's presence changes in the current
+{- Updates the Logs.Location when a key's presence changes in the current
  - repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
 logStatus key status = do

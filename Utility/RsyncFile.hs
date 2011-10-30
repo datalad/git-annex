@@ -1,4 +1,4 @@
-{- git-annex file copying with rsync
+{- file copying with rsync
  -
  - Copyright 2010 Joey Hess <joey@kitenet.net>
  -

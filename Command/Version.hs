@@ -12,8 +12,9 @@ import Command
 import qualified Build.SysConfig as SysConfig
 import Annex.Version
 
-command :: [Command]
-command = [standaloneCommand "version" paramNothing seek "show version info"]
+def :: [Command]
+def = [dontCheck repoExists $
+	command "version" paramNothing seek "show version info"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

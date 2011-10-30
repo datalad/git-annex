@@ -12,10 +12,11 @@ module Init (
 ) where
 
 import Common.Annex
+import Utility.TempFile
 import qualified Git
 import qualified Annex.Branch
 import Annex.Version
-import UUID
+import Annex.UUID
 
 initialize :: Annex ()
 initialize = do

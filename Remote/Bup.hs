@@ -15,9 +15,8 @@ import System.Process
 import Common.Annex
 import Types.Remote
 import qualified Git
-import UUID
 import Config
-import Utility.Ssh
+import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto

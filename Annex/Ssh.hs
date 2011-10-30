@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.Ssh where
+module Annex.Ssh where
 
 import Control.Monad.State (liftIO)
 
@@ -13,7 +13,7 @@ import qualified Git
 import Utility.SafeCommand
 import Types
 import Config
-import UUID
+import Annex.UUID
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the

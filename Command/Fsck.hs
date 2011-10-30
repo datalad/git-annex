@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,39 +12,73 @@ import Command
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
-import UUID
+import qualified Backend
 import Annex.Content
-import LocationLog
-import Trust
+import Logs.Location
+import Logs.Trust
+import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode
 import Config
 
-command :: [Command]
-command = [repoCommand "fsck" paramPaths seek "check for problems"]
+def :: [Command]
+def = [command "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start]
+seek = [withNumCopies start, withBarePresentKeys startBare]
 
 start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = notBareRepo $ isAnnexed file $ \(key, backend) -> do
+start file numcopies = isAnnexed file $ \(key, backend) -> do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
 
 perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
-perform key file backend numcopies = do
-	-- the location log is checked first, so that if it has bad data
-	-- that gets corrected
-	locationlogok <- verifyLocationLog key file
-	backendok <- fsckKey backend key (Just file) numcopies
-	if locationlogok && backendok
-		then next $ return True
-		else stop
+perform key file backend numcopies = check
+	-- order matters
+	[ verifyLocationLog key file
+	, checkKeySize key
+	, checkKeyNumCopies key file numcopies
+	, (Types.Backend.fsckKey backend) key
+	]
+
+{- To fsck a bare repository, fsck each key in the location log. -}
+withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
+withBarePresentKeys a params = isBareRepo >>= go
+	where
+		go False = return []
+		go True = do
+			unless (null params) $ do
+				error "fsck should be run without parameters in a bare repository"
+			prepStart a loggedKeys
+
+startBare :: Key -> CommandStart
+startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+	Nothing -> stop
+	Just backend -> do
+		showStart "fsck" (show key)
+		next $ performBare key backend
+
+{- Note that numcopies cannot be checked in a bare repository, because
+ - getting the numcopies value requires a working copy with .gitattributes
+ - files. -}
+performBare :: Key -> Backend Annex -> CommandPerform
+performBare key backend = check
+	[ verifyLocationLog key (show key)
+	, checkKeySize key
+	, (Types.Backend.fsckKey backend) key
+	]
+
+check :: [Annex Bool] -> CommandPerform	
+check s = sequence s >>= dispatch
+	where
+		dispatch vs
+			| all (== True) vs = next $ return True
+			| otherwise = stop
 
 {- Checks that the location log reflects the current status of the key,
    in this repository only. -}
-verifyLocationLog :: Key -> FilePath -> Annex Bool
-verifyLocationLog key file = do
+verifyLocationLog :: Key -> String -> Annex Bool
+verifyLocationLog key desc = do
 	g <- gitRepo
 	present <- inAnnex key
 	
@@ -66,7 +100,7 @@ verifyLocationLog key file = do
 		(False, True) -> do
 				fix g u InfoMissing
 				warning $
-					"** Based on the location log, " ++ file
+					"** Based on the location log, " ++ desc
 					++ "\n** was expected to be present, " ++
 					"but its content is missing."
 				return False
@@ -76,14 +110,6 @@ verifyLocationLog key file = do
 		fix g u s = do
 			showNote "fixing location log"
 			logChange g key u s
-
-{- Checks a key for problems. -}
-fsckKey :: Backend Annex -> Key -> Maybe FilePath -> Maybe Int -> Annex Bool
-fsckKey backend key file numcopies = do
-	size_ok <- checkKeySize key
-	copies_ok <- checkKeyNumCopies key file numcopies
-	backend_ok <- (Types.Backend.fsckKey backend) key
-	return $ size_ok && copies_ok && backend_ok
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
@@ -108,7 +134,7 @@ checkKeySize key = do
 					return False
 
 
-checkKeyNumCopies :: Key -> Maybe FilePath -> Maybe Int -> Annex Bool
+checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
@@ -116,12 +142,9 @@ checkKeyNumCopies key file numcopies = do
 	if present < needed
 		then do
 			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-			warning $ missingNote (filename file key) present needed ppuuids
+			warning $ missingNote file present needed ppuuids
 			return False
 		else return True
-	where
-		filename Nothing k = show k
-		filename (Just f) _ = f
 
 missingNote :: String -> Int -> Int -> String -> String
 missingNote file 0 _ [] = 

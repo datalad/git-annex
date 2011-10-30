@@ -10,11 +10,11 @@ module Command.DropKey where
 import Common.Annex
 import Command
 import qualified Annex
-import LocationLog
+import Logs.Location
 import Annex.Content
 
-command :: [Command]
-command = [repoCommand "dropkey" (paramRepeating paramKey) seek
+def :: [Command]
+def = [command "dropkey" (paramRepeating paramKey) seek
 	"drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]

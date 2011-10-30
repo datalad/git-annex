@@ -7,6 +7,8 @@
 
 module Command.Uninit where
 
+import qualified Data.ByteString.Lazy.Char8 as B
+
 import Common.Annex
 import Command
 import qualified Git
@@ -16,9 +18,21 @@ import Init
 import qualified Annex.Branch
 import Annex.Content
 
-command :: [Command]
-command = [repoCommand "uninit" paramPaths seek 
+def :: [Command]
+def = [addCheck check $ command "uninit" paramPaths seek 
         "de-initialize git-annex and clean out repository"]
+
+check :: Annex ()
+check = do
+	b <- current_branch	
+	when (b == Annex.Branch.name) $ error $
+		"cannot uninit when the " ++ b ++ " branch is checked out"
+	where
+		current_branch = do
+			g <- gitRepo
+			b <- liftIO $
+				Git.pipeRead g [Params "rev-parse --abbrev-ref HEAD"]
+			return $ head $ lines $ B.unpack b
 
 seek :: [CommandSeek]
 seek = [withFilesInGit startUnannex, withNothing start]

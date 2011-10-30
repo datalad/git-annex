@@ -13,13 +13,15 @@ import qualified Data.Map as M
 import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
-import Utility.Ssh
+import Annex.Ssh
 import Types.Remote
 import qualified Git
 import qualified Annex
-import UUID
+import Annex.UUID
 import qualified Annex.Content
+import qualified Annex.Branch
 import qualified Utility.Url as Url
+import Utility.TempFile
 import Config
 import Init
 
@@ -34,7 +36,18 @@ remote = RemoteType {
 list :: Annex [Git.Repo]
 list = do
 	g <- gitRepo
-	return $ Git.remotes g
+	let c = Git.configMap g
+	mapM (tweakurl c) $ Git.remotes g
+	where
+		annexurl n = "remote." ++ n ++ ".annexurl"
+		tweakurl c r = do
+			let n = fromJust $ Git.repoRemoteName r
+			case M.lookup (annexurl n) c of
+				Nothing -> return r
+				Just url -> do
+					g <- gitRepo
+					r' <- liftIO $ Git.genRemote g url
+					return $ Git.repoRemoteNameSet r' n
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do
@@ -44,7 +57,8 @@ gen r u _ = do
 	 - cached UUID value. -}
 	let cheap = not $ Git.repoIsUrl r
 	r' <- case (cheap, u) of
-		(True, _) -> tryGitConfigRead r
+		(True, _) -> do
+			tryGitConfigRead r
 		(False, "") -> tryGitConfigRead r
 		_ -> return r
 
@@ -121,7 +135,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = safely checklocal
 	where
-		checklocal = onLocal r (Annex.Content.inAnnex key)
+		checklocal = onLocal r $ Annex.Content.inAnnex key
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			inannex <- onRemote r (boolSystem, False) "inannex" 
@@ -134,8 +148,18 @@ inAnnex r key
  - monad using that repository. -}
 onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
-	annex <- Annex.new r
-	Annex.eval annex a
+	-- Avoid re-reading the repository's configuration if it was
+	-- already read.
+	state <- if (M.null $ Git.configMap r)
+		then Annex.new r
+		else return $ Annex.newState r
+	Annex.eval state $ do
+		-- No need to update the branch; its data is not used
+		-- for anything onLocal is used to do.
+		Annex.Branch.disableUpdate
+		ret <- a
+		liftIO $ Git.reap
+		return ret
 
 keyUrl :: Git.Repo -> Key -> String
 keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
@@ -151,9 +175,11 @@ dropKey r key
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
-	| not $ Git.repoIsUrl r = rsyncOrCopyFile r (gitAnnexLocation r key) file
+	| not $ Git.repoIsUrl r = do
+		params <- rsyncParams r
+		rsyncOrCopyFile params (gitAnnexLocation r key) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = Url.download (keyUrl r key) file
+	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 
 {- Tries to copy a key's content to a remote's annex. -}
@@ -162,10 +188,11 @@ copyToRemote r key
 	| not $ Git.repoIsUrl r = do
 		g <- gitRepo
 		let keysrc = gitAnnexLocation g key
+		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ok <- Annex.Content.getViaTmp key $
-				rsyncOrCopyFile r keysrc
+				rsyncOrCopyFile params keysrc
 			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
@@ -186,15 +213,13 @@ rsyncHelper p = do
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
-rsyncOrCopyFile :: Git.Repo -> FilePath -> FilePath -> Annex Bool
-rsyncOrCopyFile r src dest = do
+rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> Annex Bool
+rsyncOrCopyFile rsyncparams src dest = do
 	ss <- liftIO $ getFileStatus $ parentDir src
 	ds <- liftIO $ getFileStatus $ parentDir dest
 	if deviceID ss == deviceID ds
 		then liftIO $ copyFileExternal src dest
-		else do
-			params <- rsyncParams r
-			rsyncHelper $ params ++ [Param src, Param dest]
+		else rsyncHelper $ rsyncparams ++ [Param src, Param dest]
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}

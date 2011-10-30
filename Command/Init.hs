@@ -9,12 +9,13 @@ module Command.Init where
 
 import Common.Annex
 import Command
-import UUID
+import Annex.UUID
+import Logs.UUID
 import Init
 	
-command :: [Command]
-command = [standaloneCommand "init" paramDesc seek
-		"initialize git-annex"]
+def :: [Command]
+def = [dontCheck repoExists $
+	command "init" paramDesc seek "initialize git-annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

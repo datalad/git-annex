@@ -1,3 +1,32 @@
+git-annex (3.20111026) UNRELEASED; urgency=low
+
+  * Sped up some operations on remotes that are on the same host.
+  * copy --to: Fixed leak when copying many files to a remote on the same
+    host.
+  * uninit: Add guard against being run with the git-annex branch checked out.
+  * Fail if --from or --to is passed to commands that do not support them.
+  * drop --from is now supported to remove file content from a remote.
+  * status: Now always shows the current repository, even when it does not
+    appear in uuid.log.
+  * fsck: Now works in bare repositories. Checks location log information,
+    and file contents. Does not check that numcopies is satisfied, as
+    .gitattributes information about numcopies is not available in a bare
+    repository.
+  * unused, dropunused: Now work in bare repositories.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
+
+git-annex (3.20111025) unstable; urgency=low
+
+  * A remote can have a annexUrl configured, that is used by git-annex
+    instead of its usual url. (Similar to pushUrl.)
+  * migrate: Copy url logs for keys when migrating.
+  * git-annex-shell: GIT_ANNEX_SHELL_READONLY and GIT_ANNEX_SHELL_LIMITED
+    environment variables can be set to limit what commands can be run.
+    This is used by gitolite's new git-annex support!
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 25 Oct 2011 13:03:08 -0700
+
 git-annex (3.20111011~bpo60+1) unstable; urgency=low
 
   * Fix referring to remotes by uuid.

@@ -12,8 +12,7 @@ import Common.Annex
 import qualified Git
 import CmdLine
 import Command
-import Options
-import UUID
+import Annex.UUID
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -21,21 +20,29 @@ import qualified Command.DropKey
 import qualified Command.RecvKey
 import qualified Command.SendKey
 
-cmds :: [Command]
-cmds = map adddirparam $ concat
-	[ Command.ConfigList.command
-	, Command.InAnnex.command
-	, Command.DropKey.command
-	, Command.RecvKey.command
-	, Command.SendKey.command
+cmds_readonly :: [Command]
+cmds_readonly = concat
+	[ Command.ConfigList.def
+	, Command.InAnnex.def
+	, Command.SendKey.def
 	]
+
+cmds_notreadonly :: [Command]
+cmds_notreadonly = concat
+	[ Command.RecvKey.def
+	, Command.DropKey.def
+	]
+
+cmds :: [Command]
+cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 	where
 		adddirparam c = c { cmdparams = "DIRECTORY " ++ cmdparams c }
 
 options :: [OptDescr (Annex ())]
-options = uuid : commonOptions
+options = commonOptions ++
+	[ Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
+	]
 	where
-		uuid = Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
 		check expected = do
 			u <- getUUID
 			when (u /= expected) $ error $
@@ -67,12 +74,14 @@ builtins :: [String]
 builtins = map cmdname cmds
 
 builtin :: String -> String -> [String] -> IO ()
-builtin cmd dir params =
+builtin cmd dir params = do
+	checkNotReadOnly cmd
 	Git.repoAbsPath dir >>= Git.repoFromAbsPath >>=
 		dispatch (cmd : filterparams params) cmds options header
 
 external :: [String] -> IO ()
-external params =
+external params = do
+	checkNotLimited
 	unlessM (boolSystem "git-shell" $ map Param $ "-c":filterparams params) $
 		error "git-shell failed"
 
@@ -85,3 +94,19 @@ filterparams (a:as) = a:filterparams as
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage header cmds options
+
+checkNotLimited :: IO ()
+checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
+
+checkNotReadOnly :: String -> IO ()
+checkNotReadOnly cmd
+	| cmd `elem` map cmdname cmds_readonly = return ()
+	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
+
+checkEnv :: String -> IO ()
+checkEnv var = catch check (const $ return ())
+	where
+		check = do
+			val <- getEnv var
+			when (not $ null val) $
+				error $ "Action blocked by " ++ var

@@ -1,0 +1,15 @@
+Running `git annex uninit` in a repo which has branch git-annex checked out will result in:
+
+    error: Cannot delete the branch 'git-annex' which you are currently on.
+    git-annex: git [Param "-D",Param "git-annex"] failed
+
+and trying to checkout branch master afterwards results in:
+
+    error: The following untracked working tree files would be overwritten by checkout:
+
+Both of which is logical. The best thing would be if git-annex refused to run uninit while in branch git-annex.
+
+
+Richard
+
+> [[done]] --[[Joey]] 

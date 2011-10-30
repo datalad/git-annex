@@ -11,7 +11,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module PresenceLog (
+module Logs.Presence (
 	LogStatus(..),
 	addLog,
 	readLog,

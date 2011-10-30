@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="comment 7"
+ date="2011-10-22T05:25:47Z"
+ content="""
+I think that's because the SSH was successful (I entered the password and let it connect), so it got the UUID and put that in the .dot instead.  The same UUID (for psychosis) then ended up in two different \"subgraph\" stanzas, and Graphviz just plotted them together as one node.
+
+<p>Maybe this will clarify:
+
+<p>On psychosis, run \"git annex map\" and press ^C at the ssh password prompt: [map-nossh.dot](http://jim.sh/~jim/tmp/map-nossh.dot)
+![Map](http://jim.sh/~jim/tmp/map-nossh.png)
+
+<p>On psychosis, run \"git annex map\" and type the correct password: [map-goodssh.dot](http://jim.sh/~jim/tmp/map-goodssh.dot)
+![Map](http://jim.sh/~jim/tmp/map-goodssh.png)
+
+As I see it:
+
+* psychosis (\"localhost\") connects to each of its remotes
+* some of them point back to ssh://psychosis
+* psychosis doesn't know that ssh://psychosis is itself, so it tries to connect
+* if successful:
+  * psychosis gets put twice in the .dot as if it was two different hosts, one \"local\" and one \"ssh://psychosis\"
+  * graphviz recognizes it as the same node because the UUID is the same, but graphviz still draws the extra connecting lines
+* if unsuccessful:
+  * ssh://psychosis is shown as an additional host that can't be reached
+"""]]

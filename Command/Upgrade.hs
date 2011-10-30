@@ -12,9 +12,9 @@ import Command
 import Upgrade
 import Annex.Version
 
-command :: [Command]
-command = [standaloneCommand "upgrade" paramNothing seek
-	"upgrade repository layout"]
+def :: [Command]
+def = [dontCheck repoExists $ -- because an old version may not seem to exist
+	command "upgrade" paramNothing seek "upgrade repository layout"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

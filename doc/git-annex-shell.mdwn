@@ -19,6 +19,10 @@ user's restricted login shell.
 
 Any command not listed below is passed through to git-shell.
 
+Note that the directory parameter should be an absolute path, otherwise
+it is assumed to be relative to the user's home directory. Also the
+first "/~/" or "/~user/" is expanded to the specified home directory.
+
 * configlist directory
 
   This outputs a subset of the git configuration, in the same form as
@@ -44,11 +48,23 @@ Any command not listed below is passed through to git-shell.
 
 # OPTIONS
 
-Same as git-annex or git-shell, depending on the command being run.
+Most options are the same as in git-annex. The ones specific
+to git-annex-shell are:
 
-Note that the directory parameter should be an absolute path, otherwise
-it is assumed to be relative to the user's home directory. Also the
-first "/~/" or "/~user/" is expanded to the specified home directory.
+* --uuid=UUID
+
+  git-annex uses this to specify the UUID of the repository it was expecting
+  git-annex-shell to access, as a sanity check.
+
+# ENVIRONMENT
+
+* GIT_ANNEX_SHELL_READONLY
+
+  If set, disallows any command that could modify the repository.
+
+* GIT_ANNEX_SHELL_LIMITED
+
+  If set, disallows running git-shell to handle unknown commands.
 
 # SEE ALSO
 

@@ -12,8 +12,8 @@ import Command
 import Annex.Content
 import Limit
 
-command :: [Command]
-command = [repoCommand "find" paramPaths seek "lists available files"]
+def :: [Command]
+def = [command "find" paramPaths seek "lists available files"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit start]

@@ -23,18 +23,18 @@ import Common
 
 import qualified Utility.SafeCommand
 import qualified Annex
+import qualified Annex.UUID
 import qualified Backend
 import qualified Git
 import qualified Locations
 import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
-import qualified LocationLog
-import qualified UUID
-import qualified UUIDLog
-import qualified Trust
+import qualified Logs.Location
+import qualified Logs.UUIDBased
+import qualified Logs.Trust
+import qualified Logs.Remote
 import qualified Remote
-import qualified RemoteLog
 import qualified Command.DropUnused
 import qualified Types.Key
 import qualified Config
@@ -73,14 +73,14 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
 	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, qctest "prop_idempotent_configEscape" RemoteLog.prop_idempotent_configEscape
+	, qctest "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
 
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
-	, qctest "prop_TimeStamp_sane" UUIDLog.prop_TimeStamp_sane
-	, qctest "prop_addLog_sane" UUIDLog.prop_addLog_sane
+	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
+	, qctest "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
 	]
 
 blackbox :: Test
@@ -341,22 +341,22 @@ test_fix = "git-annex fix" ~: intmpclonerepo $ do
 test_trust :: Test
 test_trust = "git-annex trust/untrust/semitrust" ~: intmpclonerepo $ do
 	git_annex "trust" ["-q", repo] @? "trust failed"
-	trustcheck Trust.Trusted "trusted 1"
+	trustcheck Logs.Trust.Trusted "trusted 1"
 	git_annex "trust" ["-q", repo] @? "trust of trusted failed"
-	trustcheck Trust.Trusted "trusted 2"
+	trustcheck Logs.Trust.Trusted "trusted 2"
 	git_annex "untrust" ["-q", repo] @? "untrust failed"
-	trustcheck Trust.UnTrusted "untrusted 1"
+	trustcheck Logs.Trust.UnTrusted "untrusted 1"
 	git_annex "untrust" ["-q", repo] @? "untrust of untrusted failed"
-	trustcheck Trust.UnTrusted "untrusted 2"
+	trustcheck Logs.Trust.UnTrusted "untrusted 2"
 	git_annex "semitrust" ["-q", repo] @? "semitrust failed"
-	trustcheck Trust.SemiTrusted "semitrusted 1"
+	trustcheck Logs.Trust.SemiTrusted "semitrusted 1"
 	git_annex "semitrust" ["-q", repo] @? "semitrust of semitrusted failed"
-	trustcheck Trust.SemiTrusted "semitrusted 2"
+	trustcheck Logs.Trust.SemiTrusted "semitrusted 2"
 	where
 		repo = "origin"
 		trustcheck expected msg = do
 			present <- annexeval $ do
-				l <- Trust.trustGet expected
+				l <- Logs.Trust.trustGet expected
 				u <- Remote.nameToUUID repo
 				return $ u `elem` l
 			assertBool msg present
@@ -609,11 +609,11 @@ checkdangling f = do
 
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
-	thisuuid <- annexeval UUID.getUUID
+	thisuuid <- annexeval Annex.UUID.getUUID
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do
-			uuids <- annexeval $ LocationLog.keyLocations k
+			uuids <- annexeval $ Logs.Location.keyLocations k
 			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"

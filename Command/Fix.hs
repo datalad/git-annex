@@ -12,8 +12,8 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 
-command :: [Command]
-command = [repoCommand "fix" paramPaths seek
+def :: [Command]
+def = [command "fix" paramPaths seek
 	"fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]

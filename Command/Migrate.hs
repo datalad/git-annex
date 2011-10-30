@@ -14,10 +14,10 @@ import qualified Types.Key
 import Annex.Content
 import qualified Command.Add
 import Backend
+import Logs.Web
 
-command :: [Command]
-command = [repoCommand "migrate" paramPaths seek
-	"switch data to different backend"]
+def :: [Command]
+def = [command "migrate" paramPaths seek "switch data to different backend"]
 
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit start]
@@ -65,6 +65,14 @@ perform file oldkey newbackend = do
 				then do
 					-- Update symlink to use the new key.
 					liftIO $ removeFile file
+
+					-- If the old key had some
+					-- associated urls, record them for
+					-- the new key as well.
+					urls <- getUrls oldkey
+					when (not $ null urls) $
+						mapM_ (setUrlPresent newkey) urls
+
 					next $ Command.Add.cleanup file newkey True
 				else stop
 	where

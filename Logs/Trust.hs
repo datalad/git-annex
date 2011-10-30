@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Trust (
+module Logs.Trust (
 	TrustLevel(..),
 	trustGet,
 	trustSet,
@@ -19,9 +19,7 @@ import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
-
-import UUID
-import UUIDLog
+import Logs.UUIDBased
 
 {- Filename of trust.log. -}
 trustLog :: FilePath

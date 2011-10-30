@@ -1,0 +1,5 @@
+As there's no way to permanently hide remotes and I have to recreate two repos now, I would love to be able to re-use the old UUIDs to remove clutter.
+
+> git-annex already provides a way to do this: Copy `.git/config` from the
+> original repo (or use `git-config` to set `annex.uuid`) *before* running
+> `git annex init`. [[done]] --[[Joey]]
