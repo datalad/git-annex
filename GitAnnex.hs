@@ -26,7 +26,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
-import qualified Command.SetContent
+import qualified Command.Reinject
 import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
@@ -63,7 +63,7 @@ cmds = concat
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
-	, Command.SetContent.def
+	, Command.Reinject.def
 	, Command.Unannex.def
 	, Command.Uninit.def
 	, Command.PreCommit.def

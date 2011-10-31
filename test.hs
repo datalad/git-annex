@@ -88,7 +88,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	-- test order matters, later tests may rely on state from earlier
 	[ test_init
 	, test_add
-	, test_setcontent
+	, test_reinject
 	, test_unannex
 	, test_drop
 	, test_get
@@ -140,13 +140,13 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 			changeWorkingDirectory "dir"
 			git_annex "add" ["-q", "../dir2"] @? "add of ../subdir failed"
 
-test_setcontent :: Test
-test_setcontent = "git-annex setcontent/fromkey" ~: TestCase $ intmpclonerepo $ do
+test_reinject :: Test
+test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
 	git_annex "drop" ["-q", "--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 tmp
 	let key = show $ fromJust r
-	git_annex "setcontent" ["-q", tmp, sha1annexedfile] @? "setcontent failed"
+	git_annex "reinject" ["-q", tmp, sha1annexedfile] @? "reinject failed"
 	git_annex "fromkey" ["-q", key, sha1annexedfiledup] @? "fromkey failed"
 	annexed_present sha1annexedfiledup
 	where

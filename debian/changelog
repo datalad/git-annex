@@ -13,7 +13,7 @@ git-annex (3.20111026) UNRELEASED; urgency=low
     .gitattributes information about numcopies is not available in a bare
     repository.
   * unused, dropunused: Now work in bare repositories.
-  * Removed the setkey command, and added a setcontent command with a more
+  * Removed the setkey command, and added a reinject command with a more
     useful interface.
   * The fromkey command now takes the key as its first parameter. The --key
     option is no longer used.

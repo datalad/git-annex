@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Command.SetContent where
+module Command.Reinject where
 
 import Common.Annex
 import Command
@@ -14,7 +14,7 @@ import Annex.Content
 import qualified Command.Fsck
 
 def :: [Command]
-def = [command "setcontent" (paramPair paramPath paramPath) seek
+def = [command "reinject" (paramPair paramPath paramPath) seek
 	"sets content of annexed file"]
 
 seek :: [CommandSeek]
@@ -22,7 +22,7 @@ seek = [withWords start]
 
 start :: [FilePath] -> CommandStart
 start (src:dest:[]) = do
-	showStart "setcontent" dest
+	showStart "reinject" dest
 	next $ perform src dest
 start _ = error "specify a src file and a dest file"
 
