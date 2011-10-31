@@ -17,6 +17,7 @@ git-annex (3.20111026) UNRELEASED; urgency=low
     useful interface.
   * The fromkey command now takes the key as its first parameter. The --key
     option is no longer used.
+  * Built without any filename containing .git being excluded. Closes: #647215
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 
