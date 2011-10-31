@@ -88,7 +88,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	-- test order matters, later tests may rely on state from earlier
 	[ test_init
 	, test_add
-	, test_setkey
+	, test_setcontent
 	, test_unannex
 	, test_drop
 	, test_get
@@ -118,15 +118,15 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 			writeFile annexedfile $ content annexedfile
 			git_annex "add" ["-q", annexedfile] @? "add failed"
 			annexed_present annexedfile
+			writeFile sha1annexedfile $ content sha1annexedfile
+			git_annex "add" ["-q", sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
+			annexed_present sha1annexedfile
 			writeFile ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 			boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
 			git_annex "add" ["-q", ingitfile] @? "add ingitfile should be no-op"
 			unannexed ingitfile
 		sha1dup = TestCase $ intmpclonerepo $ do
-			writeFile sha1annexedfile $ content sha1annexedfile
-			git_annex "add" ["-q", sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
-			annexed_present sha1annexedfile
 			writeFile sha1annexedfiledup $ content sha1annexedfiledup
 			git_annex "add" ["-q", sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
 			annexed_present sha1annexedfiledup
@@ -140,15 +140,15 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 			changeWorkingDirectory "dir"
 			git_annex "add" ["-q", "../dir2"] @? "add of ../subdir failed"
 
-test_setkey :: Test
-test_setkey = "git-annex setkey/fromkey" ~: TestCase $ inmainrepo $ do
+test_setcontent :: Test
+test_setcontent = "git-annex setcontent/fromkey" ~: TestCase $ intmpclonerepo $ do
+	git_annex "drop" ["-q", "--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 tmp
 	let key = show $ fromJust r
-	git_annex "setkey" ["-q", "--key", key, tmp] @? "setkey failed"
-	git_annex "fromkey" ["-q", "--key", key, sha1annexedfile] @? "fromkey failed"
-	boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
-	annexed_present sha1annexedfile
+	git_annex "setcontent" ["-q", tmp, sha1annexedfile] @? "setcontent failed"
+	git_annex "fromkey" ["-q", key, sha1annexedfiledup] @? "fromkey failed"
+	annexed_present sha1annexedfiledup
 	where
 		tmp = "tmpfile"
 

@@ -318,7 +318,7 @@ subdirectories).
   This is meant to be called from git's pre-commit hook. `git annex init`
   automatically creates a pre-commit hook using this.
 
-* fromkey file
+* fromkey key file
 
   This plumbing-level command can be used to manually set up a file
   in the git repository to link to a specified key.
@@ -405,10 +405,6 @@ subdirectories).
   adding a file to the annex, or migrating a file. Once files
   are in the annex, their backend is known and this option is not
   necessary.
-
-* --key=name
-
-  Specifies a key to operate on.
 
 * -c name=value
 

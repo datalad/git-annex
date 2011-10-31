@@ -23,7 +23,7 @@ seek = [withWords start]
 
 start :: [FilePath] -> CommandStart
 start (src:dest:[]) = do
-	showStart "setkey" dest
+	showStart "setcontent" dest
 	next $ perform src dest
 start _ = error "specify a src file and a dest file"
 

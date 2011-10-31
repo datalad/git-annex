@@ -60,7 +60,6 @@ data AnnexState = AnnexState
 	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
-	, defaultkey :: Maybe String
 	, toremote :: Maybe String
 	, fromremote :: Maybe String
 	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
@@ -85,7 +84,6 @@ newState gitrepo = AnnexState
 	, catfilehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
-	, defaultkey = Nothing
 	, toremote = Nothing
 	, fromremote = Nothing
 	, limit = Left []

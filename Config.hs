@@ -10,7 +10,6 @@ module Config where
 import Common.Annex
 import qualified Git
 import qualified Annex
-import Types.Key (readKey)
 
 type ConfigKey = String
 
@@ -92,15 +91,3 @@ getNumCopies v =
 			g <- gitRepo
 			return $ read $ Git.configGet g config "1"
 		config = "annex.numcopies"
-
-{- The Key specified by the --key parameter. -}
-cmdlineKey :: Annex Key
-cmdlineKey  = do
-	k <- Annex.getState Annex.defaultkey
-	case k of
-		Nothing -> nokey
-		Just "" -> nokey
-		Just kstring -> maybe badkey return $ readKey kstring
-	where
-		nokey = error "please specify the key with --key"
-		badkey = error "bad key"
