@@ -31,11 +31,9 @@ perform key = do
 	let num = length safelocations
 	showNote $ show num ++ " " ++ copiesplural num
 	pp <- prettyPrintUUIDs "whereis" safelocations
-	unless (null safelocations) $
-		showLongNote pp
+	unless (null safelocations) $ showLongNote pp
 	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
-	unless (null untrustedlocations) $
-		showLongNote $ untrustedheader ++ pp'
+	unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
 	if null safelocations then stop else next $ return True
 	where
 		copiesplural 1 = "copy"

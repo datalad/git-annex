@@ -71,8 +71,7 @@ readUnusedLog prefix = do
 	let f = gitAnnexUnusedLog prefix g
 	e <- liftIO $ doesFileExist f
 	if e
-		then return . M.fromList . map parse . lines
-			=<< liftIO (readFile f)
+		then M.fromList . map parse . lines <$> liftIO (readFile f)
 		else return M.empty
 	where
 		parse line = (head ws, fromJust $ readKey $ unwords $ tail ws)

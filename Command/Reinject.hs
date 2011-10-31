@@ -21,9 +21,11 @@ seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [FilePath] -> CommandStart
-start (src:dest:[]) = do
-	showStart "reinject" dest
-	next $ perform src dest
+start (src:dest:[])
+	| src == dest = stop
+	| otherwise = do
+		showStart "reinject" dest
+		next $ perform src dest
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> CommandPerform
@@ -36,9 +38,7 @@ perform src dest = isAnnexed dest $ \(key, backend) -> do
 		-- moveToObjectDir; disk space is also
 		-- checked this way.
 		move key = getViaTmp key $ \tmp ->
-			if dest /= src
-			then liftIO $ boolSystem "mv" [File src, File tmp]
-			else return True
+			liftIO $ boolSystem "mv" [File src, File tmp]
 
 cleanup :: Key -> Backend Annex -> CommandCleanup
 cleanup key backend = do

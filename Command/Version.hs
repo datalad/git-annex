@@ -21,12 +21,13 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	liftIO $ putStrLn $ "git-annex version: " ++ SysConfig.packageversion
 	v <- getVersion
-	liftIO $ putStrLn $ "local repository version: " ++ fromMaybe "unknown" v
-	liftIO $ putStrLn $ "default repository version: " ++ defaultVersion
-	liftIO $ putStrLn $ "supported repository versions: " ++ vs supportedVersions
-	liftIO $ putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
+	liftIO $ do
+		putStrLn $ "git-annex version: " ++ SysConfig.packageversion
+		putStrLn $ "local repository version: " ++ fromMaybe "unknown" v
+		putStrLn $ "default repository version: " ++ defaultVersion
+		putStrLn $ "supported repository versions: " ++ vs supportedVersions
+		putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
 	stop
 	where
 		vs = join " "

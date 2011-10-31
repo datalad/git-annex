@@ -26,15 +26,14 @@ seek :: [CommandSeek]
 seek = [withStrings start]
 
 start :: String -> CommandStart
-start s = notBareRepo $ do
-	let u = parseURI s
-	case u of
-		Nothing -> error $ "bad url " ++ s
-		Just url -> do
+start s = notBareRepo $ go $ parseURI s
+	where
+		go Nothing = error $ "bad url " ++ s
+		go (Just url) = do
 			file <- liftIO $ url2file url
 			showStart "addurl" file
 			next $ perform s file
-			
+
 perform :: String -> FilePath -> CommandPerform
 perform url file = do
 	fast <- Annex.getState Annex.fast
@@ -64,7 +63,6 @@ nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
 	let key = Backend.URL.fromUrl url
 	setUrlPresent key url
-	
 	next $ Command.Add.cleanup file key False
 
 url2file :: URI -> IO FilePath

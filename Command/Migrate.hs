@@ -56,11 +56,7 @@ perform file oldkey newbackend = do
 	case k of
 		Nothing -> stop
 		Just (newkey, _) -> do
-			ok <- getViaTmpUnchecked newkey $ \t -> do
-				-- Make a hard link to the old backend's
-				-- cached key, to avoid wasting disk space.
-				liftIO $ unlessM (doesFileExist t) $ createLink src t
-				return True
+			ok <- link src newkey
 			if ok
 				then do
 					-- Update symlink to use the new key.
@@ -77,3 +73,8 @@ perform file oldkey newbackend = do
 				else stop
 	where
 		cleantmp t = whenM (doesFileExist t) $ removeFile t
+		link src newkey = getViaTmpUnchecked newkey $ \t -> do
+			-- Make a hard link to the old backend's
+			-- cached key, to avoid wasting disk space.
+			liftIO $ unlessM (doesFileExist t) $ createLink src t
+			return True	
