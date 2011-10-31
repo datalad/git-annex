@@ -31,9 +31,6 @@ toOpt = CommandCheck 2 $ do
 	v <- Annex.getState Annex.toremote
 	unless (v == Nothing) $ error "cannot use --to with this command"
 
-checkCommand :: Command -> Annex ()
-checkCommand Command { cmdcheck = c } = sequence_ $ map runCheck c
-
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
 

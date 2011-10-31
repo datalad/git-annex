@@ -46,25 +46,24 @@ next a = return $ Just a
 stop :: Annex (Maybe a)
 stop = return Nothing
 
-{- Prepares a list of actions to run to perform a command, based on
- - the parameters passed to it. -}
-prepCommand :: Command -> [String] -> Annex [Annex Bool]
-prepCommand cmd ps = return . map doCommand =<< seekCommand cmd ps
-
-{- Runs a command through the seek stage. -}
-seekCommand :: Command -> [String] -> Annex [CommandStart]
-seekCommand Command { cmdseek = seek } ps = concat <$> mapM (\s -> s ps) seek
+{- Prepares to run a command via the check and seek stages, returning a
+ - list of actions to perform to run the command. -}
+prepCommand :: Command -> [String] -> Annex [CommandCleanup]
+prepCommand Command { cmdseek = seek, cmdcheck = c } params = do
+	sequence_ $ map runCheck c
+	map doCommand . concat <$> mapM (\s -> s params) seek
 
 {- Runs a command through the start, perform and cleanup stages -}
 doCommand :: CommandStart -> CommandCleanup
 doCommand = start
 	where
-		start   = stage $ maybe success perform
+		start   = stage $ maybe skip perform
 		perform = stage $ maybe failure cleanup
-		cleanup = stage $ \r -> showEndResult r >> return r
+		cleanup = stage $ status
 		stage = (=<<)
-		success = return True
+		skip = return True
 		failure = showEndFail >> return False
+		status r = showEndResult r >> return r
 
 notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
