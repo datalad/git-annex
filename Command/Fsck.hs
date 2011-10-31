@@ -38,7 +38,7 @@ perform key file backend numcopies = check
 	[ verifyLocationLog key file
 	, checkKeySize key
 	, checkKeyNumCopies key file numcopies
-	, (Types.Backend.fsckKey backend) key
+	, checkBackend backend key
 	]
 
 {- To fsck a bare repository, fsck each key in the location log. -}
@@ -65,7 +65,7 @@ performBare :: Key -> Backend Annex -> CommandPerform
 performBare key backend = check
 	[ verifyLocationLog key (show key)
 	, checkKeySize key
-	, (Types.Backend.fsckKey backend) key
+	, checkBackend backend key
 	]
 
 check :: [Annex Bool] -> CommandPerform	
@@ -133,6 +133,9 @@ checkKeySize key = do
 						"); moved to " ++ dest
 					return False
 
+
+checkBackend :: Backend Annex -> Key -> Annex Bool
+checkBackend backend key =  (Types.Backend.fsckKey backend) key
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do

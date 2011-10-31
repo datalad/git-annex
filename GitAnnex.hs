@@ -26,7 +26,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
-import qualified Command.SetKey
+import qualified Command.SetContent
 import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
@@ -63,6 +63,7 @@ cmds = concat
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
+	, Command.SetContent.def
 	, Command.Unannex.def
 	, Command.Uninit.def
 	, Command.PreCommit.def
@@ -72,7 +73,6 @@ cmds = concat
 	, Command.AddUrl.def
 	, Command.FromKey.def
 	, Command.DropKey.def
-	, Command.SetKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
 	, Command.Unused.def
@@ -89,9 +89,7 @@ cmds = concat
 
 options :: [Option]
 options = commonOptions ++
-	[ Option ['k'] ["key"] (ReqArg setkey paramKey)
-		"specify a key to use"
-	, Option ['t'] ["to"] (ReqArg setto paramRemote)
+	[ Option ['t'] ["to"] (ReqArg setto paramRemote)
 		"specify to where to transfer content"
 	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
 		"specify from where to transfer content"
@@ -116,7 +114,6 @@ options = commonOptions ++
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
-		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
 			g <- gitRepo
