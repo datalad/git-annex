@@ -11,7 +11,6 @@ import Common.Annex
 import Command
 import Logs.Location
 import Annex.Content
-import qualified Backend
 import qualified Command.Fsck
 
 def :: [Command]
@@ -28,22 +27,18 @@ start (src:dest:[]) = do
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> CommandPerform
-perform src dest = go =<< Backend.lookupFile dest
+perform src dest = isAnnexed dest $ \(key, backend) -> do
+	unlessM (move key) $ error "mv failed!"
+	next $ cleanup key backend
 	where
-		go Nothing = error "dest file is not in annex"
-		go (Just (key, backend)) = do
-			-- the file might be on a different filesystem,
-			-- so mv is used rather than simply calling
-			-- moveToObjectDir; disk space is also
-			-- checked this way.
-			ok <- getViaTmp key $ \tmp ->
-				if dest /= src
-					then liftIO $
-						boolSystem "mv" [File src, File tmp]
-					else return True
-			if ok
-				then next $ cleanup key backend
-				else error "mv failed!"
+		-- the file might be on a different filesystem,
+		-- so mv is used rather than simply calling
+		-- moveToObjectDir; disk space is also
+		-- checked this way.
+		move key = getViaTmp key $ \tmp ->
+			if dest /= src
+			then liftIO $ boolSystem "mv" [File src, File tmp]
+			else return True
 
 cleanup :: Key -> Backend Annex -> CommandCleanup
 cleanup key backend = do
