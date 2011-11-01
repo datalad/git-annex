@@ -8,15 +8,16 @@
 module Utility.Misc where
 
 import System.IO
+import Control.Monad
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
 hGetContentsStrict :: Handle -> IO String
-hGetContentsStrict h  = hGetContents h >>= \s -> length s `seq` return s
+hGetContentsStrict  = hGetContents >=> \s -> length s `seq` return s
 
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
-readFileStrict f = readFile f >>= \s -> length s `seq` return s
+readFileStrict = readFile >=> \s -> length s `seq` return s
 
 {- Attempts to read a value from a String. -}
 readMaybe :: (Read a) => String -> Maybe a

@@ -69,7 +69,7 @@ performBare key backend = check
 	]
 
 check :: [Annex Bool] -> CommandPerform	
-check s = sequence s >>= dispatch
+check = sequence >=> dispatch
 	where
 		dispatch vs
 			| all (== True) vs = next $ return True
