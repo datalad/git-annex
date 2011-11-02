@@ -15,6 +15,7 @@ import Common.Annex
 import Utility.TempFile
 import qualified Git
 import qualified Annex.Branch
+import Logs.UUID
 import Annex.Version
 import Annex.UUID
 
@@ -24,6 +25,7 @@ initialize = do
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
+	getUUID >>= recordUUID
 
 uninitialize :: Annex ()
 uninitialize = gitPreCommitHookUnWrite

@@ -83,7 +83,7 @@ keyValue size file = do
 
 {- Extension preserving keys. -}
 keyValueE :: SHASize -> FilePath -> Annex (Maybe Key)
-keyValueE size file = keyValue >>= maybe (return Nothing) addE
+keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 	where
 		addE k = return $ Just $ k
 			{ keyName = keyName k ++ extension

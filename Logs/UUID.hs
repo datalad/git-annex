@@ -15,6 +15,7 @@
 
 module Logs.UUID (
 	describeUUID,
+	recordUUID,
 	uuidMap
 ) where
 
@@ -36,6 +37,15 @@ describeUUID uuid desc = do
 	ts <- liftIO $ getPOSIXTime
 	Annex.Branch.change logfile $
 		showLog id . changeLog ts uuid desc . parseLog Just
+
+{- Records the uuid in the log, if it's not already there. -}
+recordUUID :: UUID -> Annex ()
+recordUUID u = go . M.lookup u =<< uuidMap 
+	where
+		go (Just "") = set
+		go Nothing = set
+		go _ = return ()
+		set = describeUUID u ""
 
 {- Read the uuidLog into a simple Map.
  -
