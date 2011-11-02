@@ -250,10 +250,9 @@ files = withIndexUpdate $ do
 setJournalFile :: FilePath -> String -> Annex ()
 setJournalFile file content = do
 	g <- gitRepo
-	liftIO $ catch (write g) $ const $ do
+	liftIO $ doRedo (write g) $ do
 		createDirectoryIfMissing True $ gitAnnexJournalDir g
 		createDirectoryIfMissing True $ gitAnnexTmpDir g
-		write g
 	where
 		-- journal file is written atomically
 		write g = do
@@ -342,7 +341,13 @@ lockJournal a = do
 	bracketIO (lock file) unlock a
 	where
 		lock file = do
-			l <- createFile file stdFileMode
+			l <- doRedo (createFile file stdFileMode) $
+				createDirectoryIfMissing True $ takeDirectory file
 			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 			return l
 		unlock = closeFd
+
+{- Runs an action, catching failure and running something to fix it up, and
+ - retrying if necessary. -}
+doRedo :: IO a -> IO b -> IO a
+doRedo a b = catch a $ const $ b >> a
