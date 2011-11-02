@@ -43,7 +43,7 @@
   same repository, which git-annex does, and is an important feature for
   large-scale archiving.
 
-* git-annex is not the [Mercurial bfiles extension](http://mercurial.selenic.com/wiki/BfilesExtension).
+* git-annex is not the [Mercurial largefiles extension](http://mercurial.selenic.com/wiki/LargefilesExtension).
   Although mercurial and git have some of the same problems around large
   files, and both try to solve them in similar ways (standin files using
   mostly hashes of the real content).
