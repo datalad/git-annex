@@ -19,6 +19,8 @@ git-annex (3.20111026) UNRELEASED; urgency=low
     option is no longer used.
   * Built without any filename containing .git being excluded. Closes: #647215
   * Record uuid when auto-initializing a remote so it shows in status.
+  * Bugfix: Fixed git-annex init crash in a bare repository when there was
+    already an existing git-annex branch.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 
