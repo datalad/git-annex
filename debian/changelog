@@ -24,6 +24,7 @@ git-annex (3.20111026) UNRELEASED; urgency=low
   * Record uuid when auto-initializing a remote so it shows in status.
   * Bugfix: Fixed git-annex init crash in a bare repository when there was
     already an existing git-annex branch.
+  * Pass -t to rsync to preserve timestamps.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
 

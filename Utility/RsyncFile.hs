@@ -35,6 +35,8 @@ rsyncServerParams =
 	[ Param "--server"
 	-- preserve permissions
 	, Param "-p"
+	-- preserve timestamps
+	, Param "-t"
 	-- allow resuming of transfers of big files
 	, Param "--inplace"
 	-- other options rsync normally uses in server mode
