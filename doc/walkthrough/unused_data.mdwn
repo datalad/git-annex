@@ -1,8 +1,8 @@
-It's possible for data to accumulate in the annex that no files point to
-anymore. One way it can happen is if you `git rm` a file without 
-first calling `git annex drop`. And, when you modify an annexed file, the old
-content of the file remains in the annex. Another way is when migrating
-between key-value [[backends|backend]].
+It's possible for data to accumulate in the annex that no files in any
+branch point to anymore. One way it can happen is if you `git rm` a file
+without first calling `git annex drop`. And, when you modify an annexed
+file, the old content of the file remains in the annex. Another way is when
+migrating between key-value [[backends|backend]].
 
 This might be historical data you want to preserve, so git-annex defaults to
 preserving it. So from time to time, you may want to check for such data and
@@ -12,8 +12,8 @@ eliminate it to save space.
 	unused . (checking for unused data...) 
 	  Some annexed data is no longer used by any files in the repository.
 	    NUMBER  KEY
-	    1       WORM-s3-m1289672605--file
-	    2       WORM-s14-m1289672605--file
+	    1       SHA256-s86050597--6ae2688bc533437766a48aa19f2c06be14d1bab9c70b468af445d4f07b65f41e
+	    2       SHA1-s14--f1358ec1873d57350e3dc62054dc232bc93c2bd1
 	  (To see where data was previously used, try: git log --stat -S'KEY')
 	  (To remove unwanted data: git-annex dropunused NUMBER)
 	ok
