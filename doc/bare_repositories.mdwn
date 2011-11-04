@@ -18,3 +18,27 @@ as non-bare repositories. Except for these caveats:
   branches that have been pushed to the bare repository. So use it with care..
 * Commands that need a work tree, like `git annex add` won't work in a bare
   repository, of course.
+
+***
+
+Here is a quick example of how to set this up, using `origin` as the remote name, and assuming `~/annex` contains an annex:
+
+On the server:
+
+    mkdir bare-annex
+    git init --bare
+    git annex init origin
+
+Now configure the remote and do the initial push:
+
+    cd ~/annex
+    git remote add origin example.com:bare-annex
+    git push origin master git-annex
+
+Now `git annex status` should show the configured bare remote. If it does not, you may have to pull from the remote first (older versions of `git-annex`)
+
+If you wish to configure git such that you can push/pull without arguments, set the upstream branch:
+
+    git branch master --set-upstream origin/master
+
+   
