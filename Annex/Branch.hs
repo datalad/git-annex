@@ -240,15 +240,16 @@ hasOrigin = refExists originname
 hasSomeBranch :: Annex Bool
 hasSomeBranch = not . null <$> siblingBranches
 
-{- List of all git-annex (refs, branches), including the main one and any
- - from remotes. -}
+{- List of git-annex (refs, branches), including the main one and any
+ - from remotes. Duplicate refs are filtered out. -}
 siblingBranches :: Annex [(String, String)]
 siblingBranches = do
 	g <- gitRepo
 	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
-	return $ map (pair . words . L.unpack) (L.lines r)
+	return $ nubBy uref $ map (pair . words . L.unpack) (L.lines r)
 	where
 		pair l = (head l, last l)
+		uref (a, _) (b, _) = a == b
 
 {- Applies a function to modifiy the content of a file. -}
 change :: FilePath -> (String -> String) -> Annex ()
