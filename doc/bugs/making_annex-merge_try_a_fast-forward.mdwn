@@ -27,3 +27,9 @@ But as sometimes annex-merge takes time, it would probably be worth it
 > 
 > Although, perhaps fast-forward merge would use slightly
 > less space. --[[Joey]]
+
+>> To avoid the ladder-merge between two repositories described at
+>> <http://sprunge.us/LOMU>, seems a fast-forward should be detected and
+>> written to git, even if the index is still updated the current way.
+>> [[done]]
+>> --[[Joey]]

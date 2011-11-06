@@ -117,28 +117,30 @@ commit message = whenM journalDirty $ lockJournal $ do
 	g <- gitRepo
 	withIndex $ liftIO $ Git.commit g message fullname [fullname]
 
-{- Ensures that the branch is up-to-date; should be called before
- - data is read from it. Runs only once per git-annex run.
+{- Ensures that the branch is up-to-date; should be called before data is
+ - read from it. Runs only once per git-annex run.
  -
- - Before refs are merged into the index, it's
- - important to first stage the journal into the
- - index. Otherwise, any changes in the journal
- - would later get staged, and might overwrite
- - changes made during the merge.
+ - Before refs are merged into the index, it's important to first stage the
+ - journal into the index. Otherwise, any changes in the journal would
+ - later get staged, and might overwrite changes made during the merge.
  -
- - It would be cleaner to handle the merge by
- - updating the journal, not the index, with changes
- - from the branches.
+ - It would be cleaner to handle the merge by updating the journal, not the
+ - index, with changes from the branches.
+ -
+ - The index is always updated using a union merge, as that's the most
+ - efficient way to update it. However, if the branch can be
+ - fast-forwarded, that is then done, rather than adding an unnecessary
+ - commit to it.
  -}
 update :: Annex ()
 update = onceonly $ do
+	g <- gitRepo
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
-	c <- filterM changedbranch =<< siblingBranches
+	c <- filterM (changedBranch name . snd) =<< siblingBranches
 	let (refs, branches) = unzip c
 	unless (not dirty && null refs) $ withIndex $ lockJournal $ do
 		when dirty stageJournalFiles
-		g <- gitRepo
 		unless (null branches) $ do
 			showSideAction $ "merging " ++
 				(unwords $ map Git.refDescribe branches) ++
@@ -150,24 +152,64 @@ update = onceonly $ do
 			 - modify the branch.
 			 -}
 			liftIO $ Git.UnionMerge.merge_index g branches
-		liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
+		ff <- if dirty then return False else tryFastForwardTo refs
+		unless ff $
+			liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
 		invalidateCache
 	where
-		changedbranch (_, branch) = do
-			g <- gitRepo
-			-- checking with log to see if there have been changes
-			-- is less expensive than always merging
-			diffs <- liftIO $ Git.pipeRead g [
-				Param "log",
-				Param (name ++ ".." ++ branch),
-				Params "--oneline -n1"
-				]
-			return $ not $ L.null diffs
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
 			r <- a
 			disableUpdate
 			return r
 
+{- Checks if the second branch has any commits not present on the first
+ - branch. -}
+changedBranch :: String -> String -> Annex Bool
+changedBranch origbranch newbranch = do
+	g <- gitRepo
+	diffs <- liftIO $ Git.pipeRead g [
+		Param "log",
+		Param (origbranch ++ ".." ++ newbranch),
+		Params "--oneline -n1"
+		]
+	return $ not $ L.null diffs
+
+{- Given a set of refs that are all known to have commits not
+ - on the git-annex branch, tries to update the branch by a
+ - fast-forward.
+ -
+ - In order for that to be possible, one of the refs must contain
+ - every commit present in all the other refs, as well as in the
+ - git-annex branch.
+ -}
+tryFastForwardTo :: [String] -> Annex Bool
+tryFastForwardTo [] = return True
+tryFastForwardTo (first:rest) = do
+	-- First, check that the git-annex branch does not contain any
+	-- new commits that are in the first other branch. If it does,
+	-- cannot fast-forward.
+	diverged <- changedBranch first fullname
+	if diverged
+		then no_ff
+		else maybe no_ff do_ff =<< findbest first rest
+	where
+		no_ff = return False
+		do_ff branch = do
+			g <- gitRepo
+			liftIO $ Git.run g "update-ref" [Param fullname, Param branch]
+			return True
+		findbest c [] = return $ Just c
+		findbest c (r:rs)
+			| c == r = findbest c rs
+			| otherwise = do
+			better <- changedBranch c r
+			worse <- changedBranch r c
+			case (better, worse) of
+				(True, True) -> return Nothing -- divergent fail
+				(True, False) -> findbest r rs -- better
+				(False, True) -> findbest c rs -- worse
+				(False, False) -> findbest c rs -- same
+			
 {- Avoids updating the branch. A useful optimisation when the branch
  - is known to have not changed, or git-annex won't be relying on info
  - from it. -}
