@@ -14,6 +14,12 @@ On your laptop, [[install]] git-annex, and clone the repository:
 	# git clone git@github.com:joeyh/techtalks.git
 	# cd techtalks
 
+Tell git-annex to use the repository, and describe where this clone is
+located:
+
+	# git annex init 'my laptop'
+	init my laptop ok
+
 Let's tell git-annex that GitHub doesn't support running git-annex-shell there.
 This means you can't store annexed file *contents* on GitHub; it would
 really be better to host the bare repository on your own server, which
@@ -21,12 +27,6 @@ would not have this limitation. (If you want to do that, check out
 [[using_gitolite_with_git-annex]].)
 
 	# git config remote.origin.annex-ignore true
-
-Tell git-annex to use the repository, and describe where this clone is
-located:
-
-	# git annex init 'my laptop'
-	init my laptop ok
 
 ## add files to the repository
 
@@ -78,7 +78,6 @@ you like, just make it be somewhere your laptop can access. A few options:
 * Put it on a desktop.
 * Put it on some server in the local network.
 * Put it on a remote VPS.
-* All of the above!
 
 I'll use the VPS option, but these instructions should work for
 any of the above.
@@ -101,8 +100,8 @@ If you run `ls`, you'll see broken symlinks. We want to populate this
 backup with the file contents, by copying them from your laptop.
 
 Back on your laptop, you need to configure a git remote for the backup.
-Adjust the url as needed to point to wherever the backup is. (If it
-was on a local USB drive, you'd use the path to the repository.)
+Adjust the ssh url as needed to point to wherever the backup is. (If it
+was on a local USB drive, you'd use the path to the repository instead.)
 
 	# git remote add backup ssh://server/~/techtalks
 
@@ -116,7 +115,9 @@ and can do things like copy files to it:
 
 You can also `git annex move` files to it, to free up space on your laptop.
 And then you can `git annex get` files back to your laptop later on, as
-desired. After you using git-annex to move files around, remember to push,
+desired.
+
+After you use git-annex to move files around, remember to push, 
 which will broadcast its updated location information.
 
 	# git push
