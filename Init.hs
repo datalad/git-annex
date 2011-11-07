@@ -19,13 +19,14 @@ import Logs.UUID
 import Annex.Version
 import Annex.UUID
 
-initialize :: Annex ()
-initialize = do
+initialize :: Maybe String -> Annex ()
+initialize mdescription = do
 	prepUUID
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
-	getUUID >>= recordUUID
+	u <- getUUID
+	maybe (recordUUID u) (describeUUID u) mdescription
 
 uninitialize :: Annex ()
 uninitialize = gitPreCommitHookUnWrite
@@ -40,7 +41,7 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 		needsinit = do
 			annexed <- Annex.Branch.hasSomeBranch
 			if annexed
-				then initialize
+				then initialize Nothing
 				else error "First run: git-annex init"
 
 {- set up a git pre-commit hook, if one is not already present -}
