@@ -100,7 +100,7 @@ byName' n = do
 		then return $ Left $ "there is no git remote named \"" ++ n ++ "\""
 		else return $ Right $ head match
 	where
-		matching r = n == name r || n == uuid r
+		matching r = n == name r || read n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even remotes that are not configured in
@@ -115,12 +115,13 @@ nameToUUID n = do
 	where
 		byDescription = do
 			m <- uuidMap
-			case M.lookup n $ transform swap m of
+			case M.lookup wantuuid $ transform swap m of
 				Just u -> return $ Just u
-				Nothing -> return $ M.lookup n $ transform double m
+				Nothing -> return $ M.lookup wantuuid $ transform double m
 		transform a = M.fromList . map a . M.toList
 		swap (a, b) = (b, a)
-		double (a, _) = (a, a)
+		double (a, _) = (show a, a)
+		wantuuid = read n
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
@@ -143,8 +144,8 @@ prettyPrintUUIDs desc uuids = do
 		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
 		prettify m here u
-			| not (null d) = u ++ " -- " ++ d
-			| otherwise = u
+			| not (null d) = show u ++ " -- " ++ d
+			| otherwise = show u
 			where
 				ishere = here == u
 				n = findlog m u
@@ -153,7 +154,7 @@ prettyPrintUUIDs desc uuids = do
 					| ishere = addname n "here"
 					| otherwise = n
 		jsonify m here u = toJSObject
-			[ ("uuid", toJSON u)
+			[ ("uuid", toJSON $ show u)
 			, ("description", toJSON $ findlog m u)
 			, ("here", toJSON $ here == u)
 			]

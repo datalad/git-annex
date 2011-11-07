@@ -161,13 +161,13 @@ storeBupUUID u buprepo = do
 		then do
 			showAction "storing uuid"
 			onBupRemote r boolSystem "git"
-				[Params $ "config annex.uuid " ++ u]
+				[Params $ "config annex.uuid " ++ show u]
 					>>! error "ssh failed"
 		else liftIO $ do
 			r' <- Git.configRead r
 			let olduuid = Git.configGet r' "annex.uuid" ""
 			when (olduuid == "") $
-				Git.run r' "config" [Param "annex.uuid", Param u]
+				Git.run r' "config" [Param "annex.uuid", Param $ show u]
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
@@ -192,8 +192,8 @@ getBupUUID r u
 	| otherwise = liftIO $ do
 		ret <- try $ Git.configRead r
 		case ret of
-			Right r' -> return (Git.configGet r' "annex.uuid" "", r')
-			Left _ -> return ("", r)
+			Right r' -> return (read $ Git.configGet r' "annex.uuid" "", r')
+			Left _ -> return (NoUUID, r)
 
 {- Converts a bup remote path spec into a Git.Repo. There are some
  - differences in path representation between git and bup. -}

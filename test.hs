@@ -614,7 +614,7 @@ checklocationlog f expected = do
 	case r of
 		Just (k, _) -> do
 			uuids <- annexeval $ Logs.Location.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 

@@ -45,9 +45,9 @@ options = commonOptions ++
 	where
 		check expected = do
 			u <- getUUID
-			when (u /= expected) $ error $
+			when (u /= read expected) $ error $
 				"expected repository UUID " ++ expected
-					++ " but found UUID " ++ u
+					++ " but found UUID " ++ show u
 
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"

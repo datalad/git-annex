@@ -50,9 +50,9 @@ showLog :: (a -> String) -> Log a -> String
 showLog shower = unlines . map showpair . M.toList
 	where
 		showpair (k, LogEntry (Date p) v) =
-			unwords [k, shower v, tskey ++ show p]
+			unwords [show k, shower v, tskey ++ show p]
 		showpair (k, LogEntry Unknown v) =
-			unwords [k, shower v]
+			unwords [show k, shower v]
 
 parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog parser = M.fromListWith best . catMaybes . map pair . lines
@@ -61,7 +61,7 @@ parseLog parser = M.fromListWith best . catMaybes . map pair . lines
 			| null ws = Nothing
 			| otherwise = case parser $ unwords info of
 				Nothing -> Nothing
-				Just v -> Just (u, LogEntry c v)
+				Just v -> Just (read u, LogEntry c v)
 			where
 				ws = words line
 				u = head ws
@@ -103,8 +103,8 @@ prop_TimeStamp_sane = Unknown < Date 1
 prop_addLog_sane :: Bool
 prop_addLog_sane = newWins && newestWins
 	where
-		newWins = addLog "foo" (LogEntry (Date 1) "new") l == l2
-		newestWins = addLog "foo" (LogEntry (Date 1) "newest") l2 /= l2
+		newWins = addLog (UUID "foo") (LogEntry (Date 1) "new") l == l2
+		newestWins = addLog (UUID "foo") (LogEntry (Date 1) "newest") l2 /= l2
 
-		l = M.fromList [("foo", LogEntry (Date 0) "old")]
-		l2 = M.fromList [("foo", LogEntry (Date 1) "new")]
+		l = M.fromList [(UUID "foo", LogEntry (Date 0) "old")]
+		l2 = M.fromList [(UUID "foo", LogEntry (Date 1) "new")]

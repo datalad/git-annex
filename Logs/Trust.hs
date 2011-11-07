@@ -53,13 +53,12 @@ parseTrust s
 
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
-trustSet uuid level = do
-	when (null uuid) $
-		error "unknown UUID; cannot modify trust level"
+trustSet uuid@(UUID _) level = do
 	ts <- liftIO $ getPOSIXTime
 	Annex.Branch.change trustLog $
 		showLog show . changeLog ts uuid level . parseLog parseTrust
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
+trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
 
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])

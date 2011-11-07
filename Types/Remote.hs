@@ -15,6 +15,7 @@ import Data.Ord
 
 import qualified Git
 import Types.Key
+import Types.UUID
 
 type RemoteConfig = M.Map String String
 
@@ -25,15 +26,15 @@ data RemoteType a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> String -> Maybe RemoteConfig -> a (Remote a),
+	generate :: Git.Repo -> UUID -> Maybe RemoteConfig -> a (Remote a),
 	-- initializes or changes a remote
-	setup :: String -> RemoteConfig -> a RemoteConfig
+	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
 
 {- An individual remote. -}
 data Remote a = Remote {
 	-- each Remote has a unique uuid
-	uuid :: String,
+	uuid :: UUID,
 	-- each Remote has a human visible name
 	name :: String,
 	-- Remotes have a use cost; higher is more expensive

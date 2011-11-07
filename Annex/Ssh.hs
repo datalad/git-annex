@@ -45,9 +45,8 @@ git_annex_shell r command params
 		sshcmd uuid = unwords $
 			shellcmd : (map shellEscape $ toCommand shellopts) ++
 			uuidcheck uuid
-		uuidcheck uuid
-			| null uuid = []
-			| otherwise = ["--uuid", uuid]
+		uuidcheck NoUUID = []
+		uuidcheck (UUID u) = ["--uuid", u]
 
 {- Uses a supplied function (such as boolSystem) to run a git-annex-shell
  - command on a remote.

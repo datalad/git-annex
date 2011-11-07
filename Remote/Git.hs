@@ -60,7 +60,7 @@ gen r u _ = do
 	r' <- case (cheap, notignored, u) of
 		(_, False, _) -> return r
 		(True, _, _) -> tryGitConfigRead r
-		(False, _, "") -> tryGitConfigRead r
+		(False, _, NoUUID) -> tryGitConfigRead r
 		_ -> return r
 
 	u' <- getRepoUUID r'

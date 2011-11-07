@@ -21,7 +21,7 @@ type URLString = String
 
 -- Dummy uuid for the whole web. Do not alter.
 webUUID :: UUID
-webUUID = "00000000-0000-0000-0000-000000000001"
+webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
 {- The urls for a key are stored in remote/web/hash/key.log 
  - in the git-annex branch. -}
