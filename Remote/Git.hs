@@ -56,10 +56,11 @@ gen r u _ = do
 	 - the config of an URL remote is only read when there is no
 	 - cached UUID value. -}
 	let cheap = not $ Git.repoIsUrl r
-	r' <- case (cheap, u) of
-		(True, _) -> do
-			tryGitConfigRead r
-		(False, "") -> tryGitConfigRead r
+	notignored <- repoNotIgnored r
+	r' <- case (cheap, notignored, u) of
+		(_, False, _) -> return r
+		(True, _, _) -> tryGitConfigRead r
+		(False, _, "") -> tryGitConfigRead r
 		_ -> return r
 
 	u' <- getRepoUUID r'
