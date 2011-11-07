@@ -1,12 +1,13 @@
 The [[walkthrough]] builds up a decentralized git repository setup, but
 git-annex can also be used with a centralized bare repository, just like
-git can.
+git can. This tutorial shows how to set up a centralized repository hosted on
+GitHub.
 
 ## set up the repository, and make a checkout
 
-In this tutorial, I'll set up a centralized repository hosted on
-GitHub. I've created a repository for technical talk videos, which you can
-fork, or make your own repository on GitHub (or elsewhere) now.
+I've created a repository for technical talk videos, which you can
+[fork on Github](https://github.com/joeyh/techtalks).
+Or make your own repository on GitHub (or elsewhere) now.
 
 On your laptop, [[install]] git-annex, and clone the repository:
 
@@ -115,7 +116,10 @@ and can do things like copy files to it:
 
 You can also `git annex move` files to it, to free up space on your laptop.
 And then you can `git annex get` files back to your laptop later on, as
-desired.
+desired. After you using git-annex to move files around, remember to push,
+which will broadcast its updated location information.
+
+	# git push
 
 ## take it farther
 
