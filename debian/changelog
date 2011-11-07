@@ -1,3 +1,10 @@
+git-annex (3.20111108) UNRELEASED; urgency=low
+
+  * Handle a case where an annexed file is moved into a gitignored directory,
+    by having fix --force add its change.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Nov 2011 18:08:42 -0400
+
 git-annex (3.20111107) unstable; urgency=low
 
   * merge: Use fast-forward merges when possible.

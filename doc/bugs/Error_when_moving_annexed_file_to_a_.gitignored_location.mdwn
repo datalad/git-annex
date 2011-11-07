@@ -17,3 +17,5 @@ This is the error message:
 	git-annex: user error (Command xargs ["-0","git","--git-dir=/home/[...]/repo/.git","--work-tree=/home/[...]/repo","add","--"] failed; exit code 123)
 	failed
 	git-annex: 1 failed
+
+> Weird edge case.. ok, fixed. [[done]] --[[Joey]] 
