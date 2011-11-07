@@ -30,5 +30,6 @@ start ws = do
 perform :: String -> CommandPerform
 perform description = do
 	initialize
-	getUUID >>= describeUUID description
+	u <- getUUID
+	describeUUID u description
 	next $ return True

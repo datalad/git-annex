@@ -4,6 +4,8 @@ git-annex (3.20111106) UNRELEASED; urgency=low
     Thanks Valentin Haenel for a test case showing how non-fast-forward
     merges could result in an ongoing pull/merge/push cycle.
   * Don't try to read config from repos with annex-ignore set.
+  * Bugfix: In the past two releases, git-annex init has written the uuid.log
+    in the wrong format, with the UUID and description flipped.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 06 Nov 2011 14:57:57 -0400
 
