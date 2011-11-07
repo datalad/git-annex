@@ -107,21 +107,19 @@ byName' n = do
  - .git/config. -}
 nameToUUID :: String -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
-nameToUUID n = do
-	res <- byName' n
-	case res of
-		Left e -> fromMaybe (error e) <$> byDescription
-		Right r -> return $ uuid r
+nameToUUID n = byName' n >>= go
 	where
-		byDescription = do
+		go (Right r) = return $ uuid r
+		go (Left e) = fromMaybe (error e) <$> bydescription
+		bydescription = do
 			m <- uuidMap
-			case M.lookup wantuuid $ transform swap m of
+			case M.lookup n $ transform swap m of
 				Just u -> return $ Just u
-				Nothing -> return $ M.lookup wantuuid $ transform double m
+				Nothing -> return $ byuuid m
+		byuuid m = M.lookup (read n) $ transform double m
 		transform a = M.fromList . map a . M.toList
 		swap (a, b) = (b, a)
-		double (a, _) = (show a, a)
-		wantuuid = read n
+		double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
