@@ -1,4 +1,4 @@
-This wiki contains [[!pagecount pages="*"]]
+This wiki contains [[!pagecount pages="*"]] pages.
 
 Broken links:
 
