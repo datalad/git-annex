@@ -11,3 +11,11 @@ Each git-annex repository is responsible for storing some of the content,
 and can copy it to or from other repositories. [[Location_tracking]]
 information is committed to git, to let repositories inform other
 repositories what file contents they have available.
+
+--
+
+The [[tutorial]] walks you through creating a distributed set of git-annex
+repositories with no central repository.
+
+Prefer a central repository like GitHub? See the
+[[tips/centralized_git_repository_tutorial]].
