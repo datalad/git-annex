@@ -37,7 +37,7 @@ logChange repo _ NoUUID _ = error $
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
 keyLocations :: Key -> Annex [UUID]
-keyLocations key = map read <$> (currentLog . logFile) key
+keyLocations key = map toUUID <$> (currentLog . logFile) key
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}

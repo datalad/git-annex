@@ -9,13 +9,12 @@ module Types.UUID where
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
 data UUID = NoUUID | UUID String
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
-instance Show UUID where
-	show (UUID u) = u
-	show NoUUID = ""
+fromUUID :: UUID -> String
+fromUUID (UUID u) = u
+fromUUID NoUUID = ""
 
-instance Read UUID where
-	readsPrec _ s
-		| null s = [(NoUUID, "")]
-		| otherwise = [(UUID s, "")]
+toUUID :: String -> UUID
+toUUID [] = NoUUID
+toUUID s = UUID s

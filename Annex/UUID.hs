@@ -30,7 +30,7 @@ configkey = "annex.uuid"
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
 genUUID :: IO UUID
-genUUID = pOpen ReadFromPipe command params $ liftM read . hGetLine
+genUUID = pOpen ReadFromPipe command params $ liftM toUUID . hGetLine
 	where
 		command = SysConfig.uuid
 		params = if command == "uuid"
@@ -56,12 +56,12 @@ getRepoUUID r = do
 			return u
 		else return c
 	where
-		cached g = read $ Git.configGet g cachekey ""
+		cached g = toUUID $ Git.configGet g cachekey ""
 		updatecache g u = when (g /= r) $ storeUUID cachekey u
 		cachekey = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-uuid"
 
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID r = read $ Git.configGet r configkey ""
+getUncachedUUID r = toUUID $ Git.configGet r configkey ""
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
@@ -69,4 +69,4 @@ prepUUID = whenM ((==) NoUUID <$> getUUID) $
 	storeUUID configkey =<< liftIO genUUID
 
 storeUUID :: String -> UUID -> Annex ()
-storeUUID configfield uuid = setConfig configfield (show uuid)
+storeUUID configfield = setConfig configfield . fromUUID

@@ -102,14 +102,18 @@ describeCipher (EncryptedCipher _ (KeyIds ks)) =
 {- Stores an EncryptedCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> EncryptedCipher -> RemoteConfig
 storeCipher c (EncryptedCipher t ks) = 
-	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (show ks) c
+	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
+	where
+		showkeys (KeyIds l) = join "," l
 
 {- Extracts an EncryptedCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe EncryptedCipher
 extractCipher c = 
 	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
-		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (read ks)
+		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
 		_ -> Nothing
+	where
+		readkeys = KeyIds . split ","
 
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Cipher -> KeyIds -> IO EncryptedCipher

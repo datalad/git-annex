@@ -178,7 +178,7 @@ fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
 writeLog1 :: FilePath -> [LogLine] -> IO ()
-writeLog1 file ls = viaTmp writeFile file (unlines $ map show ls)
+writeLog1 file ls = viaTmp writeFile file (showLog ls)
 
 readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catch (parseLog <$> readFileStrict file) (const $ return [])

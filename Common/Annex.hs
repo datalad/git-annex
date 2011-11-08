@@ -1,6 +1,7 @@
 module Common.Annex (
 	module Common,
 	module Types,
+	module Types.UUID,
 	module Annex,
 	module Locations,
 	module Messages,
@@ -8,6 +9,7 @@ module Common.Annex (
 
 import Common
 import Types
+import Types.UUID (toUUID, fromUUID)
 import Annex (gitRepo)
 import Locations
 import Messages

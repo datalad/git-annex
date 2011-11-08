@@ -16,6 +16,7 @@ module Logs.Presence (
 	addLog,
 	readLog,
 	parseLog,
+	showLog,
 	logNow,
 	compactLog,
 	currentLog,
@@ -36,40 +37,8 @@ data LogLine = LogLine {
 	info :: String
 } deriving (Eq)
 
-data LogStatus = InfoPresent | InfoMissing | Undefined
+data LogStatus = InfoPresent | InfoMissing
 	deriving (Eq)
-
-instance Show LogStatus where
-	show InfoPresent = "1"
-	show InfoMissing = "0"
-	show Undefined = "undefined"
-
-instance Read LogStatus where
-	readsPrec _ "1" = [(InfoPresent, "")]
-	readsPrec _ "0" = [(InfoMissing, "")]
-	readsPrec _ _   = [(Undefined, "")]
-
-instance Show LogLine where
-	show (LogLine d s i) = unwords [show d, show s, i]
-
-instance Read LogLine where
-	-- This parser is robust in that even unparsable log lines are
-	-- read without an exception being thrown.
-	-- Such lines have a status of Undefined.
-	readsPrec _ string = 
-		if length w >= 3
-			then maybe bad good pdate
-			else bad
-		where
-			w = words string
-			s = read $ w !! 1
-			i = w !! 2
-			pdate :: Maybe UTCTime
-			pdate = parseTime defaultTimeLocale "%s%Qs" $ head w
-
-			good v = ret $ LogLine (utcTimeToPOSIXSeconds v) s i
-			bad = ret $ LogLine 0 Undefined ""
-			ret v = [(v, "")]
 
 addLog :: FilePath -> LogLine -> Annex ()
 addLog file line = Annex.Branch.change file $ \s -> 
@@ -80,15 +49,26 @@ addLog file line = Annex.Branch.change file $ \s ->
 readLog :: FilePath -> Annex [LogLine]
 readLog file = parseLog <$> Annex.Branch.get file
 
+{- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: String -> [LogLine]
-parseLog = filter parsable . map read . lines
+parseLog = mapMaybe (parseline . words) . lines
 	where
-		-- some lines may be unparseable, avoid them
-		parsable l = status l /= Undefined
+		parseline (a:b:c:_) = do
+			d <- parseTime defaultTimeLocale "%s%Qs" a
+			s <- parsestatus b
+			Just $ LogLine (utcTimeToPOSIXSeconds d) s c
+		parseline _ = Nothing
+		parsestatus "1" = Just InfoPresent
+		parsestatus "0" = Just InfoMissing
+		parsestatus _ = Nothing
 
 {- Generates a log file. -}
 showLog :: [LogLine] -> String
-showLog = unlines . map show
+showLog = unlines . map genline
+	where
+		genline (LogLine d s i) = unwords [show d, genstatus s, i]
+		genstatus InfoPresent = "1"
+		genstatus InfoMissing = "0"
 
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine

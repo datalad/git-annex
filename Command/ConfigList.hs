@@ -21,5 +21,5 @@ seek = [withNothing start]
 start :: CommandStart
 start = do
 	u <- getUUID
-	liftIO $ putStrLn $ "annex.uuid=" ++ show u
+	liftIO $ putStrLn $ "annex.uuid=" ++ fromUUID u
 	stop

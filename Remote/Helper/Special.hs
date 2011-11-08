@@ -32,7 +32,7 @@ gitConfigSpecialRemote u c k v = do
 	g <- gitRepo
 	liftIO $ do
 		Git.run g "config" [Param (configsetting $ "annex-"++k), Param v]
-		Git.run g "config" [Param (configsetting "annex-uuid"), Param $ show u]
+		Git.run g "config" [Param (configsetting "annex-uuid"), Param $ fromUUID u]
 	where
 		remotename = fromJust (M.lookup "name" c)
 		configsetting s = "remote." ++ remotename ++ "." ++ s

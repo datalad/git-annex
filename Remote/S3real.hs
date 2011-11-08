@@ -64,7 +64,7 @@ s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
 s3Setup u c = handlehost $ M.lookup "host" c
 	where
 		remotename = fromJust (M.lookup "name" c)
-		defbucket = remotename ++ "-" ++ show u
+		defbucket = remotename ++ "-" ++ fromUUID u
 		defaults = M.fromList
 			[ ("datacenter", "US")
 			, ("storageclass", "STANDARD")
