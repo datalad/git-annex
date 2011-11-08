@@ -68,12 +68,10 @@ gitPreCommitHookUnWrite = unlessBare $ do
 				" Edit it to remove call to git annex."
 
 unlessBare :: Annex () -> Annex ()
-unlessBare = unlessM $ Git.repoIsLocalBare <$> gitRepo
+unlessBare = unlessM $ fromRepo $ Git.repoIsLocalBare
 
 preCommitHook :: Annex FilePath
-preCommitHook = do
-	g <- gitRepo
-	return $ Git.gitDir g ++ "/hooks/pre-commit"
+preCommitHook = (</>) <$> fromRepo Git.gitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 

@@ -50,9 +50,9 @@ import qualified Upgrade.V2
 upgrade :: Annex Bool
 upgrade = do
 	showAction "v1 to v2"
-
-	g <- gitRepo
-	if Git.repoIsLocalBare g
+	
+	bare <- fromRepo $ Git.repoIsLocalBare
+	if bare
 		then do
 			moveContent
 			setVersion
@@ -83,8 +83,8 @@ moveContent = do
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
-	g <- gitRepo
-	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
+	top <- fromRepo Git.workTree
+	files <- inRepo $ LsFiles.inRepo [top]
 	forM_ files fixlink
 	where
 		fixlink f = do
@@ -104,8 +104,7 @@ moveLocationLogs = do
 	forM_ logkeys move
 		where
 			oldlocationlogs = do
-				g <- gitRepo
-				let dir = Upgrade.V2.gitStateDir g
+				dir <- fromRepo Upgrade.V2.gitStateDir
 				exists <- liftIO $ doesDirectoryExist dir
 				if exists
 					then do
@@ -113,9 +112,8 @@ moveLocationLogs = do
 						return $ mapMaybe oldlog2key contents
 					else return []
 			move (l, k) = do
-				g <- gitRepo
-				let dest = logFile2 g k
-				let dir = Upgrade.V2.gitStateDir g
+				dest <- fromRepo $ logFile2 k
+				dir <- fromRepo $ Upgrade.V2.gitStateDir
 				let f = dir </> l
 				liftIO $ createDirectoryIfMissing True (parentDir dest)
 				-- could just git mv, but this way deals with
@@ -206,9 +204,7 @@ lookupFile1 file = do
 					" (unknown backend " ++ bname ++ ")"
 
 getKeyFilesPresent1 :: Annex [FilePath]
-getKeyFilesPresent1  = do
-	g <- gitRepo
-	getKeyFilesPresent1' $ gitAnnexObjectDir g
+getKeyFilesPresent1  = getKeyFilesPresent1' =<< fromRepo gitAnnexObjectDir
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
 getKeyFilesPresent1' dir = do
 	exists <- liftIO $ doesDirectoryExist dir
@@ -228,11 +224,11 @@ getKeyFilesPresent1' dir = do
 logFile1 :: Git.Repo -> Key -> String
 logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 
-logFile2 :: Git.Repo -> Key -> String
+logFile2 :: Key -> Git.Repo -> String
 logFile2 = logFile' hashDirLower
 
-logFile' :: (Key -> FilePath) -> Git.Repo -> Key -> String
-logFile' hasher repo key =
+logFile' :: (Key -> FilePath) -> Key -> Git.Repo -> String
+logFile' hasher key repo =
 	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
 
 stateDir :: FilePath

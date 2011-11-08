@@ -98,9 +98,8 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
-	g <- gitRepo
 	fast <- Annex.getState Annex.fast
-	let file = gitAnnexLocation g key
+	file <- fromRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True

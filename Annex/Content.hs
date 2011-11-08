@@ -37,18 +37,18 @@ import Config
 {- Checks if a given key is currently present in the gitAnnexLocation. -}
 inAnnex :: Key -> Annex Bool
 inAnnex key = do
-	g <- gitRepo
-	when (Git.repoIsUrl g) $ error "inAnnex cannot check remote repo"
-	liftIO $ doesFileExist $ gitAnnexLocation g key
+	whenM (fromRepo Git.repoIsUrl) $
+		error "inAnnex cannot check remote repo"
+	inRepo $ doesFileExist . gitAnnexLocation key
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
 calcGitLink file key = do
-	g <- gitRepo
 	cwd <- liftIO getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPath cwd file
+	top <- fromRepo Git.workTree
 	return $ relPathDirToFile (parentDir absfile) 
-			(Git.workTree g) </> ".git" </> annexLocation key
+			top </> ".git" </> annexLocation key
 	where
 		whoops = error $ "unable to normalize " ++ file
 
@@ -65,8 +65,7 @@ logStatus key status = do
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmp key action = do
-	g <- gitRepo
-	let tmp = gitAnnexTmpLocation g key
+	tmp <- fromRepo $ gitAnnexTmpLocation key
 
 	-- Check that there is enough free disk space.
 	-- When the temp file already exists, count the space
@@ -84,8 +83,7 @@ getViaTmp key action = do
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
-	g <- gitRepo
-	let tmp = gitAnnexTmpLocation g key
+	tmp <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	return tmp
 
@@ -162,8 +160,7 @@ checkDiskSpace' adjustment key = do
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = do
-	g <- gitRepo
-	let dest = gitAnnexLocation g key
+	dest <- fromRepo $ gitAnnexLocation key
 	let dir = parentDir dest
 	e <- liftIO $ doesFileExist dest
 	if e
@@ -177,8 +174,7 @@ moveAnnex key src = do
 
 withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
 withObjectLoc key a = do
-	g <- gitRepo
-	let file = gitAnnexLocation g key
+	file <- fromRepo $gitAnnexLocation key
 	let dir = parentDir file
 	a (dir, file)
 
@@ -201,9 +197,9 @@ fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	g <- gitRepo
-	let src = gitAnnexLocation g key
-	let dest = gitAnnexBadDir g </> takeFileName src
+	src <- fromRepo $ gitAnnexLocation key
+	bad <- fromRepo $ gitAnnexBadDir
+	let dest = bad </> takeFileName src
 	liftIO $ do
 		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
@@ -214,9 +210,7 @@ moveBad key = do
 
 {- List of keys whose content exists in .git/annex/objects/ -}
 getKeysPresent :: Annex [Key]
-getKeysPresent = do
-	g <- gitRepo
-	getKeysPresent' $ gitAnnexObjectDir g
+getKeysPresent = getKeysPresent' =<< fromRepo gitAnnexObjectDir
 getKeysPresent' :: FilePath -> Annex [Key]
 getKeysPresent' dir = do
 	exists <- liftIO $ doesDirectoryExist dir

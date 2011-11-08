@@ -31,8 +31,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	g <- gitRepo
-	rs <- spider g
+	rs <- spider =<< gitRepo
 
 	umap <- uuidMap
 	trusted <- trustGet Trusted

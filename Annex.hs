@@ -17,7 +17,9 @@ module Annex (
 	eval,
 	getState,
 	changeState,
-	gitRepo
+	gitRepo,
+	inRepo,
+	fromRepo,
 ) where
 
 import Control.Monad.IO.Control
@@ -114,6 +116,16 @@ getState = gets
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState = modify
 
-{- Returns the git repository being acted on -}
+{- Returns the annex's git repository. -}
 gitRepo :: Annex Git.Repo
 gitRepo = getState repo
+
+{- Runs an IO action in the annex's git repository. -}
+inRepo :: (Git.Repo -> IO a) -> Annex a
+inRepo a = do
+	g <- gitRepo
+	liftIO $ a g
+
+{- Extracts a value from the annex's git repisitory. -}
+fromRepo :: (Git.Repo -> a) -> Annex a
+fromRepo a = a <$> gitRepo

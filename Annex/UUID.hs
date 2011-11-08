@@ -45,23 +45,23 @@ getUUID = getRepoUUID =<< gitRepo
 {- Looks up a repo's UUID. May return "" if none is known. -}
 getRepoUUID :: Git.Repo -> Annex UUID
 getRepoUUID r = do
-	g <- gitRepo
-
-	let c = cached g
+	c <- fromRepo cached
 	let u = getUncachedUUID r
 	
 	if c /= u && u /= NoUUID
 		then do
-			updatecache g u
+			updatecache u
 			return u
 		else return c
 	where
-		cached g = toUUID $ Git.configGet g cachekey ""
-		updatecache g u = when (g /= r) $ storeUUID cachekey u
+		cached g = toUUID $ Git.configGet cachekey "" g
+		updatecache u = do
+			g <- gitRepo
+			when (g /= r) $ storeUUID cachekey u
 		cachekey = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-uuid"
 
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID r = toUUID $ Git.configGet r configkey ""
+getUncachedUUID = toUUID . Git.configGet configkey ""
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()

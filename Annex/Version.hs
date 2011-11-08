@@ -26,12 +26,10 @@ versionField :: String
 versionField = "annex.version"
 
 getVersion :: Annex (Maybe Version)
-getVersion = do
-	g <- gitRepo
-	let v = Git.configGet g versionField ""
-	if not $ null v
-		then return $ Just v
-		else return Nothing
+getVersion = handle <$> fromRepo (Git.configGet versionField "")
+	where
+		handle [] = Nothing
+		handle v = Just v
 
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion

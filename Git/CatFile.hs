@@ -25,7 +25,7 @@ type CatFileHandle = (PipeHandle, Handle, Handle)
 {- Starts git cat-file running in batch mode in a repo and returns a handle. -}
 catFileStart :: Repo -> IO CatFileHandle
 catFileStart repo = hPipeBoth "git" $ toCommand $
-	Git.gitCommandLine repo [Param "cat-file", Param "--batch"]
+	Git.gitCommandLine [Param "cat-file", Param "--batch"] repo
 
 {- Stops git cat-file. -}
 catFileStop :: CatFileHandle -> IO ()

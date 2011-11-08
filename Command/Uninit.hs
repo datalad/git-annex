@@ -28,11 +28,9 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ b ++ " branch is checked out"
 	where
-		current_branch = do
-			g <- gitRepo
-			b <- liftIO $
-				Git.pipeRead g [Params "rev-parse --abbrev-ref HEAD"]
-			return $ head $ lines $ B.unpack b
+		current_branch = head . lines . B.unpack <$> revhead
+		revhead = inRepo $ Git.pipeRead 
+			[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit startUnannex, withNothing start]
@@ -53,12 +51,11 @@ perform = next cleanup
 
 cleanup :: CommandCleanup
 cleanup = do
-	g <- gitRepo
+	annexdir <- fromRepo $ gitAnnexDir
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
-	liftIO $ removeDirectoryRecursive (gitAnnexDir g)
+	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState
-	liftIO $ do
-		Git.run g "branch" [Param "-D", Param Annex.Branch.name]
-		exitSuccess
+	inRepo $ Git.run "branch" [Param "-D", Param Annex.Branch.name]
+	liftIO $ exitSuccess

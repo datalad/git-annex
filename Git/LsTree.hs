@@ -29,9 +29,9 @@ data TreeItem = TreeItem
 	} deriving Show
 
 {- Lists the contents of a Treeish -}
-lsTree :: Repo -> Treeish -> IO [TreeItem]
-lsTree repo t = map parseLsTree <$>
-	pipeNullSplitB repo [Params "ls-tree --full-tree -z -r --", File t]
+lsTree :: Treeish -> Repo -> IO [TreeItem]
+lsTree t repo = map parseLsTree <$>
+	pipeNullSplitB [Params "ls-tree --full-tree -z -r --", File t] repo
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

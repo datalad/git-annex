@@ -56,21 +56,19 @@ index g = gitAnnexDir g </> "index"
  - and merge in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
-genIndex g = Git.UnionMerge.ls_tree g fullname >>= Git.UnionMerge.update_index g
+genIndex g = Git.UnionMerge.ls_tree fullname g >>= Git.UnionMerge.update_index g
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	g <- gitRepo
-	let f = index g
-
+	f <- fromRepo $ index
 	bracketIO (Git.useIndex f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f
-			unless bootstrapping $ liftIO $ genIndex g
+			unless bootstrapping $ inRepo genIndex
 		a
 
 withIndexUpdate :: Annex a -> Annex a
@@ -103,19 +101,17 @@ getCache file = getState >>= go
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
 create = unlessM hasBranch $ do
-	g <- gitRepo
 	e <- hasOrigin
 	if e
-		then liftIO $ Git.run g "branch" [Param name, Param originname]
+		then inRepo $ Git.run "branch" [Param name, Param originname]
 		else withIndex' True $
-			liftIO $ Git.commit g "branch created" fullname []
+			inRepo $ Git.commit "branch created" fullname []
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
 	stageJournalFiles
-	g <- gitRepo
-	withIndex $ liftIO $ Git.commit g message fullname [fullname]
+	withIndex $ inRepo $ Git.commit message fullname [fullname]
 
 {- Ensures that the branch is up-to-date; should be called before data is
  - read from it. Runs only once per git-annex run.
@@ -134,7 +130,6 @@ commit message = whenM journalDirty $ lockJournal $ do
  -}
 update :: Annex ()
 update = onceonly $ do
-	g <- gitRepo
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
@@ -151,10 +146,10 @@ update = onceonly $ do
 			 - documentation advises users not to directly
 			 - modify the branch.
 			 -}
-			liftIO $ Git.UnionMerge.merge_index g branches
+			inRepo $ \g -> Git.UnionMerge.merge_index g branches
 		ff <- if dirty then return False else tryFastForwardTo refs
-		unless ff $
-			liftIO $ Git.commit g "update" fullname (nub $ fullname:refs)
+		unless ff $ inRepo $
+			Git.commit "update" fullname (nub $ fullname:refs)
 		invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
@@ -165,14 +160,13 @@ update = onceonly $ do
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changedBranch :: String -> String -> Annex Bool
-changedBranch origbranch newbranch = do
-	g <- gitRepo
-	diffs <- liftIO $ Git.pipeRead g [
-		Param "log",
-		Param (origbranch ++ ".." ++ newbranch),
-		Params "--oneline -n1"
-		]
-	return $ not $ L.null diffs
+changedBranch origbranch newbranch = not . L.null <$> diffs
+	where
+		diffs = inRepo $ Git.pipeRead
+			[ Param "log"
+			, Param (origbranch ++ ".." ++ newbranch)
+			, Params "--oneline -n1"
+			]
 
 {- Given a set of refs that are all known to have commits not
  - on the git-annex branch, tries to update the branch by a
@@ -195,8 +189,7 @@ tryFastForwardTo (first:rest) = do
 	where
 		no_ff = return False
 		do_ff branch = do
-			g <- gitRepo
-			liftIO $ Git.run g "update-ref" [Param fullname, Param branch]
+			inRepo $ Git.run "update-ref" [Param fullname, Param branch]
 			return True
 		findbest c [] = return $ Just c
 		findbest c (r:rs)
@@ -223,10 +216,8 @@ disableUpdate = Annex.changeState setupdated
 
 {- Checks if a git ref exists. -}
 refExists :: GitRef -> Annex Bool
-refExists ref = do
-	g <- gitRepo
-	liftIO $ Git.runBool g "show-ref"
-		[Param "--verify", Param "-q", Param ref]
+refExists ref = inRepo $ Git.runBool "show-ref"
+	[Param "--verify", Param "-q", Param ref]
 
 {- Does the main git-annex branch exist? -}
 hasBranch :: Annex Bool
@@ -244,8 +235,7 @@ hasSomeBranch = not . null <$> siblingBranches
  - from remotes. Duplicate refs are filtered out. -}
 siblingBranches :: Annex [(String, String)]
 siblingBranches = do
-	g <- gitRepo
-	r <- liftIO $ Git.pipeRead g [Param "show-ref", Param name]
+	r <- inRepo $ Git.pipeRead [Param "show-ref", Param name]
 	return $ nubBy uref $ map (pair . words . L.unpack) (L.lines r)
 	where
 		pair l = (head l, last l)
@@ -280,8 +270,7 @@ get file = fromcache =<< getCache file
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
 files = withIndexUpdate $ do
-	g <- gitRepo
-	bfiles <- liftIO $ Git.pipeNullSplit g
+	bfiles <- inRepo $ Git.pipeNullSplit
 		[Params "ls-tree --name-only -r -z", Param fullname]
 	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles
@@ -349,8 +338,8 @@ stageJournalFiles = do
 	where
 		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
-		git_hash_object g = Git.gitCommandLine g
-			[Param "hash-object", Param "-w", Param "--stdin-paths"]
+		git_hash_object g = Git.gitCommandLine
+			[Param "hash-object", Param "-w", Param "--stdin-paths"] g
 
 
 {- Checks if there are changes in the journal. -}
@@ -379,8 +368,7 @@ fileJournal = replace "//" "_" . replace "_" "/"
  - contention with other git-annex processes. -}
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
-	g <- gitRepo
-	let file = gitAnnexJournalLock g
+	file <- fromRepo $ gitAnnexJournalLock
 	bracketIO (lock file) unlock a
 	where
 		lock file = do

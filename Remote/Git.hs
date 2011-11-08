@@ -35,19 +35,16 @@ remote = RemoteType {
 
 list :: Annex [Git.Repo]
 list = do
-	g <- gitRepo
-	let c = Git.configMap g
-	mapM (tweakurl c) $ Git.remotes g
+	c <- fromRepo Git.configMap
+	mapM (tweakurl c) =<< fromRepo Git.remotes
 	where
 		annexurl n = "remote." ++ n ++ ".annexurl"
 		tweakurl c r = do
 			let n = fromJust $ Git.repoRemoteName r
 			case M.lookup (annexurl n) c of
 				Nothing -> return r
-				Just url -> do
-					g <- gitRepo
-					r' <- liftIO $ Git.genRemote g url
-					return $ Git.repoRemoteNameSet r' n
+				Just url -> Git.repoRemoteNameSet n <$>
+					inRepo (Git.genRemote url)
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do
@@ -178,7 +175,7 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
-		rsyncOrCopyFile params (gitAnnexLocation r key) file
+		rsyncOrCopyFile params (gitAnnexLocation key r) file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
 	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
@@ -187,8 +184,7 @@ copyFromRemote r key file
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
 	| not $ Git.repoIsUrl r = do
-		g <- gitRepo
-		let keysrc = gitAnnexLocation g key
+		keysrc <- fromRepo $ gitAnnexLocation key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
@@ -197,8 +193,7 @@ copyToRemote r key
 			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
-		g <- gitRepo
-		let keysrc = gitAnnexLocation g key
+		keysrc <- fromRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
 

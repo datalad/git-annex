@@ -41,10 +41,9 @@ perform url file = do
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
-	g <- gitRepo
 	showAction $ "downloading " ++ url ++ " "
 	let dummykey = Backend.URL.fromUrl url
-	let tmp = gitAnnexTmpLocation g dummykey
+	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	ok <- liftIO $ Url.download url tmp
 	if ok

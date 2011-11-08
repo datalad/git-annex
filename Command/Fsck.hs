@@ -79,26 +79,26 @@ check = sequence >=> dispatch
    in this repository only. -}
 verifyLocationLog :: Key -> String -> Annex Bool
 verifyLocationLog key desc = do
-	g <- gitRepo
 	present <- inAnnex key
 	
 	-- Since we're checking that a key's file is present, throw
 	-- in a permission fixup here too.
-	when present $ liftIO $ do
-		let f = gitAnnexLocation g key
-		preventWrite f
-		preventWrite (parentDir f)
+	when present $ do
+		f <- fromRepo $ gitAnnexLocation key
+		liftIO $ do
+			preventWrite f
+			preventWrite (parentDir f)
 
 	u <- getUUID
         uuids <- keyLocations key
 
 	case (present, u `elem` uuids) of
 		(True, False) -> do
-				fix g u InfoPresent
+				fix u InfoPresent
 				-- There is no data loss, so do not fail.
 				return True
 		(False, True) -> do
-				fix g u InfoMissing
+				fix u InfoMissing
 				warning $
 					"** Based on the location log, " ++ desc
 					++ "\n** was expected to be present, " ++
@@ -107,16 +107,16 @@ verifyLocationLog key desc = do
 		_ -> return True
 	
 	where
-		fix g u s = do
+		fix u s = do
 			showNote "fixing location log"
+			g <- gitRepo
 			logChange g key u s
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
-	g <- gitRepo
-	let file = gitAnnexLocation g key
+	file <- fromRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	case (present, Types.Key.keySize key) of
 		(_, Nothing) -> return True

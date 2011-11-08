@@ -34,8 +34,7 @@ flush silent = do
 	unless (0 == Git.Queue.size q) $ do
 		unless silent $
 			showSideAction "Recording state in git"
-		g <- gitRepo
-		q' <- liftIO $ Git.Queue.flush g q
+		q' <- inRepo $ Git.Queue.flush q
 		store q'
 
 store :: Git.Queue.Queue -> Annex ()

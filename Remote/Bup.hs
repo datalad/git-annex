@@ -102,15 +102,13 @@ bupSplitParams r buprepo k src = do
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck (Param "-")
 	liftIO $ catchBool $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
@@ -147,7 +145,7 @@ checkPresent r bupr k
 		showAction $ "checking " ++ Git.repoDescribe r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
-	| otherwise = liftIO $ try $ boolSystem "git" $ Git.gitCommandLine bupr params
+	| otherwise = liftIO $ try $ boolSystem "git" $ Git.gitCommandLine params bupr
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
@@ -165,9 +163,10 @@ storeBupUUID u buprepo = do
 					>>! error "ssh failed"
 		else liftIO $ do
 			r' <- Git.configRead r
-			let olduuid = Git.configGet r' "annex.uuid" ""
-			when (olduuid == "") $ Git.run r' "config"
-				[Param "annex.uuid", Param v]
+			let olduuid = Git.configGet "annex.uuid" "" r'
+			when (olduuid == "") $
+				Git.run "config"
+					[Param "annex.uuid", Param v] r'
 	where
 		v = fromUUID u
 
@@ -194,7 +193,7 @@ getBupUUID r u
 	| otherwise = liftIO $ do
 		ret <- try $ Git.configRead r
 		case ret of
-			Right r' -> return (toUUID $ Git.configGet r' "annex.uuid" "", r')
+			Right r' -> return (toUUID $ Git.configGet "annex.uuid" "" r', r')
 			Left _ -> return (NoUUID, r)
 
 {- Converts a bup remote path spec into a Git.Repo. There are some

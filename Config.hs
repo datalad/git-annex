@@ -16,19 +16,17 @@ type ConfigKey = String
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
-	g <- gitRepo
-	liftIO $ Git.run g "config" [Param k, Param value]
+	inRepo $ Git.run "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
-	g' <- liftIO $ Git.configRead g
-	Annex.changeState $ \s -> s { Annex.repo = g' }
+	newg <- inRepo $ Git.configRead
+	Annex.changeState $ \s -> s { Annex.repo = newg }
 
 {- Looks up a per-remote config setting in git config.
  - Failing that, tries looking for a global config option. -}
 getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
 getConfig r key def = do
-	g <- gitRepo
-	let def' = Git.configGet g ("annex." ++ key) def
-	return $ Git.configGet g (remoteConfig r key) def'
+	def' <- fromRepo $ Git.configGet ("annex." ++ key) def
+	fromRepo $ Git.configGet (remoteConfig r key) def'
 
 remoteConfig :: Git.Repo -> ConfigKey -> String
 remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-" ++ key
@@ -87,7 +85,5 @@ getNumCopies v =
 	Annex.getState Annex.forcenumcopies >>= maybe (use v) (return . id)
 	where
 		use (Just n) = return n
-		use Nothing = do
-			g <- gitRepo
-			return $ read $ Git.configGet g config "1"
+		use Nothing = read <$> fromRepo (Git.configGet config "1")
 		config = "annex.numcopies"

@@ -90,15 +90,12 @@ rsyncKeyDir :: RsyncOpts -> Key -> String
 rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> shellEscape (keyFile k)
 
 store :: RsyncOpts -> Key -> Annex Bool
-store o k = do
-	g <- gitRepo
-	rsyncSend o k (gitAnnexLocation g k)
+store o k = rsyncSend o k =<< fromRepo (gitAnnexLocation k)
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
-	g <- gitRepo
-	let f = gitAnnexLocation g k
-	liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
+	src <- fromRepo $ gitAnnexLocation k
+	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	rsyncSend o enck tmp
 
 retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
@@ -151,9 +148,9 @@ partialParams = Params "--no-inplace --partial --partial-dir=.rsync-partial"
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
-	g <- gitRepo
 	pid <- liftIO getProcessID
-	let tmp = gitAnnexTmpDir g </> "rsynctmp" </> show pid
+	t <- fromRepo gitAnnexTmpDir
+	let tmp = t </> "rsynctmp" </> show pid
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
 	res <- a tmp

@@ -130,10 +130,10 @@ nameToUUID n = byName' n >>= go
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
-	here <- getUUID
+	hereu <- getUUID
 	m <- M.unionWith addname <$> uuidMap <*> remoteMap
-	maybeShowJSON [(desc, map (jsonify m here) uuids)]
-	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
+	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
+	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
 	where
 		addname d n
 			| d == n = d
@@ -141,20 +141,20 @@ prettyPrintUUIDs desc uuids = do
 			| otherwise = n ++ " (" ++ d ++ ")"
 		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
-		prettify m here u
+		prettify m hereu u
 			| not (null d) = fromUUID u ++ " -- " ++ d
 			| otherwise = fromUUID u
 			where
-				ishere = here == u
+				ishere = hereu == u
 				n = findlog m u
 				d
 					| null n && ishere = "here"
 					| ishere = addname n "here"
 					| otherwise = n
-		jsonify m here u = toJSObject
+		jsonify m hereu u = toJSObject
 			[ ("uuid", toJSON $ fromUUID u)
 			, ("description", toJSON $ findlog m u)
-			, ("here", toJSON $ here == u)
+			, ("here", toJSON $ hereu == u)
 			]
 
 {- Filters a list of remotes to ones that have the listed uuids. -}

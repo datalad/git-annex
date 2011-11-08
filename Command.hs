@@ -78,7 +78,7 @@ notBareRepo a = do
 	a
 
 isBareRepo :: Annex Bool
-isBareRepo = Git.repoIsLocalBare <$> gitRepo
+isBareRepo = fromRepo Git.repoIsLocalBare
 
 {- Used for commands that have an auto mode that checks the number of known
  - copies of a key.

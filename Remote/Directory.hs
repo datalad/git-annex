@@ -70,15 +70,13 @@ dirKey d k = d </> hashDirMixed k </> f </> f
 
 store :: FilePath -> Key -> Annex Bool
 store d k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	let dest = dirKey d k
 	liftIO $ catchBool $ storeHelper dest $ copyFileExternal src dest
 
 storeEncrypted :: FilePath -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d (cipher, enck) k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	let dest = dirKey d enck
 	liftIO $ catchBool $ storeHelper dest $ encrypt src dest
 	where

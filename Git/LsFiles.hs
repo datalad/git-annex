@@ -19,51 +19,52 @@ import Git
 import Utility.SafeCommand
 
 {- Scans for files that are checked into git at the specified locations. -}
-inRepo :: Repo -> [FilePath] -> IO [FilePath]
-inRepo repo l = pipeNullSplit repo $ Params "ls-files --cached -z --" : map File l
+inRepo :: [FilePath] -> Repo -> IO [FilePath]
+inRepo l repo = pipeNullSplit (Params "ls-files --cached -z --" : map File l) repo
 
 {- Scans for files at the specified locations that are not checked into git. -}
-notInRepo :: Repo -> Bool -> [FilePath] -> IO [FilePath]
-notInRepo repo include_ignored l = pipeNullSplit repo $
-		[Params "ls-files --others"] ++ exclude ++
-		[Params "-z --"] ++ map File l
+notInRepo :: Bool -> [FilePath] -> Repo -> IO [FilePath]
+notInRepo include_ignored l repo = pipeNullSplit params repo
 	where
+		params = [Params "ls-files --others"] ++ exclude ++
+			[Params "-z --"] ++ map File l
 		exclude
 			| include_ignored = []
 			| otherwise = [Param "--exclude-standard"]
 
 {- Returns a list of all files that are staged for commit. -}
-staged :: Repo -> [FilePath] -> IO [FilePath]
-staged repo l = staged' repo l []
+staged :: [FilePath] -> Repo -> IO [FilePath]
+staged = staged' []
 
 {- Returns a list of the files, staged for commit, that are being added,
  - moved, or changed (but not deleted), from the specified locations. -}
-stagedNotDeleted :: Repo -> [FilePath] -> IO [FilePath]
-stagedNotDeleted repo l = staged' repo l [Param "--diff-filter=ACMRT"]
+stagedNotDeleted :: [FilePath] -> Repo -> IO [FilePath]
+stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 
-staged' :: Repo -> [FilePath] -> [CommandParam] -> IO [FilePath]
-staged' repo l middle = pipeNullSplit repo $ start ++ middle ++ end
+staged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
+staged' middle l = pipeNullSplit $ start ++ middle ++ end
 	where
 		start = [Params "diff --cached --name-only -z"]
 		end = Param "--" : map File l
 
 {- Returns a list of files that have unstaged changes. -}
-changedUnstaged :: Repo -> [FilePath] -> IO [FilePath]
-changedUnstaged repo l = pipeNullSplit repo $
-	Params "diff --name-only -z --" : map File l
+changedUnstaged :: [FilePath] -> Repo -> IO [FilePath]
+changedUnstaged l = pipeNullSplit params
+	where
+		params = Params "diff --name-only -z --" : map File l
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
-typeChangedStaged :: Repo -> [FilePath] -> IO [FilePath]
-typeChangedStaged repo l = typeChanged' repo l [Param "--cached"]
+typeChangedStaged :: [FilePath] -> Repo -> IO [FilePath]
+typeChangedStaged = typeChanged' [Param "--cached"]
 
 {- Returns a list of the files in the specified locations whose type has
  - changed.  Files only staged for commit will not be included. -}
-typeChanged :: Repo -> [FilePath] -> IO [FilePath]
-typeChanged repo l = typeChanged' repo l []
+typeChanged :: [FilePath] -> Repo -> IO [FilePath]
+typeChanged = typeChanged' []
 
-typeChanged' :: Repo -> [FilePath] -> [CommandParam] -> IO [FilePath]
-typeChanged' repo l middle = pipeNullSplit repo $ start ++ middle ++ end
+typeChanged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
+typeChanged' middle l = pipeNullSplit $ start ++ middle ++ end
 	where
 		start = [Params "diff --name-only --diff-filter=T -z"]
 		end = Param "--" : map File l

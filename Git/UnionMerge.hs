@@ -27,24 +27,25 @@ import Git
  -
  - Should be run with a temporary index file configured by Git.useIndex.
  -}
-merge :: Repo -> String -> String -> IO ()
-merge g x y = do
-	a <- ls_tree g x
-	b <- merge_trees g x y
-	update_index g (a++b)
+merge :: String -> String -> Repo -> IO ()
+merge x y repo = do
+	a <- ls_tree x repo
+	b <- merge_trees x y repo
+	update_index repo (a++b)
 
 {- Merges a list of branches into the index. Previously staged changed in
  - the index are preserved (and participate in the merge). -}
 merge_index :: Repo -> [String] -> IO ()
-merge_index g bs = update_index g =<< concat <$> mapM (merge_tree_index g) bs
+merge_index repo bs =
+	update_index repo =<< concat <$> mapM (\b -> merge_tree_index b repo) bs
 
 {- Feeds a list into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of
  - ls_tree, merge_trees, and merge_tree_index. -}
 update_index :: Repo -> [String] -> IO ()
-update_index g l = togit ["update-index", "-z", "--index-info"] (join "\0" l)
+update_index repo l = togit ["update-index", "-z", "--index-info"] (join "\0" l)
 	where
-		togit ps content = pipeWrite g (map Param ps) (L.pack content)
+		togit ps content = pipeWrite (map Param ps) (L.pack content) repo
 			>>= forceSuccess
 
 {- Generates a line suitable to be fed into update-index, to add
@@ -53,27 +54,28 @@ update_index_line :: String -> FilePath -> String
 update_index_line sha file = "100644 blob " ++ sha ++ "\t" ++ file
 
 {- Gets the contents of a tree in a format suitable for update_index. -}
-ls_tree :: Repo -> String -> IO [String]
-ls_tree g x = pipeNullSplit g $ 
-	map Param ["ls-tree", "-z", "-r", "--full-tree", x]
+ls_tree :: String -> Repo -> IO [String]
+ls_tree x = pipeNullSplit params
+	where
+		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- For merging two trees. -}
-merge_trees :: Repo -> String -> String -> IO [String]
-merge_trees g x y = calc_merge g $ "diff-tree":diff_opts ++ [x, y]
+merge_trees :: String -> String -> Repo -> IO [String]
+merge_trees x y = calc_merge $ "diff-tree":diff_opts ++ [x, y]
 
 {- For merging a single tree into the index. -}
-merge_tree_index :: Repo -> String -> IO [String]
-merge_tree_index g x = calc_merge g $ "diff-index":diff_opts ++ ["--cached", x]
+merge_tree_index :: String -> Repo -> IO [String]
+merge_tree_index x = calc_merge $ "diff-index":diff_opts ++ ["--cached", x]
 
 diff_opts :: [String]
 diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
 {- Calculates how to perform a merge, using git to get a raw diff,
  - and returning a list suitable for update_index. -}
-calc_merge :: Repo -> [String] -> IO [String]
-calc_merge g differ = do
-	diff <- pipeNullSplit g $ map Param differ
-	l <- mapM (mergeFile g) (pairs diff)
+calc_merge :: [String] -> Repo -> IO [String]
+calc_merge differ repo = do
+	diff <- pipeNullSplit (map Param differ) repo
+	l <- mapM (\p -> mergeFile p repo) (pairs diff)
 	return $ catMaybes l
 	where
 		pairs [] = []
@@ -81,9 +83,9 @@ calc_merge g differ = do
 		pairs (a:b:rest) = (a,b):pairs rest
 
 {- Injects some content into git, returning its hash. -}
-hashObject :: Repo -> L.ByteString -> IO String
-hashObject repo content = getSha subcmd $ do
-	(h, s) <- pipeWriteRead repo (map Param params) content
+hashObject :: L.ByteString -> Repo -> IO String
+hashObject content repo = getSha subcmd $ do
+	(h, s) <- pipeWriteRead (map Param params) content repo
 	L.length s `seq` do
 		forceSuccess h
 		reap -- XXX unsure why this is needed
@@ -95,13 +97,13 @@ hashObject repo content = getSha subcmd $ do
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
-mergeFile :: Repo -> (String, FilePath) -> IO (Maybe String)
-mergeFile g (info, file) = case filter (/= nullsha) [asha, bsha] of
+mergeFile :: (String, FilePath) -> Repo -> IO (Maybe String)
+mergeFile (info, file) repo = case filter (/= nullsha) [asha, bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
 	shas -> do
-		content <- pipeRead g $ map Param ("show":shas)
-		sha <- hashObject g $ unionmerge content
+		content <- pipeRead (map Param ("show":shas)) repo
+		sha <- hashObject (unionmerge content) repo
 		return $ Just $ update_index_line sha file
 	where
 		[_colonamode, _bmode, asha, bsha, _status] = words info

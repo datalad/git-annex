@@ -42,14 +42,13 @@ upgradableKey key = isNothing $ Types.Key.keySize key
 
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	g <- gitRepo
-
 	-- Store the old backend's cached key in the new backend
 	-- (the file can't be stored as usual, because it's already a symlink).
 	-- The old backend's key is not dropped from it, because there may
 	-- be other files still pointing at that key.
-	let src = gitAnnexLocation g oldkey
-	let tmpfile = gitAnnexTmpDir g </> takeFileName file
+	src <- fromRepo $ gitAnnexLocation oldkey
+	tmp <- fromRepo $ gitAnnexTmpDir
+	let tmpfile = tmp </> takeFileName file
 	liftIO $ createLink src tmpfile
 	k <- Backend.genKey tmpfile $ Just newbackend
 	liftIO $ cleantmp tmpfile

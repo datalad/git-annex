@@ -72,8 +72,8 @@ full :: Queue -> Bool
 full (Queue n _) = n > maxSize
 
 {- Runs a queue on a git repository. -}
-flush :: Repo -> Queue -> IO Queue
-flush repo (Queue _ m) = do
+flush :: Queue -> Repo -> IO Queue
+flush (Queue _ m) repo = do
 	forM_ (M.toList m) $ uncurry $ runAction repo
 	return empty
 
@@ -87,6 +87,6 @@ runAction :: Repo -> Action -> [FilePath] -> IO ()
 runAction repo action files =
 	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
 	where
-		params = toCommand $ gitCommandLine repo
-			(Param (getSubcommand action):getParams action)
+		params = toCommand $ gitCommandLine
+			(Param (getSubcommand action):getParams action) repo
 		feedxargs h = hPutStr h $ join "\0" files

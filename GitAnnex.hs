@@ -116,9 +116,8 @@ options = commonOptions ++
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			g <- gitRepo
-			g' <- liftIO $ Git.configStore g v
-			Annex.changeState $ \s -> s { Annex.repo = g' }
+			newg <- inRepo $ Git.configStore v
+			Annex.changeState $ \s -> s { Annex.repo = newg }
 
 header :: String
 header = "Usage: git-annex command [option ..]"

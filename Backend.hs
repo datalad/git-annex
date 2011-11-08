@@ -47,10 +47,7 @@ orderedList = do
 			l' <- (lookupBackendName name :) <$> standard
 			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		standard = do
-			g <- gitRepo
-			return $ parseBackendList $
-				Git.configGet g "annex.backends" ""
+		standard = fromRepo $ parseBackendList . Git.configGet "annex.backends" ""
 		parseBackendList [] = list
 		parseBackendList s = map lookupBackendName $ words s
 
@@ -96,16 +93,14 @@ type BackendFile = (Maybe (Backend Annex), FilePath)
  - That can be configured on a per-file basis in the gitattributes file.
  -}
 chooseBackends :: [FilePath] -> Annex [BackendFile]
-chooseBackends fs = do
-	g <- gitRepo
-	forced <- Annex.getState Annex.forcebackend
-	if isJust forced
-		then do
+chooseBackends fs = Annex.getState Annex.forcebackend >>= go
+	where
+		go Nothing = do
+			pairs <- inRepo $ Git.checkAttr "annex.backend" fs
+			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
+		go (Just _) = do
 			l <- orderedList
 			return $ map (\f -> (Just $ head l, f)) fs
-		else do
-			pairs <- liftIO $ Git.checkAttr g "annex.backend" fs
-			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend Annex

@@ -60,8 +60,8 @@ undo file key e = do
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do
-			g <- gitRepo
-			liftIO $ renameFile (gitAnnexLocation g key) file
+			src <- fromRepo $ gitAnnexLocation key
+			liftIO $ renameFile src file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do

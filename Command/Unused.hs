@@ -75,8 +75,8 @@ checkRemoteUnused' r = do
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do
-	g <- gitRepo
-	liftIO $ viaTmp writeFile (gitAnnexUnusedLog prefix g) $
+	logfile <- fromRepo $ gitAnnexUnusedLog prefix
+	liftIO $ viaTmp writeFile logfile $
 		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
 table :: [(Int, Key)] -> [String]
@@ -147,8 +147,7 @@ unusedKeys = do
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
-	g <- gitRepo
-	c <- liftIO $ Git.pipeRead g [Param "show-ref"]
+	c <- inRepo $ Git.pipeRead [Param "show-ref"]
 	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
 		(S.fromList l)
 	where
@@ -183,8 +182,8 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 {- List of keys referenced by symlinks in the git repo. -}
 getKeysReferenced :: Annex [Key]
 getKeysReferenced = do
-	g <- gitRepo
-	files <- liftIO $ LsFiles.inRepo g [Git.workTree g]
+	top <- fromRepo Git.workTree
+	files <- inRepo $ LsFiles.inRepo [top]
 	keypairs <- mapM Backend.lookupFile files
 	return $ map fst $ catMaybes keypairs
 
@@ -192,8 +191,7 @@ getKeysReferenced = do
 getKeysReferencedInGit :: String -> Annex [Key]
 getKeysReferencedInGit ref = do
 	showAction $ "checking " ++ Git.refDescribe ref
-	g <- gitRepo
-	findkeys [] =<< liftIO (LsTree.lsTree g ref)
+	findkeys [] =<< inRepo (LsTree.lsTree ref)
 	where
 		findkeys c [] = return c
 		findkeys c (l:ls)
@@ -217,16 +215,14 @@ staleKeysPrune dirspec present = do
 	let stale = contents `exclude` present
 	let dups = contents `exclude` stale
 
-	g <- gitRepo
-	let dir = dirspec g
+	dir <- fromRepo dirspec
 	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
 
 	return stale
 
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
-	g <- gitRepo
-	let dir = dirspec g
+	dir <- fromRepo dirspec
 	exists <- liftIO $ doesDirectoryExist dir
 	if not exists
 		then return []
