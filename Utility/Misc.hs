@@ -13,7 +13,7 @@ import Control.Monad
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
 hGetContentsStrict :: Handle -> IO String
-hGetContentsStrict  = hGetContents >=> \s -> length s `seq` return s
+hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
