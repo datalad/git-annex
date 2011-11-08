@@ -2,12 +2,14 @@
 (all keys with content present in the repository,
 with all keys used by files in the repository), and so
 uses more memory than git-annex typically needs; around
-60-80 mb when run in a repository with 80 thousand files.
+50 mb when run in a repository with 80 thousand files.
+
+(Used to be 80 mb, but implementation improved.)
 
 I would like to reduce this. One idea is to use a bloom filter. 
 For example, construct a bloom filter of all keys used by files in
 the repository. Then for each key with content present, check if it's
-in the bloom filter. Since there can be false negatives, this might
+in the bloom filter. Since there can be false positives, this might
 miss finding some unused keys. The probability/size of filter
 could be tunable.
 
