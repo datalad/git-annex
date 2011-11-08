@@ -2,7 +2,7 @@ It's possible for data to accumulate in the annex that no files in any
 branch point to anymore. One way it can happen is if you `git rm` a file
 without first calling `git annex drop`. And, when you modify an annexed
 file, the old content of the file remains in the annex. Another way is when
-migrating between key-value [[backends|backend]].
+migrating between key-value [[backends]].
 
 This might be historical data you want to preserve, so git-annex defaults to
 preserving it. So from time to time, you may want to check for such data and

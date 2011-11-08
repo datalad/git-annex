@@ -1,4 +1,4 @@
-Conversation moved from [[walkthrough/recover_data_from_lost+found]]
+Conversation moved from [[tips/recover_data_from_lost+found]]
 to a proper bug. --[[Joey]]
 
 (Unfortunatly that scrambled the comment creation times and thus order.)

@@ -1,4 +1,4 @@
-I was trying out the example with the walkthrough [[walkthrough/using_the_URL_backend]]. I tried dropping files that I had after doing an "git annex get ." which have the URL backend associated with the files it fails with
+I was trying out the example with the walkthrough using_the_URL_backend. I tried dropping files that I had after doing an "git annex get ." which have the URL backend associated with the files it fails with
 
 
 <pre>

@@ -1,6 +1,0 @@
-git-annex does not seem to support all kinds of urls that git does.
-
-> Please use [[bugs]] for bug reports. Moved [[there|bugs/wishlist:_support_for_more_ssh_urls_]].
-> --[[Joey]] 
-
->> And now all fixed! --[[Joey]] 

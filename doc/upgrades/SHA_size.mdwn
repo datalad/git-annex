@@ -15,6 +15,6 @@ to repository version 2, in each repository run:
 	git annex migrate
 	git commit -m 'migrated keys for v2'
 
-The usual caveats about [[walkthrough/migrating_data_to_a_new_backend]]
+The usual caveats about [[tips/migrating_data_to_a_new_backend]]
 apply; you will end up with unused keys that you can later clean up with
 `git annex unused`.

@@ -14,7 +14,7 @@ repositories what file contents they have available.
 
 --
 
-The [[tutorial]] walks you through creating a distributed set of git-annex
+The [[walkthrough]] shows how to create a distributed set of git-annex
 repositories with no central repository.
 
 Prefer a central repository like GitHub? See the
