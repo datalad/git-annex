@@ -1,5 +1,11 @@
-If using Ubuntu natty or newer:
+If using Ubuntu Oneiric or newer:
 
 	sudo apt-get install git-annex
 
 Otherwise, see [[manual_installation_instructions|install]].
+
+---
+
+Warning: The version of git-annex shipped in Ubuntu Oneiric
+has [a bug that prevents upgrades from v1 git-annex repositories](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/875958).
+If you need to upgrade such a repository, get a newer version of git-annex.
