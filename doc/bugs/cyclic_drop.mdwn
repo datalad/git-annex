@@ -38,6 +38,10 @@ distinguishable from "not in annex".
 
 ---
 
+drop --from could also cycle. Locking should fix.
+
+---
+
 move --to can also be included in the cycle, since it can drop data. 
 
 Consider move to a remote that already has the content and 

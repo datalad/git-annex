@@ -55,7 +55,8 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 		dropremote name = do
 			r <- Remote.byName name
 			showAction $ "from " ++ Remote.name r
-			next $ Command.Drop.cleanupRemote key r
+			ok <- Remote.removeKey r key
+			next $ Command.Drop.cleanupRemote key r ok
 		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform

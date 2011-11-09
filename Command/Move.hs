@@ -68,7 +68,7 @@ toStart dest move file = isAnnexed file $ \(key, _) -> do
 			showMoveAction move file
 			next $ toPerform dest move key
 toPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
-toPerform dest move key = do
+toPerform dest move key = moveLock move key $ do
 	-- Checking the remote is expensive, so not done in the start step.
 	-- In fast mode, location tracking is assumed to be correct,
 	-- and an explicit check is not done, when copying. When moving,
@@ -88,18 +88,20 @@ toPerform dest move key = do
 			showAction $ "to " ++ Remote.name dest
 			ok <- Remote.storeKey dest key
 			if ok
-				then next $ toCleanup dest move key
+				then finish
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> next $ toCleanup dest move key
-toCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
-toCleanup dest move key = do
-	Remote.remoteHasKey dest key True
-	if move
-		then Command.Drop.cleanupLocal key
-		else return True
+		Right True -> finish
+	where
+		finish = do
+			Remote.remoteHasKey dest key True
+			if move
+				then do
+					whenM (inAnnex key) $ removeAnnex key
+					next $ Command.Drop.cleanupLocal key
+				else next $ return True
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.
@@ -117,16 +119,23 @@ fromStart src move file = isAnnexed file $ \(key, _) -> do
 			showMoveAction move file
 			next $ fromPerform src move key
 fromPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
-fromPerform src move key = do
+fromPerform src move key = moveLock move key $ do
 	ishere <- inAnnex key
 	if ishere
-		then next $ fromCleanup src move key
+		then handle move True
 		else do
 			showAction $ "from " ++ Remote.name src
 			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
-			if ok
-				then next $ fromCleanup src move key
-				else stop -- fail
-fromCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
-fromCleanup src True key = Command.Drop.cleanupRemote key src
-fromCleanup _ False _ = return True
+			handle move ok
+	where
+		handle _ False = stop -- failed
+		handle False True = next $ return True -- copy complete
+		handle True True = do -- finish moving
+			ok <- Remote.removeKey src key
+			next $ Command.Drop.cleanupRemote key src ok
+
+{- Locks a key in order for it to be moved.
+ - No lock is needed when a key is being copied. -}
+moveLock :: Bool -> Key -> Annex a -> Annex a
+moveLock True key a = lockExclusive key a
+moveLock False _ a = a

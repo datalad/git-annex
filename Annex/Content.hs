@@ -7,6 +7,8 @@
 
 module Annex.Content (
 	inAnnex,
+	lockExclusive,
+	lockShared,
 	calcGitLink,
 	logStatus,
 	getViaTmp,
@@ -40,6 +42,16 @@ inAnnex key = do
 	whenM (fromRepo Git.repoIsUrl) $
 		error "inAnnex cannot check remote repo"
 	inRepo $ doesFileExist . gitAnnexLocation key
+
+{- Content is exclusively locked to indicate that it's in the process of
+ - being removed. -}
+lockExclusive :: Key -> Annex a -> Annex a
+lockExclusive key a = a -- TODO
+
+{- Things that rely on content being present can take a shared lock to
+ - avoid it vanishing from under them. -}
+lockShared :: Key -> Annex a -> Annex a
+lockShared key a = a -- TODO
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
