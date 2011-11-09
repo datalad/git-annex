@@ -19,6 +19,23 @@ deadlock, this must be a nonblocking lock. If it fails, the status of
 the content is unknown, so inannex should fail. Note that this needs to be
 distinguishable from "not in annex".
 
+> Thinking about these lock files, this would be a lot more files, 
+> and would possibly break some assumptions that everything in
+> `.git/annex/objects` is a key's content. (Or would need lots more
+> directories to put the lock files elsewhere.) There would be more
+> overhead to manage these and have them on disk.
+> 
+> What if it just locked the actual content file? The obvious limitation
+> is only content that was already inannex could be locked, but that
+> happens to be exactly what's needed here; if content is not present,
+> it's not going to get dropped or moved.
+>
+> Of course, if some consumer of a file locked it, then it could prevent it
+> from being dropped or moved. This could be considered a bug, or a feature. :)
+> 
+> However, this would mean that such a hypothetical consumer could also
+> make inannex checks fail.
+
 ---
 
 move --to can also be included in the cycle, since it can drop data. 
@@ -39,7 +56,7 @@ via inannex checks. Then both run git-annex-shell dropkey, removing both
 copies.
 
 So move --from needs to take the content lock on start, so the inannex will
-fail.
+fail.  NB: If the content is not locally present, don't take the lock.
 
 ---
 
