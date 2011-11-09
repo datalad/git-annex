@@ -172,7 +172,7 @@ remove r k = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ deleteObject conn $ bucketKey r bucket k
 	s3Bool res
 
-checkPresent :: Remote Annex -> Key -> Annex (Either IOException Bool)
+checkPresent :: Remote Annex -> Key -> Annex (Either String Bool)
 checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k

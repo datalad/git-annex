@@ -26,7 +26,7 @@ module Remote (
 	showTriedRemotes,
 	showLocations,
 	forceTrust,
-	remoteHasKey
+	logStatus
 ) where
 
 import qualified Data.Map as M
@@ -230,7 +230,7 @@ forceTrust level remotename = do
  - in the local repo, not on the remote. The process of transferring the
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
-remoteHasKey :: Remote Annex -> Key -> Bool -> Annex ()
-remoteHasKey remote key present	= logChange key (uuid remote) status
+logStatus :: Remote Annex -> Key -> Bool -> Annex ()
+logStatus remote key present = logChange key (uuid remote) status
 	where
 		status = if present then InfoPresent else InfoMissing

@@ -114,5 +114,9 @@ remove d k = liftIO $ catchBool $ do
 		file = dirKey d k
 		dir = parentDir file
 
-checkPresent :: FilePath -> Key -> Annex (Either IOException Bool)
-checkPresent d k = liftIO $ try $ doesFileExist (dirKey d k)
+checkPresent :: FilePath -> Key -> Annex (Either String Bool)
+checkPresent d k = dispatch <$> check
+	where
+		check = liftIO $ try $ doesFileExist (dirKey d k)
+		dispatch (Left e) = Left $ show e
+		dispatch (Right v) = Right v

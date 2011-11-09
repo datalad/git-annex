@@ -7,8 +7,8 @@
 
 module Annex.Content (
 	inAnnex,
-	lockExclusive,
-	lockShared,
+	inAnnexSafe,
+	lockContent,
 	calcGitLink,
 	logStatus,
 	getViaTmp,
@@ -36,22 +36,34 @@ import Types.Key
 import Utility.DataUnits
 import Config
 
-{- Checks if a given key is currently present in the gitAnnexLocation. -}
+{- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex key = do
+inAnnex = inAnnex' doesFileExist
+inAnnex' :: (FilePath -> IO a) -> Key -> Annex a
+inAnnex' a key = do
 	whenM (fromRepo Git.repoIsUrl) $
 		error "inAnnex cannot check remote repo"
-	inRepo $ doesFileExist . gitAnnexLocation key
+	inRepo $ a . gitAnnexLocation key
+
+{- A safer check; the key's content must not only be present, but
+ - is not in the process of being removed. -}
+inAnnexSafe :: Key -> Annex (Maybe Bool)
+inAnnexSafe = inAnnex' $ \f -> do
+	e <- doesFileExist f
+	if e
+		then do
+			locked <- testlock f
+			if locked
+				then return Nothing
+				else return $ Just True
+		else return $ Just False
+	where
+		testlock f = return False -- TODO
 
 {- Content is exclusively locked to indicate that it's in the process of
  - being removed. -}
-lockExclusive :: Key -> Annex a -> Annex a
-lockExclusive key a = a -- TODO
-
-{- Things that rely on content being present can take a shared lock to
- - avoid it vanishing from under them. -}
-lockShared :: Key -> Annex a -> Annex a
-lockShared key a = a -- TODO
+lockContent :: Key -> Annex a -> Annex a
+lockContent key a = a -- TODO
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath

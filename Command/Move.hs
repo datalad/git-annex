@@ -82,7 +82,7 @@ toPerform dest move key = moveLock move key $ do
 		else Remote.hasKey dest key
 	case isthere of
 		Left err -> do
-			showNote $ show err
+			showNote $ err
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
@@ -96,7 +96,7 @@ toPerform dest move key = moveLock move key $ do
 		Right True -> finish
 	where
 		finish = do
-			Remote.remoteHasKey dest key True
+			Remote.logStatus dest key True
 			if move
 				then do
 					whenM (inAnnex key) $ removeAnnex key
@@ -137,5 +137,5 @@ fromPerform src move key = moveLock move key $ do
 {- Locks a key in order for it to be moved.
  - No lock is needed when a key is being copied. -}
 moveLock :: Bool -> Key -> Annex a -> Annex a
-moveLock True key a = lockExclusive key a
+moveLock True key a = lockContent key a
 moveLock False _ a = a

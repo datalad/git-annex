@@ -9,7 +9,6 @@
 
 module Types.Remote where
 
-import Control.Exception
 import Data.Map as M
 import Data.Ord
 
@@ -46,8 +45,8 @@ data Remote a = Remote {
 	-- removes a key's contents
 	removeKey :: Key -> a Bool,
 	-- Checks if a key is present in the remote; if the remote
-	-- cannot be accessed returns a Left error.
-	hasKey :: Key -> a (Either IOException Bool),
+	-- cannot be accessed returns a Left error message.
+	hasKey :: Key -> a (Either String Bool),
 	-- Some remotes can check hasKey without an expensive network
 	-- operation.
 	hasKeyCheap :: Bool,

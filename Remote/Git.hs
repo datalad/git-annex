@@ -125,22 +125,38 @@ tryGitConfigRead r
 				else old : exchange ls new
 
 {- Checks if a given remote has the content for a key inAnnex.
- - If the remote cannot be accessed, returns a Left error.
+ - If the remote cannot be accessed, or if it cannot determine
+ - whether it has the content, returns a Left error message.
  -}
-inAnnex :: Git.Repo -> Key -> Annex (Either IOException Bool)
+inAnnex :: Git.Repo -> Key -> Annex (Either String Bool)
 inAnnex r key
-	| Git.repoIsHttp r = safely checkhttp
+	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
-	| otherwise = safely checklocal
+	| otherwise = checklocal
 	where
-		checklocal = onLocal r $ Annex.Content.inAnnex key
+		checkhttp = dispatch <$> check
+			where
+				check = safely $ Url.exists $ keyUrl r key
+				dispatch (Left e) = Left $ show e
+				dispatch (Right v) = Right v
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
-			inannex <- onRemote r (boolSystem, False) "inannex" 
-				[Param (show key)]
-			return $ Right inannex
-		checkhttp = Url.exists $ keyUrl r key
-		safely a = liftIO (try a ::IO (Either IOException Bool))
+			onRemote r (check, unknown) "inannex" [Param (show key)]
+			where
+				check c p = dispatch <$> safeSystem c p
+				dispatch ExitSuccess = Right True
+				dispatch (ExitFailure 1) = Right False
+				dispatch _ = unknown
+		checklocal = dispatch <$> check
+			where
+				check = safely $ onLocal r $
+					Annex.Content.inAnnexSafe key
+				dispatch (Left e) = Left $ show e
+				dispatch (Right (Just b)) = Right b
+				dispatch (Right Nothing) = unknown
+		safely :: IO a -> Annex (Either IOException a)
+		safely a = liftIO $ try a
+		unknown = Left $ "unable to check " ++ Git.repoDescribe r
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

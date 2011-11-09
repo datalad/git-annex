@@ -139,17 +139,21 @@ remove _ = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either IOException Bool)
+checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
 		showAction $ "checking " ++ Git.repoDescribe r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
-	| otherwise = liftIO $ try $ boolSystem "git" $ Git.gitCommandLine params bupr
+	| otherwise = dispatch <$> localcheck
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
 			, Param $ "refs/heads/" ++ show k]
+		localcheck = liftIO $ try $
+			boolSystem "git" $ Git.gitCommandLine params bupr
+		dispatch (Left e) = Left $ show e
+		dispatch (Right v) = Right v
 
 {- Store UUID in the annex.uuid setting of the bup repository. -}
 storeBupUUID :: UUID -> BupRepo -> Annex ()

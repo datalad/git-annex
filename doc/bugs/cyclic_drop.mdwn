@@ -16,8 +16,8 @@ content and git-annex should refuse to do anything.
 
 Then when checking inannex, try to take a shared lock. Note that to avoid
 deadlock, this must be a nonblocking lock. If it fails, the status of
-the content is unknown, so inannex should fail. Note that this needs to be
-distinguishable from "not in annex".
+the content is unknown, so inannex should fail. Note that this failure 
+needs to be distinguishable from "not in annex".
 
 > Thinking about these lock files, this would be a lot more files, 
 > and would possibly break some assumptions that everything in
@@ -51,6 +51,11 @@ The movee removes its copy.
 
 So move --to needs to take the content lock on start. Then the inannex
 will fail.
+
+This is why it's important for inannex to fail in a way that is
+distinguishable from "not in annex". Otherwise, move --to
+would see the cycle as the remote not having content, and try to
+redundantly send it, drop it locally, and still race.
 
 -- 
 

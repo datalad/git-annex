@@ -64,7 +64,7 @@ dropKey _ = do
 	warning "removal from web not supported"
 	return False
 
-checkKey :: Key -> Annex (Either IOException Bool)
+checkKey :: Key -> Annex (Either String Bool)
 checkKey key = do
 	us <- getUrls key
 	if null us

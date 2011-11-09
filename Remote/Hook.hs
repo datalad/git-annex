@@ -119,14 +119,16 @@ retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->
 remove :: String -> Key -> Annex Bool
 remove h k = runHook h "remove" k Nothing $ return True
 
-checkPresent :: Git.Repo -> String -> Key -> Annex (Either IOException Bool)
+checkPresent :: Git.Repo -> String -> Key -> Annex (Either String Bool)
 checkPresent r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h "checkpresent"
-	liftIO (try (check v) ::IO (Either IOException Bool))
+	dispatch <$> liftIO (try (check v) ::IO (Either IOException Bool))
 	where
 		findkey s = show k `elem` lines s
 		env = hookEnv k Nothing
+		dispatch (Left e) = Left $ show e
+		dispatch (Right v) = Right v
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
 			(frompipe, topipe) <- createPipe

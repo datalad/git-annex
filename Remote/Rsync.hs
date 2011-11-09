@@ -128,7 +128,7 @@ remove o k = withRsyncScratchDir $ \tmp -> do
 		, Param $ rsyncKeyDir o k
 		]
 
-checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either IOException Bool)
+checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
 checkPresent r o k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	-- note: Does not currently differnetiate between rsync failing

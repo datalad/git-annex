@@ -52,7 +52,7 @@ startRemote file numcopies key remote = do
 	next $ performRemote key numcopies remote
 
 performLocal :: Key -> Maybe Int -> CommandPerform
-performLocal key numcopies = lockExclusive key $ do
+performLocal key numcopies = lockContent key $ do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
@@ -64,7 +64,7 @@ performLocal key numcopies = lockExclusive key $ do
 		else stop
 
 performRemote :: Key -> Maybe Int -> Remote.Remote Annex -> CommandPerform
-performRemote key numcopies remote = lockExclusive key $ do
+performRemote key numcopies remote = lockContent key $ do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy.
@@ -95,7 +95,7 @@ cleanupRemote key remote ok = do
 	-- better safe than sorry: assume the remote dropped the key
 	-- even if it seemed to fail; the failure could have occurred
 	-- after it really dropped it
-	Remote.remoteHasKey remote key False
+	Remote.logStatus remote key False
 	return ok
 
 {- Checks specified remotes to verify that enough copies of a key exist to
