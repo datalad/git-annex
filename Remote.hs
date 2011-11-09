@@ -231,9 +231,6 @@ forceTrust level remotename = do
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
 remoteHasKey :: Remote Annex -> Key -> Bool -> Annex ()
-remoteHasKey remote key present	= do
-	let remoteuuid = uuid remote
-	g <- gitRepo
-	logChange g key remoteuuid status
+remoteHasKey remote key present	= logChange key (uuid remote) status
 	where
 		status = if present then InfoPresent else InfoMissing

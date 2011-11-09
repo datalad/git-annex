@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -48,6 +48,8 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 		Applicative
 	)
 
+data OutputType = NormalOutput | QuietOutput | JSONOutput
+
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
@@ -69,8 +71,6 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, cipher :: Maybe Cipher
 	}
-
-data OutputType = NormalOutput | QuietOutput | JSONOutput
 
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState

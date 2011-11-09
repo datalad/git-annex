@@ -109,8 +109,7 @@ verifyLocationLog key desc = do
 	where
 		fix u s = do
 			showNote "fixing location log"
-			g <- gitRepo
-			logChange g key u s
+			logChange key u s
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
