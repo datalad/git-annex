@@ -33,7 +33,7 @@ import Data.String.Utils
 import System.Path
 import System.FilePath
 import System.Directory
-import System.Cmd.Utils
+import System.Cmd.Utils hiding (safeSystem)
 import System.IO hiding (FilePath)
 import System.Posix.Files
 import System.Posix.IO

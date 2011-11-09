@@ -13,6 +13,7 @@ import System.Posix.Process hiding (executeFile)
 import System.Posix.Signals
 import Data.String.Utils
 import System.Log.Logger
+import Control.Applicative
 
 {- A type for parameters passed to a shell command. A command can
  - be passed either some Params (multiple parameters can be included,
@@ -36,14 +37,23 @@ toCommand = (>>= unwrap)
 
 {- Run a system command, and returns True or False
  - if it succeeded or failed.
- -
- - SIGINT(ctrl-c) is allowed to propigate and will terminate the program.
  -}
 boolSystem :: FilePath -> [CommandParam] -> IO Bool
 boolSystem command params = boolSystemEnv command params Nothing
 
 boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-boolSystemEnv command params env = do
+boolSystemEnv command params env = dispatch <$> safeSystemEnv command params env
+	where
+		dispatch ExitSuccess = True
+		dispatch _ = False
+
+{- Runs a system command, returning the exit status. -}
+safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
+safeSystem command params = safeSystemEnv command params Nothing
+
+{- SIGINT(ctrl-c) is allowed to propigate and will terminate the program. -}
+safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
+safeSystemEnv command params env = do
 	-- Going low-level because all the high-level system functions
 	-- block SIGINT etc. We need to block SIGCHLD, but allow
 	-- SIGINT to do its default program termination.
@@ -55,8 +65,8 @@ boolSystemEnv command params env = do
 	mps <- getProcessStatus True False childpid
 	restoresignals oldint oldset
 	case mps of
-		Just (Exited ExitSuccess) -> return True
-		_ -> return False
+		Just (Exited code) -> return code
+		_ -> error $ "unknown error running " ++ command
 	where
 		restoresignals oldint oldset = do
 			_ <- installHandler sigINT oldint Nothing
