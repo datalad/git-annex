@@ -35,7 +35,7 @@ start key = do
 				error "dropkey can cause data loss; use --force if you're sure you want to do this"
 
 perform :: Key -> CommandPerform
-perform key = do
+perform key = lockContent key $ do
 	removeAnnex key
 	next $ cleanup key
 
