@@ -73,6 +73,15 @@ Another cycle might be running move --to and move --from on the same file,
 locally. The exclusivity of the content lock solves this, as only one can
 run at a time.
 
+Would it work with a shared lock? The --to would run git-annex-shell
+inannex. The --from would also be running, and would run git-annex-shell
+dropkey. So inannex and dropkey would end up running on the remote
+at the same time. Dropkey takes the content lock, and inannex checks it,
+but what if inannex runs first? Then it returns true, and then the content
+is removed, so both the --to and --from see success and the --to proceeds
+to remove the local content that the --from already caused to be removed
+from the remote. So, no, the nasty exclusive lock is needed.
+
 ---
 
 Another cycle might involve move --from and drop, both run on the same

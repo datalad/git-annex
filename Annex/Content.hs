@@ -65,8 +65,8 @@ inAnnexSafe = inAnnex' $ \f -> openForLock f False >>= check
 		is_unlocked = Just True
 		is_missing = Just False
 
-{- Content is exclusively locked to indicate that it's in the process
- - of being removed. (If the content is not present, no locking is done.) -}
+{- Content is exclusively locked while running an action that might remove
+ - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
 	file <- fromRepo $ gitAnnexLocation key
@@ -85,11 +85,14 @@ openForLock file writelock = bracket_ prep cleanup $
 		(const $ return Nothing)
 	where
 		mode = if writelock then ReadWrite else ReadOnly
-		-- Since files are stored with the write bit disabled,
-		-- have to fiddle with permissions to open for an
-		-- exclusive lock.
-		prep = when writelock $ allowWrite file
-		cleanup = when writelock $ preventWrite file
+		{- Since files are stored with the write bit disabled,
+		 - have to fiddle with permissions to open for an
+		 - exclusive lock. flock locking would avoid this,
+		 - but -}
+		prep = forwritelock $ allowWrite file
+		cleanup = forwritelock $ preventWrite file
+		forwritelock a = 
+			when writelock $ whenM (doesFileExist file) $ a
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
