@@ -1,16 +1,26 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
 GHCFLAGS=-O2 -Wall $(IGNORE) -fspec-constr-count=5
+
 ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(IGNORE)
 endif
+
 GHCMAKE=ghc $(GHCFLAGS) --make
 
 bins=git-annex git-annex-shell git-union-merge
 mans=git-annex.1 git-annex-shell.1 git-union-merge.1
 sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs Remote/S3.hs
 
-all: $(bins) $(mans) docs
+all=$(bins) $(mans) docs
+
+# Am I typing :make in vim? Do a fast build without optimisation.
+ifdef VIM
+GHCFLAGS=-Wall $(IGNORE)
+all=$(bins)
+endif
+
+all: $(all)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs
 	$(GHCMAKE) configure
