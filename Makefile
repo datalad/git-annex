@@ -14,13 +14,16 @@ sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs Remote/S3.hs
 
 all=$(bins) $(mans) docs
 
-# Am I typing :make in vim? Do a fast build without optimisation.
+# Am I typing :make in vim? Do a fast build.
 ifdef VIM
-GHCFLAGS=-Wall $(IGNORE)
-all=$(bins)
+all=fast
 endif
 
 all: $(all)
+
+# Disables optimisation. Not for production use.
+fast: GHCFLAGS=-Wall $(IGNORE)
+fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs
 	$(GHCMAKE) configure
