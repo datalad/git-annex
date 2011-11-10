@@ -23,6 +23,7 @@ module Annex.Content (
 	saveState
 ) where
 
+import System.IO.Error (try)
 import Control.Exception (bracket_)
 import System.Posix.Types
 
@@ -74,8 +75,10 @@ lockContent key a = do
 	where
 		lock Nothing = return Nothing
 		lock (Just l) = do
-			setLock l (WriteLock, AbsoluteSeek, 0, 0)
-			return $ Just l
+			v <- try $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
+			case v of
+				Left _ -> error "content is locked"
+				Right _ -> return $ Just l
 		unlock Nothing = return ()
 		unlock (Just l) = closeFd l
 
