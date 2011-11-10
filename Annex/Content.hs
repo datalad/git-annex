@@ -23,6 +23,9 @@ module Annex.Content (
 	saveState
 ) where
 
+import Control.Exception (bracket_)
+import System.Posix.Types
+
 import Common.Annex
 import Logs.Location
 import Annex.UUID
@@ -35,6 +38,7 @@ import Utility.FileMode
 import Types.Key
 import Utility.DataUnits
 import Config
+import Annex.Exception
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -48,22 +52,44 @@ inAnnex' a key = do
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe = inAnnex' $ \f -> do
-	e <- doesFileExist f
-	if e
-		then do
-			locked <- testlock f
-			if locked
-				then return Nothing
-				else return $ Just True
-		else return $ Just False
+inAnnexSafe = inAnnex' $ \f -> openForLock f False >>= check
 	where
-		testlock f = return False -- TODO
+		check Nothing = return is_missing
+		check (Just h) = do
+			v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
+			closeFd h
+			return $ case v of
+				Just _ -> is_locked
+				Nothing -> is_unlocked
+		is_locked = Nothing
+		is_unlocked = Just True
+		is_missing = Just False
 
-{- Content is exclusively locked to indicate that it's in the process of
- - being removed. -}
+{- Content is exclusively locked to indicate that it's in the process
+ - of being removed. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
-lockContent key a = a -- TODO
+lockContent key a = do
+	file <- fromRepo $ gitAnnexLocation key
+	bracketIO (openForLock file True >>= lock) unlock a
+	where
+		lock Nothing = return Nothing
+		lock (Just l) = do
+			setLock l (WriteLock, AbsoluteSeek, 0, 0)
+			return $ Just l
+		unlock Nothing = return ()
+		unlock (Just l) = closeFd l
+
+openForLock :: FilePath -> Bool -> IO (Maybe Fd)
+openForLock file writelock = bracket_ prep cleanup $
+	catch (Just <$> openFd file mode Nothing defaultFileFlags)
+		(const $ return Nothing)
+	where
+		mode = if writelock then ReadWrite else ReadOnly
+		-- Since files are stored with the write bit disabled,
+		-- have to fiddle with permissions to open for an
+		-- exclusive lock.
+		prep = when writelock $ allowWrite file
+		cleanup = when writelock $ preventWrite file
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
