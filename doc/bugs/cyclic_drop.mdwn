@@ -3,6 +3,8 @@ if the remote is also dropping the content at the same time. Each
 repository checks that the other still has the content, and then both
 drop it. Could also happen with larger cycles of repositories.
 
+> Confirmed fixed now. All cases tested. [[done]]
+
 ---
 
 Fixing this requires locking. (Well, there are other ways, like moving the
@@ -15,9 +17,10 @@ nonblocking; if it cannot be obtained, something else is acting on the
 content and git-annex should refuse to do anything.
 
 Then when checking inannex, try to take a shared lock. Note that to avoid
-deadlock, this must be a nonblocking lock. If it fails, the status of
-the content is unknown, so inannex should fail. Note that this failure 
-needs to be distinguishable from "not in annex".
+deadlock, this must be a nonblocking lock. (Actually, with fcntl locking,
+can just check if there is a lock, without needing to take one.) 
+If it fails, the status of the content is unknown, so inannex should fail.
+Note that this failure needs to be distinguishable from "not in annex".
 
 > Thinking about these lock files, this would be a lot more files, 
 > and would possibly break some assumptions that everything in
@@ -35,10 +38,17 @@ needs to be distinguishable from "not in annex".
 > 
 > However, this would mean that such a hypothetical consumer could also
 > make inannex checks fail.
+>
+> The other downside is that, for fcntl exclusive locking, the file has to
+> be opened for write. Normally the modes of content files are locked down
+> to prevent modifcation. Dealt with, but oh so nasty. Almost makes flock
+> locking seem worth using.
 
 ---
 
 drop --from could also cycle. Locking should fix.
+
+> Confirmed fixed now. 
 
 ---
 
@@ -57,6 +67,8 @@ distinguishable from "not in annex". Otherwise, move --to
 would see the cycle as the remote not having content, and try to
 redundantly send it, drop it locally, and still race.
 
+> Confirmed fixed now.
+
 -- 
 
 move --from is similar. Consider a case where both the local and the remote
@@ -66,6 +78,8 @@ copies.
 
 So move --from needs to take the content lock on start, so the inannex will
 fail.  NB: If the content is not locally present, don't take the lock.
+
+> Confirmed fixed now.
 
 ---
 
@@ -81,6 +95,8 @@ but what if inannex runs first? Then it returns true, and then the content
 is removed, so both the --to and --from see success and the --to proceeds
 to remove the local content that the --from already caused to be removed
 from the remote. So, no, the nasty exclusive lock is needed.
+
+> Confirmed fixed now.
 
 ---
 
