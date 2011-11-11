@@ -21,11 +21,11 @@ def :: [Command]
 def = [command "unannex" paramPaths seek "undo accidential add command"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withFilesInGit $ whenAnnexed start]
 
 {- The unannex subcommand undoes an add. -}
-start :: FilePath -> CommandStart
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start file (key, _) = do
 	ishere <- inAnnex key
 	if ishere
 		then do

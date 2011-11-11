@@ -21,14 +21,14 @@ def = [dontCheck toOpt $ dontCheck fromOpt $
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit $ start True]
+seek = [withFilesInGit $ whenAnnexed $ start True]
 
 {- Move (or copy) a file either --to or --from a repository.
  -
  - This only operates on the cached file content; it does not involve
  - moving data in the key-value backend. -}
-start :: Bool -> FilePath -> CommandStart
-start move file = isAnnexed file $ \(key, _) -> do
+start :: Bool -> FilePath -> (Key, Backend Annex) -> CommandStart
+start move file (key, _) = do
 	noAuto
 	to <- Annex.getState Annex.toremote
 	from <- Annex.getState Annex.fromremote

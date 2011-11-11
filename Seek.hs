@@ -33,10 +33,10 @@ withAttrFilesInGit attr a params = do
 	files <- seekHelper LsFiles.inRepo params
 	prepFilteredGen a fst $ inRepo $ Git.checkAttr attr files
 
-withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
+withNumCopies :: (Maybe Int -> FilePath -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 	where
-		go (file, v) = a file (readMaybe v)
+		go (file, v) = a (readMaybe v) file
 
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do

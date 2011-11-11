@@ -22,20 +22,19 @@ def = [dontCheck fromOpt $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start]
+seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
-start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, _) ->
-	autoCopies key (>) numcopies $ do
-		from <- Annex.getState Annex.fromremote
-		case from of
-			Nothing -> startLocal file numcopies key
-			Just name -> do
-				remote <- Remote.byName name
-				u <- getUUID
-				if Remote.uuid remote == u
-					then startLocal file numcopies key
-					else startRemote file numcopies key remote
+start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start numcopies file (key, _) = autoCopies key (>) numcopies $ do
+	from <- Annex.getState Annex.fromremote
+	case from of
+		Nothing -> startLocal file numcopies key
+		Just name -> do
+			remote <- Remote.byName name
+			u <- getUUID
+			if Remote.uuid remote == u
+				then startLocal file numcopies key
+				else startRemote file numcopies key remote
 
 startLocal :: FilePath -> Maybe Int -> Key -> CommandStart
 startLocal file numcopies key = do

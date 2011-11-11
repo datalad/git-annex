@@ -15,8 +15,8 @@ module Command (
 	stop,
 	prepCommand,
 	doCommand,
+	whenAnnexed,
 	notAnnexed,
-	isAnnexed,
 	notBareRepo,
 	isBareRepo,
 	autoCopies
@@ -65,11 +65,13 @@ doCommand = start
 		failure = showEndFail >> return False
 		status r = showEndResult r >> return r
 
+{- Modifies an action to only act on files that are already annexed,
+ - and passes the key and backend on to it. -}
+whenAnnexed :: (FilePath -> (Key, Backend Annex) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+whenAnnexed a file = maybe (return Nothing) (a file) =<< Backend.lookupFile file
+
 notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
 notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
-
-isAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex (Maybe a)) -> Annex (Maybe a)
-isAnnexed file a = maybe (return Nothing) a =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do

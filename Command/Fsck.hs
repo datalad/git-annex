@@ -25,10 +25,13 @@ def :: [Command]
 def = [command "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start, withBarePresentKeys startBare]
+seek =
+	[ withNumCopies $ \n -> whenAnnexed $ start n
+	, withBarePresentKeys startBare
+	]
 
-start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, backend) -> do
+start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start numcopies file (key, backend) = do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
 

@@ -13,17 +13,16 @@ import qualified Backend
 import qualified Types.Key
 import Annex.Content
 import qualified Command.Add
-import Backend
 import Logs.Web
 
 def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
 
 seek :: [CommandSeek]
-seek = [withBackendFilesInGit start]
+seek = [withBackendFilesInGit $ \(b, f) -> whenAnnexed (start b) f]
 
-start :: BackendFile -> CommandStart
-start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
+start :: Maybe (Backend Annex) -> FilePath -> (Key, Backend Annex) -> CommandStart
+start b file (key, oldbackend) = do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
 	if (newbackend /= oldbackend || upgradableKey key) && exists

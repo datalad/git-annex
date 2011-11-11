@@ -33,15 +33,15 @@ check = do
 			[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit startUnannex, withNothing start]
+seek = [withFilesInGit $ whenAnnexed startUnannex, withNothing start]
 
-startUnannex :: FilePath -> CommandStart
-startUnannex file = do
+startUnannex :: FilePath -> (Key, Backend Annex) -> CommandStart
+startUnannex file info = do
 	-- Force fast mode before running unannex. This way, if multiple
 	-- files link to a key, it will be left in the annex and hardlinked
 	-- to by each.
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	Command.Unannex.start file
+	Command.Unannex.start file info
 
 start :: CommandStart
 start = next perform

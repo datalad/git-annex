@@ -7,6 +7,7 @@
 
 module Command.Copy where
 
+import Common.Annex
 import Command
 import qualified Command.Move
 
@@ -16,11 +17,10 @@ def = [dontCheck toOpt $ dontCheck fromOpt $
 	"copy content of files to/from another repository"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start]
+seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
 -- A copy is just a move that does not delete the source file.
 -- However, --auto mode avoids unnecessary copies.
-start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, _) ->
-	autoCopies key (<) numcopies $
-		Command.Move.start False file
+start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start numcopies file (key, backend) = autoCopies key (<) numcopies $
+	Command.Move.start False file (key, backend)

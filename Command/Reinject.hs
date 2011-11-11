@@ -25,19 +25,19 @@ start (src:dest:[])
 	| src == dest = stop
 	| otherwise = do
 		showStart "reinject" dest
-		next $ perform src dest
+		next $ whenAnnexed (perform src) dest
 start _ = error "specify a src file and a dest file"
 
-perform :: FilePath -> FilePath -> CommandPerform
-perform src dest = isAnnexed dest $ \(key, backend) -> do
-	unlessM (move key) $ error "mv failed!"
+perform :: FilePath -> FilePath -> (Key, Backend Annex) -> CommandPerform
+perform src _dest (key, backend) = do
+	unlessM move $ error "mv failed!"
 	next $ cleanup key backend
 	where
 		-- the file might be on a different filesystem,
 		-- so mv is used rather than simply calling
 		-- moveToObjectDir; disk space is also
 		-- checked this way.
-		move key = getViaTmp key $ \tmp ->
+		move = getViaTmp key $ \tmp ->
 			liftIO $ boolSystem "mv" [File src, File tmp]
 
 cleanup :: Key -> Backend Annex -> CommandCleanup

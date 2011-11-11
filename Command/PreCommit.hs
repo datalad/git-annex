@@ -18,8 +18,9 @@ def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
 {- The pre-commit hook needs to fix symlinks to all files being committed.
  - And, it needs to inject unlocked files into the annex. -}
 seek :: [CommandSeek]
-seek = [withFilesToBeCommitted Command.Fix.start,
-	withFilesUnlockedToBeCommitted start]
+seek =
+	[ withFilesToBeCommitted $ whenAnnexed Command.Fix.start
+	, withFilesUnlockedToBeCommitted start]
 
 start :: BackendFile -> CommandStart
 start p = next $ perform p

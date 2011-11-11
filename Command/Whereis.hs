@@ -18,10 +18,10 @@ def = [command "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withFilesInGit $ whenAnnexed start]
 
-start :: FilePath -> CommandStart
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start file (key, _) = do
 	showStart "whereis" file
 	next $ perform key
 

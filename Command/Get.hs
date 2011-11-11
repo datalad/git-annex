@@ -19,10 +19,10 @@ def = [dontCheck fromOpt $ command "get" paramPaths seek
 	"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start]
+seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
-start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, _) -> do
+start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start numcopies file (key, _) = do
 	inannex <- inAnnex key
 	if inannex
 		then stop
