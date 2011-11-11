@@ -91,7 +91,7 @@ openForLock file writelock = bracket_ prep cleanup go
 		 - have to fiddle with permissions to open for an
 		 - exclusive lock. -}
 		forwritelock a = 
-			when writelock $ whenM (doesFileExist file) $ a
+			when writelock $ whenM (doesFileExist file) a
 		prep = forwritelock $ allowWrite file
 		cleanup = forwritelock $ preventWrite file
 
@@ -251,7 +251,7 @@ fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
 moveBad :: Key -> Annex FilePath
 moveBad key = do
 	src <- fromRepo $ gitAnnexLocation key
-	bad <- fromRepo $ gitAnnexBadDir
+	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	liftIO $ do
 		createDirectoryIfMissing True (parentDir dest)

@@ -18,7 +18,7 @@ setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
 	inRepo $ Git.run "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
-	newg <- inRepo $ Git.configRead
+	newg <- inRepo Git.configRead
 	Annex.changeState $ \s -> s { Annex.repo = newg }
 
 {- Looks up a per-remote config setting in git config.

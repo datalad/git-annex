@@ -6,10 +6,6 @@
  -}
 
 module Command (
-	module Types.Command,
-	module Seek,
-	module Checks,
-	module Options,
 	command,
 	next,
 	stop,
@@ -19,20 +15,21 @@ module Command (
 	notAnnexed,
 	notBareRepo,
 	isBareRepo,
-	autoCopies
+	autoCopies,
+	module ReExported
 ) where
 
 import Common.Annex
 import qualified Backend
 import qualified Annex
 import qualified Git
-import Types.Command
+import Types.Command as ReExported
+import Seek as ReExported
+import Checks as ReExported
+import Options as ReExported
 import Logs.Trust
 import Logs.Location
 import Config
-import Seek
-import Checks
-import Options
 
 {- Generates a command with the common checks. -}
 command :: String -> String -> [CommandSeek] -> String -> Command
@@ -50,7 +47,7 @@ stop = return Nothing
  - list of actions to perform to run the command. -}
 prepCommand :: Command -> [String] -> Annex [CommandCleanup]
 prepCommand Command { cmdseek = seek, cmdcheck = c } params = do
-	sequence_ $ map runCheck c
+	mapM_ runCheck c
 	map doCommand . concat <$> mapM (\s -> s params) seek
 
 {- Runs a command through the start, perform and cleanup stages -}

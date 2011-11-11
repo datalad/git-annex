@@ -50,7 +50,7 @@ withBarePresentKeys a params = isBareRepo >>= go
 	where
 		go False = return []
 		go True = do
-			unless (null params) $ do
+			unless (null params) $
 				error "fsck should be run without parameters in a bare repository"
 			prepStart a loggedKeys
 
@@ -137,7 +137,7 @@ checkKeySize key = do
 
 
 checkBackend :: Backend Annex -> Key -> Annex Bool
-checkBackend backend key =  (Types.Backend.fsckKey backend) key
+checkBackend = Types.Backend.fsckKey
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do

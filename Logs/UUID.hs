@@ -34,7 +34,7 @@ logfile = "uuid.log"
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> String -> Annex ()
 describeUUID uuid desc = do
-	ts <- liftIO $ getPOSIXTime
+	ts <- liftIO getPOSIXTime
 	Annex.Branch.change logfile $
 		showLog id . changeLog ts uuid desc . parseLog Just
 

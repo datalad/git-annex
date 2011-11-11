@@ -19,7 +19,7 @@ import qualified Git
  -}
 findSpecialRemotes :: String -> Annex [Git.Repo]
 findSpecialRemotes s = do
-	m <- fromRepo $ Git.configMap
+	m <- fromRepo Git.configMap
 	return $ map construct $ remotepairs m
 	where
 		remotepairs = M.toList . M.filterWithKey match

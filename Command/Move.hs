@@ -82,7 +82,7 @@ toPerform dest move key = moveLock move key $ do
 		else Remote.hasKey dest key
 	case isthere of
 		Left err -> do
-			showNote $ err
+			showNote err
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
@@ -111,7 +111,7 @@ toPerform dest move key = moveLock move key $ do
  -}
 fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
 fromStart src move file key
-	| move == True = go
+	| move = go
 	| otherwise = do
 		ishere <- inAnnex key
 		if ishere then stop else go

@@ -22,7 +22,7 @@ seek = [withWords start]
 
 start :: [String] -> CommandStart
 start (keyname:file:[]) = notBareRepo $ do
-	let key = maybe (error "bad key") id $ readKey keyname
+	let key = fromMaybe (error "bad key") $ readKey keyname
 	inbackend <- inAnnex key
 	unless inbackend $ error $
 		"key ("++ keyname ++") is not present in backend"

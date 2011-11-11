@@ -23,7 +23,7 @@ import qualified Limit
 seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
 	g <- gitRepo
-	liftIO $ runPreserveOrder (\p -> a p g) params
+	liftIO $ runPreserveOrder (`a` g) params
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
@@ -73,7 +73,7 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
-	top <- fromRepo $ Git.workTree
+	top <- fromRepo Git.workTree
 	typechangedfiles <- seekHelper typechanged params
 	unlockedfiles <- liftIO $ filterM notSymlink $
 		map (\f -> top ++ "/" ++ f) typechangedfiles
@@ -109,7 +109,7 @@ prepFilteredGen a d fs = do
  - command, using a list (ie of files) coming from an action. The list
  - will be produced and consumed lazily. -}
 prepStart :: (b -> CommandStart) -> Annex [b] -> Annex [CommandStart]
-prepStart a fs = liftM (map a) fs
+prepStart a = liftM (map a)
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

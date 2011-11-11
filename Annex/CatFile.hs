@@ -17,7 +17,7 @@ catFile :: String -> FilePath -> Annex String
 catFile branch file = maybe startup go =<< Annex.getState Annex.catfilehandle
 	where
 		startup = do
-			h <- inRepo $ Git.CatFile.catFileStart
+			h <- inRepo Git.CatFile.catFileStart
 			Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
 			go h
 		go h = liftIO $ Git.CatFile.catFile h branch file

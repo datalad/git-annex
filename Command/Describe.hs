@@ -24,7 +24,7 @@ start (name:description) = do
 	showStart "describe" name
 	u <- Remote.nameToUUID name
 	next $ perform u $ unwords description
-start _ = do error "Specify a repository and a description."	
+start _ = error "Specify a repository and a description."	
 
 perform :: UUID -> String -> CommandPerform
 perform u description = do

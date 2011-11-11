@@ -37,7 +37,7 @@ merge x y repo = do
  - the index are preserved (and participate in the merge). -}
 merge_index :: Repo -> [String] -> IO ()
 merge_index repo bs =
-	update_index repo =<< concat <$> mapM (\b -> merge_tree_index b repo) bs
+	update_index repo =<< concat <$> mapM (`merge_tree_index` repo) bs
 
 {- Feeds a list into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of

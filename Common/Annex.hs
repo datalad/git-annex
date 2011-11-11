@@ -1,15 +1,8 @@
-module Common.Annex (
-	module Common,
-	module Types,
-	module Types.UUID,
-	module Annex,
-	module Locations,
-	module Messages,
-) where
+module Common.Annex (module X) where
 
-import Common
-import Types
-import Types.UUID (toUUID, fromUUID)
-import Annex (gitRepo, inRepo, fromRepo)
-import Locations
-import Messages
+import Common as X
+import Types as X
+import Types.UUID as X (toUUID, fromUUID)
+import Annex as X (gitRepo, inRepo, fromRepo)
+import Locations as X
+import Messages as X

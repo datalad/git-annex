@@ -20,7 +20,7 @@ import Utility.SafeCommand
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO [FilePath]
-inRepo l repo = pipeNullSplit (Params "ls-files --cached -z --" : map File l) repo
+inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO [FilePath]

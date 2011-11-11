@@ -47,7 +47,7 @@ parseTrust :: String -> Maybe TrustLevel
 parseTrust s
 	| length w > 0 = Just $ parse $ head w
 	-- back-compat; the trust.log used to only list trusted repos
-	| otherwise = Just $ Trusted
+	| otherwise = Just Trusted
 	where
 		w = words s
 		parse "1" = Trusted
@@ -62,7 +62,7 @@ showTrust Trusted = "1"
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
-	ts <- liftIO $ getPOSIXTime
+	ts <- liftIO getPOSIXTime
 	Annex.Branch.change trustLog $
 		showLog showTrust . changeLog ts uuid level . parseLog parseTrust
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }

@@ -51,11 +51,11 @@ perform = next cleanup
 
 cleanup :: CommandCleanup
 cleanup = do
-	annexdir <- fromRepo $ gitAnnexDir
+	annexdir <- fromRepo gitAnnexDir
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
 	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState
 	inRepo $ Git.run "branch" [Param "-D", Param Annex.Branch.name]
-	liftIO $ exitSuccess
+	liftIO exitSuccess

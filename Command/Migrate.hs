@@ -46,7 +46,7 @@ perform file oldkey newbackend = do
 	-- The old backend's key is not dropped from it, because there may
 	-- be other files still pointing at that key.
 	src <- fromRepo $ gitAnnexLocation oldkey
-	tmp <- fromRepo $ gitAnnexTmpDir
+	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName file
 	liftIO $ createLink src tmpfile
 	k <- Backend.genKey tmpfile $ Just newbackend
@@ -64,7 +64,7 @@ perform file oldkey newbackend = do
 					-- associated urls, record them for
 					-- the new key as well.
 					urls <- getUrls oldkey
-					when (not $ null urls) $
+					unless (null urls) $
 						mapM_ (setUrlPresent newkey) urls
 
 					next $ Command.Add.cleanup file newkey True

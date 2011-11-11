@@ -63,7 +63,7 @@ withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	f <- fromRepo $ index
+	f <- fromRepo index
 	bracketIO (Git.useIndex f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
@@ -336,8 +336,8 @@ stageJournalFiles = do
 	where
 		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
-		git_hash_object g = Git.gitCommandLine
-			[Param "hash-object", Param "-w", Param "--stdin-paths"] g
+		git_hash_object = Git.gitCommandLine
+			[Param "hash-object", Param "-w", Param "--stdin-paths"]
 
 
 {- Checks if there are changes in the journal. -}
@@ -366,7 +366,7 @@ fileJournal = replace "//" "_" . replace "_" "/"
  - contention with other git-annex processes. -}
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
-	file <- fromRepo $ gitAnnexJournalLock
+	file <- fromRepo gitAnnexJournalLock
 	bracketIO (lock file) unlock a
 	where
 		lock file = do

@@ -51,7 +51,7 @@ upgrade :: Annex Bool
 upgrade = do
 	showAction "v1 to v2"
 	
-	bare <- fromRepo $ Git.repoIsLocalBare
+	bare <- fromRepo Git.repoIsLocalBare
 	if bare
 		then do
 			moveContent
@@ -113,7 +113,7 @@ moveLocationLogs = do
 					else return []
 			move (l, k) = do
 				dest <- fromRepo $ logFile2 k
-				dir <- fromRepo $ Upgrade.V2.gitStateDir
+				dir <- fromRepo Upgrade.V2.gitStateDir
 				let f = dir </> l
 				liftIO $ createDirectoryIfMissing True (parentDir dest)
 				-- could just git mv, but this way deals with

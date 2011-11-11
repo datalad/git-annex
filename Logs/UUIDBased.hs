@@ -55,7 +55,7 @@ showLog shower = unlines . map showpair . M.toList
 			unwords [fromUUID k, shower v]
 
 parseLog :: (String -> Maybe a) -> String -> Log a
-parseLog parser = M.fromListWith best . catMaybes . map parse . lines
+parseLog parser = M.fromListWith best . mapMaybe parse . lines
 	where
 		parse line
 			| null ws = Nothing

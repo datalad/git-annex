@@ -166,7 +166,7 @@ onLocal r a = do
 		-- for anything onLocal is used to do.
 		Annex.Branch.disableUpdate
 		ret <- a
-		liftIO $ Git.reap
+		liftIO Git.reap
 		return ret
 
 keyUrl :: Git.Repo -> Key -> String
