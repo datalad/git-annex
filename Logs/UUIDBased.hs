@@ -15,6 +15,7 @@
 module Logs.UUIDBased (
 	Log,
 	LogEntry(..),
+	TimeStamp(..),
 	parseLog,
 	showLog,
 	changeLog,
