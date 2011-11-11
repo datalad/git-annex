@@ -28,7 +28,7 @@ seek = [withFilesInGit $ start True]
  - This only operates on the cached file content; it does not involve
  - moving data in the key-value backend. -}
 start :: Bool -> FilePath -> CommandStart
-start move file = do
+start move file = isAnnexed file $ \(key, _) -> do
 	noAuto
 	to <- Annex.getState Annex.toremote
 	from <- Annex.getState Annex.fromremote
@@ -36,10 +36,10 @@ start move file = do
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just name) -> do
 			dest <- Remote.byName name
-			toStart dest move file
+			toStart dest move file key
 		(Just name, Nothing) -> do
 			src <- Remote.byName name
-			fromStart src move file
+			fromStart src move file key
 		(_ ,  _) -> error "only one of --from or --to can be specified"
 	where
 		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
@@ -58,8 +58,8 @@ showMoveAction False file = showStart "copy" file
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
-toStart dest move file = isAnnexed file $ \(key, _) -> do
+toStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+toStart dest move file key = do
 	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
@@ -109,14 +109,14 @@ toPerform dest move key = moveLock move key $ do
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
-fromStart src move file
-	| move == True = isAnnexed file $ \(key, _) -> go key
-	| otherwise = isAnnexed file $ \(key, _) -> do
+fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+fromStart src move file key
+	| move == True = go
+	| otherwise = do
 		ishere <- inAnnex key
-		if ishere then stop else go key
+		if ishere then stop else go
 	where
-		go key = do
+		go = do
 			u <- getUUID
 			remotes <- Remote.keyPossibilities key
 			if u == Remote.uuid src || not (any (== src) remotes)
