@@ -195,11 +195,17 @@ tryScan r
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" []
 		manualconfiglist = do
-			let sshcmd =
-				"cd " ++ shellEscape(Git.workTree r) ++ " && " ++
-				"git config --list"
 			sshparams <- sshToRepo r [Param sshcmd]
 			liftIO $ pipedconfig "ssh" sshparams
+			where
+				sshcmd = cddir ++ " && " ++
+					"git config --list"
+				dir = Git.workTree r
+				cddir
+					| take 2 dir == "/~" =
+						let (userhome, reldir) = span (/= '/') (drop 1 dir)
+						in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
+					| otherwise = "cd " ++ shellEscape dir
 
 		-- First, try sshing and running git config manually,
 		-- only fall back to git-annex-shell configlist if that

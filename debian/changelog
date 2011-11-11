@@ -1,4 +1,4 @@
-git-annex (3.20111108) UNRELEASED; urgency=low
+git-annex (3.20111111) unstable; urgency=low
 
   * Handle a case where an annexed file is moved into a gitignored directory,
     by having fix --force add its change.
@@ -7,8 +7,9 @@ git-annex (3.20111108) UNRELEASED; urgency=low
     for files that are already present.
   * Automatically fix up badly formatted uuid.log entries produced by
     3.20111105, whenever the uuid.log is changed (ie, by init or describe).
+  * map: Support remotes with /~/ and /~user/
 
- -- Joey Hess <joeyh@debian.org>  Mon, 07 Nov 2011 18:08:42 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Nov 2011 13:44:18 -0400
 
 git-annex (3.20111107) unstable; urgency=low
 
