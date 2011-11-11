@@ -31,9 +31,9 @@ withTempFile :: String -> (FilePath -> Handle -> IO a) -> IO a
 withTempFile template a = bracket create remove use
 	where
 		create = do
-			tmpdir <- catch getTemporaryDirectory (const $ return ".")
+			tmpdir <- catchDefaultIO getTemporaryDirectory "."
 			openTempFile tmpdir template
 		remove (name, handle) = do
 			hClose handle
-			catchBool (removeFile name >> return True)
+			catchBoolIO (removeFile name >> return True)
 		use (name, handle) = a name handle

@@ -414,7 +414,7 @@ pipeNullSplitB params repo = filter (not . L.null) . L.split '\0' <$>
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes
-	r <- catch (getAnyProcessStatus False True) (\_ -> return Nothing)
+	r <- catchDefaultIO (getAnyProcessStatus False True) Nothing
 	maybe (return ()) (const reap) r
 
 {- Forces git to use the specified index file.

@@ -286,7 +286,7 @@ s3GetCreds c = do
 				_ -> return Nothing
 		else return $ Just (ak, sk)
 	where
-		getEnvKey s = liftIO $ catch (getEnv s) (const $ return "")
+		getEnvKey s = liftIO $ catchDefaultIO (getEnv s) ""
 
 {- Stores S3 creds encrypted in the remote's config if possible. -}
 s3SetCreds :: RemoteConfig -> Annex RemoteConfig

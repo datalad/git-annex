@@ -83,19 +83,17 @@ lockContent key a = do
 		unlock (Just l) = closeFd l
 
 openForLock :: FilePath -> Bool -> IO (Maybe Fd)
-openForLock file writelock = bracket_ prep cleanup $
-	catch (Just <$> openFd file mode Nothing defaultFileFlags)
-		(const $ return Nothing)
+openForLock file writelock = bracket_ prep cleanup go
 	where
+		go = catchMaybeIO $ openFd file mode Nothing defaultFileFlags
 		mode = if writelock then ReadWrite else ReadOnly
 		{- Since files are stored with the write bit disabled,
 		 - have to fiddle with permissions to open for an
-		 - exclusive lock. flock locking would avoid this,
-		 - but -}
-		prep = forwritelock $ allowWrite file
-		cleanup = forwritelock $ preventWrite file
+		 - exclusive lock. -}
 		forwritelock a = 
 			when writelock $ whenM (doesFileExist file) $ a
+		prep = forwritelock $ allowWrite file
+		cleanup = forwritelock $ preventWrite file
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath

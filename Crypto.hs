@@ -173,7 +173,7 @@ gpgParams :: [CommandParam] -> IO [String]
 gpgParams params = do
 	-- Enable batch mode if GPG_AGENT_INFO is set, to avoid extraneous
 	-- gpg output about password prompts.
-	e <- catch (getEnv "GPG_AGENT_INFO") (const $ return "")
+	e <- catchDefaultIO (getEnv "GPG_AGENT_INFO") ""
 	let batch = if null e then [] else ["--batch"]
 	return $ batch ++ defaults ++ toCommand params
 	where

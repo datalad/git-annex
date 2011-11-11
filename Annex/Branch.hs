@@ -295,10 +295,8 @@ setJournalFile file content = do
 
 {- Gets any journalled content for a file in the branch. -}
 getJournalFile :: FilePath -> Annex (Maybe String)
-getJournalFile file = do
-	g <- gitRepo
-	liftIO $ catch (liftM Just . readFileStrict $ journalFile g file)
-		(const $ return Nothing)
+getJournalFile file = inRepo $ \g -> catchMaybeIO $
+	readFileStrict $ journalFile g file
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: Annex [FilePath]
@@ -308,8 +306,8 @@ getJournalledFiles = map fileJournal <$> getJournalFiles
 getJournalFiles :: Annex [FilePath]
 getJournalFiles = do
 	g <- gitRepo
-	fs <- liftIO $ catch (getDirectoryContents $ gitAnnexJournalDir g)
-		(const $ return [])
+	fs <- liftIO $
+		catchDefaultIO (getDirectoryContents $ gitAnnexJournalDir g) []
 	return $ filter (`notElem` [".", ".."]) fs
 
 {- Stages the specified journalfiles. -}

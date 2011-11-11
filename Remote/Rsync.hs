@@ -110,7 +110,7 @@ retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
 	res <- retrieve o enck tmp
 	if res
-		then liftIO $ catchBool $ do
+		then liftIO $ catchBoolIO $ do
 			withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 			return True
 		else return res

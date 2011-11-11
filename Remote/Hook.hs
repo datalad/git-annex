@@ -9,7 +9,6 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
-import System.IO.Error (try)
 import System.Exit
 
 import Common.Annex
@@ -112,7 +111,7 @@ retrieve h k f = runHook h "retrieve" k (Just f) $ return True
 
 retrieveEncrypted :: String -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->
-	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBool $ do
+	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBoolIO $ do
 		withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 		return True
 
@@ -123,12 +122,10 @@ checkPresent :: Git.Repo -> String -> Key -> Annex (Either String Bool)
 checkPresent r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h "checkpresent"
-	dispatch <$> liftIO (try (check v) ::IO (Either IOException Bool))
+	liftIO $ catchMsgIO $ check v
 	where
 		findkey s = show k `elem` lines s
 		env = hookEnv k Nothing
-		dispatch (Left e) = Left $ show e
-		dispatch (Right v) = Right v
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
 			(frompipe, topipe) <- createPipe

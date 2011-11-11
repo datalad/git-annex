@@ -134,11 +134,7 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
 	where
-		checkhttp = dispatch <$> check
-			where
-				check = safely $ Url.exists $ keyUrl r key
-				dispatch (Left e) = Left $ show e
-				dispatch (Right v) = Right v
+		checkhttp = liftIO $ catchMsgIO $ Url.exists $ keyUrl r key
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			onRemote r (check, unknown) "inannex" [Param (show key)]
@@ -149,13 +145,11 @@ inAnnex r key
 				dispatch _ = unknown
 		checklocal = dispatch <$> check
 			where
-				check = safely $ onLocal r $
+				check = liftIO $ catchMsgIO $ onLocal r $
 					Annex.Content.inAnnexSafe key
-				dispatch (Left e) = Left $ show e
+				dispatch (Left e) = Left e
 				dispatch (Right (Just b)) = Right b
 				dispatch (Right Nothing) = unknown
-		safely :: IO a -> Annex (Either IOException a)
-		safely a = liftIO $ try a
 		unknown = Left $ "unable to check " ++ Git.repoDescribe r
 
 {- Runs an action on a local repository inexpensively, by making an annex

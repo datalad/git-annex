@@ -110,21 +110,21 @@ storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
 	src <- fromRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck (Param "-")
-	liftIO $ catchBool $
+	liftIO $ catchBoolIO $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieve buprepo k f = do
 	let params = bupParams "join" buprepo [Param $ show k]
-	liftIO $ catchBool $ do
+	liftIO $ catchBoolIO $ do
 		tofile <- openFile f WriteMode
 		pipeBup params Nothing (Just tofile)
 
 retrieveEncrypted :: BupRepo -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted buprepo (cipher, enck) f = do
 	let params = bupParams "join" buprepo [Param $ show enck]
-	liftIO $ catchBool $ do
+	liftIO $ catchBoolIO $ do
 		(pid, h) <- hPipeFrom "bup" $ toCommand params
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
 		forceSuccess pid
@@ -145,15 +145,12 @@ checkPresent r bupr k
 		showAction $ "checking " ++ Git.repoDescribe r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
-	| otherwise = dispatch <$> localcheck
+	| otherwise = liftIO $ catchMsgIO $
+		boolSystem "git" $ Git.gitCommandLine params bupr
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
 			, Param $ "refs/heads/" ++ show k]
-		localcheck = liftIO $ try $
-			boolSystem "git" $ Git.gitCommandLine params bupr
-		dispatch (Left e) = Left $ show e
-		dispatch (Right v) = Right v
 
 {- Store UUID in the annex.uuid setting of the bup repository. -}
 storeBupUUID :: UUID -> BupRepo -> Annex ()

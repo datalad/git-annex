@@ -69,7 +69,7 @@ locationLogs = do
 		files <- mapM tryDirContents (concat levelb)
 		return $ mapMaybe islogfile (concat files)
 	where
-		tryDirContents d = catch (dirContents d) (return . const [])
+		tryDirContents d = catchDefaultIO (dirContents d) []
 		islogfile f = maybe Nothing (\k -> Just (k, f)) $
 				logFileKey $ takeFileName f
 

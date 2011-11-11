@@ -104,9 +104,6 @@ checkNotReadOnly cmd
 	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
 
 checkEnv :: String -> IO ()
-checkEnv var = catch check (const $ return ())
-	where
-		check = do
-			val <- getEnv var
-			when (not $ null val) $
-				error $ "Action blocked by " ++ var
+checkEnv var =
+	whenM (not . null <$> catchDefaultIO (getEnv var) "") $
+		error $ "Action blocked by " ++ var
