@@ -1,3 +1,9 @@
+git-annex (3.20111112) UNRELEASED; urgency=low
+
+  * merge: Improve commit messages to mention what was merged.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
+
 git-annex (3.20111111) unstable; urgency=low
 
   * Handle a case where an annexed file is moved into a gitignored directory,

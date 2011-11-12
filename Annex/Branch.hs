@@ -120,8 +120,8 @@ commit message = whenM journalDirty $ lockJournal $ do
  - journal into the index. Otherwise, any changes in the journal would
  - later get staged, and might overwrite changes made during the merge.
  -
- - It would be cleaner to handle the merge by updating the journal, not the
- - index, with changes from the branches.
+ - (It would be cleaner to handle the merge by updating the journal, not the
+ - index, with changes from the branches.)
  -
  - The index is always updated using a union merge, as that's the most
  - efficient way to update it. However, if the branch can be
@@ -136,10 +136,13 @@ update = onceonly $ do
 	let (refs, branches) = unzip c
 	unless (not dirty && null refs) $ withIndex $ lockJournal $ do
 		when dirty stageJournalFiles
-		unless (null branches) $ do
-			showSideAction $ "merging " ++
-				(unwords $ map Git.refDescribe branches) ++
+		let merge_desc = if null branches
+			then "update" 
+			else "merging " ++
+				(unwords $ map Git.refDescribe branches) ++ 
 				" into " ++ name
+		unless (null branches) $ do
+			showSideAction merge_desc
 			{- Note: This merges the branches into the index.
 			 - Any unstaged changes in the git-annex branch
 			 - (if it's checked out) will be removed. So,
@@ -149,7 +152,7 @@ update = onceonly $ do
 			inRepo $ \g -> Git.UnionMerge.merge_index g branches
 		ff <- if dirty then return False else tryFastForwardTo refs
 		unless ff $ inRepo $
-			Git.commit "update" fullname (nub $ fullname:refs)
+			Git.commit merge_desc fullname (nub $ fullname:refs)
 		invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
