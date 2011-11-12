@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
 import Git
+import Git.CatFile
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -30,14 +31,16 @@ import Git
 merge :: String -> String -> Repo -> IO ()
 merge x y repo = do
 	a <- ls_tree x repo
-	b <- merge_trees x y repo
+	h <- catFileStart repo
+	b <- merge_trees x y h repo
+	catFileStop h
 	update_index repo (a++b)
 
 {- Merges a list of branches into the index. Previously staged changed in
  - the index are preserved (and participate in the merge). -}
-merge_index :: Repo -> [String] -> IO ()
-merge_index repo bs =
-	update_index repo =<< concat <$> mapM (`merge_tree_index` repo) bs
+merge_index :: CatFileHandle -> Repo -> [String] -> IO ()
+merge_index h repo bs =
+	update_index repo =<< concat <$> mapM (\b -> merge_tree_index b h repo) bs
 
 {- Feeds a list into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of
@@ -60,22 +63,22 @@ ls_tree x = pipeNullSplit params
 		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- For merging two trees. -}
-merge_trees :: String -> String -> Repo -> IO [String]
-merge_trees x y = calc_merge $ "diff-tree":diff_opts ++ [x, y]
+merge_trees :: String -> String -> CatFileHandle -> Repo -> IO [String]
+merge_trees x y h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
 
 {- For merging a single tree into the index. -}
-merge_tree_index :: String -> Repo -> IO [String]
-merge_tree_index x = calc_merge $ "diff-index":diff_opts ++ ["--cached", x]
+merge_tree_index :: String -> CatFileHandle -> Repo -> IO [String]
+merge_tree_index x h = calc_merge h $ "diff-index":diff_opts ++ ["--cached", x]
 
 diff_opts :: [String]
 diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
 {- Calculates how to perform a merge, using git to get a raw diff,
  - and returning a list suitable for update_index. -}
-calc_merge :: [String] -> Repo -> IO [String]
-calc_merge differ repo = do
+calc_merge :: CatFileHandle -> [String] -> Repo -> IO [String]
+calc_merge h differ repo = do
 	diff <- pipeNullSplit (map Param differ) repo
-	l <- mapM (\p -> mergeFile p repo) (pairs diff)
+	l <- mapM (\p -> mergeFile p h repo) (pairs diff)
 	return $ catMaybes l
 	where
 		pairs [] = []
@@ -97,12 +100,12 @@ hashObject content repo = getSha subcmd $ do
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
-mergeFile :: (String, FilePath) -> Repo -> IO (Maybe String)
-mergeFile (info, file) repo = case filter (/= nullsha) [asha, bsha] of
+mergeFile :: (String, FilePath) -> CatFileHandle -> Repo -> IO (Maybe String)
+mergeFile (info, file) h repo = case filter (/= nullsha) [asha, bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
 	shas -> do
-		content <- pipeRead (map Param ("show":shas)) repo
+		content <- L.concat <$> mapM (catObject h) shas
 		sha <- hashObject (unionmerge content) repo
 		return $ Just $ update_index_line sha file
 	where

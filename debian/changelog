@@ -6,6 +6,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
     no longer needs to auto-merge.
   * init: When run in an already initalized repository, and without
     a description specified, don't delete the old description. 
+  * Optimised union merging; now only runs git cat-file once.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 

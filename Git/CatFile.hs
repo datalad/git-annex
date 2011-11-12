@@ -9,13 +9,15 @@ module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
 	catFileStop,
-	catFile
+	catFile,
+	catObject
 ) where
 
 import Control.Monad.State
 import System.Cmd.Utils
 import System.IO
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
 import Utility.SafeCommand
@@ -34,30 +36,38 @@ catFileStop (pid, from, to) = do
 	hClose from
 	forceSuccess pid
 
-{- Uses a running git cat-file read the content of a file from a branch.
- - Files that do not exist on the branch will have "" returned. -}
-catFile :: CatFileHandle -> String -> FilePath -> IO String
-catFile (_, from, to) branch file = do
-	hPutStrLn to want
+{- Reads a file from a specified branch. -}
+catFile :: CatFileHandle -> String -> FilePath -> IO L.ByteString
+catFile h branch file = catObject h (branch ++ ":" ++ file)
+
+{- Uses a running git cat-file read the content of an object.
+ - Objects that do not exist will have "" returned. -}
+catObject :: CatFileHandle -> String -> IO L.ByteString
+catObject (_, from, to) object = do
+	hPutStrLn to object
 	hFlush to
 	header <- hGetLine from
 	case words header of
-		[sha, blob, size]
+		[sha, objtype, size]
 			| length sha == Git.shaSize &&
-			  blob == "blob" -> handle size
+			  validobjtype objtype -> handle size
 			| otherwise -> empty
 		_
-			| header == want ++ " missing" -> empty
+			| header == object ++ " missing" -> empty
 			| otherwise -> error $ "unknown response from git cat-file " ++ header
 	where
-		want = branch ++ ":" ++ file
 		handle size = case reads size of
 			[(bytes, "")] -> readcontent bytes
 			_ -> empty
 		readcontent bytes = do
-			content <- B.hGet from bytes
+			content <- S.hGet from bytes
 			c <- hGetChar from
 			when (c /= '\n') $
 				error "missing newline from git cat-file"
-			return $ B.unpack content
-		empty = return ""
+			return $ L.fromChunks [content]
+		empty = return L.empty
+		validobjtype t
+			| t == "blob" = True
+			| t == "commit" = True
+			| t == "tree" = True
+			| otherwise = False

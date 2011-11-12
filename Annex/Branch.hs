@@ -149,7 +149,8 @@ update = onceonly $ do
 			 - documentation advises users not to directly
 			 - modify the branch.
 			 -}
-			inRepo $ \g -> Git.UnionMerge.merge_index g branches
+			h <- catFileHandle
+			inRepo $ \g -> Git.UnionMerge.merge_index h g branches
 		ff <- if dirty then return False else tryFastForwardTo refs
 		unless ff $ inRepo $
 			Git.commit merge_desc fullname (nub $ fullname:refs)
@@ -280,7 +281,7 @@ get' staleok file = fromcache =<< getCache file
 		fromjournal Nothing
 			| staleok = withIndex frombranch
 			| otherwise = withIndexUpdate $ frombranch >>= cache
-		frombranch = catFile fullname file
+		frombranch = L.unpack <$> catFile fullname file
 		cache content = do
 			setCache file content
 			return content
