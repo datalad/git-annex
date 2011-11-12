@@ -122,9 +122,7 @@ gitRepo = getState repo
 
 {- Runs an IO action in the annex's git repository. -}
 inRepo :: (Git.Repo -> IO a) -> Annex a
-inRepo a = do
-	g <- gitRepo
-	liftIO $ a g
+inRepo a = liftIO . a =<< gitRepo
 
 {- Extracts a value from the annex's git repisitory. -}
 fromRepo :: (Git.Repo -> a) -> Annex a
