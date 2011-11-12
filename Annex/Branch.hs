@@ -244,9 +244,13 @@ siblingBranches = do
 		pair l = (head l, last l)
 		uref (a, _) (b, _) = a == b
 
-{- Applies a function to modifiy the content of a file. -}
+{- Applies a function to modifiy the content of a file.
+ -
+ - Note that this does not cause the branch to be merged, it only
+ - modifes the current content of the file on the branch.
+ -}
 change :: FilePath -> (String -> String) -> Annex ()
-change file a = lockJournal $ get file >>= return . a >>= set file
+change file a = lockJournal $ getStale file >>= return . a >>= set file
 
 {- Records new content of a file into the journal. -}
 set :: FilePath -> String -> Annex ()
@@ -259,13 +263,24 @@ set file content = do
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
-get file = fromcache =<< getCache file
+get = get' False
+
+{- Like get, but does not merge the branch, so the info returned may not
+ - reflect changes in remotes. (Changing the value this returns, and then
+ - merging is always the same as using get, and then changing its value.) -}
+getStale :: FilePath -> Annex String
+getStale = get' True
+
+get' :: Bool -> FilePath -> Annex String
+get' staleok file = fromcache =<< getCache file
 	where
 		fromcache (Just content) = return content
 		fromcache Nothing = fromjournal =<< getJournalFile file
 		fromjournal (Just content) = cache content
-		fromjournal Nothing = withIndexUpdate $
-			cache =<< catFile fullname file
+		fromjournal Nothing
+			| staleok = withIndex frombranch
+			| otherwise = withIndexUpdate $ frombranch >>= cache
+		frombranch = catFile fullname file
 		cache content = do
 			setCache file content
 			return content

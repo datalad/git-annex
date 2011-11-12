@@ -16,3 +16,5 @@ occurs before it has done anything, so ctrl-c should not be a problem
 there.
 
 This is a delicate change, I need to take care.. --[[Joey]]
+
+> [[done]] (assuming I didn't miss any cases where this is not safe!) --[[Joey]] 

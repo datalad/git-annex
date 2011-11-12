@@ -1,6 +1,9 @@
 git-annex (3.20111112) UNRELEASED; urgency=low
 
   * merge: Improve commit messages to mention what was merged.
+  * Avoid doing auto-merging in commands that don't need fully current
+    information from the git-annex branch. In particular, git annex add
+    no longer needs to auto-merge.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 
