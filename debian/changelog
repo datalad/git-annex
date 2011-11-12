@@ -4,6 +4,8 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * Avoid doing auto-merging in commands that don't need fully current
     information from the git-annex branch. In particular, git annex add
     no longer needs to auto-merge.
+  * init: When run in an already initalized repository, and without
+    a description specified, don't delete the old description. 
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 

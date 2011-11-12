@@ -27,5 +27,5 @@ start ws = do
 
 perform :: String -> CommandPerform
 perform description = do
-	initialize (Just description)
+	initialize $ if null description then Nothing else Just description
 	next $ return True
