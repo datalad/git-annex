@@ -76,7 +76,7 @@ start = do
 	fast <- Annex.getState Annex.fast
 	let stats = if fast then fast_stats else fast_stats ++ slow_stats
 	evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
-	stop
+	next $ next $ return True
 
 stat :: String -> StatState String -> Stat
 stat desc a = return $ Just (desc, a)
