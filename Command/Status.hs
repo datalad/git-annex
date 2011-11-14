@@ -54,8 +54,8 @@ stats =
 	[ supported_backends
 	, supported_remote_types
 	, remote_list Trusted "trusted"
-	, remote_list UnTrusted "untrusted"
 	, remote_list SemiTrusted "semitrusted"
+	, remote_list UnTrusted "untrusted"
 	, tmp_size
 	, bad_data_size
 	, local_annex_keys
