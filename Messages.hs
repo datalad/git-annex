@@ -20,6 +20,8 @@ module Messages (
 	warning,
 	indent,
 	maybeShowJSON,
+	showWith,
+	
 	setupConsole
 ) where
 
@@ -31,7 +33,7 @@ import qualified Annex
 import qualified Messages.JSON as JSON
 
 showStart :: String -> String -> Annex ()
-showStart command file = handle (JSON.start command file) $
+showStart command file = handle (JSON.start command $ Just file) $
 	flushed $ putStr $ command ++ " " ++ file ++ " "
 
 showNote :: String -> Annex ()
@@ -110,6 +112,16 @@ handle json normal = do
 {- Shows a JSON value only when in json mode. -}
 maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
 maybeShowJSON v = handle (JSON.add v) q
+
+{- Performs an a action (such as displaying something) only when
+ - not in json mode, and not quiet. -}
+showWith :: Annex () -> Annex ()
+showWith a = do
+	output <- Annex.getState Annex.output
+	case output of
+		Annex.NormalOutput -> a
+		Annex.QuietOutput -> q
+		Annex.JSONOutput -> q
 
 q :: Monad m => m ()
 q = return ()

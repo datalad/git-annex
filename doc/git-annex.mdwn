@@ -240,7 +240,9 @@ subdirectories).
 * status
 
   Displays some statistics and other information, including how much data
-  is in the annex.
+  is in the annex and a list of all known repositories.
+
+  To only show the data that can be gathered quickly, use --fast.
 
 * map
 

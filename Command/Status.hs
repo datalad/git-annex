@@ -18,6 +18,7 @@ import qualified Types.Remote as R
 import qualified Remote
 import qualified Command.Unused
 import qualified Git
+import qualified Annex
 import Command
 import Utility.DataUnits
 import Annex.Content
@@ -49,14 +50,17 @@ seek = [withNothing start]
 {- Order is significant. Less expensive operations, and operations
  - that share data go together.
  -}
-stats :: [Stat]
-stats = 
+fast_stats :: [Stat]
+fast_stats = 
 	[ supported_backends
 	, supported_remote_types
 	, remote_list Trusted "trusted"
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
-	, tmp_size
+	]
+slow_stats :: [Stat]
+slow_stats = 
+	[ tmp_size
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
@@ -67,6 +71,10 @@ stats =
 
 start :: CommandStart
 start = do
+	showStart "status" "."
+	showWith $ liftIO $ putStrLn ""
+	fast <- Annex.getState Annex.fast
+	let stats = if fast then fast_stats else fast_stats ++ slow_stats
 	evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
 	stop
 
@@ -80,9 +88,11 @@ showStat :: Stat -> StatState ()
 showStat s = calc =<< s
 	where
 		calc (Just (desc, a)) = do
-			liftIO $ putStr $ desc ++ ": "
-			liftIO $ hFlush stdout
-			liftIO . putStrLn =<< a
+			r <- a -- run first, it may produce JSON
+			lift . showWith $ do
+				liftIO $ putStr $ desc ++ ": "
+				liftIO $ hFlush stdout
+				liftIO $ putStrLn r
 		calc Nothing = return ()
 
 supported_backends :: Stat

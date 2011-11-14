@@ -9,6 +9,9 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * Optimised union merging; now only runs git cat-file once.
   * status: Now displays trusted, untrusted, and semitrusted repositories
     separately.
+  * status: Fix --json mode (only the repository lists are currently
+    displayed)
+  * status: --fast is back
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 

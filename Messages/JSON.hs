@@ -16,8 +16,12 @@ import Text.JSON
 
 import qualified Utility.JSONStream as Stream
 
-start :: String -> String -> IO ()
-start command file = putStr $ Stream.start [("command", command), ("file", file)]
+start :: String -> Maybe String -> IO ()
+start command file =
+	putStr $ Stream.start $ ("command", command) : filepart file
+	where
+		filepart Nothing = []
+		filepart (Just f) = [("file", f)]
 
 end :: Bool -> IO ()
 end b = putStr $ Stream.add [("success", b)] ++ Stream.end
