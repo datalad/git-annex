@@ -24,6 +24,7 @@ import Annex.Content
 import Types.Key
 import Backend
 import Logs.UUID
+import Logs.Trust
 import Remote
 
 -- a named computation that produces a statistic
@@ -52,7 +53,9 @@ stats :: [Stat]
 stats = 
 	[ supported_backends
 	, supported_remote_types
-	, remote_list
+	, remote_list Trusted "trusted"
+	, remote_list UnTrusted "untrusted"
+	, remote_list SemiTrusted "semitrusted"
 	, tmp_size
 	, bad_data_size
 	, local_annex_keys
@@ -90,10 +93,13 @@ supported_remote_types :: Stat
 supported_remote_types = stat "supported remote types" $
 	return $ unwords $ map R.typename Remote.remoteTypes
 
-remote_list :: Stat
-remote_list = stat "known repositories" $ lift $ do
-	s <- prettyPrintUUIDs "repos" =<< M.keys <$> uuidMap
-	return $ '\n':init s
+remote_list :: TrustLevel -> String -> Stat
+remote_list level desc = stat n $ lift $ do
+	us <- M.keys <$> uuidMap
+	s <- prettyPrintUUIDs n =<< fst <$> trustPartition level us
+	return $ if null s then "none" else '\n':init s
+	where
+		n = desc ++ " repositories"
 
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $
