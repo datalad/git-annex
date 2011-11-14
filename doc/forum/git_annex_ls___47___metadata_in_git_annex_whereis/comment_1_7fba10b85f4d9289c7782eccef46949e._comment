@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-11-14T22:46:35Z"
+ content="""
+When  I want that, I ls -l the file and look at the symlink to the key. Ie, in SHA1-s10481423--efc7eec0d711212842cd6bb8f957e1628146d6ed the size is 10481423 bytes. 
+"""]]
