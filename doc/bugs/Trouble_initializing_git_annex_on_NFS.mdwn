@@ -12,3 +12,5 @@ The following occurs in a directory that is shared on an NFS server:
 This happens reliably.  Is there any way around it?  I have shell
 access on the NFS server, but it is a NAS, so I don't think it is
 capable of running git-annex.
+
+[[done]]
