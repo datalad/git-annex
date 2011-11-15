@@ -12,6 +12,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * status: Fix --json mode (only the repository lists are currently
     displayed)
   * status: --fast is back
+  * Fix support for insteadOf url remapping. Closes: #644278
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 
