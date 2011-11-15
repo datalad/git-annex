@@ -40,14 +40,17 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 
 options :: [OptDescr (Annex ())]
 options = commonOptions ++
-	[ Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "repository uuid"
 	]
 	where
-		check expected = do
-			u <- getUUID
-			when (u /= toUUID expected) $ error $
-				"expected repository UUID " ++ expected
-					++ " but found UUID " ++ fromUUID u
+		checkuuid expected = getUUID >>= check
+			where
+				check u | u == toUUID expected = return ()
+				check NoUUID = unexpected "uninitialized repository"
+				check u = unexpected $ "UUID " ++ fromUUID u
+				unexpected s = error $
+					"expected repository UUID " ++
+					expected ++ " but found " ++ s
 
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
