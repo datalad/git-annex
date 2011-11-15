@@ -71,12 +71,12 @@ slow_stats =
 
 start :: CommandStart
 start = do
-	showStart "status" "."
-	showWith $ liftIO $ putStrLn ""
 	fast <- Annex.getState Annex.fast
 	let stats = if fast then fast_stats else fast_stats ++ slow_stats
-	evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
-	next $ next $ return True
+	showCustom "status" $ do
+		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
+		return True
+	stop
 
 stat :: String -> StatState String -> Stat
 stat desc a = return $ Just (desc, a)
@@ -88,11 +88,8 @@ showStat :: Stat -> StatState ()
 showStat s = calc =<< s
 	where
 		calc (Just (desc, a)) = do
-			r <- a -- run first, it may produce JSON
-			lift . showWith $ do
-				liftIO $ putStr $ desc ++ ": "
-				liftIO $ hFlush stdout
-				liftIO $ putStrLn r
+			(lift . showHeader) desc
+			lift . showRaw =<< a
 		calc Nothing = return ()
 
 supported_backends :: Stat

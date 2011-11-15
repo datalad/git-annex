@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,9 @@ module Messages (
 	warning,
 	indent,
 	maybeShowJSON,
-	showWith,
+	showCustom,
+	showHeader,
+	showRaw,
 	
 	setupConsole
 ) where
@@ -88,6 +90,28 @@ warning' w = do
 indent :: String -> String
 indent s = join "\n" $ map (\l -> "  " ++ l) $ lines s
 
+{- Shows a JSON value only when in json mode. -}
+maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
+maybeShowJSON v = handle (JSON.add v) q
+
+{- Performs an action that outputs nonstandard/customized output, and
+ - in JSON mode wraps its output in JSON.start and JSON.end, so it's
+ - a complete JSON document.
+ - This is only needed when showStart and showEndOk is not used. -}
+showCustom :: String -> Annex Bool -> Annex ()
+showCustom command a = do
+	handle (JSON.start command Nothing) q
+	r <- a
+	handle (JSON.end r) q
+
+showHeader :: String -> Annex ()
+showHeader h = handle q $ do
+	putStr $ h ++ ": "
+	hFlush stdout
+
+showRaw :: String -> Annex ()
+showRaw s = handle q $ putStrLn s
+
 {- By default, haskell honors the user's locale in its output to stdout
  - and stderr. While that's great for proper unicode support, for git-annex
  - all that's really needed is the ability to display simple messages
@@ -108,20 +132,6 @@ handle json normal = do
 		Annex.NormalOutput -> liftIO normal
 		Annex.QuietOutput -> q
 		Annex.JSONOutput -> liftIO json
-
-{- Shows a JSON value only when in json mode. -}
-maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
-maybeShowJSON v = handle (JSON.add v) q
-
-{- Performs an a action (such as displaying something) only when
- - not in json mode, and not quiet. -}
-showWith :: Annex () -> Annex ()
-showWith a = do
-	output <- Annex.getState Annex.output
-	case output of
-		Annex.NormalOutput -> a
-		Annex.QuietOutput -> q
-		Annex.JSONOutput -> q
 
 q :: Monad m => m ()
 q = return ()
