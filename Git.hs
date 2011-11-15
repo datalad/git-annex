@@ -521,16 +521,17 @@ genRemote s repo = gen $ calcloc s
 		-- insteadof config can rewrite remote location
 		calcloc l
 			| null insteadofs = l
-			| otherwise = replacement ++ drop (length replacement) l
+			| otherwise = replacement ++ drop (length bestvalue) l
 			where
-				replacement = drop (length "url.") $
+				replacement = drop (length prefix) $
 					take (length bestkey - length suffix) bestkey
-				bestkey = fst $ maximumBy longestvalue insteadofs
+				(bestkey, bestvalue) = maximumBy longestvalue insteadofs
 				longestvalue (_, a) (_, b) = compare b a
 				insteadofs = filterconfig $ \(k, v) -> 
+					startswith prefix k &&
 					endswith suffix k &&
 					startswith v l
-				suffix = ".insteadof"
+				(prefix, suffix) = ("url." , ".insteadof")
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
