@@ -131,7 +131,7 @@ which will broadcast its updated location information.
 ## take it farther
 
 Of course you can create as many checkouts as you desire. If you have a
-desktop matchine too, you can make a checkout there, and use `git remote
+desktop machine too, you can make a checkout there, and use `git remote
 add` to also let your desktop access the backup repository. 
 
 You can add remotes for each direct connection between machines you find you
