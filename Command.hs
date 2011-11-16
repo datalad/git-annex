@@ -7,6 +7,7 @@
 
 module Command (
 	command,
+	noRepo,
 	next,
 	stop,
 	prepCommand,
@@ -31,9 +32,14 @@ import Logs.Trust
 import Logs.Location
 import Config
 
-{- Generates a command with the common checks. -}
+{- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
-command = Command commonChecks
+command = Command Nothing commonChecks
+
+{- Adds a fallback action to a command, that will be run if it's used
+ - outside a git repository. -}
+noRepo :: IO () -> Command -> Command
+noRepo a c = c { cmdnorepo = Just a }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

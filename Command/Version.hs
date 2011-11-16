@@ -13,7 +13,7 @@ import qualified Build.SysConfig as SysConfig
 import Annex.Version
 
 def :: [Command]
-def = [dontCheck repoExists $
+def = [noRepo showPackageVersion $ dontCheck repoExists $
 	command "version" paramNothing seek "show version info"]
 
 seek :: [CommandSeek]
@@ -23,7 +23,7 @@ start :: CommandStart
 start = do
 	v <- getVersion
 	liftIO $ do
-		putStrLn $ "git-annex version: " ++ SysConfig.packageversion
+		showPackageVersion
 		putStrLn $ "local repository version: " ++ fromMaybe "unknown" v
 		putStrLn $ "default repository version: " ++ defaultVersion
 		putStrLn $ "supported repository versions: " ++ vs supportedVersions
@@ -31,3 +31,6 @@ start = do
 	stop
 	where
 		vs = join " "
+
+showPackageVersion :: IO ()
+showPackageVersion = putStrLn $ "git-annex version: " ++ SysConfig.packageversion

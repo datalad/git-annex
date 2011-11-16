@@ -30,8 +30,8 @@ trustLog = "trust.log"
 trustGet :: TrustLevel -> Annex [UUID]
 trustGet SemiTrusted = do -- special case; trustMap does not contain all these
 	others <- M.keys . M.filter (/= SemiTrusted) <$> trustMap
-	all <- uuidList
-	return $ all \\ others
+	alluuids <- uuidList
+	return $ alluuids \\ others
 trustGet level = M.keys . M.filter (== level) <$> trustMap
 
 {- Read the trustLog into a map, overriding with any

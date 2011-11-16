@@ -11,7 +11,9 @@ module CmdLine (
 	shutdown
 ) where
 
-import System.IO.Error (try)
+import qualified System.IO.Error as IO
+import qualified Control.Exception as E
+import Control.Exception (throw)
 import System.Console.GetOpt
 
 import Common.Annex
@@ -25,14 +27,18 @@ type Params = [String]
 type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
-dispatch :: Params -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
-dispatch args cmds options header gitrepo = do
+dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
+dispatch args cmds options header getgitrepo = do
 	setupConsole
-	state <- Annex.new gitrepo
-	(actions, state') <- Annex.run state $ do
-		sequence_ flags
-		prepCommand cmd params
-	tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
+	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
+	case r of
+		Left e -> maybe (throw e) id (cmdnorepo cmd)
+		Right g -> do
+			state <- Annex.new g
+			(actions, state') <- Annex.run state $ do
+				sequence_ flags
+				prepCommand cmd params
+			tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
 	where
 		(flags, cmd, params) = parseCmd args cmds options header
 
@@ -77,7 +83,7 @@ tryRun' errnum _ cmd []
 	| otherwise = return ()
 tryRun' errnum state cmd (a:as) = run >>= handle
 	where
-		run = try $ Annex.run state $ do
+		run = IO.try $ Annex.run state $ do
 			Annex.Queue.flushWhenFull
 			a
 		handle (Left err) = showerr err >> cont False state
