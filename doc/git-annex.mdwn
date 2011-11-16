@@ -441,7 +441,7 @@ file contents are present at either of two repositories.
 * --copies=number
 
   Matches only files that git-annex believes to have the specified number
-  of copies.
+  of copies, or more.
 
 * --not
 
