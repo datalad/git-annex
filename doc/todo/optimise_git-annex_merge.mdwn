@@ -15,3 +15,9 @@ merged. This could be reduced to a single call to `git-cat-file --batch`,
 There is already a Git.CatFile library that can do this easily. --[[Joey]]
 
 > This is now done, part above remains todo. --[[Joey]] 
+
+---
+
+Merging used to use memory proportional to the size of the diff. It now
+streams data, running in constant space. This probably sped it up a lot,
+as there's much less allocation and GC action. --[[Joey]] 

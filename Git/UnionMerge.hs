@@ -42,25 +42,27 @@ merge_index :: CatFileHandle -> Repo -> [String] -> IO ()
 merge_index h repo bs =
 	update_index_via repo $ map (\b -> merge_tree_index b h repo) bs
 
-update_index :: Repo -> [String] -> IO ()
-update_index repo ls = update_index_via repo [\h -> mapM_ (sendContent h) ls]
-
 {- Feeds content into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of
  - ls_tree, merge_trees, and merge_tree_index. -}
-update_index_via :: Repo -> [Handle -> IO ()] -> IO ()
-update_index_via repo ls = do
+update_index :: Repo -> [String] -> IO ()
+update_index repo ls = update_index_via repo [\s -> mapM_ s ls]
+
+type Streamer = (String -> IO ()) -> IO ()
+
+{- Streams content into update-index. -}
+update_index_via :: Repo -> [Streamer] -> IO ()
+update_index_via repo as = do
 	(p, h) <- hPipeTo "git" (toCommand $ Git.gitCommandLine params repo)
-	forM_ ls $ \l -> l h
+	forM_ as (stream h)
 	hClose h
 	forceSuccess p
 	where
 		params = map Param ["update-index", "-z", "--index-info"]
-
-sendContent :: Handle -> String -> IO ()
-sendContent h s = do
-	hPutStr h s
-	hPutStr h "\0"
+		stream h a = a (streamer h)
+		streamer h s = do
+			hPutStr h s
+			hPutStr h "\0"
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
@@ -68,17 +70,17 @@ update_index_line :: String -> FilePath -> String
 update_index_line sha file = "100644 blob " ++ sha ++ "\t" ++ file
 
 {- Gets the contents of a tree. -}
-ls_tree :: String -> Repo -> Handle -> IO ()
-ls_tree x repo h = mapM_ (sendContent h) =<< pipeNullSplit params repo
+ls_tree :: String -> Repo -> Streamer
+ls_tree x repo streamer = mapM_ streamer =<< pipeNullSplit params repo
 	where
 		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- For merging two trees. -}
-merge_trees :: String -> String -> CatFileHandle -> Repo -> Handle -> IO ()
+merge_trees :: String -> String -> CatFileHandle -> Repo -> Streamer
 merge_trees x y h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
 
 {- For merging a single tree into the index. -}
-merge_tree_index :: String -> CatFileHandle -> Repo -> Handle -> IO ()
+merge_tree_index :: String -> CatFileHandle -> Repo -> Streamer
 merge_tree_index x h = calc_merge h $ "diff-index":diff_opts ++ ["--cached", x]
 
 diff_opts :: [String]
@@ -86,12 +88,13 @@ diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
 {- Calculates how to perform a merge, using git to get a raw diff,
  - and returning a list suitable for update_index. -}
-calc_merge :: CatFileHandle -> [String] -> Repo -> Handle -> IO ()
-calc_merge ch differ repo ih = pipeNullSplit (map Param differ) repo >>= go
+calc_merge :: CatFileHandle -> [String] -> Repo -> Streamer
+calc_merge ch differ repo streamer = gendiff >>= go
 	where
+		gendiff = pipeNullSplit (map Param differ) repo
 		go [] = return ()
 		go (info:file:rest) = mergeFile info file ch repo >>=
-			maybe (go rest) (\l -> sendContent ih l >> go rest)
+			maybe (go rest) (\l -> streamer l >> go rest)
 		go (_:[]) = error "calc_merge parse error"
 
 {- Given an info line from a git raw diff, and the filename, generates
