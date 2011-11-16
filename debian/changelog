@@ -6,14 +6,14 @@ git-annex (3.20111112) UNRELEASED; urgency=low
     no longer needs to auto-merge.
   * init: When run in an already initalized repository, and without
     a description specified, don't delete the old description. 
-  * Optimised union merging; now only runs git cat-file once.
+  * Optimised union merging; now only runs git cat-file once, and runs
+    in constant space.
   * status: Now displays trusted, untrusted, and semitrusted repositories
     separately.
   * status: Fix --json mode (only the repository lists are currently
     displayed)
   * status: --fast is back
   * Fix support for insteadOf url remapping. Closes: #644278
-  * merge: Now runs in constant space.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 
