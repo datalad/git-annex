@@ -20,6 +20,7 @@ import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
+import Logs.UUID
 
 {- Filename of trust.log. -}
 trustLog :: FilePath
@@ -27,6 +28,10 @@ trustLog = "trust.log"
 
 {- Returns a list of UUIDs at the specified trust level. -}
 trustGet :: TrustLevel -> Annex [UUID]
+trustGet SemiTrusted = do -- special case; trustMap does not contain all these
+	others <- M.keys . M.filter (/= SemiTrusted) <$> trustMap
+	all <- uuidList
+	return $ all \\ others
 trustGet level = M.keys . M.filter (== level) <$> trustMap
 
 {- Read the trustLog into a map, overriding with any
