@@ -130,6 +130,8 @@ commit message = whenM journalDirty $ lockJournal $ do
  -}
 update :: Annex ()
 update = onceonly $ do
+	-- ensure branch exists
+	create
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
