@@ -10,6 +10,10 @@
 
 module Git (
 	Repo,
+	Ref(..),
+	Branch,
+	Sha,
+	Tag,
 	repoFromCwd,
 	repoFromAbsPath,
 	repoFromUnknown,
@@ -94,6 +98,18 @@ data Repo = Repo {
 	remoteName :: Maybe String 
 } deriving (Show, Eq)
 
+{- A git ref. Can be a sha1, or a branch or tag name. -}
+newtype Ref = Ref String
+	deriving (Eq)
+
+instance Show Ref where
+	show (Ref v) = v
+
+{- Aliases for Ref. -}
+type Branch = Ref
+type Sha = Ref
+type Tag = Ref
+
 newFrom :: RepoLocation -> Repo
 newFrom l = 
 	Repo {
@@ -162,9 +178,9 @@ repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
 
-{- Converts a fully qualified git ref into a user-visible version -}
-refDescribe :: String -> String
-refDescribe = remove "refs/heads/" . remove "refs/remotes/"
+{- Converts a fully qualified git ref into a user-visible version. -}
+refDescribe :: Ref -> String
+refDescribe = remove "refs/heads/" . remove "refs/remotes/" . show
 	where
 		remove prefix s
 			| prefix `isPrefixOf` s = drop (length prefix) s
@@ -432,7 +448,7 @@ useIndex index = do
 
 {- Runs an action that causes a git subcommand to emit a sha, and strips
    any trailing newline, returning the sha. -}
-getSha :: String -> IO String -> IO String
+getSha :: String -> IO String -> IO Sha
 getSha subcommand a = do
 	t <- a
 	let t' = if last t == '\n'
@@ -440,27 +456,27 @@ getSha subcommand a = do
 		else t
 	when (length t' /= shaSize) $
 		error $ "failed to read sha from git " ++ subcommand ++ " (" ++ t' ++ ")"
-	return t'
+	return $ Ref t'
 
 {- Size of a git sha. -}
 shaSize :: Int
 shaSize = 40
 
-{- Commits the index into the specified branch, 
+{- Commits the index into the specified branch (or other ref), 
  - with the specified parent refs. -}
-commit :: String -> String -> [String] -> Repo -> IO ()
+commit :: String -> Ref -> [Ref] -> Repo -> IO ()
 commit message newref parentrefs repo = do
 	tree <- getSha "write-tree" $ asString $
 		pipeRead [Param "write-tree"] repo
 	sha <- getSha "commit-tree" $ asString $
 		ignorehandle $ pipeWriteRead
-			(map Param $ ["commit-tree", tree] ++ ps)
+			(map Param $ ["commit-tree", show tree] ++ ps)
 			(L.pack message) repo
-	run "update-ref" [Param newref, Param sha] repo
+	run "update-ref" [Param $ show newref, Param $ show sha] repo
 	where
 		ignorehandle a = snd <$> a
 		asString a = L.unpack <$> a
-		ps = concatMap (\r -> ["-p", r]) parentrefs
+		ps = concatMap (\r -> ["-p", show r]) parentrefs
 
 {- Runs git config and populates a repo with its config. -}
 configRead :: Repo -> IO Repo

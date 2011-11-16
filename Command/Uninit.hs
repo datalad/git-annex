@@ -26,9 +26,9 @@ check :: Annex ()
 check = do
 	b <- current_branch	
 	when (b == Annex.Branch.name) $ error $
-		"cannot uninit when the " ++ b ++ " branch is checked out"
+		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	where
-		current_branch = head . lines . B.unpack <$> revhead
+		current_branch = Git.Ref . head . lines . B.unpack <$> revhead
 		revhead = inRepo $ Git.pipeRead 
 			[Params "rev-parse --abbrev-ref HEAD"]
 
@@ -57,5 +57,5 @@ cleanup = do
 	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState
-	inRepo $ Git.run "branch" [Param "-D", Param Annex.Branch.name]
+	inRepo $ Git.run "branch" [Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess

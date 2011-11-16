@@ -86,7 +86,7 @@ logFiles dir = return . filter (".log" `isSuffixOf`)
 
 push :: Annex ()
 push = do
-	origin_master <- Annex.Branch.refExists "origin/master"
+	origin_master <- Annex.Branch.refExists $ Git.Ref "origin/master"
 	origin_gitannex <- Annex.Branch.hasOrigin
 	case (origin_master, origin_gitannex) of
 		(_, True) -> do
@@ -103,7 +103,7 @@ push = do
 			Annex.Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
-			inRepo $ Git.run "push" [Param "origin", Param Annex.Branch.name]
+			inRepo $ Git.run "push" [Param "origin", Param $ show Annex.Branch.name]
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch

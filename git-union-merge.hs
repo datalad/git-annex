@@ -37,7 +37,7 @@ parseArgs = do
 
 main :: IO ()
 main = do
-	[aref, bref, newref] <- parseArgs
+	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.configRead =<< Git.repoFromCwd
 	_ <- Git.useIndex (tmpIndex g)
 	setup g

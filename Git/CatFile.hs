@@ -37,14 +37,14 @@ catFileStop (pid, from, to) = do
 	forceSuccess pid
 
 {- Reads a file from a specified branch. -}
-catFile :: CatFileHandle -> String -> FilePath -> IO L.ByteString
-catFile h branch file = catObject h (branch ++ ":" ++ file)
+catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
+catFile h branch file = catObject h $ Ref $ show branch ++ ":" ++ file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
-catObject :: CatFileHandle -> String -> IO L.ByteString
+catObject :: CatFileHandle -> Ref -> IO L.ByteString
 catObject (_, from, to) object = do
-	hPutStrLn to object
+	hPutStrLn to $ show object
 	hFlush to
 	header <- hGetLine from
 	case words header of
@@ -53,7 +53,7 @@ catObject (_, from, to) object = do
 			  validobjtype objtype -> handle size
 			| otherwise -> empty
 		_
-			| header == object ++ " missing" -> empty
+			| header == show object ++ " missing" -> empty
 			| otherwise -> error $ "unknown response from git cat-file " ++ header
 	where
 		handle size = case reads size of

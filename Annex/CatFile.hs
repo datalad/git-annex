@@ -13,10 +13,11 @@ module Annex.CatFile (
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
+import qualified Git
 import qualified Git.CatFile
 import qualified Annex
 
-catFile :: String -> FilePath -> Annex L.ByteString
+catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catFile h branch file

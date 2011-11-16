@@ -31,19 +31,17 @@ import qualified Git.UnionMerge
 import qualified Annex
 import Annex.CatFile
 
-type GitRef = String
-
 {- Name of the branch that is used to store git-annex's information. -}
-name :: GitRef
-name = "git-annex"
+name :: Git.Ref
+name = Git.Ref "git-annex"
 
 {- Fully qualified name of the branch. -}
-fullname :: GitRef
-fullname = "refs/heads/" ++ name
+fullname :: Git.Ref
+fullname = Git.Ref $ "refs/heads/" ++ show name
 
 {- Branch's name in origin. -}
-originname :: GitRef
-originname = "origin/" ++ name
+originname :: Git.Ref
+originname = Git.Ref $ "origin/" ++ show name
 
 {- A separate index file for the branch. -}
 index :: Git.Repo -> FilePath
@@ -104,7 +102,8 @@ create :: Annex ()
 create = unlessM hasBranch $ do
 	e <- hasOrigin
 	if e
-		then inRepo $ Git.run "branch" [Param name, Param originname]
+		then inRepo $ Git.run "branch"
+			[Param $ show name, Param $ show originname]
 		else withIndex' True $
 			inRepo $ Git.commit "branch created" fullname []
 
@@ -140,8 +139,8 @@ update = onceonly $ do
 		let merge_desc = if null branches
 			then "update" 
 			else "merging " ++
-				(unwords $ map Git.refDescribe branches) ++ 
-				" into " ++ name
+				(unwords $ map (show . Git.refDescribe) branches) ++ 
+				" into " ++ show name
 		unless (null branches) $ do
 			showSideAction merge_desc
 			{- Note: This merges the branches into the index.
@@ -164,12 +163,12 @@ update = onceonly $ do
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
-changedBranch :: String -> String -> Annex Bool
+changedBranch :: Git.Branch -> Git.Branch -> Annex Bool
 changedBranch origbranch newbranch = not . L.null <$> diffs
 	where
 		diffs = inRepo $ Git.pipeRead
 			[ Param "log"
-			, Param (origbranch ++ ".." ++ newbranch)
+			, Param (show origbranch ++ ".." ++ show newbranch)
 			, Params "--oneline -n1"
 			]
 
@@ -181,7 +180,7 @@ changedBranch origbranch newbranch = not . L.null <$> diffs
  - every commit present in all the other refs, as well as in the
  - git-annex branch.
  -}
-tryFastForwardTo :: [String] -> Annex Bool
+tryFastForwardTo :: [Git.Ref] -> Annex Bool
 tryFastForwardTo [] = return True
 tryFastForwardTo (first:rest) = do
 	-- First, check that the git-annex branch does not contain any
@@ -194,7 +193,7 @@ tryFastForwardTo (first:rest) = do
 	where
 		no_ff = return False
 		do_ff branch = do
-			inRepo $ Git.run "update-ref" [Param fullname, Param branch]
+			inRepo $ Git.run "update-ref" [Param $ show fullname, Param $ show branch]
 			return True
 		findbest c [] = return $ Just c
 		findbest c (r:rs)
@@ -220,9 +219,9 @@ disableUpdate = Annex.changeState setupdated
 				old = Annex.branchstate s
 
 {- Checks if a git ref exists. -}
-refExists :: GitRef -> Annex Bool
+refExists :: Git.Ref -> Annex Bool
 refExists ref = inRepo $ Git.runBool "show-ref"
-	[Param "--verify", Param "-q", Param ref]
+	[Param "--verify", Param "-q", Param $ show ref]
 
 {- Does the main git-annex branch exist? -}
 hasBranch :: Annex Bool
@@ -238,12 +237,12 @@ hasSomeBranch = not . null <$> siblingBranches
 
 {- List of git-annex (refs, branches), including the main one and any
  - from remotes. Duplicate refs are filtered out. -}
-siblingBranches :: Annex [(String, String)]
+siblingBranches :: Annex [(Git.Ref, Git.Branch)]
 siblingBranches = do
-	r <- inRepo $ Git.pipeRead [Param "show-ref", Param name]
-	return $ nubBy uref $ map (pair . words . L.unpack) (L.lines r)
+	r <- inRepo $ Git.pipeRead [Param "show-ref", Param $ show name]
+	return $ nubBy uref $ map (gen . words . L.unpack) (L.lines r)
 	where
-		pair l = (head l, last l)
+		gen l = (Git.Ref $ head l, Git.Ref $ last l)
 		uref (a, _) (b, _) = a == b
 
 {- Applies a function to modifiy the content of a file.
@@ -291,7 +290,7 @@ get' staleok file = fromcache =<< getCache file
 files :: Annex [FilePath]
 files = withIndexUpdate $ do
 	bfiles <- inRepo $ Git.pipeNullSplit
-		[Params "ls-tree --name-only -r -z", Param fullname]
+		[Params "ls-tree --name-only -r -z", Param $ show fullname]
 	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles
 
@@ -346,10 +345,10 @@ stageJournalFiles = do
 			hClose toh
 			exitSuccess
 		hClose toh
-		s <- hGetContents fromh
+		shas <- map Git.Ref . lines <$> hGetContents fromh
 		-- update the index, also in just one command
 		Git.UnionMerge.update_index g $
-			index_lines (lines s) $ map fileJournal fs
+			index_lines shas (map fileJournal fs)
 		hClose fromh
 		forceSuccess pid
 		mapM_ removeFile paths

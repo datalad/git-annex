@@ -22,12 +22,14 @@ import Common
 import Git
 import Git.CatFile
 
+type Streamer = (String -> IO ()) -> IO ()
+
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
  -
  - Should be run with a temporary index file configured by Git.useIndex.
  -}
-merge :: String -> String -> Repo -> IO ()
+merge :: Ref -> Ref -> Repo -> IO ()
 merge x y repo = do
 	h <- catFileStart repo
 	stream_update_index repo
@@ -38,7 +40,7 @@ merge x y repo = do
 
 {- Merges a list of branches into the index. Previously staged changed in
  - the index are preserved (and participate in the merge). -}
-merge_index :: CatFileHandle -> Repo -> [String] -> IO ()
+merge_index :: CatFileHandle -> Repo -> [Ref] -> IO ()
 merge_index h repo bs =
 	stream_update_index repo $ map (\b -> merge_tree_index b h repo) bs
 
@@ -47,8 +49,6 @@ merge_index h repo bs =
  - ls_tree, merge_trees, and merge_tree_index. -}
 update_index :: Repo -> [String] -> IO ()
 update_index repo ls = stream_update_index repo [\s -> mapM_ s ls]
-
-type Streamer = (String -> IO ()) -> IO ()
 
 {- Streams content into update-index. -}
 stream_update_index :: Repo -> [Streamer] -> IO ()
@@ -66,22 +66,22 @@ stream_update_index repo as = do
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
-update_index_line :: String -> FilePath -> String
-update_index_line sha file = "100644 blob " ++ sha ++ "\t" ++ file
+update_index_line :: Sha -> FilePath -> String
+update_index_line sha file = "100644 blob " ++ show sha ++ "\t" ++ file
 
-{- Gets the contents of a tree. -}
-ls_tree :: String -> Repo -> Streamer
-ls_tree x repo streamer = mapM_ streamer =<< pipeNullSplit params repo
+{- Gets the current tree for a ref. -}
+ls_tree :: Ref -> Repo -> Streamer
+ls_tree (Ref x) repo streamer = mapM_ streamer =<< pipeNullSplit params repo
 	where
 		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- For merging two trees. -}
-merge_trees :: String -> String -> CatFileHandle -> Repo -> Streamer
-merge_trees x y h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
+merge_trees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
+merge_trees (Ref x) (Ref y) h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
 
 {- For merging a single tree into the index. -}
-merge_tree_index :: String -> CatFileHandle -> Repo -> Streamer
-merge_tree_index x h = calc_merge h $ "diff-index":diff_opts ++ ["--cached", x]
+merge_tree_index :: Ref -> CatFileHandle -> Repo -> Streamer
+merge_tree_index (Ref x) h = calc_merge h $ "diff-index":diff_opts ++ ["--cached", x]
 
 diff_opts :: [String]
 diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
@@ -101,7 +101,7 @@ calc_merge ch differ repo streamer = gendiff >>= go
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
 mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
-mergeFile info file h repo = case filter (/= nullsha) [asha, bsha] of
+mergeFile info file h repo = case filter (/= nullsha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
 	shas -> do
@@ -110,11 +110,11 @@ mergeFile info file h repo = case filter (/= nullsha) [asha, bsha] of
 		return $ Just $ update_index_line sha file
 	where
 		[_colonamode, _bmode, asha, bsha, _status] = words info
-		nullsha = replicate shaSize '0'
+		nullsha = Ref $ replicate shaSize '0'
 		unionmerge = L.unlines . nub . L.lines
 
-{- Injects some content into git, returning its hash. -}
-hashObject :: L.ByteString -> Repo -> IO String
+{- Injects some content into git, returning its Sha. -}
+hashObject :: L.ByteString -> Repo -> IO Sha
 hashObject content repo = getSha subcmd $ do
 	(h, s) <- pipeWriteRead (map Param params) content repo
 	L.length s `seq` do
