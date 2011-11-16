@@ -16,7 +16,6 @@ module Git.UnionMerge (
 import System.Cmd.Utils
 import Data.List
 import Data.Maybe
-import Data.String.Utils
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
@@ -88,18 +87,6 @@ calc_merge h differ repo = do
 		pairs (_:[]) = error "calc_merge parse error"
 		pairs (a:b:rest) = (a,b):pairs rest
 
-{- Injects some content into git, returning its hash. -}
-hashObject :: L.ByteString -> Repo -> IO String
-hashObject content repo = getSha subcmd $ do
-	(h, s) <- pipeWriteRead (map Param params) content repo
-	L.length s `seq` do
-		forceSuccess h
-		reap -- XXX unsure why this is needed
-		return $ L.unpack s
-	where
-		subcmd = "hash-object"
-		params = [subcmd, "-w", "--stdin"]
-
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
@@ -115,3 +102,15 @@ mergeFile (info, file) h repo = case filter (/= nullsha) [asha, bsha] of
 		[_colonamode, _bmode, asha, bsha, _status] = words info
 		nullsha = replicate shaSize '0'
 		unionmerge = L.unlines . nub . L.lines
+
+{- Injects some content into git, returning its hash. -}
+hashObject :: L.ByteString -> Repo -> IO String
+hashObject content repo = getSha subcmd $ do
+	(h, s) <- pipeWriteRead (map Param params) content repo
+	L.length s `seq` do
+		forceSuccess h
+		reap -- XXX unsure why this is needed
+		return $ L.unpack s
+	where
+		subcmd = "hash-object"
+		params = [subcmd, "-w", "--stdin"]
