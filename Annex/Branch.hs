@@ -56,7 +56,7 @@ index g = gitAnnexDir g </> "index"
  - and merge in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
-genIndex g = Git.UnionMerge.update_index_via g
+genIndex g = Git.UnionMerge.stream_update_index g
 	[Git.UnionMerge.ls_tree fullname g]
 
 {- Runs an action using the branch's index file. -}

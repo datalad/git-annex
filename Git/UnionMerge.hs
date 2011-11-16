@@ -9,7 +9,7 @@ module Git.UnionMerge (
 	merge,
 	merge_index,
 	update_index,
-	update_index_via,
+	stream_update_index,
 	update_index_line,
 	ls_tree
 ) where
@@ -30,7 +30,7 @@ import Git.CatFile
 merge :: String -> String -> Repo -> IO ()
 merge x y repo = do
 	h <- catFileStart repo
-	update_index_via repo
+	stream_update_index repo
 		[ ls_tree x repo
 		, merge_trees x y h repo
 		]
@@ -40,19 +40,19 @@ merge x y repo = do
  - the index are preserved (and participate in the merge). -}
 merge_index :: CatFileHandle -> Repo -> [String] -> IO ()
 merge_index h repo bs =
-	update_index_via repo $ map (\b -> merge_tree_index b h repo) bs
+	stream_update_index repo $ map (\b -> merge_tree_index b h repo) bs
 
 {- Feeds content into update-index. Later items in the list can override
  - earlier ones, so the list can be generated from any combination of
  - ls_tree, merge_trees, and merge_tree_index. -}
 update_index :: Repo -> [String] -> IO ()
-update_index repo ls = update_index_via repo [\s -> mapM_ s ls]
+update_index repo ls = stream_update_index repo [\s -> mapM_ s ls]
 
 type Streamer = (String -> IO ()) -> IO ()
 
 {- Streams content into update-index. -}
-update_index_via :: Repo -> [Streamer] -> IO ()
-update_index_via repo as = do
+stream_update_index :: Repo -> [Streamer] -> IO ()
+stream_update_index repo as = do
 	(p, h) <- hPipeTo "git" (toCommand $ Git.gitCommandLine params repo)
 	forM_ as (stream h)
 	hClose h
