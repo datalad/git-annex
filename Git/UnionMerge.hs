@@ -46,10 +46,13 @@ merge_index h repo bs =
  - earlier ones, so the list can be generated from any combination of
  - ls_tree, merge_trees, and merge_tree_index. -}
 update_index :: Repo -> [String] -> IO ()
-update_index repo l = togit ["update-index", "-z", "--index-info"] (join "\0" l)
+update_index repo l = do
+	(p, h) <- hPipeTo "git" (toCommand $ Git.gitCommandLine params repo)
+	mapM_ (\s -> hPutStr h s >> hPutStr h "\0") l
+	hClose h
+	forceSuccess p
 	where
-		togit ps content = pipeWrite (map Param ps) (L.pack content) repo
-			>>= forceSuccess
+		params = map Param ["update-index", "-z", "--index-info"]
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
