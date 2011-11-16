@@ -1,0 +1,5 @@
+was checking the version of git-annex on a machine before cloning a repo...
+
+    $ git annex version
+    git-annex: Not in a git repository.
+
