@@ -47,4 +47,6 @@ The error:
     failed
     git-annex: migrate: 1 failed
 
-    
+> Fixed it to delete the stale temp file. [[done]]
+> 
+> Thanks for making such clear test cases, Jim! --[[Joey]] 

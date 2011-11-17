@@ -16,6 +16,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * Fix support for insteadOf url remapping. Closes: #644278
   * When not run in a git repository, git-annex can still display a usage
     message, and "git annex version" even works.
+  * migrate: Don't fall over a stale temp file.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 

@@ -48,9 +48,10 @@ perform file oldkey newbackend = do
 	src <- fromRepo $ gitAnnexLocation oldkey
 	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName file
+	cleantmp tmpfile
 	liftIO $ createLink src tmpfile
 	k <- Backend.genKey tmpfile $ Just newbackend
-	liftIO $ cleantmp tmpfile
+	cleantmp tmpfile
 	case k of
 		Nothing -> stop
 		Just (newkey, _) -> do
@@ -70,7 +71,7 @@ perform file oldkey newbackend = do
 					next $ Command.Add.cleanup file newkey True
 				else stop
 	where
-		cleantmp t = whenM (doesFileExist t) $ removeFile t
+		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
 		link src newkey = getViaTmpUnchecked newkey $ \t -> do
 			-- Make a hard link to the old backend's
 			-- cached key, to avoid wasting disk space.
