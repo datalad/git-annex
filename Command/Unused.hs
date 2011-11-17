@@ -153,7 +153,7 @@ excludeReferenced l = do
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
 		refs = map Git.Ref . 
-			last .
+			map last .
 			nubBy cmpheads .
 			filter ourbranches .
 			map words . lines . L.unpack
