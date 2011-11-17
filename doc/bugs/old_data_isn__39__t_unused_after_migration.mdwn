@@ -45,3 +45,11 @@ Output:
     unused . (checking for unused data...) (checking master...) ok
 
 The two files are hardlinked, so it's not taking up extra space, but it would be nice to be able to remove the old keys.
+
+> `git annex unused` checks the content of all branches, and assumes that,
+> when a branch contains a file that points to a key, that key is still 
+> used. In this case, the migration has staged a change to the file,
+> but it is not yet committed, so when it checks the master branch, it
+> still finds a file referring to the old key. 
+> 
+> So, slightly surprising, but not a bug. --[[Joey]] [[done]]
