@@ -16,6 +16,7 @@ module Remote (
 	hasKeyCheap,
 
 	remoteTypes,
+	remoteMap,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
@@ -83,6 +84,10 @@ genList = do
 			u <- getRepoUUID r
 			generate t r u (M.lookup u m)
 
+{- Map of UUIDs of Remotes and their names. -}
+remoteMap :: Annex (M.Map UUID String)
+remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+
 {- Looks up a remote by name. (Or by UUID.) Only finds currently configured
  - git remotes. -}
 byName :: String -> Annex (Remote Annex)
@@ -139,7 +144,6 @@ prettyPrintUUIDs desc uuids = do
 			| d == n = d
 			| null d = n
 			| otherwise = n ++ " (" ++ d ++ ")"
-		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
 		prettify m hereu u
 			| not (null d) = fromUUID u ++ " -- " ++ d

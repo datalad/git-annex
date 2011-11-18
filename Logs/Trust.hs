@@ -20,19 +20,29 @@ import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
-import Logs.UUID
 
 {- Filename of trust.log. -}
 trustLog :: FilePath
 trustLog = "trust.log"
 
-{- Returns a list of UUIDs at the specified trust level. -}
+{- Returns a list of UUIDs that the trustLog indicates have the
+ - specified trust level.
+ - Note that the list can be incomplete for SemiTrusted, since that's
+ - the default. -}
 trustGet :: TrustLevel -> Annex [UUID]
-trustGet SemiTrusted = do -- special case; trustMap does not contain all these
-	others <- M.keys . M.filter (/= SemiTrusted) <$> trustMap
-	alluuids <- uuidList
-	return $ alluuids \\ others
 trustGet level = M.keys . M.filter (== level) <$> trustMap
+
+{- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
+trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
+trustPartition level ls
+	| level == SemiTrusted = do
+		t <- trustGet Trusted
+		u <- trustGet UnTrusted
+		let uncandidates = t ++ u
+		return $ partition (`notElem` uncandidates) ls
+	| otherwise = do
+		candidates <- trustGet level
+		return $ partition (`elem` candidates) ls
 
 {- Read the trustLog into a map, overriding with any
  - values from forcetrust. The map is cached for speed. -}
@@ -72,9 +82,3 @@ trustSet uuid@(UUID _) level = do
 		showLog showTrust . changeLog ts uuid level . parseLog parseTrust
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
-
-{- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
-trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
-trustPartition level ls = do
-	candidates <- trustGet level
-	return $ partition (`elem` candidates) ls

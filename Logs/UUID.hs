@@ -16,8 +16,7 @@
 module Logs.UUID (
 	describeUUID,
 	recordUUID,
-	uuidMap,
-	uuidList
+	uuidMap
 ) where
 
 import qualified Data.Map as M
@@ -88,6 +87,3 @@ uuidMap = do
 	return $ M.insertWith' preferold u "" m
 	where
 		preferold = flip const
-
-uuidList :: Annex [UUID]
-uuidList = M.keys <$> uuidMap

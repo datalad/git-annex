@@ -102,7 +102,7 @@ supported_remote_types = stat "supported remote types" $
 
 remote_list :: TrustLevel -> String -> Stat
 remote_list level desc = stat n $ lift $ do
-	us <- uuidList
+	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap)
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ init s

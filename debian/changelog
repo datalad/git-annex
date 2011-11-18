@@ -10,6 +10,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
     in constant space.
   * status: Now displays trusted, untrusted, and semitrusted repositories
     separately.
+  * status: Include all special remotes in the list of repositories.
   * status: Fix --json mode (only the repository lists are currently
     displayed)
   * status: --fast is back
