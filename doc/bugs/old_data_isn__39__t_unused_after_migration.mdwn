@@ -53,3 +53,9 @@ The two files are hardlinked, so it's not taking up extra space, but it would be
 > still finds a file referring to the old key. 
 > 
 > So, slightly surprising, but not a bug. --[[Joey]] [[done]]
+
+>> Thanks for the explanation.  In my real repository, it was a bit trickier:
+>> the migration was commited to `master`, but other *remote* branches still
+>> referenced those keys.  I was just doing a `git pull` from a central repo, but
+>> needed a `git remote update` to remove those references from `remotes/foo/master` too.
+>> --Jim
