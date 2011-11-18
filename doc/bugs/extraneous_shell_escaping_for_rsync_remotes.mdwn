@@ -1,0 +1,4 @@
+When using `git annex get foo` where foo is available in a rsync remote with encryption I got an error saying that rsync cannot
+find the required file but extra ' are here.
+
+I attached a patch for this.
