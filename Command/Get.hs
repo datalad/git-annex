@@ -27,14 +27,20 @@ start numcopies file (key, _) = do
 	if inannex
 		then stop
 		else autoCopies key (<) numcopies $ do
-			showStart "get" file
 			from <- Annex.getState Annex.fromremote
 			case from of
-				Nothing -> next $ perform key
+				Nothing -> go $ perform key
 				Just name -> do
 					-- get --from = copy --from
 					src <- Remote.byName name
-					next $ Command.Move.fromPerform src False key
+					ok <- Command.Move.fromOk src key
+					if ok
+						then go $ Command.Move.fromPerform src False key
+						else stop
+	where
+		go a = do
+			showStart "get" file
+			next a	
 
 perform :: Key -> CommandPerform
 perform key = do

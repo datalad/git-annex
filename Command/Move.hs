@@ -117,13 +117,17 @@ fromStart src move file key
 		if ishere then stop else go
 	where
 		go = do
-			u <- getUUID
-			remotes <- Remote.keyPossibilities key
-			if u == Remote.uuid src || not (any (== src) remotes)
-				then stop
-				else do
+			ok <- fromOk src key
+			if ok
+				then do
 					showMoveAction move file
 					next $ fromPerform src move key
+				else stop
+fromOk :: Remote.Remote Annex -> Key -> Annex Bool
+fromOk src key = do
+	u <- getUUID
+	remotes <- Remote.keyPossibilities key
+	return $ u /= Remote.uuid src && any (== src) remotes
 fromPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
 fromPerform src move key = moveLock move key $ do
 	ishere <- inAnnex key
