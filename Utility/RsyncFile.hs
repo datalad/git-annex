@@ -8,6 +8,7 @@
 module Utility.RsyncFile where
 
 import Data.String.Utils
+import Data.List
 
 import Utility.SafeCommand
 
@@ -48,3 +49,18 @@ rsync = boolSystem "rsync"
 
 rsyncExec :: [CommandParam] -> IO ()
 rsyncExec params = executeFile "rsync" True (toCommand params) Nothing
+
+{- Checks if an rsync url involves the remote shell (ssh or rsh).
+ - Use of such urls with rsync or rsyncExec requires additional shell
+ - escaping. -}
+rsyncUrlIsShell :: String -> Bool
+rsyncUrlIsShell s
+	| "rsync://" `isPrefixOf` s = False
+	| otherwise = go s
+	where
+		-- host:dir is rsync protocol, while host:dir is ssh/rsh
+		go [] = False
+		go (c:cs)
+			| c == '/' = False -- got to directory with no colon
+			| c == ':' = not $ ":" `isPrefixOf` cs
+			| otherwise = go cs

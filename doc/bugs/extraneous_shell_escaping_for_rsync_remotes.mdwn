@@ -11,3 +11,5 @@ I attached a patch for this.
 > 
 > Ah, you're not using rsync over ssh, but just to a local directory,
 > right? --[[Joey]]
+
+>> [[fixed|done]] --[[Joey]] 

@@ -81,13 +81,18 @@ rsyncSetup u c = do
 	gitConfigSpecialRemote u c' "rsyncurl" url
 	return c'
 
+rsyncEscape :: RsyncOpts -> String -> String
+rsyncEscape o s
+	| rsyncUrlIsShell (rsyncUrl o) = shellEscape s
+	| otherwise = s
+
 rsyncKey :: RsyncOpts -> Key -> String
-rsyncKey o k = rsyncUrl o </> hashDirMixed k </> shellEscape (f </> f)
+rsyncKey o k = rsyncUrl o </> hashDirMixed k </> rsyncEscape o (f </> f)
         where
                 f = keyFile k
 
 rsyncKeyDir :: RsyncOpts -> Key -> String
-rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> shellEscape (keyFile k)
+rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> rsyncEscape o (keyFile k)
 
 store :: RsyncOpts -> Key -> Annex Bool
 store o k = rsyncSend o k =<< fromRepo (gitAnnexLocation k)
