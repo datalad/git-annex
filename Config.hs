@@ -28,13 +28,13 @@ getConfig r key def = do
 	def' <- fromRepo $ Git.configGet ("annex." ++ key) def
 	fromRepo $ Git.configGet (remoteConfig r key) def'
 
+{- Looks up a per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
 remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-" ++ key
 
 {- Calculates cost for a remote. Either the default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
- - is set and prints a number, that is used.
- -}
+ - is set and prints a number, that is used. -}
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
 	cmd <- getConfig r "cost-command" ""
@@ -55,7 +55,7 @@ semiCheapRemoteCost = 110
 expensiveRemoteCost :: Int
 expensiveRemoteCost = 200
 
-{- Adjust's a remote's cost to reflect it being encrypted. -}
+{- Adjusts a remote's cost to reflect it being encrypted. -}
 encryptedRemoteCostAdj :: Int
 encryptedRemoteCostAdj = 50
 
@@ -74,9 +74,7 @@ prop_cost_sane = False `notElem`
  - setting, or on command-line options. Allows command-line to override
  - annex-ignore. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = do
-	ignored <- getConfig r "ignore" "false"
-	return $ not $ Git.configTrue ignored
+repoNotIgnored r = not . Git.configTrue <$> getConfig r "ignore" "false"
 
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}

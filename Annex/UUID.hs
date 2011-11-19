@@ -59,7 +59,7 @@ getRepoUUID r = do
 		updatecache u = do
 			g <- gitRepo
 			when (g /= r) $ storeUUID cachekey u
-		cachekey = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-uuid"
+		cachekey = remoteConfig r "uuid"
 
 getUncachedUUID :: Git.Repo -> UUID
 getUncachedUUID = toUUID . Git.configGet configkey ""
