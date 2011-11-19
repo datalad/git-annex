@@ -39,10 +39,11 @@ genUUID = pOpen ReadFromPipe command params $ liftM toUUID . hGetLine
 			-- uuidgen generates random uuid by default
 			else []
 
+{- Get current repository's UUID. -}
 getUUID :: Annex UUID
 getUUID = getRepoUUID =<< gitRepo
 
-{- Looks up a repo's UUID. May return "" if none is known. -}
+{- Looks up a repo's UUID, caching it in .git/config if it's not already. -}
 getRepoUUID :: Git.Repo -> Annex UUID
 getRepoUUID r = do
 	c <- fromRepo cached
@@ -54,7 +55,7 @@ getRepoUUID r = do
 			return u
 		else return c
 	where
-		cached g = toUUID $ Git.configGet cachekey "" g
+		cached = toUUID . Git.configGet cachekey ""
 		updatecache u = do
 			g <- gitRepo
 			when (g /= r) $ storeUUID cachekey u
