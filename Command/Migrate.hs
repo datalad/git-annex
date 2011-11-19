@@ -39,12 +39,16 @@ start b file (key, oldbackend) = do
 upgradableKey :: Key -> Bool
 upgradableKey key = isNothing $ Types.Key.keySize key
 
+{- Store the old backend's key in the new backend
+ - The old backend's key is not dropped from it, because there may
+ - be other files still pointing at that key.
+ -
+ - Use the same filename as the file for the temp file name, to support
+ - backends that allow the filename to influence the keys they
+ - generate.
+ -}
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	-- Store the old backend's cached key in the new backend
-	-- (the file can't be stored as usual, because it's already a symlink).
-	-- The old backend's key is not dropped from it, because there may
-	-- be other files still pointing at that key.
 	src <- fromRepo $ gitAnnexLocation oldkey
 	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName file
