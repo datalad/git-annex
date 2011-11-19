@@ -92,11 +92,10 @@ isBareRepo = fromRepo Git.repoIsLocalBare
  - copies of the key is > or < than the numcopies setting, before running
  - the action. -}
 autoCopies :: Key -> (Int -> Int -> Bool) -> Maybe Int -> CommandStart -> CommandStart
-autoCopies key vs numcopiesattr a = do
-	auto <- Annex.getState Annex.auto
-	if auto
-		then do
+autoCopies key vs numcopiesattr a = Annex.getState Annex.auto >>= auto
+	where
+		auto False = a
+		auto True = do
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< keyLocations key
 			if length have `vs` needed then a else stop
-		else a
