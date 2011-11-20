@@ -11,8 +11,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * status: Now displays trusted, untrusted, and semitrusted repositories
     separately.
   * status: Include all special remotes in the list of repositories.
-  * status: Fix --json mode (only the repository lists are currently
-    displayed)
+  * status: Fix --json mode.
   * status: --fast is back
   * Fix support for insteadOf url remapping. Closes: #644278
   * When not run in a git repository, git-annex can still display a usage

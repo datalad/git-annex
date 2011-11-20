@@ -11,6 +11,7 @@ import Control.Monad.State
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
+import Text.JSON
 
 import Common.Annex
 import qualified Types.Backend as B
@@ -78,11 +79,20 @@ start = do
 		return True
 	stop
 
-stat :: String -> StatState String -> Stat
-stat desc a = return $ Just (desc, a)
+stat :: String -> (String -> StatState String) -> Stat
+stat desc a = return $ Just (desc, a desc)
 
 nostat :: Stat
 nostat = return Nothing
+
+json :: JSON j => (j -> String) -> StatState j -> String -> StatState String
+json serialize a desc = do
+	j <- a
+	lift $ maybeShowJSON [(desc, j)]
+	return $ serialize j
+
+nojson :: StatState String -> String -> StatState String
+nojson a _ = a
 
 showStat :: Stat -> StatState ()
 showStat s = calc =<< s
@@ -93,15 +103,15 @@ showStat s = calc =<< s
 		calc Nothing = return ()
 
 supported_backends :: Stat
-supported_backends = stat "supported backends" $ 
-	return $ unwords $ map B.name Backend.list
+supported_backends = stat "supported backends" $ json unwords $
+	return $ map B.name Backend.list
 
 supported_remote_types :: Stat
-supported_remote_types = stat "supported remote types" $
-	return $ unwords $ map R.typename Remote.remoteTypes
+supported_remote_types = stat "supported remote types" $ json unwords $
+	return $ map R.typename Remote.remoteTypes
 
 remote_list :: TrustLevel -> String -> Stat
-remote_list level desc = stat n $ lift $ do
+remote_list level desc = stat n $ nojson $ lift $ do
 	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap)
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
@@ -110,20 +120,20 @@ remote_list level desc = stat n $ lift $ do
 		n = desc ++ " repositories"
 
 local_annex_size :: Stat
-local_annex_size = stat "local annex size" $
+local_annex_size = stat "local annex size" $ json id $
 	keySizeSum <$> cachedKeysPresent
 
 local_annex_keys :: Stat
-local_annex_keys = stat "local annex keys" $
-	show . S.size <$> cachedKeysPresent
+local_annex_keys = stat "local annex keys" $ json show $
+	S.size <$> cachedKeysPresent
 
 visible_annex_size :: Stat
-visible_annex_size = stat "visible annex size" $
+visible_annex_size = stat "visible annex size" $ json id $
 	keySizeSum <$> cachedKeysReferenced
 
 visible_annex_keys :: Stat
-visible_annex_keys = stat "visible annex keys" $
-	show . S.size <$> cachedKeysReferenced
+visible_annex_keys = stat "visible annex keys" $ json show $
+	S.size <$> cachedKeysReferenced
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -132,7 +142,8 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
-backend_usage = stat "backend usage" $ usage <$> cachedKeysReferenced <*> cachedKeysPresent
+backend_usage = stat "backend usage" $ nojson $
+	usage <$> cachedKeysReferenced <*> cachedKeysPresent
 	where
 		usage a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
 		splits :: [Key] -> [(String, Integer)]
@@ -179,9 +190,9 @@ staleSize label dirspec = do
 	keys <- lift (Command.Unused.staleKeys dirspec)
 	if null keys
 		then nostat
-		else stat label $ do
-			let s = keySizeSum $ S.fromList keys
-			return $ s ++ aside "clean up with git-annex unused"
+		else do
+			stat label $ json (++ aside "clean up with git-annex unused") $
+				return $ keySizeSum $ S.fromList keys
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"
