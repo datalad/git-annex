@@ -59,3 +59,8 @@ The two files are hardlinked, so it's not taking up extra space, but it would be
 >> referenced those keys.  I was just doing a `git pull` from a central repo, but
 >> needed a `git remote update` to remove those references from `remotes/foo/master` too.
 >> --Jim
+
+>>> I have considered making unused ignore remote tracking branches. 
+>>> On the one hand, it can be a little bit confusing, and those branches
+>>> can be out of date. On the other hand, it can be useful to know you're
+>>> not dropping anything that some remote might still refer to. --[[Joey]] 
