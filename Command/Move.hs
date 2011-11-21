@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,10 +23,6 @@ def = [dontCheck toOpt $ dontCheck fromOpt $
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed $ start True]
 
-{- Move (or copy) a file either --to or --from a repository.
- -
- - This only operates on the cached file content; it does not involve
- - moving data in the key-value backend. -}
 start :: Bool -> FilePath -> (Key, Backend Annex) -> CommandStart
 start move file (key, _) = do
 	noAuto
