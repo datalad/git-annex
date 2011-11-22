@@ -18,11 +18,28 @@ I wonder if the directory remote should use hashDirLower instead of hashDirMixed
 
 > git-annex intentionally uses the same layout for directory and rsync
 > special remotes as it does for the .git/annex directory. As far
-> as I know it works ok on case-insensative filesystems.
+> as I know it works ok on (truely) case-insensative filesystems.
 > 
 > Based on your strace, if you `ls /media/annex/Zp`, you will see
 > "No such file or directory", but if you `mkdir /media/annex/Zp` it will
 > fail with "File exists". Doesn't make much sense to me.
 > 
-> I cannot reproduce this problem using a vfat filesystem 
-> mounted using the same options you show (linux 3.0.0). --[[Joey]]
+> The (default) VFAT mount option shortname=mixed causes this behavior.
+> With shortname=lower it works ok. --[[Joey]]
+> 
+>> So, the options for fixing this bug seem to be to fix Linux (which would
+>> be a good idea IMHO but I don't really want to go there), or generally
+>> convert git-annex to using lowercase for its hashing (which would be a
+>> large amount of pain to rewrite all the symlinks in every git repo),
+>> or some special hack around this problem. 
+>> 
+>> I've put in a workaround for the problem in the directory special
+>> remote; it will use mixed case but fall-back to lowercase as necessary.
+>> 
+>> That does leave the case of a bare git repository with annexed content
+>> stored on VFAT. More special casing could fix it, but that is, I
+>> think, an unusual configuration. Leaving the bug open for that case,
+>> and for the even more unlikely configuration of a rsync special remote
+>> stored on VFAT. --[[Joey]] 
+
+[[!meta title="bare git repository not supported on VFAT"]]

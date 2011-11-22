@@ -1,3 +1,10 @@
+git-annex (3.20111123) UNRELEASED; urgency=low
+
+  * Put a workaround in the directory special remote for strange behavior
+    with VFAT filesystems on Linux (mounted with shortname=mixed)
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 17:53:42 -0400
+
 git-annex (3.20111122) unstable; urgency=low
 
   * merge: Improve commit messages to mention what was merged.
