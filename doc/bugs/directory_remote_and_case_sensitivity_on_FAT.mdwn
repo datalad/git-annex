@@ -15,3 +15,14 @@ The filesystem is FAT32 and has weird case semantics.  This was mounted by udisk
     /dev/sdb1 on /media/annex type vfat (rw,nosuid,nodev,uhelper=udisks,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec)
 
 I wonder if the directory remote should use hashDirLower instead of hashDirMixed?
+
+> git-annex intentionally uses the same layout for directory and rsync
+> special remotes as it does for the .git/annex directory. As far
+> as I know it works ok on case-insensative filesystems.
+> 
+> Based on your strace, if you `ls /media/annex/Zp`, you will see
+> "No such file or directory", but if you `mkdir /media/annex/Zp` it will
+> fail with "File exists". Doesn't make much sense to me.
+> 
+> I cannot reproduce this problem using a vfat filesystem 
+> mounted using the same options you show (linux 3.0.0). --[[Joey]]
