@@ -1,0 +1,79 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Case sensitivity"
+ date="2011-11-22T18:51:03Z"
+ content="""
+I agree, it's weird, but that's what I'm seeing:
+
+    #!/bin/sh
+    
+    if [ $UID != 0 ] ; then echo \"need root\" ; exit 1 ; fi
+    
+    set -x
+    
+    # make image
+    cd /tmp
+    dd if=/dev/zero of=diskimage bs=1M count=40
+    DEV=$(losetup --find --show diskimage)
+    
+    # make FAT32 fs
+    mkfs.vfat -F 32 $DEV
+    
+    # mount it
+    mkdir annex
+    mount -o shortname=mixed,utf8=1 $DEV annex
+    
+    # show bug
+    ( 
+        cd annex
+        mkdir zP
+        mkdir Zp
+        ls Zp
+        ls
+        touch zP
+        touch Zp
+    )
+    
+    # cleanup
+    umount annex
+    rm -r annex
+    losetup -d $DEV
+    rm diskimage
+    
+    # info
+    uname -a
+
+Output:
+
+    + cd /tmp
+    + dd if=/dev/zero of=diskimage bs=1M count=40
+    40+0 records in
+    40+0 records out
+    41943040 bytes (42 MB) copied, 0.0847729 s, 495 MB/s
+    ++ losetup --find --show diskimage
+    + DEV=/dev/loop0
+    + mkfs.vfat -F 32 /dev/loop0
+    mkfs.vfat 3.0.9 (31 Jan 2010)
+    Loop device does not match a floppy size, using default hd params
+    + mkdir annex
+    + mount -o shortname=mixed,utf8=1 /dev/loop0 annex
+    + cd annex
+    + mkdir zP
+    + mkdir Zp
+    mkdir: cannot create directory `Zp': File exists
+    + ls Zp
+    ls: cannot access Zp: No such file or directory
+    + ls
+    zP
+    + touch zP
+    + touch Zp
+    touch: cannot touch `Zp': File exists
+    + umount annex
+    + rm -r annex
+    + losetup -d /dev/loop0
+    + rm diskimage
+    + uname -a
+    Linux pilot 3.0.3+ #1 SMP Mon Aug 29 15:21:18 EDT 2011 x86_64 GNU/Linux
+
+"""]]
