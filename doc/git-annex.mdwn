@@ -232,6 +232,9 @@ subdirectories).
   With no parameters, defaults to finding all files in the current directory
   and its subdirectories.
 
+  To output filenames terminated with nulls, for use with xargs -0,
+  specify --print0.
+
 * whereis [path ...]
 
   Displays a list of repositories known to contain the content of the

@@ -60,6 +60,7 @@ data AnnexState = AnnexState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
+	, print0 :: Bool
 	, branchstate :: BranchState
 	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
@@ -82,6 +83,7 @@ newState gitrepo = AnnexState
 	, force = False
 	, fast = False
 	, auto = False
+	, print0 = False
 	, branchstate = startBranchState
 	, catfilehandle = Nothing
 	, forcebackend = Nothing

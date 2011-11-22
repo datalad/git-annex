@@ -103,6 +103,8 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
+	, Option [] ["print0"] (NoArg (setprint0 True))
+		"terminate filename with null"
 	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
 	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
@@ -114,6 +116,7 @@ options = commonOptions ++
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
+		setprint0 v = Annex.changeState $ \s -> s { Annex.print0 = v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
 			newg <- inRepo $ Git.configStore v

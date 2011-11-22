@@ -19,6 +19,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
   * migrate: Don't fall over a stale temp file.
   * Avoid excessive escaping for rsync special remotes that are not accessed
     over ssh.
+  * find: Support --print0
 
  -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
 
