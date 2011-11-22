@@ -1,0 +1,17 @@
+I was copying files to a directory remote with `git annex copy`.  Out of 114 files, 9 of them failed with no message, just:
+
+    copy data/foo.dat (to usbdrive...) failed
+    copy data/bar.dat (to usbdrive...) failed
+
+According to strace:
+
+    31338 mkdir("/media/annex/Zp/9v/SHA256-s1362999320--d650297c8cf8c2dc0575110a52d0c5cc0ff266f294a0599f85796a6b44b23492", 0777) = -1 ENOENT (No such file or directory)
+    31338 mkdir("/media/annex/Zp/9v", 0777) = -1 ENOENT (No such file or directory)
+    31338 mkdir("/media/annex/Zp", 0777)    = -1 EEXIST (File exists)
+    31338 stat("/media/annex/Zp", 0x7f8449f170d0) = -1 ENOENT (No such file or directory)
+
+The filesystem is FAT32 and has weird case semantics.  This was mounted by udisks with its default options:
+
+    /dev/sdb1 on /media/annex type vfat (rw,nosuid,nodev,uhelper=udisks,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec)
+
+I wonder if the directory remote should use hashDirLower instead of hashDirMixed?
