@@ -1,4 +1,4 @@
-git-annex (3.20111112) UNRELEASED; urgency=low
+git-annex (3.20111122) unstable; urgency=low
 
   * merge: Improve commit messages to mention what was merged.
   * Avoid doing auto-merging in commands that don't need fully current
@@ -21,7 +21,7 @@ git-annex (3.20111112) UNRELEASED; urgency=low
     over ssh.
   * find: Support --print0
 
- -- Joey Hess <joeyh@debian.org>  Sat, 12 Nov 2011 14:50:21 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 14:31:45 -0400
 
 git-annex (3.20111111) unstable; urgency=low
 
