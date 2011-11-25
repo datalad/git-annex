@@ -129,7 +129,7 @@ handle json normal = Annex.getState Annex.output >>= go
 	where
 		go Annex.NormalOutput = liftIO normal
 		go Annex.QuietOutput = q
-		go Annex.JSONOutput = liftIO json
+		go Annex.JSONOutput = liftIO $ flushed $ json
 
 q :: Monad m => m ()
 q = return ()

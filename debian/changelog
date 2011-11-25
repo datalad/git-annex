@@ -2,6 +2,8 @@ git-annex (3.20111123) UNRELEASED; urgency=low
 
   * Put a workaround in the directory special remote for strange behavior
     with VFAT filesystems on Linux (mounted with shortname=mixed)
+  * Flush json output, avoiding a buffering problem that could result in
+    doubled output.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 17:53:42 -0400
 
