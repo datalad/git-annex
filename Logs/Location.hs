@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 {- git-annex location log
  -
  - git-annex keeps track of which repositories have the contents of annexed

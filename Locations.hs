@@ -26,8 +26,8 @@ module Locations (
 	prop_idempotent_fileKey
 ) where
 
-import Bits
-import Word
+import Data.Bits
+import Data.Word
 import Data.Hash.MD5
 
 import Common
