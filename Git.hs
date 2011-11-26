@@ -72,7 +72,7 @@ module Git (
 
 import System.Posix.Directory
 import System.Posix.User
-import IO (bracket_, try)
+import Control.Exception (bracket_)
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
 import Data.Char
@@ -438,12 +438,12 @@ reap = do
  - index file. -}
 useIndex :: FilePath -> IO (IO ())
 useIndex index = do
-	res <- try $ getEnv var
+	res <- getEnv var
 	setEnv var index True
 	return $ reset res
 	where
 		var = "GIT_INDEX_FILE"
-		reset (Right (Just v)) = setEnv var v True
+		reset (Just v) = setEnv var v True
 		reset _ = unsetEnv var
 
 {- Runs an action that causes a git subcommand to emit a sha, and strips
@@ -484,10 +484,8 @@ configRead repo@(Repo { location = Dir d }) = do
 	{- Cannot use pipeRead because it relies on the config having
 	   been already read. Instead, chdir to the repo. -}
 	cwd <- getCurrentDirectory
-	bracket_ (changeWorkingDirectory d)
-		(\_ -> changeWorkingDirectory cwd) $
-			pOpen ReadFromPipe "git" ["config", "--list"] $
-				hConfigRead repo
+	bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) $
+		pOpen ReadFromPipe "git" ["config", "--list"] $ hConfigRead repo
 configRead r = assertLocal r $ error "internal"
 
 {- Reads git config from a handle and populates a repo with it. -}
