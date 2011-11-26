@@ -11,7 +11,7 @@ import Test.QuickCheck
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
-import IO (bracket_, bracket)
+import Control.Exception (bracket_, bracket)
 import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
@@ -523,8 +523,7 @@ indir dir a = do
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to cwd before
 	-- rethrowing.
-	r <- bracket_ (changeToTmpDir dir)
-		(\_ -> changeWorkingDirectory cwd)
+	r <- bracket_ (changeToTmpDir dir) (changeWorkingDirectory cwd)
 		(E.try (a)::IO (Either E.SomeException ()))
 	case r of
 		Right () -> return ()
