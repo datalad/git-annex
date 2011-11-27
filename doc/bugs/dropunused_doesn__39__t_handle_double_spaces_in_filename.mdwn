@@ -81,3 +81,7 @@ Output:
     ok
 
 Strange that `dropunused` still said "ok" when it didn't succeed at removing the file.
+
+> It was misparsing the unused file, so it thought you'd asked it to drop a
+> key that didn't exist (which means already dropped) so no error. I've
+> fixed the bug. [[done]] --[[Joey]] 
