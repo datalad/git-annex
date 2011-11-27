@@ -1,0 +1,15 @@
+I belive I have found a regression.
+
+Inspired by 
+<http://git-annex.branchable.com/forum/performance_improvement:_git_on_ssd__44___annex_on_spindle_disk/>
+I tried to only have .git/annex/objects (also tested moving .git/annex) on NFS while having the rest on local SSD disk.
+
+But when trying to add files i get:
+
+     > git annex add testfile
+    add testfile (checksum...) 
+    git-annex: testfile: rename: unsupported operation (Invalid cross-device link)
+    failed
+    git-annex: add: 1 failed
+
+I have tried both using bind-mount and with a sym-link.
