@@ -13,3 +13,13 @@ But when trying to add files i get:
     git-annex: add: 1 failed
 
 I have tried both using bind-mount and with a sym-link.
+
+> I don't think this was a reversion; the forum post doesn't really
+> indicate it ever worked.
+> 
+> Grepping for `renameFile` and `createLink` will find all the places
+> in git-annex that assume one filesystem. These would have to be changed
+> to catch errors and fall back to expensive copying.
+> 
+> Putting a separate repository on the file server could work better
+> depending on what you're trying to do. --[[Joey]] 
