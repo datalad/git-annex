@@ -1,8 +1,7 @@
 git-annex keeps track of in which repositories it last saw a file's content.
 This location tracking information is stored in the git-annex branch.
 Repositories record their UUID and the date when they get or drop 
-a file's content. (Git is configured to use a union merge for this file,
-so the lines may be in arbitrary order, but it will never conflict.)
+a file's content.
 
 This location tracking information is useful if you have multiple
 repositories, and not all are always accessible. For example, perhaps one
@@ -10,7 +9,7 @@ is on a home file server, and you are away from home. Then git-annex can
 tell you what git remote it needs access to in order to get a file:
 
 	# git annex get myfile 
-	get myfile(not available)
+	get myfile (not available)
 	  I was unable to access these remotes: home
 
 Another way the location tracking comes in handy is if you put repositories
