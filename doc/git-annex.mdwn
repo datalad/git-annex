@@ -446,6 +446,11 @@ file contents are present at either of two repositories.
   Matches only files that git-annex believes to have the specified number
   of copies, or more.
 
+* --inbackend=name
+
+  Matches only files whose content is stored using the specified key-value
+  backend.
+
 * --not
 
   Inverts the next file matching option. For example, to only act on

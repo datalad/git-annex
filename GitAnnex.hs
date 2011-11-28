@@ -111,6 +111,8 @@ options = commonOptions ++
 		"skip files not present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
+	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
+		"skip files not using a key-value backend"
 	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }

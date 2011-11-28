@@ -8,6 +8,8 @@ git-annex (3.20111123) UNRELEASED; urgency=low
   * Bugfix: dropunused did not drop keys with two spaces in their name.
   * Support for storing .git/annex on a different device than the rest of the
     git repository.
+  * --inbackend can be used to make git-annex only operate on files
+    whose content is stored using a specified key-value backend.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 17:53:42 -0400
 
