@@ -435,7 +435,8 @@ file contents are present at either of two repositories.
 * --in=repository
 
   Matches only files that git-annex believes have their contents present
-  in a repository.
+  in a repository. Note that it does not check the repository to verify
+  that it still has the content.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
@@ -444,7 +445,8 @@ file contents are present at either of two repositories.
 * --copies=number
 
   Matches only files that git-annex believes to have the specified number
-  of copies, or more.
+  of copies, or more. Note that it does not check remotes to verify that
+  the copies still exist.
 
 * --inbackend=name
 
