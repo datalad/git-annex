@@ -46,7 +46,7 @@ perform dest key = do
                 then do
 			liftIO $ do
 				removeFile dest
-				renameFile tmpdest dest
+				moveFile tmpdest dest
 				allowWrite dest
 			next $ return True
                 else error "copy failed!"

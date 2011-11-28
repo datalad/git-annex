@@ -113,7 +113,7 @@ logStatus key status = do
 	u <- getUUID
 	logChange key u status
 
-{- Runs an action, passing it a temporary filename to download,
+{- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
@@ -221,7 +221,7 @@ moveAnnex key src = do
 		else liftIO $ do
 			createDirectoryIfMissing True dir
 			allowWrite dir -- in case the directory already exists
-			renameFile src dest
+			moveFile src dest
 			preventWrite dest
 			preventWrite dir
 
@@ -243,7 +243,7 @@ fromAnnex :: Key -> FilePath -> Annex ()
 fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
 	allowWrite dir
 	allowWrite file
-	renameFile file dest
+	moveFile file dest
 	removeDirectory dir
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
@@ -256,7 +256,7 @@ moveBad key = do
 	liftIO $ do
 		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
-		renameFile src dest
+		moveFile src dest
 		removeDirectory (parentDir src)
 	logStatus key InfoMissing
 	return dest

@@ -61,7 +61,7 @@ undo file key e = do
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do
 			src <- fromRepo $ gitAnnexLocation key
-			liftIO $ renameFile src file
+			liftIO $ moveFile src file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do

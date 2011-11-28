@@ -1,0 +1,51 @@
+{- directory manipulation
+ -
+ - Copyright 2011 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
+module Utility.Directory where
+
+import System.IO.Error
+import System.Posix.Files
+import System.Directory
+import Control.Exception (throw)
+
+import Utility.SafeCommand
+import Utility.Conditional
+import Utility.TempFile
+
+{- Moves one filename to another.
+ - First tries a rename, but falls back to moving across devices if needed. -}
+moveFile :: FilePath -> FilePath -> IO ()
+moveFile src dest = try (rename src dest) >>= onrename
+	where
+		onrename (Right _) = return ()
+		onrename (Left e)
+			| isPermissionError e = rethrow
+			| isDoesNotExistError e = rethrow
+			| otherwise = do
+				-- copyFile is likely not as optimised as
+				-- the mv command, so we'll use the latter.
+				-- But, mv will move into a directory if
+				-- dest is one, which is not desired.
+				whenM (isdir dest) rethrow
+				viaTmp mv dest undefined
+			where
+				rethrow = throw e
+				mv tmp _ = do
+					ok <- boolSystem "mv" [Param "-f",
+						Param src, Param tmp]
+					if ok
+						then return ()
+						else do
+							-- delete any partial
+							_ <- try $
+								removeFile tmp
+							rethrow
+		isdir f = do
+			r <- try (getFileStatus f)
+			case r of
+				(Left _) -> return False
+				(Right s) -> return $ isDirectory s

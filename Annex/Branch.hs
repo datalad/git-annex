@@ -312,7 +312,7 @@ setJournalFile file content = do
 			let jfile = journalFile g file
 			let tmpfile = gitAnnexTmpDir g </> takeFileName jfile
 			writeBinaryFile tmpfile content
-			renameFile tmpfile jfile
+			moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
 getJournalFile :: FilePath -> Annex (Maybe String)
