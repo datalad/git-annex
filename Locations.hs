@@ -59,28 +59,35 @@ objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
 {- Annexed file's possible locations relative to the .git directory.
- - There are two different possibilities, using different hashes;
- - the first is the default for new content. -}
+ - There are two different possibilities, using different hashes. -}
 annexLocations :: Key -> [FilePath]
-annexLocations key = [using hashDirMixed, using hashDirLower]
+annexLocations key = map (annexLocation key) [hashDirMixed, hashDirLower]
+annexLocation :: Key -> (Key -> FilePath) -> FilePath
+annexLocation key hasher = objectDir </> hasher key </> f </> f
 	where
-		using h = objectDir </> h key </> f </> f
 		f = keyFile key
 
 {- Annexed file's absolute location in a repository.
- - Out of the possible annexLocations, returns the one where the file
- - is actually present. When the file is not present, returns the
- - one where the file should be put.
+ -
+ - When there are multiple possible locations, returns the one where the
+ - file is actually present.
+ -
+ - When the file is not present, returns the location where the file should
+ - be stored.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
 gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
-		-- bare repositories default to hashDirLower for new
-		-- content, as it's more portable, so check locations
-		-- in reverse order
-		go (Git.workTree r) $ reverse $ annexLocations key
+		{- Bare repositories default to hashDirLower for new
+		 - content, as it's more portable. -}
+		go (Git.workTree r) $
+			map (annexLocation key) [hashDirLower, hashDirMixed]
 	| otherwise =
-		go (Git.workTree r </> ".git") $ annexLocations key
+		{- Non-bare repositories only use hashDirMixed, so
+		 - don't need to do any work to check if the file is
+		 - present. -}
+		return $ Git.workTree r </> ".git" </>
+				annexLocation key hashDirMixed
 	where
 		go dir locs = fromMaybe (dir </> head locs) <$> check dir locs
 		check _ [] = return Nothing
