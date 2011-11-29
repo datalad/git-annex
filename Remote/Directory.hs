@@ -94,12 +94,12 @@ withStoredFile = withCheckedFile doesFileExist
 
 store :: FilePath -> Key -> Annex Bool
 store d k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	liftIO $ catchBoolIO $ storeHelper d k $ copyFileExternal src
 
 storeEncrypted :: FilePath -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d (cipher, enck) k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	liftIO $ catchBoolIO $ storeHelper d enck $ encrypt src
 	where
 		encrypt src dest = do

@@ -87,7 +87,7 @@ verifyLocationLog key desc = do
 	-- Since we're checking that a key's file is present, throw
 	-- in a permission fixup here too.
 	when present $ do
-		f <- fromRepo $ gitAnnexLocation key
+		f <- inRepo $ gitAnnexLocation key
 		liftIO $ do
 			preventWrite f
 			preventWrite (parentDir f)
@@ -118,7 +118,7 @@ verifyLocationLog key desc = do
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
-	file <- fromRepo $ gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	case (present, Types.Key.keySize key) of
 		(_, Nothing) -> return True

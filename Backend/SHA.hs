@@ -99,7 +99,7 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
 	fast <- Annex.getState Annex.fast
-	file <- fromRepo $ gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True

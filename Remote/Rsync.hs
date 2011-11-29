@@ -95,11 +95,11 @@ rsyncKeyDir :: RsyncOpts -> Key -> String
 rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> rsyncEscape o (keyFile k)
 
 store :: RsyncOpts -> Key -> Annex Bool
-store o k = rsyncSend o k =<< fromRepo (gitAnnexLocation k)
+store o k = rsyncSend o k =<< inRepo (gitAnnexLocation k)
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	rsyncSend o enck tmp
 

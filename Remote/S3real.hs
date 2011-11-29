@@ -112,7 +112,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 store :: Remote Annex -> Key -> Annex Bool
 store r k = s3Action r False $ \(conn, bucket) -> do
-	dest <- fromRepo $ gitAnnexLocation k
+	dest <- inRepo $ gitAnnexLocation k
 	res <- liftIO $ storeHelper (conn, bucket) r k dest
 	s3Bool res
 
@@ -121,7 +121,7 @@ storeEncrypted r (cipher, enck) k = s3Action r False $ \(conn, bucket) ->
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
-		f <- fromRepo $ gitAnnexLocation k
+		f <- inRepo $ gitAnnexLocation k
 		liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
 		s3Bool res

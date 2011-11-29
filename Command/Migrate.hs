@@ -49,7 +49,7 @@ upgradableKey key = isNothing $ Types.Key.keySize key
  -}
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	src <- fromRepo $ gitAnnexLocation oldkey
+	src <- inRepo $ gitAnnexLocation oldkey
 	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName file
 	cleantmp tmpfile

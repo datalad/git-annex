@@ -102,13 +102,13 @@ bupSplitParams r buprepo k src = do
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck (Param "-")
 	liftIO $ catchBoolIO $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->

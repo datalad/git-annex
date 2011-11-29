@@ -37,7 +37,7 @@ perform dest key = do
 	
 	checkDiskSpace key
 
-	src <- fromRepo $ gitAnnexLocation key
+	src <- inRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"

@@ -9,7 +9,7 @@ module Locations (
 	keyFile,
 	fileKey,
 	gitAnnexLocation,
-	annexLocation,
+	annexLocations,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpDir,
@@ -58,17 +58,33 @@ annexDir = addTrailingPathSeparator "annex"
 objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
-{- Annexed file's location relative to the .git directory. -}
-annexLocation :: Key -> FilePath
-annexLocation key = objectDir </> hashDirMixed key </> f </> f
+{- Annexed file's possible locations relative to the .git directory.
+ - There are two different possibilities, using different hashes;
+ - the first is the default for new content. -}
+annexLocations :: Key -> [FilePath]
+annexLocations key = [using hashDirMixed, using hashDirLower]
 	where
+		using h = objectDir </> h key </> f </> f
 		f = keyFile key
 
-{- Annexed file's absolute location in a repository. -}
-gitAnnexLocation :: Key -> Git.Repo -> FilePath
+{- Annexed file's absolute location in a repository.
+ - Out of the possible annexLocations, returns the one where the file
+ - is actually present. When the file is not present, returns the
+ - one where the file should be put.
+ -}
+gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
 gitAnnexLocation key r
-	| Git.repoIsLocalBare r = Git.workTree r </> annexLocation key
-	| otherwise = Git.workTree r </> ".git" </> annexLocation key
+	| Git.repoIsLocalBare r =
+		go (Git.workTree r) $ annexLocations key
+	| otherwise =
+		go (Git.workTree r </> ".git") $ annexLocations key
+	where
+		go dir locs = fromMaybe (dir </> head locs) <$> check dir locs
+		check _ [] = return Nothing
+		check dir (l:ls) = do
+			let f = dir </> l
+			e <- doesFileExist f
+			if e then return (Just f) else check dir ls
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
@@ -76,8 +92,7 @@ gitAnnexDir r
 	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> annexDir
 	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> annexDir
 
-{- The part of the annex directory where file contents are stored.
- -}
+{- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
 gitAnnexObjectDir r
 	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> objectDir

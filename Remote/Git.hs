@@ -134,7 +134,14 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
 	where
-		checkhttp = liftIO $ catchMsgIO $ Url.exists $ keyUrl r key
+		checkhttp = liftIO $ go undefined $ keyUrls r key
+			where
+				go e [] = return $ Left e
+				go _ (u:us) = do
+					res <- catchMsgIO $ Url.exists u
+					case res of
+						Left e -> go e us
+						v -> return v
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			onRemote r (check, unknown) "inannex" [Param (show key)]
@@ -169,8 +176,10 @@ onLocal r a = do
 		liftIO Git.reap
 		return ret
 
-keyUrl :: Git.Repo -> Key -> String
-keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
+keyUrls :: Git.Repo -> Key -> [String]
+keyUrls r key = map tourl (annexLocations key)
+	where
+		tourl l = Git.repoLocation r ++ "/" ++ l
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
@@ -185,16 +194,22 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
-		rsyncOrCopyFile params (gitAnnexLocation key r) file
+		loc <- liftIO $ gitAnnexLocation key r
+		rsyncOrCopyFile params loc file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
+	| Git.repoIsHttp r = liftIO $ downloadurls $ keyUrls r key
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
+	where
+		downloadurls [] = return False
+		downloadurls (u:us) = do
+			ok <- Url.download u file
+			if ok then return ok else downloadurls us
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
 	| not $ Git.repoIsUrl r = do
-		keysrc <- fromRepo $ gitAnnexLocation key
+		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
@@ -203,7 +218,7 @@ copyToRemote r key
 			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
-		keysrc <- fromRepo $ gitAnnexLocation key
+		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
 

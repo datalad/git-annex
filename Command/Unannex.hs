@@ -55,7 +55,7 @@ cleanup file key = do
 	if fast
 		then do
 			-- fast mode: hard link to content in annex
-			src <- fromRepo $ gitAnnexLocation key
+			src <- inRepo $ gitAnnexLocation key
 			liftIO $ do
 				createLink src file
 				allowWrite file
