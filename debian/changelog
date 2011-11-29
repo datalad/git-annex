@@ -3,7 +3,7 @@ git-annex (3.20111123) UNRELEASED; urgency=low
   * The VFAT filesystem on recent versions of Linux, when mounted with
     shortname=mixed, does not get along well with git-annex's mixed case
     .git/annex/objects hash directories. To better support it, bare
-    repositories (and the directory special remote) now store content
+    repositories (and the directory special remote) now store new content
     in all-lowercase hash directories. Mixed case hash directories are
     still used for non-bare directories, which cannot be put in VFAT.
   * Flush json output, avoiding a buffering problem that could result in
