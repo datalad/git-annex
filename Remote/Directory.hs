@@ -62,20 +62,10 @@ directorySetup u c = do
 	gitConfigSpecialRemote u c' "directory" dir
 	return $ M.delete "directory" c'
 
-{- Where to store a given Key in the Directory.
- -
- - There are two possible locations to try; this had to be done because
- - on Linux, vfat filesystem mounted with shortname=mixed have a
- - variant of case insensativity that causes miserable failure when
- - hashDirMixed produces eg, "xx" and "XX". The first directory to be
- - created wins the namespace, and the second one cannot then be created.
- - But unlike behavior with shortname=lower, "XX/foo" won't look in
- - "xx/foo".
- -}
+{- Locations to try to access a given Key in the Directory. -}
 locations :: FilePath -> Key -> [FilePath]
-locations d k = [using hashDirMixed, using hashDirLower]
+locations d k = map (\h -> d </> h k </> f </> f) annexHashes
 	where
-		using h = d </> h k </> f </> f
 		f = keyFile k
 
 withCheckedFile :: (FilePath -> IO Bool) -> FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool

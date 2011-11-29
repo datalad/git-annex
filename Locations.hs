@@ -20,6 +20,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	isLinkToAnnex,
+	annexHashes,
 	hashDirMixed,
 	hashDirLower,
 
@@ -58,10 +59,18 @@ annexDir = addTrailingPathSeparator "annex"
 objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
+{- Two different directory hashes may be used. The mixed case hash
+ - came first, and is fine, except for the problem of case-strict
+ - filesystems such as Linux VFAT (mounted with shortname=mixed),
+ - which do not allow using a directory "XX" when "xx" already exists.
+ - To support that, some repositories will use a lower case hash. -}
+annexHashes :: [Key -> FilePath]
+annexHashes = [hashDirMixed, hashDirLower]
+
 {- Annexed file's possible locations relative to the .git directory.
  - There are two different possibilities, using different hashes. -}
 annexLocations :: Key -> [FilePath]
-annexLocations key = map (annexLocation key) [hashDirMixed, hashDirLower]
+annexLocations key = map (annexLocation key) annexHashes
 annexLocation :: Key -> (Key -> FilePath) -> FilePath
 annexLocation key hasher = objectDir </> hasher key </> f </> f
 	where
