@@ -75,7 +75,10 @@ annexLocations key = [using hashDirMixed, using hashDirLower]
 gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
 gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
-		go (Git.workTree r) $ annexLocations key
+		-- bare repositories default to hashDirLower for new
+		-- content, as it's more portable, so check locations
+		-- in reverse order
+		go (Git.workTree r) $ reverse $ annexLocations key
 	| otherwise =
 		go (Git.workTree r </> ".git") $ annexLocations key
 	where

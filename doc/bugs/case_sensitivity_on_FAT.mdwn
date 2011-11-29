@@ -42,4 +42,5 @@ I wonder if the directory remote should use hashDirLower instead of hashDirMixed
 >> and for the even more unlikely configuration of a rsync special remote
 >> stored on VFAT. --[[Joey]] 
 
-[[!meta title="bare git repository not supported on VFAT"]]
+>>> Bare repositories now use lowercase. rsync is the only remaining
+>>> unsupported possibility. --[[Joey]]

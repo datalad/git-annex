@@ -1,7 +1,11 @@
 git-annex (3.20111123) UNRELEASED; urgency=low
 
-  * Put a workaround in the directory special remote for strange behavior
-    with VFAT filesystems on Linux (mounted with shortname=mixed)
+  * The VFAT filesystem on recent versions of Linux, when mounted with
+    shortname=mixed, does not get along well with git-annex's mixed case
+    .git/annex/objects hash directories. To better support it, bare
+    repositories (and the directory special remote) now store content
+    in all-lowercase hash directories. Mixed case hash directories are
+    still used for non-bare directories, which cannot be put in VFAT.
   * Flush json output, avoiding a buffering problem that could result in
     doubled output.
   * Avoid needing haskell98 and other fixes for new ghc. Thanks, Mark Wright.
