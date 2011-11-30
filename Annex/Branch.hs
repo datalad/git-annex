@@ -186,7 +186,7 @@ tryFastForwardTo :: [Git.Ref] -> Annex Bool
 tryFastForwardTo [] = return True
 tryFastForwardTo (first:rest) = do
 	-- First, check that the git-annex branch does not contain any
-	-- new commits that are in the first other branch. If it does,
+	-- new commits that are not in the first other branch. If it does,
 	-- cannot fast-forward.
 	diverged <- changedBranch first fullname
 	if diverged
@@ -195,7 +195,8 @@ tryFastForwardTo (first:rest) = do
 	where
 		no_ff = return False
 		do_ff branch = do
-			inRepo $ Git.run "update-ref" [Param $ show fullname, Param $ show branch]
+			inRepo $ Git.run "update-ref"
+				[Param $ show fullname, Param $ show branch]
 			return True
 		findbest c [] = return $ Just c
 		findbest c (r:rs)
