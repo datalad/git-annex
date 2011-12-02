@@ -38,7 +38,8 @@ trustPartition level ls
 	| level == SemiTrusted = do
 		t <- trustGet Trusted
 		u <- trustGet UnTrusted
-		let uncandidates = t ++ u
+		d <- trustGet DeadTrusted
+		let uncandidates = t ++ u ++ d
 		return $ partition (`notElem` uncandidates) ls
 	| otherwise = do
 		candidates <- trustGet level

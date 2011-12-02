@@ -58,6 +58,7 @@ fast_stats =
 	, remote_list Trusted "trusted"
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
+	, remote_list DeadTrusted "dead"
 	]
 slow_stats :: [Stat]
 slow_stats = 
