@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Locations (
 	keyFile,
 	fileKey,
+	keyPaths,
 	gitAnnexLocation,
 	annexLocations,
 	gitAnnexDir,
@@ -59,22 +60,12 @@ annexDir = addTrailingPathSeparator "annex"
 objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
-{- Two different directory hashes may be used. The mixed case hash
- - came first, and is fine, except for the problem of case-strict
- - filesystems such as Linux VFAT (mounted with shortname=mixed),
- - which do not allow using a directory "XX" when "xx" already exists.
- - To support that, some repositories will use a lower case hash. -}
-annexHashes :: [Key -> FilePath]
-annexHashes = [hashDirMixed, hashDirLower]
-
 {- Annexed file's possible locations relative to the .git directory.
  - There are two different possibilities, using different hashes. -}
 annexLocations :: Key -> [FilePath]
 annexLocations key = map (annexLocation key) annexHashes
-annexLocation :: Key -> (Key -> FilePath) -> FilePath
-annexLocation key hasher = objectDir </> hasher key </> f </> f
-	where
-		f = keyFile key
+annexLocation :: Key -> Hasher -> FilePath
+annexLocation key hasher = objectDir </> keyPath key hasher
 
 {- Annexed file's absolute location in a repository.
  -
@@ -150,7 +141,7 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = ("/.git/" ++ objectDir) `isInfixOf` s
 
-{- Converts a key into a filename fragment.
+{- Converts a key into a filename fragment without any directory.
  -
  - Escape "/" in the key name, to keep a flat tree of files and avoid
  - issues with keys containing "/../" or ending with "/" etc. 
@@ -166,6 +157,22 @@ keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
 	replace "%" "&s" $ replace "&" "&a"  $ show key
 
+{- A location to store a key on the filesystem. A directory hash is used,
+ - to protect against filesystems that dislike having many items in a
+ - single directory.
+ -
+ - The file is put in a directory with the same name, this allows
+ - write-protecting the directory to avoid accidental deletion of the file.
+ -}
+keyPath :: Key -> Hasher -> FilePath
+keyPath key hasher = hasher key </> f </> f
+	where
+		f = keyFile key
+
+{- All possibile locations to store a key using different directory hashes. -}
+keyPaths :: Key -> [FilePath]
+keyPaths key = map (keyPath key) annexHashes
+
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
@@ -178,17 +185,22 @@ prop_idempotent_fileKey :: String -> Bool
 prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
 	where k = stubKey { keyName = s, keyBackendName = "test" }
 
-{- Given a key, generates a short directory name to put it in,
- - to do hashing to protect against filesystems that dislike having
- - many items in a single directory. -}
-hashDirMixed :: Key -> FilePath
+{- Two different directory hashes may be used. The mixed case hash
+ - came first, and is fine, except for the problem of case-strict
+ - filesystems such as Linux VFAT (mounted with shortname=mixed),
+ - which do not allow using a directory "XX" when "xx" already exists.
+ - To support that, some repositories will use a lower case hash. -}
+type Hasher = Key -> FilePath
+annexHashes :: [Hasher]
+annexHashes = [hashDirMixed, hashDirLower]
+
+hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
 	where
 		dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
 		ABCD (a,b,c,d) = md5 $ Str $ show k
 
-{- Generates a hash directory that is all lower case. -}
-hashDirLower :: Key -> FilePath
+hashDirLower :: Hasher
 hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
 	where
 		dir = take 6 $ md5s $ Str $ show k

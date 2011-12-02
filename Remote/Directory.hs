@@ -64,9 +64,7 @@ directorySetup u c = do
 
 {- Locations to try to access a given Key in the Directory. -}
 locations :: FilePath -> Key -> [FilePath]
-locations d k = map (\h -> d </> h k </> f </> f) annexHashes
-	where
-		f = keyFile k
+locations d k = map (d </>) (keyLocations k)
 
 withCheckedFile :: (FilePath -> IO Bool) -> FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
 withCheckedFile _ [] _ _ = return False
