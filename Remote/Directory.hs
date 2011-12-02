@@ -64,7 +64,7 @@ directorySetup u c = do
 
 {- Locations to try to access a given Key in the Directory. -}
 locations :: FilePath -> Key -> [FilePath]
-locations d k = map (d </>) (keyLocations k)
+locations d k = map (d </>) (keyPaths k)
 
 withCheckedFile :: (FilePath -> IO Bool) -> FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
 withCheckedFile _ [] _ _ = return False
@@ -95,18 +95,16 @@ storeEncrypted d (cipher, enck) k = do
 			return True
 
 storeHelper :: FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
-storeHelper d key a = withCheckedFile check d key go
-	where
-		check dest = isJust <$> mkdir (parentDir dest)
-		mkdir = catchMaybeIO . createDirectoryIfMissing True
-		go dest = do
-			let dir = parentDir dest
-			allowWrite dir
-			ok <- a dest
-			when ok $ do
-				preventWrite dest
-				preventWrite dir
-			return ok
+storeHelper d key a = do
+	let dest = head $ locations d key
+	let dir = parentDir dest
+	createDirectoryIfMissing True dir
+	allowWrite dir
+	ok <- a dest
+	when ok $ do
+		preventWrite dest
+		preventWrite dir
+	return ok
 
 retrieve :: FilePath -> Key -> FilePath -> Annex Bool
 retrieve d k f = liftIO $ withStoredFile d k $ \file -> copyFileExternal file f

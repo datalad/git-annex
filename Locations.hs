@@ -21,7 +21,6 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	isLinkToAnnex,
-	annexHashes,
 	hashDirMixed,
 	hashDirLower,
 
@@ -80,8 +79,7 @@ gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
 		{- Bare repositories default to hashDirLower for new
 		 - content, as it's more portable. -}
-		go (Git.workTree r) $
-			map (annexLocation key) [hashDirLower, hashDirMixed]
+		go (Git.workTree r) (annexLocations key)
 	| otherwise =
 		{- Non-bare repositories only use hashDirMixed, so
 		 - don't need to do any work to check if the file is
@@ -189,10 +187,10 @@ prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
  - came first, and is fine, except for the problem of case-strict
  - filesystems such as Linux VFAT (mounted with shortname=mixed),
  - which do not allow using a directory "XX" when "xx" already exists.
- - To support that, some repositories will use a lower case hash. -}
+ - To support that, most repositories use the lower case hash for new data. -}
 type Hasher = Key -> FilePath
 annexHashes :: [Hasher]
-annexHashes = [hashDirMixed, hashDirLower]
+annexHashes = [hashDirLower, hashDirMixed]
 
 hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
