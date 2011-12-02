@@ -46,6 +46,7 @@ import qualified Command.Uninit
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
+import qualified Command.Dead
 import qualified Command.AddUrl
 import qualified Command.Map
 import qualified Command.Upgrade
@@ -70,6 +71,7 @@ cmds = concat
 	, Command.Trust.def
 	, Command.Untrust.def
 	, Command.Semitrust.def
+	, Command.Dead.def
 	, Command.AddUrl.def
 	, Command.FromKey.def
 	, Command.DropKey.def

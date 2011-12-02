@@ -67,12 +67,14 @@ parseTrust s
 		w = words s
 		parse "1" = Trusted
 		parse "0" = UnTrusted
+		parse "X" = DeadTrusted
 		parse _ = SemiTrusted
 
 showTrust :: TrustLevel -> String
-showTrust SemiTrusted = "?"
-showTrust UnTrusted = "0"
 showTrust Trusted = "1"
+showTrust UnTrusted = "0"
+showTrust DeadTrusted = "X"
+showTrust SemiTrusted = "?"
 
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()

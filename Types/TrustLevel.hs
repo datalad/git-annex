@@ -14,7 +14,7 @@ import qualified Data.Map as M
 
 import Types.UUID
 
-data TrustLevel = SemiTrusted | UnTrusted | Trusted
+data TrustLevel = Trusted | SemiTrusted | UnTrusted | DeadTrusted
 	deriving Eq
 
 type TrustMap = M.Map UUID TrustLevel

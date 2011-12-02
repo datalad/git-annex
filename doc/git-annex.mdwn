@@ -173,6 +173,11 @@ subdirectories).
 
   Returns a repository to the default semi trusted state.
 
+* dead [repository ...]
+
+  Indicates that the repository has been irretrevably lost.
+  (To undo, use semitrust.)
+
 # REPOSITORY MAINTENANCE COMMANDS
 
 * fsck [path ...]

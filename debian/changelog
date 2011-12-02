@@ -15,6 +15,8 @@ git-annex (3.20111123) UNRELEASED; urgency=low
     git repository.
   * --inbackend can be used to make git-annex only operate on files
     whose content is stored using a specified key-value backend.
+  * dead: A command which says that a repository is gone for good
+    and you don't want git-annex to mention it again.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 17:53:42 -0400
 

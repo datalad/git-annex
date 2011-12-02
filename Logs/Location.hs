@@ -27,6 +27,7 @@ module Logs.Location (
 import Common.Annex
 import qualified Annex.Branch
 import Logs.Presence
+import Logs.Trust
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
@@ -34,9 +35,14 @@ logChange key (UUID u) s = addLog (logFile key) =<< logNow s u
 logChange _ NoUUID _ = return ()
 
 {- Returns a list of repository UUIDs that, according to the log, have
- - the value of a key. -}
+ - the value of a key.
+ -
+ - Dead repositories are skipped.
+ -}
 keyLocations :: Key -> Annex [UUID]
-keyLocations key = map toUUID <$> (currentLog . logFile) key
+keyLocations key = do
+	l <- map toUUID <$> (currentLog . logFile) key
+	snd <$> trustPartition DeadTrusted l
 
 {- Finds all keys that have location log information.
  - (There may be duplicate keys in the list.) -}
