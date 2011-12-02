@@ -86,13 +86,26 @@ rsyncEscape o s
 	| rsyncUrlIsShell (rsyncUrl o) = shellEscape s
 	| otherwise = s
 
-rsyncKey :: RsyncOpts -> Key -> String
-rsyncKey o k = rsyncUrl o </> hashDirMixed k </> rsyncEscape o (f </> f)
-        where
+rsyncUrls :: RsyncOpts -> Key -> [String]
+rsyncUrls o k = map use annexHashes
+	where
+		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
                 f = keyFile k
 
-rsyncKeyDir :: RsyncOpts -> Key -> String
-rsyncKeyDir o k = rsyncUrl o </> hashDirMixed k </> rsyncEscape o (keyFile k)
+rsyncUrlDirs :: RsyncOpts -> Key -> [String]
+rsyncUrlDirs o k = map use annexHashes
+	where
+		use h = rsyncUrl o </> h k </> rsyncEscape o (keyFile k)
+
+withRsyncUrl :: RsyncOpts -> Key -> (FilePath -> Annex Bool) -> Annex Bool
+withRsyncUrl o k a = go $ rsyncUrls o k
+	where
+		go [] = return False
+		go (u:us) = do
+			ok <- a u
+			if ok
+				then return ok
+				else go us
 
 store :: RsyncOpts -> Key -> Annex Bool
 store o k = rsyncSend o k =<< inRepo (gitAnnexLocation k)
@@ -104,10 +117,10 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 	rsyncSend o enck tmp
 
 retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieve o k f = rsyncRemote o
+retrieve o k f = withRsyncUrl o k $ \u -> rsyncRemote o
 	-- use inplace when retrieving to support resuming
 	[ Param "--inplace"
-	, Param $ rsyncKey o k
+	, Param u
 	, Param f
 	]
 
@@ -121,27 +134,30 @@ retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
 		else return res
 
 remove :: RsyncOpts -> Key -> Annex Bool
-remove o k = withRsyncScratchDir $ \tmp -> do
-	{- Send an empty directory to rysnc as the parent directory
-         - of the file to remove. -}
-	let dummy = tmp </> keyFile k
-	liftIO $ createDirectoryIfMissing True dummy
-	liftIO $ rsync $ rsyncOptions o ++
-		[ Params "--delete --recursive"
-		, partialParams
-		, Param $ addTrailingPathSeparator dummy
-		, Param $ rsyncKeyDir o k
-		]
+remove o k = any (== True) <$> sequence (map go (rsyncUrlDirs o k))
+	where
+		go d = withRsyncScratchDir $ \tmp -> liftIO $ do
+			{- Send an empty directory to rysnc as the
+			 - parent directory of the file to remove. -}
+			let dummy = tmp </> keyFile k
+			createDirectoryIfMissing True dummy
+			rsync $ rsyncOptions o ++
+				[ Params "--quiet --delete --recursive"
+				, partialParams
+				, Param $ addTrailingPathSeparator dummy
+				, Param d
+				]
 
 checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
 checkPresent r o k = do
 	showAction $ "checking " ++ Git.repoDescribe r
-	-- note: Does not currently differnetiate between rsync failing
+	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
-	res <- liftIO $ boolSystem "sh" [Param "-c", Param cmd]
-	return $ Right res
+	Right <$> check
 	where
-		cmd = "rsync --quiet " ++ shellEscape (rsyncKey o k) ++ " 2>/dev/null"
+ 		check = withRsyncUrl o k $ \u ->
+			liftIO $ boolSystem "sh" [Param "-c", Param (cmd u)]
+		cmd u = "rsync --quiet " ++ shellEscape u ++ " 2>/dev/null"
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
@@ -182,7 +198,7 @@ rsyncRemote o params = do
    directories. -}
 rsyncSend :: RsyncOpts -> Key -> FilePath -> Annex Bool
 rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> hashDirMixed k </> f </> f
+	let dest = tmp </> head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	liftIO $ createLink src dest
 	rsyncRemote o
@@ -192,5 +208,3 @@ rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
 		, Param $ addTrailingPathSeparator tmp
 		, Param $ rsyncUrl o
 		]
-	where
-		f = keyFile k

@@ -21,6 +21,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	isLinkToAnnex,
+	annexHashes,
 	hashDirMixed,
 	hashDirLower,
 
