@@ -71,8 +71,6 @@ checkKey key = do
 		then return $ Right False
 		else return . Right =<< checkKey' us
 checkKey' :: [URLString] -> Annex Bool
-checkKey' [] = return False
-checkKey' (u:us) = do
+checkKey' us = untilTrue us $ \u -> do
 	showAction $ "checking " ++ u
-	e <- liftIO $ Url.exists u
-	if e then return e else checkKey' us
+	liftIO $ Url.exists u

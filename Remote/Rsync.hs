@@ -97,16 +97,6 @@ rsyncUrlDirs o k = map use annexHashes
 	where
 		use h = rsyncUrl o </> h k </> rsyncEscape o (keyFile k)
 
-withRsyncUrl :: RsyncOpts -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-withRsyncUrl o k a = go $ rsyncUrls o k
-	where
-		go [] = return False
-		go (u:us) = do
-			ok <- a u
-			if ok
-				then return ok
-				else go us
-
 store :: RsyncOpts -> Key -> Annex Bool
 store o k = rsyncSend o k =<< inRepo (gitAnnexLocation k)
 
@@ -117,12 +107,13 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 	rsyncSend o enck tmp
 
 retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieve o k f = withRsyncUrl o k $ \u -> rsyncRemote o
-	-- use inplace when retrieving to support resuming
-	[ Param "--inplace"
-	, Param u
-	, Param f
-	]
+retrieve o k f = untilTrue (rsyncUrls o k) $ \u ->
+	rsyncRemote o
+		-- use inplace when retrieving to support resuming
+		[ Param "--inplace"
+		, Param u
+		, Param f
+		]
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
@@ -134,19 +125,18 @@ retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
 		else return res
 
 remove :: RsyncOpts -> Key -> Annex Bool
-remove o k = any (== True) <$> sequence (map go (rsyncUrlDirs o k))
-	where
-		go d = withRsyncScratchDir $ \tmp -> liftIO $ do
-			{- Send an empty directory to rysnc as the
-			 - parent directory of the file to remove. -}
-			let dummy = tmp </> keyFile k
-			createDirectoryIfMissing True dummy
-			rsync $ rsyncOptions o ++
-				[ Params "--quiet --delete --recursive"
-				, partialParams
-				, Param $ addTrailingPathSeparator dummy
-				, Param d
-				]
+remove o k = untilTrue (rsyncUrlDirs o k) $ \d ->
+	withRsyncScratchDir $ \tmp -> liftIO $ do
+		{- Send an empty directory to rysnc as the
+		 - parent directory of the file to remove. -}
+		let dummy = tmp </> keyFile k
+		createDirectoryIfMissing True dummy
+		rsync $ rsyncOptions o ++
+			[ Params "--quiet --delete --recursive"
+			, partialParams
+			, Param $ addTrailingPathSeparator dummy
+			, Param d
+			]
 
 checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
 checkPresent r o k = do
@@ -155,7 +145,7 @@ checkPresent r o k = do
 	-- to connect, and the file not being present.
 	Right <$> check
 	where
- 		check = withRsyncUrl o k $ \u ->
+ 		check = untilTrue (rsyncUrls o k) $ \u ->
 			liftIO $ boolSystem "sh" [Param "-c", Param (cmd u)]
 		cmd u = "rsync --quiet " ++ shellEscape u ++ " 2>/dev/null"
 

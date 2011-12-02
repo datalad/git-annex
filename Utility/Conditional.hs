@@ -9,6 +9,12 @@ module Utility.Conditional where
 
 import Control.Monad (when, unless)
 
+untilTrue :: Monad m => [v] -> (v -> m Bool) -> m Bool
+untilTrue [] _ = return False
+untilTrue (v:vs) a = do
+	ok <- a v
+	if ok then return ok else untilTrue vs a
+
 whenM :: Monad m => m Bool -> m () -> m ()
 whenM c a = c >>= flip when a
 

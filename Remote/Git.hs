@@ -200,10 +200,7 @@ copyFromRemote r key file
 	| Git.repoIsHttp r = liftIO $ downloadurls $ keyUrls r key
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 	where
-		downloadurls [] = return False
-		downloadurls (u:us) = do
-			ok <- Url.download u file
-			if ok then return ok else downloadurls us
+		downloadurls us = untilTrue us $ \u -> Url.download u file
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
