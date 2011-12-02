@@ -44,3 +44,6 @@ I wonder if the directory remote should use hashDirLower instead of hashDirMixed
 
 >>> Bare repositories now use lowercase. rsync is the only remaining
 >>> unsupported possibility. --[[Joey]]
+>>>> Everything now uses lowercase, with the exception of non-bare
+>>>> repos, which cannot be on FAT anyway due to using symlinks. [[done]]
+>>>> --[[Joey]] 
