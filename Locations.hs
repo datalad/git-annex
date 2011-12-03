@@ -89,11 +89,7 @@ gitAnnexLocation key r
 				annexLocation key hashDirMixed
 	where
 		go dir locs = fromMaybe (dir </> head locs) <$> check dir locs
-		check _ [] = return Nothing
-		check dir (l:ls) = do
-			let f = dir </> l
-			e <- doesFileExist f
-			if e then return (Just f) else check dir ls
+		check dir = firstM $ \f -> doesFileExist $ dir </> f
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath

@@ -13,7 +13,6 @@ import qualified Git
 import Config
 import Logs.Web
 import qualified Utility.Url as Url
-import Utility.Monad
 
 remote :: RemoteType Annex
 remote = RemoteType {
