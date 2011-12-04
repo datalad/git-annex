@@ -24,15 +24,12 @@ repoExists = CommandCheck 0 ensureInitialized
 fromOpt :: CommandCheck
 fromOpt = CommandCheck 1 $ do
 	v <- Annex.getState Annex.fromremote
-	unless (v == Nothing) $ error "cannot use --from with this command"
+	unless (isNothing v) $ error "cannot use --from with this command"
 
 toOpt :: CommandCheck
 toOpt = CommandCheck 2 $ do
 	v <- Annex.getState Annex.toremote
-	unless (v == Nothing) $ error "cannot use --to with this command"
-
-checkCommand :: Command -> Annex ()
-checkCommand Command { cmdcheck = c } = sequence_ $ map runCheck c
+	unless (isNothing v) $ error "cannot use --to with this command"
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c

@@ -20,26 +20,27 @@ import qualified Git
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
 
+seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
+seekHelper a params = do
+	g <- gitRepo
+	liftIO $ runPreserveOrder (`a` g) params
+
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
-withFilesInGit a params = do
-	repo <- gitRepo
-	prepFiltered a $ liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
+withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
 
 withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandSeek
 withAttrFilesInGit attr a params = do
-	repo <- gitRepo
-	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
-	prepFilteredGen a fst $ liftIO $ Git.checkAttr repo attr files
+	files <- seekHelper LsFiles.inRepo params
+	prepFilteredGen a fst $ inRepo $ Git.checkAttr attr files
 
-withNumCopies :: (FilePath -> Maybe Int -> CommandStart) -> CommandSeek
+withNumCopies :: (Maybe Int -> FilePath -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 	where
-		go (file, v) = a file (readMaybe v)
+		go (file, v) = a (readMaybe v) file
 
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params = do
-	repo <- gitRepo
-	files <- liftIO $ runPreserveOrder (LsFiles.inRepo repo) params
+	files <- seekHelper LsFiles.inRepo params
 	prepBackendPairs a files
 
 withFilesMissing :: (String -> CommandStart) -> CommandSeek
@@ -49,9 +50,8 @@ withFilesMissing a params = prepFiltered a $ liftIO $ filterM missing params
 
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
-	repo <- gitRepo
 	force <- Annex.getState Annex.force
-	newfiles <- liftIO $ runPreserveOrder (LsFiles.notInRepo repo force) params
+	newfiles <- seekHelper (LsFiles.notInRepo force) params
 	prepBackendPairs a newfiles
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
@@ -61,10 +61,8 @@ withStrings :: (String -> CommandStart) -> CommandSeek
 withStrings a params = return $ map a params
 
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
-withFilesToBeCommitted a params = do
-	repo <- gitRepo
-	prepFiltered a $
-		liftIO $ runPreserveOrder (LsFiles.stagedNotDeleted repo) params
+withFilesToBeCommitted a params = prepFiltered a $
+	seekHelper LsFiles.stagedNotDeleted params
 
 withFilesUnlocked :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
@@ -72,13 +70,13 @@ withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 
-withFilesUnlocked' :: (Git.Repo -> [FilePath] -> IO [FilePath]) -> (BackendFile -> CommandStart) -> CommandSeek
+withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> (BackendFile -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
-	repo <- gitRepo
-	typechangedfiles <- liftIO $ runPreserveOrder (typechanged repo) params
+	top <- fromRepo Git.workTree
+	typechangedfiles <- seekHelper typechanged params
 	unlockedfiles <- liftIO $ filterM notSymlink $
-		map (\f -> Git.workTree repo ++ "/" ++ f) typechangedfiles
+		map (\f -> top ++ "/" ++ f) typechangedfiles
 	prepBackendPairs a unlockedfiles
 
 withKeys :: (Key -> CommandStart) -> CommandSeek
@@ -111,7 +109,7 @@ prepFilteredGen a d fs = do
  - command, using a list (ie of files) coming from an action. The list
  - will be produced and consumed lazily. -}
 prepStart :: (b -> CommandStart) -> Annex [b] -> Annex [CommandStart]
-prepStart a fs = liftM (map a) fs
+prepStart a = liftM (map a)
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

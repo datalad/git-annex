@@ -37,45 +37,46 @@ olddir g
 upgrade :: Annex Bool
 upgrade = do
 	showAction "v2 to v3"
-	g <- gitRepo
-	let bare = Git.repoIsLocalBare g
+	bare <- fromRepo Git.repoIsLocalBare
+	old <- fromRepo olddir
 
 	Annex.Branch.create
 	showProgress
 
-	e <- liftIO $ doesDirectoryExist (olddir g)
+	e <- liftIO $ doesDirectoryExist old
 	when e $ do
-		mapM_ (\(k, f) -> inject f $ logFile k) =<< locationLogs g
-		mapM_ (\f -> inject f f) =<< logFiles (olddir g)
+		mapM_ (\(k, f) -> inject f $ logFile k) =<< locationLogs
+		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState
 	showProgress
 
-	when e $ liftIO $ do
-		Git.run g "rm" [Param "-r", Param "-f", Param "-q", File (olddir g)]
-		unless bare $ gitAttributesUnWrite g
+	when e $ do
+		inRepo $ Git.run "rm" [Param "-r", Param "-f", Param "-q", File old]
+		unless bare $ inRepo $ gitAttributesUnWrite
 	showProgress
 
 	unless bare push
 
 	return True
 
-locationLogs :: Git.Repo -> Annex [(Key, FilePath)]
-locationLogs repo = liftIO $ do
-	levela <- dirContents dir
-	levelb <- mapM tryDirContents levela
-	files <- mapM tryDirContents (concat levelb)
-	return $ mapMaybe islogfile (concat files)
+locationLogs :: Annex [(Key, FilePath)]
+locationLogs = do
+	dir <- fromRepo gitStateDir
+	liftIO $ do
+		levela <- dirContents dir
+		levelb <- mapM tryDirContents levela
+		files <- mapM tryDirContents (concat levelb)
+		return $ mapMaybe islogfile (concat files)
 	where
-		tryDirContents d = catch (dirContents d) (return . const [])
-		dir = gitStateDir repo
+		tryDirContents d = catchDefaultIO (dirContents d) []
 		islogfile f = maybe Nothing (\k -> Just (k, f)) $
 				logFileKey $ takeFileName f
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
-	g <- gitRepo
-	new <- liftIO (readFile $ olddir g </> source)
+	old <- fromRepo olddir
+	new <- liftIO (readFile $ old </> source)
 	Annex.Branch.change dest $ \prev -> 
 		unlines $ nub $ lines prev ++ lines new
 
@@ -85,7 +86,7 @@ logFiles dir = return . filter (".log" `isSuffixOf`)
 
 push :: Annex ()
 push = do
-	origin_master <- Annex.Branch.refExists "origin/master"
+	origin_master <- Annex.Branch.refExists $ Git.Ref "origin/master"
 	origin_gitannex <- Annex.Branch.hasOrigin
 	case (origin_master, origin_gitannex) of
 		(_, True) -> do
@@ -102,8 +103,7 @@ push = do
 			Annex.Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
-			g <- gitRepo
-			liftIO $ Git.run g "push" [Param "origin", Param Annex.Branch.name]
+			inRepo $ Git.run "push" [Param "origin", Param $ show Annex.Branch.name]
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch
@@ -126,7 +126,7 @@ gitAttributesUnWrite repo = do
 		c <- readFileStrict attributes
 		liftIO $ viaTmp writeFile attributes $ unlines $
 			filter (`notElem` attrLines) $ lines c
-		Git.run repo "add" [File attributes]
+		Git.run "add" [File attributes] repo
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"

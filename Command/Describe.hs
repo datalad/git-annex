@@ -20,15 +20,11 @@ seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
-start ws = do
-	let (name, description) =
-		case ws of
-			(n:d) -> (n,unwords d)
-			_ -> error "Specify a repository and a description."
-	
+start (name:description) = do
 	showStart "describe" name
 	u <- Remote.nameToUUID name
-	next $ perform u description
+	next $ perform u $ unwords description
+start _ = error "Specify a repository and a description."	
 
 perform :: UUID -> String -> CommandPerform
 perform u description = do

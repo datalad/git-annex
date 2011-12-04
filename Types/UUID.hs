@@ -7,5 +7,14 @@
 
 module Types.UUID where
 
--- might be nice to have a newtype, but lots of stuff treats uuids as strings
-type UUID = String
+-- A UUID is either an arbitrary opaque string, or UUID info may be missing.
+data UUID = NoUUID | UUID String
+	deriving (Eq, Ord, Show)
+
+fromUUID :: UUID -> String
+fromUUID (UUID u) = u
+fromUUID NoUUID = ""
+
+toUUID :: String -> UUID
+toUUID [] = NoUUID
+toUUID s = UUID s

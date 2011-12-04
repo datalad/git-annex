@@ -8,15 +8,18 @@
 module Utility.Misc where
 
 import System.IO
+import System.IO.Error (try)
+import Control.Monad
+import Control.Applicative
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
 hGetContentsStrict :: Handle -> IO String
-hGetContentsStrict h  = hGetContents h >>= \s -> length s `seq` return s
+hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
-readFileStrict f = readFile f >>= \s -> length s `seq` return s
+readFileStrict = readFile >=> \s -> length s `seq` return s
 
 {- Attempts to read a value from a String. -}
 readMaybe :: (Read a) => String -> Maybe a
@@ -25,5 +28,20 @@ readMaybe s = case reads s of
 	_ -> Nothing
 
 {- Catches IO errors and returns a Bool -}
-catchBool :: IO Bool -> IO Bool
-catchBool = flip catch (const $ return False)
+catchBoolIO :: IO Bool -> IO Bool
+catchBoolIO a = catchDefaultIO a False
+
+{- Catches IO errors and returns a Maybe -}
+catchMaybeIO :: IO a -> IO (Maybe a)
+catchMaybeIO a = catchDefaultIO (Just <$> a) Nothing
+
+{- Catches IO errors and returns a default value. -}
+catchDefaultIO :: IO a -> a -> IO a
+catchDefaultIO a def = catch a (const $ return def)
+
+{- Catches IO errors and returns the error message. -}
+catchMsgIO :: IO a -> IO (Either String a)
+catchMsgIO a = dispatch <$> try a
+	where
+		dispatch (Left e) = Left $ show e
+		dispatch (Right v) = Right v

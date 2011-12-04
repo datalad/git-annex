@@ -37,10 +37,10 @@ parseArgs = do
 
 main :: IO ()
 main = do
-	[aref, bref, newref] <- parseArgs
+	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.configRead =<< Git.repoFromCwd
 	_ <- Git.useIndex (tmpIndex g)
 	setup g
-	Git.UnionMerge.merge g aref bref
-	Git.commit g "union merge" newref [aref, bref]
+	Git.UnionMerge.merge aref bref g
+	Git.commit "union merge" newref [aref, bref] g
 	cleanup g

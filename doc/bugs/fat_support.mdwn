@@ -8,8 +8,6 @@ be VFAT formatted:
 - Use of ":" in filenames of object files, also not supported.
   Could easily be fixed by reorganizing the object directory.
 
-[[!tag wishlist]]
-
 [[Done]]; in annex.version 2 repos, colons are entirely avoided in
 filenames. So a bare git clone can be put on VFAT, and git-annex
 used to move stuff --to and --from it, for sneakernet.

@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,10 @@ module Messages (
 	warning,
 	indent,
 	maybeShowJSON,
+	showCustom,
+	showHeader,
+	showRaw,
+	
 	setupConsole
 ) where
 
@@ -31,7 +35,7 @@ import qualified Annex
 import qualified Messages.JSON as JSON
 
 showStart :: String -> String -> Annex ()
-showStart command file = handle (JSON.start command file) $
+showStart command file = handle (JSON.start command $ Just file) $
 	flushed $ putStr $ command ++ " " ++ file ++ " "
 
 showNote :: String -> Annex ()
@@ -64,17 +68,17 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult b = handle (JSON.end b) $ putStrLn msg
+showEndResult ok = handle (JSON.end ok) $ putStrLn msg
 	where
 		msg
-			| b = "ok"
+			| ok = "ok"
 			| otherwise = "failed"
 
 showErr :: (Show a) => a -> Annex ()
 showErr e = warning' $ "git-annex: " ++ show e
 
 warning :: String -> Annex ()
-warning w = warning' (indent w)
+warning = warning' . indent
 
 warning' :: String -> Annex ()
 warning' w = do
@@ -84,7 +88,28 @@ warning' w = do
 		hPutStrLn stderr w
 
 indent :: String -> String
-indent s = join "\n" $ map (\l -> "  " ++ l) $ lines s
+indent = join "\n" . map (\l -> "  " ++ l) . lines
+
+{- Shows a JSON value only when in json mode. -}
+maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
+maybeShowJSON v = handle (JSON.add v) q
+
+{- Performs an action that outputs nonstandard/customized output, and
+ - in JSON mode wraps its output in JSON.start and JSON.end, so it's
+ - a complete JSON document.
+ - This is only needed when showStart and showEndOk is not used. -}
+showCustom :: String -> Annex Bool -> Annex ()
+showCustom command a = do
+	handle (JSON.start command Nothing) q
+	r <- a
+	handle (JSON.end r) q
+
+showHeader :: String -> Annex ()
+showHeader h = handle q $
+	flushed $ putStr $ h ++ ": "
+
+showRaw :: String -> Annex ()
+showRaw s = handle q $ putStrLn s
 
 {- By default, haskell honors the user's locale in its output to stdout
  - and stderr. While that's great for proper unicode support, for git-annex
@@ -100,16 +125,11 @@ setupConsole = do
 	hSetBinaryMode stderr True
 
 handle :: IO () -> IO () -> Annex ()
-handle json normal = do
-	output <- Annex.getState Annex.output
-	case output of
-		Annex.NormalOutput -> liftIO normal
-		Annex.QuietOutput -> q
-		Annex.JSONOutput -> liftIO json
-
-{- Shows a JSON value only when in json mode. -}
-maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
-maybeShowJSON v = handle (JSON.add v) q
+handle json normal = Annex.getState Annex.output >>= go
+	where
+		go Annex.NormalOutput = liftIO normal
+		go Annex.QuietOutput = q
+		go Annex.JSONOutput = liftIO json
 
 q :: Monad m => m ()
 q = return ()

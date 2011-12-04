@@ -33,6 +33,7 @@ type CommandCleanup = Annex Bool
 
 {- A command is defined by specifying these things. -}
 data Command = Command {
+	cmdnorepo :: Maybe (IO ()),
 	cmdcheck :: [CommandCheck],
 	cmdname :: String,
 	cmdparams :: String,

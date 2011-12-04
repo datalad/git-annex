@@ -1,6 +1,6 @@
 This was the design doc for [[/encryption]] and is preserved for
 the curious. For an example of using git-annex with an encrypted S3 remote,
-see [[walkthrough/using_Amazon_S3]].
+see [[tips/using_Amazon_S3]].
 
 [[!toc]]
 

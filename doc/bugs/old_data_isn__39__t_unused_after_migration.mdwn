@@ -1,0 +1,66 @@
+Old data isn't listed as unused after migrating backends:
+
+    #!/bin/bash
+    
+    BASE=/tmp/migrate-bug-2
+    set -x
+    chmod -R +w $BASE
+    rm -rf $BASE
+    mkdir -p $BASE
+    cd $BASE
+    
+    # create annex
+    git init .
+    git annex init
+    
+    # make a big (sparse) file and add it
+    dd if=/dev/zero of=bigfile bs=1 count=0 seek=1G
+    git annex add --backend WORM bigfile
+    git commit -m 'added bigfile'
+    
+    # migrate it
+    git annex migrate --backend SHA256 bigfile
+    
+    # status shows 2 keys taking up 2G
+    git annex status
+    
+    # but nothing is unused
+    git annex unused
+
+Output:
+
+    ++ git annex status
+    supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+    known repositories: 
+            ede95a82-1166-11e1-a475-475d55eb0f8f -- here
+    local annex keys: 2
+    local annex size: 2 gigabytes
+    visible annex keys: 1
+    visible annex size: 1 gigabyte
+    backend usage: 
+            WORM: 1
+            SHA256: 1
+    ++ git annex unused
+    unused . (checking for unused data...) (checking master...) ok
+
+The two files are hardlinked, so it's not taking up extra space, but it would be nice to be able to remove the old keys.
+
+> `git annex unused` checks the content of all branches, and assumes that,
+> when a branch contains a file that points to a key, that key is still 
+> used. In this case, the migration has staged a change to the file,
+> but it is not yet committed, so when it checks the master branch, it
+> still finds a file referring to the old key. 
+> 
+> So, slightly surprising, but not a bug. --[[Joey]] [[done]]
+
+>> Thanks for the explanation.  In my real repository, it was a bit trickier:
+>> the migration was commited to `master`, but other *remote* branches still
+>> referenced those keys.  I was just doing a `git pull` from a central repo, but
+>> needed a `git remote update` to remove those references from `remotes/foo/master` too.
+>> --Jim
+
+>>> I have considered making unused ignore remote tracking branches. 
+>>> On the one hand, it can be a little bit confusing, and those branches
+>>> can be out of date. On the other hand, it can be useful to know you're
+>>> not dropping anything that some remote might still refer to. --[[Joey]] 

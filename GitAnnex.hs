@@ -26,7 +26,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
-import qualified Command.SetKey
+import qualified Command.Reinject
 import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
@@ -63,6 +63,7 @@ cmds = concat
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
+	, Command.Reinject.def
 	, Command.Unannex.def
 	, Command.Uninit.def
 	, Command.PreCommit.def
@@ -72,7 +73,6 @@ cmds = concat
 	, Command.AddUrl.def
 	, Command.FromKey.def
 	, Command.DropKey.def
-	, Command.SetKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
 	, Command.Unused.def
@@ -89,9 +89,7 @@ cmds = concat
 
 options :: [Option]
 options = commonOptions ++
-	[ Option ['k'] ["key"] (ReqArg setkey paramKey)
-		"specify a key to use"
-	, Option ['t'] ["to"] (ReqArg setto paramRemote)
+	[ Option ['t'] ["to"] (ReqArg setto paramRemote)
 		"specify to where to transfer content"
 	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
 		"specify from where to transfer content"
@@ -105,6 +103,8 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
+	, Option [] ["print0"] (NoArg (setprint0 True))
+		"terminate filename with null"
 	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
 	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
@@ -116,15 +116,14 @@ options = commonOptions ++
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
 		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
-		setkey v = Annex.changeState $ \s -> s { Annex.defaultkey = Just v }
+		setprint0 v = Annex.changeState $ \s -> s { Annex.print0 = v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			g <- gitRepo
-			g' <- liftIO $ Git.configStore g v
-			Annex.changeState $ \s -> s { Annex.repo = g' }
+			newg <- inRepo $ Git.configStore v
+			Annex.changeState $ \s -> s { Annex.repo = newg }
 
 header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch args cmds options header =<< Git.repoFromCwd
+run args = dispatch args cmds options header Git.repoFromCwd

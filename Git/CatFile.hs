@@ -9,13 +9,15 @@ module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
 	catFileStop,
-	catFile
+	catFile,
+	catObject
 ) where
 
 import Control.Monad.State
 import System.Cmd.Utils
 import System.IO
-import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
 import Utility.SafeCommand
@@ -25,7 +27,7 @@ type CatFileHandle = (PipeHandle, Handle, Handle)
 {- Starts git cat-file running in batch mode in a repo and returns a handle. -}
 catFileStart :: Repo -> IO CatFileHandle
 catFileStart repo = hPipeBoth "git" $ toCommand $
-	Git.gitCommandLine repo [Param "cat-file", Param "--batch"]
+	Git.gitCommandLine [Param "cat-file", Param "--batch"] repo
 
 {- Stops git cat-file. -}
 catFileStop :: CatFileHandle -> IO ()
@@ -34,30 +36,38 @@ catFileStop (pid, from, to) = do
 	hClose from
 	forceSuccess pid
 
-{- Uses a running git cat-file read the content of a file from a branch.
- - Files that do not exist on the branch will have "" returned. -}
-catFile :: CatFileHandle -> String -> FilePath -> IO String
-catFile (_, from, to) branch file = do
-	hPutStrLn to want
+{- Reads a file from a specified branch. -}
+catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
+catFile h branch file = catObject h $ Ref $ show branch ++ ":" ++ file
+
+{- Uses a running git cat-file read the content of an object.
+ - Objects that do not exist will have "" returned. -}
+catObject :: CatFileHandle -> Ref -> IO L.ByteString
+catObject (_, from, to) object = do
+	hPutStrLn to $ show object
 	hFlush to
 	header <- hGetLine from
 	case words header of
-		[sha, blob, size]
+		[sha, objtype, size]
 			| length sha == Git.shaSize &&
-			  blob == "blob" -> handle size
+			  validobjtype objtype -> handle size
 			| otherwise -> empty
 		_
-			| header == want ++ " missing" -> empty
+			| header == show object ++ " missing" -> empty
 			| otherwise -> error $ "unknown response from git cat-file " ++ header
 	where
-		want = branch ++ ":" ++ file
 		handle size = case reads size of
 			[(bytes, "")] -> readcontent bytes
 			_ -> empty
 		readcontent bytes = do
-			content <- B.hGet from bytes
+			content <- S.hGet from bytes
 			c <- hGetChar from
 			when (c /= '\n') $
 				error "missing newline from git cat-file"
-			return $ B.unpack content
-		empty = return ""
+			return $ L.fromChunks [content]
+		empty = return L.empty
+		validobjtype t
+			| t == "blob" = True
+			| t == "commit" = True
+			| t == "tree" = True
+			| otherwise = False

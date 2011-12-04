@@ -67,7 +67,9 @@ findByName name = do
 			return (uuid, M.insert nameKey name M.empty)
 
 findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)
-findByName' n m = if null matches then Nothing else Just $ head matches
+findByName' n m
+	| null matches = Nothing
+	| otherwise = Just $ head matches
 	where
 		matches = filter (matching . snd) $ M.toList m
 		matching c = case M.lookup nameKey c of

@@ -7,6 +7,8 @@
 
 module Annex.Content (
 	inAnnex,
+	inAnnexSafe,
+	lockContent,
 	calcGitLink,
 	logStatus,
 	getViaTmp,
@@ -21,6 +23,10 @@ module Annex.Content (
 	saveState
 ) where
 
+import System.IO.Error (try)
+import Control.Exception (bracket_)
+import System.Posix.Types
+
 import Common.Annex
 import Logs.Location
 import Annex.UUID
@@ -33,22 +39,70 @@ import Utility.FileMode
 import Types.Key
 import Utility.DataUnits
 import Config
+import Annex.Exception
 
-{- Checks if a given key is currently present in the gitAnnexLocation. -}
+{- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex key = do
-	g <- gitRepo
-	when (Git.repoIsUrl g) $ error "inAnnex cannot check remote repo"
-	liftIO $ doesFileExist $ gitAnnexLocation g key
+inAnnex = inAnnex' doesFileExist
+inAnnex' :: (FilePath -> IO a) -> Key -> Annex a
+inAnnex' a key = do
+	whenM (fromRepo Git.repoIsUrl) $
+		error "inAnnex cannot check remote repo"
+	inRepo $ a . gitAnnexLocation key
+
+{- A safer check; the key's content must not only be present, but
+ - is not in the process of being removed. -}
+inAnnexSafe :: Key -> Annex (Maybe Bool)
+inAnnexSafe = inAnnex' $ \f -> openForLock f False >>= check
+	where
+		check Nothing = return is_missing
+		check (Just h) = do
+			v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
+			closeFd h
+			return $ case v of
+				Just _ -> is_locked
+				Nothing -> is_unlocked
+		is_locked = Nothing
+		is_unlocked = Just True
+		is_missing = Just False
+
+{- Content is exclusively locked while running an action that might remove
+ - it. (If the content is not present, no locking is done.) -}
+lockContent :: Key -> Annex a -> Annex a
+lockContent key a = do
+	file <- fromRepo $ gitAnnexLocation key
+	bracketIO (openForLock file True >>= lock) unlock a
+	where
+		lock Nothing = return Nothing
+		lock (Just l) = do
+			v <- try $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
+			case v of
+				Left _ -> error "content is locked"
+				Right _ -> return $ Just l
+		unlock Nothing = return ()
+		unlock (Just l) = closeFd l
+
+openForLock :: FilePath -> Bool -> IO (Maybe Fd)
+openForLock file writelock = bracket_ prep cleanup go
+	where
+		go = catchMaybeIO $ openFd file mode Nothing defaultFileFlags
+		mode = if writelock then ReadWrite else ReadOnly
+		{- Since files are stored with the write bit disabled,
+		 - have to fiddle with permissions to open for an
+		 - exclusive lock. -}
+		forwritelock a = 
+			when writelock $ whenM (doesFileExist file) a
+		prep = forwritelock $ allowWrite file
+		cleanup = forwritelock $ preventWrite file
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
 calcGitLink file key = do
-	g <- gitRepo
 	cwd <- liftIO getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPath cwd file
+	top <- fromRepo Git.workTree
 	return $ relPathDirToFile (parentDir absfile) 
-			(Git.workTree g) </> ".git" </> annexLocation key
+			top </> ".git" </> annexLocation key
 	where
 		whoops = error $ "unable to normalize " ++ file
 
@@ -56,17 +110,15 @@ calcGitLink file key = do
  - repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
 logStatus key status = do
-	g <- gitRepo
 	u <- getUUID
-	logChange g key u status
+	logChange key u status
 
 {- Runs an action, passing it a temporary filename to download,
  - and if the action succeeds, moves the temp file into 
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmp key action = do
-	g <- gitRepo
-	let tmp = gitAnnexTmpLocation g key
+	tmp <- fromRepo $ gitAnnexTmpLocation key
 
 	-- Check that there is enough free disk space.
 	-- When the temp file already exists, count the space
@@ -84,8 +136,7 @@ getViaTmp key action = do
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
-	g <- gitRepo
-	let tmp = gitAnnexTmpLocation g key
+	tmp <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	return tmp
 
@@ -162,8 +213,7 @@ checkDiskSpace' adjustment key = do
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = do
-	g <- gitRepo
-	let dest = gitAnnexLocation g key
+	dest <- fromRepo $ gitAnnexLocation key
 	let dir = parentDir dest
 	e <- liftIO $ doesFileExist dest
 	if e
@@ -177,8 +227,7 @@ moveAnnex key src = do
 
 withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
 withObjectLoc key a = do
-	g <- gitRepo
-	let file = gitAnnexLocation g key
+	file <- fromRepo $gitAnnexLocation key
 	let dir = parentDir file
 	a (dir, file)
 
@@ -201,9 +250,9 @@ fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	g <- gitRepo
-	let src = gitAnnexLocation g key
-	let dest = gitAnnexBadDir g </> takeFileName src
+	src <- fromRepo $ gitAnnexLocation key
+	bad <- fromRepo gitAnnexBadDir
+	let dest = bad </> takeFileName src
 	liftIO $ do
 		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
@@ -214,9 +263,7 @@ moveBad key = do
 
 {- List of keys whose content exists in .git/annex/objects/ -}
 getKeysPresent :: Annex [Key]
-getKeysPresent = do
-	g <- gitRepo
-	getKeysPresent' $ gitAnnexObjectDir g
+getKeysPresent = getKeysPresent' =<< fromRepo gitAnnexObjectDir
 getKeysPresent' :: FilePath -> Annex [Key]
 getKeysPresent' dir = do
 	exists <- liftIO $ doesDirectoryExist dir

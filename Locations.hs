@@ -65,8 +65,8 @@ annexLocation key = objectDir </> hashDirMixed key </> f </> f
 		f = keyFile key
 
 {- Annexed file's absolute location in a repository. -}
-gitAnnexLocation :: Git.Repo -> Key -> FilePath
-gitAnnexLocation r key
+gitAnnexLocation :: Key -> Git.Repo -> FilePath
+gitAnnexLocation key r
 	| Git.repoIsLocalBare r = Git.workTree r </> annexLocation key
 	| otherwise = Git.workTree r </> ".git" </> annexLocation key
 
@@ -88,16 +88,16 @@ gitAnnexTmpDir :: Git.Repo -> FilePath
 gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 
 {- The temp file to use for a given key. -}
-gitAnnexTmpLocation :: Git.Repo -> Key -> FilePath
-gitAnnexTmpLocation r key = gitAnnexTmpDir r </> keyFile key
+gitAnnexTmpLocation :: Key -> Git.Repo -> FilePath
+gitAnnexTmpLocation key r = gitAnnexTmpDir r </> keyFile key
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath
 gitAnnexBadDir r = addTrailingPathSeparator $ gitAnnexDir r </> "bad"
 
 {- The bad file to use for a given key. -}
-gitAnnexBadLocation :: Git.Repo -> Key -> FilePath
-gitAnnexBadLocation r key = gitAnnexBadDir r </> keyFile key
+gitAnnexBadLocation :: Key -> Git.Repo -> FilePath
+gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 
 {- .git/annex/*unused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath

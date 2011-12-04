@@ -102,31 +102,29 @@ bupSplitParams r buprepo k src = do
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck (Param "-")
-	liftIO $ catchBool $
+	liftIO $ catchBoolIO $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieve buprepo k f = do
 	let params = bupParams "join" buprepo [Param $ show k]
-	liftIO $ catchBool $ do
+	liftIO $ catchBoolIO $ do
 		tofile <- openFile f WriteMode
 		pipeBup params Nothing (Just tofile)
 
 retrieveEncrypted :: BupRepo -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted buprepo (cipher, enck) f = do
 	let params = bupParams "join" buprepo [Param $ show enck]
-	liftIO $ catchBool $ do
+	liftIO $ catchBoolIO $ do
 		(pid, h) <- hPipeFrom "bup" $ toCommand params
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
 		forceSuccess pid
@@ -141,13 +139,14 @@ remove _ = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either IOException Bool)
+checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
 		showAction $ "checking " ++ Git.repoDescribe r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
-	| otherwise = liftIO $ try $ boolSystem "git" $ Git.gitCommandLine bupr params
+	| otherwise = liftIO $ catchMsgIO $
+		boolSystem "git" $ Git.gitCommandLine params bupr
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
@@ -161,13 +160,16 @@ storeBupUUID u buprepo = do
 		then do
 			showAction "storing uuid"
 			onBupRemote r boolSystem "git"
-				[Params $ "config annex.uuid " ++ u]
+				[Params $ "config annex.uuid " ++ v]
 					>>! error "ssh failed"
 		else liftIO $ do
 			r' <- Git.configRead r
-			let olduuid = Git.configGet r' "annex.uuid" ""
+			let olduuid = Git.configGet "annex.uuid" "" r'
 			when (olduuid == "") $
-				Git.run r' "config" [Param "annex.uuid", Param u]
+				Git.run "config"
+					[Param "annex.uuid", Param v] r'
+	where
+		v = fromUUID u
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
@@ -192,8 +194,8 @@ getBupUUID r u
 	| otherwise = liftIO $ do
 		ret <- try $ Git.configRead r
 		case ret of
-			Right r' -> return (Git.configGet r' "annex.uuid" "", r')
-			Left _ -> return ("", r)
+			Right r' -> return (toUUID $ Git.configGet "annex.uuid" "" r', r')
+			Left _ -> return (NoUUID, r)
 
 {- Converts a bup remote path spec into a Git.Repo. There are some
  - differences in path representation between git and bup. -}

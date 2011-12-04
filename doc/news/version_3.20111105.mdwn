@@ -1,0 +1,27 @@
+git-annex 3.20111105 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * The default backend used when adding files to the annex is changed
+     from WORM to SHA256.
+     To get old behavior, add a .gitattributes containing: * annex.backend=WORM
+   * Sped up some operations on remotes that are on the same host.
+   * copy --to: Fixed leak when copying many files to a remote on the same
+     host.
+   * uninit: Add guard against being run with the git-annex branch checked out.
+   * Fail if --from or --to is passed to commands that do not support them.
+   * drop --from is now supported to remove file content from a remote.
+   * status: Now always shows the current repository, even when it does not
+     appear in uuid.log.
+   * fsck: Now works in bare repositories. Checks location log information,
+     and file contents. Does not check that numcopies is satisfied, as
+     .gitattributes information about numcopies is not available in a bare
+     repository.
+   * unused, dropunused: Now work in bare repositories.
+   * Removed the setkey command, and added a reinject command with a more
+     useful interface.
+   * The fromkey command now takes the key as its first parameter. The --key
+     option is no longer used.
+   * Built without any filename containing .git being excluded. Closes: #[647215](http://bugs.debian.org/647215)
+   * Record uuid when auto-initializing a remote so it shows in status.
+   * Bugfix: Fixed git-annex init crash in a bare repository when there was
+     already an existing git-annex branch.
+   * Pass -t to rsync to preserve timestamps."""]]

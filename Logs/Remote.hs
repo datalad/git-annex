@@ -30,7 +30,7 @@ remoteLog = "remote.log"
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u c = do
-	ts <- liftIO $ getPOSIXTime
+	ts <- liftIO getPOSIXTime
 	Annex.Branch.change remoteLog $
 		showLog showConfig . changeLog ts u c . parseLog parseConfig
 

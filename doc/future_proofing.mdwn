@@ -34,4 +34,4 @@ problem:
   metadata. So if a filesystem is badly corrupted and all your annexed
   files end up in `lost+found`, they can easily be lifted back out into
   another clone of the repository. Even if the filenames are lost,
-  it's possible to [[walkthrough/recover_data_from_lost+found]].
+  it's possible to [[tips/recover_data_from_lost+found]].

@@ -10,6 +10,10 @@
 
 module Git (
 	Repo,
+	Ref(..),
+	Branch,
+	Sha,
+	Tag,
 	repoFromCwd,
 	repoFromAbsPath,
 	repoFromUnknown,
@@ -94,6 +98,18 @@ data Repo = Repo {
 	remoteName :: Maybe String 
 } deriving (Show, Eq)
 
+{- A git ref. Can be a sha1, or a branch or tag name. -}
+newtype Ref = Ref String
+	deriving (Eq)
+
+instance Show Ref where
+	show (Ref v) = v
+
+{- Aliases for Ref. -}
+type Branch = Ref
+type Sha = Ref
+type Tag = Ref
+
 newFrom :: RepoLocation -> Repo
 newFrom l = 
 	Repo {
@@ -162,9 +178,9 @@ repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
 
-{- Converts a fully qualified git ref into a user-visible version -}
-refDescribe :: String -> String
-refDescribe = remove "refs/heads/" . remove "refs/remotes/"
+{- Converts a fully qualified git ref into a user-visible version. -}
+refDescribe :: Ref -> String
+refDescribe = remove "refs/heads/" . remove "refs/remotes/" . show
 	where
 		remove prefix s
 			| prefix `isPrefixOf` s = drop (length prefix) s
@@ -188,13 +204,13 @@ repoRemoteName Repo { remoteName = Just name } = Just name
 repoRemoteName _ = Nothing
 
 {- Sets the name of a remote. -}
-repoRemoteNameSet :: Repo -> String -> Repo
-repoRemoteNameSet r n = r { remoteName = Just n }
+repoRemoteNameSet :: String -> Repo -> Repo
+repoRemoteNameSet n r = r { remoteName = Just n }
 
 {- Sets the name of a remote based on the git config key, such as
    "remote.foo.url". -}
-repoRemoteNameFromKey :: Repo -> String -> Repo
-repoRemoteNameFromKey r k = repoRemoteNameSet r basename
+repoRemoteNameFromKey :: String -> Repo -> Repo
+repoRemoteNameFromKey k = repoRemoteNameSet basename
 	where
 		basename = join "." $ reverse $ drop 1 $
 				reverse $ drop 1 $ split "." k
@@ -280,8 +296,8 @@ workTree Repo { location = Unknown } = undefined
  - is itself a symlink). But, if the cwd is "/tmp/repo/subdir",
  - it's best to refer to "../foo".
  -}
-workTreeFile :: Repo -> FilePath -> IO FilePath
-workTreeFile repo@(Repo { location = Dir d }) file = do
+workTreeFile :: FilePath -> Repo -> IO FilePath
+workTreeFile file repo@(Repo { location = Dir d }) = do
 	cwd <- getCurrentDirectory
 	let file' = absfile cwd
 	unless (inrepo file') $
@@ -296,7 +312,7 @@ workTreeFile repo@(Repo { location = Dir d }) file = do
 		absfile c = fromMaybe file $ secureAbsNormPath c file
 		inrepo f = absrepo `isPrefixOf` f
 		bad = error $ "bad repo" ++ repoDescribe repo
-workTreeFile repo _ = assertLocal repo $ error "internal"
+workTreeFile _ repo = assertLocal repo $ error "internal"
 
 {- Path of an URL repo. -}
 urlPath :: Repo -> String
@@ -350,23 +366,23 @@ urlAuthPart a Repo { location = Url u } = a auth
 urlAuthPart _ repo = assertUrl repo $ error "internal"
 
 {- Constructs a git command line operating on the specified repo. -}
-gitCommandLine :: Repo -> [CommandParam] -> [CommandParam]
-gitCommandLine repo@(Repo { location = Dir _ } ) params =
+gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
+gitCommandLine params repo@(Repo { location = Dir _ } ) =
 	-- force use of specified repo via --git-dir and --work-tree
 	[ Param ("--git-dir=" ++ gitDir repo)
 	, Param ("--work-tree=" ++ workTree repo)
 	] ++ params
-gitCommandLine repo _ = assertLocal repo $ error "internal"
+gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
-runBool :: Repo -> String -> [CommandParam] -> IO Bool
-runBool repo subcommand params = assertLocal repo $
-	boolSystem "git" $ gitCommandLine repo $ Param subcommand : params
+runBool :: String -> [CommandParam] -> Repo -> IO Bool
+runBool subcommand params repo = assertLocal repo $
+	boolSystem "git" $ gitCommandLine (Param subcommand : params) repo
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
-run :: Repo -> String -> [CommandParam] -> IO ()
-run repo subcommand params = assertLocal repo $
-	runBool repo subcommand params
+run :: String -> [CommandParam] -> Repo -> IO ()
+run subcommand params repo = assertLocal repo $
+	runBool subcommand params repo
 		>>! error $ "git " ++ show params ++ " failed"
 
 {- Runs a git subcommand and returns its output, lazily. 
@@ -374,26 +390,26 @@ run repo subcommand params = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: Repo -> [CommandParam] -> IO L.ByteString
-pipeRead repo params = assertLocal repo $ do
-	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine repo params
+pipeRead :: [CommandParam] -> Repo -> IO L.ByteString
+pipeRead params repo = assertLocal repo $ do
+	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine params repo
 	hSetBinaryMode h True
 	L.hGetContents h
 
 {- Runs a git subcommand, feeding it input.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: Repo -> [CommandParam] -> L.ByteString -> IO PipeHandle
-pipeWrite repo params s = assertLocal repo $ do
-	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine repo params)
+pipeWrite :: [CommandParam] -> L.ByteString -> Repo -> IO PipeHandle
+pipeWrite params s repo = assertLocal repo $ do
+	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
 	L.hPut h s
 	hClose h
 	return p
 
 {- Runs a git subcommand, feeding it input, and returning its output.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: Repo -> [CommandParam] -> L.ByteString -> IO (PipeHandle, L.ByteString)
-pipeWriteRead repo params s = assertLocal repo $ do
-	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine repo params)
+pipeWriteRead :: [CommandParam] -> L.ByteString -> Repo -> IO (PipeHandle, L.ByteString)
+pipeWriteRead params s repo = assertLocal repo $ do
+	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
 	hSetBinaryMode from True
 	L.hPut to s
 	hClose to
@@ -402,19 +418,19 @@ pipeWriteRead repo params s = assertLocal repo $ do
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
-pipeNullSplit :: Repo -> [CommandParam] -> IO [String]
-pipeNullSplit repo params = map L.unpack <$> pipeNullSplitB repo params
+pipeNullSplit :: [CommandParam] -> Repo -> IO [String]
+pipeNullSplit params repo = map L.unpack <$> pipeNullSplitB params repo
 
 {- For when Strings are not needed. -}
-pipeNullSplitB :: Repo -> [CommandParam] -> IO [L.ByteString]
-pipeNullSplitB repo params = filter (not . L.null) . L.split '\0' <$>
-	pipeRead repo params
+pipeNullSplitB ::[CommandParam] -> Repo -> IO [L.ByteString]
+pipeNullSplitB params repo = filter (not . L.null) . L.split '\0' <$>
+	pipeRead params repo
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes
-	r <- catch (getAnyProcessStatus False True) (\_ -> return Nothing)
+	r <- catchDefaultIO (getAnyProcessStatus False True) Nothing
 	maybe (return ()) (const reap) r
 
 {- Forces git to use the specified index file.
@@ -432,7 +448,7 @@ useIndex index = do
 
 {- Runs an action that causes a git subcommand to emit a sha, and strips
    any trailing newline, returning the sha. -}
-getSha :: String -> IO String -> IO String
+getSha :: String -> IO String -> IO Sha
 getSha subcommand a = do
 	t <- a
 	let t' = if last t == '\n'
@@ -440,27 +456,27 @@ getSha subcommand a = do
 		else t
 	when (length t' /= shaSize) $
 		error $ "failed to read sha from git " ++ subcommand ++ " (" ++ t' ++ ")"
-	return t'
+	return $ Ref t'
 
 {- Size of a git sha. -}
 shaSize :: Int
 shaSize = 40
 
-{- Commits the index into the specified branch, 
+{- Commits the index into the specified branch (or other ref), 
  - with the specified parent refs. -}
-commit :: Repo -> String -> String -> [String] -> IO ()
-commit g message newref parentrefs = do
+commit :: String -> Ref -> [Ref] -> Repo -> IO ()
+commit message newref parentrefs repo = do
 	tree <- getSha "write-tree" $ asString $
-		pipeRead g [Param "write-tree"]
+		pipeRead [Param "write-tree"] repo
 	sha <- getSha "commit-tree" $ asString $
-		ignorehandle $ pipeWriteRead g
-			(map Param $ ["commit-tree", tree] ++ ps)
-			(L.pack message)
-	run g "update-ref" [Param newref, Param sha]
+		ignorehandle $ pipeWriteRead
+			(map Param $ ["commit-tree", show tree] ++ ps)
+			(L.pack message) repo
+	run "update-ref" [Param $ show newref, Param $ show sha] repo
 	where
 		ignorehandle a = snd <$> a
 		asString a = L.unpack <$> a
-		ps = concatMap (\r -> ["-p", r]) parentrefs
+		ps = concatMap (\r -> ["-p", show r]) parentrefs
 
 {- Runs git config and populates a repo with its config. -}
 configRead :: Repo -> IO Repo
@@ -478,13 +494,13 @@ configRead r = assertLocal r $ error "internal"
 hConfigRead :: Repo -> Handle -> IO Repo
 hConfigRead repo h = do
 	val <- hGetContentsStrict h
-	configStore repo val
+	configStore val repo
 
 {- Stores a git config into a repo, returning the new version of the repo.
  - The git config may be multiple lines, or a single line. Config settings
  - can be updated inrementally. -}
-configStore :: Repo -> String -> IO Repo
-configStore repo s = do
+configStore :: String -> Repo -> IO Repo
+configStore s repo = do
 	let repo' = repo { config = configParse s `M.union` config repo }
 	rs <- configRemotes repo'
 	return $ repo' { remotes = rs }
@@ -507,13 +523,11 @@ configRemotes repo = mapM construct remotepairs
 		filterkeys f = filterconfig (\(k,_) -> f k)
 		remotepairs = filterkeys isremote
 		isremote k = startswith "remote." k && endswith ".url" k
-		construct (k,v) = do
-			r <- genRemote repo v
-			return $ repoRemoteNameFromKey r k
+		construct (k,v) = repoRemoteNameFromKey k <$> genRemote v repo
 
 {- Generates one of a repo's remotes using a given location (ie, an url). -}
-genRemote :: Repo -> String -> IO Repo
-genRemote repo = gen . calcloc
+genRemote :: String -> Repo -> IO Repo
+genRemote s repo = gen $ calcloc s
 	where
 		filterconfig f = filter f $ M.toList $ config repo
 		gen v	
@@ -523,15 +537,17 @@ genRemote repo = gen . calcloc
 		-- insteadof config can rewrite remote location
 		calcloc l
 			| null insteadofs = l
-			| otherwise = replacement ++ drop (length replacement) l
+			| otherwise = replacement ++ drop (length bestvalue) l
 			where
-				replacement = take (length bestkey - length prefix) bestkey
-				bestkey = fst $ maximumBy longestvalue insteadofs
+				replacement = drop (length prefix) $
+					take (length bestkey - length suffix) bestkey
+				(bestkey, bestvalue) = maximumBy longestvalue insteadofs
 				longestvalue (_, a) (_, b) = compare b a
 				insteadofs = filterconfig $ \(k, v) -> 
-					endswith prefix k &&
+					startswith prefix k &&
+					endswith suffix k &&
 					startswith v l
-				prefix = ".insteadof"
+				(prefix, suffix) = ("url." , ".insteadof")
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
@@ -549,8 +565,8 @@ configTrue :: String -> Bool
 configTrue s = map toLower s == "true"
 
 {- Returns a single git config setting, or a default value if not set. -}
-configGet :: Repo -> String -> String -> String
-configGet repo key defaultValue = 
+configGet :: String -> String -> Repo -> String
+configGet key defaultValue repo = 
 	M.findWithDefault defaultValue key (config repo)
 
 {- Access to raw config Map -}
@@ -558,8 +574,8 @@ configMap :: Repo -> M.Map String String
 configMap = config
 
 {- Efficiently looks up a gitattributes value for each file in a list. -}
-checkAttr :: Repo -> String -> [FilePath] -> IO [(FilePath, String)]
-checkAttr repo attr files = do
+checkAttr :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
+checkAttr attr files repo = do
 	-- this code is for git < 1.7, which changed git acheck-attr
 	-- significantly!
 	cwd <- getCurrentDirectory
@@ -574,7 +590,11 @@ checkAttr repo attr files = do
         hClose toh
 	(map (topair cwd top) . lines) <$> hGetContents fromh
 	where
-		params = gitCommandLine repo [Param "check-attr", Param attr, Params "-z --stdin"]
+		params = gitCommandLine 
+				[ Param "check-attr"
+				, Param attr
+				, Params "-z --stdin"
+				] repo
 		topair cwd top l = (relfile, value)
 			where 
 				relfile

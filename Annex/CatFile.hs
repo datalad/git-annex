@@ -6,19 +6,26 @@
  -}
 
 module Annex.CatFile (
-	catFile
+	catFile,
+	catFileHandle
 ) where
 
+import qualified Data.ByteString.Lazy.Char8 as L
+
 import Common.Annex
+import qualified Git
 import qualified Git.CatFile
 import qualified Annex
 
-catFile :: String -> FilePath -> Annex String
-catFile branch file = maybe startup go =<< Annex.getState Annex.catfilehandle
+catFile :: Git.Branch -> FilePath -> Annex L.ByteString
+catFile branch file = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catFile h branch file
+
+catFileHandle :: Annex Git.CatFile.CatFileHandle
+catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
 	where
 		startup = do
-			g <- gitRepo
-			h <- liftIO $ Git.CatFile.catFileStart g
+			h <- inRepo Git.CatFile.catFileStart
 			Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
-			go h
-		go h = liftIO $ Git.CatFile.catFile h branch file
+			return h

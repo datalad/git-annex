@@ -12,3 +12,6 @@ Adding the dependency for `monadIO` to `git-annex.cabal` should fix this?
 > dependency in the cabal file. Your system might be old/new/or broken,
 > perhaps it's time to provide some details about the version of haskell
 > and of `monad-control` you have installed? --[[Joey]] 
+
+>> Closing as apparently user error or a broken system.
+>> If you see this problem please do say. [[done]] --[[Joey]] 

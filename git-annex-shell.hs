@@ -40,14 +40,17 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 
 options :: [OptDescr (Annex ())]
 options = commonOptions ++
-	[ Option [] ["uuid"] (ReqArg check paramUUID) "repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "repository uuid"
 	]
 	where
-		check expected = do
-			u <- getUUID
-			when (u /= expected) $ error $
-				"expected repository UUID " ++ expected
-					++ " but found UUID " ++ u
+		checkuuid expected = getUUID >>= check
+			where
+				check u | u == toUUID expected = return ()
+				check NoUUID = unexpected "uninitialized repository"
+				check u = unexpected $ "UUID " ++ fromUUID u
+				unexpected s = error $
+					"expected repository UUID " ++
+					expected ++ " but found " ++ s
 
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
@@ -76,8 +79,8 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	Git.repoAbsPath dir >>= Git.repoFromAbsPath >>=
-		dispatch (cmd : filterparams params) cmds options header
+	dispatch (cmd : filterparams params) cmds options header $
+		Git.repoAbsPath dir >>= Git.repoFromAbsPath
 
 external :: [String] -> IO ()
 external params = do
@@ -104,9 +107,6 @@ checkNotReadOnly cmd
 	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
 
 checkEnv :: String -> IO ()
-checkEnv var = catch check (const $ return ())
-	where
-		check = do
-			val <- getEnv var
-			when (not $ null val) $
-				error $ "Action blocked by " ++ var
+checkEnv var =
+	whenM (not . null <$> catchDefaultIO (getEnv var) "") $
+		error $ "Action blocked by " ++ var

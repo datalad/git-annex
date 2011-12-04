@@ -9,7 +9,6 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
-import System.IO.Error (try)
 import System.Exit
 
 import Common.Annex
@@ -98,14 +97,13 @@ runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype h
 
 store :: String -> Key -> Annex Bool
 store h k = do
-	g <- gitRepo
-	runHook h "store" k (Just $ gitAnnexLocation g k) $ return True
+	src <- fromRepo $ gitAnnexLocation k
+	runHook h "store" k (Just src) $ return True
 
 storeEncrypted :: String -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted h (cipher, enck) k = withTmp enck $ \tmp -> do
-	g <- gitRepo
-	let f = gitAnnexLocation g k
-	liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
+	src <- fromRepo $ gitAnnexLocation k
+	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	runHook h "store" enck (Just tmp) $ return True
 
 retrieve :: String -> Key -> FilePath -> Annex Bool
@@ -113,18 +111,18 @@ retrieve h k f = runHook h "retrieve" k (Just f) $ return True
 
 retrieveEncrypted :: String -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->
-	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBool $ do
+	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBoolIO $ do
 		withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 		return True
 
 remove :: String -> Key -> Annex Bool
 remove h k = runHook h "remove" k Nothing $ return True
 
-checkPresent :: Git.Repo -> String -> Key -> Annex (Either IOException Bool)
+checkPresent :: Git.Repo -> String -> Key -> Annex (Either String Bool)
 checkPresent r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h "checkpresent"
-	liftIO (try (check v) ::IO (Either IOException Bool))
+	liftIO $ catchMsgIO $ check v
 	where
 		findkey s = show k `elem` lines s
 		env = hookEnv k Nothing

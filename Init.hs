@@ -15,15 +15,18 @@ import Common.Annex
 import Utility.TempFile
 import qualified Git
 import qualified Annex.Branch
+import Logs.UUID
 import Annex.Version
 import Annex.UUID
 
-initialize :: Annex ()
-initialize = do
+initialize :: Maybe String -> Annex ()
+initialize mdescription = do
 	prepUUID
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
+	u <- getUUID
+	maybe (recordUUID u) (describeUUID u) mdescription
 
 uninitialize :: Annex ()
 uninitialize = gitPreCommitHookUnWrite
@@ -38,7 +41,7 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 		needsinit = do
 			annexed <- Annex.Branch.hasSomeBranch
 			if annexed
-				then initialize
+				then initialize Nothing
 				else error "First run: git-annex init"
 
 {- set up a git pre-commit hook, if one is not already present -}
@@ -65,14 +68,10 @@ gitPreCommitHookUnWrite = unlessBare $ do
 				" Edit it to remove call to git annex."
 
 unlessBare :: Annex () -> Annex ()
-unlessBare a = do
-	g <- gitRepo
-	unless (Git.repoIsLocalBare g) a
+unlessBare = unlessM $ fromRepo $ Git.repoIsLocalBare
 
 preCommitHook :: Annex FilePath
-preCommitHook = do
-	g <- gitRepo
-	return $ Git.gitDir g ++ "/hooks/pre-commit"
+preCommitHook = (</>) <$> fromRepo Git.gitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 

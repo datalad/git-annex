@@ -22,12 +22,12 @@ def =
 		c n = command n paramPaths seek
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withFilesInGit $ whenAnnexed start]
 
 {- The unlock subcommand replaces the symlink with a copy of the file's
  - content. -}
-start :: FilePath -> CommandStart
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start file (key, _) = do
 	showStart "unlock" file
 	next $ perform file key
 
@@ -37,9 +37,8 @@ perform dest key = do
 	
 	checkDiskSpace key
 
-	g <- gitRepo
-	let src = gitAnnexLocation g key
-	let tmpdest = gitAnnexTmpLocation g key
+	src <- fromRepo $ gitAnnexLocation key
+	tmpdest <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
 	ok <- liftIO $ copyFileExternal src tmpdest

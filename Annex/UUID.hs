@@ -30,7 +30,7 @@ configkey = "annex.uuid"
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
 genUUID :: IO UUID
-genUUID = pOpen ReadFromPipe command params hGetLine
+genUUID = pOpen ReadFromPipe command params $ liftM toUUID . hGetLine
 	where
 		command = SysConfig.uuid
 		params = if command == "uuid"
@@ -39,31 +39,35 @@ genUUID = pOpen ReadFromPipe command params hGetLine
 			-- uuidgen generates random uuid by default
 			else []
 
+{- Get current repository's UUID. -}
 getUUID :: Annex UUID
 getUUID = getRepoUUID =<< gitRepo
 
-{- Looks up a repo's UUID. May return "" if none is known. -}
+{- Looks up a repo's UUID, caching it in .git/config if it's not already. -}
 getRepoUUID :: Git.Repo -> Annex UUID
 getRepoUUID r = do
-	g <- gitRepo
-
-	let c = cached g
+	c <- fromRepo cached
 	let u = getUncachedUUID r
 	
-	if c /= u && u /= ""
+	if c /= u && u /= NoUUID
 		then do
-			updatecache g u
+			updatecache u
 			return u
 		else return c
 	where
-		cached g = Git.configGet g cachekey ""
-		updatecache g u = when (g /= r) $ setConfig cachekey u
-		cachekey = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-uuid"
+		cached = toUUID . Git.configGet cachekey ""
+		updatecache u = do
+			g <- gitRepo
+			when (g /= r) $ storeUUID cachekey u
+		cachekey = remoteConfig r "uuid"
 
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID r = Git.configGet r configkey ""
+getUncachedUUID = toUUID . Git.configGet configkey ""
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
-prepUUID = whenM (null <$> getUUID) $
-	setConfig configkey =<< liftIO genUUID
+prepUUID = whenM ((==) NoUUID <$> getUUID) $
+	storeUUID configkey =<< liftIO genUUID
+
+storeUUID :: String -> UUID -> Annex ()
+storeUUID configfield = setConfig configfield . fromUUID

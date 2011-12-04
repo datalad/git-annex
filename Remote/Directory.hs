@@ -8,7 +8,6 @@
 module Remote.Directory (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import System.IO.Error
 import qualified Data.Map as M
 
 import Common.Annex
@@ -70,17 +69,15 @@ dirKey d k = d </> hashDirMixed k </> f </> f
 
 store :: FilePath -> Key -> Annex Bool
 store d k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	let dest = dirKey d k
-	liftIO $ catchBool $ storeHelper dest $ copyFileExternal src dest
+	liftIO $ catchBoolIO $ storeHelper dest $ copyFileExternal src dest
 
 storeEncrypted :: FilePath -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d (cipher, enck) k = do
-	g <- gitRepo
-	let src = gitAnnexLocation g k
+	src <- fromRepo $ gitAnnexLocation k
 	let dest = dirKey d enck
-	liftIO $ catchBool $ storeHelper dest $ encrypt src dest
+	liftIO $ catchBoolIO $ storeHelper dest $ encrypt src dest
 	where
 		encrypt src dest = do
 			withEncryptedContent cipher (L.readFile src) $ L.writeFile dest
@@ -102,12 +99,12 @@ retrieve d k f = liftIO $ copyFileExternal (dirKey d k) f
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =
-	liftIO $ catchBool $ do
+	liftIO $ catchBoolIO $ do
 		withDecryptedContent cipher (L.readFile (dirKey d enck)) $ L.writeFile f
 		return True
 
 remove :: FilePath -> Key -> Annex Bool
-remove d k = liftIO $ catchBool $ do
+remove d k = liftIO $ catchBoolIO $ do
 	allowWrite dir
 	removeFile file
 	removeDirectory dir
@@ -116,5 +113,5 @@ remove d k = liftIO $ catchBool $ do
 		file = dirKey d k
 		dir = parentDir file
 
-checkPresent :: FilePath -> Key -> Annex (Either IOException Bool)
-checkPresent d k = liftIO $ try $ doesFileExist (dirKey d k)
+checkPresent :: FilePath -> Key -> Annex (Either String Bool)
+checkPresent d k = liftIO $ catchMsgIO $ doesFileExist (dirKey d k)

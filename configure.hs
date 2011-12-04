@@ -69,7 +69,7 @@ checkGitVersion = do
 		-- for git-check-attr behavior change
 		need = "1.7.7"
 		dotted = sum . mult 1 . reverse . extend 10 . map readi . split "." 
-		extend n l = l ++ take (n - length l) (repeat 0)
+		extend n l = l ++ replicate (n - length l) 0
 		mult _ [] = []
 		mult n (x:xs) = (n*x) : (mult (n*100) xs)
 		readi :: String -> Integer

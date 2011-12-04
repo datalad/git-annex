@@ -13,17 +13,16 @@ import qualified Backend
 import qualified Types.Key
 import Annex.Content
 import qualified Command.Add
-import Backend
 import Logs.Web
 
 def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
 
 seek :: [CommandSeek]
-seek = [withBackendFilesInGit start]
+seek = [withBackendFilesInGit $ \(b, f) -> whenAnnexed (start b) f]
 
-start :: BackendFile -> CommandStart
-start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
+start :: Maybe (Backend Annex) -> FilePath -> (Key, Backend Annex) -> CommandStart
+start b file (key, oldbackend) = do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
 	if (newbackend /= oldbackend || upgradableKey key) && exists
@@ -40,27 +39,27 @@ start (b, file) = isAnnexed file $ \(key, oldbackend) -> do
 upgradableKey :: Key -> Bool
 upgradableKey key = isNothing $ Types.Key.keySize key
 
+{- Store the old backend's key in the new backend
+ - The old backend's key is not dropped from it, because there may
+ - be other files still pointing at that key.
+ -
+ - Use the same filename as the file for the temp file name, to support
+ - backends that allow the filename to influence the keys they
+ - generate.
+ -}
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	g <- gitRepo
-
-	-- Store the old backend's cached key in the new backend
-	-- (the file can't be stored as usual, because it's already a symlink).
-	-- The old backend's key is not dropped from it, because there may
-	-- be other files still pointing at that key.
-	let src = gitAnnexLocation g oldkey
-	let tmpfile = gitAnnexTmpDir g </> takeFileName file
+	src <- fromRepo $ gitAnnexLocation oldkey
+	tmp <- fromRepo gitAnnexTmpDir
+	let tmpfile = tmp </> takeFileName file
+	cleantmp tmpfile
 	liftIO $ createLink src tmpfile
 	k <- Backend.genKey tmpfile $ Just newbackend
-	liftIO $ cleantmp tmpfile
+	cleantmp tmpfile
 	case k of
 		Nothing -> stop
 		Just (newkey, _) -> do
-			ok <- getViaTmpUnchecked newkey $ \t -> do
-				-- Make a hard link to the old backend's
-				-- cached key, to avoid wasting disk space.
-				liftIO $ unlessM (doesFileExist t) $ createLink src t
-				return True
+			ok <- link src newkey
 			if ok
 				then do
 					-- Update symlink to use the new key.
@@ -70,10 +69,15 @@ perform file oldkey newbackend = do
 					-- associated urls, record them for
 					-- the new key as well.
 					urls <- getUrls oldkey
-					when (not $ null urls) $
+					unless (null urls) $
 						mapM_ (setUrlPresent newkey) urls
 
 					next $ Command.Add.cleanup file newkey True
 				else stop
 	where
-		cleantmp t = whenM (doesFileExist t) $ removeFile t
+		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
+		link src newkey = getViaTmpUnchecked newkey $ \t -> do
+			-- Make a hard link to the old backend's
+			-- cached key, to avoid wasting disk space.
+			liftIO $ unlessM (doesFileExist t) $ createLink src t
+			return True	

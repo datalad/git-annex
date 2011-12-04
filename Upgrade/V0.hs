@@ -16,10 +16,9 @@ import qualified Upgrade.V1
 upgrade :: Annex Bool
 upgrade = do
 	showAction "v0 to v1"
-	g <- gitRepo
 
 	-- do the reorganisation of the key files
-	let olddir = gitAnnexDir g
+	olddir <- fromRepo gitAnnexDir
 	keys <- getKeysPresent0 olddir
 	forM_ keys $ \k -> moveAnnex k $ olddir </> keyFile0 k
 

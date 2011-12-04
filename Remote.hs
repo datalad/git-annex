@@ -16,6 +16,7 @@ module Remote (
 	hasKeyCheap,
 
 	remoteTypes,
+	remoteMap,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
@@ -26,7 +27,7 @@ module Remote (
 	showTriedRemotes,
 	showLocations,
 	forceTrust,
-	remoteHasKey
+	logStatus
 ) where
 
 import qualified Data.Map as M
@@ -83,6 +84,10 @@ genList = do
 			u <- getRepoUUID r
 			generate t r u (M.lookup u m)
 
+{- Map of UUIDs of Remotes and their names. -}
+remoteMap :: Annex (M.Map UUID String)
+remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+
 {- Looks up a remote by name. (Or by UUID.) Only finds currently configured
  - git remotes. -}
 byName :: String -> Annex (Remote Annex)
@@ -100,24 +105,23 @@ byName' n = do
 		then return $ Left $ "there is no git remote named \"" ++ n ++ "\""
 		else return $ Right $ head match
 	where
-		matching r = n == name r || n == uuid r
+		matching r = n == name r || toUUID n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even remotes that are not configured in
  - .git/config. -}
 nameToUUID :: String -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
-nameToUUID n = do
-	res <- byName' n
-	case res of
-		Left e -> fromMaybe (error e) <$> byDescription
-		Right r -> return $ uuid r
+nameToUUID n = byName' n >>= go
 	where
-		byDescription = do
+		go (Right r) = return $ uuid r
+		go (Left e) = fromMaybe (error e) <$> bydescription
+		bydescription = do
 			m <- uuidMap
 			case M.lookup n $ transform swap m of
 				Just u -> return $ Just u
-				Nothing -> return $ M.lookup n $ transform double m
+				Nothing -> return $ byuuid m
+		byuuid m = M.lookup (toUUID n) $ transform double m
 		transform a = M.fromList . map a . M.toList
 		swap (a, b) = (b, a)
 		double (a, _) = (a, a)
@@ -131,31 +135,30 @@ nameToUUID n = do
  - of the UUIDs. -}
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
-	here <- getUUID
+	hereu <- getUUID
 	m <- M.unionWith addname <$> uuidMap <*> remoteMap
-	maybeShowJSON [(desc, map (jsonify m here) uuids)]
-	return $ unwords $ map (\u -> "\t" ++ prettify m here u ++ "\n") uuids
+	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
+	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
 	where
 		addname d n
 			| d == n = d
 			| null d = n
 			| otherwise = n ++ " (" ++ d ++ ")"
-		remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
 		findlog m u = M.findWithDefault "" u m
-		prettify m here u
-			| not (null d) = u ++ " -- " ++ d
-			| otherwise = u
+		prettify m hereu u
+			| not (null d) = fromUUID u ++ " -- " ++ d
+			| otherwise = fromUUID u
 			where
-				ishere = here == u
+				ishere = hereu == u
 				n = findlog m u
 				d
 					| null n && ishere = "here"
 					| ishere = addname n "here"
 					| otherwise = n
-		jsonify m here u = toJSObject
-			[ ("uuid", toJSON u)
+		jsonify m hereu u = toJSObject
+			[ ("uuid", toJSON $ fromUUID u)
 			, ("description", toJSON $ findlog m u)
-			, ("here", toJSON $ here == u)
+			, ("here", toJSON $ hereu == u)
 			]
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
@@ -231,10 +234,7 @@ forceTrust level remotename = do
  - in the local repo, not on the remote. The process of transferring the
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
-remoteHasKey :: Remote Annex -> Key -> Bool -> Annex ()
-remoteHasKey remote key present	= do
-	let remoteuuid = uuid remote
-	g <- gitRepo
-	logChange g key remoteuuid status
+logStatus :: Remote Annex -> Key -> Bool -> Annex ()
+logStatus remote key present = logChange key (uuid remote) status
 	where
 		status = if present then InfoPresent else InfoMissing

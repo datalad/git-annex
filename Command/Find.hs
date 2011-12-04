@@ -11,17 +11,21 @@ import Common.Annex
 import Command
 import Annex.Content
 import Limit
+import qualified Annex
 
 def :: [Command]
 def = [command "find" paramPaths seek "lists available files"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withFilesInGit $ whenAnnexed start]
 
-start :: FilePath -> CommandStart
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
-	whenM (liftM2 (||) (inAnnex key) limited) $
-		liftIO $ putStrLn file
+	whenM (liftM2 (||) (inAnnex key) limited) $ do
+		print0 <- Annex.getState Annex.print0
+		if print0
+			then liftIO $ putStr (file ++ "\0")
+			else liftIO $ putStrLn file
 	stop

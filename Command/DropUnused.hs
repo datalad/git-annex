@@ -55,24 +55,22 @@ perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
 		dropremote name = do
 			r <- Remote.byName name
 			showAction $ "from " ++ Remote.name r
-			next $ Command.Drop.cleanupRemote key r
+			ok <- Remote.removeKey r key
+			next $ Command.Drop.cleanupRemote key r ok
 		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
 
-performOther :: (Git.Repo -> Key -> FilePath) -> Key -> CommandPerform
+performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
-	g <- gitRepo
-	let f = filespec g key
+	f <- fromRepo $ filespec key
 	liftIO $ whenM (doesFileExist f) $ removeFile f
 	next $ return True
 
 readUnusedLog :: FilePath -> Annex UnusedMap
 readUnusedLog prefix = do
-	g <- gitRepo
-	let f = gitAnnexUnusedLog prefix g
+	f <- fromRepo $ gitAnnexUnusedLog prefix
 	e <- liftIO $ doesFileExist f
 	if e
-		then return . M.fromList . map parse . lines
-			=<< liftIO (readFile f)
+		then M.fromList . map parse . lines <$> liftIO (readFile f)
 		else return M.empty
 	where
 		parse line = (head ws, fromJust $ readKey $ unwords $ tail ws)

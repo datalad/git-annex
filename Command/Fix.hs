@@ -17,11 +17,11 @@ def = [command "fix" paramPaths seek
 	"fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit start]
+seek = [withFilesInGit $ whenAnnexed start]
 
 {- Fixes the symlink to an annexed file. -}
-start :: FilePath -> CommandStart
-start file = isAnnexed file $ \(key, _) -> do
+start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start file (key, _) = do
 	link <- calcGitLink file key
 	l <- liftIO $ readSymbolicLink file
 	if link == l
@@ -39,5 +39,5 @@ perform file link = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	Annex.Queue.add "add" [Param "--"] [file]
+	Annex.Queue.add "add" [Param "--force", Param "--"] [file]
 	return True

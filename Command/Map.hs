@@ -31,8 +31,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	g <- gitRepo
-	rs <- spider g
+	rs <- spider =<< gitRepo
 
 	umap <- uuidMap
 	trusted <- trustGet Trusted
@@ -62,7 +61,8 @@ drawMap rs umap ts = Dot.graph $ repos ++ trusted ++ others
 		others = map (unreachable . uuidnode) $
 			filter (`notElem` ruuids) (M.keys umap)
 		trusted = map (trustworthy . uuidnode) ts
-		uuidnode u = Dot.graphNode u $ M.findWithDefault "" u umap
+		uuidnode u = Dot.graphNode (fromUUID u) $
+			M.findWithDefault "" u umap
 
 hostname :: Git.Repo -> String
 hostname r
@@ -76,7 +76,7 @@ basehostname r = head $ split "." $ hostname r
  - or the remote name if not. -}
 repoName :: M.Map UUID String -> Git.Repo -> String
 repoName umap r
-	| null repouuid = fallback
+	| repouuid == NoUUID = fallback
 	| otherwise = M.findWithDefault fallback repouuid umap
 	where
 		repouuid = getUncachedUUID r
@@ -86,8 +86,8 @@ repoName umap r
 nodeId :: Git.Repo -> String
 nodeId r =
 	case getUncachedUUID r of
-		"" -> Git.repoLocation r
-		u -> u
+		NoUUID -> Git.repoLocation r
+		UUID u -> u
 
 {- A node representing a repo. -}
 node :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> String
@@ -195,11 +195,17 @@ tryScan r
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" []
 		manualconfiglist = do
-			let sshcmd =
-				"cd " ++ shellEscape(Git.workTree r) ++ " && " ++
-				"git config --list"
 			sshparams <- sshToRepo r [Param sshcmd]
 			liftIO $ pipedconfig "ssh" sshparams
+			where
+				sshcmd = cddir ++ " && " ++
+					"git config --list"
+				dir = Git.workTree r
+				cddir
+					| take 2 dir == "/~" =
+						let (userhome, reldir) = span (/= '/') (drop 1 dir)
+						in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
+					| otherwise = "cd " ++ shellEscape dir
 
 		-- First, try sshing and running git config manually,
 		-- only fall back to git-annex-shell configlist if that

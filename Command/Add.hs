@@ -38,11 +38,10 @@ start p@(_, file) = notBareRepo $ notAnnexed file $ do
 			next $ perform p
 
 perform :: BackendFile -> CommandPerform
-perform (backend, file) = do
-	k <- Backend.genKey file backend
-	case k of
-		Nothing -> stop
-		Just (key, _) -> do
+perform (backend, file) = Backend.genKey file backend >>= go
+	where
+		go Nothing = stop
+		go (Just (key, _)) = do
 			handle (undo file key) $ moveAnnex key file
 			next $ cleanup file key True
 
@@ -61,8 +60,8 @@ undo file key e = do
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do
-			g <- gitRepo
-			liftIO $ renameFile (gitAnnexLocation g key) file
+			src <- fromRepo $ gitAnnexLocation key
+			liftIO $ renameFile src file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
@@ -75,9 +74,9 @@ cleanup file key hascontent = do
 	
 			-- touch the symlink to have the same mtime as the
 			-- file it points to
-			s <- liftIO $ getFileStatus file
-			let mtime = modificationTime s
-			liftIO $ touch file (TimeSpec mtime) False
+			liftIO $ do
+				mtime <- modificationTime <$> getFileStatus file
+				touch file (TimeSpec mtime) False
 
 	force <- Annex.getState Annex.force
 	if force

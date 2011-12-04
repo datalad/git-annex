@@ -1,4 +1,4 @@
-a [[!taglink minor]] <!-- (a suggestion for introducing severity tags on bugs,
+a <!-- (a suggestion for introducing severity tags on bugs,
 feel free to discard) --> issue: `git annex initremote` (in particular, adding
 a key as described in [[encryption]] -- `git annex initremote my_remote
 encryption=my_key`) seems to iterate over the `.git-annex/???/???/*.log` files

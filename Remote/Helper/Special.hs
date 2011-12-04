@@ -19,20 +19,20 @@ import qualified Git
  -}
 findSpecialRemotes :: String -> Annex [Git.Repo]
 findSpecialRemotes s = do
-	g <- gitRepo
-	return $ map construct $ remotepairs g
+	m <- fromRepo Git.configMap
+	return $ map construct $ remotepairs m
 	where
-		remotepairs r = M.toList $ M.filterWithKey match $ Git.configMap r
-		construct (k,_) = Git.repoRemoteNameFromKey Git.repoFromUnknown k
+		remotepairs = M.toList . M.filterWithKey match
+		construct (k,_) = Git.repoRemoteNameFromKey k Git.repoFromUnknown
 		match k _ = startswith "remote." k && endswith (".annex-"++s) k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> String -> String -> Annex ()
 gitConfigSpecialRemote u c k v = do
-	g <- gitRepo
-	liftIO $ do
-		Git.run g "config" [Param (configsetting $ "annex-"++k), Param v]
-		Git.run g "config" [Param (configsetting "annex-uuid"), Param u]
+	set ("annex-"++k) v
+	set ("annex-uuid") (fromUUID u)
 	where
+		set a b = inRepo $ Git.run "config"
+			[Param (configsetting a), Param b]
 		remotename = fromJust (M.lookup "name" c)
 		configsetting s = "remote." ++ remotename ++ "." ++ s

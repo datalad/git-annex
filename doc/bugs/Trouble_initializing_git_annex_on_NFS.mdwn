@@ -1,0 +1,16 @@
+The following occurs in a directory that is shared on an NFS server:
+
+    /media/mybook/movies $ git init
+    Initialized empty Git repository in /media/mybook/movies/.git/
+    /media/mybook/movies $ git annex init mybook-movies
+    init mybook-movies 
+    git-annex: waitToSetLock: resource exhausted (No locks available)
+    failed
+    git-annex: init: 1 failed
+    /media/mybook/movies $
+
+This happens reliably.  Is there any way around it?  I have shell
+access on the NFS server, but it is a NAS, so I don't think it is
+capable of running git-annex.
+
+[[done]]

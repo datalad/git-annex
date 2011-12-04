@@ -25,10 +25,13 @@ def :: [Command]
 def = [command "fsck" paramPaths seek "check for problems"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies start, withBarePresentKeys startBare]
+seek =
+	[ withNumCopies $ \n -> whenAnnexed $ start n
+	, withBarePresentKeys startBare
+	]
 
-start :: FilePath -> Maybe Int -> CommandStart
-start file numcopies = isAnnexed file $ \(key, backend) -> do
+start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start numcopies file (key, backend) = do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
 
@@ -38,7 +41,7 @@ perform key file backend numcopies = check
 	[ verifyLocationLog key file
 	, checkKeySize key
 	, checkKeyNumCopies key file numcopies
-	, (Types.Backend.fsckKey backend) key
+	, checkBackend backend key
 	]
 
 {- To fsck a bare repository, fsck each key in the location log. -}
@@ -47,7 +50,7 @@ withBarePresentKeys a params = isBareRepo >>= go
 	where
 		go False = return []
 		go True = do
-			unless (null params) $ do
+			unless (null params) $
 				error "fsck should be run without parameters in a bare repository"
 			prepStart a loggedKeys
 
@@ -65,11 +68,11 @@ performBare :: Key -> Backend Annex -> CommandPerform
 performBare key backend = check
 	[ verifyLocationLog key (show key)
 	, checkKeySize key
-	, (Types.Backend.fsckKey backend) key
+	, checkBackend backend key
 	]
 
 check :: [Annex Bool] -> CommandPerform	
-check s = sequence s >>= dispatch
+check = sequence >=> dispatch
 	where
 		dispatch vs
 			| all (== True) vs = next $ return True
@@ -79,26 +82,26 @@ check s = sequence s >>= dispatch
    in this repository only. -}
 verifyLocationLog :: Key -> String -> Annex Bool
 verifyLocationLog key desc = do
-	g <- gitRepo
 	present <- inAnnex key
 	
 	-- Since we're checking that a key's file is present, throw
 	-- in a permission fixup here too.
-	when present $ liftIO $ do
-		let f = gitAnnexLocation g key
-		preventWrite f
-		preventWrite (parentDir f)
+	when present $ do
+		f <- fromRepo $ gitAnnexLocation key
+		liftIO $ do
+			preventWrite f
+			preventWrite (parentDir f)
 
 	u <- getUUID
         uuids <- keyLocations key
 
 	case (present, u `elem` uuids) of
 		(True, False) -> do
-				fix g u InfoPresent
+				fix u InfoPresent
 				-- There is no data loss, so do not fail.
 				return True
 		(False, True) -> do
-				fix g u InfoMissing
+				fix u InfoMissing
 				warning $
 					"** Based on the location log, " ++ desc
 					++ "\n** was expected to be present, " ++
@@ -107,16 +110,15 @@ verifyLocationLog key desc = do
 		_ -> return True
 	
 	where
-		fix g u s = do
+		fix u s = do
 			showNote "fixing location log"
-			logChange g key u s
+			logChange key u s
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
-	g <- gitRepo
-	let file = gitAnnexLocation g key
+	file <- fromRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	case (present, Types.Key.keySize key) of
 		(_, Nothing) -> return True
@@ -133,6 +135,9 @@ checkKeySize key = do
 						"); moved to " ++ dest
 					return False
 
+
+checkBackend :: Backend Annex -> Key -> Annex Bool
+checkBackend = Types.Backend.fsckKey
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do

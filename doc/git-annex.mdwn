@@ -232,6 +232,9 @@ subdirectories).
   With no parameters, defaults to finding all files in the current directory
   and its subdirectories.
 
+  To output filenames terminated with nulls, for use with xargs -0,
+  specify --print0.
+
 * whereis [path ...]
 
   Displays a list of repositories known to contain the content of the
@@ -240,7 +243,9 @@ subdirectories).
 * status
 
   Displays some statistics and other information, including how much data
-  is in the annex.
+  is in the annex and a list of all known repositories.
+
+  To only show the data that can be gathered quickly, use --fast.
 
 * map
 
@@ -274,6 +279,19 @@ subdirectories).
   However, if a backend changes the information it uses to construct a key,
   this can also be used to migrate files to use the new key format.
 
+* reinject src dest
+
+  Moves the src file into the annex as the content of the dest file.
+  This can be useful if you have obtained the content of a file from
+  elsewhere and want to put it in the local annex.
+
+  Automatically runs fsck on dest to check that the expected content was
+  provided.
+
+  Example:
+
+	git annex reinject /tmp/foo.iso foo.iso
+
 * unannex [path ...]
 
   Use this to undo an accidental `git annex add` command. You can use
@@ -304,7 +322,7 @@ subdirectories).
   This is meant to be called from git's pre-commit hook. `git annex init`
   automatically creates a pre-commit hook using this.
 
-* fromkey file
+* fromkey key file
 
   This plumbing-level command can be used to manually set up a file
   in the git repository to link to a specified key.
@@ -320,15 +338,6 @@ subdirectories).
   Example:
 
 	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
-
-* setkey file
-
-  This plumbing-level command sets the annexed data for a key to the
-  content of the specified file, and then removes the file.
-
-  Example:
-
-	git annex setkey --key=WORM-s3-m1287765018--file /tmp/file
 
 # OPTIONS
 
@@ -401,10 +410,6 @@ subdirectories).
   are in the annex, their backend is known and this option is not
   necessary.
 
-* --key=name
-
-  Specifies a key to operate on.
-
 * -c name=value
 
   Used to override git configuration settings. May be specified multiple times.
@@ -439,7 +444,7 @@ file contents are present at either of two repositories.
 * --copies=number
 
   Matches only files that git-annex believes to have the specified number
-  of copies.
+  of copies, or more.
 
 * --not
 

@@ -9,12 +9,12 @@
 
 module Types.Remote where
 
-import Control.Exception
 import Data.Map as M
 import Data.Ord
 
 import qualified Git
 import Types.Key
+import Types.UUID
 
 type RemoteConfig = M.Map String String
 
@@ -25,15 +25,15 @@ data RemoteType a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> String -> Maybe RemoteConfig -> a (Remote a),
+	generate :: Git.Repo -> UUID -> Maybe RemoteConfig -> a (Remote a),
 	-- initializes or changes a remote
-	setup :: String -> RemoteConfig -> a RemoteConfig
+	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
 
 {- An individual remote. -}
 data Remote a = Remote {
 	-- each Remote has a unique uuid
-	uuid :: String,
+	uuid :: UUID,
 	-- each Remote has a human visible name
 	name :: String,
 	-- Remotes have a use cost; higher is more expensive
@@ -45,8 +45,8 @@ data Remote a = Remote {
 	-- removes a key's contents
 	removeKey :: Key -> a Bool,
 	-- Checks if a key is present in the remote; if the remote
-	-- cannot be accessed returns a Left error.
-	hasKey :: Key -> a (Either IOException Bool),
+	-- cannot be accessed returns a Left error message.
+	hasKey :: Key -> a (Either String Bool),
 	-- Some remotes can check hasKey without an expensive network
 	-- operation.
 	hasKeyCheap :: Bool,

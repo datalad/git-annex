@@ -11,7 +11,9 @@ module CmdLine (
 	shutdown
 ) where
 
-import System.IO.Error (try)
+import qualified System.IO.Error as IO
+import qualified Control.Exception as E
+import Control.Exception (throw)
 import System.Console.GetOpt
 
 import Common.Annex
@@ -21,42 +23,45 @@ import qualified Git
 import Annex.Content
 import Command
 
-{- Runs the passed command line. -}
-dispatch :: [String] -> [Command] -> [Option] -> String -> Git.Repo -> IO ()
-dispatch args cmds options header gitrepo = do
-	setupConsole
-	state <- Annex.new gitrepo
-	(actions, state') <- Annex.run state $ parseCmd args header cmds options
-	tryRun state' $ [startup] ++ actions ++ [shutdown]
+type Params = [String]
+type Flags = [Annex ()]
 
-{- Parses command line, stores configure flags, and returns a 
- - list of actions to be run in the Annex monad. -}
-parseCmd :: [String] -> String -> [Command] -> [Option] -> Annex [Annex Bool]
-parseCmd argv header cmds options = do
-	(flags, params) <- liftIO getopt
-	when (null params) $ error $ "missing command" ++ usagemsg
-	case lookupCmd (head params) of
-		[] -> error $ "unknown command" ++ usagemsg
-		[cmd] -> do
-			_ <- sequence flags
-			checkCommand cmd
-			prepCommand cmd (drop 1 params)
-		_ -> error "internal error: multiple matching commands"
+{- Runs the passed command line. -}
+dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
+dispatch args cmds options header getgitrepo = do
+	setupConsole
+	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
+	case r of
+		Left e -> maybe (throw e) id (cmdnorepo cmd)
+		Right g -> do
+			state <- Annex.new g
+			(actions, state') <- Annex.run state $ do
+				sequence_ flags
+				prepCommand cmd params
+			tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
 	where
-		getopt = case getOpt Permute options argv of
-			(flags, params, []) ->
-				return (flags, params)
-			(_, _, errs) ->
-				ioError (userError (concat errs ++ usagemsg))
-		lookupCmd cmd = filter (\c -> cmd  == cmdname c) cmds
-		usagemsg = "\n\n" ++ usage header cmds options
+		(flags, cmd, params) = parseCmd args cmds options header
+
+{- Parses command line, and returns actions to run to configure flags,
+ - the Command being run, and the remaining parameters for the command. -} 
+parseCmd :: Params -> [Command] -> [Option] -> String -> (Flags, Command, Params)
+parseCmd argv cmds options header = check $ getOpt Permute options argv
+	where
+		check (_, [], []) = err "missing command"
+		check (flags, name:rest, [])
+			| null matches = err $ "unknown command " ++ name
+			| otherwise = (flags, head matches, rest)
+			where
+				matches = filter (\c -> name == cmdname c) cmds
+		check (_, _, errs) = err $ concat errs
+		err msg = error $ msg ++ "\n\n" ++ usage header cmds options
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String
-usage header cmds options =
-	usageInfo (header ++ "\n\nOptions:") options ++
-		"\nCommands:\n" ++ cmddescs
+usage header cmds options = usageInfo top options ++ commands
 	where
+		top = header ++ "\n\nOptions:"
+		commands = "\nCommands:\n" ++ cmddescs
 		cmddescs = unlines $ map (indent . showcmd) cmds
 		showcmd c =
 			cmdname c ++
@@ -70,22 +75,23 @@ usage header cmds options =
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).
  -}
-tryRun :: Annex.AnnexState -> [Annex Bool] -> IO ()
+tryRun :: Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
 tryRun = tryRun' 0
-tryRun' :: Integer -> Annex.AnnexState -> [Annex Bool] -> IO ()
-tryRun' errnum state (a:as) = do
-	result <- try $ Annex.run state $ do
-		Annex.Queue.flushWhenFull
-		a
-	case result of
-		Left err -> do
-			Annex.eval state $ do
-				showErr err
-				showEndFail
-			tryRun' (errnum + 1) state as
-		Right (True,state') -> tryRun' errnum state' as
-		Right (False,state') -> tryRun' (errnum + 1) state' as
-tryRun' errnum _ [] = when (errnum > 0) $ error $ show errnum ++ " failed"
+tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
+tryRun' errnum _ cmd []
+	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
+	| otherwise = return ()
+tryRun' errnum state cmd (a:as) = run >>= handle
+	where
+		run = IO.try $ Annex.run state $ do
+			Annex.Queue.flushWhenFull
+			a
+		handle (Left err) = showerr err >> cont False state
+		handle (Right (success, state')) = cont success state'
+		cont success s = tryRun' (if success then errnum else errnum + 1) s cmd as
+		showerr err = Annex.eval state $ do
+			showErr err
+			showEndFail
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool

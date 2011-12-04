@@ -26,24 +26,22 @@ check :: Annex ()
 check = do
 	b <- current_branch	
 	when (b == Annex.Branch.name) $ error $
-		"cannot uninit when the " ++ b ++ " branch is checked out"
+		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	where
-		current_branch = do
-			g <- gitRepo
-			b <- liftIO $
-				Git.pipeRead g [Params "rev-parse --abbrev-ref HEAD"]
-			return $ head $ lines $ B.unpack b
+		current_branch = Git.Ref . head . lines . B.unpack <$> revhead
+		revhead = inRepo $ Git.pipeRead 
+			[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit startUnannex, withNothing start]
+seek = [withFilesInGit $ whenAnnexed startUnannex, withNothing start]
 
-startUnannex :: FilePath -> CommandStart
-startUnannex file = do
+startUnannex :: FilePath -> (Key, Backend Annex) -> CommandStart
+startUnannex file info = do
 	-- Force fast mode before running unannex. This way, if multiple
 	-- files link to a key, it will be left in the annex and hardlinked
 	-- to by each.
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	Command.Unannex.start file
+	Command.Unannex.start file info
 
 start :: CommandStart
 start = next perform
@@ -53,12 +51,11 @@ perform = next cleanup
 
 cleanup :: CommandCleanup
 cleanup = do
-	g <- gitRepo
+	annexdir <- fromRepo gitAnnexDir
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
-	liftIO $ removeDirectoryRecursive (gitAnnexDir g)
+	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState
-	liftIO $ do
-		Git.run g "branch" [Param "-D", Param Annex.Branch.name]
-		exitSuccess
+	inRepo $ Git.run "branch" [Param "-D", Param $ show Annex.Branch.name]
+	liftIO exitSuccess

@@ -16,12 +16,12 @@ import qualified Build.SysConfig as SysConfig
 
 type SHASize = Int
 
+-- order is slightly significant; want SHA256 first, and more general
+-- sizes earlier
 sizes :: [Int]
-sizes = [1, 256, 512, 224, 384]
+sizes = [256, 1, 512, 224, 384]
 
 backends :: [Backend Annex]
--- order is slightly significant; want sha1 first, and more general
--- sizes earlier
 backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
 
 genBackend :: SHASize -> Maybe (Backend Annex)
@@ -98,9 +98,8 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
-	g <- gitRepo
 	fast <- Annex.getState Annex.fast
-	let file = gitAnnexLocation g key
+	file <- fromRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True

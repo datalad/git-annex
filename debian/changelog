@@ -1,5 +1,57 @@
-git-annex (3.20111026) UNRELEASED; urgency=low
+git-annex (3.20111122~bpo60+2) squeeze-backports; urgency=low
 
+  * merge: Improve commit messages to mention what was merged.
+  * Avoid doing auto-merging in commands that don't need fully current
+    information from the git-annex branch. In particular, git annex add
+    no longer needs to auto-merge.
+  * init: When run in an already initalized repository, and without
+    a description specified, don't delete the old description. 
+  * Optimised union merging; now only runs git cat-file once, and runs
+    in constant space.
+  * status: Now displays trusted, untrusted, and semitrusted repositories
+    separately.
+  * status: Include all special remotes in the list of repositories.
+  * status: Fix --json mode.
+  * status: --fast is back
+  * Fix support for insteadOf url remapping. Closes: #644278
+  * When not run in a git repository, git-annex can still display a usage
+    message, and "git annex version" even works.
+  * migrate: Don't fall over a stale temp file.
+  * Avoid excessive escaping for rsync special remotes that are not accessed
+    over ssh.
+  * find: Support --print0
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 14:31:45 -0400
+
+git-annex (3.20111111) unstable; urgency=low
+
+  * Handle a case where an annexed file is moved into a gitignored directory,
+    by having fix --force add its change.
+  * Avoid cyclic drop problems.
+  * Optimized copy --from and get --from to avoid checking the location log
+    for files that are already present.
+  * Automatically fix up badly formatted uuid.log entries produced by
+    3.20111105, whenever the uuid.log is changed (ie, by init or describe).
+  * map: Support remotes with /~/ and /~user/
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Nov 2011 13:44:18 -0400
+
+git-annex (3.20111107) unstable; urgency=low
+
+  * merge: Use fast-forward merges when possible.
+    Thanks Valentin Haenel for a test case showing how non-fast-forward
+    merges could result in an ongoing pull/merge/push cycle.
+  * Don't try to read config from repos with annex-ignore set.
+  * Bugfix: In the past two releases, git-annex init has written the uuid.log
+    in the wrong format, with the UUID and description flipped.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Nov 2011 12:47:44 -0400
+
+git-annex (3.20111105) unstable; urgency=low
+
+  * The default backend used when adding files to the annex is changed
+    from WORM to SHA256.
+    To get old behavior, add a .gitattributes containing: * annex.backend=WORM
   * Sped up some operations on remotes that are on the same host.
   * copy --to: Fixed leak when copying many files to a remote on the same
     host.
@@ -13,8 +65,17 @@ git-annex (3.20111026) UNRELEASED; urgency=low
     .gitattributes information about numcopies is not available in a bare
     repository.
   * unused, dropunused: Now work in bare repositories.
+  * Removed the setkey command, and added a reinject command with a more
+    useful interface.
+  * The fromkey command now takes the key as its first parameter. The --key
+    option is no longer used.
+  * Built without any filename containing .git being excluded. Closes: #647215
+  * Record uuid when auto-initializing a remote so it shows in status.
+  * Bugfix: Fixed git-annex init crash in a bare repository when there was
+    already an existing git-annex branch.
+  * Pass -t to rsync to preserve timestamps.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 27 Oct 2011 13:58:53 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 05 Nov 2011 15:47:52 -0400
 
 git-annex (3.20111025) unstable; urgency=low
 

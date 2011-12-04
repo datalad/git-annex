@@ -12,26 +12,26 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 import Types.Key
-import Config
 
 def :: [Command]
-def = [command "fromkey" paramPath seek "adds a file using a specific key"]
+def = [command "fromkey" (paramPair paramKey paramPath) seek
+	"adds a file using a specific key"]
 
 seek :: [CommandSeek]
-seek = [withFilesMissing start]
+seek = [withWords start]
 
-start :: FilePath -> CommandStart
-start file = notBareRepo $ do
-	key <- cmdlineKey
+start :: [String] -> CommandStart
+start (keyname:file:[]) = notBareRepo $ do
+	let key = fromMaybe (error "bad key") $ readKey keyname
 	inbackend <- inAnnex key
 	unless inbackend $ error $
-		"key ("++keyName key++") is not present in backend"
+		"key ("++ keyname ++") is not present in backend"
 	showStart "fromkey" file
-	next $ perform file
+	next $ perform key file
+start _ = error "specify a key and a dest file"
 
-perform :: FilePath -> CommandPerform
-perform file = do
-	key <- cmdlineKey
+perform :: Key -> FilePath -> CommandPerform
+perform key file = do
 	link <- calcGitLink file key
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	liftIO $ createSymbolicLink link file

@@ -9,8 +9,6 @@ module Command.Init where
 
 import Common.Annex
 import Command
-import Annex.UUID
-import Logs.UUID
 import Init
 	
 def :: [Command]
@@ -29,7 +27,5 @@ start ws = do
 
 perform :: String -> CommandPerform
 perform description = do
-	initialize
-	u <- getUUID
-	describeUUID u description
+	initialize $ if null description then Nothing else Just description
 	next $ return True

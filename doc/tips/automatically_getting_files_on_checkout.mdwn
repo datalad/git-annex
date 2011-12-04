@@ -1,0 +1,15 @@
+Normally git-annex does not retrieve file contents when checking out a
+tree. In some use cases, it makes sense to always have the contents of
+files available after a `git checkout` or `git update`. This can be
+accomplished by installing the following as `.git/hooks/post-checkout`
+
+	#!/bin/sh
+	# Uses git-annex to get all files in the specified directories
+	# (relative to the top of the repository) on checkout.
+	dirs=.
+	top="$(git rev-parse --show-toplevel)"
+	for dir in "$dirs"; do git annex get $top/$dir"; done
+
+By default, all files in the whole repository will be made available. The
+`dirs` setting can be configured if you only want to get files in certian
+directories. 

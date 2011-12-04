@@ -4,5 +4,5 @@
  subject="comment 4"
  date="2011-05-14T16:29:35Z"
  content="""
-Although, if you really do want to shoot yourself in the foot, or know you have the old content, you can use `git-annex setkey`.
+Now available as `git-annex reinject`.
 """]]

@@ -19,8 +19,9 @@ seek :: [CommandSeek]
 seek = [withKeys start]
 
 start :: Key -> CommandStart
-start key = do
-	present <- inAnnex key
-	if present
-		then stop
-		else liftIO exitFailure
+start key = inAnnexSafe key >>= dispatch
+	where
+		dispatch (Just True) = stop
+		dispatch (Just False) = exit 1
+		dispatch Nothing = exit 100
+		exit n = liftIO $ exitWith $ ExitFailure n

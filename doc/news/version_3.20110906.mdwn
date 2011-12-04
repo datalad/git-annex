@@ -1,4 +1,0 @@
-git-annex 3.20110906 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Improve display of newlines around error and warning messages.
-   * Fix Makefile to work with cabal again."""]]

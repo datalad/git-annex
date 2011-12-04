@@ -21,7 +21,7 @@ type URLString = String
 
 -- Dummy uuid for the whole web. Do not alter.
 webUUID :: UUID
-webUUID = "00000000-0000-0000-0000-000000000001"
+webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
 {- The urls for a key are stored in remote/web/hash/key.log 
  - in the git-annex branch. -}
@@ -42,12 +42,11 @@ getUrls key = do
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()
 setUrl key url status = do
-	g <- gitRepo
 	addLog (urlLog key) =<< logNow status url
 
 	-- update location log to indicate that the web has the key, or not
 	us <- getUrls key
-	logChange g key webUUID (if null us then InfoMissing else InfoPresent)
+	logChange key webUUID (if null us then InfoMissing else InfoPresent)
 
 setUrlPresent :: Key -> URLString -> Annex ()
 setUrlPresent key url = setUrl key url InfoPresent

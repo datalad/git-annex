@@ -64,7 +64,7 @@ s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
 s3Setup u c = handlehost $ M.lookup "host" c
 	where
 		remotename = fromJust (M.lookup "name" c)
-		defbucket = remotename ++ "-" ++ u
+		defbucket = remotename ++ "-" ++ fromUUID u
 		defaults = M.fromList
 			[ ("datacenter", "US")
 			, ("storageclass", "STANDARD")
@@ -112,8 +112,8 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 store :: Remote Annex -> Key -> Annex Bool
 store r k = s3Action r False $ \(conn, bucket) -> do
-	g <- gitRepo
-	res <- liftIO $ storeHelper (conn, bucket) r k $ gitAnnexLocation g k
+	dest <- fromRepo $ gitAnnexLocation k
+	res <- liftIO $ storeHelper (conn, bucket) r k dest
 	s3Bool res
 
 storeEncrypted :: Remote Annex -> (Cipher, Key) -> Key -> Annex Bool
@@ -121,8 +121,7 @@ storeEncrypted r (cipher, enck) k = s3Action r False $ \(conn, bucket) ->
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
-		g <- gitRepo
-		let f = gitAnnexLocation g k
+		f <- fromRepo $ gitAnnexLocation k
 		liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
 		s3Bool res
@@ -173,7 +172,7 @@ remove r k = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ deleteObject conn $ bucketKey r bucket k
 	s3Bool res
 
-checkPresent :: Remote Annex -> Key -> Annex (Either IOException Bool)
+checkPresent :: Remote Annex -> Key -> Annex (Either String Bool)
 checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
@@ -287,7 +286,7 @@ s3GetCreds c = do
 				_ -> return Nothing
 		else return $ Just (ak, sk)
 	where
-		getEnvKey s = liftIO $ catch (getEnv s) (const $ return "")
+		getEnvKey s = liftIO $ catchDefaultIO (getEnv s) ""
 
 {- Stores S3 creds encrypted in the remote's config if possible. -}
 s3SetCreds :: RemoteConfig -> Annex RemoteConfig

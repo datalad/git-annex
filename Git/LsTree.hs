@@ -19,8 +19,6 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import Git
 import Utility.SafeCommand
 
-type Treeish = String
-
 data TreeItem = TreeItem
 	{ mode :: FileMode
 	, typeobj :: String
@@ -28,10 +26,10 @@ data TreeItem = TreeItem
 	, file :: FilePath
 	} deriving Show
 
-{- Lists the contents of a Treeish -}
-lsTree :: Repo -> Treeish -> IO [TreeItem]
-lsTree repo t = map parseLsTree <$>
-	pipeNullSplitB repo [Params "ls-tree --full-tree -z -r --", File t]
+{- Lists the contents of a Ref -}
+lsTree :: Ref -> Repo -> IO [TreeItem]
+lsTree t repo = map parseLsTree <$>
+	pipeNullSplitB [Params "ls-tree --full-tree -z -r --", File $ show t] repo
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

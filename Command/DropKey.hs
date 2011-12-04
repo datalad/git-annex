@@ -23,17 +23,19 @@ seek = [withKeys start]
 start :: Key -> CommandStart
 start key = do
 	present <- inAnnex key
-	force <- Annex.getState Annex.force
 	if not present
 		then stop
-		else if not force
-			then error "dropkey is can cause data loss; use --force if you're sure you want to do this"
-			else do
-				showStart "dropkey" (show key)
-				next $ perform key
+		else do
+			checkforced
+			showStart "dropkey" (show key)
+			next $ perform key
+	where
+		checkforced = 
+			unlessM (Annex.getState Annex.force) $
+				error "dropkey can cause data loss; use --force if you're sure you want to do this"
 
 perform :: Key -> CommandPerform
-perform key = do
+perform key = lockContent key $ do
 	removeAnnex key
 	next $ cleanup key
 

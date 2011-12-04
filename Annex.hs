@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,7 +17,9 @@ module Annex (
 	eval,
 	getState,
 	changeState,
-	gitRepo
+	gitRepo,
+	inRepo,
+	fromRepo,
 ) where
 
 import Control.Monad.State
@@ -49,6 +51,8 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 		Applicative
 	)
 
+data OutputType = NormalOutput | QuietOutput | JSONOutput
+
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
@@ -59,11 +63,11 @@ data AnnexState = AnnexState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
+	, print0 :: Bool
 	, branchstate :: BranchState
 	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
-	, defaultkey :: Maybe String
 	, toremote :: Maybe String
 	, fromremote :: Maybe String
 	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
@@ -71,8 +75,6 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, cipher :: Maybe Cipher
 	}
-
-data OutputType = NormalOutput | QuietOutput | JSONOutput
 
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState
@@ -84,11 +86,11 @@ newState gitrepo = AnnexState
 	, force = False
 	, fast = False
 	, auto = False
+	, print0 = False
 	, branchstate = startBranchState
 	, catfilehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
-	, defaultkey = Nothing
 	, toremote = Nothing
 	, fromremote = Nothing
 	, limit = Left []
@@ -119,6 +121,14 @@ getState = gets
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState = modify
 
-{- Returns the git repository being acted on -}
+{- Returns the annex's git repository. -}
 gitRepo :: Annex Git.Repo
 gitRepo = getState repo
+
+{- Runs an IO action in the annex's git repository. -}
+inRepo :: (Git.Repo -> IO a) -> Annex a
+inRepo a = liftIO . a =<< gitRepo
+
+{- Extracts a value from the annex's git repisitory. -}
+fromRepo :: (Git.Repo -> a) -> Annex a
+fromRepo a = a <$> gitRepo

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,14 +21,10 @@ def = [dontCheck toOpt $ dontCheck fromOpt $
 	"move content of files to/from another repository"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit $ start True]
+seek = [withFilesInGit $ whenAnnexed $ start True]
 
-{- Move (or copy) a file either --to or --from a repository.
- -
- - This only operates on the cached file content; it does not involve
- - moving data in the key-value backend. -}
-start :: Bool -> FilePath -> CommandStart
-start move file = do
+start :: Bool -> FilePath -> (Key, Backend Annex) -> CommandStart
+start move file (key, _) = do
 	noAuto
 	to <- Annex.getState Annex.toremote
 	from <- Annex.getState Annex.fromremote
@@ -36,10 +32,10 @@ start move file = do
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just name) -> do
 			dest <- Remote.byName name
-			toStart dest move file
+			toStart dest move file key
 		(Just name, Nothing) -> do
 			src <- Remote.byName name
-			fromStart src move file
+			fromStart src move file key
 		(_ ,  _) -> error "only one of --from or --to can be specified"
 	where
 		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
@@ -58,8 +54,8 @@ showMoveAction False file = showStart "copy" file
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
-toStart dest move file = isAnnexed file $ \(key, _) -> do
+toStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+toStart dest move file key = do
 	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
@@ -68,7 +64,7 @@ toStart dest move file = isAnnexed file $ \(key, _) -> do
 			showMoveAction move file
 			next $ toPerform dest move key
 toPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
-toPerform dest move key = do
+toPerform dest move key = moveLock move key $ do
 	-- Checking the remote is expensive, so not done in the start step.
 	-- In fast mode, location tracking is assumed to be correct,
 	-- and an explicit check is not done, when copying. When moving,
@@ -82,24 +78,26 @@ toPerform dest move key = do
 		else Remote.hasKey dest key
 	case isthere of
 		Left err -> do
-			showNote $ show err
+			showNote err
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- Remote.storeKey dest key
 			if ok
-				then next $ toCleanup dest move key
+				then finish
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> next $ toCleanup dest move key
-toCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
-toCleanup dest move key = do
-	Remote.remoteHasKey dest key True
-	if move
-		then Command.Drop.cleanupLocal key
-		else return True
+		Right True -> finish
+	where
+		finish = do
+			Remote.logStatus dest key True
+			if move
+				then do
+					whenM (inAnnex key) $ removeAnnex key
+					next $ Command.Drop.cleanupLocal key
+				else next $ return True
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.
@@ -107,26 +105,43 @@ toCleanup dest move key = do
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote.Remote Annex -> Bool -> FilePath -> CommandStart
-fromStart src move file = isAnnexed file $ \(key, _) -> do
+fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+fromStart src move file key
+	| move = go
+	| otherwise = do
+		ishere <- inAnnex key
+		if ishere then stop else go
+	where
+		go = do
+			ok <- fromOk src key
+			if ok
+				then do
+					showMoveAction move file
+					next $ fromPerform src move key
+				else stop
+fromOk :: Remote.Remote Annex -> Key -> Annex Bool
+fromOk src key = do
 	u <- getUUID
 	remotes <- Remote.keyPossibilities key
-	if u == Remote.uuid src || not (any (== src) remotes)
-		then stop
-		else do
-			showMoveAction move file
-			next $ fromPerform src move key
+	return $ u /= Remote.uuid src && any (== src) remotes
 fromPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
-fromPerform src move key = do
+fromPerform src move key = moveLock move key $ do
 	ishere <- inAnnex key
 	if ishere
-		then next $ fromCleanup src move key
+		then handle move True
 		else do
 			showAction $ "from " ++ Remote.name src
 			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
-			if ok
-				then next $ fromCleanup src move key
-				else stop -- fail
-fromCleanup :: Remote.Remote Annex -> Bool -> Key -> CommandCleanup
-fromCleanup src True key = Command.Drop.cleanupRemote key src
-fromCleanup _ False _ = return True
+			handle move ok
+	where
+		handle _ False = stop -- failed
+		handle False True = next $ return True -- copy complete
+		handle True True = do -- finish moving
+			ok <- Remote.removeKey src key
+			next $ Command.Drop.cleanupRemote key src ok
+
+{- Locks a key in order for it to be moved.
+ - No lock is needed when a key is being copied. -}
+moveLock :: Bool -> Key -> Annex a -> Annex a
+moveLock True key a = lockContent key a
+moveLock False _ a = a
