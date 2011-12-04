@@ -62,8 +62,8 @@ Records the [[trust]] information for repositories. Does not exist unless
 [[trust]] values are configured.
 
 The file format is one line per repository, with the uuid followed by a
-space, and then either 1 (trusted), 0 (untrusted), or ? (semi-trusted),
-and finally a timestamp.
+space, and then either `1` (trusted), `0` (untrusted), `?` (semi-trusted),
+`X` (dead) and finally a timestamp.
 
 Example:
 
