@@ -1,3 +1,10 @@
+git-annex (3.20111204) UNRELEASED; urgency=low
+
+  * map: Fix a failure to detect a loop when both repositories are local
+    and refer to each other with relative paths.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 04 Dec 2011 12:22:37 -0400
+
 git-annex (3.20111203) unstable; urgency=low
 
   * The VFAT filesystem on recent versions of Linux, when mounted with

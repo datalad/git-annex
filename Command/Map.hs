@@ -138,15 +138,16 @@ spider' (r:rs) known
 
 		-- The remotes will be relative to r', and need to be
 		-- made absolute for later use.
-		let remotes = map (absRepo r') (Git.remotes r')
+		remotes <- mapM (absRepo r') (Git.remotes r')
 		let r'' = Git.remotesAdd r' remotes
 
 		spider' (rs ++ remotes) (r'':known)
 
-absRepo :: Git.Repo -> Git.Repo -> Git.Repo
+{- Converts repos to a common absolute form. -}
+absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
-	| Git.repoIsUrl reference = Git.localToUrl reference r
-	| otherwise = r
+	| Git.repoIsUrl reference = return $ Git.localToUrl reference r
+	| otherwise = liftIO $ Git.repoFromAbsPath =<< absPath (Git.workTree r)
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
