@@ -1,4 +1,4 @@
-git-annex (3.20111123) UNRELEASED; urgency=low
+git-annex (3.20111203) unstable; urgency=low
 
   * The VFAT filesystem on recent versions of Linux, when mounted with
     shortname=mixed, does not get along well with git-annex's mixed case
@@ -18,7 +18,7 @@ git-annex (3.20111123) UNRELEASED; urgency=low
   * dead: A command which says that a repository is gone for good
     and you don't want git-annex to mention it again.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 22 Nov 2011 17:53:42 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 03 Dec 2011 21:01:45 -0400
 
 git-annex (3.20111122) unstable; urgency=low
 
