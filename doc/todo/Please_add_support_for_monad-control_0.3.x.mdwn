@@ -1,0 +1,1 @@
+Git-annex doesn't compile with the latest version of monad-control. Would it be hard to support that new version?
