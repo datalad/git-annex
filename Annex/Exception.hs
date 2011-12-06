@@ -11,8 +11,8 @@ module Annex.Exception (
 	throw,
 ) where
 
-import Control.Exception.Control (handle)
-import Control.Monad.IO.Control (liftIOOp)
+import Control.Exception.Lifted (handle)
+import Control.Monad.Trans.Control (liftBaseOp)
 import Control.Exception hiding (handle, throw)
 
 import Common.Annex
@@ -20,7 +20,7 @@ import Common.Annex
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO c -> (c -> IO b) -> Annex a -> Annex a
 bracketIO setup cleanup go =
-	liftIOOp (Control.Exception.bracket setup cleanup) (const go)
+	liftBaseOp (Control.Exception.bracket setup cleanup) (const go)
 
 {- Throws an exception in the Annex monad. -}
 throw :: Control.Exception.Exception e => e -> Annex a

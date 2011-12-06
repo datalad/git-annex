@@ -22,7 +22,7 @@ module Annex (
 	fromRepo,
 ) where
 
-import Control.Monad.IO.Control
+import Control.Monad.Trans.Control
 import Control.Monad.State
 
 import Common
@@ -38,15 +38,7 @@ import Types.UUID
 import qualified Utility.Matcher
 
 -- git-annex's monad
-newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
-	deriving (
-		Monad,
-		MonadIO,
-		MonadControlIO,
-		MonadState AnnexState,
-		Functor,
-		Applicative
-	)
+type Annex = StateT AnnexState IO
 
 data OutputType = NormalOutput | QuietOutput | JSONOutput
 
@@ -102,9 +94,9 @@ new gitrepo = newState <$> Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = runStateT (runAnnex a) s
+run s a = runStateT a s
 eval :: AnnexState -> Annex a -> IO a
-eval s a = evalStateT (runAnnex a) s
+eval s a = evalStateT a s
 
 {- Gets a value from the internal state, selected by the passed value
  - constructor. -}
