@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, MultiParamTypeClasses #-}
 
 module Annex (
 	Annex,
@@ -22,8 +22,9 @@ module Annex (
 	fromRepo,
 ) where
 
-import Control.Monad.Trans.Control
 import Control.Monad.State
+import Control.Monad.Trans.Control (StM, MonadBaseControl, liftBaseWith, restoreM)
+import Control.Monad.Base (liftBase, MonadBase)
 
 import Common
 import qualified Git
@@ -38,7 +39,25 @@ import Types.UUID
 import qualified Utility.Matcher
 
 -- git-annex's monad
-type Annex = StateT AnnexState IO
+newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
+	deriving (
+		Monad,
+		MonadIO,
+		MonadState AnnexState,
+		Functor,
+		Applicative
+	)
+
+instance MonadBase IO Annex where
+	liftBase = Annex . liftBase
+
+instance MonadBaseControl IO Annex where
+	newtype StM Annex a = StAnnex (StM (StateT AnnexState IO) a)
+	liftBaseWith f = Annex $ liftBaseWith $ \runInIO ->
+		f $ liftM StAnnex . runInIO . runAnnex
+	restoreM = Annex . restoreM . unStAnnex
+		where
+			unStAnnex (StAnnex st) = st
 
 data OutputType = NormalOutput | QuietOutput | JSONOutput
 
@@ -94,9 +113,9 @@ new gitrepo = newState <$> Git.configRead gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = runStateT a s
+run s a = runStateT (runAnnex a) s
 eval :: AnnexState -> Annex a -> IO a
-eval s a = evalStateT a s
+eval s a = evalStateT (runAnnex a) s
 
 {- Gets a value from the internal state, selected by the passed value
  - constructor. -}
