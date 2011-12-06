@@ -1,5 +1,9 @@
 Somehow git-annex has again lost a complete rsync remote with encryption enabled...
 
+> "once again" ? When did it do it before?
+
+> "lost" ? How is the remote lost?
+
 Both *remoteserver* and *localserver* are rsync remotes with enabled encryption.
 All commands are executed on the git repository on my laptop.
 Target of origin is a gitolite repository without annex support (thus the two rsync remotes).
@@ -38,3 +42,14 @@ I thought that *copy* would verify that, but seems not.
     % g a fsck tools
     fsck tools/md5_sha1_utility.exe (checksum...) ok
     fsck tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checksum...) ok
+
+> Copy does do an explicit check that the content is present on remoteserver,
+> and based on the above, the content was found to be already there,
+> which is why it did not copy it again.
+> 
+> Drop does an indentical check that the content is present, and 
+> since it failed to find it, I am left thinking something must have
+> happened to the remove in between the copy and the drop to cause the
+> content to go away.
+> 
+> What happens if you copy the data to remoteserver again? --[[Joey]]
