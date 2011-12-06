@@ -1,0 +1,40 @@
+Somehow git-annex has again lost a complete rsync remote with encryption enabled...
+
+Both *remoteserver* and *localserver* are rsync remotes with enabled encryption.
+All commands are executed on the git repository on my laptop.
+Target of origin is a gitolite repository without annex support (thus the two rsync remotes).
+
+Is there a way in git-annex to verify that all files fullfill the numcopies, in my case
+numcopies=2, and can be read from the remotes their are on?
+I thought that *copy* would verify that, but seems not.
+    
+    % g a copy --to remoteserver tools
+    copy tools/md5_sha1_utility.exe (gpg) (checking remoteserver...) ok
+    copy tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking remoteserver...) ok
+    
+    % g a copy --to localserver tools
+    copy tools/md5_sha1_utility.exe (gpg) (checking localserver...) ok
+    copy tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking localserver...) ok
+    
+    % g a drop tools
+    drop tools/md5_sha1_utility.exe (gpg) (checking localserver...) (checking remoteserver...) (unsafe)
+      Could only verify the existence of 1 out of 2 necessary copies
+      
+      Try making some of these repositories available:
+            718a9b5c-1b4a-11e1-8211-6f094f20e050 -- remoteserver (remote backupserver)
+      
+      (Use --force to override this check, or adjust annex.numcopies.)
+    failed
+    drop tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking localserver...) (checking remoteserver...) (unsafe)
+      Could only verify the existence of 1 out of 2 necessary copies
+      
+      Try making some of these repositories available:
+            718a9b5c-1b4a-11e1-8211-6f094f20e050 -- remoteserver (remote backupserver)
+      
+      (Use --force to override this check, or adjust annex.numcopies.)
+    failed
+    git-annex: drop: 2 failed
+    
+    % g a fsck tools
+    fsck tools/md5_sha1_utility.exe (checksum...) ok
+    fsck tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checksum...) ok
