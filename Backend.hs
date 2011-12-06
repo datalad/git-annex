@@ -64,7 +64,13 @@ genKey' (b:bs) file = do
 	r <- (B.getKey b) file
 	case r of
 		Nothing -> genKey' bs file
-		Just k -> return $ Just (k, b)
+		Just k -> return $ Just (makesane k, b)
+	where
+		-- keyNames should not contain newline characters.
+		makesane k = k { keyName = map fixbadchar (keyName k) }
+		fixbadchar c
+			| c == '\n' = '_'
+			| otherwise = c
 
 {- Looks up the key and backend corresponding to an annexed file,
  - by examining what the file symlinks to. -}
