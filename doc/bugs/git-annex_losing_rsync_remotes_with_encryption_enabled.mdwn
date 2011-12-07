@@ -2,7 +2,14 @@ Somehow git-annex has again lost a complete rsync remote with encryption enabled
 
 > "once again" ? When did it do it before?
 
+It's the second time i uploaded all the files to an encrypted rsync remote and git-annex is not able to find it anymore. --[[gebi]]
+
 > "lost" ? How is the remote lost?
+
+git-annex is not able to find any files on the encrypted rsync remote anymore.
+Copy does not copy the content again but drop doesn't find it, thus it's somehow "lost" and in an strange state.
+I've also had the state where the content was already on the remote side but git-annex copy would copy it again,
+ignoring all the data on the remote side. --[[gebi]]
 
 Both *remoteserver* and *localserver* are rsync remotes with enabled encryption.
 All commands are executed on the git repository on my laptop.
@@ -53,3 +60,5 @@ I thought that *copy* would verify that, but seems not.
 > content to go away.
 > 
 > What happens if you copy the data to remoteserver again? --[[Joey]]
+
+The commands above are executed within a few seconds and completely repeatable. --[[gebi]]
