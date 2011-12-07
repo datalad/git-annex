@@ -623,4 +623,4 @@ Joey Hess <joey@kitenet.net>
 
 <http://git-annex.branchable.com/>
 
-Warning: this page is automatically made into a man page via [mdwn2man](http://git.ikiwiki.info/?p=ikiwiki;a=blob;f=mdwn2man;hb=HEAD).  Edit with care
+Warning: Automatically converted into a man page by mdwn2man. Edit with care
