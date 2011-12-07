@@ -1,5 +1,7 @@
 Somehow git-annex has again lost a complete rsync remote with encryption enabled...
 
+git-annex version was 3.20111111
+
 > "once again" ? When did it do it before?
 
 It's the second time i uploaded all the files to an encrypted rsync remote and git-annex is not able to find it anymore. --[[gebi]]
