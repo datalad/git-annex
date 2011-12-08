@@ -2,9 +2,9 @@
 
 This tip is based on my experience of using `git annex` with my out-and-about netbook which hits many different wifi networks and has no fixed home or address.
 
-I'm not using a bare repository that allows pushing (an alternate way to sort the issue) nor did I fancy allowing `git push` to run against my desktop checked out repository.
+I'm not using a bare repository that allows pushing (an alternative solution) nor do I fancy allowing `git push` to run against my desktop checked out repository (perhaps I worry over nothing?)
 
-None of this stuff is really `git annex` specific but is useful to know...
+None of this is really `git annex` specific but I think it is useful to know...
 
 ## Dealing with no fixed hostname
 
@@ -28,23 +28,23 @@ For the laptop it is easy:
 
     git remote add desktop ssh://desktop/~/annex 
 
-However for the desktop to add an ever changing laptops hostname it's a little tricky.  We make use of remote SSH tunnels to do this.  Essentially we have the laptop which always knows it's own name and address and that of the desktop create a tunnel starting on an arbitrary port on the desktop and heading back to itself on it's own SSH server port (22).
+However for the desktop to add an ever changing laptops hostname it's a little tricky.  We make use of remote SSH tunnels to do this.  Essentially we have the laptop (which always knows it's own name and address and knows the address of the desktop) create a tunnel starting on an arbitrary port at the desktop and heads back to the laptop on it's own SSH server port (22).
 
-To do this make part of your laptops SSH config look like this:
+To do this make part of your laptop's SSH config look like this:
 
     Host desktop
     User matt
     HostName desktop.example.org
     RemoteForward 2222 localhost:22
 
-Now on the desktop to connect over the tunnel to the laptops SSH port you need this:
+Now on the desktop to connect over the tunnel to the laptop's SSH port you need this:
 
     Host laptop
     User matt
     HostName localhost
     port 2222
 
-So to add the desktops remote:
+So to add the desktop's remote:
 
 a) From the laptop ensure the tunnel is up
 
@@ -54,13 +54,13 @@ b) From the desktop add the remote
 
     git remote add laptop ssh://laptop/~/annex
 
-So now you can work on the train, pop on the wifi at work upon arrival and sync up with a `git pull && git annex get`.
+So now you can work on the train, pop on the wifi at work upon arrival, and sync up with a `git pull && git annex get`.
 
-An alternate solution maybe to use direct tunnels over Openvpn.
+An alternative solution may be to use direct tunnels over Openvpn.
 
 ## Optimising SSH
 
-Running a `git annex get .`, at least in the version I have, creates a new SSH connection for every file transfer (maybe this is a feature request?)
+Running a `git annex get .`, at least in the version I have, creates a new SSH connection for every file transfer (maybe this should be a feature request?)
 
 Lot's of new small files in an _annex_ cause lot's of connections to be made quickly: this is an relatively expensive overhead and is enough for connection limiting to start in my case.  The process can be made much faster by using SSH's connection sharing capabilities.  An SSH config like this should do it:
 
