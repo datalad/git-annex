@@ -5,6 +5,8 @@ git-annex (3.20111204) UNRELEASED; urgency=low
   * Prevent key names from containing newlines.
   * add: If interrupted, add can leave files converted to symlinks but not
     yet added to git. Running the add again will now clean up this situtation.
+  * Fix caching of decrypted ciphers, which failed when drop had to check
+    multiple different encrypted special remotes.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 04 Dec 2011 12:22:37 -0400
 

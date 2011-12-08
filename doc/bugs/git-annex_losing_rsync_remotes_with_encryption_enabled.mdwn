@@ -92,3 +92,10 @@ git annex copy --to remoteserver -d tools/md5_sha1_utility.exe
 > Running: sh ["-c","rsync --quiet 'REMOVED_HOST:annex/work/1F/PQ/'\"'\"'GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35/GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35'\"'\"'' 2>/dev/null"]
 
 And yes, only the hash *annex copy* is checking for exists on the remote side. --[[gebi]]
+
+> Ok, this is due to too aggressive caching of the decrypted cipher
+> for a remote. When dopping, it decrypts localserver's cipher, 
+> caches it, and then when checking remoteserver it says hey, 
+> here's an already decrypted cipher -- it must be the right one!
+> 
+> Problem reproduced here, and fixed. [[done]] --[[Joey]]
