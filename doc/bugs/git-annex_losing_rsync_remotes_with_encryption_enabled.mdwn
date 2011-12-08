@@ -69,10 +69,26 @@ The commands above are executed within a few seconds and completely repeatable. 
 > rsync command it's running to check if the content is present. 
 > Then you can try repeatedly running the command by hand and see why it
 > sometimes succeeds and sometimes fail.
-> 
+
+The commands fail and succeed consistently, not either or.
+git annex copy succeeds consistently with not copying the content to remote because it checks and it's already there.
+
+git annex drop fails consistently with error because content is missing on the exact same remote git annex copy checks
+and thinks the content is there. --[[gebi]]
+
 > The command will be something like this:
 > `rsync --quiet hostname:/dir/file 2>/dev/null`
 > 
 > The exit status is what's used to see if content is present -- and
 > currently any failure even a failure to connect is taken to mean it's not
 > present. --[[Joey]]
+
+hm... thats interesting, git annex drop and git annex copy check for different hashes on the same file at the same remote...
+
+git annex drop -d tools/md5_sha1_utility.exe
+> Running: sh ["-c","rsync --quiet 'REMOVED_HOST:annex/work/JF/z7/'\"'\"'GPGHMACSHA1--7ffb3840f0e37aee964352e98808403655e8473a/GPGHMACSHA1--7ffb3840f0e37aee964352e98808403655e8473a'\"'\"'' 2>/dev/null"]
+
+git annex copy --to remoteserver -d tools/md5_sha1_utility.exe
+> Running: sh ["-c","rsync --quiet 'REMOVED_HOST:annex/work/1F/PQ/'\"'\"'GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35/GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35'\"'\"'' 2>/dev/null"]
+
+And yes, only the hash *annex copy* is checking for exists on the remote side. --[[gebi]]
