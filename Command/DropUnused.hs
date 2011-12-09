@@ -73,6 +73,6 @@ readUnusedLog prefix = do
 		then M.fromList . map parse . lines <$> liftIO (readFile f)
 		else return M.empty
 	where
-		parse line = (num, fromJust $ readKey $ tail rest)
+		parse line = (num, fromJust $ readKey rest)
 			where
-				(num, rest) = break (== ' ') line
+				(num, rest) = separate (== ' ') line

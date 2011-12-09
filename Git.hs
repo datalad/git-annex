@@ -507,11 +507,7 @@ configStore s repo = do
 configParse :: String -> M.Map String String
 configParse s = M.fromList $ map pair $ lines s
 	where
-		pair l = (key l, val l)
-		key l = head $ keyval l
-		val l = join sep $ drop 1 $ keyval l
-		keyval l = split sep l :: [String]
-		sep = "="
+		pair = separate (== '=')
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 configRemotes :: Repo -> IO [Repo]
@@ -550,13 +546,11 @@ genRemote s repo = gen $ calcloc s
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
 			where
-				bits = split ":" v
-				host = head bits
-				dir = join ":" $ drop 1 bits
-				slash d	| d == "" = "/~/" ++ dir
-					| head d == '/' = dir
-					| head d == '~' = '/':dir
-					| otherwise = "/~/" ++ dir
+				(host, dir) = separate (== ':') v
+				slash d	| d == "" = "/~/" ++ d
+					| "/" `isPrefixOf` d = d
+					| "~" `isPrefixOf` d = '/':d
+					| otherwise = "/~/" ++ d
 
 {- Checks if a string from git config is a true value. -}
 configTrue :: String -> Bool
