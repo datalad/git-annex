@@ -21,7 +21,7 @@ seek :: [CommandSeek]
 seek = [withKeys start]
 
 start :: Key -> CommandStart
-start key = stopUnless (not <$> inAnnex key) $ do
+start key = stopUnless (inAnnex key) $ do
 	unlessM (Annex.getState Annex.force) $
 		error "dropkey can cause data loss; use --force if you're sure you want to do this"
 	showStart "dropkey" (show key)

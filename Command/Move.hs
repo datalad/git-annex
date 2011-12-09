@@ -108,7 +108,7 @@ toPerform dest move key = moveLock move key $ do
 fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
 fromStart src move file key
 	| move = go
-	| otherwise = stopUnless (inAnnex key) go
+	| otherwise = stopUnless (not <$> inAnnex key) go
 	where
 		go = stopUnless (fromOk src key) $ do
 			showMoveAction move file
