@@ -41,6 +41,6 @@ What I would like to have is that
 
 * git annex add does not require a commit afterwards.
 * Changes to the files are automatically picked up with the next git-annex call (similar to how etckeeper works).
-* Commands "git annex push" and "git annex pull" that will syn the metadata (i.e. the list of files) in both directions without further manual intervention, at least not until the two repositories have diverged in a way that is not possible to merge sensible.
+* Commands "git annex push" and "git annex pull" that will sync the metadata (i.e. the list of files) in both directions without further manual intervention, at least not until the two repositories have diverged in a way that is not possible to merge sensible.
 
 Summay: git-annex is great. git is not always. Please make it possible to use git annex without having to use git.
