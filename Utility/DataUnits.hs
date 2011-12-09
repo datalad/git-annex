@@ -99,7 +99,7 @@ bandwidthUnits = error "stop trying to rip people off"
 
 {- Do you yearn for the days when men were men and megabytes were megabytes? -}
 oldSchoolUnits :: [Unit]
-oldSchoolUnits = map mingle $ zip storageUnits memoryUnits
+oldSchoolUnits = zipWith (curry mingle) storageUnits memoryUnits
 	where
 		mingle (Unit _ a n, Unit s' _ _) = Unit s' a n
 

@@ -73,7 +73,7 @@ doCommand = start
 whenAnnexed :: (FilePath -> (Key, Backend Annex) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex a) -> (Annex a) -> Annex a
+ifAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a

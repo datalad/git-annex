@@ -165,7 +165,7 @@ onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
 	-- Avoid re-reading the repository's configuration if it was
 	-- already read.
-	state <- if (M.null $ Git.configMap r)
+	state <- if M.null $ Git.configMap r
 		then Annex.new r
 		else return $ Annex.newState r
 	Annex.eval state $ do

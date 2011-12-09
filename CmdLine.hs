@@ -32,7 +32,7 @@ dispatch args cmds options header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
-		Left e -> maybe (throw e) id (cmdnorepo cmd)
+		Left e -> fromMaybe (throw e) (cmdnorepo cmd)
 		Right g -> do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do

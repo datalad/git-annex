@@ -43,7 +43,7 @@ import Annex.Exception
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex = inAnnex' $ doesFileExist
+inAnnex = inAnnex' doesFileExist
 inAnnex' :: (FilePath -> IO a) -> Key -> Annex a
 inAnnex' a key = do
 	whenM (fromRepo Git.repoIsUrl) $

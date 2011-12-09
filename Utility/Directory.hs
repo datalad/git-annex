@@ -11,6 +11,7 @@ import System.IO.Error
 import System.Posix.Files
 import System.Directory
 import Control.Exception (throw)
+import Control.Monad
 
 import Utility.SafeCommand
 import Utility.Conditional
@@ -37,13 +38,11 @@ moveFile src dest = try (rename src dest) >>= onrename
 				mv tmp _ = do
 					ok <- boolSystem "mv" [Param "-f",
 						Param src, Param tmp]
-					if ok
-						then return ()
-						else do
-							-- delete any partial
-							_ <- try $
-								removeFile tmp
-							rethrow
+					unless ok $ do
+						-- delete any partial
+						_ <- try $
+							removeFile tmp
+						rethrow
 		isdir f = do
 			r <- try (getFileStatus f)
 			case r of

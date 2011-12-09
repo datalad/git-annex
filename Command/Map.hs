@@ -203,7 +203,7 @@ tryScan r
 					"git config --list"
 				dir = Git.workTree r
 				cddir
-					| take 2 dir == "/~" =
+					| "/~" `isPrefixOf` dir =
 						let (userhome, reldir) = span (/= '/') (drop 1 dir)
 						in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
 					| otherwise = "cd " ++ shellEscape dir
