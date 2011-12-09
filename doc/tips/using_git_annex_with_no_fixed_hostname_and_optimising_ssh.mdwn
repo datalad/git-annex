@@ -1,6 +1,6 @@
 ## Intro
 
-This tip is based on my experience of using `git annex` with my out-and-about netbook which hits many different wifi networks and has no fixed home or address.
+This tip is based on my (Matt Ford) experience of using `git annex` with my out-and-about netbook which hits many different wifi networks and has no fixed home or address.
 
 I'm not using a bare repository that allows pushing (an alternative solution) nor do I fancy allowing `git push` to run against my desktop checked out repository (perhaps I worry over nothing?)
 
