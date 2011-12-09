@@ -35,7 +35,7 @@ I’m using git annex to manage my movie collection on various devices – my la
 	Merge the remote changes (e.g. 'git pull') before pushing again.  See the
 	'Note about fast-forwards' section of 'git push --help' for details.
 
-It seems that to successfully make the new files known to the other side, I have to log into jeff and pull _from_ my currenct machine.	
+It seems that to successfully make the new files known to the other side, I have to log into jeff and pull _from_ my current machine.	
 
 What I would like to have is that
 
