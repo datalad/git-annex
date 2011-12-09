@@ -10,7 +10,6 @@ module Command.Unannex where
 import Common.Annex
 import Command
 import qualified Annex
-import qualified Annex.Queue
 import Utility.FileMode
 import Logs.Location
 import Annex.Content
