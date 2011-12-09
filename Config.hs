@@ -79,9 +79,10 @@ repoNotIgnored r = not . Git.configTrue <$> getConfig r "ignore" "false"
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
 getNumCopies :: Maybe Int -> Annex Int
-getNumCopies v = 
-	Annex.getState Annex.forcenumcopies >>= maybe (use v) (return . id)
+getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 	where
 		use (Just n) = return n
-		use Nothing = read <$> fromRepo (Git.configGet config "1")
+		use Nothing = perhaps (return 1) =<< 
+			readMaybe <$> fromRepo (Git.configGet config "1")
+		perhaps fallback = maybe fallback (return . id)
 		config = "annex.numcopies"

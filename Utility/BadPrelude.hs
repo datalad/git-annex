@@ -22,3 +22,7 @@ init = Prelude.init
 {- last too -}
 last :: [a] -> a
 last = Prelude.last
+
+{- read should be avoided, as it throws an error -}
+read :: Read a => String -> a
+read = Prelude.read
