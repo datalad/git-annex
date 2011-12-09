@@ -45,18 +45,15 @@ download url file = do
 	let dummykey = Backend.URL.fromUrl url
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	ok <- liftIO $ Url.download url tmp
-	if ok
-		then do
-			[(backend, _)] <- Backend.chooseBackends [file]
-			k <- Backend.genKey tmp backend
-			case k of
-				Nothing -> stop
-				Just (key, _) -> do
-					moveAnnex key tmp
-					setUrlPresent key url
-					next $ Command.Add.cleanup file key True
-		else stop
+	stopUnless (liftIO $ Url.download url tmp) $ do
+		[(backend, _)] <- Backend.chooseBackends [file]
+		k <- Backend.genKey tmp backend
+		case k of
+			Nothing -> stop
+			Just (key, _) -> do
+				moveAnnex key tmp
+				setUrlPresent key url
+				next $ Command.Add.cleanup file key True
 
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do

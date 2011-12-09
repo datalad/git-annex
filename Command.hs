@@ -10,6 +10,7 @@ module Command (
 	noRepo,
 	next,
 	stop,
+	stopUnless,
 	prepCommand,
 	doCommand,
 	whenAnnexed,
@@ -48,6 +49,12 @@ next a = return $ Just a
 {- Or to indicate nothing needs to be done. -}
 stop :: Annex (Maybe a)
 stop = return Nothing
+
+{- Stops unless a condition is met. -}
+stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
+stopUnless c a = do
+	ok <- c
+	if ok then a else stop
 
 {- Prepares to run a command via the check and seek stages, returning a
  - list of actions to perform to run the command. -}

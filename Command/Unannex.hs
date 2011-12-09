@@ -25,21 +25,17 @@ seek = [withFilesInGit $ whenAnnexed start]
 
 {- The unannex subcommand undoes an add. -}
 start :: FilePath -> (Key, Backend Annex) -> CommandStart
-start file (key, _) = do
-	ishere <- inAnnex key
-	if ishere
-		then do
-			force <- Annex.getState Annex.force
-			unless force $ do
-				top <- fromRepo Git.workTree
-				staged <- inRepo $ LsFiles.staged [top]
-				unless (null staged) $
-					error "This command cannot be run when there are already files staged for commit."
-				Annex.changeState $ \s -> s { Annex.force = True }
+start file (key, _) = stopUnless (inAnnex key) $ do
+	force <- Annex.getState Annex.force
+	unless force $ do
+		top <- fromRepo Git.workTree
+		staged <- inRepo $ LsFiles.staged [top]
+		unless (null staged) $
+			error "This command cannot be run when there are already files staged for commit."
+		Annex.changeState $ \s -> s { Annex.force = True }
 
-			showStart "unannex" file
-			next $ perform file key
-		else stop
+	showStart "unannex" file
+	next $ perform file key
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = next $ cleanup file key

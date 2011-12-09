@@ -37,13 +37,9 @@ start numcopies file (key, _) = autoCopies key (>) numcopies $ do
 				else startRemote file numcopies key remote
 
 startLocal :: FilePath -> Maybe Int -> Key -> CommandStart
-startLocal file numcopies key = do
-	present <- inAnnex key
-	if present
-		then do
-			showStart "drop" file
-			next $ performLocal key numcopies
-		else stop
+startLocal file numcopies key = stopUnless (inAnnex key) $ do
+	showStart "drop" file
+	next $ performLocal key numcopies
 
 startRemote :: FilePath -> Maybe Int -> Key -> Remote.Remote Annex -> CommandStart
 startRemote file numcopies key remote = do
@@ -55,12 +51,9 @@ performLocal key numcopies = lockContent key $ do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids++untrusteduuids)
-	success <- canDropKey key numcopies trusteduuids tocheck []
-	if success
-		then do
-			whenM (inAnnex key) $ removeAnnex key
-			next $ cleanupLocal key
-		else stop
+	stopUnless (canDropKey key numcopies trusteduuids tocheck []) $ do
+		whenM (inAnnex key) $ removeAnnex key
+		next $ cleanupLocal key
 
 performRemote :: Key -> Maybe Int -> Remote.Remote Annex -> CommandPerform
 performRemote key numcopies remote = lockContent key $ do
@@ -75,12 +68,9 @@ performRemote key numcopies remote = lockContent key $ do
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	success <- canDropKey key numcopies have tocheck [uuid]
-	if success
-		then do
-			ok <- Remote.removeKey remote key
-			next $ cleanupRemote key remote ok
-		else stop
+	stopUnless (canDropKey key numcopies have tocheck [uuid]) $ do
+		ok <- Remote.removeKey remote key
+		next $ cleanupRemote key remote ok
 	where
 		uuid = Remote.uuid remote
 
