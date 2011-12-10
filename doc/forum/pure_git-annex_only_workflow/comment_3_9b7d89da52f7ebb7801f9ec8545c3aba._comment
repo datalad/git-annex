@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-12-10T19:43:04Z"
+ content="""
+Git can actually push into a non-bare repository, so long as the branch you change there is not a checked out one. Pushing into `remotes/$foo/master` and `remotes/$foo/git-annex` would work, however determining the value that the repository expects for `$foo` is something git cannot do on its own. And of course you'd still have to `git merge remotes/$foo/master` to get the changes. 
+
+Yes, you still keep the non-bare repos as remotes when adding a bare repository, so git-annex knows how to get to them.
+
+I've made `git annex sync` run the simple script above. Perhaps it can later be improved to sync all repositories.
+"""]]
