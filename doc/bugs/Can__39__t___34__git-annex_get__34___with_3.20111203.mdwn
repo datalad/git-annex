@@ -19,3 +19,8 @@ Note there is a call to `stat()` with the full path to the requested file, and *
 Using `git bisect` I was able to determine that this bug appeared in commit 64672c62 ("refactor"). Reverting it makes `git-annex-shell` work as expected, but I'm sure there are better ways to fix this. However I don't know enough Haskell to do it myself.
 
 Could you please try to fix this in a future version?
+
+> Thanks for a very good bug report. 
+> 
+> I've fixed this stupid mistake introduced in the code refactoring.
+> --[[Joey]]
