@@ -9,6 +9,8 @@ git-annex (3.20111204) UNRELEASED; urgency=low
     multiple different encrypted special remotes.
   * unannex: Can be run on files that have been added to the annex, but not
     yet committed.
+  * sync: New command that synchronises the local repository and default
+    remote, by running git commit, pull, and push for you.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 04 Dec 2011 12:22:37 -0400
 

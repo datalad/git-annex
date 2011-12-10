@@ -47,6 +47,7 @@ import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
+import qualified Command.Sync
 import qualified Command.AddUrl
 import qualified Command.Map
 import qualified Command.Upgrade
@@ -61,6 +62,8 @@ cmds = concat
 	, Command.Copy.def
 	, Command.Unlock.def
 	, Command.Lock.def
+	, Command.Sync.def
+	, Command.AddUrl.def
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
@@ -72,7 +75,6 @@ cmds = concat
 	, Command.Untrust.def
 	, Command.Semitrust.def
 	, Command.Dead.def
-	, Command.AddUrl.def
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.Fix.def
