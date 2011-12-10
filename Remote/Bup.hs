@@ -182,7 +182,7 @@ onBupRemote r a command params = do
  - local bup repositories to see if they are available, and getting their
  - uuid (which may be different from the stored uuid for the bup remote).
  -
- - If a bup repository is not available, returns a dummy uuid of "".
+ - If a bup repository is not available, returns NoUUID.
  - This will cause checkPresent to indicate nothing from the bup remote
  - is known to be present.
  -
