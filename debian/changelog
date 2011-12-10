@@ -11,6 +11,7 @@ git-annex (3.20111204) UNRELEASED; urgency=low
     yet committed.
   * sync: New command that synchronises the local repository and default
     remote, by running git commit, pull, and push for you.
+  * Version monad-control dependency in cabal file.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 04 Dec 2011 12:22:37 -0400
 
