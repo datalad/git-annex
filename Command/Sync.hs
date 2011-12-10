@@ -17,39 +17,45 @@ import qualified Data.ByteString.Lazy.Char8 as L
 def :: [Command]
 def = [command "sync" paramPaths seek "synchronize local repository with remote"]
 
+-- syncing involves several operations, any of which can independantly fail
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek = map withNothing [commit, pull, push]
 
-start :: CommandStart
-start = do
-        showStart "sync" "."
-	showOutput
-        next perform
+commit :: CommandStart
+commit = do
+	showStart "commit" ""
+	next $ next $ do
+		showOutput
+		-- Commit will fail when the tree is clean, so ignore failure.
+		_ <- inRepo $ Git.runBool "commit" [Param "-a", Param "-m", Param "sync"]
+		return True
 
-perform :: CommandPerform
-perform = do
-	remote <- defaultRemote =<< currentBranch
-	checkRemote remote
-	commit
-	inRepo $ Git.run "pull" [Param remote]
-	Annex.Branch.update
-	inRepo $ Git.run "push" [Param remote, matchingbranches]
-	next $ return True
+pull :: CommandStart
+pull = do
+	remote <- defaultRemote
+	showStart "pull" remote
+	next $ next $ do
+		showOutput
+		checkRemote remote
+		inRepo $ Git.runBool "pull" [Param remote]
+
+push :: CommandStart
+push = do
+	remote <- defaultRemote
+	showStart "push" remote
+	next $ next $ do
+		Annex.Branch.update
+		showOutput
+		inRepo $ Git.runBool "push" [Param remote, matchingbranches]
 	where
 		-- git push may be configured to not push matching
 		-- branches; this should ensure it always does.
 		matchingbranches = Param ":"
 
-commit :: Annex ()
-commit = do
-	-- Commit will fail when the tree is clean (or when in a confliced
-	-- merge, etc). Ignore failure.
-	_ <- inRepo $ Git.runBool "commit" [Param "-a", Param "-m", Param "sync"]
-	return ()
-
 -- the remote defaults to origin when not configured
-defaultRemote :: String -> Annex String
-defaultRemote branch =
+defaultRemote :: Annex String
+defaultRemote = do
+	branch <- currentBranch
 	fromRepo $ Git.configGet ("branch." ++ branch ++ ".remote") "origin"
 
 currentBranch :: Annex String
