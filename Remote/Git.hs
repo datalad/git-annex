@@ -210,6 +210,7 @@ copyToRemote r key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
+			ensureInitialized
 			ok <- Annex.Content.getViaTmp key $
 				rsyncOrCopyFile params keysrc
 			Annex.Content.saveState
