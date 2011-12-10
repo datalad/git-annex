@@ -141,7 +141,7 @@ update = onceonly $ do
 		let merge_desc = if null branches
 			then "update" 
 			else "merging " ++
-				unwords (map (show . Git.refDescribe) branches) ++ 
+				unwords (map Git.refDescribe branches) ++ 
 				" into " ++ show name
 		unless (null branches) $ do
 			showSideAction merge_desc
