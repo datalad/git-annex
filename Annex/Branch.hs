@@ -45,13 +45,25 @@ originname = Git.Ref $ "origin/" ++ show name
 
 {- Populates the branch's index file with the current branch contents.
  - 
- - Usually, this is only done when the index doesn't yet exist, and
- - the index is used to build up changes to be commited to the branch,
- - and merge in changes from other branches.
+ - This is only done when the index doesn't yet exist, and the index 
+ - is used to build up changes to be commited to the branch, and merge
+ - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
 genIndex g = Git.UnionMerge.stream_update_index g
 	[Git.UnionMerge.ls_tree fullname g]
+
+{- Merges the specified branches into the index.
+ - Any changes staged in the index will be preserved. -}
+mergeIndex :: [Git.Ref] -> Annex ()
+mergeIndex branches = do
+	h <- catFileHandle
+	inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+
+{- Updates the branch's index to reflect the current contents of the branch.
+ - Any changes staged in the index will be preserved. -}
+updateIndex :: Annex ()
+updateIndex = withIndex $ mergeIndex [fullname]
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
@@ -66,6 +78,8 @@ withIndex' bootstrapping a = do
 			unless bootstrapping $ inRepo genIndex
 		a
 
+{- Runs an action using the branch's index file, first making sure that
+ - the branch and index are up-to-date. -}
 withIndexUpdate :: Annex a -> Annex a
 withIndexUpdate a = update >> withIndex a
 
@@ -106,11 +120,12 @@ create = unlessM hasBranch $ do
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
+	updateIndex
 	stageJournalFiles
 	withIndex $ inRepo $ Git.commit message fullname [fullname]
 
-{- Ensures that the branch is up-to-date; should be called before data is
- - read from it. Runs only once per git-annex run.
+{- Ensures that the branch and index are is up-to-date; should be
+ - called before data is read from it. Runs only once per git-annex run.
  -
  - Before refs are merged into the index, it's important to first stage the
  - journal into the index. Otherwise, any changes in the journal would
@@ -126,8 +141,9 @@ commit message = whenM journalDirty $ lockJournal $ do
  -}
 update :: Annex ()
 update = onceonly $ do
-	-- ensure branch exists
+	-- ensure branch exists, and index is up-to-date
 	create
+	updateIndex
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
@@ -141,14 +157,7 @@ update = onceonly $ do
 				" into " ++ show name
 		unless (null branches) $ do
 			showSideAction merge_desc
-			{- Note: This merges the branches into the index.
-			 - Any unstaged changes in the git-annex branch
-			 - (if it's checked out) will be removed. So,
-			 - documentation advises users not to directly
-			 - modify the branch.
-			 -}
-			h <- catFileHandle
-			inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+			mergeIndex branches
 		ff <- if dirty then return False else tryFastForwardTo refs
 		unless ff $ inRepo $
 			Git.commit merge_desc fullname (nub $ fullname:refs)
