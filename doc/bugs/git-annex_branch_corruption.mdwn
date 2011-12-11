@@ -36,11 +36,14 @@ fixed.
 
 Probably git-annex needs to record which ref of the git-annex branch
 corresponds to its index, and if the branch is at a different ref,
-merge it into the index. I am still considering how to do that atomically;
-what if a push comes in while git-annex is updating its index?
+merge it into the index.
 
-> Now git-annex always updates the index with the git-annex branch, which
-> is a slow, but safe way to avoid this problem. [[done]] --[[Joey]]
+> And now that's [[done]]. I managed to do it with very little slowdown.
+> 
+> A side benefit is that users can now safely check out the git-annex
+> branch and commit changes to it, and git-annex will notice them.
+> Before, it was documented to ignore such changes.
+> --[[Joey]] 
 
 ---
 
