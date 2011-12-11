@@ -463,8 +463,8 @@ shaSize :: Int
 shaSize = 40
 
 {- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs. -}
-commit :: String -> Ref -> [Ref] -> Repo -> IO ()
+ - with the specified parent refs, and returns the new ref -}
+commit :: String -> Ref -> [Ref] -> Repo -> IO Ref
 commit message newref parentrefs repo = do
 	tree <- getSha "write-tree" $ asString $
 		pipeRead [Param "write-tree"] repo
@@ -473,6 +473,7 @@ commit message newref parentrefs repo = do
 			(map Param $ ["commit-tree", show tree] ++ ps)
 			(L.pack message) repo
 	run "update-ref" [Param $ show newref, Param $ show sha] repo
+	return sha
 	where
 		ignorehandle a = snd <$> a
 		asString a = L.unpack <$> a

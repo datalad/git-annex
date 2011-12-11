@@ -21,6 +21,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexIndex,
+	gitAnnexIndexLock,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -135,6 +136,10 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 {- .git/annex/index is used to stage changes to the git-annex branch -}
 gitAnnexIndex :: Git.Repo -> FilePath
 gitAnnexIndex r = gitAnnexDir r </> "index"
+
+{- Lock file for .git/annex/index. -}
+gitAnnexIndexLock :: Git.Repo -> FilePath
+gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
