@@ -40,4 +40,6 @@ redo them.
 will need the same check for the race as the other commits. It won't loop
 forever, I hope.)
 
+> [[done]] and tested.
+
 --[[Joey]]

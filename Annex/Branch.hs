@@ -60,28 +60,6 @@ mergeIndex branches = do
 	h <- catFileHandle
 	inRepo $ \g -> Git.UnionMerge.merge_index h g branches
 
-{- Updates the branch's index to reflect the current contents of the branch.
- - Any changes staged in the index will be preserved.
- -
- - Compares the ref stored in the lock file with the current
- - ref of the branch to see if an update is needed.
- -}
-updateIndex :: Annex ()
-updateIndex = do
-        lock <- fromRepo gitAnnexIndexLock
-	lockref <- firstRef <$> liftIO (catchDefaultIO (readFileStrict lock) "")
-	branchref <- getRef fullname
-	when (lockref /= branchref) $ do
-		withIndex $ mergeIndex [fullname]
-		setIndexRef branchref
-
-{- Record that the branch's index has been updated to correspond to a
- - given ref of the branch. -}
-setIndexRef :: Git.Ref -> Annex ()
-setIndexRef ref = do
-        lock <- fromRepo gitAnnexIndexLock
-	liftIO $ writeFile lock $ show ref ++ "\n"
-
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
@@ -94,6 +72,80 @@ withIndex' bootstrapping a = do
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex
 		a
+
+{- Updates the branch's index to reflect the current contents of the branch.
+ - Any changes staged in the index will be preserved.
+ -
+ - Compares the ref stored in the lock file with the current
+ - ref of the branch to see if an update is needed.
+ -}
+updateIndex :: Annex (Maybe Git.Ref)
+updateIndex = do
+	branchref <- getRef fullname
+	go branchref
+	return branchref
+	where
+		go Nothing = return ()
+		go (Just branchref) = do
+			lock <- fromRepo gitAnnexIndexLock
+			lockref <- firstRef <$> liftIO (catchDefaultIO (readFileStrict lock) "")
+			when (lockref /= branchref) $ do
+				withIndex $ mergeIndex [fullname]
+				setIndexRef branchref
+
+{- Record that the branch's index has been updated to correspond to a
+ - given ref of the branch. -}
+setIndexRef :: Git.Ref -> Annex ()
+setIndexRef ref = do
+        lock <- fromRepo gitAnnexIndexLock
+	liftIO $ writeFile lock $ show ref ++ "\n"
+
+{- Commits the staged changes in the index to the branch.
+ - 
+ - Ensures that the branch's index file is first updated to include the
+ - current state of the branch, before running the commit action. This
+ - is needed because the branch may have had changes pushed to it, that
+ - are not yet reflected in the index.
+ -
+ - Also safely handles a race that can occur if a change is being pushed
+ - into the branch at the same time. When the race happens, the commit will
+ - be made on top of the newly pushed change, but without the index file
+ - being updated to include it. The result is that the newly pushed
+ - change is reverted. This race is detected and another commit made
+ - to fix it.
+ -}
+commitBranch :: String -> [Git.Ref] -> Annex ()
+commitBranch message parents = do
+	expected <- updateIndex
+	committedref <- inRepo $ Git.commit message fullname parents
+	setIndexRef committedref
+	parentrefs <- commitparents <$> catObject committedref
+	when (racedetected expected parentrefs) $
+		fixrace committedref parentrefs
+	where
+		-- look for "parent ref" lines and return the refs
+		commitparents = map (Git.Ref . snd) . filter isparent .
+			map (toassoc . L.unpack) . L.lines
+		toassoc = separate (== ' ')
+		isparent (k,_) = k == "parent"
+		
+ 		{- The race can be detected by checking the commit's
+		 - parent, which will be the newly pushed branch,
+		 - instead of the expected ref that the index was updated to. -}
+		racedetected Nothing parentrefs
+			| null parentrefs = False -- first commit, no parents
+			| otherwise = True -- race on first commit
+		racedetected (Just expectedref) parentrefs
+			| expectedref `elem` parentrefs = False -- good parent
+			| otherwise = True -- race!
+		
+		{- To recover from the race, union merge the lost refs
+		 - into the index, and recommit on top of the bad commit. -}
+		fixrace committedref lostrefs = do
+			mergeIndex lostrefs
+			commitBranch racemessage [committedref]
+		
+		racemessage = message ++ " (recovery from race)"
 
 {- Runs an action using the branch's index file, first making sure that
  - the branch and index are up-to-date. -}
@@ -126,22 +178,20 @@ getCache file = getState >>= go
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = unlessM hasBranch $ hasOrigin >>= go >>= setIndexRef
+create = unlessM hasBranch $ hasOrigin >>= go
 	where
 		go True = do
 			inRepo $ Git.run "branch"
 				[Param $ show name, Param $ show originname]
-			getRef fullname
-		go False = withIndex' True $
-			inRepo $ Git.commit "branch created" fullname []
+			maybe (return ()) setIndexRef =<< getRef fullname
+		go False = withIndex' True $ 
+			setIndexRef =<< (inRepo $ Git.commit "branch created" fullname [])
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
-	updateIndex
 	stageJournalFiles
-	withIndex $ 
-		setIndexRef =<< inRepo (Git.commit message fullname [fullname])
+	withIndex $ commitBranch message [fullname]
 
 {- Ensures that the branch and index are is up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run.
@@ -162,7 +212,7 @@ update :: Annex ()
 update = onceonly $ do
 	-- ensure branch exists, and index is up-to-date
 	create
-	updateIndex
+	_ <- updateIndex
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
@@ -178,9 +228,7 @@ update = onceonly $ do
 			showSideAction merge_desc
 			mergeIndex branches
 		ff <- if dirty then return False else tryFastForwardTo refs
-		unless ff $ 
-			setIndexRef =<< 
-				inRepo (Git.commit merge_desc fullname (nub $ fullname:refs))
+		unless ff $ commitBranch merge_desc (nub $ fullname:refs)
 		invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
@@ -274,13 +322,15 @@ siblingBranches = do
 		uref (a, _) (b, _) = a == b
 
 {- Get the ref of a branch. -}
-getRef :: Git.Ref -> Annex Git.Ref
-getRef branch = firstRef . L.unpack <$> showref
+getRef :: Git.Ref -> Annex (Maybe Git.Ref)
+getRef branch = process . L.unpack <$> showref
 	where
 		showref = inRepo $ Git.pipeRead [Param "show-ref",
 			Param "--hash", -- get the hash
-			Param "--verify", -- only exact match
+			Params "--verify", -- only exact match
 			Param $ show branch]
+		process [] = Nothing
+		process s = Just $ firstRef s
 
 firstRef :: String-> Git.Ref
 firstRef = Git.Ref . takeWhile (/= '\n')
