@@ -20,6 +20,7 @@ module Locations (
 	gitAnnexUnusedLog,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
+	gitAnnexIndex,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -130,6 +131,10 @@ gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> FilePath
 gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
+
+{- .git/annex/index is used to stage changes to the git-annex branch -}
+gitAnnexIndex :: Git.Repo -> FilePath
+gitAnnexIndex r = gitAnnexDir r </> "index"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool

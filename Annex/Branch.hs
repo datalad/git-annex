@@ -43,10 +43,6 @@ fullname = Git.Ref $ "refs/heads/" ++ show name
 originname :: Git.Ref
 originname = Git.Ref $ "origin/" ++ show name
 
-{- A separate index file for the branch. -}
-index :: Git.Repo -> FilePath
-index g = gitAnnexDir g </> "index"
-
 {- Populates the branch's index file with the current branch contents.
  - 
  - Usually, this is only done when the index doesn't yet exist, and
@@ -62,7 +58,7 @@ withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	f <- fromRepo index
+	f <- fromRepo gitAnnexIndex
 	bracketIO (Git.useIndex f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
