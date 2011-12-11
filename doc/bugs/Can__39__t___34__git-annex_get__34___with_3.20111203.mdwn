@@ -23,4 +23,5 @@ Could you please try to fix this in a future version?
 > Thanks for a very good bug report. 
 > 
 > I've fixed this stupid mistake introduced in the code refactoring.
+> [[done]]
 > --[[Joey]]
