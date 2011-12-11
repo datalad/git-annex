@@ -11,5 +11,7 @@ module Types.Crypto where
 newtype Cipher = Cipher String
 
 data EncryptedCipher = EncryptedCipher String KeyIds
+	deriving (Ord, Eq)
 
 newtype KeyIds = KeyIds [String]
+	deriving (Ord, Eq)

@@ -191,9 +191,8 @@ staleSize label dirspec = do
 	keys <- lift (Command.Unused.staleKeys dirspec)
 	if null keys
 		then nostat
-		else do
-			stat label $ json (++ aside "clean up with git-annex unused") $
-				return $ keySizeSum $ S.fromList keys
+		else stat label $ json (++ aside "clean up with git-annex unused") $
+			return $ keySizeSum $ S.fromList keys
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

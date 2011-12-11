@@ -43,7 +43,7 @@ git_annex_shell r command params
 		shellcmd = "git-annex-shell"
 		shellopts = Param command : File dir : params
 		sshcmd uuid = unwords $
-			shellcmd : (map shellEscape $ toCommand shellopts) ++
+			shellcmd : map shellEscape (toCommand shellopts) ++
 			uuidcheck uuid
 		uuidcheck NoUUID = []
 		uuidcheck (UUID u) = ["--uuid", u]

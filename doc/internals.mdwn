@@ -22,17 +22,9 @@ deleting or changing the file contents.
 This branch is managed by git-annex, with the contents listed below.
 
 The file `.git/annex/index` is a separate git index file it uses
-to accumulate changes for the git-annex. Also, `.git/annex/journal/` is used
-to record changes before they are added to git.
-
-Note that for speed reasons, git-annex assumes only it will modify this
-branch. If you go in and make changes directly, it will probably revert
-your changes in its next commit to the branch.
-
-The best way to make changes to the git-annex branch is instead
-to create a branch of it, with a name like "my/git-annex", and then
-use "git annex merge" to automerge your branch into the main git-annex
-branch.
+to accumulate changes for the git-annex branch.
+Also, `.git/annex/journal/` is used to record changes before they
+are added to git.
 
 ### `uuid.log`
 

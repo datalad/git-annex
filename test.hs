@@ -11,11 +11,10 @@ import Test.QuickCheck
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
-import Control.Exception (bracket_, bracket)
+import Control.Exception (bracket_, bracket, throw)
 import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
-import Control.Exception (throw)
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 

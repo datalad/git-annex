@@ -42,5 +42,5 @@ main = do
 	_ <- Git.useIndex (tmpIndex g)
 	setup g
 	Git.UnionMerge.merge aref bref g
-	Git.commit "union merge" newref [aref, bref] g
+	_ <- Git.commit "union merge" newref [aref, bref] g
 	cleanup g

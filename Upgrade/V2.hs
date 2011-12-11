@@ -53,7 +53,7 @@ upgrade = do
 
 	when e $ do
 		inRepo $ Git.run "rm" [Param "-r", Param "-f", Param "-q", File old]
-		unless bare $ inRepo $ gitAttributesUnWrite
+		unless bare $ inRepo gitAttributesUnWrite
 	showProgress
 
 	unless bare push

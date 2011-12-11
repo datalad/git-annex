@@ -20,6 +20,8 @@ module Locations (
 	gitAnnexUnusedLog,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
+	gitAnnexIndex,
+	gitAnnexIndexLock,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -80,16 +82,15 @@ gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
 		{- Bare repositories default to hashDirLower for new
 		 - content, as it's more portable. -}
-		go (Git.workTree r) (annexLocations key)
+		check (map inrepo $ annexLocations key)
 	| otherwise =
 		{- Non-bare repositories only use hashDirMixed, so
 		 - don't need to do any work to check if the file is
 		 - present. -}
-		return $ Git.workTree r </> ".git" </>
-				annexLocation key hashDirMixed
+		return $ inrepo ".git" </> annexLocation key hashDirMixed
 	where
-		go dir locs = fromMaybe (dir </> head locs) <$> check dir locs
-		check dir = firstM $ \f -> doesFileExist $ dir </> f
+		inrepo d = Git.workTree r </> d
+		check locs = fromMaybe (head locs) <$> firstM doesFileExist locs
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
@@ -131,6 +132,14 @@ gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> FilePath
 gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
+
+{- .git/annex/index is used to stage changes to the git-annex branch -}
+gitAnnexIndex :: Git.Repo -> FilePath
+gitAnnexIndex r = gitAnnexDir r </> "index"
+
+{- Lock file for .git/annex/index. -}
+gitAnnexIndexLock :: Git.Repo -> FilePath
+gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool

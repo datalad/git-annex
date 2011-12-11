@@ -43,26 +43,51 @@ fullname = Git.Ref $ "refs/heads/" ++ show name
 originname :: Git.Ref
 originname = Git.Ref $ "origin/" ++ show name
 
-{- A separate index file for the branch. -}
-index :: Git.Repo -> FilePath
-index g = gitAnnexDir g </> "index"
-
 {- Populates the branch's index file with the current branch contents.
  - 
- - Usually, this is only done when the index doesn't yet exist, and
- - the index is used to build up changes to be commited to the branch,
- - and merge in changes from other branches.
+ - This is only done when the index doesn't yet exist, and the index 
+ - is used to build up changes to be commited to the branch, and merge
+ - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
 genIndex g = Git.UnionMerge.stream_update_index g
 	[Git.UnionMerge.ls_tree fullname g]
+
+{- Merges the specified branches into the index.
+ - Any changes staged in the index will be preserved. -}
+mergeIndex :: [Git.Ref] -> Annex ()
+mergeIndex branches = do
+	h <- catFileHandle
+	inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+
+{- Updates the branch's index to reflect the current contents of the branch.
+ - Any changes staged in the index will be preserved.
+ -
+ - Compares the ref stored in the lock file with the current
+ - ref of the branch to see if an update is needed.
+ -}
+updateIndex :: Annex ()
+updateIndex = do
+        lock <- fromRepo gitAnnexIndexLock
+	lockref <- firstRef <$> liftIO (catchDefaultIO (readFileStrict lock) "")
+	branchref <- getRef fullname
+	when (lockref /= branchref) $ do
+		withIndex $ mergeIndex [fullname]
+		setIndexRef branchref
+
+{- Record that the branch's index has been updated to correspond to a
+ - given ref of the branch. -}
+setIndexRef :: Git.Ref -> Annex ()
+setIndexRef ref = do
+        lock <- fromRepo gitAnnexIndexLock
+	liftIO $ writeFile lock $ show ref ++ "\n"
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
-	f <- fromRepo index
+	f <- fromRepo gitAnnexIndex
 	bracketIO (Git.useIndex f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
@@ -70,6 +95,8 @@ withIndex' bootstrapping a = do
 			unless bootstrapping $ inRepo genIndex
 		a
 
+{- Runs an action using the branch's index file, first making sure that
+ - the branch and index are up-to-date. -}
 withIndexUpdate :: Annex a -> Annex a
 withIndexUpdate a = update >> withIndex a
 
@@ -99,22 +126,25 @@ getCache file = getState >>= go
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = unlessM hasBranch $ do
-	e <- hasOrigin
-	if e
-		then inRepo $ Git.run "branch"
-			[Param $ show name, Param $ show originname]
-		else withIndex' True $
+create = unlessM hasBranch $ hasOrigin >>= go >>= setIndexRef
+	where
+		go True = do
+			inRepo $ Git.run "branch"
+				[Param $ show name, Param $ show originname]
+			getRef fullname
+		go False = withIndex' True $
 			inRepo $ Git.commit "branch created" fullname []
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
+	updateIndex
 	stageJournalFiles
-	withIndex $ inRepo $ Git.commit message fullname [fullname]
+	withIndex $ 
+		setIndexRef =<< inRepo (Git.commit message fullname [fullname])
 
-{- Ensures that the branch is up-to-date; should be called before data is
- - read from it. Runs only once per git-annex run.
+{- Ensures that the branch and index are is up-to-date; should be
+ - called before data is read from it. Runs only once per git-annex run.
  -
  - Before refs are merged into the index, it's important to first stage the
  - journal into the index. Otherwise, any changes in the journal would
@@ -130,8 +160,9 @@ commit message = whenM journalDirty $ lockJournal $ do
  -}
 update :: Annex ()
 update = onceonly $ do
-	-- ensure branch exists
+	-- ensure branch exists, and index is up-to-date
 	create
+	updateIndex
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
@@ -141,21 +172,15 @@ update = onceonly $ do
 		let merge_desc = if null branches
 			then "update" 
 			else "merging " ++
-				(unwords $ map (show . Git.refDescribe) branches) ++ 
+				unwords (map Git.refDescribe branches) ++ 
 				" into " ++ show name
 		unless (null branches) $ do
 			showSideAction merge_desc
-			{- Note: This merges the branches into the index.
-			 - Any unstaged changes in the git-annex branch
-			 - (if it's checked out) will be removed. So,
-			 - documentation advises users not to directly
-			 - modify the branch.
-			 -}
-			h <- catFileHandle
-			inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+			mergeIndex branches
 		ff <- if dirty then return False else tryFastForwardTo refs
-		unless ff $ inRepo $
-			Git.commit merge_desc fullname (nub $ fullname:refs)
+		unless ff $ 
+			setIndexRef =<< 
+				inRepo (Git.commit merge_desc fullname (nub $ fullname:refs))
 		invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
@@ -247,6 +272,18 @@ siblingBranches = do
 	where
 		gen l = (Git.Ref $ head l, Git.Ref $ last l)
 		uref (a, _) (b, _) = a == b
+
+{- Get the ref of a branch. -}
+getRef :: Git.Ref -> Annex Git.Ref
+getRef branch = firstRef . L.unpack <$> showref
+	where
+		showref = inRepo $ Git.pipeRead [Param "show-ref",
+			Param "--hash", -- get the hash
+			Param "--verify", -- only exact match
+			Param $ show branch]
+
+firstRef :: String-> Git.Ref
+firstRef = Git.Ref . takeWhile (/= '\n')
 
 {- Applies a function to modifiy the content of a file.
  -

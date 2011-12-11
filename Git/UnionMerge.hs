@@ -48,7 +48,7 @@ merge_index h repo bs =
  - earlier ones, so the list can be generated from any combination of
  - ls_tree, merge_trees, and merge_tree_index. -}
 update_index :: Repo -> [String] -> IO ()
-update_index repo ls = stream_update_index repo [\s -> mapM_ s ls]
+update_index repo ls = stream_update_index repo [(`mapM_` ls)]
 
 {- Streams content into update-index. -}
 stream_update_index :: Repo -> [Streamer] -> IO ()

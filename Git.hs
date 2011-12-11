@@ -345,7 +345,7 @@ urlPort :: Repo -> Maybe Integer
 urlPort r = 
 	case urlAuthPart uriPort r of
 		":" -> Nothing
-		(':':p) -> Just (read p)
+		(':':p) -> readMaybe p
 		_ -> Nothing
 
 {- Hostname of an URL repo, including any username (ie, "user@host") -}
@@ -463,8 +463,8 @@ shaSize :: Int
 shaSize = 40
 
 {- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs. -}
-commit :: String -> Ref -> [Ref] -> Repo -> IO ()
+ - with the specified parent refs, and returns the new ref -}
+commit :: String -> Ref -> [Ref] -> Repo -> IO Ref
 commit message newref parentrefs repo = do
 	tree <- getSha "write-tree" $ asString $
 		pipeRead [Param "write-tree"] repo
@@ -473,6 +473,7 @@ commit message newref parentrefs repo = do
 			(map Param $ ["commit-tree", show tree] ++ ps)
 			(L.pack message) repo
 	run "update-ref" [Param $ show newref, Param $ show sha] repo
+	return sha
 	where
 		ignorehandle a = snd <$> a
 		asString a = L.unpack <$> a
@@ -507,11 +508,7 @@ configStore s repo = do
 configParse :: String -> M.Map String String
 configParse s = M.fromList $ map pair $ lines s
 	where
-		pair l = (key l, val l)
-		key l = head $ keyval l
-		val l = join sep $ drop 1 $ keyval l
-		keyval l = split sep l :: [String]
-		sep = "="
+		pair = separate (== '=')
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 configRemotes :: Repo -> IO [Repo]
@@ -550,13 +547,11 @@ genRemote s repo = gen $ calcloc s
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
 			where
-				bits = split ":" v
-				host = head bits
-				dir = join ":" $ drop 1 bits
-				slash d	| d == "" = "/~/" ++ dir
-					| head d == '/' = dir
-					| head d == '~' = '/':dir
-					| otherwise = "/~/" ++ dir
+				(host, dir) = separate (== ':') v
+				slash d	| d == "" = "/~/" ++ d
+					| "/" `isPrefixOf` d = d
+					| "~" `isPrefixOf` d = '/':d
+					| otherwise = "/~/" ++ d
 
 {- Checks if a string from git config is a true value. -}
 configTrue :: String -> Bool
