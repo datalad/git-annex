@@ -87,7 +87,7 @@ gitAnnexLocation key r
 		 - present. -}
 		return $ inrepo ".git" </> annexLocation key hashDirMixed
 	where
-		inrepo = (</>) (Git.workTree r)
+		inrepo d = Git.workTree r </> d
 		check locs = fromMaybe (head locs) <$> firstM doesFileExist locs
 
 {- The annex directory of a repository. -}
