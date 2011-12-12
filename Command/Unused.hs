@@ -20,6 +20,7 @@ import Utility.TempFile
 import Logs.Location
 import qualified Annex
 import qualified Git
+import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import qualified Backend
@@ -190,7 +191,7 @@ getKeysReferenced = do
 {- List of keys referenced by symlinks in a git ref. -}
 getKeysReferencedInGit :: Git.Ref -> Annex [Key]
 getKeysReferencedInGit ref = do
-	showAction $ "checking " ++ Git.refDescribe ref
+	showAction $ "checking " ++ Git.Ref.describe ref
 	findkeys [] =<< inRepo (LsTree.lsTree ref)
 	where
 		findkeys c [] = return c

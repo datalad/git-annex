@@ -24,7 +24,6 @@ module Git (
 	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
-	refDescribe,
 	repoLocation,
 	workTree,
 	workTreeFile,
@@ -177,14 +176,6 @@ repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
-
-{- Converts a fully qualified git ref into a user-visible version. -}
-refDescribe :: Ref -> String
-refDescribe = remove "refs/heads/" . remove "refs/remotes/" . show
-	where
-		remove prefix s
-			| prefix `isPrefixOf` s = drop (length prefix) s
-			| otherwise = s
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
@@ -463,16 +454,16 @@ shaSize :: Int
 shaSize = 40
 
 {- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs, and returns the new ref -}
-commit :: String -> Ref -> [Ref] -> Repo -> IO Ref
-commit message newref parentrefs repo = do
+ - with the specified parent refs, and returns the committed sha -}
+commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
+commit message branch parentrefs repo = do
 	tree <- getSha "write-tree" $ asString $
 		pipeRead [Param "write-tree"] repo
 	sha <- getSha "commit-tree" $ asString $
 		ignorehandle $ pipeWriteRead
 			(map Param $ ["commit-tree", show tree] ++ ps)
 			(L.pack message) repo
-	run "update-ref" [Param $ show newref, Param $ show sha] repo
+	run "update-ref" [Param $ show branch, Param $ show sha] repo
 	return sha
 	where
 		ignorehandle a = snd <$> a

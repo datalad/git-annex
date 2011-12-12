@@ -12,10 +12,9 @@ module Annex.Branch (
 	change,
 	commit,
 	files,
-	refExists,
+	name,
 	hasOrigin,
-	hasSomeBranch,
-	name	
+	hasSibling,
 ) where
 
 import System.Exit
@@ -27,6 +26,7 @@ import Annex.BranchState
 import Annex.Journal
 import qualified Git
 import qualified Git.UnionMerge
+import qualified Git.Ref
 import Annex.CatFile
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -84,12 +84,12 @@ updateIndex branchref = do
 		liftIO (catchDefaultIO (readFileStrict lock) "")
 	when (lockref /= branchref) $ do
 		withIndex $ mergeIndex [fullname]
-		setIndexRef branchref
+		setIndexSha branchref
 
 {- Record that the branch's index has been updated to correspond to a
  - given ref of the branch. -}
-setIndexRef :: Git.Ref -> Annex ()
-setIndexRef ref = do
+setIndexSha :: Git.Ref -> Annex ()
+setIndexSha ref = do
         lock <- fromRepo gitAnnexIndexLock
 	liftIO $ writeFile lock $ show ref ++ "\n"
 
@@ -115,7 +115,7 @@ commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitBranch branchref message parents = do
 	updateIndex branchref
 	committedref <- inRepo $ Git.commit message fullname parents
-	setIndexRef committedref
+	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
@@ -154,18 +154,19 @@ create = do
 
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex (Git.Ref)
-getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< getRef fullname
+getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
 	where
 		go True = do
 			inRepo $ Git.run "branch"
 				[Param $ show name, Param $ show originname]
 			fromMaybe (error $ "failed to create " ++ show name)
-				<$> getRef fullname
+				<$> branchsha
 		go False = withIndex' True $ do
 			inRepo $ Git.commit "branch created" fullname []
-		use ref = do
-			setIndexRef ref
-			return ref
+		use sha = do
+			setIndexSha sha
+			return sha
+		branchsha = inRepo $ Git.Ref.sha fullname
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
@@ -202,7 +203,7 @@ update = runUpdateOnce $ do
 			let merge_desc = if null branches
 				then "update" 
 				else "merging " ++
-					unwords (map Git.refDescribe branches) ++ 
+					unwords (map Git.Ref.describe branches) ++ 
 					" into " ++ show name
 			unless (null branches) $ do
 				showSideAction merge_desc
@@ -263,38 +264,18 @@ tryFastForwardTo (first:rest) = do
 				(False, True) -> findbest c rs -- worse
 				(False, False) -> findbest c rs -- same
 			
-{- Checks if a git ref exists. -}
-refExists :: Git.Ref -> Annex Bool
-refExists ref = inRepo $ Git.runBool "show-ref"
-	[Param "--verify", Param "-q", Param $ show ref]
-
-{- Get the ref of a branch. (Must be a fully qualified branch name) -}
-getRef :: Git.Branch -> Annex (Maybe Git.Ref)
-getRef branch = process . L.unpack <$> showref
-	where
-		showref = inRepo $ Git.pipeRead [Param "show-ref",
-			Param "--hash", -- get the hash
-			Param $ show branch]
-		process [] = Nothing
-		process s = Just $ Git.Ref $ firstLine s
-
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
-hasOrigin = refExists originname
+hasOrigin = inRepo $ Git.Ref.exists originname
 
-{- Does the git-annex branch or a foo/git-annex branch exist? -}
-hasSomeBranch :: Annex Bool
-hasSomeBranch = not . null <$> siblingBranches
+{- Does the git-annex branch or a sibling foo/git-annex branch exist? -}
+hasSibling :: Annex Bool
+hasSibling = not . null <$> siblingBranches
 
 {- List of git-annex (refs, branches), including the main one and any
  - from remotes. Duplicate refs are filtered out. -}
 siblingBranches :: Annex [(Git.Ref, Git.Branch)]
-siblingBranches = do
-	r <- inRepo $ Git.pipeRead [Param "show-ref", Param $ show name]
-	return $ nubBy uref $ map (gen . words . L.unpack) (L.lines r)
-	where
-		gen l = (Git.Ref $ head l, Git.Ref $ last l)
-		uref (a, _) (b, _) = a == b
+siblingBranches = inRepo $ Git.Ref.matching name
 
 {- Applies a function to modifiy the content of a file.
  -

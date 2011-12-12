@@ -39,7 +39,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
 	where
 		needsinit = do
-			annexed <- Annex.Branch.hasSomeBranch
+			annexed <- Annex.Branch.hasSibling
 			if annexed
 				then initialize Nothing
 				else error "First run: git-annex init"

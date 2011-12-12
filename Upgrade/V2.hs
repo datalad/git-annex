@@ -9,6 +9,7 @@ module Upgrade.V2 where
 
 import Common.Annex
 import qualified Git
+import qualified Git.Ref
 import qualified Annex.Branch
 import Logs.Location
 import Annex.Content
@@ -86,7 +87,7 @@ logFiles dir = return . filter (".log" `isSuffixOf`)
 
 push :: Annex ()
 push = do
-	origin_master <- Annex.Branch.refExists $ Git.Ref "origin/master"
+	origin_master <- inRepo $ Git.Ref.exists $ Git.Ref "origin/master"
 	origin_gitannex <- Annex.Branch.hasOrigin
 	case (origin_master, origin_gitannex) of
 		(_, True) -> do
