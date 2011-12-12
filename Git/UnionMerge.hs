@@ -15,8 +15,8 @@ module Git.UnionMerge (
 ) where
 
 import System.Cmd.Utils
-import Data.List
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Set as S
 
 import Common
 import Git
@@ -103,22 +103,14 @@ calc_merge ch differ repo streamer = gendiff >>= go
 mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullsha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
-	(sha:[]) -> return $ Just $ update_index_line sha file
-	(sha:shas) -> do
-		newsha <- maybe (return sha) (hashObject repo . L.unlines) =<<
-			unionmerge
-				<$> (L.lines <$> catObject h sha)
-				<*> (map L.lines <$> mapM (catObject h) shas)
-		return $ Just $ update_index_line newsha file
+	(sha:[]) -> use sha
+	shas -> use =<< either return (hashObject repo . L.unlines) =<<
+		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
 		nullsha = Ref $ replicate shaSize '0'
-
-		unionmerge origcontent content
-			| newcontent == origcontent = Nothing
-			| otherwise = Just newcontent
-			where
-				newcontent = nub $ concat $ origcontent:content
+		getcontents s = L.lines <$> catObject h s
+		use sha = return $ Just $ update_index_line sha file
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: Repo -> L.ByteString -> IO Sha
@@ -131,3 +123,17 @@ hashObject repo content = getSha subcmd $ do
 	where
 		subcmd = "hash-object"
 		params = [subcmd, "-w", "--stdin"]
+
+{- Calculates a union merge between a list of refs, with contents.
+ -
+ - When possible, reuses the content of an existing ref, rather than
+ - generating new content.
+ -}
+calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
+calcMerge shacontents
+	| null reuseable = Right $ new
+	| otherwise = Left $ fst $ head reuseable
+	where
+		reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
+		new = sorteduniq $ concat $ map snd shacontents
+		sorteduniq = S.toList . S.fromList
