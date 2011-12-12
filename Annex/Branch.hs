@@ -97,8 +97,8 @@ setIndexRef ref = do
 
 {- Commits the staged changes in the index to the branch.
  - 
- - Ensures that the branch's index file is first updated to include the
- - current state of the branch, before running the commit action. This
+ - Ensures that the branch's index file is first updated to the state
+ - of the brannch at branchref, before running the commit action. This
  - is needed because the branch may have had changes pushed to it, that
  - are not yet reflected in the index.
  -
@@ -108,6 +108,10 @@ setIndexRef ref = do
  - being updated to include it. The result is that the newly pushed
  - change is reverted. This race is detected and another commit made
  - to fix it.
+ - 
+ - The branchref value can have been obtained using getBranch at any
+ - previous point, though getting it a long time ago makes the race
+ - more likely to occur.
  -}
 commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitBranch branchref message parents = do
