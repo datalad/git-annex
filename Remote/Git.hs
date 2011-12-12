@@ -86,9 +86,9 @@ tryGitConfigRead r
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
 	| Git.repoIsHttp r = store $ safely geturlconfig
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ do
-		onLocal r ensureInitialized
-		Git.configRead r
+	| otherwise = store $ safely $ onLocal r $ do 
+		ensureInitialized
+		Annex.getState Annex.repo
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
