@@ -213,7 +213,7 @@ update = onceonly $ do
 	create
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
-	c <- filterM (changedBranch name . snd) =<< siblingBranches
+	c <- filterM (changedBranch fullname . snd) =<< siblingBranches
 	let (refs, branches) = unzip c
 	if (not dirty && null refs)
 		then simpleupdate
@@ -244,7 +244,9 @@ update = onceonly $ do
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changedBranch :: Git.Branch -> Git.Branch -> Annex Bool
-changedBranch origbranch newbranch = not . L.null <$> diffs
+changedBranch origbranch newbranch
+	| origbranch == newbranch = return False
+	| otherwise = not . L.null <$> diffs
 	where
 		diffs = inRepo $ Git.pipeRead
 			[ Param "log"
