@@ -1,5 +1,11 @@
-git-annex (3.20111204) UNRELEASED; urgency=low
+git-annex (3.20111211) unstable; urgency=medium
 
+  * Fix bug in last version in getting contents from bare repositories.
+  * Ensure that git-annex branch changes are merged into git-annex's index,
+    which fixes a bug that could cause changes that were pushed to the
+    git-annex branch to get reverted. As a side effect, it's now safe
+    for users to check out and commit changes directly to the git-annex
+    branch.
   * map: Fix a failure to detect a loop when both repositories are local
     and refer to each other with relative paths.
   * Prevent key names from containing newlines.
@@ -12,14 +18,8 @@ git-annex (3.20111204) UNRELEASED; urgency=low
   * sync: New command that synchronises the local repository and default
     remote, by running git commit, pull, and push for you.
   * Version monad-control dependency in cabal file.
-  * Fix bug in last version in getting contents from bare repositories.
-  * Ensure that git-annex branch changes are merged into git-annex's index,
-    which fixes a bug that could cause changes that were pushed to the
-    git-annex branch to get reverted. As a side effect, it's now safe
-    for users to check out and commit changes directly to the git-annex
-    branch.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 04 Dec 2011 12:22:37 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 11 Dec 2011 21:24:39 -0400
 
 git-annex (3.20111203) unstable; urgency=low
 
