@@ -203,38 +203,42 @@ commit message = whenM journalDirty $ lockJournal $ do
  - (It would be cleaner to handle the merge by updating the journal, not the
  - index, with changes from the branches.)
  -
- - The index is always updated using a union merge, as that's the most
- - efficient way to update it. However, if the branch can be
- - fast-forwarded, that is then done, rather than adding an unnecessary
- - commit to it.
+ - The branch is fast-forwarded if possible, otherwise a merge commit is
+ - made.
  -}
 update :: Annex ()
 update = onceonly $ do
-	-- ensure branch exists, and index is up-to-date
+	-- ensure branch exists
 	create
-	_ <- updateIndex
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch name . snd) =<< siblingBranches
 	let (refs, branches) = unzip c
-	unless (not dirty && null refs) $ withIndex $ lockJournal $ do
-		when dirty stageJournalFiles
-		let merge_desc = if null branches
-			then "update" 
-			else "merging " ++
-				unwords (map Git.refDescribe branches) ++ 
-				" into " ++ show name
-		unless (null branches) $ do
-			showSideAction merge_desc
-			mergeIndex branches
-		ff <- if dirty then return False else tryFastForwardTo refs
-		unless ff $ commitBranch merge_desc (nub $ fullname:refs)
-		invalidateCache
+	if (not dirty && null refs)
+		then simpleupdate
+		else withIndex $ lockJournal $ do
+			when dirty stageJournalFiles
+			let merge_desc = if null branches
+				then "update" 
+				else "merging " ++
+					unwords (map Git.refDescribe branches) ++ 
+					" into " ++ show name
+			unless (null branches) $ do
+				showSideAction merge_desc
+				mergeIndex branches
+			ff <- if dirty then return False else tryFastForwardTo refs
+			if ff
+				then simpleupdate
+				else commitBranch merge_desc (nub $ fullname:refs)
+			invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
 			r <- a
 			disableUpdate
 			return r
+		simpleupdate = do
+			_ <- updateIndex
+			return ()
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
