@@ -104,14 +104,17 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullsha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> return $ Just $ update_index_line sha file
-	shas -> do
-		content <- L.concat <$> mapM (catObject h) shas
-		sha <- hashObject (unionmerge content) repo
-		return $ Just $ update_index_line sha file
+	(sha:shas) -> do
+		origcontent <- L.lines <$> catObject h sha
+		content <- map L.lines <$> mapM (catObject h) shas
+		let newcontent = nub $ concat $ origcontent:content
+		newsha <- if (newcontent == origcontent)
+			then return sha
+			else hashObject (L.unlines $ newcontent) repo
+		return $ Just $ update_index_line newsha file
 	where
-		[_colonamode, _bmode, asha, bsha, _status] = words info
+		[_colonmode, _bmode, asha, bsha, _status] = words info
 		nullsha = Ref $ replicate shaSize '0'
-		unionmerge = L.unlines . nub . L.lines
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: L.ByteString -> Repo -> IO Sha
