@@ -8,7 +8,6 @@
 module Annex.Branch (
 	create,
 	update,
-	disableUpdate,
 	get,
 	change,
 	commit,
@@ -25,7 +24,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
 import Annex.Exception
-import Types.BranchState
+import Annex.BranchState
 import qualified Git
 import qualified Git.UnionMerge
 import qualified Annex
@@ -148,30 +147,6 @@ commitBranch branchref message parents = do
 withIndexUpdate :: Annex a -> Annex a
 withIndexUpdate a = update >> withIndex a
 
-getState :: Annex BranchState
-getState = Annex.getState Annex.branchstate
-
-setState :: BranchState -> Annex ()
-setState state = Annex.changeState $ \s -> s { Annex.branchstate = state }
-
-setCache :: FilePath -> String -> Annex ()
-setCache file content = do
-	state <- getState
-	setState state { cachedFile = Just file, cachedContent = content }
-
-invalidateCache :: Annex ()
-invalidateCache = do
-	state <- getState
-	setState state { cachedFile = Nothing, cachedContent = "" }
-
-getCache :: FilePath -> Annex (Maybe String)
-getCache file = getState >>= go
-	where
-		go state
-			| cachedFile state == Just file =
-				return $ Just $ cachedContent state
-			| otherwise = return Nothing
-
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
 create = do
@@ -214,7 +189,7 @@ commit message = whenM journalDirty $ lockJournal $ do
  - made.
  -}
 update :: Annex ()
-update = onceonly $ do
+update = runUpdateOnce $ do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	-- check what needs updating before taking the lock
@@ -239,11 +214,6 @@ update = onceonly $ do
 				else commitBranch branchref merge_desc
 					(nub $ fullname:refs)
 			invalidateCache
-	where
-		onceonly a = unlessM (branchUpdated <$> getState) $ do
-			r <- a
-			disableUpdate
-			return r
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
@@ -294,17 +264,6 @@ tryFastForwardTo (first:rest) = do
 				(False, True) -> findbest c rs -- worse
 				(False, False) -> findbest c rs -- same
 			
-{- Avoids updating the branch. A useful optimisation when the branch
- - is known to have not changed, or git-annex won't be relying on info
- - from it. -}
-disableUpdate :: Annex ()
-disableUpdate = Annex.changeState setupdated
-	where
-		setupdated s = s { Annex.branchstate = new }
-			where
-				new = old { branchUpdated = True }
-				old = Annex.branchstate s
-
 {- Checks if a git ref exists. -}
 refExists :: Git.Ref -> Annex Bool
 refExists ref = inRepo $ Git.runBool "show-ref"

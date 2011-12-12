@@ -19,7 +19,7 @@ import qualified Git
 import qualified Annex
 import Annex.UUID
 import qualified Annex.Content
-import qualified Annex.Branch
+import qualified Annex.BranchState
 import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
@@ -171,7 +171,7 @@ onLocal r a = do
 	Annex.eval state $ do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
-		Annex.Branch.disableUpdate
+		Annex.BranchState.disableUpdate
 		ret <- a
 		liftIO Git.reap
 		return ret
