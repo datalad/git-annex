@@ -79,20 +79,14 @@ withIndex' bootstrapping a = do
  - Compares the ref stored in the lock file with the current
  - ref of the branch to see if an update is needed.
  -}
-updateIndex :: Annex (Maybe Git.Ref)
-updateIndex = do
-	branchref <- getRef fullname
-	go branchref
-	return branchref
-	where
-		go Nothing = return ()
-		go (Just branchref) = do
-			lock <- fromRepo gitAnnexIndexLock
-			lockref <- Git.Ref . firstLine <$>
-				liftIO (catchDefaultIO (readFileStrict lock) "")
-			when (lockref /= branchref) $ do
-				withIndex $ mergeIndex [fullname]
-				setIndexRef branchref
+updateIndex :: Git.Ref -> Annex ()
+updateIndex branchref = do
+	lock <- fromRepo gitAnnexIndexLock
+	lockref <- Git.Ref . firstLine <$>
+		liftIO (catchDefaultIO (readFileStrict lock) "")
+	when (lockref /= branchref) $ do
+		withIndex $ mergeIndex [fullname]
+		setIndexRef branchref
 
 {- Record that the branch's index has been updated to correspond to a
  - given ref of the branch. -}
@@ -115,13 +109,13 @@ setIndexRef ref = do
  - change is reverted. This race is detected and another commit made
  - to fix it.
  -}
-commitBranch :: String -> [Git.Ref] -> Annex ()
-commitBranch message parents = do
-	expected <- updateIndex
+commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitBranch branchref message parents = do
+	updateIndex branchref
 	committedref <- inRepo $ Git.commit message fullname parents
 	setIndexRef committedref
 	parentrefs <- commitparents <$> catObject committedref
-	when (racedetected expected parentrefs) $
+	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
 	where
 		-- look for "parent ref" lines and return the refs
@@ -133,10 +127,7 @@ commitBranch message parents = do
  		{- The race can be detected by checking the commit's
 		 - parent, which will be the newly pushed branch,
 		 - instead of the expected ref that the index was updated to. -}
-		racedetected Nothing parentrefs
-			| null parentrefs = False -- first commit, no parents
-			| otherwise = True -- race on first commit
-		racedetected (Just expectedref) parentrefs
+		racedetected expectedref parentrefs
 			| expectedref `elem` parentrefs = False -- good parent
 			| otherwise = True -- race!
 		
@@ -144,7 +135,7 @@ commitBranch message parents = do
 		 - into the index, and recommit on top of the bad commit. -}
 		fixrace committedref lostrefs = do
 			mergeIndex lostrefs
-			commitBranch racemessage [committedref]
+			commitBranch committedref racemessage [committedref]
 		
 		racemessage = message ++ " (recovery from race)"
 
@@ -179,20 +170,31 @@ getCache file = getState >>= go
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = unlessM hasBranch $ hasOrigin >>= go
+create = do
+	_ <- getBranch
+	return ()
+
+{- Returns the ref of the branch, creating it first if necessary. -}
+getBranch :: Annex (Git.Ref)
+getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< getRef fullname
 	where
 		go True = do
 			inRepo $ Git.run "branch"
 				[Param $ show name, Param $ show originname]
-			maybe (return ()) setIndexRef =<< getRef fullname
-		go False = withIndex' True $ 
-			setIndexRef =<< (inRepo $ Git.commit "branch created" fullname [])
+			fromMaybe (error $ "failed to create " ++ show name)
+				<$> getRef fullname
+		go False = withIndex' True $ do
+			inRepo $ Git.commit "branch created" fullname []
+		use ref = do
+			setIndexRef ref
+			return ref
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
 	stageJournalFiles
-	withIndex $ commitBranch message [fullname]
+	ref <- getBranch
+	withIndex $ commitBranch ref message [fullname]
 
 {- Ensures that the branch and index are is up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run.
@@ -209,14 +211,14 @@ commit message = whenM journalDirty $ lockJournal $ do
  -}
 update :: Annex ()
 update = onceonly $ do
-	-- ensure branch exists
-	create
+	-- ensure branch exists, and get its current ref
+	branchref <- getBranch
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	c <- filterM (changedBranch fullname . snd) =<< siblingBranches
 	let (refs, branches) = unzip c
 	if (not dirty && null refs)
-		then simpleupdate
+		then updateIndex branchref
 		else withIndex $ lockJournal $ do
 			when dirty stageJournalFiles
 			let merge_desc = if null branches
@@ -229,17 +231,15 @@ update = onceonly $ do
 				mergeIndex branches
 			ff <- if dirty then return False else tryFastForwardTo refs
 			if ff
-				then simpleupdate
-				else commitBranch merge_desc (nub $ fullname:refs)
+				then updateIndex branchref
+				else commitBranch branchref merge_desc
+					(nub $ fullname:refs)
 			invalidateCache
 	where
 		onceonly a = unlessM (branchUpdated <$> getState) $ do
 			r <- a
 			disableUpdate
 			return r
-		simpleupdate = do
-			_ <- updateIndex
-			return ()
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
@@ -306,20 +306,15 @@ refExists :: Git.Ref -> Annex Bool
 refExists ref = inRepo $ Git.runBool "show-ref"
 	[Param "--verify", Param "-q", Param $ show ref]
 
-{- Get the ref of a branch. -}
+{- Get the ref of a branch. (Must be a fully qualified branch name) -}
 getRef :: Git.Branch -> Annex (Maybe Git.Ref)
 getRef branch = process . L.unpack <$> showref
 	where
 		showref = inRepo $ Git.pipeRead [Param "show-ref",
 			Param "--hash", -- get the hash
-			Params "--verify", -- only exact match
 			Param $ show branch]
 		process [] = Nothing
 		process s = Just $ Git.Ref $ firstLine s
-
-{- Does the main git-annex branch exist? -}
-hasBranch :: Annex Bool
-hasBranch = refExists fullname
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
