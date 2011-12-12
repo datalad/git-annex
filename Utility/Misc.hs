@@ -40,6 +40,10 @@ separate c l = unbreak $ break c l
 			| null b = r
 			| otherwise = (a, tail b)
 
+{- Breaks out the first line. -}
+firstLine :: String-> String
+firstLine = takeWhile (/= '\n')
+
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
 catchBoolIO a = catchDefaultIO a False

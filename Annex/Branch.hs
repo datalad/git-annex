@@ -88,7 +88,8 @@ updateIndex = do
 		go Nothing = return ()
 		go (Just branchref) = do
 			lock <- fromRepo gitAnnexIndexLock
-			lockref <- firstRef <$> liftIO (catchDefaultIO (readFileStrict lock) "")
+			lockref <- Git.Ref . firstLine <$>
+				liftIO (catchDefaultIO (readFileStrict lock) "")
 			when (lockref /= branchref) $ do
 				withIndex $ mergeIndex [fullname]
 				setIndexRef branchref
@@ -303,6 +304,17 @@ refExists :: Git.Ref -> Annex Bool
 refExists ref = inRepo $ Git.runBool "show-ref"
 	[Param "--verify", Param "-q", Param $ show ref]
 
+{- Get the ref of a branch. -}
+getRef :: Git.Branch -> Annex (Maybe Git.Ref)
+getRef branch = process . L.unpack <$> showref
+	where
+		showref = inRepo $ Git.pipeRead [Param "show-ref",
+			Param "--hash", -- get the hash
+			Params "--verify", -- only exact match
+			Param $ show branch]
+		process [] = Nothing
+		process s = Just $ Git.Ref $ firstLine s
+
 {- Does the main git-annex branch exist? -}
 hasBranch :: Annex Bool
 hasBranch = refExists fullname
@@ -324,20 +336,6 @@ siblingBranches = do
 	where
 		gen l = (Git.Ref $ head l, Git.Ref $ last l)
 		uref (a, _) (b, _) = a == b
-
-{- Get the ref of a branch. -}
-getRef :: Git.Ref -> Annex (Maybe Git.Ref)
-getRef branch = process . L.unpack <$> showref
-	where
-		showref = inRepo $ Git.pipeRead [Param "show-ref",
-			Param "--hash", -- get the hash
-			Params "--verify", -- only exact match
-			Param $ show branch]
-		process [] = Nothing
-		process s = Just $ firstRef s
-
-firstRef :: String-> Git.Ref
-firstRef = Git.Ref . takeWhile (/= '\n')
 
 {- Applies a function to modifiy the content of a file.
  -
