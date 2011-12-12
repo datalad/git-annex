@@ -18,16 +18,15 @@ module Annex.Branch (
 	name	
 ) where
 
-import System.IO.Binary
 import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
 import Annex.Exception
 import Annex.BranchState
+import Annex.Journal
 import qualified Git
 import qualified Git.UnionMerge
-import qualified Annex
 import Annex.CatFile
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -171,7 +170,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< getRef fullname
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ do
-	stageJournalFiles
+	stageJournal
 	ref <- getBranch
 	withIndex $ commitBranch ref message [fullname]
 
@@ -199,7 +198,7 @@ update = runUpdateOnce $ do
 	if (not dirty && null refs)
 		then updateIndex branchref
 		else withIndex $ lockJournal $ do
-			when dirty stageJournalFiles
+			when dirty stageJournal
 			let merge_desc = if null branches
 				then "update" 
 				else "merging " ++
@@ -305,7 +304,7 @@ siblingBranches = do
 change :: FilePath -> (String -> String) -> Annex ()
 change file a = lockJournal $ getStale file >>= return . a >>= set file
 
-{- Records new content of a file into the journal. -}
+{- Records new content of a file into the journal and cache. -}
 set :: FilePath -> String -> Annex ()
 set file content = do
 	setJournalFile file content
@@ -346,44 +345,9 @@ files = withIndexUpdate $ do
 	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles
 
-{- Records content for a file in the branch to the journal.
- -
- - Using the journal, rather than immediatly staging content to the index
- - avoids git needing to rewrite the index after every change. -}
-setJournalFile :: FilePath -> String -> Annex ()
-setJournalFile file content = do
-	g <- gitRepo
-	liftIO $ doRedo (write g) $ do
-		createDirectoryIfMissing True $ gitAnnexJournalDir g
-		createDirectoryIfMissing True $ gitAnnexTmpDir g
-	where
-		-- journal file is written atomically
-		write g = do
-			let jfile = journalFile g file
-			let tmpfile = gitAnnexTmpDir g </> takeFileName jfile
-			writeBinaryFile tmpfile content
-			moveFile tmpfile jfile
-
-{- Gets any journalled content for a file in the branch. -}
-getJournalFile :: FilePath -> Annex (Maybe String)
-getJournalFile file = inRepo $ \g -> catchMaybeIO $
-	readFileStrict $ journalFile g file
-
-{- List of files that have updated content in the journal. -}
-getJournalledFiles :: Annex [FilePath]
-getJournalledFiles = map fileJournal <$> getJournalFiles
-
-{- List of existing journal files. -}
-getJournalFiles :: Annex [FilePath]
-getJournalFiles = do
-	g <- gitRepo
-	fs <- liftIO $
-		catchDefaultIO (getDirectoryContents $ gitAnnexJournalDir g) []
-	return $ filter (`notElem` [".", ".."]) fs
-
-{- Stages the specified journalfiles. -}
-stageJournalFiles :: Annex ()
-stageJournalFiles = do
+{- Stages the journal into the index. -}
+stageJournal :: Annex ()
+stageJournal = do
 	fs <- getJournalFiles
 	g <- gitRepo
 	withIndex $ liftIO $ do
@@ -409,45 +373,3 @@ stageJournalFiles = do
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
 		git_hash_object = Git.gitCommandLine
 			[Param "hash-object", Param "-w", Param "--stdin-paths"]
-
-
-{- Checks if there are changes in the journal. -}
-journalDirty :: Annex Bool
-journalDirty = not . null <$> getJournalFiles
-
-{- Produces a filename to use in the journal for a file on the branch.
- -
- - The journal typically won't have a lot of files in it, so the hashing
- - used in the branch is not necessary, and all the files are put directly
- - in the journal directory.
- -}
-journalFile :: Git.Repo -> FilePath -> FilePath
-journalFile repo file = gitAnnexJournalDir repo </> concatMap mangle file
-	where
-		mangle '/' = "_"
-		mangle '_' = "__"
-		mangle c = [c]
-
-{- Converts a journal file (relative to the journal dir) back to the
- - filename on the branch. -}
-fileJournal :: FilePath -> FilePath
-fileJournal = replace "//" "_" . replace "_" "/"
-
-{- Runs an action that modifies the journal, using locking to avoid
- - contention with other git-annex processes. -}
-lockJournal :: Annex a -> Annex a
-lockJournal a = do
-	file <- fromRepo gitAnnexJournalLock
-	bracketIO (lock file) unlock a
-	where
-		lock file = do
-			l <- doRedo (createFile file stdFileMode) $
-				createDirectoryIfMissing True $ takeDirectory file
-			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-			return l
-		unlock = closeFd
-
-{- Runs an action, catching failure and running something to fix it up, and
- - retrying if necessary. -}
-doRedo :: IO a -> IO b -> IO a
-doRedo a b = catch a $ const $ b >> a
