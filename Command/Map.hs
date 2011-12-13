@@ -13,6 +13,8 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -146,8 +148,8 @@ spider' (r:rs) known
 {- Converts repos to a common absolute form. -}
 absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
-	| Git.repoIsUrl reference = return $ Git.localToUrl reference r
-	| otherwise = liftIO $ Git.repoFromAbsPath =<< absPath (Git.workTree r)
+	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
+	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.workTree r)
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
@@ -182,7 +184,7 @@ tryScan :: Git.Repo -> Annex (Maybe Git.Repo)
 tryScan r
 	| Git.repoIsSsh r = sshscan
 	| Git.repoIsUrl r = return Nothing
-	| otherwise = safely $ Git.configRead r
+	| otherwise = safely $ Git.Config.read r
 	where
 		safely a = do
 			result <- liftIO (try a :: IO (Either SomeException Git.Repo))
@@ -191,7 +193,7 @@ tryScan r
 				Right r' -> return $ Just r'
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
-				Git.hConfigRead r
+				Git.Config.hRead r
 
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" []

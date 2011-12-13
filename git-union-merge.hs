@@ -9,6 +9,8 @@ import System.Environment
 
 import Common
 import qualified Git.UnionMerge
+import qualified Git.Config
+import qualified Git.Construct
 import qualified Git
 
 header :: String
@@ -38,7 +40,7 @@ parseArgs = do
 main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
-	g <- Git.configRead =<< Git.repoFromCwd
+	g <- Git.Config.read =<< Git.Construct.fromCwd
 	_ <- Git.useIndex (tmpIndex g)
 	setup g
 	Git.UnionMerge.merge aref bref g

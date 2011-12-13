@@ -10,7 +10,8 @@ module GitAnnex where
 import System.Console.GetOpt
 
 import Common.Annex
-import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import CmdLine
 import Command
 import Types.TrustLevel
@@ -125,11 +126,11 @@ options = commonOptions ++
 		setprint0 v = Annex.changeState $ \s -> s { Annex.print0 = v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			newg <- inRepo $ Git.configStore v
+			newg <- inRepo $ Git.Config.store v
 			Annex.changeState $ \s -> s { Annex.repo = newg }
 
 header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch args cmds options header Git.repoFromCwd
+run args = dispatch args cmds options header Git.Construct.fromCwd

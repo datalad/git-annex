@@ -8,7 +8,7 @@
 module Annex.Version where
 
 import Common.Annex
-import qualified Git
+import qualified Git.Config
 import Config
 
 type Version = String
@@ -26,7 +26,7 @@ versionField :: String
 versionField = "annex.version"
 
 getVersion :: Annex (Maybe Version)
-getVersion = handle <$> fromRepo (Git.configGet versionField "")
+getVersion = handle <$> fromRepo (Git.Config.get versionField "")
 	where
 		handle [] = Nothing
 		handle v = Just v

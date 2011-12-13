@@ -21,6 +21,7 @@ module Annex.UUID (
 
 import Common.Annex
 import qualified Git
+import qualified Git.Config
 import qualified Build.SysConfig as SysConfig
 import Config
 
@@ -55,14 +56,14 @@ getRepoUUID r = do
 			return u
 		else return c
 	where
-		cached = toUUID . Git.configGet cachekey ""
+		cached = toUUID . Git.Config.get cachekey ""
 		updatecache u = do
 			g <- gitRepo
 			when (g /= r) $ storeUUID cachekey u
 		cachekey = remoteConfig r "uuid"
 
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID = toUUID . Git.configGet configkey ""
+getUncachedUUID = toUUID . Git.Config.get configkey ""
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()

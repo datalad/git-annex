@@ -16,6 +16,8 @@ import Utility.RsyncFile
 import Annex.Ssh
 import Types.Remote
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import qualified Annex
 import Annex.UUID
 import qualified Annex.Content
@@ -44,7 +46,7 @@ list = do
 			case M.lookup (annexurl n) c of
 				Nothing -> return r
 				Just url -> Git.repoRemoteNameSet n <$>
-					inRepo (Git.genRemote url)
+					inRepo (Git.Construct.fromRemoteLocation url)
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do
@@ -100,7 +102,7 @@ tryGitConfigRead r
 
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
-				Git.hConfigRead r
+				Git.Config.hRead r
 
 		geturlconfig = do
 			s <- Url.get (Git.repoLocation r ++ "/config")
@@ -108,7 +110,7 @@ tryGitConfigRead r
 				hPutStr h s
 				hClose h
 				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
-					Git.hConfigRead r
+					Git.Config.hRead r
 
 		store a = do
 			r' <- a

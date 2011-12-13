@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import qualified Annex.Branch
 import qualified Git
+import qualified Git.Config
 
 import qualified Data.ByteString.Lazy.Char8 as L
 
@@ -56,7 +57,7 @@ push = do
 defaultRemote :: Annex String
 defaultRemote = do
 	branch <- currentBranch
-	fromRepo $ Git.configGet ("branch." ++ branch ++ ".remote") "origin"
+	fromRepo $ Git.Config.get ("branch." ++ branch ++ ".remote") "origin"
 
 currentBranch :: Annex String
 currentBranch = last . split "/" . L.unpack . head . L.lines <$>
@@ -65,6 +66,6 @@ currentBranch = last . split "/" . L.unpack . head . L.lines <$>
 checkRemote :: String -> Annex ()
 checkRemote remote = do
 	remoteurl <- fromRepo $
-		Git.configGet ("remote." ++ remote ++ ".url") ""
+		Git.Config.get ("remote." ++ remote ++ ".url") ""
 	when (null remoteurl) $ do
 		error $ "No url is configured for the remote: " ++ remote

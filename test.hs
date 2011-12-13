@@ -25,6 +25,8 @@ import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import qualified Locations
 import qualified Types.Backend
 import qualified Types
@@ -496,8 +498,8 @@ git_annex command params = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.repoFromCwd
-	g' <- Git.configRead g
+	g <- Git.Construct.fromCwd
+	g' <- Git.Config.read g
 	s <- Annex.new g'
 	Annex.eval s a
 

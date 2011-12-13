@@ -9,7 +9,7 @@ import System.Environment
 import System.Console.GetOpt
 
 import Common.Annex
-import qualified Git
+import qualified Git.Construct
 import CmdLine
 import Command
 import Annex.UUID
@@ -80,7 +80,7 @@ builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
 	dispatch (cmd : filterparams params) cmds options header $
-		Git.repoAbsPath dir >>= Git.repoFromAbsPath
+		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()
 external params = do

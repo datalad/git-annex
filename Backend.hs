@@ -21,6 +21,7 @@ import System.Posix.Files
 
 import Common.Annex
 import qualified Git
+import qualified Git.Config
 import qualified Annex
 import Types.Key
 import qualified Types.Backend as B
@@ -47,7 +48,7 @@ orderedList = do
 			l' <- (lookupBackendName name :) <$> standard
 			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		standard = fromRepo $ parseBackendList . Git.configGet "annex.backends" ""
+		standard = fromRepo $ parseBackendList . Git.Config.get "annex.backends" ""
 		parseBackendList [] = list
 		parseBackendList s = map lookupBackendName $ words s
 

@@ -10,6 +10,7 @@ module Remote.Web (remote) where
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Construct
 import Config
 import Logs.Web
 import qualified Utility.Url as Url
@@ -26,7 +27,7 @@ remote = RemoteType {
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
 list :: Annex [Git.Repo]
-list = return [Git.repoRemoteNameSet "web" Git.repoFromUnknown]
+list = return [Git.repoRemoteNameSet "web" Git.Construct.fromUnknown]
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r _ _ = 

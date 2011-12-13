@@ -3,7 +3,7 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,11 +14,6 @@ module Git (
 	Branch,
 	Sha,
 	Tag,
-	repoFromCwd,
-	repoFromAbsPath,
-	repoFromUnknown,
-	repoFromUrl,
-	localToUrl,
 	repoIsUrl,
 	repoIsSsh,
 	repoIsHttp,
@@ -34,11 +29,7 @@ module Git (
 	urlHostUser,
 	urlAuthority,
 	urlScheme,
-	configGet,
 	configMap,
-	configRead,
-	hConfigRead,
-	configStore,
 	configTrue,
 	gitCommandLine,
 	run,
@@ -51,14 +42,12 @@ module Git (
 	attributes,
 	remotes,
 	remotesAdd,
-	genRemote,
 	repoRemoteName,
 	repoRemoteNameSet,
 	repoRemoteNameFromKey,
 	checkAttr,
 	decodeGitFile,
 	encodeGitFile,
-	repoAbsPath,
 	reap,
 	useIndex,
 	getSha,
@@ -69,9 +58,6 @@ module Git (
 	prop_idempotent_deencode
 ) where
 
-import System.Posix.Directory
-import System.Posix.User
-import Control.Exception (bracket_)
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
 import Data.Char
@@ -83,92 +69,7 @@ import System.Posix.Env (setEnv, unsetEnv, getEnv)
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
-
-{- There are two types of repositories; those on local disk and those
- - accessed via an URL. -}
-data RepoLocation = Dir FilePath | Url URI | Unknown
-	deriving (Show, Eq)
-
-data Repo = Repo {
-	location :: RepoLocation,
-	config :: M.Map String String,
-	remotes :: [Repo],
-	-- remoteName holds the name used for this repo in remotes
-	remoteName :: Maybe String 
-} deriving (Show, Eq)
-
-{- A git ref. Can be a sha1, or a branch or tag name. -}
-newtype Ref = Ref String
-	deriving (Eq)
-
-instance Show Ref where
-	show (Ref v) = v
-
-{- Aliases for Ref. -}
-type Branch = Ref
-type Sha = Ref
-type Tag = Ref
-
-newFrom :: RepoLocation -> Repo
-newFrom l = 
-	Repo {
-		location = l,
-		config = M.empty,
-		remotes = [],
-		remoteName = Nothing
-	}
-
-{- Local Repo constructor, requires an absolute path to the repo be
- - specified. -}
-repoFromAbsPath :: FilePath -> IO Repo
-repoFromAbsPath dir
-	| "/" `isPrefixOf` dir = do
- 		-- Git always looks for "dir.git" in preference to
-		-- to "dir", even if dir ends in a "/".
-		let canondir = dropTrailingPathSeparator dir
-		let dir' = canondir ++ ".git"
-		e <- doesDirectoryExist dir'
-		if e
-			then ret dir'
-			else if "/.git" `isSuffixOf` canondir
-				then do
-					-- When dir == "foo/.git", git looks
-					-- for "foo/.git/.git", and failing
-					-- that, uses "foo" as the repository.
-					e' <- doesDirectoryExist $ dir </> ".git"
-					if e'
-						then ret dir
-						else ret $ takeDirectory canondir
-				else ret dir
-	| otherwise = error $ "internal error, " ++ dir ++ " is not absolute"
-	where
-		ret = return . newFrom . Dir
-
-{- Remote Repo constructor. Throws exception on invalid url. -}
-repoFromUrl :: String -> IO Repo
-repoFromUrl url
-	| startswith "file://" url = repoFromAbsPath $ uriPath u
-	| otherwise = return $ newFrom $ Url u
-		where
-			u = fromMaybe bad $ parseURI url
-			bad = error $ "bad url " ++ url
-
-{- Creates a repo that has an unknown location. -}
-repoFromUnknown :: Repo
-repoFromUnknown = newFrom Unknown
-
-{- Converts a Local Repo into a remote repo, using the reference repo
- - which is assumed to be on the same host. -}
-localToUrl :: Repo -> Repo -> Repo
-localToUrl reference r
-	| not $ repoIsUrl reference = error "internal error; reference repo not url"
-	| repoIsUrl r = r
-	| otherwise = r { location = Url $ fromJust $ parseURI absurl }
-	where
-		absurl =
-			urlScheme reference ++ "//" ++
-			urlAuthority reference ++
-			workTree r
+import Git.Types
 
 {- User-visible description of a git repo. -}
 repoDescribe :: Repo -> String
@@ -470,88 +371,9 @@ commit message branch parentrefs repo = do
 		asString a = L.unpack <$> a
 		ps = concatMap (\r -> ["-p", show r]) parentrefs
 
-{- Runs git config and populates a repo with its config. -}
-configRead :: Repo -> IO Repo
-configRead repo@(Repo { location = Dir d }) = do
-	{- Cannot use pipeRead because it relies on the config having
-	   been already read. Instead, chdir to the repo. -}
-	cwd <- getCurrentDirectory
-	bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) $
-		pOpen ReadFromPipe "git" ["config", "--list"] $ hConfigRead repo
-configRead r = assertLocal r $ error "internal"
-
-{- Reads git config from a handle and populates a repo with it. -}
-hConfigRead :: Repo -> Handle -> IO Repo
-hConfigRead repo h = do
-	val <- hGetContentsStrict h
-	configStore val repo
-
-{- Stores a git config into a repo, returning the new version of the repo.
- - The git config may be multiple lines, or a single line. Config settings
- - can be updated inrementally. -}
-configStore :: String -> Repo -> IO Repo
-configStore s repo = do
-	let repo' = repo { config = configParse s `M.union` config repo }
-	rs <- configRemotes repo'
-	return $ repo' { remotes = rs }
-
-{- Parses git config --list output into a config map. -}
-configParse :: String -> M.Map String String
-configParse s = M.fromList $ map pair $ lines s
-	where
-		pair = separate (== '=')
-
-{- Calculates a list of a repo's configured remotes, by parsing its config. -}
-configRemotes :: Repo -> IO [Repo]
-configRemotes repo = mapM construct remotepairs
-	where
-		filterconfig f = filter f $ M.toList $ config repo
-		filterkeys f = filterconfig (\(k,_) -> f k)
-		remotepairs = filterkeys isremote
-		isremote k = startswith "remote." k && endswith ".url" k
-		construct (k,v) = repoRemoteNameFromKey k <$> genRemote v repo
-
-{- Generates one of a repo's remotes using a given location (ie, an url). -}
-genRemote :: String -> Repo -> IO Repo
-genRemote s repo = gen $ calcloc s
-	where
-		filterconfig f = filter f $ M.toList $ config repo
-		gen v	
-			| scpstyle v = repoFromUrl $ scptourl v
-			| isURI v = repoFromUrl v
-			| otherwise = repoFromRemotePath v repo
-		-- insteadof config can rewrite remote location
-		calcloc l
-			| null insteadofs = l
-			| otherwise = replacement ++ drop (length bestvalue) l
-			where
-				replacement = drop (length prefix) $
-					take (length bestkey - length suffix) bestkey
-				(bestkey, bestvalue) = maximumBy longestvalue insteadofs
-				longestvalue (_, a) (_, b) = compare b a
-				insteadofs = filterconfig $ \(k, v) -> 
-					startswith prefix k &&
-					endswith suffix k &&
-					startswith v l
-				(prefix, suffix) = ("url." , ".insteadof")
-		-- git remotes can be written scp style -- [user@]host:dir
-		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
-		scptourl v = "ssh://" ++ host ++ slash dir
-			where
-				(host, dir) = separate (== ':') v
-				slash d	| d == "" = "/~/" ++ d
-					| "/" `isPrefixOf` d = d
-					| "~" `isPrefixOf` d = '/':d
-					| otherwise = "/~/" ++ d
-
 {- Checks if a string from git config is a true value. -}
 configTrue :: String -> Bool
 configTrue s = map toLower s == "true"
-
-{- Returns a single git config setting, or a default value if not set. -}
-configGet :: String -> String -> Repo -> String
-configGet key defaultValue repo = 
-	M.findWithDefault defaultValue key (config repo)
 
 {- Access to raw config Map -}
 configMap :: Repo -> M.Map String String
@@ -658,71 +480,3 @@ encodeGitFile s = foldl (++) "\"" (map echar s) ++ "\""
 {- for quickcheck -}
 prop_idempotent_deencode :: String -> Bool
 prop_idempotent_deencode s = s == decodeGitFile (encodeGitFile s)
-
-{- Constructs a Repo from the path specified in the git remotes of
- - another Repo. -}
-repoFromRemotePath :: FilePath -> Repo -> IO Repo
-repoFromRemotePath dir repo = do
-	dir' <- expandTilde dir
-	repoFromAbsPath $ workTree repo </> dir'
-
-{- Git remotes can have a directory that is specified relative
- - to the user's home directory, or that contains tilde expansions.
- - This converts such a directory to an absolute path.
- - Note that it has to run on the system where the remote is.
- -}
-repoAbsPath :: FilePath -> IO FilePath
-repoAbsPath d = do
-	d' <- expandTilde d
-	h <- myHomeDir
-	return $ h </> d'
-
-expandTilde :: FilePath -> IO FilePath
-expandTilde = expandt True
-	where
-		expandt _ [] = return ""
-		expandt _ ('/':cs) = do
-			v <- expandt True cs
-			return ('/':v)
-		expandt True ('~':'/':cs) = do
-			h <- myHomeDir
-			return $ h </> cs
-		expandt True ('~':cs) = do
-			let (name, rest) = findname "" cs
-			u <- getUserEntryForName name
-			return $ homeDirectory u </> rest
-		expandt _ (c:cs) = do
-			v <- expandt False cs
-			return (c:v)
-		findname n [] = (n, "")
-		findname n (c:cs)
-			| c == '/' = (n, cs)
-			| otherwise = findname (n++[c]) cs
-
-{- Finds the current git repository, which may be in a parent directory. -}
-repoFromCwd :: IO Repo
-repoFromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
-	where
-		makerepo = return . newFrom . Dir
-		norepo = error "Not in a git repository."
-
-seekUp :: (FilePath -> IO Bool) -> FilePath -> IO (Maybe FilePath)
-seekUp want dir = do
-	ok <- want dir
-	if ok
-		then return $ Just dir
-		else case parentDir dir of
-			"" -> return Nothing
-			d -> seekUp want d
-
-isRepoTop :: FilePath -> IO Bool
-isRepoTop dir = do
-	r <- isRepo
-	b <- isBareRepo
-	return (r || b)
-	where
-		isRepo = gitSignature ".git" ".git/config"
-		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = liftM2 (&&)
-			(doesDirectoryExist (dir ++ "/" ++ subdir))
-			(doesFileExist (dir ++ "/" ++ file))

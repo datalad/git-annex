@@ -27,6 +27,7 @@ import Control.Monad.State
 
 import Common
 import qualified Git
+import qualified Git.Config
 import Git.CatFile
 import Git.Queue
 import Types.Backend
@@ -99,7 +100,7 @@ newState gitrepo = AnnexState
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState <$> Git.configRead gitrepo
+new gitrepo = newState <$> Git.Config.read gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)

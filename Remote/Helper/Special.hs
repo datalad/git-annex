@@ -12,6 +12,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Construct
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different
@@ -23,7 +24,7 @@ findSpecialRemotes s = do
 	return $ map construct $ remotepairs m
 	where
 		remotepairs = M.toList . M.filterWithKey match
-		construct (k,_) = Git.repoRemoteNameFromKey k Git.repoFromUnknown
+		construct (k,_) = Git.repoRemoteNameFromKey k Git.Construct.fromUnknown
 		match k _ = startswith "remote." k && endswith (".annex-"++s) k
 
 {- Sets up configuration for a special remote in .git/config. -}
