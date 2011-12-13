@@ -17,7 +17,6 @@ module Annex.Branch (
 	files,
 ) where
 
-import System.Exit
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
@@ -25,9 +24,10 @@ import Annex.Exception
 import Annex.BranchState
 import Annex.Journal
 import qualified Git
-import qualified Git.UnionMerge
 import qualified Git.Ref
 import qualified Git.Branch
+import qualified Git.UnionMerge
+import qualified Git.HashObject
 import Annex.CatFile
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -291,23 +291,10 @@ stageJournal = do
 	withIndex $ liftIO $ do
 		let dir = gitAnnexJournalDir g
 		let paths = map (dir </>) fs
-		-- inject all the journal files directly into git
-		-- in one quick command
-		(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $ git_hash_object g
-		_ <- forkProcess $ do
-			hPutStr toh $ unlines paths
-			hClose toh
-			exitSuccess
-		hClose toh
-		shas <- map Git.Ref . lines <$> hGetContents fromh
-		-- update the index, also in just one command
+		shas <- Git.HashObject.hashFiles paths g
 		Git.UnionMerge.update_index g $
 			index_lines shas (map fileJournal fs)
-		hClose fromh
-		forceSuccess pid
 		mapM_ removeFile paths
 	where
 		index_lines shas = map genline . zip shas
 		genline (sha, file) = Git.UnionMerge.update_index_line sha file
-		git_hash_object = Git.gitCommandLine
-			[Param "hash-object", Param "-w", Param "--stdin-paths"]
