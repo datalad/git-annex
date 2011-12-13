@@ -45,25 +45,16 @@ module Git (
 	repoRemoteName,
 	repoRemoteNameSet,
 	repoRemoteNameFromKey,
-	checkAttr,
-	decodeGitFile,
-	encodeGitFile,
 	reap,
 	useIndex,
 	getSha,
 	shaSize,
 	assertLocal,
-
-	prop_idempotent_deencode
 ) where
 
-import qualified Data.Map as M hiding (map, split)
+import qualified Data.Map as M
 import Network.URI
 import Data.Char
-import Data.Word (Word8)
-import Codec.Binary.UTF8.String (encode)
-import Text.Printf
-import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 import qualified Data.ByteString.Lazy.Char8 as L
 
@@ -360,105 +351,3 @@ configTrue s = map toLower s == "true"
 {- Access to raw config Map -}
 configMap :: Repo -> M.Map String String
 configMap = config
-
-{- Efficiently looks up a gitattributes value for each file in a list. -}
-checkAttr :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
-checkAttr attr files repo = do
-	-- git check-attr needs relative filenames input; it will choke
-	-- on some absolute filenames. This also means it will output
-	-- all relative filenames.
-	cwd <- getCurrentDirectory
-	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
-	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
-        _ <- forkProcess $ do
-		hClose fromh
-                hPutStr toh $ join "\0" relfiles
-                hClose toh
-                exitSuccess
-        hClose toh
-	(map topair . lines) <$> hGetContents fromh
-	where
-		params = gitCommandLine 
-				[ Param "check-attr"
-				, Param attr
-				, Params "-z --stdin"
-				] repo
-		topair l = (file, value)
-			where 
-				file = decodeGitFile $ join sep $ take end bits
-				value = bits !! end
-				end = length bits - 1
-				bits = split sep l
-				sep = ": " ++ attr ++ ": "
-
-{- Some git commands output encoded filenames. Decode that (annoyingly
- - complex) encoding. -}
-decodeGitFile :: String -> FilePath
-decodeGitFile [] = []
-decodeGitFile f@(c:s)
-	-- encoded strings will be inside double quotes
-	| c == '"' = unescape ("", middle)
-	| otherwise = f
-	where
-		e = '\\'
-		middle = init s
-		unescape (b, []) = b
-		-- look for escapes starting with '\'
-		unescape (b, v) = b ++ beginning ++ unescape (decode rest)
-			where
-				pair = span (/= e) v
-				beginning = fst pair
-				rest = snd pair
-		isescape x = x == e
-		-- \NNN is an octal encoded character
-		decode (x:n1:n2:n3:rest)
-			| isescape x && alloctal = (fromoctal, rest)
-				where
-					alloctal = isOctDigit n1 &&
-						isOctDigit n2 &&
-						isOctDigit n3
-					fromoctal = [chr $ readoctal [n1, n2, n3]]
-					readoctal o = read $ "0o" ++ o :: Int
-		-- \C is used for a few special characters
-		decode (x:nc:rest)
-			| isescape x = ([echar nc], rest)
-			where
-				echar 'a' = '\a'
-				echar 'b' = '\b'
-				echar 'f' = '\f'
-				echar 'n' = '\n'
-				echar 'r' = '\r'
-				echar 't' = '\t'
-				echar 'v' = '\v'
-				echar a = a
-		decode n = ("", n)
-
-{- Should not need to use this, except for testing decodeGitFile. -}
-encodeGitFile :: FilePath -> String
-encodeGitFile s = foldl (++) "\"" (map echar s) ++ "\""
-	where
-		e c = '\\' : [c]
-		echar '\a' = e 'a'
-		echar '\b' = e 'b'
-		echar '\f' = e 'f'
-		echar '\n' = e 'n'
-		echar '\r' = e 'r'
-		echar '\t' = e 't'
-		echar '\v' = e 'v'
-		echar '\\' = e '\\'
-		echar '"'  = e '"'
-		echar x
-			| ord x < 0x20 = e_num x -- low ascii
-			| ord x >= 256 = e_utf x
-			| ord x > 0x7E = e_num x -- high ascii
-			| otherwise = [x]        -- printable ascii
-			where 
-				showoctal i = '\\' : printf "%03o" i
-				e_num c = showoctal $ ord c
-				-- unicode character is decomposed to
-				-- Word8s and each is shown in octal
-				e_utf c = showoctal =<< (encode [c] :: [Word8])
-
-{- for quickcheck -}
-prop_idempotent_deencode :: String -> Bool
-prop_idempotent_deencode s = s == decodeGitFile (encodeGitFile s)

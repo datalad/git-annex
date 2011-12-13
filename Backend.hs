@@ -22,6 +22,7 @@ import System.Posix.Files
 import Common.Annex
 import qualified Git
 import qualified Git.Config
+import qualified Git.CheckAttr
 import qualified Annex
 import Types.Key
 import qualified Types.Backend as B
@@ -103,7 +104,7 @@ chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = Annex.getState Annex.forcebackend >>= go
 	where
 		go Nothing = do
-			pairs <- inRepo $ Git.checkAttr "annex.backend" fs
+			pairs <- inRepo $ Git.CheckAttr.lookup "annex.backend" fs
 			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 		go (Just _) = do
 			l <- orderedList

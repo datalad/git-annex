@@ -11,6 +11,7 @@ import Common
 import qualified Git.UnionMerge
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Git.Branch
 import qualified Git
 
 header :: String
@@ -44,5 +45,5 @@ main = do
 	_ <- Git.useIndex (tmpIndex g)
 	setup g
 	Git.UnionMerge.merge aref bref g
-	_ <- Git.commit "union merge" newref [aref, bref] g
+	_ <- Git.Branch.commit "union merge" newref [aref, bref] g
 	cleanup g
