@@ -291,9 +291,10 @@ stageJournal = do
 	withIndex $ liftIO $ do
 		let dir = gitAnnexJournalDir g
 		let paths = map (dir </>) fs
-		shas <- Git.HashObject.hashFiles paths g
+		(shas, cleanup) <- Git.HashObject.hashFiles paths g
 		Git.UnionMerge.update_index g $
 			index_lines shas (map fileJournal fs)
+		cleanup
 		mapM_ removeFile paths
 	where
 		index_lines shas = map genline . zip shas
