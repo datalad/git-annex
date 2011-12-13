@@ -21,7 +21,6 @@ module Git (
 	repoDescribe,
 	repoLocation,
 	workTree,
-	workTreeFile,
 	gitDir,
 	urlPath,
 	urlHost,
@@ -165,36 +164,6 @@ workTree :: Repo -> FilePath
 workTree r@(Repo { location = Url _ }) = urlPath r
 workTree (Repo { location = Dir d }) = d
 workTree Repo { location = Unknown } = undefined
-
-{- Given a relative or absolute filename inside a git repository's
- - workTree, calculates the name to use to refer to that file to git.
- -
- - This is complicated because the best choice can vary depending on
- - whether the cwd is in a subdirectory of the git repository, or not.
- -
- - For example, when adding a file "/tmp/repo/foo", it's best to refer
- - to it as "foo" if the cwd is outside the repository entirely
- - (this avoids a gotcha with using the full path name when /tmp/repo
- - is itself a symlink). But, if the cwd is "/tmp/repo/subdir",
- - it's best to refer to "../foo".
- -}
-workTreeFile :: FilePath -> Repo -> IO FilePath
-workTreeFile file repo@(Repo { location = Dir d }) = do
-	cwd <- getCurrentDirectory
-	let file' = absfile cwd
-	unless (inrepo file') $
-		error $ file ++ " is not located inside git repository " ++ absrepo
-	if inrepo $ addTrailingPathSeparator cwd
-		then return $ relPathDirToFile cwd file'
-		else return $ drop (length absrepo) file'
-	where
-		-- normalize both repo and file, so that repo
-		-- will be substring of file
-		absrepo = maybe bad addTrailingPathSeparator $ absNormPath "/" d
-		absfile c = fromMaybe file $ secureAbsNormPath c file
-		inrepo f = absrepo `isPrefixOf` f
-		bad = error $ "bad repo" ++ repoDescribe repo
-workTreeFile _ repo = assertLocal repo $ error "internal"
 
 {- Path of an URL repo. -}
 urlPath :: Repo -> String
