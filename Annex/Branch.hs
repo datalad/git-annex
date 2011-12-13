@@ -71,7 +71,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
 			fromMaybe (error $ "failed to create " ++ show name)
 				<$> branchsha
 		go False = withIndex' True $ do
-			inRepo $ Git.commit "branch created" fullname []
+			inRepo $ Git.Branch.commit "branch created" fullname []
 		use sha = do
 			setIndexSha sha
 			return sha
@@ -190,7 +190,7 @@ commit message = whenM journalDirty $ lockJournal $ do
 commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitBranch branchref message parents = do
 	updateIndex branchref
-	committedref <- inRepo $ Git.commit message fullname parents
+	committedref <- inRepo $ Git.Branch.commit message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $

@@ -52,7 +52,6 @@ module Git (
 	useIndex,
 	getSha,
 	shaSize,
-	commit,
 	assertLocal,
 
 	prop_idempotent_deencode
@@ -353,23 +352,6 @@ getSha subcommand a = do
 {- Size of a git sha. -}
 shaSize :: Int
 shaSize = 40
-
-{- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs, and returns the committed sha -}
-commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
-commit message branch parentrefs repo = do
-	tree <- getSha "write-tree" $ asString $
-		pipeRead [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $ asString $
-		ignorehandle $ pipeWriteRead
-			(map Param $ ["commit-tree", show tree] ++ ps)
-			(L.pack message) repo
-	run "update-ref" [Param $ show branch, Param $ show sha] repo
-	return sha
-	where
-		ignorehandle a = snd <$> a
-		asString a = L.unpack <$> a
-		ps = concatMap (\r -> ["-p", show r]) parentrefs
 
 {- Checks if a string from git config is a true value. -}
 configTrue :: String -> Bool
