@@ -26,6 +26,7 @@ import Control.Monad.State
 
 import Common
 import qualified Git
+import qualified Git.Config
 import Git.CatFile
 import Git.Queue
 import Types.Backend
@@ -35,6 +36,7 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.UUID
 import qualified Utility.Matcher
+import qualified Data.Map as M
 
 -- needed for Debian stable's haskell to derive Applicative for StateT
 instance (Functor m, Monad m) => Applicative (StateT s m) where
@@ -73,7 +75,7 @@ data AnnexState = AnnexState
 	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
 	, forcetrust :: [(UUID, TrustLevel)]
 	, trustmap :: Maybe TrustMap
-	, cipher :: Maybe Cipher
+	, ciphers :: M.Map EncryptedCipher Cipher
 	}
 
 newState :: Git.Repo -> AnnexState
@@ -96,12 +98,12 @@ newState gitrepo = AnnexState
 	, limit = Left []
 	, forcetrust = []
 	, trustmap = Nothing
-	, cipher = Nothing
+	, ciphers = M.empty
 	}
 
 {- Create and returns an Annex state object for the specified git repo. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState <$> Git.configRead gitrepo
+new gitrepo = newState <$> Git.Config.read gitrepo
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)

@@ -37,7 +37,7 @@ perform dest key = do
 	
 	checkDiskSpace key
 
-	src <- fromRepo $ gitAnnexLocation key
+	src <- inRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
@@ -46,7 +46,7 @@ perform dest key = do
                 then do
 			liftIO $ do
 				removeFile dest
-				renameFile tmpdest dest
+				moveFile tmpdest dest
 				allowWrite dest
 			next $ return True
                 else error "copy failed!"

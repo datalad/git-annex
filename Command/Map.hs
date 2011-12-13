@@ -13,6 +13,8 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -138,15 +140,16 @@ spider' (r:rs) known
 
 		-- The remotes will be relative to r', and need to be
 		-- made absolute for later use.
-		let remotes = map (absRepo r') (Git.remotes r')
+		remotes <- mapM (absRepo r') (Git.remotes r')
 		let r'' = Git.remotesAdd r' remotes
 
 		spider' (rs ++ remotes) (r'':known)
 
-absRepo :: Git.Repo -> Git.Repo -> Git.Repo
+{- Converts repos to a common absolute form. -}
+absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
-	| Git.repoIsUrl reference = Git.localToUrl reference r
-	| otherwise = r
+	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
+	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.workTree r)
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
@@ -181,7 +184,7 @@ tryScan :: Git.Repo -> Annex (Maybe Git.Repo)
 tryScan r
 	| Git.repoIsSsh r = sshscan
 	| Git.repoIsUrl r = return Nothing
-	| otherwise = safely $ Git.configRead r
+	| otherwise = safely $ Git.Config.read r
 	where
 		safely a = do
 			result <- liftIO (try a :: IO (Either SomeException Git.Repo))
@@ -190,7 +193,7 @@ tryScan r
 				Right r' -> return $ Just r'
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
-				Git.hConfigRead r
+				Git.Config.hRead r
 
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" []
@@ -202,7 +205,7 @@ tryScan r
 					"git config --list"
 				dir = Git.workTree r
 				cddir
-					| take 2 dir == "/~" =
+					| "/~" `isPrefixOf` dir =
 						let (userhome, reldir) = span (/= '/') (drop 1 dir)
 						in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
 					| otherwise = "cd " ++ shellEscape dir

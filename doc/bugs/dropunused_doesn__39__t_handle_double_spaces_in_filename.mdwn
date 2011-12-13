@@ -1,0 +1,87 @@
+Unused files with double spaces in their name are not removed by `dropunused`:
+
+Script:
+
+    #!/bin/bash
+    
+    BASE=/tmp/unused-bug
+    
+    # setup
+    set -x
+    chmod -R +w $BASE
+    rm -rf $BASE
+    mkdir -p $BASE
+    cd $BASE
+    
+    # create annex
+    git init .
+    git annex init
+    
+    # make a file with two spaces
+    echo hello > 'foo  bar'
+    
+    # add it
+    git annex add --backend WORM 'foo  bar'
+    git commit -m 'add'
+    
+    # remove it
+    git rm 'foo  bar'
+    git commit -m 'remove'
+    
+    # unused
+    git annex unused
+    git annex dropunused 1
+    git annex unused
+
+Output:
+
+    + chmod -R +w /tmp/unused-bug
+    + rm -rf /tmp/unused-bug
+    + mkdir -p /tmp/unused-bug
+    + cd /tmp/unused-bug
+    + git init .
+    Initialized empty Git repository in /tmp/unused-bug/.git/
+    + git annex init
+    init  ok
+    + echo hello
+    + git annex add --backend WORM 'foo  bar'
+    add foo  bar ok
+    (Recording state in git...)
+    + git commit -m add
+    [master (root-commit) 926f7f5] add
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 foo  bar
+    + git rm 'foo  bar'
+    rm 'foo  bar'
+    + git commit -m remove
+    [master d025e3f] remove
+     1 files changed, 0 insertions(+), 1 deletions(-)
+     delete mode 120000 foo  bar
+    + git annex unused
+    unused . (checking for unused data...) (checking master...) 
+      Some annexed data is no longer used by any files:
+        NUMBER  KEY
+        1       WORM-s6-m1322200438--foo  bar
+      (To see where data was previously used, try: git log --stat -S'KEY')
+      
+      To remove unwanted data: git-annex dropunused NUMBER
+      
+    ok
+    + git annex dropunused 1
+    dropunused 1 ok
+    + git annex unused
+    unused . (checking for unused data...) (checking master...) 
+      Some annexed data is no longer used by any files:
+        NUMBER  KEY
+        1       WORM-s6-m1322200438--foo  bar
+      (To see where data was previously used, try: git log --stat -S'KEY')
+      
+      To remove unwanted data: git-annex dropunused NUMBER
+      
+    ok
+
+Strange that `dropunused` still said "ok" when it didn't succeed at removing the file.
+
+> It was misparsing the unused file, so it thought you'd asked it to drop a
+> key that didn't exist (which means already dropped) so no error. I've
+> fixed the bug. [[done]] --[[Joey]] 

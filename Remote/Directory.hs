@@ -62,56 +62,67 @@ directorySetup u c = do
 	gitConfigSpecialRemote u c' "directory" dir
 	return $ M.delete "directory" c'
 
-dirKey :: FilePath -> Key -> FilePath
-dirKey d k = d </> hashDirMixed k </> f </> f
+{- Locations to try to access a given Key in the Directory. -}
+locations :: FilePath -> Key -> [FilePath]
+locations d k = map (d </>) (keyPaths k)
+
+withCheckedFile :: (FilePath -> IO Bool) -> FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
+withCheckedFile _ [] _ _ = return False
+withCheckedFile check d k a = go $ locations d k
 	where
-		f = keyFile k
+		go [] = return False
+		go (f:fs) = do
+			use <- check f
+			if use
+				then a f
+				else go fs
+
+withStoredFile :: FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
+withStoredFile = withCheckedFile doesFileExist
 
 store :: FilePath -> Key -> Annex Bool
 store d k = do
-	src <- fromRepo $ gitAnnexLocation k
-	let dest = dirKey d k
-	liftIO $ catchBoolIO $ storeHelper dest $ copyFileExternal src dest
+	src <- inRepo $ gitAnnexLocation k
+	liftIO $ catchBoolIO $ storeHelper d k $ copyFileExternal src
 
 storeEncrypted :: FilePath -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d (cipher, enck) k = do
-	src <- fromRepo $ gitAnnexLocation k
-	let dest = dirKey d enck
-	liftIO $ catchBoolIO $ storeHelper dest $ encrypt src dest
+	src <- inRepo $ gitAnnexLocation k
+	liftIO $ catchBoolIO $ storeHelper d enck $ encrypt src
 	where
 		encrypt src dest = do
 			withEncryptedContent cipher (L.readFile src) $ L.writeFile dest
 			return True
 
-storeHelper :: FilePath -> IO Bool -> IO Bool
-storeHelper dest a = do
+storeHelper :: FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
+storeHelper d key a = do
+	let dest = head $ locations d key
 	let dir = parentDir dest
 	createDirectoryIfMissing True dir
-	allowWrite dir	
-	ok <- a
+	allowWrite dir
+	ok <- a dest
 	when ok $ do
 		preventWrite dest
 		preventWrite dir
 	return ok
 
 retrieve :: FilePath -> Key -> FilePath -> Annex Bool
-retrieve d k f = liftIO $ copyFileExternal (dirKey d k) f
+retrieve d k f = liftIO $ withStoredFile d k $ \file -> copyFileExternal file f
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =
-	liftIO $ catchBoolIO $ do
-		withDecryptedContent cipher (L.readFile (dirKey d enck)) $ L.writeFile f
+	liftIO $ withStoredFile d enck $ \file -> catchBoolIO $ do
+		withDecryptedContent cipher (L.readFile file) $ L.writeFile f
 		return True
 
 remove :: FilePath -> Key -> Annex Bool
-remove d k = liftIO $ catchBoolIO $ do
+remove d k = liftIO $ withStoredFile d k $ \file -> catchBoolIO $ do
+	let dir = parentDir file
 	allowWrite dir
 	removeFile file
 	removeDirectory dir
 	return True
-	where
-		file = dirKey d k
-		dir = parentDir file
 
 checkPresent :: FilePath -> Key -> Annex (Either String Bool)
-checkPresent d k = liftIO $ catchMsgIO $ doesFileExist (dirKey d k)
+checkPresent d k = liftIO $ catchMsgIO $ withStoredFile d k $
+	const $ return True -- withStoredFile checked that it exists

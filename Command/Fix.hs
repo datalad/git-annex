@@ -23,12 +23,9 @@ seek = [withFilesInGit $ whenAnnexed start]
 start :: FilePath -> (Key, Backend Annex) -> CommandStart
 start file (key, _) = do
 	link <- calcGitLink file key
-	l <- liftIO $ readSymbolicLink file
-	if link == l
-		then stop
-		else do
-			showStart "fix" file
-			next $ perform file link
+	stopUnless ((/=) link <$> liftIO (readSymbolicLink file)) $ do
+		showStart "fix" file
+		next $ perform file link
 
 perform :: FilePath -> FilePath -> CommandPerform
 perform file link = do

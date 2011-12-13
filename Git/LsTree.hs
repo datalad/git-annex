@@ -17,6 +17,7 @@ import System.Posix.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
+import qualified Git.Filename
 import Utility.SafeCommand
 
 data TreeItem = TreeItem
@@ -38,7 +39,7 @@ parseLsTree l = TreeItem
 	{ mode = fst $ head $ readOct $ L.unpack m
 	, typeobj = L.unpack t
 	, sha = L.unpack s
-	, file = decodeGitFile $ L.unpack f
+	, file = Git.Filename.decode $ L.unpack f
 	}
 	where
 		-- l = <mode> SP <type> SP <sha> TAB <file>

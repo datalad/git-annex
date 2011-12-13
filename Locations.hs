@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,8 +8,9 @@
 module Locations (
 	keyFile,
 	fileKey,
+	keyPaths,
 	gitAnnexLocation,
-	annexLocation,
+	annexLocations,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpDir,
@@ -19,15 +20,18 @@ module Locations (
 	gitAnnexUnusedLog,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
+	gitAnnexIndex,
+	gitAnnexIndexLock,
 	isLinkToAnnex,
+	annexHashes,
 	hashDirMixed,
 	hashDirLower,
 
 	prop_idempotent_fileKey
 ) where
 
-import Bits
-import Word
+import Data.Bits
+import Data.Word
 import Data.Hash.MD5
 
 import Common
@@ -58,17 +62,35 @@ annexDir = addTrailingPathSeparator "annex"
 objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
 
-{- Annexed file's location relative to the .git directory. -}
-annexLocation :: Key -> FilePath
-annexLocation key = objectDir </> hashDirMixed key </> f </> f
-	where
-		f = keyFile key
+{- Annexed file's possible locations relative to the .git directory.
+ - There are two different possibilities, using different hashes. -}
+annexLocations :: Key -> [FilePath]
+annexLocations key = map (annexLocation key) annexHashes
+annexLocation :: Key -> Hasher -> FilePath
+annexLocation key hasher = objectDir </> keyPath key hasher
 
-{- Annexed file's absolute location in a repository. -}
-gitAnnexLocation :: Key -> Git.Repo -> FilePath
+{- Annexed file's absolute location in a repository.
+ -
+ - When there are multiple possible locations, returns the one where the
+ - file is actually present.
+ -
+ - When the file is not present, returns the location where the file should
+ - be stored.
+ -}
+gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
 gitAnnexLocation key r
-	| Git.repoIsLocalBare r = Git.workTree r </> annexLocation key
-	| otherwise = Git.workTree r </> ".git" </> annexLocation key
+	| Git.repoIsLocalBare r =
+		{- Bare repositories default to hashDirLower for new
+		 - content, as it's more portable. -}
+		check (map inrepo $ annexLocations key)
+	| otherwise =
+		{- Non-bare repositories only use hashDirMixed, so
+		 - don't need to do any work to check if the file is
+		 - present. -}
+		return $ inrepo ".git" </> annexLocation key hashDirMixed
+	where
+		inrepo d = Git.workTree r </> d
+		check locs = fromMaybe (head locs) <$> firstM doesFileExist locs
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
@@ -76,8 +98,7 @@ gitAnnexDir r
 	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> annexDir
 	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> annexDir
 
-{- The part of the annex directory where file contents are stored.
- -}
+{- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
 gitAnnexObjectDir r
 	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> objectDir
@@ -112,11 +133,19 @@ gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
 gitAnnexJournalLock :: Git.Repo -> FilePath
 gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 
+{- .git/annex/index is used to stage changes to the git-annex branch -}
+gitAnnexIndex :: Git.Repo -> FilePath
+gitAnnexIndex r = gitAnnexDir r </> "index"
+
+{- Lock file for .git/annex/index. -}
+gitAnnexIndexLock :: Git.Repo -> FilePath
+gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
+
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = ("/.git/" ++ objectDir) `isInfixOf` s
 
-{- Converts a key into a filename fragment.
+{- Converts a key into a filename fragment without any directory.
  -
  - Escape "/" in the key name, to keep a flat tree of files and avoid
  - issues with keys containing "/../" or ending with "/" etc. 
@@ -132,6 +161,22 @@ keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
 	replace "%" "&s" $ replace "&" "&a"  $ show key
 
+{- A location to store a key on the filesystem. A directory hash is used,
+ - to protect against filesystems that dislike having many items in a
+ - single directory.
+ -
+ - The file is put in a directory with the same name, this allows
+ - write-protecting the directory to avoid accidental deletion of the file.
+ -}
+keyPath :: Key -> Hasher -> FilePath
+keyPath key hasher = hasher key </> f </> f
+	where
+		f = keyFile key
+
+{- All possibile locations to store a key using different directory hashes. -}
+keyPaths :: Key -> [FilePath]
+keyPaths key = map (keyPath key) annexHashes
+
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
@@ -144,17 +189,22 @@ prop_idempotent_fileKey :: String -> Bool
 prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
 	where k = stubKey { keyName = s, keyBackendName = "test" }
 
-{- Given a key, generates a short directory name to put it in,
- - to do hashing to protect against filesystems that dislike having
- - many items in a single directory. -}
-hashDirMixed :: Key -> FilePath
+{- Two different directory hashes may be used. The mixed case hash
+ - came first, and is fine, except for the problem of case-strict
+ - filesystems such as Linux VFAT (mounted with shortname=mixed),
+ - which do not allow using a directory "XX" when "xx" already exists.
+ - To support that, most repositories use the lower case hash for new data. -}
+type Hasher = Key -> FilePath
+annexHashes :: [Hasher]
+annexHashes = [hashDirLower, hashDirMixed]
+
+hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
 	where
 		dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
 		ABCD (a,b,c,d) = md5 $ Str $ show k
 
-{- Generates a hash directory that is all lower case. -}
-hashDirLower :: Key -> FilePath
+hashDirLower :: Hasher
 hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
 	where
 		dir = take 6 $ md5s $ Str $ show k

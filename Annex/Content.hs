@@ -48,7 +48,7 @@ inAnnex' :: (FilePath -> IO a) -> Key -> Annex a
 inAnnex' a key = do
 	whenM (fromRepo Git.repoIsUrl) $
 		error "inAnnex cannot check remote repo"
-	inRepo $ a . gitAnnexLocation key
+	inRepo $ \g -> gitAnnexLocation key g >>= a
 
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
@@ -70,7 +70,7 @@ inAnnexSafe = inAnnex' $ \f -> openForLock f False >>= check
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
-	file <- fromRepo $ gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	bracketIO (openForLock file True >>= lock) unlock a
 	where
 		lock Nothing = return Nothing
@@ -100,9 +100,8 @@ calcGitLink :: FilePath -> Key -> Annex FilePath
 calcGitLink file key = do
 	cwd <- liftIO getCurrentDirectory
 	let absfile = fromMaybe whoops $ absNormPath cwd file
-	top <- fromRepo Git.workTree
-	return $ relPathDirToFile (parentDir absfile) 
-			top </> ".git" </> annexLocation key
+	loc <- inRepo $ gitAnnexLocation key
+	return $ relPathDirToFile (parentDir absfile) loc
 	where
 		whoops = error $ "unable to normalize " ++ file
 
@@ -113,7 +112,7 @@ logStatus key status = do
 	u <- getUUID
 	logChange key u status
 
-{- Runs an action, passing it a temporary filename to download,
+{- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
@@ -213,7 +212,7 @@ checkDiskSpace' adjustment key = do
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = do
-	dest <- fromRepo $ gitAnnexLocation key
+	dest <- inRepo $ gitAnnexLocation key
 	let dir = parentDir dest
 	e <- liftIO $ doesFileExist dest
 	if e
@@ -221,13 +220,13 @@ moveAnnex key src = do
 		else liftIO $ do
 			createDirectoryIfMissing True dir
 			allowWrite dir -- in case the directory already exists
-			renameFile src dest
+			moveFile src dest
 			preventWrite dest
 			preventWrite dir
 
 withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
 withObjectLoc key a = do
-	file <- fromRepo $gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	let dir = parentDir file
 	a (dir, file)
 
@@ -243,20 +242,20 @@ fromAnnex :: Key -> FilePath -> Annex ()
 fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
 	allowWrite dir
 	allowWrite file
-	renameFile file dest
+	moveFile file dest
 	removeDirectory dir
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	src <- fromRepo $ gitAnnexLocation key
+	src <- inRepo $ gitAnnexLocation key
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	liftIO $ do
 		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
-		renameFile src dest
+		moveFile src dest
 		removeDirectory (parentDir src)
 	logStatus key InfoMissing
 	return dest

@@ -15,6 +15,8 @@ import System.Process
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import Config
 import Annex.Ssh
 import Remote.Helper.Special
@@ -102,13 +104,13 @@ bupSplitParams r buprepo k src = do
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k = do
-	src <- fromRepo $ gitAnnexLocation k
+	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck (Param "-")
 	liftIO $ catchBoolIO $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
@@ -163,8 +165,8 @@ storeBupUUID u buprepo = do
 				[Params $ "config annex.uuid " ++ v]
 					>>! error "ssh failed"
 		else liftIO $ do
-			r' <- Git.configRead r
-			let olduuid = Git.configGet "annex.uuid" "" r'
+			r' <- Git.Config.read r
+			let olduuid = Git.Config.get "annex.uuid" "" r'
 			when (olduuid == "") $
 				Git.run "config"
 					[Param "annex.uuid", Param v] r'
@@ -182,7 +184,7 @@ onBupRemote r a command params = do
  - local bup repositories to see if they are available, and getting their
  - uuid (which may be different from the stored uuid for the bup remote).
  -
- - If a bup repository is not available, returns a dummy uuid of "".
+ - If a bup repository is not available, returns NoUUID.
  - This will cause checkPresent to indicate nothing from the bup remote
  - is known to be present.
  -
@@ -192,9 +194,9 @@ getBupUUID :: Git.Repo -> UUID -> Annex (UUID, Git.Repo)
 getBupUUID r u
 	| Git.repoIsUrl r = return (u, r)
 	| otherwise = liftIO $ do
-		ret <- try $ Git.configRead r
+		ret <- try $ Git.Config.read r
 		case ret of
-			Right r' -> return (toUUID $ Git.configGet "annex.uuid" "" r', r')
+			Right r' -> return (toUUID $ Git.Config.get "annex.uuid" "" r', r')
 			Left _ -> return (NoUUID, r)
 
 {- Converts a bup remote path spec into a Git.Repo. There are some
@@ -203,13 +205,13 @@ bup2GitRemote :: BupRepo -> IO Git.Repo
 bup2GitRemote "" = do
 	-- bup -r "" operates on ~/.bup
 	h <- myHomeDir
-	Git.repoFromAbsPath $ h </> ".bup"
+	Git.Construct.fromAbsPath $ h </> ".bup"
 bup2GitRemote r
 	| bupLocal r = 
 		if head r == '/'
-			then Git.repoFromAbsPath r
+			then Git.Construct.fromAbsPath r
 			else error "please specify an absolute path"
-	| otherwise = Git.repoFromUrl $ "ssh://" ++ host ++ slash dir
+	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
 		where
 			bits = split ":" r
 			host = head bits

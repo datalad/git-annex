@@ -11,11 +11,10 @@ import Test.QuickCheck
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
-import IO (bracket_, bracket)
+import Control.Exception (bracket_, bracket, throw)
 import System.IO.Error
 import System.Posix.Env
 import qualified Control.Exception.Extensible as E
-import Control.Exception (throw)
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 
@@ -26,6 +25,9 @@ import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
+import qualified Git.Filename
 import qualified Locations
 import qualified Types.Backend
 import qualified Types
@@ -68,7 +70,7 @@ propigate (Counts { errors = e , failures = f }, _)
 
 quickcheck :: Test
 quickcheck = TestLabel "quickcheck" $ TestList
-	[ qctest "prop_idempotent_deencode" Git.prop_idempotent_deencode
+	[ qctest "prop_idempotent_deencode" Git.Filename.prop_idempotent_deencode
 	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
 	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
 	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
@@ -497,8 +499,8 @@ git_annex command params = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.repoFromCwd
-	g' <- Git.configRead g
+	g <- Git.Construct.fromCwd
+	g' <- Git.Config.read g
 	s <- Annex.new g'
 	Annex.eval s a
 
@@ -523,8 +525,7 @@ indir dir a = do
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to cwd before
 	-- rethrowing.
-	r <- bracket_ (changeToTmpDir dir)
-		(\_ -> changeWorkingDirectory cwd)
+	r <- bracket_ (changeToTmpDir dir) (changeWorkingDirectory cwd)
 		(E.try (a)::IO (Either E.SomeException ()))
 	case r of
 		Right () -> return ()

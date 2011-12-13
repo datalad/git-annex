@@ -16,10 +16,12 @@ import Utility.RsyncFile
 import Annex.Ssh
 import Types.Remote
 import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import qualified Annex
 import Annex.UUID
 import qualified Annex.Content
-import qualified Annex.Branch
+import qualified Annex.BranchState
 import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
@@ -44,7 +46,7 @@ list = do
 			case M.lookup (annexurl n) c of
 				Nothing -> return r
 				Just url -> Git.repoRemoteNameSet n <$>
-					inRepo (Git.genRemote url)
+					inRepo (Git.Construct.fromRemoteLocation url)
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do
@@ -86,9 +88,9 @@ tryGitConfigRead r
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
 	| Git.repoIsHttp r = store $ safely geturlconfig
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ do
-		onLocal r ensureInitialized
-		Git.configRead r
+	| otherwise = store $ safely $ onLocal r $ do 
+		ensureInitialized
+		Annex.getState Annex.repo
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
@@ -100,7 +102,7 @@ tryGitConfigRead r
 
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
-				Git.hConfigRead r
+				Git.Config.hRead r
 
 		geturlconfig = do
 			s <- Url.get (Git.repoLocation r ++ "/config")
@@ -108,7 +110,7 @@ tryGitConfigRead r
 				hPutStr h s
 				hClose h
 				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
-					Git.hConfigRead r
+					Git.Config.hRead r
 
 		store a = do
 			r' <- a
@@ -134,7 +136,14 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
 	where
-		checkhttp = liftIO $ catchMsgIO $ Url.exists $ keyUrl r key
+		checkhttp = liftIO $ go undefined $ keyUrls r key
+			where
+				go e [] = return $ Left e
+				go _ (u:us) = do
+					res <- catchMsgIO $ Url.exists u
+					case res of
+						Left e -> go e us
+						v -> return v
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
 			onRemote r (check, unknown) "inannex" [Param (show key)]
@@ -158,19 +167,21 @@ onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
 	-- Avoid re-reading the repository's configuration if it was
 	-- already read.
-	state <- if (M.null $ Git.configMap r)
+	state <- if M.null $ Git.configMap r
 		then Annex.new r
 		else return $ Annex.newState r
 	Annex.eval state $ do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
-		Annex.Branch.disableUpdate
+		Annex.BranchState.disableUpdate
 		ret <- a
 		liftIO Git.reap
 		return ret
 
-keyUrl :: Git.Repo -> Key -> String
-keyUrl r key = Git.repoLocation r ++ "/" ++ annexLocation key
+keyUrls :: Git.Repo -> Key -> [String]
+keyUrls r key = map tourl (annexLocations key)
+	where
+		tourl l = Git.repoLocation r ++ "/" ++ l
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
@@ -185,25 +196,29 @@ copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
-		rsyncOrCopyFile params (gitAnnexLocation key r) file
+		loc <- liftIO $ gitAnnexLocation key r
+		rsyncOrCopyFile params loc file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = liftIO $ Url.download (keyUrl r key) file
+	| Git.repoIsHttp r = liftIO $ downloadurls $ keyUrls r key
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
+	where
+		downloadurls us = untilTrue us $ \u -> Url.download u file
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
 	| not $ Git.repoIsUrl r = do
-		keysrc <- fromRepo $ gitAnnexLocation key
+		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
+			ensureInitialized
 			ok <- Annex.Content.getViaTmp key $
 				rsyncOrCopyFile params keysrc
 			Annex.Content.saveState
 			return ok
 	| Git.repoIsSsh r = do
-		keysrc <- fromRepo $ gitAnnexLocation key
+		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
 

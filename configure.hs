@@ -71,7 +71,7 @@ checkGitVersion = do
 		dotted = sum . mult 1 . reverse . extend 10 . map readi . split "." 
 		extend n l = l ++ replicate (n - length l) 0
 		mult _ [] = []
-		mult n (x:xs) = (n*x) : (mult (n*100) xs)
+		mult n (x:xs) = (n*x) : mult (n*100) xs
 		readi :: String -> Integer
 		readi s = case reads s of
 			((x,_):_) -> x

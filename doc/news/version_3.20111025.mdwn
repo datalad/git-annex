@@ -1,8 +1,0 @@
-git-annex 3.20111025 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * A remote can have a annexUrl configured, that is used by git-annex
-     instead of its usual url. (Similar to pushUrl.)
-   * migrate: Copy url logs for keys when migrating.
-   * git-annex-shell: GIT\_ANNEX\_SHELL\_READONLY and GIT\_ANNEX\_SHELL\_LIMITED
-     environment variables can be set to limit what commands can be run.
-     This is used by gitolite's new git-annex support!"""]]

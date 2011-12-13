@@ -27,6 +27,23 @@ readMaybe s = case reads s of
 	((x,_):_) -> Just x
 	_ -> Nothing
 
+{- Like break, but the character matching the condition is not included
+ - in the second result list.
+ -
+ - separate (== ':') "foo:bar" = ("foo", "bar")
+ - separate (== ':') "foobar" = ("foo, "")
+ -}
+separate :: (a -> Bool) -> [a] -> ([a], [a])
+separate c l = unbreak $ break c l
+	where
+		unbreak r@(a, b)
+			| null b = r
+			| otherwise = (a, tail b)
+
+{- Breaks out the first line. -}
+firstLine :: String-> String
+firstLine = takeWhile (/= '\n')
+
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
 catchBoolIO a = catchDefaultIO a False

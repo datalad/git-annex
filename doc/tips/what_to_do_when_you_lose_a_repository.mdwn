@@ -4,16 +4,16 @@ drive died or some other misfortune has befallen your data.
 Unless you configured backups, git-annex can't get your data back. But it
 can help you deal with the loss.
 
-First, go somewhere that knows about the lost repository, and mark it as
-untrusted.
+Go somewhere that knows about the lost repository, and mark it as
+dead:
 
-	git annex untrust usbdrive
+	git annex dead usbdrive
 
-To remind yourself later what happened, you can change its description, too:
+This retains the [[location_tracking]] information for the repository,
+but avoids trying to access it, or list it as a location where files
+are present.
 
-	git annex describe usbdrive "USB drive lost in Timbuktu. Probably gone forever."
+If you later found the drive, you could let git-annex know it's found
+like so:
 
-This retains the [[location_tracking]] information for the repository.
-Maybe you'll find the drive later. Maybe that's impossible. Either way,
-this lets git-annex tell you why a file is no longer accessible, and
-it avoids it relying on that drive to hold any content.
+	git annex semitrusted usbdrive

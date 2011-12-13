@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 1"
+ date="2011-12-06T12:50:27Z"
+ content="""
+Ah HA!  Looks like I found the cause of this.
+
+    [matt@rss01:~/files/matt_ford]0> git annex add mhs
+    add mhs/Accessing_Web_Manager_V10.pdf ok
+    ....
+    add mhs/MAHSC Costing Request Form Dual
+    Organisations - FINAL v20 Oct 2010.xls git-annex: unknown response from git cat-file refs/heads/git-annex:8d5/ed4/WORM-s568832-m1323164214--MAHSC Costing Request Form Dual missing
+
+Spot the file name with a newline character in it!  This causes the error message above.  It seems that the files proceeding this badly named file are sym-linked but not registered.
+
+Perhaps a bug?
+"""]]

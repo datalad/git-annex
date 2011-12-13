@@ -24,3 +24,7 @@ firstM p (x:xs) = do
  - stopping once one is found. -}
 anyM :: (Monad m) => (a -> m Bool) -> [a] -> m Bool
 anyM p = liftM isJust . firstM p
+
+{- Runs an action on values from a list until it succeeds. -}
+untilTrue :: (Monad m) => [a] -> (a -> m Bool) -> m Bool
+untilTrue = flip anyM

@@ -18,6 +18,7 @@ import Backend
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles as LsFiles
+import qualified Git.CheckAttr
 import qualified Limit
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
@@ -31,7 +32,7 @@ withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
 withAttrFilesInGit :: String -> ((FilePath, String) -> CommandStart) -> CommandSeek
 withAttrFilesInGit attr a params = do
 	files <- seekHelper LsFiles.inRepo params
-	prepFilteredGen a fst $ inRepo $ Git.checkAttr attr files
+	prepFilteredGen a fst $ inRepo $ Git.CheckAttr.lookup attr files
 
 withNumCopies :: (Maybe Int -> FilePath -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params

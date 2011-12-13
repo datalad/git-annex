@@ -10,7 +10,8 @@ module GitAnnex where
 import System.Console.GetOpt
 
 import Common.Annex
-import qualified Git
+import qualified Git.Config
+import qualified Git.Construct
 import CmdLine
 import Command
 import Types.TrustLevel
@@ -46,6 +47,8 @@ import qualified Command.Uninit
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
+import qualified Command.Dead
+import qualified Command.Sync
 import qualified Command.AddUrl
 import qualified Command.Map
 import qualified Command.Upgrade
@@ -60,6 +63,8 @@ cmds = concat
 	, Command.Copy.def
 	, Command.Unlock.def
 	, Command.Lock.def
+	, Command.Sync.def
+	, Command.AddUrl.def
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
@@ -70,7 +75,7 @@ cmds = concat
 	, Command.Trust.def
 	, Command.Untrust.def
 	, Command.Semitrust.def
-	, Command.AddUrl.def
+	, Command.Dead.def
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.Fix.def
@@ -111,6 +116,8 @@ options = commonOptions ++
 		"skip files not present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
+	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
+		"skip files not using a key-value backend"
 	] ++ matcherOptions
 	where
 		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
@@ -119,11 +126,11 @@ options = commonOptions ++
 		setprint0 v = Annex.changeState $ \s -> s { Annex.print0 = v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
-			newg <- inRepo $ Git.configStore v
+			newg <- inRepo $ Git.Config.store v
 			Annex.changeState $ \s -> s { Annex.repo = newg }
 
 header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch args cmds options header Git.repoFromCwd
+run args = dispatch args cmds options header Git.Construct.fromCwd

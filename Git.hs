@@ -3,7 +3,7 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,17 +14,11 @@ module Git (
 	Branch,
 	Sha,
 	Tag,
-	repoFromCwd,
-	repoFromAbsPath,
-	repoFromUnknown,
-	repoFromUrl,
-	localToUrl,
 	repoIsUrl,
 	repoIsSsh,
 	repoIsHttp,
 	repoIsLocalBare,
 	repoDescribe,
-	refDescribe,
 	repoLocation,
 	workTree,
 	workTreeFile,
@@ -35,11 +29,7 @@ module Git (
 	urlHostUser,
 	urlAuthority,
 	urlScheme,
-	configGet,
 	configMap,
-	configRead,
-	hConfigRead,
-	configStore,
 	configTrue,
 	gitCommandLine,
 	run,
@@ -52,124 +42,24 @@ module Git (
 	attributes,
 	remotes,
 	remotesAdd,
-	genRemote,
 	repoRemoteName,
 	repoRemoteNameSet,
 	repoRemoteNameFromKey,
-	checkAttr,
-	decodeGitFile,
-	encodeGitFile,
-	repoAbsPath,
 	reap,
 	useIndex,
 	getSha,
 	shaSize,
-	commit,
 	assertLocal,
-
-	prop_idempotent_deencode
 ) where
 
-import System.Posix.Directory
-import System.Posix.User
-import IO (bracket_, try)
-import qualified Data.Map as M hiding (map, split)
+import qualified Data.Map as M
 import Network.URI
 import Data.Char
-import Data.Word (Word8)
-import Codec.Binary.UTF8.String (encode)
-import Text.Printf
-import System.Exit
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
-
-{- There are two types of repositories; those on local disk and those
- - accessed via an URL. -}
-data RepoLocation = Dir FilePath | Url URI | Unknown
-	deriving (Show, Eq)
-
-data Repo = Repo {
-	location :: RepoLocation,
-	config :: M.Map String String,
-	remotes :: [Repo],
-	-- remoteName holds the name used for this repo in remotes
-	remoteName :: Maybe String 
-} deriving (Show, Eq)
-
-{- A git ref. Can be a sha1, or a branch or tag name. -}
-newtype Ref = Ref String
-	deriving (Eq)
-
-instance Show Ref where
-	show (Ref v) = v
-
-{- Aliases for Ref. -}
-type Branch = Ref
-type Sha = Ref
-type Tag = Ref
-
-newFrom :: RepoLocation -> Repo
-newFrom l = 
-	Repo {
-		location = l,
-		config = M.empty,
-		remotes = [],
-		remoteName = Nothing
-	}
-
-{- Local Repo constructor, requires an absolute path to the repo be
- - specified. -}
-repoFromAbsPath :: FilePath -> IO Repo
-repoFromAbsPath dir
-	| "/" `isPrefixOf` dir = do
- 		-- Git always looks for "dir.git" in preference to
-		-- to "dir", even if dir ends in a "/".
-		let canondir = dropTrailingPathSeparator dir
-		let dir' = canondir ++ ".git"
-		e <- doesDirectoryExist dir'
-		if e
-			then ret dir'
-			else if "/.git" `isSuffixOf` canondir
-				then do
-					-- When dir == "foo/.git", git looks
-					-- for "foo/.git/.git", and failing
-					-- that, uses "foo" as the repository.
-					e' <- doesDirectoryExist $ dir </> ".git"
-					if e'
-						then ret dir
-						else ret $ takeDirectory canondir
-				else ret dir
-	| otherwise = error $ "internal error, " ++ dir ++ " is not absolute"
-	where
-		ret = return . newFrom . Dir
-
-{- Remote Repo constructor. Throws exception on invalid url. -}
-repoFromUrl :: String -> IO Repo
-repoFromUrl url
-	| startswith "file://" url = repoFromAbsPath $ uriPath u
-	| otherwise = return $ newFrom $ Url u
-		where
-			u = fromMaybe bad $ parseURI url
-			bad = error $ "bad url " ++ url
-
-{- Creates a repo that has an unknown location. -}
-repoFromUnknown :: Repo
-repoFromUnknown = newFrom Unknown
-
-{- Converts a Local Repo into a remote repo, using the reference repo
- - which is assumed to be on the same host. -}
-localToUrl :: Repo -> Repo -> Repo
-localToUrl reference r
-	| not $ repoIsUrl reference = error "internal error; reference repo not url"
-	| repoIsUrl r = r
-	| otherwise = r { location = Url $ fromJust $ parseURI absurl }
-	where
-		absurl =
-			urlScheme reference ++ "//" ++
-			urlAuthority reference ++
-			workTree r
+import Git.Types
 
 {- User-visible description of a git repo. -}
 repoDescribe :: Repo -> String
@@ -177,14 +67,6 @@ repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
 repoDescribe Repo { location = Dir dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
-
-{- Converts a fully qualified git ref into a user-visible version. -}
-refDescribe :: Ref -> String
-refDescribe = remove "refs/heads/" . remove "refs/remotes/" . show
-	where
-		remove prefix s
-			| prefix `isPrefixOf` s = drop (length prefix) s
-			| otherwise = s
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
@@ -345,7 +227,7 @@ urlPort :: Repo -> Maybe Integer
 urlPort r = 
 	case urlAuthPart uriPort r of
 		":" -> Nothing
-		(':':p) -> Just (read p)
+		(':':p) -> readMaybe p
 		_ -> Nothing
 
 {- Hostname of an URL repo, including any username (ie, "user@host") -}
@@ -438,12 +320,12 @@ reap = do
  - index file. -}
 useIndex :: FilePath -> IO (IO ())
 useIndex index = do
-	res <- try $ getEnv var
+	res <- getEnv var
 	setEnv var index True
 	return $ reset res
 	where
 		var = "GIT_INDEX_FILE"
-		reset (Right (Just v)) = setEnv var v True
+		reset (Just v) = setEnv var v True
 		reset _ = unsetEnv var
 
 {- Runs an action that causes a git subcommand to emit a sha, and strips
@@ -462,288 +344,10 @@ getSha subcommand a = do
 shaSize :: Int
 shaSize = 40
 
-{- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs. -}
-commit :: String -> Ref -> [Ref] -> Repo -> IO ()
-commit message newref parentrefs repo = do
-	tree <- getSha "write-tree" $ asString $
-		pipeRead [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $ asString $
-		ignorehandle $ pipeWriteRead
-			(map Param $ ["commit-tree", show tree] ++ ps)
-			(L.pack message) repo
-	run "update-ref" [Param $ show newref, Param $ show sha] repo
-	where
-		ignorehandle a = snd <$> a
-		asString a = L.unpack <$> a
-		ps = concatMap (\r -> ["-p", show r]) parentrefs
-
-{- Runs git config and populates a repo with its config. -}
-configRead :: Repo -> IO Repo
-configRead repo@(Repo { location = Dir d }) = do
-	{- Cannot use pipeRead because it relies on the config having
-	   been already read. Instead, chdir to the repo. -}
-	cwd <- getCurrentDirectory
-	bracket_ (changeWorkingDirectory d)
-		(\_ -> changeWorkingDirectory cwd) $
-			pOpen ReadFromPipe "git" ["config", "--list"] $
-				hConfigRead repo
-configRead r = assertLocal r $ error "internal"
-
-{- Reads git config from a handle and populates a repo with it. -}
-hConfigRead :: Repo -> Handle -> IO Repo
-hConfigRead repo h = do
-	val <- hGetContentsStrict h
-	configStore val repo
-
-{- Stores a git config into a repo, returning the new version of the repo.
- - The git config may be multiple lines, or a single line. Config settings
- - can be updated inrementally. -}
-configStore :: String -> Repo -> IO Repo
-configStore s repo = do
-	let repo' = repo { config = configParse s `M.union` config repo }
-	rs <- configRemotes repo'
-	return $ repo' { remotes = rs }
-
-{- Parses git config --list output into a config map. -}
-configParse :: String -> M.Map String String
-configParse s = M.fromList $ map pair $ lines s
-	where
-		pair l = (key l, val l)
-		key l = head $ keyval l
-		val l = join sep $ drop 1 $ keyval l
-		keyval l = split sep l :: [String]
-		sep = "="
-
-{- Calculates a list of a repo's configured remotes, by parsing its config. -}
-configRemotes :: Repo -> IO [Repo]
-configRemotes repo = mapM construct remotepairs
-	where
-		filterconfig f = filter f $ M.toList $ config repo
-		filterkeys f = filterconfig (\(k,_) -> f k)
-		remotepairs = filterkeys isremote
-		isremote k = startswith "remote." k && endswith ".url" k
-		construct (k,v) = repoRemoteNameFromKey k <$> genRemote v repo
-
-{- Generates one of a repo's remotes using a given location (ie, an url). -}
-genRemote :: String -> Repo -> IO Repo
-genRemote s repo = gen $ calcloc s
-	where
-		filterconfig f = filter f $ M.toList $ config repo
-		gen v	
-			| scpstyle v = repoFromUrl $ scptourl v
-			| isURI v = repoFromUrl v
-			| otherwise = repoFromRemotePath v repo
-		-- insteadof config can rewrite remote location
-		calcloc l
-			| null insteadofs = l
-			| otherwise = replacement ++ drop (length bestvalue) l
-			where
-				replacement = drop (length prefix) $
-					take (length bestkey - length suffix) bestkey
-				(bestkey, bestvalue) = maximumBy longestvalue insteadofs
-				longestvalue (_, a) (_, b) = compare b a
-				insteadofs = filterconfig $ \(k, v) -> 
-					startswith prefix k &&
-					endswith suffix k &&
-					startswith v l
-				(prefix, suffix) = ("url." , ".insteadof")
-		-- git remotes can be written scp style -- [user@]host:dir
-		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
-		scptourl v = "ssh://" ++ host ++ slash dir
-			where
-				bits = split ":" v
-				host = head bits
-				dir = join ":" $ drop 1 bits
-				slash d	| d == "" = "/~/" ++ dir
-					| head d == '/' = dir
-					| head d == '~' = '/':dir
-					| otherwise = "/~/" ++ dir
-
 {- Checks if a string from git config is a true value. -}
 configTrue :: String -> Bool
 configTrue s = map toLower s == "true"
 
-{- Returns a single git config setting, or a default value if not set. -}
-configGet :: String -> String -> Repo -> String
-configGet key defaultValue repo = 
-	M.findWithDefault defaultValue key (config repo)
-
 {- Access to raw config Map -}
 configMap :: Repo -> M.Map String String
 configMap = config
-
-{- Efficiently looks up a gitattributes value for each file in a list. -}
-checkAttr :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
-checkAttr attr files repo = do
-	-- this code is for git < 1.7, which changed git acheck-attr
-	-- significantly!
-	cwd <- getCurrentDirectory
-	let top = workTree repo
-	let absfiles = map (absPathFrom cwd) files
-	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
-        _ <- forkProcess $ do
-		hClose fromh
-                hPutStr toh $ join "\0" absfiles
-                hClose toh
-                exitSuccess
-        hClose toh
-	(map (topair cwd top) . lines) <$> hGetContents fromh
-	where
-		params = gitCommandLine 
-				[ Param "check-attr"
-				, Param attr
-				, Params "-z --stdin"
-				] repo
-		topair cwd top l = (relfile, value)
-			where 
-				relfile
-					| startswith cwd' file = drop (length cwd') file
-					| otherwise = relPathDirToFile top' file
-				file = decodeGitFile $ join sep $ take end bits
-				value = bits !! end
-				end = length bits - 1
-				bits = split sep l
-				sep = ": " ++ attr ++ ": "
-				cwd' = cwd ++ "/"
-				top' = top ++ "/"
-
-{- Some git commands output encoded filenames. Decode that (annoyingly
- - complex) encoding. -}
-decodeGitFile :: String -> FilePath
-decodeGitFile [] = []
-decodeGitFile f@(c:s)
-	-- encoded strings will be inside double quotes
-	| c == '"' = unescape ("", middle)
-	| otherwise = f
-	where
-		e = '\\'
-		middle = init s
-		unescape (b, []) = b
-		-- look for escapes starting with '\'
-		unescape (b, v) = b ++ beginning ++ unescape (decode rest)
-			where
-				pair = span (/= e) v
-				beginning = fst pair
-				rest = snd pair
-		isescape x = x == e
-		-- \NNN is an octal encoded character
-		decode (x:n1:n2:n3:rest)
-			| isescape x && alloctal = (fromoctal, rest)
-				where
-					alloctal = isOctDigit n1 &&
-						isOctDigit n2 &&
-						isOctDigit n3
-					fromoctal = [chr $ readoctal [n1, n2, n3]]
-					readoctal o = read $ "0o" ++ o :: Int
-		-- \C is used for a few special characters
-		decode (x:nc:rest)
-			| isescape x = ([echar nc], rest)
-			where
-				echar 'a' = '\a'
-				echar 'b' = '\b'
-				echar 'f' = '\f'
-				echar 'n' = '\n'
-				echar 'r' = '\r'
-				echar 't' = '\t'
-				echar 'v' = '\v'
-				echar a = a
-		decode n = ("", n)
-
-{- Should not need to use this, except for testing decodeGitFile. -}
-encodeGitFile :: FilePath -> String
-encodeGitFile s = foldl (++) "\"" (map echar s) ++ "\""
-	where
-		e c = '\\' : [c]
-		echar '\a' = e 'a'
-		echar '\b' = e 'b'
-		echar '\f' = e 'f'
-		echar '\n' = e 'n'
-		echar '\r' = e 'r'
-		echar '\t' = e 't'
-		echar '\v' = e 'v'
-		echar '\\' = e '\\'
-		echar '"'  = e '"'
-		echar x
-			| ord x < 0x20 = e_num x -- low ascii
-			| ord x >= 256 = e_utf x
-			| ord x > 0x7E = e_num x -- high ascii
-			| otherwise = [x]        -- printable ascii
-			where 
-				showoctal i = '\\' : printf "%03o" i
-				e_num c = showoctal $ ord c
-				-- unicode character is decomposed to
-				-- Word8s and each is shown in octal
-				e_utf c = showoctal =<< (encode [c] :: [Word8])
-
-{- for quickcheck -}
-prop_idempotent_deencode :: String -> Bool
-prop_idempotent_deencode s = s == decodeGitFile (encodeGitFile s)
-
-{- Constructs a Repo from the path specified in the git remotes of
- - another Repo. -}
-repoFromRemotePath :: FilePath -> Repo -> IO Repo
-repoFromRemotePath dir repo = do
-	dir' <- expandTilde dir
-	repoFromAbsPath $ workTree repo </> dir'
-
-{- Git remotes can have a directory that is specified relative
- - to the user's home directory, or that contains tilde expansions.
- - This converts such a directory to an absolute path.
- - Note that it has to run on the system where the remote is.
- -}
-repoAbsPath :: FilePath -> IO FilePath
-repoAbsPath d = do
-	d' <- expandTilde d
-	h <- myHomeDir
-	return $ h </> d'
-
-expandTilde :: FilePath -> IO FilePath
-expandTilde = expandt True
-	where
-		expandt _ [] = return ""
-		expandt _ ('/':cs) = do
-			v <- expandt True cs
-			return ('/':v)
-		expandt True ('~':'/':cs) = do
-			h <- myHomeDir
-			return $ h </> cs
-		expandt True ('~':cs) = do
-			let (name, rest) = findname "" cs
-			u <- getUserEntryForName name
-			return $ homeDirectory u </> rest
-		expandt _ (c:cs) = do
-			v <- expandt False cs
-			return (c:v)
-		findname n [] = (n, "")
-		findname n (c:cs)
-			| c == '/' = (n, cs)
-			| otherwise = findname (n++[c]) cs
-
-{- Finds the current git repository, which may be in a parent directory. -}
-repoFromCwd :: IO Repo
-repoFromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
-	where
-		makerepo = return . newFrom . Dir
-		norepo = error "Not in a git repository."
-
-seekUp :: (FilePath -> IO Bool) -> FilePath -> IO (Maybe FilePath)
-seekUp want dir = do
-	ok <- want dir
-	if ok
-		then return $ Just dir
-		else case parentDir dir of
-			"" -> return Nothing
-			d -> seekUp want d
-
-isRepoTop :: FilePath -> IO Bool
-isRepoTop dir = do
-	r <- isRepo
-	b <- isBareRepo
-	return (r || b)
-	where
-		isRepo = gitSignature ".git" ".git/config"
-		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = liftM2 (&&)
-			(doesDirectoryExist (dir ++ "/" ++ subdir))
-			(doesFileExist (dir ++ "/" ++ file))

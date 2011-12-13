@@ -29,13 +29,21 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
 start :: BackendFile -> CommandStart
-start p@(_, file) = notBareRepo $ notAnnexed file $ do
-	s <- liftIO $ getSymbolicLinkStatus file
-	if isSymbolicLink s || not (isRegularFile s)
-		then stop
-		else do
+start p@(_, file) = notBareRepo $ ifAnnexed file fixup add
+	where
+		add = do
+			s <- liftIO $ getSymbolicLinkStatus file
+			if isSymbolicLink s || not (isRegularFile s)
+				then stop
+				else do
+					showStart "add" file
+					next $ perform p
+		fixup (key, _) = do
+			-- fixup from an interrupted add; the symlink
+			-- is present but not yet added to git
 			showStart "add" file
-			next $ perform p
+			liftIO $ removeFile file
+			next $ next $ cleanup file key =<< inAnnex key
 
 perform :: BackendFile -> CommandPerform
 perform (backend, file) = Backend.genKey file backend >>= go
@@ -60,8 +68,8 @@ undo file key e = do
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do
-			src <- fromRepo $ gitAnnexLocation key
-			liftIO $ renameFile src file
+			src <- inRepo $ gitAnnexLocation key
+			liftIO $ moveFile src file
 
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do

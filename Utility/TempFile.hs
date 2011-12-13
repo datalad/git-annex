@@ -7,7 +7,7 @@
 
 module Utility.TempFile where
 
-import IO (bracket)
+import Control.Exception (bracket)
 import System.IO
 import System.Posix.Process hiding (executeFile)
 import System.Directory

@@ -20,6 +20,7 @@ import Utility.TempFile
 import Logs.Location
 import qualified Annex
 import qualified Git
+import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import qualified Backend
@@ -152,13 +153,12 @@ excludeReferenced l = do
 		(S.fromList l)
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
-		refs = map Git.Ref . 
-			map last .
+		refs = map (Git.Ref .  last) .
 			nubBy cmpheads .
 			filter ourbranches .
 			map words . lines . L.unpack
 		cmpheads a b = head a == head b
-		ourbranchend = '/' : show (Annex.Branch.name)
+		ourbranchend = '/' : show Annex.Branch.name
 		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
 		removewith [] s = return $ S.toList s
 		removewith (a:as) s
@@ -191,7 +191,7 @@ getKeysReferenced = do
 {- List of keys referenced by symlinks in a git ref. -}
 getKeysReferencedInGit :: Git.Ref -> Annex [Key]
 getKeysReferencedInGit ref = do
-	showAction $ "checking " ++ Git.refDescribe ref
+	showAction $ "checking " ++ Git.Ref.describe ref
 	findkeys [] =<< inRepo (LsTree.lsTree ref)
 	where
 		findkeys c [] = return c

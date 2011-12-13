@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20111122
+Version: 3.20111212
 Cabal-Version: >= 1.6
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -28,7 +28,7 @@ Description:
 
 Executable git-annex
   Main-Is: git-annex.hs
-  Build-Depends: haskell98, MissingH, hslogger, directory, filepath,
+  Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, HTTP,
    base < 5, json

@@ -21,7 +21,7 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = do
-	file <- fromRepo $ gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	whenM (inAnnex key) $
 		liftIO $ rsyncServerSend file -- does not return
 	warning "requested key is not present"

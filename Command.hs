@@ -10,10 +10,11 @@ module Command (
 	noRepo,
 	next,
 	stop,
+	stopUnless,
 	prepCommand,
 	doCommand,
 	whenAnnexed,
-	notAnnexed,
+	ifAnnexed,
 	notBareRepo,
 	isBareRepo,
 	autoCopies,
@@ -49,6 +50,12 @@ next a = return $ Just a
 stop :: Annex (Maybe a)
 stop = return Nothing
 
+{- Stops unless a condition is met. -}
+stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
+stopUnless c a = do
+	ok <- c
+	if ok then a else stop
+
 {- Prepares to run a command via the check and seek stages, returning a
  - list of actions to perform to run the command. -}
 prepCommand :: Command -> [String] -> Annex [CommandCleanup]
@@ -71,10 +78,10 @@ doCommand = start
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key and backend on to it. -}
 whenAnnexed :: (FilePath -> (Key, Backend Annex) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
-whenAnnexed a file = maybe (return Nothing) (a file) =<< Backend.lookupFile file
+whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-notAnnexed :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
-notAnnexed file a = maybe a (const $ return Nothing) =<< Backend.lookupFile file
+ifAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex a) -> Annex a -> Annex a
+ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a
 notBareRepo a = do

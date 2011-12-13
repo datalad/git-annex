@@ -88,3 +88,10 @@ addCopies num =
 		handle n (Just (key, _)) = do
 			us <- keyLocations key
 			return $ length us >= n
+
+{- Adds a limit to skip files not using a specified key-value backend. -}
+addInBackend :: String -> Annex ()
+addInBackend name = addLimit $ Backend.lookupFile >=> check
+	where
+		wanted = Backend.lookupBackendName name
+		check = return . maybe False ((==) wanted . snd)

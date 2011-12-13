@@ -108,17 +108,11 @@ toPerform dest move key = moveLock move key $ do
 fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
 fromStart src move file key
 	| move = go
-	| otherwise = do
-		ishere <- inAnnex key
-		if ishere then stop else go
+	| otherwise = stopUnless (not <$> inAnnex key) go
 	where
-		go = do
-			ok <- fromOk src key
-			if ok
-				then do
-					showMoveAction move file
-					next $ fromPerform src move key
-				else stop
+		go = stopUnless (fromOk src key) $ do
+			showMoveAction move file
+			next $ fromPerform src move key
 fromOk :: Remote.Remote Annex -> Key -> Annex Bool
 fromOk src key = do
 	u <- getUUID

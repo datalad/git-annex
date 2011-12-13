@@ -10,10 +10,10 @@ module Remote.Web (remote) where
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Construct
 import Config
 import Logs.Web
 import qualified Utility.Url as Url
-import Utility.Monad
 
 remote :: RemoteType Annex
 remote = RemoteType {
@@ -27,7 +27,7 @@ remote = RemoteType {
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
 list :: Annex [Git.Repo]
-list = return [Git.repoRemoteNameSet "web" Git.repoFromUnknown]
+list = return [Git.repoRemoteNameSet "web" Git.Construct.fromUnknown]
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r _ _ = 
@@ -71,8 +71,6 @@ checkKey key = do
 		then return $ Right False
 		else return . Right =<< checkKey' us
 checkKey' :: [URLString] -> Annex Bool
-checkKey' [] = return False
-checkKey' (u:us) = do
+checkKey' us = untilTrue us $ \u -> do
 	showAction $ "checking " ++ u
-	e <- liftIO $ Url.exists u
-	if e then return e else checkKey' us
+	liftIO $ Url.exists u

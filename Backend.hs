@@ -21,6 +21,8 @@ import System.Posix.Files
 
 import Common.Annex
 import qualified Git
+import qualified Git.Config
+import qualified Git.CheckAttr
 import qualified Annex
 import Types.Key
 import qualified Types.Backend as B
@@ -47,7 +49,7 @@ orderedList = do
 			l' <- (lookupBackendName name :) <$> standard
 			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		standard = fromRepo $ parseBackendList . Git.configGet "annex.backends" ""
+		standard = fromRepo $ parseBackendList . Git.Config.get "annex.backends" ""
 		parseBackendList [] = list
 		parseBackendList s = map lookupBackendName $ words s
 
@@ -64,7 +66,13 @@ genKey' (b:bs) file = do
 	r <- (B.getKey b) file
 	case r of
 		Nothing -> genKey' bs file
-		Just k -> return $ Just (k, b)
+		Just k -> return $ Just (makesane k, b)
+	where
+		-- keyNames should not contain newline characters.
+		makesane k = k { keyName = map fixbadchar (keyName k) }
+		fixbadchar c
+			| c == '\n' = '_'
+			| otherwise = c
 
 {- Looks up the key and backend corresponding to an annexed file,
  - by examining what the file symlinks to. -}
@@ -96,7 +104,7 @@ chooseBackends :: [FilePath] -> Annex [BackendFile]
 chooseBackends fs = Annex.getState Annex.forcebackend >>= go
 	where
 		go Nothing = do
-			pairs <- inRepo $ Git.checkAttr "annex.backend" fs
+			pairs <- inRepo $ Git.CheckAttr.lookup "annex.backend" fs
 			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 		go (Just _) = do
 			l <- orderedList

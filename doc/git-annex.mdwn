@@ -120,6 +120,17 @@ subdirectories).
   Use this to undo an unlock command if you don't want to modify
   the files, or have made modifications you want to discard.
 
+* sync
+
+  Use this command when you want to synchronize the local repository
+  with its default remote (typically "origin"). The sync process involves
+  first committing all local changes, then pulling and merging any changes
+  from the remote, and finally pushing the repository's state to the remote.
+  You can use standard git commands to do each of those steps by hand,
+  or if you don't want to worry about the details, you can use sync.
+
+  Note that sync does not transfer any file contents from or to the remote.
+
 * addurl [url ...]
 
   Downloads each url to a file, which is added to the annex.
@@ -172,6 +183,11 @@ subdirectories).
 * semitrust [repository ...]
 
   Returns a repository to the default semi trusted state.
+
+* dead [repository ...]
+
+  Indicates that the repository has been irretrevably lost.
+  (To undo, use semitrust.)
 
 # REPOSITORY MAINTENANCE COMMANDS
 
@@ -435,7 +451,8 @@ file contents are present at either of two repositories.
 * --in=repository
 
   Matches only files that git-annex believes have their contents present
-  in a repository.
+  in a repository. Note that it does not check the repository to verify
+  that it still has the content.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
@@ -444,7 +461,13 @@ file contents are present at either of two repositories.
 * --copies=number
 
   Matches only files that git-annex believes to have the specified number
-  of copies, or more.
+  of copies, or more. Note that it does not check remotes to verify that
+  the copies still exist.
+
+* --inbackend=name
+
+  Matches only files whose content is stored using the specified key-value
+  backend.
 
 * --not
 
@@ -611,4 +634,4 @@ Joey Hess <joey@kitenet.net>
 
 <http://git-annex.branchable.com/>
 
-Warning: this page is automatically made into a man page via [mdwn2man](http://git.ikiwiki.info/?p=ikiwiki;a=blob;f=mdwn2man;hb=HEAD).  Edit with care
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

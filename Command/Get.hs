@@ -22,32 +22,24 @@ seek :: [CommandSeek]
 seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
 start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
-start numcopies file (key, _) = do
-	inannex <- inAnnex key
-	if inannex
-		then stop
-		else autoCopies key (<) numcopies $ do
-			from <- Annex.getState Annex.fromremote
-			case from of
-				Nothing -> go $ perform key
-				Just name -> do
-					-- get --from = copy --from
-					src <- Remote.byName name
-					ok <- Command.Move.fromOk src key
-					if ok
-						then go $ Command.Move.fromPerform src False key
-						else stop
+start numcopies file (key, _) = stopUnless (not <$> inAnnex key) $
+	autoCopies key (<) numcopies $ do
+		from <- Annex.getState Annex.fromremote
+		case from of
+			Nothing -> go $ perform key
+			Just name -> do
+				-- get --from = copy --from
+				src <- Remote.byName name
+				stopUnless (Command.Move.fromOk src key) $
+					go $ Command.Move.fromPerform src False key
 	where
 		go a = do
 			showStart "get" file
 			next a	
 
 perform :: Key -> CommandPerform
-perform key = do
-	ok <- getViaTmp key (getKeyFile key)
-	if ok
-		then next $ return True -- no cleanup needed
-		else stop
+perform key = stopUnless (getViaTmp key $ getKeyFile key) $ do
+	next $ return True -- no cleanup needed
 
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}

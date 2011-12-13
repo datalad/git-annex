@@ -49,7 +49,7 @@ upgradableKey key = isNothing $ Types.Key.keySize key
  -}
 perform :: FilePath -> Key -> Backend Annex -> CommandPerform
 perform file oldkey newbackend = do
-	src <- fromRepo $ gitAnnexLocation oldkey
+	src <- inRepo $ gitAnnexLocation oldkey
 	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName file
 	cleantmp tmpfile
@@ -58,22 +58,18 @@ perform file oldkey newbackend = do
 	cleantmp tmpfile
 	case k of
 		Nothing -> stop
-		Just (newkey, _) -> do
-			ok <- link src newkey
-			if ok
-				then do
-					-- Update symlink to use the new key.
-					liftIO $ removeFile file
+		Just (newkey, _) -> stopUnless (link src newkey) $ do
+			-- Update symlink to use the new key.
+			liftIO $ removeFile file
 
-					-- If the old key had some
-					-- associated urls, record them for
-					-- the new key as well.
-					urls <- getUrls oldkey
-					unless (null urls) $
-						mapM_ (setUrlPresent newkey) urls
+			-- If the old key had some
+			-- associated urls, record them for
+			-- the new key as well.
+			urls <- getUrls oldkey
+			unless (null urls) $
+				mapM_ (setUrlPresent newkey) urls
 
-					next $ Command.Add.cleanup file newkey True
-				else stop
+			next $ Command.Add.cleanup file newkey True
 	where
 		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
 		link src newkey = getViaTmpUnchecked newkey $ \t -> do

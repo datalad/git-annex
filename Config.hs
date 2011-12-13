@@ -9,6 +9,7 @@ module Config where
 
 import Common.Annex
 import qualified Git
+import qualified Git.Config
 import qualified Annex
 
 type ConfigKey = String
@@ -18,15 +19,15 @@ setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
 	inRepo $ Git.run "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
-	newg <- inRepo Git.configRead
+	newg <- inRepo Git.Config.read
 	Annex.changeState $ \s -> s { Annex.repo = newg }
 
 {- Looks up a per-remote config setting in git config.
  - Failing that, tries looking for a global config option. -}
 getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
 getConfig r key def = do
-	def' <- fromRepo $ Git.configGet ("annex." ++ key) def
-	fromRepo $ Git.configGet (remoteConfig r key) def'
+	def' <- fromRepo $ Git.Config.get ("annex." ++ key) def
+	fromRepo $ Git.Config.get (remoteConfig r key) def'
 
 {- Looks up a per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
@@ -79,9 +80,10 @@ repoNotIgnored r = not . Git.configTrue <$> getConfig r "ignore" "false"
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
 getNumCopies :: Maybe Int -> Annex Int
-getNumCopies v = 
-	Annex.getState Annex.forcenumcopies >>= maybe (use v) (return . id)
+getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 	where
 		use (Just n) = return n
-		use Nothing = read <$> fromRepo (Git.configGet config "1")
+		use Nothing = perhaps (return 1) =<< 
+			readMaybe <$> fromRepo (Git.Config.get config "1")
+		perhaps fallback = maybe fallback (return . id)
 		config = "annex.numcopies"

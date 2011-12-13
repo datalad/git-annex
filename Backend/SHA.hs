@@ -90,16 +90,18 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 			, keyBackendName = shaNameE size
 			}
 		naiveextension = takeExtension file
-		extension = 
-			if length naiveextension > 6
-				then "" -- probably not really an extension
-				else naiveextension
+		extension
+			-- long or newline containing extensions are 
+			-- probably not really an extension
+			| length naiveextension > 6 ||
+			  '\n' `elem` naiveextension = ""
+			| otherwise = naiveextension
 
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> Annex Bool
 checkKeyChecksum size key = do
 	fast <- Annex.getState Annex.fast
-	file <- fromRepo $ gitAnnexLocation key
+	file <- inRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True
