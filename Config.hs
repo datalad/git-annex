@@ -10,6 +10,7 @@ module Config where
 import Common.Annex
 import qualified Git
 import qualified Git.Config
+import qualified Git.Command
 import qualified Annex
 
 type ConfigKey = String
@@ -17,7 +18,7 @@ type ConfigKey = String
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
-	inRepo $ Git.run "config" [Param k, Param value]
+	inRepo $ Git.Command.run "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
 	newg <- inRepo Git.Config.read
 	Annex.changeState $ \s -> s { Annex.repo = newg }

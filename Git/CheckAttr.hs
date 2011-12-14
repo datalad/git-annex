@@ -11,6 +11,7 @@ import System.Exit
 
 import Common
 import Git
+import Git.Command
 import qualified Git.Filename
 
 {- Efficiently looks up a gitattributes value for each file in a list. -}

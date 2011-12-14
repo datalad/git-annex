@@ -17,6 +17,7 @@ import System.Posix.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
+import Git.Command
 import qualified Git.Filename
 import Utility.SafeCommand
 

@@ -22,6 +22,7 @@ import Control.Monad (forM_)
 import Utility.SafeCommand
 
 import Git
+import Git.Command
 
 {- An action to perform in a git repository. The file to act on
  - is not included, and must be able to be appended after the params. -}

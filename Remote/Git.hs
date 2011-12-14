@@ -16,6 +16,7 @@ import Utility.RsyncFile
 import Annex.Ssh
 import Types.Remote
 import qualified Git
+import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Annex
@@ -176,7 +177,7 @@ onLocal r a = do
 		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
 		ret <- a
-		liftIO Git.reap
+		liftIO Git.Command.reap
 		return ret
 
 keyUrls :: Git.Repo -> Key -> [String]

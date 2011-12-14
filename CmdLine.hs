@@ -20,6 +20,7 @@ import Common.Annex
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
+import qualified Git.Command
 import Annex.Content
 import Command
 
@@ -101,5 +102,5 @@ startup = return True
 shutdown :: Annex Bool
 shutdown = do
 	saveState
-	liftIO Git.reap -- zombies from long-running git processes
+	liftIO Git.Command.reap -- zombies from long-running git processes
 	return True

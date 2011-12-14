@@ -13,7 +13,7 @@ import qualified Annex
 import Utility.FileMode
 import Logs.Location
 import Annex.Content
-import qualified Git
+import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 
 def :: [Command]
@@ -34,14 +34,14 @@ cleanup :: FilePath -> Key -> CommandCleanup
 cleanup file key = do
 	liftIO $ removeFile file
 	-- git rm deletes empty directory without --cached
-	inRepo $ Git.run "rm" [Params "--cached --quiet --", File file]
+	inRepo $ Git.Command.run "rm" [Params "--cached --quiet --", File file]
 	
 	-- If the file was already committed, it is now staged for removal.
 	-- Commit that removal now, to avoid later confusing the
 	-- pre-commit hook if this file is later added back to
 	-- git as a normal, non-annexed file.
 	whenM (not . null <$> inRepo (LsFiles.staged [file])) $ do
-		inRepo $ Git.run "commit" [
+		inRepo $ Git.Command.run "commit" [
 			Param "-m", Param "content removed from git annex",
 			Param "--", File file]
 

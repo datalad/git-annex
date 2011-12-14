@@ -11,6 +11,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
 import Git
+import Git.Command
 
 {- Converts a fully qualified git ref into a user-visible version. -}
 describe :: Ref -> String

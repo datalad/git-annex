@@ -16,6 +16,7 @@ module Git.LsFiles (
 ) where
 
 import Git
+import Git.Command
 import Utility.SafeCommand
 
 {- Scans for files that are checked into git at the specified locations. -}

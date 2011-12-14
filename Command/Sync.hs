@@ -10,7 +10,7 @@ module Command.Sync where
 import Common.Annex
 import Command
 import qualified Annex.Branch
-import qualified Git
+import qualified Git.Command
 import qualified Git.Config
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -28,7 +28,8 @@ commit = do
 	next $ next $ do
 		showOutput
 		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ Git.runBool "commit" [Param "-a", Param "-m", Param "sync"]
+		_ <- inRepo $ Git.Command.runBool "commit"
+			[Param "-a", Param "-m", Param "sync"]
 		return True
 
 pull :: CommandStart
@@ -38,7 +39,7 @@ pull = do
 	next $ next $ do
 		showOutput
 		checkRemote remote
-		inRepo $ Git.runBool "pull" [Param remote]
+		inRepo $ Git.Command.runBool "pull" [Param remote]
 
 push :: CommandStart
 push = do
@@ -47,7 +48,7 @@ push = do
 	next $ next $ do
 		Annex.Branch.update
 		showOutput
-		inRepo $ Git.runBool "push" [Param remote, matchingbranches]
+		inRepo $ Git.Command.runBool "push" [Param remote, matchingbranches]
 	where
 		-- git push may be configured to not push matching
 		-- branches; this should ensure it always does.
@@ -61,7 +62,7 @@ defaultRemote = do
 
 currentBranch :: Annex String
 currentBranch = last . split "/" . L.unpack . head . L.lines <$>
-	inRepo (Git.pipeRead [Param "symbolic-ref", Param "HEAD"])
+	inRepo (Git.Command.pipeRead [Param "symbolic-ref", Param "HEAD"])
 
 checkRemote :: String -> Annex ()
 checkRemote remote = do

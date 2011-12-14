@@ -15,6 +15,7 @@ import System.Process
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import Config
@@ -148,7 +149,7 @@ checkPresent r bupr k
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
 	| otherwise = liftIO $ catchMsgIO $
-		boolSystem "git" $ Git.gitCommandLine params bupr
+		boolSystem "git" $ Git.Command.gitCommandLine params bupr
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
@@ -168,7 +169,7 @@ storeBupUUID u buprepo = do
 			r' <- Git.Config.read r
 			let olduuid = Git.Config.get "annex.uuid" "" r'
 			when (olduuid == "") $
-				Git.run "config"
+				Git.Command.run "config"
 					[Param "annex.uuid", Param v] r'
 	where
 		v = fromUUID u

@@ -12,6 +12,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import Common
 import Git
 import Git.Sha
+import Git.Command
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}

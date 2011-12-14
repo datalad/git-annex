@@ -9,6 +9,7 @@ module Git.HashObject where
 
 import Common
 import Git
+import Git.Command
 
 {- Injects a set of files into git, returning the shas of the objects
  - and an IO action to call ones the the shas have been used. -}

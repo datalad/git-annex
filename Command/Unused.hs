@@ -20,6 +20,7 @@ import Utility.TempFile
 import Logs.Location
 import qualified Annex
 import qualified Git
+import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
@@ -148,7 +149,7 @@ unusedKeys = do
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
-	c <- inRepo $ Git.pipeRead [Param "show-ref"]
+	c <- inRepo $ Git.Command.pipeRead [Param "show-ref"]
 	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
 		(S.fromList l)
 	where

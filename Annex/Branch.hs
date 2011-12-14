@@ -24,6 +24,7 @@ import Annex.Exception
 import Annex.BranchState
 import Annex.Journal
 import qualified Git
+import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.UnionMerge
@@ -67,7 +68,7 @@ getBranch :: Annex (Git.Ref)
 getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
 	where
 		go True = do
-			inRepo $ Git.run "branch"
+			inRepo $ Git.Command.run "branch"
 				[Param $ show name, Param $ show originname]
 			fromMaybe (error $ "failed to create " ++ show name)
 				<$> branchsha
@@ -221,7 +222,7 @@ commitBranch branchref message parents = do
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
 files = withIndexUpdate $ do
-	bfiles <- inRepo $ Git.pipeNullSplit
+	bfiles <- inRepo $ Git.Command.pipeNullSplit
 		[Params "ls-tree --name-only -r -z", Param $ show fullname]
 	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles

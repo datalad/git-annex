@@ -22,6 +22,7 @@ import Common
 import Git
 import Git.Sha
 import Git.CatFile
+import Git.Command
 
 type Streamer = (String -> IO ()) -> IO ()
 

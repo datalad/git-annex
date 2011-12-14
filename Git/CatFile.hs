@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
 import Git.Sha
+import Git.Command
 import Utility.SafeCommand
 
 type CatFileHandle = (PipeHandle, Handle, Handle)
