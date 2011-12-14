@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 4"
+ date="2011-12-13T18:16:08Z"
+ content="""
+I thought about this some more, and I think I have a pretty decent solution that avoids a central bare repository. Instead of pushing to master (which git does not like) or trying to guess the remote branch name on the other side, there is a well-known branch name, say git-annex-master. Then a sync command would do something like this (untested):
+
+    git commit -a -m 'git annex sync' # ideally with a description derived from the diff
+    git merge git-annex-master
+    git pull someremote git-annex-master # for all reachable remotes. Or better to use fetch and then merge everything in one command?
+    git branch -f git-annex-master # (or checkout git-annex-master, merge master, checkout master, but since we merged before this should have the same effect
+    git annex merge
+    git push someremote git-annex-master # for all reachable remotes
+
+The nice things are: One can push to any remote repository, and thus avoid the issue of pushing to a portable device; the merging happens on the master branch, so if it fails to merge automatically, regular git foo can resolve it, and all changes eventually reach every repository.
+
+What do you think?
+    
+"""]]
