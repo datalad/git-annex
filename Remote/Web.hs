@@ -27,7 +27,9 @@ remote = RemoteType {
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
 list :: Annex [Git.Repo]
-list = return [Git.repoRemoteNameSet "web" Git.Construct.fromUnknown]
+list = do
+	r <- liftIO $ Git.Construct.remoteNamed "web" Git.Construct.fromUnknown
+	return [r]
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r _ _ = 

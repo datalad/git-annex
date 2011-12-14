@@ -20,6 +20,7 @@ import qualified Data.ByteString.Char8 as S
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Git
+import Git.Sha
 import Utility.SafeCommand
 
 type CatFileHandle = (PipeHandle, Handle, Handle)
@@ -27,7 +28,7 @@ type CatFileHandle = (PipeHandle, Handle, Handle)
 {- Starts git cat-file running in batch mode in a repo and returns a handle. -}
 catFileStart :: Repo -> IO CatFileHandle
 catFileStart repo = hPipeBoth "git" $ toCommand $
-	Git.gitCommandLine [Param "cat-file", Param "--batch"] repo
+	gitCommandLine [Param "cat-file", Param "--batch"] repo
 
 {- Stops git cat-file. -}
 catFileStop :: CatFileHandle -> IO ()
@@ -49,7 +50,7 @@ catObject (_, from, to) object = do
 	header <- hGetLine from
 	case words header of
 		[sha, objtype, size]
-			| length sha == Git.shaSize &&
+			| length sha == shaSize &&
 			  validobjtype objtype -> handle size
 			| otherwise -> empty
 		_

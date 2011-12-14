@@ -31,7 +31,7 @@ getConfig r key def = do
 
 {- Looks up a per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
-remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-" ++ key
+remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" ++ key
 
 {- Calculates cost for a remote. Either the default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command

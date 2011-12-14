@@ -12,6 +12,7 @@ import qualified Git.UnionMerge
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Branch
+import qualified Git.Index
 import qualified Git
 
 header :: String
@@ -42,7 +43,7 @@ main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.Config.read =<< Git.Construct.fromCwd
-	_ <- Git.useIndex (tmpIndex g)
+	_ <- Git.Index.override (tmpIndex g)
 	setup g
 	Git.UnionMerge.merge aref bref g
 	_ <- Git.Branch.commit "union merge" newref [aref, bref] g

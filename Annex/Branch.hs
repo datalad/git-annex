@@ -28,6 +28,7 @@ import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.HashObject
+import qualified Git.Index
 import Annex.CatFile
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -249,7 +250,7 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	bracketIO (Git.useIndex f) id $ do
+	bracketIO (Git.Index.override f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f

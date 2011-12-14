@@ -37,11 +37,11 @@ sha branch repo = process . L.unpack <$> showref repo
 
 {- List of (refs, branches) matching a given ref spec.
  - Duplicate refs are filtered out. -}
-matching :: Ref -> Repo -> IO [(Git.Ref, Git.Branch)]
+matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = do
-	r <- Git.pipeRead [Param "show-ref", Param $ show ref] repo
+	r <- pipeRead [Param "show-ref", Param $ show ref] repo
 	return $ nubBy uref $ map (gen . words . L.unpack) (L.lines r)
 	where
-		gen l = (Git.Ref $ head l, Git.Ref $ last l)
+		gen l = (Ref $ head l, Ref $ last l)
 		uref (a, _) (b, _) = a == b
 

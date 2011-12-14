@@ -37,16 +37,17 @@ remote = RemoteType {
 
 list :: Annex [Git.Repo]
 list = do
-	c <- fromRepo Git.configMap
+	c <- fromRepo Git.config
 	mapM (tweakurl c) =<< fromRepo Git.remotes
 	where
 		annexurl n = "remote." ++ n ++ ".annexurl"
 		tweakurl c r = do
-			let n = fromJust $ Git.repoRemoteName r
+			let n = fromJust $ Git.remoteName r
 			case M.lookup (annexurl n) c of
 				Nothing -> return r
-				Just url -> Git.repoRemoteNameSet n <$>
-					inRepo (Git.Construct.fromRemoteLocation url)
+				Just url -> inRepo $ \g ->
+					Git.Construct.remoteNamed n $
+						Git.Construct.fromRemoteLocation url g
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
 gen r u _ = do
@@ -84,7 +85,7 @@ gen r u _ = do
  - returns the updated repo. -}
 tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
-	| not $ M.null $ Git.configMap r = return r -- already read
+	| not $ M.null $ Git.config r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
 	| Git.repoIsHttp r = store $ safely geturlconfig
 	| Git.repoIsUrl r = return r
@@ -116,13 +117,13 @@ tryGitConfigRead r
 			r' <- a
 			g <- gitRepo
 			let l = Git.remotes g
-			let g' = Git.remotesAdd g $ exchange l r'
+			let g' = g { Git.remotes = exchange l r' }
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 			return r'
 
 		exchange [] _ = []
 		exchange (old:ls) new =
-			if Git.repoRemoteName old == Git.repoRemoteName new
+			if Git.remoteName old == Git.remoteName new
 				then new : exchange ls new
 				else old : exchange ls new
 
@@ -167,7 +168,7 @@ onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
 	-- Avoid re-reading the repository's configuration if it was
 	-- already read.
-	state <- if M.null $ Git.configMap r
+	state <- if M.null $ Git.config r
 		then Annex.new r
 		else return $ Annex.newState r
 	Annex.eval state $ do

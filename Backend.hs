@@ -20,7 +20,6 @@ import System.IO.Error (try)
 import System.Posix.Files
 
 import Common.Annex
-import qualified Git
 import qualified Git.Config
 import qualified Git.CheckAttr
 import qualified Annex

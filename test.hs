@@ -24,7 +24,6 @@ import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
-import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Filename
