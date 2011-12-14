@@ -17,7 +17,7 @@ mv b old_b
 git clone a b
 cd b
 mv ../old_b .
-git annex add old_b --exclude --not '*.avi'
+git annex add old_b --not --exclude '*.avi'
 </pre>
 
 Or, a third way would be to commit A to a branch like branchA and B to a separate branchB, and not merge the branches at all.
