@@ -65,7 +65,6 @@ url2file :: URI -> IO FilePath
 url2file url = do
 	whenM (doesFileExist file) $
 		error $ "already have this url in " ++ file
-	liftIO $ print file
 	return file
 	where
 		file = escape $ uriRegName auth ++ uriPath url ++ uriQuery url
