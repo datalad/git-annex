@@ -5,14 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Git.Config (
-	get,
-	read,
-	hRead,
-	store
-) where
+module Git.Config where
 
-import Prelude hiding (read)
 import System.Posix.Directory
 import Control.Exception (bracket_)
 import qualified Data.Map as M
@@ -58,7 +52,7 @@ parse :: String -> M.Map String String
 parse [] = M.empty
 parse s
 	-- --list output will have an = in the first line
-	| '=' `elem` head ls = sep '=' ls
+	| all ('=' `elem`) (take 1 ls) = sep '=' ls
 	-- --null --list output separates keys from values with newlines
 	| otherwise = sep '\n' $ split "\0" s
 	where
