@@ -12,11 +12,11 @@ head :: [a] -> a
 head = Prelude.head
 
 {- tail is also partial -}
-tail :: [a] -> a
+tail :: [a] -> [a]
 tail = Prelude.tail
 
 {- init too -}
-init :: [a] -> a
+init :: [a] -> [a]
 init = Prelude.init
 
 {- last too -}
