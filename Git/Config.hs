@@ -58,9 +58,9 @@ parse :: String -> M.Map String String
 parse [] = M.empty
 parse s
 	-- --list output will have an = in the first line
-	| '=' `elem` head ls = M.fromList $ map (separate (== '=')) ls
+	| '=' `elem` head ls = sep '=' ls
 	-- --null --list output separates keys from values with newlines
-	| otherwise = M.fromList $ map (separate (== '\n')) $ split "\0" s
+	| otherwise = sep '\n' $ split "\0" s
 	where
-		pair = separate (== '=')
 		ls = lines s
+		sep c = M.fromList . map (separate (== c))
