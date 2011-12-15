@@ -10,17 +10,26 @@ module Git.Sha where
 import Common
 import Git.Types
 
-{- Runs an action that causes a git subcommand to emit a sha, and strips
+{- Runs an action that causes a git subcommand to emit a Sha, and strips
    any trailing newline, returning the sha. -}
 getSha :: String -> IO String -> IO Sha
-getSha subcommand a = do
-	t <- a
-	let t' = if last t == '\n'
-		then init t
-		else t
-	when (length t' /= shaSize) $
-		error $ "failed to read sha from git " ++ subcommand ++ " (" ++ t' ++ ")"
-	return $ Ref t'
+getSha subcommand a = maybe bad return =<< extractSha <$> a
+	where
+		bad = error $ "failed to read sha from git " ++ subcommand
+
+{- Extracts the Sha from a string. There can be a trailing newline after
+ - it, but nothing else. -}
+extractSha :: String -> Maybe Sha
+extractSha s
+	| len == shaSize = val s
+	| len == shaSize + 1 && length s' == shaSize = val s'
+	| otherwise = Nothing
+	where
+		len = length s
+		s' = firstLine s
+		val v
+			| all (`elem` "1234567890ABCDEFabcdef") v = Just $ Ref v
+			| otherwise = Nothing
 
 {- Size of a git sha. -}
 shaSize :: Int
