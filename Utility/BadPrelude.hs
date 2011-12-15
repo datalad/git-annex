@@ -12,7 +12,7 @@ read :: Read a => String -> a
 read = Prelude.read
 
 {- head is a partial function; head [] is an error
- - Instead, use: take 1 -}
+ - Instead, use: take 1 or headMaybe -}
 head :: [a] -> a
 head = Prelude.head
 
@@ -27,9 +27,19 @@ init :: [a] -> [a]
 init = Prelude.init
 
 {- last too
- - Instead, use: end -}
+ - Instead, use: end or lastMaybe -}
 last :: [a] -> a
 last = Prelude.last
+
+{- Like head but Nothing on empty list. -}
+headMaybe :: [a] -> Maybe a
+headMaybe [] = Nothing
+headMaybe v = Just $ Prelude.head v
+
+{- Like last but Nothing on empty list. -}
+lastMaybe :: [a] -> Maybe a
+lastMaybe [] = Nothing
+lastMaybe v = Just $ Prelude.last v
 
 {- All but the last element of a list.
  - (Like init, but no error on an empty list.) -}

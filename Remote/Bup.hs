@@ -209,20 +209,20 @@ bup2GitRemote "" = do
 	Git.Construct.fromAbsPath $ h </> ".bup"
 bup2GitRemote r
 	| bupLocal r = 
-		if head r == '/'
+		if "/" `isPrefixOf` r
 			then Git.Construct.fromAbsPath r
 			else error "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
 		where
 			bits = split ":" r
-			host = head bits
+			host = Prelude.head bits
 			dir = join ":" $ drop 1 bits
 			-- "host:~user/dir" is not supported specially by bup;
 			-- "host:dir" is relative to the home directory;
 			-- "host:" goes in ~/.bup
 			slash d
-				| d == "" = "/~/.bup"
-				| head d == '/' = d
+				| null d = "/~/.bup"
+				| "/" `isPrefixOf` d = d
 				| otherwise = "/~/" ++ d
 
 bupLocal :: BupRepo -> Bool

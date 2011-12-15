@@ -6,7 +6,7 @@ import Control.Monad.State as X (liftIO)
 import Control.Exception.Extensible as X (IOException)
 
 import Data.Maybe as X
-import Data.List as X
+import Data.List as X hiding (head, tail, init, last)
 import Data.String.Utils as X
 
 import System.Path as X
@@ -25,3 +25,5 @@ import Utility.SafeCommand as X
 import Utility.Path as X
 import Utility.Directory as X
 import Utility.Monad as X
+
+import Utility.BadPrelude as X

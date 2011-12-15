@@ -51,7 +51,7 @@ parseCmd argv cmds options header = check $ getOpt Permute options argv
 		check (_, [], []) = err "missing command"
 		check (flags, name:rest, [])
 			| null matches = err $ "unknown command " ++ name
-			| otherwise = (flags, head matches, rest)
+			| otherwise = (flags, Prelude.head matches, rest)
 			where
 				matches = filter (\c -> name == cmdname c) cmds
 		check (_, _, errs) = err $ concat errs

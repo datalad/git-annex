@@ -40,15 +40,10 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" +
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
 	cmd <- getConfig r "cost-command" ""
-	safeparse <$> if not $ null cmd
+	(fromMaybe def . readMaybe) <$>
+		if not $ null cmd
 			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
 			else getConfig r "cost" ""
-	where
-		safeparse v
-			| null ws = def
-			| otherwise = fromMaybe def $ readMaybe $ head ws
-			where
-				ws = words v
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100

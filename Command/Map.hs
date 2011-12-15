@@ -73,7 +73,7 @@ hostname r
 	| otherwise = "localhost"
 
 basehostname :: Git.Repo -> String
-basehostname r = head $ split "." $ hostname r
+basehostname r = Prelude.head $ split "." $ hostname r
 
 {- A name to display for a repo. Uses the name from uuid.log if available,
  - or the remote name if not. -}

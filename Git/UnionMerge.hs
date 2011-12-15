@@ -134,7 +134,7 @@ hashObject repo content = getSha subcmd $ do
 calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
 calcMerge shacontents
 	| null reuseable = Right $ new
-	| otherwise = Left $ fst $ head reuseable
+	| otherwise = Left $ fst $ Prelude.head reuseable
 	where
 		reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
 		new = sorteduniq $ concat $ map snd shacontents

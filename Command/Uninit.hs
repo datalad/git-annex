@@ -29,7 +29,7 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	where
-		current_branch = Git.Ref . head . lines . B.unpack <$> revhead
+		current_branch = Git.Ref . Prelude.head . lines . B.unpack <$> revhead
 		revhead = inRepo $ Git.Command.pipeRead 
 			[Params "rev-parse --abbrev-ref HEAD"]
 

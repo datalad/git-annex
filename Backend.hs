@@ -107,7 +107,7 @@ chooseBackends fs = Annex.getState Annex.forcebackend >>= go
 			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
 		go (Just _) = do
 			l <- orderedList
-			return $ map (\f -> (Just $ head l, f)) fs
+			return $ map (\f -> (Just $ Prelude.head l, f)) fs
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend Annex
@@ -115,8 +115,6 @@ lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
 	where
 		unknown = error $ "unknown backend " ++ s
 maybeLookupBackendName :: String -> Maybe (Backend Annex)
-maybeLookupBackendName s
-	| length matches == 1 = Just $ head matches
-	| otherwise = Nothing
+maybeLookupBackendName s = headMaybe matches
 	where
 		matches = filter (\b -> s == B.name b) list

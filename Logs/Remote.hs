@@ -73,14 +73,13 @@ configUnEscape = unescape
 			| c == '&' = entity rest
 			| otherwise = c : unescape rest
 		entity s = if ok
-				then chr (read num) : unescape rest
+				then chr (Prelude.read num) : unescape rest
 				else '&' : unescape s
 			where
 				num = takeWhile isNumber s
 				r = drop (length num) s
 				rest = drop 1 r
-				ok = not (null num) && 
-					not (null r) && head r == ';'
+				ok = not (null num) && take 1 r == ";"
 
 {- for quickcheck -}
 prop_idempotent_configEscape :: String -> Bool

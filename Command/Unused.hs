@@ -154,13 +154,13 @@ excludeReferenced l = do
 		(S.fromList l)
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
-		refs = map (Git.Ref .  last) .
-			nubBy cmpheads .
+		refs = map (Git.Ref .  snd) .
+			nubBy uniqref .
 			filter ourbranches .
-			map words . lines . L.unpack
-		cmpheads a b = head a == head b
+			map (separate (== ' ')) . lines . L.unpack
+		uniqref (a, _) (b, _) = a == b
 		ourbranchend = '/' : show Annex.Branch.name
-		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
+		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
 		removewith [] s = return $ S.toList s
 		removewith (a:as) s
 			| s == S.empty = return [] -- optimisation

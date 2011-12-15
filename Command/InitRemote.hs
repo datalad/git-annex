@@ -25,9 +25,13 @@ seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
-start ws = do
-	when (null ws) needname
-
+start [] = do
+	names <- remoteNames
+	error $ "Specify a name for the remote. " ++
+		if null names
+			then ""
+			else "Either a new name, or one of these existing special remotes: " ++ join " " names
+start (name:ws) = do
 	(u, c) <- findByName name
 	let fullconfig = config `M.union` c	
 	t <- findType fullconfig
@@ -36,15 +40,7 @@ start ws = do
 	next $ perform t u $ M.union config c
 
 	where
-		name = head ws
-		config = Logs.Remote.keyValToConfig $ tail ws
-		needname = do
-			let err s = error $ "Specify a name for the remote. " ++ s
-			names <- remoteNames
-			if null names
-				then err ""
-				else err $ "Either a new name, or one of these existing special remotes: " ++ join " " names
-			
+		config = Logs.Remote.keyValToConfig ws
 
 perform :: R.RemoteType Annex -> UUID -> R.RemoteConfig -> CommandPerform
 perform t u c = do
@@ -67,11 +63,8 @@ findByName name = do
 			return (uuid, M.insert nameKey name M.empty)
 
 findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)
-findByName' n m
-	| null matches = Nothing
-	| otherwise = Just $ head matches
+findByName' n = headMaybe . filter (matching . snd) . M.toList
 	where
-		matches = filter (matching . snd) $ M.toList m
 		matching c = case M.lookup nameKey c of
 			Nothing -> False
 			Just n'

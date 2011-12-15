@@ -68,7 +68,7 @@ logFile key = hashDirLower key ++ keyFile key ++ ".log"
 {- Converts a log filename into a key. -}
 logFileKey :: FilePath -> Maybe Key
 logFileKey file
-	| end == ".log" = fileKey beginning
+	| ext == ".log" = fileKey base
 	| otherwise = Nothing
 	where
-		(beginning, end) = splitAt (length file - 4) file
+		(base, ext) = splitAt (length file - 4) file

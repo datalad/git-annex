@@ -188,7 +188,7 @@ rsyncRemote o params = do
    directories. -}
 rsyncSend :: RsyncOpts -> Key -> FilePath -> Annex Bool
 rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> head (keyPaths k)
+	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	liftIO $ createLink src dest
 	rsyncRemote o

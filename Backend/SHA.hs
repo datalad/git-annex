@@ -62,11 +62,10 @@ shaN :: SHASize -> FilePath -> Annex String
 shaN size file = do
 	showAction "checksum"
 	liftIO $ pOpen ReadFromPipe command (toCommand [File file]) $ \h -> do
-		line <- hGetLine h
-		let bits = split " " line
-		if null bits
+		sha <- fst . separate (== ' ') <$> hGetLine h
+		if null sha
 			then error $ command ++ " parse error"
-			else return $ head bits
+			else return sha
 	where
 		command = fromJust $ shaCommand size
 

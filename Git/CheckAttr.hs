@@ -36,10 +36,9 @@ lookup attr files repo = do
 				, Param attr
 				, Params "-z --stdin"
 				] repo
-		topair l = (file, value)
+		topair l = (Git.Filename.decode file, value)
 			where 
-				file = Git.Filename.decode $ join sep $ take end bits
-				value = bits !! end
-				end = length bits - 1
+				file = join sep $ beginning bits
+				value = end bits !! 0
 				bits = split sep l
 				sep = ": " ++ attr ++ ": "

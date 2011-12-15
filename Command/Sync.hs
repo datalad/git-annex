@@ -12,6 +12,8 @@ import Command
 import qualified Annex.Branch
 import qualified Git.Command
 import qualified Git.Config
+import qualified Git.Ref
+import qualified Git
 
 import qualified Data.ByteString.Lazy.Char8 as L
 
@@ -61,7 +63,7 @@ defaultRemote = do
 	fromRepo $ Git.Config.get ("branch." ++ branch ++ ".remote") "origin"
 
 currentBranch :: Annex String
-currentBranch = last . split "/" . L.unpack . head . L.lines <$>
+currentBranch = Git.Ref.describe . Git.Ref . firstLine . L.unpack <$>
 	inRepo (Git.Command.pipeRead [Param "symbolic-ref", Param "HEAD"])
 
 checkRemote :: String -> Annex ()
