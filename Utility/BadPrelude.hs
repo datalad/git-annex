@@ -7,7 +7,8 @@
 
 module Utility.BadPrelude where
 
-{- read should be avoided, as it throws an error -}
+{- read should be avoided, as it throws an error
+ - Instead, use: readMaybe -}
 read :: Read a => String -> a
 read = Prelude.read
 
@@ -30,6 +31,16 @@ init = Prelude.init
  - Instead, use: end or lastMaybe -}
 last :: [a] -> a
 last = Prelude.last
+
+{- Attempts to read a value from a String.
+ -
+ - Ignores leading/trailing whitespace, and throws away any trailing
+ - text after the part that can be read.
+ -}
+readMaybe :: (Read a) => String -> Maybe a
+readMaybe s = case reads s of
+	((x,_):_) -> Just x
+	_ -> Nothing
 
 {- Like head but Nothing on empty list. -}
 headMaybe :: [a] -> Maybe a

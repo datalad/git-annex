@@ -21,12 +21,6 @@ hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 readFileStrict :: FilePath -> IO String
 readFileStrict = readFile >=> \s -> length s `seq` return s
 
-{- Attempts to read a value from a String. -}
-readMaybe :: (Read a) => String -> Maybe a
-readMaybe s = case reads s of
-	((x,_):_) -> Just x
-	_ -> Nothing
-
 {- Like break, but the character matching the condition is not included
  - in the second result list.
  -
