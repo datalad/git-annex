@@ -41,8 +41,8 @@ sha branch repo = process . L.unpack <$> showref repo
 matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = do
 	r <- pipeRead [Param "show-ref", Param $ show ref] repo
-	return $ nubBy uref $ map (gen . words . L.unpack) (L.lines r)
+	return $ nubBy uniqref $ map (gen . L.unpack) (L.lines r)
 	where
-		gen l = (Ref $ head l, Ref $ last l)
-		uref (a, _) (b, _) = a == b
-
+		uniqref (a, _) (b, _) = a == b
+		gen l = let (r, b) = separate (== ' ') l in
+			(Ref r, Ref b)
