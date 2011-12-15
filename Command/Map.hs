@@ -203,7 +203,7 @@ tryScan r
 			liftIO $ pipedconfig "ssh" sshparams
 			where
 				sshcmd = cddir ++ " && " ++
-					"git config --list"
+					"git config --null --list"
 				dir = Git.workTree r
 				cddir
 					| "/~" `isPrefixOf` dir =

@@ -111,7 +111,7 @@ tryGitConfigRead r
 			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
-				pOpen ReadFromPipe "git" ["config", "--list", "--file", tmpfile] $
+				pOpen ReadFromPipe "git" ["config", "--null", "--list", "--file", tmpfile] $
 					Git.Config.hRead r
 
 		store a = do
