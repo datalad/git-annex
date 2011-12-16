@@ -26,7 +26,11 @@ start (src:dest:[])
 	| otherwise = do
 		ifAnnexed src
 			(error $ "cannot used annexed file as src: " ++ src)
-			(next $ whenAnnexed (perform src) dest)
+			go
+	where
+		go = do
+			showStart "reinject" dest
+			next $ whenAnnexed (perform src) dest
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> (Key, Backend Annex) -> CommandPerform
