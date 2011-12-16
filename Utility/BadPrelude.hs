@@ -56,16 +56,9 @@ lastMaybe v = Just $ Prelude.last v
  - (Like init, but no error on an empty list.) -}
 beginning :: [a] -> [a]
 beginning [] = []
-beginning (x:xs) =  beginning' x xs
-	where
-		beginning' _ [] = []
-		beginning' y (z:zs) = y : beginning' z zs
+beginning l = Prelude.init l
 
 {- Like last, but no error on an empty list. -}
 end :: [a] -> [a]
 end [] = []
-end (x:xs) = end' x xs
-	where
-		end' y [] = [y]
-		end' _ (y:ys) = end' y ys
-
+end l = [Prelude.last l]
