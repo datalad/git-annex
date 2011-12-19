@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 9"
+ date="2011-12-19T22:56:26Z"
+ content="""
+Another option that would please the naive user without hindering the more advanced user: \"git annex init\", by default, creates a synced/master branch. \"git annex sync\" will pull from every <remote>/sync/master branch it finds, and also push to any <remote>/sync/master branch it finds, but will not create any. So by default (at least for new users), this provides simple one-step syncing.
+
+Advanced users can disable this per-repo by just deleting the synced/master branch. Presumably the logic will be: Every repo that should not be pushed to, because it has access to some central repo, should not have a synced/master branch. Every other repo, including the (or one of the few) central repos, will have the branch.
+
+This is not the most expressive solution, as it does not allow configuring syncing between arbitrary pairs of repos, but it feels like a good compromise between that and simplicity and transparency.
+
+I think it's about time that I provide less talk and more code. I’ll see when I find the time :-)
+"""]]
