@@ -565,7 +565,7 @@ annexeval a = do
 	g <- Git.Construct.fromCwd
 	g' <- Git.Config.read g
 	s <- Annex.new g'
-	Annex.eval s a
+	Annex.eval s { Annex.output = Annex.QuietOutput } a
 
 innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a
