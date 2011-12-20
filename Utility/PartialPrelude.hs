@@ -1,11 +1,11 @@
-{- Some stuff from Prelude should not be used, as it tends to be a source
- - of bugs.
+{- Parts of the Prelude are partial functions, which are a common source of
+ - bugs.
  -
  - This exports functions that conflict with the prelude, which avoids
  - them being accidentially used.
  -}
 
-module Utility.BadPrelude where
+module Utility.PartialPrelude where
 
 {- read should be avoided, as it throws an error
  - Instead, use: readMaybe -}

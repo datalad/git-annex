@@ -26,4 +26,4 @@ import Utility.Path as X
 import Utility.Directory as X
 import Utility.Monad as X
 
-import Utility.BadPrelude as X
+import Utility.PartialPrelude as X
