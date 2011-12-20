@@ -108,6 +108,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_merge
 	, test_status
 	, test_sync
+	, test_map
 	, test_hook_remote
 	, test_directory_remote
 	, test_rsync_remote
@@ -525,6 +526,17 @@ test_status = "git-annex status" ~: intmpclonerepo $ do
 test_sync :: Test
 test_sync = "git-annex sync" ~: intmpclonerepo $ do
 	git_annex "sync" [] @? "sync failed"
+
+test_map :: Test
+test_map = "git-annex map" ~: intmpclonerepo $ do
+	-- set descriptions, that will be looked for in the map
+	git_annex "describe" [".", "this repo"] @? "describe 1 failed"
+	git_annex "describe" ["origin", "origin repo"] @? "describe 2 failed"
+	-- --fast avoids it running graphviz, not a build dependency
+	git_annex "map" ["--fast"] @? "map failed"
+	doesFileExist "map.dot" @? "map.dot not generated"
+	c <- readFile "map.dot"
+	not ("this repo" `isInfixOf` c && "origin repo" `isInfixOf` c) @? "map.dot bad content"
 
 test_hook_remote :: Test
 test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do

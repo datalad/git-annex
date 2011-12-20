@@ -16,6 +16,7 @@ import qualified Git
 import qualified Git.Url
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -40,10 +41,14 @@ start = do
 	trusted <- trustGet Trusted
 
 	liftIO $ writeFile file (drawMap rs umap trusted)
-	showLongNote $ "running: dot -Tx11 " ++ file
-	showOutput
-	r <- liftIO $ boolSystem "dot" [Param "-Tx11", File file]
-	next $ next $ return r
+	next $ next $ do
+		fast <- Annex.getState Annex.fast
+		if fast
+			then return True
+			else do
+				showLongNote $ "running: dot -Tx11 " ++ file
+				showOutput
+				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
 	where
 		file = "map.dot"
 
