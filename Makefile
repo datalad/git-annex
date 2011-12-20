@@ -81,6 +81,7 @@ testcoverage:
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
 	@hpc markup test --exclude=Main --exclude=QC --destdir=.hpc >/dev/null
+	@echo "(See .hpc/ for test coverage details.)"
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
