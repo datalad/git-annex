@@ -64,7 +64,7 @@ install: all
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-test: $(bins)
+test:
 	@if ! $(GHCMAKE) -O0 test; then \
 		echo "** not running test suite" >&2; \
 	else \
@@ -74,7 +74,7 @@ test: $(bins)
 		fi; \
 	fi
 
-testcoverage: $(bins)
+testcoverage:
 	rm -f test.tix test
 	ghc -odir build/test -hidir build/test $(GHCFLAGS) --make -fhpc test
 	./test
