@@ -62,13 +62,12 @@ hookEnv k f = Just $ fileenv f ++ keyenv
 		env s v = ("ANNEX_" ++ s, v)
 		keyenv =
 			[ env "KEY" (show k)
-			, env "HASH_1" hash_1
-			, env "HASH_2" hash_2
+			, env "HASH_1" (hashbits !! 0)
+			, env "HASH_2" (hashbits !! 1)
 			]
 		fileenv Nothing = []
 		fileenv (Just file) =  [env "FILE" file]
-		[hash_1, hash_2, _rest] =
-			map takeDirectory $ splitPath $ hashDirMixed k
+		hashbits = map takeDirectory $ splitPath $ hashDirMixed k
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
