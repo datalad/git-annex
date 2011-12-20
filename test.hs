@@ -102,6 +102,12 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_fsck
 	, test_migrate
 	, test_unused
+	, test_addurl
+	, test_describe
+	, test_find
+	, test_merge
+	, test_status
+	, test_sync
 	, test_hook_remote
 	, test_directory_remote
 	, test_rsync_remote
@@ -343,7 +349,7 @@ test_fix = "git-annex fix" ~: intmpclonerepo $ do
 		newfile = subdir ++ "/" ++ annexedfile
 
 test_trust :: Test
-test_trust = "git-annex trust/untrust/semitrust" ~: intmpclonerepo $ do
+test_trust = "git-annex trust/untrust/semitrust/dead" ~: intmpclonerepo $ do
 	git_annex "trust" [repo] @? "trust failed"
 	trustcheck Logs.Trust.Trusted "trusted 1"
 	git_annex "trust" [repo] @? "trust of trusted failed"
@@ -352,6 +358,10 @@ test_trust = "git-annex trust/untrust/semitrust" ~: intmpclonerepo $ do
 	trustcheck Logs.Trust.UnTrusted "untrusted 1"
 	git_annex "untrust" [repo] @? "untrust of untrusted failed"
 	trustcheck Logs.Trust.UnTrusted "untrusted 2"
+	git_annex "dead" [repo] @? "dead failed"
+	trustcheck Logs.Trust.DeadTrusted "deadtrusted 1"
+	git_annex "dead" [repo] @? "dead of dead failed"
+	trustcheck Logs.Trust.DeadTrusted "deadtrusted 2"
 	git_annex "semitrust" [repo] @? "semitrust failed"
 	trustcheck Logs.Trust.SemiTrusted "semitrusted 1"
 	git_annex "semitrust" [repo] @? "semitrust of semitrusted failed"
@@ -484,6 +494,37 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 		findkey f = do
 			r <- Backend.lookupFile f
 			return $ fst $ fromJust r
+
+test_addurl :: Test
+test_addurl = "git-annex addurl" ~: intmpclonerepo $ do
+	annexed_notpresent annexedfile
+	-- can't check download; test suite should not access network,
+	-- and starting up a web server seems excessive
+	git_annex "addurl" ["--fast", "http://example.com/nosuchfile"] @? "addurl failed"
+
+test_describe :: Test
+test_describe = "git-annex describe" ~: intmpclonerepo $ do
+	git_annex "describe" [".", "this repo"] @? "describe 1 failed"
+	git_annex "describe" ["origin", "origin repo"] @? "describe 2 failed"
+
+test_find :: Test
+test_find = "git-annex find" ~: intmpclonerepo $ do
+	annexed_notpresent annexedfile
+	git_annex "find" [] @? "find failed"
+	git_annex "get" [] @? "get failed"
+	git_annex "find" [] @? "find failed"
+
+test_merge :: Test
+test_merge = "git-annex merge" ~: intmpclonerepo $ do
+	git_annex "merge" [] @? "merge failed"
+
+test_status :: Test
+test_status = "git-annex status" ~: intmpclonerepo $ do
+	git_annex "status" [] @? "status failed"
+
+test_sync :: Test
+test_sync = "git-annex sync" ~: intmpclonerepo $ do
+	git_annex "sync" [] @? "sync failed"
 
 test_hook_remote :: Test
 test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
