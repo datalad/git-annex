@@ -16,10 +16,10 @@ import Control.Applicative
 import System.Posix.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 
+import Common
 import Git
 import Git.Command
 import qualified Git.Filename
-import Utility.SafeCommand
 
 data TreeItem = TreeItem
 	{ mode :: FileMode
@@ -37,7 +37,7 @@ lsTree t repo = map parseLsTree <$>
  - (The --long format is not currently supported.) -}
 parseLsTree :: L.ByteString -> TreeItem
 parseLsTree l = TreeItem 
-	{ mode = fst $ head $ readOct $ L.unpack m
+	{ mode = fst $ Prelude.head $ readOct $ L.unpack m
 	, typeobj = L.unpack t
 	, sha = L.unpack s
 	, file = Git.Filename.decode $ L.unpack f

@@ -9,6 +9,8 @@ module Git.Index where
 
 import System.Posix.Env (setEnv, unsetEnv, getEnv)
 
+import Common
+
 {- Forces git to use the specified index file.
  -
  - Returns an action that will reset back to the default

@@ -7,7 +7,7 @@
 
 module Git.Queue (
 	Queue,
-	empty,
+	new,
 	add,
 	size,
 	full,
@@ -18,9 +18,9 @@ import qualified Data.Map as M
 import System.IO
 import System.Cmd.Utils
 import Data.String.Utils
-import Control.Monad (forM_)
 import Utility.SafeCommand
 
+import Common
 import Git
 import Git.Command
 
@@ -50,8 +50,8 @@ maxSize :: Int
 maxSize = 10240
 
 {- Constructor for empty queue. -}
-empty :: Queue
-empty = Queue 0 M.empty
+new :: Queue
+new = Queue 0 M.empty
 
 {- Adds an action to a queue. -}
 add :: Queue -> String -> [CommandParam] -> [FilePath] -> Queue
@@ -76,7 +76,7 @@ full (Queue n _) = n > maxSize
 flush :: Queue -> Repo -> IO Queue
 flush (Queue _ m) repo = do
 	forM_ (M.toList m) $ uncurry $ runAction repo
-	return empty
+	return new
 
 {- Runs an Action on a list of files in a git repository.
  -

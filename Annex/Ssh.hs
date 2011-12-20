@@ -7,11 +7,9 @@
 
 module Annex.Ssh where
 
-import Control.Monad.State (liftIO)
-
+import Common
 import qualified Git
 import qualified Git.Url
-import Utility.SafeCommand
 import Types
 import Config
 import Annex.UUID
