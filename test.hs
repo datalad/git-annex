@@ -430,15 +430,15 @@ test_migrate = "git-annex migrate" ~: TestList [t False, t True]
 		checkbackend sha1annexedfile backendSHA1
 
 		-- check that reversing a migration works
-		writeFile ".gitattributes" $ "* annex.backend=WORM"
+		writeFile ".gitattributes" $ "* annex.backend=SHA256"
 		git_annex "migrate" [sha1annexedfile]
 			@? "migrate sha1annexedfile failed"
 		git_annex "migrate" [annexedfile]
 			@? "migrate annexedfile failed"
 		annexed_present annexedfile
 		annexed_present sha1annexedfile
-		checkbackend annexedfile backendWORM
-		checkbackend sha1annexedfile backendWORM
+		checkbackend annexedfile backendSHA256
+		checkbackend sha1annexedfile backendSHA256
 		
 		where
 			checkbackend file expected = do
@@ -761,8 +761,8 @@ changedcontent f = (content f) ++ " (modified)"
 backendSHA1 :: Types.Backend Types.Annex
 backendSHA1 = backend_ "SHA1"
 
-backendWORM :: Types.Backend Types.Annex
-backendWORM = backend_ "WORM"
+backendSHA256 :: Types.Backend Types.Annex
+backendSHA256 = backend_ "SHA256"
 
 backend_ :: String -> Types.Backend Types.Annex
 backend_ name = Backend.lookupBackendName name
