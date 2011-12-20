@@ -115,7 +115,7 @@ getState = gets
 
 {- Applies a state mutation function to change the internal state. 
  -
- - Example: changeState $ \s -> s { quiet = True }
+ - Example: changeState $ \s -> s { output = QuietOutput }
  -}
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState = modify
