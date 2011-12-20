@@ -103,6 +103,8 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_migrate
 	, test_unused
 	, test_hook_remote
+	, test_directory_remote
+	, test_rsync_remote
 	]
 
 test_init :: Test
@@ -503,11 +505,46 @@ test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "move" ["-q", annexedfile, "--from", "foo"] @? "move --from hook remote failed"
 	annexed_present annexedfile
+	r <- git_annex "drop" ["-q", annexedfile, "--numcopies=2"]
+	not r @? "drop failed to fail"
+	annexed_present annexedfile
 	where
 		dir = "dir"
 		loc = dir ++ "/$ANNEX_KEY"
 		git_config k v = boolSystem "git" [Param "config", Param k, Param v]
 			@? "git config failed"
+
+test_directory_remote :: Test
+test_directory_remote = "git-annex directory remote" ~: intmpclonerepo $ do
+	createDirectory "dir"
+	git_annex "initremote" (words $ "foo type=directory encryption=none directory=dir") @? "initremote failed"
+	git_annex "get" ["-q", annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex "copy" ["-q", annexedfile, "--to", "foo"] @? "copy --to directory remote failed"
+	annexed_present annexedfile
+	git_annex "drop" ["-q", annexedfile, "--numcopies=2"] @? "drop failed"
+	annexed_notpresent annexedfile
+	git_annex "move" ["-q", annexedfile, "--from", "foo"] @? "move --from directory remote failed"
+	annexed_present annexedfile
+	r <- git_annex "drop" ["-q", annexedfile, "--numcopies=2"]
+	not r @? "drop failed to fail"
+	annexed_present annexedfile
+
+test_rsync_remote :: Test
+test_rsync_remote = "git-annex rsync remote" ~: intmpclonerepo $ do
+	createDirectory "dir"
+	git_annex "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
+	git_annex "get" ["-q", annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex "copy" ["-q", annexedfile, "--to", "foo"] @? "copy --to rsync remote failed"
+	annexed_present annexedfile
+	git_annex "drop" ["-q", annexedfile, "--numcopies=2"] @? "drop failed"
+	annexed_notpresent annexedfile
+	git_annex "move" ["-q", annexedfile, "--from", "foo"] @? "move --from rsync remote failed"
+	annexed_present annexedfile
+	r <- git_annex "drop" ["-q", annexedfile, "--numcopies=2"]
+	not r @? "drop failed to fail"
+	annexed_present annexedfile
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
