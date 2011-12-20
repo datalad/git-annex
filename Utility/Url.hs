@@ -7,6 +7,7 @@
 
 module Utility.Url (
 	exists,
+	canDownload,
 	download,
 	get
 ) where
@@ -31,6 +32,9 @@ exists url =
 			case rspCode r of
 				(2,_,_) -> return True
 				_ -> return False
+
+canDownload :: IO Bool
+canDownload = (||) <$> inPath "wget" <*> inPath "curl"
 
 {- Used to download large files, such as the contents of keys.
  -
