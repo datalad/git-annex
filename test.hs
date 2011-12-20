@@ -102,6 +102,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_fsck
 	, test_migrate
 	, test_unused
+	, test_hook_remote
 	]
 
 test_init :: Test
@@ -481,6 +482,32 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 		findkey f = do
 			r <- Backend.lookupFile f
 			return $ fst $ fromJust r
+
+test_hook_remote :: Test
+test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
+	git_annex "initremote" (words "foo type=hook encryption=none hooktype=foo") @? "initremote failed"
+	createDirectory dir
+	git_config "annex.foo-store-hook" $
+		"cp $ANNEX_FILE " ++ loc
+	git_config "annex.foo-retrieve-hook" $
+		"cp " ++ loc ++ " $ANNEX_FILE"
+	git_config "annex.foo-remove-hook" $
+		"rm -f " ++ loc
+	git_config "annex.foo-checkpresent-hook" $
+		"if [ -e " ++ loc ++ " ]; then echo $ANNEX_KEY; fi"
+	git_annex "get" ["-q", annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex "copy" ["-q", annexedfile, "--to", "foo"] @? "copy --to hook remote failed"
+	annexed_present annexedfile
+	git_annex "drop" ["-q", annexedfile, "--numcopies=2"] @? "drop failed"
+	annexed_notpresent annexedfile
+	git_annex "move" ["-q", annexedfile, "--from", "foo"] @? "move --from hook remote failed"
+	annexed_present annexedfile
+	where
+		dir = "dir"
+		loc = dir ++ "/$ANNEX_KEY"
+		git_config k v = boolSystem "git" [Param "config", Param k, Param v]
+			@? "git config failed"
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
