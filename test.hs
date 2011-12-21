@@ -388,7 +388,7 @@ test_trust = "git-annex trust/untrust/semitrust/dead" ~: intmpclonerepo $ do
 			assertBool msg present
 
 test_fsck :: Test
-test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withremoteuntrusted]
+test_fsck = "git-annex fsck" ~: TestList [basicfsck, barefsck, withlocaluntrusted, withremoteuntrusted]
 	where
 		basicfsck = TestCase $ intmpclonerepo $ do
 			git_annex "fsck" [] @? "fsck failed"
@@ -397,6 +397,8 @@ test_fsck = "git-annex fsck" ~: TestList [basicfsck, withlocaluntrusted, withrem
 			boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
 			corrupt annexedfile
 			corrupt sha1annexedfile
+		barefsck = TestCase $ intmpbareclonerepo $ do
+			git_annex "fsck" [] @? "fsck failed"
 		withlocaluntrusted = TestCase $ intmpclonerepo $ do
 			git_annex "get" [annexedfile] @? "get failed"
 			git_annex "untrust" ["origin"] @? "untrust of origin repo failed"
@@ -735,10 +737,13 @@ inmainrepo :: Assertion -> Assertion
 inmainrepo a = indir mainrepodir a
 
 intmpclonerepo :: Assertion -> Assertion
-intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
+intmpclonerepo a = withtmpclonerepo False $ \r -> indir r a
 
-withtmpclonerepo :: (FilePath -> Assertion) -> Assertion
-withtmpclonerepo = bracket (clonerepo mainrepodir tmprepodir) cleanup
+intmpbareclonerepo :: Assertion -> Assertion
+intmpbareclonerepo a = withtmpclonerepo True $ \r -> indir r a
+
+withtmpclonerepo :: Bool -> (FilePath -> Assertion) -> Assertion
+withtmpclonerepo bare = bracket (clonerepo mainrepodir tmprepodir bare) cleanup
 
 withgitrepo :: (FilePath -> Assertion) -> Assertion
 withgitrepo = bracket (setuprepo mainrepodir) return
@@ -766,11 +771,12 @@ setuprepo dir = do
 	return dir
 
 -- clones are always done as local clones; we cannot test ssh clones
-clonerepo :: FilePath -> FilePath -> IO FilePath
-clonerepo old new = do
+clonerepo :: FilePath -> FilePath -> Bool -> IO FilePath
+clonerepo old new bare = do
 	cleanup new
 	ensuretmpdir
-	boolSystem "git" [Params "clone -q", File old, File new] @? "git clone failed"
+	let b = if bare then " --bare" else ""
+	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
 	indir new $ git_annex "init" ["-q", new] @? "git annex init failed"
 	return new
 	

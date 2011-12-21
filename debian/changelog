@@ -5,7 +5,7 @@ git-annex (3.20111212) UNRELEASED; urgency=low
   * Properly handle multiline git config values.
   * Fix the hook special remote, which bitrotted a while ago.
   * map: --fast disables use of dot to display map
-  * Test suite improvements. Current top-level test coverage: 74%
+  * Test suite improvements. Current top-level test coverage: 75%
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
