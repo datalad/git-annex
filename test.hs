@@ -141,6 +141,12 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 			writeFile sha1annexedfile $ content sha1annexedfile
 			git_annex "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
 			annexed_present sha1annexedfile
+			checkbackend sha1annexedfile backendSHA1
+			writeFile wormannexedfile $ content wormannexedfile
+			git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+			annexed_present wormannexedfile
+			checkbackend wormannexedfile backendWORM
+			boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
 			writeFile ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 			boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
@@ -455,10 +461,6 @@ test_migrate = "git-annex migrate" ~: TestList [t False, t True]
 		checkbackend sha1annexedfile backendSHA256
 		
 		where
-			checkbackend file expected = do
-				r <- annexeval $ Backend.lookupFile file
-				let b = snd $ fromJust r
-				assertEqual ("backend for " ++ file) expected b
 
 test_unused :: Test
 test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
@@ -640,7 +642,7 @@ test_rsync_remote = "git-annex rsync remote" ~: intmpclonerepo $ do
 	annexed_present annexedfile
 
 test_bup_remote :: Test
-test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ checkbup $ do
+test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ when Build.SysConfig.bup $ do
 	dir <- absPath "dir" -- bup special remote needs an absolute path
 	createDirectory dir
 	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
@@ -654,34 +656,31 @@ test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ checkbup $ do
 	annexed_present annexedfile
 	not <$> git_annex "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
 	annexed_present annexedfile
-	where
-		checkbup = whenM (inPath "bup")
 
+-- gpg is not a build dependency, so only test when it's available
 test_crypto :: Test
-test_crypto = "git-annex crypto" ~: intmpclonerepo $
-	-- gpg is not a build dependency, so only test when it's available
-	when Build.SysConfig.gpg $ do
-		Utility.Gpg.testTestHarness @? "test harness self-test failed"
-		Utility.Gpg.testHarness $ do
-			createDirectory "dir"
-			let initremote = git_annex "initremote"
-				[ "foo"
-				, "type=directory"
-				, "encryption=" ++ Utility.Gpg.testKeyId
-				, "directory=dir"
-				]
-			initremote @? "initremote failed"
-			initremote @? "initremote failed when run twice in a row"
-			git_annex "get" [annexedfile] @? "get of file failed"
-			annexed_present annexedfile
-			git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
-			annexed_present annexedfile
-			git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
-			annexed_notpresent annexedfile
-			git_annex "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
-			annexed_present annexedfile
-			not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
-			annexed_present annexedfile	
+test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ do
+	Utility.Gpg.testTestHarness @? "test harness self-test failed"
+	Utility.Gpg.testHarness $ do
+		createDirectory "dir"
+		let initremote = git_annex "initremote"
+			[ "foo"
+			, "type=directory"
+			, "encryption=" ++ Utility.Gpg.testKeyId
+			, "directory=dir"
+			]
+		initremote @? "initremote failed"
+		initremote @? "initremote failed when run twice in a row"
+		git_annex "get" [annexedfile] @? "get of file failed"
+		annexed_present annexedfile
+		git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
+		annexed_present annexedfile
+		git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+		annexed_notpresent annexedfile
+		git_annex "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
+		annexed_present annexedfile
+		not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+		annexed_present annexedfile	
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
@@ -844,6 +843,12 @@ checklocationlog f expected = do
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
+checkbackend :: FilePath -> Types.Backend Types.Annex -> Assertion			
+checkbackend file expected = do
+	r <- annexeval $ Backend.lookupFile file
+	let b = snd $ fromJust r
+	assertEqual ("backend for " ++ file) expected b
+
 inlocationlog :: FilePath -> Assertion
 inlocationlog f = checklocationlog f True
 
@@ -897,6 +902,9 @@ tmprepodir = tmpdir ++ "/tmprepo"
 annexedfile :: String
 annexedfile = "foo"
 
+wormannexedfile :: String
+wormannexedfile = "apple"
+
 sha1annexedfile :: String
 sha1annexedfile = "sha1foo"
 
@@ -912,6 +920,7 @@ content f
 	| f == ingitfile = "normal file content"
 	| f == sha1annexedfile ="sha1 annexed file content"
 	| f == sha1annexedfiledup = content sha1annexedfile
+	| f == wormannexedfile = "worm annexed file content"
 	| otherwise = "unknown file " ++ f
 
 changecontent :: FilePath -> IO ()
@@ -925,6 +934,9 @@ backendSHA1 = backend_ "SHA1"
 
 backendSHA256 :: Types.Backend Types.Annex
 backendSHA256 = backend_ "SHA256"
+
+backendWORM :: Types.Backend Types.Annex
+backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend Types.Annex
 backend_ name = Backend.lookupBackendName name
