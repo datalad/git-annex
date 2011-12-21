@@ -5,13 +5,16 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Types.Crypto where
+module Types.Crypto (
+	Cipher(..),
+	EncryptedCipher(..),
+	KeyIds(..),
+) where
+
+import Utility.Gpg (KeyIds(..))
 
 -- XXX ideally, this would be a locked memory region
 newtype Cipher = Cipher String
 
 data EncryptedCipher = EncryptedCipher String KeyIds
-	deriving (Ord, Eq)
-
-newtype KeyIds = KeyIds [String]
 	deriving (Ord, Eq)
