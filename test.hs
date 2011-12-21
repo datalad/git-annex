@@ -119,6 +119,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_hook_remote
 	, test_directory_remote
 	, test_rsync_remote
+	, test_bup_remote
 	, test_crypto
 	]
 
@@ -637,6 +638,24 @@ test_rsync_remote = "git-annex rsync remote" ~: intmpclonerepo $ do
 	annexed_present annexedfile
 	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
+
+test_bup_remote :: Test
+test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ checkbup $ do
+	dir <- absPath "dir" -- bup special remote needs an absolute path
+	createDirectory dir
+	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
+	git_annex "get" [annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to bup remote failed"
+	annexed_present annexedfile
+	git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+	annexed_notpresent annexedfile
+	git_annex "copy" [annexedfile, "--from", "foo"] @? "copy --from bup remote failed"
+	annexed_present annexedfile
+	not <$> git_annex "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
+	annexed_present annexedfile
+	where
+		checkbup = whenM (inPath "bup")
 
 test_crypto :: Test
 test_crypto = "git-annex crypto" ~: intmpclonerepo $
