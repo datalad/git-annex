@@ -17,6 +17,7 @@ import System.Posix.Env
 import qualified Control.Exception.Extensible as E
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
+import Text.JSON
 
 import Common
 
@@ -512,9 +513,16 @@ test_describe = "git-annex describe" ~: intmpclonerepo $ do
 test_find :: Test
 test_find = "git-annex find" ~: intmpclonerepo $ do
 	annexed_notpresent annexedfile
-	git_annex "find" [] @? "find failed"
-	git_annex "get" [] @? "get failed"
-	git_annex "find" [] @? "find failed"
+	git_annex_expectoutput "find" [] []
+	git_annex "get" [annexedfile] @? "get failed"
+	annexed_present annexedfile
+	annexed_notpresent sha1annexedfile
+	git_annex_expectoutput "find" [] [annexedfile]
+	git_annex_expectoutput "find" ["--exclude", annexedfile, "--and", "--exclude", sha1annexedfile] []
+	git_annex_expectoutput "find" ["--not", "--in", "origin"] []
+	git_annex_expectoutput "find" ["--copies", "1", "--and", "--not", "--copies", "2"] [sha1annexedfile]
+	git_annex_expectoutput "find" ["--inbackend", "SHA1"] [sha1annexedfile]
+	git_annex_expectoutput "find" ["--inbackend", "WORM"] []
 
 test_merge :: Test
 test_merge = "git-annex merge" ~: intmpclonerepo $ do
@@ -522,7 +530,10 @@ test_merge = "git-annex merge" ~: intmpclonerepo $ do
 
 test_status :: Test
 test_status = "git-annex status" ~: intmpclonerepo $ do
-	git_annex "status" [] @? "status failed"
+	json <- git_annex_output "status" ["--json"]
+	case Text.JSON.decodeStrict json :: Text.JSON.Result (JSObject JSValue) of
+		Ok _ -> return ()
+		Error e -> assertFailure e
 
 test_version :: Test
 test_version = "git-annex version" ~: intmpclonerepo $ do
@@ -550,9 +561,10 @@ test_uninit = "git-annex uninit" ~: intmpclonerepo $ do
 	boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
 	not <$> git_annex "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 	boolSystem "git" [Params "checkout master"] @? "git checkout master"
-	git_annex "unannex" [] @? "unannex failed"
+	_ <- git_annex "uninit" [] -- exit status not checked; does abnormal exit
 	checkregularfile annexedfile
 	doesDirectoryExist ".git" @? ".git vanished in uninit"
+	not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
 
 test_upgrade :: Test
 test_upgrade = "git-annex upgrade" ~: intmpclonerepo $ do
@@ -663,6 +675,31 @@ git_annex command params = do
 		Left _ -> return False
 	where
 		run = GitAnnex.run (command:"-q":params)
+
+{- Runs git-annex and returns its output. -}
+git_annex_output :: String -> [String] -> IO String
+git_annex_output command params = do
+	(frompipe, topipe) <- createPipe
+	pid <- forkProcess $ do
+		_ <- dupTo topipe stdOutput
+		closeFd frompipe
+		_ <- git_annex command params
+		exitSuccess
+	-- XXX since the above is a separate process, code coverage stats are
+	-- not gathered for things run in it.
+	closeFd topipe
+	fromh <- fdToHandle frompipe
+	got <- hGetContentsStrict fromh
+	hClose fromh
+	_ <- getProcessStatus True False pid
+	-- XXX hack Run same command again, to get code coverage.
+	_ <- git_annex command params
+	return got
+
+git_annex_expectoutput :: String -> [String] -> [String] -> IO ()
+git_annex_expectoutput command params expected = do
+	got <- lines <$> git_annex_output command params
+	got == expected @? ("unexpected value running " ++ command ++ " " ++ show params ++ " -- got: " ++ show got ++ " expected: " ++ show expected)
 
 -- Runs an action in the current annex. Note that shutdown actions
 -- are not run; this should only be used for actions that query state.
