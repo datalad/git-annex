@@ -42,6 +42,8 @@ import qualified Config
 import qualified Crypto
 import qualified Utility.Path
 import qualified Utility.FileMode
+import qualified Utility.Gpg
+import qualified Build.SysConfig
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -116,6 +118,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_hook_remote
 	, test_directory_remote
 	, test_rsync_remote
+	, test_crypto
 	]
 
 test_init :: Test
@@ -622,6 +625,32 @@ test_rsync_remote = "git-annex rsync remote" ~: intmpclonerepo $ do
 	annexed_present annexedfile
 	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
+
+test_crypto :: Test
+test_crypto = "git-annex crypto" ~: intmpclonerepo $
+	-- gpg is not a build dependency, so only test when it's available
+	when Build.SysConfig.gpg $ do
+		Utility.Gpg.testTestHarness @? "test harness self-test failed"
+		Utility.Gpg.testHarness $ do
+			createDirectory "dir"
+			let initremote = git_annex "initremote"
+				[ "foo"
+				, "type=directory"
+				, "encryption=" ++ Utility.Gpg.testKeyId
+				, "directory=dir"
+				]
+			initremote @? "initremote failed"
+			initremote @? "initremote failed when run twice in a row"
+			git_annex "get" [annexedfile] @? "get of file failed"
+			annexed_present annexedfile
+			git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
+			annexed_present annexedfile
+			git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+			annexed_notpresent annexedfile
+			git_annex "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
+			annexed_present annexedfile
+			not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+			annexed_present annexedfile	
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
