@@ -71,7 +71,7 @@ genCipher c = do
 	random <- genrandom
 	encryptCipher (Cipher random) ks
 	where
-		genrandom = gpgRead
+		genrandom = gpgReadStrict
 			-- Armor the random data, to avoid newlines,
 			-- since gpg only reads ciphers up to the first
 			-- newline.
@@ -150,12 +150,12 @@ encryptKey c k = Key
 {- Runs an action, passing it a handle from which it can 
  - stream encrypted content. -}
 withEncryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
-withEncryptedHandle = gpgCipherHandle [Params "--symmetric --force-mdc"]
+withEncryptedHandle = gpgPassphraseHandle [Params "--symmetric --force-mdc"] . cipherPassphrase
 
 {- Runs an action, passing it a handle from which it can
  - stream decrypted content. -}
 withDecryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
-withDecryptedHandle = gpgCipherHandle [Param "--decrypt"]
+withDecryptedHandle = gpgPassphraseHandle [Param "--decrypt"] . cipherPassphrase
 
 {- Streams encrypted content to an action. -}
 withEncryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
@@ -180,11 +180,14 @@ gpgParams params = do
 		-- be quiet, even about checking the trustdb
 		defaults = ["--quiet", "--trust-model", "always"]
 
-gpgRead :: [CommandParam] -> IO String
-gpgRead params = do
+{- Runs gpg with some params and returns its stdout, strictly. -}
+gpgReadStrict :: [CommandParam] -> IO String
+gpgReadStrict params = do
 	params' <- gpgParams params
 	pOpen ReadFromPipe "gpg" params' hGetContentsStrict
 
+{- Runs gpg, piping an input value to it, and returninging its stdout,
+ - strictly. -}
 gpgPipeStrict :: [CommandParam] -> String -> IO String
 gpgPipeStrict params input = do
 	params' <- gpgParams params
@@ -194,23 +197,24 @@ gpgPipeStrict params input = do
 	forceSuccess pid
 	return output
 
-{- Runs gpg with a cipher and some parameters, feeding it an input,
- - and passing a handle to its output to an action.
+{- Runs gpg with some parameters, first feeding it a passphrase via
+ - --passphrase-fd, then feeding it an input, and passing a handle
+ - to its output to an action.
  -
  - Note that to avoid deadlock with the cleanup stage,
  - the action must fully consume gpg's input before returning. -}
-gpgCipherHandle :: [CommandParam] -> Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
-gpgCipherHandle params c a b = do
+gpgPassphraseHandle :: [CommandParam] -> String -> IO L.ByteString -> (Handle -> IO a) -> IO a
+gpgPassphraseHandle params passphrase a b = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
 	_ <- forkIO $ do
 		toh <- fdToHandle topipe
-		hPutStrLn toh $ cipherPassphrase c
+		hPutStrLn toh passphrase
 		hClose toh
-	let Fd passphrasefd = frompipe
-	let passphrase = [Param "--passphrase-fd", Param $ show passphrasefd]
+	let Fd pfd = frompipe
+	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
-	params' <- gpgParams $ passphrase ++ params
+	params' <- gpgParams $ passphrasefd ++ params
 	(pid, fromh, toh) <- hPipeBoth "gpg" params'
 	pid2 <- forkProcess $ do
 		L.hPut toh =<< a
@@ -226,7 +230,7 @@ gpgCipherHandle params c a b = do
 	return ret
 
 configKeyIds :: RemoteConfig -> IO KeyIds
-configKeyIds c = parse <$> gpgRead params
+configKeyIds c = parse <$> gpgReadStrict params
 	where
 		params = [Params "--with-colons --list-public-keys",
 			Param $ configGet c "encryption"]
