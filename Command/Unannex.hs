@@ -41,8 +41,10 @@ cleanup file key = do
 	-- pre-commit hook if this file is later added back to
 	-- git as a normal, non-annexed file.
 	whenM (not . null <$> inRepo (LsFiles.staged [file])) $ do
+		showOutput
 		inRepo $ Git.Command.run "commit" [
-			Param "-m", Param "content removed from git annex",
+			Param "-q",
+			Params "-m", Param "content removed from git annex",
 			Param "--", File file]
 
 	fast <- Annex.getState Annex.fast
