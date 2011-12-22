@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.Format (gen, format) where
+module Utility.Format (Format, gen, format) where
 
 import Text.Printf (printf)
 import Data.String.Utils (replace)

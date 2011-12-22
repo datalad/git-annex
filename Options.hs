@@ -82,6 +82,8 @@ paramUUID :: String
 paramUUID = "UUID"
 paramType :: String
 paramType = "TYPE"
+paramFormat :: String
+paramFormat = "FORMAT"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String
