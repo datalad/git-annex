@@ -435,8 +435,8 @@ subdirectories).
 * --format=value
 
   Specifies a custom output format. The value is a format string, 
-  in which '${var}' is expanded to the value of a variable. To right-align
-  a variable with whitespace, use '${var;width}' ; to left-align
+  in which '${var}' is expanded to the value of a variable. To right-justify
+  a variable with whitespace, use '${var;width}' ; to left-justify
   a variable, use '${var;-width}'. Also, '\n' is a newline, '\0' is a NULL,
   etc.
 
