@@ -461,8 +461,6 @@ test_migrate = "git-annex migrate" ~: TestList [t False, t True]
 		annexed_present sha1annexedfile
 		checkbackend annexedfile backendSHA256
 		checkbackend sha1annexedfile backendSHA256
-		
-		where
 
 test_unused :: Test
 test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
