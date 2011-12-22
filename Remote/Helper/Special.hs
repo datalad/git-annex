@@ -12,6 +12,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Types.Remote
 import qualified Git
+import qualified Git.Command
 import qualified Git.Construct
 
 {- Special remotes don't have a configured url, so Git.Repo does not
@@ -20,11 +21,11 @@ import qualified Git.Construct
  -}
 findSpecialRemotes :: String -> Annex [Git.Repo]
 findSpecialRemotes s = do
-	m <- fromRepo Git.configMap
-	return $ map construct $ remotepairs m
+	m <- fromRepo Git.config
+	liftIO $ mapM construct $ remotepairs m
 	where
 		remotepairs = M.toList . M.filterWithKey match
-		construct (k,_) = Git.repoRemoteNameFromKey k Git.Construct.fromUnknown
+		construct (k,_) = Git.Construct.remoteNamedFromKey k Git.Construct.fromUnknown
 		match k _ = startswith "remote." k && endswith (".annex-"++s) k
 
 {- Sets up configuration for a special remote in .git/config. -}
@@ -33,7 +34,7 @@ gitConfigSpecialRemote u c k v = do
 	set ("annex-"++k) v
 	set ("annex-uuid") (fromUUID u)
 	where
-		set a b = inRepo $ Git.run "config"
+		set a b = inRepo $ Git.Command.run "config"
 			[Param (configsetting a), Param b]
 		remotename = fromJust (M.lookup "name" c)
 		configsetting s = "remote." ++ remotename ++ "." ++ s

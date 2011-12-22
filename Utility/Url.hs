@@ -7,6 +7,7 @@
 
 module Utility.Url (
 	exists,
+	canDownload,
 	download,
 	get
 ) where
@@ -32,9 +33,16 @@ exists url =
 				(2,_,_) -> return True
 				_ -> return False
 
+canDownload :: IO Bool
+canDownload = (||) <$> inPath "wget" <*> inPath "curl"
+
 {- Used to download large files, such as the contents of keys.
+ -
  - Uses wget or curl program for its progress bar. (Wget has a better one,
- - so is preferred.) -}
+ - so is preferred.) Which program to use is determined at run time; it
+ - would not be appropriate to test at configure time and build support
+ - for only one in.
+ -}
 download :: URLString -> FilePath -> IO Bool
 download url file = do
 	e <- inPath "wget"

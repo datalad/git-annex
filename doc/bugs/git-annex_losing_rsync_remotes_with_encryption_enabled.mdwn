@@ -99,3 +99,5 @@ And yes, only the hash *annex copy* is checking for exists on the remote side. -
 > here's an already decrypted cipher -- it must be the right one!
 > 
 > Problem reproduced here, and fixed. [[done]] --[[Joey]]
+
+THX Joey! -- [[gebi]]

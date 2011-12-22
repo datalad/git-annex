@@ -13,22 +13,21 @@ import Data.Char
 import Data.Word (Word8)
 import Text.Printf
 
+import Common
+
 decode :: String -> FilePath
 decode [] = []
 decode f@(c:s)
 	-- encoded strings will be inside double quotes
-	| c == '"' = unescape ("", middle)
+	| c == '"' && end s == ['"'] = unescape ("", beginning s)
 	| otherwise = f
 	where
 		e = '\\'
-		middle = init s
 		unescape (b, []) = b
 		-- look for escapes starting with '\'
-		unescape (b, v) = b ++ beginning ++ unescape (handle rest)
+		unescape (b, v) = b ++ fst pair ++ unescape (handle $ snd pair)
 			where
 				pair = span (/= e) v
-				beginning = fst pair
-				rest = snd pair
 		isescape x = x == e
 		-- \NNN is an octal encoded character
 		handle (x:n1:n2:n3:rest)
@@ -38,7 +37,7 @@ decode f@(c:s)
 						isOctDigit n2 &&
 						isOctDigit n3
 					fromoctal = [chr $ readoctal [n1, n2, n3]]
-					readoctal o = read $ "0o" ++ o :: Int
+					readoctal o = Prelude.read $ "0o" ++ o :: Int
 		-- \C is used for a few special characters
 		handle (x:nc:rest)
 			| isescape x = ([echar nc], rest)

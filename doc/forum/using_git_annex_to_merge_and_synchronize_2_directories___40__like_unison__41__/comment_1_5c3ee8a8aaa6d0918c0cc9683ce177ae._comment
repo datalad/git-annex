@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 1"
+ date="2011-12-18T13:57:33Z"
+ content="""
+Are the files identical or different? I today did something like that with similar, but not identical directories containing media files, and git happily merged them. but there, same files had same content.
+
+Also, make sure you use the same backend. In my case, one of the machines runs Debian stable, so I use the WORM backend, not the SHA backend.
+"""]]

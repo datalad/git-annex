@@ -64,7 +64,7 @@ install: all
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-test: $(bins)
+test:
 	@if ! $(GHCMAKE) -O0 test; then \
 		echo "** not running test suite" >&2; \
 	else \
@@ -74,13 +74,14 @@ test: $(bins)
 		fi; \
 	fi
 
-testcoverage: $(bins)
+testcoverage:
 	rm -f test.tix test
 	ghc -odir build/test -hidir build/test $(GHCFLAGS) --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
 	@hpc markup test --exclude=Main --exclude=QC --destdir=.hpc >/dev/null
+	@echo "(See .hpc/ for test coverage details.)"
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.

@@ -64,15 +64,15 @@ parseLog parser = M.fromListWith best . mapMaybe parse . lines
 			where
 				makepair v = Just (toUUID u, LogEntry ts v)
 				ws = words line
-				u = head ws
-				end = last ws
+				u = Prelude.head ws
+				t = Prelude.last ws
 				ts
-					| tskey `isPrefixOf` end =
-						pdate $ tail $ dropWhile (/= '=') end
+					| tskey `isPrefixOf` t =
+						pdate $ drop 1 $ dropWhile (/= '=') t
 					| otherwise = Unknown
 				info
 					| ts == Unknown = drop 1 ws
-					| otherwise = drop 1 $ init ws
+					| otherwise = drop 1 $ beginning ws
 				pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
 					Nothing -> Unknown
 					Just d -> Date $ utcTimeToPOSIXSeconds d

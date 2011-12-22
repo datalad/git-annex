@@ -7,10 +7,9 @@
 
 module Annex.Ssh where
 
-import Control.Monad.State (liftIO)
-
+import Common
 import qualified Git
-import Utility.SafeCommand
+import qualified Git.Url
 import Types
 import Config
 import Annex.UUID
@@ -22,10 +21,10 @@ sshToRepo :: Git.Repo -> [CommandParam] -> Annex [CommandParam]
 sshToRepo repo sshcmd = do
 	s <- getConfig repo "ssh-options" ""
 	let sshoptions = map Param (words s)
-	let sshport = case Git.urlPort repo of
+	let sshport = case Git.Url.port repo of
 		Nothing -> []
 		Just p -> [Param "-p", Param (show p)]
-	let sshhost = Param $ Git.urlHostUser repo
+	let sshhost = Param $ Git.Url.hostuser repo
 	return $ sshoptions ++ sshport ++ [sshhost] ++ sshcmd
 
 {- Generates parameters to run a git-annex-shell command on a remote

@@ -112,6 +112,8 @@ options = commonOptions ++
 		"terminate filename with null"
 	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
+	, Option ['I'] ["include"] (ReqArg Limit.addInclude paramGlob)
+		"don't skip files matching the glob pattern"
 	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
 		"skip files not present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)

@@ -96,7 +96,7 @@ storeEncrypted d (cipher, enck) k = do
 
 storeHelper :: FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
 storeHelper d key a = do
-	let dest = head $ locations d key
+	let dest = Prelude.head $ locations d key
 	let dir = parentDir dest
 	createDirectoryIfMissing True dir
 	allowWrite dir

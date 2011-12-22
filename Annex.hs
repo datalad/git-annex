@@ -28,7 +28,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import Git.CatFile
-import Git.Queue
+import qualified Git.Queue
 import Types.Backend
 import qualified Types.Remote
 import Types.Crypto
@@ -60,7 +60,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [Backend Annex]
 	, remotes :: [Types.Remote.Remote Annex]
-	, repoqueue :: Queue
+	, repoqueue :: Git.Queue.Queue
 	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
@@ -83,7 +83,7 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, repoqueue = Git.Queue.empty
+	, repoqueue = Git.Queue.new
 	, output = NormalOutput
 	, force = False
 	, fast = False
@@ -118,7 +118,7 @@ getState = gets
 
 {- Applies a state mutation function to change the internal state. 
  -
- - Example: changeState $ \s -> s { quiet = True }
+ - Example: changeState $ \s -> s { output = QuietOutput }
  -}
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState = modify

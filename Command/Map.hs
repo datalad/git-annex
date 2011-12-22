@@ -13,8 +13,10 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import qualified Git
+import qualified Git.Url
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
@@ -39,10 +41,14 @@ start = do
 	trusted <- trustGet Trusted
 
 	liftIO $ writeFile file (drawMap rs umap trusted)
-	showLongNote $ "running: dot -Tx11 " ++ file
-	showOutput
-	r <- liftIO $ boolSystem "dot" [Param "-Tx11", File file]
-	next $ next $ return r
+	next $ next $ do
+		fast <- Annex.getState Annex.fast
+		if fast
+			then return True
+			else do
+				showLongNote $ "running: dot -Tx11 " ++ file
+				showOutput
+				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
 	where
 		file = "map.dot"
 
@@ -68,11 +74,11 @@ drawMap rs umap ts = Dot.graph $ repos ++ trusted ++ others
 
 hostname :: Git.Repo -> String
 hostname r
-	| Git.repoIsUrl r = Git.urlHost r
+	| Git.repoIsUrl r = Git.Url.host r
 	| otherwise = "localhost"
 
 basehostname :: Git.Repo -> String
-basehostname r = head $ split "." $ hostname r
+basehostname r = Prelude.head $ split "." $ hostname r
 
 {- A name to display for a repo. Uses the name from uuid.log if available,
  - or the remote name if not. -}
@@ -82,7 +88,7 @@ repoName umap r
 	| otherwise = M.findWithDefault fallback repouuid umap
 	where
 		repouuid = getUncachedUUID r
-		fallback = fromMaybe "unknown" $ Git.repoRemoteName r
+		fallback = fromMaybe "unknown" $ Git.remoteName r
 
 {- A unique id for the node for a repo. Uses the annex.uuid if available. -}
 nodeId :: Git.Repo -> String
@@ -99,7 +105,7 @@ node umap fullinfo r = unlines $ n:edges
 			decorate $ Dot.graphNode (nodeId r) (repoName umap r)
 		edges = map (edge umap fullinfo r) (Git.remotes r)
 		decorate
-			| Git.configMap r == M.empty = unreachable
+			| Git.config r == M.empty = unreachable
 			| otherwise = reachable
 
 {- An edge between two repos. The second repo is a remote of the first. -}
@@ -116,7 +122,7 @@ edge umap fullinfo from to =
 		{- Only name an edge if the name is different than the name
 		 - that will be used for the destination node, and is
 		 - different from its hostname. (This reduces visual clutter.) -}
-		edgename = maybe Nothing calcname $ Git.repoRemoteName to
+		edgename = maybe Nothing calcname $ Git.remoteName to
 		calcname n
 			| n `elem` [repoName umap fullto, hostname fullto] = Nothing
 			| otherwise = Just n
@@ -141,7 +147,7 @@ spider' (r:rs) known
 		-- The remotes will be relative to r', and need to be
 		-- made absolute for later use.
 		remotes <- mapM (absRepo r') (Git.remotes r')
-		let r'' = Git.remotesAdd r' remotes
+		let r'' = r' { Git.remotes = remotes }
 
 		spider' (rs ++ remotes) (r'':known)
 
@@ -154,7 +160,7 @@ absRepo reference r
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
 same a b
-	| both Git.repoIsSsh = matching Git.urlAuthority && matching Git.workTree
+	| both Git.repoIsSsh = matching Git.Url.authority && matching Git.workTree
 	| both Git.repoIsUrl && neither Git.repoIsSsh = matching show
 	| neither Git.repoIsSsh = matching Git.workTree
 	| otherwise = False
@@ -202,7 +208,7 @@ tryScan r
 			liftIO $ pipedconfig "ssh" sshparams
 			where
 				sshcmd = cddir ++ " && " ++
-					"git config --list"
+					"git config --null --list"
 				dir = Git.workTree r
 				cddir
 					| "/~" `isPrefixOf` dir =

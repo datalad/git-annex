@@ -11,6 +11,8 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
 import Git
+import Git.Sha
+import Git.Command
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
@@ -19,7 +21,7 @@ changed origbranch newbranch repo
 	| origbranch == newbranch = return False
 	| otherwise = not . L.null <$> diffs
 	where
-		diffs = Git.pipeRead
+		diffs = pipeRead
 			[ Param "log"
 			, Param (show origbranch ++ ".." ++ show newbranch)
 			, Params "--oneline -n1"
@@ -44,7 +46,7 @@ fastForward branch (first:rest) repo = do
 	where
 		no_ff = return False
 		do_ff to = do
-			Git.run "update-ref"
+			run "update-ref"
 				[Param $ show branch, Param $ show to] repo
 			return True
 		findbest c [] = return $ Just c

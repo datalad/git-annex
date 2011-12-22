@@ -11,6 +11,8 @@ module Git.Construct (
 	fromUrl,
 	fromUnknown,
 	localToUrl,
+	remoteNamed,
+	remoteNamedFromKey,
 	fromRemotes,
 	fromRemoteLocation,
 	repoAbsPath,
@@ -23,6 +25,7 @@ import Network.URI
 import Common
 import Git.Types
 import Git
+import qualified Git.Url as Url
 
 {- Finds the current git repository, which may be in a parent directory. -}
 fromCwd :: IO Repo
@@ -67,8 +70,8 @@ fromUrl url
 			bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
-fromUnknown :: Repo
-fromUnknown = newFrom Unknown
+fromUnknown :: IO Repo
+fromUnknown = return $ newFrom Unknown
 
 {- Converts a local Repo into a remote repo, using the reference repo
  - which is assumed to be on the same host. -}
@@ -79,8 +82,8 @@ localToUrl reference r
 	| otherwise = r { location = Url $ fromJust $ parseURI absurl }
 	where
 		absurl =
-			urlScheme reference ++ "//" ++
-			urlAuthority reference ++
+			Url.scheme reference ++ "//" ++
+			Url.authority reference ++
 			workTree r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
@@ -91,7 +94,21 @@ fromRemotes repo = mapM construct remotepairs
 		filterkeys f = filterconfig (\(k,_) -> f k)
 		remotepairs = filterkeys isremote
 		isremote k = startswith "remote." k && endswith ".url" k
-		construct (k,v) = repoRemoteNameFromKey k <$> fromRemoteLocation v repo
+		construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
+
+{- Sets the name of a remote when constructing the Repo to represent it. -}
+remoteNamed :: String -> IO Repo -> IO Repo
+remoteNamed n constructor = do
+	r <- constructor
+	return $ r { remoteName = Just n }
+
+{- Sets the name of a remote based on the git config key, such as
+   "remote.foo.url". -}
+remoteNamedFromKey :: String -> IO Repo -> IO Repo
+remoteNamedFromKey k = remoteNamed basename
+	where
+		basename = join "." $ reverse $ drop 1 $
+				reverse $ drop 1 $ split "." k
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}

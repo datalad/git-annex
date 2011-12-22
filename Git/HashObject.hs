@@ -9,6 +9,7 @@ module Git.HashObject where
 
 import Common
 import Git
+import Git.Command
 
 {- Injects a set of files into git, returning the shas of the objects
  - and an IO action to call ones the the shas have been used. -}
@@ -17,10 +18,10 @@ hashFiles paths repo = do
 	(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $ git_hash_object repo
 	_ <- forkProcess (feeder toh)
 	hClose toh
-	shas <- map Git.Ref . lines <$> hGetContentsStrict fromh
+	shas <- map Ref . lines <$> hGetContentsStrict fromh
 	return (shas, ender fromh pid)
 	where
-		git_hash_object = Git.gitCommandLine
+		git_hash_object = gitCommandLine
 			[Param "hash-object", Param "-w", Param "--stdin-paths"]
 		feeder toh = do
 			hPutStr toh $ unlines paths

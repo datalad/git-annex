@@ -146,20 +146,20 @@ oldlog2key l =
 readKey1 :: String -> Key
 readKey1 v = 
 	if mixup
-		then fromJust $ readKey $ join ":" $ tail bits
+		then fromJust $ readKey $ join ":" $ Prelude.tail bits
 		else Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t }
 	where
 		bits = split ":" v
-		b = head bits
+		b = Prelude.head bits
 		n = join ":" $ drop (if wormy then 3 else 1) bits
 		t = if wormy
-			then Just (read (bits !! 1) :: EpochTime)
+			then Just (Prelude.read (bits !! 1) :: EpochTime)
 			else Nothing
 		s = if wormy
-			then Just (read (bits !! 2) :: Integer)
+			then Just (Prelude.read (bits !! 2) :: Integer)
 			else Nothing
-		wormy = head bits == "WORM"
-		mixup = wormy && isUpper (head $ bits !! 1)
+		wormy = Prelude.head bits == "WORM"
+		mixup = wormy && isUpper (Prelude.head $ bits !! 1)
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =

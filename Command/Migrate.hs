@@ -31,7 +31,7 @@ start b file (key, oldbackend) = do
 			next $ perform file key newbackend
 		else stop
 	where
-		choosebackend Nothing = head <$> Backend.orderedList
+		choosebackend Nothing = Prelude.head <$> Backend.orderedList
 		choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation. -}

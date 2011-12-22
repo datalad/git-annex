@@ -24,10 +24,12 @@ import Annex.Exception
 import Annex.BranchState
 import Annex.Journal
 import qualified Git
+import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.HashObject
+import qualified Git.Index
 import Annex.CatFile
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -66,7 +68,7 @@ getBranch :: Annex (Git.Ref)
 getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
 	where
 		go True = do
-			inRepo $ Git.run "branch"
+			inRepo $ Git.Command.run "branch"
 				[Param $ show name, Param $ show originname]
 			fromMaybe (error $ "failed to create " ++ show name)
 				<$> branchsha
@@ -220,7 +222,7 @@ commitBranch branchref message parents = do
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
 files = withIndexUpdate $ do
-	bfiles <- inRepo $ Git.pipeNullSplit
+	bfiles <- inRepo $ Git.Command.pipeNullSplit
 		[Params "ls-tree --name-only -r -z", Param $ show fullname]
 	jfiles <- getJournalledFiles
 	return $ jfiles ++ bfiles
@@ -249,7 +251,7 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	bracketIO (Git.useIndex f) id $ do
+	bracketIO (Git.Index.override f) id $ do
 		unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f

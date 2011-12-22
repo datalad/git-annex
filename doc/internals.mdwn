@@ -77,7 +77,7 @@ Example:
 	1287290776.765152s 1 e605dca6-446a-11e0-8b2a-002170d25c55
 	1287290767.478634s 0 26339d22-446b-11e0-9101-002170d25c55
 
-These files are designed to be auto-merged using git's union merge driver.
+These files are designed to be auto-merged using git's [[union merge driver|git-union-merge]].
 The timestamps allow the most recent information to be identified.
 
 ## `remote/web/aaa/bbb/*.log`

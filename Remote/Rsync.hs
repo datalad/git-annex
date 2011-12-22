@@ -92,11 +92,6 @@ rsyncUrls o k = map use annexHashes
 		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
                 f = keyFile k
 
-rsyncUrlDirs :: RsyncOpts -> Key -> [String]
-rsyncUrlDirs o k = map use annexHashes
-	where
-		use h = rsyncUrl o </> h k </> rsyncEscape o (keyFile k)
-
 store :: RsyncOpts -> Key -> Annex Bool
 store o k = rsyncSend o k =<< inRepo (gitAnnexLocation k)
 
@@ -125,17 +120,29 @@ retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
 		else return res
 
 remove :: RsyncOpts -> Key -> Annex Bool
-remove o k = untilTrue (rsyncUrlDirs o k) $ \d ->
-	withRsyncScratchDir $ \tmp -> liftIO $ do
-		{- Send an empty directory to rysnc as the
-		 - parent directory of the file to remove. -}
-		let dummy = tmp </> keyFile k
-		createDirectoryIfMissing True dummy
-		rsync $ rsyncOptions o ++
-			[ Params "--quiet --delete --recursive"
-			, partialParams
-			, Param $ addTrailingPathSeparator dummy
-			, Param d
+remove o k = withRsyncScratchDir $ \tmp -> liftIO $ do
+	{- Send an empty directory to rysnc to make it delete. -}
+	let dummy = tmp </> keyFile k
+	createDirectoryIfMissing True dummy
+	rsync $ rsyncOptions o ++
+		map (\s -> Param $ "--include=" ++ s) includes ++
+		[ Param "--exclude=*" -- exclude everything else
+		, Params "--quiet --delete --recursive"
+		, partialParams
+		, Param $ addTrailingPathSeparator dummy
+		, Param $ rsyncUrl o
+		]
+	where
+		{- Specify include rules to match the directories where the
+		 - content could be. Note that the parent directories have
+		 - to also be explicitly included, due to how rsync
+		 - traverses directories. -}
+		includes = concatMap use annexHashes
+		use h = let dir = h k in
+			[ parentDir dir
+			, dir
+			-- match content directory and anything in it
+			, dir </> keyFile k </> "***"
 			]
 
 checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
@@ -188,7 +195,7 @@ rsyncRemote o params = do
    directories. -}
 rsyncSend :: RsyncOpts -> Key -> FilePath -> Annex Bool
 rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
-	let dest = tmp </> head (keyPaths k)
+	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	liftIO $ createLink src dest
 	rsyncRemote o

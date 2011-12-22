@@ -15,8 +15,9 @@ module Git.LsFiles (
 	typeChangedStaged,
 ) where
 
+import Common
 import Git
-import Utility.SafeCommand
+import Git.Command
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO [FilePath]
@@ -42,10 +43,10 @@ stagedNotDeleted :: [FilePath] -> Repo -> IO [FilePath]
 stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 
 staged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
-staged' middle l = pipeNullSplit $ start ++ middle ++ end
+staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
 	where
-		start = [Params "diff --cached --name-only -z"]
-		end = Param "--" : map File l
+		prefix = [Params "diff --cached --name-only -z"]
+		suffix = Param "--" : map File l
 
 {- Returns a list of files that have unstaged changes. -}
 changedUnstaged :: [FilePath] -> Repo -> IO [FilePath]
@@ -64,7 +65,7 @@ typeChanged :: [FilePath] -> Repo -> IO [FilePath]
 typeChanged = typeChanged' []
 
 typeChanged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
-typeChanged' middle l = pipeNullSplit $ start ++ middle ++ end
+typeChanged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
 	where
-		start = [Params "diff --name-only --diff-filter=T -z"]
-		end = Param "--" : map File l
+		prefix = [Params "diff --name-only --diff-filter=T -z"]
+		suffix = Param "--" : map File l

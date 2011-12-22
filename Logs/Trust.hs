@@ -54,18 +54,16 @@ trustMap = do
 		Just m -> return m
 		Nothing -> do
 			overrides <- M.fromList <$> Annex.getState Annex.forcetrust
-			m <- (M.union overrides . simpleMap . parseLog parseTrust) <$>
+			m <- (M.union overrides . simpleMap . parseLog (Just . parseTrust)) <$>
 				Annex.Branch.get trustLog
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
 
-parseTrust :: String -> Maybe TrustLevel
-parseTrust s
-	| length w > 0 = Just $ parse $ head w
-	-- back-compat; the trust.log used to only list trusted repos
-	| otherwise = Just Trusted
+{- The trust.log used to only list trusted repos, without a field for the
+ - trust status, which is why this defaults to Trusted. -}
+parseTrust :: String -> TrustLevel
+parseTrust s = maybe Trusted parse $ headMaybe $ words s
 	where
-		w = words s
 		parse "1" = Trusted
 		parse "0" = UnTrusted
 		parse "X" = DeadTrusted
@@ -82,6 +80,6 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change trustLog $
-		showLog showTrust . changeLog ts uuid level . parseLog parseTrust
+		showLog showTrust . changeLog ts uuid level . parseLog (Just . parseTrust)
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"

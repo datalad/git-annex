@@ -19,15 +19,17 @@ import System.IO
 import qualified Data.ByteString.Char8 as S
 import qualified Data.ByteString.Lazy.Char8 as L
 
+import Common
 import Git
-import Utility.SafeCommand
+import Git.Sha
+import Git.Command
 
 type CatFileHandle = (PipeHandle, Handle, Handle)
 
 {- Starts git cat-file running in batch mode in a repo and returns a handle. -}
 catFileStart :: Repo -> IO CatFileHandle
 catFileStart repo = hPipeBoth "git" $ toCommand $
-	Git.gitCommandLine [Param "cat-file", Param "--batch"] repo
+	gitCommandLine [Param "cat-file", Param "--batch"] repo
 
 {- Stops git cat-file. -}
 catFileStop :: CatFileHandle -> IO ()
@@ -49,23 +51,23 @@ catObject (_, from, to) object = do
 	header <- hGetLine from
 	case words header of
 		[sha, objtype, size]
-			| length sha == Git.shaSize &&
+			| length sha == shaSize &&
 			  validobjtype objtype -> handle size
-			| otherwise -> empty
+			| otherwise -> dne
 		_
-			| header == show object ++ " missing" -> empty
+			| header == show object ++ " missing" -> dne
 			| otherwise -> error $ "unknown response from git cat-file " ++ header
 	where
 		handle size = case reads size of
 			[(bytes, "")] -> readcontent bytes
-			_ -> empty
+			_ -> dne
 		readcontent bytes = do
 			content <- S.hGet from bytes
 			c <- hGetChar from
 			when (c /= '\n') $
 				error "missing newline from git cat-file"
 			return $ L.fromChunks [content]
-		empty = return L.empty
+		dne = return L.empty
 		validobjtype t
 			| t == "blob" = True
 			| t == "commit" = True

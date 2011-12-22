@@ -5,14 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Git.Config (
-	get,
-	read,
-	hRead,
-	store
-) where
+module Git.Config where
 
-import Prelude hiding (read)
 import System.Posix.Directory
 import Control.Exception (bracket_)
 import qualified Data.Map as M
@@ -33,7 +27,8 @@ read repo@(Repo { location = Dir d }) = do
 	   been already read. Instead, chdir to the repo. -}
 	cwd <- getCurrentDirectory
 	bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) $
-		pOpen ReadFromPipe "git" ["config", "--list"] $ hRead repo
+		pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
+			hRead repo
 read r = assertLocal r $ error "internal"
 
 {- Reads git config from a handle and populates a repo with it. -}
@@ -51,8 +46,15 @@ store s repo = do
 	rs <- Git.Construct.fromRemotes repo'
 	return $ repo' { remotes = rs }
 
-{- Parses git config --list output into a config map. -}
+{- Parses git config --list or git config --null --list output into a
+ - config map. -}
 parse :: String -> M.Map String String
-parse s = M.fromList $ map pair $ lines s
+parse [] = M.empty
+parse s
+	-- --list output will have an = in the first line
+	| all ('=' `elem`) (take 1 ls) = sep '=' ls
+	-- --null --list output separates keys from values with newlines
+	| otherwise = sep '\n' $ split "\0" s
 	where
-		pair = separate (== '=')
+		ls = lines s
+		sep c = M.fromList . map (separate (== c))

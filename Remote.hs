@@ -103,7 +103,7 @@ byName' n = do
 	let match = filter matching allremotes
 	if null match
 		then return $ Left $ "there is no git remote named \"" ++ n ++ "\""
-		else return $ Right $ head match
+		else return $ Right $ Prelude.head match
 	where
 		matching r = n == name r || toUUID n == uuid r
 

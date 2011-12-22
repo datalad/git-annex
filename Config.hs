@@ -10,6 +10,7 @@ module Config where
 import Common.Annex
 import qualified Git
 import qualified Git.Config
+import qualified Git.Command
 import qualified Annex
 
 type ConfigKey = String
@@ -17,7 +18,7 @@ type ConfigKey = String
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig k value = do
-	inRepo $ Git.run "config" [Param k, Param value]
+	inRepo $ Git.Command.run "config" [Param k, Param value]
 	-- re-read git config and update the repo's state
 	newg <- inRepo Git.Config.read
 	Annex.changeState $ \s -> s { Annex.repo = newg }
@@ -31,7 +32,7 @@ getConfig r key def = do
 
 {- Looks up a per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
-remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex-" ++ key
+remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" ++ key
 
 {- Calculates cost for a remote. Either the default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
@@ -39,15 +40,10 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.repoRemoteName r) ++ ".annex
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
 	cmd <- getConfig r "cost-command" ""
-	safeparse <$> if not $ null cmd
+	(fromMaybe def . readMaybe) <$>
+		if not $ null cmd
 			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
 			else getConfig r "cost" ""
-	where
-		safeparse v
-			| null ws = def
-			| otherwise = fromMaybe def $ readMaybe $ head ws
-			where
-				ws = words v
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100

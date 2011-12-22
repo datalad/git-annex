@@ -57,9 +57,9 @@ fixBadUUID = M.fromList . map fixup . M.toList
 				kuuid = fromUUID k
 				isbad = not (isuuid kuuid) && isuuid lastword
 				ws = words $ value v
-				lastword = last ws
+				lastword = Prelude.last ws
 				fixeduuid = toUUID lastword
-				fixedvalue = unwords $ kuuid: init ws
+				fixedvalue = unwords $ kuuid: Prelude.init ws
 		-- For the fixed line to take precidence, it should be
 		-- slightly newer, but only slightly.
 		newertime (LogEntry (Date d) _) = d + minimumPOSIXTimeSlice

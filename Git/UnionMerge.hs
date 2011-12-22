@@ -20,14 +20,16 @@ import qualified Data.Set as S
 
 import Common
 import Git
+import Git.Sha
 import Git.CatFile
+import Git.Command
 
 type Streamer = (String -> IO ()) -> IO ()
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
  -
- - Should be run with a temporary index file configured by Git.useIndex.
+ - Should be run with a temporary index file configured by useIndex.
  -}
 merge :: Ref -> Ref -> Repo -> IO ()
 merge x y repo = do
@@ -53,7 +55,7 @@ update_index repo ls = stream_update_index repo [(`mapM_` ls)]
 {- Streams content into update-index. -}
 stream_update_index :: Repo -> [Streamer] -> IO ()
 stream_update_index repo as = do
-	(p, h) <- hPipeTo "git" (toCommand $ Git.gitCommandLine params repo)
+	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
 	forM_ as (stream h)
 	hClose h
 	forceSuccess p
@@ -132,7 +134,7 @@ hashObject repo content = getSha subcmd $ do
 calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
 calcMerge shacontents
 	| null reuseable = Right $ new
-	| otherwise = Left $ fst $ head reuseable
+	| otherwise = Left $ fst $ Prelude.head reuseable
 	where
 		reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
 		new = sorteduniq $ concat $ map snd shacontents

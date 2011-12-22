@@ -12,6 +12,7 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import Common.Annex
 import Command
 import qualified Git
+import qualified Git.Command
 import qualified Annex
 import qualified Command.Unannex
 import Init
@@ -28,8 +29,8 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	where
-		current_branch = Git.Ref . head . lines . B.unpack <$> revhead
-		revhead = inRepo $ Git.pipeRead 
+		current_branch = Git.Ref . Prelude.head . lines . B.unpack <$> revhead
+		revhead = inRepo $ Git.Command.pipeRead 
 			[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
@@ -57,5 +58,6 @@ cleanup = do
 	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState
-	inRepo $ Git.run "branch" [Param "-D", Param $ show Annex.Branch.name]
+	inRepo $ Git.Command.run "branch"
+		[Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess

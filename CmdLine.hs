@@ -20,6 +20,7 @@ import Common.Annex
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
+import qualified Git.Command
 import Annex.Content
 import Command
 
@@ -50,7 +51,7 @@ parseCmd argv cmds options header = check $ getOpt Permute options argv
 		check (_, [], []) = err "missing command"
 		check (flags, name:rest, [])
 			| null matches = err $ "unknown command " ++ name
-			| otherwise = (flags, head matches, rest)
+			| otherwise = (flags, Prelude.head matches, rest)
 			where
 				matches = filter (\c -> name == cmdname c) cmds
 		check (_, _, errs) = err $ concat errs
@@ -101,5 +102,5 @@ startup = return True
 shutdown :: Annex Bool
 shutdown = do
 	saveState
-	liftIO Git.reap -- zombies from long-running git processes
+	liftIO Git.Command.reap -- zombies from long-running git processes
 	return True

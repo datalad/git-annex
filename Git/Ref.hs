@@ -11,6 +11,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common
 import Git
+import Git.Command
 
 {- Converts a fully qualified git ref into a user-visible version. -}
 describe :: Ref -> String
@@ -37,11 +38,11 @@ sha branch repo = process . L.unpack <$> showref repo
 
 {- List of (refs, branches) matching a given ref spec.
  - Duplicate refs are filtered out. -}
-matching :: Ref -> Repo -> IO [(Git.Ref, Git.Branch)]
+matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = do
-	r <- Git.pipeRead [Param "show-ref", Param $ show ref] repo
-	return $ nubBy uref $ map (gen . words . L.unpack) (L.lines r)
+	r <- pipeRead [Param "show-ref", Param $ show ref] repo
+	return $ nubBy uniqref $ map (gen . L.unpack) (L.lines r)
 	where
-		gen l = (Git.Ref $ head l, Git.Ref $ last l)
-		uref (a, _) (b, _) = a == b
-
+		uniqref (a, _) (b, _) = a == b
+		gen l = let (r, b) = separate (== ' ') l in
+			(Ref r, Ref b)

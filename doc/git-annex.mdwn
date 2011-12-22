@@ -241,12 +241,13 @@ subdirectories).
 
 * find [path ...]
 
-  Outputs a list of annexed files whose content is currently present.
-  Or, if a file matching option is specified, outputs a list of all
-  matching files, whether or not their content is currently present.
+  Outputs a list of annexed files in the specified path. With no path,
+  finds files in the current directory and its subdirectories.
 
-  With no parameters, defaults to finding all files in the current directory
-  and its subdirectories.
+  By default, only lists annexed files whose content is currently present.
+  This can be changed by specifying file matching options. To list all
+  annexed files, present or not, specify --include "*". To list all
+  annexed files whose content is not present, specify --not --in "."
 
   To output filenames terminated with nulls, for use with xargs -0,
   specify --print0.
@@ -268,9 +269,10 @@ subdirectories).
   Helps you keep track of your repositories, and the connections between them,
   by going out and looking at all the ones it can get to, and generating a
   Graphviz file displaying it all. If the `dot` command is available, it is
-  used to display the file to your screen (using x11 backend).
+  used to display the file to your screen (using x11 backend). (To disable
+  this display, specify --fast)
 
-  Note that this only connects to hosts that the host it's run on can
+  This command only connects to hosts that the host it's run on can
   directly connect to. It does not try to tunnel through intermediate hosts.
   So it might not show all connections between the repositories in the network.
 
@@ -446,7 +448,16 @@ file contents are present at either of two repositories.
 * --exclude=glob
 
   Skips files matching the glob pattern. The glob is matched relative to
-  the current directory. For example: --exclude='*.mp3' --exclude='subdir/*'
+  the current directory. For example:
+
+	--exclude='*.mp3' --exclude='subdir/*'
+
+* --include=glob
+
+  Skips files not matching the glob pattern.  (Same as --not --exclude.)
+  For example, to include only mp3 and ogg files:
+
+	--include='*.mp3' --or --include='*.ogg'
 
 * --in=repository
 

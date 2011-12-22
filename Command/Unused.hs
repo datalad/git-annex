@@ -20,6 +20,7 @@ import Utility.TempFile
 import Logs.Location
 import qualified Annex
 import qualified Git
+import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
@@ -148,18 +149,18 @@ unusedKeys = do
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
-	c <- inRepo $ Git.pipeRead [Param "show-ref"]
+	c <- inRepo $ Git.Command.pipeRead [Param "show-ref"]
 	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
 		(S.fromList l)
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
-		refs = map (Git.Ref .  last) .
-			nubBy cmpheads .
+		refs = map (Git.Ref .  snd) .
+			nubBy uniqref .
 			filter ourbranches .
-			map words . lines . L.unpack
-		cmpheads a b = head a == head b
+			map (separate (== ' ')) . lines . L.unpack
+		uniqref (a, _) (b, _) = a == b
 		ourbranchend = '/' : show Annex.Branch.name
-		ourbranches ws = not $ ourbranchend `isSuffixOf` last ws
+		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
 		removewith [] s = return $ S.toList s
 		removewith (a:as) s
 			| s == S.empty = return [] -- optimisation
