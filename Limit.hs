@@ -55,10 +55,16 @@ addLimit :: (FilePath -> Annex Bool) -> Annex ()
 addLimit = add . Utility.Matcher.Operation
 
 {- Add a limit to skip files that do not match the glob. -}
+addInclude :: String -> Annex ()
+addInclude glob = addLimit $ return . matchglob glob
+
+{- Add a limit to skip files that match the glob. -}
 addExclude :: String -> Annex ()
-addExclude glob = addLimit $ return . notExcluded
+addExclude glob = addLimit $ return . not . matchglob glob
+
+matchglob :: String -> FilePath -> Bool
+matchglob glob f = isJust $ match cregex f []
 	where
-		notExcluded f = isNothing $ match cregex f []
 		cregex = compile regex []
 		regex = '^':wildToRegex glob
 

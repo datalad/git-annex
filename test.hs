@@ -524,6 +524,7 @@ test_find = "git-annex find" ~: intmpclonerepo $ do
 	annexed_notpresent sha1annexedfile
 	git_annex_expectoutput "find" [] [annexedfile]
 	git_annex_expectoutput "find" ["--exclude", annexedfile, "--and", "--exclude", sha1annexedfile] []
+	git_annex_expectoutput "find" ["--include", annexedfile] [annexedfile]
 	git_annex_expectoutput "find" ["--not", "--in", "origin"] []
 	git_annex_expectoutput "find" ["--copies", "1", "--and", "--not", "--copies", "2"] [sha1annexedfile]
 	git_annex_expectoutput "find" ["--inbackend", "SHA1"] [sha1annexedfile]
