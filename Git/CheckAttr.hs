@@ -13,32 +13,54 @@ import Common
 import Git
 import Git.Command
 import qualified Git.Filename
+import qualified Git.Version
 
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
-	-- git check-attr needs relative filenames input; it will choke
-	-- on some absolute filenames. This also means it will output
-	-- all relative filenames.
 	cwd <- getCurrentDirectory
-	let relfiles = map (relPathDirToFile cwd . absPathFrom cwd) files
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
-                hPutStr toh $ join "\0" relfiles
+                hPutStr toh $ join "\0" $ input cwd
                 hClose toh
                 exitSuccess
         hClose toh
-	(map topair . lines) <$> hGetContents fromh
+	output cwd . lines <$> hGetContents fromh
 	where
 		params = gitCommandLine 
 				[ Param "check-attr"
 				, Param attr
 				, Params "-z --stdin"
 				] repo
+
+		{- Before git 1.7.7, git check-attr worked best with
+		 - absolute filenames; using them worked around some bugs
+		 - with relative filenames.
+		 - 
+		 - With newer git, git check-attr chokes on some absolute
+		 - filenames, and the bugs that necessitated them were fixed,
+		 - so use relative filenames. -}
+		oldgit = Git.Version.older "1.7.7"
+		input cwd
+			| oldgit = map (absPathFrom cwd) files
+			| otherwise = map (relPathDirToFile cwd . absPathFrom cwd) files
+		output cwd
+			| oldgit = map (torel cwd . topair)
+			| otherwise = map topair
+
 		topair l = (Git.Filename.decode file, value)
 			where 
 				file = join sep $ beginning bits
 				value = end bits !! 0
 				bits = split sep l
 				sep = ": " ++ attr ++ ": "
+
+		torel cwd (file, value) = (relfile, value)
+			where
+				relfile
+					| startswith cwd' file = drop (length cwd') file
+					| otherwise = relPathDirToFile top' file
+				top = workTree repo
+				cwd' = cwd ++ "/"
+				top' = top ++ "/"
