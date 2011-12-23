@@ -25,4 +25,4 @@ I want this because I have copies of various of mine (photos, in particular) sca
 
 (As I write this, I realize it's possible to parse the destination of the symlink in a way that does this..)
 
-> 
+> [[done]]; see [[tips/finding_duplicate_files]] --[[Joey]]

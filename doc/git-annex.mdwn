@@ -437,8 +437,10 @@ subdirectories).
   Specifies a custom output format. The value is a format string, 
   in which '${var}' is expanded to the value of a variable. To right-justify
   a variable with whitespace, use '${var;width}' ; to left-justify
-  a variable, use '${var;-width}'. Also, '\\n' is a newline, '\\000' is a NULL,
-  etc.
+  a variable, use '${var;-width}'; to escape unusual characters in a variable,
+  use '${escaped_var}'
+
+  Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
 * -c name=value
 

@@ -18,6 +18,8 @@ import Text.Printf (printf)
 import Data.Char (isAlphaNum, isOctDigit, chr, ord)
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)
+import Data.List (isPrefixOf)
+import Data.String.Utils (replace)
 import qualified Codec.Binary.UTF8.String
 import qualified Data.Map as M
 
@@ -42,8 +44,16 @@ format :: Format -> M.Map String String -> String
 format f vars = concatMap expand f
 	where
 		expand (Const s) = s
-		expand (Var name padding) = justify padding $
-			fromMaybe "" $ M.lookup name vars
+		expand (Var name padding) = justify padding $ getvar name
+		getvar name
+			| "escaped_" `isPrefixOf` name = 
+				-- escape whitespace too
+				replace " " (e_asc ' ') $
+				replace "\t" (e_asc '\t') $
+				encode_c $
+				getvar' $ drop (length "escaped_") name
+			| otherwise = getvar' name
+		getvar' name = fromMaybe "" $ M.lookup name vars
 		justify p s
 			| p > 0 = take (p - length s) spaces ++ s
 			| p < 0 = s ++ take (-1 * (length s + p)) spaces
@@ -73,9 +83,9 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 		invar f var [] = Const (novar var) : f
 		invar f var (c:cs)
 			| c == '}' = foundvar f var 0 cs
-			| isAlphaNum c = invar f (c:var) cs
+			| isAlphaNum c || c == '_' = invar f (c:var) cs
 			| c == ';' = inpad "" f var cs
-			| otherwise = scan ((Const $ reverse $ novar $ c:var):f) cs
+			| otherwise = scan ((Const $ novar $ c:var):f) cs
 
 		inpad p f var (c:cs)
 			| c == '}' = foundvar f var (readpad $ reverse p) cs
@@ -127,7 +137,7 @@ decode_c s = unescape ("", s)
 				echar a = a
 		handle n = ("", n)
 
-{- Should not need to use this, except for testing decode_c. -}
+{- Inverse of decode_c. -}
 encode_c :: FormatString -> FormatString
 encode_c s = concatMap echar s
 	where
@@ -141,17 +151,23 @@ encode_c s = concatMap echar s
 		echar '\v' = e 'v'
 		echar '\\' = e '\\'
 		echar '"'  = e '"'
-		echar x
-			| ord x < 0x20 = e_num x -- low ascii
-			| ord x >= 256 = e_utf x
-			| ord x > 0x7E = e_num x -- high ascii
-			| otherwise = [x]        -- printable ascii
-			where 
-				showoctal i = '\\' : printf "%03o" i
-				e_num c = showoctal $ ord c
-				-- unicode character is decomposed to
-				-- Word8s and each is shown in octal
-				e_utf c = showoctal =<< (Codec.Binary.UTF8.String.encode [c] :: [Word8])
+		echar c
+			| ord c < 0x20 = e_asc c -- low ascii
+			| ord c >= 256 = e_utf c
+			| ord c > 0x7E = e_asc c -- high ascii
+			| otherwise = [c]        -- printable ascii
+
+-- unicode character is decomposed to individual Word8s,
+-- and each is shown in octal
+e_utf :: Char -> String
+e_utf c = showoctal . toInteger =<<
+	(Codec.Binary.UTF8.String.encode [c] :: [Word8])
+		
+e_asc :: Char -> String
+e_asc c = showoctal $ toInteger $ ord c
+
+showoctal :: Integer -> String				
+showoctal i = '\\' : printf "%03o" i
 
 {- for quickcheck -}
 prop_idempotent_deencode :: String -> Bool
