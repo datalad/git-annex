@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="comment 7"
+ date="2011-12-22T20:04:14Z"
+ content="""
+> My main concern with putting this in git-annex is that finding
+> duplicates necessarily involves storing a list of every key and file
+> in the repository
+
+Only if you want to search the *whole* repository for duplicates, and if
+you do, then you're necessarily going to have to chew up memory in
+some process anyway, so what difference whether it's git-annex or
+(say) a Perl wrapper?
+
+> and git-annex is very carefully built to avoid things that require
+> non-constant memory use, so that it can scale to very big
+> repositories.
+
+That's a worthy goal, but if everything could be implemented with an
+O(1) memory footprint then we'd be in much more pleasant world :-)
+Even O(n) isn't that bad ...
+
+That aside, I like your `--format=\"%f %k\n\"` idea a lot.  That opens
+up the \"black box\" of `.git/annex/objects` and makes nice things
+possible, as your pipeline already demonstrates.  However, I'm not
+sure why you think `git annex find | sort | uniq` would be more
+efficient.  Not only does the sort require the very thing you were
+trying to avoid (i.e. the whole list in memory), but it's also 
+O(n log n) which is significantly slower than my O(n) Perl script 
+linked above.
+
+More considerations about this pipeline:
+
+* Doesn't it only include locally available files?  Ideally it should
+  spot duplicates even when the backing blob is not available locally.
+* What's the point of `--include '*'` ?  Doesn't `git annex find` 
+  with no arguments already include all files, modulo the requirement
+  above that they're locally available?
+* Any user using this `git annex find | ...` approach is likely to
+  run up against its limitations sooner rather than later, because
+  they're already used to the plethora of options `find(1)` provides.
+  Rather than reinventing the wheel, is there some way `git annex find`
+  could harness the power of `find(1)` ?
+
+Those considerations aside, a combined approach would be to implement
+
+    git annex find --format=...
+
+and then alter my Perl wrapper to `popen(2)` from that rather than using
+`File::Find`.  But I doubt you would want to ship Perl wrappers in the
+distribution, so if you don't provide a Haskell equivalent then users
+who can't code are left high and dry.
+"""]]
