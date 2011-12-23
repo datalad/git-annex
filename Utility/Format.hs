@@ -15,11 +15,10 @@ module Utility.Format (
 ) where
 
 import Text.Printf (printf)
-import Data.Char (isAlphaNum, isOctDigit, chr, ord)
+import Data.Char (isAlphaNum, isOctDigit, isSpace, chr, ord)
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)
 import Data.List (isPrefixOf)
-import Data.String.Utils (replace)
 import qualified Codec.Binary.UTF8.String
 import qualified Data.Map as M
 
@@ -30,13 +29,13 @@ type FormatString = String
 {- A format consists of a list of fragments. -}
 type Format = [Frag]
 
-{- A fragment is either a constant string, or a variable, with a padding. -}
-data Frag = Const String | Var String Padding
+{- A fragment is either a constant string,
+ - or a variable, with a justification. -}
+data Frag = Const String | Var String Justify
 	deriving (Show)
 
-{- Positive padding is right justification; negative padding is left
- - justification. -}
-type Padding = Int
+data Justify = LeftJustified Int | RightJustified Int | UnJustified
+	deriving (Show)
 
 {- Expands a Format using some variables, generating a formatted string.
  - This can be repeatedly called, efficiently. -}
@@ -44,20 +43,16 @@ format :: Format -> M.Map String String -> String
 format f vars = concatMap expand f
 	where
 		expand (Const s) = s
-		expand (Var name padding) = justify padding $ getvar name
-		getvar name
-			| "escaped_" `isPrefixOf` name = 
-				-- escape whitespace too
-				replace " " (e_asc ' ') $
-				replace "\t" (e_asc '\t') $
-				encode_c $
-				getvar' $ drop (length "escaped_") name
-			| otherwise = getvar' name
-		getvar' name = fromMaybe "" $ M.lookup name vars
-		justify p s
-			| p > 0 = take (p - length s) spaces ++ s
-			| p < 0 = s ++ take (-1 * (length s + p)) spaces
-			| otherwise = s
+		expand (Var name j)
+			| "escaped_" `isPrefixOf` name =
+				justify j $ encode_c_strict $
+					getvar $ drop (length "escaped_") name
+			| otherwise = justify j $ getvar name
+		getvar name = fromMaybe "" $ M.lookup name vars
+		justify UnJustified s        = s
+		justify (LeftJustified i) s  = s ++ pad i s
+		justify (RightJustified i) s = pad i s ++ s
+		pad i s = take (i - length s) spaces
 		spaces = repeat ' '
 
 {- Generates a Format that can be used to expand variables in a
@@ -82,17 +77,20 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 
 		invar f var [] = Const (novar var) : f
 		invar f var (c:cs)
-			| c == '}' = foundvar f var 0 cs
+			| c == '}' = foundvar f var UnJustified cs
 			| isAlphaNum c || c == '_' = invar f (c:var) cs
 			| c == ';' = inpad "" f var cs
 			| otherwise = scan ((Const $ novar $ c:var):f) cs
 
 		inpad p f var (c:cs)
-			| c == '}' = foundvar f var (readpad $ reverse p) cs
+			| c == '}' = foundvar f var (readjustify $ reverse p) cs
 			| otherwise = inpad (c:p) f var cs
 		inpad p f var [] = Const (novar $ p++";"++var) : f
-		readpad = fromMaybe 0 . readMaybe
-
+		readjustify = getjustify . fromMaybe 0 . readMaybe
+		getjustify i
+			| i == 0 = UnJustified
+			| i < 0 = LeftJustified (-1 * i)
+			| otherwise = RightJustified i
 		novar v = "${" ++ reverse v
 		foundvar f v p cs = scan (Var (reverse v) p : f) cs
 
@@ -139,7 +137,14 @@ decode_c s = unescape ("", s)
 
 {- Inverse of decode_c. -}
 encode_c :: FormatString -> FormatString
-encode_c s = concatMap echar s
+encode_c = encode_c' (const False)
+
+{- Encodes more strictly, including whitespace. -}
+encode_c_strict :: FormatString -> FormatString
+encode_c_strict = encode_c' isSpace
+
+encode_c' :: (Char -> Bool) -> FormatString -> FormatString
+encode_c' p = concatMap echar
 	where
 		e c = '\\' : [c]
 		echar '\a' = e 'a'
@@ -153,21 +158,15 @@ encode_c s = concatMap echar s
 		echar '"'  = e '"'
 		echar c
 			| ord c < 0x20 = e_asc c -- low ascii
-			| ord c >= 256 = e_utf c
+			| ord c >= 256 = e_utf c -- unicode
 			| ord c > 0x7E = e_asc c -- high ascii
-			| otherwise = [c]        -- printable ascii
-
--- unicode character is decomposed to individual Word8s,
--- and each is shown in octal
-e_utf :: Char -> String
-e_utf c = showoctal . toInteger =<<
-	(Codec.Binary.UTF8.String.encode [c] :: [Word8])
-		
-e_asc :: Char -> String
-e_asc c = showoctal $ toInteger $ ord c
-
-showoctal :: Integer -> String				
-showoctal i = '\\' : printf "%03o" i
+			| p c          = e_asc c -- unprintable ascii
+			| otherwise    = [c]     -- printable ascii
+		-- unicode character is decomposed to individual Word8s,
+		-- and each is shown in octal
+		e_utf c = showoctal =<< (Codec.Binary.UTF8.String.encode [c] :: [Word8])
+		e_asc c = showoctal $ ord c
+		showoctal i = '\\' : printf "%03o" i
 
 {- for quickcheck -}
 prop_idempotent_deencode :: String -> Bool
