@@ -251,7 +251,7 @@ subdirectories).
 
   To output filenames terminated with nulls, for use with xargs -0,
   specify --print0. Or, a custom output formatting can be specified using
-  --format. The default output format is the same as --format='${file}\n'
+  --format. The default output format is the same as --format='${file}\\n'
 
   These variables are available for use in formats: file, key, backend,
   bytesize, humansize
@@ -437,7 +437,7 @@ subdirectories).
   Specifies a custom output format. The value is a format string, 
   in which '${var}' is expanded to the value of a variable. To right-justify
   a variable with whitespace, use '${var;width}' ; to left-justify
-  a variable, use '${var;-width}'. Also, '\n' is a newline, '\0' is a NULL,
+  a variable, use '${var;-width}'. Also, '\\n' is a newline, '\\000' is a NULL,
   etc.
 
 * -c name=value
