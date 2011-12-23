@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="comment 10"
+ date="2011-12-23T17:22:11Z"
+ content="""
+> Your perl script is not O(n). Inserting into perl hash tables has
+> overhead of minimum O(n log n).
+
+What's your source for this assertion?  I would expect an amortized
+average of `O(1)` per insertion, i.e. `O(n)` for full population.
+
+> Not counting the overhead of resizing hash tables,
+> the grevious slowdown if the bucket size is overcome by data (it
+> probably falls back to a linked list or something then), and the
+> overhead of traversing the hash tables to get data out.
+
+None of which necessarily change the algorithmic complexity.  However
+real benchmarks are far more useful here than complexity analysis, and
+[the dangers of premature optimization](http://c2.com/cgi/wiki?PrematureOptimization) 
+should not be forgotten.
+
+> Your memory size calculations ignore the overhead of a hash table or
+> other data structure to store the data in, which will tend to be
+> more than the actual data size it's storing. I estimate your 50
+> million number is off by at least one order of magnitude, and more
+> likely two;
+
+Sure, I was aware of that, but my point still stands.  Even 500k keys
+per 1GB of RAM does not sound expensive to me.
+
+> in any case I don't want git-annex to use 1 gb of ram.
+
+Why not?  What's the maximum it should use?  512MB?  256MB?
+32MB?  I don't see the sense in the author of a program 
+dictating thresholds which are entirely dependent on the context
+in which the program is *run*, not the context in which it's *written*.
+That's why systems have files such as `/etc/security/limits.conf`.
+
+You said you want git-annex to scale to enormous repositories.  If you
+impose an arbitrary memory restriction such as the above, that means
+avoiding implementing *any* kind of functionality which requires `O(n)`
+memory or worse.  Isn't it reasonable to assume that many users use
+git-annex on repositories which are *not* enormous?  Even when they do
+work with enormous repositories, just like with any other program,
+they would naturally expect certain operations to take longer or
+become impractical without sufficient RAM.  That's why I say that this
+restriction amounts to throwing out the baby with the bathwater.
+It just means that those who need the functionality would have to
+reimplement it themselves, assuming they are able, which is likely
+to result in more wheel reinventions.  I've already shared
+[my implementation](https://github.com/aspiers/git-config/blob/master/bin/git-annex-finddups)
+but how many people are likely to find it, let alone get it working?
+
+> Little known fact: sort(1) will use a temp file as a buffer if too
+> much memory is needed to hold the data to sort.
+
+Interesting.  Presumably you are referring to some undocumented
+behaviour, rather than `--batch-size` which only applies when merging
+multiple files, and not when only sorting STDIN.
+
+> It's also written in the most efficient language possible and has
+> been ruthlessly optimised for 30 years, so I would be very surprised
+> if it was not the best choice.
+
+It's the best choice for sorting.  But sorting purely to detect
+duplicates is a dismally bad choice.
+"""]]
