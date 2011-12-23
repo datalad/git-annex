@@ -218,10 +218,10 @@ subdirectories).
 
 * merge
 
-  Automatically merges any changes from remotes into the git-annex branch.
-  While git-annex mostly handles keeping the git-annex branch merged
-  automatically, if you find you are unable to push the git-annex branch
-  due non-fast-forward, this will fix it.
+  Automatically merges remote tracking branches */git-annex into
+  the git-annex branch. While git-annex mostly handles keeping the
+  git-annex branch merged automatically, if you find you are unable
+  to push the git-annex branch due non-fast-forward, this will fix it.
 
 * fix [path ...]
 
