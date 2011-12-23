@@ -247,7 +247,7 @@ subdirectories).
   By default, only lists annexed files whose content is currently present.
   This can be changed by specifying file matching options. To list all
   annexed files, present or not, specify --include "*". To list all
-  annexed files whose content is not present, specify --not --in "."
+  annexed files whose content is not present, specify --not --in="."
 
   To output filenames terminated with nulls, for use with xargs -0,
   specify --print0. Or, a custom output formatting can be specified using
@@ -454,7 +454,7 @@ limit which files git-annex acts on.
 Arbitrarily complicated expressions can be built using these options.
 For example:
 
-	--exclude '*.mp3' --and --not -( --in usbdrive --or --in archive -)
+	--exclude '*.mp3' --and --not -( --in=usbdrive --or --in=archive -)
 
 The above example prevents git-annex from working on mp3 files whose
 file contents are present at either of two repositories.
