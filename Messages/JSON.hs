@@ -9,7 +9,8 @@ module Messages.JSON (
 	start,
 	end,
 	note,
-	add
+	add,
+	complete
 ) where
 
 import Text.JSON
@@ -31,3 +32,9 @@ note s = add [("note", s)]
 
 add :: JSON a => [(String, a)] -> IO ()
 add v = putStr $ Stream.add v
+
+complete :: JSON a => [(String, a)] -> IO ()
+complete v = putStr $ concat
+	[ Stream.start v
+	, Stream.end
+	]

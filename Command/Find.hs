@@ -28,15 +28,17 @@ start :: FilePath -> (Key, Backend Annex) -> CommandStart
 start file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
-	whenM (liftM2 (||) (inAnnex key) limited) $ do
-		f <- Annex.getState Annex.format
-		case f of
-			Nothing -> liftIO $ putStrLn file
-			Just formatter -> liftIO $ putStr $
-				Utility.Format.format formatter vars
+	whenM (liftM2 (||) (inAnnex key) limited) $
+		unlessM (showFullJSON vars) $ do
+			f <- Annex.getState Annex.format
+			case f of
+				Nothing -> liftIO $ putStrLn file
+				Just formatter -> liftIO $ putStr $
+					Utility.Format.format formatter $
+						M.fromList vars
 	stop
 	where
-		vars = M.fromList
+		vars =
 			[ ("file", file)
 			, ("key", show key)
 			, ("backend", keyBackendName key)

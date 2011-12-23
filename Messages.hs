@@ -20,6 +20,7 @@ module Messages (
 	warning,
 	indent,
 	maybeShowJSON,
+	showFullJSON,
 	showCustom,
 	showHeader,
 	showRaw,
@@ -90,9 +91,16 @@ warning' w = do
 indent :: String -> String
 indent = join "\n" . map (\l -> "  " ++ l) . lines
 
-{- Shows a JSON value only when in json mode. -}
+{- Shows a JSON fragment only when in json mode. -}
 maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
 maybeShowJSON v = handle (JSON.add v) q
+
+{- Shows a complete JSON value, only when in json mode. -}
+showFullJSON :: JSON a => [(String, a)] -> Annex Bool
+showFullJSON v = Annex.getState Annex.output >>= liftIO . go
+	where
+		go Annex.JSONOutput = JSON.complete v >> return True
+		go _ = return False
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's

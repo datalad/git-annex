@@ -10,8 +10,9 @@ git-annex (3.20111212) UNRELEASED; urgency=low
   * Add --include, which is the same as --not --exclude.
   * Can now be built with older git versions (before 1.7.7); the resulting
     binary should only be used with old git.
-  * Format strings can be specified using the new --find option, to control
+  * Format strings can be specified using the new --format option, to control
     what is output by git annex find.
+  * Support git annex find --json
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
