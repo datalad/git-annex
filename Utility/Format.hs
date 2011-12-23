@@ -36,10 +36,6 @@ data Frag = Const String | Var String Padding
  - justification. -}
 type Padding = Int
 
-empty :: Frag -> Bool
-empty (Const "") = True
-empty _ = False
-
 {- Expands a Format using some variables, generating a formatted string.
  - This can be repeatedly called, efficiently. -}
 format :: Format -> M.Map String String -> String
@@ -63,7 +59,7 @@ gen :: FormatString -> Format
 gen = filter (not . empty) . fuse [] . scan [] . decode_c
 	where
 		-- The Format is built up in reverse, for efficiency,
-		-- and can have adjacent Consts. Fusing it fixes both
+		-- and can have many adjacent Consts. Fusing it fixes both
 		-- problems.
 		fuse f [] = f
 		fuse f (Const c1:Const c2:vs) = fuse f $ Const (c2++c1) : vs
@@ -90,6 +86,9 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 		novar v = "${" ++ reverse v
 		foundvar f v p cs = scan (Var (reverse v) p : f) cs
 
+empty :: Frag -> Bool
+empty (Const "") = True
+empty _ = False
 
 {- Decodes a C-style encoding, where \n is a newline, \NNN is an octal
  - encoded character, etc.
