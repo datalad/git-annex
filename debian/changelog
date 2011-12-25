@@ -8,11 +8,12 @@ git-annex (3.20111212) UNRELEASED; urgency=low
   * Test suite improvements. Current top-level test coverage: 75%
   * Improve deletion of files from rsync special remotes. Closes: #652849
   * Add --include, which is the same as --not --exclude.
-  * Can now be built with older git versions (before 1.7.7); the resulting
-    binary should only be used with old git.
   * Format strings can be specified using the new --format option, to control
     what is output by git annex find.
   * Support git annex find --json
+  * Can now be built with older git versions (before 1.7.7); the resulting
+    binary should only be used with old git.
+  * Updated to build with monad-control 0.3.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
