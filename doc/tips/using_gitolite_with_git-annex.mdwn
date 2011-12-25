@@ -86,4 +86,4 @@ git-annex-shell: First run: git-annex init
 Command ssh ["git@git.example.com","git-annex-shell 'configlist' '/~/myrepo.git'"] failed; exit code 1
 </pre>
 
-because I forgot to "git pull --all" after adding the new gitolite remote.
+because I forgot to "git push --all" after adding the new gitolite remote.
