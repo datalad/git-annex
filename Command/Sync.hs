@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {- git-annex command
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
@@ -26,10 +27,10 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independantly fail
 seek :: CommandSeek
 seek args = do
+    !branch <- currentBranch
     remotes <- if null args
-               then defaultSyncRemotes
+               then defaultSyncRemotes branch
                else mapM Remote.byName args
-    branch <- currentBranch
     showStart "syncing" $ "branch " ++ Git.Ref.describe branch ++ " with remote repositories " ++ intercalate "," (map Remote.name remotes)
     showOutput
     return $
@@ -42,8 +43,16 @@ seek args = do
         [ pushLocal branch ] ++
         [ pushRemote remote branch | remote <- remotes ]
 
-defaultSyncRemotes :: Annex [Remote.Remote Annex]
-defaultSyncRemotes = undefined
+defaultSyncRemotes :: Git.Ref -> Annex [Remote.Remote Annex]
+defaultSyncRemotes branch = mapM Remote.byName =<< process . L.unpack <$> inRepo showref
+    where 
+        syncbranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
+        showref = Git.Command.pipeRead
+            [Param "show-ref", Param (Git.Ref.describe syncbranch)]
+        process = map getRemoteName . filter isRemote . map getBranchName . lines
+        isRemote r = "refs/remotes/" `isPrefixOf` r
+        getBranchName = snd . separate (== ' ')
+        getRemoteName = fst . separate (== '/') . snd . separate (== '/') . snd . separate (== '/')
 
 commit :: CommandStart
 commit = do
