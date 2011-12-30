@@ -1,10 +1,12 @@
-{-# LANGUAGE BangPatterns #-}
 {- git-annex command
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Command.Sync where
 
@@ -21,37 +23,42 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
-               [seek] "synchronize local repository with remote repositories"]
+	[seek] "synchronize local repository with remote repositories"]
 
 -- syncing involves several operations, any of which can independantly fail
 seek :: CommandSeek
 seek args = do
-    !branch <- currentBranch
-    remotes <- if null args
-               then defaultSyncRemotes branch
-               else mapM Remote.byName args
-    showStart "syncing" $ "branch " ++ Git.Ref.describe branch ++ " with remote repositories " ++ intercalate "," (map Remote.name remotes)
-    showOutput
-    return $
-        [ commit
-        , mergeLocal branch
-        ] ++
-        [ fetch remote | remote <- remotes ] ++
-        [ mergeRemote remote branch | remote <- remotes ] ++
-        [ mergeAnnex ] ++
-        [ pushLocal branch ] ++
-        [ pushRemote remote branch | remote <- remotes ]
+	!branch <- currentBranch
+	remotes <- syncRemotes branch args
+	showStart "syncing" $ "branch " ++ Git.Ref.describe branch ++ " with remote repositories " ++ intercalate "," (map Remote.name remotes)
+	showOutput
+	return $
+		[ commit
+		, mergeLocal branch
+		] ++
+		[ fetch remote | remote <- remotes ] ++
+		[ mergeRemote remote branch | remote <- remotes ] ++
+		[ mergeAnnex ] ++
+		[ pushLocal branch ] ++
+		[ pushRemote remote branch | remote <- remotes ]
+
+syncRemotes :: Git.Ref -> [String] -> Annex [Remote.Remote Annex]
+syncRemotes branch [] = defaultSyncRemotes branch
+syncRemotes _ rs = mapM Remote.byName rs
 
 defaultSyncRemotes :: Git.Ref -> Annex [Remote.Remote Annex]
-defaultSyncRemotes branch = mapM Remote.byName =<< process . L.unpack <$> inRepo showref
-    where 
-        syncbranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
-        showref = Git.Command.pipeRead
-            [Param "show-ref", Param (Git.Ref.describe syncbranch)]
-        process = map getRemoteName . filter isRemote . map getBranchName . lines
-        isRemote r = "refs/remotes/" `isPrefixOf` r
-        getBranchName = snd . separate (== ' ')
-        getRemoteName = fst . separate (== '/') . snd . separate (== '/') . snd . separate (== '/')
+defaultSyncRemotes branch = 
+	mapM Remote.byName
+		=<< process . L.unpack <$> inRepo showref
+	where 
+		syncbranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
+		showref = Git.Command.pipeRead
+			[Param "show-ref", Param (Git.Ref.describe syncbranch)]
+		process = map getRemoteName . filter isRemote .
+			map getBranchName . lines
+	        isRemote r = "refs/remotes/" `isPrefixOf` r
+		getBranchName = snd . separate (== ' ')
+		getRemoteName = fst . separate (== '/') . snd . separate (== '/') . snd . separate (== '/')
 
 commit :: CommandStart
 commit = do
@@ -64,34 +71,34 @@ commit = do
 		return True
 
 mergeLocal :: Git.Ref -> CommandStart
-mergeLocal branch =
-    mergeFromIfExists $ Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
+mergeLocal branch = mergeFromIfExists $ Git.Ref $
+	"refs/heads/synced/" ++ Git.Ref.describe branch
 
 pushLocal :: Git.Ref -> CommandStart
 pushLocal branch = do
-    let syncBranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
-    ex <- inRepo $ Git.Ref.exists syncBranch
-    if ex then do
-        showStart "updateing" $
-            Git.Ref.describe syncBranch ++
-            " to the state of " ++ Git.Ref.describe branch ++ "..."
-        next $ next $
-            inRepo $ Git.Command.runBool "branch" [Param "-f", Param (Git.Ref.describe syncBranch)]
-      else
-        return Nothing
+	let syncBranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
+	ex <- inRepo $ Git.Ref.exists syncBranch
+	if ex then do
+		showStart "updateing" $
+			Git.Ref.describe syncBranch ++
+			" to the state of " ++ Git.Ref.describe branch ++ "..."
+		next $ next $
+			inRepo $ Git.Command.runBool "branch"
+				[Param "-f", Param (Git.Ref.describe syncBranch)]
+	else
+		return Nothing
 
 mergeFromIfExists :: Git.Ref -> CommandStart
 mergeFromIfExists fromBranch = do
-    ex <- inRepo $ Git.Ref.exists fromBranch
-    if ex then do
-        showStart "merging" $ Git.Ref.describe fromBranch ++ "..."
-        next $ next $
-            inRepo $ Git.Command.runBool "merge" [Param (show fromBranch)]
-      else do
-        showNote $ Git.Ref.describe fromBranch ++ " does not exist, not merging."
-        showOutput
-        return Nothing
-
+	ex <- inRepo $ Git.Ref.exists fromBranch
+	if ex then do
+		showStart "merging" $ Git.Ref.describe fromBranch ++ "..."
+		next $ next $
+			inRepo $ Git.Command.runBool "merge" [Param (show fromBranch)]
+	else do
+		showNote $ Git.Ref.describe fromBranch ++ " does not exist, not merging."
+		showOutput
+		return Nothing
 
 fetch :: Remote.Remote Annex -> CommandStart
 fetch remote = do
@@ -102,22 +109,25 @@ fetch remote = do
 		inRepo $ Git.Command.runBool "fetch" [Param (Remote.name remote)]
 
 mergeRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
-mergeRemote remote branch =
-    mergeFromIfExists $ Git.Ref $ "refs/remotes/" ++ Remote.name remote ++ "/synced/" ++ Git.Ref.describe branch
+mergeRemote remote branch = mergeFromIfExists $ Git.Ref $
+	"refs/remotes/" ++ Remote.name remote ++ 
+	"/synced/" ++ Git.Ref.describe branch
 
 pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
 pushRemote remote branch = do
-    showStart "pushing to" (Remote.name remote)
-    let syncbranch = Git.Ref $ "refs/heads/synced/" ++ Git.Ref.describe branch
-    let syncbranchRemote = Git.Ref $ "refs/remotes/" ++ Remote.name remote ++ "/" ++ Git.Ref.describe syncbranch
-    let refspec = Git.Ref.describe branch ++ ":" ++ Git.Ref.describe syncbranch
-    ex <- inRepo $ Git.Ref.exists syncbranchRemote
-    next $ next $ do
-            showOutput
-            inRepo $ Git.Command.runBool "push" $
-                [ Param (Remote.name remote)
-                , Param (Git.Ref.describe Annex.Branch.name) ] ++ 
-                [ Param refspec | ex ]
+	showStart "pushing to" (Remote.name remote)
+	let syncbranch = Git.Ref $ "refs/heads/synced/" ++
+		Git.Ref.describe branch
+	let syncbranchRemote = Git.Ref $ "refs/remotes/" ++
+		Remote.name remote ++ "/" ++ Git.Ref.describe syncbranch
+	let refspec = Git.Ref.describe branch ++ ":" ++ Git.Ref.describe syncbranch
+	ex <- inRepo $ Git.Ref.exists syncbranchRemote
+	next $ next $ do
+		showOutput
+		inRepo $ Git.Command.runBool "push" $
+			[ Param (Remote.name remote)
+			, Param (Git.Ref.describe Annex.Branch.name) ] ++ 
+			[ Param refspec | ex ]
 
 currentBranch :: Annex Git.Ref
 currentBranch = Git.Ref . firstLine . L.unpack <$>
