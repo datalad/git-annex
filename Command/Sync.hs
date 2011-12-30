@@ -70,9 +70,13 @@ commit = do
 		return True
 
 mergeLocal :: Git.Ref -> CommandStart
-mergeLocal branch = go =<< inRepo (Git.Branch.changed branch mergebranch)
+mergeLocal branch = go =<< needmerge
 	where
 		mergebranch = Git.Ref.under "refs/heads/synced" branch
+		needmerge = do
+			unlessM (inRepo $ Git.Ref.exists mergebranch) $
+				error $ Git.Ref.describe mergebranch ++ " does not exist; create it to enable sync"
+			inRepo $ Git.Branch.changed branch mergebranch
 		go False = stop
 		go True = do
 			showStart "merge" $ Git.Ref.describe mergebranch
@@ -109,7 +113,8 @@ pullRemote remote branch = do
 	next $ do
 		checkRemote remote
 		showOutput
-		fetched <- inRepo $ Git.Command.runBool "fetch" [Param (Remote.name remote)]
+		fetched <- inRepo $ Git.Command.runBool "fetch"
+			[Param $ Remote.name remote]
 		if fetched
 			then next $ mergeRemote remote branch
 			else stop
@@ -123,7 +128,7 @@ pushRemote remote branch syncbranch = go =<< newer
 	where
 		newer = inRepo $ Git.Branch.changed syncbranchRemote syncbranch
 		go False = stop
-		go True = do		
+		go True = do
 			showStart "push" (Remote.name remote)
 			ex <- inRepo $ Git.Ref.exists syncbranchRemote
 			next $ next $ do
