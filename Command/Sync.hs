@@ -31,14 +31,14 @@ seek args = do
 	!branch <- currentBranch
 	let syncbranch = Git.Ref.under "refs/heads/synced/" branch
 	remotes <- syncRemotes syncbranch args
-	return $
-		[ commit
-		, mergeLocal branch
-		] ++
-		[ update remote branch | remote <- remotes ] ++
-		[ mergeAnnex ] ++
-		[ pushLocal syncbranch ] ++
-		[ pushRemote remote branch syncbranch | remote <- remotes ]
+	return $ concat $
+		[ [ commit ]
+		, [ mergeLocal branch ]
+		, [ update remote branch | remote <- remotes ]
+		, [ mergeAnnex ]
+		, [ pushLocal syncbranch ]
+		, [ pushRemote remote branch syncbranch | remote <- remotes ]
+		]
 
 syncRemotes :: Git.Ref -> [String] -> Annex [Remote.Remote Annex]
 syncRemotes branch [] = defaultSyncRemotes branch
