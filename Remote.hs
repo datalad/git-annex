@@ -16,6 +16,7 @@ module Remote (
 	hasKeyCheap,
 
 	remoteTypes,
+	remoteList,
 	remoteMap,
 	byName,
 	prettyPrintUUIDs,
@@ -65,8 +66,8 @@ remoteTypes =
 
 {- Builds a list of all available Remotes.
  - Since doing so can be expensive, the list is cached. -}
-genList :: Annex [Remote Annex]
-genList = do
+remoteList :: Annex [Remote Annex]
+remoteList = do
 	rs <- Annex.getState Annex.remotes
 	if null rs
 		then do
@@ -86,7 +87,7 @@ genList = do
 
 {- Map of UUIDs of Remotes and their names. -}
 remoteMap :: Annex (M.Map UUID String)
-remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> genList
+remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
 
 {- Looks up a remote by name. (Or by UUID.) Only finds currently configured
  - git remotes. -}
@@ -99,8 +100,7 @@ byName n = do
 byName' :: String -> Annex (Either String (Remote Annex))
 byName' "" = return $ Left "no remote specified"
 byName' n = do
-	allremotes <- genList
-	let match = filter matching allremotes
+	match <- filter matching <$> remoteList
 	if null match
 		then return $ Left $ "there is no git remote named \"" ++ n ++ "\""
 		else return $ Right $ Prelude.head match
@@ -196,7 +196,7 @@ keyPossibilities' withtrusted key = do
 	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- filterM (repoNotIgnored . repo) =<< genList
+	allremotes <- filterM (repoNotIgnored . repo) =<< remoteList
 	let validremotes = remotesWithUUID allremotes validuuids
 
 	return (sort validremotes, validtrusteduuids)
