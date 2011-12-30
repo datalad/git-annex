@@ -16,7 +16,6 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Ref
 import qualified Git
-import qualified Command.Merge
 
 import qualified Data.ByteString.Lazy.Char8 as L
 
@@ -39,7 +38,7 @@ seek args = do
         ] ++
         [ fetch remote | remote <- remotes ] ++
         [ mergeRemote remote branch | remote <- remotes ] ++
-        [ Command.Merge.start ] ++
+        [ mergeAnnex ] ++
         [ pushLocal branch ] ++
         [ pushRemote remote branch | remote <- remotes ]
 
@@ -130,3 +129,8 @@ checkRemote remote = do
 		Git.Config.get ("remote." ++ Remote.name remote ++ ".url") ""
 	when (null remoteurl) $
 		error $ "No url is configured for the remote: " ++ Remote.name remote
+
+mergeAnnex :: CommandStart
+mergeAnnex = next $ next $ do
+	Annex.Branch.forceUpdate
+	return True
