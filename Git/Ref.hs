@@ -13,13 +13,25 @@ import Common
 import Git
 import Git.Command
 
-{- Converts a fully qualified git ref into a user-visible version. -}
+{- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
-describe = remove "refs/heads/" . remove "refs/remotes/" . show
+describe = show . base
+
+{- Often git refs are fully qualified (eg: refs/heads/master).
+ - Converts such a fully qualified ref into a base ref (eg: master). -}
+base :: Ref -> Ref
+base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
 	where
 		remove prefix s
 			| prefix `isPrefixOf` s = drop (length prefix) s
 			| otherwise = s
+
+
+{- Given a directory such as "refs/remotes/origin", and a ref such as
+ - refs/heads/master, yields a version of that ref under the directory,
+ - such as refs/remotes/origin/master. -}
+under :: String -> Ref -> Ref
+under dir r = Ref $ dir </> show (base r)
 
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
