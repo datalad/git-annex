@@ -115,7 +115,6 @@ remoteNamedFromKey k = remoteNamed basename
 fromRemoteLocation :: String -> Repo -> IO Repo
 fromRemoteLocation s repo = gen $ calcloc s
 	where
-		filterconfig f = filter f $ M.toList $ config repo
 		gen v	
 			| scpstyle v = fromUrl $ scptourl v
 			| isURI v = fromUrl v
@@ -133,6 +132,10 @@ fromRemoteLocation s repo = gen $ calcloc s
 					startswith prefix k &&
 					endswith suffix k &&
 					startswith v l
+				filterconfig f = filter f $
+					concatMap splitconfigs $
+						M.toList $ fullconfig repo
+				splitconfigs (k, vs) = map (\v -> (k, v)) vs
 				(prefix, suffix) = ("url." , ".insteadof")
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
@@ -210,6 +213,7 @@ newFrom l =
 	Repo {
 		location = l,
 		config = M.empty,
+		fullconfig = M.empty,
 		remotes = [],
 		remoteName = Nothing
 	}

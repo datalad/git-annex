@@ -13,6 +13,8 @@ git-annex (3.20111212) UNRELEASED; urgency=low
   * Format strings can be specified using the new --format option, to control
     what is output by git annex find.
   * Support git annex find --json
+  * Fixed behavior when multiple insteadOf configs are provided for the
+    same url base.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
