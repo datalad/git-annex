@@ -46,18 +46,12 @@ syncRemotes branch [] = defaultSyncRemotes branch
 syncRemotes _ rs = mapM Remote.byName rs
 
 defaultSyncRemotes :: Git.Ref -> Annex [Remote.Remote Annex]
-defaultSyncRemotes syncbranch = mapM Remote.byName
-		=<< process . L.unpack <$> inRepo showref
+defaultSyncRemotes syncbranch = mapM Remote.byName =<<
+	map getRemoteName . filter isRemote . map (show . snd) <$>
+		inRepo (Git.Ref.matching $ Git.Ref.base syncbranch)
 	where
-		showref = Git.Command.pipeRead
-			[ Param "show-ref"
-			, Param $ show $ Git.Ref.base syncbranch
-			]
-		process = map getRemoteName . filter isRemote .
-			map getBranchName . lines
-	        isRemote r = "refs/remotes/" `isPrefixOf` r
-		getBranchName = snd . separate (== ' ')
 		getRemoteName = fst . separate (== '/') . snd . separate (== '/') . snd . separate (== '/')
+	        isRemote r = "refs/remotes/" `isPrefixOf` r
 
 commit :: CommandStart
 commit = do

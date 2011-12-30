@@ -48,13 +48,18 @@ sha branch repo = process . L.unpack <$> showref repo
 		process [] = Nothing
 		process s = Just $ Ref $ firstLine s
 
-{- List of (refs, branches) matching a given ref spec.
- - Duplicate refs are filtered out. -}
+{- List of (refs, branches) matching a given ref spec. -}
 matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = do
 	r <- pipeRead [Param "show-ref", Param $ show ref] repo
-	return $ nubBy uniqref $ map (gen . L.unpack) (L.lines r)
+	return $ map (gen . L.unpack) (L.lines r)
 	where
-		uniqref (a, _) (b, _) = a == b
 		gen l = let (r, b) = separate (== ' ') l in
 			(Ref r, Ref b)
+
+{- List of (refs, branches) matching a given ref spec.
+ - Duplicate refs are filtered out. -}
+matchingUniq :: Ref -> Repo -> IO [(Ref, Branch)]
+matchingUniq ref repo = nubBy uniqref <$> matching ref repo
+	where
+		uniqref (a, _) (b, _) = a == b
