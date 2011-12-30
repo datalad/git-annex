@@ -47,9 +47,9 @@ syncRemotes _ rs = mapM Remote.byName rs
 
 defaultSyncRemotes :: Git.Ref -> Annex [Remote.Remote Annex]
 defaultSyncRemotes syncbranch = mapM Remote.byName =<<
-	map getRemoteName . filter isRemote . map (show . snd) <$>
-		inRepo (Git.Ref.matching $ Git.Ref.base syncbranch)
+	map getRemoteName . filter isRemote . map (show . snd) <$> siblings
 	where
+		siblings = inRepo (Git.Ref.matching $ Git.Ref.base syncbranch)
 		getRemoteName = fst . separate (== '/') . snd . separate (== '/') . snd . separate (== '/')
 	        isRemote r = "refs/remotes/" `isPrefixOf` r
 
