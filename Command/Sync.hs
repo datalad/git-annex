@@ -129,12 +129,16 @@ mergeRemote remote branch = all (== True) <$> mapM go [branch, syncBranch branch
 		remotebranch = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
 pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
-pushRemote remote branch = go =<< newer
+pushRemote remote branch = go =<< needpush
 	where
-		newer = do
-			e <- inRepo (Git.Ref.exists syncbranchRemote)
+		needpush = (||)
+			<$> newer syncbranch
+			<*> newer Annex.Branch.name
+		newer b = do
+			let r = remotebranch b
+			e <- inRepo (Git.Ref.exists r)
 			if e
-				then inRepo $ Git.Branch.changed syncbranchRemote syncbranch
+				then inRepo $ Git.Branch.changed r b
 				else return True
 		go False = stop
 		go True = do
@@ -148,8 +152,7 @@ pushRemote remote branch = go =<< newer
 					]
 		refspec = show (Git.Ref.base branch) ++ ":" ++ show (Git.Ref.base syncbranch)
 		syncbranch = syncBranch branch
-		syncbranchRemote = Git.Ref.under 
-			("refs/remotes/" ++ Remote.name remote) syncbranch
+		remotebranch = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
 currentBranch :: Annex Git.Ref
 currentBranch = Git.Ref . firstLine . L.unpack <$>
