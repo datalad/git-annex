@@ -34,7 +34,7 @@ seek args = do
 	remotes <- syncRemotes syncbranch args
 	return $ concat $
 		[ [ commit ]
-		, [ mergeLocal branch ]
+		, [ mergeLocal branch syncbranch ]
 		, [ pullRemote remote branch | remote <- remotes ]
 		, [ mergeAnnex ]
 		, [ pushLocal syncbranch ]
@@ -63,28 +63,31 @@ commit = do
 			[Param "-a", Param "-m", Param "git-annex automatic sync"]
 		return True
 
-mergeLocal :: Git.Ref -> CommandStart
-mergeLocal branch = go =<< needmerge
+mergeLocal :: Git.Ref -> Git.Ref -> CommandStart
+mergeLocal branch syncbranch = go =<< needmerge
 	where
-		mergebranch = Git.Ref.under "refs/heads/synced" branch
 		needmerge = do
-			unlessM (inRepo $ Git.Ref.exists mergebranch) $
-				error $ Git.Ref.describe mergebranch ++ " does not exist; create it to enable sync"
-			inRepo $ Git.Branch.changed branch mergebranch
+			unlessM (inRepo $ Git.Ref.exists syncbranch) $
+				updateBranch syncbranch
+			inRepo $ Git.Branch.changed branch syncbranch
 		go False = stop
 		go True = do
-			showStart "merge" $ Git.Ref.describe mergebranch
-			next $ next $ mergeFromIfExists mergebranch
+			showStart "merge" $ Git.Ref.describe syncbranch
+			next $ next $ mergeFromIfExists syncbranch
 
 pushLocal :: Git.Ref -> CommandStart
 pushLocal syncbranch = go =<< inRepo (Git.Ref.exists syncbranch)
 	where
 		go False = stop
 		go True = do
-			unlessM (updatebranch) $
-				error $ "failed to update " ++ show syncbranch
+			updateBranch syncbranch
 			stop
-		updatebranch = inRepo $ Git.Command.runBool "branch"
+
+updateBranch :: Git.Ref -> Annex ()
+updateBranch syncbranch = 
+	unlessM go $ error $ "failed to update " ++ show syncbranch
+	where
+		go = inRepo $ Git.Command.runBool "branch"
 			[ Param "-f"
 			, Param $ show $ Git.Ref.base syncbranch
 			]
