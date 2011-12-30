@@ -9,8 +9,11 @@ module Annex.Branch (
 	name,
 	hasOrigin,
 	hasSibling,
+	siblingBranches,
 	create,
 	update,
+	forceUpdate,
+	updateTo,
 	get,
 	change,
 	commit,
@@ -81,10 +84,23 @@ getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
 
 {- Ensures that the branch and index are is up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run.
+ -}
+update :: Annex ()
+update = runUpdateOnce $ updateTo =<< siblingBranches
+
+{- Forces an update even if one has already been run. -}
+forceUpdate :: Annex ()
+forceUpdate = updateTo =<< siblingBranches
+
+{- Merges the specified Refs into the index, if they have any changes not
+ - already in it. The Branch names are only used in the commit message;
+ - it's even possible that the provided Branches have not been updated to
+ - point to the Refs yet.
  -
  - Before refs are merged into the index, it's important to first stage the
  - journal into the index. Otherwise, any changes in the journal would
  - later get staged, and might overwrite changes made during the merge.
+ - If no Refs are provided, the journal is still staged and committed.
  -
  - (It would be cleaner to handle the merge by updating the journal, not the
  - index, with changes from the branches.)
@@ -92,13 +108,13 @@ getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
  - The branch is fast-forwarded if possible, otherwise a merge commit is
  - made.
  -}
-update :: Annex ()
-update = runUpdateOnce $ do
+updateTo :: [(Git.Ref, Git.Branch)] -> Annex ()
+updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
-	(refs, branches) <- unzip <$> newerSiblings
+	(refs, branches) <- unzip <$> filterM isnewer pairs
 	if (not dirty && null refs)
 		then updateIndex branchref
 		else withIndex $ lockJournal $ do
@@ -110,7 +126,7 @@ update = runUpdateOnce $ do
 					" into " ++ show name
 			unless (null branches) $ do
 				showSideAction merge_desc
-				mergeIndex branches
+				mergeIndex refs
 			ff <- if dirty
 				then return False
 				else inRepo $ Git.Branch.fastForward fullname refs
@@ -120,8 +136,7 @@ update = runUpdateOnce $ do
 					(nub $ fullname:refs)
 			invalidateCache
 	where
-		newerSiblings = filterM isnewer =<< siblingBranches
-		isnewer (_, b) = inRepo $ Git.Branch.changed fullname b
+		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 
 {- Gets the content of a file on the branch, or content from the journal, or
  - staged in the index.
@@ -238,7 +253,7 @@ genIndex :: Git.Repo -> IO ()
 genIndex g = Git.UnionMerge.stream_update_index g
 	[Git.UnionMerge.ls_tree fullname g]
 
-{- Merges the specified branches into the index.
+{- Merges the specified refs into the index.
  - Any changes staged in the index will be preserved. -}
 mergeIndex :: [Git.Ref] -> Annex ()
 mergeIndex branches = do
