@@ -8,6 +8,7 @@ A walkthrough of the basic features of git-annex.
 	adding_files
 	renaming_files
 	getting_file_content
+	syncing
 	transferring_files:_When_things_go_wrong
 	removing_files
 	removing_files:_When_things_go_wrong
