@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Git (remote) where
+module Remote.Git (remote, repoAvail) where
 
 import Control.Exception.Extensible
 import qualified Data.Map as M
@@ -163,6 +163,13 @@ inAnnex r key
 				dispatch (Right (Just b)) = Right b
 				dispatch (Right Nothing) = unknown
 		unknown = Left $ "unable to check " ++ Git.repoDescribe r
+
+{- Checks inexpensively if a repository is available for use. -}
+repoAvail :: Git.Repo -> Annex Bool
+repoAvail r 
+	| Git.repoIsHttp r = return True
+	| Git.repoIsUrl r = return True
+	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

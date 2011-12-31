@@ -57,12 +57,13 @@ syncRemotes rs = do
 		then nub <$> pickfast
 		else wanted
 	where
-		pickfast = (++) <$> listed <*> (fastest <$> available)
+		pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
 		wanted
-			| null rs = available
+			| null rs = good =<< available
 			| otherwise = listed
 		listed = mapM Remote.byName rs
 		available = filter nonspecial <$> Remote.enabledRemoteList
+		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
 		nonspecial r = Types.Remote.remotetype r == Remote.Git.remote
 		fastest = fromMaybe [] . headMaybe .
 			map snd . sort . M.toList . costmap
