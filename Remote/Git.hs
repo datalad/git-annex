@@ -79,7 +79,8 @@ gen r u _ = do
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
 		config = Nothing,
-		repo = r'
+		repo = r',
+		remotetype = remote
 	}
 
 {- Tries to read the config for a specified remote, updates state, and

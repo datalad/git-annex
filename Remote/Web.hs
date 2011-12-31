@@ -43,7 +43,8 @@ gen r _ _ =
 		hasKey = checkKey,
 		hasKeyCheap = False,
 		config = Nothing,
-		repo = r
+		repo = r,
+		remotetype = remote
 	}
 
 downloadKey :: Key -> FilePath -> Annex Bool

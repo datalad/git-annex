@@ -52,7 +52,8 @@ gen r u c = do
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
 			config = Nothing,
-			repo = r
+			repo = r,
+			remotetype = remote
 		}
 
 genRsyncOpts :: Git.Repo -> Annex RsyncOpts

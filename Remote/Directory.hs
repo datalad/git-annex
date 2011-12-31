@@ -45,7 +45,8 @@ gen r u c = do
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
 			config = Nothing,
-			repo = r
+			repo = r,
+			remotetype = remote
 		}
 
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig

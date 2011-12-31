@@ -30,6 +30,9 @@ data RemoteType a = RemoteType {
 	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
 
+instance Eq (RemoteType a) where
+	x == y = typename x == typename y
+
 {- An individual remote. -}
 data Remote a = Remote {
 	-- each Remote has a unique uuid
@@ -53,7 +56,9 @@ data Remote a = Remote {
 	-- a Remote can have a persistent configuration store
 	config :: Maybe RemoteConfig,
 	-- git configuration for the remote
-	repo :: Git.Repo
+	repo :: Git.Repo,
+	-- the type of the remote
+	remotetype :: RemoteType a
 }
 
 instance Show (Remote a) where

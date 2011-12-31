@@ -17,10 +17,10 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Git.Command
 import qualified Git.Branch
-import qualified Git.Config
 import qualified Git.Ref
 import qualified Git
 import qualified Types.Remote
+import qualified Remote.Git
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
@@ -61,9 +61,8 @@ syncRemotes rs = do
 			| null rs = available
 			| otherwise = listed
 		listed = mapM Remote.byName rs
-		available = filterM hasurl =<< Remote.enabledRemoteList
-		hasurl r = not . null <$> geturl r
-		geturl r = fromRepo $ Git.Config.get ("remote." ++ Remote.name r ++ ".url") ""
+		available = filter nonspecial <$> Remote.enabledRemoteList
+		nonspecial r = Types.Remote.remotetype r == Remote.Git.remote
 		fastest = fromMaybe [] . headMaybe .
 			map snd . sort . M.toList . costmap
 		costmap = M.fromListWith (++) . map costpair
