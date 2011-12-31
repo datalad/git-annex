@@ -1,8 +1,0 @@
-git-annex 3.20111107 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * merge: Use fast-forward merges when possible.
-     Thanks Valentin Haenel for a test case showing how non-fast-forward
-     merges could result in an ongoing pull/merge/push cycle.
-   * Don't try to read config from repos with annex-ignore set.
-   * Bugfix: In the past two releases, git-annex init has written the uuid.log
-     in the wrong format, with the UUID and description flipped."""]]
