@@ -130,8 +130,8 @@ mergeRemote :: Remote.Remote Annex -> Git.Ref -> CommandCleanup
 mergeRemote remote branch = all id <$> mapM go [branch, syncBranch branch]
 	where
 		go b = do
-			e <- inRepo $ Git.Branch.changed branch b
-			if e
+			c <- inRepo $ Git.Branch.changed b (remotebranch b)
+			if c
 				then mergeFrom $ remotebranch b
 				else return True
 		remotebranch = Git.Ref.under $
