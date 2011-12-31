@@ -45,6 +45,7 @@ files with git.
 * [[git-annex man page|git-annex]]
 * [[key-value backends|backends]] for data storage
 * [[special_remotes]] (including [[special_remotes/S3]] and [[special_remotes/bup]])
+* [[sync]]
 * [[encryption]]
 * [[bare_repositories]]
 * [[internals]]
