@@ -7,8 +7,6 @@
 
 module Git.CheckAttr where
 
-{-# LANGUAGE BangPatterns #-}
-
 import System.Exit
 
 import Common
@@ -20,7 +18,7 @@ import qualified Git.Version
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
-	!oldgit <- Git.Version.older "1.7.7"
+	oldgit <- Git.Version.older "1.7.7"
 	cwd <- getCurrentDirectory
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do

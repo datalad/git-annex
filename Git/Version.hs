@@ -14,7 +14,10 @@ import Common
 version :: IO String
 version = do
 	(_, s) <- pipeFrom "git" ["--version"]
-	return $ last $ words $ head $ lines s
+	return $ parse $ lines s
+	where
+		parse [] = ""
+		parse (l:_) = fromMaybe "" $ lastMaybe $ words l
 
 older :: String -> IO Bool
 older v = do
