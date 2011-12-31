@@ -46,6 +46,9 @@ seek rs = do
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"
 
+remoteBranch :: Remote.Remote Annex -> Git.Ref -> Git.Ref
+remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
+
 syncRemotes :: [String] -> Annex [Remote.Remote Annex]
 syncRemotes rs = do
 	fast <- Annex.getState Annex.fast
@@ -124,26 +127,13 @@ pullRemote remote branch = do
 mergeRemote :: Remote.Remote Annex -> Git.Ref -> CommandCleanup
 mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
 	where
-		remotebranch = Git.Ref.under $
-			"refs/remotes/" ++ Remote.name remote
-		merge = mergeFrom . remotebranch
-		tomerge = filterM changed [branch, syncBranch branch]
-		changed b = do
-			e <- inRepo $ Git.Ref.exists $ remotebranch b
-			if e
-				then inRepo $ Git.Branch.changed b $ remotebranch b
-				else return False
+		merge = mergeFrom . remoteBranch remote
+		tomerge = filterM (changed remote) [branch, syncBranch branch]
 
 pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
 	where
-		needpush = anyM newer [syncbranch, Annex.Branch.name]
-		newer b = do
-			let r = remotebranch b
-			e <- inRepo (Git.Ref.exists r)
-			if e
-				then inRepo $ Git.Branch.changed r b
-				else return True
+		needpush = anyM (newer remote) [syncbranch, Annex.Branch.name]
 		go False = stop
 		go True = do
 			showStart "push" (Remote.name remote)
@@ -156,7 +146,6 @@ pushRemote remote branch = go =<< needpush
 					]
 		refspec = show (Git.Ref.base branch) ++ ":" ++ show (Git.Ref.base syncbranch)
 		syncbranch = syncBranch branch
-		remotebranch = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
@@ -171,3 +160,19 @@ mergeFrom :: Git.Ref -> CommandCleanup
 mergeFrom branch = do
 	showOutput
 	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
+
+changed :: Remote.Remote Annex -> Git.Ref -> Annex Bool
+changed remote b = do
+	let r = remoteBranch remote b
+	e <- inRepo $ Git.Ref.exists r
+	if e
+		then inRepo $ Git.Branch.changed b r
+		else return False
+
+newer :: Remote.Remote Annex -> Git.Ref -> Annex Bool
+newer remote b = do
+	let r = remoteBranch remote b
+	e <- inRepo $ Git.Ref.exists r
+	if e
+		then inRepo $ Git.Branch.changed r b
+		else return True
