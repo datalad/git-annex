@@ -1,6 +1,6 @@
 {- git-annex key/value backend data type
  -
- - Most things should not need this, using Remotes instead
+ - Most things should not need this, using Types instead
  -
  - Copyright 2010 Joey Hess <joey@kitenet.net>
  -

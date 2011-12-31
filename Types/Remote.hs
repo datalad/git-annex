@@ -1,6 +1,6 @@
 {- git-annex remotes types
  -
- - Most things should not need this, using Remote instead
+ - Most things should not need this, using Types instead
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
