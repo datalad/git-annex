@@ -122,15 +122,17 @@ pullRemote remote branch = do
  - were committed, while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote.Remote Annex -> Git.Ref -> CommandCleanup
-mergeRemote remote branch = all id <$> mapM go [branch, syncBranch branch]
+mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
 	where
-		go b = do
-			c <- inRepo $ Git.Branch.changed b (remotebranch b)
-			if c
-				then mergeFrom $ remotebranch b
-				else return True
 		remotebranch = Git.Ref.under $
 			"refs/remotes/" ++ Remote.name remote
+		merge = mergeFrom . remotebranch
+		tomerge = filterM changed [branch, syncBranch branch]
+		changed b = do
+			e <- inRepo $ Git.Ref.exists $ remotebranch b
+			if e
+				then inRepo $ Git.Branch.changed b $ remotebranch b
+				else return False
 
 pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
