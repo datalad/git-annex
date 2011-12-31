@@ -12,7 +12,7 @@ and can copy it to or from other repositories. [[Location_tracking]]
 information is committed to git, to let repositories inform other
 repositories what file contents they have available.
 
---
+---
 
 The [[walkthrough]] shows how to create a distributed set of git-annex
 repositories with no central repository.
