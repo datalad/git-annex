@@ -56,13 +56,14 @@ syncRemotes rs = do
 		then nub <$> pickfast
 		else wanted
 	where
+		pickfast = (++) <$> listed <*> (fastest <$> available)
 		wanted
-			| null rs = filterM hasurl =<< Remote.enabledRemoteList
+			| null rs = available
 			| otherwise = listed
 		listed = mapM Remote.byName rs
+		available = filterM hasurl =<< Remote.enabledRemoteList
 		hasurl r = not . null <$> geturl r
 		geturl r = fromRepo $ Git.Config.get ("remote." ++ Remote.name r ++ ".url") ""
-		pickfast = (++) <$> listed <*> (fastest <$> Remote.enabledRemoteList)
 		fastest = fromMaybe [] . headMaybe .
 			map snd . sort . M.toList . costmap
 		costmap = M.fromListWith (++) . map costpair
