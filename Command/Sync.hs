@@ -13,14 +13,17 @@ module Command.Sync where
 import Common.Annex
 import Command
 import qualified Remote
+import qualified Annex
 import qualified Annex.Branch
 import qualified Git.Command
 import qualified Git.Branch
 import qualified Git.Config
 import qualified Git.Ref
 import qualified Git
+import qualified Types.Remote
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Map as M
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -28,9 +31,9 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 
 -- syncing involves several operations, any of which can independantly fail
 seek :: CommandSeek
-seek args = do
+seek rs = do
 	!branch <- currentBranch
-	remotes <- syncRemotes args
+	remotes <- syncRemotes rs
 	return $ concat $
 		[ [ commit ]
 		, [ mergeLocal branch ]
@@ -44,11 +47,23 @@ syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"
 
 syncRemotes :: [String] -> Annex [Remote.Remote Annex]
-syncRemotes [] = filterM hasurl =<< Remote.remoteList
+syncRemotes rs = do
+	fast <- Annex.getState Annex.fast
+	if fast
+		then nub <$> pickfast
+		else wanted
 	where
+		wanted
+			| null rs = filterM hasurl =<< Remote.remoteList
+			| otherwise = listed
+		listed = mapM Remote.byName rs
 		hasurl r = not . null <$> geturl r
 		geturl r = fromRepo $ Git.Config.get ("remote." ++ Remote.name r ++ ".url") ""
-syncRemotes rs = mapM Remote.byName rs
+		pickfast = (++) <$> listed <*> (fastest <$> Remote.remoteList)
+		fastest = fromMaybe [] . headMaybe .
+			map snd . sort . M.toList . costmap
+		costmap = M.fromListWith (++) . map costpair
+		costpair r = (Types.Remote.cost r, [r])
 
 commit :: CommandStart
 commit = do

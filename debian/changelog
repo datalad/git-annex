@@ -18,6 +18,8 @@ git-annex (3.20111212) UNRELEASED; urgency=low
   * Updated to build with monad-control 0.3.
   * sync: Improved to work well without a central bare repository. 
     Thanks to Joachim Breitner.
+  * sync --fast: Selects some of the remotes with the lowest annex.cost
+    and syncs those, in addition to any specified at the command line.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
