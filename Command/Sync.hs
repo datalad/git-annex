@@ -92,13 +92,9 @@ mergeLocal branch = go =<< needmerge
 			next $ next $ mergeFrom syncbranch
 
 pushLocal :: Git.Ref -> CommandStart
-pushLocal branch = go =<< inRepo (Git.Ref.exists syncbranch)
-	where
-		syncbranch = syncBranch branch
-		go False = stop
-		go True = do
-			updateBranch syncbranch
-			stop
+pushLocal branch = do
+	updateBranch $ syncBranch branch
+	stop
 
 updateBranch :: Git.Ref -> Annex ()
 updateBranch syncbranch = 
