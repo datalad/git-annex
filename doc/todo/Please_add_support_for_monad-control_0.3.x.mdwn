@@ -5,3 +5,5 @@ Git-annex doesn't compile with the latest version of monad-control. Would it be 
 > 
 > There is now a branch in git called `new-monad-control` that will build
 > with the new monad-control. --[[Joey]]
+
+>> Now merged to master. [[done]] --[[Joey]]

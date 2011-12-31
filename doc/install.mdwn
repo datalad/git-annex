@@ -25,6 +25,7 @@ To build and use git-annex, you will need:
   * [SHA](http://hackage.haskell.org/package/SHA)
   * [dataenc](http://hackage.haskell.org/package/dataenc)
   * [monad-control](http://hackage.haskell.org/package/monad-control)
+  * [lifted-base](http://hackage.haskell.org/package/lifted-base)
   * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [HTTP](http://hackage.haskell.org/package/HTTP)

@@ -1,6 +1,6 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-GHCFLAGS=-O2 -Wall $(IGNORE) -fspec-constr-count=5
+GHCFLAGS=-O2 -Wall $(IGNORE) -fspec-constr-count=8
 
 ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(IGNORE)
