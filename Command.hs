@@ -77,10 +77,10 @@ doCommand = start
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key and backend on to it. -}
-whenAnnexed :: (FilePath -> (Key, Backend Annex) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+whenAnnexed :: (FilePath -> (Key, Backend) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> ((Key, Backend Annex) -> Annex a) -> Annex a -> Annex a
+ifAnnexed :: FilePath -> ((Key, Backend) -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 notBareRepo :: Annex a -> Annex a

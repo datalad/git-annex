@@ -36,7 +36,7 @@ check = do
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed startUnannex, withNothing start]
 
-startUnannex :: FilePath -> (Key, Backend Annex) -> CommandStart
+startUnannex :: FilePath -> (Key, Backend) -> CommandStart
 startUnannex file info = do
 	-- Force fast mode before running unannex. This way, if multiple
 	-- files link to a key, it will be left in the annex and hardlinked

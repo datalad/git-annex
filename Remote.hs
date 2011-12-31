@@ -54,7 +54,7 @@ import qualified Remote.Rsync
 import qualified Remote.Web
 import qualified Remote.Hook
 
-remoteTypes :: [RemoteType Annex]
+remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
 	, Remote.S3.remote
@@ -67,7 +67,7 @@ remoteTypes =
 
 {- Builds a list of all available Remotes.
  - Since doing so can be expensive, the list is cached. -}
-remoteList :: Annex [Remote Annex]
+remoteList :: Annex [Remote]
 remoteList = do
 	rs <- Annex.getState Annex.remotes
 	if null rs
@@ -87,7 +87,7 @@ remoteList = do
 			generate t r u (M.lookup u m)
 
 {- All remotes that are not ignored. -}
-enabledRemoteList :: Annex [Remote Annex]
+enabledRemoteList :: Annex [Remote]
 enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
 
 {- Map of UUIDs of Remotes and their names. -}
@@ -96,13 +96,13 @@ remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
 
 {- Looks up a remote by name. (Or by UUID.) Only finds currently configured
  - git remotes. -}
-byName :: String -> Annex (Remote Annex)
+byName :: String -> Annex (Remote)
 byName n = do
 	res <- byName' n
 	case res of
 		Left e -> error e
 		Right r -> return r
-byName' :: String -> Annex (Either String (Remote Annex))
+byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = do
 	match <- filter matching <$> remoteList
@@ -168,16 +168,16 @@ prettyPrintUUIDs desc uuids = do
 			]
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
-remotesWithUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
+remotesWithUUID :: [Remote] -> [UUID] -> [Remote]
 remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
 
 {- Filters a list of remotes to ones that do not have the listed uuids. -}
-remotesWithoutUUID :: [Remote Annex] -> [UUID] -> [Remote Annex]
+remotesWithoutUUID :: [Remote] -> [UUID] -> [Remote]
 remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 
 {- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
  -}
-keyPossibilities :: Key -> Annex [Remote Annex]
+keyPossibilities :: Key -> Annex [Remote]
 keyPossibilities key = fst <$> keyPossibilities' False key
 
 {- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
@@ -185,10 +185,10 @@ keyPossibilities key = fst <$> keyPossibilities' False key
  - Also returns a list of UUIDs that are trusted to have the key
  - (some may not have configured remotes).
  -}
-keyPossibilitiesTrusted :: Key -> Annex ([Remote Annex], [UUID])
+keyPossibilitiesTrusted :: Key -> Annex ([Remote], [UUID])
 keyPossibilitiesTrusted = keyPossibilities' True
 
-keyPossibilities' :: Bool -> Key -> Annex ([Remote Annex], [UUID])
+keyPossibilities' :: Bool -> Key -> Annex ([Remote], [UUID])
 keyPossibilities' withtrusted key = do
 	u <- getUUID
 	trusted <- if withtrusted then trustGet Trusted else return []
@@ -224,7 +224,7 @@ showLocations key exclude = do
 		message [] us = "Also these untrusted repositories may contain the file:\n" ++ us
 		message rs us = message rs [] ++ message [] us
 
-showTriedRemotes :: [Remote Annex] -> Annex ()
+showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = return ()	
 showTriedRemotes remotes =
 	showLongNote $ "Unable to access these remotes: " ++
@@ -240,7 +240,7 @@ forceTrust level remotename = do
  - in the local repo, not on the remote. The process of transferring the
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
-logStatus :: Remote Annex -> Key -> Bool -> Annex ()
+logStatus :: Remote -> Key -> Bool -> Annex ()
 logStatus remote key present = logChange key (uuid remote) status
 	where
 		status = if present then InfoPresent else InfoMissing

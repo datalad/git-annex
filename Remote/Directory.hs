@@ -20,7 +20,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "directory",
 	enumerate = findSpecialRemotes "directory",
@@ -28,7 +28,7 @@ remote = RemoteType {
 	setup = directorySetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
 	dir <- getConfig r "directory" (error "missing directory")
 	cst <- remoteCost r cheapRemoteCost

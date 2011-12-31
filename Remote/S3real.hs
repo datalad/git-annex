@@ -28,7 +28,7 @@ import Crypto
 import Annex.Content
 import Utility.Base64
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "S3",
 	enumerate = findSpecialRemotes "s3",
@@ -36,11 +36,11 @@ remote = RemoteType {
 	setup = s3Setup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
 	cst <- remoteCost r expensiveRemoteCost
 	return $ gen' r u c cst
-gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote Annex
+gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote
 gen' r u c cst =
 	encryptableRemote c
 		(storeEncrypted this)
@@ -111,13 +111,13 @@ s3Setup u c = handlehost $ M.lookup "host" c
 					-- be human-readable
 					M.delete "bucket" defaults
 
-store :: Remote Annex -> Key -> Annex Bool
+store :: Remote -> Key -> Annex Bool
 store r k = s3Action r False $ \(conn, bucket) -> do
 	dest <- inRepo $ gitAnnexLocation k
 	res <- liftIO $ storeHelper (conn, bucket) r k dest
 	s3Bool res
 
-storeEncrypted :: Remote Annex -> (Cipher, Key) -> Key -> Annex Bool
+storeEncrypted :: Remote -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted r (cipher, enck) k = s3Action r False $ \(conn, bucket) -> 
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
@@ -127,7 +127,7 @@ storeEncrypted r (cipher, enck) k = s3Action r False $ \(conn, bucket) ->
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
 		s3Bool res
 
-storeHelper :: (AWSConnection, String) -> Remote Annex -> Key -> FilePath -> IO (AWSResult ())
+storeHelper :: (AWSConnection, String) -> Remote -> Key -> FilePath -> IO (AWSResult ())
 storeHelper (conn, bucket) r k file = do
 	content <- liftIO $ L.readFile file
 	-- size is provided to S3 so the whole content does not need to be
@@ -149,7 +149,7 @@ storeHelper (conn, bucket) r k file = do
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
-retrieve :: Remote Annex -> Key -> FilePath -> Annex Bool
+retrieve :: Remote -> Key -> FilePath -> Annex Bool
 retrieve r k f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket k
 	case res of
@@ -158,7 +158,7 @@ retrieve r k f = s3Action r False $ \(conn, bucket) -> do
 			return True
 		Left e -> s3Warning e
 
-retrieveEncrypted :: Remote Annex -> (Cipher, Key) -> FilePath -> Annex Bool
+retrieveEncrypted :: Remote -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket enck
 	case res of
@@ -168,12 +168,12 @@ retrieveEncrypted r (cipher, enck) f = s3Action r False $ \(conn, bucket) -> do
 				return True
 		Left e -> s3Warning e
 
-remove :: Remote Annex -> Key -> Annex Bool
+remove :: Remote -> Key -> Annex Bool
 remove r k = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ deleteObject conn $ bucketKey r bucket k
 	s3Bool res
 
-checkPresent :: Remote Annex -> Key -> Annex (Either String Bool)
+checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
 	showAction $ "checking " ++ name r
 	res <- liftIO $ getObjectInfo conn $ bucketKey r bucket k
@@ -196,7 +196,7 @@ s3Bool :: AWSResult () -> Annex Bool
 s3Bool (Right _) = return True
 s3Bool (Left e) = s3Warning e
 
-s3Action :: Remote Annex -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
+s3Action :: Remote -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
 s3Action r noconn action = do
 	when (isNothing $ config r) $
 		error $ "Missing configuration for special remote " ++ name r
@@ -206,14 +206,14 @@ s3Action r noconn action = do
 		(Just b, Just c) -> action (c, b)
 		_ -> return noconn
 
-bucketFile :: Remote Annex -> Key -> FilePath
+bucketFile :: Remote -> Key -> FilePath
 bucketFile r = munge . show
 	where
 		munge s = case M.lookup "mungekeys" $ fromJust $ config r of
 			Just "ia" -> iaMunge s
 			_ -> s
 
-bucketKey :: Remote Annex -> String -> Key -> S3Object
+bucketKey :: Remote -> String -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
 
 {- Internet Archive limits filenames to a subset of ascii,

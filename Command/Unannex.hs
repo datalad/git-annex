@@ -22,7 +22,7 @@ def = [command "unannex" paramPaths seek "undo accidential add command"]
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]
 
-start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = stopUnless (inAnnex key) $ do
 	showStart "unannex" file
 	next $ perform file key

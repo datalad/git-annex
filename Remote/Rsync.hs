@@ -27,7 +27,7 @@ data RsyncOpts = RsyncOpts {
 	rsyncOptions :: [CommandParam]
 }
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "rsync",
 	enumerate = findSpecialRemotes "rsyncurl",
@@ -35,7 +35,7 @@ remote = RemoteType {
 	setup = rsyncSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
 	o <- genRsyncOpts r
 	cst <- remoteCost r expensiveRemoteCost

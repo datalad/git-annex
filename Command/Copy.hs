@@ -21,6 +21,6 @@ seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
 -- A copy is just a move that does not delete the source file.
 -- However, --auto mode avoids unnecessary copies.
-start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start numcopies file (key, backend) = autoCopies key (<) numcopies $
 	Command.Move.start False file (key, backend)

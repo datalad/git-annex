@@ -67,8 +67,8 @@ data OutputType = NormalOutput | QuietOutput | JSONOutput
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
-	, backends :: [Backend Annex]
-	, remotes :: [Types.Remote.Remote Annex]
+	, backends :: [BackendA Annex]
+	, remotes :: [Types.Remote.RemoteA Annex]
 	, repoqueue :: Git.Queue.Queue
 	, output :: OutputType
 	, force :: Bool

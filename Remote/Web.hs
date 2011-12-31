@@ -15,7 +15,7 @@ import Config
 import Logs.Web
 import qualified Utility.Url as Url
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "web",
 	enumerate = list,
@@ -31,7 +31,7 @@ list = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" Git.Construct.fromUnknown
 	return [r]
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r _ _ = 
 	return Remote {
 		uuid = webUUID,

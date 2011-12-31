@@ -47,10 +47,10 @@ seek rs = do
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"
 
-remoteBranch :: Remote.Remote Annex -> Git.Ref -> Git.Ref
+remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
-syncRemotes :: [String] -> Annex [Remote.Remote Annex]
+syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = do
 	fast <- Annex.getState Annex.fast
 	if fast
@@ -106,7 +106,7 @@ updateBranch syncbranch =
 			, Param $ show $ Git.Ref.base syncbranch
 			]
 
-pullRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
+pullRemote :: Remote -> Git.Ref -> CommandStart
 pullRemote remote branch = do
 	showStart "pull" (Remote.name remote)
 	next $ do
@@ -121,13 +121,13 @@ pullRemote remote branch = do
  - Which to merge from? Well, the master has whatever latest changes
  - were committed, while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote.Remote Annex -> Git.Ref -> CommandCleanup
+mergeRemote :: Remote -> Git.Ref -> CommandCleanup
 mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
 	where
 		merge = mergeFrom . remoteBranch remote
 		tomerge = filterM (changed remote) [branch, syncBranch branch]
 
-pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
+pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
 	where
 		needpush = anyM (newer remote) [syncbranch, Annex.Branch.name]
@@ -154,7 +154,7 @@ mergeFrom branch = do
 	showOutput
 	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
 
-changed :: Remote.Remote Annex -> Git.Ref -> Annex Bool
+changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
 	let r = remoteBranch remote b
 	e <- inRepo $ Git.Ref.exists r
@@ -162,7 +162,7 @@ changed remote b = do
 		then inRepo $ Git.Branch.changed b r
 		else return False
 
-newer :: Remote.Remote Annex -> Git.Ref -> Annex Bool
+newer :: Remote -> Git.Ref -> Annex Bool
 newer remote b = do
 	let r = remoteBranch remote b
 	e <- inRepo $ Git.Ref.exists r

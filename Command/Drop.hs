@@ -24,7 +24,7 @@ def = [dontCheck fromOpt $ command "drop" paramPaths seek
 seek :: [CommandSeek]
 seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
-start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start numcopies file (key, _) = autoCopies key (>) numcopies $ do
 	from <- Annex.getState Annex.fromremote
 	case from of
@@ -41,7 +41,7 @@ startLocal file numcopies key = stopUnless (inAnnex key) $ do
 	showStart "drop" file
 	next $ performLocal key numcopies
 
-startRemote :: FilePath -> Maybe Int -> Key -> Remote.Remote Annex -> CommandStart
+startRemote :: FilePath -> Maybe Int -> Key -> Remote -> CommandStart
 startRemote file numcopies key remote = do
 	showStart "drop" file
 	next $ performRemote key numcopies remote
@@ -55,7 +55,7 @@ performLocal key numcopies = lockContent key $ do
 		whenM (inAnnex key) $ removeAnnex key
 		next $ cleanupLocal key
 
-performRemote :: Key -> Maybe Int -> Remote.Remote Annex -> CommandPerform
+performRemote :: Key -> Maybe Int -> Remote -> CommandPerform
 performRemote key numcopies remote = lockContent key $ do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
@@ -79,7 +79,7 @@ cleanupLocal key = do
 	logStatus key InfoMissing
 	return True
 
-cleanupRemote :: Key -> Remote.Remote Annex -> Bool -> CommandCleanup
+cleanupRemote :: Key -> Remote -> Bool -> CommandCleanup
 cleanupRemote key remote ok = do
 	-- better safe than sorry: assume the remote dropped the key
 	-- even if it seemed to fail; the failure could have occurred
@@ -90,7 +90,7 @@ cleanupRemote key remote ok = do
 {- Checks specified remotes to verify that enough copies of a key exist to
  - allow it to be safely removed (with no data loss). Can be provided with
  - some locations where the key is known/assumed to be present. -}
-canDropKey :: Key -> Maybe Int -> [UUID] -> [Remote.Remote Annex] -> [UUID] -> Annex Bool
+canDropKey :: Key -> Maybe Int -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
 canDropKey key numcopiesM have check skip = do
 	force <- Annex.getState Annex.force
 	if force || numcopiesM == Just 0
@@ -99,7 +99,7 @@ canDropKey key numcopiesM have check skip = do
 			need <- getNumCopies numcopiesM
 			findCopies key need skip have check
 
-findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote.Remote Annex] -> Annex Bool
+findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 findCopies key need skip = helper []
 	where
 		helper bad have []
@@ -116,7 +116,7 @@ findCopies key need skip = helper []
 					(False, Left _)     -> helper (r:bad) have rs
 					_                   -> helper bad have rs
 
-notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote.Remote Annex] -> Annex Bool
+notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 notEnoughCopies key need have skip bad = do
 	unsafe
 	showLongNote $
