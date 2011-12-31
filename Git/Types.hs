@@ -18,6 +18,8 @@ data RepoLocation = Dir FilePath | Url URI | Unknown
 data Repo = Repo {
 	location :: RepoLocation,
 	config :: M.Map String String,
+	-- a given git config key can actually have multiple values
+	fullconfig :: M.Map String [String],
 	remotes :: [Repo],
 	-- remoteName holds the name used for this repo in remotes
 	remoteName :: Maybe String 

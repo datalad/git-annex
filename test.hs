@@ -45,6 +45,7 @@ import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Utility.Gpg
 import qualified Build.SysConfig
+import qualified Utility.Format
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -72,7 +73,8 @@ propigate (Counts { errors = e , failures = f }, _)
 
 quickcheck :: Test
 quickcheck = TestLabel "quickcheck" $ TestList
-	[ qctest "prop_idempotent_deencode" Git.Filename.prop_idempotent_deencode
+	[ qctest "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
+	, qctest "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
 	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
 	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape

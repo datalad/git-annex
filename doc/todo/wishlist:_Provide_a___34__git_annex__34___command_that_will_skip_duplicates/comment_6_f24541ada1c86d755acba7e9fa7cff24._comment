@@ -8,7 +8,9 @@ My main concern with putting this in git-annex is that finding duplicates necess
 
 So I would rather come at this from a different angle.. like providing a way to output a list of files and their associated keys, which the user can then use in their own shell pipelines to find duplicate keys:
 
-      git annex find --include '*' --format=\"%f %k\n\" | sort foo --key 2 | uniq --all-repeated --skip-fields=1
+      git annex find --include '*' --format='${file} ${key}\n' | sort --key 2 | uniq --all-repeated --skip-fields=1
 
-(Making that properly handle filenames with spaces is left as an exercise for the reader..)
+Which is implemented now!
+
+(Making that pipeline properly handle filenames with spaces is left as an exercise for the reader..)
 """]]

@@ -21,7 +21,7 @@ gitolite installation, just with different paths.
 Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
 
 <pre>
-echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/;' >>~gitolite/.gitolite.rc
+echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/;"' >>~gitolite/.gitolite.rc
 </pre>
 
 Make the ADC directory, and a "ua" subdirectory.
@@ -75,3 +75,15 @@ sent 2606 bytes  received 31 bytes  1758.00 bytes/sec
 total size is 2502  speedup is 0.95
 ok
 </pre>
+
+
+### Troubleshooting
+
+I got an error like this when setting up gitolite *after* setting up a local git repo and git annex:
+
+<pre>
+git-annex-shell: First run: git-annex init
+Command ssh ["git@git.example.com","git-annex-shell 'configlist' '/~/myrepo.git'"] failed; exit code 1
+</pre>
+
+because I forgot to "git push --all" after adding the new gitolite remote.

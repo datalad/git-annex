@@ -24,3 +24,5 @@ I want this because I have copies of various of mine (photos, in particular) sca
 (Another way to do this would be to "git annex add" them all, and then use a "git annex remove-duplicates" that could prompt me about which files are duplicates of each other, and then I could pipe that command's output into xargs git rm.)
 
 (As I write this, I realize it's possible to parse the destination of the symlink in a way that does this..)
+
+> [[done]]; see [[tips/finding_duplicate_files]] --[[Joey]]

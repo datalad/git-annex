@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, MultiParamTypeClasses #-}
 
 module Annex (
 	Annex,
@@ -36,6 +36,7 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.UUID
 import qualified Utility.Matcher
+import qualified Utility.Format
 import qualified Data.Map as M
 
 -- needed for Debian stable's haskell to derive Applicative for StateT
@@ -65,7 +66,7 @@ data AnnexState = AnnexState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
-	, print0 :: Bool
+	, format :: Maybe Utility.Format.Format
 	, branchstate :: BranchState
 	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
@@ -88,7 +89,7 @@ newState gitrepo = AnnexState
 	, force = False
 	, fast = False
 	, auto = False
-	, print0 = False
+	, format = Nothing
 	, branchstate = startBranchState
 	, catfilehandle = Nothing
 	, forcebackend = Nothing

@@ -6,14 +6,17 @@ We can use this to copy everything in the laptop's annex to the
 USB drive.
 
 	# cd /media/usb/annex
-	# git pull laptop
+	# git fetch laptop; git merge laptop/master
 	# git annex get .
 	get my_cool_big_file (from laptop...) ok
 	get iso/debian.iso (from laptop...) ok
 
-Notice that you had to git pull from laptop first, this lets git-annex know
-what has changed in laptop, and so it knows about the files present there and
-can get them. The alternate approach is to set up a central bare repository,
-and always push changes to it after committing them, then in the above,
-you can just pull from the central repository to get synced up to all
-repositories.
+Notice that you had to git fetch and merge from laptop first, this lets
+git-annex know what has changed in laptop, and so it knows about the files
+present there and can get them.
+
+The alternate approach is to set up a
+[[central bare repository|tips/centralized_git_repository_tutorial]], and
+always push changes to it after committing them, then in the above,
+you can just pull from the central repository to get synced up to
+all repositories.

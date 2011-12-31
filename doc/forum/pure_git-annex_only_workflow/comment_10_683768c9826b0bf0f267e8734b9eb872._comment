@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="Finally some code"
+ date="2011-12-29T19:58:31Z"
+ content="""
+The repository at http://git.nomeata.de/?p=git-annex.git;a=summary contains changes to Commands/Sync.hs (and to the manpage) that implements this behavior. The functionality should be fine; the progress output is not very nice yet, but I’m not sure if I really understood the various Command types. It also should be more easily discoverable how to activate the behavior (by running \"git branch synced/master\") by providing a helpful message, at least unless git annex init creates the branch by default.
+"""]]

@@ -7,11 +7,16 @@
 
 module Command.Find where
 
+import qualified Data.Map as M
+
 import Common.Annex
 import Command
 import Annex.Content
 import Limit
 import qualified Annex
+import qualified Utility.Format
+import Utility.DataUnits
+import Types.Key
 
 def :: [Command]
 def = [command "find" paramPaths seek "lists available files"]
@@ -23,9 +28,21 @@ start :: FilePath -> (Key, Backend Annex) -> CommandStart
 start file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
-	whenM (liftM2 (||) (inAnnex key) limited) $ do
-		print0 <- Annex.getState Annex.print0
-		if print0
-			then liftIO $ putStr (file ++ "\0")
-			else liftIO $ putStrLn file
+	whenM (liftM2 (||) limited (inAnnex key)) $
+		unlessM (showFullJSON vars) $ do
+			f <- Annex.getState Annex.format
+			case f of
+				Nothing -> liftIO $ putStrLn file
+				Just formatter -> liftIO $ putStr $
+					Utility.Format.format formatter $
+						M.fromList vars
 	stop
+	where
+		vars =
+			[ ("file", file)
+			, ("key", show key)
+			, ("backend", keyBackendName key)
+			, ("bytesize", size show)
+			, ("humansize", size $ roughSize storageUnits True)
+			]
+		size c = maybe "unknown" c $ keySize key

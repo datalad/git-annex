@@ -42,13 +42,17 @@ hRead repo h = do
  - can be updated inrementally. -}
 store :: String -> Repo -> IO Repo
 store s repo = do
-	let repo' = repo { config = parse s `M.union` config repo }
+	let c = parse s
+	let repo' = repo
+		{ config = (M.map Prelude.head c) `M.union` config repo
+		, fullconfig = M.unionWith (++) c (fullconfig repo)
+		}
 	rs <- Git.Construct.fromRemotes repo'
 	return $ repo' { remotes = rs }
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: String -> M.Map String String
+parse :: String -> M.Map String [String]
 parse [] = M.empty
 parse s
 	-- --list output will have an = in the first line
@@ -57,4 +61,5 @@ parse s
 	| otherwise = sep '\n' $ split "\0" s
 	where
 		ls = lines s
-		sep c = M.fromList . map (separate (== c))
+		sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .
+			map (separate (== c))
