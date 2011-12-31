@@ -27,9 +27,9 @@ import qualified Data.Map as M
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
-	[seek] "synchronize local repository with remote repositories"]
+	[seek] "synchronize local repository with remotes"]
 
--- syncing involves several operations, any of which can independantly fail
+-- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
 	!branch <- currentBranch
@@ -106,11 +106,6 @@ updateBranch syncbranch =
 			, Param $ show $ Git.Ref.base syncbranch
 			]
 
-mergeFrom :: Git.Ref -> CommandCleanup
-mergeFrom branch = do
-	showOutput
-	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
-
 pullRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
 pullRemote remote branch = do
 	showStart "pull" (Remote.name remote)
@@ -161,11 +156,16 @@ pushRemote remote branch = go =<< needpush
 		syncbranch = syncBranch branch
 		remotebranch = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
-currentBranch :: Annex Git.Ref
-currentBranch = Git.Ref . firstLine . L.unpack <$>
-	inRepo (Git.Command.pipeRead [Param "symbolic-ref", Param "HEAD"])
-
 mergeAnnex :: CommandStart
 mergeAnnex = do
 	Annex.Branch.forceUpdate
 	stop
+
+currentBranch :: Annex Git.Ref
+currentBranch = Git.Ref . firstLine . L.unpack <$>
+	inRepo (Git.Command.pipeRead [Param "symbolic-ref", Param "HEAD"])
+
+mergeFrom :: Git.Ref -> CommandCleanup
+mergeFrom branch = do
+	showOutput
+	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
