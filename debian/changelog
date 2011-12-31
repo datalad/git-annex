@@ -7,8 +7,14 @@ git-annex (backport) UNRELEASED; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
 
-git-annex (3.20111212) UNRELEASED; urgency=low
+git-annex (3.20111231) unstable; urgency=low
 
+  * sync: Improved to work well without a central bare repository.
+    Thanks to Joachim Breitner.
+  * Rather than manually committing, pushing, pulling, merging, and git annex
+    merging, we encourage you to give "git annex sync" a try.
+  * sync --fast: Selects some of the remotes with the lowest annex.cost
+    and syncs those, in addition to any specified at the command line.
   * Union merge now finds the least expensive way to represent the merge.
   * reinject: Add a sanity check for using an annexed file as the source file.
   * Properly handle multiline git config values.
@@ -26,7 +32,7 @@ git-annex (3.20111212) UNRELEASED; urgency=low
     binary should only be used with old git.
   * Updated to build with monad-control 0.3.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 31 Dec 2011 14:55:29 -0400
 
 git-annex (3.20111211) unstable; urgency=medium
 
