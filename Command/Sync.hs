@@ -140,9 +140,7 @@ mergeRemote remote branch = all id <$> mapM go [branch, syncBranch branch]
 pushRemote :: Remote.Remote Annex -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
 	where
-		needpush = (||)
-			<$> newer syncbranch
-			<*> newer Annex.Branch.name
+		needpush = anyM newer [syncbranch, Annex.Branch.name]
 		newer b = do
 			let r = remotebranch b
 			e <- inRepo (Git.Ref.exists r)
