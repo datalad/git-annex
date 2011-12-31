@@ -7,6 +7,8 @@
 
 module Git.CheckAttr where
 
+{-# LANGUAGE BangPatterns #-}
+
 import System.Exit
 
 import Common
@@ -18,15 +20,16 @@ import qualified Git.Version
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
+	!oldgit <- Git.Version.older "1.7.7"
 	cwd <- getCurrentDirectory
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
-                hPutStr toh $ join "\0" $ input cwd
+                hPutStr toh $ join "\0" $ input cwd oldgit
                 hClose toh
                 exitSuccess
         hClose toh
-	output cwd . lines <$> hGetContents fromh
+	output cwd oldgit . lines <$> hGetContents fromh
 	where
 		params = gitCommandLine 
 				[ Param "check-attr"
@@ -41,11 +44,10 @@ lookup attr files repo = do
 		 - With newer git, git check-attr chokes on some absolute
 		 - filenames, and the bugs that necessitated them were fixed,
 		 - so use relative filenames. -}
-		oldgit = Git.Version.older "1.7.7"
-		input cwd
+		input cwd oldgit
 			| oldgit = map (absPathFrom cwd) files
 			| otherwise = map (relPathDirToFile cwd . absPathFrom cwd) files
-		output cwd
+		output cwd oldgit
 			| oldgit = map (torel cwd . topair)
 			| otherwise = map topair
 

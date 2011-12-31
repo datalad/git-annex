@@ -7,18 +7,19 @@
 
 module Git.Version where
 
+import System.Cmd.Utils
+
 import Common
-import qualified Build.SysConfig
 
-{- Using the version it was configured for avoids running git to check its
- - version, at the cost that upgrading git won't be noticed.
- - This is only acceptable because it's rare that git's version influences
- - code's behavior. -}
-version :: String
-version = Build.SysConfig.gitversion
+version :: IO String
+version = do
+	(_, s) <- pipeFrom "git" ["--version"]
+	return $ last $ words $ head $ lines s
 
-older :: String -> Bool
-older v = normalize version < normalize v
+older :: String -> IO Bool
+older v = do
+	current <- version
+	return $ normalize current < normalize v
 
 {- To compare dotted versions like 1.7.7 and 1.8, they are normalized to
  - a somewhat arbitrary integer representation. -}
