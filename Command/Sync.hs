@@ -22,7 +22,6 @@ import qualified Git
 import qualified Types.Remote
 import qualified Remote.Git
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 
 def :: [Command]
@@ -32,7 +31,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	!branch <- currentBranch
+	!branch <- fromMaybe nobranch <$> inRepo (Git.Branch.current)
 	remotes <- syncRemotes rs
 	return $ concat $
 		[ [ commit ]
@@ -42,6 +41,8 @@ seek rs = do
 		, [ pushLocal branch ]
 		, [ pushRemote remote branch | remote <- remotes ]
 		]
+	where
+		nobranch = error "no branch is checked out"
 
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"
@@ -147,10 +148,6 @@ mergeAnnex :: CommandStart
 mergeAnnex = do
 	Annex.Branch.forceUpdate
 	stop
-
-currentBranch :: Annex Git.Ref
-currentBranch = Git.Ref . firstLine . L.unpack <$>
-	inRepo (Git.Command.pipeRead [Param "symbolic-ref", Param "HEAD"])
 
 mergeFrom :: Git.Ref -> CommandCleanup
 mergeFrom branch = do
