@@ -17,6 +17,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
+	enabledRemoteList,
 	remoteMap,
 	byName,
 	prettyPrintUUIDs,
@@ -84,6 +85,10 @@ remoteList = do
 		gen m t r = do
 			u <- getRepoUUID r
 			generate t r u (M.lookup u m)
+
+{- All remotes that are not ignored. -}
+enabledRemoteList :: Annex [Remote Annex]
+enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
 
 {- Map of UUIDs of Remotes and their names. -}
 remoteMap :: Annex (M.Map UUID String)
@@ -196,7 +201,7 @@ keyPossibilities' withtrusted key = do
 	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- filterM (repoNotIgnored . repo) =<< remoteList
+	allremotes <- enabledRemoteList
 	let validremotes = remotesWithUUID allremotes validuuids
 
 	return (sort validremotes, validtrusteduuids)
