@@ -33,7 +33,7 @@ start (src:dest:[])
 			next $ whenAnnexed (perform src) dest
 start _ = error "specify a src file and a dest file"
 
-perform :: FilePath -> FilePath -> (Key, Backend Annex) -> CommandPerform
+perform :: FilePath -> FilePath -> (Key, Backend) -> CommandPerform
 perform src _dest (key, backend) = do
 	unlessM move $ error "mv failed!"
 	next $ cleanup key backend
@@ -45,7 +45,7 @@ perform src _dest (key, backend) = do
 		move = getViaTmp key $ \tmp ->
 			liftIO $ boolSystem "mv" [File src, File tmp]
 
-cleanup :: Key -> Backend Annex -> CommandCleanup
+cleanup :: Key -> Backend -> CommandCleanup
 cleanup key backend = do
 	logStatus key InfoPresent
 

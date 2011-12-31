@@ -24,7 +24,7 @@ def = [command "find" paramPaths seek "lists available files"]
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]
 
-start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit

@@ -33,7 +33,7 @@ keyFile0 :: Key -> FilePath
 keyFile0 = Upgrade.V1.keyFile1
 fileKey0 :: FilePath -> Key
 fileKey0 = Upgrade.V1.fileKey1
-lookupFile0 :: FilePath -> Annex (Maybe (Key, Backend Annex))
+lookupFile0 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile0 = Upgrade.V1.lookupFile1
 
 getKeysPresent0 :: FilePath -> Annex [Key]

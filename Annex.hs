@@ -64,11 +64,13 @@ instance MonadBaseControl IO Annex where
 
 data OutputType = NormalOutput | QuietOutput | JSONOutput
 
+type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
+
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
-	, backends :: [Backend Annex]
-	, remotes :: [Types.Remote.Remote Annex]
+	, backends :: [BackendA Annex]
+	, remotes :: [Types.Remote.RemoteA Annex]
 	, repoqueue :: Git.Queue.Queue
 	, output :: OutputType
 	, force :: Bool
@@ -81,7 +83,7 @@ data AnnexState = AnnexState
 	, forcenumcopies :: Maybe Int
 	, toremote :: Maybe String
 	, fromremote :: Maybe String
-	, limit :: Either [Utility.Matcher.Token (FilePath -> Annex Bool)] (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+	, limit :: Matcher (FilePath -> Annex Bool)
 	, forcetrust :: [(UUID, TrustLevel)]
 	, trustmap :: Maybe TrustMap
 	, ciphers :: M.Map EncryptedCipher Cipher

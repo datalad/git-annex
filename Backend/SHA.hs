@@ -21,21 +21,21 @@ type SHASize = Int
 sizes :: [Int]
 sizes = [256, 1, 512, 224, 384]
 
-backends :: [Backend Annex]
+backends :: [Backend]
 backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
 
-genBackend :: SHASize -> Maybe (Backend Annex)
+genBackend :: SHASize -> Maybe Backend
 genBackend size
 	| isNothing (shaCommand size) = Nothing
 	| otherwise = Just b
 	where
-		b = Types.Backend.Backend
+		b = Backend
 			{ name = shaName size
 			, getKey = keyValue size
 			, fsckKey = checkKeyChecksum size
 			}
 
-genBackendE :: SHASize -> Maybe (Backend Annex)
+genBackendE :: SHASize -> Maybe Backend
 genBackendE size =
 	case genBackend size of
 		Nothing -> Nothing

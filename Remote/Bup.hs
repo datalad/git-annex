@@ -26,7 +26,7 @@ import Crypto
 
 type BupRepo = String
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "bup",
 	enumerate = findSpecialRemotes "buprepo",
@@ -34,7 +34,7 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
 	buprepo <- getConfig r "buprepo" (error "missing buprepo")
 	cst <- remoteCost r (if bupLocal buprepo then semiCheapRemoteCost else expensiveRemoteCost)
@@ -54,7 +54,8 @@ gen r u c = do
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
 			config = c,
-			repo = r
+			repo = r,
+			remotetype = remote
 		}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Git (remote) where
+module Remote.Git (remote, repoAvail) where
 
 import Control.Exception.Extensible
 import qualified Data.Map as M
@@ -28,7 +28,7 @@ import Utility.TempFile
 import Config
 import Init
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "git",
 	enumerate = list,
@@ -50,7 +50,7 @@ list = do
 					Git.Construct.remoteNamed n $
 						Git.Construct.fromRemoteLocation url g
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u _ = do
  	{- It's assumed to be cheap to read the config of non-URL remotes,
 	 - so this is done each time git-annex is run. Conversely,
@@ -79,7 +79,8 @@ gen r u _ = do
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
 		config = Nothing,
-		repo = r'
+		repo = r',
+		remotetype = remote
 	}
 
 {- Tries to read the config for a specified remote, updates state, and
@@ -162,6 +163,13 @@ inAnnex r key
 				dispatch (Right (Just b)) = Right b
 				dispatch (Right Nothing) = unknown
 		unknown = Left $ "unable to check " ++ Git.repoDescribe r
+
+{- Checks inexpensively if a repository is available for use. -}
+repoAvail :: Git.Repo -> Annex Bool
+repoAvail r 
+	| Git.repoIsHttp r = return True
+	| Git.repoIsUrl r = return True
+	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

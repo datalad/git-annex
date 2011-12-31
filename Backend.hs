@@ -31,11 +31,11 @@ import qualified Backend.SHA
 import qualified Backend.WORM
 import qualified Backend.URL
 
-list :: [Backend Annex]
+list :: [Backend]
 list = Backend.SHA.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
 {- List of backends in the order to try them when storing a new key. -}
-orderedList :: Annex [Backend Annex]
+orderedList :: Annex [Backend]
 orderedList = do
 	l <- Annex.getState Annex.backends -- list is cached here
 	if not $ null l
@@ -54,12 +54,12 @@ orderedList = do
 
 {- Generates a key for a file, trying each backend in turn until one
  - accepts it. -}
-genKey :: FilePath -> Maybe (Backend Annex) -> Annex (Maybe (Key, Backend Annex))
+genKey :: FilePath -> Maybe Backend -> Annex (Maybe (Key, Backend))
 genKey file trybackend = do
 	bs <- orderedList
 	let bs' = maybe bs (: bs) trybackend
 	genKey' bs' file
-genKey' :: [Backend Annex] -> FilePath -> Annex (Maybe (Key, Backend Annex))
+genKey' :: [Backend] -> FilePath -> Annex (Maybe (Key, Backend))
 genKey' [] _ = return Nothing
 genKey' (b:bs) file = do
 	r <- (B.getKey b) file
@@ -75,7 +75,7 @@ genKey' (b:bs) file = do
 
 {- Looks up the key and backend corresponding to an annexed file,
  - by examining what the file symlinks to. -}
-lookupFile :: FilePath -> Annex (Maybe (Key, Backend Annex))
+lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
 	tl <- liftIO $ try getsymlink
 	case tl of
@@ -94,7 +94,7 @@ lookupFile file = do
 						bname ++ ")"
 					return Nothing
 
-type BackendFile = (Maybe (Backend Annex), FilePath)
+type BackendFile = (Maybe Backend, FilePath)
 
 {- Looks up the backends that should be used for each file in a list.
  - That can be configured on a per-file basis in the gitattributes file.
@@ -110,11 +110,11 @@ chooseBackends fs = Annex.getState Annex.forcebackend >>= go
 			return $ map (\f -> (Just $ Prelude.head l, f)) fs
 
 {- Looks up a backend by name. May fail if unknown. -}
-lookupBackendName :: String -> Backend Annex
+lookupBackendName :: String -> Backend
 lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
 	where
 		unknown = error $ "unknown backend " ++ s
-maybeLookupBackendName :: String -> Maybe (Backend Annex)
+maybeLookupBackendName :: String -> Maybe Backend
 maybeLookupBackendName s = headMaybe matches
 	where
 		matches = filter (\b -> s == B.name b) list

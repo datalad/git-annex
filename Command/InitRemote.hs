@@ -42,7 +42,7 @@ start (name:ws) = do
 	where
 		config = Logs.Remote.keyValToConfig ws
 
-perform :: R.RemoteType Annex -> UUID -> R.RemoteConfig -> CommandPerform
+perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
 perform t u c = do
 	c' <- R.setup t u c
 	next $ cleanup u c'
@@ -77,7 +77,7 @@ remoteNames = do
 	return $ mapMaybe (M.lookup nameKey . snd) $ M.toList m
 
 {- find the specified remote type -}
-findType :: R.RemoteConfig -> Annex (R.RemoteType Annex)
+findType :: R.RemoteConfig -> Annex RemoteType
 findType config = maybe unspecified specified $ M.lookup typeKey config
 	where
 		unspecified = error "Specify the type of remote with type="

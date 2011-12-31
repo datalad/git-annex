@@ -1,6 +1,6 @@
 {- git-annex remotes types
  -
- - Most things should not need this, using Remote instead
+ - Most things should not need this, using Types instead
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
@@ -19,19 +19,22 @@ import Types.UUID
 type RemoteConfig = M.Map String String
 
 {- There are different types of remotes. -}
-data RemoteType a = RemoteType {
+data RemoteTypeA a = RemoteType {
 	-- human visible type name
 	typename :: String,
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> Maybe RemoteConfig -> a (Remote a),
+	generate :: Git.Repo -> UUID -> Maybe RemoteConfig -> a (RemoteA a),
 	-- initializes or changes a remote
 	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
 
+instance Eq (RemoteTypeA a) where
+	x == y = typename x == typename y
+
 {- An individual remote. -}
-data Remote a = Remote {
+data RemoteA a = Remote {
 	-- each Remote has a unique uuid
 	uuid :: UUID,
 	-- each Remote has a human visible name
@@ -53,16 +56,18 @@ data Remote a = Remote {
 	-- a Remote can have a persistent configuration store
 	config :: Maybe RemoteConfig,
 	-- git configuration for the remote
-	repo :: Git.Repo
+	repo :: Git.Repo,
+	-- the type of the remote
+	remotetype :: RemoteTypeA a
 }
 
-instance Show (Remote a) where
+instance Show (RemoteA a) where
 	show remote = "Remote { name =\"" ++ name remote ++ "\" }"
 
 -- two remotes are the same if they have the same uuid
-instance Eq (Remote a) where
+instance Eq (RemoteA a) where
 	x == y = uuid x == uuid y
 
 -- order remotes by cost
-instance Ord (Remote a) where
+instance Ord (RemoteA a) where
 	compare = comparing cost

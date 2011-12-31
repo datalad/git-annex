@@ -21,7 +21,7 @@ def = [command "migrate" paramPaths seek "switch data to different backend"]
 seek :: [CommandSeek]
 seek = [withBackendFilesInGit $ \(b, f) -> whenAnnexed (start b) f]
 
-start :: Maybe (Backend Annex) -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Maybe Backend -> FilePath -> (Key, Backend) -> CommandStart
 start b file (key, oldbackend) = do
 	exists <- inAnnex key
 	newbackend <- choosebackend b
@@ -47,7 +47,7 @@ upgradableKey key = isNothing $ Types.Key.keySize key
  - backends that allow the filename to influence the keys they
  - generate.
  -}
-perform :: FilePath -> Key -> Backend Annex -> CommandPerform
+perform :: FilePath -> Key -> Backend -> CommandPerform
 perform file oldkey newbackend = do
 	src <- inRepo $ gitAnnexLocation oldkey
 	tmp <- fromRepo gitAnnexTmpDir

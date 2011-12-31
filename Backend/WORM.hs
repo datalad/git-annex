@@ -11,11 +11,11 @@ import Common.Annex
 import Types.Backend
 import Types.Key
 
-backends :: [Backend Annex]
+backends :: [Backend]
 backends = [backend]
 
-backend :: Backend Annex
-backend = Types.Backend.Backend {
+backend :: Backend
+backend = Backend {
 	name = "WORM",
 	getKey = keyValue,
 	fsckKey = const (return True)

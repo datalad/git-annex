@@ -21,7 +21,7 @@ def = [dontCheck fromOpt $ command "get" paramPaths seek
 seek :: [CommandSeek]
 seek = [withNumCopies $ \n -> whenAnnexed $ start n]
 
-start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start numcopies file (key, _) = stopUnless (not <$> inAnnex key) $
 	autoCopies key (<) numcopies $ do
 		from <- Annex.getState Annex.fromremote

@@ -66,7 +66,7 @@ checkRemoteUnused name = do
 	checkRemoteUnused' =<< Remote.byName name
 	next $ return True
 
-checkRemoteUnused' :: Remote.Remote Annex -> Annex ()
+checkRemoteUnused' :: Remote -> Annex ()
 checkRemoteUnused' r = do
 	showAction "checking for unused data"
 	remotehas <- loggedKeysFor (Remote.uuid r)
@@ -112,14 +112,14 @@ unusedMsg' u header trailer = unlines $
 	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
 	trailer
 
-remoteUnusedMsg :: Remote.Remote Annex -> [(Int, Key)] -> String
+remoteUnusedMsg :: Remote -> [(Int, Key)] -> String
 remoteUnusedMsg r u = unusedMsg' u
 	["Some annexed data on " ++ name ++ " is not used by any files:"]
 	[dropMsg $ Just r]
 	where
 		name = Remote.name r 
 
-dropMsg :: Maybe (Remote.Remote Annex) -> String
+dropMsg :: Maybe Remote -> String
 dropMsg Nothing = dropMsg' ""
 dropMsg (Just r) = dropMsg' $ " --from " ++ Remote.name r
 dropMsg' :: String -> String
