@@ -20,7 +20,7 @@ seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]
 
 {- Fixes the symlink to an annexed file. -}
-start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = do
 	link <- calcGitLink file key
 	stopUnless ((/=) link <$> liftIO (readSymbolicLink file)) $ do

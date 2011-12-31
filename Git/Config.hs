@@ -29,7 +29,8 @@ read repo@(Repo { location = Dir d }) = do
 	bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) $
 		pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
 			hRead repo
-read r = assertLocal r $ error "internal"
+read r = assertLocal r $
+	error $ "internal error; trying to read config of " ++ show r
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo

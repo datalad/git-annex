@@ -4,7 +4,7 @@ module Remote.S3 (remote) where
 import Types.Remote
 import Types
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "S3",
 	enumerate = return [],

@@ -20,7 +20,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 
-remote :: RemoteType Annex
+remote :: RemoteType
 remote = RemoteType {
 	typename = "hook",
 	enumerate = findSpecialRemotes "hooktype",
@@ -28,7 +28,7 @@ remote = RemoteType {
 	setup = hookSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex (Remote Annex)
+gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
 	hooktype <- getConfig r "hooktype" (error "missing hooktype")
 	cst <- remoteCost r expensiveRemoteCost
@@ -45,7 +45,8 @@ gen r u c = do
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
 			config = Nothing,
-			repo = r
+			repo = r,
+			remotetype = remote
 		}
 
 hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig

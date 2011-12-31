@@ -41,8 +41,8 @@ encryptableRemote
 	:: Maybe RemoteConfig
 	-> ((Cipher, Key) -> Key -> Annex Bool)
 	-> ((Cipher, Key) -> FilePath -> Annex Bool)
-	-> Remote Annex 
-	-> Remote Annex
+	-> Remote
+	-> Remote
 encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
 	r {
 		storeKey = store,

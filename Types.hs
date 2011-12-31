@@ -9,10 +9,17 @@ module Types (
 	Annex,
 	Backend,
 	Key,
-	UUID(..)
+	UUID(..),
+	Remote,
+	RemoteType
 ) where
 
 import Annex
 import Types.Backend
 import Types.Key
 import Types.UUID
+import Types.Remote
+
+type Backend = BackendA Annex
+type Remote = RemoteA Annex
+type RemoteType = RemoteTypeA Annex

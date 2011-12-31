@@ -30,12 +30,12 @@ seek =
 	, withBarePresentKeys startBare
 	]
 
-start :: Maybe Int -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start numcopies file (key, backend) = do
 	showStart "fsck" file
 	next $ perform key file backend numcopies
 
-perform :: Key -> FilePath -> Backend Annex -> Maybe Int -> CommandPerform
+perform :: Key -> FilePath -> Backend -> Maybe Int -> CommandPerform
 perform key file backend numcopies = check
 	-- order matters
 	[ verifyLocationLog key file
@@ -64,7 +64,7 @@ startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName ke
 {- Note that numcopies cannot be checked in a bare repository, because
  - getting the numcopies value requires a working copy with .gitattributes
  - files. -}
-performBare :: Key -> Backend Annex -> CommandPerform
+performBare :: Key -> Backend -> CommandPerform
 performBare key backend = check
 	[ verifyLocationLog key (show key)
 	, checkKeySize key
@@ -136,7 +136,7 @@ checkKeySize key = do
 					return False
 
 
-checkBackend :: Backend Annex -> Key -> Annex Bool
+checkBackend :: Backend -> Key -> Annex Bool
 checkBackend = Types.Backend.fsckKey
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool

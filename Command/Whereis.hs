@@ -20,7 +20,7 @@ def = [command "whereis" paramPaths seek
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]
 
-start :: FilePath -> (Key, Backend Annex) -> CommandStart
+start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = do
 	showStart "whereis" file
 	next $ perform key

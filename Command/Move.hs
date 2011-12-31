@@ -23,7 +23,7 @@ def = [dontCheck toOpt $ dontCheck fromOpt $
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed $ start True]
 
-start :: Bool -> FilePath -> (Key, Backend Annex) -> CommandStart
+start :: Bool -> FilePath -> (Key, Backend) -> CommandStart
 start move file (key, _) = do
 	noAuto
 	to <- Annex.getState Annex.toremote
@@ -54,7 +54,7 @@ showMoveAction False file = showStart "copy" file
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+toStart :: Remote -> Bool -> FilePath -> Key -> CommandStart
 toStart dest move file key = do
 	u <- getUUID
 	ishere <- inAnnex key
@@ -63,7 +63,7 @@ toStart dest move file key = do
 		else do
 			showMoveAction move file
 			next $ toPerform dest move key
-toPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
+toPerform :: Remote -> Bool -> Key -> CommandPerform
 toPerform dest move key = moveLock move key $ do
 	-- Checking the remote is expensive, so not done in the start step.
 	-- In fast mode, location tracking is assumed to be correct,
@@ -105,7 +105,7 @@ toPerform dest move key = moveLock move key $ do
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote.Remote Annex -> Bool -> FilePath -> Key -> CommandStart
+fromStart :: Remote -> Bool -> FilePath -> Key -> CommandStart
 fromStart src move file key
 	| move = go
 	| otherwise = stopUnless (not <$> inAnnex key) go
@@ -113,12 +113,12 @@ fromStart src move file key
 		go = stopUnless (fromOk src key) $ do
 			showMoveAction move file
 			next $ fromPerform src move key
-fromOk :: Remote.Remote Annex -> Key -> Annex Bool
+fromOk :: Remote -> Key -> Annex Bool
 fromOk src key = do
 	u <- getUUID
 	remotes <- Remote.keyPossibilities key
 	return $ u /= Remote.uuid src && any (== src) remotes
-fromPerform :: Remote.Remote Annex -> Bool -> Key -> CommandPerform
+fromPerform :: Remote -> Bool -> Key -> CommandPerform
 fromPerform src move key = moveLock move key $ do
 	ishere <- inAnnex key
 	if ishere

@@ -1,6 +1,6 @@
 {- git-annex key/value backend data type
  -
- - Most things should not need this, using Remotes instead
+ - Most things should not need this, using Types instead
  -
  - Copyright 2010 Joey Hess <joey@kitenet.net>
  -
@@ -11,7 +11,7 @@ module Types.Backend where
 
 import Types.Key
 
-data Backend a = Backend {
+data BackendA a = Backend {
 	-- name of this backend
 	name :: String,
 	-- converts a filename to a key
@@ -20,8 +20,8 @@ data Backend a = Backend {
 	fsckKey :: Key -> a Bool
 }
 
-instance Show (Backend a) where
+instance Show (BackendA a) where
 	show backend = "Backend { name =\"" ++ name backend ++ "\" }"
 
-instance Eq (Backend a) where
+instance Eq (BackendA a) where
 	a == b = name a == name b

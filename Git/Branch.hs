@@ -14,6 +14,14 @@ import Git
 import Git.Sha
 import Git.Command
 
+{- The currently checked out branch. -}
+current :: Repo -> IO (Maybe Git.Ref)
+current r = parse <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
+	where
+		parse v
+			| L.null v = Nothing
+			| otherwise = Just $ Git.Ref $ firstLine $ L.unpack v
+
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changed :: Branch -> Branch -> Repo -> IO Bool

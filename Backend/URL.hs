@@ -14,11 +14,11 @@ import Common.Annex
 import Types.Backend
 import Types.Key
 
-backends :: [Backend Annex]
+backends :: [Backend]
 backends = [backend]
 
-backend :: Backend Annex
-backend = Types.Backend.Backend {
+backend :: Backend
+backend = Backend {
 	name = "URL",
 	getKey = const (return Nothing),
 	fsckKey = const (return True)

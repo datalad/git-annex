@@ -850,7 +850,7 @@ checklocationlog f expected = do
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
-checkbackend :: FilePath -> Types.Backend Types.Annex -> Assertion			
+checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	r <- annexeval $ Backend.lookupFile file
 	let b = snd $ fromJust r
@@ -936,14 +936,14 @@ changecontent f = writeFile f $ changedcontent f
 changedcontent :: FilePath -> String
 changedcontent f = (content f) ++ " (modified)"
 
-backendSHA1 :: Types.Backend Types.Annex
+backendSHA1 :: Types.Backend
 backendSHA1 = backend_ "SHA1"
 
-backendSHA256 :: Types.Backend Types.Annex
+backendSHA256 :: Types.Backend
 backendSHA256 = backend_ "SHA256"
 
-backendWORM :: Types.Backend Types.Annex
+backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
-backend_ :: String -> Types.Backend Types.Annex
+backend_ :: String -> Types.Backend
 backend_ name = Backend.lookupBackendName name
