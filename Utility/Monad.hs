@@ -36,3 +36,7 @@ observe observer a = do
 	r <- a
 	_ <- observer r
 	return r
+
+{- Like observe, but the observer is not passed the value. -}
+observe_ :: (Monad m) => m b -> m a -> m a
+observe_ observer = observe (const observer)

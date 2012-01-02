@@ -115,13 +115,11 @@ tryGitConfigRead r
 				pOpen ReadFromPipe "git" ["config", "--null", "--list", "--file", tmpfile] $
 					Git.Config.hRead r
 
-		store a = do
-			r' <- a
+		store = observe $ \r' -> do
 			g <- gitRepo
 			let l = Git.remotes g
 			let g' = g { Git.remotes = exchange l r' }
 			Annex.changeState $ \s -> s { Annex.repo = g' }
-			return r'
 
 		exchange [] _ = []
 		exchange (old:ls) new =
@@ -184,9 +182,7 @@ onLocal r a = do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
-		ret <- a
-		liftIO Git.Command.reap
-		return ret
+		observe_ (liftIO Git.Command.reap) a
 
 keyUrls :: Git.Repo -> Key -> [String]
 keyUrls r key = map tourl (annexLocations key)
@@ -221,10 +217,9 @@ copyToRemote r key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			ok <- Annex.Content.getViaTmp key $
-				rsyncOrCopyFile params keysrc
-			Annex.Content.saveState
-			return ok
+			observe_ Annex.Content.saveState $
+				Annex.Content.getViaTmp key $
+					rsyncOrCopyFile params keysrc
 	| Git.repoIsSsh r = do
 		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
