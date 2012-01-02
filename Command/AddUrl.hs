@@ -12,7 +12,6 @@ import Network.URI
 import Common.Annex
 import Command
 import qualified Backend
-import qualified Utility.Url as Url
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
@@ -45,7 +44,7 @@ download url file = do
 	let dummykey = Backend.URL.fromUrl url
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	stopUnless (liftIO $ Url.download url tmp) $ do
+	stopUnless (downloadUrl [url] tmp) $ do
 		[(backend, _)] <- Backend.chooseBackends [file]
 		k <- Backend.genKey tmp backend
 		case k of

@@ -603,6 +603,12 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force ipv6, and limit
   the bandwidth to 100Kbyte/s, set it to "-6 --bwlimit 100"
 
+* `remote.<name>.annex-web-options`
+
+  Options to use when using wget or curl to download a file from the web.
+  (wget is always used in preference to curl if available).
+  For example, to force ipv4 only, set it to "-4"
+
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.

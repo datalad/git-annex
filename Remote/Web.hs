@@ -11,6 +11,7 @@ import Common.Annex
 import Types.Remote
 import qualified Git
 import qualified Git.Construct
+import Annex.Content
 import Config
 import Logs.Web
 import qualified Utility.Url as Url
@@ -55,7 +56,7 @@ downloadKey key file = get =<< getUrls key
 			return False
 		get urls = do
 			showOutput -- make way for download progress bar
-			liftIO $ anyM (`Url.download` file) urls
+			downloadUrl urls file
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

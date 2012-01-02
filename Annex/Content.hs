@@ -20,7 +20,8 @@ module Annex.Content (
 	fromAnnex,
 	moveBad,
 	getKeysPresent,
-	saveState
+	saveState,
+	downloadUrl,
 ) where
 
 import System.IO.Error (try)
@@ -36,6 +37,7 @@ import qualified Annex.Queue
 import qualified Annex.Branch
 import Utility.StatFS
 import Utility.FileMode
+import qualified Utility.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Config
@@ -281,3 +283,10 @@ saveState :: Annex ()
 saveState = do
 	Annex.Queue.flush False
 	Annex.Branch.commit "update"
+
+{- Downloads content from any of a list of urls. -}
+downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
+downloadUrl urls file = do
+	g <- gitRepo
+	o <- map Param . words <$> getConfig g "web-options" ""
+	liftIO $ anyM (\u -> Url.download u o file) urls
