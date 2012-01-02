@@ -28,3 +28,11 @@ anyM p = liftM isJust . firstM p
 {- Runs an action on values from a list until it succeeds. -}
 untilTrue :: (Monad m) => [a] -> (a -> m Bool) -> m Bool
 untilTrue = flip anyM
+
+{- Runs a monadic action, passing its value to an observer
+ - before returning it. -}
+observe :: (Monad m) => (a -> m b) -> m a -> m a
+observe observer a = do
+	r <- a
+	_ <- observer r
+	return r
