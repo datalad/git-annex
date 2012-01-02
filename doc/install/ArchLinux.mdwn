@@ -1,0 +1,9 @@
+There is a non-official source package for git-annex in
+[AUR](https://aur.archlinux.org/packages.php?ID=44272).
+
+You can then build it yourself or use a wrapper for AUR
+such as yaourt:
+
+<pre>
+$ yaourt -Sy git-annex
+</pre>

@@ -6,6 +6,7 @@
 * [[Fedora]]
 * [[FreeBSD]]
 * [[openSUSE]]
+* [[ArchLinux]]
 
 ## Using cabal
 
