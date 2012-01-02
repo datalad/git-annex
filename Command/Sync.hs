@@ -31,7 +31,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	!branch <- fromMaybe nobranch <$> inRepo (Git.Branch.current)
+	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
 	return $ concat $
 		[ [ commit ]
