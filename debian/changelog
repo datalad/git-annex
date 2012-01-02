@@ -1,6 +1,6 @@
 git-annex (3.20111232) UNRELEASED; urgency=low
 
-  * Added remote.name.annex-web-options configuration setting, which can be
+  * Added annex-web-options configuration settings, which can be
     used to provide parameters to whichever of wget or curl git-annex uses
     (depends on which is available, but most of their important options
     suitable for use here are the same).

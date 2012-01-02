@@ -615,10 +615,10 @@ Here are all the supported configuration settings.
   For example, to limit the bandwidth to 100Kbye/s, set it to "--bwlimit 100k"
   (There is no corresponding option for bup join.)
 
-* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`
+* `annex.ssh-options`, `annex.rsync-options`, `annex.web-options, `annex.bup-split-options`
 
-  Default ssh, rsync, and bup options to use if a remote does not have
-  specific options.
+  Default ssh, rsync, wget/curl, and bup options to use if a remote does not
+  have specific options.
 
 * `remote.<name>.buprepo`
 
