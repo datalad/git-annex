@@ -46,9 +46,16 @@ withBackendFilesInGit a params = do
 
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
-	force <- Annex.getState Annex.force
-	newfiles <- seekHelper (LsFiles.notInRepo force) params
-	prepBackendPairs a newfiles
+	{- dotfiles are not acted on unless explicitly listed -}
+	files <- filter (not . dotfile) <$> seek ps
+	dotfiles <- if null dotps then return [] else seek dotps
+	prepBackendPairs a $ preserveOrder params (files++dotfiles)
+	where
+		(dotps, ps) = partition dotfile params
+		seek l = do
+			force <- Annex.getState Annex.force
+			g <- gitRepo
+			liftIO $ (\p -> LsFiles.notInRepo force p g) l
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = return [a params]

@@ -64,7 +64,8 @@ subdirectories).
 
   Adds files in the path to the annex. Files that are already checked into
   git, or that git has been configured to ignore will be silently skipped.
-  (Use --force to add ignored files.)
+  (Use --force to add ignored files.) Dotfiles are skipped unless explicitly
+  listed.
 
 * get [path ...]
 

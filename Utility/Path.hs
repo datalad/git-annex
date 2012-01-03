@@ -134,3 +134,14 @@ inPath :: String -> IO Bool
 inPath command = getSearchPath >>= anyM indir
 	where
 		indir d = doesFileExist $ d </> command
+
+{- Checks if a filename is a unix dotfile. All files inside dotdirs
+ - count as dotfiles. -}
+dotfile :: FilePath -> Bool
+dotfile file
+	| f == "." = False
+	| f == ".." = False
+	| f == "" = False
+	| otherwise = "." `isPrefixOf` f || dotfile (takeDirectory file)
+	where
+		f = takeFileName file
