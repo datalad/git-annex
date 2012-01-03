@@ -29,14 +29,13 @@ anyM p = liftM isJust . firstM p
 untilTrue :: (Monad m) => [a] -> (a -> m Bool) -> m Bool
 untilTrue = flip anyM
 
-{- Runs a monadic action, passing its value to an observer
- - before returning it. -}
+{- Runs an action, passing its value to an observer before returning it. -}
 observe :: (Monad m) => (a -> m b) -> m a -> m a
 observe observer a = do
 	r <- a
 	_ <- observer r
 	return r
 
-{- Like observe, but the observer is not passed the value. -}
-observe_ :: (Monad m) => m b -> m a -> m a
-observe_ observer = observe (const observer)
+{- b `after` a runs first a, then b, and returns the value of a -}
+after :: (Monad m) => m b -> m a -> m a
+after = observe . const

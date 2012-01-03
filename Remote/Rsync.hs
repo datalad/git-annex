@@ -172,7 +172,7 @@ withRsyncScratchDir a = do
 	let tmp = t </> "rsynctmp" </> show pid
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
-	observe_ (nuke tmp) (a tmp)
+	nuke tmp `after` a tmp
 	where
 		nuke d = liftIO $ 
 			doesDirectoryExist d >>? removeDirectoryRecursive d
