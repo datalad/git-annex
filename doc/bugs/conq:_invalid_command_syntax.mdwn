@@ -1,0 +1,29 @@
+I've been getting an occasional error from git-annex.
+
+The error is:   'conq: invalid command syntax.'
+
+For example, the last two commands I ran are:
+
+    $ git annex unused
+    unused . (checking for unused data...) (checking master...) (checking origin/master...) 
+      Some annexed data is no longer used by any files:
+        NUMBER  KEY
+        1       SHA256-s.....
+      (To see where data was previously used, try: git log --stat -S'KEY')
+      
+      To remove unwanted data: git-annex dropunused NUMBER
+      
+    ok
+    
+    $ git annex dropunused 1
+    dropunused 1 conq: invalid command syntax.
+    ok
+
+
+
+*OS:*  OSX + port installs of the GNU tools
+
+*git-annex-version:*  3.20111211
+
+*git-version:*  1.7.7.4
+
