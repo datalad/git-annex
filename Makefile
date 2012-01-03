@@ -66,12 +66,11 @@ install: all
 
 test:
 	@if ! $(GHCMAKE) -O0 test; then \
-		echo "** not running test suite" >&2; \
-	else \
-		if ! ./test; then \
-			echo "** test suite failed!" >&2; \
-			exit 1; \
-		fi; \
+		echo "** failed to build the test suite" >&2; \
+		exit 1; \
+	elif ! ./test; then \
+		echo "** test suite failed!" >&2; \
+		exit 1; \
 	fi
 
 testcoverage:

@@ -8,6 +8,8 @@ git-annex (3.20111232) UNRELEASED; urgency=low
     unless the dotfile or directory is explicitly listed. So "git annex add ."
     will add all untracked files in the current directory except for those in
     dotdirs.
+  * Added quickcheck to build dependencies, and fail if test suite cannot be
+    built.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 02 Jan 2012 14:19:19 -0400
 
