@@ -44,11 +44,6 @@ withBackendFilesInGit a params = do
 	files <- seekHelper LsFiles.inRepo params
 	prepBackendPairs a files
 
-withFilesMissing :: (String -> CommandStart) -> CommandSeek
-withFilesMissing a params = prepFiltered a $ liftIO $ filterM missing params
-	where
-		missing = liftM not . doesFileExist
-
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
 	force <- Annex.getState Annex.force
