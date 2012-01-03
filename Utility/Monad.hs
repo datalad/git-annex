@@ -20,7 +20,7 @@ firstM p (x:xs) = do
 		then return (Just x)
 		else firstM p xs
 
-{- Returns true if any value in the list satisfies the preducate,
+{- Returns true if any value in the list satisfies the predicate,
  - stopping once one is found. -}
 anyM :: (Monad m) => (a -> m Bool) -> [a] -> m Bool
 anyM p = liftM isJust . firstM p
