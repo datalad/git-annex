@@ -40,8 +40,8 @@ perform key file backend numcopies = check
 	-- order matters
 	[ verifyLocationLog key file
 	, checkKeySize key
-	, checkKeyNumCopies key file numcopies
 	, checkBackend backend key
+	, checkKeyNumCopies key file numcopies
 	]
 
 {- To fsck a bare repository, fsck each key in the location log. -}

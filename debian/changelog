@@ -10,6 +10,7 @@ git-annex (3.20111232) UNRELEASED; urgency=low
     dotdirs.
   * Added quickcheck to build dependencies, and fail if test suite cannot be
     built.
+  * fsck: Do backend-specific check before checking numcopies is satisfied.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 02 Jan 2012 14:19:19 -0400
 
