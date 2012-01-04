@@ -12,4 +12,6 @@ http://pastebin.com/53iLqyPd
 
 You just add the annex.archive attribute to files via .gitattributes to use
 
+The script runs in preview mode... exec with autoArchive.sh commit to drop the files.
+
 Open to thoughts / suggestions
