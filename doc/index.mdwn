@@ -51,11 +51,13 @@ files with git.
 * [[internals]]
 * [[design]]
 * [[what git annex is not|not]]
-* git-annex is Free Software, licensed under the [[GPL]].
+* [[sitemap]]
 
 <br clear="all" />
 
 ----
+
+git-annex is Free Software, licensed under the [[GPL]].
 
 git-annex's wiki is powered by [Ikiwiki](http://ikiwiki.info/) and
 hosted by [Branchable](http://branchable.com/).
