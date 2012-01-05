@@ -28,8 +28,9 @@ stdParams params = do
 	let batch = if isNothing e then [] else ["--batch"]
 	return $ batch ++ defaults ++ toCommand params
 	where
-		-- be quiet, even about checking the trustdb
-		defaults = ["--quiet", "--trust-model", "always"]
+		-- be quiet, even about checking the trustdb,
+		-- and avoid using a tty
+		defaults = ["--quiet", "--trust-model", "always", "--no-tty"]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: [CommandParam] -> IO String

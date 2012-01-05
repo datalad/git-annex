@@ -1,4 +1,4 @@
-git-annex (3.20111232) UNRELEASED; urgency=low
+git-annex (3.20120105) UNRELEASED; urgency=low
 
   * Added annex-web-options configuration settings, which can be
     used to provide parameters to whichever of wget or curl git-annex uses
@@ -11,6 +11,7 @@ git-annex (3.20111232) UNRELEASED; urgency=low
   * Added quickcheck to build dependencies, and fail if test suite cannot be
     built.
   * fsck: Do backend-specific check before checking numcopies is satisfied.
+  * Run gpg with --no-tty. Closes: #654721
 
  -- Joey Hess <joeyh@debian.org>  Mon, 02 Jan 2012 14:19:19 -0400
 
