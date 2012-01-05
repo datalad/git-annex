@@ -1,3 +1,9 @@
+git-annex (3.20120106) UNRELEASED; urgency=low
+
+  * Support unescaped repository urls, like git does.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 05 Jan 2012 14:29:30 -0400
+
 git-annex (3.20120105) unstable; urgency=low
 
   * Added annex-web-options configuration settings, which can be

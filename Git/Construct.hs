@@ -60,14 +60,23 @@ fromAbsPath dir
 	where
 		ret = return . newFrom . Dir
 
-{- Remote Repo constructor. Throws exception on invalid url. -}
+{- Remote Repo constructor. Throws exception on invalid url.
+ -
+ - Git is somewhat forgiving about urls to repositories, allowing
+ - eg spaces that are not normally allowed unescaped in urls.
+ -}
 fromUrl :: String -> IO Repo
 fromUrl url
+	| not (isURI url) = fromUrlStrict $ escapeURIString isUnescapedInURI url
+	| otherwise = fromUrlStrict url
+
+fromUrlStrict :: String -> IO Repo
+fromUrlStrict url
 	| startswith "file://" url = fromAbsPath $ uriPath u
 	| otherwise = return $ newFrom $ Url u
-		where
-			u = fromMaybe bad $ parseURI url
-			bad = error $ "bad url " ++ url
+	where
+		u = fromMaybe bad $ parseURI url
+		bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
 fromUnknown :: IO Repo
@@ -117,7 +126,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 	where
 		gen v	
 			| scpstyle v = fromUrl $ scptourl v
-			| isURI v = fromUrl v
+			| urlstyle v = fromUrl v
 			| otherwise = fromRemotePath v repo
 		-- insteadof config can rewrite remote location
 		calcloc l
@@ -137,6 +146,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 						M.toList $ fullconfig repo
 				splitconfigs (k, vs) = map (\v -> (k, v)) vs
 				(prefix, suffix) = ("url." , ".insteadof")
+		urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
