@@ -33,29 +33,30 @@ seek = [withFilesInGit $ whenAnnexed $ start]
 start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = do
 	showStart file ""
-	liftIO $ putStrLn ""
 	showLog =<< readLog key
 	stop
 
 showLog :: [(POSIXTime, Git.Ref)] -> Annex ()
-showLog v = go Nothing v =<< (liftIO getCurrentTimeZone)
+showLog ps = do
+	zone <- liftIO getCurrentTimeZone
+	sets <- mapM getset ps
+	liftIO $ putStrLn ""
+	mapM_ (diff zone) $ zip sets (drop 1 sets ++ genesis)
 	where
-		go new [] zone = diff S.empty new zone
-		go new ((ts, ref):ls) zone = do
-			cur <- S.fromList <$> get ref
-			diff cur new zone
-			go (Just (ts, cur)) ls zone
+		genesis = [(0, S.empty)]
+		getset (ts, ref) = do
+			s <- S.fromList <$> get ref
+			return (ts, s)
 		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 			catObject ref
-		diff _ Nothing _ = return ()
-		diff cur (Just (ts, new)) zone = do
+		diff zone ((ts, new), (_, old)) = do
 			let time = show $ utcToLocalTime zone $
 				posixSecondsToUTCTime ts
 			output time True added
 			output time False removed
 			where
-				added = S.difference new cur
-				removed = S.difference cur new
+				added = S.difference new old
+				removed = S.difference old new
 		output time present s = do
 			rs <- map (dropWhile isSpace) . lines <$>
 				Remote.prettyPrintUUIDs "log" (S.toList s)
