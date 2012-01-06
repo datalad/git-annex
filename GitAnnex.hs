@@ -18,6 +18,7 @@ import Types.TrustLevel
 import qualified Annex
 import qualified Remote
 import qualified Limit
+import qualified Option
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -93,7 +94,7 @@ cmds = concat
 	]
 
 options :: [Option]
-options = commonOptions ++
+options = Option.common ++
 	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
@@ -114,7 +115,7 @@ options = commonOptions ++
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"skip files not using a key-value backend"
-	] ++ matcherOptions
+	] ++ Option.matcher
 	where
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setgitconfig :: String -> Annex ()

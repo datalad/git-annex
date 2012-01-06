@@ -14,23 +14,24 @@ import qualified Annex
 import Annex.Content
 import qualified Remote
 import Annex.UUID
+import qualified Option
 
 def :: [Command]
 def = [withOptions options $ command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "source remote"
+fromOption = Option.field ['f'] "from" paramRemote "source remote"
 
 toOption :: Option
-toOption = fieldOption ['t'] "to" paramRemote "destination remote"
+toOption = Option.field ['t'] "to" paramRemote "destination remote"
 
 options :: [Option]
 options = [fromOption, toOption]
 
 seek :: [CommandSeek]
-seek = [withField "to" Remote.byName $ \to ->
-		withField "from" Remote.byName $ \from ->
+seek = [withField toOption Remote.byName $ \to ->
+		withField fromOption Remote.byName $ \from ->
 			withFilesInGit $ whenAnnexed $ start to from True]
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart

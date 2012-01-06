@@ -18,8 +18,8 @@ def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
 	"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withField "from" Remote.byName $ \from -> withNumCopies $ \n ->
-	whenAnnexed $ start from n]
+seek = [withField Command.Move.fromOption Remote.byName $ \from ->
+	withNumCopies $ \n -> whenAnnexed $ start from n]
 
 start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start from numcopies file (key, _) = stopUnless (not <$> inAnnex key) $

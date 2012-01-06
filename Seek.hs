@@ -20,6 +20,7 @@ import qualified Git
 import qualified Git.LsFiles as LsFiles
 import qualified Git.CheckAttr
 import qualified Limit
+import qualified Option
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -87,13 +88,13 @@ withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
 
-{- Modifies a seek action using the value of a field, which is fed into
+{- Modifies a seek action using the value of a field option, which is fed into
  - a conversion function, and then is passed into the seek action.
  - This ensures that the conversion function only runs once.
  -}
-withField :: String -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
-withField field converter a ps = do
-        f <- converter =<< Annex.getField field
+withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
+withField option converter a ps = do
+        f <- converter =<< Annex.getField (Option.name option)
         a f ps
 
 withNothing :: CommandStart -> CommandSeek

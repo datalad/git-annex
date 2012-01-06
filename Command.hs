@@ -30,7 +30,6 @@ import Types.Command as ReExported
 import Types.Option as ReExported
 import Seek as ReExported
 import Checks as ReExported
-import Options as ReExported
 import Usage as ReExported
 import Logs.Trust
 import Logs.Location

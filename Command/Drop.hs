@@ -16,16 +16,17 @@ import Logs.Location
 import Logs.Trust
 import Annex.Content
 import Config
+import qualified Option
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
+fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: [CommandSeek]
-seek = [withField "from" Remote.byName $ \from -> withNumCopies $ \n ->
+seek = [withField fromOption Remote.byName $ \from -> withNumCopies $ \n ->
 	whenAnnexed $ start from n]
 
 start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart

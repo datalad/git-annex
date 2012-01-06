@@ -17,20 +17,23 @@ import qualified Annex
 import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
+import qualified Option
 
 def :: [Command]
 def = [withOptions [formatOption, print0Option] $
 	command "find" paramPaths seek "lists available files"]
 
-print0Option :: Option
-print0Option = Option [] ["print0"] (NoArg $ Annex.setField "format" "${file}\0")
-	"terminate output with null"
-
 formatOption :: Option
-formatOption = fieldOption [] "format" paramFormat "control format of output"
+formatOption = Option.field [] "format" paramFormat "control format of output"
+
+print0Option :: Option
+print0Option = Option.Option [] ["print0"] (Option.NoArg set)
+	"terminate output with null"
+	where
+		set = Annex.setField (Option.name formatOption) "${file}\0"
 
 seek :: [CommandSeek]
-seek = [withField "format" formatconverter $ \f ->
+seek = [withField formatOption formatconverter $ \f ->
 		withFilesInGit $ whenAnnexed $ start f]
 	where
 		formatconverter = return . maybe Nothing (Just . Utility.Format.gen)

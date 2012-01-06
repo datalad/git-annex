@@ -17,8 +17,8 @@ def = [withOptions Command.Move.options $ command "copy" paramPaths seek
 	"copy content of files to/from another repository"]
 
 seek :: [CommandSeek]
-seek = [withField "to" Remote.byName $ \to ->
-		withField "from" Remote.byName $ \from ->
+seek = [withField Command.Move.toOption Remote.byName $ \to ->
+		withField Command.Move.fromOption Remote.byName $ \from ->
 			withNumCopies $ \n -> whenAnnexed $ start to from n]
 
 -- A copy is just a move that does not delete the source file.

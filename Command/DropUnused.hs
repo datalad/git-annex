@@ -15,6 +15,7 @@ import qualified Annex
 import qualified Command.Drop
 import qualified Remote
 import qualified Git
+import qualified Option
 import Types.Key
 
 type UnusedMap = M.Map String Key
@@ -51,13 +52,14 @@ start (unused, unusedbad, unusedtmp) s = search
 					next $ a key
 
 perform :: Key -> CommandPerform
-perform key = maybe droplocal dropremote =<< Remote.byName =<< Annex.getField "from"
+perform key = maybe droplocal dropremote =<< Remote.byName =<< from
 	where
 		dropremote r = do
 			showAction $ "from " ++ Remote.name r
 			ok <- Remote.removeKey r key
 			next $ Command.Drop.cleanupRemote key r ok
 		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
+		from = Annex.getField $ Option.name Command.Drop.fromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

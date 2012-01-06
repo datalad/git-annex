@@ -27,6 +27,7 @@ import qualified Git.LsTree as LsTree
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
+import qualified Option
 import Annex.CatFile
 
 def :: [Command]
@@ -34,7 +35,7 @@ def = [withOptions [fromOption] $ command "unused" paramNothing seek
 	"look for unused file content"]
 
 fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
+fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"
 
 seek :: [CommandSeek]
 seek = [withNothing $ start]
@@ -42,7 +43,7 @@ seek = [withNothing $ start]
 {- Finds unused content in the annex. -} 
 start :: CommandStart
 start = do
-	from <- Annex.getField "from"
+	from <- Annex.getField $ Option.name fromOption
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)
 		Just "." -> (".", checkUnused)
