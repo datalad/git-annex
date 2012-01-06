@@ -39,6 +39,12 @@ git remote lists "cloud" as a remote:
   cs
   es3
 
+git-annex status lists S3 support:
+
+    $ git-annex status
+    supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+
 
 
 I appreciate any help....  I've tested versions 3.20111211, 3.20111231, and 3.20120105
