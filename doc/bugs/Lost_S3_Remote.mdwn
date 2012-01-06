@@ -1,0 +1,36 @@
+Somehow I've lost my S3 remote... git-annex knows it's there, but its not associating it with the git remote in .git/config
+
+$ git-annex whereis pebuilder.iso 
+whereis pebuilder.iso (3 copies) 
+  	3b6fc6f6-3025-11e1-b496-33bffbc0f3ed -- housebackup (external seagate drive on /mnt/back/RemoteStore)
+   	6b1326d8-2abb-11e1-8f43-979159a7f900 -- synology
+   	9b297772-2ab2-11e1-a86f-2fd669cb2417 -- Amazon S3
+ok
+
+Amazon S3 is the description from the remote.  My .git/config file contains this block:
+[remote "cloud"]
+        annex-s3 = true
+        annex-uuid = 9b297772-2ab2-11e1-a86f-2fd669cb2417
+        annex-cost = 70
+
+The UUID matches... But I cannot access it... see below:
+
+[39532:39531 - 0:626] 08:20:38 [vivitron@tronlap:o +3] ~/annex/ISO 
+$ git-annex get pebuilder.iso --from=cloud
+git-annex: there is no git remote named "cloud"
+
+[39532:39531 - 0:627] 08:20:56 [vivitron@tronlap:o +3] ~/annex/ISO 
+$ git-annex get pebuilder.iso --from="Amazon S3"
+git-annex: there is no git remote named "Amazon S3"
+
+[39532:39531 - 0:628] 08:21:01 [vivitron@tronlap:o +3] ~/annex/ISO 
+$ git-annex get pebuilder.iso --from=9b297772-2ab2-11e1-a86f-2fd669cb2417
+git-annex: there is no git remote named "9b297772-2ab2-11e1-a86f-2fd669cb2417"
+
+[39532:39531 - 0:629] 08:21:08 [vivitron@tronlap:o +3] ~/annex/ISO 
+$ 
+
+
+I appreciate any help....
+
+
