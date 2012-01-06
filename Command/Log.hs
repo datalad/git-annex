@@ -26,23 +26,29 @@ import qualified Remote
 import qualified Option
 
 def :: [Command]
-def = [withOptions [afterOption] $
+def = [withOptions [afterOption, maxcountOption] $
 	command "log" paramPaths seek "shows location log"]
 
 afterOption :: Option
 afterOption = Option.field [] "after" paramDate "show log after date"
 
+maxcountOption :: Option
+maxcountOption = Option.field ['n'] "max-count" paramNumber "limit number of logs displayed"
+
 seek :: [CommandSeek]
 seek = [withField afterOption return $ \afteropt ->
-	withFilesInGit $ whenAnnexed $ start afteropt]
+	withField maxcountOption return $ \maxcount ->
+	withFilesInGit $ whenAnnexed $ start afteropt maxcount]
 
-start :: Maybe String -> FilePath -> (Key, Backend) -> CommandStart
-start afteropt file (key, _) = do
-	let ps = case afteropt of
-		Nothing -> []
-		Just date -> [Param "--after", Param date]
+start :: Maybe String -> Maybe String -> FilePath -> (Key, Backend) -> CommandStart
+start afteropt maxcount file (key, _) = do
 	showLog file =<< (readLog <$> getLog key ps)
 	stop
+	where
+		ps = concatMap (\(o, p) -> maybe [] p o)
+			[ (afteropt, \d -> [Param "--after", Param d])
+			, (maxcount, \c -> [Param "--max-count", Param c])
+			]
 
 showLog :: FilePath -> [(POSIXTime, (Git.Ref, Git.Ref))] -> Annex ()
 showLog file ps = do
