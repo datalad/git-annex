@@ -273,6 +273,11 @@ subdirectories).
   Displays a list of repositories known to contain the content of the
   specified file or files.
 
+* log [path ...]
+
+  Displays the location log for the specified file or files,
+  showing each repository they were added to ("+") and removed from ("-").
+
 * status
 
   Displays some statistics and other information, including how much data
