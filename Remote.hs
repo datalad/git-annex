@@ -55,14 +55,14 @@ import qualified Remote.Web
 import qualified Remote.Hook
 
 remoteTypes :: [RemoteType]
-remoteTypes =
-	[ Remote.Git.remote
+remoteTypes = catMaybes
+	[ Just Remote.Git.remote
 	, Remote.S3.remote
-	, Remote.Bup.remote
-	, Remote.Directory.remote
-	, Remote.Rsync.remote
-	, Remote.Web.remote
-	, Remote.Hook.remote
+	, Just Remote.Bup.remote
+	, Just Remote.Directory.remote
+	, Just Remote.Rsync.remote
+	, Just Remote.Web.remote
+	, Just Remote.Hook.remote
 	]
 
 {- Builds a list of all available Remotes.
