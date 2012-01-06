@@ -33,11 +33,12 @@ The UUID matches... But I cannot access it... see below:
 
 git remote lists "cloud" as a remote:
 
-  $ git remote
-  all
-  cloud
-  cs
-  es3
+    $ git remote
+    all
+    cloud
+    cs
+    es3
+    origin
 
 git-annex status lists S3 support:
 
