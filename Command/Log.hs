@@ -25,6 +25,12 @@ import Git.Command
 import qualified Remote
 import qualified Option
 
+data RefChange = RefChange 
+	{ changetime :: POSIXTime
+	, oldref :: Git.Ref
+	, newref :: Git.Ref
+	}
+
 def :: [Command]
 def = [withOptions [afterOption, maxcountOption] $
 	command "log" paramPaths seek "shows location log"]
@@ -42,7 +48,7 @@ seek = [withField afterOption return $ \afteropt ->
 
 start :: Maybe String -> Maybe String -> FilePath -> (Key, Backend) -> CommandStart
 start afteropt maxcount file (key, _) = do
-	showLog file =<< (readLog <$> getLog key ps)
+	showLog file =<< readLog <$> getLog key ps
 	stop
 	where
 		ps = concatMap (\(o, p) -> maybe [] p o)
@@ -50,17 +56,17 @@ start afteropt maxcount file (key, _) = do
 			, (maxcount, \c -> [Param "--max-count", Param c])
 			]
 
-showLog :: FilePath -> [(POSIXTime, (Git.Ref, Git.Ref))] -> Annex ()
+showLog :: FilePath -> [RefChange] -> Annex ()
 showLog file ps = do
 	zone <- liftIO getCurrentTimeZone
-	sets <- mapM (getset snd) ps
-	previous <- maybe (return genesis) (getset fst) (lastMaybe ps)
+	sets <- mapM (getset newref) ps
+	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
 	mapM_ (diff zone) $ zip sets (drop 1 sets ++ [previous])
 	where
 		genesis = (0, S.empty)
-		getset select (ts, refs) = do
-			s <- S.fromList <$> get (select refs)
-			return (ts, s)
+		getset select change = do
+			s <- S.fromList <$> get (select change)
+			return (changetime change, s)
 		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 			catObject ref
 		diff zone ((ts, new), (_, old)) = do
@@ -76,13 +82,9 @@ showLog file ps = do
 				Remote.prettyPrintUUIDs "log" (S.toList s)
 			liftIO $ mapM_ (putStrLn . format) rs
 				where
+					addel = if present then "+" else "-"
 					format r = unwords
-						[ if present then "+" else "-"
-						, time
-						, file
-						, "|"
-						, r
-						]
+						[ addel, time, file, "|", r ]
 
 getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key ps = do
@@ -98,10 +100,15 @@ getLog key ps = do
 		, Param logfile
 		]
 
-readLog :: [String] -> [(POSIXTime, (Git.Ref, Git.Ref))]
+readLog :: [String] -> [RefChange]
 readLog = mapMaybe (parse . lines)
 	where
-		parse (ts:raw:[]) = Just (parseTimeStamp ts, parseRaw raw)
+		parse (ts:raw:[]) = let (old, new) = parseRaw raw in
+			Just RefChange
+				{ changetime = parseTimeStamp ts
+				, oldref = old
+				, newref = new
+				}
 		parse _ = Nothing
 
 -- Parses something like ":100644 100644 oldsha newsha M"
