@@ -18,7 +18,7 @@ def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
 	"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withField "from" $ \from -> withNumCopies $ \n ->
+seek = [withField "from" id $ \from -> withNumCopies $ \n ->
 	whenAnnexed $ start from n]
 
 start :: Maybe String -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart

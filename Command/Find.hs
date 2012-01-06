@@ -30,8 +30,8 @@ formatOption :: Option
 formatOption = fieldOption [] "format" paramFormat "control format of output"
 
 seek :: [CommandSeek]
-seek = [withField "format" $ \f ->
-		withFilesInGit $ whenAnnexed $ start $ formatconverter f]
+seek = [withField "format" formatconverter $ \f ->
+		withFilesInGit $ whenAnnexed $ start f]
 	where
 		formatconverter = maybe Nothing (Just . Utility.Format.gen)
 

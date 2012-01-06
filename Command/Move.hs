@@ -29,7 +29,7 @@ options :: [Option]
 options = [fromOption, toOption]
 
 seek :: [CommandSeek]
-seek = [withField "to" $ \to -> withField "from" $ \from ->
+seek = [withField "to" id $ \to -> withField "from" id $ \from ->
 		withFilesInGit $ whenAnnexed $ start to from True]
 
 start :: Maybe String -> Maybe String -> Bool -> FilePath -> (Key, Backend) -> CommandStart
