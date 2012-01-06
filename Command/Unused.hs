@@ -66,7 +66,7 @@ checkUnused = do
 
 checkRemoteUnused :: String -> CommandPerform
 checkRemoteUnused name = do
-	checkRemoteUnused' =<< Remote.byName name
+	checkRemoteUnused' =<< fromJust <$> Remote.byName (Just name)
 	next $ return True
 
 checkRemoteUnused' :: Remote -> Annex ()

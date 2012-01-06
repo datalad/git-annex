@@ -25,15 +25,14 @@ fromOption :: Option
 fromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: [CommandSeek]
-seek = [withField "from" id $ \from -> withNumCopies $ \n ->
+seek = [withField "from" Remote.byName $ \from -> withNumCopies $ \n ->
 	whenAnnexed $ start from n]
 
-start :: Maybe String -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
+start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
 start from numcopies file (key, _) = autoCopies key (>) numcopies $ do
 	case from of
 		Nothing -> startLocal file numcopies key
-		Just name -> do
-			remote <- Remote.byName name
+		Just remote -> do
 			u <- getUUID
 			if Remote.uuid remote == u
 				then startLocal file numcopies key

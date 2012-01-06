@@ -94,14 +94,15 @@ enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
 remoteMap :: Annex (M.Map UUID String)
 remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
 
-{- Looks up a remote by name. (Or by UUID.) Only finds currently configured
- - git remotes. -}
-byName :: String -> Annex (Remote)
-byName n = do
+{- When a name is specified, looks up the remote matching that name.
+ - (Or it can be a UUID.) Only finds currently configured git remotes. -}
+byName :: Maybe String -> Annex (Maybe Remote)
+byName Nothing = return Nothing
+byName (Just n) = do
 	res <- byName' n
 	case res of
 		Left e -> error e
-		Right r -> return r
+		Right r -> return $ Just r
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = do

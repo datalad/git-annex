@@ -51,10 +51,9 @@ start (unused, unusedbad, unusedtmp) s = search
 					next $ a key
 
 perform :: Key -> CommandPerform
-perform key = maybe droplocal dropremote =<< Annex.getField "from"
+perform key = maybe droplocal dropremote =<< Remote.byName =<< Annex.getField "from"
 	where
-		dropremote name = do
-			r <- Remote.byName name
+		dropremote r = do
 			showAction $ "from " ++ Remote.name r
 			ok <- Remote.removeKey r key
 			next $ Command.Drop.cleanupRemote key r ok
