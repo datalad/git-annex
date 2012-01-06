@@ -278,6 +278,9 @@ subdirectories).
   Displays the location log for the specified file or files,
   showing each repository they were added to ("+") and removed from ("-").
 
+  To only show location changes after a date, specify --after=date.
+  (The "date" can be any format accepted by git log, ie "last wednesday")
+
 * status
 
   Displays some statistics and other information, including how much data

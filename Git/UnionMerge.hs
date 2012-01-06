@@ -103,14 +103,13 @@ calc_merge ch differ repo streamer = gendiff >>= go
  - a line suitable for update_index that union merges the two sides of the
  - diff. -}
 mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
-mergeFile info file h repo = case filter (/= nullsha) [Ref asha, Ref bsha] of
+mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
 	shas -> use =<< either return (hashObject repo . L.unlines) =<<
 		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
-		nullsha = Ref $ replicate shaSize '0'
 		getcontents s = L.lines <$> catObject h s
 		use sha = return $ Just $ update_index_line sha file
 
