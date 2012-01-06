@@ -1,6 +1,8 @@
 git-annex (3.20120106) UNRELEASED; urgency=low
 
   * Support unescaped repository urls, like git does.
+  * log: New command that displays the location log for file,
+    showing each repository they were added to and removed from.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 05 Jan 2012 14:29:30 -0400
 

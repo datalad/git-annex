@@ -34,3 +34,6 @@ extractSha s
 {- Size of a git sha. -}
 shaSize :: Int
 shaSize = 40
+
+nullSha :: Ref		
+nullSha = Ref $ replicate shaSize '0'

@@ -6,6 +6,7 @@
  -}
 
 module Annex.Branch (
+	fullname,
 	name,
 	hasOrigin,
 	hasSibling,

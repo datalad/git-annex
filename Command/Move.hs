@@ -14,35 +14,33 @@ import qualified Annex
 import Annex.Content
 import qualified Remote
 import Annex.UUID
+import qualified Option
 
 def :: [Command]
 def = [withOptions options $ command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 fromOption :: Option
-fromOption = fieldOption ['f'] "from" paramRemote "source remote"
+fromOption = Option.field ['f'] "from" paramRemote "source remote"
 
 toOption :: Option
-toOption = fieldOption ['t'] "to" paramRemote "destination remote"
+toOption = Option.field ['t'] "to" paramRemote "destination remote"
 
 options :: [Option]
 options = [fromOption, toOption]
 
 seek :: [CommandSeek]
-seek = [withField "to" id $ \to -> withField "from" id $ \from ->
-		withFilesInGit $ whenAnnexed $ start to from True]
+seek = [withField toOption Remote.byName $ \to ->
+		withField fromOption Remote.byName $ \from ->
+			withFilesInGit $ whenAnnexed $ start to from True]
 
-start :: Maybe String -> Maybe String -> Bool -> FilePath -> (Key, Backend) -> CommandStart
+start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
 start to from move file (key, _) = do
 	noAuto
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
-		(Nothing, Just name) -> do
-			dest <- Remote.byName name
-			toStart dest move file key
-		(Just name, Nothing) -> do
-			src <- Remote.byName name
-			fromStart src move file key
+		(Nothing, Just dest) -> toStart dest move file key
+		(Just src, Nothing) -> fromStart src move file key
 		(_ ,  _) -> error "only one of --from or --to can be specified"
 	where
 		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error

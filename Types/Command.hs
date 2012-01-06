@@ -8,7 +8,6 @@
 module Types.Command where
 
 import Types
-import Types.Option
 
 {- A command runs in these stages.
  -
