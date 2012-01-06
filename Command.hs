@@ -8,6 +8,7 @@
 module Command (
 	command,
 	noRepo,
+	withOptions,
 	next,
 	stop,
 	stopUnless,
@@ -26,21 +27,27 @@ import qualified Backend
 import qualified Annex
 import qualified Git
 import Types.Command as ReExported
+import Types.Option as ReExported
 import Seek as ReExported
 import Checks as ReExported
 import Options as ReExported
+import Usage as ReExported
 import Logs.Trust
 import Logs.Location
 import Config
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
-command = Command Nothing commonChecks
+command = Command [] Nothing commonChecks
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
 noRepo :: IO () -> Command -> Command
 noRepo a c = c { cmdnorepo = Just a }
+
+{- Adds options to a command. -}
+withOptions :: [Option] -> Command -> Command
+withOptions o c = c { cmdoptions = o }
 
 {- For start and perform stages to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,7 +19,12 @@ import Utility.DataUnits
 import Types.Key
 
 def :: [Command]
-def = [command "find" paramPaths seek "lists available files"]
+def = [withOptions [formatOption, print0Option] $
+	command "find" paramPaths seek "lists available files"]
+
+print0Option :: Option
+print0Option = Option [] ["print0"] (NoArg $ setFormat "${file}\0")
+	"terminate output with null"
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

@@ -5,7 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Options where
+module Options (
+	commonOptions,
+	matcherOptions,
+	formatOption,
+	setFormat,
+	ArgDescr(..),
+	Option,
+	OptDescr(..),
+) where
 
 import System.Console.GetOpt
 import System.Log.Logger
@@ -13,11 +21,9 @@ import System.Log.Logger
 import Common.Annex
 import qualified Annex
 import Limit
-
-{- Each dashed command-line option results in generation of an action
- - in the Annex monad that performs the necessary setting.
- -}
-type Option = OptDescr (Annex ())
+import Types.Option
+import Usage
+import qualified Utility.Format
 
 commonOptions :: [Option]
 commonOptions =
@@ -59,38 +65,10 @@ matcherOptions =
 		longopt o = Option [] [o] $ NoArg $ addToken o
 		shortopt o = Option o [] $ NoArg $ addToken o
 
-{- Descriptions of params used in usage messages. -}
-paramPaths :: String
-paramPaths = paramOptional $ paramRepeating paramPath -- most often used
-paramPath :: String
-paramPath = "PATH"
-paramKey :: String
-paramKey = "KEY"
-paramDesc :: String
-paramDesc = "DESC"
-paramUrl :: String
-paramUrl = "URL"
-paramNumber :: String
-paramNumber = "NUMBER"
-paramRemote :: String
-paramRemote = "REMOTE"
-paramGlob :: String
-paramGlob = "GLOB"
-paramName :: String
-paramName = "NAME"
-paramUUID :: String
-paramUUID = "UUID"
-paramType :: String
-paramType = "TYPE"
-paramFormat :: String
-paramFormat = "FORMAT"
-paramKeyValue :: String
-paramKeyValue = "K=V"
-paramNothing :: String
-paramNothing = ""
-paramRepeating :: String -> String
-paramRepeating s = s ++ " ..."
-paramOptional :: String -> String
-paramOptional s = "[" ++ s ++ "]"
-paramPair :: String -> String -> String
-paramPair a b = a ++ " " ++ b
+formatOption :: Option
+formatOption = Option [] ["format"] (ReqArg setFormat paramFormat)
+		"control format of output"
+
+setFormat :: String -> Annex ()
+setFormat v = Annex.changeState $ \s ->
+	s { Annex.format = Just $ Utility.Format.gen v }

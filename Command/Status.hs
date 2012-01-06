@@ -144,9 +144,9 @@ bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $
-	usage <$> cachedKeysReferenced <*> cachedKeysPresent
+	calc <$> cachedKeysReferenced <*> cachedKeysPresent
 	where
-		usage a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
+		calc a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
 		splits :: [Key] -> [(String, Integer)]
 		splits ks = M.toList $ M.fromListWith (+) $ map tcount ks
 		tcount k = (keyBackendName k, 1)
