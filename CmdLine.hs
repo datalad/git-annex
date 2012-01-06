@@ -67,8 +67,8 @@ usage header cmds options = usageInfo top options ++ commands
 		showcmd c =
 			cmdname c ++
 			pad (longest cmdname + 1) (cmdname c) ++
-			cmdparams c ++
-			pad (longest cmdparams + 2) (cmdparams c) ++
+			cmdparamdesc c ++
+			pad (longest cmdparamdesc + 2) (cmdparamdesc c) ++
 			cmddesc c
 		pad n s = replicate (n - length s) ' '
 		longest f = foldl max 0 $ map (length . f) cmds

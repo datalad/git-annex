@@ -33,12 +33,12 @@ type CommandCleanup = Annex Bool
 
 {- A command is defined by specifying these things. -}
 data Command = Command {
-	cmdnorepo :: Maybe (IO ()),
-	cmdcheck :: [CommandCheck],
+	cmdnorepo :: Maybe (IO ()), -- an action to run when not in a repo
+	cmdcheck :: [CommandCheck], -- check stage
 	cmdname :: String,
-	cmdparams :: String,
-	cmdseek :: [CommandSeek],
-	cmddesc :: String
+	cmdparamdesc :: String,     -- description of params for usage
+	cmdseek :: [CommandSeek],   -- seek stage
+	cmddesc :: String           -- description of command for usage
 }
 
 {- CommandCheck functions can be compared using their unique id. -}

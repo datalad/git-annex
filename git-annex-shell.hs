@@ -36,7 +36,9 @@ cmds_notreadonly = concat
 cmds :: [Command]
 cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 	where
-		adddirparam c = c { cmdparams = "DIRECTORY " ++ cmdparams c }
+		adddirparam c = c
+			{ cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c
+			}
 
 options :: [OptDescr (Annex ())]
 options = commonOptions ++
