@@ -28,8 +28,8 @@ import Crypto
 import Annex.Content
 import Utility.Base64
 
-remote :: Maybe RemoteType
-remote = Just $ RemoteType {
+remote :: RemoteType
+remote = RemoteType {
 	typename = "S3",
 	enumerate = findSpecialRemotes "s3",
 	generate = gen,
@@ -58,7 +58,7 @@ gen' r u c cst =
 			hasKeyCheap = False,
 			config = c,
 			repo = r,
-			remotetype = fromJust remote
+			remotetype = remote
 		}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig

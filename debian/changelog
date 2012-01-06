@@ -1,7 +1,6 @@
 git-annex (3.20120106) UNRELEASED; urgency=low
 
   * Support unescaped repository urls, like git does.
-  * Don't list S3 as a remote type when built without S3 support.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 05 Jan 2012 14:29:30 -0400
 
