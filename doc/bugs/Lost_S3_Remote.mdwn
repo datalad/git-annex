@@ -31,6 +31,15 @@ The UUID matches... But I cannot access it... see below:
     [39532:39531 - 0:629] 08:21:08 [vivitron@tronlap:o +3] ~/annex/ISO 
     $ 
 
+git remote lists "cloud" as a remote:
+
+  $ git remote
+  all
+  cloud
+  cs
+  es3
+
+
 
 I appreciate any help....  I've tested versions 3.20111211, 3.20111231, and 3.20120105
 
