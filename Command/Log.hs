@@ -38,19 +38,17 @@ seek = [withField afterOption return $ \afteropt ->
 
 start :: Maybe String -> FilePath -> (Key, Backend) -> CommandStart
 start afteropt file (key, _) = do
-	showStart file ""
 	let ps = case afteropt of
 		Nothing -> []
 		Just date -> [Param "--after", Param date]
-	showLog =<< (readLog <$> getLog key ps)
+	showLog file =<< (readLog <$> getLog key ps)
 	stop
 
-showLog :: [(POSIXTime, (Git.Ref, Git.Ref))] -> Annex ()
-showLog ps = do
+showLog :: FilePath -> [(POSIXTime, (Git.Ref, Git.Ref))] -> Annex ()
+showLog file ps = do
 	zone <- liftIO getCurrentTimeZone
 	sets <- mapM (getset snd) ps
 	previous <- maybe (return genesis) (getset fst) (lastMaybe ps)
-	liftIO $ putStrLn ""
 	mapM_ (diff zone) $ zip sets (drop 1 sets ++ [previous])
 	where
 		genesis = (0, S.empty)
@@ -70,11 +68,13 @@ showLog ps = do
 		output time present s = do
 			rs <- map (dropWhile isSpace) . lines <$>
 				Remote.prettyPrintUUIDs "log" (S.toList s)
-			liftIO $ mapM_ (putStrLn . indent . format) rs
+			liftIO $ mapM_ (putStrLn . format) rs
 				where
 					format r = unwords
-						[ time
-						, if present then "+" else "-"
+						[ if present then "+" else "-"
+						, time
+						, file
+						, "|"
 						, r
 						]
 
