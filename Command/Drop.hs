@@ -25,7 +25,7 @@ fromOption :: Option
 fromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: [CommandSeek]
-seek = [withField "from" id $ \from -> withNumCopies $ \n ->
+seek = [withField "from" $ \from -> withNumCopies $ \n ->
 	whenAnnexed $ start from n]
 
 start :: Maybe String -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
