@@ -16,18 +16,25 @@ import qualified Remote
 import Annex.UUID
 
 def :: [Command]
-def = [dontCheck toOpt $ dontCheck fromOpt $
-	command "move" paramPaths seek
+def = [withOptions options $ command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed $ start True]
+fromOption :: Option
+fromOption = fieldOption ['f'] "from" paramRemote "source remote"
 
-start :: Bool -> FilePath -> (Key, Backend) -> CommandStart
-start move file (key, _) = do
+toOption :: Option
+toOption = fieldOption ['t'] "to" paramRemote "destination remote"
+
+options :: [Option]
+options = [fromOption, toOption]
+
+seek :: [CommandSeek]
+seek = [withField "to" id $ \to -> withField "from" id $ \from ->
+		withFilesInGit $ whenAnnexed $ start to from True]
+
+start :: Maybe String -> Maybe String -> Bool -> FilePath -> (Key, Backend) -> CommandStart
+start to from move file (key, _) = do
 	noAuto
-	to <- Annex.getState Annex.toremote
-	from <- Annex.getState Annex.fromremote
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just name) -> do

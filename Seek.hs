@@ -87,6 +87,15 @@ withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
 
+{- Modifies a seek action using the value of a field, which is fed into
+ - a conversion function, and then is passed into the seek action.
+ - This ensures that the conversion function only runs once.
+ -}
+withField :: String -> (Maybe String -> a) -> (a -> CommandSeek) -> CommandSeek
+withField field converter a ps = do
+        f <- converter <$> Annex.getField field
+        a f ps
+
 withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."

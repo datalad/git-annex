@@ -8,8 +8,8 @@
 module Options (
 	commonOptions,
 	matcherOptions,
-	formatOption,
-	setFormat,
+	flagOption,
+	fieldOption,
 	ArgDescr(..),
 	Option,
 	OptDescr(..),
@@ -23,7 +23,6 @@ import qualified Annex
 import Limit
 import Types.Option
 import Usage
-import qualified Utility.Format
 
 commonOptions :: [Option]
 commonOptions =
@@ -65,10 +64,12 @@ matcherOptions =
 		longopt o = Option [] [o] $ NoArg $ addToken o
 		shortopt o = Option o [] $ NoArg $ addToken o
 
-formatOption :: Option
-formatOption = Option [] ["format"] (ReqArg setFormat paramFormat)
-		"control format of output"
+{- An option that sets a flag. -}
+flagOption :: String -> String -> String -> Option
+flagOption short flag description = 
+	Option short [flag] (NoArg (Annex.setFlag flag)) description
 
-setFormat :: String -> Annex ()
-setFormat v = Annex.changeState $ \s ->
-	s { Annex.format = Just $ Utility.Format.gen v }
+{- An option that sets a field. -}
+fieldOption :: String -> String -> String -> String -> Option
+fieldOption short field paramdesc description = 
+	Option short [field] (ReqArg (Annex.setField field) paramdesc) description

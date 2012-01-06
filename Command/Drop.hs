@@ -18,15 +18,18 @@ import Annex.Content
 import Config
 
 def :: [Command]
-def = [dontCheck fromOpt $ command "drop" paramPaths seek
+def = [withOptions [fromOption] $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
-seek :: [CommandSeek]
-seek = [withNumCopies $ \n -> whenAnnexed $ start n]
+fromOption :: Option
+fromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
 
-start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start numcopies file (key, _) = autoCopies key (>) numcopies $ do
-	from <- Annex.getState Annex.fromremote
+seek :: [CommandSeek]
+seek = [withField "from" id $ \from -> withNumCopies $ \n ->
+	whenAnnexed $ start from n]
+
+start :: Maybe String -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
+start from numcopies file (key, _) = autoCopies key (>) numcopies $ do
 	case from of
 		Nothing -> startLocal file numcopies key
 		Just name -> do

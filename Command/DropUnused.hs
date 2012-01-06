@@ -20,8 +20,9 @@ import Types.Key
 type UnusedMap = M.Map String Key
 
 def :: [Command]
-def = [dontCheck fromOpt $ command "dropunused" (paramRepeating paramNumber)
-	seek "drop unused file content"]
+def = [withOptions [Command.Drop.fromOption] $
+	command "dropunused" (paramRepeating paramNumber)
+		seek "drop unused file content"]
 
 seek :: [CommandSeek]
 seek = [withUnusedMaps]
@@ -50,7 +51,7 @@ start (unused, unusedbad, unusedtmp) s = search
 					next $ a key
 
 perform :: Key -> CommandPerform
-perform key = maybe droplocal dropremote =<< Annex.getState Annex.fromremote
+perform key = maybe droplocal dropremote =<< Annex.getField "from"
 	where
 		dropremote name = do
 			r <- Remote.byName name

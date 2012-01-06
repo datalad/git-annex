@@ -23,20 +23,25 @@ def = [withOptions [formatOption, print0Option] $
 	command "find" paramPaths seek "lists available files"]
 
 print0Option :: Option
-print0Option = Option [] ["print0"] (NoArg $ setFormat "${file}\0")
+print0Option = Option [] ["print0"] (NoArg $ Annex.setField "format" "${file}\0")
 	"terminate output with null"
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed start]
+formatOption :: Option
+formatOption = fieldOption [] "format" paramFormat "control format of output"
 
-start :: FilePath -> (Key, Backend) -> CommandStart
-start file (key, _) = do
+seek :: [CommandSeek]
+seek = [withField "format" formatconverter $ \f ->
+		withFilesInGit $ whenAnnexed $ start f]
+	where
+		formatconverter = maybe Nothing (Just . Utility.Format.gen)
+
+start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
+start format file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (liftM2 (||) limited (inAnnex key)) $
-		unlessM (showFullJSON vars) $ do
-			f <- Annex.getState Annex.format
-			case f of
+		unlessM (showFullJSON vars) $
+			case format of
 				Nothing -> liftIO $ putStrLn file
 				Just formatter -> liftIO $ putStr $
 					Utility.Format.format formatter $

@@ -9,22 +9,21 @@ module Command.Get where
 
 import Common.Annex
 import Command
-import qualified Annex
 import qualified Remote
 import Annex.Content
 import qualified Command.Move
 
 def :: [Command]
-def = [dontCheck fromOpt $ command "get" paramPaths seek
+def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
 	"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withNumCopies $ \n -> whenAnnexed $ start n]
+seek = [withField "from" id $ \from -> withNumCopies $ \n ->
+	whenAnnexed $ start from n]
 
-start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start numcopies file (key, _) = stopUnless (not <$> inAnnex key) $
+start :: Maybe String -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
+start from numcopies file (key, _) = stopUnless (not <$> inAnnex key) $
 	autoCopies key (<) numcopies $ do
-		from <- Annex.getState Annex.fromremote
 		case from of
 			Nothing -> go $ perform key
 			Just name -> do

@@ -94,11 +94,7 @@ cmds = concat
 
 options :: [Option]
 options = commonOptions ++
-	[ Option ['t'] ["to"] (ReqArg setto paramRemote)
-		"specify to where to transfer content"
-	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
-		"specify from where to transfer content"
-	, Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
+	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
 		"override trust setting"
@@ -120,8 +116,6 @@ options = commonOptions ++
 		"skip files not using a key-value backend"
 	] ++ matcherOptions
 	where
-		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
-		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
