@@ -63,7 +63,7 @@ showLog file ps = do
 	zone <- liftIO getCurrentTimeZone
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
-	mapM_ (diff file zone) $ zip sets (drop 1 sets ++ [previous])
+	sequence_ $ compareChanges (output zone) $ sets ++ [previous]
 	where
 		genesis = (0, S.empty)
 		getset select change = do
@@ -71,21 +71,28 @@ showLog file ps = do
 			return (changetime change, s)
 		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 			catObject ref
-
-diff :: FilePath -> TimeZone -> ((POSIXTime, S.Set UUID), (POSIXTime, S.Set UUID)) -> Annex ()
-diff file zone ((ts, new), (_, old)) = output True added >> output False removed
-	where
-		added = S.difference new old
-		removed = S.difference old new
-		time = showTimeStamp zone ts
-		output present s = do
+		output zone present ts s = do
 			rs <- map (dropWhile isSpace) . lines <$>
 				Remote.prettyPrintUUIDs "log" (S.toList s)
 			liftIO $ mapM_ (putStrLn . format) rs
 				where
+					time = showTimeStamp zone ts
 					addel = if present then "+" else "-"
 					format r = unwords
 						[ addel, time, file, "|", r ]
+
+{- Generates a display of the changes (which are ordered with newest first),
+ - by comparing each change with the previous change.
+ - Uses a formater to generate a display of items that are added and
+ - removed. -}
+compareChanges :: Ord a => (Bool -> POSIXTime -> S.Set a -> b) -> [(POSIXTime, S.Set a)] -> [b]
+compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
+	where
+		diff ((ts, new), (_, old)) =
+			[format True ts added, format False ts removed]
+			where
+				added = S.difference new old
+				removed = S.difference old new
 
 getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
