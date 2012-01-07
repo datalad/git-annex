@@ -24,8 +24,8 @@ dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
 
 addCheck :: Annex () -> Command -> Command
-addCheck check cmd = mutateCheck cmd $
-	\c -> CommandCheck (length c + 100) check : c
+addCheck check cmd = mutateCheck cmd $ \c ->
+	CommandCheck (length c + 100) check : c
 
 mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
 mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }
