@@ -1,0 +1,11 @@
+Several times now I've done something like:
+
+    $ git annex unlock movie.avi
+    $ mv /tmp/fixed.avi movie.avi
+    $ git annex lock movie.avi
+
+Oops, I just lost my fixed.avi!  That really feels like the right sequence of operations to me, so I'm always surprised when I make that mistake.  I would like to see the current `lock` renamed to something like `undo-unlock`, or have the behavior changed to be the same as `add`, or maybe warn and require a `--force` when the file has been changed.
+
+If changing current behavior is undesirable, maybe `unlock` could just print a reminder that `git annex add` is the correct next step after making changes?
+
+Failing that, I suppose I could slowly start to learn from my mistakes.
