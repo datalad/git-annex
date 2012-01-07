@@ -282,6 +282,9 @@ subdirectories).
   --since, --after, --until, --before, and --max-count can be specified.
   They are passed through to git log. For example, --since "1 month ago"
 
+  To generate output suitable for the gource visualisation program,
+  specify --gource.
+
 * status
 
   Displays some statistics and other information, including how much data

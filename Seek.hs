@@ -101,6 +101,9 @@ withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> Comman
 withField option converter = withValue $
 	converter =<< Annex.getField (Option.name option)
 
+withFlag :: Option -> (Bool -> CommandSeek) -> CommandSeek
+withFlag option = withValue $ Annex.getFlag (Option.name option)
+
 withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."

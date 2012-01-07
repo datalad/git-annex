@@ -19,6 +19,7 @@ module Remote (
 	remoteList,
 	enabledRemoteList,
 	remoteMap,
+	uuidDescriptions,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
@@ -94,6 +95,18 @@ enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
 remoteMap :: Annex (M.Map UUID String)
 remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
 
+{- Map of UUIDs and their descriptions.
+ - The names of Remotes are added to suppliment any description that has
+ - been set for a repository. -}
+uuidDescriptions :: Annex (M.Map UUID String)
+uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap
+
+addName :: String -> String -> String
+addName desc n
+	| desc == n = desc
+	| null desc = n
+	| otherwise = n ++ " (" ++ desc ++ ")"
+
 {- When a name is specified, looks up the remote matching that name.
  - (Or it can be a UUID.) Only finds currently configured git remotes. -}
 byName :: Maybe String -> Annex (Maybe Remote)
@@ -143,28 +156,24 @@ nameToUUID n = byName' n >>= go
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	hereu <- getUUID
-	m <- M.unionWith addname <$> uuidMap <*> remoteMap
+	m <- uuidDescriptions
 	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
 	where
-		addname d n
-			| d == n = d
-			| null d = n
-			| otherwise = n ++ " (" ++ d ++ ")"
-		findlog m u = M.findWithDefault "" u m
+		finddescription m u = M.findWithDefault "" u m
 		prettify m hereu u
 			| not (null d) = fromUUID u ++ " -- " ++ d
 			| otherwise = fromUUID u
 			where
 				ishere = hereu == u
-				n = findlog m u
+				n = finddescription m u
 				d
 					| null n && ishere = "here"
-					| ishere = addname n "here"
+					| ishere = addName n "here"
 					| otherwise = n
 		jsonify m hereu u = toJSObject
 			[ ("uuid", toJSON $ fromUUID u)
-			, ("description", toJSON $ findlog m u)
+			, ("description", toJSON $ finddescription m u)
 			, ("here", toJSON $ hereu == u)
 			]
 

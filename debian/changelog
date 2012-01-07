@@ -1,3 +1,9 @@
+git-annex (3.20120107) UNRELEASED; urgency=low
+
+  * log: Add --gource mode, which generates output usable by gource.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 18:12:09 -0400
+
 git-annex (3.20120106) unstable; urgency=low
 
   * Support unescaped repository urls, like git does.

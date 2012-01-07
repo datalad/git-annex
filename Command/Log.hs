@@ -8,6 +8,7 @@
 module Command.Log where
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -32,12 +33,17 @@ data RefChange = RefChange
 	, newref :: Git.Ref
 	}
 
+type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
+
 def :: [Command]
 def = [withOptions options $
 	command "log" paramPaths seek "shows location log"]
 
 options :: [Option]
-options = map odate ["since", "after", "until", "before"] ++
+options = passthruOptions ++ [gourceOption]
+
+passthruOptions :: [Option]
+passthruOptions = map odate ["since", "after", "until", "before"] ++
 	[ Option.field ['n'] "max-count" paramNumber
 		"limit number of logs displayed"
 	]
@@ -45,26 +51,37 @@ options = map odate ["since", "after", "until", "before"] ++
 		odate n = Option.field [] n paramDate $
 			"show log " ++ n ++ " date"
 
+gourceOption :: Option
+gourceOption = Option.flag [] "gource" "format output for gource"
+
 seek :: [CommandSeek]
-seek = [withValue (concat <$> mapM getoption options) $ \os ->
-	withFilesInGit $ whenAnnexed $ start os]
+seek = [withValue (Remote.uuidDescriptions) $ \m ->
+	withValue (liftIO getCurrentTimeZone) $ \zone ->
+	withValue (concat <$> mapM getoption passthruOptions) $ \os ->
+	withFlag gourceOption $ \gource ->
+	withFilesInGit $ whenAnnexed $ start m zone os gource]
 	where
 		getoption o = maybe [] (use o) <$>
 			Annex.getField (Option.name o)
 		use o v = [Param ("--" ++ Option.name o), Param v]
 
-start :: [CommandParam] -> FilePath -> (Key, Backend) -> CommandStart
-start os file (key, _) = do
-	showLog file =<< readLog <$> getLog key os
+start :: (M.Map UUID String) -> TimeZone -> [CommandParam] -> Bool ->
+	FilePath -> (Key, Backend) -> CommandStart
+start m zone os gource file (key, _) = do
+	showLog output =<< readLog <$> getLog key os
 	liftIO Git.Command.reap
 	stop
+	where
+		output
+			| gource = gourceOutput lookupdescription file
+			| otherwise = normalOutput lookupdescription file zone
+		lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
 
-showLog :: FilePath -> [RefChange] -> Annex ()
-showLog file ps = do
-	zone <- liftIO getCurrentTimeZone
+showLog :: Outputter -> [RefChange] -> Annex ()
+showLog outputter ps = do
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
-	sequence_ $ compareChanges (output zone) $ sets ++ [previous]
+	sequence_ $ compareChanges outputter $ sets ++ [previous]
 	where
 		genesis = (0, S.empty)
 		getset select change = do
@@ -72,28 +89,36 @@ showLog file ps = do
 			return (changetime change, s)
 		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 			catObject ref
-		output zone present ts s = do
-			rs <- map (dropWhile isSpace) . lines <$>
-				Remote.prettyPrintUUIDs "log" (S.toList s)
-			liftIO $ mapM_ (putStrLn . format) rs
-				where
-					time = showTimeStamp zone ts
-					addel = if present then "+" else "-"
-					format r = unwords
-						[ addel, time, file, "|", r ]
+
+normalOutput :: (UUID -> String) -> FilePath -> TimeZone -> Outputter
+normalOutput lookupdescription file zone present ts us = do
+	liftIO $ mapM_ (putStrLn . format) us
+	where
+		time = showTimeStamp zone ts
+		addel = if present then "+" else "-"
+		format u = unwords [ addel, time, file, "|", 
+			fromUUID u ++ " -- " ++ lookupdescription u ]
+
+gourceOutput :: (UUID -> String) -> FilePath -> Outputter
+gourceOutput lookupdescription file present ts us = do
+	liftIO $ mapM_ (putStrLn . intercalate "|" . format) us
+	where
+		time = takeWhile isDigit $ show ts
+		addel = if present then "A" else "M"
+		format u = [ time, lookupdescription u, addel, file ]
 
 {- Generates a display of the changes (which are ordered with newest first),
  - by comparing each change with the previous change.
  - Uses a formatter to generate a display of items that are added and
  - removed. -}
-compareChanges :: Ord a => (Bool -> POSIXTime -> S.Set a -> b) -> [(POSIXTime, S.Set a)] -> [b]
+compareChanges :: Ord a => (Bool -> POSIXTime -> [a] -> b) -> [(POSIXTime, S.Set a)] -> [b]
 compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
 	where
 		diff ((ts, new), (_, old)) =
 			[format True ts added, format False ts removed]
 			where
-				added = S.difference new old
-				removed = S.difference old new
+				added = S.toList $ S.difference new old
+				removed = S.toList $ S.difference old new
 
 {- Gets the git log for a given location log file.
  -
