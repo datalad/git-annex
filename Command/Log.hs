@@ -37,13 +37,13 @@ def = [withOptions options $
 	command "log" paramPaths seek "shows location log"]
 
 options :: [Option]
-options = 
-	[ Option.field [] "since" paramDate "show log since date"
-	, Option.field [] "after" paramDate "show log after date"
-	, Option.field [] "until" paramDate "show log until date"
-	, Option.field [] "before" paramDate "show log before date"
-	, Option.field ['n'] "max-count" paramNumber "limit number of logs displayed"
+options = map odate ["since", "after", "until", "before"] ++
+	[ Option.field ['n'] "max-count" paramNumber
+		"limit number of logs displayed"
 	]
+	where
+		odate n = Option.field [] n paramDate $
+			"show log " ++ n ++ " date"
 
 seek :: [CommandSeek]
 seek = [withValue (concat <$> mapM getoption options) $ \os ->
