@@ -24,6 +24,7 @@ import qualified Git
 import Git.Command
 import qualified Remote
 import qualified Option
+import qualified Annex
 
 data RefChange = RefChange 
 	{ changetime :: POSIXTime
@@ -32,29 +33,28 @@ data RefChange = RefChange
 	}
 
 def :: [Command]
-def = [withOptions [afterOption, maxcountOption] $
+def = [withOptions options $
 	command "log" paramPaths seek "shows location log"]
 
-afterOption :: Option
-afterOption = Option.field [] "after" paramDate "show log after date"
-
-maxcountOption :: Option
-maxcountOption = Option.field ['n'] "max-count" paramNumber "limit number of logs displayed"
+options :: [Option]
+options = 
+	[ Option.field [] "after" paramDate "show log after date"
+	, Option.field [] "before" paramDate "show log before date"
+	, Option.field ['n'] "max-count" paramNumber "limit number of logs displayed"
+	]
 
 seek :: [CommandSeek]
-seek = [withField afterOption return $ \afteropt ->
-	withField maxcountOption return $ \maxcount ->
-	withFilesInGit $ whenAnnexed $ start afteropt maxcount]
-
-start :: Maybe String -> Maybe String -> FilePath -> (Key, Backend) -> CommandStart
-start afteropt maxcount file (key, _) = do
-	showLog file =<< readLog <$> getLog key ps
-	stop
+seek = [withValue (concat <$> mapM getoption options) $ \os ->
+	withFilesInGit $ whenAnnexed $ start os]
 	where
-		ps = concatMap (\(o, p) -> maybe [] p o)
-			[ (afteropt, \d -> [Param "--after", Param d])
-			, (maxcount, \c -> [Param "--max-count", Param c])
-			]
+		getoption o = maybe [] (use o) <$>
+			Annex.getField (Option.name o)
+		use o v = [Param ("--" ++ Option.name o), Param v]
+
+start :: [CommandParam] -> FilePath -> (Key, Backend) -> CommandStart
+start os file (key, _) = do
+	showLog file =<< readLog <$> getLog key os
+	stop
 
 showLog :: FilePath -> [RefChange] -> Annex ()
 showLog file ps = do
@@ -87,13 +87,13 @@ showLog file ps = do
 						[ addel, time, file, "|", r ]
 
 getLog :: Key -> [CommandParam] -> Annex [String]
-getLog key ps = do
+getLog key os = do
 	top <- fromRepo Git.workTree
 	p <- liftIO $ relPathCwdToFile top
 	let logfile = p </> Logs.Location.logFile key
 	inRepo $ pipeNullSplit $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
-		] ++ ps ++
+		] ++ os ++
 		[ Param $ show Annex.Branch.fullname
 		, Param "--"
 		, Param logfile

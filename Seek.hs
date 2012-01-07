@@ -88,14 +88,18 @@ withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
 
+withValue :: Annex v -> (v -> CommandSeek) -> CommandSeek
+withValue v a params = do
+	r <- v
+	a r params
+
 {- Modifies a seek action using the value of a field option, which is fed into
  - a conversion function, and then is passed into the seek action.
  - This ensures that the conversion function only runs once.
  -}
 withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
-withField option converter a ps = do
-        f <- converter =<< Annex.getField (Option.name option)
-        a f ps
+withField option converter = withValue $
+	converter =<< Annex.getField (Option.name option)
 
 withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]

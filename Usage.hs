@@ -73,7 +73,7 @@ paramUUID = "UUID"
 paramType :: String
 paramType = "TYPE"
 paramDate :: String
-paramDate = "Date"
+paramDate = "DATE"
 paramFormat :: String
 paramFormat = "FORMAT"
 paramKeyValue :: String
