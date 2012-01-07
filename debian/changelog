@@ -1,11 +1,11 @@
-git-annex (3.20120106) UNRELEASED; urgency=low
+git-annex (3.20120106) unstable; urgency=low
 
   * Support unescaped repository urls, like git does.
   * log: New command that displays the location log for files,
     showing each repository they were added to and removed from.
   * Fix overbroad gpg --no-tty fix from last release.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 05 Jan 2012 14:29:30 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 13:16:23 -0400
 
 git-annex (3.20120105) unstable; urgency=low
 
