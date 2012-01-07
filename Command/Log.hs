@@ -93,7 +93,6 @@ getLog key ps = do
 	let logfile = p </> Logs.Location.logFile key
 	inRepo $ pipeNullSplit $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
-		, Param "--boundary"
 		] ++ ps ++
 		[ Param $ show Annex.Branch.fullname
 		, Param "--"
