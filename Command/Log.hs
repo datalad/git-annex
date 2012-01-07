@@ -84,7 +84,7 @@ showLog file ps = do
 
 {- Generates a display of the changes (which are ordered with newest first),
  - by comparing each change with the previous change.
- - Uses a formater to generate a display of items that are added and
+ - Uses a formatter to generate a display of items that are added and
  - removed. -}
 compareChanges :: Ord a => (Bool -> POSIXTime -> S.Set a -> b) -> [(POSIXTime, S.Set a)] -> [b]
 compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
