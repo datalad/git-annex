@@ -38,7 +38,9 @@ def = [withOptions options $
 
 options :: [Option]
 options = 
-	[ Option.field [] "after" paramDate "show log after date"
+	[ Option.field [] "since" paramDate "show log since date"
+	, Option.field [] "after" paramDate "show log after date"
+	, Option.field [] "until" paramDate "show log until date"
 	, Option.field [] "before" paramDate "show log before date"
 	, Option.field ['n'] "max-count" paramNumber "limit number of logs displayed"
 	]
