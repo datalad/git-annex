@@ -25,12 +25,11 @@ stdParams params = do
 	-- Enable batch mode if GPG_AGENT_INFO is set, to avoid extraneous
 	-- gpg output about password prompts.
 	e <- getEnv "GPG_AGENT_INFO"
-	let batch = if isNothing e then [] else ["--batch"]
+	let batch = if isNothing e then [] else ["--batch", "--no-tty"]
 	return $ batch ++ defaults ++ toCommand params
 	where
-		-- be quiet, even about checking the trustdb,
-		-- and avoid using a tty
-		defaults = ["--quiet", "--trust-model", "always", "--no-tty"]
+		-- be quiet, even about checking the trustdb
+		defaults = ["--quiet", "--trust-model", "always"]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: [CommandParam] -> IO String
