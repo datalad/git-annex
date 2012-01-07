@@ -94,6 +94,17 @@ compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
 				added = S.difference new old
 				removed = S.difference old new
 
+{- Gets the git log for a given location log file.
+ -
+ - This is complicated by git log using paths relative to the current
+ - directory, even when looking at files in a different branch. A wacky
+ - relative path to the log file has to be used.
+ -
+ - The --remove-empty is a significant optimisation. It relies on location
+ - log files never being deleted in normal operation. Letting git stop
+ - once the location log file is gone avoids it checking all the way back
+ - to commit 0 to see if it used to exist, so generally speeds things up a
+ - *lot* for newish files. -}
 getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
 	top <- fromRepo Git.workTree
@@ -101,6 +112,7 @@ getLog key os = do
 	let logfile = p </> Logs.Location.logFile key
 	inRepo $ pipeNullSplit $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
+		, Param "--remove-empty"
 		] ++ os ++
 		[ Param $ show Annex.Branch.fullname
 		, Param "--"
