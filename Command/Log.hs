@@ -56,6 +56,7 @@ seek = [withValue (concat <$> mapM getoption options) $ \os ->
 start :: [CommandParam] -> FilePath -> (Key, Backend) -> CommandStart
 start os file (key, _) = do
 	showLog file =<< readLog <$> getLog key os
+	liftIO Git.Command.reap
 	stop
 
 showLog :: FilePath -> [RefChange] -> Annex ()
