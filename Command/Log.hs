@@ -63,7 +63,7 @@ showLog file ps = do
 	zone <- liftIO getCurrentTimeZone
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
-	mapM_ (diff zone) $ zip sets (drop 1 sets ++ [previous])
+	mapM_ (diff file zone) $ zip sets (drop 1 sets ++ [previous])
 	where
 		genesis = (0, S.empty)
 		getset select change = do
@@ -71,15 +71,14 @@ showLog file ps = do
 			return (changetime change, s)
 		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
 			catObject ref
-		diff zone ((ts, new), (_, old)) = do
-			let time = show $ utcToLocalTime zone $
-				posixSecondsToUTCTime ts
-			output time True added
-			output time False removed
-			where
-				added = S.difference new old
-				removed = S.difference old new
-		output time present s = do
+
+diff :: FilePath -> TimeZone -> ((POSIXTime, S.Set UUID), (POSIXTime, S.Set UUID)) -> Annex ()
+diff file zone ((ts, new), (_, old)) = output True added >> output False removed
+	where
+		added = S.difference new old
+		removed = S.difference old new
+		time = showTimeStamp zone ts
+		output present s = do
 			rs <- map (dropWhile isSpace) . lines <$>
 				Remote.prettyPrintUUIDs "log" (S.toList s)
 			liftIO $ mapM_ (putStrLn . format) rs
@@ -123,3 +122,6 @@ parseRaw l = (Git.Ref oldsha, Git.Ref newsha)
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
 	parseTime defaultTimeLocale "%s"
+
+showTimeStamp :: TimeZone -> POSIXTime -> String
+showTimeStamp zone = show . utcToLocalTime zone . posixSecondsToUTCTime
