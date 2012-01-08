@@ -10,6 +10,8 @@ annexed file contents between repositories. In this view, the "users" are
 repositories, and they move around the file contents that are being added
 or removed from them with git-annex.
 
+[[!img screenshot.jpg]]
+
 To use gource this way, first go into the directory you want to visualize,
 and use `git annex log` to make an input file for `gource`:
 
