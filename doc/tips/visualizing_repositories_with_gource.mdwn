@@ -19,4 +19,4 @@ and use `git annex log` to make an input file for `gource`:
 	sort gource.log | gource --log-format custom -
 
 The `git annex log` can take a while, to speed it up you can use something
-like `--after "4 monts ago" to limit how far back it goes.
+like `--after "4 monts ago"` to limit how far back it goes.
