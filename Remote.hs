@@ -93,7 +93,8 @@ enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
 
 {- Map of UUIDs of Remotes and their names. -}
 remoteMap :: Annex (M.Map UUID String)
-remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
+remoteMap = M.fromList . map (\r -> (uuid r, name r)) .
+	filter (\r -> uuid r /= NoUUID) <$> remoteList
 
 {- Map of UUIDs and their descriptions.
  - The names of Remotes are added to suppliment any description that has
