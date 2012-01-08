@@ -155,6 +155,7 @@ spider' (r:rs) known
 absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
+	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.workTree r)
 
 {- Checks if two repos are the same. -}

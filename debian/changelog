@@ -1,6 +1,7 @@
 git-annex (3.20120107) UNRELEASED; urgency=low
 
   * log: Add --gource mode, which generates output usable by gource.
+  * map: Fix display of remote repos
 
  -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 18:12:09 -0400
 
