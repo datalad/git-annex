@@ -664,7 +664,7 @@ test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ when Build.SysConfi
 test_crypto :: Test
 test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ do
 	-- force gpg into batch mode for the tests
-	setEnv "GPG_AGENT_INFO" "/dev/null" True
+	setEnv "GPG_BATCH" "1" True
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
