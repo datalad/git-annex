@@ -19,7 +19,7 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import Config
-import Annex.Ssh
+import Remote.Helper.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
