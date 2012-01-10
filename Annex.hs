@@ -40,7 +40,6 @@ import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
-import Types.UUID
 import qualified Utility.Matcher
 import qualified Data.Map as M
 
@@ -84,7 +83,7 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FilePath -> Annex Bool)
-	, forcetrust :: [(UUID, TrustLevel)]
+	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, ciphers :: M.Map EncryptedCipher Cipher
 	, flags :: M.Map String Bool
@@ -106,7 +105,7 @@ newState gitrepo = AnnexState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
-	, forcetrust = []
+	, forcetrust = M.empty
 	, trustmap = Nothing
 	, ciphers = M.empty
 	, flags = M.empty

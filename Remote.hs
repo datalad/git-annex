@@ -40,6 +40,7 @@ import Text.JSON.Generic
 import Common.Annex
 import Types.Remote
 import qualified Annex
+import qualified Git
 import Config
 import Annex.UUID
 import Logs.UUID
@@ -74,17 +75,15 @@ remoteList = do
 	if null rs
 		then do
 			m <- readRemoteLog
-			l <- mapM (process m) remoteTypes
-			let rs' = concat l
+			rs' <- concat <$> mapM (process m) remoteTypes
 			Annex.changeState $ \s -> s { Annex.remotes = rs' }
 			return rs'
 		else return rs
 	where
-		process m t = 
-			enumerate t >>=
-			mapM (gen m t)
+		process m t = enumerate t >>= mapM (gen m t)
 		gen m t r = do
 			u <- getRepoUUID r
+			checkTrust r u
 			generate t r u (M.lookup u m)
 
 {- All remotes that are not ignored. -}
@@ -242,10 +241,24 @@ showTriedRemotes remotes =
 		(join ", " $ map name remotes)
 
 forceTrust :: TrustLevel -> String -> Annex ()
-forceTrust level remotename = do
-	r <- nameToUUID remotename
+forceTrust level remotename = forceTrust' True level =<< nameToUUID remotename
+
+forceTrust' :: Bool -> TrustLevel -> UUID -> Annex ()
+forceTrust' overwrite level u = do
 	Annex.changeState $ \s ->
-		s { Annex.forcetrust = (r, level):Annex.forcetrust s }
+		s { Annex.forcetrust = change u level (Annex.forcetrust s) }
+	-- This change invalidated any cached trustmap.
+	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
+	where
+		change
+			| overwrite = M.insert
+			| otherwise = M.insertWith (\_new old -> old)
+
+checkTrust :: Git.Repo -> UUID -> Annex ()
+checkTrust r u = set =<< getTrustLevel r
+	where
+		set (Just level) = forceTrust' False level u
+		set Nothing = return ()
 
 {- Used to log a change in a remote's having a key. The change is logged
  - in the local repo, not on the remote. The process of transferring the

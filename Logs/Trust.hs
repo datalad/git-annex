@@ -9,7 +9,8 @@ module Logs.Trust (
 	TrustLevel(..),
 	trustGet,
 	trustSet,
-	trustPartition
+	trustPartition,
+	trustName
 ) where
 
 import qualified Data.Map as M
@@ -32,6 +33,15 @@ trustLog = "trust.log"
 trustGet :: TrustLevel -> Annex [UUID]
 trustGet level = M.keys . M.filter (== level) <$> trustMap
 
+{- Changes the trust level for a uuid in the trustLog. -}
+trustSet :: UUID -> TrustLevel -> Annex ()
+trustSet uuid@(UUID _) level = do
+	ts <- liftIO getPOSIXTime
+	Annex.Branch.change trustLog $
+		showLog showTrust . changeLog ts uuid level . parseLog (Just . parseTrust)
+	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
+trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
+
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
 trustPartition level ls
@@ -53,9 +63,10 @@ trustMap = do
 	case cached of
 		Just m -> return m
 		Nothing -> do
-			overrides <- M.fromList <$> Annex.getState Annex.forcetrust
-			m <- (M.union overrides . simpleMap . parseLog (Just . parseTrust)) <$>
+			overrides <- Annex.getState Annex.forcetrust
+			logged <- simpleMap . parseLog (Just . parseTrust) <$>
 				Annex.Branch.get trustLog
+			let m = M.union overrides logged
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
 
@@ -75,11 +86,9 @@ showTrust UnTrusted = "0"
 showTrust DeadTrusted = "X"
 showTrust SemiTrusted = "?"
 
-{- Changes the trust level for a uuid in the trustLog. -}
-trustSet :: UUID -> TrustLevel -> Annex ()
-trustSet uuid@(UUID _) level = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change trustLog $
-		showLog showTrust . changeLog ts uuid level . parseLog (Just . parseTrust)
-	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
-trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
+trustName :: String -> Maybe TrustLevel
+trustName "trusted" = Just Trusted
+trustName "untrusted" = Just UnTrusted
+trustName "deadtrusted" = Just DeadTrusted
+trustName "semitrusted" = Just SemiTrusted
+trustName _ = Nothing

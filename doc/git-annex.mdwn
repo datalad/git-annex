@@ -606,6 +606,12 @@ Here are all the supported configuration settings.
 
   git-annex caches UUIDs of remote repositories here.
 
+* `remote.<name>.annex-trustlevel`
+
+  Configures a local trust level for the remote. This overrides the value
+  configured by the trust and untrust commands. The value can be any of
+  "trusted", "semitrusted" or "untrusted".
+
 * `remote.<name>.annex-ssh-options`
 
   Options to use when using ssh to talk to this remote.

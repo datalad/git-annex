@@ -12,6 +12,8 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
+import qualified Logs.Trust
+import Types.TrustLevel
 
 type ConfigKey = String
 
@@ -30,7 +32,7 @@ getConfig r key def = do
 	def' <- fromRepo $ Git.Config.get ("annex." ++ key) def
 	fromRepo $ Git.Config.get (remoteConfig r key) def'
 
-{- Looks up a per-remote config setting in git config. -}
+{- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
 remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" ++ key
 
@@ -67,9 +69,7 @@ prop_cost_sane = False `notElem`
 	, semiCheapRemoteCost + encryptedRemoteCostAdj < expensiveRemoteCost
 	]
 
-{- Checks if a repo should be ignored, based either on annex-ignore
- - setting, or on command-line options. Allows command-line to override
- - annex-ignore. -}
+{- Checks if a repo should be ignored. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
 repoNotIgnored r = not . Git.configTrue <$> getConfig r "ignore" "false"
 
@@ -83,3 +83,8 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 			readMaybe <$> fromRepo (Git.Config.get config "1")
 		perhaps fallback = maybe fallback (return . id)
 		config = "annex.numcopies"
+
+{- Gets the trust level set for a remote in git config. -}
+getTrustLevel :: Git.Repo -> Annex (Maybe TrustLevel)
+getTrustLevel r = maybe Nothing Logs.Trust.trustName <$>
+	fromRepo (Git.Config.getMaybe (remoteConfig r "trustlevel"))
