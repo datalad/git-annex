@@ -52,7 +52,7 @@ withBarePresentKeys a params = isBareRepo >>= go
 		go True = do
 			unless (null params) $
 				error "fsck should be run without parameters in a bare repository"
-			prepStart a loggedKeys
+			map a <$> loggedKeys
 
 startBare :: Key -> CommandStart
 startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of

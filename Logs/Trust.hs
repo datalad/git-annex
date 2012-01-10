@@ -1,6 +1,6 @@
-{- git-annex trust
+{- git-annex trust log
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -76,14 +76,12 @@ trustMap = do
 	where
 		configuredtrust r =
 			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
-				(convert <$> getTrustLevel (Types.Remote.repo r))
-		convert :: Maybe String -> Maybe TrustLevel
-		convert Nothing = Nothing
-		convert (Just s)
-			| s ==  "trusted" = Just Trusted
-			| s == "untrusted" = Just UnTrusted
-			| s == "semitrusted" = Just SemiTrusted
-			| otherwise = Nothing
+				maybe Nothing convert <$>
+					getTrustLevel (Types.Remote.repo r)
+		convert "trusted" = Just Trusted
+		convert "untrusted" = Just UnTrusted
+		convert "semitrusted" = Just SemiTrusted
+		convert _ = Nothing
 
 {- The trust.log used to only list trusted repos, without a field for the
  - trust status, which is why this defaults to Trusted. -}

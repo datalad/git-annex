@@ -47,7 +47,7 @@ dispatch args cmds commonoptions header getgitrepo = do
  - the Command being run, and the remaining parameters for the command. -} 
 parseCmd :: Params -> [Command] -> [Option] -> String -> (Flags, Command, Params)
 parseCmd argv cmds commonoptions header
-	| name == Nothing = err "missing command"
+	| isNothing name = err "missing command"
 	| null matches = err $ "unknown command " ++ fromJust name
 	| otherwise = check $ getOpt Permute (commonoptions ++ cmdoptions cmd) args
 	where

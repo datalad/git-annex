@@ -200,7 +200,7 @@ showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = return ()	
 showTriedRemotes remotes =
 	showLongNote $ "Unable to access these remotes: " ++
-		(join ", " $ map name remotes)
+		join ", " (map name remotes)
 
 forceTrust :: TrustLevel -> String -> Annex ()
 forceTrust level remotename = do

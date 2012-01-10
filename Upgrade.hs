@@ -13,12 +13,10 @@ import qualified Upgrade.V0
 import qualified Upgrade.V1
 import qualified Upgrade.V2
 
-{- Uses the annex.version git config setting to automate upgrades. -}
 upgrade :: Annex Bool
-upgrade = do
-	version <- getVersion
-	case version of
-		Just "0" -> Upgrade.V0.upgrade
-		Just "1" -> Upgrade.V1.upgrade
-		Just "2" -> Upgrade.V2.upgrade
-		_ -> return True
+upgrade = go =<< getVersion
+	where
+		go (Just "0") = Upgrade.V0.upgrade
+		go (Just "1") = Upgrade.V1.upgrade
+		go (Just "2") = Upgrade.V2.upgrade
+		go _ = return True

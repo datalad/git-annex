@@ -28,9 +28,7 @@ setup :: Git.Repo -> IO ()
 setup = cleanup -- idempotency
 
 cleanup :: Git.Repo -> IO ()
-cleanup g = do
-	e' <- doesFileExist (tmpIndex g)
-	when e' $ removeFile (tmpIndex g)
+cleanup g = whenM (doesFileExist $ tmpIndex g) $ removeFile $ tmpIndex g
 
 parseArgs :: IO [String]
 parseArgs = do
@@ -43,7 +41,7 @@ main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
 	g <- Git.Config.read =<< Git.Construct.fromCwd
-	_ <- Git.Index.override (tmpIndex g)
+	_ <- Git.Index.override $ tmpIndex g
 	setup g
 	Git.UnionMerge.merge aref bref g
 	_ <- Git.Branch.commit "union merge" newref [aref, bref] g
