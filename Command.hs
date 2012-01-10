@@ -26,13 +26,13 @@ import Common.Annex
 import qualified Backend
 import qualified Annex
 import qualified Git
+import qualified Remote
 import Types.Command as ReExported
 import Types.Option as ReExported
 import Seek as ReExported
 import Checks as ReExported
 import Usage as ReExported
 import Logs.Trust
-import Logs.Location
 import Config
 
 {- Generates a normal command -}
@@ -110,5 +110,5 @@ autoCopies key vs numcopiesattr a = Annex.getState Annex.auto >>= auto
 		auto False = a
 		auto True = do
 			needed <- getNumCopies numcopiesattr
-			(_, have) <- trustPartition UnTrusted =<< keyLocations key
+			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
 			if length have `vs` needed then a else stop

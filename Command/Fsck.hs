@@ -93,7 +93,7 @@ verifyLocationLog key desc = do
 			preventWrite (parentDir f)
 
 	u <- getUUID
-        uuids <- keyLocations key
+	uuids <- Remote.keyLocations key
 
 	case (present, u `elem` uuids) of
 		(True, False) -> do
@@ -142,7 +142,7 @@ checkBackend = Types.Backend.fsckKey
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
-	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< keyLocations key
+	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
 	let present = length safelocations
 	if present < needed
 		then do

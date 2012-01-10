@@ -12,8 +12,6 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
-import qualified Logs.Trust
-import Types.TrustLevel
 
 type ConfigKey = String
 
@@ -85,6 +83,5 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 		config = "annex.numcopies"
 
 {- Gets the trust level set for a remote in git config. -}
-getTrustLevel :: Git.Repo -> Annex (Maybe TrustLevel)
-getTrustLevel r = maybe Nothing Logs.Trust.trustName <$>
-	fromRepo (Git.Config.getMaybe (remoteConfig r "trustlevel"))
+getTrustLevel :: Git.Repo -> Annex (Maybe String)
+getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"

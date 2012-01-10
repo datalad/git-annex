@@ -32,7 +32,6 @@ import qualified Locations
 import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
-import qualified Logs.Location
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -847,7 +846,7 @@ checklocationlog f expected = do
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do
-			uuids <- annexeval $ Logs.Location.keyLocations k
+			uuids <- annexeval $ Remote.keyLocations k
 			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"

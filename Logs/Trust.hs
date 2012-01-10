@@ -10,7 +10,6 @@ module Logs.Trust (
 	trustGet,
 	trustSet,
 	trustPartition,
-	trustName
 ) where
 
 import qualified Data.Map as M
@@ -21,6 +20,9 @@ import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
+import Remote.List
+import Config
+import qualified Types.Remote
 
 {- Filename of trust.log. -}
 trustLog :: FilePath
@@ -56,7 +58,7 @@ trustPartition level ls
 		return $ partition (`elem` candidates) ls
 
 {- Read the trustLog into a map, overriding with any
- - values from forcetrust. The map is cached for speed. -}
+ - values from forcetrust or the git config. The map is cached for speed. -}
 trustMap :: Annex TrustMap
 trustMap = do
 	cached <- Annex.getState Annex.trustmap
@@ -66,9 +68,22 @@ trustMap = do
 			overrides <- Annex.getState Annex.forcetrust
 			logged <- simpleMap . parseLog (Just . parseTrust) <$>
 				Annex.Branch.get trustLog
-			let m = M.union overrides logged
+			configured <- M.fromList . catMaybes <$>
+				(mapM configuredtrust =<< remoteList)
+			let m = M.union overrides $ M.union configured logged
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
+	where
+		configuredtrust r =
+			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
+				(convert <$> getTrustLevel (Types.Remote.repo r))
+		convert :: Maybe String -> Maybe TrustLevel
+		convert Nothing = Nothing
+		convert (Just s)
+			| s ==  "trusted" = Just Trusted
+			| s == "untrusted" = Just UnTrusted
+			| s == "semitrusted" = Just SemiTrusted
+			| otherwise = Nothing
 
 {- The trust.log used to only list trusted repos, without a field for the
  - trust status, which is why this defaults to Trusted. -}
@@ -85,10 +100,3 @@ showTrust Trusted = "1"
 showTrust UnTrusted = "0"
 showTrust DeadTrusted = "X"
 showTrust SemiTrusted = "?"
-
-trustName :: String -> Maybe TrustLevel
-trustName "trusted" = Just Trusted
-trustName "untrusted" = Just UnTrusted
-trustName "deadtrusted" = Just DeadTrusted
-trustName "semitrusted" = Just SemiTrusted
-trustName _ = Nothing
