@@ -27,3 +27,4 @@ For example, the last two commands I ran are:
 
 *git-version:*  1.7.7.4
 
+> [[done]], apparently not a git-annex bug --[[Joey]] 
