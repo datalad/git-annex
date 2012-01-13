@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-01-13T17:52:46Z"
+ content="""
+Uploading to hackage is a PITA (manual password entry and I am often on a slow link besides) and is not integrated with my regular release process, so I often forget to do it. I will try to upload the next release there again.
+
+You might add a page under [[install]] for your git-annex packages.
+"""]]
