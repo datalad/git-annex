@@ -6,6 +6,7 @@
  -}
 
 module Git.Construct (
+	fromCurrent,
 	fromCwd,
 	fromAbsPath,
 	fromUrl,
@@ -19,6 +20,8 @@ module Git.Construct (
 ) where
 
 import System.Posix.User
+import System.Posix.Env (getEnv)
+import System.Posix.Directory (changeWorkingDirectory)
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
 
@@ -27,7 +30,23 @@ import Git.Types
 import Git
 import qualified Git.Url as Url
 
-{- Finds the current git repository, which may be in a parent directory. -}
+{- Finds the current git repository.
+ -
+ - GIT_DIR can override the location of the .git directory.
+ -
+ - When GIT_WORK_TREE is set, chdir to it, so that anything using
+ - this repository runs in the right location. However, this chdir is
+ - done after determining GIT_DIR; git does not let GIT_WORK_TREE
+ - influence the git directory.
+ -}
+fromCurrent :: IO Repo
+fromCurrent = do
+	r <- maybe fromCwd fromAbsPath =<< getEnv "GIT_DIR"
+	maybe (return ()) changeWorkingDirectory =<< getEnv "GIT_WORK_TREE"
+	return r
+
+{- Finds the git repository used for the Cwd, which may be in a parent
+ - directory. -}
 fromCwd :: IO Repo
 fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
 	where

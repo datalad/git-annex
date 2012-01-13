@@ -727,7 +727,7 @@ git_annex_expectoutput command params expected = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.Construct.fromCwd
+	g <- Git.Construct.fromCurrent
 	g' <- Git.Config.read g
 	s <- Annex.new g'
 	Annex.eval s { Annex.output = Annex.QuietOutput } a

@@ -129,4 +129,4 @@ header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch args cmds options header Git.Construct.fromCwd
+run args = dispatch args cmds options header Git.Construct.fromCurrent

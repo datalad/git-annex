@@ -4,6 +4,7 @@ git-annex (3.20120107) UNRELEASED; urgency=low
   * map: Fix display of remote repos
   * Add annex-trustlevel configuration settings, which can be used to 
     override the trust level of a remote.
+  * git-annex, git-union-merge: Support GIT_DIR and GIT_WORK_TREE.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 18:12:09 -0400
 

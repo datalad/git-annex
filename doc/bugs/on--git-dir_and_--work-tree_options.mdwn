@@ -27,3 +27,5 @@ regular git add works:
 
 git-annex version: 3.20110702
 
+> [[done]], git-annex now honors `GIT_DIR` and `GIT_WORK_TREE` like other
+> git commands do. --[[Joey]]

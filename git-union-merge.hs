@@ -40,7 +40,7 @@ parseArgs = do
 main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
-	g <- Git.Config.read =<< Git.Construct.fromCwd
+	g <- Git.Config.read =<< Git.Construct.fromCurrent
 	_ <- Git.Index.override $ tmpIndex g
 	setup g
 	Git.UnionMerge.merge aref bref g
