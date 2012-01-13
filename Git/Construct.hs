@@ -20,7 +20,7 @@ module Git.Construct (
 ) where
 
 import System.Posix.User
-import System.Posix.Env (getEnv)
+import System.Posix.Env (getEnv, unsetEnv)
 import System.Posix.Directory (changeWorkingDirectory)
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
@@ -38,11 +38,18 @@ import qualified Git.Url as Url
  - this repository runs in the right location. However, this chdir is
  - done after determining GIT_DIR; git does not let GIT_WORK_TREE
  - influence the git directory.
+ -
+ - Both environment variables are unset, to avoid confusing other git
+ - commands that also look at them. This would particularly be a problem
+ - when GIT_DIR is relative and we chdir for GIT_WORK_TREE. Instead,
+ - the Git module passes --work-tree and --git-dir to git commands it runs.
  -}
 fromCurrent :: IO Repo
 fromCurrent = do
-	r <- maybe fromCwd fromAbsPath =<< getEnv "GIT_DIR"
+	r <- maybe fromCwd fromPath =<< getEnv "GIT_DIR"
 	maybe (return ()) changeWorkingDirectory =<< getEnv "GIT_WORK_TREE"
+	unsetEnv "GIT_DIR"
+	unsetEnv "GIT_WORK_TREE"
 	return r
 
 {- Finds the git repository used for the Cwd, which may be in a parent
@@ -52,6 +59,10 @@ fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
 	where
 		makerepo = return . newFrom . Dir
 		norepo = error "Not in a git repository."
+
+{- Local Repo constructor, accepts a relative or absolute path. -}
+fromPath :: FilePath -> IO Repo
+fromPath dir = fromAbsPath =<< absPath dir
 
 {- Local Repo constructor, requires an absolute path to the repo be
  - specified. -}
