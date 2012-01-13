@@ -1,12 +1,13 @@
-git-annex (3.20120107) UNRELEASED; urgency=low
+git-annex (3.20120113) unstable; urgency=low
 
   * log: Add --gource mode, which generates output usable by gource.
   * map: Fix display of remote repos
   * Add annex-trustlevel configuration settings, which can be used to 
     override the trust level of a remote.
   * git-annex, git-union-merge: Support GIT_DIR and GIT_WORK_TREE.
+  * Add libghc-testpack-dev to build depends on all arches.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 18:12:09 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Jan 2012 15:35:17 -0400
 
 git-annex (3.20120106) unstable; urgency=low
 
