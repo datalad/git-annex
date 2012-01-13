@@ -100,4 +100,8 @@ sdist: clean
 	@cabal sdist
 	@mv git-annex.cabal.orig git-annex.cabal
 
+# Upload to hackage.
+hackage: sdist
+	@cabal upload dist/*.tar.gz
+
 .PHONY: $(bins) test install
