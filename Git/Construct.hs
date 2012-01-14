@@ -239,14 +239,15 @@ seekUp want dir = do
 isRepoTop :: FilePath -> IO Bool
 isRepoTop dir = do
 	r <- isRepo
-	b <- isBareRepo
-	return (r || b)
+	if r
+		then return r
+		else isBareRepo
 	where
-		isRepo = gitSignature ".git" ".git/config"
-		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = liftM2 (&&)
-			(doesDirectoryExist (dir ++ "/" ++ subdir))
-			(doesFileExist (dir ++ "/" ++ file))
+		isRepo = gitSignature (".git" </> "config")
+		isBareRepo = (&&)
+			<$> doesDirectoryExist (dir </> "objects")
+			<*> gitSignature "config"
+		gitSignature file = doesFileExist (dir </> file)
 
 newFrom :: RepoLocation -> IO Repo
 newFrom l = return Repo
