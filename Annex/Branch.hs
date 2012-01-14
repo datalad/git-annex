@@ -268,7 +268,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
 	bracketIO (Git.Index.override f) id $ do
-		unlessM (liftIO $ doesFileExist f) $ do
+		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex

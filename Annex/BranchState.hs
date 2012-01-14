@@ -37,6 +37,14 @@ invalidateCache = do
 	state <- getState
 	setState state { cachedFile = Nothing, cachedContent = "" }
 
+{- Runs an action to check that the index file exists, if it's not been
+ - checked before in this run of git-annex. -}
+checkIndexOnce :: Annex () -> Annex ()
+checkIndexOnce a = unlessM (indexChecked <$> getState) $ do
+	a
+	state <- getState
+	setState state { indexChecked = True }
+
 {- Runs an action to update the branch, if it's not been updated before
  - in this run of git-annex. -}
 runUpdateOnce :: Annex () -> Annex ()
@@ -48,9 +56,6 @@ runUpdateOnce a = unlessM (branchUpdated <$> getState) $ do
  - is known to have not changed, or git-annex won't be relying on info
  - from it. -}
 disableUpdate :: Annex ()
-disableUpdate = Annex.changeState setupdated
-	where
-		setupdated s = s { Annex.branchstate = new }
-			where
-				new = old { branchUpdated = True }
-				old = Annex.branchstate s
+disableUpdate = do
+	state <- getState
+	setState state { branchUpdated = True }
