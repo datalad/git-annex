@@ -57,7 +57,7 @@ fromCurrent = do
 fromCwd :: IO Repo
 fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
 	where
-		makerepo = return . newFrom . Dir
+		makerepo = newFrom . Dir
 		norepo = error "Not in a git repository."
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
@@ -88,7 +88,7 @@ fromAbsPath dir
 				else ret dir
 	| otherwise = error $ "internal error, " ++ dir ++ " is not absolute"
 	where
-		ret = return . newFrom . Dir
+		ret = newFrom . Dir
 
 {- Remote Repo constructor. Throws exception on invalid url.
  -
@@ -103,14 +103,14 @@ fromUrl url
 fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
 	| startswith "file://" url = fromAbsPath $ uriPath u
-	| otherwise = return $ newFrom $ Url u
+	| otherwise = newFrom $ Url u
 	where
 		u = fromMaybe bad $ parseURI url
 		bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
 fromUnknown :: IO Repo
-fromUnknown = return $ newFrom Unknown
+fromUnknown = newFrom Unknown
 
 {- Converts a local Repo into a remote repo, using the reference repo
  - which is assumed to be on the same host. -}
@@ -248,12 +248,11 @@ isRepoTop dir = do
 			(doesDirectoryExist (dir ++ "/" ++ subdir))
 			(doesFileExist (dir ++ "/" ++ file))
 
-newFrom :: RepoLocation -> Repo
-newFrom l = 
-	Repo {
-		location = l,
-		config = M.empty,
-		fullconfig = M.empty,
-		remotes = [],
-		remoteName = Nothing
+newFrom :: RepoLocation -> IO Repo
+newFrom l = return Repo
+	{ location = l
+	, config = M.empty
+	, fullconfig = M.empty
+	, remotes = []
+	, remoteName = Nothing
 	}
