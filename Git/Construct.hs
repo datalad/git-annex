@@ -244,9 +244,11 @@ isRepoTop dir = do
 		else isBareRepo
 	where
 		isRepo = gitSignature (".git" </> "config")
-		isBareRepo = (&&)
-			<$> doesDirectoryExist (dir </> "objects")
-			<*> gitSignature "config"
+		isBareRepo = do
+			e <- doesDirectoryExist (dir </> "objects")
+			if not e
+				then return e
+				else gitSignature "config"
 		gitSignature file = doesFileExist (dir </> file)
 
 newFrom :: RepoLocation -> IO Repo
