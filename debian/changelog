@@ -1,3 +1,9 @@
+git-annex (3.20120114) UNRELEASED; urgency=low
+
+  * Add a sanity check for bad StatFS results.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 14 Jan 2012 17:12:04 -0400
+
 git-annex (3.20120113) unstable; urgency=low
 
   * log: Add --gource mode, which generates output usable by gource.
