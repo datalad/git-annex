@@ -30,8 +30,11 @@ read repo@(Repo { location = Dir d }) = do
 	{- Cannot use pipeRead because it relies on the config having
 	   been already read. Instead, chdir to the repo. -}
 	cwd <- getCurrentDirectory
-	bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) $
-		pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
+	if dirContains d cwd
+		then go
+		else bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) go
+	where
+		go = pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
 			hRead repo
 read r = assertLocal r $
 	error $ "internal error; trying to read config of " ++ show r
