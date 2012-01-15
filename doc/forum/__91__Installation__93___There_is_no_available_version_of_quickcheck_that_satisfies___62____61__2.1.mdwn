@@ -38,3 +38,19 @@ Sorry to disagree, this doesn't fix my problem. cabal still complains that no ve
 
 >> You need to `cabal update` to get the fixed version of git-annex which
 >> spells QuickCheck correctly. [[done]] --[[Joey]]
+
+I moved this over to the forum, because I'm probably just too much a Haskell/Cabal/whatever Noob to get it right ;)
+
+I started with a clean `~/.cabal` directory and did the following:
+
+    andreas@antares:~/src/gitolite-admin$ cabal update
+    andreas@antares:~/src/gitolite-admin$ cabal install git-annex -v --bindir=$HOME/
+
+However, again some error:
+
+    cabal: dependencies conflict: base-3.0.3.2 requires syb ==0.1.0.2 however
+    syb-0.1.0.2 was excluded because json-0.5 requires syb >=0.3.3
+
+Any ideas?
+
+Thanks for your help!
