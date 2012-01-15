@@ -31,3 +31,5 @@ which is really strange, because quickcheck 2.4.2 is installed:
 
 Any help is greatly appreciated :)
 Andreas.
+
+> [[fixed|done]], QuickCheck has to be spelled in mised case. --[[Joey]] 
