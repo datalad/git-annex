@@ -1,0 +1,8 @@
+git-annex 3.20120115 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Add a sanity check for bad StatFS results. On architectures
+     where StatFS does not currently work (s390, mips, powerpc, sparc),
+     this disables the diskreserve checking code, and attempting to
+     configure an annex.diskreserve will result in an error.
+   * Fix QuickCheck dependency in cabal file.
+   * Minor optimisations."""]]
