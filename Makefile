@@ -21,11 +21,13 @@ endif
 
 all: $(all)
 
+sources: $(sources)
+
 # Disables optimisation. Not for production use.
 fast: GHCFLAGS=-Wall $(IGNORE)
 fast: $(bins)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
 	$(GHCMAKE) configure
 	./configure
 

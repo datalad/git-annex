@@ -1,6 +1,9 @@
 git-annex (3.20120114) UNRELEASED; urgency=low
 
-  * Add a sanity check for bad StatFS results.
+  * Add a sanity check for bad StatFS results. On architectures
+    where StatFS does not currently work (s390, mips, powerpc, sparc),
+    this disables the diskreserve checking code, and attempting to
+    configure an annex.diskreserve will result in an error.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 14 Jan 2012 17:12:04 -0400
 
