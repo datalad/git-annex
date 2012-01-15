@@ -1,12 +1,13 @@
-git-annex (3.20120114) UNRELEASED; urgency=low
+git-annex (3.20120115) unstable; urgency=low
 
   * Add a sanity check for bad StatFS results. On architectures
     where StatFS does not currently work (s390, mips, powerpc, sparc),
     this disables the diskreserve checking code, and attempting to
     configure an annex.diskreserve will result in an error.
   * Fix QuickCheck dependency in cabal file.
+  * Minor optimisations.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 14 Jan 2012 17:12:04 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 15 Jan 2012 13:54:20 -0400
 
 git-annex (3.20120113) unstable; urgency=low
 
