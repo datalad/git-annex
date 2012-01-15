@@ -32,45 +32,9 @@ which is really strange, because quickcheck 2.4.2 is installed:
 Any help is greatly appreciated :)
 Andreas.
 
-> QuickCheck has to be spelled in mised case. --[[Joey]] 
+> QuickCheck has to be spelled in mixed case. --[[Joey]] 
 
 Sorry to disagree, this doesn't fix my problem. cabal still complains that no version >= 2.1 is available, even though 2.4.2 is installed. This problem already occurred before I explicitly installed QuickCheck. According to [[install]], the `cabal install git-annex -v --bindir=$HOME/bin` should already take care of the dependencies.
 
-This is what I get:
-
-    andreas@antares:~/src/gitolite-admin$ cabal install QuickCheck --reinstall --bindir=$HOME/bin
-    Resolving dependencies...
-    Configuring QuickCheck-2.4.2...
-    Preprocessing library QuickCheck-2.4.2...
-    Building QuickCheck-2.4.2...
-    [ 1 of 13] Compiling Test.QuickCheck.Exception ( Test/QuickCheck/Exception.hs, dist/build/Test/QuickCheck/Exception.o )
-    [ 2 of 13] Compiling Test.QuickCheck.Text ( Test/QuickCheck/Text.hs, dist/build/Test/QuickCheck/Text.o )
-    [ 3 of 13] Compiling Test.QuickCheck.State ( Test/QuickCheck/State.hs, dist/build/Test/QuickCheck/State.o )
-    [ 4 of 13] Compiling Test.QuickCheck.Gen ( Test/QuickCheck/Gen.hs, dist/build/Test/QuickCheck/Gen.o )
-    [ 5 of 13] Compiling Test.QuickCheck.Arbitrary ( Test/QuickCheck/Arbitrary.hs, dist/build/Test/QuickCheck/Arbitrary.o )
-    [ 6 of 13] Compiling Test.QuickCheck.Poly ( Test/QuickCheck/Poly.hs, dist/build/Test/QuickCheck/Poly.o )
-    [ 7 of 13] Compiling Test.QuickCheck.Modifiers ( Test/QuickCheck/Modifiers.hs, dist/build/Test/QuickCheck/Modifiers.o )
-    [ 8 of 13] Compiling Test.QuickCheck.Function ( Test/QuickCheck/Function.hs, dist/build/Test/QuickCheck/Function.o )
-    [ 9 of 13] Compiling Test.QuickCheck.Property ( Test/QuickCheck/Property.hs, dist/build/Test/QuickCheck/Property.o )
-    [10 of 13] Compiling Test.QuickCheck.Test ( Test/QuickCheck/Test.hs, dist/build/Test/QuickCheck/Test.o )
-    [11 of 13] Compiling Test.QuickCheck.Monadic ( Test/QuickCheck/Monadic.hs, dist/build/Test/QuickCheck/Monadic.o )
-    [12 of 13] Compiling Test.QuickCheck  ( Test/QuickCheck.hs, dist/build/Test/QuickCheck.o )
-    [13 of 13] Compiling Test.QuickCheck.All ( Test/QuickCheck/All.hs, dist/build/Test/QuickCheck/All.o )
-    Registering QuickCheck-2.4.2...
-    Installing library in /home/andreas/.cabal/lib/QuickCheck-2.4.2/ghc-6.12.1
-    Registering QuickCheck-2.4.2...
-    andreas@antares:~/src/gitolite-admin$ cabal install git-annex -v --bindir=$HOME/bin
-    /usr/bin/ghc --numeric-version
-    looking for package tool: ghc-pkg near compiler in /usr/bin
-    found package tool in /usr/bin/ghc-pkg
-    /usr/bin/ghc-pkg --version
-    /usr/bin/ghc --supported-languages
-    Reading installed packages...
-    /usr/bin/ghc-pkg dump --global
-    /usr/bin/ghc-pkg dump --user
-    Reading available packages...
-    Resolving dependencies...
-    selecting
-    cabal: cannot configure git-annex-3.20120113. It requires quickcheck >=2.1
-    There is no available version of quickcheck that satisfies >=2.1
-    
+>> You need to `cabal update` to get the fixed version of git-annex which
+>> spells QuickCheck correctly. [[done]] --[[Joey]]
