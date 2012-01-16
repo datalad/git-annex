@@ -20,11 +20,10 @@ import qualified Git
 import qualified Git.LsFiles as LsFiles
 import qualified Git.CheckAttr
 import qualified Limit
+import qualified Option
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
-seekHelper a params = do
-	g <- gitRepo
-	liftIO $ runPreserveOrder (`a` g) params
+seekHelper a params = inRepo $ \g -> runPreserveOrder (`a` g) params
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
@@ -40,9 +39,8 @@ withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 		go (file, v) = a (readMaybe v) file
 
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
-withBackendFilesInGit a params = do
-	files <- seekHelper LsFiles.inRepo params
-	prepBackendPairs a files
+withBackendFilesInGit a params =
+	prepBackendPairs a =<< seekHelper LsFiles.inRepo params
 
 withFilesNotInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
@@ -87,6 +85,22 @@ withKeys a params = return $ map (a . parse) params
 	where
 		parse p = fromMaybe (error "bad key") $ readKey p
 
+withValue :: Annex v -> (v -> CommandSeek) -> CommandSeek
+withValue v a params = do
+	r <- v
+	a r params
+
+{- Modifies a seek action using the value of a field option, which is fed into
+ - a conversion function, and then is passed into the seek action.
+ - This ensures that the conversion function only runs once.
+ -}
+withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
+withField option converter = withValue $
+	converter =<< Annex.getField (Option.name option)
+
+withFlag :: Option -> (Bool -> CommandSeek) -> CommandSeek
+withFlag option = withValue $ Annex.getFlag (Option.name option)
+
 withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
@@ -101,18 +115,12 @@ prepBackendPairs a fs = prepFilteredGen a snd (chooseBackends fs)
 prepFilteredGen :: (b -> CommandStart) -> (b -> FilePath) -> Annex [b] -> Annex [CommandStart]
 prepFilteredGen a d fs = do
 	matcher <- Limit.getMatcher
-	prepStart (proc matcher) fs
+	map (proc matcher) <$> fs
 	where
 		proc matcher v = do
 			let f = d v
 			ok <- matcher f
 			if ok then a v else return Nothing
-
-{- Generates a list of CommandStart actions that will be run to perform a
- - command, using a list (ie of files) coming from an action. The list
- - will be produced and consumed lazily. -}
-prepStart :: (b -> CommandStart) -> Annex [b] -> Annex [CommandStart]
-prepStart a = liftM (map a)
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

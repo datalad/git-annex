@@ -1,0 +1,22 @@
+[Gource](http://code.google.com/p/gource/) is an amazing animated
+visualisation of a git repository.
+
+Normally, gource shows files being added, removed, and changed in
+the repository, and the user(s) making the changes. Of course it can be
+used in this way in a repository using git-annex too; just run `gource`.
+
+The other way to use gource with git-annex is to visualise the movement of
+annexed file contents between repositories. In this view, the "users" are
+repositories, and they move around the file contents that are being added
+or removed from them with git-annex.
+
+[[!img screenshot.jpg]]
+
+To use gource this way, first go into the directory you want to visualize,
+and use `git annex log` to make an input file for `gource`:
+
+	git annex log --gource | tee gorce.log
+	sort gource.log | gource --log-format custom -
+
+The `git annex log` can take a while, to speed it up you can use something
+like `--after "4 monts ago"` to limit how far back it goes.

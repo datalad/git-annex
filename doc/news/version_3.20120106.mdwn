@@ -1,0 +1,6 @@
+git-annex 3.20120106 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Support unescaped repository urls, like git does.
+   * log: New command that displays the location log for files,
+     showing each repository they were added to and removed from.
+   * Fix overbroad gpg --no-tty fix from last release."""]]

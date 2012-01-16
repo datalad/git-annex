@@ -20,7 +20,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
-import Annex.Ssh
+import Remote.Helper.Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)
@@ -155,6 +155,7 @@ spider' (r:rs) known
 absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
+	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.workTree r)
 
 {- Checks if two repos are the same. -}

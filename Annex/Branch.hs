@@ -6,6 +6,7 @@
  -}
 
 module Annex.Branch (
+	fullname,
 	name,
 	hasOrigin,
 	hasSibling,
@@ -67,15 +68,15 @@ create = do
 	return ()
 
 {- Returns the ref of the branch, creating it first if necessary. -}
-getBranch :: Annex (Git.Ref)
-getBranch = maybe (hasOrigin >>= go >>= use) (return) =<< branchsha
+getBranch :: Annex Git.Ref
+getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 	where
 		go True = do
 			inRepo $ Git.Command.run "branch"
 				[Param $ show name, Param $ show originname]
 			fromMaybe (error $ "failed to create " ++ show name)
 				<$> branchsha
-		go False = withIndex' True $ do
+		go False = withIndex' True $
 			inRepo $ Git.Branch.commit "branch created" fullname []
 		use sha = do
 			setIndexSha sha
@@ -267,7 +268,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
 	bracketIO (Git.Index.override f) id $ do
-		unlessM (liftIO $ doesFileExist f) $ do
+		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			liftIO $ createDirectoryIfMissing True $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex

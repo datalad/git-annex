@@ -273,6 +273,18 @@ subdirectories).
   Displays a list of repositories known to contain the content of the
   specified file or files.
 
+* log [path ...]
+
+  Displays the location log for the specified file or files,
+  showing each repository they were added to ("+") and removed from ("-").
+
+  To limit how far back to seach for location log changes, the options
+  --since, --after, --until, --before, and --max-count can be specified.
+  They are passed through to git log. For example, --since "1 month ago"
+
+  To generate output suitable for the gource visualisation program,
+  specify --gource.
+
 * status
 
   Displays some statistics and other information, including how much data
@@ -593,6 +605,12 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-uuid`
 
   git-annex caches UUIDs of remote repositories here.
+
+* `remote.<name>.annex-trustlevel`
+
+  Configures a local trust level for the remote. This overrides the value
+  configured by the trust and untrust commands. The value can be any of
+  "trusted", "semitrusted" or "untrusted".
 
 * `remote.<name>.annex-ssh-options`
 

@@ -13,7 +13,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
-import Annex.Ssh
+import Remote.Helper.Ssh
 import Types.Remote
 import qualified Git
 import qualified Git.Command

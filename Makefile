@@ -21,11 +21,13 @@ endif
 
 all: $(all)
 
+sources: $(sources)
+
 # Disables optimisation. Not for production use.
 fast: GHCFLAGS=-Wall $(IGNORE)
 fast: $(bins)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
 	$(GHCMAKE) configure
 	./configure
 
@@ -99,5 +101,9 @@ sdist: clean
 	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
 	@cabal sdist
 	@mv git-annex.cabal.orig git-annex.cabal
+
+# Upload to hackage.
+hackage: sdist
+	@cabal upload dist/*.tar.gz
 
 .PHONY: $(bins) test install

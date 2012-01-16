@@ -13,6 +13,7 @@ import qualified Git.Construct
 import CmdLine
 import Command
 import Annex.UUID
+import qualified Option
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -41,7 +42,7 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 			}
 
 options :: [OptDescr (Annex ())]
-options = commonOptions ++
+options = Option.common ++
 	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "repository uuid"
 	]
 	where

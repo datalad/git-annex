@@ -1,24 +1,21 @@
-[[!comment format=mdwn
- username="http://joey.kitenet.net/"
- nickname="joey"
- subject="short answer: no"
- date="2011-06-10T19:55:38Z"
- content="""
+short answer: no
+
 Long answer, quoting from a mail to someone else:
 
 Well, I can tell you that it assumes a POSIX system, both in available
 utilities and system calls, So you'd need to use cygwin or something
 like that. (Perhaps you already are for git, I think git also assumes a
 POSIX system.) So you need a Haskell that can target that. What this
-page refers to as \"GHC-Cygwin\":
+page refers to as "GHC-Cygwin":
 <http://www.haskell.org/ghc/docs/6.6/html/building/platforms.html>
 I don't know where to get one. Did find this:
 <http://copilotco.com/mail-archives/haskell-cafe.2007/msg00824.html>
 
 (There are probably also still some places where it assumes / as a path
-separator, although I fixed some.)
+separator, although I fixed some. Probably almost all are fixed now.)
 
 FWIW, git-annex works fine on OS X and other fine proprietary unixen. ;P
+--[[Joey]]
 
 ----
 
@@ -66,4 +63,3 @@ sigCHLD
 sigINT
 unionFileModes
 </pre>
-"""]]

@@ -114,7 +114,7 @@ getFileSystemStats path =
         bfree <- (#peek struct statfs, f_bfree) vfs
         bavail <- (#peek struct statfs, f_bavail) vfs
         let bpb = toI bsize
-        return $ Just FileSystemStats
+        let stats = FileSystemStats
                        { fsStatBlockSize = bpb
                        , fsStatBlockCount = toI bcount
                        , fsStatByteCount = toI bcount * bpb
@@ -122,4 +122,7 @@ getFileSystemStats path =
                        , fsStatBytesAvailable = toI bavail * bpb
                        , fsStatBytesUsed = toI (bcount - bfree) * bpb
                        }
+        if fsStatBlockCount stats == 0 || fsStatBlockSize stats == 0
+          then return Nothing
+          else return $ Just stats
 #endif

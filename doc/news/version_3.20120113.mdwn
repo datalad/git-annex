@@ -1,0 +1,8 @@
+git-annex 3.20120113 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * log: Add --gource mode, which generates output usable by gource.
+   * map: Fix display of remote repos
+   * Add annex-trustlevel configuration settings, which can be used to
+     override the trust level of a remote.
+   * git-annex, git-union-merge: Support GIT\_DIR and GIT\_WORK\_TREE.
+   * Add libghc-testpack-dev to build depends on all arches."""]]

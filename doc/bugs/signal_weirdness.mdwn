@@ -1,0 +1,38 @@
+For the record, there is a slight weirdness with how git-annex
+handles a signal like ctrl-c.
+
+For example:
+
+	joey@gnu:~/tmp/b>git annex copy a b --to origin
+	copy a (checking origin...) (to origin...) 
+	SHA256-s104857600--20492a4d0d84f8beb1767f6616229f85d44c2827b64bdbfb260ee12fa1109e0e
+	        3272   0%    0.00kB/s    0:00:00  ^C
+	zsh: interrupt  git annex copy a --to origin
+	joey@gnu:~/tmp/b>
+	rsync error: unexplained error (code 130) at rsync.c(549) [sender=3.0.9]
+
+Here git-annex exits before rsync has fully exited. Not a large problem
+but sorta weird.
+
+The culprit is `safeSystemEnv` in Utility.SafeCommand, which installs
+a default signal handler for SIGINT, which causes it to immediatly
+terminate git-annex. rsync, in turn, has its own SIGINT handler, which 
+prints the message, typically later.
+
+(Why it prints that message and not its more usual message about having
+received a signal, I'm not sure?)
+
+It's more usual for a `system` like thing to block SIGINT, letting the child
+catch it and exit, and then detecting the child's exit status and terminating. 
+However, since rsync *is* trapping SIGINT, and exiting nonzero explicitly,
+git-annex can't tell that rsync failed due to a SIGINT.
+And, git-annex typically doesn't stop when a single child fails. In the
+example above, it would go on to copy `b` after a ctrl-c!
+
+A further complication is that git-annex is itself a child process
+of git, which does not block SIGINT either. So if git-annex blocks sigint,
+it will be left running in the background after git exits, and continuing
+with further actions too. (Probably this is a bug in git.)
+
+Which is why the current behavior of not blocking SIGINT was chosen,
+as a less bad alternative. Still, I'd like to find a better one. --[[Joey]] 

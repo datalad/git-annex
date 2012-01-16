@@ -13,30 +13,19 @@ module Checks where
 import Common.Annex
 import Types.Command
 import Init
-import qualified Annex
 
 commonChecks :: [CommandCheck]
-commonChecks = [fromOpt, toOpt, repoExists]
+commonChecks = [repoExists]
 
 repoExists :: CommandCheck
 repoExists = CommandCheck 0 ensureInitialized
-
-fromOpt :: CommandCheck
-fromOpt = CommandCheck 1 $ do
-	v <- Annex.getState Annex.fromremote
-	unless (isNothing v) $ error "cannot use --from with this command"
-
-toOpt :: CommandCheck
-toOpt = CommandCheck 2 $ do
-	v <- Annex.getState Annex.toremote
-	unless (isNothing v) $ error "cannot use --to with this command"
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
 
 addCheck :: Annex () -> Command -> Command
-addCheck check cmd = mutateCheck cmd $
-	\c -> CommandCheck (length c + 100) check : c
+addCheck check cmd = mutateCheck cmd $ \c ->
+	CommandCheck (length c + 100) check : c
 
 mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
 mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }

@@ -54,3 +54,6 @@ I appreciate any help....  I've tested versions 3.20111211, 3.20111231, and 3.20
     git version 1.7.8.1
 
 
+
+> [[done]]; I've fixed the build system so this confusing thing cannot
+> happen anymore. --[[Joey]]

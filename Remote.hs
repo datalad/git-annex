@@ -19,10 +19,12 @@ module Remote (
 	remoteList,
 	enabledRemoteList,
 	remoteMap,
+	uuidDescriptions,
 	byName,
 	prettyPrintUUIDs,
 	remotesWithUUID,
 	remotesWithoutUUID,
+	keyLocations,
 	keyPossibilities,
 	keyPossibilitiesTrusted,
 	nameToUUID,
@@ -39,67 +41,38 @@ import Text.JSON.Generic
 import Common.Annex
 import Types.Remote
 import qualified Annex
-import Config
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
-import Logs.Remote
-
-import qualified Remote.Git
-import qualified Remote.Bup
-import qualified Remote.Directory
-import qualified Remote.Rsync
-import qualified Remote.Web
-import qualified Remote.Hook
-
-remoteTypes :: [RemoteType]
-remoteTypes =
-	[ Remote.Git.remote
-	, Remote.Bup.remote
-	, Remote.Directory.remote
-	, Remote.Rsync.remote
-	, Remote.Web.remote
-	, Remote.Hook.remote
-	]
-
-{- Builds a list of all available Remotes.
- - Since doing so can be expensive, the list is cached. -}
-remoteList :: Annex [Remote]
-remoteList = do
-	rs <- Annex.getState Annex.remotes
-	if null rs
-		then do
-			m <- readRemoteLog
-			l <- mapM (process m) remoteTypes
-			let rs' = concat l
-			Annex.changeState $ \s -> s { Annex.remotes = rs' }
-			return rs'
-		else return rs
-	where
-		process m t = 
-			enumerate t >>=
-			mapM (gen m t)
-		gen m t r = do
-			u <- getRepoUUID r
-			generate t r u (M.lookup u m)
-
-{- All remotes that are not ignored. -}
-enabledRemoteList :: Annex [Remote]
-enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
+import Remote.List
 
 {- Map of UUIDs of Remotes and their names. -}
 remoteMap :: Annex (M.Map UUID String)
-remoteMap = M.fromList . map (\r -> (uuid r, name r)) <$> remoteList
+remoteMap = M.fromList . map (\r -> (uuid r, name r)) .
+	filter (\r -> uuid r /= NoUUID) <$> remoteList
 
-{- Looks up a remote by name. (Or by UUID.) Only finds currently configured
- - git remotes. -}
-byName :: String -> Annex (Remote)
-byName n = do
+{- Map of UUIDs and their descriptions.
+ - The names of Remotes are added to suppliment any description that has
+ - been set for a repository. -}
+uuidDescriptions :: Annex (M.Map UUID String)
+uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap
+
+addName :: String -> String -> String
+addName desc n
+	| desc == n = desc
+	| null desc = n
+	| otherwise = n ++ " (" ++ desc ++ ")"
+
+{- When a name is specified, looks up the remote matching that name.
+ - (Or it can be a UUID.) Only finds currently configured git remotes. -}
+byName :: Maybe String -> Annex (Maybe Remote)
+byName Nothing = return Nothing
+byName (Just n) = do
 	res <- byName' n
 	case res of
 		Left e -> error e
-		Right r -> return r
+		Right r -> return $ Just r
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = do
@@ -140,28 +113,24 @@ nameToUUID n = byName' n >>= go
 prettyPrintUUIDs :: String -> [UUID] -> Annex String
 prettyPrintUUIDs desc uuids = do
 	hereu <- getUUID
-	m <- M.unionWith addname <$> uuidMap <*> remoteMap
+	m <- uuidDescriptions
 	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
 	where
-		addname d n
-			| d == n = d
-			| null d = n
-			| otherwise = n ++ " (" ++ d ++ ")"
-		findlog m u = M.findWithDefault "" u m
+		finddescription m u = M.findWithDefault "" u m
 		prettify m hereu u
 			| not (null d) = fromUUID u ++ " -- " ++ d
 			| otherwise = fromUUID u
 			where
 				ishere = hereu == u
-				n = findlog m u
+				n = finddescription m u
 				d
 					| null n && ishere = "here"
-					| ishere = addname n "here"
+					| ishere = addName n "here"
 					| otherwise = n
 		jsonify m hereu u = toJSObject
 			[ ("uuid", toJSON $ fromUUID u)
-			, ("description", toJSON $ findlog m u)
+			, ("description", toJSON $ finddescription m u)
 			, ("here", toJSON $ hereu == u)
 			]
 
@@ -173,27 +142,32 @@ remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
 remotesWithoutUUID :: [Remote] -> [UUID] -> [Remote]
 remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 
-{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
+{- List of repository UUIDs that the location log indicates may have a key.
+ - Dead repositories are excluded. -}
+keyLocations :: Key -> Annex [UUID]
+keyLocations key = snd <$> (trustPartition DeadTrusted =<< loggedLocations key)
+
+{- Cost ordered lists of remotes that the location log indicates
+ - may have a key.
  -}
 keyPossibilities :: Key -> Annex [Remote]
-keyPossibilities key = fst <$> keyPossibilities' False key
+keyPossibilities key = fst <$> keyPossibilities' key []
 
-{- Cost ordered lists of remotes that the Logs.Location indicate may have a key.
+{- Cost ordered lists of remotes that the location log indicates
+ - may have a key.
  -
  - Also returns a list of UUIDs that are trusted to have the key
  - (some may not have configured remotes).
  -}
 keyPossibilitiesTrusted :: Key -> Annex ([Remote], [UUID])
-keyPossibilitiesTrusted = keyPossibilities' True
+keyPossibilitiesTrusted key = keyPossibilities' key =<< trustGet Trusted
 
-keyPossibilities' :: Bool -> Key -> Annex ([Remote], [UUID])
-keyPossibilities' withtrusted key = do
+keyPossibilities' :: Key -> [UUID] -> Annex ([Remote], [UUID])
+keyPossibilities' key trusted = do
 	u <- getUUID
-	trusted <- if withtrusted then trustGet Trusted else return []
 
-	-- get uuids of all remotes that are recorded to have the key
-	uuids <- keyLocations key
-	let validuuids = filter (/= u) uuids
+	-- uuids of all remotes that are recorded to have the key
+	validuuids <- filter (/= u) <$> keyLocations key
 
 	-- note that validuuids is assumed to not have dups
 	let validtrusteduuids = validuuids `intersect` trusted
@@ -226,13 +200,13 @@ showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = return ()	
 showTriedRemotes remotes =
 	showLongNote $ "Unable to access these remotes: " ++
-		(join ", " $ map name remotes)
+		join ", " (map name remotes)
 
 forceTrust :: TrustLevel -> String -> Annex ()
 forceTrust level remotename = do
-	r <- nameToUUID remotename
+	u <- nameToUUID remotename
 	Annex.changeState $ \s ->
-		s { Annex.forcetrust = (r, level):Annex.forcetrust s }
+		s { Annex.forcetrust = M.insert u level (Annex.forcetrust s) }
 
 {- Used to log a change in a remote's having a key. The change is logged
  - in the local repo, not on the remote. The process of transferring the

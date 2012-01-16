@@ -32,7 +32,6 @@ import qualified Locations
 import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
-import qualified Logs.Location
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -663,6 +662,8 @@ test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ when Build.SysConfi
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: Test
 test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ do
+	-- force gpg into batch mode for the tests
+	setEnv "GPG_BATCH" "1" True
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
@@ -726,7 +727,7 @@ git_annex_expectoutput command params expected = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.Construct.fromCwd
+	g <- Git.Construct.fromCurrent
 	g' <- Git.Config.read g
 	s <- Annex.new g'
 	Annex.eval s { Annex.output = Annex.QuietOutput } a
@@ -845,7 +846,7 @@ checklocationlog f expected = do
 	r <- annexeval $ Backend.lookupFile f
 	case r of
 		Just (k, _) -> do
-			uuids <- annexeval $ Logs.Location.keyLocations k
+			uuids <- annexeval $ Remote.keyLocations k
 			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"

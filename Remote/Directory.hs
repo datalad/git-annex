@@ -98,11 +98,13 @@ storeEncrypted d (cipher, enck) k = do
 storeHelper :: FilePath -> Key -> (FilePath -> IO Bool) -> IO Bool
 storeHelper d key a = do
 	let dest = Prelude.head $ locations d key
+	let tmpdest = dest ++ ".tmp"
 	let dir = parentDir dest
 	createDirectoryIfMissing True dir
 	allowWrite dir
-	ok <- a dest
+	ok <- a tmpdest
 	when ok $ do
+		renameFile tmpdest dest
 		preventWrite dest
 		preventWrite dir
 	return ok

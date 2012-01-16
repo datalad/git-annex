@@ -66,10 +66,14 @@ paramGlob :: String
 paramGlob = "GLOB"
 paramName :: String
 paramName = "NAME"
+paramValue :: String
+paramValue = "VALUE"
 paramUUID :: String
 paramUUID = "UUID"
 paramType :: String
 paramType = "TYPE"
+paramDate :: String
+paramDate = "DATE"
 paramFormat :: String
 paramFormat = "FORMAT"
 paramKeyValue :: String
