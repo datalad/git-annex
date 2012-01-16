@@ -1,3 +1,12 @@
+git-annex (3.20120116) UNRELEASED; urgency=low
+
+  * Fix data loss bug in directory special remote, when moving a file
+    to the remote failed, and partially transferred content was left
+    behind in the directory, re-running the same move would think it
+    succeeded and delete the local copy.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 16 Jan 2012 16:21:51 -0400
+
 git-annex (3.20120115) unstable; urgency=low
 
   * Add a sanity check for bad StatFS results. On architectures
