@@ -26,7 +26,6 @@ import qualified Remote.Hook
 remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
-	, Remote.S3.remote
 	, Remote.Bup.remote
 	, Remote.Directory.remote
 	, Remote.Rsync.remote
