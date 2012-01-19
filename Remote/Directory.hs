@@ -110,8 +110,10 @@ storeHelper d key a = do
 	return ok
 
 retrieve :: FilePath -> Key -> Bool -> FilePath -> Annex Bool
-retrieve d k _ f = do
-	liftIO $ withStoredFile d k $ \file -> copyFileExternal file f
+retrieve d k tmp f = liftIO $ withStoredFile d k $ \file ->
+	if tmp
+		then catchBoolIO $ createSymbolicLink file f >> return True
+		else copyFileExternal file f
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =
