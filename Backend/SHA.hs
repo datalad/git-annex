@@ -32,7 +32,7 @@ genBackend size
 		b = Backend
 			{ name = shaName size
 			, getKey = keyValue size
-			, fsckKey = checkKeyChecksum size
+			, fsckKey = Just $ checkKeyChecksum size
 			}
 
 genBackendE :: SHASize -> Maybe Backend

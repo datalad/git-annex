@@ -21,7 +21,7 @@ backend :: Backend
 backend = Backend {
 	name = "URL",
 	getKey = const (return Nothing),
-	fsckKey = const (return True)
+	fsckKey = Nothing
 }
 
 fromUrl :: String -> Key

@@ -137,7 +137,9 @@ checkKeySize key = do
 
 
 checkBackend :: Backend -> Key -> Annex Bool
-checkBackend = Types.Backend.fsckKey
+checkBackend backend key = case Types.Backend.fsckKey backend of
+	Nothing -> return True
+	Just a -> a key
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
