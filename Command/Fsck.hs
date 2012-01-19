@@ -58,13 +58,13 @@ perform key file backend numcopies = check
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
 performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> CommandPerform
-performRemote key file backend numcopies remote = withTmp key $ \tmpfile -> do
+performRemote key file backend numcopies remote = do
 	v <- Remote.hasKey remote key
 	case v of
 		Left err -> do
 			showNote err
 			stop
-		Right True -> do
+		Right True -> withtmp $ \tmpfile -> do
 			copied <- Remote.retrieveKeyFile remote key True tmpfile
 			if copied then go True (Just tmpfile) else go False Nothing
 		Right False -> go False Nothing
@@ -75,6 +75,14 @@ performRemote key file backend numcopies remote = withTmp key $ \tmpfile -> do
 			, checkBackendRemote backend key remote localcopy
 			, checkKeyNumCopies key file numcopies
 			]
+		withtmp a = do
+			pid <- liftIO getProcessID
+			t <- fromRepo gitAnnexTmpDir
+			let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
+			liftIO $ createDirectoryIfMissing True t
+			let cleanup = liftIO $ catch (removeFile tmp) (const $ return ())
+			cleanup
+			cleanup `after` a tmp
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
