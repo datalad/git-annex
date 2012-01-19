@@ -1,3 +1,16 @@
+git-annex (3.20120117) UNRELEASED; urgency=low
+
+  * fsck --from: Fscking a remote is now supported. It's done by retrieving
+    the contents of the specified files from the remote, and checking them,
+    so can be an expensive operation. Still, if the remote is a special
+    remote, or a git repository that you cannot run fsck in locally, it's
+    nice to have the ability to fsck it.
+  * If you have any directory special remotes, now would be a good time to
+    fsck them, in case you were hit by the data loss bug fixed in the
+    previous release!
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 19 Jan 2012 15:12:03 -0400
+
 git-annex (3.20120116) unstable; urgency=medium
 
   * Fix data loss bug in directory special remote, when moving a file

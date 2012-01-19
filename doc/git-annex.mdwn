@@ -212,6 +212,8 @@ subdirectories).
 
   To avoid expensive checksum calculations, specify --fast
 
+  To check a remote to fsck, specify --from.
+
 * unused
 
   Checks the annex for data that does not correspond to any files present
