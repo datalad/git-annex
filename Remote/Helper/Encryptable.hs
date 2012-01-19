@@ -55,8 +55,8 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		store k = cip k >>= maybe
 			(storeKey r k)
 			(`storeKeyEncrypted` k)
-		retrieve k f = cip k >>= maybe
-			(retrieveKeyFile r k f)
+		retrieve k t f = cip k >>= maybe
+			(retrieveKeyFile r k t f)
 			(`retrieveKeyFileEncrypted` f)
 		withkey a k = cip k >>= maybe (a k) (a . snd)
 		cip = cipherKey c

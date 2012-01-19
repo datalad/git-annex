@@ -65,7 +65,7 @@ performRemote key file backend numcopies remote = withTmp key $ \tmpfile -> do
 			showNote err
 			stop
 		Right True -> do
-			copied <- Remote.retrieveKeyFile remote key tmpfile
+			copied <- Remote.retrieveKeyFile remote key True tmpfile
 			if copied then go True (Just tmpfile) else go False Nothing
 		Right False -> go False Nothing
 	where

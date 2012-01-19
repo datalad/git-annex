@@ -43,8 +43,8 @@ data RemoteA a = Remote {
 	cost :: Int,
 	-- Transfers a key to the remote.
 	storeKey :: Key -> a Bool,
-	-- retrieves a key's contents to a file
-	retrieveKeyFile :: Key -> FilePath -> a Bool,
+	-- retrieves a key's contents to a file (possibly a tmp file)
+	retrieveKeyFile :: Key -> Bool -> FilePath -> a Bool,
 	-- removes a key's contents
 	removeKey :: Key -> a Bool,
 	-- Checks if a key is present in the remote; if the remote

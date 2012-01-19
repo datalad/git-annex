@@ -106,8 +106,8 @@ storeEncrypted h (cipher, enck) k = withTmp enck $ \tmp -> do
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	runHook h "store" enck (Just tmp) $ return True
 
-retrieve :: String -> Key -> FilePath -> Annex Bool
-retrieve h k f = runHook h "retrieve" k (Just f) $ return True
+retrieve :: String -> Key -> Bool -> FilePath -> Annex Bool
+retrieve h k _ f = runHook h "retrieve" k (Just f) $ return True
 
 retrieveEncrypted :: String -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->

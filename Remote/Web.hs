@@ -48,8 +48,8 @@ gen r _ _ =
 		remotetype = remote
 	}
 
-downloadKey :: Key -> FilePath -> Annex Bool
-downloadKey key file = get =<< getUrls key
+downloadKey :: Key -> Bool -> FilePath -> Annex Bool
+downloadKey key _ file = get =<< getUrls key
 	where
 		get [] = do
 			warning "no known url"

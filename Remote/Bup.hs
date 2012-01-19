@@ -118,8 +118,8 @@ storeEncrypted r buprepo (cipher, enck) k = do
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
-retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
-retrieve buprepo k f = do
+retrieve :: BupRepo -> Key -> Bool -> FilePath -> Annex Bool
+retrieve buprepo k _ f = do
 	let params = bupParams "join" buprepo [Param $ show k]
 	liftIO $ catchBoolIO $ do
 		tofile <- openFile f WriteMode

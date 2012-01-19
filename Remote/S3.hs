@@ -149,8 +149,8 @@ storeHelper (conn, bucket) r k file = do
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
-retrieve :: Remote -> Key -> FilePath -> Annex Bool
-retrieve r k f = s3Action r False $ \(conn, bucket) -> do
+retrieve :: Remote -> Key -> Bool -> FilePath -> Annex Bool
+retrieve r k _ f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket k
 	case res of
 		Right o -> do

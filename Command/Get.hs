@@ -72,7 +72,7 @@ getKeyFile key file = do
 				else return True
 		docopy r continue = do
 			showAction $ "from " ++ Remote.name r
-			copied <- Remote.retrieveKeyFile r key file
+			copied <- Remote.retrieveKeyFile r key False file
 			if copied
 				then return True
 				else continue

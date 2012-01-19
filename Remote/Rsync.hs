@@ -104,9 +104,9 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	rsyncSend o enck tmp
 
-retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> do
-	unlessM (liftIO $ doesFileExist f) $ whenM (inAnnex k) $ preseed
+retrieve :: RsyncOpts -> Key -> Bool -> FilePath -> Annex Bool
+retrieve o k tmp f = untilTrue (rsyncUrls o k) $ \u -> do
+	when tmp $ preseed
 	rsyncRemote o
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
@@ -115,14 +115,15 @@ retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> do
 		]
 	where
 		-- this speeds up fsck --from
-		preseed = do
-			s <- inRepo $ gitAnnexLocation k
-			liftIO $ whenM (copyFileExternal s f) $
-				allowWrite f
+		preseed = unlessM (liftIO $ doesFileExist f) $
+			whenM (inAnnex k) $ do
+				s <- inRepo $ gitAnnexLocation k
+				liftIO $ whenM (copyFileExternal s f) $
+					allowWrite f
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
-	res <- retrieve o enck tmp
+	res <- retrieve o enck False tmp
 	if res
 		then liftIO $ catchBoolIO $ do
 			withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f

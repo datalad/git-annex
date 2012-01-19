@@ -198,8 +198,8 @@ dropKey r key
 		]
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
-copyFromRemote r key file
+copyFromRemote :: Git.Repo -> Key -> Bool -> FilePath -> Annex Bool
+copyFromRemote r key _ file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
 		loc <- liftIO $ gitAnnexLocation key r

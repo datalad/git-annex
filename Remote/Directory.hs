@@ -109,8 +109,9 @@ storeHelper d key a = do
 		preventWrite dir
 	return ok
 
-retrieve :: FilePath -> Key -> FilePath -> Annex Bool
-retrieve d k f = liftIO $ withStoredFile d k $ \file -> copyFileExternal file f
+retrieve :: FilePath -> Key -> Bool -> FilePath -> Annex Bool
+retrieve d k _ f = do
+	liftIO $ withStoredFile d k $ \file -> copyFileExternal file f
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =
