@@ -199,12 +199,16 @@ dropKey r key
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Git.Repo -> Key -> Bool -> FilePath -> Annex Bool
-copyFromRemote r key _ file
+copyFromRemote r key tmp file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
 		loc <- liftIO $ gitAnnexLocation key r
-		rsyncOrCopyFile params loc file
-	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
+		if tmp
+			then liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
+			else rsyncOrCopyFile params loc file
+	| Git.repoIsSsh r = do
+		when tmp $ Annex.Content.preseedTmp key file
+		rsyncHelper =<< rsyncParamsRemote r True key file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 

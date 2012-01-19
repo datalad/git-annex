@@ -19,8 +19,6 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Utility.RsyncFile
-import Utility.CopyFile
-import Utility.FileMode
 
 type RsyncUrl = String
 
@@ -106,20 +104,13 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 
 retrieve :: RsyncOpts -> Key -> Bool -> FilePath -> Annex Bool
 retrieve o k tmp f = untilTrue (rsyncUrls o k) $ \u -> do
-	when tmp $ preseed
+	when tmp $ preseedTmp k f
 	rsyncRemote o
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
 		, Param f
 		]
-	where
-		-- this speeds up fsck --from
-		preseed = unlessM (liftIO $ doesFileExist f) $
-			whenM (inAnnex k) $ do
-				s <- inRepo $ gitAnnexLocation k
-				liftIO $ whenM (copyFileExternal s f) $
-					allowWrite f
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
