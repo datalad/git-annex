@@ -11,6 +11,8 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import System.IO.Error
 import qualified Data.Map as M
 import System.Process
+import System.Posix.Env (getEnvironment)
+import System.Path (brackettmpdir)
 
 import Common.Annex
 import Types.Remote
@@ -83,10 +85,21 @@ bupParams :: String -> BupRepo -> [CommandParam] -> [CommandParam]
 bupParams command buprepo params = 
 	Param command : [Param "-r", Param buprepo] ++ params
 
+isLocal :: BupRepo -> Bool
+isLocal buprepo = not (elem ':' buprepo)
+
 bup :: String -> BupRepo -> [CommandParam] -> Annex Bool
 bup command buprepo params = do
 	showOutput -- make way for bup output
-	liftIO $ boolSystem "bup" $ bupParams command buprepo params
+	liftIO action
+	where
+		action | isLocal buprepo = runBup lparams buprepo
+		       | otherwise = brackettmpdir "bupXXXXXX" $ runBup rparams
+		lparams = Param command : params
+		rparams = bupParams command buprepo params
+		runBup params bupdir = do
+			env <- getEnvironment
+			boolSystemEnv "bup" params (Just (("BUP_DIR", bupdir) : env))
 
 pipeBup :: [CommandParam] -> Maybe Handle -> Maybe Handle -> IO Bool
 pipeBup params inh outh = do
