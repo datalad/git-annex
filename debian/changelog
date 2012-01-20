@@ -10,6 +10,11 @@ git-annex (3.20120117) UNRELEASED; urgency=low
     previous release!
   * fsck --from remote --fast: Avoids expensive file transfers, at the
     expense of checking file size and/or contents.
+  * Ssh connection caching is now enabled automatically by git-annex.
+    Only one ssh connection is made to each host per git-annex run, which
+    can speed some things up a lot, as well as avoiding repeated password
+    prompts. Concurrent git-annex processes also share ssh connections.
+    Cached ssh connections are shut down when git-annex exits.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 19 Jan 2012 15:12:03 -0400
 

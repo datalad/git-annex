@@ -22,6 +22,7 @@ import qualified Annex.Queue
 import qualified Git
 import qualified Git.Command
 import Annex.Content
+import Annex.Ssh
 import Command
 
 type Params = [String]
@@ -92,4 +93,5 @@ shutdown :: Annex Bool
 shutdown = do
 	saveState
 	liftIO Git.Command.reap -- zombies from long-running git processes
+	sshCleanup -- ssh connection caching
 	return True

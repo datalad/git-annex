@@ -22,6 +22,7 @@ module Locations (
 	gitAnnexJournalLock,
 	gitAnnexIndex,
 	gitAnnexIndexLock,
+	gitAnnexSshDir,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -141,6 +142,10 @@ gitAnnexIndex r = gitAnnexDir r </> "index"
 {- Lock file for .git/annex/index. -}
 gitAnnexIndexLock :: Git.Repo -> FilePath
 gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
+
+{- .git/annex/ssh/ is used for ssh connection caching -}
+gitAnnexSshDir :: Git.Repo -> FilePath
+gitAnnexSshDir r = addTrailingPathSeparator $ gitAnnexDir r </> "ssh"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool

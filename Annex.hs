@@ -29,6 +29,7 @@ module Annex (
 import Control.Monad.State
 import Control.Monad.Trans.Control (StM, MonadBaseControl, liftBaseWith, restoreM)
 import Control.Monad.Base (liftBase, MonadBase)
+import System.Posix.Types (Fd)
 
 import Common
 import qualified Git
@@ -86,6 +87,7 @@ data AnnexState = AnnexState
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, ciphers :: M.Map EncryptedCipher Cipher
+	, lockpool :: M.Map FilePath Fd
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	}
@@ -108,6 +110,7 @@ newState gitrepo = AnnexState
 	, forcetrust = M.empty
 	, trustmap = Nothing
 	, ciphers = M.empty
+	, lockpool = M.empty
 	, flags = M.empty
 	, fields = M.empty
 	}

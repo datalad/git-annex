@@ -57,16 +57,3 @@ b) From the desktop add the remote
 So now you can work on the train, pop on the wifi at work upon arrival, and sync up with a `git pull && git annex get`.
 
 An alternative solution may be to use direct tunnels over Openvpn.
-
-## Optimising SSH
-
-Running a `git annex get .`, at least in the version I have, creates a new SSH connection for every file transfer (maybe this should be a feature request?)
-
-Lot's of new small files in an _annex_ cause lot's of connections to be made quickly: this is an relatively expensive overhead and is enough for connection limiting to start in my case.  The process can be made much faster by using SSH's connection sharing capabilities.  An SSH config like this should do it:
-
-    # Global Settings
-    ControlMaster auto
-    ControlPersist 30
-    ControlPath ~/.ssh/master-%r@%h:%p
-
-This will create a master connection for sharing if one isn't present, maintain it for 30 seconds after closing down the connection (just-in-cases') and automatically use the master connection for subsequent connections.  Wins all round!
