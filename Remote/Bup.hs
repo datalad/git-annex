@@ -50,6 +50,7 @@ gen r u c = do
 			name = Git.repoDescribe r,
  			storeKey = store r buprepo,
 			retrieveKeyFile = retrieve buprepo,
+			retrieveKeyFileCheap = retrieveCheap buprepo,
 			removeKey = remove,
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
@@ -118,12 +119,15 @@ storeEncrypted r buprepo (cipher, enck) k = do
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
-retrieve :: BupRepo -> Key -> Bool -> FilePath -> Annex Bool
-retrieve buprepo k _ f = do
+retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
+retrieve buprepo k f = do
 	let params = bupParams "join" buprepo [Param $ show k]
 	liftIO $ catchBoolIO $ do
 		tofile <- openFile f WriteMode
 		pipeBup params Nothing (Just tofile)
+
+retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: BupRepo -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted buprepo (cipher, enck) f = do

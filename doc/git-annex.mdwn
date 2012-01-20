@@ -210,9 +210,10 @@ subdirectories).
 
   With parameters, only the specified files are checked.
 
-  To avoid expensive checksum calculations, specify --fast
-
   To check a remote to fsck, specify --from.
+  
+  To avoid expensive checksum calculations (and expensive transfers when
+  fscking a remote), specify --fast
 
 * unused
 

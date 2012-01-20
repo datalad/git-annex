@@ -41,6 +41,7 @@ gen r u c = do
 			name = Git.repoDescribe r,
  			storeKey = store dir,
 			retrieveKeyFile = retrieve dir,
+			retrieveKeyFileCheap = retrieveCheap dir,
 			removeKey = remove dir,
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
@@ -109,11 +110,12 @@ storeHelper d key a = do
 		preventWrite dir
 	return ok
 
-retrieve :: FilePath -> Key -> Bool -> FilePath -> Annex Bool
-retrieve d k tmp f = liftIO $ withStoredFile d k $ \file ->
-	if tmp
-		then catchBoolIO $ createSymbolicLink file f >> return True
-		else copyFileExternal file f
+retrieve :: FilePath -> Key -> FilePath -> Annex Bool
+retrieve d k f = liftIO $ withStoredFile d k $ \file -> copyFileExternal file f
+
+retrieveCheap :: FilePath -> Key -> FilePath -> Annex Bool
+retrieveCheap d k f = liftIO $ withStoredFile d k $ \file ->
+	catchBoolIO $ createSymbolicLink file f >> return True
 
 retrieveEncrypted :: FilePath -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted d (cipher, enck) f =

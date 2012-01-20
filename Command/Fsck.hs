@@ -9,6 +9,7 @@ module Command.Fsck where
 
 import Common.Annex
 import Command
+import qualified Annex
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
@@ -65,8 +66,8 @@ performRemote key file backend numcopies remote = do
 			showNote err
 			stop
 		Right True -> withtmp $ \tmpfile -> do
-			copied <- Remote.retrieveKeyFile remote key True tmpfile
-			if copied then go True (Just tmpfile) else go False Nothing
+			copied <- getfile tmpfile
+			if copied then go True (Just tmpfile) else go True Nothing
 		Right False -> go False Nothing
 	where
 		go present localcopy = check
@@ -83,6 +84,15 @@ performRemote key file backend numcopies remote = do
 			let cleanup = liftIO $ catch (removeFile tmp) (const $ return ())
 			cleanup
 			cleanup `after` a tmp
+		getfile tmp = do
+			ok <- Remote.retrieveKeyFileCheap remote key tmp
+			if ok
+				then return ok
+				else do
+					fast <- Annex.getState Annex.fast
+					if fast
+						then return False
+						else Remote.retrieveKeyFile remote key tmp
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek

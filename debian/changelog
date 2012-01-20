@@ -8,6 +8,8 @@ git-annex (3.20120117) UNRELEASED; urgency=low
   * If you have any directory special remotes, now would be a good time to
     fsck them, in case you were hit by the data loss bug fixed in the
     previous release!
+  * fsck --from remote --fast: Avoids expensive file transfers, at the
+    expense of checking file size and/or contents.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 19 Jan 2012 15:12:03 -0400
 

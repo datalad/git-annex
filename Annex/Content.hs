@@ -306,9 +306,18 @@ downloadUrl urls file = do
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}
-preseedTmp :: Key -> FilePath -> Annex ()
-preseedTmp key file =
-	unlessM (liftIO $ doesFileExist file) $ whenM (inAnnex key) $ do
-		s <- inRepo $ gitAnnexLocation key
-		liftIO $ whenM (copyFileExternal s file) $
-			allowWrite file
+preseedTmp :: Key -> FilePath -> Annex Bool
+preseedTmp key file = go =<< inAnnex key
+	where
+		go False = return False
+		go True = do
+			ok <- copy
+			when ok $ liftIO $ allowWrite file
+			return ok
+		copy = do
+			present <- liftIO $ doesFileExist file
+			if present
+				then return True
+				else do
+					s <- inRepo $ gitAnnexLocation key
+					liftIO $ copyFileExternal s file

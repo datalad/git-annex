@@ -40,6 +40,7 @@ gen r _ _ =
 		name = Git.repoDescribe r,
 		storeKey = uploadKey,
 		retrieveKeyFile = downloadKey,
+		retrieveKeyFileCheap = downloadKeyCheap,
 		removeKey = dropKey,
 		hasKey = checkKey,
 		hasKeyCheap = False,
@@ -48,8 +49,8 @@ gen r _ _ =
 		remotetype = remote
 	}
 
-downloadKey :: Key -> Bool -> FilePath -> Annex Bool
-downloadKey key _ file = get =<< getUrls key
+downloadKey :: Key -> FilePath -> Annex Bool
+downloadKey key file = get =<< getUrls key
 	where
 		get [] = do
 			warning "no known url"
@@ -57,6 +58,9 @@ downloadKey key _ file = get =<< getUrls key
 		get urls = do
 			showOutput -- make way for download progress bar
 			downloadUrl urls file
+
+downloadKeyCheap :: Key -> FilePath -> Annex Bool
+downloadKeyCheap _ _ = return False
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

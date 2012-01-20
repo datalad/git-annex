@@ -53,6 +53,7 @@ gen' r u c cst =
 			name = Git.repoDescribe r,
 	 		storeKey = store this,
 			retrieveKeyFile = retrieve this,
+			retrieveKeyFileCheap = retrieveCheap this,
 			removeKey = remove this,
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
@@ -149,14 +150,17 @@ storeHelper (conn, bucket) r k file = do
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
-retrieve :: Remote -> Key -> Bool -> FilePath -> Annex Bool
-retrieve r k _ f = s3Action r False $ \(conn, bucket) -> do
+retrieve :: Remote -> Key -> FilePath -> Annex Bool
+retrieve r k f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket k
 	case res of
 		Right o -> do
 			liftIO $ L.writeFile f $ obj_data o
 			return True
 		Left e -> s3Warning e
+
+retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) f = s3Action r False $ \(conn, bucket) -> do

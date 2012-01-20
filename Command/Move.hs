@@ -131,7 +131,7 @@ fromPerform src move key = moveLock move key $ do
 		then handle move True
 		else do
 			showAction $ "from " ++ Remote.name src
-			ok <- getViaTmp key $ Remote.retrieveKeyFile src key False
+			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
 			handle move ok
 	where
 		handle _ False = stop -- failed

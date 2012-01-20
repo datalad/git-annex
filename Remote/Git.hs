@@ -75,6 +75,7 @@ gen r u _ = do
 		name = Git.repoDescribe r',
 		storeKey = copyToRemote r',
 		retrieveKeyFile = copyFromRemote r',
+		retrieveKeyFileCheap = copyFromRemoteCheap r',
 		removeKey = dropKey r',
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
@@ -198,19 +199,27 @@ dropKey r key
 		]
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Git.Repo -> Key -> Bool -> FilePath -> Annex Bool
-copyFromRemote r key tmp file
+copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
+copyFromRemote r key file
 	| not $ Git.repoIsUrl r = do
 		params <- rsyncParams r
 		loc <- liftIO $ gitAnnexLocation key r
-		if tmp
-			then liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
-			else rsyncOrCopyFile params loc file
-	| Git.repoIsSsh r = do
-		when tmp $ Annex.Content.preseedTmp key file
-		rsyncHelper =<< rsyncParamsRemote r True key file
+		rsyncOrCopyFile params loc file
+	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
+
+copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool
+copyFromRemoteCheap r key file
+	| not $ Git.repoIsUrl r = do
+		loc <- liftIO $ gitAnnexLocation key r
+		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
+	| Git.repoIsSsh r = do
+		ok <- Annex.Content.preseedTmp key file
+		if ok
+			then copyFromRemote r key file
+			else return False
+	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
