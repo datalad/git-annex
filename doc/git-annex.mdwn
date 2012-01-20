@@ -575,6 +575,10 @@ Here are all the supported configuration settings.
 
   Automatically maintained, and used to automate upgrades between versions.
 
+* `annex.sshcaching`
+
+  By default, git-annex caches ssh connections. To disable this, set to `false`.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

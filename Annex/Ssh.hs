@@ -15,28 +15,37 @@ import System.IO.Error (try)
 
 import Common.Annex
 import Annex.LockPool
+import qualified Git
+import qualified Git.Config
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
 sshParams :: (String, Maybe Integer) -> Annex [CommandParam]
-sshParams (host, port) = do
-	cleanstale
-	(socketfile, params) <- sshInfo (host, port)
-	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-	lockFile $ socket2lock socketfile
-	return params
+sshParams (host, port) = go =<< sshInfo (host, port)
 	where
+		go (Nothing, params) = return params
+		go (Just socketfile, params) = do
+			cleanstale
+			liftIO $ createDirectoryIfMissing True $ parentDir socketfile
+			lockFile $ socket2lock socketfile
+			return params
 		-- If the lock pool is empty, this is the first ssh of this
 		-- run. There could be stale ssh connections hanging around
 		-- from a previous git-annex run that was interrupted.
 		cleanstale = whenM (null . filter isLock . M.keys <$> getPool) $
 			sshCleanup
 
-sshInfo :: (String, Maybe Integer) -> Annex (FilePath, [CommandParam])
+sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
 sshInfo (host, port) = do
-	dir <- fromRepo $ gitAnnexSshDir
-	let socketfile = dir </> hostport2socket host port
-	return $ (socketfile, cacheParams socketfile ++ portParams port ++ [Param host])
+	caching <- Git.configTrue <$> fromRepo (Git.Config.get "annex.sshcaching" "true")
+	if caching
+		then do
+			dir <- fromRepo $ gitAnnexSshDir
+			let socketfile = dir </> hostport2socket host port
+		 	return $ (Just socketfile, cacheParams socketfile ++ params)
+		else return (Nothing, params)
+	where
+		params = portParams port ++ [Param host]
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =
