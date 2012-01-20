@@ -25,7 +25,7 @@ readFileStrict = readFile >=> \s -> length s `seq` return s
  - in the second result list.
  -
  - separate (== ':') "foo:bar" = ("foo", "bar")
- - separate (== ':') "foobar" = ("foo, "")
+ - separate (== ':') "foobar" = ("foobar", "")
  -}
 separate :: (a -> Bool) -> [a] -> ([a], [a])
 separate c l = unbreak $ break c l
