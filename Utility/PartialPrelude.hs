@@ -37,7 +37,7 @@ last = Prelude.last
  - Ignores leading/trailing whitespace, and throws away any trailing
  - text after the part that can be read.
  -}
-readMaybe :: (Read a) => String -> Maybe a
+readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
 	((x,_):_) -> Just x
 	_ -> Nothing
