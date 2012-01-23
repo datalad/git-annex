@@ -5,7 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Options where
+module Option (
+	common,
+	matcher,
+	flag,
+	field,
+	name,
+	ArgDescr(..),
+	OptDescr(..),
+) where
 
 import System.Console.GetOpt
 import System.Log.Logger
@@ -13,14 +21,10 @@ import System.Log.Logger
 import Common.Annex
 import qualified Annex
 import Limit
+import Usage
 
-{- Each dashed command-line option results in generation of an action
- - in the Annex monad that performs the necessary setting.
- -}
-type Option = OptDescr (Annex ())
-
-commonOptions :: [Option]
-commonOptions =
+common :: [Option]
+common =
 	[ Option [] ["force"] (NoArg (setforce True))
 		"allow actions that may lose annexed data"
 	, Option ['F'] ["fast"] (NoArg (setfast True))
@@ -46,9 +50,9 @@ commonOptions =
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $
 			setLevel DEBUG
-	
-matcherOptions :: [Option]
-matcherOptions =
+
+matcher :: [Option]
+matcher =
 	[ longopt "not" "negate next option"
 	, longopt "and" "both previous and next option must match"
 	, longopt "or" "either previous or next option must match"
@@ -59,38 +63,17 @@ matcherOptions =
 		longopt o = Option [] [o] $ NoArg $ addToken o
 		shortopt o = Option o [] $ NoArg $ addToken o
 
-{- Descriptions of params used in usage messages. -}
-paramPaths :: String
-paramPaths = paramOptional $ paramRepeating paramPath -- most often used
-paramPath :: String
-paramPath = "PATH"
-paramKey :: String
-paramKey = "KEY"
-paramDesc :: String
-paramDesc = "DESC"
-paramUrl :: String
-paramUrl = "URL"
-paramNumber :: String
-paramNumber = "NUMBER"
-paramRemote :: String
-paramRemote = "REMOTE"
-paramGlob :: String
-paramGlob = "GLOB"
-paramName :: String
-paramName = "NAME"
-paramUUID :: String
-paramUUID = "UUID"
-paramType :: String
-paramType = "TYPE"
-paramFormat :: String
-paramFormat = "FORMAT"
-paramKeyValue :: String
-paramKeyValue = "K=V"
-paramNothing :: String
-paramNothing = ""
-paramRepeating :: String -> String
-paramRepeating s = s ++ " ..."
-paramOptional :: String -> String
-paramOptional s = "[" ++ s ++ "]"
-paramPair :: String -> String -> String
-paramPair a b = a ++ " " ++ b
+{- An option that sets a flag. -}
+flag :: String -> String -> String -> Option
+flag short opt description = 
+	Option short [opt] (NoArg (Annex.setFlag opt)) description
+
+{- An option that sets a field. -}
+field :: String -> String -> String -> String -> Option
+field short opt paramdesc description = 
+	Option short [opt] (ReqArg (Annex.setField opt) paramdesc) description
+
+{- The flag or field name used for an option. -}
+name :: Option -> String
+name (Option _ o _ _) = Prelude.head o
+

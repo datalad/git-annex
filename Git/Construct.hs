@@ -6,6 +6,7 @@
  -}
 
 module Git.Construct (
+	fromCurrent,
 	fromCwd,
 	fromAbsPath,
 	fromUrl,
@@ -19,6 +20,8 @@ module Git.Construct (
 ) where
 
 import System.Posix.User
+import System.Posix.Env (getEnv, unsetEnv)
+import System.Posix.Directory (changeWorkingDirectory)
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
 
@@ -27,12 +30,39 @@ import Git.Types
 import Git
 import qualified Git.Url as Url
 
-{- Finds the current git repository, which may be in a parent directory. -}
+{- Finds the current git repository.
+ -
+ - GIT_DIR can override the location of the .git directory.
+ -
+ - When GIT_WORK_TREE is set, chdir to it, so that anything using
+ - this repository runs in the right location. However, this chdir is
+ - done after determining GIT_DIR; git does not let GIT_WORK_TREE
+ - influence the git directory.
+ -
+ - Both environment variables are unset, to avoid confusing other git
+ - commands that also look at them. This would particularly be a problem
+ - when GIT_DIR is relative and we chdir for GIT_WORK_TREE. Instead,
+ - the Git module passes --work-tree and --git-dir to git commands it runs.
+ -}
+fromCurrent :: IO Repo
+fromCurrent = do
+	r <- maybe fromCwd fromPath =<< getEnv "GIT_DIR"
+	maybe (return ()) changeWorkingDirectory =<< getEnv "GIT_WORK_TREE"
+	unsetEnv "GIT_DIR"
+	unsetEnv "GIT_WORK_TREE"
+	return r
+
+{- Finds the git repository used for the Cwd, which may be in a parent
+ - directory. -}
 fromCwd :: IO Repo
 fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
 	where
-		makerepo = return . newFrom . Dir
+		makerepo = newFrom . Dir
 		norepo = error "Not in a git repository."
+
+{- Local Repo constructor, accepts a relative or absolute path. -}
+fromPath :: FilePath -> IO Repo
+fromPath dir = fromAbsPath =<< absPath dir
 
 {- Local Repo constructor, requires an absolute path to the repo be
  - specified. -}
@@ -58,20 +88,29 @@ fromAbsPath dir
 				else ret dir
 	| otherwise = error $ "internal error, " ++ dir ++ " is not absolute"
 	where
-		ret = return . newFrom . Dir
+		ret = newFrom . Dir
 
-{- Remote Repo constructor. Throws exception on invalid url. -}
+{- Remote Repo constructor. Throws exception on invalid url.
+ -
+ - Git is somewhat forgiving about urls to repositories, allowing
+ - eg spaces that are not normally allowed unescaped in urls.
+ -}
 fromUrl :: String -> IO Repo
 fromUrl url
+	| not (isURI url) = fromUrlStrict $ escapeURIString isUnescapedInURI url
+	| otherwise = fromUrlStrict url
+
+fromUrlStrict :: String -> IO Repo
+fromUrlStrict url
 	| startswith "file://" url = fromAbsPath $ uriPath u
-	| otherwise = return $ newFrom $ Url u
-		where
-			u = fromMaybe bad $ parseURI url
-			bad = error $ "bad url " ++ url
+	| otherwise = newFrom $ Url u
+	where
+		u = fromMaybe bad $ parseURI url
+		bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
 fromUnknown :: IO Repo
-fromUnknown = return $ newFrom Unknown
+fromUnknown = newFrom Unknown
 
 {- Converts a local Repo into a remote repo, using the reference repo
  - which is assumed to be on the same host. -}
@@ -117,7 +156,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 	where
 		gen v	
 			| scpstyle v = fromUrl $ scptourl v
-			| isURI v = fromUrl v
+			| urlstyle v = fromUrl v
 			| otherwise = fromRemotePath v repo
 		-- insteadof config can rewrite remote location
 		calcloc l
@@ -137,6 +176,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 						M.toList $ fullconfig repo
 				splitconfigs (k, vs) = map (\v -> (k, v)) vs
 				(prefix, suffix) = ("url." , ".insteadof")
+		urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
 		-- git remotes can be written scp style -- [user@]host:dir
 		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
@@ -199,21 +239,23 @@ seekUp want dir = do
 isRepoTop :: FilePath -> IO Bool
 isRepoTop dir = do
 	r <- isRepo
-	b <- isBareRepo
-	return (r || b)
+	if r
+		then return r
+		else isBareRepo
 	where
-		isRepo = gitSignature ".git" ".git/config"
-		isBareRepo = gitSignature "objects" "config"
-		gitSignature subdir file = liftM2 (&&)
-			(doesDirectoryExist (dir ++ "/" ++ subdir))
-			(doesFileExist (dir ++ "/" ++ file))
+		isRepo = gitSignature (".git" </> "config")
+		isBareRepo = do
+			e <- doesDirectoryExist (dir </> "objects")
+			if not e
+				then return e
+				else gitSignature "config"
+		gitSignature file = doesFileExist (dir </> file)
 
-newFrom :: RepoLocation -> Repo
-newFrom l = 
-	Repo {
-		location = l,
-		config = M.empty,
-		fullconfig = M.empty,
-		remotes = [],
-		remoteName = Nothing
+newFrom :: RepoLocation -> IO Repo
+newFrom l = return Repo
+	{ location = l
+	, config = M.empty
+	, fullconfig = M.empty
+	, remotes = []
+	, remoteName = Nothing
 	}

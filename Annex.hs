@@ -17,6 +17,10 @@ module Annex (
 	eval,
 	getState,
 	changeState,
+	setFlag,
+	setField,
+	getFlag,
+	getField,
 	gitRepo,
 	inRepo,
 	fromRepo,
@@ -34,9 +38,7 @@ import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
-import Types.UUID
 import qualified Utility.Matcher
-import qualified Utility.Format
 import qualified Data.Map as M
 
 -- needed for Debian stable's haskell to derive Applicative for StateT
@@ -68,17 +70,16 @@ data AnnexState = AnnexState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
-	, format :: Maybe Utility.Format.Format
 	, branchstate :: BranchState
 	, catfilehandle :: Maybe CatFileHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
-	, toremote :: Maybe String
-	, fromremote :: Maybe String
 	, limit :: Matcher (FilePath -> Annex Bool)
-	, forcetrust :: [(UUID, TrustLevel)]
+	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, ciphers :: M.Map EncryptedCipher Cipher
+	, flags :: M.Map String Bool
+	, fields :: M.Map String String
 	}
 
 newState :: Git.Repo -> AnnexState
@@ -91,17 +92,16 @@ newState gitrepo = AnnexState
 	, force = False
 	, fast = False
 	, auto = False
-	, format = Nothing
 	, branchstate = startBranchState
 	, catfilehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
-	, toremote = Nothing
-	, fromremote = Nothing
 	, limit = Left []
-	, forcetrust = []
+	, forcetrust = M.empty
 	, trustmap = Nothing
 	, ciphers = M.empty
+	, flags = M.empty
+	, fields = M.empty
 	}
 
 {- Create and returns an Annex state object for the specified git repo. -}
@@ -125,6 +125,24 @@ getState = gets
  -}
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState = modify
+
+{- Sets a flag to True -}
+setFlag :: String -> Annex ()
+setFlag flag = changeState $ \s ->
+	s { flags = M.insert flag True $ flags s }
+
+{- Sets a field to a value -}
+setField :: String -> String -> Annex ()
+setField field value = changeState $ \s ->
+	s { fields = M.insert field value $ fields s }
+
+{- Checks if a flag was set. -}
+getFlag :: String -> Annex Bool
+getFlag flag = fromMaybe False . M.lookup flag <$> getState flags
+
+{- Gets the value of a field. -}
+getField :: String -> Annex (Maybe String)
+getField field = M.lookup field <$> getState fields
 
 {- Returns the annex's git repository. -}
 gitRepo :: Annex Git.Repo

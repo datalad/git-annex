@@ -2,7 +2,7 @@ Source: git-annex
 Section: utils
 Priority: optional
 Build-Depends: 
-	debhelper (>= 7.0.50),
+	debhelper (>= 9),
 	ghc,
 	libghc6-missingh-dev,
 	libghc6-hslogger-dev,
@@ -13,6 +13,7 @@ Build-Depends:
 	libghc6-utf8-string-dev,
 	libghc6-testpack-dev [any-i386 any-amd64],
 	libghc6-json-dev,
+	libghc6-quickcheck2-dev,
 	ikiwiki,
 	perlmagick,
 	git,

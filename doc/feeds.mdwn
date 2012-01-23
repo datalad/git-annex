@@ -1,3 +1,5 @@
 Aggregating git-annex mentions from elsewhere on the net..
 
 * [[!aggregate expirecount=25 name="identica" feedurl="http://identi.ca/api/statusnet/tags/timeline/gitannex.rss" url="http://identi.ca/tag/gitannex"]]
+* [[!aggregate expirecount=25 name="twitter" feedurl="http://search.twitter.com/search.atom?q=git-annex" url="http://twitter.com/"]]
+

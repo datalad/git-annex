@@ -64,7 +64,8 @@ subdirectories).
 
   Adds files in the path to the annex. Files that are already checked into
   git, or that git has been configured to ignore will be silently skipped.
-  (Use --force to add ignored files.)
+  (Use --force to add ignored files.) Dotfiles are skipped unless explicitly
+  listed.
 
 * get [path ...]
 
@@ -127,8 +128,8 @@ subdirectories).
   the default is to sync with all remotes. Or specify --fast to sync with
   the remotes with the lowest annex-cost value.
 
-  The sync process involves first committing all local changes, then
-  fetching and merging the `synced/master` and the `git-annex` branch
+  The sync process involves first committing all local changes (git commit -a),
+  then fetching and merging the `synced/master` and the `git-annex` branch
   from the remote repositories and finally pushing the changes back to
   those branches on the remote repositories. You can use standard git
   commands to do each of those steps by hand, or if you don't want to
@@ -271,6 +272,18 @@ subdirectories).
 
   Displays a list of repositories known to contain the content of the
   specified file or files.
+
+* log [path ...]
+
+  Displays the location log for the specified file or files,
+  showing each repository they were added to ("+") and removed from ("-").
+
+  To limit how far back to seach for location log changes, the options
+  --since, --after, --until, --before, and --max-count can be specified.
+  They are passed through to git log. For example, --since "1 month ago"
+
+  To generate output suitable for the gource visualisation program,
+  specify --gource.
 
 * status
 
@@ -593,6 +606,12 @@ Here are all the supported configuration settings.
 
   git-annex caches UUIDs of remote repositories here.
 
+* `remote.<name>.annex-trustlevel`
+
+  Configures a local trust level for the remote. This overrides the value
+  configured by the trust and untrust commands. The value can be any of
+  "trusted", "semitrusted" or "untrusted".
+
 * `remote.<name>.annex-ssh-options`
 
   Options to use when using ssh to talk to this remote.
@@ -603,16 +622,22 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force ipv6, and limit
   the bandwidth to 100Kbyte/s, set it to "-6 --bwlimit 100"
 
+* `remote.<name>.annex-web-options`
+
+  Options to use when using wget or curl to download a file from the web.
+  (wget is always used in preference to curl if available).
+  For example, to force ipv4 only, set it to "-4"
+
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.
   For example, to limit the bandwidth to 100Kbye/s, set it to "--bwlimit 100k"
   (There is no corresponding option for bup join.)
 
-* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`
+* `annex.ssh-options`, `annex.rsync-options`, `annex.web-options, `annex.bup-split-options`
 
-  Default ssh, rsync, and bup options to use if a remote does not have
-  specific options.
+  Default ssh, rsync, wget/curl, and bup options to use if a remote does not
+  have specific options.
 
 * `remote.<name>.buprepo`
 

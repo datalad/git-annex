@@ -1,0 +1,3 @@
+[[!map pages="page(*) and !*/discussion and !recentchanges
+and !bugs/* and !examples/*/* and !news/* and !tips/*
+and !forum/* and !todo/* and !users/* and !ikiwiki/*"]]

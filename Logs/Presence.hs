@@ -13,14 +13,15 @@
 
 module Logs.Presence (
 	LogStatus(..),
+	LogLine,
 	addLog,
 	readLog,
+	getLog,
 	parseLog,
 	showLog,
 	logNow,
 	compactLog,
 	currentLog,
-	LogLine
 ) where
 
 import Data.Time.Clock.POSIX
@@ -79,6 +80,10 @@ logNow s i = do
 {- Reads a log and returns only the info that is still in effect. -}
 currentLog :: FilePath -> Annex [String]
 currentLog file = map info . filterPresent <$> readLog file
+
+{- Given a log, returns only the info that is are still in effect. -}
+getLog :: String -> [String]
+getLog = map info . filterPresent . parseLog
 
 {- Returns the info from LogLines that are in effect. -}
 filterPresent :: [LogLine] -> [LogLine]

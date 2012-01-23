@@ -29,7 +29,7 @@ module Git (
 
 import qualified Data.Map as M
 import Data.Char
-import Network.URI (uriPath, uriScheme)
+import Network.URI (uriPath, uriScheme, unEscapeString)
 
 import Common
 import Git.Types
@@ -107,7 +107,7 @@ gitDir repo
  -
  - Note that for URL repositories, this is the path on the remote host. -}
 workTree :: Repo -> FilePath
-workTree Repo { location = Url u } = uriPath u
+workTree Repo { location = Url u } = unEscapeString $ uriPath u
 workTree Repo { location = Dir d } = d
 workTree Repo { location = Unknown } = undefined
 

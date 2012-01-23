@@ -10,7 +10,7 @@ GHCMAKE=ghc $(GHCFLAGS) --make
 
 bins=git-annex git-annex-shell git-union-merge
 mans=git-annex.1 git-annex-shell.1 git-union-merge.1
-sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs Remote/S3.hs
+sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs
 
 all=$(bins) $(mans) docs
 
@@ -21,11 +21,13 @@ endif
 
 all: $(all)
 
+sources: $(sources)
+
 # Disables optimisation. Not for production use.
 fast: GHCFLAGS=-Wall $(IGNORE)
 fast: $(bins)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
 	$(GHCMAKE) configure
 	./configure
 
@@ -33,18 +35,7 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs
 	hsc2hs $<
 	perl -i -pe 's/^{-# INCLUDE.*//' $@
 
-Remote/S3.hs:
-	@ln -sf S3real.hs Remote/S3.hs
-
-Remote/S3.o: Remote/S3.hs
-	@if ! $(GHCMAKE) Remote/S3.hs; then \
-		ln -sf S3stub.hs Remote/S3.hs; \
-		echo "** building without S3 support"; \
-	fi
-
-sources: $(sources)
-
-$(bins): sources Remote/S3.o
+$(bins): $(sources)
 	$(GHCMAKE) $@
 
 git-annex.1: doc/git-annex.mdwn
@@ -66,12 +57,11 @@ install: all
 
 test:
 	@if ! $(GHCMAKE) -O0 test; then \
-		echo "** not running test suite" >&2; \
-	else \
-		if ! ./test; then \
-			echo "** test suite failed!" >&2; \
-			exit 1; \
-		fi; \
+		echo "** failed to build the test suite" >&2; \
+		exit 1; \
+	elif ! ./test; then \
+		echo "** test suite failed!" >&2; \
+		exit 1; \
 	fi
 
 testcoverage:
@@ -111,5 +101,9 @@ sdist: clean
 	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
 	@cabal sdist
 	@mv git-annex.cabal.orig git-annex.cabal
+
+# Upload to hackage.
+hackage: sdist
+	@cabal upload dist/*.tar.gz
 
 .PHONY: $(bins) test install

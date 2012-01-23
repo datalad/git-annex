@@ -8,7 +8,6 @@
 module Command.Whereis where
 
 import Common.Annex
-import Logs.Location
 import Command
 import Remote
 import Logs.Trust

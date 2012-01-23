@@ -29,7 +29,7 @@ type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
 dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
-dispatch args cmds options header getgitrepo = do
+dispatch args cmds commonoptions header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
@@ -41,37 +41,26 @@ dispatch args cmds options header getgitrepo = do
 				prepCommand cmd params
 			tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
 	where
-		(flags, cmd, params) = parseCmd args cmds options header
+		(flags, cmd, params) = parseCmd args cmds commonoptions header
 
 {- Parses command line, and returns actions to run to configure flags,
  - the Command being run, and the remaining parameters for the command. -} 
 parseCmd :: Params -> [Command] -> [Option] -> String -> (Flags, Command, Params)
-parseCmd argv cmds options header = check $ getOpt Permute options argv
+parseCmd argv cmds commonoptions header
+	| isNothing name = err "missing command"
+	| null matches = err $ "unknown command " ++ fromJust name
+	| otherwise = check $ getOpt Permute (commonoptions ++ cmdoptions cmd) args
 	where
-		check (_, [], []) = err "missing command"
-		check (flags, name:rest, [])
-			| null matches = err $ "unknown command " ++ name
-			| otherwise = (flags, Prelude.head matches, rest)
-			where
-				matches = filter (\c -> name == cmdname c) cmds
+		(name, args) = findname argv []
+		findname [] c = (Nothing, reverse c)
+		findname (a:as) c
+			| "-" `isPrefixOf` a = findname as (a:c)
+			| otherwise = (Just a, reverse c ++ as)
+		matches = filter (\c -> name == Just (cmdname c)) cmds
+		cmd = Prelude.head matches
+		check (flags, rest, []) = (flags, cmd, rest)
 		check (_, _, errs) = err $ concat errs
-		err msg = error $ msg ++ "\n\n" ++ usage header cmds options
-
-{- Usage message with lists of commands and options. -}
-usage :: String -> [Command] -> [Option] -> String
-usage header cmds options = usageInfo top options ++ commands
-	where
-		top = header ++ "\n\nOptions:"
-		commands = "\nCommands:\n" ++ cmddescs
-		cmddescs = unlines $ map (indent . showcmd) cmds
-		showcmd c =
-			cmdname c ++
-			pad (longest cmdname + 1) (cmdname c) ++
-			cmdparams c ++
-			pad (longest cmdparams + 2) (cmdparams c) ++
-			cmddesc c
-		pad n s = replicate (n - length s) ' '
-		longest f = foldl max 0 $ map (length . f) cmds
+		err msg = error $ msg ++ "\n\n" ++ usage header cmds commonoptions
 
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).

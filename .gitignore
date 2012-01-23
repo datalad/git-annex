@@ -15,5 +15,4 @@ html
 .hpc
 Utility/Touch.hs
 Utility/StatFS.hs
-Remote/S3.hs
 dist

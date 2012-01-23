@@ -20,7 +20,8 @@ module Annex.Content (
 	fromAnnex,
 	moveBad,
 	getKeysPresent,
-	saveState
+	saveState,
+	downloadUrl,
 ) where
 
 import System.IO.Error (try)
@@ -36,6 +37,7 @@ import qualified Annex.Queue
 import qualified Annex.Branch
 import Utility.StatFS
 import Utility.FileMode
+import qualified Utility.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Config
@@ -175,6 +177,7 @@ checkDiskSpace' adjustment key = do
 	r <- getConfig g "diskreserve" ""
 	let reserve = fromMaybe megabyte $ readSize dataUnits r
 	stats <- liftIO $ getFileSystemStats (gitAnnexDir g)
+	sanitycheck r stats
 	case (stats, keySize key) of
 		(Nothing, _) -> return ()
 		(_, Nothing) -> return ()
@@ -187,7 +190,17 @@ checkDiskSpace' adjustment key = do
 		needmorespace n = unlessM (Annex.getState Annex.force) $
 			error $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
-				" more (use --force to override this check or adjust annex.diskreserve)"
+				" more" ++ forcemsg
+		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
+		sanitycheck r stats
+			| not (null r) && isNothing stats = do
+				unlessM (Annex.getState Annex.force) $
+					error $ "You have configured a diskreserve of "
+						++ r ++
+						" but disk space checking is not working"
+						++ forcemsg
+				return ()
+			| otherwise = return ()
 
 {- Moves a file into .git/annex/objects/
  -
@@ -281,3 +294,10 @@ saveState :: Annex ()
 saveState = do
 	Annex.Queue.flush False
 	Annex.Branch.commit "update"
+
+{- Downloads content from any of a list of urls. -}
+downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
+downloadUrl urls file = do
+	g <- gitRepo
+	o <- map Param . words <$> getConfig g "web-options" ""
+	liftIO $ anyM (\u -> Url.download u o file) urls

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://peter-simons.myopenid.com/"
+ ip="77.186.134.113"
+ subject="Not announced on Hackage?"
+ date="2012-01-13T17:37:11Z"
+ content="""
+We have the [latest version in NixOS](http://hydra.nixos.org/job/nixpkgs/trunk/gitAndTools.gitAnnex), but we cannot advertise that fact on Hackage because it seems the corresponding Cabal file hasn't been uploaded to <http://hackage.haskell.org/package/git-annex>. Is there any particular reason why Hackage doesn't know about this release?
+"""]]

@@ -31,7 +31,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	!branch <- fromMaybe nobranch <$> inRepo (Git.Branch.current)
+	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
 	return $ concat $
 		[ [ commit ]
@@ -61,7 +61,7 @@ syncRemotes rs = do
 		wanted
 			| null rs = good =<< available
 			| otherwise = listed
-		listed = mapM Remote.byName rs
+		listed = catMaybes <$> mapM (Remote.byName . Just) rs
 		available = filter nonspecial <$> Remote.enabledRemoteList
 		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
 		nonspecial r = Types.Remote.remotetype r == Remote.Git.remote

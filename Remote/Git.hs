@@ -13,7 +13,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Utility.CopyFile
 import Utility.RsyncFile
-import Annex.Ssh
+import Remote.Helper.Ssh
 import Types.Remote
 import qualified Git
 import qualified Git.Command
@@ -115,13 +115,11 @@ tryGitConfigRead r
 				pOpen ReadFromPipe "git" ["config", "--null", "--list", "--file", tmpfile] $
 					Git.Config.hRead r
 
-		store a = do
-			r' <- a
+		store = observe $ \r' -> do
 			g <- gitRepo
 			let l = Git.remotes g
 			let g' = g { Git.remotes = exchange l r' }
 			Annex.changeState $ \s -> s { Annex.repo = g' }
-			return r'
 
 		exchange [] _ = []
 		exchange (old:ls) new =
@@ -184,9 +182,7 @@ onLocal r a = do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
-		ret <- a
-		liftIO Git.Command.reap
-		return ret
+		liftIO Git.Command.reap `after` a
 
 keyUrls :: Git.Repo -> Key -> [String]
 keyUrls r key = map tourl (annexLocations key)
@@ -209,10 +205,8 @@ copyFromRemote r key file
 		loc <- liftIO $ gitAnnexLocation key r
 		rsyncOrCopyFile params loc file
 	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = liftIO $ downloadurls $ keyUrls r key
+	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) file
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
-	where
-		downloadurls us = untilTrue us $ \u -> Url.download u file
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
@@ -223,10 +217,9 @@ copyToRemote r key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			ok <- Annex.Content.getViaTmp key $
-				rsyncOrCopyFile params keysrc
-			Annex.Content.saveState
-			return ok
+			Annex.Content.saveState `after`
+				Annex.Content.getViaTmp key
+					(rsyncOrCopyFile params keysrc)
 	| Git.repoIsSsh r = do
 		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-03T00:57:55Z"
+ content="""
+The web special remote will happily download files when you `git annex get` even if they don't have the same content that they did before.
+
+`git annex fsck` will detect such mismatched content to the best ability of the backend (so checking the SHA1, or verifying the file size at least matches if you use WORM), and complain and move such mismatched content aside. `git annex addurl --fast` deserves a special mention; it uses a backend that only records the URL, and so if it's used, fsck cannot later detect such changes. Which might be what you want..
+
+For most users, this is one of the reasons `git annex untrust web` is a recommended configuration. Once you untrust the web, any content you download from the web will be kept around in one of your own git-annex repositories, rather than the untrustworthy web being the old copy.
+"""]]

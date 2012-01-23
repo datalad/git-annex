@@ -2,9 +2,11 @@
 
 import System.Directory
 import Data.List
+import Data.Maybe
 import System.Cmd.Utils
 
 import Build.TestConfig
+import Utility.StatFS
 
 tests :: [TestCase]
 tests =
@@ -21,6 +23,7 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
+	, TestCase "StatFS" testStatFS
 	] ++ shaTestCases [1, 256, 512, 224, 384]
 
 shaTestCases :: [Int] -> [TestCase]
@@ -62,6 +65,11 @@ getGitVersion = do
 	(_, s) <- pipeFrom "git" ["--version"]
 	let version = last $ words $ head $ lines s
 	return $ Config "gitversion" (StringConfig version)
+
+testStatFS :: Test
+testStatFS = do
+	s <- getFileSystemStats "."
+	return $ Config "statfs_sane" $ BoolConfig $ isJust s
 
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()

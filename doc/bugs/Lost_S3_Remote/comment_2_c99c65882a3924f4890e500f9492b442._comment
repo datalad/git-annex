@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-01-06T03:08:28Z"
+ content="""
+BTW, you'll want to \"make clean\", since the S3stub hack symlinks a file into place and it will continue building with S3stub even if you fix the problem until you clean.
+"""]]

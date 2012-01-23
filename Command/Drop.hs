@@ -16,21 +16,24 @@ import Logs.Location
 import Logs.Trust
 import Annex.Content
 import Config
+import qualified Option
 
 def :: [Command]
-def = [dontCheck fromOpt $ command "drop" paramPaths seek
+def = [withOptions [fromOption] $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
-seek :: [CommandSeek]
-seek = [withNumCopies $ \n -> whenAnnexed $ start n]
+fromOption :: Option
+fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
-start :: Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start numcopies file (key, _) = autoCopies key (>) numcopies $ do
-	from <- Annex.getState Annex.fromremote
+seek :: [CommandSeek]
+seek = [withField fromOption Remote.byName $ \from -> withNumCopies $ \n ->
+	whenAnnexed $ start from n]
+
+start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
+start from numcopies file (key, _) = autoCopies key (>) numcopies $ do
 	case from of
 		Nothing -> startLocal file numcopies key
-		Just name -> do
-			remote <- Remote.byName name
+		Just remote -> do
 			u <- getUUID
 			if Remote.uuid remote == u
 				then startLocal file numcopies key

@@ -6,6 +6,7 @@
  -}
 
 module Utility.Url (
+	URLString,
 	exists,
 	canDownload,
 	download,
@@ -43,21 +44,21 @@ canDownload = (||) <$> inPath "wget" <*> inPath "curl"
  - would not be appropriate to test at configure time and build support
  - for only one in.
  -}
-download :: URLString -> FilePath -> IO Bool
-download url file = do
+download :: URLString -> [CommandParam] -> FilePath -> IO Bool
+download url options file = do
 	e <- inPath "wget"
 	if e
 		then
-			boolSystem "wget"
-				[Params "-c -O", File file, File url]
+			go "wget" [Params "-c -O", File file, File url]
 		else
 			-- Uses the -# progress display, because the normal
 			-- one is very confusing when resuming, showing
 			-- the remainder to download as the whole file,
 			-- and not indicating how much percent was
 			-- downloaded before the resume.
-			boolSystem "curl" 
-				[Params "-L -C - -# -o", File file, File url]
+			go "curl" [Params "-L -C - -# -o", File file, File url]
+	where
+		go cmd opts = boolSystem cmd (options++opts)
 
 {- Downloads a small file. -}
 get :: URLString -> IO String

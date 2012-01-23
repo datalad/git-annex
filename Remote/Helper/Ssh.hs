@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.Ssh where
+module Remote.Helper.Ssh where
 
 import Common
 import qualified Git

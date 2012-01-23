@@ -1,6 +1,6 @@
 [[!inline raw=yes pages="summary"]]
 
-To get a feel for it, see the [[walkthrough]].
+To get a feel for it, see the [[walkthrough]] or read about [[how_it_works]].
 
 [[!sidebar content="""
 [[!img logo_small.png link=no]]
@@ -51,11 +51,13 @@ files with git.
 * [[internals]]
 * [[design]]
 * [[what git annex is not|not]]
-* git-annex is Free Software, licensed under the [[GPL]].
+* [[sitemap]]
 
 <br clear="all" />
 
 ----
+
+git-annex is Free Software, licensed under the [[GPL]].
 
 git-annex's wiki is powered by [Ikiwiki](http://ikiwiki.info/) and
 hosted by [Branchable](http://branchable.com/).

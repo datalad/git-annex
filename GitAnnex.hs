@@ -18,7 +18,7 @@ import Types.TrustLevel
 import qualified Annex
 import qualified Remote
 import qualified Limit
-import qualified Utility.Format
+import qualified Option
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -41,6 +41,7 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.Whereis
+import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.Status
 import qualified Command.Migrate
@@ -85,6 +86,7 @@ cmds = concat
 	, Command.DropUnused.def
 	, Command.Find.def
 	, Command.Whereis.def
+	, Command.Log.def
 	, Command.Merge.def
 	, Command.Status.def
 	, Command.Migrate.def
@@ -94,12 +96,8 @@ cmds = concat
 	]
 
 options :: [Option]
-options = commonOptions ++
-	[ Option ['t'] ["to"] (ReqArg setto paramRemote)
-		"specify to where to transfer content"
-	, Option ['f'] ["from"] (ReqArg setfrom paramRemote)
-		"specify from where to transfer content"
-	, Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
+options = Option.common ++
+	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
 		"override trust setting"
@@ -109,10 +107,6 @@ options = commonOptions ++
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
-	, Option [] ["print0"] (NoArg setprint0)
-		"terminate output with null"
-	, Option [] ["format"] (ReqArg setformat paramFormat)
-		"control format of output"
 	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
 	, Option ['I'] ["include"] (ReqArg Limit.addInclude paramGlob)
@@ -123,13 +117,9 @@ options = commonOptions ++
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"skip files not using a key-value backend"
-	] ++ matcherOptions
+	] ++ Option.matcher
 	where
-		setto v = Annex.changeState $ \s -> s { Annex.toremote = Just v }
-		setfrom v = Annex.changeState $ \s -> s { Annex.fromremote = Just v }
 		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readMaybe v }
-		setformat v = Annex.changeState $ \s -> s { Annex.format = Just $ Utility.Format.gen v }
-		setprint0 = setformat "${file}\0"
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
 			newg <- inRepo $ Git.Config.store v
@@ -139,4 +129,4 @@ header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch args cmds options header Git.Construct.fromCwd
+run args = dispatch args cmds options header Git.Construct.fromCurrent

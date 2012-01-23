@@ -1,11 +1,11 @@
 Name: git-annex
-Version: 3.20111231
+Version: 3.20120116
 Cabal-Version: >= 1.6
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2011 Joey Hess
+Copyright: 2010-2012 Joey Hess
 License-File: GPL
 Extra-Source-Files: use-make-sdist-instead
 Homepage: http://git-annex.branchable.com/
@@ -31,7 +31,7 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
-   base < 5
+   base < 5, QuickCheck >= 2.1
 
 Executable git-annex-shell
   Main-Is: git-annex-shell.hs

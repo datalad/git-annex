@@ -15,7 +15,6 @@ import qualified Annex
 import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
-import Logs.Location
 import Annex.Content
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
@@ -78,7 +77,7 @@ addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
 		handle a (Just (key, _)) = a key
 		inremote key = do
 			u <- Remote.nameToUUID name
-			us <- keyLocations key
+			us <- Remote.keyLocations key
 			return $ u `elem` us
 
 {- Adds a limit to skip files not believed to have the specified number
@@ -92,7 +91,7 @@ addCopies num =
 		check n = Backend.lookupFile >=> handle n
 		handle _ Nothing = return False
 		handle n (Just (key, _)) = do
-			us <- keyLocations key
+			us <- Remote.keyLocations key
 			return $ length us >= n
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
