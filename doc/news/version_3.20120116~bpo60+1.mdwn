@@ -1,6 +1,6 @@
-git-annex backport released with [[!toggle text="these changes"]]
+git-annex 3.20120116~bpo60+1 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
    * Removed conflict on newer version of git, this backport can now be used
      with either stable's git, or the git backport.
    * This backport continues to be modified to not build without monad-control,
-     which is not available in stable."""]]
+     which is not available in stable, and without S3 support."""]]
