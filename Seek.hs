@@ -36,7 +36,7 @@ withAttrFilesInGit attr a params = do
 withNumCopies :: (Maybe Int -> FilePath -> CommandStart) -> CommandSeek
 withNumCopies a params = withAttrFilesInGit "annex.numcopies" go params
 	where
-		go (file, v) = a (readMaybe v) file
+		go (file, v) = a (readish v) file
 
 withBackendFilesInGit :: (BackendFile -> CommandStart) -> CommandSeek
 withBackendFilesInGit a params =

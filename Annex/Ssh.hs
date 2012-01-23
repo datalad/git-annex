@@ -101,7 +101,7 @@ hostport2socket host (Just port) = host ++ "!" ++ show port
 socket2hostport :: FilePath -> (String, Maybe Integer)
 socket2hostport socket
 	| null p = (h, Nothing)
-	| otherwise = (h, readMaybe p)
+	| otherwise = (h, readish p)
 	where
 		(h, p) = separate (== '!') $ takeFileName socket
 
