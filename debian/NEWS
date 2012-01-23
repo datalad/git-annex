@@ -1,4 +1,4 @@
-git-annex (3.20120119) unstable; urgency=low
+git-annex (3.20120123) unstable; urgency=low
 
   There was a bug in the handling of directory special remotes that
   could cause partial file contents to be stored in them. If you use
