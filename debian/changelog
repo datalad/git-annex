@@ -1,4 +1,4 @@
-git-annex (3.20120116~bpo60+1) UNRELEASED; urgency=low
+git-annex (3.20120116~bpo60+1) squeeze-backports; urgency=low
 
   * Removed conflict on newer version of git, this backport can now be used
     with either stable's git, or the git backport.
