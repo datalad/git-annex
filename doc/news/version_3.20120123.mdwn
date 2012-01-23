@@ -1,0 +1,27 @@
+News for git-annex 3.20120123:
+
+   There was a bug in the handling of directory special remotes that
+   could cause partial file contents to be stored in them. If you use
+   a directory special remote, you should fsck it, to avoid potential
+   data loss.
+   Example: git annex fsck --from mydirectory
+
+git-annex 3.20120123 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * fsck --from: Fscking a remote is now supported. It's done by retrieving
+     the contents of the specified files from the remote, and checking them,
+     so can be an expensive operation. Still, if the remote is a special
+     remote, or a git repository that you cannot run fsck in locally, it's
+     nice to have the ability to fsck it.
+   * If you have any directory special remotes, now would be a good time to
+     fsck them, in case you were hit by the data loss bug fixed in the
+     previous release!
+   * fsck --from remote --fast: Avoids expensive file transfers, at the
+     expense of not checking file size and/or contents.
+   * Ssh connection caching is now enabled automatically by git-annex.
+     Only one ssh connection is made to each host per git-annex run, which
+     can speed some things up a lot, as well as avoiding repeated password
+     prompts. Concurrent git-annex processes also share ssh connections.
+     Cached ssh connections are shut down when git-annex exits.
+   * To disable the ssh caching (if for example you have your own broader
+     ssh caching configuration), set annex.sshcaching=false."""]]
