@@ -17,7 +17,6 @@ import Annex.UUID
 import Config
 
 import qualified Remote.Git
-import qualified Remote.S3
 import qualified Remote.Bup
 import qualified Remote.Directory
 import qualified Remote.Rsync
@@ -27,7 +26,6 @@ import qualified Remote.Hook
 remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
-	, Remote.S3.remote
 	, Remote.Bup.remote
 	, Remote.Directory.remote
 	, Remote.Rsync.remote

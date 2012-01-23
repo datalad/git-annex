@@ -1,0 +1,6 @@
+git-annex 3.20120116 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix data loss bug in directory special remote, when moving a file
+     to the remote failed, and partially transferred content was left
+     behind in the directory, re-running the same move would think it
+     succeeded and delete the local copy."""]]
