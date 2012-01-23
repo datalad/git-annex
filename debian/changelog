@@ -3,9 +3,66 @@ git-annex (3.20120116~bpo60+1) UNRELEASED; urgency=low
   * Removed conflict on newer version of git, this backport can now be used
     with either stable's git, or the git backport.
   * This backport continues to be modified to not build without monad-control,
-    which is not available in stable. 
+    which is not available in stable, and without S3 support.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 12 Dec 2011 01:57:49 -0400
+
+git-annex (3.20120116) unstable; urgency=medium
+
+  * Fix data loss bug in directory special remote, when moving a file
+    to the remote failed, and partially transferred content was left
+    behind in the directory, re-running the same move would think it
+    succeeded and delete the local copy.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 16 Jan 2012 16:43:45 -0400
+
+git-annex (3.20120115) unstable; urgency=low
+
+  * Add a sanity check for bad StatFS results. On architectures
+    where StatFS does not currently work (s390, mips, powerpc, sparc),
+    this disables the diskreserve checking code, and attempting to
+    configure an annex.diskreserve will result in an error.
+  * Fix QuickCheck dependency in cabal file.
+  * Minor optimisations.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 15 Jan 2012 13:54:20 -0400
+
+git-annex (3.20120113) unstable; urgency=low
+
+  * log: Add --gource mode, which generates output usable by gource.
+  * map: Fix display of remote repos
+  * Add annex-trustlevel configuration settings, which can be used to 
+    override the trust level of a remote.
+  * git-annex, git-union-merge: Support GIT_DIR and GIT_WORK_TREE.
+  * Add libghc-testpack-dev to build depends on all arches.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Jan 2012 15:35:17 -0400
+
+git-annex (3.20120106) unstable; urgency=low
+
+  * Support unescaped repository urls, like git does.
+  * log: New command that displays the location log for files,
+    showing each repository they were added to and removed from.
+  * Fix overbroad gpg --no-tty fix from last release.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 07 Jan 2012 13:16:23 -0400
+
+git-annex (3.20120105) unstable; urgency=low
+
+  * Added annex-web-options configuration settings, which can be
+    used to provide parameters to whichever of wget or curl git-annex uses
+    (depends on which is available, but most of their important options
+    suitable for use here are the same).
+  * Dotfiles, and files inside dotdirs are not added by "git annex add"
+    unless the dotfile or directory is explicitly listed. So "git annex add ."
+    will add all untracked files in the current directory except for those in
+    dotdirs.
+  * Added quickcheck to build dependencies, and fail if test suite cannot be
+    built.
+  * fsck: Do backend-specific check before checking numcopies is satisfied.
+  * Run gpg with --no-tty. Closes: #654721
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 05 Jan 2012 13:44:12 -0400
 
 git-annex (3.20111231) unstable; urgency=low
 
