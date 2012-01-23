@@ -7,6 +7,8 @@
 
 module Utility.PartialPrelude where
 
+import qualified Data.Maybe
+
 {- read should be avoided, as it throws an error
  - Instead, use: readMaybe -}
 read :: Read a => String -> a
@@ -36,6 +38,9 @@ last = Prelude.last
  -
  - Ignores leading/trailing whitespace, and throws away any trailing
  - text after the part that can be read.
+ -
+ - readMaybe is available in Text.Read in new versions of GHC,
+ - but that one requires the entire string to be consumed.
  -}
 readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
@@ -44,8 +49,7 @@ readMaybe s = case reads s of
 
 {- Like head but Nothing on empty list. -}
 headMaybe :: [a] -> Maybe a
-headMaybe [] = Nothing
-headMaybe v = Just $ Prelude.head v
+headMaybe = Data.Maybe.listToMaybe
 
 {- Like last but Nothing on empty list. -}
 lastMaybe :: [a] -> Maybe a
