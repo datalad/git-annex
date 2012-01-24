@@ -31,7 +31,8 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
-   base < 5, monad-control, transformers-base, lifted-base, QuickCheck >= 2.1
+   base < 5, monad-control, transformers-base, lifted-base, IfElse,
+   QuickCheck >= 2.1
 
 Executable git-annex-shell
   Main-Is: git-annex-shell.hs

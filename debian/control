@@ -17,6 +17,7 @@ Build-Depends:
 	libghc-monad-control-dev (>= 0.3),
 	libghc-lifted-base-dev,
 	libghc-json-dev,
+	libghc-ifelse-dev,
 	ikiwiki,
 	perlmagick,
 	git,

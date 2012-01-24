@@ -12,9 +12,9 @@ import System.Posix.Files
 import System.Directory
 import Control.Exception (throw)
 import Control.Monad
+import Control.Monad.IfElse
 
 import Utility.SafeCommand
-import Utility.Conditional
 import Utility.TempFile
 
 {- Moves one filename to another.

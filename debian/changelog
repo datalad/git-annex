@@ -1,3 +1,9 @@
+git-annex (3.20120124) UNRELEASED; urgency=low
+
+  * Use the haskell IfElse library.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
+
 git-annex (3.20120123) unstable; urgency=low
 
   * fsck --from: Fscking a remote is now supported. It's done by retrieving
