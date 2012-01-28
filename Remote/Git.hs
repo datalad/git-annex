@@ -230,7 +230,7 @@ copyToRemote r key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			Annex.Content.saveState `after`
+			Annex.Content.saveState True `after`
 				Annex.Content.getViaTmp key
 					(rsyncOrCopyFile params keysrc)
 	| Git.repoIsSsh r = do

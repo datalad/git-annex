@@ -29,8 +29,8 @@ type Params = [String]
 type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
-dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
-dispatch args cmds commonoptions header getgitrepo = do
+dispatch :: Bool -> Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
+dispatch oneshot args cmds commonoptions header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
@@ -40,7 +40,7 @@ dispatch args cmds commonoptions header getgitrepo = do
 			(actions, state') <- Annex.run state $ do
 				sequence_ flags
 				prepCommand cmd params
-			tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
+			tryRun state' cmd $ [startup] ++ actions ++ [shutdown oneshot]
 	where
 		(flags, cmd, params) = parseCmd args cmds commonoptions header
 
@@ -89,9 +89,9 @@ startup :: Annex Bool
 startup = return True
 
 {- Cleanup actions. -}
-shutdown :: Annex Bool
-shutdown = do
-	saveState
+shutdown :: Bool -> Annex Bool
+shutdown oneshot = do
+	saveState oneshot
 	liftIO Git.Command.reap -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
 	return True

@@ -291,11 +291,16 @@ getKeysPresent' dir = do
 			let files = concat contents
 			return $ mapMaybe (fileKey . takeFileName) files
 
-{- Things to do to record changes to content. -}
-saveState :: Annex ()
-saveState = do
+{- Things to do to record changes to content when shutting down.
+ -
+ - It's acceptable to avoid committing changes to the branch,
+ - especially if performing a short-lived action.
+ -}
+saveState :: Bool -> Annex ()
+saveState oneshot = do
 	Annex.Queue.flush False
-	Annex.Branch.commit "update"
+	unless oneshot $
+		Annex.Branch.commit "update"
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool

@@ -1,6 +1,12 @@
 git-annex (3.20120124) UNRELEASED; urgency=low
 
   * Use the haskell IfElse library.
+  * Avoid repeated location log commits when a remote is receiving files.
+    Done by adding a oneshot mode, in which location log changes are
+    written to the journal, but not committed. Taking advantage of
+    git-annex's existing ability to recover in this situation. This is
+    used by git-annex-shell and other places where changes are made to
+    a remote's location log.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

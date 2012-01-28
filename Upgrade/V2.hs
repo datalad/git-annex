@@ -50,7 +50,7 @@ upgrade = do
 		mapM_ (\(k, f) -> inject f $ logFile k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
-	saveState
+	saveState False
 	showProgress
 
 	when e $ do

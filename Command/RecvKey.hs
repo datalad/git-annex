@@ -28,7 +28,7 @@ start key = do
 	if ok
 		then do
 			-- forcibly quit after receiving one key,
-			-- and shutdown cleanly so queued git commands run
-			_ <- shutdown
+			-- and shutdown cleanly
+			_ <- shutdown True
 			liftIO exitSuccess
 		else liftIO exitFailure
