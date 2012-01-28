@@ -1,3 +1,11 @@
+This bug is reopened to track some new UTF-8 filename issues caused by GHC
+7.4. Older versions of GHC, like the 7.0.4 in debian unstable, are not
+affected. See the comments for details about the new bug. --[[Joey]] 
+
+----
+
+Old, now fixed bug report follows:
+
 There are problems with displaying filenames in UTF8 encoding, as shown here:
 
     $ echo $LANG
@@ -45,7 +53,7 @@ It looks like the common latin1-to-UTF8 encoding. Functionality other than otupu
 >    outputting a filename (assuming the filename is encoded using the
 >    user's configured encoding), and allow haskell's output encoding to then
 >    encode it according to the user's locale configuration.
->    > This is now [[implemented|done]]. I'm not very happy that I have to watch
+>    > This is now implemented. I'm not very happy that I have to watch
 >    > out for any place that a filename is output and call `filePathToString`
 >    > on it, but there are really not too many such places in git-annex.
 >    >
