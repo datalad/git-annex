@@ -20,6 +20,7 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Annex
+import Logs.Presence
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
@@ -192,6 +193,14 @@ keyUrls r key = map tourl (annexLocations key)
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
+	| not $ Git.repoIsUrl r = liftIO $ onLocal r $ do
+		ensureInitialized
+		whenM (Annex.Content.inAnnex key) $ do
+			Annex.Content.lockContent key $
+				Annex.Content.removeAnnex key
+			Annex.Content.logStatus key InfoMissing
+			Annex.Content.saveState True
+		return True
 	| Git.repoIsHttp r = error "dropping from http repo not supported"
 	| otherwise = onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
