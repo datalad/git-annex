@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-01-28T19:32:36Z"
+ content="""
+Ah, I see, I was not thinking about the location log update that's done on the remote side.
+
+For transfers over ssh, that's a separate git-annex-shell invoked per change. For local-local transfers, it's all done in a single process but it spins up a state to handle the remote and then immediately shuts it down, also generating a commit.
+
+In either case, I think there is a nice fix. Since git-annex *does* have a journal nowadays, and goes to all the bother to
+support recovery if a process was interrupted and journalled changes that did not get committed, there's really no reason in either of these cases for the remote end to do anything more than journal the change. The next time git-annex is actually run on the remote, and needs to look up location information, it will merge the journalled changes into the branch, in a single commit.
+
+My only real concern is that some remotes might *never* have git-annex run in them directly, and would just continue to accumulate journal files forever. Although due to the way the journal is structured, it can have, at a maximum, the number of files in the git-annex branch. However, the number of files in it is expected to be relatively smal and it might get a trifle innefficient, as it lacks directory hashing. These performance problems could certainly be dealt with if they do turn out to be a problem.
+"""]]
