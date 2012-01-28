@@ -27,3 +27,9 @@ are local. It seems to be just overhead.)
 > (However, if the copy is to another directory in the same disk, it does
 > use cp, and even supports really fast copies on COW filesystems.)
 > --[[Joey]]
+
+---
+
+Oneshot mode is now implemented, making git-annex-shell and other
+short lifetime processes not bother with committing changes.
+[[done]] --[[Joey]] 
