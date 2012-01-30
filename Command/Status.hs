@@ -7,7 +7,7 @@
 
 module Command.Status where
 
-import Control.Monad.State
+import Control.Monad.State.Strict
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
