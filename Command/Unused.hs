@@ -10,7 +10,8 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Lazy as L
+import qualified Data.Text.Lazy.Encoding as L
 
 import Common.Annex
 import Command
@@ -202,7 +203,7 @@ getKeysReferencedInGit ref = do
 		findkeys c [] = return c
 		findkeys c (l:ls)
 			| isSymLink (LsTree.mode l) = do
-				content <- catFile ref $ LsTree.file l
+				content <- L.decodeUtf8 <$> catFile ref (LsTree.file l)
 				case fileKey (takeFileName $ L.unpack content) of
 					Nothing -> findkeys c ls
 					Just k -> findkeys (k:c) ls

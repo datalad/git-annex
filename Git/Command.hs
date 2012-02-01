@@ -7,7 +7,10 @@
 
 module Git.Command where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Lazy as L
+import qualified Data.Text.Lazy.Encoding as L
+import qualified Data.Text.Lazy.IO as L
+import qualified Data.ByteString.Lazy as B
 
 import Common
 import Git
@@ -38,28 +41,27 @@ run subcommand params repo = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: [CommandParam] -> Repo -> IO L.ByteString
+pipeRead :: [CommandParam] -> Repo -> IO L.Text
 pipeRead params repo = assertLocal repo $ do
 	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine params repo
-	hSetBinaryMode h True
-	L.hGetContents h
+	L.decodeUtf8 <$> B.hGetContents h
 
 {- Runs a git subcommand, feeding it input.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: [CommandParam] -> L.ByteString -> Repo -> IO PipeHandle
+pipeWrite :: [CommandParam] -> L.Text -> Repo -> IO PipeHandle
 pipeWrite params s repo = assertLocal repo $ do
 	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
-	L.hPut h s
+	L.hPutStr h s
 	hClose h
 	return p
 
 {- Runs a git subcommand, feeding it input, and returning its output.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: [CommandParam] -> L.ByteString -> Repo -> IO (PipeHandle, L.ByteString)
+pipeWriteRead :: [CommandParam] -> L.Text -> Repo -> IO (PipeHandle, L.Text)
 pipeWriteRead params s repo = assertLocal repo $ do
 	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
 	hSetBinaryMode from True
-	L.hPut to s
+	L.hPutStr to s
 	hClose to
 	c <- L.hGetContents from
 	return (p, c)
@@ -67,12 +69,14 @@ pipeWriteRead params s repo = assertLocal repo $ do
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
 pipeNullSplit :: [CommandParam] -> Repo -> IO [String]
-pipeNullSplit params repo = map L.unpack <$> pipeNullSplitB params repo
+pipeNullSplit params repo = map L.unpack <$> pipeNullSplitT params repo
 
 {- For when Strings are not needed. -}
-pipeNullSplitB ::[CommandParam] -> Repo -> IO [L.ByteString]
-pipeNullSplitB params repo = filter (not . L.null) . L.split '\0' <$>
+pipeNullSplitT ::[CommandParam] -> Repo -> IO [L.Text]
+pipeNullSplitT params repo = filter (not . L.null) . L.splitOn sep <$>
 	pipeRead params repo
+	where
+		sep = L.pack "\0"
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()

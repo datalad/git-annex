@@ -15,7 +15,8 @@ module Git.UnionMerge (
 ) where
 
 import System.Cmd.Utils
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Lazy as L
+import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Set as S
 
 import Common
@@ -110,11 +111,11 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
-		getcontents s = L.lines <$> catObject h s
+		getcontents s = L.lines . L.decodeUtf8 <$> catObject h s
 		use sha = return $ Just $ update_index_line sha file
 
 {- Injects some content into git, returning its Sha. -}
-hashObject :: Repo -> L.ByteString -> IO Sha
+hashObject :: Repo -> L.Text -> IO Sha
 hashObject repo content = getSha subcmd $ do
 	(h, s) <- pipeWriteRead (map Param params) content repo
 	L.length s `seq` do
@@ -130,7 +131,7 @@ hashObject repo content = getSha subcmd $ do
  - When possible, reuses the content of an existing ref, rather than
  - generating new content.
  -}
-calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
+calcMerge :: [(Ref, [L.Text])] -> Either Ref [L.Text]
 calcMerge shacontents
 	| null reuseable = Right $ new
 	| otherwise = Left $ fst $ Prelude.head reuseable

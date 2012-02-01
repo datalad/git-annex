@@ -14,7 +14,7 @@ module Git.LsTree (
 import Numeric
 import Control.Applicative
 import System.Posix.Types
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Lazy as L
 
 import Common
 import Git
@@ -31,11 +31,11 @@ data TreeItem = TreeItem
 {- Lists the contents of a Ref -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
 lsTree t repo = map parseLsTree <$>
-	pipeNullSplitB [Params "ls-tree --full-tree -z -r --", File $ show t] repo
+	pipeNullSplitT [Params "ls-tree --full-tree -z -r --", File $ show t] repo
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}
-parseLsTree :: L.ByteString -> TreeItem
+parseLsTree :: L.Text -> TreeItem
 parseLsTree l = TreeItem 
 	{ mode = fst $ Prelude.head $ readOct $ L.unpack m
 	, typeobj = L.unpack t

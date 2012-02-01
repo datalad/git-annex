@@ -128,9 +128,9 @@ showRaw s = handle q $ putStrLn s
  -
  - NB: Once git-annex gets localized, this will need a rethink. -}
 setupConsole :: IO ()
-setupConsole = do
-	hSetBinaryMode stdout True
-	hSetBinaryMode stderr True
+setupConsole = return ()
+	--hSetBinaryMode stdout True
+	--hSetBinaryMode stderr True
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = Annex.getState Annex.output >>= go
