@@ -1,6 +1,28 @@
 This bug is reopened to track some new UTF-8 filename issues caused by GHC
-7.4. Older versions of GHC, like the 7.0.4 in debian unstable, are not
-affected. See the comments for details about the new bug. --[[Joey]] 
+7.4. In this version of GHC, git-annex's hack to support filenames in any
+encoding no longer works. Even unicode filenames fail to work when
+git-annex is built with 7.4. --[[Joey]] 
+
+The new ghc requires a new data type, `RawFilePath` be used if you
+don't want to impose utf-8 filenames on your users. I have a `newghc` branch
+in git where I am trying to convert it to use `RawFilePath`. However, since
+there is no way to cast a `FilePath` to a `RawFilePath` or back (because
+the encoding of `RawFilePath` is not specified), this means changing
+essentially all of git-annex. Even the filenames used for keys in
+`.git/annex/objects` need to use the new data type. Worse, several utility
+libraries it uses are only available for `FilePath`.
+
+The current state of the branch is that it needs an implementation of
+`absNormPath` for `RawFilePath` to be added, as well as some other path
+manipulation functions like `parentDir`. Then the types can continue
+to be followed to get it to build and work. It could take days or weeks of
+work. --[[Joey]]
+
+**As a stopgap workaround**, I have made a branch `unicode-only`. This
+makes git-annex work with unicode filenames with ghc 7.4, but *only*
+unicode filenames. If you have filenames with some other encoding, you're
+out in the cold, and it will probably just crash with a error about wrong
+encoding. --[[Joey]]
 
 ----
 
@@ -74,39 +96,3 @@ It looks like the common latin1-to-UTF8 encoding. Functionality other than otupu
 >    > On second thought, I switched to this. Any decoding of a filename
 >    > is going to make someone unhappy; the previous approach broke
 >    > non-utf8 filenames.
-
-----
-
-Simpler test case:
-
-<pre>
-import Codec.Binary.UTF8.String
-import System.Environment
-
-main = do
-        args <- getArgs
-        let file = decodeString $ head args
-        putStrLn $ "file is: " ++ file
-        putStr =<< readFile file
-</pre>
-
-If I pass this a filename like 'ü', it will fail, and notice
-the bad encoding of the filename in the error message:
-
-<pre>
-$ echo hi > ü; runghc foo.hs ü
-file is: ü
-foo.hs: �: openFile: does not exist (No such file or directory)
-</pre>
-
-On the other hand, if I remove the decodeString, it prints the filename
-wrong, while accessing it right:
-
-<pre>
-$ runghc foo.hs ü
-file is: Ã¼a
-hi
-</pre>
-
-The only way that seems to consistently work is to delay decoding the
-filename to places where it's output. But then it's easy to miss some.
