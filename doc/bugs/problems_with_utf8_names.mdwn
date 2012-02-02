@@ -3,6 +3,12 @@ This bug is reopened to track some new UTF-8 filename issues caused by GHC
 encoding no longer works. Even unicode filenames fail to work when
 git-annex is built with 7.4. --[[Joey]] 
 
+> What's going on exactly? The new ghc, when presented with 
+> a String of raw bytes like "fo\194\161", and asked to do
+> something like `getSymbolicLinkStatus`, encodes it
+> as unicode, yielding "fo\303\202\302\241". Which is
+> not the same as the original filename.
+
 The new ghc requires a new data type, `RawFilePath` be used if you
 don't want to impose utf-8 filenames on your users. I have a `newghc` branch
 in git where I am trying to convert it to use `RawFilePath`. However, since
