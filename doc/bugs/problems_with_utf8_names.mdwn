@@ -26,9 +26,9 @@ libraries that do things with FilePaths, if you need them to use
 RawFilePaths. Until the haskell ecosystem adapts to `RawFilePath`
 (if it does), using it broadly, as git-annex needs to, will be difficult.
 
-## newghc branch
+## rawfilepath branch
 
-I have a `newghc` branch in git where I am trying to convert it to use
+I have a `rawfilepath` branch in git where I am trying to convert it to use
 `RawFilePath`. However, since there is no way to cast a `FilePath` to a
 `RawFilePath` or back (because the encoding of `RawFilePath` is not
 specified), this means changing essentially all of git-annex. Even the
