@@ -9,14 +9,7 @@ in git where I am trying to convert it to use `RawFilePath`. However, since
 there is no way to cast a `FilePath` to a `RawFilePath` or back (because
 the encoding of `RawFilePath` is not specified), this means changing
 essentially all of git-annex. Even the filenames used for keys in
-`.git/annex/objects` need to use the new data type. Worse, several utility
-libraries it uses are only available for `FilePath`.
-
-The current state of the branch is that it needs an implementation of
-`absNormPath` for `RawFilePath` to be added, as well as some other path
-manipulation functions like `parentDir`. Then the types can continue
-to be followed to get it to build and work. It could take days or weeks of
-work. --[[Joey]]
+`.git/annex/objects` need to use the new data type. --[[Joey]]
 
 **As a stopgap workaround**, I have made a branch `unicode-only`. This
 makes git-annex work with unicode filenames with ghc 7.4, but *only*
