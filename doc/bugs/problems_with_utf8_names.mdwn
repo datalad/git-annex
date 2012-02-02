@@ -11,6 +11,14 @@ the encoding of `RawFilePath` is not specified), this means changing
 essentially all of git-annex. Even the filenames used for keys in
 `.git/annex/objects` need to use the new data type. --[[Joey]]
 
+> Actually it may not be that bad. A `RawFilePath` contains only bytes,
+> so it can be cast to a string, containing encoded characters. That
+> string can then be 1) output in binary mode or 2) manipulated
+> in ways that do not add characters larger than 255, and cast back to
+> a `RawFilePath`. While not type-safe, such casts should at least
+> help during bootstrapping, and might allow for a quick fix that only
+> changes to `RawFilePath` at the edges.
+
 **As a stopgap workaround**, I have made a branch `unicode-only`. This
 makes git-annex work with unicode filenames with ghc 7.4, but *only*
 unicode filenames. If you have filenames with some other encoding, you're
