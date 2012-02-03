@@ -119,18 +119,16 @@ showHeader h = handle q $
 showRaw :: String -> Annex ()
 showRaw s = handle q $ putStrLn s
 
-{- By default, haskell honors the user's locale in its output to stdout
- - and stderr. While that's great for proper unicode support, for git-annex
- - all that's really needed is the ability to display simple messages
- - (currently untranslated), and importantly, to display filenames exactly
- - as they are written on disk, no matter what their encoding. So, force
- - raw mode. 
- -
- - NB: Once git-annex gets localized, this will need a rethink. -}
+{- This check is done because the code assumes filenames are utf8 encoded,
+ - using decodeUtf8 and Codec.Binary.UTF8.String.encodeString. So if
+ - run in a non unicode locale, it will crash or worse, possibly operate
+ - on the wrong file.
+ -}
 setupConsole :: IO ()
-setupConsole = return ()
-	--hSetBinaryMode stdout True
-	--hSetBinaryMode stderr True
+setupConsole
+	| show localeEncoding == show utf8 = return ()
+	| otherwise = error $
+		"Sorry, only UTF-8 locales are currently supported."
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = Annex.getState Annex.output >>= go
