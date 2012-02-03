@@ -12,7 +12,7 @@ import System.IO
 import System.Posix.Process hiding (executeFile)
 import System.Directory
 
-import Utility.Misc
+import Utility.Exception
 import Utility.Path
 
 {- Runs an action like writeFile, writing to a temp file first and

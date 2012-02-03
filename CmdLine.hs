@@ -11,7 +11,6 @@ module CmdLine (
 	shutdown
 ) where
 
-import qualified System.IO.Error as IO
 import qualified Control.Exception as E
 import Control.Exception (throw)
 import System.Console.GetOpt
@@ -74,7 +73,7 @@ tryRun' errnum _ cmd []
 	| otherwise = return ()
 tryRun' errnum state cmd (a:as) = run >>= handle
 	where
-		run = IO.try $ Annex.run state $ do
+		run = tryIO $ Annex.run state $ do
 			Annex.Queue.flushWhenFull
 			a
 		handle (Left err) = showerr err >> cont False state

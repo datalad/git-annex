@@ -11,7 +11,6 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
-import System.IO.Error (try)
 
 import Common.Annex
 import Annex.LockPool
@@ -72,7 +71,8 @@ sshCleanup = do
 			let lockfile = socket2lock socketfile
 			unlockFile lockfile
 			fd <- liftIO $ openFd lockfile ReadWrite (Just stdFileMode) defaultFileFlags
-			v <- liftIO $ try $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+			v <- liftIO $ tryIO $
+				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
 				Left _ -> return ()
 				Right _ -> stopssh socketfile

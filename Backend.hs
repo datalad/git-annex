@@ -16,7 +16,6 @@ module Backend (
 	maybeLookupBackendName
 ) where
 
-import System.IO.Error (try)
 import System.Posix.Files
 
 import Common.Annex
@@ -77,7 +76,7 @@ genKey' (b:bs) file = do
  - by examining what the file symlinks to. -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
-	tl <- liftIO $ try getsymlink
+	tl <- liftIO $ tryIO getsymlink
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l

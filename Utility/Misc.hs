@@ -8,9 +8,7 @@
 module Utility.Misc where
 
 import System.IO
-import System.IO.Error (try)
 import Control.Monad
-import Control.Applicative
 import GHC.IO.Encoding
 
 {- Sets a Handle to use the filesystem encoding. This causes data
@@ -45,22 +43,3 @@ separate c l = unbreak $ break c l
 {- Breaks out the first line. -}
 firstLine :: String-> String
 firstLine = takeWhile (/= '\n')
-
-{- Catches IO errors and returns a Bool -}
-catchBoolIO :: IO Bool -> IO Bool
-catchBoolIO a = catchDefaultIO a False
-
-{- Catches IO errors and returns a Maybe -}
-catchMaybeIO :: IO a -> IO (Maybe a)
-catchMaybeIO a = catchDefaultIO (Just <$> a) Nothing
-
-{- Catches IO errors and returns a default value. -}
-catchDefaultIO :: IO a -> a -> IO a
-catchDefaultIO a def = catch a (const $ return def)
-
-{- Catches IO errors and returns the error message. -}
-catchMsgIO :: IO a -> IO (Either String a)
-catchMsgIO a = dispatch <$> try a
-	where
-		dispatch (Left e) = Left $ show e
-		dispatch (Right v) = Right v
