@@ -11,10 +11,8 @@ import Test.QuickCheck
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
-import Control.Exception (bracket_, bracket, throw)
-import System.IO.Error
 import System.Posix.Env
-import qualified Control.Exception.Extensible as E
+import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import Text.JSON
@@ -695,7 +693,7 @@ test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ 
 git_annex :: String -> [String] -> IO Bool
 git_annex command params = do
 	-- catch all errors, including normally fatal errors
-	r <- E.try (run)::IO (Either E.SomeException ())
+	r <- try (run)::IO (Either SomeException ())
 	case r of
 		Right _ -> return True
 		Left _ -> return False
@@ -761,7 +759,7 @@ indir dir a = do
 	-- any type of error and change back to cwd before
 	-- rethrowing.
 	r <- bracket_ (changeToTmpDir dir) (changeWorkingDirectory cwd)
-		(E.try (a)::IO (Either E.SomeException ()))
+		(try (a)::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
 		Left e -> throw e
@@ -832,14 +830,14 @@ checkunwritable f = do
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
-	r <- try $ writeFile f $ content f
+	r <- tryIO $ writeFile f $ content f
 	case r of
 		Left _ -> assertFailure $ "unable to modify " ++ f
 		Right _ -> return ()
 
 checkdangling :: FilePath -> Assertion
 checkdangling f = do
-	r <- try $ readFile f
+	r <- tryIO $ readFile f
 	case r of
 		Left _ -> return () -- expected; dangling link
 		Right _ -> assertFailure $ f ++ " was not a dangling link as expected"
