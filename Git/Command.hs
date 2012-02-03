@@ -8,9 +8,7 @@
 module Git.Command where
 
 import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Text.Lazy.IO as L
-import qualified Data.ByteString.Lazy as B
 
 import Common
 import Git
@@ -41,10 +39,11 @@ run subcommand params repo = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: [CommandParam] -> Repo -> IO L.Text
+pipeRead :: [CommandParam] -> Repo -> IO String
 pipeRead params repo = assertLocal repo $ do
 	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine params repo
-	L.decodeUtf8 <$> B.hGetContents h
+	fileEncoding h
+	hGetContents h
 
 {- Runs a git subcommand, feeding it input.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
@@ -57,26 +56,23 @@ pipeWrite params s repo = assertLocal repo $ do
 
 {- Runs a git subcommand, feeding it input, and returning its output.
  - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: [CommandParam] -> L.Text -> Repo -> IO (PipeHandle, L.Text)
+pipeWriteRead :: [CommandParam] -> String -> Repo -> IO (PipeHandle, String)
 pipeWriteRead params s repo = assertLocal repo $ do
 	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
-	hSetBinaryMode from True
-	L.hPutStr to s
+	fileEncoding to
+	fileEncoding from
+	hPutStr to s
 	hClose to
-	c <- L.hGetContents from
+	c <- hGetContents from
 	return (p, c)
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
 pipeNullSplit :: [CommandParam] -> Repo -> IO [String]
-pipeNullSplit params repo = map L.unpack <$> pipeNullSplitT params repo
-
-{- For when Strings are not needed. -}
-pipeNullSplitT ::[CommandParam] -> Repo -> IO [L.Text]
-pipeNullSplitT params repo = filter (not . L.null) . L.splitOn sep <$>
-	pipeRead params repo
+pipeNullSplit params repo =
+	filter (not . null) . split sep <$> pipeRead params repo
 	where
-		sep = L.pack "\0"
+		sep = "\0"
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()

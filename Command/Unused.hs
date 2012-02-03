@@ -162,7 +162,7 @@ excludeReferenced l = do
 		refs = map (Git.Ref .  snd) .
 			nubBy uniqref .
 			filter ourbranches .
-			map (separate (== ' ')) . lines . L.unpack
+			map (separate (== ' ')) . lines
 		uniqref (a, _) (b, _) = a == b
 		ourbranchend = '/' : show Annex.Branch.name
 		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b

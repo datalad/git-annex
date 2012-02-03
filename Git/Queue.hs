@@ -18,7 +18,6 @@ import qualified Data.Map as M
 import System.IO
 import System.Cmd.Utils
 import Data.String.Utils
-import Codec.Binary.UTF8.String
 
 import Utility.SafeCommand
 import Common
@@ -91,4 +90,6 @@ runAction repo action files =
 	where
 		params = toCommand $ gitCommandLine
 			(Param (getSubcommand action):getParams action) repo
-		feedxargs h = hPutStr h $ join "\0" $ map encodeString files
+		feedxargs h = do
+			fileEncoding h
+			hPutStr h $ join "\0" files

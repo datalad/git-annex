@@ -7,8 +7,6 @@
 
 module Git.Ref where
 
-import qualified Data.Text.Lazy as L
-
 import Common
 import Git
 import Git.Command
@@ -40,7 +38,7 @@ exists ref = runBool "show-ref"
 
 {- Get the sha of a fully qualified git ref, if it exists. -}
 sha :: Branch -> Repo -> IO (Maybe Sha)
-sha branch repo = process . L.unpack <$> showref repo
+sha branch repo = process <$> showref repo
 	where
 		showref = pipeRead [Param "show-ref",
 			Param "--hash", -- get the hash
@@ -52,7 +50,7 @@ sha branch repo = process . L.unpack <$> showref repo
 matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = do
 	r <- pipeRead [Param "show-ref", Param $ show ref] repo
-	return $ map (gen . L.unpack) (L.lines r)
+	return $ map gen (lines r)
 	where
 		gen l = let (r, b) = separate (== ' ') l in
 			(Ref r, Ref b)

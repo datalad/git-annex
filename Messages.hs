@@ -119,16 +119,13 @@ showHeader h = handle q $
 showRaw :: String -> Annex ()
 showRaw s = handle q $ putStrLn s
 
-{- This check is done because the code assumes filenames are utf8 encoded,
- - using decodeUtf8 and Codec.Binary.UTF8.String.encodeString. So if
- - run in a non unicode locale, it will crash or worse, possibly operate
- - on the wrong file.
+{- This avoids ghc's output layer crashing on invalid encoded characters in
+ - files when printing them out.
  -}
 setupConsole :: IO ()
-setupConsole
-	| show localeEncoding == show utf8 = return ()
-	| otherwise = error $
-		"Sorry, only UTF-8 locales are currently supported."
+setupConsole = do
+	fileEncoding stdout
+	fileEncoding stderr
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = Annex.getState Annex.output >>= go
