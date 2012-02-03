@@ -8,7 +8,6 @@
 module Remote.Bup (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import System.IO.Error
 import qualified Data.Map as M
 import System.Process
 
@@ -200,7 +199,7 @@ getBupUUID :: Git.Repo -> UUID -> Annex (UUID, Git.Repo)
 getBupUUID r u
 	| Git.repoIsUrl r = return (u, r)
 	| otherwise = liftIO $ do
-		ret <- try $ Git.Config.read r
+		ret <- tryIO $ Git.Config.read r
 		case ret of
 			Right r' -> return (toUUID $ Git.Config.get "annex.uuid" "" r', r')
 			Left _ -> return (NoUUID, r)

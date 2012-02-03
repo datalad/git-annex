@@ -91,4 +91,4 @@ lockJournal a = do
 {- Runs an action, catching failure and running something to fix it up, and
  - retrying if necessary. -}
 doRedo :: IO a -> IO b -> IO a
-doRedo a b = catch a $ const $ b >> a
+doRedo a b = catchIO a $ const $ b >> a

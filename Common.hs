@@ -21,6 +21,7 @@ import System.Posix.Process as X hiding (executeFile)
 import System.Exit as X
 
 import Utility.Misc as X
+import Utility.Exception as X
 import Utility.SafeCommand as X
 import Utility.Path as X
 import Utility.Directory as X

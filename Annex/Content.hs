@@ -25,7 +25,6 @@ module Annex.Content (
 	preseedTmp,
 ) where
 
-import System.IO.Error (try)
 import Control.Exception (bracket_)
 import System.Posix.Types
 
@@ -79,7 +78,7 @@ lockContent key a = do
 	where
 		lock Nothing = return Nothing
 		lock (Just l) = do
-			v <- try $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
+			v <- tryIO $ setLock l (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
 				Left _ -> error "content is locked"
 				Right _ -> return $ Just l

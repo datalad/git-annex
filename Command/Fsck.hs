@@ -81,7 +81,7 @@ performRemote key file backend numcopies remote = do
 			t <- fromRepo gitAnnexTmpDir
 			let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
 			liftIO $ createDirectoryIfMissing True t
-			let cleanup = liftIO $ catch (removeFile tmp) (const $ return ())
+			let cleanup = liftIO $ catchIO (removeFile tmp) (const $ return ())
 			cleanup
 			cleanup `after` a tmp
 		getfile tmp = do
