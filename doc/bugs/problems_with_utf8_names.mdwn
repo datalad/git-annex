@@ -3,58 +3,10 @@ This bug is reopened to track some new UTF-8 filename issues caused by GHC
 encoding no longer works. Even unicode filenames fail to work when
 git-annex is built with 7.4. --[[Joey]]
 
-**As a stopgap workaround**, I have made a branch `unicode-only`. This
-makes git-annex work with unicode filenames with ghc 7.4, but *only*
-unicode filenames. If you have filenames with some other encoding, you're
-out in the cold, and it will probably just crash with a error about wrong
-encoding.
-
-## analysis
-
-What's going on exactly? The new ghc, when presented with 
-a String of raw bytes like "fo\194\161", and asked to do
-something like `getSymbolicLinkStatus`, encodes it
-as unicode, yielding "fo\303\202\302\241". Which is
-not the same as the original filename, assuming it was "fo¡".
-
-The new ghc requires a new data type, `RawFilePath` be used if you
-don't want to impose utf-8 filenames on your users.
-
-The available `RawFilePath` support is quite low-level, so all the nice
-readFile and writeFile code, etc has to be reimplemented. So do any utility
-libraries that do things with FilePaths, if you need them to use
-RawFilePaths. Until the haskell ecosystem adapts to `RawFilePath`
-(if it does), using it broadly, as git-annex needs to, will be difficult.
-
-## rawfilepath branch
-
-I have a `rawfilepath` branch in git where I am trying to convert it to use
-`RawFilePath`. However, since there is no way to cast a `FilePath` to a
-`RawFilePath` or back (because the encoding of `RawFilePath` is not
-specified), this means changing essentially all of git-annex. Even the
-filenames used for keys in `.git/annex/objects` need to use the new data
-type. I didn't get very far on this branch.
-
-## newghc-edges branch
-
-I have a `newghc-edges` branch in git, trying a different approach.
-
-A `RawFilePath` contains only bytes, so it can actually be cast to a string,
-containing encoded characters. That string can then be 1) output in binary
-mode or 2) manipulated in ways that do not add characters larger than 255,
-and cast back to a `RawFilePath`. While not type-safe, such casts should at
-least help during bootstrapping, and might allow for a quick fix that only
-changes to `RawFilePath` at the edges.
-
-The branch contains an almost complete, although probably also buggy
-conversion using this method. It is missing wrappers for a
-few things like `readFile` and `writeFile` but otherwise seems to
-basically work.
-
-Is this a suitable approach for merging into `master`? It's nasty,
-being not type safe, having to reimplent/copy+modify random bits of
-libraries, etc. The nastiness is contained, though, in a single file,
-of only a few hundred lines of code. --[[Joey]]
+I now have a `ghc7.4` branch in git that seems to solve this, 
+for all filename encodings, and all system encodings. It will
+only build with the new GHC. If you have this problem, give it a try!
+--[[Joey]] 
 
 ----
 
