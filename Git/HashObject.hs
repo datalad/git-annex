@@ -16,6 +16,7 @@ import Git.Command
 hashFiles :: [FilePath] -> Repo -> IO ([Sha], IO ())
 hashFiles paths repo = do
 	(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $ git_hash_object repo
+	fileEncoding toh
 	_ <- forkProcess (feeder toh)
 	hClose toh
 	shas <- map Ref . lines <$> hGetContentsStrict fromh
