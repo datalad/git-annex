@@ -57,6 +57,7 @@ update_index repo ls = stream_update_index repo [(`mapM_` ls)]
 stream_update_index :: Repo -> [Streamer] -> IO ()
 stream_update_index repo as = do
 	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
+	fileEncoding h
 	forM_ as (stream h)
 	hClose h
 	forceSuccess p
