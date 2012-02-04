@@ -82,8 +82,6 @@ cleanup file key hascontent = do
 	
 			-- touch the symlink to have the same mtime as the
 			-- file it points to
-			-- XXX Currently broken on non-utf8 locales when
-			-- dealing with utf-8 filenames.
 			liftIO $ do
 				mtime <- modificationTime <$> getFileStatus file
 				touch file (TimeSpec mtime) False
