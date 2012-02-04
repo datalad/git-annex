@@ -120,7 +120,7 @@ showRaw :: String -> Annex ()
 showRaw s = handle q $ putStrLn s
 
 {- This avoids ghc's output layer crashing on invalid encoded characters in
- - files when printing them out.
+ - filenames when printing them out.
  -}
 setupConsole :: IO ()
 setupConsole = do
