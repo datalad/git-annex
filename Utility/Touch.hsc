@@ -16,6 +16,11 @@ module Utility.Touch (
 import Foreign
 import Foreign.C
 import Control.Monad (when)
+import GHC.IO.Encoding (getFileSystemEncoding)
+import GHC.Foreign as GHC
+
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath fp f = getFileSystemEncoding >>= \enc -> GHC.withCString enc fp f
 
 newtype TimeSpec = TimeSpec CTime
 
@@ -64,7 +69,7 @@ foreign import ccall "utimensat"
 
 touchBoth file atime mtime follow = 
 	allocaArray 2 $ \ptr ->
-	withCAString file $ \f -> do
+	withFilePath file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- c_utimensat at_fdcwd f ptr flags
 		when (r /= 0) $ throwErrno "touchBoth"
@@ -101,7 +106,7 @@ foreign import ccall "lutimes"
 
 touchBoth file atime mtime follow = 
 	allocaArray 2 $ \ptr ->
-	withCAString file $ \f -> do
+	withFilePath file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- syscall f ptr
 		if (r /= 0)
