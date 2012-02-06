@@ -66,8 +66,8 @@ slow_stats =
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, visible_annex_keys
-	, visible_annex_size
+	, known_annex_keys
+	, known_annex_size
 	, backend_usage
 	]
 
@@ -128,12 +128,12 @@ local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	S.size <$> cachedKeysPresent
 
-visible_annex_size :: Stat
-visible_annex_size = stat "visible annex size" $ json id $
+known_annex_size :: Stat
+known_annex_size = stat "known annex size" $ json id $
 	keySizeSum <$> cachedKeysReferenced
 
-visible_annex_keys :: Stat
-visible_annex_keys = stat "visible annex keys" $ json show $
+known_annex_keys :: Stat
+known_annex_keys = stat "known annex keys" $ json show $
 	S.size <$> cachedKeysReferenced
 
 tmp_size :: Stat
