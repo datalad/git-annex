@@ -1,0 +1,31 @@
+[[!meta title="using assume-unstages to speed up git with large trees of annexed files"]]
+
+Git update-index's assume-unstaged feature can be used to speed
+up `git status` and stuff by not statting the whole tree looking for changed
+files.
+
+This feature works quite well with git-annex. Especially because git
+annex's files are immutable, so arn't going to change out from under it,
+this is a nice fit. If you have a very large tree and `git status` is
+annoyingly slow, you can turn it on:
+
+	git config core.ignoreStat true
+
+When git mv and git rm are used, those changes *do* get noticed, even
+on assume-unchanged files. When new files are added, eg by `git annex add`,
+they are also noticed.
+
+There are two gotchas. Both occur because `git add` does not stage
+assume-unchanged files.
+
+1. When an annexed file is moved to a different directory, it updates
+   the symlink, and runs `git add` on it. So the file will move,
+   but the changed symlink will not be noticed by git and it will commit a
+   dangling symlink.
+2. When using `git annex migrate`, it changes the symlink and `git adds`
+   it. Again this won't be committed.
+
+These can be worked around by running `git update-index --really-refresh`
+after performing such operations. I hope that `git add` will be changed
+to stage changes to assume-unchanged files, which would remove this
+only complication. --[[Joey]] 
