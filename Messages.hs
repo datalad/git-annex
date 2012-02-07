@@ -119,13 +119,18 @@ showHeader h = handle q $
 showRaw :: String -> Annex ()
 showRaw s = handle q $ putStrLn s
 
-{- This avoids ghc's output layer crashing on invalid encoded characters in
- - filenames when printing them out.
- -}
+{- By default, haskell honors the user's locale in its output to stdout
+ - and stderr. While that's great for proper unicode support, for git-annex
+ - all that's really needed is the ability to display simple messages
+ - (currently untranslated), and importantly, to display filenames exactly
+ - as they are written on disk, no matter what their encoding. So, force
+ - raw mode. 
+ -
+ - NB: Once git-annex gets localized, this will need a rethink. -}
 setupConsole :: IO ()
 setupConsole = do
-	fileEncoding stdout
-	fileEncoding stderr
+	hSetBinaryMode stdout True
+	hSetBinaryMode stderr True
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = Annex.getState Annex.output >>= go

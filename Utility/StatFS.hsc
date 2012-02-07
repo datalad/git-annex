@@ -50,11 +50,8 @@ module Utility.StatFS ( FileSystemStats(..), getFileSystemStats ) where
 import Foreign
 import Foreign.C.Types
 import Foreign.C.String
-import GHC.IO.Encoding (getFileSystemEncoding)
-import GHC.Foreign as GHC
-
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath fp f = getFileSystemEncoding >>= \enc -> GHC.withCString enc fp f
+import Data.ByteString (useAsCString)
+import Data.ByteString.Char8 (pack)
 
 #if defined (__FreeBSD__) || defined (__FreeBSD_kernel__) || defined (__APPLE__)
 # include <sys/param.h>
@@ -108,7 +105,7 @@ getFileSystemStats path =
   return Nothing
 #else
   allocaBytes (#size struct statfs) $ \vfs ->
-  withFilePath path $ \cpath -> do
+  useAsCString (pack path) $ \cpath -> do
     res <- c_statfs cpath vfs
     if res == -1 then return Nothing
       else do

@@ -7,9 +7,12 @@
 
 module Git.CheckAttr where
 
+import System.Exit
+
 import Common
 import Git
 import Git.Command
+import qualified Git.Filename
 import qualified Git.Version
 
 {- Efficiently looks up a gitattributes value for each file in a list. -}
@@ -17,9 +20,13 @@ lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
 	cwd <- getCurrentDirectory
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
-	hPutStr toh $ join "\0" $ input cwd
-	hClose toh
-	zip files . map attrvalue . lines <$> hGetContents fromh
+        _ <- forkProcess $ do
+		hClose fromh
+                hPutStr toh $ join "\0" $ input cwd
+                hClose toh
+                exitSuccess
+        hClose toh
+	output cwd . lines <$> hGetContents fromh
 	where
 		params = gitCommandLine 
 				[ Param "check-attr"
@@ -38,7 +45,22 @@ lookup attr files repo = do
 		input cwd
 			| oldgit = map (absPathFrom cwd) files
 			| otherwise = map (relPathDirToFile cwd . absPathFrom cwd) files
-		attrvalue l = end bits !! 0
-			where
+		output cwd
+			| oldgit = map (torel cwd . topair)
+			| otherwise = map topair
+
+		topair l = (Git.Filename.decode file, value)
+			where 
+				file = join sep $ beginning bits
+				value = end bits !! 0
 				bits = split sep l
 				sep = ": " ++ attr ++ ": "
+
+		torel cwd (file, value) = (relfile, value)
+			where
+				relfile
+					| startswith cwd' file = drop (length cwd') file
+					| otherwise = relPathDirToFile top' file
+				top = workTree repo
+				cwd' = cwd ++ "/"
+				top' = top ++ "/"

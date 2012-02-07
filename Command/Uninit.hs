@@ -7,6 +7,8 @@
 
 module Command.Uninit where
 
+import qualified Data.ByteString.Lazy.Char8 as B
+
 import Common.Annex
 import Command
 import qualified Git
@@ -27,7 +29,7 @@ check = do
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	where
-		current_branch = Git.Ref . Prelude.head . lines <$> revhead
+		current_branch = Git.Ref . Prelude.head . lines . B.unpack <$> revhead
 		revhead = inRepo $ Git.Command.pipeRead 
 			[Params "rev-parse --abbrev-ref HEAD"]
 

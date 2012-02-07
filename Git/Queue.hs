@@ -90,6 +90,4 @@ runAction repo action files =
 	where
 		params = toCommand $ gitCommandLine
 			(Param (getSubcommand action):getParams action) repo
-		feedxargs h = do
-			fileEncoding h
-			hPutStr h $ join "\0" files
+		feedxargs h = hPutStr h $ join "\0" files
