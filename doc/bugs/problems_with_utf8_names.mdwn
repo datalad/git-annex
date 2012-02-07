@@ -3,10 +3,9 @@ This bug is reopened to track some new UTF-8 filename issues caused by GHC
 encoding no longer works. Even unicode filenames fail to work when
 git-annex is built with 7.4. --[[Joey]]
 
-I now have a `ghc7.4` branch in git that seems to solve this, 
+This bug is now fixed in current master. Once again, git-annex will work
 for all filename encodings, and all system encodings. It will
-only build with the new GHC. If you have this problem, give it a try!
---[[Joey]] 
+only build with the new GHC. [[done]] --[[Joey]] 
 
 ----
 
