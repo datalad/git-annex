@@ -18,8 +18,8 @@ import qualified Data.Map as M
 import System.IO
 import System.Cmd.Utils
 import Data.String.Utils
-import Utility.SafeCommand
 
+import Utility.SafeCommand
 import Common
 import Git
 import Git.Command
@@ -90,4 +90,6 @@ runAction repo action files =
 	where
 		params = toCommand $ gitCommandLine
 			(Param (getSubcommand action):getParams action) repo
-		feedxargs h = hPutStr h $ join "\0" files
+		feedxargs h = do
+			fileEncoding h
+			hPutStr h $ join "\0" files

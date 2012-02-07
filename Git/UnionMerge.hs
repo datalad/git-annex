@@ -15,7 +15,8 @@ module Git.UnionMerge (
 ) where
 
 import System.Cmd.Utils
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Lazy as L
+import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Set as S
 
 import Common
@@ -56,6 +57,7 @@ update_index repo ls = stream_update_index repo [(`mapM_` ls)]
 stream_update_index :: Repo -> [Streamer] -> IO ()
 stream_update_index repo as = do
 	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
+	fileEncoding h
 	forM_ as (stream h)
 	hClose h
 	forceSuccess p
@@ -106,21 +108,22 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
-	shas -> use =<< either return (hashObject repo . L.unlines) =<<
+	shas -> use =<< either return (hashObject repo . unlines) =<<
 		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
-		getcontents s = L.lines <$> catObject h s
+		getcontents s = map L.unpack . L.lines .
+			L.decodeUtf8 <$> catObject h s
 		use sha = return $ Just $ update_index_line sha file
 
 {- Injects some content into git, returning its Sha. -}
-hashObject :: Repo -> L.ByteString -> IO Sha
+hashObject :: Repo -> String -> IO Sha
 hashObject repo content = getSha subcmd $ do
 	(h, s) <- pipeWriteRead (map Param params) content repo
-	L.length s `seq` do
+	length s `seq` do
 		forceSuccess h
 		reap -- XXX unsure why this is needed
-		return $ L.unpack s
+		return s
 	where
 		subcmd = "hash-object"
 		params = [subcmd, "-w", "--stdin"]
@@ -130,7 +133,7 @@ hashObject repo content = getSha subcmd $ do
  - When possible, reuses the content of an existing ref, rather than
  - generating new content.
  -}
-calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
+calcMerge :: [(Ref, [String])] -> Either Ref [String]
 calcMerge shacontents
 	| null reuseable = Right $ new
 	| otherwise = Left $ fst $ Prelude.head reuseable

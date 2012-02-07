@@ -9,6 +9,14 @@ module Utility.Misc where
 
 import System.IO
 import Control.Monad
+import GHC.IO.Encoding
+
+{- Sets a Handle to use the filesystem encoding. This causes data
+ - written or read from it to be encoded/decoded the same
+ - as ghc 7.4 does to filenames et. This special encoding
+ - allows "arbitrary undecodable bytes to be round-tripped through it". -}
+fileEncoding :: Handle -> IO ()
+fileEncoding h = hSetEncoding h =<< getFileSystemEncoding
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}

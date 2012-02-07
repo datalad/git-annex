@@ -7,8 +7,6 @@
 
 module Git.Branch where
 
-import qualified Data.ByteString.Lazy.Char8 as L
-
 import Common
 import Git
 import Git.Sha
@@ -19,15 +17,15 @@ current :: Repo -> IO (Maybe Git.Ref)
 current r = parse <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
 	where
 		parse v
-			| L.null v = Nothing
-			| otherwise = Just $ Git.Ref $ firstLine $ L.unpack v
+			| null v = Nothing
+			| otherwise = Just $ Git.Ref $ firstLine v
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changed :: Branch -> Branch -> Repo -> IO Bool
 changed origbranch newbranch repo
 	| origbranch == newbranch = return False
-	| otherwise = not . L.null <$> diffs
+	| otherwise = not . null <$> diffs
 	where
 		diffs = pipeRead
 			[ Param "log"
@@ -73,15 +71,14 @@ fastForward branch (first:rest) repo = do
  - with the specified parent refs, and returns the committed sha -}
 commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
 commit message branch parentrefs repo = do
-	tree <- getSha "write-tree" $ asString $
+	tree <- getSha "write-tree" $
 		pipeRead [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $ asString $
+	sha <- getSha "commit-tree" $
 		ignorehandle $ pipeWriteRead
 			(map Param $ ["commit-tree", show tree] ++ ps)
-			(L.pack message) repo
+			message repo
 	run "update-ref" [Param $ show branch, Param $ show sha] repo
 	return sha
 	where
 		ignorehandle a = snd <$> a
-		asString a = L.unpack <$> a
 		ps = concatMap (\r -> ["-p", show r]) parentrefs

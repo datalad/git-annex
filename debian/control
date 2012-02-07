@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Build-Depends: 
 	debhelper (>= 9),
-	ghc,
+	ghc (>= 7.4),
 	libghc-missingh-dev,
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
