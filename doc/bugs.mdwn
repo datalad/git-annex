@@ -2,3 +2,5 @@ This is git-annex's bug list. Link bugs to [[bugs/done]] when done.
 
 [[!inline pages="./bugs/* and !./bugs/done and !link(done) 
 and !*/Discussion" actions=yes postform=yes show=0 archive=yes]]
+
+[[!edittemplate template=templates/bugtemplate match="bugs/*" silent=yes]]
