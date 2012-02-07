@@ -1,0 +1,11 @@
+It'd be nice to be able to run "git annex version" -- and maybe some other
+commands, like "git annex" itself for the help text, without having to be
+inside a git repo. Right now it requires you to be in a git repo even if
+it's not a git-annex repo.
+
+> You need a newer verison of git-annex. --[[Joey]] 
+
+	joey@gnu:/>git annex version
+	git-annex version: 3.20120124
+
+[[done]]
