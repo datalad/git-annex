@@ -8,7 +8,7 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     used by git-annex-shell and other places where changes are made to
     a remote's location log.
   * Modifications to support ghc 7.4's handling of filenames.
-    This version can only be built with ghc 7.4.
+    This version can only be built with ghc 7.4 or newer.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
