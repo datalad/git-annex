@@ -41,6 +41,7 @@ gen r u c = do
 			name = Git.repoDescribe r,
  			storeKey = store hooktype,
 			retrieveKeyFile = retrieve hooktype,
+			retrieveKeyFileCheap = retrieveCheap hooktype,
 			removeKey = remove hooktype,
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
@@ -108,6 +109,9 @@ storeEncrypted h (cipher, enck) k = withTmp enck $ \tmp -> do
 
 retrieve :: String -> Key -> FilePath -> Annex Bool
 retrieve h k f = runHook h "retrieve" k (Just f) $ return True
+
+retrieveCheap :: String -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: String -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->

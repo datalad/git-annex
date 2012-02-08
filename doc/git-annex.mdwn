@@ -210,7 +210,10 @@ subdirectories).
 
   With parameters, only the specified files are checked.
 
-  To avoid expensive checksum calculations, specify --fast
+  To check a remote to fsck, specify --from.
+  
+  To avoid expensive checksum calculations (and expensive transfers when
+  fscking a remote), specify --fast
 
 * unused
 
@@ -571,6 +574,10 @@ Here are all the supported configuration settings.
 * `annex.version`
 
   Automatically maintained, and used to automate upgrades between versions.
+
+* `annex.sshcaching`
+
+  By default, git-annex caches ssh connections. To disable this, set to `false`.
 
 * `remote.<name>.annex-cost`
 

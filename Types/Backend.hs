@@ -16,8 +16,8 @@ data BackendA a = Backend {
 	name :: String,
 	-- converts a filename to a key
 	getKey :: FilePath -> a (Maybe Key),
-	-- called during fsck to check a key
-	fsckKey :: Key -> a Bool
+	-- called during fsck to check a key, if the backend has its own checks
+	fsckKey :: Maybe (Key -> FilePath -> a Bool)
 }
 
 instance Show (BackendA a) where

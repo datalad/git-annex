@@ -7,25 +7,21 @@
 
 module Remote.Helper.Ssh where
 
-import Common
+import Common.Annex
 import qualified Git
 import qualified Git.Url
-import Types
 import Config
 import Annex.UUID
+import Annex.Ssh
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
  - passed command. -}
 sshToRepo :: Git.Repo -> [CommandParam] -> Annex [CommandParam]
 sshToRepo repo sshcmd = do
-	s <- getConfig repo "ssh-options" ""
-	let sshoptions = map Param (words s)
-	let sshport = case Git.Url.port repo of
-		Nothing -> []
-		Just p -> [Param "-p", Param (show p)]
-	let sshhost = Param $ Git.Url.hostuser repo
-	return $ sshoptions ++ sshport ++ [sshhost] ++ sshcmd
+	opts <- map Param . words <$> getConfig repo "ssh-options" ""
+	params <- sshParams (Git.Url.hostuser repo, Git.Url.port repo) opts
+	return $ params ++ sshcmd
 
 {- Generates parameters to run a git-annex-shell command on a remote
  - repository. -}

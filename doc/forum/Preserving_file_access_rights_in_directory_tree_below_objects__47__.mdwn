@@ -1,0 +1,77 @@
+Hello,
+
+I have the problem that, while git-annex preserves the file access rights (user, group, others) for the actual file, it does not make sure that others can access this file through the directory tree above said file:
+
+    /tmp $ mkdir test
+    /tmp $ chown claudius:media test
+    /tmp $ chmod 750 test
+    /tmp $ ls -dl test
+    drwxr-x--- 2 claudius media 40 2012-01-23 19:27 test/
+    /tmp $ cd test
+    /tmp/test $ git init --shared=all
+    Initialized empty shared Git repository in /tmp/test/.git/
+    /tmp/test $ git annex init "test"
+    init test ok
+    /tmp/test $ echo 123 > abc
+    /tmp/test $ chmod 640 abc
+    /tmp/test $ chown claudius:media abc
+    /tmp/test $ ls -l
+    total 4
+    -rw-r----- 1 claudius media 4 2012-01-23 19:27 abc
+    /tmp/test $ git annex add .
+    add abc (checksum...) ok
+    (Recording state in git...)
+    /tmp/test $ ls -l
+    total 4
+    lrwxrwxrwx 1 claudius claudius 176 2012-01-23 19:27 abc -> .git/annex/objects/8F/pj/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+    /tmp/test $ ls -l .git/annex/objects/8F/pj/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+    -r--r----- 1 claudius media 4 2012-01-23 19:27 .git/annex/objects/8F/pj/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+    /tmp/test $ ls -lR .git/annex/objects/
+    .git/annex/objects/:
+    total 0
+    drwx--S--- 3 claudius claudius 60 2012-01-23 19:28 8F/
+    
+    .git/annex/objects/8F:
+    total 0
+    drwx--S--- 3 claudius claudius 60 2012-01-23 19:28 pj/
+    
+    .git/annex/objects/8F/pj:
+    total 0
+    dr-x--S--- 2 claudius claudius 60 2012-01-23 19:28 SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/
+    
+    .git/annex/objects/8F/pj/SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b:
+    total 4
+    -r--r----- 1 claudius media 4 2012-01-23 19:27 SHA256-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+    /tmp/test $ stat .git/annex/objects/
+      File: `.git/annex/objects/'
+      Size: 60        	Blocks: 0          IO Block: 4096   directory
+    Device: 11h/17d	Inode: 2365970     Links: 3
+    Access: (2700/drwx--S---)  Uid: ( 1000/claudius)   Gid: ( 1000/claudius)
+    Access: 2012-01-23 19:28:10.614948386 +0100
+    Modify: 2012-01-23 19:28:10.614948386 +0100
+    Change: 2012-01-23 19:28:10.614948386 +0100
+     Birth: -
+
+The use case is that I have a rather large collection of music I would like to manage with git-annex in various locations (all of it on my external hard drive, some on my notebook etc. This music is played by MPD, which can access the collection because it is in the "media" group. After changing to git-annex, however, this fails.
+
+I tried to avoid this specific problem by declaring the git repository to be shared, which does appear to have some effect on the other files in .git:
+
+    /tmp/test $ ls -l .git
+    total 16
+    drwx--S---  5 claudius claudius 160 2012-01-23 19:28 annex/
+    drwxrwsr-x  2 claudius claudius  40 2012-01-23 19:27 branches/
+    -rw-rw-r--  1 claudius claudius 218 2012-01-23 19:27 config
+    -rw-rw-r--  1 claudius claudius  73 2012-01-23 19:27 description
+    -rw-rw-r--  1 claudius claudius  23 2012-01-23 19:27 HEAD
+    drwxrwsr-x  2 claudius claudius 220 2012-01-23 19:27 hooks/
+    -rw-rw-r--  1 claudius claudius 104 2012-01-23 19:28 index
+    drwxrwsr-x  2 claudius claudius  60 2012-01-23 19:27 info/
+    drwxrwsr-x  3 claudius claudius  60 2012-01-23 19:27 logs/
+    drwxrwsr-x 15 claudius claudius 300 2012-01-23 19:28 objects/
+    drwxrwsr-x  4 claudius claudius  80 2012-01-23 19:27 refs/
+
+I could obviously try to change the rights of annex/, annex/objects etc., but I would like to avoid having to adapt them each time a new folder is added somewhere below annex/objects/.
+
+My knowledge of git and especially git-annex is not too good, so it might well be that I missed something obvious. Any hints? :)
+
+(And thank you, of course, for taking the time to read all this)

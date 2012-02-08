@@ -22,6 +22,7 @@ module Annex.Content (
 	getKeysPresent,
 	saveState,
 	downloadUrl,
+	preseedTmp,
 ) where
 
 import System.IO.Error (try)
@@ -40,6 +41,7 @@ import Utility.FileMode
 import qualified Utility.Url as Url
 import Types.Key
 import Utility.DataUnits
+import Utility.CopyFile
 import Config
 import Annex.Exception
 
@@ -301,3 +303,21 @@ downloadUrl urls file = do
 	g <- gitRepo
 	o <- map Param . words <$> getConfig g "web-options" ""
 	liftIO $ anyM (\u -> Url.download u o file) urls
+
+{- Copies a key's content, when present, to a temp file.
+ - This is used to speed up some rsyncs. -}
+preseedTmp :: Key -> FilePath -> Annex Bool
+preseedTmp key file = go =<< inAnnex key
+	where
+		go False = return False
+		go True = do
+			ok <- copy
+			when ok $ liftIO $ allowWrite file
+			return ok
+		copy = do
+			present <- liftIO $ doesFileExist file
+			if present
+				then return True
+				else do
+					s <- inRepo $ gitAnnexLocation key
+					liftIO $ copyFileExternal s file

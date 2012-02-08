@@ -9,7 +9,6 @@ module Backend.SHA (backends) where
 
 import Common.Annex
 import qualified Annex
-import Annex.Content
 import Types.Backend
 import Types.Key
 import qualified Build.SysConfig as SysConfig
@@ -32,7 +31,7 @@ genBackend size
 		b = Backend
 			{ name = shaName size
 			, getKey = keyValue size
-			, fsckKey = checkKeyChecksum size
+			, fsckKey = Just $ checkKeyChecksum size
 			}
 
 genBackendE :: SHASize -> Maybe Backend
@@ -97,18 +96,14 @@ keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
 			| otherwise = naiveextension
 
 {- A key's checksum is checked during fsck. -}
-checkKeyChecksum :: SHASize -> Key -> Annex Bool
-checkKeyChecksum size key = do
+checkKeyChecksum :: SHASize -> Key -> FilePath -> Annex Bool
+checkKeyChecksum size key file = do
 	fast <- Annex.getState Annex.fast
-	file <- inRepo $ gitAnnexLocation key
 	present <- liftIO $ doesFileExist file
 	if not present || fast
 		then return True
-		else check =<< shaN size file
+		else check <$> shaN size file
 	where
 		check s
-			| s == dropExtension (keyName key) = return True
-			| otherwise = do
-				dest <- moveBad key
-				warning $ "Bad file content; moved to " ++ dest
-				return False
+			| s == dropExtension (keyName key) = True
+			| otherwise = False

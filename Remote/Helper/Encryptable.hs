@@ -47,6 +47,7 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 	r {
 		storeKey = store,
 		retrieveKeyFile = retrieve,
+		retrieveKeyFileCheap = retrieveCheap,
 		removeKey = withkey $ removeKey r,
 		hasKey = withkey $ hasKey r,
 		cost = cost r + encryptedRemoteCostAdj
@@ -58,6 +59,9 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		retrieve k f = cip k >>= maybe
 			(retrieveKeyFile r k f)
 			(`retrieveKeyFileEncrypted` f)
+		retrieveCheap k f = cip k >>= maybe
+			(retrieveKeyFileCheap r k f)
+			(\_ -> return False)
 		withkey a k = cip k >>= maybe (a k) (a . snd)
 		cip = cipherKey c
 

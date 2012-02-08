@@ -40,6 +40,7 @@ gen r _ _ =
 		name = Git.repoDescribe r,
 		storeKey = uploadKey,
 		retrieveKeyFile = downloadKey,
+		retrieveKeyFileCheap = downloadKeyCheap,
 		removeKey = dropKey,
 		hasKey = checkKey,
 		hasKeyCheap = False,
@@ -57,6 +58,9 @@ downloadKey key file = get =<< getUrls key
 		get urls = do
 			showOutput -- make way for download progress bar
 			downloadUrl urls file
+
+downloadKeyCheap :: Key -> FilePath -> Annex Bool
+downloadKeyCheap _ _ = return False
 
 uploadKey :: Key -> Annex Bool
 uploadKey _ = do

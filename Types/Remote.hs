@@ -45,6 +45,8 @@ data RemoteA a = Remote {
 	storeKey :: Key -> a Bool,
 	-- retrieves a key's contents to a file
 	retrieveKeyFile :: Key -> FilePath -> a Bool,
+	-- retrieves a key's contents to a tmp file, if it can be done cheaply
+	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
 	-- removes a key's contents
 	removeKey :: Key -> a Bool,
 	-- Checks if a key is present in the remote; if the remote

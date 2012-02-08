@@ -15,8 +15,8 @@ or removed from them with git-annex.
 To use gource this way, first go into the directory you want to visualize,
 and use `git annex log` to make an input file for `gource`:
 
-	git annex log --gource | tee gorce.log
+	git annex log --gource | tee gource.log
 	sort gource.log | gource --log-format custom -
 
 The `git annex log` can take a while, to speed it up you can use something
-like `--after "4 monts ago"` to limit how far back it goes.
+like `--after "4 months ago"` to limit how far back it goes.

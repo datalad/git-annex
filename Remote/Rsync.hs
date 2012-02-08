@@ -48,6 +48,7 @@ gen r u c = do
 			name = Git.repoDescribe r,
  			storeKey = store o,
 			retrieveKeyFile = retrieve o,
+			retrieveKeyFileCheap = retrieveCheap o,
 			removeKey = remove o,
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
@@ -103,13 +104,19 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 	rsyncSend o enck tmp
 
 retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieve o k f = untilTrue (rsyncUrls o k) $ \u ->
-	rsyncRemote o
-		-- use inplace when retrieving to support resuming
-		[ Param "--inplace"
-		, Param u
-		, Param f
-		]
+retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
+	-- use inplace when retrieving to support resuming
+	[ Param "--inplace"
+	, Param u
+	, Param f
+	]
+
+retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
+retrieveCheap o k f = do
+	ok <- preseedTmp k f
+	if ok
+		then retrieve o k f
+		else return False
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do

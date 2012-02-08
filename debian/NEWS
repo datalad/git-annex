@@ -1,8 +1,13 @@
-git-annex (3.20110702) unstable; urgency=low
+git-annex (3.20120123) unstable; urgency=low
 
-  The URL backend has been removed. Instead the new web remote can be used.
+  There was a bug in the handling of directory special remotes that
+  could cause partial file contents to be stored in them. If you use
+  a directory special remote, you should fsck it, to avoid potential
+  data loss.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 01 Jul 2011 15:40:51 -0400
+  Example: git annex fsck --from mydirectory
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 19 Jan 2012 15:24:23 -0400
 
 git-annex (3.20110624) experimental; urgency=low
 

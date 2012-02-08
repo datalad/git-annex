@@ -18,7 +18,7 @@ backend :: Backend
 backend = Backend {
 	name = "WORM",
 	getKey = keyValue,
-	fsckKey = const (return True)
+	fsckKey = Nothing
 }
 
 {- The key includes the file size, modification time, and the

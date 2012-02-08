@@ -15,6 +15,7 @@ import Annex.Content
 import qualified Remote
 import Annex.UUID
 import qualified Option
+import Logs.Presence
 
 def :: [Command]
 def = [withOptions options $ command "move" paramPaths seek
@@ -97,7 +98,7 @@ toPerform dest move key = moveLock move key $ do
 		Right True -> finish
 	where
 		finish = do
-			Remote.logStatus dest key True
+			Remote.logStatus dest key InfoPresent
 			if move
 				then do
 					whenM (inAnnex key) $ removeAnnex key

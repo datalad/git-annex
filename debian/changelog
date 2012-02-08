@@ -1,3 +1,25 @@
+git-annex (3.20120123) unstable; urgency=low
+
+  * fsck --from: Fscking a remote is now supported. It's done by retrieving
+    the contents of the specified files from the remote, and checking them,
+    so can be an expensive operation. Still, if the remote is a special
+    remote, or a git repository that you cannot run fsck in locally, it's
+    nice to have the ability to fsck it.
+  * If you have any directory special remotes, now would be a good time to
+    fsck them, in case you were hit by the data loss bug fixed in the
+    previous release!
+  * fsck --from remote --fast: Avoids expensive file transfers, at the
+    expense of not checking file size and/or contents.
+  * Ssh connection caching is now enabled automatically by git-annex.
+    Only one ssh connection is made to each host per git-annex run, which
+    can speed some things up a lot, as well as avoiding repeated password
+    prompts. Concurrent git-annex processes also share ssh connections.
+    Cached ssh connections are shut down when git-annex exits.
+  * To disable the ssh caching (if for example you have your own broader
+    ssh caching configuration), set annex.sshcaching=false.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 23 Jan 2012 13:48:48 -0400
+
 git-annex (3.20120116~bpo60+1) squeeze-backports; urgency=low
 
   * Removed conflict on newer version of git, this backport can now be used
