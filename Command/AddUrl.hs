@@ -44,7 +44,7 @@ perform url file = ifAnnexed file addurl geturl
 	where
 		geturl = do
 			whenM (liftIO $ doesFileExist file) $
-				error $ "already have this url in " ++ file
+				error $ "not overwriting existing " ++ file
 			fast <- Annex.getState Annex.fast
 			if fast then nodownload url file else download url file
 		addurl (key, _backend) = do
