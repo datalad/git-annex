@@ -11,7 +11,7 @@ Build-Depends:
 	libghc6-dataenc-dev,
 	libghc6-http-dev,
 	libghc6-utf8-string-dev,
-	libghc6-testpack-dev [any-i386 any-amd64],
+	libghc6-testpack-dev,
 	libghc6-json-dev,
 	libghc6-quickcheck2-dev,
 	ikiwiki,
