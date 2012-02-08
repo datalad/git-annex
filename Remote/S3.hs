@@ -289,12 +289,15 @@ s3GetCreds c = maybe fromconfig (return . Just) =<< liftIO getenv
 					liftIO $ decrypt s3creds cipher
 				_ -> return Nothing
 		decrypt s3creds cipher = do
-			[ak, sk, _rest] <- lines <$>
+			creds <- lines <$>
 				withDecryptedContent cipher
 					(return $ L.pack $ fromB64 s3creds)
 					(return . L.unpack)
-			setenv (ak, sk)
-			return $ Just (ak, sk)
+			case creds of
+				[ak, sk] -> do
+					setenv (ak, sk)
+					return $ Just (ak, sk)
+				_ -> do error "bad s3creds"
 
 {- Stores S3 creds encrypted in the remote's config if possible. -}
 s3SetCreds :: RemoteConfig -> Annex RemoteConfig

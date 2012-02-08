@@ -7,6 +7,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     git-annex's existing ability to recover in this situation. This is
     used by git-annex-shell and other places where changes are made to
     a remote's location log.
+  * S3: Fix irrefutable pattern failure when accessing encrypted S3
+    credentials.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
