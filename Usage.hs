@@ -76,6 +76,8 @@ paramDate :: String
 paramDate = "DATE"
 paramFormat :: String
 paramFormat = "FORMAT"
+paramFile :: String
+paramFile = "FILE"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String
