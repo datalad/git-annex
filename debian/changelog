@@ -16,6 +16,7 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     filename that is used when adding an url, which is based on the url.
     Or, when the file already exists, the url is recorded as another
     location of the file.
+  * addurl: Normalize badly encoded urls.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

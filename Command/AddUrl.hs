@@ -31,10 +31,11 @@ seek = [withField fileOption return $ \f ->
 	withStrings $ start f]
 
 start :: Maybe FilePath -> String -> CommandStart
-start optfile s = notBareRepo $ go $ parseURI s
+start optfile s = notBareRepo $ go $ fromMaybe bad $ parseURI s
 	where
-		go Nothing = error $ "bad url " ++ s
-		go (Just url) = do
+		bad = fromMaybe (error $ "bad url " ++ s) $
+			parseURI $ escapeURIString isUnescapedInURI s
+		go url = do
 			let file = fromMaybe (url2file url) optfile
 			showStart "addurl" file
 			next $ perform s file
