@@ -83,13 +83,14 @@ merge_trees (Ref x) (Ref y) h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
 
 {- For merging a single tree into the index. -}
 merge_tree_index :: Ref -> CatFileHandle -> Repo -> Streamer
-merge_tree_index (Ref x) h = calc_merge h $ "diff-index":diff_opts ++ ["--cached", x]
+merge_tree_index (Ref x) h = calc_merge h $
+	"diff-index" : diff_opts ++ ["--cached", x]
 
 diff_opts :: [String]
 diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
 {- Calculates how to perform a merge, using git to get a raw diff,
- - and returning a list suitable for update_index. -}
+ - and generating update-index input. -}
 calc_merge :: CatFileHandle -> [String] -> Repo -> Streamer
 calc_merge ch differ repo streamer = gendiff >>= go
 	where
@@ -100,7 +101,7 @@ calc_merge ch differ repo streamer = gendiff >>= go
 		go (_:[]) = error "calc_merge parse error"
 
 {- Given an info line from a git raw diff, and the filename, generates
- - a line suitable for update_index that union merges the two sides of the
+ - a line suitable for update-index that union merges the two sides of the
  - diff. -}
 mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of

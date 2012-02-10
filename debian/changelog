@@ -9,6 +9,12 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     a remote's location log.
   * S3: Fix irrefutable pattern failure when accessing encrypted S3
     credentials.
+  * addurl: Added a --file option, which can be used to specify what
+    file the url is added to. This can be used to override the default
+    filename that is used when adding an url, which is based on the url.
+    Or, when the file already exists, the url is recorded as another
+    location of the file.
+  * addurl: Normalize badly encoded urls.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

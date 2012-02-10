@@ -145,9 +145,14 @@ subdirectories).
 
 * addurl [url ...]
 
-  Downloads each url to a file, which is added to the annex.
+  Downloads each url to its own file, which is added to the annex.
 
-  To avoid immediately downloading the url, specify --fast
+  To avoid immediately downloading the url, specify --fast.
+
+  To specify what file the url is added to, specify --file. This changes
+  the behavior; now all the specified urls are recorded as alternate
+  locations from which the file can be downloaded. In this mode, addurl
+  can be used both to add new files, or to add urls to existing files.
 
 # REPOSITORY SETUP COMMANDS
 
