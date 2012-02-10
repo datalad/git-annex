@@ -15,6 +15,7 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     Or, when the file already exists, the url is recorded as another
     location of the file.
   * addurl: Normalize badly encoded urls.
+  * Fix teardown of stale cached ssh connections.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

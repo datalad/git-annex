@@ -78,12 +78,13 @@ sshCleanup = do
 				Right _ -> stopssh socketfile
 			liftIO $ closeFd fd
 		stopssh socketfile = do
-			(_, params) <- sshInfo $ socket2hostport socketfile
+			let (host, port) = socket2hostport socketfile
+			(_, params) <- sshInfo (host, port)
 			_ <- liftIO $ do
 				-- "ssh -O stop" is noisy on stderr even with -q
 				let cmd = unwords $ toCommand $
 					[ Params "-O stop"
-					] ++ params
+					] ++ params ++ [Param host]
 				_ <- boolSystem "sh"
 					[ Param "-c"
 					, Param $ "ssh " ++ cmd ++ " >/dev/null 2>/dev/null"
