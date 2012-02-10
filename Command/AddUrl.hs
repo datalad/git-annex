@@ -15,6 +15,7 @@ import qualified Backend
 import qualified Command.Add
 import qualified Annex
 import qualified Backend.URL
+import qualified Utility.Url as Url
 import Annex.Content
 import Logs.Web
 import qualified Option
@@ -55,7 +56,7 @@ perform url file = ifAnnexed file addurl geturl
 download :: String -> FilePath -> CommandPerform
 download url file = do
 	showAction $ "downloading " ++ url ++ " "
-	let dummykey = Backend.URL.fromUrl url
+	let dummykey = Backend.URL.fromUrl url Nothing
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	stopUnless (downloadUrl [url] tmp) $ do
@@ -70,7 +71,10 @@ download url file = do
 
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
-	let key = Backend.URL.fromUrl url
+	(exists, size) <- liftIO $ Url.exists url
+	unless exists $
+		error $ "unable to access url: " ++ url
+	let key = Backend.URL.fromUrl url size
 	setUrlPresent key url
 	next $ Command.Add.cleanup file key False
 
