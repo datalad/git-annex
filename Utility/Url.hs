@@ -7,6 +7,7 @@
 
 module Utility.Url (
 	URLString,
+	check,
 	exists,
 	canDownload,
 	download,
@@ -14,6 +15,7 @@ module Utility.Url (
 ) where
 
 import Control.Applicative
+import Control.Monad
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
@@ -23,16 +25,28 @@ import Utility.Path
 
 type URLString = String
 
-{- Checks that an url exists and could be successfully downloaded. -}
-exists :: URLString -> IO Bool
+{- Checks that an url exists and could be successfully downloaded,
+ - also checking that its size, if available, matches a specified size. -}
+check :: URLString -> Maybe Integer -> IO Bool
+check url expected_size = handle <$> exists url
+	where
+		handle (False, _) = False
+		handle (True, Nothing) = True
+		handle (True, s) = expected_size == s
+
+{- Checks that an url exists and could be successfully downloaded,
+ - also returning its size if available. -}
+exists :: URLString -> IO (Bool, Maybe Integer)
 exists url =
 	case parseURI url of
-		Nothing -> return False
+		Nothing -> return (False, Nothing)
 		Just u -> do
 			r <- request u HEAD
 			case rspCode r of
-				(2,_,_) -> return True
-				_ -> return False
+				(2,_,_) -> return (True, size r)
+				_ -> return (False, Nothing)
+	where
+		size = liftM read . lookupHeader HdrContentLength . rspHeaders
 
 canDownload :: IO Bool
 canDownload = (||) <$> inPath "wget" <*> inPath "curl"
