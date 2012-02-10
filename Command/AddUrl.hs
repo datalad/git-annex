@@ -19,6 +19,7 @@ import qualified Utility.Url as Url
 import Annex.Content
 import Logs.Web
 import qualified Option
+import Types.Key
 
 def :: [Command]
 def = [withOptions [fileOption] $
@@ -50,6 +51,8 @@ perform url file = ifAnnexed file addurl geturl
 			fast <- Annex.getState Annex.fast
 			if fast then nodownload url file else download url file
 		addurl (key, _backend) = do
+			unlessM (liftIO $ Url.check url (keySize key)) $
+				error $ "failed to verify url: " ++ url
 			setUrlPresent key url
 			next $ return True
 
