@@ -28,6 +28,7 @@ import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
 import Init
+import Types.Key
 
 remote :: RemoteType
 remote = RemoteType {
@@ -143,7 +144,8 @@ inAnnex r key
 			where
 				go e [] = return $ Left e
 				go _ (u:us) = do
-					res <- catchMsgIO $ Url.exists u
+					res <- catchMsgIO $
+						Url.check u (keySize key)
 					case res of
 						Left e -> go e us
 						v -> return v

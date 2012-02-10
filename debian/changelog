@@ -18,6 +18,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     location of the file.
   * addurl: Normalize badly encoded urls.
   * Fix teardown of stale cached ssh connections.
+  * When checking that an url has a key, verify that the Content-Length,
+    if available, matches the size of the key.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
