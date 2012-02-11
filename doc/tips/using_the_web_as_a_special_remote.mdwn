@@ -8,10 +8,10 @@ The web can be used as a [[special_remote|special_remotes]] too.
 Now the file is downloaded, and has been added to the annex like any other
 file. So it can be renamed, copied to other repositories, and so on.
 
-Note that git-annex assumes that, if the web site does not 404, the file is
-still present on the web, and this counts as one [[copy|copies]] of the
-file. So it will let you remove your last copy, trusting it can be
-downloaded again:
+Note that git-annex assumes that, if the web site does not 404, and has the
+right file size, the file is still present on the web, and this counts as
+one [[copy|copies]] of the file. So it will let you remove your last copy,
+trusting it can be downloaded again:
 
 	# git annex drop example.com_video.mpeg
 	drop example.com_video.mpeg (checking http://example.com/video.mpeg) ok
