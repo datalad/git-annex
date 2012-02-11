@@ -19,6 +19,7 @@ import Control.Monad
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
+import Data.Maybe
 
 import Utility.SafeCommand
 import Utility.Path
@@ -87,12 +88,32 @@ get url =
 
 {- Makes a http request of an url. For example, HEAD can be used to
  - check if the url exists, or GET used to get the url content (best for
- - small urls). -}
+ - small urls).
+ -
+ - This does its own redirect following because Browser's is buggy for HEAD
+ - requests.
+ -}
 request :: URI -> RequestMethod -> IO (Response String)
-request url requesttype = Browser.browse $ do
-	Browser.setErrHandler ignore
-	Browser.setOutHandler ignore
-	Browser.setAllowRedirects True
-	snd <$> Browser.request (mkRequest requesttype url :: Request_String)
+request url requesttype = go 5 url
 	where
+		go :: Int -> URI -> IO (Response String)
+		go 0 _ = error "Too many redirects "
+		go n u = do
+			rsp <- Browser.browse $ do
+				Browser.setErrHandler ignore
+				Browser.setOutHandler ignore
+				Browser.setAllowRedirects False
+				snd <$> Browser.request (mkRequest requesttype u :: Request_String)
+			case rspCode rsp of
+				(3,0,x) | x /= 5 -> redir (n - 1) u rsp
+				_ -> return rsp
 		ignore = const $ return ()
+		redir n u rsp = do
+			case retrieveHeaders HdrLocation rsp of
+				[] -> return rsp
+				(Header _ newu:_) ->
+					case parseURIReference newu of
+						Nothing -> return rsp
+						Just newURI -> go n newURI_abs
+							where
+								newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
