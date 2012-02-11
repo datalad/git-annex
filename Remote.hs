@@ -66,7 +66,7 @@ addName desc n
 	| otherwise = n ++ " (" ++ desc ++ ")"
 
 {- When a name is specified, looks up the remote matching that name.
- - (Or it can be a UUID.) Only finds currently configured git remotes. -}
+ - Only finds currently configured git remotes. -}
 byName :: Maybe String -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = do
