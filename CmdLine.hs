@@ -71,7 +71,9 @@ tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
 tryRun' errnum _ cmd []
 	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
 	| otherwise = return ()
-tryRun' errnum state cmd (a:as) = run >>= handle
+tryRun' errnum state cmd (a:as) = do
+	r <- run
+	handle $! r
 	where
 		run = tryIO $ Annex.run state $ do
 			Annex.Queue.flushWhenFull
