@@ -22,6 +22,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     if available, matches the size of the key.
   * addurl --fast: Verifies that the url can be downloaded (only getting
     its head), and records the size in the key.
+  * Fixed to use the strict state monad, to avoid leaking all kinds of memory
+    due to lazy state update thunks when adding/fixing many files.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
