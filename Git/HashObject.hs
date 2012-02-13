@@ -12,7 +12,7 @@ import Git
 import Git.Command
 
 {- Injects a set of files into git, returning the shas of the objects
- - and an IO action to call ones the the shas have been used. -}
+ - and an IO action to call once the the shas have been used. -}
 hashFiles :: [FilePath] -> Repo -> IO ([Sha], IO ())
 hashFiles paths repo = do
 	(pid, fromh, toh) <- hPipeBoth "git" $ toCommand $ git_hash_object repo
