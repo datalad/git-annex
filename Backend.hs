@@ -19,7 +19,6 @@ import System.Posix.Files
 
 import Common.Annex
 import qualified Git.Config
-import qualified Git.CheckAttr
 import qualified Annex
 import Annex.CheckAttr
 import Types.Key

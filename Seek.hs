@@ -58,10 +58,8 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
-	top <- fromRepo Git.workTree
 	typechangedfiles <- seekHelper typechanged params
-	let unlockedfiles = liftIO $ filterM notSymlink $
-		map (\f -> top ++ "/" ++ f) typechangedfiles
+	let unlockedfiles = liftIO $ filterM notSymlink typechangedfiles
 	prepFiltered a unlockedfiles
 
 withKeys :: (Key -> CommandStart) -> CommandSeek
