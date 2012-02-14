@@ -49,6 +49,7 @@ files with git.
 * [[encryption]]
 * [[bare_repositories]]
 * [[internals]]
+* [[scalability]]
 * [[design]]
 * [[what git annex is not|not]]
 * [[sitemap]]
