@@ -42,10 +42,6 @@ files with git.
 
 ## documentation
 
-[[!template id="note" text="""
-<video controls src="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm" width="300"></video>
-"""]]
-
 * [[git-annex man page|git-annex]]
 * [[key-value backends|backends]] for data storage
 * [[special_remotes]] (including [[special_remotes/S3]] and [[special_remotes/bup]])
@@ -56,6 +52,11 @@ files with git.
 * [[design]]
 * [[what git annex is not|not]]
 * [[sitemap]]
+
+## talks
+
+<video controls src="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm" width="500"></video>  
+A [15 minute introduction to git-annex](http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm), presented by Richard Hartmann.
 
 <br clear="all" />
 
