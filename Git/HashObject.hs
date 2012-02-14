@@ -19,7 +19,7 @@ hashFiles paths repo = do
 	fileEncoding toh
 	_ <- forkProcess (feeder toh)
 	hClose toh
-	shas <- map Ref . lines <$> hGetContentsStrict fromh
+	shas <- map Ref . lines <$> hGetContents fromh
 	return (shas, ender fromh pid)
 	where
 		git_hash_object = gitCommandLine

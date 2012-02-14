@@ -27,6 +27,11 @@ A history of the leaks:
   Apparently fixed in versions afer 3.20120123, but this one is not
   well understood.
 
+* Committing journal files turned out to have another memory leak.
+  After adding a lot of files ran out of memory, this left the journal
+  behind and could affect other git-anne commands. Fixed in versions afer
+  3.20120123.
+
 * (Note that `git ls-files --others`, which is used to find files to add,
   also uses surpsisingly large amounts
   of memory when you have a lot of files. It buffers

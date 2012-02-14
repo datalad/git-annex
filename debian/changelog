@@ -24,6 +24,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     its head), and records the size in the key.
   * Fixed to use the strict state monad, to avoid leaking all kinds of memory
     due to lazy state update thunks when adding/fixing many files.
+  * Fixed a memory leak due to excessive strictness when committing journal
+    files.
   * whereis: Prints the urls of files that the web special remote knows about.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400

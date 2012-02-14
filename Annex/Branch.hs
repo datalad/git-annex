@@ -190,7 +190,7 @@ commit message = whenM journalDirty $ lockJournal $ do
 {- Commits the staged changes in the index to the branch.
  - 
  - Ensures that the branch's index file is first updated to the state
- - of the brannch at branchref, before running the commit action. This
+ - of the branch at branchref, before running the commit action. This
  - is needed because the branch may have had changes pushed to it, that
  - are not yet reflected in the index.
  -
