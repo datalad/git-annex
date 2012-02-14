@@ -19,12 +19,12 @@ def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
 
 seek :: [CommandSeek]
-seek = [withBackendFilesInGit $ \(b, f) -> whenAnnexed (start b) f]
+seek = [withFilesInGit $ whenAnnexed start]
 
-start :: Maybe Backend -> FilePath -> (Key, Backend) -> CommandStart
-start b file (key, oldbackend) = do
+start :: FilePath -> (Key, Backend) -> CommandStart
+start file (key, oldbackend) = do
 	exists <- inAnnex key
-	newbackend <- choosebackend b
+	newbackend <- choosebackend =<< Backend.chooseBackend file
 	if (newbackend /= oldbackend || upgradableKey key) && exists
 		then do
 			showStart "migrate" file

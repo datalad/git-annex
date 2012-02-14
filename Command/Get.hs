@@ -19,11 +19,11 @@ def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
 
 seek :: [CommandSeek]
 seek = [withField Command.Move.fromOption Remote.byName $ \from ->
-	withNumCopies $ \n -> whenAnnexed $ start from n]
+	withFilesInGit $ whenAnnexed $ start from]
 
-start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start from numcopies file (key, _) = stopUnless (not <$> inAnnex key) $
-	autoCopies key (<) numcopies $ do
+start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
+start from file (key, _) = stopUnless (not <$> inAnnex key) $
+	autoCopies file key (<) $ \_numcopies -> do
 		case from of
 			Nothing -> go $ perform key
 			Just src -> do

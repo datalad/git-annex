@@ -16,7 +16,6 @@ import qualified Backend
 import Logs.Location
 import Annex.Content
 import Utility.Touch
-import Backend
 
 def :: [Command]
 def = [command "add" paramPaths seek "add files to annex"]
@@ -28,8 +27,8 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
 {- The add subcommand annexes a file, storing it in a backend, and then
  - moving it into the annex directory and setting up the symlink pointing
  - to its content. -}
-start :: BackendFile -> CommandStart
-start p@(_, file) = notBareRepo $ ifAnnexed file fixup add
+start :: FilePath -> CommandStart
+start file = notBareRepo $ ifAnnexed file fixup add
 	where
 		add = do
 			s <- liftIO $ getSymbolicLinkStatus file
@@ -37,7 +36,7 @@ start p@(_, file) = notBareRepo $ ifAnnexed file fixup add
 				then stop
 				else do
 					showStart "add" file
-					next $ perform p
+					next $ perform file
 		fixup (key, _) = do
 			-- fixup from an interrupted add; the symlink
 			-- is present but not yet added to git
@@ -45,8 +44,10 @@ start p@(_, file) = notBareRepo $ ifAnnexed file fixup add
 			liftIO $ removeFile file
 			next $ next $ cleanup file key =<< inAnnex key
 
-perform :: BackendFile -> CommandPerform
-perform (backend, file) = Backend.genKey file backend >>= go
+perform :: FilePath -> CommandPerform
+perform file = do
+	backend <- Backend.chooseBackend file
+	Backend.genKey file backend >>= go
 	where
 		go Nothing = stop
 		go (Just (key, _)) = do

@@ -19,10 +19,10 @@ def = [withOptions Command.Move.options $ command "copy" paramPaths seek
 seek :: [CommandSeek]
 seek = [withField Command.Move.toOption Remote.byName $ \to ->
 		withField Command.Move.fromOption Remote.byName $ \from ->
-			withNumCopies $ \n -> whenAnnexed $ start to from n]
+			withFilesInGit $ whenAnnexed $ start to from]
 
 -- A copy is just a move that does not delete the source file.
 -- However, --auto mode avoids unnecessary copies.
-start :: Maybe Remote -> Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start to from numcopies file (key, backend) = autoCopies key (<) numcopies $
+start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
+start to from file (key, backend) = autoCopies file key (<) $ \_numcopies ->
 	Command.Move.start to from False file (key, backend)
