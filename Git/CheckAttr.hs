@@ -16,10 +16,9 @@ import qualified Git.Version
 lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
 	cwd <- getCurrentDirectory
-	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
-	hPutStr toh $ join "\0" $ input cwd
-	hClose toh
-	zip files . map attrvalue . lines <$> hGetContents fromh
+	(_, r) <- pipeBoth "git" (toCommand params) $
+		join "\0" $ input cwd
+	return $ zip files $ map attrvalue $ lines r
 	where
 		params = gitCommandLine 
 				[ Param "check-attr"
