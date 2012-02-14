@@ -34,5 +34,3 @@ A history of the leaks:
   before outputting anything.
   This is Not Our Problem, but I'm sure the git developers
   would appreciate a patch that fixes it.)
-
-[[done]] ... for now --[[Joey]] 
