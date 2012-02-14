@@ -9,6 +9,8 @@ module Git.Command where
 
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.IO as L
+import Control.Concurrent
+import Control.Exception (finally)
 
 import Common
 import Git
@@ -61,8 +63,7 @@ pipeWriteRead params s repo = assertLocal repo $ do
 	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
 	fileEncoding to
 	fileEncoding from
-	hPutStr to s
-	hClose to
+	_ <- forkIO $ finally (hPutStr to s) (hClose to)
 	c <- hGetContents from
 	return (p, c)
 
