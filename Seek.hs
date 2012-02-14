@@ -89,17 +89,13 @@ withNothing _ _ = error "This command takes no parameters."
 
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
-prepFiltered a = prepFilteredGen a id
-
-prepFilteredGen :: (b -> CommandStart) -> (b -> FilePath) -> Annex [b] -> Annex [CommandStart]
-prepFilteredGen a d fs = do
+prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (proc matcher) <$> fs
 	where
-		proc matcher v = do
-			let f = d v
+		proc matcher f = do
 			ok <- matcher f
-			if ok then a v else return Nothing
+			if ok then a f else return Nothing
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
