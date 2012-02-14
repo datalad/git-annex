@@ -10,7 +10,6 @@ module Command.Lock where
 import Common.Annex
 import Command
 import qualified Annex.Queue
-import Backend
 	
 def :: [Command]
 def = [command "lock" paramPaths seek "undo unlock command"]
@@ -18,9 +17,8 @@ def = [command "lock" paramPaths seek "undo unlock command"]
 seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
 
-{- Undo unlock -}
-start :: BackendFile -> CommandStart
-start (_, file) = do
+start :: FilePath -> CommandStart
+start file = do
 	showStart "lock" file
 	next $ perform file
 

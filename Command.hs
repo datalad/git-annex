@@ -18,6 +18,7 @@ module Command (
 	ifAnnexed,
 	notBareRepo,
 	isBareRepo,
+	numCopies,
 	autoCopies,
 	module ReExported
 ) where
@@ -34,6 +35,7 @@ import Checks as ReExported
 import Usage as ReExported
 import Logs.Trust
 import Config
+import Annex.CheckAttr
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
@@ -98,17 +100,22 @@ notBareRepo a = do
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
 
+numCopies :: FilePath  -> Annex (Maybe Int)
+numCopies file = readish <$> checkAttr "annex.numcopies" file
+
 {- Used for commands that have an auto mode that checks the number of known
  - copies of a key.
  -
  - In auto mode, first checks that the number of known
  - copies of the key is > or < than the numcopies setting, before running
  - the action. -}
-autoCopies :: Key -> (Int -> Int -> Bool) -> Maybe Int -> CommandStart -> CommandStart
-autoCopies key vs numcopiesattr a = Annex.getState Annex.auto >>= auto
+autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
+autoCopies file key vs a = do
+	numcopiesattr <- numCopies file
+	Annex.getState Annex.auto >>= auto numcopiesattr
 	where
-		auto False = a
-		auto True = do
+		auto numcopiesattr False = a numcopiesattr
+		auto numcopiesattr True = do
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed then a else stop
+			if length have `vs` needed then a numcopiesattr else stop

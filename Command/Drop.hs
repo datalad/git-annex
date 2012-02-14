@@ -26,11 +26,11 @@ fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: [CommandSeek]
-seek = [withField fromOption Remote.byName $ \from -> withNumCopies $ \n ->
-	whenAnnexed $ start from n]
+seek = [withField fromOption Remote.byName $ \from ->
+	withFilesInGit $ whenAnnexed $ start from]
 
-start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start from numcopies file (key, _) = autoCopies key (>) numcopies $ do
+start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
+start from file (key, _) = autoCopies file key (>) $ \numcopies -> do
 	case from of
 		Nothing -> startLocal file numcopies key
 		Just remote -> do

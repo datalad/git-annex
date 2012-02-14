@@ -10,7 +10,6 @@ module Command.PreCommit where
 import Command
 import qualified Command.Add
 import qualified Command.Fix
-import Backend
 
 def :: [Command]
 def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
@@ -22,12 +21,12 @@ seek =
 	[ withFilesToBeCommitted $ whenAnnexed Command.Fix.start
 	, withFilesUnlockedToBeCommitted start]
 
-start :: BackendFile -> CommandStart
-start p = next $ perform p
+start :: FilePath -> CommandStart
+start file = next $ perform file
 
-perform :: BackendFile -> CommandPerform
-perform pair@(_, file) = do
-	ok <- doCommand $ Command.Add.start pair
+perform :: FilePath -> CommandPerform
+perform file = do
+	ok <- doCommand $ Command.Add.start file
 	if ok
 		then next $ return True
 		else error $ "failed to add " ++ file ++ "; canceling commit"

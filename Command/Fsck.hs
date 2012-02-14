@@ -36,12 +36,13 @@ options = [fromOption]
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byName $ \from ->
-		withNumCopies $ \n -> whenAnnexed $ start from n
+		withFilesInGit $ whenAnnexed $ start from
 	, withBarePresentKeys startBare
 	]
 
-start :: Maybe Remote -> Maybe Int -> FilePath -> (Key, Backend) -> CommandStart
-start from numcopies file (key, backend) = do
+start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
+start from file (key, backend) = do
+	numcopies <- numCopies file
 	showStart "fsck" file
 	case from of
 		Nothing -> next $ perform key file backend numcopies

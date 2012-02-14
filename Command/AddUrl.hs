@@ -63,7 +63,7 @@ download url file = do
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	stopUnless (downloadUrl [url] tmp) $ do
-		[(backend, _)] <- Backend.chooseBackends [file]
+		backend <- Backend.chooseBackend file
 		k <- Backend.genKey tmp backend
 		case k of
 			Nothing -> stop

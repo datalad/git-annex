@@ -35,6 +35,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import Git.CatFile
+import Git.CheckAttr
 import qualified Git.Queue
 import Types.Backend
 import qualified Types.Remote
@@ -82,6 +83,7 @@ data AnnexState = AnnexState
 	, auto :: Bool
 	, branchstate :: BranchState
 	, catfilehandle :: Maybe CatFileHandle
+	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FilePath -> Annex Bool)
@@ -105,6 +107,7 @@ newState gitrepo = AnnexState
 	, auto = False
 	, branchstate = startBranchState
 	, catfilehandle = Nothing
+	, checkattrhandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
