@@ -23,8 +23,6 @@ checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
 	(pid, from, to) <- hPipeBoth "git" $ toCommand $
 		gitCommandLine params repo
-	fileEncoding from
-	fileEncoding to
 	return (pid, from, to, attrs, cwd)
 	where
 		params =
