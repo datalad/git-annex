@@ -28,8 +28,8 @@ type Params = [String]
 type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
-dispatch oneshot args cmds commonoptions header getgitrepo = do
+dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
+dispatch args cmds commonoptions header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
@@ -39,7 +39,7 @@ dispatch oneshot args cmds commonoptions header getgitrepo = do
 			(actions, state') <- Annex.run state $ do
 				sequence_ flags
 				prepCommand cmd params
-			tryRun state' cmd $ [startup] ++ actions ++ [shutdown oneshot]
+			tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]
 	where
 		(flags, cmd, params) = parseCmd args cmds commonoptions header
 
