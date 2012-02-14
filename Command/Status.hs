@@ -113,7 +113,7 @@ supported_remote_types = stat "supported remote types" $ json unwords $
 
 remote_list :: TrustLevel -> String -> Stat
 remote_list level desc = stat n $ nojson $ lift $ do
-	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap)
+	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s

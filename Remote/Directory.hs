@@ -45,6 +45,7 @@ gen r u c = do
 			removeKey = remove dir,
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
+			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
 			remotetype = remote

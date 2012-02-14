@@ -55,6 +55,8 @@ data RemoteA a = Remote {
 	-- Some remotes can check hasKey without an expensive network
 	-- operation.
 	hasKeyCheap :: Bool,
+	-- Some remotes can provide additional details for whereis.
+	whereisKey :: Maybe (Key -> a [String]),
 	-- a Remote can have a persistent configuration store
 	config :: Maybe RemoteConfig,
 	-- git configuration for the remote

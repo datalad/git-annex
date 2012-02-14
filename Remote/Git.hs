@@ -81,6 +81,7 @@ gen r u _ = do
 		removeKey = dropKey r',
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
+		whereisKey = Nothing,
 		config = Nothing,
 		repo = r',
 		remotetype = remote
