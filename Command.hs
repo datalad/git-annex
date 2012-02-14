@@ -8,6 +8,7 @@
 module Command (
 	command,
 	noRepo,
+	oneShot,
 	withOptions,
 	next,
 	stop,
@@ -39,7 +40,11 @@ import Annex.CheckAttr
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
-command = Command [] Nothing commonChecks
+command = Command [] Nothing commonChecks False
+
+{- Makes a command run in oneshot mode. -}
+oneShot :: Command -> Command
+oneShot c = c { cmdoneshot = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}

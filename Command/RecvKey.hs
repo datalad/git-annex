@@ -14,7 +14,7 @@ import Annex.Content
 import Utility.RsyncFile
 
 def :: [Command]
-def = [command "recvkey" paramKey seek
+def = [oneShot $ command "recvkey" paramKey seek
 	"runs rsync in server mode to receive content"]
 
 seek :: [CommandSeek]
