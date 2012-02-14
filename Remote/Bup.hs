@@ -53,6 +53,7 @@ gen r u c = do
 			removeKey = remove,
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
+			whereisKey = Nothing,
 			config = c,
 			repo = r,
 			remotetype = remote

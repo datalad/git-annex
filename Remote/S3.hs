@@ -57,6 +57,7 @@ gen' r u c cst =
 			removeKey = remove this,
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
+			whereisKey = Nothing,
 			config = c,
 			repo = r,
 			remotetype = remote

@@ -52,6 +52,7 @@ gen r u c = do
 			removeKey = remove o,
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
+			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
 			remotetype = remote

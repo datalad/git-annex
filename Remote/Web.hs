@@ -45,6 +45,7 @@ gen r _ _ =
 		removeKey = dropKey,
 		hasKey = checkKey,
 		hasKeyCheap = False,
+		whereisKey = Just getUrls,
 		config = Nothing,
 		repo = r,
 		remotetype = remote
