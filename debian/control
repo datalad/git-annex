@@ -42,7 +42,7 @@ Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file
  contents into git. While that may seem paradoxical, it is useful when
  dealing with files larger than git can currently easily handle, whether due
- to limitations in memory, checksumming time, or disk space.
+ to limitations in memory, time, or disk space.
  .
  Even without file content tracking, being able to manage files with git,
  move files around and delete files with versioned directory trees, and use
