@@ -28,9 +28,10 @@ checkAttrStart attrs repo = do
 	return (pid, from, to, attrs, cwd)
 	where
 		params =
-			[ Param "check-attr" ]
-			++ map Param attrs ++
-			[ Params "-z --stdin" ]
+			[ Param "check-attr" 
+			, Params "-z --stdin"
+			] ++ map Param attrs ++
+			[ Param "--" ]
 
 {- Stops git check-attr. -}
 checkAttrStop :: CheckAttrHandle -> IO ()
