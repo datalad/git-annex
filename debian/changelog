@@ -8,7 +8,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     used by git-annex-shell and other places where changes are made to
     a remote's location log.
   * Modifications to support ghc 7.4's handling of filenames.
-    This version can only be built with ghc 7.4 or newer.
+    This version can only be built with ghc 7.4 or newer. See the ghc7.0
+    branch for older ghcs.
   * S3: Fix irrefutable pattern failure when accessing encrypted S3
     credentials.
   * addurl: Added a --file option, which can be used to specify what
