@@ -12,30 +12,42 @@ module Annex.Queue (
 ) where
 
 import Common.Annex
-import Annex
+import Annex hiding (new)
 import qualified Git.Queue
+import qualified Git.Config
 
 {- Adds a git command to the queue. -}
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()
 add command params files = do
-	q <- getState repoqueue
+	q <- get
 	store $ Git.Queue.add q command params files
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()
 flushWhenFull = do
-	q <- getState repoqueue
+	q <- get
 	when (Git.Queue.full q) $ flush False
 
 {- Runs (and empties) the queue. -}
 flush :: Bool -> Annex ()
 flush silent = do
-	q <- getState repoqueue
+	q <- get
 	unless (0 == Git.Queue.size q) $ do
 		unless silent $
 			showSideAction "Recording state in git"
 		q' <- inRepo $ Git.Queue.flush q
 		store q'
 
+get :: Annex Git.Queue.Queue
+get = maybe new return =<< getState repoqueue
+
+new :: Annex Git.Queue.Queue
+new = do
+	q <- Git.Queue.new <$> fromRepo queuesize
+	store q
+	return q
+	where
+		queuesize r = readish =<< Git.Config.getMaybe "annex.queuesize" r
+
 store :: Git.Queue.Queue -> Annex ()
-store q = changeState $ \s -> s { repoqueue = q }
+store q = changeState $ \s -> s { repoqueue = Just q }

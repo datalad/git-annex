@@ -76,12 +76,12 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
-	, repoqueue :: Git.Queue.Queue
 	, output :: OutputType
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
 	, branchstate :: BranchState
+	, repoqueue :: Maybe Git.Queue.Queue
 	, catfilehandle :: Maybe CatFileHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
@@ -100,12 +100,12 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, repoqueue = Git.Queue.new
 	, output = NormalOutput
 	, force = False
 	, fast = False
 	, auto = False
 	, branchstate = startBranchState
+	, repoqueue = Nothing
 	, catfilehandle = Nothing
 	, checkattrhandle = Nothing
 	, forcebackend = Nothing

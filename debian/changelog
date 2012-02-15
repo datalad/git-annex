@@ -26,6 +26,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     due to lazy state update thunks when adding/fixing many files.
   * Fixed some memory leaks that occurred when committing journal files.
   * whereis: Prints the urls of files that the web special remote knows about.
+  * Added a annex.queuesize setting, useful when adding hundreds of thousands
+    of files on a system with plenty of memory.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

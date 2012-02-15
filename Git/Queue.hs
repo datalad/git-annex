@@ -5,13 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Git.Queue (
 	Queue,
 	new,
 	add,
 	size,
 	full,
-	flush
+	flush,
 ) where
 
 import qualified Data.Map as M
@@ -34,7 +36,11 @@ data Action = Action
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
  - similar git commands. -}
-data Queue = Queue Int (M.Map Action [FilePath])
+data Queue = Queue
+	{ size :: Int
+	, _limit :: Int
+	, _items :: M.Map Action [FilePath]
+	}
 	deriving (Show, Eq)
 
 {- A recommended maximum size for the queue, after which it should be
@@ -46,37 +52,33 @@ data Queue = Queue Int (M.Map Action [FilePath])
  - above 20k, so this is a fairly good balance -- the queue will buffer
  - only a few megabytes of stuff and a minimal number of commands will be
  - run by xargs. -}
-maxSize :: Int
-maxSize = 10240
+defaultLimit :: Int
+defaultLimit = 10240
 
 {- Constructor for empty queue. -}
-new :: Queue
-new = Queue 0 M.empty
+new :: Maybe Int -> Queue
+new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 
 {- Adds an action to a queue. -}
 add :: Queue -> String -> [CommandParam] -> [FilePath] -> Queue
-add (Queue n m) subcommand params files = Queue (n + 1) m'
+add (Queue cur lim m) subcommand params files = Queue (cur + 1) lim m'
 	where
 		action = Action subcommand params
 		-- There are probably few items in the map, but there
 		-- can be a lot of files per item. So, optimise adding
 		-- files.
 		m' = M.insertWith' const action fs m
-		fs = files ++ M.findWithDefault [] action m
-
-{- Number of items in a queue. -}
-size :: Queue -> Int
-size (Queue n _) = n
+		!fs = files ++ M.findWithDefault [] action m
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue -> Bool
-full (Queue n _) = n > maxSize
+full (Queue cur lim  _) = cur > lim
 
 {- Runs a queue on a git repository. -}
 flush :: Queue -> Repo -> IO Queue
-flush (Queue _ m) repo = do
+flush (Queue _ lim m) repo = do
 	forM_ (M.toList m) $ uncurry $ runAction repo
-	return new
+	return $ Queue 0 lim M.empty
 
 {- Runs an Action on a list of files in a git repository.
  -
