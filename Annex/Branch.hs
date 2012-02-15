@@ -315,6 +315,6 @@ stageJournal = do
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file
 			sha <- hashFile h path
-			streamer $ Git.UnionMerge.update_index_line
+			_ <- streamer $ Git.UnionMerge.update_index_line
 				sha (fileJournal file)
 			removeFile path

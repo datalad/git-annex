@@ -24,14 +24,9 @@ A history of the leaks:
   behind and could affect other git-annex commands. Fixed in versions afer
   3.20120123.
 
-* Something is still causing a slow leak when adding files.
-  I tested by adding many copies of the whole linux kernel
-  tree into the annex using the WORM backend, and once
-  it had added 1 million files, git-annex used ~100 mb of ram.
-  That's 100 bytes leaked per file on average .. roughly the
-  size of a filename? It's worth noting that `git add` uses more memory
-  than that in such a large tree.
-  **not fixed yet**
+* The count of the number of failed commands was updated lazily, which
+  caused a slow leak when running on a lot of files. Fixed in versions afer
+  3.20120123.
 
 * (Note that `git ls-files --others`, which is used to find files to add,
   also uses surpsisingly large amounts
@@ -40,3 +35,5 @@ A history of the leaks:
   before outputting anything.
   This is Not Our Problem, but I'm sure the git developers
   would appreciate a patch that fixes it.)
+
+[[done]]
