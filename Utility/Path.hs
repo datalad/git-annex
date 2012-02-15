@@ -47,7 +47,10 @@ dirContains a b = a == b || a' == b' || (a'++"/") `isPrefixOf` b'
 		a' = norm a
 		b' = norm b
 
-{- Converts a filename into a normalized, absolute path. -}
+{- Converts a filename into a normalized, absolute path.
+ -
+ - Unlike Directory.canonicalizePath, this does not require the path
+ - already exists. -}
 absPath :: FilePath -> IO FilePath
 absPath file = do
 	cwd <- getCurrentDirectory

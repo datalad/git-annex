@@ -57,7 +57,7 @@ cleanup = do
 	mapM_ removeAnnex =<< getKeysPresent
 	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
-	saveState
+	saveState False
 	inRepo $ Git.Command.run "branch"
 		[Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess

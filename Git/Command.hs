@@ -30,8 +30,8 @@ runBool subcommand params repo = assertLocal repo $
 {- Runs git in the specified repo, throwing an error if it fails. -}
 run :: String -> [CommandParam] -> Repo -> IO ()
 run subcommand params repo = assertLocal repo $
-	runBool subcommand params repo
-		>>! error $ "git " ++ show params ++ " failed"
+	unlessM (runBool subcommand params repo) $
+		error $ "git " ++ subcommand ++ " " ++ show params ++ " failed"
 
 {- Runs a git subcommand and returns its output, lazily. 
  -

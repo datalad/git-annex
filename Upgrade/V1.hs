@@ -7,7 +7,6 @@
 
 module Upgrade.V1 where
 
-import System.IO.Error (try)
 import System.Posix.Types
 import Data.Char
 
@@ -183,7 +182,7 @@ readLog1 file = catchDefaultIO (parseLog <$> readFileStrict file) []
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile1 file = do
-	tl <- liftIO $ try getsymlink
+	tl <- liftIO $ tryIO getsymlink
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
@@ -216,7 +215,7 @@ getKeyFilesPresent1' dir = do
 			liftIO $ filterM present files
 	where
 		present f = do
-			result <- try $ getFileStatus f
+			result <- tryIO $ getFileStatus f
 			case result of
 				Right s -> return $ isRegularFile s
 				Left _ -> return False

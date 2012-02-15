@@ -13,7 +13,7 @@ import qualified Build.SysConfig as SysConfig
 import Annex.Version
 
 def :: [Command]
-def = [noRepo showPackageVersion $ dontCheck repoExists $
+def = [oneShot $ noRepo showPackageVersion $ dontCheck repoExists $
 	command "version" paramNothing seek "show version info"]
 
 seek :: [CommandSeek]

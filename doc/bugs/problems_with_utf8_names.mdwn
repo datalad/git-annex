@@ -1,3 +1,16 @@
+This bug is reopened to track some new UTF-8 filename issues caused by GHC
+7.4. In this version of GHC, git-annex's hack to support filenames in any
+encoding no longer works. Even unicode filenames fail to work when
+git-annex is built with 7.4. --[[Joey]]
+
+This bug is now fixed in current master. Once again, git-annex will work
+for all filename encodings, and all system encodings. It will
+only build with the new GHC. [[done]] --[[Joey]] 
+
+----
+
+Old, now fixed bug report follows:
+
 There are problems with displaying filenames in UTF8 encoding, as shown here:
 
     $ echo $LANG
@@ -45,7 +58,7 @@ It looks like the common latin1-to-UTF8 encoding. Functionality other than otupu
 >    outputting a filename (assuming the filename is encoded using the
 >    user's configured encoding), and allow haskell's output encoding to then
 >    encode it according to the user's locale configuration.
->    > This is now [[implemented|done]]. I'm not very happy that I have to watch
+>    > This is now implemented. I'm not very happy that I have to watch
 >    > out for any place that a filename is output and call `filePathToString`
 >    > on it, but there are really not too many such places in git-annex.
 >    >
@@ -66,39 +79,3 @@ It looks like the common latin1-to-UTF8 encoding. Functionality other than otupu
 >    > On second thought, I switched to this. Any decoding of a filename
 >    > is going to make someone unhappy; the previous approach broke
 >    > non-utf8 filenames.
-
-----
-
-Simpler test case:
-
-<pre>
-import Codec.Binary.UTF8.String
-import System.Environment
-
-main = do
-        args <- getArgs
-        let file = decodeString $ head args
-        putStrLn $ "file is: " ++ file
-        putStr =<< readFile file
-</pre>
-
-If I pass this a filename like 'ü', it will fail, and notice
-the bad encoding of the filename in the error message:
-
-<pre>
-$ echo hi > ü; runghc foo.hs ü
-file is: ü
-foo.hs: �: openFile: does not exist (No such file or directory)
-</pre>
-
-On the other hand, if I remove the decodeString, it prints the filename
-wrong, while accessing it right:
-
-<pre>
-$ runghc foo.hs ü
-file is: Ã¼a
-hi
-</pre>
-
-The only way that seems to consistently work is to delay decoding the
-filename to places where it's output. But then it's easy to miss some.

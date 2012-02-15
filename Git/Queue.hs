@@ -18,8 +18,8 @@ import qualified Data.Map as M
 import System.IO
 import System.Cmd.Utils
 import Data.String.Utils
-import Utility.SafeCommand
 
+import Utility.SafeCommand
 import Common
 import Git
 import Git.Command

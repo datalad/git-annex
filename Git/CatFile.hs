@@ -13,7 +13,6 @@ module Git.CatFile (
 	catObject
 ) where
 
-import Control.Monad.State
 import System.Cmd.Utils
 import System.IO
 import qualified Data.ByteString.Char8 as S

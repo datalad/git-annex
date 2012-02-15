@@ -45,6 +45,7 @@ gen r u c = do
 			removeKey = remove dir,
 			hasKey = checkPresent dir,
 			hasKeyCheap = True,
+			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
 			remotetype = remote
@@ -55,8 +56,8 @@ directorySetup u c = do
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $
 		M.lookup "directory" c
-	liftIO $ doesDirectoryExist dir
-		>>! error $ "Directory does not exist: " ++ dir
+	liftIO $ unlessM (doesDirectoryExist dir) $
+		error $ "Directory does not exist: " ++ dir
 	c' <- encryptionSetup c
 
 	-- The directory is stored in git config, not in this remote's

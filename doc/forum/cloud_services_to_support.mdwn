@@ -1,0 +1,16 @@
+git-annex can already be used to store data in several cloud services:
+Amazon S3, rsync.net, Tahoe-LAFFS, The Internet Archive.
+
+I would like to support as many other cloud services as possible/reasonable.
+
+* [[swift|todo/wishlist:_swift_backend]]
+* Dropbox (I had been reluctant to go there due to it using a non-free client,
+  which I have no interest in installing, but there is actually an API,
+  and already a
+  [haskell module to use it](http://hackage.haskell.org/package/dropbox-sdk).
+  Would need to register for an API key.
+  <http://www.dropbox.com/developers/start/core>.
+  Annoyingly, Dropbox reviews each app before granting it production status.
+  Whoops my interest level dropped by 99%.)
+
+Post others in the comments. --[[Joey]]

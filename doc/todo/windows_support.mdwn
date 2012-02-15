@@ -1,25 +1,16 @@
-short answer: no
+Can it be built on Windows?
 
-Long answer, quoting from a mail to someone else:
+short answer: not yet
 
-Well, I can tell you that it assumes a POSIX system, both in available
-utilities and system calls, So you'd need to use cygwin or something
-like that. (Perhaps you already are for git, I think git also assumes a
-POSIX system.) So you need a Haskell that can target that. What this
-page refers to as "GHC-Cygwin":
-<http://www.haskell.org/ghc/docs/6.6/html/building/platforms.html>
-I don't know where to get one. Did find this:
-<http://copilotco.com/mail-archives/haskell-cafe.2007/msg00824.html>
+First, you need to get some unix utilities for windows. Git of course.
+Also rsync, and a `cp` command that understands at least `cp -p`, and
+`uuid`, and `xargs` and `sha1sum`. Note that some of these could be
+replaced with haskell libraries to some degree.
 
-(There are probably also still some places where it assumes / as a path
-separator, although I fixed some. Probably almost all are fixed now.)
+There are probably still some places where it assumes / as a path
+separator, although I fixed probably almost all by now.
 
-FWIW, git-annex works fine on OS X and other fine proprietary unixen. ;P
---[[Joey]]
-
-----
-
-Alternatively, windows versions of these functions could be found,
+Then windows versions of these functions could be found,
 which are all the ones that need POSIX, I think. A fair amount of this,
 the stuff to do with signals and users, could be empty stubs in windows.
 The file manipulation, particularly symlinks, would probably be the main
@@ -63,3 +54,8 @@ sigCHLD
 sigINT
 unionFileModes
 </pre>
+
+A good starting point is
+<http://hackage.haskell.org/package/unix-compat-0.3.0.1>. However, note
+that its implementations of stuff like `createSymbolicLink` are stubs.
+--[[Joey]] 

@@ -7,8 +7,6 @@
 
 module Upgrade.V0 where
 
-import System.IO.Error (try)
-
 import Common.Annex
 import Annex.Content
 import qualified Upgrade.V1
@@ -47,7 +45,7 @@ getKeysPresent0 dir = do
 			return $ map fileKey0 files
 	where
 		present d = do
-			result <- try $
+			result <- tryIO $
 				getFileStatus $ dir ++ "/" ++ takeFileName d
 			case result of
 				Right s -> return $ isRegularFile s

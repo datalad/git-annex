@@ -6,23 +6,21 @@
  -}
 
 module Backend (
-	BackendFile,
 	list,
 	orderedList,
 	genKey,
 	lookupFile,
-	chooseBackends,
+	chooseBackend,
 	lookupBackendName,
 	maybeLookupBackendName
 ) where
 
-import System.IO.Error (try)
 import System.Posix.Files
 
 import Common.Annex
 import qualified Git.Config
-import qualified Git.CheckAttr
 import qualified Annex
+import Annex.CheckAttr
 import Types.Key
 import qualified Types.Backend as B
 
@@ -77,7 +75,7 @@ genKey' (b:bs) file = do
  - by examining what the file symlinks to. -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
-	tl <- liftIO $ try getsymlink
+	tl <- liftIO $ tryIO getsymlink
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
@@ -94,20 +92,15 @@ lookupFile file = do
 						bname ++ ")"
 					return Nothing
 
-type BackendFile = (Maybe Backend, FilePath)
-
-{- Looks up the backends that should be used for each file in a list.
+{- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file.
  -}
-chooseBackends :: [FilePath] -> Annex [BackendFile]
-chooseBackends fs = Annex.getState Annex.forcebackend >>= go
+chooseBackend :: FilePath -> Annex (Maybe Backend)
+chooseBackend f = Annex.getState Annex.forcebackend >>= go
 	where
-		go Nothing = do
-			pairs <- inRepo $ Git.CheckAttr.lookup "annex.backend" fs
-			return $ map (\(f,b) -> (maybeLookupBackendName b, f)) pairs
-		go (Just _) = do
-			l <- orderedList
-			return $ map (\f -> (Just $ Prelude.head l, f)) fs
+		go Nothing =  maybeLookupBackendName <$>
+			checkAttr "annex.backend" f
+		go (Just _) = Just . Prelude.head <$> orderedList
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend

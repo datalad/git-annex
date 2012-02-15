@@ -8,8 +8,8 @@
 module Utility.CopyFile (copyFileExternal) where
 
 import System.Directory (doesFileExist, removeFile)
+import Control.Monad.IfElse
 
-import Utility.Conditional
 import Utility.SafeCommand
 import qualified Build.SysConfig as SysConfig
 

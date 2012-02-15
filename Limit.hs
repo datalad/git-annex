@@ -84,7 +84,7 @@ addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
  - of copies. -}
 addCopies :: String -> Annex ()
 addCopies num =
-	case readMaybe num :: Maybe Int of
+	case readish num :: Maybe Int of
 		Nothing -> error "bad number for --copies"
 		Just n -> addLimit $ check n
 	where

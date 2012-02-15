@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,7 +32,7 @@ import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.UnionMerge
-import qualified Git.HashObject
+import Git.HashObject
 import qualified Git.Index
 import Annex.CatFile
 
@@ -190,7 +190,7 @@ commit message = whenM journalDirty $ lockJournal $ do
 {- Commits the staged changes in the index to the branch.
  - 
  - Ensures that the branch's index file is first updated to the state
- - of the brannch at branchref, before running the commit action. This
+ - of the branch at branchref, before running the commit action. This
  - is needed because the branch may have had changes pushed to it, that
  - are not yet reflected in the index.
  -
@@ -307,13 +307,14 @@ stageJournal = do
 	fs <- getJournalFiles
 	g <- gitRepo
 	withIndex $ liftIO $ do
-		let dir = gitAnnexJournalDir g
-		let paths = map (dir </>) fs
-		(shas, cleanup) <- Git.HashObject.hashFiles paths g
-		Git.UnionMerge.update_index g $
-			index_lines shas (map fileJournal fs)
-		cleanup
-		mapM_ removeFile paths
+		h <- hashObjectStart g
+		Git.UnionMerge.stream_update_index g
+			[genstream (gitAnnexJournalDir g) h fs]
+		hashObjectStop h
 	where
-		index_lines shas = map genline . zip shas
-		genline (sha, file) = Git.UnionMerge.update_index_line sha file
+		genstream dir h fs streamer = forM_ fs $ \file -> do
+			let path = dir </> file
+			sha <- hashFile h path
+			streamer $ Git.UnionMerge.update_index_line
+				sha (fileJournal file)
+			removeFile path

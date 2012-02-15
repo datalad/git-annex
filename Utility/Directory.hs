@@ -12,15 +12,16 @@ import System.Posix.Files
 import System.Directory
 import Control.Exception (throw)
 import Control.Monad
+import Control.Monad.IfElse
 
 import Utility.SafeCommand
-import Utility.Conditional
 import Utility.TempFile
+import Utility.Exception
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
 moveFile :: FilePath -> FilePath -> IO ()
-moveFile src dest = try (rename src dest) >>= onrename
+moveFile src dest = tryIO (rename src dest) >>= onrename
 	where
 		onrename (Right _) = return ()
 		onrename (Left e)
@@ -40,11 +41,10 @@ moveFile src dest = try (rename src dest) >>= onrename
 						Param src, Param tmp]
 					unless ok $ do
 						-- delete any partial
-						_ <- try $
-							removeFile tmp
+						_ <- tryIO $ removeFile tmp
 						rethrow
 		isdir f = do
-			r <- try (getFileStatus f)
+			r <- tryIO $ getFileStatus f
 			case r of
 				(Left _) -> return False
 				(Right s) -> return $ isDirectory s

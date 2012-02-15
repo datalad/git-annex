@@ -1,0 +1,7 @@
+My annex contains several large files that I have unlocked, edited, and committed again, i.e. the annex contains the version history of those files. However, I don't want the history -- keeping the latest version is good enough for me. Running `git annex unused` won't detect those old versions, though, because they aren't unused as old Git revisions still refer to them. So I wonder:
+
+1. What is the best way to get rid of the old versions of files in the annex?
+
+2. What is the best way to detect old versions of files in the annex?
+
+I guess, I could run `git rebase -i` to squash commits to those files into one commit, thereby getting rid of the references to the old copies, but that approach feels awkward and error prone. Is anyone aware of a better way?

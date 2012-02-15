@@ -14,7 +14,7 @@ import Logs.Location
 import Annex.Content
 
 def :: [Command]
-def = [command "dropkey" (paramRepeating paramKey) seek
+def = [oneShot $ command "dropkey" (paramRepeating paramKey) seek
 	"drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]

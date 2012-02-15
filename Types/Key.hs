@@ -69,8 +69,8 @@ readKey s = if key == Just stubKey then Nothing else key
 		findfields _ v = v
 
 		addbackend k v = Just k { keyBackendName = v }
-		addfield 's' k v = Just k { keySize = readMaybe v }
-		addfield 'm' k v = Just k { keyMtime = readMaybe v }
+		addfield 's' k v = Just k { keySize = readish v }
+		addfield 'm' k v = Just k { keyMtime = readish v }
 		addfield _ _ _ = Nothing
 
 prop_idempotent_key_read_show :: Key -> Bool

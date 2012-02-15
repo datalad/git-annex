@@ -15,3 +15,21 @@ From time to time, releases of git-annex are uploaded
 
 Some operating systems include git-annex in easily prepackaged form and
 others need some manual work. See [[install]] for details.
+
+## git branches
+
+The git repository has some branches:
+
+* `debian-stable` contains the latest backport of git-annex to Debian
+  stable.
+* `no-s3` disables the S3 special remote, for systems that lack the
+ necessary haskell library.
+* `old-monad-control` is for systems that don't have a newer monad-control
+  library.
+* `tweak-fetch` adds support for the git tweak-fetch hook, which has
+  been proposed and implemented but not yet accepted into git.
+* `ghc7.0` supports versions of ghc older than 7.4, which
+  had a major change to filename encoding.
+* `setup` contains configuration for this website
+* `pristine-tar` contains [pristine-tar](http://kitenet.net/~joey/code/pristine-tar)
+  data to create tarballs of any past git-annex release.

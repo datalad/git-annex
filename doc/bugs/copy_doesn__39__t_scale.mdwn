@@ -1,0 +1,35 @@
+It seems that git-annex copies every individual file in a separate
+transaction. This is quite costly for mass transfers: each file involves a
+separate rsync invocation and the creation of a new commit. Even with a
+meager thousand files or so in the annex, I have to wait for fifteen
+minutes to copy the contents to another disk, simply because every
+individual file involves some disk thrashing. Also, it seems suspicious
+that the git-annex branch would get a thousands commits of history from the
+simple procedure of copying everything to a new repository. Surely it would
+be better to first copy everything and then create only a single commit
+that registers the changes to the files' availability?
+
+> git-annex is very careful to commit as infrequently as possible,
+> and the current version makes *1* commit after all the copies are
+> complete, even if it transferred a billion files. The only overhead
+> incurred for each file is writing a journal file.
+> You must have an old version.
+> --[[Joey]]
+
+(I'm also not quite clear on why rsync is being used when both repositories
+are local. It seems to be just overhead.)
+
+> Even when copying to another disk it's often on 
+> some slow bus, and the file is by definition large. So it's
+> nice to support resumes of interrupted transfers of files.
+> Also because rsync has a handy progress display that is hard to get with cp.
+> 
+> (However, if the copy is to another directory in the same disk, it does
+> use cp, and even supports really fast copies on COW filesystems.)
+> --[[Joey]]
+
+---
+
+Oneshot mode is now implemented, making git-annex-shell and other
+short lifetime processes not bother with committing changes.
+[[done]] --[[Joey]] 

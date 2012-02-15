@@ -45,7 +45,7 @@ port :: Repo -> Maybe Integer
 port r = 
 	case authpart uriPort r of
 		":" -> Nothing
-		(':':p) -> readMaybe p
+		(':':p) -> readish p
 		_ -> Nothing
 
 {- Hostname of an URL repo, including any username (ie, "user@host") -}

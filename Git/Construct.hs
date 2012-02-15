@@ -9,6 +9,7 @@ module Git.Construct (
 	fromCurrent,
 	fromCwd,
 	fromAbsPath,
+	fromPath,
 	fromUrl,
 	fromUnknown,
 	localToUrl,

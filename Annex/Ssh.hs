@@ -11,7 +11,6 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
-import System.IO.Error (try)
 
 import Common.Annex
 import Annex.LockPool
@@ -72,18 +71,20 @@ sshCleanup = do
 			let lockfile = socket2lock socketfile
 			unlockFile lockfile
 			fd <- liftIO $ openFd lockfile ReadWrite (Just stdFileMode) defaultFileFlags
-			v <- liftIO $ try $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+			v <- liftIO $ tryIO $
+				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
 				Left _ -> return ()
 				Right _ -> stopssh socketfile
 			liftIO $ closeFd fd
 		stopssh socketfile = do
-			(_, params) <- sshInfo $ socket2hostport socketfile
+			let (host, port) = socket2hostport socketfile
+			(_, params) <- sshInfo (host, port)
 			_ <- liftIO $ do
 				-- "ssh -O stop" is noisy on stderr even with -q
 				let cmd = unwords $ toCommand $
 					[ Params "-O stop"
-					] ++ params
+					] ++ params ++ [Param host]
 				_ <- boolSystem "sh"
 					[ Param "-c"
 					, Param $ "ssh " ++ cmd ++ " >/dev/null 2>/dev/null"
@@ -101,7 +102,7 @@ hostport2socket host (Just port) = host ++ "!" ++ show port
 socket2hostport :: FilePath -> (String, Maybe Integer)
 socket2hostport socket
 	| null p = (h, Nothing)
-	| otherwise = (h, readMaybe p)
+	| otherwise = (h, readish p)
 	where
 		(h, p) = separate (== '!') $ takeFileName socket
 

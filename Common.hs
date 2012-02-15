@@ -1,8 +1,9 @@
 module Common (module X) where
 
 import Control.Monad as X hiding (join)
+import Control.Monad.IfElse as X
 import Control.Applicative as X
-import Control.Monad.State as X (liftIO)
+import Control.Monad.State.Strict as X (liftIO)
 import Control.Exception.Extensible as X (IOException)
 
 import Data.Maybe as X
@@ -20,7 +21,7 @@ import System.Posix.Process as X hiding (executeFile)
 import System.Exit as X
 
 import Utility.Misc as X
-import Utility.Conditional as X
+import Utility.Exception as X
 import Utility.SafeCommand as X
 import Utility.Path as X
 import Utility.Directory as X

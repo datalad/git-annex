@@ -13,7 +13,7 @@ import Annex.Content
 import Utility.RsyncFile
 
 def :: [Command]
-def = [command "sendkey" paramKey seek
+def = [oneShot $ command "sendkey" paramKey seek
 	"runs rsync in server mode to send content"]
 
 seek :: [CommandSeek]

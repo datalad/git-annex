@@ -20,6 +20,7 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Annex
+import Logs.Presence
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
@@ -27,6 +28,7 @@ import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
 import Init
+import Types.Key
 
 remote :: RemoteType
 remote = RemoteType {
@@ -79,6 +81,7 @@ gen r u _ = do
 		removeKey = dropKey r',
 		hasKey = inAnnex r',
 		hasKeyCheap = cheap,
+		whereisKey = Nothing,
 		config = Nothing,
 		repo = r',
 		remotetype = remote
@@ -142,7 +145,8 @@ inAnnex r key
 			where
 				go e [] = return $ Left e
 				go _ (u:us) = do
-					res <- catchMsgIO $ Url.exists u
+					res <- catchMsgIO $
+						Url.check u (keySize key)
 					case res of
 						Left e -> go e us
 						v -> return v
@@ -192,6 +196,14 @@ keyUrls r key = map tourl (annexLocations key)
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
+	| not $ Git.repoIsUrl r = liftIO $ onLocal r $ do
+		ensureInitialized
+		whenM (Annex.Content.inAnnex key) $ do
+			Annex.Content.lockContent key $
+				Annex.Content.removeAnnex key
+			Annex.Content.logStatus key InfoMissing
+			Annex.Content.saveState True
+		return True
 	| Git.repoIsHttp r = error "dropping from http repo not supported"
 	| otherwise = onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
@@ -230,7 +242,7 @@ copyToRemote r key
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			Annex.Content.saveState `after`
+			Annex.Content.saveState True `after`
 				Annex.Content.getViaTmp key
 					(rsyncOrCopyFile params keysrc)
 	| Git.repoIsSsh r = do

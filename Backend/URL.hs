@@ -24,5 +24,9 @@ backend = Backend {
 	fsckKey = Nothing
 }
 
-fromUrl :: String -> Key
-fromUrl url = stubKey { keyName = url, keyBackendName = "URL" }
+fromUrl :: String -> Maybe Integer -> Key
+fromUrl url size = stubKey
+	{ keyName = url
+	, keyBackendName = "URL"
+	, keySize = size
+	}

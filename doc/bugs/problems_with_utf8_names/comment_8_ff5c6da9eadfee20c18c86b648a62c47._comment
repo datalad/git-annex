@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 8"
+ date="2012-01-28T19:40:34Z"
+ content="""
+Lauri a scratch patch would be very helpful. Encoding stuff makes my head explode.
+
+However, I am very worried by haskell's changes WRT unicode and filenames. Based on user input, git-annex users like to use it on diverse sets of files, with diverse and ill-defined encodings. Faffing about with converting between encodings seems likely to speactacularly fail.
+"""]]

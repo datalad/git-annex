@@ -8,7 +8,6 @@
 module Remote.Bup (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import System.IO.Error
 import qualified Data.Map as M
 import System.Process
 
@@ -54,6 +53,7 @@ gen r u c = do
 			removeKey = remove,
 			hasKey = checkPresent r bupr',
 			hasKeyCheap = bupLocal buprepo,
+			whereisKey = Nothing,
 			config = c,
 			repo = r,
 			remotetype = remote
@@ -69,7 +69,7 @@ bupSetup u c = do
 	-- bup init will create the repository.
 	-- (If the repository already exists, bup init again appears safe.)
 	showAction "bup init"
-	bup "init" buprepo [] >>! error "bup init failed"
+	unlessM (bup "init" buprepo []) $ error "bup init failed"
 
 	storeBupUUID u buprepo
 
@@ -167,9 +167,9 @@ storeBupUUID u buprepo = do
 	if Git.repoIsUrl r
 		then do
 			showAction "storing uuid"
-			onBupRemote r boolSystem "git"
-				[Params $ "config annex.uuid " ++ v]
-					>>! error "ssh failed"
+			unlessM (onBupRemote r boolSystem "git"
+				[Params $ "config annex.uuid " ++ v]) $
+					error "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
 			let olduuid = Git.Config.get "annex.uuid" "" r'
@@ -200,7 +200,7 @@ getBupUUID :: Git.Repo -> UUID -> Annex (UUID, Git.Repo)
 getBupUUID r u
 	| Git.repoIsUrl r = return (u, r)
 	| otherwise = liftIO $ do
-		ret <- try $ Git.Config.read r
+		ret <- tryIO $ Git.Config.read r
 		case ret of
 			Right r' -> return (toUUID $ Git.Config.get "annex.uuid" "" r', r')
 			Left _ -> return (NoUUID, r)

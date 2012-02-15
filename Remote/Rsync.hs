@@ -52,6 +52,7 @@ gen r u c = do
 			removeKey = remove o,
 			hasKey = checkPresent r o,
 			hasKeyCheap = False,
+			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
 			remotetype = remote
@@ -181,8 +182,8 @@ withRsyncScratchDir a = do
 	liftIO $ createDirectoryIfMissing True tmp
 	nuke tmp `after` a tmp
 	where
-		nuke d = liftIO $ 
-			doesDirectoryExist d >>? removeDirectoryRecursive d
+		nuke d = liftIO $ whenM (doesDirectoryExist d) $
+			removeDirectoryRecursive d
 
 rsyncRemote :: RsyncOpts -> [CommandParam] -> Annex Bool
 rsyncRemote o params = do

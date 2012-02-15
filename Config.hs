@@ -40,7 +40,7 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" +
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
 	cmd <- getConfig r "cost-command" ""
-	(fromMaybe def . readMaybe) <$>
+	(fromMaybe def . readish) <$>
 		if not $ null cmd
 			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
 			else getConfig r "cost" ""
@@ -78,7 +78,7 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 	where
 		use (Just n) = return n
 		use Nothing = perhaps (return 1) =<< 
-			readMaybe <$> fromRepo (Git.Config.get config "1")
+			readish <$> fromRepo (Git.Config.get config "1")
 		perhaps fallback = maybe fallback (return . id)
 		config = "annex.numcopies"
 

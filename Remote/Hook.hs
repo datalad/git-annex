@@ -45,6 +45,7 @@ gen r u c = do
 			removeKey = remove hooktype,
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
+			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
 			remotetype = remote

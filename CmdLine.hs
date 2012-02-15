@@ -11,7 +11,6 @@ module CmdLine (
 	shutdown
 ) where
 
-import qualified System.IO.Error as IO
 import qualified Control.Exception as E
 import Control.Exception (throw)
 import System.Console.GetOpt
@@ -40,7 +39,7 @@ dispatch args cmds commonoptions header getgitrepo = do
 			(actions, state') <- Annex.run state $ do
 				sequence_ flags
 				prepCommand cmd params
-			tryRun state' cmd $ [startup] ++ actions ++ [shutdown]
+			tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]
 	where
 		(flags, cmd, params) = parseCmd args cmds commonoptions header
 
@@ -72,9 +71,11 @@ tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
 tryRun' errnum _ cmd []
 	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
 	| otherwise = return ()
-tryRun' errnum state cmd (a:as) = run >>= handle
+tryRun' errnum state cmd (a:as) = do
+	r <- run
+	handle $! r
 	where
-		run = IO.try $ Annex.run state $ do
+		run = tryIO $ Annex.run state $ do
 			Annex.Queue.flushWhenFull
 			a
 		handle (Left err) = showerr err >> cont False state
@@ -89,9 +90,9 @@ startup :: Annex Bool
 startup = return True
 
 {- Cleanup actions. -}
-shutdown :: Annex Bool
-shutdown = do
-	saveState
+shutdown :: Bool -> Annex Bool
+shutdown oneshot = do
+	saveState oneshot
 	liftIO Git.Command.reap -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
 	return True

@@ -88,7 +88,7 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 			| c == '}' = foundvar f var (readjustify $ reverse p) cs
 			| otherwise = inpad (c:p) f var cs
 		inpad p f var [] = Const (novar $ p++";"++var) : f
-		readjustify = getjustify . fromMaybe 0 . readMaybe
+		readjustify = getjustify . fromMaybe 0 . readish
 		getjustify i
 			| i == 0 = UnJustified
 			| i < 0 = LeftJustified (-1 * i)

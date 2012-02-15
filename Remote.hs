@@ -15,6 +15,7 @@ module Remote (
 	removeKey,
 	hasKey,
 	hasKeyCheap,
+	whereisKey,
 
 	remoteTypes,
 	remoteList,
@@ -48,16 +49,16 @@ import Logs.Trust
 import Logs.Location
 import Remote.List
 
-{- Map of UUIDs of Remotes and their names. -}
-remoteMap :: Annex (M.Map UUID String)
-remoteMap = M.fromList . map (\r -> (uuid r, name r)) .
+{- Map from UUIDs of Remotes to a calculated value. -}
+remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
+remoteMap c = M.fromList . map (\r -> (uuid r, c r)) .
 	filter (\r -> uuid r /= NoUUID) <$> remoteList
 
 {- Map of UUIDs and their descriptions.
  - The names of Remotes are added to suppliment any description that has
  - been set for a repository. -}
 uuidDescriptions :: Annex (M.Map UUID String)
-uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap
+uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
 
 addName :: String -> String -> String
 addName desc n
@@ -66,7 +67,7 @@ addName desc n
 	| otherwise = n ++ " (" ++ desc ++ ")"
 
 {- When a name is specified, looks up the remote matching that name.
- - (Or it can be a UUID.) Only finds currently configured git remotes. -}
+ - Only finds currently configured git remotes. -}
 byName :: Maybe String -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = do
