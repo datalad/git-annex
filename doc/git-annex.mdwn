@@ -576,6 +576,14 @@ Here are all the supported configuration settings.
 
   The default reserve is 1 megabyte.
 
+* `annex.queuesize`
+
+  git-annex builds a queue of git commands, in order to combine similar
+  commands for speed. By default the size of the queue is limited to
+  10240 commands; this can be used to change the size. If you have plenty
+  of memory and are working with very large numbers of files, increasing
+  the queue size can speed it up.
+
 * `annex.version`
 
   Automatically maintained, and used to automate upgrades between versions.
