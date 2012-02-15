@@ -29,3 +29,16 @@ git-annex is designed for scalability. The key points are:
 
 * It can use as much, or as little bandwidth as is available. In
   particular, any interrupted file transfer can be resumed by git-annex.
+
+## scalability tips
+
+* If the files are so big that checksumming becomes a bottleneck, consider
+  using the [[WORM_backend|backends]]. You can always `git annex migrate`
+  files to a checksumming backend later on.
+
+* If you're adding a huge number of files at once (hundreds of thousands),
+  you'll soon notice that git-annex periodically stops and say
+  "Recording state in git" while it runs a `git add` command that
+  becomes increasingly expensive. Consider adjusting the `annex.queuesize`
+  to a higher value, at the expense of it using more memory.
+

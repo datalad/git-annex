@@ -80,7 +80,9 @@ tryRun' errnum state cmd (a:as) = do
 			a
 		handle (Left err) = showerr err >> cont False state
 		handle (Right (success, state')) = cont success state'
-		cont success s = tryRun' (if success then errnum else errnum + 1) s cmd as
+		cont success s = do
+			let errnum' = if success then errnum else errnum + 1
+			(tryRun' $! errnum') s cmd as
 		showerr err = Annex.eval state $ do
 			showErr err
 			showEndFail
