@@ -81,7 +81,7 @@ nodownload url file = do
 	next $ Command.Add.cleanup file key False
 
 url2file :: URI -> FilePath
-url2file url = escape $ uriRegName auth ++ uriPath url ++ uriQuery url
+url2file url = take 255 $ escape $ uriRegName auth ++ uriPath url ++ uriQuery url
 	where
 		escape = replace "/" "_" . replace "?" "_"
 		auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
