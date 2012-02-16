@@ -215,4 +215,4 @@ forceTrust level remotename = do
  - key to the remote, or removing the key from it *may* log the change
  - on the remote, but this cannot always be relied on. -}
 logStatus :: Remote -> Key -> LogStatus -> Annex ()
-logStatus remote key present = logChange key (uuid remote) present
+logStatus remote key = logChange key (uuid remote)

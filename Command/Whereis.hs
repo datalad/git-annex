@@ -22,12 +22,12 @@ seek :: [CommandSeek]
 seek = [withValue (remoteMap id) $ \m ->
 	withFilesInGit $ whenAnnexed $ start m]
 
-start :: (M.Map UUID Remote) -> FilePath -> (Key, Backend) -> CommandStart
+start :: M.Map UUID Remote -> FilePath -> (Key, Backend) -> CommandStart
 start remotemap file (key, _) = do
 	showStart "whereis" file
 	next $ perform remotemap key
 
-perform :: (M.Map UUID Remote) -> Key -> CommandPerform
+perform :: M.Map UUID Remote -> Key -> CommandPerform
 perform remotemap key = do
 	locations <- keyLocations key
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations

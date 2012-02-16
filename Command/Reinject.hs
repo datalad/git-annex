@@ -23,7 +23,7 @@ seek = [withWords start]
 start :: [FilePath] -> CommandStart
 start (src:dest:[])
 	| src == dest = stop
-	| otherwise = do
+	| otherwise =
 		ifAnnexed src
 			(error $ "cannot used annexed file as src: " ++ src)
 			go

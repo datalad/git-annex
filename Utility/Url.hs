@@ -108,12 +108,11 @@ request url requesttype = go 5 url
 				(3,0,x) | x /= 5 -> redir (n - 1) u rsp
 				_ -> return rsp
 		ignore = const $ return ()
-		redir n u rsp = do
-			case retrieveHeaders HdrLocation rsp of
-				[] -> return rsp
-				(Header _ newu:_) ->
-					case parseURIReference newu of
-						Nothing -> return rsp
-						Just newURI -> go n newURI_abs
-							where
-								newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+		redir n u rsp = case retrieveHeaders HdrLocation rsp of
+			[] -> return rsp
+			(Header _ newu:_) ->
+				case parseURIReference newu of
+					Nothing -> return rsp
+					Just newURI -> go n newURI_abs
+						where
+							newURI_abs = fromMaybe newURI (newURI `relativeTo` u)

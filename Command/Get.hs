@@ -23,7 +23,7 @@ seek = [withField Command.Move.fromOption Remote.byName $ \from ->
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = stopUnless (not <$> inAnnex key) $
-	autoCopies file key (<) $ \_numcopies -> do
+	autoCopies file key (<) $ \_numcopies ->
 		case from of
 			Nothing -> go $ perform key
 			Just src -> do
@@ -36,7 +36,7 @@ start from file (key, _) = stopUnless (not <$> inAnnex key) $
 			next a	
 
 perform :: Key -> CommandPerform
-perform key = stopUnless (getViaTmp key $ getKeyFile key) $ do
+perform key = stopUnless (getViaTmp key $ getKeyFile key) $
 	next $ return True -- no cleanup needed
 
 {- Try to find a copy of the file in one of the remotes,

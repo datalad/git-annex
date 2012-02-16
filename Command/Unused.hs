@@ -39,7 +39,7 @@ fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"
 
 seek :: [CommandSeek]
-seek = [withNothing $ start]
+seek = [withNothing start]
 
 {- Finds unused content in the annex. -} 
 start :: CommandStart

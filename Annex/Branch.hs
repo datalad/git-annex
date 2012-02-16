@@ -116,7 +116,7 @@ updateTo pairs = do
 	-- check what needs updating before taking the lock
 	dirty <- journalDirty
 	(refs, branches) <- unzip <$> filterM isnewer pairs
-	if (not dirty && null refs)
+	if not dirty && null refs
 		then updateIndex branchref
 		else withIndex $ lockJournal $ do
 			when dirty stageJournal
@@ -172,7 +172,7 @@ get' staleok file = fromcache =<< getCache file
  - modifes the current content of the file on the branch.
  -}
 change :: FilePath -> (String -> String) -> Annex ()
-change file a = lockJournal $ getStale file >>= return . a >>= set file
+change file a = lockJournal $ a <$> getStale file >>= set file
 
 {- Records new content of a file into the journal and cache. -}
 set :: FilePath -> String -> Annex ()

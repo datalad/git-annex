@@ -37,7 +37,7 @@ common =
 		"allow verbose output (default)"
 	, Option ['j'] ["json"] (NoArg (setoutput Annex.JSONOutput))
 		"enable JSON output"
-	, Option ['d'] ["debug"] (NoArg (setdebug))
+	, Option ['d'] ["debug"] (NoArg setdebug)
 		"show debug messages"
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
 		"specify key-value backend to use"
