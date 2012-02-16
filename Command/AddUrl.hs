@@ -46,8 +46,7 @@ perform :: String -> FilePath -> CommandPerform
 perform url file = ifAnnexed file addurl geturl
 	where
 		geturl = do
-			whenM (liftIO $ doesFileExist file) $
-				error $ "not overwriting existing " ++ file
+			liftIO $ createDirectoryIfMissing True (parentDir file)
 			fast <- Annex.getState Annex.fast
 			if fast then nodownload url file else download url file
 		addurl (key, _backend) = do
