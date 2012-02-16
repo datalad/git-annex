@@ -95,8 +95,8 @@ url2file url pathdepth = case pathdepth of
 		| otherwise -> error "bad --pathdepth"
 	where
 		fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
-		frombits a = filesize $ join "/" $ a urlbits
-		urlbits = map escape $ filter (not . null) $ split "/" fullurl
+		frombits a = join "/" $ a urlbits
+		urlbits = map (filesize . escape) $ filter (not . null) $ split "/" fullurl
 		auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
 		filesize = take 255
 		escape = replace "/" "_" . replace "?" "_"
