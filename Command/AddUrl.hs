@@ -29,7 +29,7 @@ fileOption :: Option
 fileOption = Option.field [] "file" paramFile "specify what file the url is added to"
 
 pathdepthOption :: Option
-pathdepthOption = Option.field [] "pathdepth" paramFile "number of path components to use in filename"
+pathdepthOption = Option.field [] "pathdepth" paramNumber "path components to use in filename"
 
 seek :: [CommandSeek]
 seek = [withField fileOption return $ \f ->
