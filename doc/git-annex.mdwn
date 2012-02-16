@@ -149,10 +149,15 @@ subdirectories).
 
   To avoid immediately downloading the url, specify --fast.
 
-  To specify what file the url is added to, specify --file. This changes
-  the behavior; now all the specified urls are recorded as alternate
-  locations from which the file can be downloaded. In this mode, addurl
-  can be used both to add new files, or to add urls to existing files.
+  Normally the filename is based on the full url, so will look like
+  "www.example.com_subdir_bigfile". For a shorter filename, specify
+  --pathdepth=N. For example, --pathdepth=2 will use "subdir/bigfile",
+  while --parhdepth=1 will use "bigfile".
+
+  Or, to directly specify what file the url is added to, specify --file.
+  This changes the behavior; now all the specified urls are recorded as
+  alternate locations from which the file can be downloaded. In this mode,
+  addurl can be used both to add new files, or to add urls to existing files.
 
 # REPOSITORY SETUP COMMANDS
 
