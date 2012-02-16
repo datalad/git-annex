@@ -1,5 +1,10 @@
 git-annex (3.20120124) UNRELEASED; urgency=low
 
+  * Modifications to support ghc 7.4's handling of filenames.
+    This version can only be built with ghc 7.4 or newer. See the ghc7.0
+    branch for older ghcs.
+  * S3: Fix irrefutable pattern failure when accessing encrypted S3
+    credentials.
   * Use the haskell IfElse library.
   * Avoid repeated location log commits when a remote is receiving files.
     Done by adding a oneshot mode, in which location log changes are
@@ -7,28 +12,23 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     git-annex's existing ability to recover in this situation. This is
     used by git-annex-shell and other places where changes are made to
     a remote's location log.
-  * Modifications to support ghc 7.4's handling of filenames.
-    This version can only be built with ghc 7.4 or newer. See the ghc7.0
-    branch for older ghcs.
-  * S3: Fix irrefutable pattern failure when accessing encrypted S3
-    credentials.
+  * Fix teardown of stale cached ssh connections.
+  * Fixed to use the strict state monad, to avoid leaking all kinds of memory
+    due to lazy state update thunks when adding/fixing many files.
+  * Fixed some memory leaks that occurred when committing journal files.
+  * Added a annex.queuesize setting, useful when adding hundreds of thousands
+    of files on a system with plenty of memory.
+  * whereis: Prints the urls of files that the web special remote knows about.
+  * addurl --fast: Verifies that the url can be downloaded (only getting
+    its head), and records the size in the key.
+  * When checking that an url has a key, verify that the Content-Length,
+    if available, matches the size of the key.
   * addurl: Added a --file option, which can be used to specify what
     file the url is added to. This can be used to override the default
     filename that is used when adding an url, which is based on the url.
     Or, when the file already exists, the url is recorded as another
     location of the file.
   * addurl: Normalize badly encoded urls.
-  * Fix teardown of stale cached ssh connections.
-  * When checking that an url has a key, verify that the Content-Length,
-    if available, matches the size of the key.
-  * addurl --fast: Verifies that the url can be downloaded (only getting
-    its head), and records the size in the key.
-  * Fixed to use the strict state monad, to avoid leaking all kinds of memory
-    due to lazy state update thunks when adding/fixing many files.
-  * Fixed some memory leaks that occurred when committing journal files.
-  * whereis: Prints the urls of files that the web special remote knows about.
-  * Added a annex.queuesize setting, useful when adding hundreds of thousands
-    of files on a system with plenty of memory.
   * addurl: Add --pathdepth option.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
