@@ -150,9 +150,10 @@ subdirectories).
   To avoid immediately downloading the url, specify --fast.
 
   Normally the filename is based on the full url, so will look like
-  "www.example.com_subdir_bigfile". For a shorter filename, specify
+  "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
   --pathdepth=N. For example, --pathdepth=2 will use "subdir/bigfile",
-  while --parhdepth=1 will use "bigfile".
+  while --pathdepth=3 will use "bigfile". It can also be negative;
+  --pathdepth=-2 will use the last two parts of the url.
 
   Or, to directly specify what file the url is added to, specify --file.
   This changes the behavior; now all the specified urls are recorded as
