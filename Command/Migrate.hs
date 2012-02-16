@@ -58,22 +58,27 @@ perform file oldkey newbackend = do
 	cleantmp tmpfile
 	case k of
 		Nothing -> stop
-		Just (newkey, _) -> stopUnless (link src newkey) $ do
-			-- Update symlink to use the new key.
-			liftIO $ removeFile file
-
-			-- If the old key had some
-			-- associated urls, record them for
-			-- the new key as well.
-			urls <- getUrls oldkey
-			unless (null urls) $
-				mapM_ (setUrlPresent newkey) urls
-
-			next $ Command.Add.cleanup file newkey True
+		Just (newkey, _) -> stopUnless (linkKey src newkey) $
+			next $ cleanup file oldkey newkey
 	where
 		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
-		link src newkey = getViaTmpUnchecked newkey $ \t -> do
-			-- Make a hard link to the old backend's
-			-- cached key, to avoid wasting disk space.
-			liftIO $ unlessM (doesFileExist t) $ createLink src t
-			return True	
+
+linkKey :: FilePath -> Key -> Annex Bool
+linkKey src newkey = getViaTmpUnchecked newkey $ \t -> do
+	-- Make a hard link to the old backend's
+	-- cached key, to avoid wasting disk space.
+	liftIO $ unlessM (doesFileExist t) $ createLink src t
+	return True
+
+cleanup :: FilePath -> Key -> Key -> CommandCleanup
+cleanup file oldkey newkey = do
+	-- Update symlink to use the new key.
+	liftIO $ removeFile file
+
+	-- If the old key had some associated urls, record them for
+	-- the new key as well.
+	urls <- getUrls oldkey
+	unless (null urls) $
+		mapM_ (setUrlPresent newkey) urls
+
+	Command.Add.cleanup file newkey True

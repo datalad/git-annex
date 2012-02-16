@@ -30,6 +30,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     location of the file.
   * addurl: Normalize badly encoded urls.
   * addurl: Add --pathdepth option.
+  * rekey: New plumbing level command, can be used to change the keys used
+    for files en masse.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

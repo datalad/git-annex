@@ -399,6 +399,14 @@ subdirectories).
 
 	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
+* rekey [file key ...]
+  
+  This plumbing-level command is similar to migrate, but you specify
+  both the file, and the new key to use for it.
+
+  With --force, even files whose content is not currently available will
+  be rekeyed. Use with caution.
+
 # OPTIONS
 
 * --force

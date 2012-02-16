@@ -45,6 +45,13 @@ withWords a params = return [a params]
 withStrings :: (String -> CommandStart) -> CommandSeek
 withStrings a params = return $ map a params
 
+withPairs :: ((String, String) -> CommandStart) -> CommandSeek
+withPairs a params = return $ map a $ pairs [] params
+	where
+		pairs c [] = reverse c
+		pairs c (x:y:xs) = pairs ((x,y):c) xs
+		pairs _ _ = error "expected pairs"
+
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
 withFilesToBeCommitted a params = prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted params

@@ -28,6 +28,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
+import qualified Command.ReKey
 import qualified Command.Reinject
 import qualified Command.Fix
 import qualified Command.Init
@@ -80,6 +81,7 @@ cmds = concat
 	, Command.Dead.def
 	, Command.FromKey.def
 	, Command.DropKey.def
+	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
 	, Command.Unused.def
