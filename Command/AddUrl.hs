@@ -91,7 +91,8 @@ url2file url pathdepth = case pathdepth of
 	Nothing -> filesize $ escape fullurl
 	Just depth
 		| depth > 0 -> frombits $ drop depth
-		| otherwise -> frombits $ reverse . take (negate depth) . reverse
+		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
+		| otherwise -> error "bad --pathdepth"
 	where
 		fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
 		frombits a = filesize $ join "/" $ a urlbits
