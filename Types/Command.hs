@@ -7,6 +7,8 @@
 
 module Types.Command where
 
+import Data.Ord
+
 import Types
 
 {- A command runs in these stages.
@@ -46,3 +48,10 @@ data Command = Command
 {- CommandCheck functions can be compared using their unique id. -}
 instance Eq CommandCheck where
 	a == b = idCheck a == idCheck b
+
+instance Eq Command where
+	a == b = cmdname a == cmdname b
+
+{- Order commands by name -}
+instance Ord Command where
+	compare = comparing cmdname
