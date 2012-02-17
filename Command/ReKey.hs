@@ -53,13 +53,12 @@ linkKey oldkey newkey = getViaTmpUnchecked newkey $ \t -> do
 
 cleanup :: FilePath -> Key -> Key -> CommandCleanup
 cleanup file oldkey newkey = do
-	-- Update symlink to use the new key.
-	liftIO $ removeFile file
-
 	-- If the old key had some associated urls, record them for
 	-- the new key as well.
 	urls <- getUrls oldkey
 	unless (null urls) $
 		mapM_ (setUrlPresent newkey) urls
 
+	-- Update symlink to use the new key.
+	liftIO $ removeFile file
 	Command.Add.cleanup file newkey True
