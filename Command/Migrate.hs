@@ -12,8 +12,7 @@ import Command
 import qualified Backend
 import qualified Types.Key
 import Annex.Content
-import qualified Command.Add
-import Logs.Web
+import qualified Command.ReKey
 
 def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
@@ -58,27 +57,8 @@ perform file oldkey newbackend = do
 	cleantmp tmpfile
 	case k of
 		Nothing -> stop
-		Just (newkey, _) -> stopUnless (linkKey src newkey) $
-			next $ cleanup file oldkey newkey
+		Just (newkey, _) ->
+			stopUnless (Command.ReKey.linkKey oldkey newkey) $
+				next $ Command.ReKey.cleanup file oldkey newkey
 	where
 		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
-
-linkKey :: FilePath -> Key -> Annex Bool
-linkKey src newkey = getViaTmpUnchecked newkey $ \t -> do
-	-- Make a hard link to the old backend's
-	-- cached key, to avoid wasting disk space.
-	liftIO $ unlessM (doesFileExist t) $ createLink src t
-	return True
-
-cleanup :: FilePath -> Key -> Key -> CommandCleanup
-cleanup file oldkey newkey = do
-	-- Update symlink to use the new key.
-	liftIO $ removeFile file
-
-	-- If the old key had some associated urls, record them for
-	-- the new key as well.
-	urls <- getUrls oldkey
-	unless (null urls) $
-		mapM_ (setUrlPresent newkey) urls
-
-	Command.Add.cleanup file newkey True

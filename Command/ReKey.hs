@@ -12,7 +12,8 @@ import Command
 import qualified Annex
 import Types.Key
 import Annex.Content
-import qualified Command.Migrate
+import qualified Command.Add
+import Logs.Web
 
 def :: [Command]
 def = [command "rekey"
@@ -36,11 +37,29 @@ perform :: FilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do
 	present <- inAnnex oldkey
 	_ <- if present
-		then do
-			src <- inRepo $ gitAnnexLocation oldkey
-			Command.Migrate.linkKey src newkey
+		then linkKey oldkey newkey
 		else do
 			unlessM (Annex.getState Annex.force) $
 				error $ file ++ " is not available (use --force to override)"
 			return True
-	next $ Command.Migrate.cleanup file oldkey newkey
+	next $ cleanup file oldkey newkey
+
+{- Make a hard link to the old key content, to avoid wasting disk space. -}
+linkKey :: Key -> Key -> Annex Bool
+linkKey oldkey newkey = getViaTmpUnchecked newkey $ \t -> do
+	src <- inRepo $ gitAnnexLocation oldkey
+	liftIO $ unlessM (doesFileExist t) $ createLink src t
+	return True
+
+cleanup :: FilePath -> Key -> Key -> CommandCleanup
+cleanup file oldkey newkey = do
+	-- Update symlink to use the new key.
+	liftIO $ removeFile file
+
+	-- If the old key had some associated urls, record them for
+	-- the new key as well.
+	urls <- getUrls oldkey
+	unless (null urls) $
+		mapM_ (setUrlPresent newkey) urls
+
+	Command.Add.cleanup file newkey True

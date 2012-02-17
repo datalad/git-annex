@@ -11,7 +11,6 @@ import Common.Annex
 import System.Console.GetOpt
 
 import Types.Command
-import Types.Option
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String
