@@ -46,9 +46,9 @@ perform file oldkey newkey = do
 
 {- Make a hard link to the old key content, to avoid wasting disk space. -}
 linkKey :: Key -> Key -> Annex Bool
-linkKey oldkey newkey = getViaTmpUnchecked newkey $ \t -> do
+linkKey oldkey newkey = getViaTmpUnchecked newkey $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation oldkey
-	liftIO $ unlessM (doesFileExist t) $ createLink src t
+	liftIO $ unlessM (doesFileExist tmp) $ createLink src tmp
 	return True
 
 cleanup :: FilePath -> Key -> Key -> CommandCleanup
