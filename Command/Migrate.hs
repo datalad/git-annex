@@ -47,18 +47,18 @@ upgradableKey key = isNothing $ Types.Key.keySize key
  - generate.
  -}
 perform :: FilePath -> Key -> Backend -> CommandPerform
-perform file oldkey newbackend = do
-	src <- inRepo $ gitAnnexLocation oldkey
-	tmp <- fromRepo gitAnnexTmpDir
-	let tmpfile = tmp </> takeFileName file
-	cleantmp tmpfile
-	liftIO $ createLink src tmpfile
-	k <- Backend.genKey tmpfile $ Just newbackend
-	cleantmp tmpfile
-	case k of
-		Nothing -> stop
-		Just (newkey, _) ->
-			stopUnless (Command.ReKey.linkKey oldkey newkey) $
-				next $ Command.ReKey.cleanup file oldkey newkey
+perform file oldkey newbackend = maybe stop go =<< genkey
 	where
+		go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
+			next $ Command.ReKey.cleanup file oldkey newkey
+		genkey = do
+			src <- inRepo $ gitAnnexLocation oldkey
+			tmp <- fromRepo gitAnnexTmpDir
+			let tmpfile = tmp </> takeFileName file
+			cleantmp tmpfile
+			liftIO $ createLink src tmpfile
+			newkey <- liftM fst <$>
+				Backend.genKey tmpfile (Just newbackend)
+			cleantmp tmpfile
+			return newkey
 		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
