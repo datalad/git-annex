@@ -151,7 +151,7 @@ subdirectories).
 
   Normally the filename is based on the full url, so will look like
   "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
-  --pathdepth=N. For example, --pathdepth=2 will use "subdir/bigfile",
+  --pathdepth=N. For example, --pathdepth=1 will use "dir/subdir/bigfile",
   while --pathdepth=3 will use "bigfile". It can also be negative;
   --pathdepth=-2 will use the last two parts of the url.
 
