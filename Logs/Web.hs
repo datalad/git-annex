@@ -47,11 +47,13 @@ getUrls key = go $ urlLog key : oldurlLogs key
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()
 setUrl key url status = do
-	addLog (urlLog key) =<< logNow status url
-
-	-- update location log to indicate that the web has the key, or not
 	us <- getUrls key
-	logChange key webUUID (if null us then InfoMissing else InfoPresent)
+	unless (status == InfoPresent && url `elem` us) $ do
+		addLog (urlLog key) =<< logNow status url
+
+		-- update location log to indicate that the web has the key, or not
+		us <- getUrls key
+		logChange key webUUID (if null us then InfoMissing else InfoPresent)
 
 setUrlPresent :: Key -> URLString -> Annex ()
 setUrlPresent key url = setUrl key url InfoPresent
