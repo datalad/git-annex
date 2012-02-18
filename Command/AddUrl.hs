@@ -44,20 +44,24 @@ start optfile pathdepth s = notBareRepo $ go $ fromMaybe bad $ parseURI s
 		go url = do
 			let file = fromMaybe (url2file url pathdepth) optfile
 			showStart "addurl" file
-			next $ perform s file pathdepth
+			next $ perform s file
 
-perform :: String -> FilePath -> Maybe Int -> CommandPerform
-perform url file pathdepth = ifAnnexed file addurl geturl
+perform :: String -> FilePath -> CommandPerform
+perform url file = ifAnnexed file addurl geturl
 	where
 		geturl = do
 			liftIO $ createDirectoryIfMissing True (parentDir file)
 			fast <- Annex.getState Annex.fast
 			if fast then nodownload url file else download url file
 		addurl (key, _backend) = do
-			unlessM (liftIO $ Url.check url (keySize key)) $
-				error $ "failed to verify url: " ++ url
-			setUrlPresent key url
-			next $ return True
+			ok <- liftIO $ Url.check url (keySize key)
+			if ok
+				then do
+					setUrlPresent key url
+					next $ return True
+				else do
+					warning $ "failed to verify url: " ++ url
+					stop
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
