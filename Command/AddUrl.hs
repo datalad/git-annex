@@ -54,8 +54,6 @@ perform url file pathdepth = ifAnnexed file addurl geturl
 			fast <- Annex.getState Annex.fast
 			if fast then nodownload url file else download url file
 		addurl (key, _backend) = do
-			when (pathdepth /= Nothing) $
-				error $ file ++ " already exists"
 			unlessM (liftIO $ Url.check url (keySize key)) $
 				error $ "failed to verify url: " ++ url
 			setUrlPresent key url
