@@ -80,11 +80,14 @@ download url file = do
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
 	(exists, size) <- liftIO $ Url.exists url
-	unless exists $
-		error $ "unable to access url: " ++ url
-	let key = Backend.URL.fromUrl url size
-	setUrlPresent key url
-	next $ Command.Add.cleanup file key False
+	if exists
+		then do
+			let key = Backend.URL.fromUrl url size
+			setUrlPresent key url
+			next $ Command.Add.cleanup file key False
+		else do
+			warning $ "unable to access url: " ++ url
+			stop
 
 url2file :: URI -> Maybe Int -> FilePath
 url2file url pathdepth = case pathdepth of
