@@ -23,21 +23,26 @@ type URLString = String
 webUUID :: UUID
 webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
-{- The urls for a key are stored in remote/web/hash/key.log 
- - in the git-annex branch. -}
 urlLog :: Key -> FilePath
-urlLog key = "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
-oldurlLog :: Key -> FilePath
-{- A bug used to store the urls elsewhere. -}
-oldurlLog key = "remote/web" </> hashDirLower key </> show key ++ ".log"
+urlLog key = hashDirLower key </> keyFile key ++ ".log.web"
+
+{- Used to store the urls elsewhere. -}
+oldurlLogs :: Key -> [FilePath]
+oldurlLogs key = 
+	[ "remote/web" </> hashDirLower key </> show key ++ ".log"
+	, "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
+	]
 
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
-getUrls key = do
-	us <- currentLog (urlLog key)
-	if null us
-		then currentLog (oldurlLog key)
-		else return us
+getUrls key = go $ urlLog key : oldurlLogs key
+	where
+		go [] = return []
+		go (l:ls) = do
+			us <- currentLog l
+			if null us
+				then go ls
+				else return us
 
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()
