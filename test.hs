@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 import Test.HUnit
 import Test.HUnit.Tools
 import Test.QuickCheck
