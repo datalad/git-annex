@@ -33,7 +33,7 @@ seek :: CommandSeek
 seek rs = do
 	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
-	return $ concat $
+	return $ concat
 		[ [ commit ]
 		, [ mergeLocal branch ]
 		, [ pullRemote remote branch | remote <- remotes ]
@@ -137,9 +137,9 @@ pushRemote remote branch = go =<< needpush
 			showStart "push" (Remote.name remote)
 			next $ next $ do
 				showOutput
-				inRepo $ Git.Command.runBool "push" $
+				inRepo $ Git.Command.runBool "push"
 					[ Param (Remote.name remote)
-					, Param (show $ Annex.Branch.name)
+					, Param (show Annex.Branch.name)
 					, Param refspec
 					]
 		refspec = show (Git.Ref.base branch) ++ ":" ++ show (Git.Ref.base syncbranch)

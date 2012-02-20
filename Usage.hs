@@ -7,10 +7,10 @@
 
 module Usage where
 
+import Common.Annex
 import System.Console.GetOpt
 
 import Types.Command
-import Types.Option
 
 {- Usage message with lists of commands and options. -}
 usage :: String -> [Command] -> [Option] -> String
@@ -30,7 +30,7 @@ usage header cmds commonoptions = unlines $
 		alloptlines = filter (not . null) $
 			lines $ usageInfo "" $
 				concatMap cmdoptions cmds ++ commonoptions
-		(cmdlines, optlines) = go cmds alloptlines []
+		(cmdlines, optlines) = go (sort cmds) alloptlines []
 		go [] os ls = (ls, os)
 		go (c:cs) os ls = go cs os' (ls++(l:o))
 			where

@@ -79,7 +79,7 @@ configUnEscape = unescape
 				num = takeWhile isNumber s
 				r = drop (length num) s
 				rest = drop 1 r
-				ok = not (null num) && take 1 r == ";"
+				ok = not (null num) && ":" `isPrefixOf` r
 
 {- for quickcheck -}
 prop_idempotent_configEscape :: String -> Bool

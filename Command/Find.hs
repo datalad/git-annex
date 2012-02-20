@@ -36,7 +36,7 @@ seek :: [CommandSeek]
 seek = [withField formatOption formatconverter $ \f ->
 		withFilesInGit $ whenAnnexed $ start f]
 	where
-		formatconverter = return . maybe Nothing (Just . Utility.Format.gen)
+		formatconverter = return . fmap Utility.Format.gen
 
 start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
 start format file (key, _) = do

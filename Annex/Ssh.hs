@@ -32,7 +32,7 @@ sshParams (host, port) opts = go =<< sshInfo (host, port)
 		-- If the lock pool is empty, this is the first ssh of this
 		-- run. There could be stale ssh connections hanging around
 		-- from a previous git-annex run that was interrupted.
-		cleanstale = whenM (null . filter isLock . M.keys <$> getPool) $
+		cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
 			sshCleanup
 
 sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
@@ -40,9 +40,9 @@ sshInfo (host, port) = do
 	caching <- Git.configTrue <$> fromRepo (Git.Config.get "annex.sshcaching" "true")
 	if caching
 		then do
-			dir <- fromRepo $ gitAnnexSshDir
+			dir <- fromRepo gitAnnexSshDir
 			let socketfile = dir </> hostport2socket host port
-		 	return $ (Just socketfile, cacheParams socketfile)
+		 	return (Just socketfile, cacheParams socketfile)
 		else return (Nothing, [])
 
 cacheParams :: FilePath -> [CommandParam]
@@ -58,7 +58,7 @@ portParams (Just port) = [Param "-p", Param $ show port]
 {- Stop any unused ssh processes. -}
 sshCleanup :: Annex ()
 sshCleanup = do
-	dir <- fromRepo $ gitAnnexSshDir
+	dir <- fromRepo gitAnnexSshDir
 	liftIO $ createDirectoryIfMissing True dir
 	sockets <- filter (not . isLock) <$> liftIO (dirContents dir)
 	forM_ sockets cleanup

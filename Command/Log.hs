@@ -55,7 +55,7 @@ gourceOption :: Option
 gourceOption = Option.flag [] "gource" "format output for gource"
 
 seek :: [CommandSeek]
-seek = [withValue (Remote.uuidDescriptions) $ \m ->
+seek = [withValue Remote.uuidDescriptions $ \m ->
 	withValue (liftIO getCurrentTimeZone) $ \zone ->
 	withValue (concat <$> mapM getoption passthruOptions) $ \os ->
 	withFlag gourceOption $ \gource ->
@@ -65,7 +65,7 @@ seek = [withValue (Remote.uuidDescriptions) $ \m ->
 			Annex.getField (Option.name o)
 		use o v = [Param ("--" ++ Option.name o), Param v]
 
-start :: (M.Map UUID String) -> TimeZone -> [CommandParam] -> Bool ->
+start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
 	FilePath -> (Key, Backend) -> CommandStart
 start m zone os gource file (key, _) = do
 	showLog output =<< readLog <$> getLog key os
@@ -91,7 +91,7 @@ showLog outputter ps = do
 			catObject ref
 
 normalOutput :: (UUID -> String) -> FilePath -> TimeZone -> Outputter
-normalOutput lookupdescription file zone present ts us = do
+normalOutput lookupdescription file zone present ts us =
 	liftIO $ mapM_ (putStrLn . format) us
 	where
 		time = showTimeStamp zone ts
@@ -100,7 +100,7 @@ normalOutput lookupdescription file zone present ts us = do
 			fromUUID u ++ " -- " ++ lookupdescription u ]
 
 gourceOutput :: (UUID -> String) -> FilePath -> Outputter
-gourceOutput lookupdescription file present ts us = do
+gourceOutput lookupdescription file present ts us =
 	liftIO $ mapM_ (putStrLn . intercalate "|" . format) us
 	where
 		time = takeWhile isDigit $ show ts
