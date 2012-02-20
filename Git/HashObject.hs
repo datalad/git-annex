@@ -10,15 +10,16 @@ module Git.HashObject where
 import Common
 import Git
 import Git.Command
+import qualified Utility.CoProcess as CoProcess
 
-type HashObjectHandle = (PipeHandle, Handle, Handle)
+type HashObjectHandle = CoProcess.CoProcessHandle
 
 {- Starts git hash-object and returns a handle.  -}
 hashObjectStart :: Repo -> IO HashObjectHandle
 hashObjectStart repo = do
-	r@(_, _, toh) <- hPipeBoth "git" $
-		toCommand $ gitCommandLine params repo
-	return r
+	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
+	--CoProcess.query h fileEncoding (const $ return ())
+	return h
 	where
 		params =
 			[ Param "hash-object"
@@ -28,14 +29,11 @@ hashObjectStart repo = do
 
 {- Stops git hash-object. -}
 hashObjectStop :: HashObjectHandle -> IO ()
-hashObjectStop (pid, from, to) = do
-	hClose to
-	hClose from
-	forceSuccess pid
+hashObjectStop = CoProcess.stop
 
 {- Injects a file into git, returning the shas of the objects. -}
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
-hashFile (_, from, to) file = do
-	hPutStrLn to file
-	hFlush to
-	Ref <$> hGetLine from
+hashFile h file = CoProcess.query h send receive
+	where
+		send to = hPutStrLn to file
+		receive from = Ref <$> hGetLine from
