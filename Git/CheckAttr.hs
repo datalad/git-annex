@@ -18,15 +18,16 @@ import qualified Git.Version
 {- Efficiently looks up a gitattributes value for each file in a list. -}
 lookup :: String -> [FilePath] -> Repo -> IO [(FilePath, String)]
 lookup attr files repo = do
-	oldgit <- Git.Version.older "1.7.7"
 	cwd <- getCurrentDirectory
 	(_, fromh, toh) <- hPipeBoth "git" (toCommand params)
         _ <- forkProcess $ do
 		hClose fromh
+		oldgit <- Git.Version.older "1.7.7"
                 hPutStr toh $ join "\0" $ input cwd oldgit
                 hClose toh
                 exitSuccess
         hClose toh
+	oldgit <- Git.Version.older "1.7.7"
 	output cwd oldgit . lines <$> hGetContents fromh
 	where
 		params = gitCommandLine 
