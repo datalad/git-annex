@@ -36,6 +36,12 @@ git-annex (3.20120124) UNRELEASED; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
+git-annex (3.20120123~bpo60+2) squeeze-backports; urgency=low
+
+  * Fix runtime git version detection code. Closes: #660646
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 20 Feb 2012 13:37:09 -0400
+
 git-annex (3.20120123~bpo60+1) squeeze-backports; urgency=low
 
   * Fixed build dependency that made the previous backport FTBFS on several
