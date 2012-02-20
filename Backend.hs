@@ -60,7 +60,7 @@ genKey file trybackend = do
 genKey' :: [Backend] -> FilePath -> Annex (Maybe (Key, Backend))
 genKey' [] _ = return Nothing
 genKey' (b:bs) file = do
-	r <- (B.getKey b) file
+	r <- B.getKey b file
 	case r of
 		Nothing -> genKey' bs file
 		Just k -> return $ Just (makesane k, b)

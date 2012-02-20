@@ -12,8 +12,7 @@ import Command
 import qualified Backend
 import qualified Types.Key
 import Annex.Content
-import qualified Command.Add
-import Logs.Web
+import qualified Command.ReKey
 
 def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
@@ -48,32 +47,18 @@ upgradableKey key = isNothing $ Types.Key.keySize key
  - generate.
  -}
 perform :: FilePath -> Key -> Backend -> CommandPerform
-perform file oldkey newbackend = do
-	src <- inRepo $ gitAnnexLocation oldkey
-	tmp <- fromRepo gitAnnexTmpDir
-	let tmpfile = tmp </> takeFileName file
-	cleantmp tmpfile
-	liftIO $ createLink src tmpfile
-	k <- Backend.genKey tmpfile $ Just newbackend
-	cleantmp tmpfile
-	case k of
-		Nothing -> stop
-		Just (newkey, _) -> stopUnless (link src newkey) $ do
-			-- Update symlink to use the new key.
-			liftIO $ removeFile file
-
-			-- If the old key had some
-			-- associated urls, record them for
-			-- the new key as well.
-			urls <- getUrls oldkey
-			unless (null urls) $
-				mapM_ (setUrlPresent newkey) urls
-
-			next $ Command.Add.cleanup file newkey True
+perform file oldkey newbackend = maybe stop go =<< genkey
 	where
+		go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
+			next $ Command.ReKey.cleanup file oldkey newkey
+		genkey = do
+			src <- inRepo $ gitAnnexLocation oldkey
+			tmp <- fromRepo gitAnnexTmpDir
+			let tmpfile = tmp </> takeFileName file
+			cleantmp tmpfile
+			liftIO $ createLink src tmpfile
+			newkey <- liftM fst <$>
+				Backend.genKey tmpfile (Just newbackend)
+			cleantmp tmpfile
+			return newkey
 		cleantmp t = liftIO $ whenM (doesFileExist t) $ removeFile t
-		link src newkey = getViaTmpUnchecked newkey $ \t -> do
-			-- Make a hard link to the old backend's
-			-- cached key, to avoid wasting disk space.
-			liftIO $ unlessM (doesFileExist t) $ createLink src t
-			return True	

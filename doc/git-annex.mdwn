@@ -149,10 +149,16 @@ subdirectories).
 
   To avoid immediately downloading the url, specify --fast.
 
-  To specify what file the url is added to, specify --file. This changes
-  the behavior; now all the specified urls are recorded as alternate
-  locations from which the file can be downloaded. In this mode, addurl
-  can be used both to add new files, or to add urls to existing files.
+  Normally the filename is based on the full url, so will look like
+  "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
+  --pathdepth=N. For example, --pathdepth=1 will use "dir/subdir/bigfile",
+  while --pathdepth=3 will use "bigfile". It can also be negative;
+  --pathdepth=-2 will use the last two parts of the url.
+
+  Or, to directly specify what file the url is added to, specify --file.
+  This changes the behavior; now all the specified urls are recorded as
+  alternate locations from which the file can be downloaded. In this mode,
+  addurl can be used both to add new files, or to add urls to existing files.
 
 # REPOSITORY SETUP COMMANDS
 
@@ -392,6 +398,14 @@ subdirectories).
   Example:
 
 	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
+
+* rekey [file key ...]
+  
+  This plumbing-level command is similar to migrate, but you specify
+  both the file, and the new key to use for it.
+
+  With --force, even files whose content is not currently available will
+  be rekeyed. Use with caution.
 
 # OPTIONS
 

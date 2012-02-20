@@ -94,7 +94,7 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 			| i < 0 = LeftJustified (-1 * i)
 			| otherwise = RightJustified i
 		novar v = "${" ++ reverse v
-		foundvar f v p cs = scan (Var (reverse v) p : f) cs
+		foundvar f v p = scan (Var (reverse v) p : f)
 
 empty :: Frag -> Bool
 empty (Const "") = True

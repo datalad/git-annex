@@ -21,7 +21,8 @@ problem:
   formats.
 
 * What filesystem is used on the drive? Will that filesystem still be
-  available?
+  available? Whatever you choose to use, git-annex can put files on it.
+  Even if you choose (ugh) FAT.
 
 * What is the hardware interface of the drive? Will hardware still exist
   to talk to it?
