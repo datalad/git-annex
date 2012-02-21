@@ -11,19 +11,19 @@ import Common
 import Git
 import Git.Command
 import qualified Git.Version
+import qualified Utility.CoProcess as CoProcess
 
-type CheckAttrHandle = (PipeHandle, Handle, Handle, [Attr], String)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
 
 type Attr = String
 
 {- Starts git check-attr running to look up the specified gitattributes
- - values and return a handle.  -}
+ - values and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
-	(pid, from, to) <- hPipeBoth "git" $ toCommand $
-		gitCommandLine params repo
-	return (pid, from, to, attrs, cwd)
+	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
+	return (h, attrs, cwd)
 	where
 		params =
 			[ Param "check-attr" 
@@ -31,27 +31,24 @@ checkAttrStart attrs repo = do
 			] ++ map Param attrs ++
 			[ Param "--" ]
 
-{- Stops git check-attr. -}
 checkAttrStop :: CheckAttrHandle -> IO ()
-checkAttrStop (pid, from, to, _, _) = do
-	hClose to
-	hClose from
-	forceSuccess pid
+checkAttrStop (h, _, _) = CoProcess.stop h
 
 {- Gets an attribute of a file. -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
-checkAttr (_, from, to, attrs, cwd) want file = do
-	oldgit <- Git.Version.older "1.7.7"
-	hPutStr to $ file' oldgit ++ "\0"
-	hFlush to
-	pairs <- forM attrs $ \attr -> do
-		l <- hGetLine from
-		return (attr, attrvalue attr l)
+checkAttr (h, attrs, cwd) want file = do
+	pairs <- CoProcess.query h send receive
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
 	where
+		send to = do
+			oldgit <- Git.Version.older "1.7.7"
+			hPutStr to $ file' oldgit ++ "\0"
+		receive from = forM attrs $ \attr -> do
+			l <- hGetLine from
+			return (attr, attrvalue attr l)
 		{- Before git 1.7.7, git check-attr worked best with
 		 - absolute filenames; using them worked around some bugs
 		 - with relative filenames.
