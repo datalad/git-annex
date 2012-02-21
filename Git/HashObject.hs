@@ -14,20 +14,13 @@ import qualified Utility.CoProcess as CoProcess
 
 type HashObjectHandle = CoProcess.CoProcessHandle
 
-{- Starts git hash-object and returns a handle.  -}
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart repo = do
-	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
-	CoProcess.query h fileEncoding (const $ return ())
-	return h
-	where
-		params =
-			[ Param "hash-object"
-			, Param "-w"
-			, Param "--stdin-paths"
-			]
+hashObjectStart = CoProcess.start "git" . toCommand . gitCommandLine
+	[ Param "hash-object"
+	, Param "-w"
+	, Param "--stdin-paths"
+	]
 
-{- Stops git hash-object. -}
 hashObjectStop :: HashObjectHandle -> IO ()
 hashObjectStop = CoProcess.stop
 
@@ -35,5 +28,7 @@ hashObjectStop = CoProcess.stop
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
 	where
-		send to = hPutStrLn to file
+		send to = do
+			fileEncoding to
+			hPutStrLn to file
 		receive from = Ref <$> hGetLine from

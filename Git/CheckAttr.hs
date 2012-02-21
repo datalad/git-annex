@@ -18,13 +18,11 @@ type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
 type Attr = String
 
 {- Starts git check-attr running to look up the specified gitattributes
- - values and return a handle.  -}
+ - values and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
-	h <- CoProcess.start "git" $ toCommand $
-		gitCommandLine params repo
-	CoProcess.query h fileEncoding fileEncoding
+	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
 	return (h, attrs, cwd)
 	where
 		params =
@@ -33,7 +31,6 @@ checkAttrStart attrs repo = do
 			] ++ map Param attrs ++
 			[ Param "--" ]
 
-{- Stops git check-attr. -}
 checkAttrStop :: CheckAttrHandle -> IO ()
 checkAttrStop (h, _, _) = CoProcess.stop h
 
@@ -46,8 +43,11 @@ checkAttr (h, attrs, cwd) want file = do
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
 	where
-		send to = hPutStr to $ file' ++ "\0"
+		send to = do
+			fileEncoding to
+			hPutStr to $ file' ++ "\0"
 		receive from = forM attrs $ \attr -> do
+			fileEncoding from
 			l <- hGetLine from
 			return (attr, attrvalue attr l)
 		{- Before git 1.7.7, git check-attr worked best with

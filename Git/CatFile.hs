@@ -25,12 +25,12 @@ import qualified Utility.CoProcess as CoProcess
 
 type CatFileHandle = CoProcess.CoProcessHandle
 
-{- Starts git cat-file running in batch mode in a repo and returns a handle. -}
 catFileStart :: Repo -> IO CatFileHandle
-catFileStart repo = CoProcess.start "git" $ toCommand $
-	gitCommandLine [Param "cat-file", Param "--batch"] repo
+catFileStart = CoProcess.start "git" . toCommand . gitCommandLine
+	[ Param "cat-file"
+	, Param "--batch"
+	]
 
-{- Stops git cat-file. -}
 catFileStop :: CatFileHandle -> IO ()
 catFileStop = CoProcess.stop
 
