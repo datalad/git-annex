@@ -43,3 +43,17 @@ I'm on an nfs mounted filesystem (some netapp somewhere).  This is repeatable, e
 
 I suspect git-annex is just too fast and optimistic for big slow nfs directories.
 
+> git-annex locks files while it is operating on their content
+> to avoid race conditions with other git-annex processes. 
+> Quite likely this problem (which I can reproduce) is due to
+> NFS having bad (non-POSIX) locking semantics. 
+> 
+> Probably the
+> lock is represented on the NFS server as some form of lock file
+> next to the file being locked, and so when that file is deleted, with
+> the lock still held, the directory, which should then be empty, still
+> contains this lock file.
+> 
+> So, this can be worked around by it not failing when the directory
+> unexpectedly cannot be removed. I've made that change. [[done]]
+> --[[Joey]]

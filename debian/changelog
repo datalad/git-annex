@@ -33,6 +33,8 @@ git-annex (3.20120124) UNRELEASED; urgency=low
   * rekey: New plumbing level command, can be used to change the keys used
     for files en masse.
   * Store web special remote url info in a more efficient location.
+  * Deal with NFS problem that caused a failure to remove a directory
+    when removing content from the annex.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

@@ -244,20 +244,33 @@ withObjectLoc key a = do
 	let dir = parentDir file
 	a (dir, file)
 
+cleanObjectLoc :: Key -> Annex ()
+cleanObjectLoc key = do
+	file <- inRepo $ gitAnnexLocation key
+	liftIO $ removeparents file (3 :: Int)
+	where
+		removeparents _ 0 = return ()
+		removeparents file n = do
+			let dir = parentDir file
+			maybe (return ()) (const $ removeparents dir (n-1))
+				=<< catchMaybeIO (removeDirectory dir)
+
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: Key -> Annex ()
-removeAnnex key = withObjectLoc key $ \(dir, file) -> liftIO $ do
-	allowWrite dir
-	removeFile file
-	removeDirectory dir
+removeAnnex key = withObjectLoc key $ \(dir, file) -> do
+	liftIO $ do
+		allowWrite dir
+		removeFile file
+	cleanObjectLoc key
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()
-fromAnnex key dest = withObjectLoc key $ \(dir, file) -> liftIO $ do
-	allowWrite dir
-	allowWrite file
-	moveFile file dest
-	removeDirectory dir
+fromAnnex key dest = withObjectLoc key $ \(dir, file) -> do
+	liftIO $ do
+		allowWrite dir
+		allowWrite file
+		moveFile file dest
+	cleanObjectLoc key
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}
@@ -270,7 +283,7 @@ moveBad key = do
 		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
 		moveFile src dest
-		removeDirectory (parentDir src)
+	cleanObjectLoc key
 	logStatus key InfoMissing
 	return dest
 
