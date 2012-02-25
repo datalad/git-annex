@@ -85,7 +85,8 @@ assertLocal repo action =
 		else error $ "acting on non-local git repo " ++  repoDescribe repo ++ 
 				" not supported"
 configBare :: Repo -> Bool
-configBare repo = maybe unknown configTrue $ M.lookup "core.bare" $ config repo
+configBare repo = maybe unknown (fromMaybe False . configTrue) $
+	M.lookup "core.bare" $ config repo
 	where
 		unknown = error $ "it is not known if git repo " ++
 			repoDescribe repo ++
@@ -112,5 +113,10 @@ workTree Repo { location = Dir d } = d
 workTree Repo { location = Unknown } = undefined
 
 {- Checks if a string from git config is a true value. -}
-configTrue :: String -> Bool
-configTrue s = map toLower s == "true"
+configTrue :: String -> Maybe Bool
+configTrue s
+	| s' == "true" = Just True
+	| s' == "false" = Just False
+	| otherwise = Nothing
+	where
+		s' = map toLower s

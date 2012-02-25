@@ -26,4 +26,6 @@ start = do
 perform :: CommandPerform
 perform = do
 	Annex.Branch.update
+	-- commit explicitly, in case no remote branches were merged
+	Annex.Branch.commit "update"
 	next $ return True

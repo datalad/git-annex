@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Logs.Presence
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
+import qualified Annex.Branch
 import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
@@ -196,7 +197,7 @@ keyUrls r key = map tourl (annexLocations key)
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
-	| not $ Git.repoIsUrl r = liftIO $ onLocal r $ do
+	| not $ Git.repoIsUrl r = commitOnCleanup r $ liftIO $ onLocal r $ do
 		ensureInitialized
 		whenM (Annex.Content.inAnnex key) $ do
 			Annex.Content.lockContent key $
@@ -205,7 +206,7 @@ dropKey r key
 			Annex.Content.saveState True
 		return True
 	| Git.repoIsHttp r = error "dropping from http repo not supported"
-	| otherwise = onRemote r (boolSystem, False) "dropkey"
+	| otherwise = commitOnCleanup r $ onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
 		, Param $ show key
 		]
@@ -236,7 +237,7 @@ copyFromRemoteCheap r key file
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
-	| not $ Git.repoIsUrl r = do
+	| not $ Git.repoIsUrl r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
@@ -245,7 +246,7 @@ copyToRemote r key
 			Annex.Content.saveState True `after`
 				Annex.Content.getViaTmp key
 					(rsyncOrCopyFile params keysrc)
-	| Git.repoIsSsh r = do
+	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc
 	| otherwise = error "copying to non-ssh repo not supported"
@@ -301,3 +302,23 @@ rsyncParams r = do
 	where
  		-- --inplace to resume partial files
 		options = [Params "-p --progress --inplace"]
+
+commitOnCleanup :: Git.Repo -> Annex a -> Annex a
+commitOnCleanup r a = go `after` a
+	where
+		go = Annex.addCleanup (Git.repoLocation r) cleanup
+		cleanup
+			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
+				Annex.Branch.commit "update"
+			| otherwise = do
+				Just (shellcmd, shellparams) <-
+					git_annex_shell r "commit" []
+				-- Throw away stderr, since the remote may not
+				-- have a new enough git-annex shell to
+				-- support committing.
+				let cmd = shellcmd ++ " "
+					++ unwords (map shellEscape $ toCommand shellparams)
+					++ ">/dev/null 2>/dev/null"
+				_ <- liftIO $
+					boolSystem "sh" [Param "-c", Param cmd]
+				return ()

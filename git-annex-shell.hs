@@ -20,6 +20,7 @@ import qualified Command.InAnnex
 import qualified Command.DropKey
 import qualified Command.RecvKey
 import qualified Command.SendKey
+import qualified Command.Commit
 
 cmds_readonly :: [Command]
 cmds_readonly = concat
@@ -32,6 +33,7 @@ cmds_notreadonly :: [Command]
 cmds_notreadonly = concat
 	[ Command.RecvKey.def
 	, Command.DropKey.def
+	, Command.Commit.def
 	]
 
 cmds :: [Command]
