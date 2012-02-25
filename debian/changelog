@@ -37,7 +37,7 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     a remote's location log.
   * To avoid commits of data to the git-annex branch after each command
     is run, set annex.alwayscommit=false. Its data will then be committed
-    less frequently, when a merge or sync is done. 
+    less frequently, when a merge or sync is done.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

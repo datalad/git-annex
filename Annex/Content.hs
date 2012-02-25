@@ -312,9 +312,11 @@ getKeysPresent' dir = do
 saveState :: Bool -> Annex ()
 saveState oneshot = do
 	Annex.Queue.flush False
-	alwayscommit <- Git.configTrue <$> fromRepo (Git.Config.get "annex.alwayscommit" "true")
-	unless (oneshot || not alwayscommit) $ do
-		Annex.Branch.commit "update"
+	unless oneshot $ do
+		alwayscommit <- Git.configTrue <$> fromRepo (Git.Config.get "annex.alwayscommit" "true")
+		if alwayscommit
+			then Annex.Branch.commit "update"
+			else Annex.Branch.stage
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
