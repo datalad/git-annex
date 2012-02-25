@@ -75,6 +75,7 @@ commit = do
 	showStart "commit" ""
 	next $ next $ do
 		showOutput
+		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
 		_ <- inRepo $ Git.Command.runBool "commit"
 			[Param "-a", Param "-m", Param "git-annex automatic sync"]

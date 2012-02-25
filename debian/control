@@ -20,6 +20,7 @@ Build-Depends:
 	git,
 	uuid,
 	rsync,
+	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.2
 Vcs-Git: git://git.kitenet.net/git-annex
@@ -33,7 +34,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	uuid,
 	rsync,
 	wget | curl,
-	openssh-client
+	openssh-client (>= 1:5.6p1)
 Suggests: graphviz, bup, gnupg
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file

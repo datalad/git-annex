@@ -18,6 +18,7 @@ module Annex.Branch (
 	get,
 	change,
 	commit,
+	stage,
 	files,
 ) where
 
@@ -114,14 +115,14 @@ updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	-- check what needs updating before taking the lock
-	dirty <- journalDirty
+	dirty <- unCommitted
 	(refs, branches) <- unzip <$> filterM isnewer pairs
 	if not dirty && null refs
 		then updateIndex branchref
 		else withIndex $ lockJournal $ do
 			when dirty stageJournal
 			let merge_desc = if null branches
-				then "update" 
+				then "update"
 				else "merging " ++
 					unwords (map Git.Ref.describe branches) ++ 
 					" into " ++ show name
@@ -182,10 +183,16 @@ set file content = do
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = whenM journalDirty $ lockJournal $ do
+commit message = whenM unCommitted $ lockJournal $ do
 	stageJournal
 	ref <- getBranch
 	withIndex $ commitBranch ref message [fullname]
+
+{- Stages the journal, not making a commit to the branch. -}
+stage :: Annex ()
+stage = whenM journalDirty $ lockJournal $ do
+	stageJournal
+	setUnCommitted
 
 {- Commits the staged changes in the index to the branch.
  - 
@@ -213,6 +220,7 @@ commitBranch branchref message parents = do
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
+	setCommitted
 	where
 		-- look for "parent ref" lines and return the refs
 		commitparents = map (Git.Ref . snd) . filter isparent .
@@ -300,6 +308,25 @@ setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
         lock <- fromRepo gitAnnexIndexLock
 	liftIO $ writeFile lock $ show ref ++ "\n"
+
+{- Checks if there are uncommitted changes in the branch's index or journal. -}
+unCommitted :: Annex Bool
+unCommitted = do
+	d <- liftIO . doesFileExist =<< fromRepo gitAnnexIndexDirty
+	if d
+		then return d
+		else journalDirty
+
+setUnCommitted :: Annex ()
+setUnCommitted = do
+	file <- fromRepo gitAnnexIndexDirty
+	liftIO $ writeFile file "1"
+
+setCommitted :: Annex ()
+setCommitted = do
+	file <- fromRepo gitAnnexIndexDirty
+	_ <- liftIO $ tryIO $ removeFile file
+	return ()
 
 {- Stages the journal into the index. -}
 stageJournal :: Annex ()

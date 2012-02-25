@@ -25,14 +25,24 @@ received a signal, I'm not sure?)
 It's more usual for a `system` like thing to block SIGINT, letting the child
 catch it and exit, and then detecting the child's exit status and terminating. 
 However, since rsync *is* trapping SIGINT, and exiting nonzero explicitly,
-git-annex can't tell that rsync failed due to a SIGINT.
+git-annex can't tell that rsync failed due to a SIGINT by examining the
+`waitpid` result.
 And, git-annex typically doesn't stop when a single child fails. In the
 example above, it would go on to copy `b` after a ctrl-c!
 
 A further complication is that git-annex is itself a child process
-of git, which does not block SIGINT either. So if git-annex blocks sigint,
+of git, which does not block SIGINT either. So if git-annex blocks SIGINT,
 it will be left running in the background after git exits, and continuing
-with further actions too. (Probably this is a bug in git.)
+with further actions too. (Perhaps its SIGINT handling is a bug in git.)
+
+Now, rsync does have a documented exit code it uses after a SIGINT.
+But other programs git-annex runs generally do not. So it would be possible
+to special case in support for rsync, blocking SIGINT while running it,
+noticing it exited with 20, and git-annex then stopping. But this is
+ugly and failure prone if rsync's code 20 changes. And it only
+would fix the rsync case, not helping with other commands like wget, unless
+it assumes they never trap SIGINT on their own.
 
 Which is why the current behavior of not blocking SIGINT was chosen,
-as a less bad alternative. Still, I'd like to find a better one. --[[Joey]] 
+as a less bad alternative. Still, I'd like to find a better one.
+--[[Joey]] 

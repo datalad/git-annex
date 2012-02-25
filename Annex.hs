@@ -21,6 +21,7 @@ module Annex (
 	setField,
 	getFlag,
 	getField,
+	addCleanup,
 	gitRepo,
 	inRepo,
 	fromRepo,
@@ -85,6 +86,7 @@ data AnnexState = AnnexState
 	, lockpool :: M.Map FilePath Fd
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
+	, cleanup :: M.Map String (Annex ())
 	}
 
 newState :: Git.Repo -> AnnexState
@@ -109,6 +111,7 @@ newState gitrepo = AnnexState
 	, lockpool = M.empty
 	, flags = M.empty
 	, fields = M.empty
+	, cleanup = M.empty
 	}
 
 {- Create and returns an Annex state object for the specified git repo. -}
@@ -124,12 +127,17 @@ eval s a = evalStateT (runAnnex a) s
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()
 setFlag flag = changeState $ \s ->
-	s { flags = M.insert flag True $ flags s }
+	s { flags = M.insertWith' const flag True $ flags s }
 
 {- Sets a field to a value -}
 setField :: String -> String -> Annex ()
 setField field value = changeState $ \s ->
-	s { fields = M.insert field value $ fields s }
+	s { fields = M.insertWith' const field value $ fields s }
+
+{- Adds a cleanup action to perform. -}
+addCleanup :: String -> Annex () -> Annex ()
+addCleanup uid a = changeState $ \s ->
+	s { cleanup = M.insertWith' const uid a $ cleanup s }
 
 {- Checks if a flag was set. -}
 getFlag :: String -> Annex Bool
