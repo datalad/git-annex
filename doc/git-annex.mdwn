@@ -604,7 +604,8 @@ Here are all the supported configuration settings.
 
 * `annex.sshcaching`
 
-  By default, git-annex caches ssh connections. To disable this, set to `false`.
+  By default, git-annex caches ssh connections
+  (if built using a new enough ssh). To disable this, set to `false`.
 
 * `annex.alwayscommit`
 

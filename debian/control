@@ -23,6 +23,7 @@ Build-Depends:
 	git,
 	uuid,
 	rsync,
+	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.2
 Vcs-Git: git://git.kitenet.net/git-annex
