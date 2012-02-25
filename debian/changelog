@@ -39,6 +39,13 @@ git-annex (3.20120124) UNRELEASED; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 
+git-annex (3.20120123~bpo60+3) squeeze-backports; urgency=low
+
+  * configure: Check if ssh connection caching is supported by the installed
+    version of ssh and default annex.sshcaching accordingly.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 25 Feb 2012 19:20:06 -0400
+
 git-annex (3.20120123~bpo60+2) squeeze-backports; urgency=low
 
   * Fix runtime git version detection code. Closes: #660646
