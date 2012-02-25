@@ -606,6 +606,13 @@ Here are all the supported configuration settings.
 
   By default, git-annex caches ssh connections. To disable this, set to `false`.
 
+* `annex.alwayscommit`
+
+  By default, git-annex automatically commits data to the git-annex branch
+  after each command is run. To disable these commits,
+  set to `false`. Then data will only be committed when
+  running `git annex merge` (or by automatic merges) or `git annex sync`.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

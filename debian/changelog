@@ -6,12 +6,6 @@ git-annex (3.20120124) UNRELEASED; urgency=low
   * S3: Fix irrefutable pattern failure when accessing encrypted S3
     credentials.
   * Use the haskell IfElse library.
-  * Avoid repeated location log commits when a remote is receiving files.
-    Done by adding a oneshot mode, in which location log changes are
-    written to the journal, but not committed. Taking advantage of
-    git-annex's existing ability to recover in this situation. This is
-    used by git-annex-shell and other places where changes are made to
-    a remote's location log.
   * Fix teardown of stale cached ssh connections.
   * Fixed to use the strict state monad, to avoid leaking all kinds of memory
     due to lazy state update thunks when adding/fixing many files.
@@ -35,6 +29,15 @@ git-annex (3.20120124) UNRELEASED; urgency=low
   * Store web special remote url info in a more efficient location.
   * Deal with NFS problem that caused a failure to remove a directory
     when removing content from the annex.
+  * Avoid repeated location log commits when a remote is receiving files.
+    Done by adding a oneshot mode, in which location log changes are
+    written to the journal, but not committed. Taking advantage of
+    git-annex's existing ability to recover in this situation. This is
+    used by git-annex-shell and other places where changes are made to
+    a remote's location log.
+  * To avoid commits of data to the git-annex branch after each command
+    is run, set annex.alwayscommit=false. Its data will then be committed
+    less frequently, when a merge or sync is done. 
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

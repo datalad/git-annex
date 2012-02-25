@@ -32,6 +32,7 @@ import Common.Annex
 import Logs.Location
 import Annex.UUID
 import qualified Git
+import qualified Git.Config
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Branch
@@ -311,7 +312,8 @@ getKeysPresent' dir = do
 saveState :: Bool -> Annex ()
 saveState oneshot = do
 	Annex.Queue.flush False
-	unless oneshot $
+	alwayscommit <- Git.configTrue <$> fromRepo (Git.Config.get "annex.alwayscommit" "true")
+	unless (oneshot || not alwayscommit) $ do
 		Annex.Branch.commit "update"
 
 {- Downloads content from any of a list of urls. -}
