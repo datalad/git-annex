@@ -4,9 +4,11 @@ import System.Directory
 import Data.List
 import Data.Maybe
 import System.Cmd.Utils
+import Control.Applicative
 
 import Build.TestConfig
 import Utility.StatFS
+import Utility.SafeCommand
 
 tests :: [TestCase]
 tests =
@@ -23,6 +25,7 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
+	, TestCase "ssh connection caching" getSshConnectionCaching
 	, TestCase "StatFS" testStatFS
 	] ++ shaTestCases [1, 256, 512, 224, 384]
 
@@ -65,6 +68,10 @@ getGitVersion = do
 	(_, s) <- pipeFrom "git" ["--version"]
 	let version = last $ words $ head $ lines s
 	return $ Config "gitversion" (StringConfig version)
+
+getSshConnectionCaching :: Test
+getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
+	boolSystem "sh" [Param "-c", Param "ssh -o ControlPersist=yes -V >/dev/null 2>/dev/null"]
 
 testStatFS :: Test
 testStatFS = do
