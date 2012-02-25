@@ -12,6 +12,7 @@ module CmdLine (
 ) where
 
 import qualified Control.Exception as E
+import qualified Data.Map as M
 import Control.Exception (throw)
 import System.Console.GetOpt
 
@@ -95,6 +96,7 @@ startup = return True
 shutdown :: Bool -> Annex Bool
 shutdown oneshot = do
 	saveState oneshot
+	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	liftIO Git.Command.reap -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
 	return True

@@ -33,3 +33,6 @@ are local. It seems to be just overhead.)
 Oneshot mode is now implemented, making git-annex-shell and other
 short lifetime processes not bother with committing changes.
 [[done]] --[[Joey]] 
+
+Update: Now it makes one commit at the very end of such a mass transfer.
+--[[Joey]]
