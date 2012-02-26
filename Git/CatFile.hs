@@ -43,8 +43,11 @@ catFile h branch file = catObject h $ Ref $ show branch ++ ":" ++ file
 catObject :: CatFileHandle -> Ref -> IO L.ByteString
 catObject h object = CoProcess.query h send receive
 	where
-		send to = hPutStrLn to $ show object
+		send to = do
+			fileEncoding to
+			hPutStrLn to $ show object
 		receive from = do
+			fileEncoding from
 			header <- hGetLine from
 			case words header of
 				[sha, objtype, size]
@@ -56,7 +59,7 @@ catObject h object = CoProcess.query h send receive
 					| otherwise -> dne
 				_
 					| header == show object ++ " missing" -> dne
-					| otherwise -> error $ "unknown response from git cat-file " ++ header
+					| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
 		readcontent bytes from = do
 			content <- S.hGet from bytes
 			c <- hGetChar from
