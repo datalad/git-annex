@@ -36,6 +36,10 @@ git-annex (3.20120124) UNRELEASED; urgency=low
     less frequently, when a merge or sync is done.
   * configure: Check if ssh connection caching is supported by the installed
     version of ssh and default annex.sshcaching accordingly.
+  * move --from, copy --from: Now 10 times faster when scanning to find
+    files in a remote on a local disk; rather than go through the location log
+    to see which files are present on the remote, it simply looks at the 
+    disk contents directly.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
 

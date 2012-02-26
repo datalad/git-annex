@@ -120,10 +120,15 @@ fromStart src move file key
 			showMoveAction move file
 			next $ fromPerform src move key
 fromOk :: Remote -> Key -> Annex Bool
-fromOk src key = do
-	u <- getUUID
-	remotes <- Remote.keyPossibilities key
-	return $ u /= Remote.uuid src && any (== src) remotes
+fromOk src key
+	| Remote.hasKeyCheap src =
+		either (const expensive) return =<< Remote.hasKey src key
+	| otherwise = expensive
+	where
+		expensive = do
+			u <- getUUID
+			remotes <- Remote.keyPossibilities key
+			return $ u /= Remote.uuid src && any (== src) remotes
 fromPerform :: Remote -> Bool -> Key -> CommandPerform
 fromPerform src move key = moveLock move key $ do
 	ishere <- inAnnex key
