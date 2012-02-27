@@ -1,0 +1,43 @@
+git-annex 3.20120227 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Modifications to support ghc 7.4's handling of filenames.
+     This version can only be built with ghc 7.4 or newer. See the ghc7.0
+     branch for older ghcs.
+   * S3: Fix irrefutable pattern failure when accessing encrypted S3
+     credentials.
+   * Use the haskell IfElse library.
+   * Fix teardown of stale cached ssh connections.
+   * Fixed to use the strict state monad, to avoid leaking all kinds of memory
+     due to lazy state update thunks when adding/fixing many files.
+   * Fixed some memory leaks that occurred when committing journal files.
+   * Added a annex.queuesize setting, useful when adding hundreds of thousands
+     of files on a system with plenty of memory.
+   * whereis: Prints the urls of files that the web special remote knows about.
+   * addurl --fast: Verifies that the url can be downloaded (only getting
+     its head), and records the size in the key.
+   * When checking that an url has a key, verify that the Content-Length,
+     if available, matches the size of the key.
+   * addurl: Added a --file option, which can be used to specify what
+     file the url is added to. This can be used to override the default
+     filename that is used when adding an url, which is based on the url.
+     Or, when the file already exists, the url is recorded as another
+     location of the file.
+   * addurl: Normalize badly encoded urls.
+   * addurl: Add --pathdepth option.
+   * rekey: New plumbing level command, can be used to change the keys used
+     for files en masse.
+   * Store web special remote url info in a more efficient location.
+     (Urls stored with this version will not be visible to older versions.)
+   * Deal with NFS problem that caused a failure to remove a directory
+     when removing content from the annex.
+   * Make a single location log commit after a remote has received or
+     dropped files. Uses a new "git-annex-shell commit" command when available.
+   * To avoid commits of data to the git-annex branch after each command
+     is run, set annex.alwayscommit=false. Its data will then be committed
+     less frequently, when a merge or sync is done.
+   * configure: Check if ssh connection caching is supported by the installed
+     version of ssh and default annex.sshcaching accordingly.
+   * move --from, copy --from: Now 10 times faster when scanning to find
+     files in a remote on a local disk; rather than go through the location log
+     to see which files are present on the remote, it simply looks at the
+     disk contents directly."""]]
