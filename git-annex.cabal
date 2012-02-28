@@ -39,6 +39,7 @@ Executable git-annex-shell
 
 Executable git-union-merge
   Main-Is: git-union-merge.hs
+  Build-Depends: text
 
 source-repository head
   type: git
