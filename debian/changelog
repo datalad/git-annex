@@ -1,6 +1,7 @@
 git-annex (3.20120229) unstable; urgency=low
 
   * Fix test suite to not require a unicode locale.
+  * Fix cabal build failure. Thanks, Sergei Trofimovich
 
  -- Joey Hess <joeyh@debian.org>  Wed, 29 Feb 2012 02:31:31 -0400
 
