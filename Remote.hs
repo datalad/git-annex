@@ -90,6 +90,7 @@ byName' n = do
  - .git/config. -}
 nameToUUID :: String -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
+nameToUUID "here" = getUUID
 nameToUUID "" = error "no remote specified"
 nameToUUID n = byName' n >>= go
 	where

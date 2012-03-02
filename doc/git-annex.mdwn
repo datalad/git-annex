@@ -177,7 +177,7 @@ subdirectories).
 
   The repository to describe can be specified by git remote name or
   by uuid. To change the description of the current repository, use
-  "."
+  "here".
 
 * initremote name [param=value ...]
 
@@ -196,7 +196,7 @@ subdirectories).
   Records that a repository is trusted to not unexpectedly lose
   content. Use with care.
 
-  To trust the current repository, use "."
+  To trust the current repository, use "here".
 
 * untrust [repository ...]
 
@@ -273,7 +273,7 @@ subdirectories).
   By default, only lists annexed files whose content is currently present.
   This can be changed by specifying file matching options. To list all
   annexed files, present or not, specify --include "*". To list all
-  annexed files whose content is not present, specify --not --in="."
+  annexed files whose content is not present, specify --not --in=here
 
   To output filenames terminated with nulls, for use with xargs -0,
   specify --print0. Or, a custom output formatting can be specified using
@@ -527,7 +527,7 @@ file contents are present at either of two repositories.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
-  use "--in=."
+  use --in=here
 
 * --copies=number
 

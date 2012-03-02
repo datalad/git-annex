@@ -1,3 +1,10 @@
+git-annex (3.20120230) UNRELEASED; urgency=low
+
+  * "here" can be used to refer to the current repository,
+    which can read better than the old "." (which still works too).
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 01 Mar 2012 22:34:27 -0400
+
 git-annex (3.20120229) unstable; urgency=low
 
   * Fix test suite to not require a unicode locale.
