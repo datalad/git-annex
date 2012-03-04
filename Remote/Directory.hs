@@ -8,7 +8,9 @@
 module Remote.Directory (remote) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8 as S
 import qualified Data.Map as M
+import Control.Exception (bracket)
 
 import Common.Annex
 import Utility.CopyFile
@@ -129,46 +131,71 @@ withStoredFiles = withCheckedFiles doesFileExist
 store :: FilePath -> ChunkSize -> Key -> Annex Bool
 store d chunksize k = do
 	src <- inRepo $ gitAnnexLocation k
-	liftIO $ catchBoolIO $ storeHelper d chunksize k $ \dests ->
-		case chunksize of
-			Nothing -> do
-				let dest = Prelude.head dests
-				ok <- copyFileExternal src dest
-				return $ if ok then [dest] else []
-			Just _ -> storeSplit chunksize dests =<< L.readFile src
+	metered k $ \meterupdate -> 
+		liftIO $ catchBoolIO $ storeHelper d chunksize k $ \dests ->
+			case chunksize of
+				Nothing -> do
+					let dest = Prelude.head dests
+					meteredWriteFile meterupdate dest
+						=<< L.readFile src
+					return [dest]
+				Just _ ->
+					storeSplit meterupdate chunksize dests
+						=<< L.readFile src
 
 storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d chunksize (cipher, enck) k = do
 	src <- inRepo $ gitAnnexLocation k
-	liftIO $ catchBoolIO $ storeHelper d chunksize enck $ encrypt src
-	where
-		encrypt src dests = withEncryptedContent cipher (L.readFile src) $ \s ->
-			case chunksize of
-				Nothing -> do
-					let dest = Prelude.head dests
-					L.writeFile dest s
-					return [dest]
-				Just _ -> storeSplit chunksize dests s
+	metered k $ \meterupdate ->
+		liftIO $ catchBoolIO $ storeHelper d chunksize enck $ \dests ->
+			withEncryptedContent cipher (L.readFile src) $ \s ->
+				case chunksize of
+					Nothing -> do
+						let dest = Prelude.head dests
+						meteredWriteFile meterupdate dest s
+						return [dest]
+					Just _ -> storeSplit meterupdate chunksize dests s
 
-{- Splits a ByteString into chunks and writes to dests.
+{- Splits a ByteString into chunks and writes to dests, obeying configured
+ - chunk size (not to be confused with the L.ByteString chunk size).
  - Note: Must always write at least one file, even for empty ByteString. -}
-storeSplit :: ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
-storeSplit Nothing _ _ = error "bad storeSplit call"
-storeSplit _ [] _ = error "bad storeSplit call"
-storeSplit (Just chunksize) alldests@(firstdest:_) s
-	| L.null s = do
+storeSplit :: MeterUpdate -> ChunkSize -> [FilePath] -> L.ByteString -> IO [FilePath]
+storeSplit _ Nothing _ _ = error "bad storeSplit call"
+storeSplit _ _ [] _ = error "bad storeSplit call"
+storeSplit meterupdate (Just chunksize) alldests@(firstdest:_) b
+	| L.null b = do
 		-- must always write at least one file, even for empty
-		L.writeFile firstdest s
+		L.writeFile firstdest b
 		return [firstdest]
-	| otherwise = storeSplit' chunksize alldests s []
-storeSplit' :: Int64 -> [FilePath] -> L.ByteString -> [FilePath] -> IO [FilePath]
-storeSplit' _ [] _ _ = error "expected an infinite list"
-storeSplit' chunksize (d:dests) s c
-	| L.null s = return $ reverse c
-	| otherwise = do
-		let (chunk, rest) = L.splitAt chunksize s
-		L.writeFile d chunk
-		storeSplit' chunksize dests rest (d:c)
+	| otherwise = storeSplit' meterupdate chunksize alldests (L.toChunks b) []
+storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath] -> IO [FilePath]
+storeSplit' _ _ [] _ _ = error "ran out of dests"
+storeSplit' _ _  _ [] c = return $ reverse c
+storeSplit' meterupdate chunksize (d:dests) bs c = do
+	bs' <- bracket (openFile d WriteMode) hClose (feed chunksize bs)
+	storeSplit' meterupdate chunksize dests bs' (d:c)
+	where
+		feed _ [] _ = return []
+		feed sz (l:ls) h = do
+			let s = fromIntegral $ S.length l
+			if s <= sz
+				then do
+					S.hPut h l
+					meterupdate $ toInteger s
+					feed (sz - s) ls h
+				else return (l:ls)
+
+{- Write a L.ByteString to a file, updating a progress meter
+ - after each chunk of the L.ByteString, typically every 64 kb or so. -}
+meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
+meteredWriteFile meterupdate dest b =
+	bracket (openFile dest WriteMode) hClose (feed $ L.toChunks b)
+	where
+		feed [] _ = return ()
+		feed (l:ls) h = do
+			S.hPut h l
+			meterupdate $ toInteger $ S.length l
+			feed ls h
 
 {- Generates a list of destinations to write to in order to store a key.
  - When chunksize is specified, this list will be a list of chunks.

@@ -144,9 +144,7 @@ storeHelper (conn, bucket) r k file = do
 			case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
 				"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
 				_ -> STANDARD
-		getsize = do
-			s <- liftIO $ getFileStatus file
-			return $ fileSize s
+		getsize = fileSize <$> (liftIO $ getFileStatus file)
 		
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h

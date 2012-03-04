@@ -4,6 +4,7 @@ git-annex (3.20120230) UNRELEASED; urgency=low
     which can read better than the old "." (which still works too).
   * Directory special remotes now support chunking files written to them,
     avoiding writing files larger than a specified size.
+  * Add progress bar display to the directory special remote.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 01 Mar 2012 22:34:27 -0400
 
