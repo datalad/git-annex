@@ -40,7 +40,7 @@ encryptionSetup c =
 encryptableRemote
 	:: Maybe RemoteConfig
 	-> ((Cipher, Key) -> Key -> Annex Bool)
-	-> ((Cipher, Key) -> FilePath -> Annex Bool)
+	-> ((Cipher, Key) -> Key -> FilePath -> Annex Bool)
 	-> Remote
 	-> Remote
 encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
@@ -58,7 +58,7 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 			(`storeKeyEncrypted` k)
 		retrieve k f = cip k >>= maybe
 			(retrieveKeyFile r k f)
-			(`retrieveKeyFileEncrypted` f)
+			(\enck -> retrieveKeyFileEncrypted enck k f)
 		retrieveCheap k f = cip k >>= maybe
 			(retrieveKeyFileCheap r k f)
 			(\_ -> return False)

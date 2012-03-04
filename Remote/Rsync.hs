@@ -119,8 +119,8 @@ retrieveCheap o k f = do
 		then retrieve o k f
 		else return False
 
-retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> FilePath -> Annex Bool
-retrieveEncrypted o (cipher, enck) f = withTmp enck $ \tmp -> do
+retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp -> do
 	res <- retrieve o enck tmp
 	if res
 		then liftIO $ catchBoolIO $ do

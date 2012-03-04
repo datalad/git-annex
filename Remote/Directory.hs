@@ -237,12 +237,13 @@ retrieve d chunksize k f = metered k $ \meterupdate ->
 				(L.concat <$> mapM L.readFile files)
 			return True
 
-retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> FilePath -> Annex Bool
-retrieveEncrypted d chunksize (cipher, enck) f =
-	liftIO $ withStoredFiles chunksize d enck $ \files -> catchBoolIO $ do
-		withDecryptedContent cipher (L.concat <$> mapM L.readFile files) $
-			L.writeFile f
-		return True
+retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted d chunksize (cipher, enck) k f = metered k $ \meterupdate ->
+	liftIO $ withStoredFiles chunksize d enck $ \files ->
+		catchBoolIO $ do
+			withDecryptedContent cipher (L.concat <$> mapM L.readFile files) $
+				meteredWriteFile meterupdate f
+			return True
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks

@@ -114,8 +114,8 @@ retrieve h k f = runHook h "retrieve" k (Just f) $ return True
 retrieveCheap :: String -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: String -> (Cipher, Key) -> FilePath -> Annex Bool
-retrieveEncrypted h (cipher, enck) f = withTmp enck $ \tmp ->
+retrieveEncrypted :: String -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted h (cipher, enck) _ f = withTmp enck $ \tmp ->
 	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBoolIO $ do
 		withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 		return True
