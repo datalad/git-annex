@@ -88,9 +88,7 @@ locations d k = map (d </>) (keyPaths k)
 
 {- An infinite stream of chunks to use for a given file. -}
 chunkStream :: FilePath -> [FilePath]
-chunkStream f = map tochunk [1 :: Integer ..]
-	where
-		tochunk n = f ++ ".chunk" ++ show n
+chunkStream f = map (\n -> f ++ ".chunk" ++ show n) [1 :: Integer ..]
 
 {- A file that records the number of chunks used. -}
 chunkCount :: FilePath -> FilePath
