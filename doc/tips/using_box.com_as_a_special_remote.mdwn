@@ -37,7 +37,7 @@ Create the special remote, in your git-annex repository.
 ** This example is non-encrypted; fill in your gpg key ID for a securely
 encrypted special remote! **
 
-	git annex initremote box.com type=directory directory=/media/box.com chunksize=100mb encryption=none
+	git annex initremote box.com type=directory directory=/media/box.com chunksize=2mb encryption=none
 
 Now git-annex can copy files to box.com, get files from it, etc, just like
 with any other special remote.
