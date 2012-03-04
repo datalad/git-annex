@@ -13,7 +13,6 @@ import qualified Data.Map as M
 import Control.Exception (bracket)
 
 import Common.Annex
-import Utility.CopyFile
 import Types.Remote
 import qualified Git
 import Config
@@ -231,11 +230,11 @@ storeHelper d chunksize key a = do
 		tmpprefixlen = length tmpprefix
 
 retrieve :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
-retrieve d chunksize k f = liftIO $ withStoredFiles chunksize d k go
-	where
-		go [file] = copyFileExternal file f
-		go files = catchBoolIO $ do
-			L.writeFile f =<< (L.concat <$> mapM L.readFile files)
+retrieve d chunksize k f = metered k $ \meterupdate ->
+	liftIO $ withStoredFiles chunksize d k $ \files ->
+		catchBoolIO $ do
+			meteredWriteFile meterupdate f =<<
+				(L.concat <$> mapM L.readFile files)
 			return True
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> FilePath -> Annex Bool
