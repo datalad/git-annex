@@ -5,6 +5,9 @@ git-annex (3.20120230) UNRELEASED; urgency=low
   * Directory special remotes now support chunking files written to them,
     avoiding writing files larger than a specified size.
   * Add progress bar display to the directory special remote.
+  * Add configurable hooks that are run when git-annex starts and stops
+    using a remote: remote.name.annex-start-command and
+    remote.name.annex-stop-command
 
  -- Joey Hess <joeyh@debian.org>  Thu, 01 Mar 2012 22:34:27 -0400
 
