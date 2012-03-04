@@ -17,9 +17,10 @@ With a little setup, git-annex can use Box as a
 * Edit `/etc/fstab`, and add a line to mount Box using davfs.
 	sudo mkdir -p /media/box.com
 	echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
-* Create `~/.davfs2/davfs2.conf`:
+* Create `~/.davfs2/davfs2.conf` with some important settings:
 	mkdir ~/.davfs2/
 	echo use_locks 0 >> ~/.davfs2/davfs2.conf
+	echo cache_size 1 >> ~/.davfs2/davfs2.conf
 	echo delay_upload 0 >> ~/.davfs2/davfs2.conf
 * Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
   Your login is probably the email address you signed up with.
@@ -37,7 +38,7 @@ Create the special remote, in your git-annex repository.
 ** This example is non-encrypted; fill in your gpg key ID for a securely
 encrypted special remote! **
 
-	git annex initremote box.com type=directory directory=/media/box.com chunksize=100mb encryption=none
+	git annex initremote box.com type=directory directory=/media/box.com chunksize=2mb encryption=none
 
 Now git-annex can copy files to box.com, get files from it, etc, just like
 with any other special remote.

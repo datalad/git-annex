@@ -188,13 +188,23 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
  - after each chunk of the L.ByteString, typically every 64 kb or so. -}
 meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate dest b =
-	bracket (openFile dest WriteMode) hClose (feed $ L.toChunks b)
+	meteredWriteFile' meterupdate dest (L.toChunks b) feeder
 	where
-		feed [] _ = return ()
-		feed (l:ls) h = do
-			S.hPut h l
-			meterupdate $ toInteger $ S.length l
-			feed ls h
+		feeder chunks = return ([], chunks)
+
+{- Writes a series of S.ByteString chunks to a file, updating a progress
+ - meter after each chunk. The feeder is called to get more chunks. -}
+meteredWriteFile' :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
+meteredWriteFile' meterupdate dest startstate feeder =
+	bracket (openFile dest WriteMode) hClose (feed startstate [])
+	where
+		feed state [] h = do
+			(state', cs) <- feeder state
+			if null cs then return () else feed state' cs h
+		feed state (c:cs) h = do
+			S.hPut h c
+			meterupdate $ toInteger $ S.length c
+			feed state cs h
 
 {- Generates a list of destinations to write to in order to store a key.
  - When chunksize is specified, this list will be a list of chunks.
@@ -233,9 +243,13 @@ retrieve :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieve d chunksize k f = metered k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFile meterupdate f =<<
-				(L.concat <$> mapM L.readFile files)
+			meteredWriteFile' meterupdate f files feeder
 			return True
+	where
+		feeder [] = return ([], [])
+		feeder (x:xs) = do
+			chunks <- L.toChunks <$> L.readFile x
+			return (xs, chunks)
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted d chunksize (cipher, enck) k f = metered k $ \meterupdate ->
