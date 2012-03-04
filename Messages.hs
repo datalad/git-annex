@@ -65,7 +65,7 @@ metered key a = Annex.getState Annex.output >>= go (keySize key)
 	where
 		go (Just size) Annex.NormalOutput = do
 			progress <- liftIO $ newProgress "" size
-			meter <- liftIO $ newMeter progress "B" 20 (renderNums binaryOpts 1)
+			meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 			showOutput
 			liftIO $ displayMeter stdout meter
 			r <- a $ \n -> liftIO $ do
