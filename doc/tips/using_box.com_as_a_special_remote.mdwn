@@ -17,9 +17,10 @@ With a little setup, git-annex can use Box as a
 * Edit `/etc/fstab`, and add a line to mount Box using davfs.
 	sudo mkdir -p /media/box.com
 	echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
-* Create `~/.davfs2/davfs2.conf`:
+* Create `~/.davfs2/davfs2.conf` with some important settings:
 	mkdir ~/.davfs2/
 	echo use_locks 0 >> ~/.davfs2/davfs2.conf
+	echo cache_size 1 >> ~/.davfs2/davfs2.conf
 	echo delay_upload 0 >> ~/.davfs2/davfs2.conf
 * Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
   Your login is probably the email address you signed up with.
