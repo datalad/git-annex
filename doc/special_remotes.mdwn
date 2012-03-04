@@ -13,7 +13,15 @@ They cannot be used by other git commands though.
 * [[rsync]]
 * [[web]]
 * [[hook]]
-* [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]] - limited testing
+
+The above special remotes can be used to tie git-annex 
+into many cloud services. Here are specific instructions
+for various cloud things:
+
+* [[tips/using_Amazon_S3]]
+* [[tips/Internet_Archive_via_S3]]
+* [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]]
+* [[tips/using_box.com_as_a_special_remote]]
 
 ## Unused content on special remotes
 
