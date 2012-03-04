@@ -1,3 +1,20 @@
+git-annex (3.20120230) UNRELEASED; urgency=low
+
+  * "here" can be used to refer to the current repository,
+    which can read better than the old "." (which still works too).
+  * Directory special remotes now support chunking files written to them,
+    avoiding writing files larger than a specified size.
+  * Add progress bar display to the directory special remote.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 01 Mar 2012 22:34:27 -0400
+
+git-annex (3.20120229) unstable; urgency=low
+
+  * Fix test suite to not require a unicode locale.
+  * Fix cabal build failure. Thanks, Sergei Trofimovich
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 29 Feb 2012 02:31:31 -0400
+
 git-annex (3.20120227) unstable; urgency=low
 
   * Modifications to support ghc 7.4's handling of filenames.

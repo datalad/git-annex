@@ -10,6 +10,8 @@ module Messages (
 	showNote,
 	showAction,
 	showProgress,
+	metered,
+	MeterUpdate,
 	showSideAction,
 	showOutput,
 	showLongNote,
@@ -29,9 +31,13 @@ module Messages (
 ) where
 
 import Text.JSON
+import Data.Progress.Meter
+import Data.Progress.Tracker
+import Data.Quantity
 
 import Common
 import Types
+import Types.Key
 import qualified Annex
 import qualified Messages.JSON as JSON
 
@@ -46,9 +52,28 @@ showNote s = handle (JSON.note s) $
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
 
+{- Progress dots. -}
 showProgress :: Annex ()
 showProgress = handle q $
 	flushed $ putStr "."
+
+{- Shows a progress meter while performing a transfer of a key.
+ - The action is passed a callback to use to update the meter. -}
+type MeterUpdate = Integer -> IO ()
+metered :: Key -> (MeterUpdate -> Annex a) -> Annex a
+metered key a = Annex.getState Annex.output >>= go (keySize key)
+	where
+		go (Just size) Annex.NormalOutput = do
+			progress <- liftIO $ newProgress "" size
+			meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
+			showOutput
+			liftIO $ displayMeter stdout meter
+			r <- a $ \n -> liftIO $ do
+				incrP progress n
+				displayMeter stdout meter
+			liftIO $ clearMeter stdout meter
+			return r	
+                go _ _ = a (const $ return ())
 
 showSideAction :: String -> Annex ()
 showSideAction s = handle q $
