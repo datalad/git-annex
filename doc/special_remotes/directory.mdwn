@@ -18,11 +18,11 @@ remote:
   the new key id. See [[encryption]].
 * `chunksize` - Avoid storing files larger than the specified size in the
   directory. For use on directories on mount points that have file size
-  limitations. The default is to never chunk files.
-  Note that changing the chunk size of an existing remote is 
-  not recommended.
+  limitations. The default is to never chunk files.  
   The value can use specified using any commonly used units.
-  Example: `chunksize=100 megabytes`
+  Example: `chunksize=100 megabytes`  
+  Note that enabling chunking on an existing remote with non-chunked
+  files is not recommended.
 
 Setup example:
 
