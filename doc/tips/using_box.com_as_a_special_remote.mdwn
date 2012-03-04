@@ -1,6 +1,6 @@
 [Box.com](http://box.com/) is a file storage service, currently notable 
 for providing 50 gb of free storage if you sign up with its Android client.
-(Or a few GB free otherwise.)
+(Or a few gb free otherwise.)
 
 With a little setup, git-annex can use Box as a
 [[special remote|special_remotes]]. 
