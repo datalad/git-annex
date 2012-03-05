@@ -82,7 +82,7 @@ relPathDirToFile from to = join s $ dotdots ++ uncommon
 		s = [pathSeparator]
 		pfrom = split s from
 		pto = split s to
-		common = map fst $ filter same $ zip pfrom pto
+		common = map fst $ takeWhile same $ zip pfrom pto
 		same (c,d) = c == d
 		uncommon = drop numcommon pto
 		dotdots = replicate (length pfrom - numcommon) ".."
@@ -94,6 +94,15 @@ prop_relPathDirToFile_basics from to
 	| otherwise = not (null r)
 	where
 		r = relPathDirToFile from to 
+
+prop_relPathDirToFile_regressionTest :: Bool
+prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
+	where
+		{- Two paths have the same directory component at the same
+		 - location, but it's not really the same directory.
+		 - Code used to get this wrong. -}
+		same_dir_shortcurcuits_at_difference =
+			relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
 
 {- Given an original list of files, and an expanded list derived from it,
  - ensures that the original list's ordering is preserved. 
