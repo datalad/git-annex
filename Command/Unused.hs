@@ -47,6 +47,7 @@ start = do
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)
 		Just "." -> (".", checkUnused)
+		Just "here" -> (".", checkUnused)
 		Just n -> (n, checkRemoteUnused n)
 	showStart "unused" name
 	next action

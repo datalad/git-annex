@@ -132,7 +132,7 @@ test_init = "git-annex init" ~: TestCase $ innewrepo $ do
 		reponame = "test repo"
 
 test_add :: Test
-test_add = "git-annex add" ~: TestList [basic, sha1dup, sha1unicode, subdirs]
+test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 	where
 		-- this test case runs in the main repo, to set up a basic
 		-- annexed file that later tests will use
@@ -159,10 +159,6 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, sha1unicode, subdirs]
 			git_annex "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
 			annexed_present sha1annexedfiledup
 			annexed_present sha1annexedfile
-		sha1unicode = TestCase $ intmpclonerepo $ do
-			writeFile sha1annexedfileunicode $ content sha1annexedfileunicode
-			git_annex "add" [sha1annexedfileunicode, "--backend=SHA1"] @? "add of unicode filename failed"
-			annexed_present sha1annexedfileunicode
 		subdirs = TestCase $ intmpclonerepo $ do
 			createDirectory "dir"
 			writeFile "dir/foo" $ content annexedfile
@@ -924,9 +920,6 @@ sha1annexedfile = "sha1foo"
 sha1annexedfiledup :: String
 sha1annexedfiledup = "sha1foodup"
 
-sha1annexedfileunicode :: String
-sha1annexedfileunicode = "foo¡"
-
 ingitfile :: String
 ingitfile = "bar"
 
@@ -936,7 +929,6 @@ content f
 	| f == ingitfile = "normal file content"
 	| f == sha1annexedfile ="sha1 annexed file content"
 	| f == sha1annexedfiledup = content sha1annexedfile
-	| f == sha1annexedfileunicode ="sha1 annexed file content ¡ünicodé!"
 	| f == wormannexedfile = "worm annexed file content"
 	| otherwise = "unknown file " ++ f
 

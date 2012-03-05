@@ -15,6 +15,7 @@ import Logs.Remote
 import Types.Remote
 import Annex.UUID
 import Config
+import Remote.Helper.Hooks
 
 import qualified Remote.Git
 --import qualified Remote.S3
@@ -51,7 +52,7 @@ remoteList = do
 		process m t = enumerate t >>= mapM (gen m t)
 		gen m t r = do
 			u <- getRepoUUID r
-			generate t r u (M.lookup u m)
+			addHooks =<< generate t r u (M.lookup u m)
 
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]

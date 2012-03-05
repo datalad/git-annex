@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120123~bpo60+4
+Version: 3.20120230
 Cabal-Version: >= 1.6
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -38,6 +38,7 @@ Executable git-annex-shell
 
 Executable git-union-merge
   Main-Is: git-union-merge.hs
+  Build-Depends: text
 
 source-repository head
   type: git

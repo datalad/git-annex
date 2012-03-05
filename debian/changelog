@@ -1,4 +1,27 @@
-git-annex (3.20120124) UNRELEASED; urgency=low
+git-annex (3.20120230) unstable; urgency=low
+
+  * "here" can be used to refer to the current repository,
+    which can read better than the old "." (which still works too).
+  * Directory special remotes now support chunking files written to them,
+    avoiding writing files larger than a specified size.
+  * Add progress bar display to the directory special remote.
+  * Add configurable hooks that are run when git-annex starts and stops
+    using a remote: remote.name.annex-start-command and
+    remote.name.annex-stop-command
+  * Fix a bug in symlink calculation code, that triggered in rare
+    cases where an annexed file is in a subdirectory that nearly
+    matched to the .git/annex/object/xx/yy subdirectories.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 05 Mar 2012 13:38:13 -0400
+
+git-annex (3.20120229) unstable; urgency=low
+
+  * Fix test suite to not require a unicode locale.
+  * Fix cabal build failure. Thanks, Sergei Trofimovich
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 29 Feb 2012 02:31:31 -0400
+
+git-annex (3.20120227) unstable; urgency=low
 
   * Modifications to support ghc 7.4's handling of filenames.
     This version can only be built with ghc 7.4 or newer. See the ghc7.0
@@ -27,17 +50,22 @@ git-annex (3.20120124) UNRELEASED; urgency=low
   * rekey: New plumbing level command, can be used to change the keys used
     for files en masse.
   * Store web special remote url info in a more efficient location.
+    (Urls stored with this version will not be visible to older versions.)
   * Deal with NFS problem that caused a failure to remove a directory
     when removing content from the annex.
   * Make a single location log commit after a remote has received or
-    dropped files. Uses a new "git-annex-shell commit" command.
+    dropped files. Uses a new "git-annex-shell commit" command when available.
   * To avoid commits of data to the git-annex branch after each command
     is run, set annex.alwayscommit=false. Its data will then be committed
     less frequently, when a merge or sync is done.
   * configure: Check if ssh connection caching is supported by the installed
     version of ssh and default annex.sshcaching accordingly.
+  * move --from, copy --from: Now 10 times faster when scanning to find
+    files in a remote on a local disk; rather than go through the location log
+    to see which files are present on the remote, it simply looks at the 
+    disk contents directly.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 24 Jan 2012 16:21:55 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 27 Feb 2012 12:58:21 -0400
 
 git-annex (3.20120123~bpo60+4) squeeze-backports; urgency=low
 

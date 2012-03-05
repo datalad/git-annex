@@ -144,9 +144,7 @@ storeHelper (conn, bucket) r k file = do
 			case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
 				"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
 				_ -> STANDARD
-		getsize = do
-			s <- liftIO $ getFileStatus file
-			return $ fileSize s
+		getsize = fileSize <$> (liftIO $ getFileStatus file)
 		
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h
@@ -163,8 +161,8 @@ retrieve r k f = s3Action r False $ \(conn, bucket) -> do
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) f = s3Action r False $ \(conn, bucket) -> do
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted r (cipher, enck) _ f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket enck
 	case res of
 		Right o -> liftIO $ 

@@ -129,8 +129,8 @@ retrieve buprepo k f = do
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: BupRepo -> (Cipher, Key) -> FilePath -> Annex Bool
-retrieveEncrypted buprepo (cipher, enck) f = do
+retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted buprepo (cipher, enck) _ f = do
 	let params = bupParams "join" buprepo [Param $ show enck]
 	liftIO $ catchBoolIO $ do
 		(pid, h) <- hPipeFrom "bup" $ toCommand params
