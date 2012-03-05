@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2012-03-05T21:29:46Z"
+ content="""
+Ah, the trouble is that's a patch nested inside a patch. So after you apply it, you need to `patch -p1 < patches/class-constraints.diff`
+"""]]
