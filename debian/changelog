@@ -1,3 +1,11 @@
+git-annex (3.20120123~bpo60+4) squeeze-backports; urgency=low
+
+  * Fix a bug in symlink calculation code, that triggered in rare
+    cases where an annexed file is in a subdirectory that nearly
+    matched to the .git/annex/object/xx/yy subdirectories.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 05 Mar 2012 13:52:22 -0400
+
 git-annex (3.20120123~bpo60+3) squeeze-backports; urgency=low
 
   * configure: Check if ssh connection caching is supported by the installed

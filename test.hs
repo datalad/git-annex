@@ -82,6 +82,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
 
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
+	, qctest "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
 	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
