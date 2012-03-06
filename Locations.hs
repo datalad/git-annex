@@ -24,6 +24,7 @@ module Locations (
 	gitAnnexIndexLock,
 	gitAnnexIndexDirty,
 	gitAnnexSshDir,
+	gitAnnexRemotesDir,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -151,6 +152,10 @@ gitAnnexIndexDirty r = gitAnnexDir r </> "index.dirty"
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> FilePath
 gitAnnexSshDir r = addTrailingPathSeparator $ gitAnnexDir r </> "ssh"
+
+{- .git/annex/remotes/ is used for remote-specific state. -}
+gitAnnexRemotesDir :: Git.Repo -> FilePath
+gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool

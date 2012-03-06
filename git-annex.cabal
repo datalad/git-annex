@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120229
+Version: 3.20120230
 Cabal-Version: >= 1.6
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -31,7 +31,7 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
-   base < 5, monad-control, transformers-base, lifted-base, IfElse,
+   base >= 4.5, base < 5, monad-control, transformers-base, lifted-base, IfElse,
    QuickCheck >= 2.1
 
 Executable git-annex-shell

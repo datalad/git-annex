@@ -82,6 +82,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
 
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
+	, qctest "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, qctest "prop_cost_sane" Config.prop_cost_sane
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
 	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
@@ -106,7 +107,6 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_fsck
 	, test_migrate
 	, test_unused
-	, test_addurl
 	, test_describe
 	, test_find
 	, test_merge
@@ -501,13 +501,6 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 		findkey f = do
 			r <- Backend.lookupFile f
 			return $ fst $ fromJust r
-
-test_addurl :: Test
-test_addurl = "git-annex addurl" ~: intmpclonerepo $ do
-	annexed_notpresent annexedfile
-	-- can't check download; test suite should not access network,
-	-- and starting up a web server seems excessive
-	git_annex "addurl" ["--fast", "http://example.com/nosuchfile"] @? "addurl failed"
 
 test_describe :: Test
 test_describe = "git-annex describe" ~: intmpclonerepo $ do

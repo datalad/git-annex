@@ -1,12 +1,18 @@
-git-annex (3.20120230) UNRELEASED; urgency=low
+git-annex (3.20120230) unstable; urgency=low
 
   * "here" can be used to refer to the current repository,
     which can read better than the old "." (which still works too).
   * Directory special remotes now support chunking files written to them,
     avoiding writing files larger than a specified size.
   * Add progress bar display to the directory special remote.
+  * Add configurable hooks that are run when git-annex starts and stops
+    using a remote: remote.name.annex-start-command and
+    remote.name.annex-stop-command
+  * Fix a bug in symlink calculation code, that triggered in rare
+    cases where an annexed file is in a subdirectory that nearly
+    matched to the .git/annex/object/xx/yy subdirectories.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 01 Mar 2012 22:34:27 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 05 Mar 2012 13:38:13 -0400
 
 git-annex (3.20120229) unstable; urgency=low
 

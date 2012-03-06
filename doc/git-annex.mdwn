@@ -627,6 +627,21 @@ Here are all the supported configuration settings.
   This allows varying the cost based on eg, the current network. The
   cost-command can be any shell command line.
 
+* `remote.<name>.annex-start-command`
+
+  A command to run when git-annex begins to use the remote. This can
+  be used to, for example, mount the directory containing the remote.
+
+  The command may be run repeatedly in multiple git-annex processes
+  are running concurrently.
+
+* `remote.<name>.annex-stop-command`
+
+  A command to run when git-annex is done using the remote.
+
+  The command will only be run once *all* running git-annex processes
+  are finished using the remote.
+
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex
