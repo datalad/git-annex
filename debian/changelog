@@ -1,3 +1,11 @@
+git-annex (3.20120231) UNRELEASED; urgency=low
+
+  * Fix key directory hash calculation code to behave as it did before 
+    version 3.20120227 when a key contains non-ascii characters (only
+    WORM backend is likely to have been affected).
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 09 Mar 2012 19:19:44 -0400
+
 git-annex (3.20120230) unstable; urgency=low
 
   * "here" can be used to refer to the current repository,

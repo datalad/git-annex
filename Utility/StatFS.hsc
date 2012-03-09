@@ -52,8 +52,6 @@ import Utility.FileSystemEncoding
 import Foreign
 import Foreign.C.Types
 import Foreign.C.String
-import GHC.IO.Encoding (getFileSystemEncoding)
-import GHC.Foreign as GHC
 
 #if defined (__FreeBSD__) || defined (__FreeBSD_kernel__) || defined (__APPLE__)
 # include <sys/param.h>
