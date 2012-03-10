@@ -11,6 +11,7 @@ import Data.ByteString (useAsCString)
 import Data.ByteString.Char8 (pack)
 import Foreign.C
 import System.IO
+import qualified Data.Hash.MD5 as MD5
 
 {- Sets a Handle to use the filesystem encoding. This causes data
  - written or read from it to be encoded/decoded the same
@@ -29,10 +30,7 @@ fileEncoding h = return () -- hSetEncoding h =<< Encoding.getFileSystemEncoding
 withFilePath :: FilePath -> (CString -> IO a) -> IO a
 withFilePath fp f = useAsCString (pack fp) f
 
-{- Encodes a FilePath into a String of encoded bytes, applying the
- - filesystem encoding.
- -
- - No-op for old ghc.
+{- Encodes a FilePath into a Str, applying the filesystem encoding.
  -}
-encodeFilePath :: FilePath -> String
-encodeFilePath fp = fp
+encodeFilePath :: FilePath -> MD5.Str
+encodeFilePath fp = MD5.Str fp
