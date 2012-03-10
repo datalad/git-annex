@@ -3,15 +3,10 @@
 import Distribution.Simple
 import System.Cmd
 
-main = defaultMainWithHooks simpleUserHooks {
-	preConf = makeSources,
-	postClean = makeClean
-}
+import qualified Build.Configure as Configure
 
-makeSources _ _ = do
-	system "make sources"
+main = defaultMainWithHooks simpleUserHooks { preConf = configure }
+
+configure _ _ = do
+	Configure.run Configure.tests
 	return (Nothing, [])
-
-makeClean _ _ _ _ = do
-	system "make clean"
-	return ()
