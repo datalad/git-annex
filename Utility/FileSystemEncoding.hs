@@ -7,13 +7,10 @@
 
 module Utility.FileSystemEncoding where
 
-import qualified GHC.Foreign as GHC
-import qualified GHC.IO.Encoding as Encoding
 import Data.ByteString (useAsCString)
 import Data.ByteString.Char8 (pack)
 import Foreign.C
 import System.IO
-import System.IO.Unsafe
 
 {- Sets a Handle to use the filesystem encoding. This causes data
  - written or read from it to be encoded/decoded the same
