@@ -30,9 +30,9 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
-   pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
-   base >= 4.5, base < 5, monad-control, transformers-base, lifted-base, IfElse,
-   QuickCheck >= 2.1
+   pcre-light, extensible-exceptions, dataenc, SHA, process, hs3, json, HTTP,
+   base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
+   IfElse, text, QuickCheck >= 2.1
   Other-Modules: Utility.StatFS, Utility.Touch
 
 Executable git-annex-shell
@@ -41,7 +41,6 @@ Executable git-annex-shell
 
 Executable git-union-merge
   Main-Is: git-union-merge.hs
-  Build-Depends: text
 
 source-repository head
   type: git
