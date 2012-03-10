@@ -18,8 +18,6 @@ import Utility.FileSystemEncoding
 import Foreign
 import Foreign.C
 import Control.Monad (when)
-import GHC.IO.Encoding (getFileSystemEncoding)
-import GHC.Foreign as GHC
 
 newtype TimeSpec = TimeSpec CTime
 
