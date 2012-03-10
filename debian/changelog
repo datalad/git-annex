@@ -2,6 +2,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
 
   * fsck: Fix up any broken links and misplaced content caused by the
     directory hash calculation bug fixed in the last release.
+  * sync: Sync to lower cost remotes first.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 
