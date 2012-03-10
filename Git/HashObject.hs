@@ -29,5 +29,6 @@ hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
 	where
 		send to = do
+			fileEncoding to
 			hPutStrLn to file
 		receive from = Ref <$> hGetLine from

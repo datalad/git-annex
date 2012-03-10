@@ -66,7 +66,7 @@ foreign import ccall "utimensat"
 
 touchBoth file atime mtime follow = 
 	allocaArray 2 $ \ptr ->
-	withCString file $ \f -> do
+	withFilePath file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- c_utimensat at_fdcwd f ptr flags
 		when (r /= 0) $ throwErrno "touchBoth"
@@ -103,7 +103,7 @@ foreign import ccall "lutimes"
 
 touchBoth file atime mtime follow = 
 	allocaArray 2 $ \ptr ->
-	withCString file $ \f -> do
+	withFilePath file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- syscall f ptr
 		if (r /= 0)

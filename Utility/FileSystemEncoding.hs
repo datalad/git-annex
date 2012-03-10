@@ -9,6 +9,8 @@ module Utility.FileSystemEncoding where
 
 import qualified GHC.Foreign as GHC
 import qualified GHC.IO.Encoding as Encoding
+import Data.ByteString (useAsCString)
+import Data.ByteString.Char8 (pack)
 import Foreign.C
 import System.IO
 import System.IO.Unsafe
@@ -22,6 +24,13 @@ import System.IO.Unsafe
  -}
 fileEncoding :: Handle -> IO ()
 fileEncoding h = return () -- hSetEncoding h =<< Encoding.getFileSystemEncoding
+
+{- Marshal a Haskell FilePath into a NUL terminated C string using temporary
+- storage. The FilePath is encoded using the filesystem encoding,
+- reversing the decoding that should have been done when the FilePath
+- was obtained. -}
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath fp f = useAsCString (pack fp) f
 
 {- Encodes a FilePath into a String of encoded bytes, applying the
  - filesystem encoding.

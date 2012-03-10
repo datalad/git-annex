@@ -44,8 +44,10 @@ catObject :: CatFileHandle -> Ref -> IO L.ByteString
 catObject h object = CoProcess.query h send receive
 	where
 		send to = do
+			fileEncoding to
 			hPutStrLn to $ show object
 		receive from = do
+			fileEncoding from
 			header <- hGetLine from
 			case words header of
 				[sha, objtype, size]

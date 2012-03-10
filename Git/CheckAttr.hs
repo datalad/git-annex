@@ -44,8 +44,10 @@ checkAttr (h, attrs, cwd) want file = do
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
 	where
 		send to = do
+			fileEncoding to
 			hPutStr to $ file' ++ "\0"
 		receive from = forM attrs $ \attr -> do
+			fileEncoding from
 			l <- hGetLine from
 			return (attr, attrvalue attr l)
 		{- Before git 1.7.7, git check-attr worked best with
