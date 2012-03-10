@@ -10,6 +10,7 @@ module Command.Fsck where
 import Common.Annex
 import Command
 import qualified Annex
+import qualified Annex.Queue
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
@@ -51,7 +52,8 @@ start from file (key, backend) = do
 perform :: Key -> FilePath -> Backend -> Maybe Int -> CommandPerform
 perform key file backend numcopies = check
 	-- order matters
-	[ verifyLocationLog key file
+	[ fixLink key file
+	, verifyLocationLog key file
 	, checkKeySize key
 	, checkBackend backend key
 	, checkKeyNumCopies key file numcopies
@@ -128,6 +130,32 @@ check = sequence >=> dispatch
 		dispatch vs
 			| all (== True) vs = next $ return True
 			| otherwise = stop
+
+
+{- Checks that the file's symlink points correctly to the content. -}
+fixLink :: Key -> FilePath -> Annex Bool
+fixLink key file = do
+	want <- calcGitLink file key
+	have <- liftIO $ readSymbolicLink file
+	when (want /= have) $ do
+		{- Version 3.20120227 had a bug that could cause content
+		 - to be stored in the wrong hash directory. Clean up
+		 - after the bug by moving the content.
+		 -}
+		whenM (liftIO $ doesFileExist file) $
+			unlessM (inAnnex key) $ do
+				showNote $ "fixing content location"
+				dir <- liftIO $ parentDir <$> absPath file
+				let content = absPathFrom dir have
+				liftIO $ allowWrite (parentDir content)
+				moveAnnex key content
+
+		showNote $ "fixing link"
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		liftIO $ removeFile file
+		liftIO $ createSymbolicLink want file
+		Annex.Queue.add "add" [Param "--force", Param "--"] [file]
+	return True
 
 {- Checks that the location log reflects the current status of the key,
    in this repository only. -}

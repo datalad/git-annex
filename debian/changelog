@@ -1,3 +1,10 @@
+git-annex (3.20120310) UNRELEASED; urgency=low
+
+  * fsck: Fix up any broken links and misplaced content caused by the
+    directory hash calculation bug fixed in the last release.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
+
 git-annex (3.20120309) unstable; urgency=low
 
   * Fix key directory hash calculation code to behave as it did before 
