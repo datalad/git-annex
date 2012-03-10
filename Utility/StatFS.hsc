@@ -47,6 +47,8 @@
 
 module Utility.StatFS ( FileSystemStats(..), getFileSystemStats ) where
 
+import Utility.FileSystemEncoding
+
 import Foreign
 import Foreign.C.Types
 import Foreign.C.String

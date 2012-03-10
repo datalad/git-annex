@@ -13,6 +13,8 @@ module Utility.Touch (
 	touch
 ) where
 
+import Utility.FileSystemEncoding
+
 import Foreign
 import Foreign.C
 import Control.Monad (when)
