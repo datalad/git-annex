@@ -58,14 +58,12 @@ perform file = do
  - This can be called before or after the symlink is in place. -}
 undo :: FilePath -> Key -> IOException -> Annex a
 undo file key e = do
-	unlessM (inAnnex key) rethrow -- no cleanup to do
-	liftIO $ whenM (doesFileExist file) $ removeFile file
-	handle tryharder $ fromAnnex key file
-	logStatus key InfoMissing
-	rethrow
+	whenM (inAnnex key) $ do
+		liftIO $ whenM (doesFileExist file) $ removeFile file
+		handle tryharder $ fromAnnex key file
+		logStatus key InfoMissing
+	throw e
 	where
-		rethrow = throw e
-
 		-- fromAnnex could fail if the file ownership is weird
 		tryharder :: IOException -> Annex ()
 		tryharder _ = do

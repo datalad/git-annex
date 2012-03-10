@@ -45,8 +45,10 @@ checkAttr (h, attrs, cwd) want file = do
 	where
 		send to = do
 			oldgit <- Git.Version.older "1.7.7"
+			fileEncoding to
 			hPutStr to $ file' oldgit ++ "\0"
 		receive from = forM attrs $ \attr -> do
+			fileEncoding from
 			l <- hGetLine from
 			return (attr, attrvalue attr l)
 		{- Before git 1.7.7, git check-attr worked best with
