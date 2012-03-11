@@ -55,12 +55,20 @@ start = do
 
 checkUnused :: CommandPerform
 checkUnused = do
-	(unused, stalebad, staletmp) <- unusedKeys
+	unused <- findunused =<< Annex.getState Annex.fast
+	stalebad <- staleKeysPrune gitAnnexBadDir
+	staletmp <- staleKeysPrune gitAnnexTmpDir
 	_ <- list "" unusedMsg unused 0 >>=
 		list "bad" staleBadMsg stalebad >>=
 			list "tmp" staleTmpMsg staletmp
 	next $ return True
 	where
+		findunused True = do
+			showNote "fast mode enabled; only finding stale files"
+			return []
+		findunused False = do
+			showAction "checking for unused data"
+			excludeReferenced =<< getKeysPresent
 		list file msg l c = do
 			let unusedlist = number c l
 			unless (null l) $ showLongNote $ msg unusedlist
@@ -131,26 +139,6 @@ dropMsg (Just r) = dropMsg' $ " --from " ++ Remote.name r
 dropMsg' :: String -> String
 dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\n"
 
-{- Finds keys whose content is present, but that do not seem to be used
- - by any files in the git repo, or that are only present as bad or tmp
- - files. -}
-unusedKeys :: Annex ([Key], [Key], [Key])
-unusedKeys = do
-	fast <- Annex.getState Annex.fast
-	if fast
-		then do
-			showNote "fast mode enabled; only finding stale files"
-			tmp <- staleKeys gitAnnexTmpDir
-			bad <- staleKeys gitAnnexBadDir
-			return ([], bad, tmp)
-		else do
-			showAction "checking for unused data"
-			present <- getKeysPresent
-			unused <- excludeReferenced present
-			staletmp <- staleKeysPrune gitAnnexTmpDir present
-			stalebad <- staleKeysPrune gitAnnexBadDir present
-			return (unused, stalebad, staletmp)
-
 {- Finds keys in the list that are not referenced in the git repository. -}
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
@@ -220,17 +208,16 @@ withKeysReferencedInGit ref initial a = do
 			| otherwise = go v ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
- - of those that might still have value, or might be stale and removable. 
+ - of those that might still have value, or might be stale and removable.
  - 
- - When a list of presently available keys is provided, stale keys
- - that no longer have value are deleted.
+ - Also, stale keys that can be proven to have no value are deleted.
  -}
-staleKeysPrune :: (Git.Repo -> FilePath) -> [Key] -> Annex [Key]
-staleKeysPrune dirspec present = do
+staleKeysPrune :: (Git.Repo -> FilePath) -> Annex [Key]
+staleKeysPrune dirspec = do
 	contents <- staleKeys dirspec
 	
-	let stale = contents `exclude` present
-	let dups = contents `exclude` stale
+	dups <- filterM inAnnex contents
+	let stale = contents `exclude` dups
 
 	dir <- fromRepo dirspec
 	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
