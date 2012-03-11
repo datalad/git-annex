@@ -6,6 +6,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
   * unused: Reduce memory usage significantly. Still not constant
     space, but now only needs to store the set of file contents that
     are present in the annex in memory.
+  * status: Fixed to run in nearly constant space.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 

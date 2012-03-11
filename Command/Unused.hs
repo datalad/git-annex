@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -171,7 +171,7 @@ excludeReferenced l = do
 		go s (r:rs)
 			| s == S.empty = return [] -- optimisation
 			| otherwise = do
-				!s' <- withKeysReferencedInGit r s S.delete
+				s' <- withKeysReferencedInGit r s S.delete
 				go s' rs
 
 {- Finds items in the first, smaller list, that are not
@@ -186,21 +186,14 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 	where
 		remove a b = foldl (flip S.delete) b a
 
-{- List of keys referenced by symlinks in the git repo. -}
-getKeysReferenced :: Annex [Key]
-getKeysReferenced = do
-	top <- fromRepo Git.workTree
-	files <- inRepo $ LsFiles.inRepo [top]
-	keypairs <- mapM Backend.lookupFile files
-	return $ map fst $ catMaybes keypairs
-
 {- Given an initial value, mutates it using an action for each
  - key referenced by symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
-withKeysReferenced initial a = do
-	top <- fromRepo Git.workTree
-	go initial =<< inRepo (LsFiles.inRepo [top])
+withKeysReferenced initial a = go initial =<< files
 	where
+		files = do
+			top <- fromRepo Git.workTree
+			inRepo $ LsFiles.inRepo [top]
 		go v [] = return v
 		go v (f:fs) = do
 			x <- Backend.lookupFile f

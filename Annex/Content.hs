@@ -300,7 +300,7 @@ getKeysPresent' dir = do
 			-- 2 levels of hashing
 			levela <- dirContents dir
 			levelb <- mapM dirContents levela
-			contents <- mapM dirContents (concat levelb)
+			contents <- unsafeInterleaveIO $ mapM dirContents (concat levelb)
 			let files = concat contents
 			return $ mapMaybe (fileKey . takeFileName) files
 
