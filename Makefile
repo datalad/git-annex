@@ -33,7 +33,6 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
 
 %.hs: %.hsc
 	hsc2hs $<
-	perl -i -pe 's/^{-# INCLUDE.*//' $@
 
 $(bins): $(sources)
 	$(GHCMAKE) $@
