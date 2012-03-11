@@ -155,9 +155,9 @@ unusedKeys = do
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced [] = return [] -- optimisation
 excludeReferenced l = do
-	c <- inRepo $ Git.Command.pipeRead [Param "show-ref"]
-	removewith (getKeysReferenced : map getKeysReferencedInGit (refs c))
-		(S.fromList l)
+	let s = S.fromList l
+	!s' <- withKeysReferenced s S.delete
+	go s' =<< refs <$> (inRepo $ Git.Command.pipeRead [Param "show-ref"])
 	where
 		-- Skip the git-annex branches, and get all other unique refs.
 		refs = map (Git.Ref .  snd) .
@@ -167,13 +167,12 @@ excludeReferenced l = do
 		uniqref (a, _) (b, _) = a == b
 		ourbranchend = '/' : show Annex.Branch.name
 		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
-		removewith [] s = return $ S.toList s
-		removewith (a:as) s
+		go s [] = return $ S.toList s
+		go s (r:rs)
 			| s == S.empty = return [] -- optimisation
 			| otherwise = do
-				referenced <- a
-				let !s' = s `S.difference` S.fromList referenced
-				removewith as s'
+				!s' <- withKeysReferencedInGit r s S.delete
+				go s' rs
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -195,20 +194,37 @@ getKeysReferenced = do
 	keypairs <- mapM Backend.lookupFile files
 	return $ map fst $ catMaybes keypairs
 
-{- List of keys referenced by symlinks in a git ref. -}
-getKeysReferencedInGit :: Git.Ref -> Annex [Key]
-getKeysReferencedInGit ref = do
-	showAction $ "checking " ++ Git.Ref.describe ref
-	findkeys [] =<< inRepo (LsTree.lsTree ref)
+{- Given an initial value, mutates it using an action for each
+ - key referenced by symlinks in the git repo. -}
+withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
+withKeysReferenced initial a = do
+	top <- fromRepo Git.workTree
+	go initial =<< inRepo (LsFiles.inRepo [top])
 	where
-		findkeys c [] = return c
-		findkeys c (l:ls)
+		go v [] = return v
+		go v (f:fs) = do
+			x <- Backend.lookupFile f
+			case x of
+				Nothing -> go v fs
+				Just (k, _) -> do
+					let !v' = a k v
+					go v' fs
+
+withKeysReferencedInGit :: Git.Ref -> v -> (Key -> v -> v) -> Annex v
+withKeysReferencedInGit ref initial a = do
+	showAction $ "checking " ++ Git.Ref.describe ref
+	go initial =<< inRepo (LsTree.lsTree ref)
+	where
+		go v [] = return v
+		go v (l:ls)
 			| isSymLink (LsTree.mode l) = do
 				content <- L.decodeUtf8 <$> catFile ref (LsTree.file l)
 				case fileKey (takeFileName $ L.unpack content) of
-					Nothing -> findkeys c ls
-					Just k -> findkeys (k:c) ls
-			| otherwise = findkeys c ls
+					Nothing -> go v ls
+					Just k -> do
+						let !v' = a k v
+						go v' ls
+			| otherwise = go v ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable. 
