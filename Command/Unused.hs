@@ -15,6 +15,7 @@ import qualified Data.Text.Lazy.Encoding as L
 import Data.BloomFilter
 import Data.BloomFilter.Easy
 import Data.BloomFilter.Hash
+import Control.Monad.ST
 
 import Common.Annex
 import Command
@@ -56,18 +57,6 @@ start = do
 	showStart "unused" name
 	next action
 
-genBloomFilter :: [Key] -> Annex (Bloom String)
-genBloomFilter ks = do
-	-- A bloom filter capable of holding one million keys with a
-	-- false positive rate of 0.1% uses 16 mb of memory.
-	-- TODO: make this configurable, for the really large repos,
-	-- or really low false positive rates.
-	let (numbits, numhashes) = suggestSizing 1000000 0.0001
-	return $ fromListB (cheapHashes numhashes) numbits $ map show ks
-
-bloomFilter :: Bloom String -> [Key] -> [Key]
-bloomFilter b l = filter (\k -> show k `notElemB` b) l
-
 checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
@@ -80,7 +69,7 @@ checkUnused = chain 0
 			return []
 		findunused False = do
 			showAction "checking for unused data"
-			b <- genBloomFilter =<< withKeysReferenced [] (:)
+			b <- genBloomFilter show withKeysReferenced'
 			bloomFilter b <$> getKeysPresent
 			-- TODO: check branches
 		chain _ [] = next $ return True
@@ -191,10 +180,40 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 	where
 		remove a b = foldl (flip S.delete) b a
 
+{- Creates a bloom filter, and runs an action, such as withKeysReferenced',
+ - to populate it.
+ -
+ - The action is passed a callback that it can use to feed values into the
+ - bloom filter. 
+ -
+ - Once the action completes, the mutable filter is frozen
+ - for later use.
+ -}
+genBloomFilter :: Hashable t => (v -> t) -> (() -> (v -> () -> Annex ()) -> Annex b) -> Annex (Bloom t)
+genBloomFilter convert populate = do
+	-- A bloom filter capable of holding one million keys with a
+	-- false positive rate of 0.1% uses 16 mb of memory.
+	-- TODO: make this configurable, for the really large repos,
+	-- or really low false positive rates.
+	let (numbits, numhashes) = suggestSizing 1000000 0.0001
+
+	bloom <- lift $ newMB (cheapHashes numhashes) numbits
+	_ <- populate () $ \v _ -> lift $ insertMB bloom (convert v)
+	lift $ unsafeFreezeMB bloom
+	where
+		lift = liftIO . stToIO
+
+bloomFilter :: Bloom String -> [Key] -> [Key]
+bloomFilter b l = filter (\k -> show k `notElemB` b) l
+
 {- Given an initial value, mutates it using an action for each
  - key referenced by symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
-withKeysReferenced initial a = go initial =<< files
+withKeysReferenced initial a = withKeysReferenced' initial reta
+	where
+		reta k v = return $ a k v
+withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
+withKeysReferenced' initial a = go initial =<< files
 	where
 		files = do
 			top <- fromRepo Git.workTree
@@ -205,7 +224,7 @@ withKeysReferenced initial a = go initial =<< files
 			case x of
 				Nothing -> go v fs
 				Just (k, _) -> do
-					let !v' = a k v
+					!v' <- a k v
 					go v' fs
 
 withKeysReferencedInGit :: Git.Ref -> v -> (Key -> v -> v) -> Annex v
