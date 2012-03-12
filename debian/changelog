@@ -7,6 +7,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
     space, but now only needs to store the set of file contents that
     are present in the annex in memory.
   * status: Fixed to run in constant space.
+  * status: More accurate display of sizes of tmp and bad keys.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 
