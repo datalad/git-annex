@@ -18,6 +18,7 @@ Build-Depends:
 	libghc-lifted-base-dev,
 	libghc-json-dev,
 	libghc-ifelse-dev,
+	libghc-bloomfilter-dev,
 	ikiwiki,
 	perlmagick,
 	git,

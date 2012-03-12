@@ -32,7 +32,7 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hs3, json, HTTP,
    base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1
+   IfElse, text, QuickCheck >= 2.1, bloomfilter
   Other-Modules: Utility.StatFS, Utility.Touch
 
 Executable git-annex-shell

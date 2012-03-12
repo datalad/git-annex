@@ -7,6 +7,14 @@ git-annex (3.20120310) UNRELEASED; urgency=low
     space, but now only needs to store the set of file contents that
     are present in the annex in memory.
   * status: Fixed to run in constant space.
+  * unused: Now uses a bloom filter, and runs in constant space.
+    Use of a bloom filter does mean it will not notice a small
+    number of unused keys. For repos with up to half a million keys,
+    it will miss one key in 1000.
+  * Added annex.bloomcapacity and annex.bloomaccuracy, which can be
+    adjusted as desired to tune the bloom filter.
+  * status: Display about of memory used by bloom filter, and
+    detect then it's too small for the number of keys in a repository.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 

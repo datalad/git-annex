@@ -29,6 +29,7 @@ import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
+import qualified Git.Config
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
@@ -182,6 +183,22 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 	where
 		remove a b = foldl (flip S.delete) b a
 
+{- A bloom filter capable of holding half a million keys with a
+ - false positive rate of 1 in 1000 uses around 8 mb of memory,
+ - so will easily fit on even my lowest memory systems.
+ -}
+bloomCapacity :: Annex Int
+bloomCapacity = fromMaybe 500000 . readish
+	<$> fromRepo (Git.Config.get "annex.bloomcapacity" "")
+bloomAccuracy :: Annex Int
+bloomAccuracy = fromMaybe 1000 . readish
+	<$> fromRepo (Git.Config.get "annex.bloomaccuracy" "")
+bloomBitsHashes :: Annex (Int, Int)
+bloomBitsHashes = do
+	capacity <- bloomCapacity
+	accuracy <- bloomAccuracy
+	return $ suggestSizing capacity (1/ fromIntegral accuracy)
+
 {- Creates a bloom filter, and runs an action, such as withKeysReferenced,
  - to populate it.
  -
@@ -193,12 +210,7 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  -}
 genBloomFilter :: Hashable t => (v -> t) -> ((v -> Annex ()) -> Annex b) -> Annex (Bloom t)
 genBloomFilter convert populate = do
-	-- A bloom filter capable of holding half a million keys with a
-	-- false positive rate of 0.1% uses around 8 mb of memory.
-	-- TODO: make this configurable, for the really large repos,
-	-- or really low false positive rates.
-	let (numbits, numhashes) = suggestSizing 500000 0.001
-
+	(numbits, numhashes) <- bloomBitsHashes
 	bloom <- lift $ newMB (cheapHashes numhashes) numbits
 	_ <- populate $ \v -> lift $ insertMB bloom (convert v)
 	lift $ unsafeFreezeMB bloom
