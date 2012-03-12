@@ -69,9 +69,7 @@ checkUnused = chain 0
 			return []
 		findunused False = do
 			showAction "checking for unused data"
-			b <- genBloomFilter show withKeysReferenced'
-			bloomFilter b <$> getKeysPresent
-			-- TODO: check branches
+			excludeReferenced =<< getKeysPresent
 		chain _ [] = next $ return True
 		chain v (a:as) = do
 			v' <- a v
@@ -145,28 +143,32 @@ dropMsg (Just r) = dropMsg' $ " --from " ++ Remote.name r
 dropMsg' :: String -> String
 dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\n"
 
-{- Finds keys in the list that are not referenced in the git repository. -}
+{- Finds keys in the list that are not referenced in the git repository.
+ -
+ - Strategy:
+ -
+ - * Build a bloom filter of all keys referenced by symlinks. This 
+ -   is the fastest one to build and will filter out most keys.
+ - * If keys remain, build a second bloom filter of keys referenced by
+ -   all branches.
+ - * The list is streamed through these bloom filters lazily, so both will
+ -   exist at the same time. This means that twice the memory is used,
+ -   but they're relatively small, so the added complexity of using a
+ -   mutable bloom filter does not seem worthwhile.
+ - * Generating the second bloom filter can take quite a while, since
+ -   it needs enumerating all keys in all git branches. But, the common
+ -   case, if the second filter is needed, is for some keys to be globally
+ -   unused, and in that case, no short-circuit is possible.
+ -   Short-circuiting if the first filter filters all the keys handles the
+ -   other common case.
+ -}
 excludeReferenced :: [Key] -> Annex [Key]
-excludeReferenced [] = return [] -- optimisation
-excludeReferenced l = do
-	let s = S.fromList l
-	!s' <- withKeysReferenced s S.delete
-	go s' =<< refs <$> (inRepo $ Git.Command.pipeRead [Param "show-ref"])
+excludeReferenced ks = runfilter firstlevel ks >>= runfilter secondlevel
 	where
-		-- Skip the git-annex branches, and get all other unique refs.
-		refs = map (Git.Ref .  snd) .
-			nubBy uniqref .
-			filter ourbranches .
-			map (separate (== ' ')) . lines
-		uniqref (a, _) (b, _) = a == b
-		ourbranchend = '/' : show Annex.Branch.name
-		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
-		go s [] = return $ S.toList s
-		go s (r:rs)
-			| s == S.empty = return [] -- optimisation
-			| otherwise = do
-				s' <- withKeysReferencedInGit r s S.delete
-				go s' rs
+		runfilter _ [] = return [] -- optimisation
+		runfilter a l = bloomFilter show l <$> genBloomFilter show a
+		firstlevel = withKeysReferencedM
+		secondlevel = withKeysReferencedInGit
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -180,7 +182,7 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 	where
 		remove a b = foldl (flip S.delete) b a
 
-{- Creates a bloom filter, and runs an action, such as withKeysReferenced',
+{- Creates a bloom filter, and runs an action, such as withKeysReferenced,
  - to populate it.
  -
  - The action is passed a callback that it can use to feed values into the
@@ -189,29 +191,36 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  - Once the action completes, the mutable filter is frozen
  - for later use.
  -}
-genBloomFilter :: Hashable t => (v -> t) -> (() -> (v -> () -> Annex ()) -> Annex b) -> Annex (Bloom t)
+genBloomFilter :: Hashable t => (v -> t) -> ((v -> Annex ()) -> Annex b) -> Annex (Bloom t)
 genBloomFilter convert populate = do
-	-- A bloom filter capable of holding one million keys with a
-	-- false positive rate of 0.1% uses 16 mb of memory.
+	-- A bloom filter capable of holding half a million keys with a
+	-- false positive rate of 0.1% uses around 8 mb of memory.
 	-- TODO: make this configurable, for the really large repos,
 	-- or really low false positive rates.
-	let (numbits, numhashes) = suggestSizing 1000000 0.0001
+	let (numbits, numhashes) = suggestSizing 500000 0.001
 
 	bloom <- lift $ newMB (cheapHashes numhashes) numbits
-	_ <- populate () $ \v _ -> lift $ insertMB bloom (convert v)
+	_ <- populate $ \v -> lift $ insertMB bloom (convert v)
 	lift $ unsafeFreezeMB bloom
 	where
 		lift = liftIO . stToIO
 
-bloomFilter :: Bloom String -> [Key] -> [Key]
-bloomFilter b l = filter (\k -> show k `notElemB` b) l
+bloomFilter :: Hashable t => (v -> t) -> [v] -> Bloom t -> [v]
+bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
 
-{- Given an initial value, mutates it using an action for each
- - key referenced by symlinks in the git repo. -}
+{- Given an initial value, folds it with each key referenced by
+ - symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
-withKeysReferenced initial a = withKeysReferenced' initial reta
+withKeysReferenced initial a = withKeysReferenced' initial folda
 	where
-		reta k v = return $ a k v
+		folda k v = return $ a k v
+
+{- Runs an action on each referenced key in the git repo. -}
+withKeysReferencedM :: (Key -> Annex ()) -> Annex ()
+withKeysReferencedM a = withKeysReferenced' () calla
+	where
+		calla k _ = a k
+
 withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
 withKeysReferenced' initial a = go initial =<< files
 	where
@@ -227,21 +236,36 @@ withKeysReferenced' initial a = go initial =<< files
 					!v' <- a k v
 					go v' fs
 
-withKeysReferencedInGit :: Git.Ref -> v -> (Key -> v -> v) -> Annex v
-withKeysReferencedInGit ref initial a = do
-	showAction $ "checking " ++ Git.Ref.describe ref
-	go initial =<< inRepo (LsTree.lsTree ref)
+
+withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
+withKeysReferencedInGit a = do
+	rs <- relevantrefs <$> showref
+	forM_ rs (withKeysReferencedInGitRef a)
 	where
-		go v [] = return v
-		go v (l:ls)
+		showref = inRepo $ Git.Command.pipeRead [Param "show-ref"]
+		relevantrefs = map (Git.Ref .  snd) .
+			nubBy uniqref .
+			filter ourbranches .
+			map (separate (== ' ')) . lines
+		uniqref (x, _) (y, _) = x == y
+		ourbranchend = '/' : show Annex.Branch.name
+		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
+
+withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
+withKeysReferencedInGitRef a ref = do
+	showAction $ "checking " ++ Git.Ref.describe ref
+	go =<< inRepo (LsTree.lsTree ref)
+	where
+		go [] = return ()
+		go (l:ls)
 			| isSymLink (LsTree.mode l) = do
 				content <- L.decodeUtf8 <$> catFile ref (LsTree.file l)
 				case fileKey (takeFileName $ L.unpack content) of
-					Nothing -> go v ls
+					Nothing -> go ls
 					Just k -> do
-						let !v' = a k v
-						go v' ls
-			| otherwise = go v ls
+						a k
+						go ls
+			| otherwise = go ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
