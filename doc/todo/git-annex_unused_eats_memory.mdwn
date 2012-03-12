@@ -21,7 +21,8 @@ in the bloom filter. Since there can be false positives, this might
 miss finding some unused keys. The probability/size of filter
 could be tunable.
 
-> [[done]]! --[[Joey]] 
+> Fixed in `bloom` branch in git. --[[Joey]] 
+>> [[done]]! --[[Joey]] 
 
 Another way might be to scan the git log for files that got removed
 or changed what key they pointed to. Correlate with keys with content
