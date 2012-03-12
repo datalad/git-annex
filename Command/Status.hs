@@ -228,12 +228,19 @@ showSizeKeys d = total ++ missingnote
 				" keys of unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
-staleSize label dirspec = do
-	keys <- lift (Command.Unused.staleKeys dirspec)
-	if null keys
-		then nostat
-		else stat label $ json (++ aside "clean up with git-annex unused") $
-			return $ showSizeKeys $ foldKeys keys
+staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
+	where
+		go [] = nostat
+		go keys = onsize =<< sum <$> keysizes keys
+		onsize 0 = nostat
+		onsize size = stat label $
+			json (++ aside "clean up with git-annex unused") $
+				return $ roughSize storageUnits False size
+		keysizes keys = map (fromIntegral . fileSize) <$> stats keys
+		stats keys = do
+			dir <- lift $ fromRepo dirspec
+			liftIO $ forM keys $ \k ->
+				getFileStatus (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

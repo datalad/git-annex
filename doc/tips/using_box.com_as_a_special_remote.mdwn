@@ -13,21 +13,30 @@ With a little setup, git-annex can use Box as a
 * Allow users to mount davfs filesystems, by ensuring that
   `/sbin/mount.davfs` is setuid root. On Debian, just `sudo dpkg-reconfigure davfs2`
 * Add yourself to the davfs2 group.
-	sudo adduser $(whoami) davfs2
+
+        sudo adduser $(whoami) davfs2
+
 * Edit `/etc/fstab`, and add a line to mount Box using davfs.
-	sudo mkdir -p /media/box.com
-	echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
+
+        sudo mkdir -p /media/box.com
+        echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
+
 * Create `~/.davfs2/davfs2.conf` with some important settings:
-	mkdir ~/.davfs2/
-	echo use_locks 0 >> ~/.davfs2/davfs2.conf
-	echo cache_size 1 >> ~/.davfs2/davfs2.conf
-	echo delay_upload 0 >> ~/.davfs2/davfs2.conf
+
+        mkdir ~/.davfs2/
+        echo use_locks 0 >> ~/.davfs2/davfs2.conf
+        echo cache_size 1 >> ~/.davfs2/davfs2.conf
+        echo delay_upload 0 >> ~/.davfs2/davfs2.conf
+
 * Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
   Your login is probably the email address you signed up with.
-	echo "/media/box.com joey@kitenet.net mypassword" > ~/.davfs2/secrets
-	chmod 600 ~/.davfs2/secrets
+
+        echo "/media/box.com joey@kitenet.net mypassword" > ~/.davfs2/secrets
+        chmod 600 ~/.davfs2/secrets
+
 * Now you should be able to mount Box, as a non-root user:
-	mount /media/box.com
+
+        mount /media/box.com
 
 ## git-annex setup
 
