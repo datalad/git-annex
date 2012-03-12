@@ -54,14 +54,11 @@ start = do
 	next action
 
 checkUnused :: CommandPerform
-checkUnused = do
-	unused <- findunused =<< Annex.getState Annex.fast
-	stalebad <- staleKeysPrune gitAnnexBadDir
-	staletmp <- staleKeysPrune gitAnnexTmpDir
-	_ <- list "" unusedMsg unused 0 >>=
-		list "bad" staleBadMsg stalebad >>=
-			list "tmp" staleTmpMsg staletmp
-	next $ return True
+checkUnused = chain 0
+	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
+	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir
+	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir
+	]
 	where
 		findunused True = do
 			showNote "fast mode enabled; only finding stale files"
@@ -69,25 +66,32 @@ checkUnused = do
 		findunused False = do
 			showAction "checking for unused data"
 			excludeReferenced =<< getKeysPresent
-		list file msg l c = do
-			let unusedlist = number c l
-			unless (null l) $ showLongNote $ msg unusedlist
-			writeUnusedFile file unusedlist
-			return $ c + length l
+		chain _ [] = next $ return True
+		chain v (a:as) = do
+			v' <- a v
+			chain v' as
 
 checkRemoteUnused :: String -> CommandPerform
-checkRemoteUnused name = do
-	checkRemoteUnused' =<< fromJust <$> Remote.byName (Just name)
-	next $ return True
+checkRemoteUnused name = go =<< fromJust <$> Remote.byName (Just name)
+	where
+		go r = do
+			showAction "checking for unused data"
+			_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
+			next $ return True
+		remoteunused r =
+			excludeReferenced =<< loggedKeysFor (Remote.uuid r)
 
-checkRemoteUnused' :: Remote -> Annex ()
-checkRemoteUnused' r = do
-	showAction "checking for unused data"
-	remotehas <- loggedKeysFor (Remote.uuid r)
-	remoteunused <- excludeReferenced remotehas
-	let list = number 0 remoteunused
-	writeUnusedFile "" list
-	unless (null remoteunused) $ showLongNote $ remoteUnusedMsg r list
+check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
+check file msg a c = do
+	l <- a
+	let unusedlist = number c l
+	unless (null l) $ showLongNote $ msg unusedlist
+	writeUnusedFile file unusedlist
+	return $ c + length l
+
+number :: Int -> [a] -> [(Int, a)]
+number _ [] = []
+number n (x:xs) = (n+1, x) : number (n+1) xs
 
 writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedFile prefix l = do
@@ -100,10 +104,6 @@ table l = "  NUMBER  KEY" : map cols l
 	where
 		cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ show k
 		pad n s = s ++ replicate (n - length s) ' '
-
-number :: Int -> [a] -> [(Int, a)]
-number _ [] = []
-number n (x:xs) = (n+1, x) : number (n+1) xs
 
 staleTmpMsg :: [(Int, Key)] -> String
 staleTmpMsg t = unlines $ 
