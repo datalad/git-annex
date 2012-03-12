@@ -28,6 +28,8 @@ The git repository has some branches:
   library.
 * `tweak-fetch` adds support for the git tweak-fetch hook, which has
   been proposed and implemented but not yet accepted into git.
+* `bloom` makes `git annex unused` use a bloom filter, thus running
+  in truely constant memory. Waiting on the haskell library being packaged.
 * `ghc7.0` supports versions of ghc older than 7.4, which
   had a major change to filename encoding.
 * `setup` contains configuration for this website
