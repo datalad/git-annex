@@ -12,6 +12,9 @@ module Command.Unused where
 import qualified Data.Set as S
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
+import Data.BloomFilter
+import Data.BloomFilter.Easy
+import Data.BloomFilter.Hash
 
 import Common.Annex
 import Command
@@ -53,6 +56,18 @@ start = do
 	showStart "unused" name
 	next action
 
+genBloomFilter :: [Key] -> Annex (Bloom String)
+genBloomFilter ks = do
+	-- A bloom filter capable of holding one million keys with a
+	-- false positive rate of 0.1% uses 16 mb of memory.
+	-- TODO: make this configurable, for the really large repos,
+	-- or really low false positive rates.
+	let (numbits, numhashes) = suggestSizing 1000000 0.0001
+	return $ fromListB (cheapHashes numhashes) numbits $ map show ks
+
+bloomFilter :: Bloom String -> [Key] -> [Key]
+bloomFilter b l = filter (\k -> show k `notElemB` b) l
+
 checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
@@ -65,7 +80,9 @@ checkUnused = chain 0
 			return []
 		findunused False = do
 			showAction "checking for unused data"
-			excludeReferenced =<< getKeysPresent
+			b <- genBloomFilter =<< withKeysReferenced [] (:)
+			bloomFilter b <$> getKeysPresent
+			-- TODO: check branches
 		chain _ [] = next $ return True
 		chain v (a:as) = do
 			v' <- a v
