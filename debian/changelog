@@ -8,6 +8,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
     are present in the annex in memory.
   * status: Fixed to run in constant space.
   * status: More accurate display of sizes of tmp and bad keys.
+  * Work around a bug in rsync (IMHO) introduced by openSUSE's SIP patch.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 
