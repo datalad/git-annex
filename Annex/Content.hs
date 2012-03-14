@@ -27,6 +27,7 @@ module Annex.Content (
 
 import Control.Exception (bracket_)
 import System.Posix.Types
+import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Common.Annex
 import Logs.Location
@@ -290,19 +291,20 @@ moveBad key = do
 
 {- List of keys whose content exists in .git/annex/objects/ -}
 getKeysPresent :: Annex [Key]
-getKeysPresent = getKeysPresent' =<< fromRepo gitAnnexObjectDir
-getKeysPresent' :: FilePath -> Annex [Key]
-getKeysPresent' dir = do
-	exists <- liftIO $ doesDirectoryExist dir
-	if not exists
-		then return []
-		else liftIO $ do
-			-- 2 levels of hashing
-			levela <- dirContents dir
-			levelb <- mapM dirContents levela
-			contents <- mapM dirContents (concat levelb)
-			let files = concat contents
-			return $ mapMaybe (fileKey . takeFileName) files
+getKeysPresent = liftIO . traverse (2 :: Int) =<< fromRepo gitAnnexObjectDir
+	where
+		traverse depth dir = do
+			contents <- catchDefaultIO (dirContents dir) []
+			if depth == 0
+				then continue (mapMaybe (fileKey . takeFileName) contents) []
+				else do
+					let deeper = traverse (depth - 1)
+					continue [] (map deeper contents)
+		continue keys [] = return keys
+		continue keys (a:as) = do
+			{- Force lazy traversal with unsafeInterleaveIO. -}
+			morekeys <- unsafeInterleaveIO a
+			continue (morekeys++keys) as
 
 {- Things to do to record changes to content when shutting down.
  -

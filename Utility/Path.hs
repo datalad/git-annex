@@ -128,15 +128,6 @@ preserveOrder (l:ls) new = found ++ preserveOrder ls rest
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
 runPreserveOrder a files = preserveOrder files <$> a files
 
-{- Lists the contents of a directory.
- - Unlike getDirectoryContents, paths are not relative to the directory. -}
-dirContents :: FilePath -> IO [FilePath]
-dirContents d = map (d </>) . filter notcruft <$> getDirectoryContents d
-	where
-		notcruft "." = False
-		notcruft ".." = False
-		notcruft _ = True
-
 {- Current user's home directory. -}
 myHomeDir :: IO FilePath
 myHomeDir = homeDirectory <$> (getUserEntryForID =<< getEffectiveUserID)

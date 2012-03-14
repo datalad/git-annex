@@ -5,12 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Command.Status where
 
 import Control.Monad.State.Strict
 import qualified Data.Map as M
-import qualified Data.Set as S
-import Data.Set (Set)
 import Text.JSON
 
 import Common.Annex
@@ -32,10 +32,18 @@ import Remote
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
 
--- cached info that multiple Stats may need
+-- data about a set of keys
+data KeyData = KeyData
+	{ countKeys :: Integer
+	, sizeKeys :: Integer
+	, unknownSizeKeys :: Integer
+	, backendsKeys :: M.Map String Integer
+	}
+
+-- cached info that multiple Stats use
 data StatInfo = StatInfo
-	{ keysPresentCache :: Maybe (Set Key)
-	, keysReferencedCache :: Maybe (Set Key)
+	{ presentData :: Maybe KeyData
+	, referencedData :: Maybe KeyData
 	}
 
 -- a state monad for running Stats in
@@ -68,6 +76,7 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
+	, bloom_info
 	, backend_usage
 	]
 
@@ -119,22 +128,38 @@ remote_list level desc = stat n $ nojson $ lift $ do
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
 	where
 		n = desc ++ " repositories"
-
+	
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $ json id $
-	keySizeSum <$> cachedKeysPresent
+	showSizeKeys <$> cachedPresentData
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
-	S.size <$> cachedKeysPresent
+	countKeys <$> cachedPresentData
+
+bloom_info :: Stat
+bloom_info = stat "bloom filter size" $ json id $ do
+	localkeys <- countKeys <$> cachedPresentData
+	capacity <- fromIntegral <$> lift Command.Unused.bloomCapacity
+	let note = aside $
+		if localkeys >= capacity
+		then "appears too small for this repository; adjust annex.bloomcapacity"
+		else "has room for " ++ show (capacity - localkeys) ++ " more local annex keys"
+
+	-- Two bloom filters are used at the same time, so double the size
+	-- of one.
+	size <- roughSize memoryUnits True . (* 2) . fromIntegral . fst <$>
+		lift Command.Unused.bloomBitsHashes
+
+	return $ size ++ note
 
 known_annex_size :: Stat
 known_annex_size = stat "known annex size" $ json id $
-	keySizeSum <$> cachedKeysReferenced
+	showSizeKeys <$> cachedReferencedData
 
 known_annex_keys :: Stat
 known_annex_keys = stat "known annex keys" $ json show $
-	S.size <$> cachedKeysReferenced
+	countKeys <$> cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -144,55 +169,78 @@ bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $
-	calc <$> cachedKeysReferenced <*> cachedKeysPresent
+	calc
+		<$> (backendsKeys <$> cachedReferencedData)
+		<*> (backendsKeys <$> cachedPresentData)
 	where
-		calc a b = pp "" $ reverse . sort $ map swap $ splits $ S.toList $ S.union a b
-		splits :: [Key] -> [(String, Integer)]
-		splits ks = M.toList $ M.fromListWith (+) $ map tcount ks
-		tcount k = (keyBackendName k, 1)
-		swap (a, b) = (b, a)
+		calc a b = pp "" $ reverse . sort $ map swap $ M.toList $ M.unionWith (+) a b
 		pp c [] = c
 		pp c ((n, b):xs) = "\n\t" ++ b ++ ": " ++ show n ++ pp c xs
+		swap (a, b) = (b, a)
 
-cachedKeysPresent :: StatState (Set Key)
-cachedKeysPresent = do
+cachedPresentData :: StatState KeyData
+cachedPresentData = do
 	s <- get
-	case keysPresentCache s of
+	case presentData s of
 		Just v -> return v
 		Nothing -> do
-			keys <- S.fromList <$> lift getKeysPresent
-			put s { keysPresentCache = Just keys }
-			return keys
+			v <- foldKeys <$> lift getKeysPresent
+			put s { presentData = Just v }
+			return v
 
-cachedKeysReferenced :: StatState (Set Key)
-cachedKeysReferenced = do
+cachedReferencedData :: StatState KeyData
+cachedReferencedData = do
 	s <- get
-	case keysReferencedCache s of
+	case referencedData s of
 		Just v -> return v
 		Nothing -> do
-			keys <- S.fromList <$> lift Command.Unused.getKeysReferenced
-			put s { keysReferencedCache = Just keys }
-			return keys
+			!v <- lift $ Command.Unused.withKeysReferenced
+				emptyKeyData addKey
+			put s { referencedData = Just v }
+			return v
 
-keySizeSum :: Set Key -> String
-keySizeSum s = total ++ missingnote
+emptyKeyData :: KeyData
+emptyKeyData = KeyData 0 0 0 M.empty
+
+foldKeys :: [Key] -> KeyData
+foldKeys = foldl' (flip addKey) emptyKeyData
+
+addKey :: Key -> KeyData -> KeyData
+addKey key (KeyData count size unknownsize backends) =
+	KeyData count' size' unknownsize' backends'
 	where
-		knownsizes = mapMaybe keySize $ S.toList s
-		total = roughSize storageUnits False $ sum knownsizes
-		missing = S.size s - genericLength knownsizes
+		{- All calculations strict to avoid thunks when repeatedly
+		 - applied to many keys. -}
+		!count' = count + 1
+		!backends' = M.insertWith' (+) (keyBackendName key) 1 backends
+		!size' = maybe size (+ size) ks
+		!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
+		ks = keySize key
+
+showSizeKeys :: KeyData -> String
+showSizeKeys d = total ++ missingnote
+	where
+		total = roughSize storageUnits False $ sizeKeys d
 		missingnote
-			| missing == 0 = ""
+			| unknownSizeKeys d == 0 = ""
 			| otherwise = aside $
-				"+ " ++ show missing ++
+				"+ " ++ show (unknownSizeKeys d) ++
 				" keys of unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
-staleSize label dirspec = do
-	keys <- lift (Command.Unused.staleKeys dirspec)
-	if null keys
-		then nostat
-		else stat label $ json (++ aside "clean up with git-annex unused") $
-			return $ keySizeSum $ S.fromList keys
+staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
+	where
+		go [] = nostat
+		go keys = onsize =<< sum <$> keysizes keys
+		onsize 0 = nostat
+		onsize size = stat label $
+			json (++ aside "clean up with git-annex unused") $
+				return $ roughSize storageUnits False size
+		keysizes keys = map (fromIntegral . fileSize) <$> stats keys
+		stats keys = do
+			dir <- lift $ fromRepo dirspec
+			liftIO $ forM keys $ \k ->
+				getFileStatus (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"
