@@ -76,7 +76,6 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
-	, bloom_info
 	, backend_usage
 	]
 
@@ -128,7 +127,7 @@ remote_list level desc = stat n $ nojson $ lift $ do
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
 	where
 		n = desc ++ " repositories"
-	
+
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $ json id $
 	showSizeKeys <$> cachedPresentData
@@ -136,22 +135,6 @@ local_annex_size = stat "local annex size" $ json id $
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	countKeys <$> cachedPresentData
-
-bloom_info :: Stat
-bloom_info = stat "bloom filter size" $ json id $ do
-	localkeys <- countKeys <$> cachedPresentData
-	capacity <- fromIntegral <$> lift Command.Unused.bloomCapacity
-	let note = aside $
-		if localkeys >= capacity
-		then "appears too small for this repository; adjust annex.bloomcapacity"
-		else "has room for " ++ show (capacity - localkeys) ++ " more local annex keys"
-
-	-- Two bloom filters are used at the same time, so double the size
-	-- of one.
-	size <- roughSize memoryUnits True . (* 2) . fromIntegral . fst <$>
-		lift Command.Unused.bloomBitsHashes
-
-	return $ size ++ note
 
 known_annex_size :: Stat
 known_annex_size = stat "known annex size" $ json id $

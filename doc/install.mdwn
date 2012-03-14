@@ -35,7 +35,6 @@ To build and use git-annex, you will need:
   * [hS3](http://hackage.haskell.org/package/hS3)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
-  * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)
