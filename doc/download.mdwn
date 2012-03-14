@@ -23,13 +23,12 @@ The git repository has some branches:
 * `debian-stable` contains the latest backport of git-annex to Debian
   stable.
 * `no-s3` disables the S3 special remote, for systems that lack the
- necessary haskell library.
+ necessary haskell library. (merge it into master if you need it)
+* `no-bloom` avoids using bloom filters. (merge it into master if you need it)
 * `old-monad-control` is for systems that don't have a newer monad-control
   library.
 * `tweak-fetch` adds support for the git tweak-fetch hook, which has
   been proposed and implemented but not yet accepted into git.
-* `bloom` makes `git annex unused` use a bloom filter, thus running
-  in truely constant memory. Waiting on the haskell library being packaged.
 * `ghc7.0` supports versions of ghc older than 7.4, which
   had a major change to filename encoding.
 * `setup` contains configuration for this website
