@@ -49,6 +49,7 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 * commit
 
   This commits any staged changes to the git-annex branch.
+  It also runs the annex-content hook.
 
 # OPTIONS
 
@@ -59,6 +60,13 @@ to git-annex-shell are:
 
   git-annex uses this to specify the UUID of the repository it was expecting
   git-annex-shell to access, as a sanity check.
+
+# HOOK
+
+After content is received or dropped from the repository by git-annex-shell,
+it runs a hook, `.git/hooks/annex-content` (or `hooks/annex-content` on a bare
+repository). The hook is not currently passed any information about what
+changed.
 
 # ENVIRONMENT
 
