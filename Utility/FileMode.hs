@@ -34,3 +34,10 @@ allowWrite f = do
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
 isSymLink mode = symbolicLinkMode `intersectFileModes` mode == symbolicLinkMode
+
+{- Checks if a file has any executable bits set. -}
+isExecutable :: FileMode -> Bool
+isExecutable mode = ebits `intersectFileModes` mode /= 0
+	where
+		ebits = ownerExecuteMode `unionFileModes`
+			groupExecuteMode `unionFileModes` otherExecuteMode

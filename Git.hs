@@ -32,9 +32,11 @@ import qualified Data.Map as M
 import Data.Char
 import Network.URI (uriPath, uriScheme, unEscapeString)
 import System.Directory
+import System.Posix.Files
 
 import Common
 import Git.Types
+import Utility.FileMode
 
 {- User-visible description of a git repo. -}
 repoDescribe :: Repo -> String
@@ -111,8 +113,12 @@ gitDir repo
 hookPath :: String -> Repo -> IO (Maybe FilePath)
 hookPath script repo = do
 	let hook = gitDir repo </> "hooks" </> script
-	ok <- doesFileExist hook
-	return $ if ok then Just hook else Nothing
+	e <- doesFileExist hook
+	if e
+		then do
+			m <- fileMode <$> getFileStatus hook
+			return $ if isExecutable m then Just hook else Nothing
+		else return Nothing
 
 {- Path to a repository's --work-tree, that is, its top.
  -
