@@ -51,11 +51,7 @@ remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
 syncRemotes :: [String] -> Annex [Remote]
-syncRemotes rs = do
-	fast <- Annex.getState Annex.fast
-	if fast
-		then nub <$> pickfast
-		else wanted
+syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	where
 		pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
 		wanted
@@ -113,11 +109,11 @@ pullRemote remote branch = do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
-		fetched <- inRepo $ Git.Command.runBool "fetch"
+		stopUnless fetch $
+			next $ mergeRemote remote branch
+	where
+		fetch = inRepo $ Git.Command.runBool "fetch"
 			[Param $ Remote.name remote]
-		if fetched
-			then next $ mergeRemote remote branch
-			else stop
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -159,15 +155,15 @@ mergeFrom branch = do
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
 	let r = remoteBranch remote b
-	e <- inRepo $ Git.Ref.exists r
-	if e
-		then inRepo $ Git.Branch.changed b r
-		else return False
+	ifM (inRepo $ Git.Ref.exists r)
+		( inRepo $ Git.Branch.changed b r
+		, return False
+		)
 
 newer :: Remote -> Git.Ref -> Annex Bool
 newer remote b = do
 	let r = remoteBranch remote b
-	e <- inRepo $ Git.Ref.exists r
-	if e
-		then inRepo $ Git.Branch.changed r b
-		else return True
+	ifM (inRepo $ Git.Ref.exists r)
+		( inRepo $ Git.Branch.changed r b
+		, return True
+		)

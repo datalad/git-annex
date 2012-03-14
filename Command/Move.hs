@@ -131,13 +131,13 @@ fromOk src key
 			return $ u /= Remote.uuid src && any (== src) remotes
 fromPerform :: Remote -> Bool -> Key -> CommandPerform
 fromPerform src move key = moveLock move key $ do
-	ishere <- inAnnex key
-	if ishere
-		then handle move True
-		else do
+	ifM (inAnnex key)
+		( handle move True
+		, do
 			showAction $ "from " ++ Remote.name src
 			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
 			handle move ok
+		)
 	where
 		handle _ False = stop -- failed
 		handle False True = next $ return True -- copy complete

@@ -7,6 +7,7 @@
 
 module Command.PreCommit where
 
+import Common.Annex
 import Command
 import qualified Command.Add
 import qualified Command.Fix
@@ -26,7 +27,6 @@ start file = next $ perform file
 
 perform :: FilePath -> CommandPerform
 perform file = do
-	ok <- doCommand $ Command.Add.start file
-	if ok
-		then next $ return True
-		else error $ "failed to add " ++ file ++ "; canceling commit"
+	unlessM (doCommand $ Command.Add.start file) $
+		error $ "failed to add " ++ file ++ "; canceling commit"
+	next $ return True

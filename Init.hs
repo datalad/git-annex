@@ -38,23 +38,22 @@ uninitialize = gitPreCommitHookUnWrite
 ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
 	where
-		needsinit = do
-			annexed <- Annex.Branch.hasSibling
-			if annexed
-				then initialize Nothing
-				else error "First run: git-annex init"
+		needsinit = ifM Annex.Branch.hasSibling
+				( initialize Nothing
+				, error "First run: git-annex init"
+				)
 
 {- set up a git pre-commit hook, if one is not already present -}
 gitPreCommitHookWrite :: Annex ()
 gitPreCommitHookWrite = unlessBare $ do
 	hook <- preCommitHook
-	exists <- liftIO $ doesFileExist hook
-	if exists
-		then warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
-		else liftIO $ do
+	ifM (liftIO $ doesFileExist hook)
+		( warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
+		, liftIO $ do
 			viaTmp writeFile hook preCommitScript
 			p <- getPermissions hook
 			setPermissions hook $ p {executable = True}
+		)
 
 gitPreCommitHookUnWrite :: Annex ()
 gitPreCommitHookUnWrite = unlessBare $ do

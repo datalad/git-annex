@@ -34,11 +34,11 @@ genUUID :: IO UUID
 genUUID = pOpen ReadFromPipe command params $ liftM toUUID . hGetLine
 	where
 		command = SysConfig.uuid
-		params = if command == "uuid"
+		params
 			-- request a random uuid be generated
-			then ["-m"]
+			| command == "uuid" = ["-m"]
 			-- uuidgen generates random uuid by default
-			else []
+			| otherwise = []
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID

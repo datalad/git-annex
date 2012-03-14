@@ -299,11 +299,11 @@ staleKeysPrune dirspec = do
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
 	dir <- fromRepo dirspec
-	exists <- liftIO $ doesDirectoryExist dir
-	if not exists
-		then return []
-		else do
+	ifM (liftIO $ doesDirectoryExist dir)
+		( do
 			contents <- liftIO $ getDirectoryContents dir
 			files <- liftIO $ filterM doesFileExist $
 				map (dir </>) contents
 			return $ mapMaybe (fileKey . takeFileName) files
+		, return []
+		)

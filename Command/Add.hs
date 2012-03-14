@@ -85,8 +85,9 @@ cleanup file key hascontent = do
 				mtime <- modificationTime <$> getFileStatus file
 				touch file (TimeSpec mtime) False
 
-	force <- Annex.getState Annex.force
-	if force
-		then Annex.Queue.add "add" [Param "-f", Param "--"] [file]
-		else Annex.Queue.add "add" [Param "--"] [file]
+	params <- ifM (Annex.getState Annex.force)
+		( return [Param "-f"]
+		, return []
+		)
+	Annex.Queue.add "add" (params++[Param "--"]) [file]
 	return True

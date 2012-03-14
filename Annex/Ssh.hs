@@ -37,15 +37,17 @@ sshParams (host, port) opts = go =<< sshInfo (host, port)
 			sshCleanup
 
 sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
-sshInfo (host, port) = do
-	caching <- fromMaybe SysConfig.sshconnectioncaching . Git.configTrue
-		<$> fromRepo (Git.Config.get "annex.sshcaching" "")
-	if caching
-		then do
-			dir <- fromRepo gitAnnexSshDir
-			let socketfile = dir </> hostport2socket host port
-		 	return (Just socketfile, cacheParams socketfile)
-		else return (Nothing, [])
+sshInfo (host, port) = ifM caching
+	( do
+		dir <- fromRepo gitAnnexSshDir
+		let socketfile = dir </> hostport2socket host port
+	 	return (Just socketfile, cacheParams socketfile)
+	, return (Nothing, [])
+	)
+	where
+		caching = fromMaybe SysConfig.sshconnectioncaching 
+			. Git.configTrue
+			<$> fromRepo (Git.Config.get "annex.sshcaching" "")
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =

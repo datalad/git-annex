@@ -51,17 +51,17 @@ perform url file = ifAnnexed file addurl geturl
 	where
 		geturl = do
 			liftIO $ createDirectoryIfMissing True (parentDir file)
-			fast <- Annex.getState Annex.fast
-			if fast then nodownload url file else download url file
-		addurl (key, _backend) = do
-			ok <- liftIO $ Url.check url (keySize key)
-			if ok
-				then do
+			ifM (Annex.getState Annex.fast)
+				( nodownload url file , download url file )
+		addurl (key, _backend) =
+			ifM (liftIO $ Url.check url $ keySize key)
+				( do
 					setUrlPresent key url
 					next $ return True
-				else do
+				, do
 					warning $ "failed to verify url: " ++ url
 					stop
+				)
 
 download :: String -> FilePath -> CommandPerform
 download url file = do

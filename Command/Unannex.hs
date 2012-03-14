@@ -47,16 +47,16 @@ cleanup file key = do
 			Params "-m", Param "content removed from git annex",
 			Param "--", File file]
 
-	fast <- Annex.getState Annex.fast
-	if fast
-		then do
+	ifM (Annex.getState Annex.fast)
+		( do
 			-- fast mode: hard link to content in annex
 			src <- inRepo $ gitAnnexLocation key
 			liftIO $ do
 				createLink src file
 				allowWrite file
-		else do
+		, do
 			fromAnnex key file
 			logStatus key InfoMissing
+		)
 
 	return True
