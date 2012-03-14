@@ -21,7 +21,7 @@ import qualified Data.Hash.MD5 as MD5
  - No-op for old ghc.
  -}
 fileEncoding :: Handle -> IO ()
-fileEncoding h = return () -- hSetEncoding h =<< Encoding.getFileSystemEncoding
+fileEncoding _ = return () -- hSetEncoding h =<< Encoding.getFileSystemEncoding
 
 {- Marshal a Haskell FilePath into a NUL terminated C string using temporary
 - storage. The FilePath is encoded using the filesystem encoding,
