@@ -3,9 +3,6 @@ git-annex (3.20120310) UNRELEASED; urgency=low
   * fsck: Fix up any broken links and misplaced content caused by the
     directory hash calculation bug fixed in the last release.
   * sync: Sync to lower cost remotes first.
-  * unused: Reduce memory usage significantly. Still not constant
-    space, but now only needs to store the set of file contents that
-    are present in the annex in memory.
   * status: Fixed to run in constant space.
   * status: More accurate display of sizes of tmp and bad keys.
   * unused: Now uses a bloom filter, and runs in constant space.
@@ -14,7 +11,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
     it will miss one key in 1000.
   * Added annex.bloomcapacity and annex.bloomaccuracy, which can be
     adjusted as desired to tune the bloom filter.
-  * status: Display about of memory used by bloom filter, and
+  * status: Display amount of memory used by bloom filter, and
     detect then it's too small for the number of keys in a repository.
   * git-annex-shell: Runs hooks/annex-content after content is received
     or dropped.
