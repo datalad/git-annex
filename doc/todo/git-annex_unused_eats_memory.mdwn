@@ -22,7 +22,6 @@ miss finding some unused keys. The probability/size of filter
 could be tunable.
 
 > Fixed in `bloom` branch in git. --[[Joey]] 
->> [[done]]! --[[Joey]] 
 
 Another way might be to scan the git log for files that got removed
 or changed what key they pointed to. Correlate with keys with content

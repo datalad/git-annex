@@ -598,23 +598,6 @@ Here are all the supported configuration settings.
   of memory and are working with very large numbers of files, increasing
   the queue size can speed it up.
 
-* `annex.bloomcapacity`
-
-  The `git annex unused` command uses a bloom filter to determine
-  what data is no longer used. The default bloom filter is sized to handle
-  up to 500000 keys. If your repository is larger than that,
-  you can adjust this to avoid `git annex unused` not noticing some unused
-  data files. Increasing this will make `git-annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
-
-* `annex.bloomaccuracy`
-
-  Adjusts the accuracy of the bloom filter used by
-  `git annex unused`. The default accuracy is 1000 -- 
-  1 unused file out of 1000 will be missed by `git annex unused`. Increasing
-  the accuracy will make `git annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
-
 * `annex.version`
 
   Automatically maintained, and used to automate upgrades between versions.
