@@ -290,10 +290,13 @@ rsyncParamsRemote r sending key file = do
 		then return $ o ++ eparam ++ [dummy, File file]
 		else return $ o ++ eparam ++ [File file, dummy]
 	where
-		-- the rsync shell parameter controls where rsync
+		-- The rsync shell parameter controls where rsync
 		-- goes, so the source/dest parameter can be a dummy value,
 		-- that just enables remote rsync mode.
-		dummy = Param ":"
+		-- For maximum compatability with some patched rsyncs,
+		-- the dummy value needs to still contain a hostname,
+		-- even though this hostname will never be used.
+		dummy = Param "dummy:"
 
 rsyncParams :: Git.Repo -> Annex [CommandParam]
 rsyncParams r = do

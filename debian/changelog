@@ -18,6 +18,7 @@ git-annex (3.20120310) UNRELEASED; urgency=low
     detect then it's too small for the number of keys in a repository.
   * git-annex-shell: Runs hooks/annex-content after content is received
     or dropped.
+  * Work around a bug in rsync (IMHO) introduced by openSUSE's SIP patch.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 
