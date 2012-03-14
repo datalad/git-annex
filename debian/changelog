@@ -9,6 +9,8 @@ git-annex (3.20120310) UNRELEASED; urgency=low
   * status: Fixed to run in constant space.
   * status: More accurate display of sizes of tmp and bad keys.
   * Work around a bug in rsync (IMHO) introduced by openSUSE's SIP patch.
+  * git-annex-shell: Runs hooks/annex-content after content is received
+    or dropped.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
 

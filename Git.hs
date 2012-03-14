@@ -24,12 +24,14 @@ module Git (
 	gitDir,
 	configTrue,
 	attributes,
+	hookPath,
 	assertLocal,
 ) where
 
 import qualified Data.Map as M
 import Data.Char
 import Network.URI (uriPath, uriScheme, unEscapeString)
+import System.Directory
 
 import Common
 import Git.Types
@@ -93,16 +95,24 @@ configBare repo = maybe unknown (fromMaybe False . configTrue) $
 			" is a bare repository; config not read"
 
 {- Path to a repository's gitattributes file. -}
-attributes :: Repo -> String
+attributes :: Repo -> FilePath
 attributes repo
 	| configBare repo = workTree repo ++ "/info/.gitattributes"
 	| otherwise = workTree repo ++ "/.gitattributes"
 
 {- Path to a repository's .git directory. -}
-gitDir :: Repo -> String
+gitDir :: Repo -> FilePath
 gitDir repo
 	| configBare repo = workTree repo
 	| otherwise = workTree repo </> ".git"
+
+{- Path to a given hook script in a repository, only if the hook exists
+ - and is executable. -}
+hookPath :: String -> Repo -> IO (Maybe FilePath)
+hookPath script repo = do
+	let hook = gitDir repo </> "hooks" </> script
+	ok <- doesFileExist hook
+	return $ if ok then Just hook else Nothing
 
 {- Path to a repository's --work-tree, that is, its top.
  -
