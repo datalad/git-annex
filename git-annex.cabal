@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120310
+Version: 3.20120315
 Cabal-Version: >= 1.6
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -38,9 +38,6 @@ Executable git-annex
 Executable git-annex-shell
   Main-Is: git-annex-shell.hs
   Other-Modules: Utility.StatFS
-
-Executable git-union-merge
-  Main-Is: git-union-merge.hs
 
 source-repository head
   type: git

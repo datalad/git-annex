@@ -9,8 +9,8 @@ endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
 
-bins=git-annex git-annex-shell git-union-merge
-mans=git-annex.1 git-annex-shell.1 git-union-merge.1
+bins=git-annex
+mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs
 
 all=$(bins) $(mans) docs
@@ -48,6 +48,7 @@ git-union-merge.1: doc/git-union-merge.mdwn
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
 	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex

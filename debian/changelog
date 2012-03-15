@@ -1,4 +1,4 @@
-git-annex (3.20120310) UNRELEASED; urgency=low
+git-annex (3.20120315) unstable; urgency=low
 
   * fsck: Fix up any broken links and misplaced content caused by the
     directory hash calculation bug fixed in the last release.
@@ -12,12 +12,15 @@ git-annex (3.20120310) UNRELEASED; urgency=low
   * Added annex.bloomcapacity and annex.bloomaccuracy, which can be
     adjusted as desired to tune the bloom filter.
   * status: Display amount of memory used by bloom filter, and
-    detect then it's too small for the number of keys in a repository.
+    detect when it's too small for the number of keys in a repository.
   * git-annex-shell: Runs hooks/annex-content after content is received
     or dropped.
   * Work around a bug in rsync (IMHO) introduced by openSUSE's SIP patch.
+  * git-annex now behaves as git-annex-shell if symlinked to and run by that
+    name. The Makefile sets this up, saving some 8 mb of installed size.
+  * git-union-merge is a demo program, so it is no longer built by default.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 15 Mar 2012 11:05:28 -0400
 
 git-annex (3.20120309) unstable; urgency=low
 
