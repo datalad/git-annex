@@ -29,8 +29,8 @@ usage header cmds commonoptions = unlines $
 		-- be displayed after the command.
 		alloptlines = filter (not . null) $
 			lines $ usageInfo "" $
-				concatMap cmdoptions cmds ++ commonoptions
-		(cmdlines, optlines) = go (sort cmds) alloptlines []
+				concatMap cmdoptions scmds ++ commonoptions
+		(cmdlines, optlines) = go scmds alloptlines []
 		go [] os ls = (ls, os)
 		go (c:cs) os ls = go cs os' (ls++(l:o))
 			where
@@ -46,6 +46,7 @@ usage header cmds commonoptions = unlines $
 		namepad = pad $ longest cmdname + 1
 		descpad = pad $ longest cmdparamdesc + 2
 		longest f = foldl max 0 $ map (length . f) cmds
+		scmds = sort cmds
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String
