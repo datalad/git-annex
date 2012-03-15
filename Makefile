@@ -1,9 +1,10 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-GHCFLAGS=-O2 -Wall $(IGNORE)
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp
+GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(IGNORE)
+GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
@@ -24,7 +25,7 @@ all: $(all)
 sources: $(sources)
 
 # Disables optimisation. Not for production use.
-fast: GHCFLAGS=-Wall $(IGNORE)
+fast: GHCFLAGS=$(BASEFLAGS)
 fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
@@ -65,7 +66,7 @@ test:
 
 testcoverage:
 	rm -f test.tix test
-	ghc -odir build/test -hidir build/test $(GHCFLAGS) --make -fhpc test
+	ghc $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -89,9 +90,8 @@ docs: $(mans)
 		--exclude='news/.*'
 
 clean:
-	rm -rf build $(bins) $(mans) test configure  *.tix .hpc $(sources)
-	rm -rf doc/.ikiwiki html dist
-	find . \( -name \*.o -or -name \*.hi \) -exec rm {} \;
+	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
+		doc/.ikiwiki html dist
 
 # Workaround for cabal sdist not running Setup hooks, so I cannot
 # generate a file list there.
