@@ -649,7 +649,7 @@ Here are all the supported configuration settings.
   A command to run when git-annex begins to use the remote. This can
   be used to, for example, mount the directory containing the remote.
 
-  The command may be run repeatedly in multiple git-annex processes
+  The command may be run repeatedly when multiple git-annex processes
   are running concurrently.
 
 * `remote.<name>.annex-stop-command`
