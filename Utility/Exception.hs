@@ -25,10 +25,7 @@ catchDefaultIO a def = catchIO a (const $ return def)
 
 {- Catches IO errors and returns the error message. -}
 catchMsgIO :: IO a -> IO (Either String a)
-catchMsgIO a = dispatch <$> tryIO a
-	where
-		dispatch (Left e) = Left $ show e
-		dispatch (Right v) = Right v
+catchMsgIO a = either (Left . show) Right <$> tryIO a
 
 {- catch specialized for IO errors only -}
 catchIO :: IO a -> (IOException -> IO a) -> IO a
