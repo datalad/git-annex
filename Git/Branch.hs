@@ -41,14 +41,14 @@ changed origbranch newbranch repo
  -}
 fastForward :: Branch -> [Ref] -> Repo -> IO Bool
 fastForward _ [] _ = return True
-fastForward branch (first:rest) repo = do
+fastForward branch (first:rest) repo =
 	-- First, check that the branch does not contain any
 	-- new commits that are not in the first ref. If it does,
 	-- cannot fast-forward.
-	diverged <- changed first branch repo
-	if diverged
-		then no_ff
-		else maybe no_ff do_ff =<< findbest first rest
+	ifM (changed first branch repo)
+		( no_ff
+		, maybe no_ff do_ff =<< findbest first rest
+		)
 	where
 		no_ff = return False
 		do_ff to = do

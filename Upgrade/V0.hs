@@ -35,14 +35,11 @@ lookupFile0 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile0 = Upgrade.V1.lookupFile1
 
 getKeysPresent0 :: FilePath -> Annex [Key]
-getKeysPresent0 dir = do
-	exists <- liftIO $ doesDirectoryExist dir
-	if not exists
-		then return []
-		else do
-			contents <- liftIO $ getDirectoryContents dir
-			files <- liftIO $ filterM present contents
-			return $ map fileKey0 files
+getKeysPresent0 dir = ifM (liftIO $ doesDirectoryExist dir)
+	( liftIO $ map fileKey0
+		<$> (filterM present =<< getDirectoryContents dir)
+	, return []
+	)
 	where
 		present d = do
 			result <- tryIO $

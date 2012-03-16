@@ -26,16 +26,15 @@ getMaybe key repo = M.lookup key (config repo)
 
 {- Runs git config and populates a repo with its config. -}
 read :: Repo -> IO Repo
-read repo@(Repo { location = Dir d }) = do
+read repo@(Repo { location = Dir d }) = bracketcd d $
 	{- Cannot use pipeRead because it relies on the config having
 	   been already read. Instead, chdir to the repo. -}
-	cwd <- getCurrentDirectory
-	if dirContains d cwd
-		then go
-		else bracket_ (changeWorkingDirectory d) (changeWorkingDirectory cwd) go
+	pOpen ReadFromPipe "git" ["config", "--null", "--list"] $ hRead repo
 	where
-		go = pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
-			hRead repo
+		bracketcd to a = bracketcd' to a =<< getCurrentDirectory
+		bracketcd' to a cwd 
+			| dirContains to cwd = a
+			| otherwise = bracket_ (changeWorkingDirectory to) (changeWorkingDirectory cwd) a
 read r = assertLocal r $
 	error $ "internal error; trying to read config of " ++ show r
 

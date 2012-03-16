@@ -58,13 +58,13 @@ gitPreCommitHookWrite = unlessBare $ do
 gitPreCommitHookUnWrite :: Annex ()
 gitPreCommitHookUnWrite = unlessBare $ do
 	hook <- preCommitHook
-	whenM (liftIO $ doesFileExist hook) $ do
-		c <- liftIO $ readFile hook
-		if c == preCommitScript
-			then liftIO $ removeFile hook
-			else warning $ "pre-commit hook (" ++ hook ++ 
+	whenM (liftIO $ doesFileExist hook) $
+		ifM (liftIO $ (==) preCommitScript <$> readFile hook)
+			( liftIO $ removeFile hook
+			, warning $ "pre-commit hook (" ++ hook ++ 
 				") contents modified; not deleting." ++
 				" Edit it to remove call to git annex."
+			)
 
 unlessBare :: Annex () -> Annex ()
 unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
