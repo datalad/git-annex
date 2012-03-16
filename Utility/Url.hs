@@ -9,7 +9,6 @@ module Utility.Url (
 	URLString,
 	check,
 	exists,
-	canDownload,
 	download,
 	get
 ) where
@@ -43,9 +42,6 @@ exists url =
 				_ -> return (False, Nothing)
 	where
 		size = liftM Prelude.read . lookupHeader HdrContentLength . rspHeaders
-
-canDownload :: IO Bool
-canDownload = (||) <$> inPath "wget" <*> inPath "curl"
 
 {- Used to download large files, such as the contents of keys.
  -
