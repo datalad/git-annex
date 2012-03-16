@@ -14,15 +14,10 @@ module Utility.Url (
 	get
 ) where
 
-import Control.Applicative
-import Control.Monad
+import Common
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
-import Data.Maybe
-
-import Utility.SafeCommand
-import Utility.Path
 
 type URLString = String
 
@@ -47,7 +42,7 @@ exists url =
 				(2,_,_) -> return (True, size r)
 				_ -> return (False, Nothing)
 	where
-		size = liftM read . lookupHeader HdrContentLength . rspHeaders
+		size = liftM Prelude.read . lookupHeader HdrContentLength . rspHeaders
 
 canDownload :: IO Bool
 canDownload = (||) <$> inPath "wget" <*> inPath "curl"
@@ -60,20 +55,17 @@ canDownload = (||) <$> inPath "wget" <*> inPath "curl"
  - for only one in.
  -}
 download :: URLString -> [CommandParam] -> FilePath -> IO Bool
-download url options file = do
-	e <- inPath "wget"
-	if e
-		then
-			go "wget" [Params "-c -O", File file, File url]
-		else
-			-- Uses the -# progress display, because the normal
-			-- one is very confusing when resuming, showing
-			-- the remainder to download as the whole file,
-			-- and not indicating how much percent was
-			-- downloaded before the resume.
-			go "curl" [Params "-L -C - -# -o", File file, File url]
+download url options file = ifM (inPath "wget") (wget , curl)
 	where
-		go cmd opts = boolSystem cmd (options++opts)
+		wget = go "wget" [Params "-c -O"]
+		{- Uses the -# progress display, because the normal
+		 - one is very confusing when resuming, showing
+		 - the remainder to download as the whole file,
+		 - and not indicating how much percent was
+		 - downloaded before the resume. -}
+		curl = go "curl" [Params "-L -C - -# -o"]
+		go cmd opts = boolSystem cmd $
+			options++opts++[File file, File url]
 
 {- Downloads a small file. -}
 get :: URLString -> IO String
