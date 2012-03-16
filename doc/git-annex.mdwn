@@ -713,6 +713,12 @@ Here are all the supported configuration settings.
   Default ssh, rsync, wget/curl, and bup options to use if a remote does not
   have specific options.
 
+* `remote.<name>.rsyncurl`
+
+  Used by rsunc special remotes, this configures
+  the location of the rsync repository to use. Normally this is automaticaly
+  set up by `git annex initremote`, but you can change it if needed.
+
 * `remote.<name>.buprepo`
 
   Used by bup special remotes, this configures
