@@ -7,8 +7,8 @@
 
 module Remote.Git (remote, repoAvail) where
 
-import Control.Exception.Extensible
 import qualified Data.Map as M
+import Control.Exception.Extensible
 
 import Common.Annex
 import Utility.CopyFile
@@ -102,11 +102,8 @@ tryGitConfigRead r
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
-		safely a = do
-			result <- liftIO (try a :: IO (Either SomeException Git.Repo))
-			case result of
-				Left _ -> return r
-				Right r' -> return r'
+		safely a = either (const $ return r) return
+				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $

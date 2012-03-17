@@ -8,7 +8,7 @@
 module Utility.Monad where
 
 import Data.Maybe
-import Control.Monad (liftM, liftM2)
+import Control.Monad (liftM)
 
 {- Return the first value from a list, if any, satisfying the given
  - predicate -}
@@ -31,15 +31,13 @@ ifM cond (thenclause, elseclause) = do
 	c <- cond
 	if c then thenclause else elseclause
 
-{- monadic ||
- -
- - Compare with (||) <$> ma <*> mb, which always runs both ma and mb. -}
-orM :: Monad m => m Bool -> m Bool -> m Bool
-orM ma mb = ifM ma ( return True , mb )
+{- short-circuiting monadic || -}
+(<||>) :: Monad m => m Bool -> m Bool -> m Bool
+ma <||> mb = ifM ma ( return True , mb )
 
-{- monadic &&  (for completeness) -}
-andM :: Monad m => m Bool -> m Bool -> m Bool
-andM  = liftM2 (&&)
+{- short-circuiting monadic && -}
+(<&&>) :: Monad m => m Bool -> m Bool -> m Bool
+ma <&&> mb = ifM ma ( mb , return False )
 
 {- Runs an action, passing its value to an observer before returning it. -}
 observe :: Monad m => (a -> m b) -> m a -> m a
