@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="don't do that"
+ date="2012-03-19T18:23:13Z"
+ content="""
+Suppose you do that to repos A and B. Now, in A, you `git annex drop` a file that is only present in those repositories. A checks B to make sure it still has a copy of the file. It sees the (same) file there, so assumes it's safe to drop. The file is removed from A, also removing it from B, and losing data.
+
+It is possible to configure A and B to mutually distrust one-another and avoid this problem, but there will be other problems too.
+
+Instead, git-annex supports using `cp --reflink=auto`, which on filesystems supporting Copy On Write (eg, btrfs), avoids duplicating contents when A and B are on the same filesystem.
+"""]]
