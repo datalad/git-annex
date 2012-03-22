@@ -36,7 +36,7 @@ import qualified Git
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Branch
-import Utility.StatFS
+import Utility.DiskFree
 import Utility.FileMode
 import qualified Utility.Url as Url
 import Types.Key
@@ -44,7 +44,6 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Config
 import Annex.Exception
-import qualified Build.SysConfig
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -176,22 +175,19 @@ checkDiskSpace = checkDiskSpace' 0
 
 checkDiskSpace' :: Integer -> Key -> Annex ()
 checkDiskSpace' adjustment key = do
-	reserve <- getDiskReserve True
-	stats <- inRepo $ getFileSystemStats .gitAnnexDir
-	case (cancheck, stats, keySize key) of
-		(False, _, _) -> return ()
-		(_, Nothing, _) -> return ()
-		(_, _, Nothing) -> return ()
-		(_, Just (FileSystemStats { fsStatBytesAvailable = have }), Just need) ->
+	reserve <- getDiskReserve
+	free <- inRepo $ getDiskFree . gitAnnexDir
+	case (free, keySize key) of
+		(Just have, Just need) ->
 			when (need + reserve > have + adjustment) $
 				needmorespace (need + reserve - have - adjustment)
+		_ -> return ()
 	where
 		needmorespace n = unlessM (Annex.getState Annex.force) $
 			error $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
 				" more" ++ forcemsg
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
-		cancheck = Build.SysConfig.statfs_sanity_checked == Just True
 
 {- Moves a file into .git/annex/objects/
  -

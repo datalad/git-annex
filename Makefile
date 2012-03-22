@@ -1,6 +1,6 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility
 GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE
@@ -11,7 +11,8 @@ GHCMAKE=ghc $(GHCFLAGS) --make
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
-sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs
+sources=Build/SysConfig.hs Utility/Touch.hs
+clibs=Utility/diskfree.o
 
 all=$(bins) $(mans) docs
 
@@ -28,15 +29,16 @@ sources: $(sources)
 fast: GHCFLAGS=$(BASEFLAGS)
 fast: $(bins)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	$(GHCMAKE) configure
 	./configure
 
 %.hs: %.hsc
 	hsc2hs $<
 
-$(bins): $(sources)
-	$(GHCMAKE) $@
+
+git-annex: $(sources) $(clibs)
+	$(GHCMAKE) $@ $(clibs)
 
 git-annex.1: doc/git-annex.mdwn
 	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
@@ -92,7 +94,7 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist
+		doc/.ikiwiki html dist $(clibs)
 
 # Workaround for cabal sdist not running Setup hooks, so I cannot
 # generate a file list there.

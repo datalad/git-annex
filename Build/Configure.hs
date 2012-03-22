@@ -10,12 +10,8 @@ import Control.Applicative
 import Build.TestConfig
 import Utility.SafeCommand
 
-tests :: Bool -> [TestCase]
-tests True = cabaltests ++ common
-tests False = common
-
-common :: [TestCase]
-common =
+tests :: [TestCase]
+tests =
 	[ TestCase "version" getVersion
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
@@ -31,11 +27,6 @@ common =
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "ssh connection caching" getSshConnectionCaching
 	] ++ shaTestCases [1, 256, 512, 224, 384]
-
-cabaltests :: [TestCase]
-cabaltests =
-	[ TestCase "StatFS" testStatFSDummy
-	]
 
 shaTestCases :: [Int] -> [TestCase]
 shaTestCases l = map make l
@@ -80,10 +71,6 @@ getGitVersion = do
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 	boolSystem "sh" [Param "-c", Param "ssh -o ControlPersist=yes -V >/dev/null 2>/dev/null"]
-
-testStatFSDummy :: Test
-testStatFSDummy = 
-	return $ Config "statfs_sanity_checked" $ MaybeBoolConfig Nothing
 
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()

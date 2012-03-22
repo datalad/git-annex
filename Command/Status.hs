@@ -22,7 +22,7 @@ import qualified Git
 import qualified Annex
 import Command
 import Utility.DataUnits
-import Utility.StatFS
+import Utility.DiskFree
 import Annex.Content
 import Types.Key
 import Backend
@@ -30,7 +30,6 @@ import Logs.UUID
 import Logs.Trust
 import Remote
 import Config
-import qualified Build.SysConfig
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -173,19 +172,16 @@ bloom_info = stat "bloom filter size" $ json id $ do
 
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $
-	if Build.SysConfig.statfs_sanity_checked == Just True
-		then calcfree
-			<$> getDiskReserve False
-			<*> inRepo (getFileSystemStats . gitAnnexDir)
-		else return unknown
+	calcfree
+		<$> getDiskReserve
+		<*> inRepo (getDiskFree . gitAnnexDir)
 	where
-		calcfree reserve (Just (FileSystemStats { fsStatBytesAvailable = have })) =
+		calcfree reserve (Just have) =
 			roughSize storageUnits True $ nonneg $ have - reserve
-		calcfree _ _ = unknown
+		calcfree _ _ = "unknown"
 		nonneg x
 			| x >= 0 = x
 			| otherwise = 0
-		unknown = "unknown"
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $
