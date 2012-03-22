@@ -141,6 +141,20 @@ local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	countKeys <$> cachedPresentData
 
+known_annex_size :: Stat
+known_annex_size = stat "known annex size" $ json id $
+	showSizeKeys <$> cachedReferencedData
+
+known_annex_keys :: Stat
+known_annex_keys = stat "known annex keys" $ json show $
+	countKeys <$> cachedReferencedData
+
+tmp_size :: Stat
+tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
+
+bad_data_size :: Stat
+bad_data_size = staleSize "bad keys size" gitAnnexBadDir
+
 bloom_info :: Stat
 bloom_info = stat "bloom filter size" $ json id $ do
 	localkeys <- countKeys <$> cachedPresentData
@@ -157,10 +171,6 @@ bloom_info = stat "bloom filter size" $ json id $ do
 
 	return $ size ++ note
 
-known_annex_size :: Stat
-known_annex_size = stat "known annex size" $ json id $
-	showSizeKeys <$> cachedReferencedData
-
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift go
 	where
@@ -171,22 +181,12 @@ disk_size = stat "available local disk space" $ json id $ lift go
 					<*> inRepo (getFileSystemStats . gitAnnexDir)
 			| otherwise = return unknown
 		calcfree reserve (Just (FileSystemStats { fsStatBytesAvailable = have })) =
-			roughSize storageUnits True $ unreserved reserve have
+			roughSize storageUnits True $ nonneg $ have - reserve
 		calcfree _ _ = unknown
-		unreserved reserve have
-			| have >= reserve = have - reserve
+		nonneg x
+			| x >= 0 = x
 			| otherwise = 0
 		unknown = "unknown"
-
-known_annex_keys :: Stat
-known_annex_keys = stat "known annex keys" $ json show $
-	countKeys <$> cachedReferencedData
-
-tmp_size :: Stat
-tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
-
-bad_data_size :: Stat
-bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $
