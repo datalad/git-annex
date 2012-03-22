@@ -45,6 +45,7 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Config
 import Annex.Exception
+import qualified Build.SysConfig
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -178,13 +179,14 @@ checkDiskSpace' :: Integer -> Key -> Annex ()
 checkDiskSpace' adjustment key = do
 	g <- gitRepo
 	r <- getConfig g "diskreserve" ""
+	sanitycheck r
 	let reserve = fromMaybe megabyte $ readSize dataUnits r
 	stats <- liftIO $ getFileSystemStats (gitAnnexDir g)
-	sanitycheck r stats
-	case (stats, keySize key) of
-		(Nothing, _) -> return ()
-		(_, Nothing) -> return ()
-		(Just (FileSystemStats { fsStatBytesAvailable = have }), Just need) ->
+	case (cancheck, stats, keySize key) of
+		(False, _, _) -> return ()
+		(_, Nothing, _) -> return ()
+		(_, _, Nothing) -> return ()
+		(_, Just (FileSystemStats { fsStatBytesAvailable = have }), Just need) ->
 			when (need + reserve > have + adjustment) $
 				needmorespace (need + reserve - have - adjustment)
 	where
@@ -195,8 +197,8 @@ checkDiskSpace' adjustment key = do
 				roughSize storageUnits True n ++
 				" more" ++ forcemsg
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
-		sanitycheck r stats
-			| not (null r) && isNothing stats = do
+		sanitycheck r
+			| not (null r) && not cancheck = do
 				unlessM (Annex.getState Annex.force) $
 					error $ "You have configured a diskreserve of "
 						++ r ++
@@ -204,6 +206,7 @@ checkDiskSpace' adjustment key = do
 						++ forcemsg
 				return ()
 			| otherwise = return ()
+		cancheck = Build.SysConfig.statfs_sanity_checked == Just True
 
 {- Moves a file into .git/annex/objects/
  -
