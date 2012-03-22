@@ -13,11 +13,17 @@
 # define STATSTRUCT statfs
 # define STATCALL statfs64
 #else
-#if defined (__FreeBSD__) || defined (__FreeBSD_kernel__)
+#if defined (__FreeBSD__)
 # include <sys/param.h>
 # include <sys/mount.h>
 # define STATSTRUCT statfs
-# define STATCALL statfs
+# define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
+#else
+#if defined (__FreeBSD_kernel__) /* Debian kFreeBSD */
+# include <sys/param.h>
+# include <sys/mount.h>
+# define STATSTRUCT statfs
+# define STATCALL statfs64
 #else
 #if defined (__linux__)
 # include <sys/statvfs.h>
@@ -29,8 +35,10 @@
 #endif
 #endif
 #endif
+#endif
 
 #include <errno.h>
+#include <stdio.h>
 
 /* Checks the amount of disk that is available to regular (non-root) users.
  * (If there's an error, or this is not supported,
