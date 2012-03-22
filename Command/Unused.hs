@@ -23,13 +23,13 @@ import Annex.Content
 import Utility.FileMode
 import Utility.TempFile
 import Logs.Location
+import Config
 import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
-import qualified Git.Config
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
@@ -189,10 +189,10 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  -}
 bloomCapacity :: Annex Int
 bloomCapacity = fromMaybe 500000 . readish
-	<$> fromRepo (Git.Config.get "annex.bloomcapacity" "")
+	<$> getConfig "annex.bloomcapacity" ""
 bloomAccuracy :: Annex Int
 bloomAccuracy = fromMaybe 1000 . readish
-	<$> fromRepo (Git.Config.get "annex.bloomaccuracy" "")
+	<$> getConfig "annex.bloomaccuracy" ""
 bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity

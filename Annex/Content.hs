@@ -33,7 +33,6 @@ import Common.Annex
 import Logs.Location
 import Annex.UUID
 import qualified Git
-import qualified Git.Config
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Branch
@@ -308,7 +307,7 @@ saveState oneshot = do
 			( Annex.Branch.commit "update" , Annex.Branch.stage)
 	where
 		alwayscommit = fromMaybe True . Git.configTrue
-			<$> fromRepo (Git.Config.get "annex.alwayscommit" "")
+			<$> getConfig "annex.alwayscommit" ""
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool

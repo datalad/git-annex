@@ -32,9 +32,8 @@ getConfig key def = fromRepo $ Git.Config.get key def
 {- Looks up a per-remote config setting in git config.
  - Failing that, tries looking for a global config option. -}
 getRemoteConfig :: Git.Repo -> ConfigKey -> String -> Annex String
-getRemoteConfig r key def = do
-	def' <- getConfig key def
-	fromRepo $ Git.Config.get (remoteConfig r key) def'
+getRemoteConfig r key def =
+	getConfig (remoteConfig r key) =<< getConfig key def
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
@@ -85,9 +84,8 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 	where
 		use (Just n) = return n
 		use Nothing = perhaps (return 1) =<< 
-			readish <$> fromRepo (Git.Config.get config "1")
+			readish <$> getConfig "annex.numcopies" "1"
 		perhaps fallback = maybe fallback (return . id)
-		config = "annex.numcopies"
 
 {- Gets the trust level set for a remote in git config. -}
 getTrustLevel :: Git.Repo -> Annex (Maybe String)

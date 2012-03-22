@@ -15,7 +15,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Annex.LockPool
 import qualified Git
-import qualified Git.Config
+import Config
 import qualified Build.SysConfig as SysConfig
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
@@ -47,7 +47,7 @@ sshInfo (host, port) = ifM caching
 	where
 		caching = fromMaybe SysConfig.sshconnectioncaching 
 			. Git.configTrue
-			<$> fromRepo (Git.Config.get "annex.sshcaching" "")
+			<$> getConfig "annex.sshcaching" ""
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =
