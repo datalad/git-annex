@@ -1,6 +1,8 @@
 git-annex (3.20120316) UNRELEASED; urgency=low
 
   * Improve detection of inability to check free disk space.
+  * status: Prints available local disk space, or shows if git-annex
+    doesn't know.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 21 Mar 2012 21:19:16 -0400
 

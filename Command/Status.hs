@@ -22,12 +22,15 @@ import qualified Git
 import qualified Annex
 import Command
 import Utility.DataUnits
+import Utility.StatFS
 import Annex.Content
 import Types.Key
 import Backend
 import Logs.UUID
 import Logs.Trust
 import Remote
+import Config
+import qualified Build.SysConfig
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -76,6 +79,7 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
+	, disk_size
 	, bloom_info
 	, backend_usage
 	]
@@ -156,6 +160,23 @@ bloom_info = stat "bloom filter size" $ json id $ do
 known_annex_size :: Stat
 known_annex_size = stat "known annex size" $ json id $
 	showSizeKeys <$> cachedReferencedData
+
+disk_size :: Stat
+disk_size = stat "available local disk space" $ json id $ lift go
+	where
+		go
+			| Build.SysConfig.statfs_sanity_checked == Just True =
+				calcfree
+					<$> getDiskReserve False
+					<*> inRepo (getFileSystemStats . gitAnnexDir)
+			| otherwise = return unknown
+		calcfree reserve (Just (FileSystemStats { fsStatBytesAvailable = have })) =
+			roughSize storageUnits True $ unreserved reserve have
+		calcfree _ _ = unknown
+		unreserved reserve have
+			| have >= reserve = have - reserve
+			| otherwise = 0
+		unknown = "unknown"
 
 known_annex_keys :: Stat
 known_annex_keys = stat "known annex keys" $ json show $

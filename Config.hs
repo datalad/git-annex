@@ -12,6 +12,8 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
+import qualified Build.SysConfig
+import Utility.DataUnits
 
 type ConfigKey = String
 
@@ -85,3 +87,22 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 {- Gets the trust level set for a remote in git config. -}
 getTrustLevel :: Git.Repo -> Annex (Maybe String)
 getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"
+
+{- Gets annex.diskreserve setting. -}
+getDiskReserve :: Bool -> Annex Integer
+getDiskReserve sanitycheck = do
+	g <- gitRepo
+	r <- getConfig g "diskreserve" ""
+	when sanitycheck $ check r
+	return $ fromMaybe megabyte $ readSize dataUnits r
+	where
+		megabyte = 1000000
+		check r
+			| not (null r) && not cancheck = do
+				unlessM (Annex.getState Annex.force) $
+					error $ "You have configured a diskreserve of "
+						++ r ++
+						" but disk space checking is not working"
+				return ()
+			| otherwise = return ()
+		cancheck = Build.SysConfig.statfs_sanity_checked == Just True

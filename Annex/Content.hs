@@ -177,11 +177,8 @@ checkDiskSpace = checkDiskSpace' 0
 
 checkDiskSpace' :: Integer -> Key -> Annex ()
 checkDiskSpace' adjustment key = do
-	g <- gitRepo
-	r <- getConfig g "diskreserve" ""
-	sanitycheck r
-	let reserve = fromMaybe megabyte $ readSize dataUnits r
-	stats <- liftIO $ getFileSystemStats (gitAnnexDir g)
+	reserve <- getDiskReserve True
+	stats <- inRepo $ getFileSystemStats .gitAnnexDir
 	case (cancheck, stats, keySize key) of
 		(False, _, _) -> return ()
 		(_, Nothing, _) -> return ()
@@ -190,22 +187,11 @@ checkDiskSpace' adjustment key = do
 			when (need + reserve > have + adjustment) $
 				needmorespace (need + reserve - have - adjustment)
 	where
-		megabyte :: Integer
-		megabyte = 1000000
 		needmorespace n = unlessM (Annex.getState Annex.force) $
 			error $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
 				" more" ++ forcemsg
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
-		sanitycheck r
-			| not (null r) && not cancheck = do
-				unlessM (Annex.getState Annex.force) $
-					error $ "You have configured a diskreserve of "
-						++ r ++
-						" but disk space checking is not working"
-						++ forcemsg
-				return ()
-			| otherwise = return ()
 		cancheck = Build.SysConfig.statfs_sanity_checked == Just True
 
 {- Moves a file into .git/annex/objects/
