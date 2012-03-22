@@ -60,8 +60,8 @@ gen r u c = do
 
 genRsyncOpts :: Git.Repo -> Annex RsyncOpts
 genRsyncOpts r = do
-	url <- getConfig r "rsyncurl" (error "missing rsyncurl")
-	opts <- getConfig r "rsync-options" ""
+	url <- getRemoteConfig r "rsyncurl" (error "missing rsyncurl")
+	opts <- getRemoteConfig r "rsync-options" ""
 	return $ RsyncOpts url $ map Param $ filter safe $ words opts
 	where
 		safe o

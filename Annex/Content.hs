@@ -313,8 +313,7 @@ saveState oneshot = do
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = do
-	g <- gitRepo
-	o <- map Param . words <$> getConfig g "web-options" ""
+	o <- map Param . words <$> getConfig "annex.web-options" ""
 	liftIO $ anyM (\u -> Url.download u o file) urls
 
 {- Copies a key's content, when present, to a temp file.

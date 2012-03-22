@@ -25,11 +25,15 @@ setConfig k value = do
 	newg <- inRepo Git.Config.read
 	Annex.changeState $ \s -> s { Annex.repo = newg }
 
+{- Looks up a git config setting in git config. -}
+getConfig :: ConfigKey -> String -> Annex String
+getConfig key def = fromRepo $ Git.Config.get key def
+
 {- Looks up a per-remote config setting in git config.
  - Failing that, tries looking for a global config option. -}
-getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
-getConfig r key def = do
-	def' <- fromRepo $ Git.Config.get ("annex." ++ key) def
+getRemoteConfig :: Git.Repo -> ConfigKey -> String -> Annex String
+getRemoteConfig r key def = do
+	def' <- getConfig key def
 	fromRepo $ Git.Config.get (remoteConfig r key) def'
 
 {- A per-remote config setting in git config. -}
@@ -41,11 +45,11 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" +
  - is set and prints a number, that is used. -}
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
-	cmd <- getConfig r "cost-command" ""
+	cmd <- getRemoteConfig r "cost-command" ""
 	(fromMaybe def . readish) <$>
 		if not $ null cmd
 			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
-			else getConfig r "cost" ""
+			else getRemoteConfig r "cost" ""
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
@@ -71,7 +75,8 @@ prop_cost_sane = False `notElem`
 
 {- Checks if a repo should be ignored. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = not . fromMaybe False . Git.configTrue <$> getConfig r "ignore" ""
+repoNotIgnored r = not . fromMaybe False . Git.configTrue
+	<$> getRemoteConfig r "ignore" ""
 
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
@@ -91,8 +96,7 @@ getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"
 {- Gets annex.diskreserve setting. -}
 getDiskReserve :: Bool -> Annex Integer
 getDiskReserve sanitycheck = do
-	g <- gitRepo
-	r <- getConfig g "diskreserve" ""
+	r <- getConfig "diskreserve" ""
 	when sanitycheck $ check r
 	return $ fromMaybe megabyte $ readSize dataUnits r
 	where

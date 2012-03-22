@@ -33,7 +33,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	dir <- getConfig r "directory" (error "missing directory")
+	dir <- getRemoteConfig r "directory" (error "missing directory")
 	cst <- remoteCost r cheapRemoteCost
 	let chunksize = chunkSize c
 	return $ encryptableRemote c

@@ -35,7 +35,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	buprepo <- getConfig r "buprepo" (error "missing buprepo")
+	buprepo <- getRemoteConfig r "buprepo" (error "missing buprepo")
 	cst <- remoteCost r (if bupLocal buprepo then semiCheapRemoteCost else expensiveRemoteCost)
 	bupr <- liftIO $ bup2GitRemote buprepo
 	(u', bupr') <- getBupUUID bupr u
@@ -99,7 +99,7 @@ pipeBup params inh outh = do
 
 bupSplitParams :: Git.Repo -> BupRepo -> Key -> CommandParam -> Annex [CommandParam]
 bupSplitParams r buprepo k src = do
-	o <- getConfig r "bup-split-options" ""
+	o <- getRemoteConfig r "bup-split-options" ""
 	let os = map Param $ words o
 	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 

@@ -300,7 +300,7 @@ rsyncParamsRemote r sending key file = do
 
 rsyncParams :: Git.Repo -> Annex [CommandParam]
 rsyncParams r = do
-	o <- getConfig r "rsync-options" ""
+	o <- getRemoteConfig r "rsync-options" ""
 	return $ options ++ map Param (words o)
 	where
  		-- --inplace to resume partial files

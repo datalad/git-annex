@@ -172,14 +172,13 @@ bloom_info = stat "bloom filter size" $ json id $ do
 	return $ size ++ note
 
 disk_size :: Stat
-disk_size = stat "available local disk space" $ json id $ lift go
+disk_size = stat "available local disk space" $ json id $ lift $
+	if Build.SysConfig.statfs_sanity_checked == Just True
+		then calcfree
+			<$> getDiskReserve False
+			<*> inRepo (getFileSystemStats . gitAnnexDir)
+		else return unknown
 	where
-		go
-			| Build.SysConfig.statfs_sanity_checked == Just True =
-				calcfree
-					<$> getDiskReserve False
-					<*> inRepo (getFileSystemStats . gitAnnexDir)
-			| otherwise = return unknown
 		calcfree reserve (Just (FileSystemStats { fsStatBytesAvailable = have })) =
 			roughSize storageUnits True $ nonneg $ have - reserve
 		calcfree _ _ = unknown
