@@ -8,5 +8,5 @@ import qualified Build.Configure as Configure
 main = defaultMainWithHooks simpleUserHooks { preConf = configure }
 
 configure _ _ = do
-	Configure.run $ Configure.tests True
+	Configure.run Configure.tests
 	return (Nothing, [])
