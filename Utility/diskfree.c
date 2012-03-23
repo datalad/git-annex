@@ -10,29 +10,29 @@
 #if defined(__APPLE__)
 # include <sys/param.h>
 # include <sys/mount.h>
-# define STATSTRUCT statfs
 /* In newer OSX versions, statfs64 is deprecated, in favor of statfs,
- * which is 64 bit with a built option -- but statfs64 still works,
+ * which is 64 bit only with a build option -- but statfs64 still works,
  * and this keeps older OSX also supported. */
 # define STATCALL statfs64
+# define STATSTRUCT statfs64
 #else
 #if defined (__FreeBSD__)
 # include <sys/param.h>
 # include <sys/mount.h>
-# define STATSTRUCT statfs
 # define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
+# define STATSTRUCT statfs
 #else
 #if defined (__FreeBSD_kernel__) /* Debian kFreeBSD */
 # include <sys/param.h>
 # include <sys/mount.h>
-# define STATSTRUCT statfs
 # define STATCALL statfs64
+# define STATSTRUCT statfs
 #else
 #if defined (__linux__)
 /* This is a POSIX standard, so might also work elsewhere. */
 # include <sys/statvfs.h>
-# define STATSTRUCT statvfs
 # define STATCALL statvfs
+# define STATSTRUCT statvfs
 #else
 # warning free space checking code not available for this OS
 # define UNKNOWN
