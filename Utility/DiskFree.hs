@@ -23,10 +23,7 @@ getDiskFree path = withFilePath path $ \c_path -> do
 	free <- c_diskfree c_path
 	ifM (safeErrno <$> getErrno)
 		( return $ Just $ toInteger free
-		, do
-			Errno i <- getErrno
-			print i
-			return Nothing
+		, return Nothing
 		)
 	where
 		safeErrno (Errno v) = v == 0
