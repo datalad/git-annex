@@ -5,6 +5,7 @@ module Build.TestConfig where
 import System.IO
 import System.Cmd
 import System.Exit
+import System.Directory
 
 type ConfigKey = String
 data ConfigValue =
@@ -36,8 +37,14 @@ instance Show Config where
 			valuetype (MaybeBoolConfig _) = "Maybe Bool"
 
 writeSysConfig :: [Config] -> IO ()
-writeSysConfig config = writeFile "Build/SysConfig.hs" body
+writeSysConfig config = do
+	e <- doesFileExist dest
+	old <- if e then readFile dest else return []
+	if (old /= body)
+		then writeFile dest body
+		else return ()
 	where
+		dest = "Build/SysConfig.hs"
 		body = unlines $ header ++ map show config ++ footer
 		header = [
 			  "{- Automatically generated. -}"
