@@ -33,11 +33,18 @@ Executable git-annex
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
    base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter
-  Other-Modules: Utility.StatFS, Utility.Touch
+  Other-Modules: Utility.Touch
+  C-Sources: Utility/diskfree.c
 
 Executable git-annex-shell
   Main-Is: git-annex-shell.hs
-  Other-Modules: Utility.StatFS
+  C-Sources: Utility/diskfree.c
+
+Test-Suite test
+  Type: exitcode-stdio-1.0
+  Main-Is: test.hs
+  Build-Depends: testpack, HUnit
+  C-Sources: Utility/diskfree.c
 
 source-repository head
   type: git
