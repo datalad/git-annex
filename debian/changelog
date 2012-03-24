@@ -2,6 +2,7 @@ git-annex (3.20120316) UNRELEASED; urgency=low
 
   * Rewrote free disk space checking code, moving the portability
     handling into a small C library.
+  * status: Display amount of free disk space.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 21 Mar 2012 21:19:16 -0400
 
