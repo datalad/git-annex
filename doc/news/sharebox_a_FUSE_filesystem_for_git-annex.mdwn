@@ -1,7 +1,7 @@
 [[!meta title="sharebox: a FUSE filesystem for git-annex"]]
 
 Christophe-Marie Duquesne has just announced 
-[Sharebox](https://github.com/chmduquesne/sharebox), a FUSE filesystem
+[Sharebox](https://github.com/chmduquesne/sharebox-fs), a FUSE filesystem
 relying on git-annex:
 
 <blockquote>
