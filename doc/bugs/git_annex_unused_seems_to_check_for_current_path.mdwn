@@ -35,3 +35,5 @@ I am using git-annex version 836e71297b8e3b5bd6f89f7eb1198f59af985b0b
 >    but I don't know how to construct such an ignore.
 > 
 > --[[Joey]] 
+
+>> Closing as there is no followup. [[done]] --[[Joey]] 
