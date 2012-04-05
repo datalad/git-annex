@@ -59,7 +59,7 @@ install: all
 	fi
 
 test:
-	@if ! $(GHCMAKE) -O0 test; then \
+	@if ! $(GHCMAKE) -O0 test $(clibs); then \
 		echo "** failed to build the test suite" >&2; \
 		exit 1; \
 	elif ! ./test; then \

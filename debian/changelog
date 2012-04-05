@@ -1,10 +1,10 @@
-git-annex (3.20120316) UNRELEASED; urgency=low
+git-annex (3.20120405) unstable; urgency=low
 
   * Rewrote free disk space checking code, moving the portability
     handling into a small C library.
   * status: Display amount of free disk space.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 21 Mar 2012 21:19:16 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 05 Apr 2012 16:19:10 -0400
 
 git-annex (3.20120315) unstable; urgency=low
 
