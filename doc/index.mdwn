@@ -24,7 +24,7 @@ To get a feel for it, see the [[walkthrough]] or read about [[how_it_works]].
 [[Feeds]]:
 
 <small>
-[[!inline pages="internal(feeds/*)" archive=yes show=5 feeds=no]]
+[[!inline pages="internal(feeds/*)" archive=yes show=8 feeds=no]]
 </small>
 """]]
 
