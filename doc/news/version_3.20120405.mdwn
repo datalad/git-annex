@@ -1,0 +1,5 @@
+git-annex 3.20120405 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Rewrote free disk space checking code, moving the portability
+     handling into a small C library.
+   * status: Display amount of free disk space."""]]
