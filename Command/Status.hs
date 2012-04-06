@@ -165,7 +165,7 @@ bloom_info = stat "bloom filter size" $ json id $ do
 
 	-- Two bloom filters are used at the same time, so double the size
 	-- of one.
-	size <- roughSize memoryUnits True . (* 2) . fromIntegral . fst <$>
+	size <- roughSize memoryUnits False . (* 2) . fromIntegral . fst <$>
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
@@ -177,7 +177,7 @@ disk_size = stat "available local disk space" $ json id $ lift $
 		<*> inRepo (getDiskFree . gitAnnexDir)
 	where
 		calcfree reserve (Just have) =
-			roughSize storageUnits True $ nonneg $ have - reserve
+			roughSize storageUnits False $ nonneg $ have - reserve
 		calcfree _ _ = "unknown"
 		nonneg x
 			| x >= 0 = x
