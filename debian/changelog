@@ -1,9 +1,9 @@
-git-annex (3.20120406) UNRELEASED; urgency=low
+git-annex (3.20120406) unstable; urgency=low
 
   * Disable diskfree on kfreebsd, as I have a build failure on kfreebsd-i386
     that is quite likely caused by it.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 07 Apr 2012 15:49:41 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 07 Apr 2012 15:50:36 -0400
 
 git-annex (3.20120405) unstable; urgency=low
 
