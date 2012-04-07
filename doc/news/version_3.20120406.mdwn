@@ -1,0 +1,4 @@
+git-annex 3.20120406 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Disable diskfree on kfreebsd, as I have a build failure on kfreebsd-i386
+     that is quite likely caused by it."""]]
