@@ -27,6 +27,7 @@
 # include <sys/mount.h>
 # define STATCALL statfs64
 # define STATSTRUCT statfs
+# define UNKNOWN /* temporarily disabled; trying to nail down a build failure */
 #else
 #if defined (__linux__)
 /* This is a POSIX standard, so might also work elsewhere. */
