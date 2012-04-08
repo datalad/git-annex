@@ -29,12 +29,14 @@ withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
 withFilesNotInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
 	{- dotfiles are not acted on unless explicitly listed -}
-	files <- filter (not . dotfile) <$> seek ps
-	dotfiles <- if null dotps then return [] else seek dotps
+	files <- filter (not . dotfile) <$>
+		seekunless (null ps && not (null params)) ps
+	dotfiles <- seekunless (null dotps) dotps
 	prepFiltered a $ return $ preserveOrder params (files++dotfiles)
 	where
 		(dotps, ps) = partition dotfile params
-		seek l = do
+		seekunless True _ = return []
+		seekunless _ l = do
 			force <- Annex.getState Annex.force
 			g <- gitRepo
 			liftIO $ (\p -> LsFiles.notInRepo force p g) l

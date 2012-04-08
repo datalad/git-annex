@@ -1,3 +1,9 @@
+git-annex (3.20120407) UNRELEASED; urgency=low
+
+  * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 08 Apr 2012 12:23:42 -0400
+
 git-annex (3.20120406) unstable; urgency=low
 
   * Disable diskfree on kfreebsd, as I have a build failure on kfreebsd-i386

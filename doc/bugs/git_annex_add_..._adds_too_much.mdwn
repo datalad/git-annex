@@ -21,3 +21,5 @@ What version of git-annex are you using? On what operating system?
 
 3.20120406
 (same problem with version 3.20120123) on Debian.
+
+> Thanks for reporting this bug, I've fixed it in git. [[done]] --[[Joey]] 
