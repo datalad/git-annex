@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlxg9HfyLFn0E87p8Em9P5G9YBUr8JYrkE"
- nickname="Yves"
- subject="comment 2"
- date="2012-04-10T16:29:33Z"
- content="""
-Okay, I was under the impression that the git-annex branch was updated when getting/dropping files in local repository.
-Are those relevant information for distant repos?
-"""]]
