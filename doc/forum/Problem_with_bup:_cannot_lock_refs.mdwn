@@ -2,12 +2,15 @@ Hi!
 
 Using bup for storing seems a good idea to save space, but I still have a problem when trying to copy files to my local git repo.
 I have two partitions:
+
 - /Data (NTFS)
+
 - / (ext4)
 
 I turned the directory /Data/Audio into a git-annex repo, and cloned it into /home/me/AudioClone
 I added the remote bup to AudioClone by doing:
-git annex initremote mybup type=bup encryption=none buprepo=
+
+    git annex initremote mybup type=bup encryption=none buprepo=
 
 But when I try to copy some files that I have previously got by "git annex get" by doing:
 git annex copy /home/me/AudioClone/someartist/somealbum --to mybup
