@@ -14,7 +14,7 @@ I added the remote bup to AudioClone by doing:
 
 But when I try to copy some files that I have previously got by "git annex get" by doing:
 
-    git annex copy /home/me/AudioClone/someartist/somealbum --to mybup
+    [~/AudioClone]$ git annex copy someartist/somealbum --to mybup
 
 it fails and tells me:
 
