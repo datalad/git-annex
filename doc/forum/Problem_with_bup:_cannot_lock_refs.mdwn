@@ -32,3 +32,5 @@ it fails and tells me:
 for each file, **except for the album cover file**, which is a simple JPG that bup doesn't try to split. This one gets copied nicely but the big FLAC files don't.
 
 I tried to restart my session, in case bup adds my username to a group or something.
+
+(I'm using Ubuntu 11.10)
