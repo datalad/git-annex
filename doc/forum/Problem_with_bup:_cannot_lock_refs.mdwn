@@ -7,7 +7,7 @@ I have two partitions:
 
 - / (ext4)
 
-I turned the directory /Data/Audio into a git-annex repo, and cloned it into /home/me/AudioClone
+I turned the directory /Data/Audio into a git-annex repo, and cloned it into /home/me/AudioClone.
 I added the remote bup to AudioClone by doing:
 
     git annex initremote mybup type=bup encryption=none buprepo=
