@@ -11,6 +11,8 @@ import Common
 import Git
 import Git.Command
 
+import Data.Char (chr)
+
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
 describe = show . base
@@ -61,3 +63,24 @@ matchingUniq :: Ref -> Repo -> IO [(Ref, Branch)]
 matchingUniq ref repo = nubBy uniqref <$> matching ref repo
 	where
 		uniqref (a, _) (b, _) = a == b
+
+{- Checks if a String is a legal git ref name.
+ -
+ - The rules for this are complex; see git-check-ref-format(1) -}
+legalRef :: Bool -> String -> Bool
+legalRef allowonelevel s
+	| any ("." `isPrefixOf`) pathbits = False
+	| any (".lock" `isSuffixOf`) pathbits = False
+	| not allowonelevel && length pathbits < 2 = False
+	| ".." `isInfixOf` s = False
+	| any (\c -> [c] `isInfixOf` s) illegalchars = False
+	| "/" `isPrefixOf` s = False
+	| "/" `isSuffixOf` s = False
+	| "//" `isInfixOf` s = False
+	| "." `isSuffixOf` s = False
+	| "@{" `isInfixOf` s = False
+	| otherwise = True
+	where
+		pathbits = split "/" s
+		illegalchars = " ~^:?*[\\" ++ controlchars
+		controlchars = chr 0o177 : [chr 0 .. chr (0o40-1)]
