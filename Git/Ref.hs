@@ -68,19 +68,25 @@ matchingUniq ref repo = nubBy uniqref <$> matching ref repo
  -
  - The rules for this are complex; see git-check-ref-format(1) -}
 legalRef :: Bool -> String -> Bool
-legalRef allowonelevel s
-	| any ("." `isPrefixOf`) pathbits = False
-	| any (".lock" `isSuffixOf`) pathbits = False
-	| not allowonelevel && length pathbits < 2 = False
-	| ".." `isInfixOf` s = False
-	| any (\c -> [c] `isInfixOf` s) illegalchars = False
-	| "/" `isPrefixOf` s = False
-	| "/" `isSuffixOf` s = False
-	| "//" `isInfixOf` s = False
-	| "." `isSuffixOf` s = False
-	| "@{" `isInfixOf` s = False
-	| otherwise = True
+legalRef allowonelevel s = all (== False) illegal
 	where
+		illegal =
+			[ any ("." `isPrefixOf`) pathbits
+			, any (".lock" `isSuffixOf`) pathbits
+			, not allowonelevel && length pathbits < 2
+			, contains ".."
+			, any (\c -> contains [c]) illegalchars
+			, begins "/"
+			, ends "/"
+			, contains "//"
+			, ends "."
+			, contains "@{"
+			, null s
+			]
+		contains v = v `isInfixOf` s
+		ends v = v `isSuffixOf` s
+		begins v = v `isPrefixOf` s
+
 		pathbits = split "/" s
 		illegalchars = " ~^:?*[\\" ++ controlchars
 		controlchars = chr 0o177 : [chr 0 .. chr (0o40-1)]
