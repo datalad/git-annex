@@ -13,7 +13,9 @@ I added the remote bup to AudioClone by doing:
     git annex initremote mybup type=bup encryption=none buprepo=
 
 But when I try to copy some files that I have previously got by "git annex get" by doing:
-git annex copy /home/me/AudioClone/someartist/somealbum --to mybup
+
+    git annex copy /home/me/AudioClone/someartist/somealbum --to mybup
+
 it fails and tells me:
 
     copy Order To Die/01 Morituri Te Salutant.flac (to mybup...) 
