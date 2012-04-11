@@ -1,6 +1,8 @@
 git-annex (3.20120407) UNRELEASED; urgency=low
 
   * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
+  * bup: Properly handle key names with spaces or other things that are
+    not legal git refs.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 08 Apr 2012 12:23:42 -0400
 

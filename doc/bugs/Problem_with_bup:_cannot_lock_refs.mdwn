@@ -48,3 +48,5 @@ I tried to restart my session, in case bup adds my username to a group or someth
 > A workaround is to switch to the SHA256 backend
 > (`git annex migrate --backend=SHA256`), which avoids spaces in its keys.
 > --[[Joey]]
+
+>> Now fixed in git. [[done]] --[[Joey]] 

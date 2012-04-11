@@ -67,8 +67,8 @@ matchingUniq ref repo = nubBy uniqref <$> matching ref repo
 {- Checks if a String is a legal git ref name.
  -
  - The rules for this are complex; see git-check-ref-format(1) -}
-legalRef :: Bool -> String -> Bool
-legalRef allowonelevel s = all (== False) illegal
+legal :: Bool -> String -> Bool
+legal allowonelevel s = all (== False) illegal
 	where
 		illegal =
 			[ any ("." `isPrefixOf`) pathbits
