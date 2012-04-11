@@ -1,6 +1,6 @@
-Most [[backends]] can transfer data to and from configured git remotes.
+git-annex can transfer data to and from configured git remotes.
 Normally those remotes are normal git repositories (bare and non-bare;
-local and remote), that store the file contents in their own git annex
+local and remote), that store the file contents in their own git-annex
 directory.
 
 But, git-annex also extends git's concept of remotes, with these special
