@@ -11,17 +11,17 @@ import System.Posix.Signals
 
 demo :: IO ()
 demo = withINotify $ \i -> do
-	watchDir i add del "/home/joey/tmp/me"
+	watchDir i (const True) add del "/home/joey/tmp/me"
 	putStrLn "started"
 	waitForTermination
 	where
 		add file = putStrLn $ "add " ++ file
 		del file = putStrLn $ "del " ++ file
 
-{- Watches for changes to files in a directory, and all its subdirectories,
- - using inotify. This function returns after its initial setup is
- - complete, leaving a thread running. Then callbacks are made for adding
- - and deleting files.
+{- Watches for changes to files in a directory, and all its subdirectories
+ - that match a test, using inotify. This function returns after its initial
+ - setup is complete, leaving a thread running. Then callbacks are made for
+ - adding and deleting files.
  -
  - Inotify is weak at recursive directory watching; the whole directory
  - tree must be walked and watches set explicitly for each subdirectory.
@@ -48,15 +48,18 @@ demo = withINotify $ \i -> do
  - /proc/sys/fs/inotify/max_user_watches (default 8192).
  - So This will fail if there are too many subdirectories.
  -}
-watchDir :: INotify -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
-watchDir i add del dir = watchDir' False i add del dir
-watchDir' :: Bool -> INotify -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
-watchDir' scan i add del dir = do
-	_ <- addWatch i [MoveIn, MoveOut, Create, Delete, CloseWrite] dir go
-	_ <- mapM walk =<< dirContents dir
-	return ()
+watchDir :: INotify -> (FilePath -> Bool) -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
+watchDir i test add del dir = watchDir' False i test add del dir
+watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
+watchDir' scan i test add del dir = do
+	if test dir
+		then do
+			_ <- addWatch i [MoveIn, MoveOut, Create, Delete, CloseWrite] dir go
+			_ <- mapM walk =<< dirContents dir
+			return ()
+		else return ()
 	where
-		recurse = watchDir' scan i add del
+		recurse = watchDir' scan i test add del
 		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
 			( recurse f
 			, if scan then add f else return ()
