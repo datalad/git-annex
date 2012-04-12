@@ -83,7 +83,7 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	dispatch (cmd : filterparams params) cmds options header $
+	dispatch False (cmd : filterparams params) cmds options header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()

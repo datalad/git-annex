@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120406
+Version: 3.20120407
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -32,7 +32,7 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
    base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
   Other-Modules: Utility.Touch
   C-Sources: Utility/diskfree.c
 

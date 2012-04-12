@@ -19,6 +19,7 @@ Build-Depends:
 	libghc-json-dev,
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
+	libghc-edit-distance-dev,
 	ikiwiki,
 	perlmagick,
 	git,
