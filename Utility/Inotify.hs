@@ -57,7 +57,7 @@ watchDir' scan i add del dir = do
 	return ()
 	where
 		recurse = watchDir' scan i add del
-		walk f = ifM (Files.isDirectory <$> getFileStatus f)
+		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
 			( recurse f
 			, if scan then add f else return ()
 			)
@@ -80,5 +80,5 @@ waitForTermination = do
 	takeMVar mv
 	where
 		check sig mv = do
-			installHandler sig (CatchOnce $ putMVar mv ()) Nothing
+			_ <- installHandler sig (CatchOnce $ putMVar mv ()) Nothing
 			return ()
