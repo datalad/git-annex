@@ -11,7 +11,7 @@ import System.Posix.Signals
 
 demo :: IO ()
 demo = withINotify $ \i -> do
-	watchDir i (const True) add del "/home/joey/tmp/me"
+	watchDir i (const True) (Just add) (Just del) "/home/joey/tmp/me"
 	putStrLn "started"
 	waitForTermination
 	where
@@ -48,30 +48,40 @@ demo = withINotify $ \i -> do
  - /proc/sys/fs/inotify/max_user_watches (default 8192).
  - So This will fail if there are too many subdirectories.
  -}
-watchDir :: INotify -> (FilePath -> Bool) -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
+watchDir :: INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
 watchDir i test add del dir = watchDir' False i test add del dir
-watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> (FilePath -> IO ()) -> (FilePath -> IO ()) -> FilePath -> IO ()
+watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
 watchDir' scan i test add del dir = do
 	if test dir
 		then do
-			_ <- addWatch i [MoveIn, MoveOut, Create, Delete, CloseWrite] dir go
+			_ <- addWatch i watchevents dir go
 			_ <- mapM walk =<< dirContents dir
 			return ()
 		else return ()
 	where
+		watchevents
+			| isJust add && isJust del =
+				[Create, MoveIn, MoveOut, Delete, CloseWrite]
+			| isJust add = [Create, MoveIn, CloseWrite]
+			| isJust del = [Create, MoveOut, Delete]
+			| otherwise = [Create]
+
 		recurse = watchDir' scan i test add del
 		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
 			( recurse f
-			, if scan then add f else return ()
+			, if scan && isJust add then fromJust add f else return ()
 			)
-		a <@> f = a $ dir </> f
+
 		go (Created { isDirectory = False }) = return ()
-		go (Created { filePath = subdir }) = recurse <@> subdir
+		go (Created { filePath = subdir }) = Just recurse <@> subdir
 		go (Closed { maybeFilePath = Just f }) = add <@> f
 		go (MovedIn { isDirectory = False, filePath = f }) = add <@> f
 		go (MovedOut { isDirectory = False, filePath = f }) = del <@> f
 		go (Deleted { isDirectory = False, filePath = f }) = del <@> f
 		go _ = return ()
+		
+		Just a <@> f = a $ dir </> f
+		Nothing <@> _ = return ()
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
