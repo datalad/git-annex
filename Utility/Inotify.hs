@@ -1,14 +1,19 @@
+{-# LANGUAGE CPP #-}
+
 module Utility.Inotify where
 
 import Common hiding (isDirectory)
 import System.INotify
 import qualified System.Posix.Files as Files
+import System.Posix.Terminal
+import Control.Concurrent.MVar
+import System.Posix.Signals
 
-demo :: IO String
+demo :: IO ()
 demo = withINotify $ \i -> do
 	watchDir i add del "/home/joey/tmp/me"
 	putStrLn "started"
-	getLine -- wait for exit
+	waitForTermination
 	where
 		add file = putStrLn $ "add " ++ file
 		del file = putStrLn $ "del " ++ file
@@ -64,3 +69,16 @@ watchDir' scan i add del dir = do
 		go (MovedOut { isDirectory = False, filePath = f }) = del <@> f
 		go (Deleted { isDirectory = False, filePath = f }) = del <@> f
 		go _ = return ()
+
+{- Pauses the main thread, letting children run until program termination. -}
+waitForTermination :: IO ()
+waitForTermination = do
+	mv <- newEmptyMVar
+	check softwareTermination mv
+	whenM (queryTerminal stdInput) $
+		check keyboardSignal mv
+	takeMVar mv
+	where
+		check sig mv = do
+			installHandler sig (CatchOnce $ putMVar mv ()) Nothing
+			return ()
