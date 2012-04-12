@@ -56,6 +56,7 @@ import qualified Command.AddUrl
 import qualified Command.Map
 import qualified Command.Upgrade
 import qualified Command.Version
+import qualified Command.Watch
 
 cmds :: [Command]
 cmds = concat
@@ -95,6 +96,7 @@ cmds = concat
 	, Command.Map.def
 	, Command.Upgrade.def
 	, Command.Version.def
+	, Command.Watch.def
 	]
 
 options :: [Option]
