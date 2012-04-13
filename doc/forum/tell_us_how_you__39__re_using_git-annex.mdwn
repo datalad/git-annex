@@ -7,6 +7,11 @@ oh my god, git-annex is amazing
 this is the revolution in fucking with gigantic piles of files that I've been waiting for
 </pre>
 
-And then my own story: I have a ton of drives. I have a lot of servers. I live in a cabin on **dialup** and often have 1 hour on broadband in a week to get everything I need. Without git-annex, managing all this would not be possible. It works perfectly for me, not a surprise since I wrote it, but still, it's a different level of "perfect" than anything I could put together before.
+And then my own story: I have a ton of drives. I have a lot of servers. I
+live in a cabin on **dialup** and often have 1 hour on broadband in a week
+to get everything I need. Without git-annex, managing all this would not be
+possible. It works perfectly for me, not a surprise since I wrote it, but
+still, it's a different level of "perfect" than anything I could put
+together before.
 
 [[!meta author=Joey]]
