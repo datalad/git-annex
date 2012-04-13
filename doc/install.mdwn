@@ -57,6 +57,7 @@ You can fetch the dependencies using `cabal install`. Then, you can build git-an
 
     runhaskell Setup.hs configure --user
     runhaskell Setup.hs build
-    runhaskell Setup.hs install --bindir=$HOME/bin
+    runhaskell Setup.hs install
 
-The `--user` option configures the build so that it uses the packages you already have in `~/.cabal`.
+The `--user` option configures the build so that it uses the packages you already have in `~/.cabal`. Binaries
+will be installed in `~/.cabal/bin`, you'll need it in your PATH.
