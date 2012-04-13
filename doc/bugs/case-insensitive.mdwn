@@ -15,3 +15,6 @@ What version of git-annex are you using? On what operating system?
 Please provide any additional information below.
 
 > The problem is that since `DiskFree.hs` generates `DiskFree.o` and `diskfree.c` generates `diskfree.o`, a case-insensitive file system overwrites one object file with the other.  Renaming `diskfree.c` to `diskfreec.c` and changing the corresponding filenames in `git-annex.cabal` fixes the problem.
+
+>> Man, not this again. The 80's called, they want their 
+>> unix portability wars back. [[fixed|done]]. --[[Joey]]

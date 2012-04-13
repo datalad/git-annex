@@ -12,7 +12,7 @@ GHCMAKE=ghc $(GHCFLAGS) --make
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs
-clibs=Utility/diskfree.o
+clibs=Utility/libdiskfree.o
 
 all=$(bins) $(mans) docs
 
