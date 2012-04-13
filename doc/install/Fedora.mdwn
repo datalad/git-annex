@@ -6,6 +6,7 @@ git clone git://git-annex.branchable.com/ git-annex
 cd git-annex
 git checkout ghc 7.0
 cabal update
+cabal install --only-dependencies
 cabal configure
 cabal build
 cabal install --bindir=$HOME/bin
