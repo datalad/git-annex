@@ -26,6 +26,7 @@ Here is a quick example of how to set this up, using `origin` as the remote name
 On the server:
 
     mkdir bare-annex
+    cd bare-annex
     git init --bare
     git annex init origin
 
