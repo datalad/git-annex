@@ -2,7 +2,7 @@ Installation recipe for Fedora 14 thruough 17.
 
 <pre>
 sudo yum install ghc cabal-install
-git clone git://git.kitenet.net/git-annex
+git clone git://git-annex.branchable.com/ git-annex
 cd git-annex
 git checkout ghc 7.0
 cabal update
