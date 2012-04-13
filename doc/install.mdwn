@@ -16,6 +16,9 @@ As a haskell package, git-annex can be installed using cabal. For example:
 
 	cabal install git-annex --bindir=$HOME/bin
 
+The above downloads the latest release. Alternatively, you can [[download]]
+it yourself and [[manually_build_with_cabal|install/cabal]].
+
 ## Installation by hand
 
 To build and use git-annex, you will need:
@@ -50,14 +53,3 @@ To build and use git-annex, you will need:
   * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)
 
 Then just [[download]] git-annex and run: `make; make install`
-
-## Installation by hand using cabal / Setup.hs
-
-You can fetch the dependencies using `cabal install`. Then, you can build git-annex by running:
-
-    runhaskell Setup.hs configure --user
-    runhaskell Setup.hs build
-    runhaskell Setup.hs install
-
-The `--user` option configures the build so that it uses the packages you already have in `~/.cabal`. Binaries
-will be installed in `~/.cabal/bin`, you'll need it in your PATH.
