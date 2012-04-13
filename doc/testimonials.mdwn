@@ -9,6 +9,7 @@
 <script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 
+Seen on IRC:
 <pre>
 oh my god, git-annex is amazing
 this is the revolution in fucking with gigantic piles of files that I've been waiting for
