@@ -26,15 +26,23 @@ Description:
  etc that are associated with annexed files but that benefit from full
  revision control.
 
+Flag S3
+  Description: Enable S3 support
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
-   pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
+   pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
+  Extensions: CPP
+
+  if flag(S3)
+    Build-Depends: hS3
+    CPP-Options: -DWITH_S3
 
 Test-Suite test
   Type: exitcode-stdio-1.0
