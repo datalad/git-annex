@@ -7,10 +7,7 @@
 
 module Utility.CopyFile (copyFileExternal) where
 
-import System.Directory (doesFileExist, removeFile)
-import Control.Monad.IfElse
-
-import Utility.SafeCommand
+import Common
 import qualified Build.SysConfig as SysConfig
 
 {- The cp command is used, because I hate reinventing the wheel,
