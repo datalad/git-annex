@@ -8,6 +8,7 @@ git-annex (3.20120407) UNRELEASED; urgency=low
     Damerau-Levenshtein edit distance, just as git does. This adds a build
     dependency on the haskell edit-distance library.
   * Renamed diskfree.c to avoid OSX case insensativity bug.
+  * cabal now installs git-annex-shell as a symlink to git-annex.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 08 Apr 2012 12:23:42 -0400
 

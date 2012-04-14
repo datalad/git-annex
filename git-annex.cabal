@@ -36,10 +36,6 @@ Executable git-annex
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
 
-Executable git-annex-shell
-  Main-Is: git-annex-shell.hs
-  C-Sources: Utility/libdiskfree.c
-
 Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs
