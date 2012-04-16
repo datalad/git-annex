@@ -22,8 +22,8 @@ The git repository has some branches:
   had a major change to filename encoding.
 * `old-monad-control` is for systems that don't have a newer monad-control
   library.
-* `no-s3` disables the S3 special remote, for systems that lack the
-  necessary haskell library. (merge it into master if you need it)
+* `no-ifelse` avoids using the IFelse library
+  (merge it into master if you need it)
 * `no-bloom` avoids using bloom filters. (merge it into master if you need it)
 * `debian-stable` contains the latest backport of git-annex to Debian
   stable.
