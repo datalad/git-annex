@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- git-annex remote list
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
