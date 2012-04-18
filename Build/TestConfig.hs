@@ -10,7 +10,8 @@ type ConfigKey = String
 data ConfigValue =
 	BoolConfig Bool |
 	StringConfig String |
-	MaybeStringConfig (Maybe String)
+	MaybeStringConfig (Maybe String) |
+	MaybeBoolConfig (Maybe Bool)
 data Config = Config ConfigKey ConfigValue
 
 type Test = IO Config
@@ -21,6 +22,7 @@ instance Show ConfigValue where
 	show (BoolConfig b) = show b
 	show (StringConfig s) = show s
 	show (MaybeStringConfig s) = show s
+	show (MaybeBoolConfig s) = show s
 
 instance Show Config where
 	show (Config key value) = unlines
@@ -31,6 +33,7 @@ instance Show Config where
 			valuetype (BoolConfig _) = "Bool"
 			valuetype (StringConfig _) = "String"
 			valuetype (MaybeStringConfig _) = "Maybe String"
+			valuetype (MaybeBoolConfig _) = "Maybe Bool"
 
 writeSysConfig :: [Config] -> IO ()
 writeSysConfig config = writeFile "Build/SysConfig.hs" body
@@ -109,6 +112,9 @@ testEnd (Config _ (BoolConfig False)) = status "no"
 testEnd (Config _ (StringConfig s)) = status s
 testEnd (Config _ (MaybeStringConfig (Just s))) = status s
 testEnd (Config _ (MaybeStringConfig Nothing)) = status "not available"
+testEnd (Config _ (MaybeBoolConfig (Just True))) = status "yes"
+testEnd (Config _ (MaybeBoolConfig (Just False))) = status "no"
+testEnd (Config _ (MaybeBoolConfig Nothing)) = status "unknown"
 
 status :: String -> IO ()
 status s = putStrLn $ ' ':s

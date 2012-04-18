@@ -62,17 +62,18 @@ perform key file backend numcopies = check
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
 performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> CommandPerform
-performRemote key file backend numcopies remote = do
-	v <- Remote.hasKey remote key
-	case v of
-		Left err -> do
+performRemote key file backend numcopies remote =
+	dispatch =<< Remote.hasKey remote key
+	where
+		dispatch (Left err) = do
 			showNote err
 			stop
-		Right True -> withtmp $ \tmpfile -> do
-			copied <- getfile tmpfile
-			if copied then go True (Just tmpfile) else go True Nothing
-		Right False -> go False Nothing
-	where
+		dispatch (Right True) = withtmp $ \tmpfile ->
+			ifM (getfile tmpfile)
+				( go True (Just tmpfile)
+				, go True Nothing
+				)
+		dispatch (Right False) = go False Nothing
 		go present localcopy = check
 			[ verifyLocationLogRemote key file remote present
 			, checkKeySizeRemote key remote localcopy
@@ -87,15 +88,14 @@ performRemote key file backend numcopies remote = do
 			let cleanup = liftIO $ catchIO (removeFile tmp) (const $ return ())
 			cleanup
 			cleanup `after` a tmp
-		getfile tmp = do
-			ok <- Remote.retrieveKeyFileCheap remote key tmp
-			if ok
-				then return ok
-				else do
-					fast <- Annex.getState Annex.fast
-					if fast
-						then return False
-						else Remote.retrieveKeyFile remote key tmp
+		getfile tmp =
+			ifM (Remote.retrieveKeyFileCheap remote key tmp)
+				( return True
+				, ifM (Annex.getState Annex.fast)
+					( return False
+					, Remote.retrieveKeyFile remote key tmp
+					)
+				)
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
@@ -205,10 +205,10 @@ verifyLocationLog' key desc present u bad = do
 checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
 	file <- inRepo $ gitAnnexLocation key
-	present <- liftIO $ doesFileExist file
-	if present
-		then checkKeySize' key file badContent
-		else return True
+	ifM (liftIO $ doesFileExist file)
+		( checkKeySize' key file badContent
+		, return True
+		)
 
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
@@ -219,16 +219,22 @@ checkKeySize' :: Key -> FilePath -> (Key -> Annex String) -> Annex Bool
 checkKeySize' key file bad = case Types.Key.keySize key of
 	Nothing -> return True
 	Just size -> do
-		stat <- liftIO $ getFileStatus file
-		let size' = fromIntegral (fileSize stat)
-		if size == size'
-			then return True
-			else do
-				msg <- bad key
-				warning $ "Bad file size (" ++
-					compareSizes storageUnits True size size' ++
-					"); " ++ msg
-				return False
+		size' <- fromIntegral . fileSize
+			<$> (liftIO $ getFileStatus file)
+		comparesizes size size'
+	where
+		comparesizes a b = do
+			let same = a == b
+			unless same $ badsize a b
+			return same
+		badsize a b = do
+			msg <- bad key
+			warning $ concat
+				[ "Bad file size ("
+				, compareSizes storageUnits True a b
+				, "); "
+				, msg
+				]
 
 checkBackend :: Backend -> Key -> Annex Bool
 checkBackend backend key = do

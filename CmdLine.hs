@@ -1,6 +1,6 @@
 {- git-annex command line parsing and dispatch
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import qualified Annex
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.Command
+import qualified Git.AutoCorrect
 import Annex.Content
 import Annex.Ssh
 import Command
@@ -29,8 +30,8 @@ type Params = [String]
 type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
-dispatch :: Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
-dispatch args cmds commonoptions header getgitrepo = do
+dispatch :: Bool -> Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
+dispatch fuzzyok allargs allcmds commonoptions header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
@@ -38,30 +39,46 @@ dispatch args cmds commonoptions header getgitrepo = do
 		Right g -> do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do
+				checkfuzzy
 				sequence_ flags
 				prepCommand cmd params
-			tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]
+		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]
 	where
-		(flags, cmd, params) = parseCmd args cmds commonoptions header
+		err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
+		cmd = Prelude.head cmds
+		(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
+		(flags, params) = getOptCmd args cmd commonoptions err
+		checkfuzzy = when fuzzy $
+			inRepo $ Git.AutoCorrect.prepare name cmdname cmds
 
-{- Parses command line, and returns actions to run to configure flags,
- - the Command being run, and the remaining parameters for the command. -} 
-parseCmd :: Params -> [Command] -> [Option] -> String -> (Flags, Command, Params)
-parseCmd argv cmds commonoptions header
-	| isNothing name = err "missing command"
-	| null matches = err $ "unknown command " ++ fromJust name
-	| otherwise = check $ getOpt Permute (commonoptions ++ cmdoptions cmd) args
+{- Parses command line params far enough to find the Command to run, and
+ - returns the remaining params.
+ - Does fuzzy matching if necessary, which may result in multiple Commands. -}
+findCmd :: Bool -> Params -> [Command] -> (String -> String) -> (Bool, [Command], String, Params)
+findCmd fuzzyok argv cmds err
+	| isNothing name = error $ err "missing command"
+	| not (null exactcmds) = (False, exactcmds, fromJust name, args)
+	| fuzzyok && not (null inexactcmds) = (True, inexactcmds, fromJust name, args)
+	| otherwise = error $ err $ "unknown command " ++ fromJust name
 	where
 		(name, args) = findname argv []
 		findname [] c = (Nothing, reverse c)
 		findname (a:as) c
 			| "-" `isPrefixOf` a = findname as (a:c)
 			| otherwise = (Just a, reverse c ++ as)
-		matches = filter (\c -> name == Just (cmdname c)) cmds
-		cmd = Prelude.head matches
-		check (flags, rest, []) = (flags, cmd, rest)
-		check (_, _, errs) = err $ concat errs
-		err msg = error $ msg ++ "\n\n" ++ usage header cmds commonoptions
+		exactcmds = filter (\c -> name == Just (cmdname c)) cmds
+		inexactcmds = case name of
+			Nothing -> []
+			Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
+
+{- Parses command line options, and returns actions to run to configure flags
+ - and the remaining parameters for the command. -}
+getOptCmd :: Params -> Command -> [Option] -> (String -> String) -> (Flags, Params)
+getOptCmd argv cmd commonoptions err = check $
+	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
+	where
+		check (flags, rest, []) = (flags, rest)
+		check (_, _, errs) = error $ err $ concat errs
 
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).

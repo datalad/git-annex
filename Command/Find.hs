@@ -42,7 +42,7 @@ start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandSta
 start format file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
-	whenM (liftM2 (||) limited (inAnnex key)) $
+	whenM (limited <||> inAnnex key) $
 		unlessM (showFullJSON vars) $
 			case format of
 				Nothing -> liftIO $ putStrLn file

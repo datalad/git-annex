@@ -42,37 +42,29 @@ perform key = stopUnless (getViaTmp key $ getKeyFile key) $
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
 getKeyFile :: Key -> FilePath -> Annex Bool
-getKeyFile key file = do
-	remotes <- Remote.keyPossibilities key
-	if null remotes
-		then do
+getKeyFile key file = dispatch =<< Remote.keyPossibilities key
+	where
+		dispatch [] = do
 			showNote "not available"
 			Remote.showLocations key []
 			return False
-		else trycopy remotes remotes
-	where
+		dispatch remotes = trycopy remotes remotes
 		trycopy full [] = do
 			Remote.showTriedRemotes full
 			Remote.showLocations key []
 			return False
-		trycopy full (r:rs) = do
-			probablythere <- probablyPresent r
-			if probablythere
-				then docopy r (trycopy full rs)
-				else trycopy full rs
+		trycopy full (r:rs) =
+			ifM (probablyPresent r)
+				( docopy r (trycopy full rs)
+				, trycopy full rs
+				)
 		-- This check is to avoid an ugly message if a remote is a
 		-- drive that is not mounted.
-		probablyPresent r =
-			if Remote.hasKeyCheap r
-				then do
-					res <- Remote.hasKey r key
-					case res of
-						Right b -> return b
-						Left _ -> return False
-				else return True
+		probablyPresent r
+			| Remote.hasKeyCheap r =
+				either (const False) id <$> Remote.hasKey r key
+			| otherwise = return True
 		docopy r continue = do
 			showAction $ "from " ++ Remote.name r
-			copied <- Remote.retrieveKeyFile r key file
-			if copied
-				then return True
-				else continue
+			ifM (Remote.retrieveKeyFile r key file)
+				( return True , continue)

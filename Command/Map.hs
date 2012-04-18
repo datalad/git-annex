@@ -41,14 +41,14 @@ start = do
 	trusted <- trustGet Trusted
 
 	liftIO $ writeFile file (drawMap rs umap trusted)
-	next $ next $ do
-		fast <- Annex.getState Annex.fast
-		if fast
-			then return True
-			else do
+	next $ next $
+		ifM (Annex.getState Annex.fast)
+			( return True
+			, do
 				showLongNote $ "running: dot -Tx11 " ++ file
 				showOutput
 				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
+			)
 	where
 		file = "map.dot"
 

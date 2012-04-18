@@ -19,7 +19,7 @@ import Annex.Ssh
  - passed command. -}
 sshToRepo :: Git.Repo -> [CommandParam] -> Annex [CommandParam]
 sshToRepo repo sshcmd = do
-	opts <- map Param . words <$> getConfig repo "ssh-options" ""
+	opts <- map Param . words <$> getRemoteConfig repo "ssh-options" ""
 	params <- sshParams (Git.Url.hostuser repo, Git.Url.port repo) opts
 	return $ params ++ sshcmd
 

@@ -18,6 +18,7 @@ import Annex.Content
 import Utility.FileMode
 import Utility.TempFile
 import Logs.Location
+import Config
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -173,8 +174,8 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
 	where
 		remove a b = foldl (flip S.delete) b a
 
-{- Given an initial value, mutates it using an action for each
- - key referenced by symlinks in the git repo. -}
+{- Given an initial value, folds it with each key referenced by
+ - symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
 withKeysReferenced initial a = go initial =<< files
 	where
@@ -226,11 +227,11 @@ staleKeysPrune dirspec = do
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
 	dir <- fromRepo dirspec
-	exists <- liftIO $ doesDirectoryExist dir
-	if not exists
-		then return []
-		else do
+	ifM (liftIO $ doesDirectoryExist dir)
+		( do
 			contents <- liftIO $ getDirectoryContents dir
 			files <- liftIO $ filterM doesFileExist $
 				map (dir </>) contents
 			return $ mapMaybe (fileKey . takeFileName) files
+		, return []
+		)

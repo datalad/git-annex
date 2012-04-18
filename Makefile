@@ -1,16 +1,18 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-GHCFLAGS=-O2 -Wall $(IGNORE)
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3
+GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(IGNORE)
+GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
 
-bins=git-annex git-annex-shell git-union-merge
-mans=git-annex.1 git-annex-shell.1 git-union-merge.1
-sources=Build/SysConfig.hs Utility/StatFS.hs Utility/Touch.hs
+bins=git-annex
+mans=git-annex.1 git-annex-shell.1
+sources=Build/SysConfig.hs Utility/Touch.hs
+clibs=Utility/libdiskfree.o
 
 all=$(bins) $(mans) docs
 
@@ -24,18 +26,19 @@ all: $(all)
 sources: $(sources)
 
 # Disables optimisation. Not for production use.
-fast: GHCFLAGS=-Wall $(IGNORE)
+fast: GHCFLAGS=$(BASEFLAGS)
 fast: $(bins)
 
-Build/SysConfig.hs: configure.hs Build/TestConfig.hs Utility/StatFS.hs
+Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	$(GHCMAKE) configure
 	./configure
 
 %.hs: %.hsc
 	hsc2hs $<
 
-$(bins): $(sources)
-	$(GHCMAKE) $@
+
+git-annex: $(sources) $(clibs)
+	$(GHCMAKE) $@ $(clibs)
 
 git-annex.1: doc/git-annex.mdwn
 	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
@@ -47,6 +50,7 @@ git-union-merge.1: doc/git-union-merge.mdwn
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
 	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex
@@ -55,7 +59,7 @@ install: all
 	fi
 
 test:
-	@if ! $(GHCMAKE) -O0 test; then \
+	@if ! $(GHCMAKE) -O0 test $(clibs); then \
 		echo "** failed to build the test suite" >&2; \
 		exit 1; \
 	elif ! ./test; then \
@@ -65,7 +69,7 @@ test:
 
 testcoverage:
 	rm -f test.tix test
-	ghc -odir build/test -hidir build/test $(GHCFLAGS) --make -fhpc test
+	ghc $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -89,9 +93,8 @@ docs: $(mans)
 		--exclude='news/.*'
 
 clean:
-	rm -rf build $(bins) $(mans) test configure  *.tix .hpc $(sources)
-	rm -rf doc/.ikiwiki html dist
-	find . \( -name \*.o -or -name \*.hi \) -exec rm {} \;
+	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
+		doc/.ikiwiki html dist $(clibs)
 
 # Workaround for cabal sdist not running Setup hooks, so I cannot
 # generate a file list there.

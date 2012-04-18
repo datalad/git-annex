@@ -632,7 +632,7 @@ Here are all the supported configuration settings.
   A command to run when git-annex begins to use the remote. This can
   be used to, for example, mount the directory containing the remote.
 
-  The command may be run repeatedly in multiple git-annex processes
+  The command may be run repeatedly when multiple git-annex processes
   are running concurrently.
 
 * `remote.<name>.annex-stop-command`
@@ -679,22 +679,28 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force ipv6, and limit
   the bandwidth to 100Kbyte/s, set it to "-6 --bwlimit 100"
 
-* `remote.<name>.annex-web-options`
-
-  Options to use when using wget or curl to download a file from the web.
-  (wget is always used in preference to curl if available).
-  For example, to force ipv4 only, set it to "-4"
-
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.
   For example, to limit the bandwidth to 100Kbye/s, set it to "--bwlimit 100k"
   (There is no corresponding option for bup join.)
 
-* `annex.ssh-options`, `annex.rsync-options`, `annex.web-options, `annex.bup-split-options`
+* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`
 
   Default ssh, rsync, wget/curl, and bup options to use if a remote does not
   have specific options.
+
+* `annex.web-options`
+
+  Options to use when using wget or curl to download a file from the web.
+  (wget is always used in preference to curl if available).
+  For example, to force ipv4 only, set it to "-4"
+
+* `remote.<name>.rsyncurl`
+
+  Used by rsync special remotes, this configures
+  the location of the rsync repository to use. Normally this is automaticaly
+  set up by `git annex initremote`, but you can change it if needed.
 
 * `remote.<name>.buprepo`
 

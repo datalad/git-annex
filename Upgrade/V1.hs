@@ -50,18 +50,18 @@ upgrade :: Annex Bool
 upgrade = do
 	showAction "v1 to v2"
 	
-	bare <- fromRepo Git.repoIsLocalBare
-	if bare
-		then do
+	ifM (fromRepo Git.repoIsLocalBare)
+		( do
 			moveContent
 			setVersion
-		else do
+		, do
 			moveContent
 			updateSymlinks
 			moveLocationLogs
 	
 			Annex.Queue.flush True
 			setVersion
+		)
 	
 	Upgrade.V2.upgrade
 
@@ -104,12 +104,11 @@ moveLocationLogs = do
 		where
 			oldlocationlogs = do
 				dir <- fromRepo Upgrade.V2.gitStateDir
-				exists <- liftIO $ doesDirectoryExist dir
-				if exists
-					then do
-						contents <- liftIO $ getDirectoryContents dir
-						return $ mapMaybe oldlog2key contents
-					else return []
+				ifM (liftIO $ doesDirectoryExist dir)
+					( mapMaybe oldlog2key
+						<$> (liftIO $ getDirectoryContents dir)
+					, return []
+					)
 			move (l, k) = do
 				dest <- fromRepo $ logFile2 k
 				dir <- fromRepo Upgrade.V2.gitStateDir
@@ -127,14 +126,13 @@ moveLocationLogs = do
 				Annex.Queue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
 		
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
-oldlog2key l = 
-	let len = length l - 4 in
-		if drop len l == ".log"
-		then let k = readKey1 (take len l) in
-			if null (keyName k) || null (keyBackendName k)
-			then Nothing
-			else Just (l, k)
-		else Nothing
+oldlog2key l
+	| drop len l == ".log" && sane = Just (l, k)
+	| otherwise = Nothing
+	where
+		len = length l - 4
+		k = readKey1 (take len l)
+		sane = (not . null $ keyName k) && (not . null $ keyBackendName k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -143,10 +141,14 @@ oldlog2key l =
 -- v2 and v1; that infelicity is worked around by treating the value
 -- as the v2 key that it is.
 readKey1 :: String -> Key
-readKey1 v = 
-	if mixup
-		then fromJust $ readKey $ join ":" $ Prelude.tail bits
-		else Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t }
+readKey1 v
+	| mixup = fromJust $ readKey $ join ":" $ Prelude.tail bits
+	| otherwise = Key
+		{ keyName = n
+		, keyBackendName = b
+		, keySize = s
+		, keyMtime = t
+		}
 	where
 		bits = split ":" v
 		b = Prelude.head bits
@@ -205,14 +207,14 @@ lookupFile1 file = do
 getKeyFilesPresent1 :: Annex [FilePath]
 getKeyFilesPresent1  = getKeyFilesPresent1' =<< fromRepo gitAnnexObjectDir
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
-getKeyFilesPresent1' dir = do
-	exists <- liftIO $ doesDirectoryExist dir
-	if not exists
-		then return []
-		else do
+getKeyFilesPresent1' dir =
+	ifM (liftIO $ doesDirectoryExist dir)
+		(  do
 			dirs <- liftIO $ getDirectoryContents dir
 			let files = map (\d -> dir ++ "/" ++ d ++ "/" ++ takeFileName d) dirs
 			liftIO $ filterM present files
+		, return []
+		)
 	where
 		present f = do
 			result <- tryIO $ getFileStatus f

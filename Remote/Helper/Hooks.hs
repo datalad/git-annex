@@ -84,10 +84,8 @@ runHooks r starthook stophook a = do
 			liftIO $ closeFd fd
 
 lookupHook :: Remote -> String -> Annex (Maybe String)
-lookupHook r n = do
-	command <- getConfig (repo r) hookname ""
-	if null command
-		then return Nothing
-		else return $ Just command
+lookupHook r n = go =<< getRemoteConfig (repo r) hookname ""
 	where
+		go "" = return Nothing
+		go command = return $ Just command
 		hookname =  n ++ "-command"

@@ -1,4 +1,0 @@
-git-annex 3.20120229 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix test suite to not require a unicode locale.
-   * Fix cabal build failure. Thanks, Sergei Trofimovich"""]]

@@ -72,14 +72,15 @@ configUnEscape = unescape
 		unescape (c:rest)
 			| c == '&' = entity rest
 			| otherwise = c : unescape rest
-		entity s = if ok
-				then chr (Prelude.read num) : unescape rest
-				else '&' : unescape s
+		entity s
+			| not (null num) && ";" `isPrefixOf` r =
+				chr (Prelude.read num) : unescape rest
+			| otherwise =
+				'&' : unescape s
 			where
 				num = takeWhile isNumber s
 				r = drop (length num) s
 				rest = drop 1 r
-				ok = not (null num) && ";" `isPrefixOf` r
 
 {- for quickcheck -}
 prop_idempotent_configEscape :: String -> Bool

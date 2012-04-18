@@ -1,3 +1,5 @@
-This is a place to discuss using git-annex. If you need help, advice, or anything, post about it here.
+This is a place to discuss using git-annex.
+If you need help, advice, or anything, post about it here.
+(But [[post_bug_reports_over_here|bugs]].)
 
 [[!inline pages="forum/* and !*/Discussion" archive=yes rootpage=forum postformtext="Add a new thread titled:"]]

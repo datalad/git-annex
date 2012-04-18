@@ -12,6 +12,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
+import Utility.DataUnits
 
 type ConfigKey = String
 
@@ -23,12 +24,15 @@ setConfig k value = do
 	newg <- inRepo Git.Config.read
 	Annex.changeState $ \s -> s { Annex.repo = newg }
 
+{- Looks up a git config setting in git config. -}
+getConfig :: ConfigKey -> String -> Annex String
+getConfig key def = fromRepo $ Git.Config.get key def
+
 {- Looks up a per-remote config setting in git config.
  - Failing that, tries looking for a global config option. -}
-getConfig :: Git.Repo -> ConfigKey -> String -> Annex String
-getConfig r key def = do
-	def' <- fromRepo $ Git.Config.get ("annex." ++ key) def
-	fromRepo $ Git.Config.get (remoteConfig r key) def'
+getRemoteConfig :: Git.Repo -> ConfigKey -> String -> Annex String
+getRemoteConfig r key def =
+	getConfig (remoteConfig r key) =<< getConfig key def
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> ConfigKey -> String
@@ -39,11 +43,11 @@ remoteConfig r key = "remote." ++ fromMaybe "" (Git.remoteName r) ++ ".annex-" +
  - is set and prints a number, that is used. -}
 remoteCost :: Git.Repo -> Int -> Annex Int
 remoteCost r def = do
-	cmd <- getConfig r "cost-command" ""
+	cmd <- getRemoteConfig r "cost-command" ""
 	(fromMaybe def . readish) <$>
 		if not $ null cmd
 			then liftIO $ snd <$> pipeFrom "sh" ["-c", cmd]
-			else getConfig r "cost" ""
+			else getRemoteConfig r "cost" ""
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
@@ -69,7 +73,8 @@ prop_cost_sane = False `notElem`
 
 {- Checks if a repo should be ignored. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = not . fromMaybe False . Git.configTrue <$> getConfig r "ignore" ""
+repoNotIgnored r = not . fromMaybe False . Git.configTrue
+	<$> getRemoteConfig r "ignore" ""
 
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
@@ -78,10 +83,16 @@ getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
 	where
 		use (Just n) = return n
 		use Nothing = perhaps (return 1) =<< 
-			readish <$> fromRepo (Git.Config.get config "1")
+			readish <$> getConfig "annex.numcopies" "1"
 		perhaps fallback = maybe fallback (return . id)
-		config = "annex.numcopies"
 
 {- Gets the trust level set for a remote in git config. -}
 getTrustLevel :: Git.Repo -> Annex (Maybe String)
 getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"
+
+{- Gets annex.diskreserve setting. -}
+getDiskReserve :: Annex Integer
+getDiskReserve = fromMaybe megabyte . readSize dataUnits
+	<$> getConfig "diskreserve" ""
+	where
+		megabyte = 1000000

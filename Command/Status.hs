@@ -22,12 +22,14 @@ import qualified Git
 import qualified Annex
 import Command
 import Utility.DataUnits
+import Utility.DiskFree
 import Annex.Content
 import Types.Key
 import Backend
 import Logs.UUID
 import Logs.Trust
 import Remote
+import Config
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -76,6 +78,7 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
+	, disk_size
 	, backend_usage
 	]
 
@@ -149,6 +152,19 @@ tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
 
 bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
+
+disk_size :: Stat
+disk_size = stat "available local disk space" $ json id $ lift $
+	calcfree
+		<$> getDiskReserve
+		<*> inRepo (getDiskFree . gitAnnexDir)
+	where
+		calcfree reserve (Just have) =
+			roughSize storageUnits False $ nonneg $ have - reserve
+		calcfree _ _ = "unknown"
+		nonneg x
+			| x >= 0 = x
+			| otherwise = 0
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $

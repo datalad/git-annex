@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+module GitAnnexShell where
+
 import System.Environment
 import System.Console.GetOpt
 
@@ -60,21 +62,18 @@ options = Option.common ++
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
 
-main :: IO ()
-main = main' =<< getArgs
-
-main' :: [String] -> IO ()
-main' [] = failure
+run :: [String] -> IO ()
+run [] = failure
 -- skip leading -c options, passed by eg, ssh
-main' ("-c":p) = main' p
+run ("-c":p) = run p
 -- a command can be either a builtin or something to pass to git-shell
-main' c@(cmd:dir:params)
+run c@(cmd:dir:params)
 	| cmd `elem` builtins = builtin cmd dir params
 	| otherwise = external c
-main' c@(cmd:_)
+run c@(cmd:_)
 	-- Handle the case of being the user's login shell. It will be passed
 	-- a single string containing all the real parameters.
-	| "git-annex-shell " `isPrefixOf` cmd = main' $ drop 1 $ shellUnEscape cmd
+	| "git-annex-shell " `isPrefixOf` cmd = run $ drop 1 $ shellUnEscape cmd
 	| cmd `elem` builtins = failure
 	| otherwise = external c
 
@@ -84,7 +83,7 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	dispatch (cmd : filterparams params) cmds options header $
+	dispatch False (cmd : filterparams params) cmds options header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()

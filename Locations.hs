@@ -124,7 +124,7 @@ gitAnnexBadDir r = addTrailingPathSeparator $ gitAnnexDir r </> "bad"
 gitAnnexBadLocation :: Key -> Git.Repo -> FilePath
 gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 
-{- .git/annex/*unused is used to number possibly unused keys -}
+{- .git/annex/foounused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 

@@ -1,0 +1,23 @@
+<div>
+<blockquote class="twitter-tweet"><p>Git annex. Brilliant. Powerful. <a href="http://t.co/AM9B6peM" title="http://git-annex.branchable.com/">git-annex.branchable.com</a></p>&mdash; Gert van Dijk (@gertvdijk) <a href="https://twitter.com/gertvdijk/status/186456474246053888" data-datetime="2012-04-01T14:14:22+00:00">April 1, 2012</a></blockquote>
+<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p>git-annex is like dropbox without the chrome. <a href="http://t.co/qcENNt3g" title="http://git-annex.branchable.com/">git-annex.branchable.com</a></p>&mdash; Wil Chung (@iamwil) <a href="https://twitter.com/iamwil/status/185997581229367296" data-datetime="2012-03-31T07:50:53+00:00">March 31, 2012</a></blockquote>
+<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p>blender 2.62 + ffmpeg + dnxhd + git-annex = who needs final cut?</p>&mdash; cdotwright (@cdotwright) <a href="https://twitter.com/cdotwright/status/187645142864375808" data-datetime="2012-04-04T20:57:42+00:00">April 4, 2012</a></blockquote>
+<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p>I want <a href="https://twitter.com/search/%2523git">#git</a>-annex whereis for all the stuff (not) in my room.</p>&mdash; topr (@derwelle) <a href="https://twitter.com/derwelle/status/172356564072673280" data-datetime="2012-02-22T16:26:21+00:00">February 22, 2012</a></blockquote>
+<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+
+Seen on IRC:
+<pre>
+oh my god, git-annex is amazing
+this is the revolution in fucking with gigantic piles of files that I've been waiting for
+</pre>
+
+And then my own story: I have a ton of drives. I have a lot of servers. I
+live in a cabin on **dialup** and often have 1 hour on broadband in a week
+to get everything I need. Without git-annex, managing all this would not be
+possible. It works perfectly for me, not a surprise since I wrote it, but
+still, it's a different level of "perfect" than anything I could put
+together before. --[[Joey]]

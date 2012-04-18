@@ -65,9 +65,7 @@ stop = return Nothing
 
 {- Stops unless a condition is met. -}
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
-stopUnless c a = do
-	ok <- c
-	if ok then a else stop
+stopUnless c a = ifM c ( a , stop )
 
 {- Prepares to run a command via the check and seek stages, returning a
  - list of actions to perform to run the command. -}

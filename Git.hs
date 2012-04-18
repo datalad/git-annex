@@ -31,7 +31,6 @@ module Git (
 import qualified Data.Map as M
 import Data.Char
 import Network.URI (uriPath, uriScheme, unEscapeString)
-import System.Directory
 import System.Posix.Files
 
 import Common
@@ -83,11 +82,14 @@ repoIsLocalBare r@(Repo { location = Dir _ }) = configAvail r && configBare r
 repoIsLocalBare _ = False
 
 assertLocal :: Repo -> a -> a
-assertLocal repo action = 
-	if not $ repoIsUrl repo
-		then action
-		else error $ "acting on non-local git repo " ++  repoDescribe repo ++ 
-				" not supported"
+assertLocal repo action
+	| repoIsUrl repo = error $ unwords
+		[ "acting on non-local git repo"
+		, repoDescribe repo
+		, "not supported"
+		]
+	| otherwise = action
+
 configBare :: Repo -> Bool
 configBare repo = maybe unknown (fromMaybe False . configTrue) $
 	M.lookup "core.bare" $ config repo
@@ -113,12 +115,10 @@ gitDir repo
 hookPath :: String -> Repo -> IO (Maybe FilePath)
 hookPath script repo = do
 	let hook = gitDir repo </> "hooks" </> script
-	e <- doesFileExist hook
-	if e
-		then do
-			m <- fileMode <$> getFileStatus hook
-			return $ if isExecutable m then Just hook else Nothing
-		else return Nothing
+	ifM (catchBoolIO $ isexecutable hook)
+		( return $ Just hook , return Nothing )
+	where
+		isexecutable f = isExecutable . fileMode <$> getFileStatus f
 
 {- Path to a repository's --work-tree, that is, its top.
  -

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-04-12T16:29:58Z"
+ content="""
+This bug was fixed in git-annex 3.20120230. You have a few options to get the fix:
+
+* Upgrade to ghc 7.4, the need for which is the cause of the cabal error message you pasted.
+* Manually [[download]] from git, and `git checkout ghc7.0` -- that branch will build with your old ghc and has the fix.
+* cherry-pick commit 51338486dcf9ab86de426e41b1eb31af1d3a6c87
+"""]]

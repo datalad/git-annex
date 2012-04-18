@@ -25,7 +25,7 @@ module Utility.Matcher (
 	matchesAny
 ) where
 
-import Control.Monad
+import Common
 
 {- A Token can be an Operation of an arbitrary type, or one of a few
  - predefined peices of syntax. -}
@@ -78,8 +78,8 @@ match a m v = go m
 	where
 		go MAny = True
 		go (MAnd m1 m2) = go m1 && go m2
-		go (MOr m1 m2) = go m1 || go m2
-		go (MNot m1) = not (go m1)
+		go (MOr m1 m2) =  go m1 || go m2
+		go (MNot m1) = not $ go m1
 		go (MOp o) = a o v
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
@@ -87,8 +87,8 @@ matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
 matchM m v = go m
 	where
 		go MAny = return True
-		go (MAnd m1 m2) = liftM2 (&&) (go m1) (go m2)
-		go (MOr m1 m2) =  liftM2 (||) (go m1) (go m2)
+		go (MAnd m1 m2) = go m1 <&&> go m2
+		go (MOr m1 m2) =  go m1 <||> go m2
 		go (MNot m1) = liftM not (go m1)
 		go (MOp o) = o v
 

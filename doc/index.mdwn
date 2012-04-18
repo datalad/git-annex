@@ -13,6 +13,7 @@ To get a feel for it, see the [[walkthrough]] or read about [[how_it_works]].
 * [[forum]]
 * [[comments]]
 * [[contact]]
+* [[testimonials]]
 * <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a>
 
 [[News]]:
@@ -24,7 +25,7 @@ To get a feel for it, see the [[walkthrough]] or read about [[how_it_works]].
 [[Feeds]]:
 
 <small>
-[[!inline pages="internal(feeds/*)" archive=yes show=5 feeds=no]]
+[[!inline pages="internal(feeds/*)" archive=yes show=8 feeds=no]]
 </small>
 """]]
 

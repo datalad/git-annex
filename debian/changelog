@@ -1,4 +1,34 @@
-git-annex (3.20120310) UNRELEASED; urgency=low
+git-annex (3.20120418) unstable; urgency=low
+
+  * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
+  * bup: Properly handle key names with spaces or other things that are
+    not legal git refs.
+  * git-annex (but not git-annex-shell) supports the git help.autocorrect
+    configuration setting, doing fuzzy matching using the restricted
+    Damerau-Levenshtein edit distance, just as git does. This adds a build
+    dependency on the haskell edit-distance library.
+  * Renamed diskfree.c to avoid OSX case insensativity bug.
+  * cabal now installs git-annex-shell as a symlink to git-annex.
+  * cabal file now autodetects whether S3 support is available.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 18 Apr 2012 12:11:32 -0400
+
+git-annex (3.20120406) unstable; urgency=low
+
+  * Disable diskfree on kfreebsd, as I have a build failure on kfreebsd-i386
+    that is quite likely caused by it.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 07 Apr 2012 15:50:36 -0400
+
+git-annex (3.20120405) unstable; urgency=low
+
+  * Rewrote free disk space checking code, moving the portability
+    handling into a small C library.
+  * status: Display amount of free disk space.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 05 Apr 2012 16:19:10 -0400
+
+git-annex (3.20120315) unstable; urgency=low
 
   * fsck: Fix up any broken links and misplaced content caused by the
     directory hash calculation bug fixed in the last release.
@@ -12,12 +42,15 @@ git-annex (3.20120310) UNRELEASED; urgency=low
   * Added annex.bloomcapacity and annex.bloomaccuracy, which can be
     adjusted as desired to tune the bloom filter.
   * status: Display amount of memory used by bloom filter, and
-    detect then it's too small for the number of keys in a repository.
+    detect when it's too small for the number of keys in a repository.
   * git-annex-shell: Runs hooks/annex-content after content is received
     or dropped.
   * Work around a bug in rsync (IMHO) introduced by openSUSE's SIP patch.
+  * git-annex now behaves as git-annex-shell if symlinked to and run by that
+    name. The Makefile sets this up, saving some 8 mb of installed size.
+  * git-union-merge is a demo program, so it is no longer built by default.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 10 Mar 2012 14:03:22 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 15 Mar 2012 11:05:28 -0400
 
 git-annex (3.20120309) unstable; urgency=low
 

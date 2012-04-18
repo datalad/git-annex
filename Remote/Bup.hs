@@ -17,11 +17,14 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Git.Ref
 import Config
 import Remote.Helper.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
+import Data.ByteString.Lazy.UTF8 (fromString)
+import Data.Digest.Pure.SHA
 
 type BupRepo = String
 
@@ -35,7 +38,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	buprepo <- getConfig r "buprepo" (error "missing buprepo")
+	buprepo <- getRemoteConfig r "buprepo" (error "missing buprepo")
 	cst <- remoteCost r (if bupLocal buprepo then semiCheapRemoteCost else expensiveRemoteCost)
 	bupr <- liftIO $ bup2GitRemote buprepo
 	(u', bupr') <- getBupUUID bupr u
@@ -99,11 +102,11 @@ pipeBup params inh outh = do
 
 bupSplitParams :: Git.Repo -> BupRepo -> Key -> CommandParam -> Annex [CommandParam]
 bupSplitParams r buprepo k src = do
-	o <- getConfig r "bup-split-options" ""
+	o <- getRemoteConfig r "bup-split-options" ""
 	let os = map Param $ words o
 	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 
-		(os ++ [Param "-n", Param (show k), src])
+		(os ++ [Param "-n", Param (bupRef k), src])
 
 store :: Git.Repo -> BupRepo -> Key -> Annex Bool
 store r buprepo k = do
@@ -121,7 +124,7 @@ storeEncrypted r buprepo (cipher, enck) k = do
 
 retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieve buprepo k f = do
-	let params = bupParams "join" buprepo [Param $ show k]
+	let params = bupParams "join" buprepo [Param $ bupRef k]
 	liftIO $ catchBoolIO $ do
 		tofile <- openFile f WriteMode
 		pipeBup params Nothing (Just tofile)
@@ -131,7 +134,7 @@ retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted buprepo (cipher, enck) _ f = do
-	let params = bupParams "join" buprepo [Param $ show enck]
+	let params = bupParams "join" buprepo [Param $ bupRef enck]
 	liftIO $ catchBoolIO $ do
 		(pid, h) <- hPipeFrom "bup" $ toCommand params
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
@@ -158,7 +161,7 @@ checkPresent r bupr k
 	where
 		params = 
 			[ Params "show-ref --quiet --verify"
-			, Param $ "refs/heads/" ++ show k]
+			, Param $ "refs/heads/" ++ bupRef k]
 
 {- Store UUID in the annex.uuid setting of the bup repository. -}
 storeBupUUID :: UUID -> BupRepo -> Annex ()
@@ -229,6 +232,15 @@ bup2GitRemote r
 				| null d = "/~/.bup"
 				| "/" `isPrefixOf` d = d
 				| otherwise = "/~/" ++ d
+
+{- Converts a key into a git ref name, which bup-split -n will use to point
+ - to it. -}
+bupRef :: Key -> String
+bupRef k
+	| Git.Ref.legal True shown = shown
+	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
+	where
+		shown = show k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'

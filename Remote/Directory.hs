@@ -33,7 +33,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	dir <- getConfig r "directory" (error "missing directory")
+	dir <- getRemoteConfig r "directory" (error "missing directory")
 	cst <- remoteCost r cheapRemoteCost
 	let chunksize = chunkSize c
 	return $ encryptableRemote c
@@ -100,11 +100,7 @@ withCheckedFiles _ _ [] _ _ = return False
 withCheckedFiles check Nothing d k a = go $ locations d k
 	where
 		go [] = return False
-		go (f:fs) = do
-			use <- check f
-			if use
-				then a [f]
-				else go fs
+		go (f:fs) = ifM (check f) ( a [f] , go fs )
 withCheckedFiles check (Just _) d k a = go $ locations d k
 	where
 		go [] = return False
@@ -115,10 +111,8 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 				then do
 					count <- readcount chunkcount
 					let chunks = take count $ chunkStream f
-					ok <- all id <$> mapM check chunks
-					if ok
-						then a chunks
-						else return False
+					ifM (all id <$> mapM check chunks)
+						( a chunks , return False )
 				else go fs
 		readcount f = fromMaybe (error $ "cannot parse " ++ f)
 			. (readish :: String -> Maybe Int)

@@ -7,7 +7,7 @@
 
 * git-annex is not a filesystem or DropBox clone. But there
   is a FUSE filesystem built on top of git-annex, called 
-  [ShareBox](https://github.com/chmduquesne/sharebox), and there is
+  [ShareBox](https://github.com/chmduquesne/sharebox-fs), and there is
   interest in making it easy to use and covering some of the use
   cases supported by DropBox.
 

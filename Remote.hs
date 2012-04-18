@@ -70,19 +70,13 @@ addName desc n
  - (Or it can be a UUID.) Only finds currently configured git remotes. -}
 byName :: Maybe String -> Annex (Maybe Remote)
 byName Nothing = return Nothing
-byName (Just n) = do
-	res <- byName' n
-	case res of
-		Left e -> error e
-		Right r -> return $ Just r
+byName (Just n) = either error Just <$> byName' n
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
-byName' n = do
-	match <- filter matching <$> remoteList
-	if null match
-		then return $ Left $ "there is no git remote named \"" ++ n ++ "\""
-		else return $ Right $ Prelude.head match
+byName' n = handle . filter matching <$> remoteList
 	where
+		handle [] = Left $ "there is no git remote named \"" ++ n ++ "\""
+		handle match = Right $ Prelude.head match
 		matching r = n == name r || toUUID n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),

@@ -30,7 +30,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	hooktype <- getConfig r "hooktype" (error "missing hooktype")
+	hooktype <- getRemoteConfig r "hooktype" (error "missing hooktype")
 	cst <- remoteCost r expensiveRemoteCost
 	return $ encryptableRemote c
 		(storeEncrypted hooktype)
@@ -74,28 +74,27 @@ hookEnv k f = Just $ fileenv f ++ keyenv
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
-	g <- gitRepo
-	command <- getConfig g hookname ""
+	command <- getConfig hookname ""
 	if null command
 		then do
 			warning $ "missing configuration for " ++ hookname
 			return Nothing
 		else return $ Just command
 	where
-		hookname =  hooktype ++ "-" ++ hook ++ "-hook"
+		hookname =  "annex." ++ hooktype ++ "-" ++ hook ++ "-hook"
 
 runHook :: String -> String -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
 runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype hook
 	where
 		run command = do
 			showOutput -- make way for hook output
-			res <- liftIO $ boolSystemEnv
-				"sh" [Param "-c", Param command] $ hookEnv k f
-			if res
-				then a
-				else do
+			ifM (liftIO $ boolSystemEnv
+				"sh" [Param "-c", Param command] $ hookEnv k f)
+				( a
+				, do
 					warning $ hook ++ " hook exited nonzero!"
-					return res
+					return False
+				)
 
 store :: String -> Key -> Annex Bool
 store h k = do

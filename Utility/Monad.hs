@@ -1,6 +1,6 @@
 {- monadic stuff
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,11 +14,7 @@ import Control.Monad (liftM)
  - predicate -}
 firstM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 firstM _ [] = return Nothing
-firstM p (x:xs) = do
-	q <- p x
-	if q
-		then return (Just x)
-		else firstM p xs
+firstM p (x:xs) = ifM (p x) (return $ Just x , firstM p xs)
 
 {- Returns true if any value in the list satisfies the predicate,
  - stopping once one is found. -}
@@ -28,6 +24,20 @@ anyM p = liftM isJust . firstM p
 {- Runs an action on values from a list until it succeeds. -}
 untilTrue :: Monad m => [a] -> (a -> m Bool) -> m Bool
 untilTrue = flip anyM
+
+{- if with a monadic conditional. -}
+ifM :: Monad m => m Bool -> (m a, m a) -> m a
+ifM cond (thenclause, elseclause) = do
+	c <- cond
+	if c then thenclause else elseclause
+
+{- short-circuiting monadic || -}
+(<||>) :: Monad m => m Bool -> m Bool -> m Bool
+ma <||> mb = ifM ma ( return True , mb )
+
+{- short-circuiting monadic && -}
+(<&&>) :: Monad m => m Bool -> m Bool -> m Bool
+ma <&&> mb = ifM ma ( mb , return False )
 
 {- Runs an action, passing its value to an observer before returning it. -}
 observe :: Monad m => (a -> m b) -> m a -> m a

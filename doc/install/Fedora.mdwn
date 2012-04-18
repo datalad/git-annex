@@ -1,7 +1,18 @@
-Installation recipe for Fedora 14.
+Installation recipe for Fedora 14 thruough 17.
 
 <pre>
 sudo yum install ghc cabal-install
-sudo cabal update
-cabal install git-annex --bindir=$HOME/bin
+git clone git://git-annex.branchable.com/ git-annex
+cd git-annex
+git checkout ghc 7.0
+cabal update
+cabal install --only-dependencies
+cabal configure
+cabal build
+cabal install --bindir=$HOME/bin
 </pre>
+
+Note: You can't just use `cabal install git-annex`, because Fedora does
+not yet ship ghc 7.4.
+
+[Status of getting a Fedora package](https://bugzilla.redhat.com/show_bug.cgi?id=662259)

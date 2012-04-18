@@ -69,27 +69,25 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| "/" `isPrefixOf` dir = do
- 		-- Git always looks for "dir.git" in preference to
-		-- to "dir", even if dir ends in a "/".
-		let canondir = dropTrailingPathSeparator dir
-		let dir' = canondir ++ ".git"
-		e <- doesDirectoryExist dir'
-		if e
-			then ret dir'
-			else if "/.git" `isSuffixOf` canondir
-				then do
-					-- When dir == "foo/.git", git looks
-					-- for "foo/.git/.git", and failing
-					-- that, uses "foo" as the repository.
-					e' <- doesDirectoryExist $ dir </> ".git"
-					if e'
-						then ret dir
-						else ret $ takeDirectory canondir
-				else ret dir
-	| otherwise = error $ "internal error, " ++ dir ++ " is not absolute"
+	| "/" `isPrefixOf` dir =
+		ifM (doesDirectoryExist dir') ( ret dir' , hunt )
+	| otherwise =
+		error $ "internal error, " ++ dir ++ " is not absolute"
 	where
 		ret = newFrom . Dir
+ 		{- Git always looks for "dir.git" in preference to
+		 - to "dir", even if dir ends in a "/". -}
+		canondir = dropTrailingPathSeparator dir
+		dir' = canondir ++ ".git"
+		{- When dir == "foo/.git", git looks for "foo/.git/.git",
+		 - and failing that, uses "foo" as the repository. -}
+		hunt
+			| "/.git" `isSuffixOf` canondir =
+				ifM (doesDirectoryExist $ dir </> ".git")
+					( ret dir
+					, ret $ takeDirectory canondir
+					)
+			| otherwise = ret dir
 
 {- Remote Repo constructor. Throws exception on invalid url.
  -
@@ -229,27 +227,20 @@ expandTilde = expandt True
 			| otherwise = findname (n++[c]) cs
 
 seekUp :: (FilePath -> IO Bool) -> FilePath -> IO (Maybe FilePath)
-seekUp want dir = do
-	ok <- want dir
-	if ok
-		then return $ Just dir
-		else case parentDir dir of
+seekUp want dir =
+	ifM (want dir)
+		( return $ Just dir
+		, case parentDir dir of
 			"" -> return Nothing
 			d -> seekUp want d
+		)
 
 isRepoTop :: FilePath -> IO Bool
-isRepoTop dir = do
-	r <- isRepo
-	if r
-		then return r
-		else isBareRepo
+isRepoTop dir = ifM isRepo ( return True , isBareRepo )
 	where
 		isRepo = gitSignature (".git" </> "config")
-		isBareRepo = do
-			e <- doesDirectoryExist (dir </> "objects")
-			if not e
-				then return e
-				else gitSignature "config"
+		isBareRepo = ifM (doesDirectoryExist $ dir </> "objects")
+			( gitSignature "config" , return False )
 		gitSignature file = doesFileExist (dir </> file)
 
 newFrom :: RepoLocation -> IO Repo

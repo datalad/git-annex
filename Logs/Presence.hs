@@ -99,10 +99,9 @@ type LogMap = M.Map String LogLine
 {- Inserts a log into a map of logs, if the log has better (ie, newer)
  - information than the other logs in the map -}
 mapLog :: LogLine -> LogMap -> LogMap
-mapLog l m = 
-	if better
-		then M.insert i l m
-		else m
+mapLog l m
+	| better = M.insert i l m
+	| otherwise = m
 	where
 		better = maybe True newer $ M.lookup i m
 		newer l' = date l' <= date l

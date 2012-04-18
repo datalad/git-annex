@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-04-10T16:05:40Z"
+ content="""
+The git-annex branch is how the annex information for the different repositories is communicated around, so yes, you need to push/pull it. 
+"""]]

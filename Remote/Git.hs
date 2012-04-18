@@ -7,8 +7,8 @@
 
 module Remote.Git (remote, repoAvail) where
 
-import Control.Exception.Extensible
 import qualified Data.Map as M
+import Control.Exception.Extensible
 
 import Common.Annex
 import Utility.CopyFile
@@ -102,11 +102,8 @@ tryGitConfigRead r
 	where
 		-- Reading config can fail due to IO error or
 		-- for other reasons; catch all possible exceptions.
-		safely a = do
-			result <- liftIO (try a :: IO (Either SomeException Git.Repo))
-			case result of
-				Left _ -> return r
-				Right r' -> return r'
+		safely a = either (const $ return r) return
+				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 		pipedconfig cmd params = safely $
 			pOpen ReadFromPipe cmd (toCommand params) $
@@ -127,10 +124,11 @@ tryGitConfigRead r
 			Annex.changeState $ \s -> s { Annex.repo = g' }
 
 		exchange [] _ = []
-		exchange (old:ls) new =
-			if Git.remoteName old == Git.remoteName new
-				then new : exchange ls new
-				else old : exchange ls new
+		exchange (old:ls) new
+			| Git.remoteName old == Git.remoteName new =
+				new : exchange ls new
+			| otherwise =
+				old : exchange ls new
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine
@@ -227,11 +225,11 @@ copyFromRemoteCheap r key file
 	| not $ Git.repoIsUrl r = do
 		loc <- liftIO $ gitAnnexLocation key r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
-	| Git.repoIsSsh r = do
-		ok <- Annex.Content.preseedTmp key file
-		if ok
-			then copyFromRemote r key file
-			else return False
+	| Git.repoIsSsh r =
+		ifM (Annex.Content.preseedTmp key file)
+			( copyFromRemote r key file
+			, return False
+			)
 	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
@@ -254,22 +252,24 @@ copyToRemote r key
 rsyncHelper :: [CommandParam] -> Annex Bool
 rsyncHelper p = do
 	showOutput -- make way for progress bar
-	res <- liftIO $ rsync p
-	if res
-		then return res
-		else do
+	ifM (liftIO $ rsync p)
+		( return True
+		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
-			return res
+			return False
+		)
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> Annex Bool
-rsyncOrCopyFile rsyncparams src dest = do
-	ss <- liftIO $ getFileStatus $ parentDir src
-	ds <- liftIO $ getFileStatus $ parentDir dest
-	if deviceID ss == deviceID ds
-		then liftIO $ copyFileExternal src dest
-		else rsyncHelper $ rsyncparams ++ [Param src, Param dest]
+rsyncOrCopyFile rsyncparams src dest =
+	ifM (sameDeviceIds src dest)
+		( liftIO $ copyFileExternal src dest
+		, rsyncHelper $ rsyncparams ++ [Param src, Param dest]
+		)
+	where
+		sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
+		getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
@@ -300,7 +300,7 @@ rsyncParamsRemote r sending key file = do
 
 rsyncParams :: Git.Repo -> Annex [CommandParam]
 rsyncParams r = do
-	o <- getConfig r "rsync-options" ""
+	o <- getRemoteConfig r "rsync-options" ""
 	return $ options ++ map Param (words o)
 	where
  		-- --inplace to resume partial files

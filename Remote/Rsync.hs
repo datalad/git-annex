@@ -60,8 +60,8 @@ gen r u c = do
 
 genRsyncOpts :: Git.Repo -> Annex RsyncOpts
 genRsyncOpts r = do
-	url <- getConfig r "rsyncurl" (error "missing rsyncurl")
-	opts <- getConfig r "rsync-options" ""
+	url <- getRemoteConfig r "rsyncurl" (error "missing rsyncurl")
+	opts <- getRemoteConfig r "rsync-options" ""
 	return $ RsyncOpts url $ map Param $ filter safe $ words opts
 	where
 		safe o
@@ -113,20 +113,16 @@ retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
 	]
 
 retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieveCheap o k f = do
-	ok <- preseedTmp k f
-	if ok
-		then retrieve o k f
-		else return False
+retrieveCheap o k f = ifM (preseedTmp k f) ( retrieve o k f , return False )
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp -> do
-	res <- retrieve o enck tmp
-	if res
-		then liftIO $ catchBoolIO $ do
+	ifM (retrieve o enck tmp)
+		( liftIO $ catchBoolIO $ do
 			withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 			return True
-		else return res
+		, return False
+		)
 
 remove :: RsyncOpts -> Key -> Annex Bool
 remove o k = withRsyncScratchDir $ \tmp -> liftIO $ do
@@ -188,12 +184,12 @@ withRsyncScratchDir a = do
 rsyncRemote :: RsyncOpts -> [CommandParam] -> Annex Bool
 rsyncRemote o params = do
 	showOutput -- make way for progress bar
-	res <- liftIO $ rsync $ rsyncOptions o ++ defaultParams ++ params
-	if res
-		then return res
-		else do
+	ifM (liftIO $ rsync $ rsyncOptions o ++ defaultParams ++ params)
+		( return True
+		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
-			return res
+			return False
+		)
 	where
 		defaultParams = [Params "--progress"]
 

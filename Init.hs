@@ -38,34 +38,33 @@ uninitialize = gitPreCommitHookUnWrite
 ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
 	where
-		needsinit = do
-			annexed <- Annex.Branch.hasSibling
-			if annexed
-				then initialize Nothing
-				else error "First run: git-annex init"
+		needsinit = ifM Annex.Branch.hasSibling
+				( initialize Nothing
+				, error "First run: git-annex init"
+				)
 
 {- set up a git pre-commit hook, if one is not already present -}
 gitPreCommitHookWrite :: Annex ()
 gitPreCommitHookWrite = unlessBare $ do
 	hook <- preCommitHook
-	exists <- liftIO $ doesFileExist hook
-	if exists
-		then warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
-		else liftIO $ do
+	ifM (liftIO $ doesFileExist hook)
+		( warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
+		, liftIO $ do
 			viaTmp writeFile hook preCommitScript
 			p <- getPermissions hook
 			setPermissions hook $ p {executable = True}
+		)
 
 gitPreCommitHookUnWrite :: Annex ()
 gitPreCommitHookUnWrite = unlessBare $ do
 	hook <- preCommitHook
-	whenM (liftIO $ doesFileExist hook) $ do
-		c <- liftIO $ readFile hook
-		if c == preCommitScript
-			then liftIO $ removeFile hook
-			else warning $ "pre-commit hook (" ++ hook ++ 
+	whenM (liftIO $ doesFileExist hook) $
+		ifM (liftIO $ (==) preCommitScript <$> readFile hook)
+			( liftIO $ removeFile hook
+			, warning $ "pre-commit hook (" ++ hook ++ 
 				") contents modified; not deleting." ++
 				" Edit it to remove call to git annex."
+			)
 
 unlessBare :: Annex () -> Annex ()
 unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
