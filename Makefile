@@ -1,6 +1,6 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility
 GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE

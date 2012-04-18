@@ -1,4 +1,4 @@
-git-annex (3.20120418) unstable; urgency=low
+git-annex (3.20120418~bpo60+1) squeeze-backports; urgency=low
 
   * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
   * bup: Properly handle key names with spaces or other things that are
@@ -10,6 +10,7 @@ git-annex (3.20120418) unstable; urgency=low
   * Renamed diskfree.c to avoid OSX case insensativity bug.
   * cabal now installs git-annex-shell as a symlink to git-annex.
   * cabal file now autodetects whether S3 support is available.
+  * Disabled bloom filter and edit-distance code for backport.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 18 Apr 2012 12:11:32 -0400
 

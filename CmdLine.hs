@@ -21,7 +21,7 @@ import qualified Annex
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.Command
-import qualified Git.AutoCorrect
+--import qualified Git.AutoCorrect
 import Annex.Content
 import Annex.Ssh
 import Command
@@ -49,7 +49,8 @@ dispatch fuzzyok allargs allcmds commonoptions header getgitrepo = do
 		(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
 		(flags, params) = getOptCmd args cmd commonoptions err
 		checkfuzzy = when fuzzy $
-			inRepo $ Git.AutoCorrect.prepare name cmdname cmds
+			return ()
+--			inRepo $ Git.AutoCorrect.prepare name cmdname cmds
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
@@ -69,7 +70,7 @@ findCmd fuzzyok argv cmds err
 		exactcmds = filter (\c -> name == Just (cmdname c)) cmds
 		inexactcmds = case name of
 			Nothing -> []
-			Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
+			Just n -> [] -- Git.AutoCorrect.fuzzymatches n cmdname cmds
 
 {- Parses command line options, and returns actions to run to configure flags
  - and the remaining parameters for the command. -}
