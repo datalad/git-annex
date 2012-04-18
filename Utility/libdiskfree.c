@@ -58,9 +58,10 @@ unsigned long long int diskfree(const char *path) {
 	unsigned long long int available, blocksize;
 	struct STATSTRUCT buf;
 
-	errno = 0;
-	if (STATCALL(path, &buf) != 0)
+	if (STATCALL(path, &buf) != 0) {
 		return 0; /* errno is set */
+	}
+	errno = 0;
 
 	available = buf.f_bavail;
 	blocksize = buf.f_bsize;
