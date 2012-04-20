@@ -34,8 +34,7 @@ start file (key, _) = do
 perform :: FilePath -> Key -> CommandPerform
 perform dest key = do
 	unlessM (inAnnex key) $ error "content not present"
-	
-	checkDiskSpace key
+	unlessM (checkDiskSpace Nothing key 0) $ error "cannot unlock"
 
 	src <- inRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key

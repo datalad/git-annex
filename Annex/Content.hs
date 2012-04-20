@@ -127,15 +127,15 @@ getViaTmp key action = do
 	-- When the temp file already exists, count the space
 	-- it is using as free.
 	e <- liftIO $ doesFileExist tmp
-	if e
-		then do
-			stat <- liftIO $ getFileStatus tmp
-			checkDiskSpace' (fromIntegral $ fileSize stat) key
-		else checkDiskSpace key
-
-	when e $ liftIO $ allowWrite tmp
-
-	getViaTmpUnchecked key action
+	alreadythere <- if e
+		then fromIntegral . fileSize <$> liftIO (getFileStatus tmp)
+		else return 0
+	ifM (checkDiskSpace Nothing key alreadythere)
+		( do
+			when e $ liftIO $ allowWrite tmp
+			getViaTmpUnchecked key action
+		, return False
+		)
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
@@ -169,22 +169,23 @@ withTmp key action = do
 	return res
 
 {- Checks that there is disk space available to store a given key,
- - throwing an error if not. -}
-checkDiskSpace :: Key -> Annex ()
-checkDiskSpace = checkDiskSpace' 0
-
-checkDiskSpace' :: Integer -> Key -> Annex ()
-checkDiskSpace' adjustment key = do
+ - in a destination (or the annex) printing a warning if not. -}
+checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Annex Bool
+checkDiskSpace destination key alreadythere = do
 	reserve <- getDiskReserve
-	free <- inRepo $ getDiskFree . gitAnnexDir
+	free <- liftIO . getDiskFree =<< dir
+	force <- Annex.getState Annex.force
 	case (free, keySize key) of
-		(Just have, Just need) ->
-			when (need + reserve > have + adjustment) $
-				needmorespace (need + reserve - have - adjustment)
-		_ -> return ()
+		(Just have, Just need) -> do
+			let ok = need + reserve > have + alreadythere || force
+			unless ok $
+				needmorespace (need + reserve - have - alreadythere)
+			return ok
+		_ -> return True
 	where
-		needmorespace n = unlessM (Annex.getState Annex.force) $
-			error $ "not enough free space, need " ++ 
+		dir = maybe (fromRepo gitAnnexDir) return destination
+		needmorespace n =
+			warning $ "not enough free space, need " ++ 
 				roughSize storageUnits True n ++
 				" more" ++ forcemsg
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
