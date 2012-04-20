@@ -177,8 +177,9 @@ checkDiskSpace destination key alreadythere = do
 	force <- Annex.getState Annex.force
 	case (free, keySize key) of
 		(Just have, Just need) -> do
-			let ok = need + reserve > have + alreadythere || force
-			unless ok $
+			let ok = (need + reserve <= have + alreadythere) || force
+			unless ok $ do
+				liftIO $ print (need, reserve, have, alreadythere)
 				needmorespace (need + reserve - have - alreadythere)
 			return ok
 		_ -> return True
