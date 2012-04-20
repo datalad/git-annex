@@ -1,3 +1,9 @@
+git-annex (3.20120419) UNRELEASED; urgency=low
+
+  * Fix use of annex.diskreserve config setting.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 20 Apr 2012 16:14:08 -0400
+
 git-annex (3.20120418) unstable; urgency=low
 
   * bugfix: Adding a dotfile also caused all non-dotfiles to be added.

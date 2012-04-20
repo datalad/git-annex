@@ -93,6 +93,6 @@ getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"
 {- Gets annex.diskreserve setting. -}
 getDiskReserve :: Annex Integer
 getDiskReserve = fromMaybe megabyte . readSize dataUnits
-	<$> getConfig "diskreserve" ""
+	<$> getConfig "annex.diskreserve" ""
 	where
 		megabyte = 1000000
