@@ -46,6 +46,6 @@ perform dest key = do
 			liftIO $ do
 				removeFile dest
 				moveFile tmpdest dest
-				allowWrite dest
+			thawContent dest
 			next $ return True
                 else error "copy failed!"
