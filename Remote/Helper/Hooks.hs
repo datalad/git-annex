@@ -14,6 +14,7 @@ import Types.Remote
 import qualified Annex
 import Annex.LockPool
 import Config
+import Annex.Perms
 
 {- Modifies a remote's access functions to first run the
  - annex-start-command hook, and trigger annex-stop-command on shutdown.
@@ -75,7 +76,9 @@ runHooks r starthook stophook a = do
 			-- succeeds, we're the only process using this remote,
 			-- so can stop it.
 			unlockFile lck
-			fd <- liftIO $ openFd lck ReadWrite (Just stdFileMode) defaultFileFlags
+			mode <- annexFileMode
+			fd <- liftIO $ noUmask mode $
+				openFd lck ReadWrite (Just mode) defaultFileFlags
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of

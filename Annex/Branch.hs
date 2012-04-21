@@ -36,6 +36,7 @@ import qualified Git.UnionMerge
 import Git.HashObject
 import qualified Git.Index
 import Annex.CatFile
+import Annex.Perms
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -308,6 +309,7 @@ setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
         lock <- fromRepo gitAnnexIndexLock
 	liftIO $ writeFile lock $ show ref ++ "\n"
+	setAnnexPerm lock
 
 {- Checks if there are uncommitted changes in the branch's index or journal. -}
 unCommitted :: Annex Bool

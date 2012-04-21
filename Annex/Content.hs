@@ -46,6 +46,7 @@ import Utility.CopyFile
 import Config
 import Annex.Exception
 import Git.SharedRepository
+import Annex.Perms
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -141,7 +142,7 @@ getViaTmp key action = do
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
 	tmp <- fromRepo $ gitAnnexTmpLocation key
-	liftIO $ createDirectoryIfMissing True (parentDir tmp)
+	createAnnexDirectory (parentDir tmp)
 	return tmp
 
 {- Like getViaTmp, but does not check that there is enough disk space
@@ -216,14 +217,11 @@ checkDiskSpace destination key alreadythere = do
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = do
 	dest <- inRepo $ gitAnnexLocation key
-	let dir = parentDir dest
 	ifM (liftIO $ doesFileExist dest)
 		( liftIO $ removeFile src
 		, do
-			liftIO $ do
-				createDirectoryIfMissing True dir
-				allowWrite dir -- in case the directory already exists
-				moveFile src dest
+			createContentDir dest
+			liftIO $ moveFile src dest
 			freezeContent dest
 			freezeContentDir dest
 		)
@@ -268,8 +266,8 @@ moveBad key = do
 	src <- inRepo $ gitAnnexLocation key
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
+	createAnnexDirectory (parentDir dest)
 	liftIO $ do
-		createDirectoryIfMissing True (parentDir dest)
 		allowWrite (parentDir src)
 		moveFile src dest
 	cleanObjectLoc key
@@ -367,3 +365,13 @@ freezeContentDir file = liftIO . go =<< fromRepo getSharedRepository
 		go AllShared = groupWriteRead dir
 		go _ = preventWrite dir
 
+{- Makes the directory tree to store an annexed file's content,
+ - with appropriate permissions on each level. -}
+createContentDir :: FilePath -> Annex ()
+createContentDir dest = do
+	unlessM (liftIO $ doesDirectoryExist dir) $
+		createAnnexDirectory dir 
+	-- might have already existed with restricted perms
+	liftIO $ allowWrite dir
+	where
+		dir = parentDir dest

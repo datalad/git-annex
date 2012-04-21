@@ -17,6 +17,7 @@ import Annex.LockPool
 import qualified Git
 import Config
 import qualified Build.SysConfig as SysConfig
+import Annex.Perms
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
@@ -74,7 +75,9 @@ sshCleanup = do
 			-- be stopped.
 			let lockfile = socket2lock socketfile
 			unlockFile lockfile
-			fd <- liftIO $ openFd lockfile ReadWrite (Just stdFileMode) defaultFileFlags
+			mode <- annexFileMode
+			fd <- liftIO $ noUmask mode $
+				openFd lockfile ReadWrite (Just mode) defaultFileFlags
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of

@@ -75,6 +75,17 @@ isExecutable mode = combineModes ebits `intersectFileModes` mode /= 0
 	where
 		ebits = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
 
+{- Runs an action without that pesky umask influencing it, unless the
+ - passed FileMode is the standard one. -}
+noUmask :: FileMode -> IO a -> IO a
+noUmask mode a
+	| mode == stdFileMode = a
+	| otherwise = bracket setup cleanup go
+	where
+		setup = setFileCreationMask nullFileMode
+		cleanup = setFileCreationMask
+		go _ = a
+
 combineModes :: [FileMode] -> FileMode
 combineModes [] = undefined
 combineModes [m] = m
