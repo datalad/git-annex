@@ -7,16 +7,24 @@
 
 module Utility.FileMode where
 
-import System.Posix.Files
+import Common
+
 import System.Posix.Types
 import Foreign (complement)
+
+modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
+modifyFileMode f convert = do
+	s <- getFileStatus f
+	let cur = fileMode s
+	let new = convert cur
+	when (new /= cur) $
+		setFileMode f new
 
 {- Removes a FileMode from a file.
  - For example, call with otherWriteMode to chmod o-w -}
 unsetFileMode :: FilePath -> FileMode -> IO ()
-unsetFileMode f m = do
-	s <- getFileStatus f
-	setFileMode f $ fileMode s `intersectFileModes` complement m
+unsetFileMode f m = modifyFileMode f $
+	\cur -> cur `intersectFileModes` complement m
 
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
@@ -27,9 +35,8 @@ preventWrite f = unsetFileMode f writebits
 
 {- Turns a file's write bit back on. -}
 allowWrite :: FilePath -> IO ()
-allowWrite f = do
-	s <- getFileStatus f
-	setFileMode f $ fileMode s `unionFileModes` ownerWriteMode
+allowWrite f = modifyFileMode f $
+	\cur -> cur `unionFileModes` ownerWriteMode
 
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
