@@ -15,15 +15,24 @@ module Annex.Perms (
 import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
+import qualified Annex
 
 import System.Posix.Types
+
+withShared :: (SharedRepository -> Annex a) -> Annex a
+withShared a = maybe startup a =<< Annex.getState Annex.shared
+	where
+		startup = do
+			shared <- fromRepo getSharedRepository
+			Annex.changeState $ \s -> s { Annex.shared = Just shared }
+			a shared
 
 {- Sets appropriate file mode for a file or directory in the annex,
  - other than the content files and content directory. Normally,
  - use the default mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
 setAnnexPerm :: FilePath -> Annex ()
-setAnnexPerm file = liftIO . go =<< fromRepo getSharedRepository
+setAnnexPerm file = withShared $ liftIO . go
 	where
 		go GroupShared = groupWriteRead file
 		go AllShared = modifyFileMode file $ addModes $
@@ -33,7 +42,7 @@ setAnnexPerm file = liftIO . go =<< fromRepo getSharedRepository
 {- Gets the appropriate mode to use for creating a file in the annex
  - (other than content files, which are locked down more). -}
 annexFileMode :: Annex FileMode
-annexFileMode = go <$> fromRepo getSharedRepository
+annexFileMode = withShared $ return . go
 	where
 		go GroupShared = sharedmode
 		go AllShared = combineModes (sharedmode:readModes)

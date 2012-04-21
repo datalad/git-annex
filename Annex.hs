@@ -37,6 +37,7 @@ import qualified Git
 import qualified Git.Config
 import Git.CatFile
 import Git.CheckAttr
+import Git.SharedRepository
 import qualified Git.Queue
 import Types.Backend
 import qualified Types.Remote
@@ -88,6 +89,7 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FilePath -> Annex Bool)
+	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, ciphers :: M.Map EncryptedCipher Cipher
@@ -113,6 +115,7 @@ newState gitrepo = AnnexState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
+	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
 	, ciphers = M.empty
