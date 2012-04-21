@@ -1,0 +1,17 @@
+i'm getting errors in ``git annex fsck`` on a shared bare git repo with git-annex 3.20120418 local repo version 3:
+
+``git-annex: ${PATH}/${MYREPO}.git/annex/objects/${HA}/${SH}/SHA1-${HASH}/SHA1-${HASH}: setFileMode: permission denied (Operation not permitted)``
+
+the repository is shared among several users in a common group, and the repo is set up with sticky group, and with appropriate umasks, everything should work.
+
+however, even with the file having permissions -rw-rw-r-- in the directory with permissions drwxrwsr-x, owned by someone else but by a group i'm currently in (as verified by issuing `groups`), i get said error message.
+
+a strace reveals that the failing syscall is:
+
+``[pid 17626] chmod("${FILENAME}", 0100555) = -1 EPERM (Operation not permitted)``
+
+(maybe related: git annex looks for the file in another ${HA}/${SH} combination (of three digits instead of two digits each) before, i take it this is just a new feature not used by the data in my repo? also, i should add that the repository dates back to git-annex 0.13.)
+
+as a workaround, i'm currently ``sudo chown``ing all files to me before the check.
+
+why does fsck try to set permissions even if they are ok? is this a bug in my setup, and if yes, how is a shared repository set up correctly?
