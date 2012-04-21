@@ -337,12 +337,12 @@ preseedTmp key file = go =<< inAnnex key
 freezeContent :: FilePath -> Annex ()
 freezeContent file = liftIO . go =<< fromRepo getSharedRepository
 	where
-		go GroupShared = do
-			preventWrite file
-			groupRead file
-		go AllShared = do
-			preventWrite file
-			allRead file
+		go GroupShared = modifyFileMode file $
+			removeModes writeModes .
+			addModes [ownerReadMode, groupReadMode]
+		go AllShared = modifyFileMode file $
+			removeModes writeModes .
+			addModes readModes
 		go _ = preventWrite file
 
 {- Allows writing to an annexed file that freezeContent was called on

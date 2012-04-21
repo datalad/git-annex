@@ -11,7 +11,6 @@ import Common.Annex
 import Command
 import Annex.Content
 import Utility.CopyFile
-import Utility.FileMode
 
 def :: [Command]
 def =

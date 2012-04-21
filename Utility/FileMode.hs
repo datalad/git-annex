@@ -13,11 +13,6 @@ import Control.Exception (bracket)
 import System.Posix.Types
 import Foreign (complement)
 
-combineModes :: [FileMode] -> FileMode
-combineModes [] = undefined
-combineModes [m] = m
-combineModes (m:ms) = foldl unionFileModes m ms
-
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
 modifyFileMode f convert = do
@@ -32,6 +27,15 @@ modifyFileMode' f convert = do
 		setFileMode f new
 	return old
 
+{- Adds the specified FileModes to the input mode, leaving the rest
+ - unchanged. -}
+addModes :: [FileMode] -> FileMode -> FileMode
+addModes ms m = combineModes (m:ms)
+
+{- Removes the specified FileModes from the input mode. -}
+removeModes :: [FileMode] -> FileMode -> FileMode
+removeModes ms m = m `intersectFileModes` complement (combineModes ms)
+
 {- Runs an action after changing a file's mode, then restores the old mode. -}
 withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
 withModifiedFileMode file convert a = bracket setup cleanup go
@@ -40,43 +44,25 @@ withModifiedFileMode file convert a = bracket setup cleanup go
 		cleanup oldmode = modifyFileMode file (const oldmode)
 		go _ = a
 
-{- Removes a FileMode from a file.
- - For example, call with otherWriteMode to chmod o-w -}
-unsetFileMode :: FilePath -> FileMode -> IO ()
-unsetFileMode f m = modifyFileMode f $
-	\cur -> cur `intersectFileModes` complement m
+writeModes :: [FileMode]
+writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
+
+readModes :: [FileMode]
+readModes = [ownerReadMode, groupReadMode, otherReadMode]
 
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
-preventWrite f = unsetFileMode f $ combineModes writebits
-	where
-		writebits = [ownerWriteMode, groupWriteMode, otherWriteMode]
+preventWrite f = modifyFileMode f $ removeModes writeModes
 
-{- Turns a file's write bit back on. -}
+{- Turns a file's owner write bit back on. -}
 allowWrite :: FilePath -> IO ()
-allowWrite f = modifyFileMode f $
-	\cur -> cur `unionFileModes` ownerWriteMode
+allowWrite f = modifyFileMode f $ addModes [ownerWriteMode]
 
 {- Allows owner and group to read and write to a file. -}
 groupWriteRead :: FilePath -> IO ()
-groupWriteRead f = modifyFileMode f $ \cur -> combineModes
-	[ cur
-	, ownerWriteMode, groupWriteMode
+groupWriteRead f = modifyFileMode f $ addModes
+	[ ownerWriteMode, groupWriteMode
 	, ownerReadMode, groupReadMode
-	]
-
-{- Allows group to read a file. -}
-groupRead :: FilePath -> IO ()
-groupRead f = modifyFileMode f $ \cur -> combineModes
-	[ cur
-	, ownerReadMode, groupReadMode
-	]
-
-{- Allows all to read a file. -}
-allRead :: FilePath -> IO ()
-allRead f = modifyFileMode f $ \cur -> combineModes
-	[ cur
-	, ownerReadMode, groupReadMode, otherReadMode
 	]
 
 {- Checks if a file mode indicates it's a symlink. -}
@@ -88,3 +74,8 @@ isExecutable :: FileMode -> Bool
 isExecutable mode = combineModes ebits `intersectFileModes` mode /= 0
 	where
 		ebits = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
+
+combineModes :: [FileMode] -> FileMode
+combineModes [] = undefined
+combineModes [m] = m
+combineModes (m:ms) = foldl unionFileModes m ms
