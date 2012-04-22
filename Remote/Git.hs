@@ -313,7 +313,7 @@ commitOnCleanup r a = go `after` a
 		cleanup
 			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
 				Annex.Branch.commit "update"
-			| otherwise = do
+			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
 					git_annex_shell r "commit" []
 				-- Throw away stderr, since the remote may not
@@ -322,6 +322,4 @@ commitOnCleanup r a = go `after` a
 				let cmd = shellcmd ++ " "
 					++ unwords (map shellEscape $ toCommand shellparams)
 					++ ">/dev/null 2>/dev/null"
-				_ <- liftIO $
-					boolSystem "sh" [Param "-c", Param cmd]
-				return ()
+				liftIO $ boolSystem "sh" [Param "-c", Param cmd]

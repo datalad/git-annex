@@ -65,9 +65,7 @@ siblingBranches = inRepo $ Git.Ref.matchingUniq name
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = do
-	_ <- getBranch
-	return ()
+create = void $ getBranch
 
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref
@@ -325,10 +323,9 @@ setUnCommitted = do
 	liftIO $ writeFile file "1"
 
 setCommitted :: Annex ()
-setCommitted = do
+setCommitted = void $ do
 	file <- fromRepo gitAnnexIndexDirty
-	_ <- liftIO $ tryIO $ removeFile file
-	return ()
+	liftIO $ tryIO $ removeFile file
 
 {- Stages the journal into the index. -}
 stageJournal :: Annex ()

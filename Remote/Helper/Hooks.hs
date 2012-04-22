@@ -47,9 +47,8 @@ runHooks r starthook stophook a = do
 	where
 		remoteid = show (uuid r)
 		run Nothing = return ()
-		run (Just command) = liftIO $ do
-			_ <- boolSystem "sh" [Param "-c", Param command]
-			return ()
+		run (Just command) = void $ liftIO $
+			boolSystem "sh" [Param "-c", Param command]
 		firstrun lck = do
 			-- Take a shared lock; This indicates that git-annex
 			-- is using the remote, and prevents other instances

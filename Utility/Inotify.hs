@@ -53,10 +53,9 @@ watchDir i test add del dir = watchDir' False i test add del dir
 watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
 watchDir' scan i test add del dir = do
 	if test dir
-		then do
+		then void $ do
 			_ <- addWatch i watchevents dir go
-			_ <- mapM walk =<< dirContents dir
-			return ()
+			mapM walk =<< dirContents dir
 		else return ()
 	where
 		watchevents
@@ -92,6 +91,5 @@ waitForTermination = do
 		check keyboardSignal mv
 	takeMVar mv
 	where
-		check sig mv = do
-			_ <- installHandler sig (CatchOnce $ putMVar mv ()) Nothing
-			return ()
+		check sig mv = void $
+			installHandler sig (CatchOnce $ putMVar mv ()) Nothing

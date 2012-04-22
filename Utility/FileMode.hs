@@ -15,9 +15,7 @@ import Foreign (complement)
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
-modifyFileMode f convert = do
-	_ <- modifyFileMode' f convert
-	return ()
+modifyFileMode f convert = void $ modifyFileMode' f convert
 modifyFileMode' :: FilePath -> (FileMode -> FileMode) -> IO FileMode
 modifyFileMode' f convert = do
 	s <- getFileStatus f

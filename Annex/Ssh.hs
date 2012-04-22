@@ -87,20 +87,17 @@ sshCleanup = do
 		stopssh socketfile = do
 			let (host, port) = socket2hostport socketfile
 			(_, params) <- sshInfo (host, port)
-			_ <- liftIO $ do
+			void $ liftIO $ do
 				-- "ssh -O stop" is noisy on stderr even with -q
 				let cmd = unwords $ toCommand $
 					[ Params "-O stop"
 					] ++ params ++ [Param host]
-				_ <- boolSystem "sh"
+				boolSystem "sh"
 					[ Param "-c"
 					, Param $ "ssh " ++ cmd ++ " >/dev/null 2>/dev/null"
 					]
-				--try $ removeFile socketfile
-				return ()
-			-- Cannot remove the lock file; other processes may
-			-- be waiting on our exclusive lock to use it.
-			return ()
+				-- Cannot remove the lock file; other processes may
+				-- be waiting on our exclusive lock to use it.
 
 hostport2socket :: String -> Maybe Integer -> FilePath
 hostport2socket host Nothing = host
