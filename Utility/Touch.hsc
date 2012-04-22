@@ -115,6 +115,6 @@ touchBoth file atime mtime follow =
 
 #else
 #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"
-touchBoth _ _ _ _ = noop
+touchBoth _ _ _ _ = return ()
 #endif
 #endif
