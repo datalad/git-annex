@@ -20,6 +20,10 @@ import qualified Git.Construct
 get :: String -> String -> Repo -> String
 get key defaultValue repo = M.findWithDefault defaultValue key (config repo)
 
+{- Returns a list with each line of a multiline config setting. -}
+getList :: String -> Repo -> [String]
+getList key repo = M.findWithDefault [] key (fullconfig repo)
+
 {- Returns a single git config setting, if set. -}
 getMaybe :: String -> Repo -> Maybe String
 getMaybe key repo = M.lookup key (config repo)

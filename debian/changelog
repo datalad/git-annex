@@ -3,6 +3,9 @@ git-annex (3.20120419) UNRELEASED; urgency=low
   * Fix use of annex.diskreserve config setting.
   * Directory special remotes now check annex.diskreserve.
   * Support git's core.sharedRepository configuration.
+  * Add annex.httpheaders and annex.httpheader-command config
+    settings, to allow custom headers to be sent with all HTTP requests.
+    (Requested by the Internet Archive)
 
  -- Joey Hess <joeyh@debian.org>  Fri, 20 Apr 2012 16:14:08 -0400
 

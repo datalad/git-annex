@@ -94,7 +94,9 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.config r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
-	| Git.repoIsHttp r = store $ safely geturlconfig
+	| Git.repoIsHttp r = do
+		headers <- getHttpHeaders
+		store $ safely $ geturlconfig headers
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
@@ -109,8 +111,8 @@ tryGitConfigRead r
 			pOpen ReadFromPipe cmd (toCommand params) $
 				Git.Config.hRead r
 
-		geturlconfig = do
-			s <- Url.get (Git.repoLocation r ++ "/config")
+		geturlconfig headers = do
+			s <- Url.get (Git.repoLocation r ++ "/config") headers
 			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
@@ -136,16 +138,16 @@ tryGitConfigRead r
  -}
 inAnnex :: Git.Repo -> Key -> Annex (Either String Bool)
 inAnnex r key
-	| Git.repoIsHttp r = checkhttp
+	| Git.repoIsHttp r = checkhttp =<< getHttpHeaders
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
 	where
-		checkhttp = liftIO $ go undefined $ keyUrls r key
+		checkhttp headers = liftIO $ go undefined $ keyUrls r key
 			where
 				go e [] = return $ Left e
 				go _ (u:us) = do
 					res <- catchMsgIO $
-						Url.check u (keySize key)
+						Url.check u headers (keySize key)
 					case res of
 						Left e -> go e us
 						v -> return v

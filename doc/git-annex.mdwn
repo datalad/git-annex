@@ -713,6 +713,16 @@ Here are all the supported configuration settings.
   (wget is always used in preference to curl if available).
   For example, to force ipv4 only, set it to "-4"
 
+* `annex.http-headers`
+
+  HTTP headers to send when downloading from the web. Multiple lines of
+  this option can be set, one per header.
+
+* `annex.http-headers-command`
+
+  If set, the command is run and each line of its output is used as a HTTP
+  header. This overrides annex.http-headers.
+
 * `remote.<name>.rsyncurl`
 
   Used by rsync special remotes, this configures

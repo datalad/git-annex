@@ -96,3 +96,12 @@ getDiskReserve = fromMaybe megabyte . readSize dataUnits
 	<$> getConfig "annex.diskreserve" ""
 	where
 		megabyte = 1000000
+
+{- Gets annex.httpheaders or annex.httpheaders-command setting,
+ - splitting it into lines. -}
+getHttpHeaders :: Annex [String]
+getHttpHeaders = do
+	cmd <- getConfig "annex.httpheaders-command" ""
+	if (null cmd)
+		then fromRepo $ Git.Config.getList "annex.httpheaders"
+		else lines . snd <$> liftIO (pipeFrom "sh" ["-c", cmd])

@@ -310,7 +310,8 @@ saveState oneshot = do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = do
 	o <- map Param . words <$> getConfig "annex.web-options" ""
-	liftIO $ anyM (\u -> Url.download u o file) urls
+	headers <- getHttpHeaders
+	liftIO $ anyM (\u -> Url.download u headers o file) urls
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

@@ -17,14 +17,16 @@ import Common
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
-import Utility.Monad
+import Data.Either
 
 type URLString = String
 
+type Headers = [String]
+
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
-check :: URLString -> Maybe Integer -> IO Bool
-check url expected_size = handle <$> exists url
+check :: URLString -> Headers -> Maybe Integer -> IO Bool
+check url headers expected_size = handle <$> exists url headers
 	where
 		handle (False, _) = False
 		handle (True, Nothing) = True
@@ -32,12 +34,12 @@ check url expected_size = handle <$> exists url
 
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size if available. -}
-exists :: URLString -> IO (Bool, Maybe Integer)
-exists url =
+exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
+exists url headers =
 	case parseURI url of
 		Nothing -> return (False, Nothing)
 		Just u -> do
-			r <- request u HEAD
+			r <- request u headers HEAD
 			case rspCode r of
 				(2,_,_) -> return (True, size r)
 				_ -> return (False, Nothing)
@@ -51,26 +53,27 @@ exists url =
  - would not be appropriate to test at configure time and build support
  - for only one in.
  -}
-download :: URLString -> [CommandParam] -> FilePath -> IO Bool
-download url options file = ifM (inPath "wget") (wget , curl)
+download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+download url headers options file = ifM (inPath "wget") (wget , curl)
 	where
-		wget = go "wget" [Params "-c -O"]
+		headerparams = map (\h -> Param $ "--header=" ++ h) headers
+		wget = go "wget" $ Params "-c -O" : headerparams
 		{- Uses the -# progress display, because the normal
 		 - one is very confusing when resuming, showing
 		 - the remainder to download as the whole file,
 		 - and not indicating how much percent was
 		 - downloaded before the resume. -}
-		curl = go "curl" [Params "-L -C - -# -o"]
+		curl = go "curl" $ Params "-L -C - -# -o" : headerparams
 		go cmd opts = boolSystem cmd $
 			options++opts++[File file, File url]
 
 {- Downloads a small file. -}
-get :: URLString -> IO String
-get url =
+get :: URLString -> Headers -> IO String
+get url headers =
 	case parseURI url of
 		Nothing -> error "url parse error"
 		Just u -> do
-			r <- request u GET
+			r <- request u headers GET
 			case rspCode r of
 				(2,_,_) -> return $ rspBody r
 				_ -> error $ rspReason r
@@ -82,8 +85,8 @@ get url =
  - This does its own redirect following because Browser's is buggy for HEAD
  - requests.
  -}
-request :: URI -> RequestMethod -> IO (Response String)
-request url requesttype = go 5 url
+request :: URI -> Headers -> RequestMethod -> IO (Response String)
+request url headers requesttype = go 5 url
 	where
 		go :: Int -> URI -> IO (Response String)
 		go 0 _ = error "Too many redirects "
@@ -92,7 +95,8 @@ request url requesttype = go 5 url
 				Browser.setErrHandler ignore
 				Browser.setOutHandler ignore
 				Browser.setAllowRedirects False
-				snd <$> Browser.request (mkRequest requesttype u :: Request_String)
+				let req = mkRequest requesttype u :: Request_String
+				snd <$> Browser.request (addheaders req)
 			case rspCode rsp of
 				(3,0,x) | x /= 5 -> redir (n - 1) u rsp
 				_ -> return rsp
@@ -105,3 +109,5 @@ request url requesttype = go 5 url
 					Just newURI -> go n newURI_abs
 						where
 							newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+		addheaders req = setHeaders req (rqHeaders req ++ userheaders)
+		userheaders = rights $ map parseHeader headers
