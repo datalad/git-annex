@@ -57,13 +57,13 @@ download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
 download url headers options file = ifM (inPath "wget") (wget , curl)
 	where
 		headerparams = map (\h -> Param $ "--header=" ++ h) headers
-		wget = go "wget" $ Params "-c -O" : headerparams
+		wget = go "wget" $ headerparams ++ [Params "-c -O"]
 		{- Uses the -# progress display, because the normal
 		 - one is very confusing when resuming, showing
 		 - the remainder to download as the whole file,
 		 - and not indicating how much percent was
 		 - downloaded before the resume. -}
-		curl = go "curl" $ Params "-L -C - -# -o" : headerparams
+		curl = go "curl" $ headerparams ++ [Params "-L -C - -# -o"]
 		go cmd opts = boolSystem cmd $
 			options++opts++[File file, File url]
 
