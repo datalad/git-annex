@@ -195,7 +195,8 @@ meteredWriteFile' meterupdate dest startstate feeder =
 	where
 		feed state [] h = do
 			(state', cs) <- feeder state
-			if null cs then return () else feed state' cs h
+			unless (null cs) $
+				feed state' cs h
 		feed state (c:cs) h = do
 			S.hPut h c
 			meterupdate $ toInteger $ S.length c

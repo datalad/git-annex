@@ -89,7 +89,7 @@ updateSymlinks = do
 		fixlink f = do
 			r <- lookupFile1 f
 			case r of
-				Nothing -> return ()
+				Nothing -> noop
 				Just (k, _) -> do
 					link <- calcGitLink f k
 					liftIO $ removeFile f

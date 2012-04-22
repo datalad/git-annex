@@ -19,6 +19,7 @@ import Control.Applicative
 import Utility.SafeCommand
 import Utility.TempFile
 import Utility.Exception
+import Utility.Monad
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
@@ -34,7 +35,7 @@ dirContents d = map (d </>) . filter notcruft <$> getDirectoryContents d
 moveFile :: FilePath -> FilePath -> IO ()
 moveFile src dest = tryIO (rename src dest) >>= onrename
 	where
-		onrename (Right _) = return ()
+		onrename (Right _) = noop
 		onrename (Left e)
 			| isPermissionError e = rethrow
 			| isDoesNotExistError e = rethrow

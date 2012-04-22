@@ -72,8 +72,8 @@ metered key a = Annex.getState Annex.output >>= go (keySize key)
 				incrP progress n
 				displayMeter stdout meter
 			liftIO $ clearMeter stdout meter
-			return r	
-                go _ _ = a (const $ return ())
+			return r
+                go _ _ = a (const noop)
 
 showSideAction :: String -> Annex ()
 showSideAction s = handle q $
@@ -160,7 +160,7 @@ handle json normal = Annex.getState Annex.output >>= go
 		go Annex.JSONOutput = liftIO $ flushed json
 
 q :: Monad m => m ()
-q = return ()
+q = noop
 
 flushed :: IO () -> IO ()
 flushed a = a >> hFlush stdout

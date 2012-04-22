@@ -81,7 +81,7 @@ sshCleanup = do
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
-				Left _ -> return ()
+				Left _ -> noop
 				Right _ -> stopssh socketfile
 			liftIO $ closeFd fd
 		stopssh socketfile = do

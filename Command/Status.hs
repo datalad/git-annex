@@ -108,12 +108,11 @@ nojson :: StatState String -> String -> StatState String
 nojson a _ = a
 
 showStat :: Stat -> StatState ()
-showStat s = calc =<< s
+showStat s = maybe noop calc =<< s
 	where
-		calc (Just (desc, a)) = do
+		calc (desc, a) = do
 			(lift . showHeader) desc
 			lift . showRaw =<< a
-		calc Nothing = return ()
 
 supported_backends :: Stat
 supported_backends = stat "supported backends" $ json unwords $

@@ -37,7 +37,7 @@ setAnnexPerm file = withShared $ liftIO . go
 		go GroupShared = groupWriteRead file
 		go AllShared = modifyFileMode file $ addModes $
 			[ ownerWriteMode, groupWriteMode ] ++ readModes
-		go _ = return ()
+		go _ = noop
 
 {- Gets the appropriate mode to use for creating a file in the annex
  - (other than content files, which are locked down more). -}

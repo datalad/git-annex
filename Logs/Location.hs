@@ -30,7 +30,7 @@ import Logs.Presence
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
 logChange key (UUID u) s = addLog (logFile key) =<< logNow s u
-logChange _ NoUUID _ = return ()
+logChange _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key.

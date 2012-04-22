@@ -46,7 +46,7 @@ runHooks r starthook stophook a = do
 	a
 	where
 		remoteid = show (uuid r)
-		run Nothing = return ()
+		run Nothing = noop
 		run (Just command) = void $ liftIO $
 			boolSystem "sh" [Param "-c", Param command]
 		firstrun lck = do
@@ -81,7 +81,7 @@ runHooks r starthook stophook a = do
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
-				Left _ -> return ()
+				Left _ -> noop
 				Right _ -> run stophook
 			liftIO $ closeFd fd
 

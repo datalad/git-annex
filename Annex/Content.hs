@@ -98,7 +98,7 @@ lockContent key a = do
 			case v of
 				Left _ -> error "content is locked"
 				Right _ -> return $ Just fd
-		unlock Nothing = return ()
+		unlock Nothing = noop
 		unlock (Just l) = closeFd l
 
 {- Calculates the relative path to use to link a file to a key. -}
@@ -237,10 +237,10 @@ cleanObjectLoc key = do
 	file <- inRepo $ gitAnnexLocation key
 	liftIO $ removeparents file (3 :: Int)
 	where
-		removeparents _ 0 = return ()
+		removeparents _ 0 = noop
 		removeparents file n = do
 			let dir = parentDir file
-			maybe (return ()) (const $ removeparents dir (n-1))
+			maybe noop (const $ removeparents dir (n-1))
 				=<< catchMaybeIO (removeDirectory dir)
 
 {- Removes a key's file from .git/annex/objects/ -}

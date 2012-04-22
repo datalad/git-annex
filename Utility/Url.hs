@@ -17,6 +17,7 @@ import Common
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Network.URI
+import Utility.Monad
 
 type URLString = String
 
@@ -95,7 +96,7 @@ request url requesttype = go 5 url
 			case rspCode rsp of
 				(3,0,x) | x /= 5 -> redir (n - 1) u rsp
 				_ -> return rsp
-		ignore = const $ return ()
+		ignore = const noop
 		redir n u rsp = case retrieveHeaders HdrLocation rsp of
 			[] -> return rsp
 			(Header _ newu:_) ->

@@ -73,7 +73,7 @@ recordUUID u = go . M.lookup u =<< uuidMap
 	where
 		go (Just "") = set
 		go Nothing = set
-		go _ = return ()
+		go _ = noop
 		set = describeUUID u ""
 
 {- Read the uuidLog into a simple Map.

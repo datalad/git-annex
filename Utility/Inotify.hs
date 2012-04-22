@@ -56,7 +56,7 @@ watchDir' scan i test add del dir = do
 		then void $ do
 			_ <- addWatch i watchevents dir go
 			mapM walk =<< dirContents dir
-		else return ()
+		else noop
 	where
 		watchevents
 			| isJust add && isJust del =
@@ -68,19 +68,19 @@ watchDir' scan i test add del dir = do
 		recurse = watchDir' scan i test add del
 		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
 			( recurse f
-			, if scan && isJust add then fromJust add f else return ()
+			, when (scan && isJust add) $ fromJust add f
 			)
 
-		go (Created { isDirectory = False }) = return ()
+		go (Created { isDirectory = False }) = noop
 		go (Created { filePath = subdir }) = Just recurse <@> subdir
 		go (Closed { maybeFilePath = Just f }) = add <@> f
 		go (MovedIn { isDirectory = False, filePath = f }) = add <@> f
 		go (MovedOut { isDirectory = False, filePath = f }) = del <@> f
 		go (Deleted { isDirectory = False, filePath = f }) = del <@> f
-		go _ = return ()
+		go _ = noop
 		
 		Just a <@> f = a $ dir </> f
-		Nothing <@> _ = return ()
+		Nothing <@> _ = noop
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()

@@ -18,7 +18,7 @@ import Annex.Perms
 lockFile :: FilePath -> Annex ()
 lockFile file = go =<< fromPool file
 	where
-		go (Just _) = return () -- already locked
+		go (Just _) = noop -- already locked
 		go Nothing = do
 			mode <- annexFileMode
 			fd <- liftIO $ noUmask mode $
@@ -27,10 +27,9 @@ lockFile file = go =<< fromPool file
 			changePool $ M.insert file fd
 
 unlockFile :: FilePath -> Annex ()
-unlockFile file = go =<< fromPool file
+unlockFile file = maybe noop go =<< fromPool file
 	where
-		go Nothing = return ()
-		go (Just fd) = do
+		go fd = do
 			liftIO $ closeFd fd
 			changePool $ M.delete file
 

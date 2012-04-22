@@ -52,7 +52,7 @@ options = Option.common ++
 	where
 		checkuuid expected = getUUID >>= check
 			where
-				check u | u == toUUID expected = return ()
+				check u | u == toUUID expected = noop
 				check NoUUID = unexpected "uninitialized repository"
 				check u = unexpected $ "UUID " ++ fromUUID u
 				unexpected s = error $
@@ -107,7 +107,7 @@ checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
 
 checkNotReadOnly :: String -> IO ()
 checkNotReadOnly cmd
-	| cmd `elem` map cmdname cmds_readonly = return ()
+	| cmd `elem` map cmdname cmds_readonly = noop
 	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
 
 checkEnv :: String -> IO ()

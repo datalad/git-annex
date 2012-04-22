@@ -48,7 +48,7 @@ import qualified Git.Url as Url
 fromCurrent :: IO Repo
 fromCurrent = do
 	r <- maybe fromCwd fromPath =<< getEnv "GIT_DIR"
-	maybe (return ()) changeWorkingDirectory =<< getEnv "GIT_WORK_TREE"
+	maybe noop changeWorkingDirectory =<< getEnv "GIT_WORK_TREE"
 	unsetEnv "GIT_DIR"
 	unsetEnv "GIT_WORK_TREE"
 	return r
