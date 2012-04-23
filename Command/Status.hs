@@ -69,6 +69,7 @@ fast_stats =
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
 	, remote_list DeadTrusted "dead"
+	, disk_size
 	]
 slow_stats :: [Stat]
 slow_stats = 
@@ -78,7 +79,6 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
-	, disk_size
 	, bloom_info
 	, backend_usage
 	]
@@ -175,8 +175,12 @@ disk_size = stat "available local disk space" $ json id $ lift $
 		<$> getDiskReserve
 		<*> inRepo (getDiskFree . gitAnnexDir)
 	where
-		calcfree reserve (Just have) =
-			roughSize storageUnits False $ nonneg $ have - reserve
+		calcfree reserve (Just have) = unwords
+			[ roughSize storageUnits False $ nonneg $ have - reserve
+			, "(+" ++ roughSize storageUnits False reserve
+			, "reserved)"
+			]
+			
 		calcfree _ _ = "unknown"
 		nonneg x
 			| x >= 0 = x
