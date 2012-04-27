@@ -330,6 +330,7 @@ setCommitted = void $ do
 {- Stages the journal into the index. -}
 stageJournal :: Annex ()
 stageJournal = do
+	showStoringStateAction
 	fs <- getJournalFiles
 	g <- gitRepo
 	withIndex $ liftIO $ do

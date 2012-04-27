@@ -59,7 +59,7 @@ upgrade = do
 			updateSymlinks
 			moveLocationLogs
 	
-			Annex.Queue.flush True
+			Annex.Queue.flush
 			setVersion
 		)
 	

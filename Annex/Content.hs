@@ -297,8 +297,8 @@ getKeysPresent = liftIO . traverse (2 :: Int) =<< fromRepo gitAnnexObjectDir
  - especially if performing a short-lived action.
  -}
 saveState :: Bool -> Annex ()
-saveState oneshot = do
-	Annex.Queue.flush False
+saveState oneshot = doSideAction $ do
+	Annex.Queue.flush
 	unless oneshot $
 		ifM alwayscommit
 			( Annex.Branch.commit "update" , Annex.Branch.stage)

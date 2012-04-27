@@ -10,7 +10,6 @@
 module Annex (
 	Annex,
 	AnnexState(..),
-	OutputType(..),
 	new,
 	newState,
 	run,
@@ -44,6 +43,7 @@ import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
+import Types.Messages
 import Utility.State
 import qualified Utility.Matcher
 import qualified Data.Map as M
@@ -69,8 +69,6 @@ instance MonadBaseControl IO Annex where
 		where
 			unStAnnex (StAnnex st) = st
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput
-
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
 -- internal state storage
@@ -78,7 +76,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
-	, output :: OutputType
+	, output :: MessageState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
@@ -104,7 +102,7 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, output = NormalOutput
+	, output = defaultMessageState
 	, force = False
 	, fast = False
 	, auto = False
