@@ -13,7 +13,7 @@ import Git.Command
 import qualified Git.Version
 import qualified Utility.CoProcess as CoProcess
 
-type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String, Bool)
 
 type Attr = String
 
@@ -23,7 +23,8 @@ checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
 	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
-	return (h, attrs, cwd)
+	oldgit <- Git.Version.older "1.7.7"
+	return (h, attrs, cwd, oldgit)
 	where
 		params =
 			[ Param "check-attr" 
@@ -32,11 +33,11 @@ checkAttrStart attrs repo = do
 			[ Param "--" ]
 
 checkAttrStop :: CheckAttrHandle -> IO ()
-checkAttrStop (h, _, _) = CoProcess.stop h
+checkAttrStop (h, _, _, _) = CoProcess.stop h
 
 {- Gets an attribute of a file. -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
-checkAttr (h, attrs, cwd) want file = do
+checkAttr (h, attrs, cwd, oldgit) want file = do
 	pairs <- CoProcess.query h send receive
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
@@ -44,9 +45,8 @@ checkAttr (h, attrs, cwd) want file = do
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
 	where
 		send to = do
-			oldgit <- Git.Version.older "1.7.7"
 			fileEncoding to
-			hPutStr to $ file' oldgit ++ "\0"
+			hPutStr to $ file' ++ "\0"
 		receive from = forM attrs $ \attr -> do
 			fileEncoding from
 			l <- hGetLine from
@@ -58,7 +58,7 @@ checkAttr (h, attrs, cwd) want file = do
 		 - With newer git, git check-attr chokes on some absolute
 		 - filenames, and the bugs that necessitated them were fixed,
 		 - so use relative filenames. -}
-		file' oldgit
+		file'
 			| oldgit = absPathFrom cwd file
 			| otherwise = relPathDirToFile cwd $ absPathFrom cwd file
 		attrvalue attr l = end bits !! 0
