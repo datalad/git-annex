@@ -6,6 +6,7 @@ git-annex (3.20120419) UNRELEASED; urgency=low
   * Add annex.http-headers and annex.http-headers-command config
     settings, to allow custom headers to be sent with all HTTP requests.
     (Requested by the Internet Archive)
+  * uninit: Clear annex.uuid from .git/config. Closes: #670639
 
  -- Joey Hess <joeyh@debian.org>  Fri, 20 Apr 2012 16:14:08 -0400
 
