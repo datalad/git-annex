@@ -1,0 +1,10 @@
+This is my current understanding on how one must use gpg with git-annex:
+
+ * Generate(or copy around) a gpg key on every machine that needs to access the encrypted remote.
+ * git annex initremote myremote encryption=KEY for each key that you generated
+
+What I'm trying to figure out is if I can generate a no-passphrase gpg key and commit it to the repository, and have git-annex use that. That way any new clones of the annex automatically have access to any encrypted remotes, without having to do any key management.
+
+I think I can generate a no-passphrase key, but then I still have to manually copy it around to each machine.
+
+I'm not a huge gpg user so part of this is me wanting to avoid having to manage and keeping track of the keys.  This would probably be a non-issue if I used gpg on more machines and was more comfortable with it.
