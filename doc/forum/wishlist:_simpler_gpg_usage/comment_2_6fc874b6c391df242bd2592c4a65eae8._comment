@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-04-29T02:39:20Z"
+ content="""
+The encryption uses a symmetric cipher that is stored in the git repository already. It's just stored encrypted to the various gpg keys that have been configured to use it. It would certianly be possible to store the symmetric cipher unencrypted in the git repo. 
+
+I don't see your idea of gpg-options saving any work. It would still require you to do key distribution and run commands in each repo to set it up.
+"""]]
