@@ -14,6 +14,7 @@ import Types.Remote
 import Crypto
 import qualified Annex
 import Config
+import Utility.Base64
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
@@ -93,3 +94,21 @@ cipherKey Nothing _ = return Nothing
 cipherKey (Just c) k = maybe Nothing encrypt <$> remoteCipher c
 	where
 		encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)
+
+{- Stores an StorableCipher in a remote's configuration. -}
+storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
+storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
+storeCipher c (EncryptedCipher t ks) = 
+	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
+	where
+		showkeys (KeyIds l) = join "," l
+
+{- Extracts an StorableCipher from a remote's configuration. -}
+extractCipher :: RemoteConfig -> Maybe StorableCipher
+extractCipher c = 
+	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
+		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
+		(Just t, Nothing) -> Just $ SharedCipher (fromB64 t)
+		_ -> Nothing
+	where
+		readkeys = KeyIds . split ","

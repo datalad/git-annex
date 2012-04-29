@@ -10,13 +10,12 @@
 
 module Crypto (
 	Cipher,
+	KeyIds(..),
 	StorableCipher(..),
 	genEncryptedCipher,
 	genSharedCipher,
 	updateEncryptedCipher,
 	describeCipher,
-	storeCipher,
-	extractCipher,
 	decryptCipher,		
 	encryptKey,
 	withEncryptedHandle,
@@ -28,7 +27,6 @@ module Crypto (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.Map as M
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Control.Applicative
@@ -36,8 +34,6 @@ import Control.Applicative
 import Common.Annex
 import qualified Utility.Gpg as Gpg
 import Types.Key
-import Types.Remote
-import Utility.Base64
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder
@@ -89,24 +85,6 @@ describeCipher (EncryptedCipher _ (KeyIds ks)) =
 	where
 		keys [_] = "key"
 		keys _ = "keys"
-
-{- Stores an StorableCipher in a remote's configuration. -}
-storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
-storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
-storeCipher c (EncryptedCipher t ks) = 
-	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
-	where
-		showkeys (KeyIds l) = join "," l
-
-{- Extracts an StorableCipher from a remote's configuration. -}
-extractCipher :: RemoteConfig -> Maybe StorableCipher
-extractCipher c = 
-	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
-		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
-		(Just t, Nothing) -> Just $ SharedCipher (fromB64 t)
-		_ -> Nothing
-	where
-		readkeys = KeyIds . split ","
 
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
@@ -160,7 +138,7 @@ withDecryptedContent = pass withDecryptedHandle
 
 pass :: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
       -> Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
-pass to c i a = to c i $ \h -> a =<< L.hGetContents h
+pass to n s a = to n s $ \h -> a =<< L.hGetContents h
 
 hmacWithCipher :: Cipher -> String -> String
 hmacWithCipher c = hmacWithCipher' (cipherHmac c) 
