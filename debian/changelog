@@ -7,6 +7,9 @@ git-annex (3.20120419) UNRELEASED; urgency=low
     settings, to allow custom headers to be sent with all HTTP requests.
     (Requested by the Internet Archive)
   * uninit: Clear annex.uuid from .git/config. Closes: #670639
+  * Added shared cipher mode to encryptable special remotes. This option
+    avoids gpg key distribution, at the expense of flexability, and with
+    the requirement that all clones of the git repository be equally trusted.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 20 Apr 2012 16:14:08 -0400
 

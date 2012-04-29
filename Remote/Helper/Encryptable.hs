@@ -17,17 +17,22 @@ import Config
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
- - updated to be accessible to an additional encryption key. -}
+ - updated to be accessible to an additional encryption key. Or the user
+ - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> Annex RemoteConfig
-encryptionSetup c =
-	case (M.lookup "encryption" c, extractCipher c) of
-		(Nothing, Nothing) -> error "Specify encryption=key or encryption=none"
-		(Just "none", Nothing) -> return c
-		(Just "none", Just _) -> error "Cannot change encryption type of existing remote."
-		(Nothing, Just _) -> return c
-		(Just _, Nothing) -> use "encryption setup" $ genCipher c
-		(Just _, Just v) -> use "encryption updated" $ updateCipher c v
+encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
+	(Nothing, Nothing) -> error "Specify encryption=key or encryption=none or encryption=shared"
+	(Just "none", Nothing) -> return c
+	(Nothing, Just _) -> return c
+	(Just "shared", Just (SharedCipher _)) -> return c
+	(Just "none", Just _) -> cannotchange
+	(Just "shared", Just (EncryptedCipher _ _)) -> cannotchange
+	(Just _, Just (SharedCipher _)) -> cannotchange
+	(Just "shared", Nothing) -> use "encryption setup" $ genSharedCipher
+	(Just keyid, Nothing) -> use "encryption setup" $ genEncryptedCipher keyid
+	(Just keyid, Just v) -> use "encryption updated" $ updateEncryptedCipher keyid v
 	where
+		cannotchange = error "Cannot change encryption type of existing remote."
 		use m a = do
 			cipher <- liftIO a
 			showNote $ m ++ " " ++ describeCipher cipher
@@ -78,7 +83,7 @@ remoteCipher c = go $ extractCipher c
 				Nothing -> decrypt encipher cache
 		decrypt encipher cache = do
 			showNote "gpg"
-			cipher <- liftIO $ decryptCipher c encipher
+			cipher <- liftIO $ decryptCipher encipher
 			Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 			return $ Just cipher
 

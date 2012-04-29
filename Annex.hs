@@ -90,7 +90,7 @@ data AnnexState = AnnexState
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
-	, ciphers :: M.Map EncryptedCipher Cipher
+	, ciphers :: M.Map StorableCipher Cipher
 	, lockpool :: M.Map FilePath Fd
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
