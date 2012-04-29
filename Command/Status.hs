@@ -12,7 +12,6 @@ module Command.Status where
 import Control.Monad.State.Strict
 import qualified Data.Map as M
 import Text.JSON
-import Data.Ratio
 
 import Common.Annex
 import qualified Types.Backend as B
@@ -31,6 +30,7 @@ import Logs.UUID
 import Logs.Trust
 import Remote
 import Config
+import Utility.Percentage
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -161,7 +161,7 @@ bloom_info = stat "bloom filter size" $ json id $ do
 	let note = aside $
 		if localkeys >= capacity
 		then "appears too small for this repository; adjust annex.bloomcapacity"
-		else show (floor (percentage capacity localkeys) :: Integer) ++ "% full"
+		else showPercentage 1 (percentage capacity localkeys) ++ " full"
 
 	-- Two bloom filters are used at the same time, so double the size
 	-- of one.
@@ -169,10 +169,6 @@ bloom_info = stat "bloom filter size" $ json id $ do
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
-
-	where
-		percentage :: Integer -> Integer -> Double
-		percentage full have = 100 * (fromRational $ have % full)
 
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $
