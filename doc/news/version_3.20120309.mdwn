@@ -1,5 +1,0 @@
-git-annex 3.20120309 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix key directory hash calculation code to behave as it did before
-     version 3.20120227 when a key contains non-ascii characters (only
-     WORM backend is likely to have been affected)."""]]

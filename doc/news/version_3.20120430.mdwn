@@ -1,0 +1,12 @@
+git-annex 3.20120430 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix use of annex.diskreserve config setting.
+   * Directory special remotes now check annex.diskreserve.
+   * Support git's core.sharedRepository configuration.
+   * Add annex.http-headers and annex.http-headers-command config
+     settings, to allow custom headers to be sent with all HTTP requests.
+     (Requested by the Internet Archive)
+   * uninit: Clear annex.uuid from .git/config. Closes: #[670639](http://bugs.debian.org/670639)
+   * Added shared cipher mode to encryptable special remotes. This option
+     avoids gpg key distribution, at the expense of flexability, and with
+     the requirement that all clones of the git repository be equally trusted."""]]
