@@ -32,11 +32,11 @@ common =
 		"avoid slow operations"
 	, Option ['a'] ["auto"] (NoArg (setauto True))
 		"automatic mode"
-	, Option ['q'] ["quiet"] (NoArg (setoutput QuietOutput))
+	, Option ['q'] ["quiet"] (NoArg (Annex.setOutput QuietOutput))
 		"avoid verbose output"
-	, Option ['v'] ["verbose"] (NoArg (setoutput NormalOutput))
+	, Option ['v'] ["verbose"] (NoArg (Annex.setOutput NormalOutput))
 		"allow verbose output (default)"
-	, Option ['j'] ["json"] (NoArg (setoutput JSONOutput))
+	, Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
 		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg setdebug)
 		"show debug messages"
@@ -47,8 +47,6 @@ common =
 		setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 		setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 		setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
-		setoutput v = Annex.changeState $ \s ->
-			s { Annex.output = (Annex.output s) { outputType = v } }
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $
 			setLevel DEBUG

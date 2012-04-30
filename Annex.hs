@@ -18,6 +18,7 @@ module Annex (
 	changeState,
 	setFlag,
 	setField,
+	setOutput,
 	getFlag,
 	getField,
 	addCleanup,
@@ -147,6 +148,11 @@ setField field value = changeState $ \s ->
 addCleanup :: String -> Annex () -> Annex ()
 addCleanup uid a = changeState $ \s ->
 	s { cleanup = M.insertWith' const uid a $ cleanup s }
+
+{- Sets the type of output to emit. -}
+setOutput :: OutputType -> Annex ()
+setOutput o = changeState $ \s ->
+	s { output = (output s) { outputType = o } }
 
 {- Checks if a flag was set. -}
 getFlag :: String -> Annex Bool

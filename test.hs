@@ -38,6 +38,7 @@ import qualified Logs.Remote
 import qualified Remote
 import qualified Command.DropUnused
 import qualified Types.Key
+import qualified Types.Messages
 import qualified Config
 import qualified Crypto
 import qualified Utility.Path
@@ -720,10 +721,10 @@ git_annex_expectoutput command params expected = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.Construct.fromCurrent
-	g' <- Git.Config.read g
-	s <- Annex.new g'
-	Annex.eval s { Annex.output = Annex.QuietOutput } a
+	s <- Annex.new =<< Git.Config.read =<< Git.Construct.fromCurrent
+	Annex.eval s $ do
+		Annex.setOutput Types.Messages.QuietOutput
+		a
 
 innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a
