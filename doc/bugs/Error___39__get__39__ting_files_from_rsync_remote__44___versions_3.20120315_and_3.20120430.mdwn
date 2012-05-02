@@ -47,3 +47,16 @@ The rsync remote config in .git/config:
 	[remote "rsyncremote"]
 		annex-rsyncurl = myuser@rsync.hidrive.strato.com:/users/myuser/git-annex/Music/
 		annex-uuid = "UUID"
+
+> Here's what the --debug flag shows is being run:
+
+	Running: rsync ["--progress","--inplace","joey@localhost:/tmp/Music/d98/a3c/'GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c'","/home/joey/tmp/x/.git/annex/tmp/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c"] 
+
+> But, this works for me, here, despite containing the quoting!
+> That's because here it's using rsync over ssh, which actually requires
+> that quoting. Are you using rsync
+> over the rsync protocol? If so, the workaround is to explicitly make
+> the rsyncurl start with `rsync://` -- and if this is the case, I need
+> to adjust the code in git-annex that determines if it's using ssh or
+> the rsync protocol.
+>  --[[Joey]]
