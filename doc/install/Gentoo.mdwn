@@ -1,0 +1,3 @@
+Gentoo users can:
+
+	`emerge git-annex`
