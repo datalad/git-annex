@@ -64,6 +64,8 @@ The rsync remote config in .git/config:
 > says AFAICS) that the rsync protocol is only used if the url starts
 > with `rsync://` or contains `::`.
 > 
+>> Nope, it is indeed using rsync over ssh as git-annex thought.
+> 
 > Hmm, I see that `hidrive.strato.com` is some kind of rsync provider?
 > Perhaps they do something with rsync over ssh that
 > avoids the need for shell quoting. For example, they might pass incoming
@@ -72,3 +74,6 @@ The rsync remote config in .git/config:
 > about them would probably be useful then. Ie, do they really use rsync
 > over ssh, is it really a `rsync.net` type rsync provider? 
 >  --[[Joey]]
+> 
+>> This was the case, and the shellescape=no config option has been added
+>> to rsync special remotes to deal with it. [[done]] --[[Joey]] 
