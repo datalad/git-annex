@@ -56,7 +56,11 @@ The rsync remote config in .git/config:
 > That's because here it's using rsync over ssh, which actually requires
 > that quoting. Are you using rsync
 > over the rsync protocol? If so, the workaround is to explicitly make
-> the rsyncurl start with `rsync://` -- and if this is the case, I need
+> the rsyncurl start with `rsync://`
+> 
+> And if this is the case, I need
 > to adjust the code in git-annex that determines if it's using ssh or
-> the rsync protocol.
+> the rsync protocol. It assumes that (and this is what the rsync man 
+> says AFAICS) that the rsync protocol is only used if the url starts
+> with `rsync://` or contains `::`.
 >  --[[Joey]]
