@@ -48,7 +48,7 @@ The rsync remote config in .git/config:
 		annex-rsyncurl = myuser@rsync.hidrive.strato.com:/users/myuser/git-annex/Music/
 		annex-uuid = "UUID"
 
-> Here's what the --debug flag shows is being run:
+> Here's what the --debug flag shows is being run: --[[Joey]] 
 
 	Running: rsync ["--progress","--inplace","joey@localhost:/tmp/Music/d98/a3c/'GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c'","/home/joey/tmp/x/.git/annex/tmp/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c"] 
 
@@ -63,4 +63,12 @@ The rsync remote config in .git/config:
 > the rsync protocol. It assumes that (and this is what the rsync man 
 > says AFAICS) that the rsync protocol is only used if the url starts
 > with `rsync://` or contains `::`.
+> 
+> Hmm, I see that `hidrive.strato.com` is some kind of rsync provider?
+> Perhaps they do something with rsync over ssh that
+> avoids the need for shell quoting. For example, they might pass incoming
+> ssh connections directly into rsync, bypassing the shell
+> -- which avoids the need for this quoting. Any details you can provide
+> about them would probably be useful then. Ie, do they really use rsync
+> over ssh, is it really a `rsync.net` type rsync provider? 
 >  --[[Joey]]
