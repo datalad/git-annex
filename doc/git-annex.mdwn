@@ -240,6 +240,8 @@ subdirectories).
   Drops the data corresponding to the numbers, as listed by the last
   `git annex unused`
 
+  You can also specify ranges of numbers, such as "1-1000".
+
   To drop the data from a remote, specify --from.
 
 * merge

@@ -5,6 +5,7 @@ git-annex (3.20120431) UNRELEASED; urgency=low
     This is known to be needed for certian rsync hosting providers
     (specificially hidrive.strato.com) that use rsync over ssh but do not
     pass it through the shell.
+  * dropunused: Allow specifying ranges to drop.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 02 May 2012 13:06:18 -0400
 

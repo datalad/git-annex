@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,7 +18,7 @@ import qualified Git
 import qualified Option
 import Types.Key
 
-type UnusedMap = M.Map String Key
+type UnusedMap = M.Map Integer Key
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
@@ -34,10 +34,20 @@ withUnusedMaps params = do
 	unused <- readUnusedLog ""
 	unusedbad <- readUnusedLog "bad"
 	unusedtmp <- readUnusedLog "tmp"
-	return $ map (start (unused, unusedbad, unusedtmp)) params
+	return $ map (start (unused, unusedbad, unusedtmp)) $
+		concatMap unusedSpec params
 
-start :: (UnusedMap, UnusedMap, UnusedMap) -> FilePath -> CommandStart
-start (unused, unusedbad, unusedtmp) s = search
+unusedSpec :: String -> [Integer]
+unusedSpec spec
+	| "-" `isInfixOf` spec = range $ separate (== '-') spec
+	| otherwise = catMaybes [readish spec]
+	where
+		range (a, b) = case (readish a, readish b) of
+			(Just x, Just y) -> [x..y]
+			_ -> []
+
+start :: (UnusedMap, UnusedMap, UnusedMap) -> Integer -> CommandStart
+start (unused, unusedbad, unusedtmp) n = search
 	[ (unused, perform)
 	, (unusedbad, performOther gitAnnexBadLocation)
 	, (unusedtmp, performOther gitAnnexTmpLocation)
@@ -45,10 +55,10 @@ start (unused, unusedbad, unusedtmp) s = search
 	where
 		search [] = stop
 		search ((m, a):rest) =
-			case M.lookup s m of
+			case M.lookup n m of
 				Nothing -> search rest
 				Just key -> do
-					showStart "dropunused" s
+					showStart "dropunused" (show n)
 					next $ a key
 
 perform :: Key -> CommandPerform
@@ -70,11 +80,15 @@ performOther filespec key = do
 readUnusedLog :: FilePath -> Annex UnusedMap
 readUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
-	e <- liftIO $ doesFileExist f
-	if e
-		then M.fromList . map parse . lines <$> liftIO (readFile f)
-		else return M.empty
+	ifM (liftIO $ doesFileExist f)
+		( M.fromList . catMaybes . map parse . lines
+			<$> liftIO (readFile f)
+		, return M.empty
+		)
 	where
-		parse line = (num, fromJust $ readKey rest)
+		parse line =
+			case (readish tag, readKey rest) of
+				(Just num, Just key) -> Just (num, key)
+				_ -> Nothing
 			where
-				(num, rest) = separate (== ' ') line
+				(tag, rest) = separate (== ' ') line
