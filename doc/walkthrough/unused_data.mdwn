@@ -27,4 +27,4 @@ data anymore, you can easily remove it:
 
 Hint: To drop a lot of unused data, use a command like this:
 
-	# git annex dropunused `seq 1 1000`
+	# git annex dropunused 1-1000
