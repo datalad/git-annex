@@ -7,8 +7,7 @@
 
 module Command.DropUnused where
 
-import qualified Data.Map as M
-
+import Logs.Unused
 import Common.Annex
 import Command
 import qualified Annex
@@ -16,50 +15,17 @@ import qualified Command.Drop
 import qualified Remote
 import qualified Git
 import qualified Option
-import Types.Key
-
-type UnusedMap = M.Map Integer Key
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
-	command "dropunused" (paramRepeating paramNumber)
+	command "dropunused" (paramRepeating paramNumRange)
 		seek "drop unused file content"]
 
 seek :: [CommandSeek]
-seek = [withUnusedMaps]
+seek = [withUnusedMaps start]
 
-{- Read unused logs once, and pass the maps to each start action. -}
-withUnusedMaps :: CommandSeek
-withUnusedMaps params = do
-	unused <- readUnusedLog ""
-	unusedbad <- readUnusedLog "bad"
-	unusedtmp <- readUnusedLog "tmp"
-	return $ map (start (unused, unusedbad, unusedtmp)) $
-		concatMap unusedSpec params
-
-unusedSpec :: String -> [Integer]
-unusedSpec spec
-	| "-" `isInfixOf` spec = range $ separate (== '-') spec
-	| otherwise = catMaybes [readish spec]
-	where
-		range (a, b) = case (readish a, readish b) of
-			(Just x, Just y) -> [x..y]
-			_ -> []
-
-start :: (UnusedMap, UnusedMap, UnusedMap) -> Integer -> CommandStart
-start (unused, unusedbad, unusedtmp) n = search
-	[ (unused, perform)
-	, (unusedbad, performOther gitAnnexBadLocation)
-	, (unusedtmp, performOther gitAnnexTmpLocation)
-	]
-	where
-		search [] = stop
-		search ((m, a):rest) =
-			case M.lookup n m of
-				Nothing -> search rest
-				Just key -> do
-					showStart "dropunused" (show n)
-					next $ a key
+start :: UnusedMaps -> Int -> CommandStart
+start = startUnused "dropunused" perform (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)
 
 perform :: Key -> CommandPerform
 perform key = maybe droplocal dropremote =<< Remote.byName =<< from
@@ -76,19 +42,3 @@ performOther filespec key = do
 	f <- fromRepo $ filespec key
 	liftIO $ whenM (doesFileExist f) $ removeFile f
 	next $ return True
-
-readUnusedLog :: FilePath -> Annex UnusedMap
-readUnusedLog prefix = do
-	f <- fromRepo $ gitAnnexUnusedLog prefix
-	ifM (liftIO $ doesFileExist f)
-		( M.fromList . catMaybes . map parse . lines
-			<$> liftIO (readFile f)
-		, return M.empty
-		)
-	where
-		parse line =
-			case (readish tag, readKey rest) of
-				(Just num, Just key) -> Just (num, key)
-				_ -> Nothing
-			where
-				(tag, rest) = separate (== ' ') line

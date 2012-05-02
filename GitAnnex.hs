@@ -37,6 +37,7 @@ import qualified Command.InitRemote
 import qualified Command.Fsck
 import qualified Command.Unused
 import qualified Command.DropUnused
+import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
@@ -86,6 +87,7 @@ cmds = concat
 	, Command.Fsck.def
 	, Command.Unused.def
 	, Command.DropUnused.def
+	, Command.AddUnused.def
 	, Command.Find.def
 	, Command.Whereis.def
 	, Command.Log.def

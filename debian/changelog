@@ -6,6 +6,8 @@ git-annex (3.20120431) UNRELEASED; urgency=low
     (specificially hidrive.strato.com) that use rsync over ssh but do not
     pass it through the shell.
   * dropunused: Allow specifying ranges to drop.
+  * addunused: New command, the opposite of dropunused, it relinks unused
+    content into the git repository.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 02 May 2012 13:06:18 -0400
 
