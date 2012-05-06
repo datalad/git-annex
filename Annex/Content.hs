@@ -304,12 +304,12 @@ saveState oneshot = doSideAction $ do
 			( Annex.Branch.commit "update" , Annex.Branch.stage)
 	where
 		alwayscommit = fromMaybe True . Git.configTrue
-			<$> getConfig "annex.alwayscommit" ""
+			<$> getConfig (annexConfig "alwayscommit") ""
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = do
-	o <- map Param . words <$> getConfig "annex.web-options" ""
+	o <- map Param . words <$> getConfig (annexConfig "web-options") ""
 	headers <- getHttpHeaders
 	liftIO $ anyM (\u -> Url.download u headers o file) urls
 

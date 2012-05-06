@@ -183,10 +183,10 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  -}
 bloomCapacity :: Annex Int
 bloomCapacity = fromMaybe 500000 . readish
-	<$> getConfig "annex.bloomcapacity" ""
+	<$> getConfig (annexConfig "bloomcapacity") ""
 bloomAccuracy :: Annex Int
 bloomAccuracy = fromMaybe 1000 . readish
-	<$> getConfig "annex.bloomaccuracy" ""
+	<$> getConfig (annexConfig "bloomaccuracy") ""
 bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity

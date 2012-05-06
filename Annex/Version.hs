@@ -21,8 +21,8 @@ supportedVersions = [defaultVersion]
 upgradableVersions :: [Version]
 upgradableVersions = ["0", "1", "2"]
 
-versionField :: String
-versionField = "annex.version"
+versionField :: ConfigKey
+versionField = annexConfig "version"
 
 getVersion :: Annex (Maybe Version)
 getVersion = handle <$> getConfig versionField ""
