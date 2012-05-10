@@ -7,3 +7,9 @@ License: GPL-3+
  The full text of version 3 of the GPL is distributed as doc/GPL in
  this package's source, or in /usr/share/common-licenses/GPL-3 on
  Debian systems.
+
+Files: doc/logo.png doc/logo_small.png doc/favicon.png
+Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
+           2010 Joey Hess <joey@kitenet.net>
+License: other
+  Free to modify and redistribute with due credit, and obviously free to use.
