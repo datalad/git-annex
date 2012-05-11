@@ -1,0 +1,13 @@
+git-annex 3.20120511 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Rsync special remotes can be configured with shellescape=no
+     to avoid shell quoting that is normally done when using rsync over ssh.
+     This is known to be needed for certian rsync hosting providers
+     (specificially hidrive.strato.com) that use rsync over ssh but do not
+     pass it through the shell.
+   * dropunused: Allow specifying ranges to drop.
+   * addunused: New command, the opposite of dropunused, it relinks unused
+     content into the git repository.
+   * Fix use of several config settings: annex.ssh-options,
+     annex.rsync-options, annex.bup-split-options. (And adjust types to avoid
+     the bugs that broke several config settings.)"""]]
