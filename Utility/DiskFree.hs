@@ -18,7 +18,7 @@ import Foreign.C.Error
 foreign import ccall unsafe "libdiskfree.h diskfree" c_diskfree
 	:: CString -> IO CULLong
 
-getDiskFree :: String -> IO (Maybe Integer)
+getDiskFree :: FilePath -> IO (Maybe Integer)
 getDiskFree path = withFilePath path $ \c_path -> do
 	free <- c_diskfree c_path
 	ifM (safeErrno <$> getErrno)

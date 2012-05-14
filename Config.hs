@@ -93,6 +93,15 @@ getTrustLevel r = fromRepo $ Git.Config.getMaybe $ remoteConfig r "trustlevel"
 {- Gets annex.diskreserve setting. -}
 getDiskReserve :: Annex Integer
 getDiskReserve = fromMaybe megabyte . readSize dataUnits
-	<$> getConfig "diskreserve" ""
+	<$> getConfig "annex.diskreserve" ""
 	where
 		megabyte = 1000000
+
+{- Gets annex.httpheaders or annex.httpheaders-command setting,
+ - splitting it into lines. -}
+getHttpHeaders :: Annex [String]
+getHttpHeaders = do
+	cmd <- getConfig "annex.http-headers-command" ""
+	if (null cmd)
+		then fromRepo $ Git.Config.getList "annex.http-headers"
+		else lines . snd <$> liftIO (pipeFrom "sh" ["-c", cmd])

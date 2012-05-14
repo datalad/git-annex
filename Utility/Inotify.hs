@@ -53,11 +53,10 @@ watchDir i test add del dir = watchDir' False i test add del dir
 watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
 watchDir' scan i test add del dir = do
 	if test dir
-		then do
+		then void $ do
 			_ <- addWatch i watchevents dir go
-			_ <- mapM walk =<< dirContents dir
-			return ()
-		else return ()
+			mapM walk =<< dirContents dir
+		else noop
 	where
 		watchevents
 			| isJust add && isJust del =
@@ -69,19 +68,19 @@ watchDir' scan i test add del dir = do
 		recurse = watchDir' scan i test add del
 		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
 			( recurse f
-			, if scan && isJust add then fromJust add f else return ()
+			, when (scan && isJust add) $ fromJust add f
 			)
 
-		go (Created { isDirectory = False }) = return ()
+		go (Created { isDirectory = False }) = noop
 		go (Created { filePath = subdir }) = Just recurse <@> subdir
 		go (Closed { maybeFilePath = Just f }) = add <@> f
 		go (MovedIn { isDirectory = False, filePath = f }) = add <@> f
 		go (MovedOut { isDirectory = False, filePath = f }) = del <@> f
 		go (Deleted { isDirectory = False, filePath = f }) = del <@> f
-		go _ = return ()
+		go _ = noop
 		
 		Just a <@> f = a $ dir </> f
-		Nothing <@> _ = return ()
+		Nothing <@> _ = noop
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
@@ -92,6 +91,5 @@ waitForTermination = do
 		check keyboardSignal mv
 	takeMVar mv
 	where
-		check sig mv = do
-			_ <- installHandler sig (CatchOnce $ putMVar mv ()) Nothing
-			return ()
+		check sig mv = void $
+			installHandler sig (CatchOnce $ putMVar mv ()) Nothing

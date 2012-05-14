@@ -35,7 +35,7 @@ setVersion = setConfig versionField defaultVersion
 
 checkVersion :: Version -> Annex ()
 checkVersion v
-	| v `elem` supportedVersions = return ()
+	| v `elem` supportedVersions = noop
 	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
 	| otherwise = err "Upgrade git-annex."
 	where

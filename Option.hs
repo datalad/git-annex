@@ -20,6 +20,7 @@ import System.Log.Logger
 
 import Common.Annex
 import qualified Annex
+import Types.Messages
 import Limit
 import Usage
 
@@ -31,11 +32,11 @@ common =
 		"avoid slow operations"
 	, Option ['a'] ["auto"] (NoArg (setauto True))
 		"automatic mode"
-	, Option ['q'] ["quiet"] (NoArg (setoutput Annex.QuietOutput))
+	, Option ['q'] ["quiet"] (NoArg (Annex.setOutput QuietOutput))
 		"avoid verbose output"
-	, Option ['v'] ["verbose"] (NoArg (setoutput Annex.NormalOutput))
+	, Option ['v'] ["verbose"] (NoArg (Annex.setOutput NormalOutput))
 		"allow verbose output (default)"
-	, Option ['j'] ["json"] (NoArg (setoutput Annex.JSONOutput))
+	, Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
 		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg setdebug)
 		"show debug messages"
@@ -46,7 +47,6 @@ common =
 		setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 		setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 		setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
-		setoutput v = Annex.changeState $ \s -> s { Annex.output = v }
 		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 		setdebug = liftIO $ updateGlobalLogger rootLoggerName $
 			setLevel DEBUG

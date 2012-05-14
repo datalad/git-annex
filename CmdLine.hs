@@ -89,7 +89,7 @@ tryRun = tryRun' 0
 tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
 tryRun' errnum _ cmd []
 	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
-	| otherwise = return ()
+	| otherwise = noop
 tryRun' errnum state cmd (a:as) = do
 	r <- run
 	handle $! r

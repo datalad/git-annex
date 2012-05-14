@@ -34,8 +34,13 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
+<<<<<<< HEAD
    base < 5, 
    text, QuickCheck >= 2.1
+=======
+   base == 4.5.*, monad-control, transformers-base, lifted-base,
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
+>>>>>>> 3.20120430
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
@@ -50,7 +55,7 @@ Test-Suite test
   Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
-   base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
+   base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP

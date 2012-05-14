@@ -16,12 +16,14 @@ module Annex.UUID (
 	getRepoUUID,
 	getUncachedUUID,
 	prepUUID,
-	genUUID
+	genUUID,
+	removeRepoUUID,
 ) where
 
 import Common.Annex
 import qualified Git
 import qualified Git.Config
+import qualified Git.Command
 import qualified Build.SysConfig as SysConfig
 import Config
 
@@ -60,6 +62,10 @@ getRepoUUID r = do
 			g <- gitRepo
 			when (g /= r) $ storeUUID cachekey u
 		cachekey = remoteConfig r "uuid"
+
+removeRepoUUID :: Annex ()
+removeRepoUUID = inRepo $ Git.Command.run "config"
+	[Param "--unset", Param configkey]
 
 getUncachedUUID :: Git.Repo -> UUID
 getUncachedUUID = toUUID . Git.Config.get configkey ""

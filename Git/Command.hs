@@ -78,5 +78,5 @@ pipeNullSplitB params repo = filter (not . L.null) . L.split '\0' <$>
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes
-	r <- catchDefaultIO (getAnyProcessStatus False True) Nothing
-	maybe (return ()) (const reap) r
+	catchDefaultIO (getAnyProcessStatus False True) Nothing
+		>>= maybe noop (const reap)

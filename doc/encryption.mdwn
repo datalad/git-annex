@@ -33,3 +33,16 @@ Note that once a key has been given access to a remote, it's not
 possible to revoke that access, short of deleting the remote. See
 [[encryption_design|design/encryption]] for other security risks
 associated with encryption.
+
+## shared cipher mode
+
+Alternatively, you can configure git-annex to use a shared cipher to
+encrypt data stored in a remote. This shared cipher is stored,
+**unencrypted** in the git repository. So it's shared amoung every
+clone of the git repository. The advantage is you don't need to set up gpg
+keys. The disadvantage is that this is **insecure** unless you
+trust every clone of the git repository with access to the encrypted data
+stored in the special remote.
+
+To use shared encryption, specify "encryption=shared" when first setting
+up a special remote.

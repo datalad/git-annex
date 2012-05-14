@@ -94,7 +94,18 @@ findPubKeys for = KeyIds . parse <$> readStrict params
 		pubKey = isPrefixOf "pub:"
 		keyIdField s = split ":" s !! 4
 
-
+{- Creates a block of high-quality random data suitable to use as a cipher.
+ - It is armored, to avoid newlines, since gpg only reads ciphers up to the
+ - first newline. -}
+genRandom :: Int -> IO String
+genRandom size = readStrict
+	[ Params "--gen-random --armor"
+	, Param $ show randomquality
+	, Param $ show size
+	]
+	where
+		-- 1 is /dev/urandom; 2 is /dev/random
+		randomquality = 1 :: Int
 
 {- A test key. This is provided pre-generated since generating a new gpg
  - key is too much work (requires too much entropy) for a test suite to

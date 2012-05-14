@@ -10,7 +10,6 @@
 module Annex (
 	Annex,
 	AnnexState(..),
-	OutputType(..),
 	new,
 	newState,
 	run,
@@ -19,6 +18,7 @@ module Annex (
 	changeState,
 	setFlag,
 	setField,
+	setOutput,
 	getFlag,
 	getField,
 	addCleanup,
@@ -35,12 +35,14 @@ import qualified Git
 import qualified Git.Config
 import Git.CatFile
 import Git.CheckAttr
+import Git.SharedRepository
 import qualified Git.Queue
 import Types.Backend
 import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
+import Types.Messages
 import Utility.State
 import qualified Utility.Matcher
 import qualified Data.Map as M
@@ -62,6 +64,17 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 
 data OutputType = NormalOutput | QuietOutput | JSONOutput
 
+instance MonadBase IO Annex where
+	liftBase = Annex . liftBase
+
+instance MonadBaseControl IO Annex where
+	newtype StM Annex a = StAnnex (StM (StateT AnnexState IO) a)
+	liftBaseWith f = Annex $ liftBaseWith $ \runInIO ->
+		f $ liftM StAnnex . runInIO . runAnnex
+	restoreM = Annex . restoreM . unStAnnex
+		where
+			unStAnnex (StAnnex st) = st
+
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
 -- internal state storage
@@ -69,7 +82,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
-	, output :: OutputType
+	, output :: MessageState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
@@ -80,9 +93,10 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FilePath -> Annex Bool)
+	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
-	, ciphers :: M.Map EncryptedCipher Cipher
+	, ciphers :: M.Map StorableCipher Cipher
 	, lockpool :: M.Map FilePath Fd
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
@@ -94,7 +108,7 @@ newState gitrepo = AnnexState
 	{ repo = gitrepo
 	, backends = []
 	, remotes = []
-	, output = NormalOutput
+	, output = defaultMessageState
 	, force = False
 	, fast = False
 	, auto = False
@@ -105,6 +119,7 @@ newState gitrepo = AnnexState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
+	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
 	, ciphers = M.empty
@@ -138,6 +153,11 @@ setField field value = changeState $ \s ->
 addCleanup :: String -> Annex () -> Annex ()
 addCleanup uid a = changeState $ \s ->
 	s { cleanup = M.insertWith' const uid a $ cleanup s }
+
+{- Sets the type of output to emit. -}
+setOutput :: OutputType -> Annex ()
+setOutput o = changeState $ \s ->
+	s { output = (output s) { outputType = o } }
 
 {- Checks if a flag was set. -}
 getFlag :: String -> Annex Bool

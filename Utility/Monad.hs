@@ -49,3 +49,7 @@ observe observer a = do
 {- b `after` a runs first a, then b, and returns the value of a -}
 after :: Monad m => m b -> m a -> m a
 after = observe . const
+
+{- do nothing -}
+noop :: Monad m => m ()
+noop = return ()

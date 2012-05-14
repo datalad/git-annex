@@ -1,0 +1,12 @@
+git-annex 3.20120418 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
+   * bup: Properly handle key names with spaces or other things that are
+     not legal git refs.
+   * git-annex (but not git-annex-shell) supports the git help.autocorrect
+     configuration setting, doing fuzzy matching using the restricted
+     Damerau-Levenshtein edit distance, just as git does. This adds a build
+     dependency on the haskell edit-distance library.
+   * Renamed diskfree.c to avoid OSX case insensativity bug.
+   * cabal now installs git-annex-shell as a symlink to git-annex.
+   * cabal file now autodetects whether S3 support is available."""]]

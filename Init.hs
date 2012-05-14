@@ -29,7 +29,9 @@ initialize mdescription = do
 	maybe (recordUUID u) (describeUUID u) mdescription
 
 uninitialize :: Annex ()
-uninitialize = gitPreCommitHookUnWrite
+uninitialize = do
+	gitPreCommitHookUnWrite
+	removeRepoUUID
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init

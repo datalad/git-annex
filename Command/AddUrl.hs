@@ -20,6 +20,7 @@ import Annex.Content
 import Logs.Web
 import qualified Option
 import Types.Key
+import Config
 
 def :: [Command]
 def = [withOptions [fileOption, pathdepthOption] $
@@ -53,8 +54,9 @@ perform url file = ifAnnexed file addurl geturl
 			liftIO $ createDirectoryIfMissing True (parentDir file)
 			ifM (Annex.getState Annex.fast)
 				( nodownload url file , download url file )
-		addurl (key, _backend) =
-			ifM (liftIO $ Url.check url $ keySize key)
+		addurl (key, _backend) = do
+			headers <- getHttpHeaders
+			ifM (liftIO $ Url.check url headers $ keySize key)
 				( do
 					setUrlPresent key url
 					next $ return True
@@ -81,7 +83,8 @@ download url file = do
 
 nodownload :: String -> FilePath -> CommandPerform
 nodownload url file = do
-	(exists, size) <- liftIO $ Url.exists url
+	headers <- getHttpHeaders
+	(exists, size) <- liftIO $ Url.exists url headers
 	if exists
 		then do
 			let key = Backend.URL.fromUrl url size

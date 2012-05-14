@@ -46,9 +46,9 @@ perform remotemap key = do
 		untrustedheader = "The following untrusted locations may also have copies:\n"
 
 performRemote :: Key -> Remote -> Annex () 
-performRemote key remote = case whereisKey remote of
-	Nothing -> return ()
-	Just a -> do
-		ls <- a key
-		unless (null ls) $ showLongNote $
-			unlines $ map (\l -> name remote ++ ": " ++ l) ls
+performRemote key remote = maybe noop go $ whereisKey remote
+	where
+		go a = do
+			ls <- a key
+			unless (null ls) $ showLongNote $ unlines $
+				map (\l -> name remote ++ ": " ++ l) ls

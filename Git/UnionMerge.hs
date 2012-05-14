@@ -96,7 +96,7 @@ calc_merge :: CatFileHandle -> [String] -> Repo -> Streamer
 calc_merge ch differ repo streamer = gendiff >>= go
 	where
 		gendiff = pipeNullSplit (map Param differ) repo
-		go [] = return ()
+		go [] = noop
 		go (info:file:rest) = mergeFile info file ch repo >>=
 			maybe (go rest) (\l -> streamer l >> go rest)
 		go (_:[]) = error "calc_merge parse error"

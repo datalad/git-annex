@@ -14,6 +14,7 @@ import Types.Remote
 import qualified Annex
 import Annex.LockPool
 import Config
+import Annex.Perms
 
 {- Modifies a remote's access functions to first run the
  - annex-start-command hook, and trigger annex-stop-command on shutdown.
@@ -45,10 +46,9 @@ runHooks r starthook stophook a = do
 	a
 	where
 		remoteid = show (uuid r)
-		run Nothing = return ()
-		run (Just command) = liftIO $ do
-			_ <- boolSystem "sh" [Param "-c", Param command]
-			return ()
+		run Nothing = noop
+		run (Just command) = void $ liftIO $
+			boolSystem "sh" [Param "-c", Param command]
 		firstrun lck = do
 			-- Take a shared lock; This indicates that git-annex
 			-- is using the remote, and prevents other instances
@@ -75,11 +75,13 @@ runHooks r starthook stophook a = do
 			-- succeeds, we're the only process using this remote,
 			-- so can stop it.
 			unlockFile lck
-			fd <- liftIO $ openFd lck ReadWrite (Just stdFileMode) defaultFileFlags
+			mode <- annexFileMode
+			fd <- liftIO $ noUmask mode $
+				openFd lck ReadWrite (Just mode) defaultFileFlags
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
-				Left _ -> return ()
+				Left _ -> noop
 				Right _ -> run stophook
 			liftIO $ closeFd fd
 
