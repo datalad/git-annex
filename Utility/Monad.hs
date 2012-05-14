@@ -53,3 +53,9 @@ after = observe . const
 {- do nothing -}
 noop :: Monad m => m ()
 noop = return ()
+
+{- backport of void -}
+void :: Monad f => f a -> f ()
+void a = do
+	_ <- a
+	return ()
