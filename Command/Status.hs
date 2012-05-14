@@ -153,25 +153,6 @@ tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
 bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
-<<<<<<< HEAD
-=======
-bloom_info :: Stat
-bloom_info = stat "bloom filter size" $ json id $ do
-	localkeys <- countKeys <$> cachedPresentData
-	capacity <- fromIntegral <$> lift Command.Unused.bloomCapacity
-	let note = aside $
-		if localkeys >= capacity
-		then "appears too small for this repository; adjust annex.bloomcapacity"
-		else showPercentage 1 (percentage capacity localkeys) ++ " full"
-
-	-- Two bloom filters are used at the same time, so double the size
-	-- of one.
-	size <- roughSize memoryUnits False . (* 2) . fromIntegral . fst <$>
-		lift Command.Unused.bloomBitsHashes
-
-	return $ size ++ note
-
->>>>>>> 3.20120430
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $
 	calcfree

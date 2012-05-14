@@ -62,19 +62,6 @@ newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
 		Applicative
 	)
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput
-
-instance MonadBase IO Annex where
-	liftBase = Annex . liftBase
-
-instance MonadBaseControl IO Annex where
-	newtype StM Annex a = StAnnex (StM (StateT AnnexState IO) a)
-	liftBaseWith f = Annex $ liftBaseWith $ \runInIO ->
-		f $ liftM StAnnex . runInIO . runAnnex
-	restoreM = Annex . restoreM . unStAnnex
-		where
-			unStAnnex (StAnnex st) = st
-
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
 -- internal state storage
