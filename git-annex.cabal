@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120430
+Version: 3.20120430~bpo60+1
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
