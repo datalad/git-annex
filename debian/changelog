@@ -1,4 +1,4 @@
-git-annex (3.20120430) unstable; urgency=low
+git-annex (3.20120430~bpo60+1) squeeze-backports; urgency=low
 
   * Fix use of annex.diskreserve config setting.
   * Directory special remotes now check annex.diskreserve.
@@ -11,7 +11,7 @@ git-annex (3.20120430) unstable; urgency=low
     avoids gpg key distribution, at the expense of flexability, and with
     the requirement that all clones of the git repository be equally trusted.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 30 Apr 2012 13:16:10 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 14 May 2012 13:13:47 -0400
 
 git-annex (3.20120418~bpo60+1) squeeze-backports; urgency=low
 
