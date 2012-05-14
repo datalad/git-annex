@@ -12,13 +12,13 @@ import System.Posix.Files
 import System.Directory
 import Control.Exception (throw)
 import Control.Monad
-import Control.Monad.IfElse
 import System.FilePath
 import Control.Applicative
 
 import Utility.SafeCommand
 import Utility.TempFile
 import Utility.Exception
+import Utility.Conditional
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}

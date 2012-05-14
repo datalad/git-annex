@@ -14,7 +14,6 @@ Build-Depends:
 	libghc6-testpack-dev,
 	libghc6-json-dev,
 	libghc6-quickcheck2-dev,
-	libghc6-ifelse-dev,
 	ikiwiki,
 	perlmagick,
 	git,

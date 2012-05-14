@@ -35,7 +35,7 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base < 5, 
-   IfElse, text, QuickCheck >= 2.1
+   text, QuickCheck >= 2.1
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
