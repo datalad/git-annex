@@ -25,7 +25,6 @@ import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
-import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations

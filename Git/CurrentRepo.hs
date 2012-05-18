@@ -29,20 +29,22 @@ import qualified Git.Config
  -}
 get :: IO Repo
 get = do
-	gd <- takeenv "GIT_DIR"
+	gd <- pathenv "GIT_DIR"
 	r <- configure gd =<< maybe fromCwd fromPath gd
-	wt <- maybe (worktree $ location r) Just <$> takeenv "GIT_WORK_TREE"
+	wt <- maybe (worktree $ location r) Just <$> pathenv "GIT_WORK_TREE"
 	case wt of
 		Nothing -> return r
 		Just d -> do
 			changeWorkingDirectory d
 			return $ addworktree wt r
 	where
-		takeenv s = do
+		pathenv s = do
 			v <- getEnv s
 			when (isJust v) $
 				unsetEnv s
-			return v
+			case v of
+				Nothing -> return Nothing
+				Just d -> Just <$> absPath d
 		configure Nothing r = Git.Config.read r
 		configure (Just d) r = do
 			r' <- Git.Config.read r
