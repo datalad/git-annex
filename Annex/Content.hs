@@ -34,6 +34,7 @@ import Common.Annex
 import Logs.Location
 import Annex.UUID
 import qualified Git
+import qualified Git.Config
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Branch
@@ -303,7 +304,7 @@ saveState oneshot = doSideAction $ do
 		ifM alwayscommit
 			( Annex.Branch.commit "update" , Annex.Branch.stage)
 	where
-		alwayscommit = fromMaybe True . Git.configTrue
+		alwayscommit = fromMaybe True . Git.Config.isTrue
 			<$> getConfig (annexConfig "alwayscommit") ""
 
 {- Downloads content from any of a list of urls. -}

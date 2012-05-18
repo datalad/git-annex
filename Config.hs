@@ -84,7 +84,7 @@ prop_cost_sane = False `notElem`
 
 {- Checks if a repo should be ignored. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = not . fromMaybe False . Git.configTrue
+repoNotIgnored r = not . fromMaybe False . Git.Config.isTrue
 	<$> getRemoteConfig r "ignore" ""
 
 {- If a value is specified, it is used; otherwise the default is looked up

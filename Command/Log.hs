@@ -133,7 +133,7 @@ compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
  - *lot* for newish files. -}
 getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
-	top <- fromRepo Git.workTree
+	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
 	let logfile = p </> Logs.Location.logFile key
 	inRepo $ pipeNullSplit $

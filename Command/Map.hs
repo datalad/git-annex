@@ -156,14 +156,14 @@ absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
 	| Git.repoIsUrl r = return r
-	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.workTree r)
+	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
 same a b
-	| both Git.repoIsSsh = matching Git.Url.authority && matching Git.workTree
+	| both Git.repoIsSsh = matching Git.Url.authority && matching Git.repoPath
 	| both Git.repoIsUrl && neither Git.repoIsSsh = matching show
-	| neither Git.repoIsSsh = matching Git.workTree
+	| neither Git.repoIsSsh = matching Git.repoPath
 	| otherwise = False
 		
 	where
@@ -210,7 +210,7 @@ tryScan r
 			where
 				sshcmd = cddir ++ " && " ++
 					"git config --null --list"
-				dir = Git.workTree r
+				dir = Git.repoPath r
 				cddir
 					| "/~" `isPrefixOf` dir =
 						let (userhome, reldir) = span (/= '/') (drop 1 dir)

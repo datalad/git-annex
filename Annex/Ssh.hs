@@ -14,7 +14,7 @@ import qualified Data.Map as M
 
 import Common.Annex
 import Annex.LockPool
-import qualified Git
+import qualified Git.Config
 import Config
 import qualified Build.SysConfig as SysConfig
 import Annex.Perms
@@ -47,7 +47,7 @@ sshInfo (host, port) = ifM caching
 	)
 	where
 		caching = fromMaybe SysConfig.sshconnectioncaching 
-			. Git.configTrue
+			. Git.Config.isTrue
 			<$> getConfig (annexConfig "sshcaching") ""
 
 cacheParams :: FilePath -> [CommandParam]

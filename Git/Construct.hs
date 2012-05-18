@@ -1,6 +1,6 @@
 {- Construction of Git Repo objects
  -
- - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -58,7 +58,7 @@ fromCurrent = do
 fromCwd :: IO Repo
 fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
 	where
-		makerepo = newFrom . Dir
+		makerepo = newFrom . LocalUnknown
 		norepo = error "Not in a git repository."
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
@@ -74,7 +74,7 @@ fromAbsPath dir
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
 	where
-		ret = newFrom . Dir
+		ret = newFrom . LocalUnknown
  		{- Git always looks for "dir.git" in preference to
 		 - to "dir", even if dir ends in a "/". -}
 		canondir = dropTrailingPathSeparator dir
@@ -122,7 +122,7 @@ localToUrl reference r
 		absurl =
 			Url.scheme reference ++ "//" ++
 			Url.authority reference ++
-			workTree r
+			repoPath r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 fromRemotes :: Repo -> IO [Repo]
@@ -191,7 +191,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromAbsPath $ workTree repo </> dir'
+	fromAbsPath $ repoPath repo </> dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
