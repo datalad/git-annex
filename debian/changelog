@@ -3,6 +3,8 @@ git-annex (3.20120512) UNRELEASED; urgency=low
   * Pass -a to cp even when it supports --reflink=auto, to preserve
     permissions.
   * Clean up handling of git directory and git worktree.
+  * Add support for core.worktree, and fix support for GIT_WORK_TREE and
+    GIT_DIR.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 15 May 2012 14:17:49 -0400
 

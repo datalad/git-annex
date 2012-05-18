@@ -27,16 +27,20 @@ getList key repo = M.findWithDefault [] key (fullconfig repo)
 getMaybe :: String -> Repo -> Maybe String
 getMaybe key repo = M.lookup key (config repo)
 
-{- Runs git config and populates a repo with its config. -}
+{- Runs git config and populates a repo with its config.
+ - Cannot use pipeRead because it relies on the config having been already
+ - read. Instead, chdir to the repo.
+ -}
 read :: Repo -> IO Repo
 read repo@(Repo { location = Local { gitdir = d } }) = read' repo d
 read repo@(Repo { location = LocalUnknown d }) = read' repo d
 read r = assertLocal r $ error "internal"
-{- Cannot use pipeRead because it relies on the config having
-   been already read. Instead, chdir to the repo. -}
 read' :: Repo -> FilePath -> IO Repo
-read' repo d = bracketCd d $
-	pOpen ReadFromPipe "git" ["config", "--null", "--list"] $ hRead repo
+read' repo@(Repo { config = c}) d
+	| c == M.empty = bracketCd d $
+		pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
+			hRead repo
+	| otherwise = return repo -- config already read
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
@@ -55,7 +59,6 @@ store s repo = do
 		{ config = (M.map Prelude.head c) `M.union` config repo
 		, fullconfig = M.unionWith (++) c (fullconfig repo)
 		}
-	print repo'
 	rs <- Git.Construct.fromRemotes repo'
 	return $ repo' { remotes = rs }
 

@@ -11,7 +11,7 @@ import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git.Config
-import qualified Git.Construct
+import qualified Git.CurrentRepo
 import CmdLine
 import Command
 import Types.TrustLevel
@@ -133,4 +133,4 @@ header :: String
 header = "Usage: git-annex command [option ..]"
 
 run :: [String] -> IO ()
-run args = dispatch True args cmds options header Git.Construct.fromCurrent
+run args = dispatch True args cmds options header Git.CurrentRepo.get
