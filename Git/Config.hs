@@ -28,19 +28,28 @@ getMaybe :: String -> Repo -> Maybe String
 getMaybe key repo = M.lookup key (config repo)
 
 {- Runs git config and populates a repo with its config.
- - Cannot use pipeRead because it relies on the config having been already
+ - Avoids re-reading config when run repeatedly. -}
+read :: Repo -> IO Repo
+read repo@(Repo { config = c })
+	| c == M.empty = read' repo
+	| otherwise = return repo
+
+{- Reads config even if it was read before. -}
+reRead :: Repo -> IO Repo
+reRead = read'
+
+{- Cannot use pipeRead because it relies on the config having been already
  - read. Instead, chdir to the repo.
  -}
-read :: Repo -> IO Repo
-read repo@(Repo { location = Local { gitdir = d } }) = read' repo d
-read repo@(Repo { location = LocalUnknown d }) = read' repo d
-read r = assertLocal r $ error "internal"
-read' :: Repo -> FilePath -> IO Repo
-read' repo@(Repo { config = c}) d
-	| c == M.empty = bracketCd d $
-		pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
-			hRead repo
-	| otherwise = return repo -- config already read
+read' :: Repo -> IO Repo
+read' repo = go repo
+	where
+		go Repo { location = Local { gitdir = d } } = git_config d
+		go Repo { location = LocalUnknown d } = git_config d
+		go _ = assertLocal repo $ error "internal"
+		git_config d = bracketCd d $
+			pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
+				hRead repo
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
