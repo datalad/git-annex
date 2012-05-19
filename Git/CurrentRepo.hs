@@ -35,7 +35,9 @@ get = do
 	case wt of
 		Nothing -> return r
 		Just d -> do
-			changeWorkingDirectory d
+			cwd <- getCurrentDirectory
+			unless (d `dirContains` cwd) $
+				changeWorkingDirectory d
 			return $ addworktree wt r
 	where
 		pathenv s = do
