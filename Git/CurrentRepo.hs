@@ -31,7 +31,7 @@ get :: IO Repo
 get = do
 	gd <- pathenv "GIT_DIR"
 	r <- configure gd =<< maybe fromCwd fromPath gd
-	wt <- maybe (worktree $ location r) Just <$> pathenv "GIT_WORK_TREE"
+	wt <- maybe (Git.Config.workTree r) Just <$> pathenv "GIT_WORK_TREE"
 	case wt of
 		Nothing -> return r
 		Just d -> do

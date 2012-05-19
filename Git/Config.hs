@@ -78,19 +78,15 @@ store s repo = do
  - based on the core.bare and core.worktree settings.
  -}
 updateLocation :: Repo -> Repo
-updateLocation r = go $ location r
+updateLocation r@(Repo { location = LocalUnknown d })
+	| isBare r = newloc $ Local d Nothing
+	| otherwise = newloc $ Local (d </> ".git") (Just d)
 	where
-		go (LocalUnknown d)
-			| isbare = ret $ Local d Nothing
-			| otherwise = ret $ Local (d </> ".git") (Just d)
-		go l@(Local {}) = ret l
-		go _ = r
-		isbare = fromMaybe False $ isTrue =<< getMaybe "core.bare" r
-		ret l = r { location = l' }
-			where
-				l' = maybe l (setworktree l) $
-					getMaybe "core.worktree" r
-		setworktree l t = l { worktree = Just t }
+		newloc l = r { location = getworktree l }
+		getworktree l = case workTree r of
+			Nothing -> l
+			wt -> l { worktree = wt }
+updateLocation r = r
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
@@ -114,3 +110,9 @@ isTrue s
 	| otherwise = Nothing
 	where
 		s' = map toLower s
+
+isBare :: Repo -> Bool
+isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r
+
+workTree :: Repo -> Maybe FilePath
+workTree = getMaybe "core.worktree"
