@@ -310,7 +310,8 @@ commitOnCleanup r a = go `after` a
 		go = Annex.addCleanup (Git.repoLocation r) cleanup
 		cleanup
 			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
-				Annex.Branch.commit "update"
+				doQuietSideAction $
+					Annex.Branch.commit "update"
 			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
 					git_annex_shell r "commit" []

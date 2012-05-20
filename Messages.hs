@@ -14,6 +14,7 @@ module Messages (
 	MeterUpdate,
 	showSideAction,
 	doSideAction,
+	doQuietSideAction,
 	showStoringStateAction,
 	showOutput,
 	showLongNote,
@@ -91,12 +92,19 @@ showSideAction m = Annex.getState Annex.output >>= go
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "Recording state in git"
 
+{- Performs an action, supressing showSideAction messages. -}
+doQuietSideAction :: Annex a -> Annex a
+doQuietSideAction = doSideAction' InBlock
+
 {- Performs an action, that may call showSideAction multiple times.
  - Only the first will be displayed. -}
 doSideAction :: Annex a -> Annex a
-doSideAction a = do
+doSideAction = doSideAction' StartBlock
+
+doSideAction' :: SideActionBlock -> Annex a -> Annex a
+doSideAction' b a = do
 	o <- Annex.getState Annex.output
-	set $ o { sideActionBlock = StartBlock }
+	set $ o { sideActionBlock = b }
 	set o `after` a
 	where
 		set o = Annex.changeState $ \s -> s {  Annex.output = o }
