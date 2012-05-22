@@ -16,3 +16,6 @@ I work around this lack as I want to drop all unused files anyway by something l
 
 > I don't see adding my own range operations to be an improvement worth
 > making; it'd arguably only be a complication. --[[Joey]] [[done]]
+
+>> Actually, this did get implemented, since using seq could fall afoul 
+>> of command-line length limits in extreme cases.

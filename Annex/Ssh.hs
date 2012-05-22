@@ -48,7 +48,7 @@ sshInfo (host, port) = ifM caching
 	where
 		caching = fromMaybe SysConfig.sshconnectioncaching 
 			. Git.configTrue
-			<$> getConfig "annex.sshcaching" ""
+			<$> getConfig (annexConfig "sshcaching") ""
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =

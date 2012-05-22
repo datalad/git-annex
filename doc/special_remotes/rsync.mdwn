@@ -24,5 +24,13 @@ These parameters can be passed to `git annex initremote` to configure rsync:
 * `rsyncurl` - Required. This is the url or `hostname:/directory` to 
   pass to rsync to tell it where to store content.
 
+* `shellescape` - Optional. Set to "no" to avoid shell escaping normally
+  done when using rsync over ssh. That escaping is needed with typical
+  setups, but not with some hosting providers that do not expose rsynced
+  filenames to the shell. You'll know you need this option if `git annex get`
+  from the special remote fails with an error message containing a single
+  quote (`'`) character. If that happens, you can re-run initremote
+  setting shellescape=no.
+
 The `annex-rsync-options` git configuration setting can be used to pass
 parameters to rsync.

@@ -14,9 +14,9 @@ import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
 import Command
+import Logs.Unused
 import Annex.Content
 import Utility.FileMode
-import Utility.TempFile
 import Logs.Location
 import Config
 import qualified Annex
@@ -86,18 +86,12 @@ check file msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $ showLongNote $ msg unusedlist
-	writeUnusedFile file unusedlist
+	writeUnusedLog file unusedlist
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]
 number _ [] = []
 number n (x:xs) = (n+1, x) : number (n+1) xs
-
-writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
-writeUnusedFile prefix l = do
-	logfile <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ viaTmp writeFile logfile $
-		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
 table :: [(Int, Key)] -> [String]
 table l = "  NUMBER  KEY" : map cols l

@@ -83,7 +83,7 @@ changeLog t u v = M.insert u $ LogEntry (Date t) v
 {- Only add an LogEntry if it's newer (or at least as new as) than any
  - existing LogEntry for a UUID. -}
 addLog :: UUID -> LogEntry a -> Log a -> Log a
-addLog = M.insertWith best
+addLog = M.insertWith' best
 
 {- Converts a Log into a simple Map without the timestamp information.
  - This is a one-way trip, but useful for code that never needs to change

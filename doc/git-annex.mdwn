@@ -235,12 +235,20 @@ subdirectories).
 
   To check for annexed data on a remote, specify --from.
 
-* dropunused [number ...]
+* dropunused [number|range ...]
 
   Drops the data corresponding to the numbers, as listed by the last
   `git annex unused`
 
+  You can also specify ranges of numbers, such as "1-1000".
+
   To drop the data from a remote, specify --from.
+
+* addunused [number|range ...]
+
+  Adds back files for the content corresponding to the numbers or ranges,
+  as listed by the last `git annex unused`. The files will have names
+  starting with "unused."
 
 * merge
 

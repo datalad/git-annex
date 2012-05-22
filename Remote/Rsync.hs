@@ -22,9 +22,10 @@ import Utility.RsyncFile
 
 type RsyncUrl = String
 
-data RsyncOpts = RsyncOpts {
-	rsyncUrl :: RsyncUrl,
-	rsyncOptions :: [CommandParam]
+data RsyncOpts = RsyncOpts
+	{ rsyncUrl :: RsyncUrl
+	, rsyncOptions :: [CommandParam]
+	, rsyncShellEscape :: Bool
 }
 
 remote :: RemoteType
@@ -37,7 +38,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	o <- genRsyncOpts r
+	o <- genRsyncOpts r c
 	cst <- remoteCost r expensiveRemoteCost
 	return $ encryptableRemote c
 		(storeEncrypted o)
@@ -58,11 +59,13 @@ gen r u c = do
 			remotetype = remote
 		}
 
-genRsyncOpts :: Git.Repo -> Annex RsyncOpts
-genRsyncOpts r = do
+genRsyncOpts :: Git.Repo -> Maybe RemoteConfig -> Annex RsyncOpts
+genRsyncOpts r c = do
 	url <- getRemoteConfig r "rsyncurl" (error "missing rsyncurl")
-	opts <- getRemoteConfig r "rsync-options" ""
-	return $ RsyncOpts url $ map Param $ filter safe $ words opts
+	opts <- map Param . filter safe . words
+		<$> getRemoteConfig r "rsync-options" ""
+	let escape = maybe True (\m -> M.lookup "shellescape" m /= Just "no") c
+	return $ RsyncOpts url opts escape
 	where
 		safe o
 			-- Don't allow user to pass --delete to rsync;
@@ -86,7 +89,7 @@ rsyncSetup u c = do
 
 rsyncEscape :: RsyncOpts -> String -> String
 rsyncEscape o s
-	| rsyncUrlIsShell (rsyncUrl o) = shellEscape s
+	| rsyncShellEscape o && rsyncUrlIsShell (rsyncUrl o) = shellEscape s
 	| otherwise = s
 
 rsyncUrls :: RsyncOpts -> Key -> [String]

@@ -46,7 +46,7 @@ orderedList = do
 			l' <- (lookupBackendName name :) <$> standard
 			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		standard = parseBackendList <$> getConfig "annex.backends" ""
+		standard = parseBackendList <$> getConfig (annexConfig "backends") ""
 		parseBackendList [] = list
 		parseBackendList s = map lookupBackendName $ words s
 

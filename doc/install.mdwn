@@ -8,6 +8,7 @@
 * [[openSUSE]]
 * [[ArchLinux]]
 * [[NixOS]]
+* [[Gentoo]]
 * Windows: [[sorry, not possible yet|todo/windows_support]]
 
 ## Using cabal

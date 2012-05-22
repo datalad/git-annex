@@ -35,8 +35,8 @@ import qualified GitAnnex
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
+import qualified Logs.Unused
 import qualified Remote
-import qualified Command.DropUnused
 import qualified Types.Key
 import qualified Types.Messages
 import qualified Config
@@ -495,7 +495,7 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	where
 		checkunused expectedkeys = do
 			git_annex "unused" [] @? "unused failed"
-			unusedmap <- annexeval $ Command.DropUnused.readUnusedLog ""
+			unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
 			let unusedkeys = M.elems unusedmap
 			assertEqual "unused keys differ"
 				(sort expectedkeys) (sort unusedkeys)

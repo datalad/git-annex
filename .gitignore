@@ -1,12 +1,8 @@
 tmp
-*.hi
-*.o
 test
 configure
 Build/SysConfig.hs
 git-annex
-git-annex-shell
-git-union-merge
 git-annex.1
 git-annex-shell.1
 git-union-merge.1
@@ -15,5 +11,5 @@ html
 *.tix
 .hpc
 Utility/Touch.hs
-Utility/StatFS.hs
+Utility/libdiskfree.o
 dist
