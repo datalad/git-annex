@@ -1,4 +1,4 @@
-git-annex (3.20120511) unstable; urgency=low
+git-annex (3.20120511~bpo60+1) squeeze-backports; urgency=low
 
   * Rsync special remotes can be configured with shellescape=no
     to avoid shell quoting that is normally done when using rsync over ssh.
