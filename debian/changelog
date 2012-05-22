@@ -1,4 +1,4 @@
-git-annex (3.20120512) UNRELEASED; urgency=low
+git-annex (3.20120522) unstable; urgency=low
 
   * Pass -a to cp even when it supports --reflink=auto, to preserve
     permissions.
@@ -6,7 +6,7 @@ git-annex (3.20120512) UNRELEASED; urgency=low
   * Add support for core.worktree, and fix support for GIT_WORK_TREE and
     GIT_DIR.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 15 May 2012 14:17:49 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 May 2012 11:16:13 -0400
 
 git-annex (3.20120511) unstable; urgency=low
 
