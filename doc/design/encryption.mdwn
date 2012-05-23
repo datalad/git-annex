@@ -20,7 +20,7 @@ with more than one encryption backend in mind helps future-proofing.
 
 [[!template id=note text="""
 The basis of this scheme was originally developed by Lars Wirzenius et al
-[for Obnam](http://braawi.org/obnam/encryption/).
+[for Obnam](http://liw.fi/obnam/encryption/).
 """]]
 
 Data is encrypted by gpg, using a symmetric cipher.
