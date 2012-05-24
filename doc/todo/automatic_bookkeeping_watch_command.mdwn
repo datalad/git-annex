@@ -4,10 +4,10 @@ It would run, in the background, watching via inotify for changes, and
 automatically annexing new files, etc.
 
 The blue sky goal would be something automated like dropbox, except fully
-distributed. All files put into the repository would propigate out
+distributed. All files put into the repository would propagate out
 to all the other clones of it, as network links allow. Note that while
 dropbox allows modifying files, git-annex freezes them upon creation,
-so this would not be 100% equivilant to dropbox. --[[Joey]]
+so this would not be 100% equivalent to dropbox. --[[Joey]]
 
 ----
 
@@ -25,7 +25,7 @@ Also nice to have would be:
     
 - Somehow sync remotes, possibly using a push sync like dvcs-autosync
   does, so they are immediately updated.
-- Somehow get content that is unavilable. This is problimatic with inotify,
+- Somehow get content that is unavailable. This is problematic with inotify,
   since we only get an event once the user has tried (and failed) to read
   from the file. Perhaps instead, automatically copy content that is added
   out to remotes, with the goal of all repos eventually getting a copy,
@@ -35,7 +35,7 @@ Also nice to have would be:
 - Perhaps automatically dropunused files that have been deleted,
   although I cannot see a way to do that, since by the time the inotify
   deletion event arrives, the file is deleted, and we cannot see what
-  its symlink pointed to! Alternatievely, perhaps automatically
+  its symlink pointed to! Alternatively, perhaps automatically
   do an expensive unused/dropunused cleanup process.
 - Support OSes other than Linux; it only uses inotify currently.
 
