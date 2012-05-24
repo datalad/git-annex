@@ -1,5 +1,5 @@
 git-annex can already be used to store data in several cloud services:
-Amazon S3, rsync.net, Tahoe-LAFFS, The Internet Archive.
+Amazon S3, rsync.net, Tahoe-LAFS, The Internet Archive.
 
 I would like to support as many other cloud services as possible/reasonable.
 
