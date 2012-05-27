@@ -7,6 +7,8 @@ of files, etc.
 The meat of the configuration will be in configuration assistants that walk
 through setting up common use cases.
 
+* Create a repository (run when the web app is started without a configured
+  repository too).
 * Clone this repo to a USB drive.
 * Clone this repo to another host:
   1. Prompt for the hostname (or do avahi local machine discovery). 
