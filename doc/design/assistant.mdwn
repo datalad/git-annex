@@ -8,7 +8,7 @@ Feel free to chip in with comments! --[[Joey]]
 ## roadmap
 
 * Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
-* Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars||
+* Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
 * Month 3 "easy setup": [[!traillink configurators]]
 * Month 4: polishing and overflow
 * Month 5 & 6 "9k bonus round": [[!traillink Android]]
