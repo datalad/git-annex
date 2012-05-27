@@ -1,5 +1,6 @@
 Things that don't fit anywhere else:
 
+* Automatically start daemon on boot or when user logs in.
 * Somehow get content that is unavailable. This is problematic with inotify,
   since we only get an event once the user has tried (and failed) to read
   from the file. This is only needed if all the files in the directory 
