@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.81.112"
+ subject="comment 6"
+ date="2012-05-27T22:08:50Z"
+ content="""
+git-annex-shell needs to be installed in the `PATH` on any host that will hold annexed files. 
+
+If you installed with cabal, it might be `.cabal/bin/`. Whereever it was installed to is apparently not on the PATH that is set when you ssh into that host. 
+
+
+"""]]
