@@ -1,5 +1,3 @@
-Gentoo users can:
-
-	`emerge git-annex`
+Gentoo users can: `emerge git-annex`
 
 A possibly more up-to-date version is in the haskell portage overlay.
