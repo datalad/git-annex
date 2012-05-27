@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://peter-simons.myopenid.com/"
- ip="77.184.15.65"
- subject="Test-suite won't compile with GHC 7.4.x"
- date="2012-02-28T17:39:59Z"
- content="""
-The recent version requires GHC 7.4.x, but some dependencies for the test suite don't build with that compiler, i.e. the `testpack` library. Do you have any recommendation how to deal with that situation? I would like to update, but I would very much like to run the regression test suite, too.
-"""]]

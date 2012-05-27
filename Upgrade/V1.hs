@@ -82,7 +82,7 @@ moveContent = do
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
-	top <- fromRepo Git.workTree
+	top <- fromRepo Git.repoPath
 	files <- inRepo $ LsFiles.inRepo [top]
 	forM_ files fixlink
 	where
@@ -236,4 +236,4 @@ stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir
+gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir

@@ -10,7 +10,7 @@ import System.Environment
 import Common
 import qualified Git.UnionMerge
 import qualified Git.Config
-import qualified Git.Construct
+import qualified Git.CurrentRepo
 import qualified Git.Branch
 import qualified Git.Index
 import qualified Git
@@ -22,7 +22,7 @@ usage :: IO a
 usage = error $ "bad parameters\n\n" ++ header
 
 tmpIndex :: Git.Repo -> FilePath
-tmpIndex g = Git.gitDir g </> "index.git-union-merge"
+tmpIndex g = Git.localGitDir g </> "index.git-union-merge"
 
 setup :: Git.Repo -> IO ()
 setup = cleanup -- idempotency
@@ -40,7 +40,7 @@ parseArgs = do
 main :: IO ()
 main = do
 	[aref, bref, newref] <- map Git.Ref <$> parseArgs
-	g <- Git.Config.read =<< Git.Construct.fromCurrent
+	g <- Git.Config.read =<< Git.CurrentRepo.get
 	_ <- Git.Index.override $ tmpIndex g
 	setup g
 	Git.UnionMerge.merge aref bref g

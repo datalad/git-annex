@@ -179,12 +179,8 @@ repoAvail r
  - monad using that repository. -}
 onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
-	-- Avoid re-reading the repository's configuration if it was
-	-- already read.
-	state <- if M.null $ Git.config r
-		then Annex.new r
-		else return $ Annex.newState r
-	Annex.eval state $ do
+	s <- Annex.new r
+	Annex.eval s $ do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
@@ -314,7 +310,8 @@ commitOnCleanup r a = go `after` a
 		go = Annex.addCleanup (Git.repoLocation r) cleanup
 		cleanup
 			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
-				Annex.Branch.commit "update"
+				doQuietSideAction $
+					Annex.Branch.commit "update"
 			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
 					git_annex_shell r "commit" []

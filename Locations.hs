@@ -85,28 +85,24 @@ gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
 		{- Bare repositories default to hashDirLower for new
 		 - content, as it's more portable. -}
-		check (map inrepo $ annexLocations key)
+		check $ map inrepo $ annexLocations key
 	| otherwise =
 		{- Non-bare repositories only use hashDirMixed, so
 		 - don't need to do any work to check if the file is
 		 - present. -}
-		return $ inrepo ".git" </> annexLocation key hashDirMixed
+		return $ inrepo $ annexLocation key hashDirMixed
 	where
-		inrepo d = Git.workTree r </> d
+		inrepo d = Git.localGitDir r </> d
 		check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
 		check [] = error "internal"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
-gitAnnexDir r
-	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> annexDir
-	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> annexDir
+gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
-gitAnnexObjectDir r
-	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> objectDir
-	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> objectDir
+gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 
 {- .git/annex/tmp/ is used for temp files -}
 gitAnnexTmpDir :: Git.Repo -> FilePath

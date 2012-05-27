@@ -116,7 +116,8 @@ newState gitrepo = AnnexState
 	, cleanup = M.empty
 	}
 
-{- Create and returns an Annex state object for the specified git repo. -}
+{- Makes an Annex state object for the specified git repo.
+ - Ensures the config is read, if it was not already. -}
 new :: Git.Repo -> IO AnnexState
 new gitrepo = newState <$> Git.Config.read gitrepo
 

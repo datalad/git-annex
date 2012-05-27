@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://peter-simons.myopenid.com/"
- ip="77.186.165.208"
- subject="comment 5"
- date="2012-03-05T23:29:41Z"
- content="""
-I didn't realize that the patch adds a patch file to the source distribution (instead of, well, patching it). That additional level of indirection surprised me. Anyway, now I figured it out and `Crypto` compiles fine. Thanks!
-"""]]

@@ -134,4 +134,4 @@ gitAttributesUnWrite repo = do
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"
 gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir
+gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir

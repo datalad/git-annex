@@ -72,7 +72,7 @@ unlessBare :: Annex () -> Annex ()
 unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
 
 preCommitHook :: Annex FilePath
-preCommitHook = (</>) <$> fromRepo Git.gitDir <*> pure "hooks/pre-commit"
+preCommitHook = (</>) <$> fromRepo Git.localGitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 

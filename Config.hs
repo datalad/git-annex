@@ -21,8 +21,7 @@ data ConfigKey = ConfigKey String
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
 	inRepo $ Git.Command.run "config" [Param key, Param value]
-	-- re-read git config and update the repo's state
-	newg <- inRepo Git.Config.read
+	newg <- inRepo Git.Config.reRead
 	Annex.changeState $ \s -> s { Annex.repo = newg }
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
@@ -84,7 +83,7 @@ prop_cost_sane = False `notElem`
 
 {- Checks if a repo should be ignored. -}
 repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = not . fromMaybe False . Git.configTrue
+repoNotIgnored r = not . fromMaybe False . Git.Config.isTrue
 	<$> getRemoteConfig r "ignore" ""
 
 {- If a value is specified, it is used; otherwise the default is looked up

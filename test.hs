@@ -25,8 +25,7 @@ import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
-import qualified Git.Config
-import qualified Git.Construct
+import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations
 import qualified Types.Backend
@@ -721,7 +720,7 @@ git_annex_expectoutput command params expected = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	s <- Annex.new =<< Git.Config.read =<< Git.Construct.fromCurrent
+	s <- Annex.new =<< Git.CurrentRepo.get
 	Annex.eval s $ do
 		Annex.setOutput Types.Messages.QuietOutput
 		a

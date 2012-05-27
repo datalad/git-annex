@@ -3,7 +3,7 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010, 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,19 +17,17 @@ module Git (
 	repoIsUrl,
 	repoIsSsh,
 	repoIsHttp,
+	repoIsLocal,
 	repoIsLocalBare,
 	repoDescribe,
 	repoLocation,
-	workTree,
-	gitDir,
-	configTrue,
+	repoPath,
+	localGitDir,
 	attributes,
 	hookPath,
 	assertLocal,
 ) where
 
-import qualified Data.Map as M
-import Data.Char
 import Network.URI (uriPath, uriScheme, unEscapeString)
 import System.Posix.Files
 
@@ -41,14 +39,33 @@ import Utility.FileMode
 repoDescribe :: Repo -> String
 repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
-repoDescribe Repo { location = Dir dir } = dir
+repoDescribe Repo { location = Local { worktree = Just dir } } = dir
+repoDescribe Repo { location = Local { gitdir = dir } } = dir
+repoDescribe Repo { location = LocalUnknown dir } = dir
 repoDescribe Repo { location = Unknown } = "UNKNOWN"
 
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
 repoLocation Repo { location = Url url } = show url
-repoLocation Repo { location = Dir dir } = dir
+repoLocation Repo { location = Local { worktree = Just dir } } = dir
+repoLocation Repo { location = Local { gitdir = dir } } = dir
+repoLocation Repo { location = LocalUnknown dir } = dir
 repoLocation Repo { location = Unknown } = undefined
+
+{- Path to a repository. For non-bare, this is the worktree, for bare, 
+ - it's the gitdir, and for URL repositories, is the path on the remote
+ - host. -}
+repoPath :: Repo -> FilePath
+repoPath Repo { location = Url u } = unEscapeString $ uriPath u
+repoPath Repo { location = Local { worktree = Just d } } = d
+repoPath Repo { location = Local { gitdir = d } } = d
+repoPath Repo { location = LocalUnknown dir } = dir
+repoPath Repo { location = Unknown } = undefined
+
+{- Path to a local repository's .git directory. -}
+localGitDir :: Repo -> FilePath
+localGitDir Repo { location = Local { gitdir = d } } = d
+localGitDir _ = undefined
 
 {- Some code needs to vary between URL and normal repos,
  - or bare and non-bare, these functions help with that. -}
@@ -74,11 +91,12 @@ repoIsHttp Repo { location = Url url }
 	| otherwise = False
 repoIsHttp _ = False
 
-configAvail ::Repo -> Bool
-configAvail Repo { config = c } = c /= M.empty
+repoIsLocal :: Repo -> Bool
+repoIsLocal Repo { location = Local { } } = True
+repoIsLocal _ = False
 
 repoIsLocalBare :: Repo -> Bool
-repoIsLocalBare r@(Repo { location = Dir _ }) = configAvail r && configBare r
+repoIsLocalBare Repo { location = Local { worktree = Nothing } } = True
 repoIsLocalBare _ = False
 
 assertLocal :: Repo -> a -> a
@@ -90,49 +108,18 @@ assertLocal repo action
 		]
 	| otherwise = action
 
-configBare :: Repo -> Bool
-configBare repo = maybe unknown (fromMaybe False . configTrue) $
-	M.lookup "core.bare" $ config repo
-	where
-		unknown = error $ "it is not known if git repo " ++
-			repoDescribe repo ++
-			" is a bare repository; config not read"
-
 {- Path to a repository's gitattributes file. -}
 attributes :: Repo -> FilePath
 attributes repo
-	| configBare repo = workTree repo ++ "/info/.gitattributes"
-	| otherwise = workTree repo ++ "/.gitattributes"
-
-{- Path to a repository's .git directory. -}
-gitDir :: Repo -> FilePath
-gitDir repo
-	| configBare repo = workTree repo
-	| otherwise = workTree repo </> ".git"
+	| repoIsLocalBare repo = repoPath repo ++ "/info/.gitattributes"
+	| otherwise = repoPath repo ++ "/.gitattributes"
 
 {- Path to a given hook script in a repository, only if the hook exists
  - and is executable. -}
 hookPath :: String -> Repo -> IO (Maybe FilePath)
 hookPath script repo = do
-	let hook = gitDir repo </> "hooks" </> script
+	let hook = localGitDir repo </> "hooks" </> script
 	ifM (catchBoolIO $ isexecutable hook)
 		( return $ Just hook , return Nothing )
 	where
 		isexecutable f = isExecutable . fileMode <$> getFileStatus f
-
-{- Path to a repository's --work-tree, that is, its top.
- -
- - Note that for URL repositories, this is the path on the remote host. -}
-workTree :: Repo -> FilePath
-workTree Repo { location = Url u } = unEscapeString $ uriPath u
-workTree Repo { location = Dir d } = d
-workTree Repo { location = Unknown } = undefined
-
-{- Checks if a string from git config is a true value. -}
-configTrue :: String -> Maybe Bool
-configTrue s
-	| s' == "true" = Just True
-	| s' == "false" = Just False
-	| otherwise = Nothing
-	where
-		s' = map toLower s

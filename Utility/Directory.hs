@@ -14,12 +14,15 @@ import Control.Exception (throw)
 import Control.Monad
 import System.FilePath
 import Control.Applicative
+import Control.Exception (bracket_)
+import System.Posix.Directory
 
 import Utility.SafeCommand
 import Utility.TempFile
 import Utility.Exception
 import Utility.Conditional
 import Utility.Monad
+import Utility.Path
 
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
@@ -60,3 +63,14 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			case r of
 				(Left _) -> return False
 				(Right s) -> return $ isDirectory s
+
+{- Runs an action in another directory. -}
+bracketCd :: FilePath -> IO a -> IO a
+bracketCd dir a = go =<< getCurrentDirectory
+	where
+		go cwd
+			| dirContains dir cwd = a
+			| otherwise = bracket_
+				(changeWorkingDirectory dir)
+				(changeWorkingDirectory cwd)
+				a
