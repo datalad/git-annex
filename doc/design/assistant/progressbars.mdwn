@@ -9,6 +9,6 @@ To get this info for downloads, git-annex can watch the file as it arrives
 and use its size.
 
 TODO: What about uploads? Will i have to parse rsync's progresss output?
-Ugh.
+Feed it via a named pipe? Ugh.
 
 This is one of those potentially hidden but time consuming problems.
