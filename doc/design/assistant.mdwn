@@ -5,14 +5,6 @@ This is my design and plan for developing it.
 Still being fleshed out, still many ideas and use cases to add.
 Feel free to chip in with comments! --[[Joey]]
 
-## the pitch
-
-The blue sky goal would be something automated like dropbox, except fully
-distributed. All files put into the repository would propagate out
-to all the other clones of it, as network links allow. Note that while
-dropbox allows modifying files, git-annex freezes them upon creation,
-so this would not be 100% equivalent to dropbox.
-
 ## roadmap
 
 * Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
@@ -20,4 +12,9 @@ so this would not be 100% equivalent to dropbox.
 * Month 3 "easy setup": [[!traillink configurators]]
 * Month 4 "release": [[!traillink leftovers]]; release
 * Months 5-6 "9k bonus round": [[!traillink Android]]
-* In my overfunded nighmares: [[!traillink Windows]]
+
+## not yet on the map:
+
+* [[desymlink]]
+* [[deltas]]
+* In my overfunded nighmares: [[Windows]]
