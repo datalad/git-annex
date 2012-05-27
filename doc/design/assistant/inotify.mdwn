@@ -1,0 +1,18 @@
+Finish "git annex watch" command, which runs, in the background, watching via
+inotify for changes, and automatically annexing new files, etc.
+
+There is a `watch` branch in git that adds such a command, although currently
+it only handles adding new files, and nothing else. To make this really
+useful, it needs to:
+
+- notice deleted files and stage the deletion
+  (tricky; there's a race with add..)
+- notice renamed files, auto-fix the symlink, and stage the new file location
+- periodically auto-commit staged changes
+- honor .gitignore, not adding files it excludesa
+
+Also to do:
+
+- Support OSes other than Linux; it only uses inotify currently.
+  OSX and FreeBSD use the same mechanism, and there is a Haskell interface
+  for it,

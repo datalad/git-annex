@@ -1,0 +1,17 @@
+See [[todo/windows_support]]..
+
+## symlinks
+
+Apparently new versions of Windows have something very like symlinks.
+(Or really, 3 or so things not entirely unlike symlinks and all different.)
+Stackoverflow has some details.
+
+Make git use them, as it (apparently) does not yet.
+
+(What **does** git do on Windows when it clones a repo with symlinks?)
+
+## POSIX
+
+Lots of ifdefs and pain to deal with POSIX calls in the code base.
+
+Or I could try to use Cywin.

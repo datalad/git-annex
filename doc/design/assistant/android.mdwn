@@ -1,0 +1,31 @@
+Porting git-annex to Android will use the Android native SDK.
+
+A hopefully small Java app will be developed, which runs the webapp
+daemon, and a web browser to display it.
+
+### programs to port
+
+These will probably need to be bundled into the Android app, unless already
+available in the App Store.
+
+* ssh (native ssh needed for scp, not a client like ConnectBot)
+* rsync
+* gpg
+* git (not all git commands are needed, but a core plumbing and a few like `git-add` are.)
+
+### FAT sucks
+
+The main media partition will use some awful FAT filesystem format from
+1982 that cannot support git-annex's symlinks. Hopefully it can at least
+handle all of git's filenames. Possible approaches to this:
+
+* Keep only a bare git repo on Android. The app would then need to include
+  a file browser to access the files in there, and adding a file would move
+  it into the repo. Not ideal.
+* Implement [[smudge]] filters to avoid needing symlinks. Difficult.
+* Use a bare git repo but don't keep files in `annex/objects`, instead
+  leave them outside the repo, and add some local mapping to find them.
+  Seems best?
+* Use a `LD_PRELOAD` wrapper to do Something Crazy.
+
+(May want to consider which of these would make a Windows port easier too.)

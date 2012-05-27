@@ -1,0 +1,21 @@
+Add to the [[webapp]] some configuration of git-annex.
+
+There are some basic settings that pass through to `git config`, things
+like how much disk space to leave free, how many copies to ensure are kept
+of files, etc.
+
+The meat of the configuration will be in configuration assistants that walk
+through setting up common use cases.
+
+* Clone this repo to a USB drive.
+* Clone this repo to another host:
+  1. Prompt for the hostname (or do avahi local machine discovery). 
+  2. Enable the two hosts to ssh to one-another and run git-annex shell.
+     (A tricky problem, if ssh keys need to be added to do that.)
+  3. Push over a clone of the repository. (Using git-annex-shell?)
+  4. Start [[syncing]].
+* Set up Amazon S3.
+* Set up rsync remote.
+* Set up encryption.
+* I lost my USB drive!
+* etc -- many more possibilities
