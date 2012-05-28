@@ -1,3 +1,9 @@
+git-annex (3.20120523) UNRELEASED; urgency=low
+
+  * sync: Show a nicer message if a user tries to sync to a special remote.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 27 May 2012 20:55:29 -0400
+
 git-annex (3.20120522) unstable; urgency=low
 
   * Pass -a to cp even when it supports --reflink=auto, to preserve

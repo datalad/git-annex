@@ -57,10 +57,17 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		wanted
 			| null rs = good =<< concat . byspeed <$> available
 			| otherwise = listed
-		listed = catMaybes <$> mapM (Remote.byName . Just) rs
+		listed = do
+			l <- catMaybes <$> mapM (Remote.byName . Just) rs
+			let s = filter special l
+			unless (null s) $
+				error $ "cannot sync special remotes: " ++
+					unwords (map Types.Remote.name s)
+			return l
 		available = filter nonspecial <$> Remote.enabledRemoteList
 		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
 		nonspecial r = Types.Remote.remotetype r == Remote.Git.remote
+		special = not . nonspecial
 		fastest = fromMaybe [] . headMaybe . byspeed
 		byspeed = map snd . sort . M.toList . costmap
 		costmap = M.fromListWith (++) . map costpair
