@@ -1,0 +1,14 @@
+On a regular system, a reasonable simplifying assumption is that all the
+files in the folder will be synced to the system. A user might want to
+disable syncing of some subdirectories, for eg, archived files. But in
+general, things are simpler to understand and implement if all files sync.
+
+But, an Android gadget probably cannot hold all a user's files. Indeed,
+it's likely that old files will be aggressively dropped from the Android
+after syncing to elsewhere, in order to keep enough free space on it for
+new files. 
+
+There needs to be a way for the user to browse files not on the gadget and
+request they be transferred to it. This could be done as a browser in the
+web app, or using a subdirectory full of placeholder files (not symlinks;
+see [[Android]]) that start transfer of the real file when accessed.

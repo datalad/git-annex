@@ -11,7 +11,7 @@ Feel free to chip in with comments! --[[Joey]]
 * Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
 * Month 3 "easy setup": [[!traillink configurators]]
 * Month 4 "release": [[!traillink leftovers]]; release
-* Months 5-6 "9k bonus round": [[!traillink Android]]
+* Months 5-6 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]]
 
 ## not yet on the map:
 

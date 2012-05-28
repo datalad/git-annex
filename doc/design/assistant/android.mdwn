@@ -3,8 +3,6 @@ Porting git-annex to Android will use the Android native SDK.
 A hopefully small Java app will be developed, which runs the webapp
 daemon, and a web browser to display it.
 
-[[!toc]]
-
 ### programs to port
 
 These will probably need to be bundled into the Android app, unless already
@@ -53,19 +51,3 @@ Problem:
 #### crazy `LD_PRELOAD` wrapper
 
 Need I say more? (Also, Android's linker may not even support it.)
-
-### partial content
-
-On a regular system, a reasonable simplifying assumption is that all the
-files in the folder will be synced to the system. A user might want to
-disable syncing of some subdirectories, for eg, archived files. But in
-general, things are simpler to understand and implement if all files sync.
-
-But, a phone probably cannot hold all a user's files. Indeed, it's likely
-that old files will be aggressively dropped from the phone after syncing to
-elsewhere, in order to keep enough free space on it for new files. 
-
-There needs to be a way for the user to browse files not on the phone and
-request they be transferred to it. This could be done as a browser in the
-web app, or using a subdirectory full of placeholder files (not symlinks;
-see above) that start transfer of the real file when accessed.
