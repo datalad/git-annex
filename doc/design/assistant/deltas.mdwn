@@ -1,4 +1,4 @@
-Speed up syncing of modified versions of to existing files. 
+Speed up syncing of modified versions of existing files. 
 
 One simple way is to find the key of the old version of a file that's
 being transferred, so it can be used as the basis for rsync, or any

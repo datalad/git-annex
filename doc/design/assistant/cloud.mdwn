@@ -4,7 +4,7 @@ LANS.
 
 ## more cloud providers
 
-Git-annex already supports several cloud providers via [[special_remotes].
+Git-annex already supports several cloud providers via [[special_remotes]].
 More should be added, such as:
 
 * Google drive (attractive because it's free)
