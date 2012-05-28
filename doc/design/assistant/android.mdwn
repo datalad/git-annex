@@ -3,6 +3,8 @@ Porting git-annex to Android will use the Android native SDK.
 A hopefully small Java app will be developed, which runs the webapp
 daemon, and a web browser to display it.
 
+[[!toc]]
+
 ### programs to port
 
 These will probably need to be bundled into the Android app, unless already
@@ -11,21 +13,59 @@ available in the App Store.
 * ssh (native ssh needed for scp, not a client like ConnectBot)
 * rsync
 * gpg
-* git (not all git commands are needed, but a core plumbing and a few like `git-add` are.)
+* git (not all git commands are needed,
+  but core plumbing and a few like `git-add` are.)
 
 ### FAT sucks
 
 The main media partition will use some awful FAT filesystem format from
-1982 that cannot support git-annex's symlinks. Hopefully it can at least
-handle all of git's filenames. Possible approaches to this:
-
-* Keep only a bare git repo on Android. The app would then need to include
-  a file browser to access the files in there, and adding a file would move
-  it into the repo. Not ideal.
-* Implement [[smudge]] filters to avoid needing symlinks. Difficult.
-* Use a bare git repo but don't keep files in `annex/objects`, instead
-  leave them outside the repo, and add some local mapping to find them.
-  Seems best?
-* Use a `LD_PRELOAD` wrapper to do Something Crazy.
+1982 that cannot support git-annex's symlinks. (Hopefully it can at least
+handle all of git's filenames.) Possible approaches to this follow.
 
 (May want to consider which of these would make a Windows port easier too.)
+
+#### bare git repo with file browser
+
+Keep only a bare git repo on Android. The app would then need to include
+a file browser to access the files in there, and adding a file would move
+it into the repo. 
+
+Not ideal.
+
+#### implement git smudge filters
+
+See [[smudge]].
+
+Difficult. Would make git-annex generally better.
+
+#### keep files outside bare git repo
+
+Use a bare git repo but don't keep files in `annex/objects`, instead
+leave them outside the repo, and add some local mapping to find them.
+
+Problem: Would leave files unlocked to modification, which might lose a
+version git-annex dependend upon existing on the phone. (Maybe the phone
+would have to be always considered an untrusted repo, which probably
+makes sense anyway.)
+
+Problem: 
+
+#### crazy `LD_PRELOAD` wrapper
+
+Need I say more? (Also, Android's linker may not even support it.)
+
+### partial content
+
+On a regular system, a reasonable simplifying assumption is that all the
+files in the folder will be synced to the system. A user might want to
+disable syncing of some subdirectories, for eg, archived files. But in
+general, things are simpler to understand and implement if all files sync.
+
+But, a phone probably cannot hold all a user's files. Indeed, it's likely
+that old files will be aggressively dropped from the phone after syncing to
+elsewhere, in order to keep enough free space on it for new files. 
+
+There needs to be a way for the user to browse files not on the phone and
+request they be transferred to it. This could be done as a browser in the
+web app, or using a subdirectory full of placeholder files (not symlinks;
+see above) that start transfer of the real file when accessed.
