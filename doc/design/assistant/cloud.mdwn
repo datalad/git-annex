@@ -1,0 +1,28 @@
+The [[syncing]] design assumes the network is connected. But it's often
+not in these pre-IPV6 days, so the cloud needs to be used to bridge between
+LANS.
+
+## more cloud providers
+
+Git-annex already supports several cloud providers via [[special_remotes].
+More should be added, such as:
+
+* Google drive (attractive because it's free)
+* OpenStack Swift
+* Box.com (it's free, and current method is hard to set up and a sorta
+  shakey)
+* Dropbox? That would be ironic..
+
+## limited space
+
+When syncing via the cloud, space there is probably limited, so
+users with more files than cloud space will want to be able to use the
+cloud as a temporary transfer point, which files are removed from after
+they've propigated out.
+
+Other users will want to use the cloud as the canonical or backup location
+of their data, and would want a copy of all their files to be kept there.
+That's also ok.
+
+git-annex will need a way to tell the difference between these, either
+heuristically, or via configuration.

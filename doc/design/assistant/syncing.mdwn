@@ -29,8 +29,8 @@ This probably will need lots of refinements to get working well.
 
 ## other considerations
 
-This assumes the network is connected. It's often not, so the
-cloud needs to be used to bridge between LANs.
-
 It would be nice if, when a USB drive is connected,
 syncing starts automatically.
+
+This assumes the network is connected. It's often not, so the
+[[cloud]] needs to be used to bridge between LANs.
