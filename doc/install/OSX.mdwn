@@ -1,4 +1,6 @@
-Install Haskel Platform from [[http://hackage.haskell.org/platform/mac.html]]. The version provided by Macports is too old to work with current versions of git-annex. Then execute
+Install Haskel Platform from [[http://hackage.haskell.org/platform/mac.html]].
+The version provided by Macports is too old to work with current versions of git-annex.
+Then execute
 
 <pre>
 sudo port install git-core ossp-uuid md5sha1sum coreutils pcre
@@ -8,8 +10,15 @@ sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that al
 # optional: this will enable the gnu tools, (to give sha224sum etc..., it does not override the BSD userland)
 export PATH=$PATH:/opt/local/libexec/gnubin
 
+git clone git://git-annex.branchable.com/ git-annex
+cd git-annex
+git checkout ghc7.0
+
 sudo cabal update
-cabal install git-annex --bindir=$HOME/bin
+cabal install --only-dependencies
+cabal configure
+cabal build
+cabal install --bindir=$HOME/bin
 </pre>
 
 Originally posted by Jon at <https://gist.github.com/671785> --[[Joey]], modified by [[kristianrumberg]]
