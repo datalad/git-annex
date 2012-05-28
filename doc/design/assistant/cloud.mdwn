@@ -26,3 +26,5 @@ That's also ok.
 
 git-annex will need a way to tell the difference between these, either
 heuristically, or via configuration.
+
+Also needed for USB keys and Android gadgets.
