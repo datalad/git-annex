@@ -16,7 +16,7 @@ These parameters can be passed to `git annex initremote` to configure rsync:
 
 * `encryption` - Required. Either "none" to disable encryption of content
   stored in rsync, 
-  or a value that can be looked up (using gpg -k) to find a gpg encryption
+  or a value that can be looked up (using `gpg -k`) to find a gpg encryption
   key that will be given access to the remote. Note that additional gpg
   keys can be given access to a remote by rerunning initremote with
   the new key id. See [[encryption]].
