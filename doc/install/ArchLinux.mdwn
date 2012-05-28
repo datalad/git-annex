@@ -7,3 +7,13 @@ such as yaourt:
 <pre>
 $ yaourt -Sy git-annex
 </pre>
+
+----
+
+I'm told the AUR has some dependency problems currently.
+If it doesn't work, you can just use cabal:
+
+<pre>
+pacman -S git rsync curl wget gpg openssh cabal-install
+cabal install git-annex --bindir=$HOME/bin
+</pre>
