@@ -4,7 +4,8 @@ LANS.
 
 ## more cloud providers
 
-Git-annex already supports several cloud providers via [[special_remotes]].
+Git-annex already supports storing large files in 
+several cloud providers via [[special_remotes]].
 More should be added, such as:
 
 * Google drive (attractive because it's free, only 5 gb tho)
@@ -28,3 +29,15 @@ git-annex will need a way to tell the difference between these, either
 heuristically, or via configuration.
 
 Also needed for USB keys and Android gadgets.
+
+## storing git repos in the cloud
+
+Of course, one option is to just use github etc to store the git repo.
+
+Two things can store git repos in Anazon S3:
+* <http://gabrito.com/post/storing-git-repositories-in-amazon-s3-for-high-availability>
+* <http://wiki.cs.pdx.edu/oss2009/index/projects/gits3.html>
+
+Another option is to not store the git repo in the cloud, but push/pull
+peer-to-peer. When peers cannot directly talk to one-another, this could be
+bounced through something like XMPP.

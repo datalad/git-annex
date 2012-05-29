@@ -14,6 +14,7 @@ The webapp is a web server that displays a shiny interface.
 * progress bars for each file
 * drag and drop to reorder
 * cancel and pause
+* keep it usable w/o javascript, and accessible to blind, etc
 
 ## implementation
 
