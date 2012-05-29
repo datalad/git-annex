@@ -1,0 +1,28 @@
+I'm just getting started with git-annex and trying to wrap my head around using it with Amazon S3. I am familiar with using git, but things are a bit different as we can't init a repo at S3 directly.
+
+I've followed http://git-annex.branchable.com/tips/using_Amazon_S3/, and performed:
+
+`git init`<br/>
+Initialized empty Git repository in /home/<br/>
+`git annex init`<br/>
+init  ok<br/>
+`git annex initremote s3 type=S3 encryption=FOOBAR bucket=foo`<br/>
+initremote s3 (encryption setup with gpg key YGTVT51715TFR) (checking bucket...) (gpg) ok<br/>
+`git annex describe s3 "Amazon S3"`<br/>
+describe s3 ok<br/>
+`git annexx add foo/`<br/>
+add foo/bar.txt<br/>
+add foo/bar.png<br/>
+...etc<br/>
+`git annex sync`<br/>
+51 files changed, 51 insertions(+)<br/>
+create mode 120000 foo/bar.txt<br/>
+create mode 120000 foo/bar.png<br/>
+...etc<br/>
+
+
+Looking at http://git-annex.branchable.com/git-annex/, I thought the files added would then be pushed to S3 by git annex sync, but that doesn't seem to be the case. I've also tried variations of got annex copy, like `git annex copy . --to s3`, without any luck.
+
+Is there a way to push to s3?
+
+Any help is appreciated!
