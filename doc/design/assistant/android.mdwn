@@ -32,7 +32,7 @@ Not ideal.
 
 #### implement git smudge filters
 
-See [[smudge]].
+See [[todo/smudge]].
 
 Difficult. Would make git-annex generally better.
 
