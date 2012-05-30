@@ -1,5 +1,7 @@
-Add a file, then unlock it, and then lock it. There is an error and the
-symlink gets deleted. 
+Add a file (do not commit), then unlock it, and then lock it.
+There is an error and the symlink gets deleted.
 
 The file will still be staged in the index, and the file content is still
 in the annex. --[[Joey]] 
+
+[[done]]
