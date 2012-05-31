@@ -6,12 +6,19 @@ Apparently new versions of Windows have something very like symlinks.
 (Or really, 3 or so things not entirely unlike symlinks and all different.)
 Stackoverflow has some details.
 
+NTFS supports symbolic links two different ways: an [[!wikipedia NTFS symbolic link]] and an [[!wikipedia NTFS_junction_point]].  The former seems like the closest analogue to POSIX symlinks.
+
 Make git use them, as it (apparently) does not yet.
 
-(What **does** git do on Windows when it clones a repo with symlinks?)
+Currently, on Windows, git checks out symlinks as files containing the symlink
+target as their contents.
 
 ## POSIX
 
 Lots of ifdefs and pain to deal with POSIX calls in the code base.
 
-Or I could try to use Cywin.
+Or I could try to use Cygwin.
+
+## Deeper system integration
+
+[NTFS Reparse Points](http://msdn.microsoft.com/en-us/library/aa365503%28v=VS.85%29.aspx) allow a program to define how the OS will interpret a file or directory in arbitrary ways.  This requires writing a file system filter.
