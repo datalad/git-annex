@@ -8,7 +8,8 @@ Stackoverflow has some details.
 
 Make git use them, as it (apparently) does not yet.
 
-(What **does** git do on Windows when it clones a repo with symlinks?)
+Currently, on Windows, git checks out symlinks as files containing the symlink
+target as their contents.
 
 ## POSIX
 
