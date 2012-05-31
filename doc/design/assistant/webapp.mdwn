@@ -16,6 +16,11 @@ The webapp is a web server that displays a shiny interface.
 * cancel and pause
 * keep it usable w/o javascript, and accessible to blind, etc
 
+## other features
+
+* there could be a UI to export a file, which would make it be served up
+  over http by the web app
+
 ## implementation
 
 Hope to use Yesod.
