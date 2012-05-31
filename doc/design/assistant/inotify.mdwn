@@ -8,7 +8,9 @@ useful, it needs to:
 - notice deleted files and stage the deletion
   (tricky; there's a race with add..)
 - notice renamed files, auto-fix the symlink, and stage the new file location
-- periodically auto-commit staged changes
+- periodically auto-commit staged changes (avoid autocommitting when
+  lots of changes are coming in)
+- tunable delays before adding new files, etc
 - honor .gitignore, not adding files it excludesa
 
 Also to do:
