@@ -15,4 +15,4 @@ target as their contents.
 
 Lots of ifdefs and pain to deal with POSIX calls in the code base.
 
-Or I could try to use Cywin.
+Or I could try to use Cygwin.
