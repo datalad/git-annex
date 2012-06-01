@@ -45,7 +45,7 @@ genBackendE size =
 
 shaCommand :: SHASize -> Maybe String
 shaCommand 1 = SysConfig.sha1
-shaCommand 256 = SysConfig.sha256
+shaCommand 256 = Just SysConfig.sha256
 shaCommand 224 = SysConfig.sha224
 shaCommand 384 = SysConfig.sha384
 shaCommand 512 = SysConfig.sha512

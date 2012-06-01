@@ -26,15 +26,16 @@ tests =
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "ssh connection caching" getSshConnectionCaching
-	] ++ shaTestCases [1, 256, 512, 224, 384]
+	] ++ shaTestCases False [1, 512, 224, 384] ++ shaTestCases True [256]
 
-shaTestCases :: [Int] -> [TestCase]
-shaTestCases l = map make l
+shaTestCases :: Bool -> [Int] -> [TestCase]
+shaTestCases required l = map make l
 	where make n =
 		let
 			cmds = map (\x -> "sha" ++ show n ++ x) ["", "sum"]
 			key = "sha" ++ show n
-		in TestCase key $ maybeSelectCmd key cmds "</dev/null"
+			selector = if required then selectCmd else maybeSelectCmd
+		in TestCase key $ selector key cmds "</dev/null"
 
 tmpDir :: String
 tmpDir = "tmp"

@@ -6,6 +6,8 @@ git-annex (3.20120523) UNRELEASED; urgency=low
     and adds them.
   * Fix display of warning message when encountering a file that uses an
     unsupported backend.
+  * Require that the SHA256 backend can be used when building, since it's the
+    default.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 27 May 2012 20:55:29 -0400
 
