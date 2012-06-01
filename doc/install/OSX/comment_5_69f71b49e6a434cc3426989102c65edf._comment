@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHrjHxJAm39x8DR4bnbazQO6H0nMNuY9c"
+ nickname="Damien"
+ subject="sha256 ?"
+ date="2012-06-01T16:05:05Z"
+ content="""
+homebrew's `md5sha1sum` does not provide a `sha256` command that seems to be required… where does yours come from ?
+"""]]
