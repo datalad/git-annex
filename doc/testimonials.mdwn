@@ -9,6 +9,13 @@
 <script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 </div>
 
+<blockquote>
+What excites me about GIT ANNEX is how it fundamentally tracks the
+backup and availability of any data you own, and allows you to share
+data with a large or small audience, ensuring that the data survives.
+</blockquote>
+-- Jason Scott <http://ascii.textfiles.com/archives/3625>
+
 Seen on IRC:
 <pre>
 oh my god, git-annex is amazing
