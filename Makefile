@@ -47,16 +47,20 @@ git-annex-shell.1: doc/git-annex-shell.mdwn
 git-union-merge.1: doc/git-union-merge.mdwn
 	./mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 
-install: all
-	install -d $(DESTDIR)$(PREFIX)/bin
-	install $(bins) $(DESTDIR)$(PREFIX)/bin
-	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+install-mans: $(mans)
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
+
+install-docs: docs install-mans
 	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex
 	if [ -d html ]; then \
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
+
+install: all install-docs
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install $(bins) $(DESTDIR)$(PREFIX)/bin
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 
 test:
 	@if ! $(GHCMAKE) -O0 test $(clibs); then \

@@ -20,6 +20,28 @@ As a haskell package, git-annex can be installed using cabal. For example:
 The above downloads the latest release. Alternatively, you can [[download]]
 it yourself and [[manually_build_with_cabal|install/cabal]].
 
+### Man pages
+
+Cabal does not install the man pages.  Do:
+
+	cd /tmp
+	cabal unpack git-annex
+	cd git-annex*
+	make install-mans PREFIX=~/.cabal
+
+to install man pages under ~/.cabal/share/man (or $PREFIX/share/man
+generally).  If ~/.cabal/bin is on your PATH, and you're on a Debian
+derivative, you're probably set.
+
+On Debian systems, `manpath` will print the paths searched for manual
+pages.  The paths searched are inferred from your PATH.  Experiments
+indicate that, on Ubuntu, D/share/man will be searched for manual
+pages whenever D/bin is on your PATH.  So, having ~/.cabal/bin on your
+PATH is enough to make the above example work.  The `man manpath` does
+not document this, but see
+http://linux.derkeiler.com/Mailing-Lists/Debian/2003-08/0956.html for
+some other special cases.
+
 ## Installation by hand
 
 To build and use git-annex, you will need:
