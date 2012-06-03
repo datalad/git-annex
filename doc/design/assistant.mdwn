@@ -9,7 +9,7 @@ Feel free to chip in with comments! --[[Joey]]
 
 * Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
 * Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
-* Month 3 "easy setup": [[!traillink configurators]]
+* Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
 * Month 4 "polishing": [[!traillink cloud]] [[!traillink leftovers]]
 * Months 5-6 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]]
 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHrjHxJAm39x8DR4bnbazQO6H0nMNuY9c"
+ nickname="Damien"
+ subject="sha256"
+ date="2012-06-01T16:13:05Z"
+ content="""
+If you're missing the `sha256sum` command with Homebrew, it's provided by `coreutils`. You have to change your `$PATH` before running `cabal install git-annex.cabal`:
+
+    PATH=\"$(brew --prefix coreutils)/libexec/gnubin:$PATH\"
+"""]]

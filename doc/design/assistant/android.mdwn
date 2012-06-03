@@ -14,6 +14,14 @@ available in the App Store.
 * git (not all git commands are needed,
   but core plumbing and a few like `git-add` are.)
 
+### Android specific features
+
+The app should be aware of power status, and avoid expensive background
+jobs when low on battery or run flat out when plugged in.
+
+The app should be aware of network status, and avoid expensive data
+transfers when not on wifi. This may need to be configurable.
+
 ### FAT sucks
 
 The main media partition will use some awful FAT filesystem format from
@@ -26,13 +34,16 @@ handle all of git's filenames.) Possible approaches to this follow.
 
 Keep only a bare git repo on Android. The app would then need to include
 a file browser to access the files in there, and adding a file would move
-it into the repo. 
+it into the repo.
 
 Not ideal.
 
+Could be improved some by registering git-annex as a file handling app on
+Android, allowing you to "send to" git-annex.
+
 #### implement git smudge filters
 
-See [[smudge]].
+See [[todo/smudge]].
 
 Difficult. Would make git-annex generally better.
 

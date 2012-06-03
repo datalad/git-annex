@@ -7,9 +7,6 @@ sudo port install git-core ossp-uuid md5sha1sum coreutils pcre
 
 sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that allows pcre-light to find pcre
 
-# optional: this will enable the gnu tools, (to give sha224sum etc..., it does not override the BSD userland)
-export PATH=$PATH:/opt/local/libexec/gnubin
-
 git clone git://git-annex.branchable.com/ git-annex
 cd git-annex
 git checkout ghc7.0

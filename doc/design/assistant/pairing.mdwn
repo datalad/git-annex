@@ -1,0 +1,13 @@
+For git-annex to be able to clone its repo to another host, it'd be good to
+have some way of pairing devices.
+
+It could work like this:
+
+1. Prompt for the hostname (or do avahi local machine discovery). 
+2. Enable the two hosts to ssh to one-another and run git-annex shell.
+   (A tricky problem, if ssh keys need to be added to do that.)
+3. Push over a clone of the repository. (Using git-annex-shell?)
+4. Start [[syncing]].
+
+Also look into the method used by
+<https://support.mozilla.org/en-US/kb/add-a-device-to-firefox-sync>

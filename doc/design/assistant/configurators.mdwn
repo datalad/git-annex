@@ -10,12 +10,7 @@ through setting up common use cases.
 * Create a repository (run when the web app is started without a configured
   repository too).
 * Clone this repo to a USB drive.
-* Clone this repo to another host:
-  1. Prompt for the hostname (or do avahi local machine discovery). 
-  2. Enable the two hosts to ssh to one-another and run git-annex shell.
-     (A tricky problem, if ssh keys need to be added to do that.)
-  3. Push over a clone of the repository. (Using git-annex-shell?)
-  4. Start [[syncing]].
+* Clone this repo to another host. (Needs [[pairing]])
 * Set up Amazon S3.
 * Set up rsync remote.
 * Set up encryption.

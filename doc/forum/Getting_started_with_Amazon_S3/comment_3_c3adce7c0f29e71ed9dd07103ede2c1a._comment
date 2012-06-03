@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.81.112"
+ subject="comment 3"
+ date="2012-05-30T00:54:38Z"
+ content="""
+If the subdirectory has a .git, then it's a separate git repo, and inside the directory, all git (and git-annex) commands in it will operate on that nested repo and ignore the outside one.
+"""]]

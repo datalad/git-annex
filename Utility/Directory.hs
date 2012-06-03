@@ -17,6 +17,7 @@ import System.FilePath
 import Control.Applicative
 import Control.Exception (bracket_)
 import System.Posix.Directory
+import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Utility.SafeCommand
 import Utility.TempFile
@@ -24,14 +25,37 @@ import Utility.Exception
 import Utility.Monad
 import Utility.Path
 
+dirCruft :: FilePath -> Bool
+dirCruft "." = True
+dirCruft ".." = True
+dirCruft _ = False
+
 {- Lists the contents of a directory.
  - Unlike getDirectoryContents, paths are not relative to the directory. -}
 dirContents :: FilePath -> IO [FilePath]
-dirContents d = map (d </>) . filter notcruft <$> getDirectoryContents d
+dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
+
+{- Gets contents of directory, and then its subdirectories, recursively,
+ - and lazily. -}
+dirContentsRecursive :: FilePath -> IO [FilePath]
+dirContentsRecursive topdir = dirContentsRecursive' topdir [""]
+
+dirContentsRecursive' :: FilePath -> [FilePath] -> IO [FilePath]
+dirContentsRecursive' _ [] = return []
+dirContentsRecursive' topdir (dir:dirs) = unsafeInterleaveIO $ do
+	(files, dirs') <- collect [] [] =<< dirContents (topdir </> dir)
+	files' <- dirContentsRecursive' topdir (dirs' ++ dirs)
+	return (files ++ files')
 	where
-		notcruft "." = False
-		notcruft ".." = False
-		notcruft _ = True
+		collect files dirs' [] = return (reverse files, reverse dirs')
+		collect files dirs' (entry:entries)
+			| dirCruft entry = collect files dirs' entries
+			| otherwise = do
+				let dirEntry = dir </> entry
+				ifM (doesDirectoryExist $ topdir </> dirEntry)
+					( collect files (dirEntry:dirs') entries
+					, collect (dirEntry:files) dirs' entries
+					)			
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}

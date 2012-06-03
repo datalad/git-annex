@@ -1,6 +1,13 @@
 git-annex (3.20120523) UNRELEASED; urgency=low
 
   * sync: Show a nicer message if a user tries to sync to a special remote.
+  * lock: Reset unlocked file to index, rather than to branch head.
+  * import: New subcommand, pulls files from a directory outside the annex
+    and adds them.
+  * Fix display of warning message when encountering a file that uses an
+    unsupported backend.
+  * Require that the SHA256 backend can be used when building, since it's the
+    default.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 27 May 2012 20:55:29 -0400
 
