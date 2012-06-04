@@ -29,12 +29,15 @@ start = notBareRepo $ do
 	showAction "scanning"
 	state <- Annex.getState id
 	next $ next $ liftIO $ withINotify $ \i -> do
-		watchDir i notgit (Just $ run state onAdd) Nothing "."
+		let hook a = Just $ run state a
+		watchDir i "." (not . gitdir)
+			(hook onAdd) (hook onAddSymlink)
+			(hook onDel) (hook onDelDir)
 		putStrLn "(started)"
 		waitForTermination
 		return True
 	where
-		notgit dir = takeFileName dir /= ".git"
+		gitdir dir = takeFileName dir /= ".git"
 
 {- Inotify events are run in separate threads, and so each is a
  - self-contained Annex monad. Exceptions by the handlers are ignored,
@@ -51,5 +54,16 @@ run startstate a f = do
 			_ <- shutdown True
 			return ()
 
-onAdd :: FilePath -> Annex Bool
-onAdd file = doCommand $ Add.start file
+onAdd :: FilePath -> Annex ()
+onAdd file = void $ doCommand $ do
+	showStart "add" file
+	next $ Add.perform file
+
+onAddSymlink :: FilePath -> Annex ()
+onAddSymlink link = liftIO $ print $ "add symlink " ++ link
+
+onDel :: FilePath -> Annex ()
+onDel file = liftIO $ print $ "del " ++ file
+
+onDelDir :: FilePath -> Annex ()
+onDelDir dir = liftIO $ print $ "del dir " ++ dir

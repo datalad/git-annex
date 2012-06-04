@@ -1,3 +1,10 @@
+{- higher-level inotify interface
+ -
+ - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
 {-# LANGUAGE CPP #-}
 
 module Utility.Inotify where
@@ -9,19 +16,12 @@ import System.Posix.Terminal
 import Control.Concurrent.MVar
 import System.Posix.Signals
 
-demo :: IO ()
-demo = withINotify $ \i -> do
-	watchDir i (const True) (Just add) (Just del) "/home/joey/tmp/me"
-	putStrLn "started"
-	waitForTermination
-	where
-		add file = putStrLn $ "add " ++ file
-		del file = putStrLn $ "del " ++ file
+type Hook = Maybe (FilePath -> IO ())
 
 {- Watches for changes to files in a directory, and all its subdirectories
- - that match a test, using inotify. This function returns after its initial
- - setup is complete, leaving a thread running. Then callbacks are made for
- - adding and deleting files.
+ - that are not ignored, using inotify. This function returns after
+ - its initial scan is complete, leaving a thread running. Callbacks are
+ - made for different events.
  -
  - Inotify is weak at recursive directory watching; the whole directory
  - tree must be walked and watches set explicitly for each subdirectory.
@@ -37,50 +37,75 @@ demo = withINotify $ \i -> do
  - Note: Due to the race amelioration, multiple add events may occur
  - for the same file.
  - 
- - Note: Moving a file may involve deleting it from its old location and
- - adding it to the new location. 
+ - Note: Moving a file will cause events deleting it from its old location
+ - and adding it to the new location. 
  - 
  - Note: Modification of files is not detected, and it's assumed that when
- - a file that was open for write is closed, it's done being written
+ - a file that was open for write is closed, it's finished being written
  - to, and can be added.
  -
  - Note: inotify has a limit to the number of watches allowed,
  - /proc/sys/fs/inotify/max_user_watches (default 8192).
- - So This will fail if there are too many subdirectories.
+ - So this will fail if there are too many subdirectories.
  -}
-watchDir :: INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
-watchDir i test add del dir = watchDir' False i test add del dir
-watchDir' :: Bool -> INotify -> (FilePath -> Bool) -> Maybe (FilePath -> IO ()) -> Maybe (FilePath -> IO ()) -> FilePath -> IO ()
-watchDir' scan i test add del dir = do
-	if test dir
-		then void $ do
-			_ <- addWatch i watchevents dir go
-			mapM walk =<< dirContents dir
-		else noop
+watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook -> Hook -> IO ()
+watchDir i dir ignored add addsymlink del deldir
+	| ignored dir = noop
+	| otherwise = void $ do
+		_ <- addWatch i watchevents dir go
+		mapM walk =<< filter (not . dirCruft) <$>
+			getDirectoryContents dir
 	where
-		watchevents
-			| isJust add && isJust del =
-				[Create, MoveIn, MoveOut, Delete, CloseWrite]
-			| isJust add = [Create, MoveIn, CloseWrite]
-			| isJust del = [Create, MoveOut, Delete]
-			| otherwise = [Create]
+		recurse d = watchDir i d ignored add addsymlink del deldir
 
-		recurse = watchDir' scan i test add del
-		walk f = ifM (catchBoolIO $ Files.isDirectory <$> getFileStatus f)
-			( recurse f
-			, when (scan && isJust add) $ fromJust add f
-			)
+		-- Select only inotify events required by the enabled
+		-- hooks, but always include Create so new directories can
+		-- be walked.
+		watchevents = Create : addevents ++ delevents
+		addevents
+			| isJust add || isJust addsymlink = [MoveIn, CloseWrite]
+			| otherwise = []
+		delevents
+			| isJust del || isJust deldir = [MoveOut, Delete]
+			| otherwise = []
 
-		go (Created { isDirectory = False }) = noop
-		go (Created { filePath = subdir }) = Just recurse <@> subdir
-		go (Closed { maybeFilePath = Just f }) = add <@> f
-		go (MovedIn { isDirectory = False, filePath = f }) = add <@> f
-		go (MovedOut { isDirectory = False, filePath = f }) = del <@> f
-		go (Deleted { isDirectory = False, filePath = f }) = del <@> f
+		walk f = do
+			let fullf = indir f
+			r <- catchMaybeIO $ getSymbolicLinkStatus fullf
+			case r of
+				Nothing -> return ()
+				Just s
+					| Files.isDirectory s -> recurse fullf
+					| Files.isSymbolicLink s -> addsymlink <@> f
+					| Files.isRegularFile s -> add <@> f
+					| otherwise -> return ()
+
+		-- Ignore creation events for regular files, which won't be
+		-- done being written when initially created, but handle for
+		-- directories and symlinks.
+		go (Created { isDirectory = True, filePath = subdir }) = recurse $ indir subdir
+		go (Created { isDirectory = False, filePath = f })
+			| isJust addsymlink =
+				ifM (catchBoolIO $ Files.isSymbolicLink <$> getSymbolicLinkStatus (indir f))
+					( addsymlink <@> f
+					, noop
+					)
+			| otherwise = noop
+		-- Closing a file is assumed to mean it's done being written.
+		go (Closed { isDirectory = False, maybeFilePath = Just f }) = add <@> f
+		-- When a file or directory is moved in, walk it to add new
+		-- stuff.
+		go (MovedIn { filePath = f }) = walk f
+		go (MovedOut { isDirectory = True, filePath = d }) = deldir <@> d
+		go (MovedOut { filePath = f }) = del <@> f
+		go (Deleted { isDirectory = True, filePath = d }) = deldir <@> d
+		go (Deleted { filePath = f }) = del <@> f
 		go _ = noop
-		
-		Just a <@> f = a $ dir </> f
+
+		Just a <@> f = a $ indir f
 		Nothing <@> _ = noop
+
+		indir f = dir </> f
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
