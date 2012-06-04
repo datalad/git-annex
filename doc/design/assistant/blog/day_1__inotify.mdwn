@@ -32,7 +32,7 @@ transcript of it in action:
 	AD bigfile
 	A  foo/bigfile
 
-Due to Linux's inotify interface, this is suely some of the most subtle,
+Due to Linux's inotify interface, this is surely some of the most subtle,
 race-heavy code that I'll need to deal with while developing the git annex
 assistant. But I can't start wading, need to jump off the deep end to make
 progress!
