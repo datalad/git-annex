@@ -44,8 +44,11 @@ start = notBareRepo $ do
 		gitdir dir = takeFileName dir /= ".git"
 
 {- Inotify events are run in separate threads, and so each is a
- - self-contained Annex monad. Exceptions by the handlers are ignored,
- - otherwise a whole watcher thread could be crashed. -}
+ - self-contained Annex monad.
+ -
+ - Exceptions by the handlers are ignored,
+ - otherwise a whole watcher thread could be crashed.
+ -}
 run :: Annex.AnnexState -> (FilePath -> Annex a) -> FilePath -> IO ()
 run startstate a f = do
 	r <- E.try go :: IO (Either E.SomeException ())
@@ -89,10 +92,11 @@ onAddSymlink file = go =<< Backend.lookupFile file
 			[Params "--force --", File file]
 
 onDel :: FilePath -> Annex ()
-onDel file = liftIO $ print $ "del " ++ file
+onDel file = inRepo $ Git.Command.run "rm"
+	[Params "--quiet --cached --", File file]
 
-{- A directory has been deleted, so tell git to remove anything that
-   was inside it from its cache. -}
+{- A directory has been deleted, or moved, so tell git to remove anything
+ - that was inside it from its cache. -}
 onDelDir :: FilePath -> Annex ()
 onDelDir dir = inRepo $ Git.Command.run "rm"
-	[Params "--quiet -r --cached --", File dir]
+	[Params "--quiet -r --cached --ignore-unmatch --", File dir]

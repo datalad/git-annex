@@ -15,6 +15,7 @@ import qualified System.Posix.Files as Files
 import System.Posix.Terminal
 import Control.Concurrent.MVar
 import System.Posix.Signals
+import Control.Exception as E
 
 type Hook = Maybe (FilePath -> IO ())
 
@@ -51,10 +52,13 @@ type Hook = Maybe (FilePath -> IO ())
 watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook -> Hook -> IO ()
 watchDir i dir ignored add addsymlink del deldir
 	| ignored dir = noop
-	| otherwise = void $ do
-		_ <- addWatch i watchevents dir go
-		mapM walk =<< filter (not . dirCruft) <$>
-			getDirectoryContents dir
+	| otherwise = do
+		mvar <- newEmptyMVar
+		void $ addWatch i watchevents dir $ \event ->
+			serialized mvar (void $ go event)
+		serialized mvar $
+			mapM_ walk =<< filter (not . dirCruft) <$>
+				getDirectoryContents dir
 	where
 		recurse d = watchDir i d ignored add addsymlink del deldir
 
@@ -117,14 +121,22 @@ watchDir i dir ignored add addsymlink del deldir
 
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
 
+{- Uses an MVar to serialize an action, so that only one thread at a time
+ - runs it. -}
+serialized :: MVar () -> IO () -> IO ()
+serialized mvar a = void $ do
+	putMVar mvar () -- blocks if action already running
+	_ <- E.try a :: IO (Either E.SomeException ())
+	takeMVar mvar -- allow next action to run
+
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
 waitForTermination = do
-	mv <- newEmptyMVar
-	check softwareTermination mv
+	mvar <- newEmptyMVar
+	check softwareTermination mvar
 	whenM (queryTerminal stdInput) $
-		check keyboardSignal mv
-	takeMVar mv
+		check keyboardSignal mvar
+	takeMVar mvar
 	where
-		check sig mv = void $
-			installHandler sig (CatchOnce $ putMVar mv ()) Nothing
+		check sig mvar = void $
+			installHandler sig (CatchOnce $ putMVar mvar ()) Nothing
