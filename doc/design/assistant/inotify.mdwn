@@ -8,10 +8,15 @@ useful, it needs to:
 - notice deleted files and stage the deletion
   (tricky; there's a race with add..)
 - notice renamed files, auto-fix the symlink, and stage the new file location
+  **done**
+- handle cases where directories are moved outside the repo, and stop
+  watching them **done**
+- when a whole directory is deleted, stage removal of its
+  contents in the index **done**
 - periodically auto-commit staged changes (avoid autocommitting when
   lots of changes are coming in)
 - tunable delays before adding new files, etc
-- honor .gitignore, not adding files it excludesa
+- honor .gitignore, not adding files it excludes
 
 Also to do:
 
