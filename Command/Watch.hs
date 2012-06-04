@@ -14,6 +14,7 @@ import CmdLine
 import Utility.Inotify
 import Control.Exception as E
 import qualified Command.Add as Add
+import qualified Git.Command
 
 import System.INotify
 
@@ -66,4 +67,4 @@ onDel :: FilePath -> Annex ()
 onDel file = liftIO $ print $ "del " ++ file
 
 onDelDir :: FilePath -> Annex ()
-onDelDir dir = liftIO $ print $ "del dir " ++ dir
+onDelDir dir = inRepo $ Git.Command.run "rm" [Params "--quiet -r", File dir]
