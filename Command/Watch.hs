@@ -7,15 +7,18 @@
 
 module Command.Watch where
 
+import CmdLine
 import Common.Annex
 import Command
-import qualified Annex
-import CmdLine
 import Utility.Inotify
-import Control.Exception as E
+import qualified Annex
 import qualified Command.Add as Add
 import qualified Git.Command
+import qualified Annex.Queue
+import qualified Backend
+import Annex.Content
 
+import Control.Exception as E
 import System.INotify
 
 def :: [Command]
@@ -55,16 +58,41 @@ run startstate a f = do
 			_ <- shutdown True
 			return ()
 
+{- Adding a file is the same as git-annex add.
+ - The git queue is immediately flushed, so the file is added to git
+ - now, rather than later (when it may have been already moved or deleted!) -}
 onAdd :: FilePath -> Annex ()
-onAdd file = void $ doCommand $ do
-	showStart "add" file
-	next $ Add.perform file
+onAdd file = do
+	void $ doCommand $ do
+		showStart "add" file
+		next $ Add.perform file
+	Annex.Queue.flush
 
+{- A symlink might be an arbitrary symlink, which is just added.
+ - Or, if it is a git-annex symlink, ensure it points to the content
+ - before adding it.
+ -}
 onAddSymlink :: FilePath -> Annex ()
-onAddSymlink link = liftIO $ print $ "add symlink " ++ link
+onAddSymlink file = go =<< Backend.lookupFile file
+	where
+		go Nothing = addlink
+		go (Just (key, _)) = do
+			link <- calcGitLink file key
+			ifM ((==) link <$> liftIO (readSymbolicLink file))
+				( addlink
+				, do
+					liftIO $ removeFile file
+					liftIO $ createSymbolicLink link file
+					addlink
+				)
+		addlink = inRepo $ Git.Command.run "add"
+			[Params "--force --", File file]
 
 onDel :: FilePath -> Annex ()
 onDel file = liftIO $ print $ "del " ++ file
 
+{- A directory has been deleted, so tell git to remove anything that
+   was inside it from its cache. -}
 onDelDir :: FilePath -> Annex ()
-onDelDir dir = inRepo $ Git.Command.run "rm" [Params "--quiet -r", File dir]
+onDelDir dir = inRepo $ Git.Command.run "rm"
+	[Params "--quiet -r --cached --", File dir]
