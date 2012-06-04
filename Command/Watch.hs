@@ -31,6 +31,7 @@ start :: CommandStart
 start = notBareRepo $ do
 	showStart "watch" "."
 	showAction "scanning"
+	inRepo $ Git.Command.run "add" [Param "--update"]
 	state <- Annex.getState id
 	next $ next $ liftIO $ withINotify $ \i -> do
 		let hook a = Just $ run state a
