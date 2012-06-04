@@ -86,13 +86,13 @@ watchDir i dir ignored add addsymlink del deldir
 		go (Created { isDirectory = True, filePath = subdir }) = recurse $ indir subdir
 		go (Created { isDirectory = False, filePath = f })
 			| isJust addsymlink =
-				ifM (catchBoolIO $ Files.isSymbolicLink <$> getSymbolicLinkStatus (indir f))
-					( addsymlink <@> f
-					, noop
-					)
+				whenM (filetype Files.isSymbolicLink f) $
+					addsymlink <@> f
 			| otherwise = noop
 		-- Closing a file is assumed to mean it's done being written.
-		go (Closed { isDirectory = False, maybeFilePath = Just f }) = add <@> f
+		go (Closed { isDirectory = False, maybeFilePath = Just f }) =
+			whenM (filetype Files.isRegularFile f) $
+				add <@> f
 		-- When a file or directory is moved in, walk it to add new
 		-- stuff.
 		go (MovedIn { filePath = f }) = walk f
@@ -106,6 +106,7 @@ watchDir i dir ignored add addsymlink del deldir
 		Nothing <@> _ = noop
 
 		indir f = dir </> f
+		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
