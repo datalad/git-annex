@@ -34,7 +34,7 @@ git_annex_shell r command params
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
 	where
-		dir = Git.workTree r
+		dir = Git.repoPath r
 		shellcmd = "git-annex-shell"
 		shellopts = Param command : File dir : params
 		sshcmd uuid = unwords $

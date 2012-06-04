@@ -14,9 +14,10 @@ import qualified Data.Map as M
 
 import Common.Annex
 import Annex.LockPool
-import qualified Git
+import qualified Git.Config
 import Config
 import qualified Build.SysConfig as SysConfig
+import Annex.Perms
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
@@ -46,8 +47,8 @@ sshInfo (host, port) = ifM caching
 	)
 	where
 		caching = fromMaybe SysConfig.sshconnectioncaching 
-			. Git.configTrue
-			<$> getConfig "annex.sshcaching" ""
+			. Git.Config.isTrue
+			<$> getConfig (annexConfig "sshcaching") ""
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =
@@ -74,30 +75,29 @@ sshCleanup = do
 			-- be stopped.
 			let lockfile = socket2lock socketfile
 			unlockFile lockfile
-			fd <- liftIO $ openFd lockfile ReadWrite (Just stdFileMode) defaultFileFlags
+			mode <- annexFileMode
+			fd <- liftIO $ noUmask mode $
+				openFd lockfile ReadWrite (Just mode) defaultFileFlags
 			v <- liftIO $ tryIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			case v of
-				Left _ -> return ()
+				Left _ -> noop
 				Right _ -> stopssh socketfile
 			liftIO $ closeFd fd
 		stopssh socketfile = do
 			let (host, port) = socket2hostport socketfile
 			(_, params) <- sshInfo (host, port)
-			_ <- liftIO $ do
+			void $ liftIO $ do
 				-- "ssh -O stop" is noisy on stderr even with -q
 				let cmd = unwords $ toCommand $
 					[ Params "-O stop"
 					] ++ params ++ [Param host]
-				_ <- boolSystem "sh"
+				boolSystem "sh"
 					[ Param "-c"
 					, Param $ "ssh " ++ cmd ++ " >/dev/null 2>/dev/null"
 					]
-				--try $ removeFile socketfile
-				return ()
-			-- Cannot remove the lock file; other processes may
-			-- be waiting on our exclusive lock to use it.
-			return ()
+				-- Cannot remove the lock file; other processes may
+				-- be waiting on our exclusive lock to use it.
 
 hostport2socket :: String -> Maybe Integer -> FilePath
 hostport2socket host Nothing = host

@@ -25,8 +25,7 @@ import qualified Utility.SafeCommand
 import qualified Annex
 import qualified Annex.UUID
 import qualified Backend
-import qualified Git.Config
-import qualified Git.Construct
+import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations
 import qualified Types.Backend
@@ -35,9 +34,10 @@ import qualified GitAnnex
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
+import qualified Logs.Unused
 import qualified Remote
-import qualified Command.DropUnused
 import qualified Types.Key
+import qualified Types.Messages
 import qualified Config
 import qualified Crypto
 import qualified Utility.Path
@@ -494,7 +494,7 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	where
 		checkunused expectedkeys = do
 			git_annex "unused" [] @? "unused failed"
-			unusedmap <- annexeval $ Command.DropUnused.readUnusedLog ""
+			unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
 			let unusedkeys = M.elems unusedmap
 			assertEqual "unused keys differ"
 				(sort expectedkeys) (sort unusedkeys)
@@ -720,10 +720,10 @@ git_annex_expectoutput command params expected = do
 -- are not run; this should only be used for actions that query state.
 annexeval :: Types.Annex a -> IO a
 annexeval a = do
-	g <- Git.Construct.fromCurrent
-	g' <- Git.Config.read g
-	s <- Annex.new g'
-	Annex.eval s { Annex.output = Annex.QuietOutput } a
+	s <- Annex.new =<< Git.CurrentRepo.get
+	Annex.eval s $ do
+		Annex.setOutput Types.Messages.QuietOutput
+		a
 
 innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a

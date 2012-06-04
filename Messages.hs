@@ -13,6 +13,9 @@ module Messages (
 	metered,
 	MeterUpdate,
 	showSideAction,
+	doSideAction,
+	doQuietSideAction,
+	showStoringStateAction,
 	showOutput,
 	showLongNote,
 	showEndOk,
@@ -37,6 +40,7 @@ import Data.Quantity
 
 import Common
 import Types
+import Types.Messages
 import Types.Key
 import qualified Annex
 import qualified Messages.JSON as JSON
@@ -61,9 +65,9 @@ showProgress = handle q $
  - The action is passed a callback to use to update the meter. -}
 type MeterUpdate = Integer -> IO ()
 metered :: Key -> (MeterUpdate -> Annex a) -> Annex a
-metered key a = Annex.getState Annex.output >>= go (keySize key)
+metered key a = withOutputType $ go (keySize key)
 	where
-		go (Just size) Annex.NormalOutput = do
+		go (Just size) NormalOutput = do
 			progress <- liftIO $ newProgress "" size
 			meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 			showOutput
@@ -72,12 +76,38 @@ metered key a = Annex.getState Annex.output >>= go (keySize key)
 				incrP progress n
 				displayMeter stdout meter
 			liftIO $ clearMeter stdout meter
-			return r	
-                go _ _ = a (const $ return ())
+			return r
+                go _ _ = a (const noop)
 
 showSideAction :: String -> Annex ()
-showSideAction s = handle q $
-	putStrLn $ "(" ++ s ++ "...)"
+showSideAction m = Annex.getState Annex.output >>= go
+	where
+		go (MessageState v StartBlock) = do
+			p
+	 		Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
+		go (MessageState _ InBlock) = return ()
+		go _ = p
+		p = handle q $ putStrLn $ "(" ++ m ++ "...)"
+			
+showStoringStateAction :: Annex ()
+showStoringStateAction = showSideAction "Recording state in git"
+
+{- Performs an action, supressing showSideAction messages. -}
+doQuietSideAction :: Annex a -> Annex a
+doQuietSideAction = doSideAction' InBlock
+
+{- Performs an action, that may call showSideAction multiple times.
+ - Only the first will be displayed. -}
+doSideAction :: Annex a -> Annex a
+doSideAction = doSideAction' StartBlock
+
+doSideAction' :: SideActionBlock -> Annex a -> Annex a
+doSideAction' b a = do
+	o <- Annex.getState Annex.output
+	set $ o { sideActionBlock = b }
+	set o `after` a
+	where
+		set o = Annex.changeState $ \s -> s {  Annex.output = o }
 
 showOutput :: Annex ()
 showOutput = handle q $
@@ -122,9 +152,9 @@ maybeShowJSON v = handle (JSON.add v) q
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON a => [(String, a)] -> Annex Bool
-showFullJSON v = Annex.getState Annex.output >>= liftIO . go
+showFullJSON v = withOutputType $ liftIO . go
 	where
-		go Annex.JSONOutput = JSON.complete v >> return True
+		go JSONOutput = JSON.complete v >> return True
 		go _ = return False
 
 {- Performs an action that outputs nonstandard/customized output, and
@@ -153,14 +183,17 @@ setupConsole = do
 	fileEncoding stderr
 
 handle :: IO () -> IO () -> Annex ()
-handle json normal = Annex.getState Annex.output >>= go
+handle json normal = withOutputType $ go
 	where
-		go Annex.NormalOutput = liftIO normal
-		go Annex.QuietOutput = q
-		go Annex.JSONOutput = liftIO $ flushed json
+		go NormalOutput = liftIO normal
+		go QuietOutput = q
+		go JSONOutput = liftIO $ flushed json
 
 q :: Monad m => m ()
-q = return ()
+q = noop
 
 flushed :: IO () -> IO ()
 flushed a = a >> hFlush stdout
+
+withOutputType :: (OutputType -> Annex a) -> Annex a
+withOutputType a = outputType <$> Annex.getState Annex.output >>= a

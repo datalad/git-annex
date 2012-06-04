@@ -194,7 +194,7 @@ showLocations key exclude = do
 		message rs us = message rs [] ++ message [] us
 
 showTriedRemotes :: [Remote] -> Annex ()
-showTriedRemotes [] = return ()	
+showTriedRemotes [] = noop
 showTriedRemotes remotes =
 	showLongNote $ "Unable to access these remotes: " ++
 		join ", " (map name remotes)

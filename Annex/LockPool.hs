@@ -12,22 +12,24 @@ import System.Posix.Types (Fd)
 
 import Common.Annex
 import Annex
+import Annex.Perms
 
 {- Create a specified lock file, and takes a shared lock. -}
 lockFile :: FilePath -> Annex ()
 lockFile file = go =<< fromPool file
 	where
-		go (Just _) = return () -- already locked
+		go (Just _) = noop -- already locked
 		go Nothing = do
-			fd <- liftIO $ openFd file ReadOnly (Just stdFileMode) defaultFileFlags
+			mode <- annexFileMode
+			fd <- liftIO $ noUmask mode $
+				openFd file ReadOnly (Just mode) defaultFileFlags
 			liftIO $ waitToSetLock fd (ReadLock, AbsoluteSeek, 0, 0)
 			changePool $ M.insert file fd
 
 unlockFile :: FilePath -> Annex ()
-unlockFile file = go =<< fromPool file
+unlockFile file = maybe noop go =<< fromPool file
 	where
-		go Nothing = return ()
-		go (Just fd) = do
+		go fd = do
 			liftIO $ closeFd fd
 			changePool $ M.delete file
 

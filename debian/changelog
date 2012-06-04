@@ -1,4 +1,58 @@
-git-annex (3.20120407) UNRELEASED; urgency=low
+git-annex (3.20120523) UNRELEASED; urgency=low
+
+  * sync: Show a nicer message if a user tries to sync to a special remote.
+  * lock: Reset unlocked file to index, rather than to branch head.
+  * import: New subcommand, pulls files from a directory outside the annex
+    and adds them.
+  * Fix display of warning message when encountering a file that uses an
+    unsupported backend.
+  * Require that the SHA256 backend can be used when building, since it's the
+    default.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 27 May 2012 20:55:29 -0400
+
+git-annex (3.20120522) unstable; urgency=low
+
+  * Pass -a to cp even when it supports --reflink=auto, to preserve
+    permissions.
+  * Clean up handling of git directory and git worktree.
+  * Add support for core.worktree, and fix support for GIT_WORK_TREE and
+    GIT_DIR.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 May 2012 11:16:13 -0400
+
+git-annex (3.20120511) unstable; urgency=low
+
+  * Rsync special remotes can be configured with shellescape=no
+    to avoid shell quoting that is normally done when using rsync over ssh.
+    This is known to be needed for certian rsync hosting providers
+    (specificially hidrive.strato.com) that use rsync over ssh but do not
+    pass it through the shell.
+  * dropunused: Allow specifying ranges to drop.
+  * addunused: New command, the opposite of dropunused, it relinks unused
+    content into the git repository.
+  * Fix use of several config settings: annex.ssh-options,
+    annex.rsync-options, annex.bup-split-options. (And adjust types to avoid
+    the bugs that broke several config settings.)
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 May 2012 12:29:30 -0400
+
+git-annex (3.20120430) unstable; urgency=low
+
+  * Fix use of annex.diskreserve config setting.
+  * Directory special remotes now check annex.diskreserve.
+  * Support git's core.sharedRepository configuration.
+  * Add annex.http-headers and annex.http-headers-command config
+    settings, to allow custom headers to be sent with all HTTP requests.
+    (Requested by the Internet Archive)
+  * uninit: Clear annex.uuid from .git/config. Closes: #670639
+  * Added shared cipher mode to encryptable special remotes. This option
+    avoids gpg key distribution, at the expense of flexability, and with
+    the requirement that all clones of the git repository be equally trusted.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 30 Apr 2012 13:16:10 -0400
+
+git-annex (3.20120418) unstable; urgency=low
 
   * bugfix: Adding a dotfile also caused all non-dotfiles to be added.
   * bup: Properly handle key names with spaces or other things that are
@@ -7,8 +61,11 @@ git-annex (3.20120407) UNRELEASED; urgency=low
     configuration setting, doing fuzzy matching using the restricted
     Damerau-Levenshtein edit distance, just as git does. This adds a build
     dependency on the haskell edit-distance library.
+  * Renamed diskfree.c to avoid OSX case insensativity bug.
+  * cabal now installs git-annex-shell as a symlink to git-annex.
+  * cabal file now autodetects whether S3 support is available.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 08 Apr 2012 12:23:42 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 18 Apr 2012 12:11:32 -0400
 
 git-annex (3.20120406) unstable; urgency=low
 

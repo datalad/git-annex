@@ -24,9 +24,5 @@ start file = do
 
 perform :: FilePath -> CommandPerform
 perform file = do
-	liftIO $ removeFile file
-	-- Checkout from HEAD to get rid of any changes that might be 
-	-- staged in the index, and get back to the previous symlink to
-	-- the content.
-	Annex.Queue.add "checkout" [Param "HEAD", Param "--"] [file]
+	Annex.Queue.add "checkout" [Param "--"] [file]
 	next $ return True -- no cleanup needed

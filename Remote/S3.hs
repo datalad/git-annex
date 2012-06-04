@@ -93,7 +93,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 		archiveorg = do
 			showNote "Internet Archive mode"
-			maybe (error "specify bucket=") (const $ return ()) $
+			maybe (error "specify bucket=") (const noop) $
 				M.lookup "bucket" archiveconfig
 			use archiveconfig
 			where
@@ -237,13 +237,13 @@ genBucket c = do
 	showAction "checking bucket"
 	loc <- liftIO $ getBucketLocation conn bucket 
 	case loc of
-		Right _ -> return ()
+		Right _ -> noop
 		Left err@(NetworkError _) -> s3Error err
 		Left (AWSError _ _) -> do
 			showAction $ "creating bucket in " ++ datacenter
 			res <- liftIO $ createBucketIn conn bucket datacenter
 			case res of
-				Right _ -> return ()
+				Right _ -> noop
 				Left err -> s3Error err
 	where
 		bucket = fromJust $ M.lookup "bucket" c

@@ -160,6 +160,15 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
+* import [path ...]
+
+  Moves files from somewhere outside the git working copy, and adds them to
+  the annex. Individual files to import can be specified. 
+  If a directory is specified, all files in it are imported, and any
+  subdirectory structure inside it is preserved.
+
+	git annex import /media/camera/DCIM/
+
 # REPOSITORY SETUP COMMANDS
 
 * init [description]
@@ -235,12 +244,20 @@ subdirectories).
 
   To check for annexed data on a remote, specify --from.
 
-* dropunused [number ...]
+* dropunused [number|range ...]
 
   Drops the data corresponding to the numbers, as listed by the last
   `git annex unused`
 
+  You can also specify ranges of numbers, such as "1-1000".
+
   To drop the data from a remote, specify --from.
+
+* addunused [number|range ...]
+
+  Adds back files for the content corresponding to the numbers or ranges,
+  as listed by the last `git annex unused`. The files will have names
+  starting with "unused."
 
 * merge
 
@@ -712,6 +729,16 @@ Here are all the supported configuration settings.
   Options to use when using wget or curl to download a file from the web.
   (wget is always used in preference to curl if available).
   For example, to force ipv4 only, set it to "-4"
+
+* `annex.http-headers`
+
+  HTTP headers to send when downloading from the web. Multiple lines of
+  this option can be set, one per header.
+
+* `annex.http-headers-command`
+
+  If set, the command is run and each line of its output is used as a HTTP
+  header. This overrides annex.http-headers.
 
 * `remote.<name>.rsyncurl`
 

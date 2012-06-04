@@ -83,4 +83,5 @@ checkKey key = do
 checkKey' :: Key -> [URLString] -> Annex Bool
 checkKey' key us = untilTrue us $ \u -> do
 	showAction $ "checking " ++ u
-	liftIO $ Url.check u (keySize key)
+	headers <- getHttpHeaders
+	liftIO $ Url.check u headers (keySize key)

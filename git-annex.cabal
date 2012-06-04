@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120407
+Version: 3.20120522
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -26,25 +26,34 @@ Description:
  etc that are associated with annexed files but that benefit from full
  revision control.
 
+Flag S3
+  Description: Enable S3 support
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
-   pcre-light, extensible-exceptions, dataenc, SHA, process, hS3, json, HTTP,
-   base >= 4.5, base < 5, monad-control, transformers-base, lifted-base,
+   pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
+   base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
   Other-Modules: Utility.Touch
-  C-Sources: Utility/diskfree.c
+  C-Sources: Utility/libdiskfree.c
+  Extensions: CPP
 
-Executable git-annex-shell
-  Main-Is: git-annex-shell.hs
-  C-Sources: Utility/diskfree.c
+  if flag(S3)
+    Build-Depends: hS3
+    CPP-Options: -DWITH_S3
 
 Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs
-  Build-Depends: testpack, HUnit
-  C-Sources: Utility/diskfree.c
+  Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
+   unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
+   pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
+   base == 4.5.*, monad-control, transformers-base, lifted-base,
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
+  C-Sources: Utility/libdiskfree.c
+  Extensions: CPP
 
 source-repository head
   type: git

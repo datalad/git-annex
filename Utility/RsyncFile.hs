@@ -58,7 +58,7 @@ rsyncUrlIsShell s
 	| "rsync://" `isPrefixOf` s = False
 	| otherwise = go s
 	where
-		-- host:dir is rsync protocol, while host:dir is ssh/rsh
+		-- host::dir is rsync protocol, while host:dir is ssh/rsh
 		go [] = False
 		go (c:cs)
 			| c == '/' = False -- got to directory with no colon

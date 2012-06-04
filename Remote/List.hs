@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- git-annex remote list
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
@@ -18,7 +20,9 @@ import Config
 import Remote.Helper.Hooks
 
 import qualified Remote.Git
+#ifdef WITH_S3
 import qualified Remote.S3
+#endif
 import qualified Remote.Bup
 import qualified Remote.Directory
 import qualified Remote.Rsync
@@ -28,7 +32,9 @@ import qualified Remote.Hook
 remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
+#ifdef WITH_S3
 	, Remote.S3.remote
+#endif
 	, Remote.Bup.remote
 	, Remote.Directory.remote
 	, Remote.Rsync.remote

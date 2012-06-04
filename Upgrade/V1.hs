@@ -59,7 +59,7 @@ upgrade = do
 			updateSymlinks
 			moveLocationLogs
 	
-			Annex.Queue.flush True
+			Annex.Queue.flush
 			setVersion
 		)
 	
@@ -82,14 +82,14 @@ moveContent = do
 updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
-	top <- fromRepo Git.workTree
+	top <- fromRepo Git.repoPath
 	files <- inRepo $ LsFiles.inRepo [top]
 	forM_ files fixlink
 	where
 		fixlink f = do
 			r <- lookupFile1 f
 			case r of
-				Nothing -> return ()
+				Nothing -> noop
 				Just (k, _) -> do
 					link <- calcGitLink f k
 					liftIO $ removeFile f
@@ -236,4 +236,4 @@ stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.workTree repo </> stateDir
+gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir

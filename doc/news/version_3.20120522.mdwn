@@ -1,0 +1,7 @@
+git-annex 3.20120522 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Pass -a to cp even when it supports --reflink=auto, to preserve
+     permissions.
+   * Clean up handling of git directory and git worktree.
+   * Add support for core.worktree, and fix support for GIT\_WORK\_TREE and
+     GIT\_DIR."""]]

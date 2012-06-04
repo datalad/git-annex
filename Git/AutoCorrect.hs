@@ -34,7 +34,7 @@ fuzzymatches :: String -> (c -> String) -> [c] -> [c]
 fuzzymatches input showchoice choices = fst $ unzip $
 	sortBy comparecost $ filter similarEnough $ zip choices costs
         where
-                distance v = restrictedDamerauLevenshteinDistance gitEditCosts v input
+                distance = restrictedDamerauLevenshteinDistance gitEditCosts input
                 costs = map (distance . showchoice) choices
                 comparecost a b = compare (snd a) (snd b)
                 similarEnough (_, cst) = cst < similarityFloor

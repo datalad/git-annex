@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -40,6 +40,14 @@ withFilesNotInGit a params = do
 			force <- Annex.getState Annex.force
 			g <- gitRepo
 			liftIO $ (\p -> LsFiles.notInRepo force p g) l
+
+withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
+withPathContents a params = map a . concat <$> liftIO (mapM get params)
+	where
+		get p = ifM (isDirectory <$> getFileStatus p)
+			( map (\f -> (f, makeRelative p f)) <$> dirContentsRecursive p
+			, return [(p, takeFileName p)]
+			)
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = return [a params]

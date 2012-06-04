@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://peter-simons.myopenid.com/"
- ip="77.186.152.146"
- subject="How do you build the Crypto library with GHC 7.4.1?"
- date="2012-02-29T19:20:20Z"
- content="""
-`Crypto 4.2.4` doesn't seem to compile with GHC 7.4.1. How did you build that package?
-"""]]

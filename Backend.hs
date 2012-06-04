@@ -46,7 +46,7 @@ orderedList = do
 			l' <- (lookupBackendName name :) <$> standard
 			Annex.changeState $ \s -> s { Annex.backends = l' }
 			return l'
-		standard = parseBackendList <$> getConfig "annex.backends" ""
+		standard = parseBackendList <$> getConfig (annexConfig "backends") ""
 		parseBackendList [] = list
 		parseBackendList s = map lookupBackendName $ words s
 
@@ -75,16 +75,16 @@ genKey' (b:bs) file = do
  - by examining what the file symlinks to. -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
-	tl <- liftIO $ tryIO getsymlink
+	tl <- liftIO $ tryIO $ readSymbolicLink file
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
 	where
-		getsymlink = takeFileName <$> readSymbolicLink file
-		makekey l = maybe (return Nothing) (makeret l) (fileKey l)
+		makekey l = maybe (return Nothing) (makeret l) (fileKey $ takeFileName l)
 		makeret l k = let bname = keyBackendName k in
 			case maybeLookupBackendName bname of
-				Just backend -> return $ Just (k, backend)
+				Just backend -> do
+					return $ Just (k, backend)
 				Nothing -> do
 					when (isLinkToAnnex l) $ warning $
 						"skipping " ++ file ++

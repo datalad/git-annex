@@ -26,15 +26,14 @@ add command params files = do
 flushWhenFull :: Annex ()
 flushWhenFull = do
 	q <- get
-	when (Git.Queue.full q) $ flush False
+	when (Git.Queue.full q) flush
 
 {- Runs (and empties) the queue. -}
-flush :: Bool -> Annex ()
-flush silent = do
+flush :: Annex ()
+flush = do
 	q <- get
 	unless (0 == Git.Queue.size q) $ do
-		unless silent $
-			showSideAction "Recording state in git"
+		showStoringStateAction
 		q' <- inRepo $ Git.Queue.flush q
 		store q'
 
@@ -47,7 +46,7 @@ new = do
 	store q
 	return q
 	where
-		queuesize = readish <$> getConfig "annex.queuesize" ""
+		queuesize = readish <$> getConfig (annexConfig "queuesize") ""
 
 store :: Git.Queue.Queue -> Annex ()
 store q = changeState $ \s -> s { repoqueue = Just q }

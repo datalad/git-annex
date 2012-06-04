@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joey.kitenet.net/"
- nickname="joey"
- subject="comment 5"
- date="2011-05-19T16:10:35Z"
- content="""
-Hmm, I've upgraded to that version, but I see nothing in its changelog, commit log, code, or runtime behavior to indicate that it's producing stable gzip output.
-"""]]

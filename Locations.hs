@@ -85,28 +85,24 @@ gitAnnexLocation key r
 	| Git.repoIsLocalBare r =
 		{- Bare repositories default to hashDirLower for new
 		 - content, as it's more portable. -}
-		check (map inrepo $ annexLocations key)
+		check $ map inrepo $ annexLocations key
 	| otherwise =
 		{- Non-bare repositories only use hashDirMixed, so
 		 - don't need to do any work to check if the file is
 		 - present. -}
-		return $ inrepo ".git" </> annexLocation key hashDirMixed
+		return $ inrepo $ annexLocation key hashDirMixed
 	where
-		inrepo d = Git.workTree r </> d
+		inrepo d = Git.localGitDir r </> d
 		check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
 		check [] = error "internal"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
-gitAnnexDir r
-	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> annexDir
-	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> annexDir
+gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
-gitAnnexObjectDir r
-	| Git.repoIsLocalBare r = addTrailingPathSeparator $ Git.workTree r </> objectDir
-	| otherwise = addTrailingPathSeparator $ Git.workTree r </> ".git" </> objectDir
+gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 
 {- .git/annex/tmp/ is used for temp files -}
 gitAnnexTmpDir :: Git.Repo -> FilePath
@@ -124,7 +120,7 @@ gitAnnexBadDir r = addTrailingPathSeparator $ gitAnnexDir r </> "bad"
 gitAnnexBadLocation :: Key -> Git.Repo -> FilePath
 gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 
-{- .git/annex/*unused is used to number possibly unused keys -}
+{- .git/annex/foounused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
@@ -159,7 +155,9 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = ("/.git/" ++ objectDir) `isInfixOf` s
+isLinkToAnnex s = ("/" ++ d) `isInfixOf` s || d `isPrefixOf` s
+	where
+		d = ".git" </> objectDir
 
 {- Converts a key into a filename fragment without any directory.
  -

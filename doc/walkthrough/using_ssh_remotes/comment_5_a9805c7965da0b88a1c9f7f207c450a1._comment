@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaT0B6s9jQuMzQUYRVBgWqtO7BhT_ZSaE"
+ nickname="Fernando Seabra"
+ subject="comment 5"
+ date="2012-05-27T21:42:56Z"
+ content="""
+Hi,
+
+I guess the problem is with git-annex-shell. I tried to do 'git annex get file --from name_ssh_repo', and I got the following:
+
+bash: git-annex-shell: command not found; failed; exit code 127
+
+The same thing happens if I try to do 'git annex whereis'
+
+git-annex-shell is indeed installed. How can I make my shell recognize this command?
+
+Thanks a lot!
+"""]]

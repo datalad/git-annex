@@ -3,19 +3,19 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Crypto (
 	Cipher,
-	EncryptedCipher,
-	genCipher,
-	updateCipher,
+	KeyIds(..),
+	StorableCipher(..),
+	genEncryptedCipher,
+	genSharedCipher,
+	updateEncryptedCipher,
 	describeCipher,
-	storeCipher,
-	extractCipher,
 	decryptCipher,		
 	encryptKey,
 	withEncryptedHandle,
@@ -27,7 +27,6 @@ module Crypto (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.Map as M
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Control.Applicative
@@ -35,8 +34,6 @@ import Control.Applicative
 import Common.Annex
 import qualified Utility.Gpg as Gpg
 import Types.Key
-import Types.Remote
-import Utility.Base64
 import Types.Crypto
 
 {- The first half of a Cipher is used for HMAC; the remainder
@@ -60,59 +57,37 @@ cipherPassphrase (Cipher c) = drop cipherHalf c
 cipherHmac :: Cipher -> String
 cipherHmac (Cipher c) = take cipherHalf c
 
-{- Creates a new Cipher, encrypted as specified in the remote's configuration -}
-genCipher :: RemoteConfig -> IO EncryptedCipher
-genCipher c = do
-	ks <- configKeyIds c
-	random <- genrandom
+{- Creates a new Cipher, encrypted to the specificed key id. -}
+genEncryptedCipher :: String -> IO StorableCipher
+genEncryptedCipher keyid = do
+	ks <- Gpg.findPubKeys keyid
+	random <- Gpg.genRandom cipherSize
 	encryptCipher (Cipher random) ks
-	where
-		genrandom = Gpg.readStrict
-			-- Armor the random data, to avoid newlines,
-			-- since gpg only reads ciphers up to the first
-			-- newline.
-			[ Params "--gen-random --armor"
-			, Param $ show randomquality
-			, Param $ show cipherSize
-			]
-		-- 1 is /dev/urandom; 2 is /dev/random
-		randomquality = 1 :: Int
 
-{- Updates an existing Cipher, re-encrypting it to add KeyIds specified in
- - the remote's configuration. -}
-updateCipher :: RemoteConfig -> EncryptedCipher -> IO EncryptedCipher
-updateCipher c encipher@(EncryptedCipher _ ks) = do
-	ks' <- configKeyIds c
-	cipher <- decryptCipher c encipher
+{- Creates a new, shared Cipher. -}
+genSharedCipher :: IO StorableCipher
+genSharedCipher = SharedCipher <$> Gpg.genRandom cipherSize
+
+{- Updates an existing Cipher, re-encrypting it to add a keyid. -}
+updateEncryptedCipher :: String -> StorableCipher -> IO StorableCipher
+updateEncryptedCipher _ (SharedCipher _) = undefined
+updateEncryptedCipher keyid encipher@(EncryptedCipher _ ks) = do
+	ks' <- Gpg.findPubKeys keyid
+	cipher <- decryptCipher encipher
 	encryptCipher cipher (merge ks ks')
 	where
 		merge (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
 
-describeCipher :: EncryptedCipher -> String
+describeCipher :: StorableCipher -> String
+describeCipher (SharedCipher _) = "shared cipher"
 describeCipher (EncryptedCipher _ (KeyIds ks)) =
 	"with gpg " ++ keys ks ++ " " ++ unwords ks
 	where
 		keys [_] = "key"
 		keys _ = "keys"
 
-{- Stores an EncryptedCipher in a remote's configuration. -}
-storeCipher :: RemoteConfig -> EncryptedCipher -> RemoteConfig
-storeCipher c (EncryptedCipher t ks) = 
-	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
-	where
-		showkeys (KeyIds l) = join "," l
-
-{- Extracts an EncryptedCipher from a remote's configuration. -}
-extractCipher :: RemoteConfig -> Maybe EncryptedCipher
-extractCipher c = 
-	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
-		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
-		_ -> Nothing
-	where
-		readkeys = KeyIds . split ","
-
 {- Encrypts a Cipher to the specified KeyIds. -}
-encryptCipher :: Cipher -> KeyIds -> IO EncryptedCipher
+encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
 encryptCipher (Cipher c) (KeyIds ks) = do
 	let ks' = nub $ sort ks -- gpg complains about duplicate recipient keyids
 	encipher <- Gpg.pipeStrict (encrypt++recipients ks') c
@@ -126,9 +101,9 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 		force_recipients = Params "--no-encrypt-to --no-default-recipient"
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
-decryptCipher :: RemoteConfig -> EncryptedCipher -> IO Cipher
-decryptCipher _ (EncryptedCipher encipher _) = 
-	Cipher <$> Gpg.pipeStrict decrypt encipher
+decryptCipher :: StorableCipher -> IO Cipher
+decryptCipher (SharedCipher t) = return $ Cipher t
+decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict decrypt t
 	where
 		decrypt = [ Param "--decrypt" ]
 
@@ -163,15 +138,7 @@ withDecryptedContent = pass withDecryptedHandle
 
 pass :: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
       -> Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
-pass to c i a = to c i $ \h -> a =<< L.hGetContents h
-
-configKeyIds :: RemoteConfig -> IO KeyIds
-configKeyIds c = Gpg.findPubKeys $ configGet c "encryption"
-
-configGet :: RemoteConfig -> String -> String
-configGet c key = fromMaybe missing $ M.lookup key c
-	where
-		missing = error $ "missing " ++ key ++ " in remote config"
+pass to n s a = to n s $ \h -> a =<< L.hGetContents h
 
 hmacWithCipher :: Cipher -> String -> String
 hmacWithCipher c = hmacWithCipher' (cipherHmac c) 

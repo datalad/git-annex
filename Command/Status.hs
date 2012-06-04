@@ -30,6 +30,7 @@ import Logs.UUID
 import Logs.Trust
 import Remote
 import Config
+import Utility.Percentage
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -69,6 +70,7 @@ fast_stats =
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
 	, remote_list DeadTrusted "dead"
+	, disk_size
 	]
 slow_stats :: [Stat]
 slow_stats = 
@@ -78,7 +80,6 @@ slow_stats =
 	, local_annex_size
 	, known_annex_keys
 	, known_annex_size
-	, disk_size
 	, bloom_info
 	, backend_usage
 	]
@@ -108,12 +109,11 @@ nojson :: StatState String -> String -> StatState String
 nojson a _ = a
 
 showStat :: Stat -> StatState ()
-showStat s = calc =<< s
+showStat s = maybe noop calc =<< s
 	where
-		calc (Just (desc, a)) = do
+		calc (desc, a) = do
 			(lift . showHeader) desc
 			lift . showRaw =<< a
-		calc Nothing = return ()
 
 supported_backends :: Stat
 supported_backends = stat "supported backends" $ json unwords $
@@ -161,7 +161,7 @@ bloom_info = stat "bloom filter size" $ json id $ do
 	let note = aside $
 		if localkeys >= capacity
 		then "appears too small for this repository; adjust annex.bloomcapacity"
-		else "has room for " ++ show (capacity - localkeys) ++ " more local annex keys"
+		else showPercentage 1 (percentage capacity localkeys) ++ " full"
 
 	-- Two bloom filters are used at the same time, so double the size
 	-- of one.
@@ -176,8 +176,12 @@ disk_size = stat "available local disk space" $ json id $ lift $
 		<$> getDiskReserve
 		<*> inRepo (getDiskFree . gitAnnexDir)
 	where
-		calcfree reserve (Just have) =
-			roughSize storageUnits False $ nonneg $ have - reserve
+		calcfree reserve (Just have) = unwords
+			[ roughSize storageUnits False $ nonneg $ have - reserve
+			, "(+" ++ roughSize storageUnits False reserve
+			, "reserved)"
+			]
+			
 		calcfree _ _ = "unknown"
 		nonneg x
 			| x >= 0 = x

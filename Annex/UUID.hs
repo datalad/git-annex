@@ -16,7 +16,8 @@ module Annex.UUID (
 	getRepoUUID,
 	getUncachedUUID,
 	prepUUID,
-	genUUID
+	genUUID,
+	removeRepoUUID,
 ) where
 
 import Common.Annex
@@ -25,8 +26,8 @@ import qualified Git.Config
 import qualified Build.SysConfig as SysConfig
 import Config
 
-configkey :: String
-configkey = "annex.uuid"
+configkey :: ConfigKey
+configkey = annexConfig "uuid"
 
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
@@ -61,13 +62,18 @@ getRepoUUID r = do
 			when (g /= r) $ storeUUID cachekey u
 		cachekey = remoteConfig r "uuid"
 
+removeRepoUUID :: Annex ()
+removeRepoUUID = unsetConfig configkey
+
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID = toUUID . Git.Config.get configkey ""
+getUncachedUUID = toUUID . Git.Config.get key ""
+	where
+		(ConfigKey key) = configkey
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
 prepUUID = whenM ((==) NoUUID <$> getUUID) $
 	storeUUID configkey =<< liftIO genUUID
 
-storeUUID :: String -> UUID -> Annex ()
+storeUUID :: ConfigKey -> UUID -> Annex ()
 storeUUID configfield = setConfig configfield . fromUUID

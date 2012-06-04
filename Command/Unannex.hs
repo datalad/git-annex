@@ -10,7 +10,6 @@ module Command.Unannex where
 import Common.Annex
 import Command
 import qualified Annex
-import Utility.FileMode
 import Logs.Location
 import Annex.Content
 import qualified Git.Command
@@ -51,9 +50,8 @@ cleanup file key = do
 		( do
 			-- fast mode: hard link to content in annex
 			src <- inRepo $ gitAnnexLocation key
-			liftIO $ do
-				createLink src file
-				allowWrite file
+			liftIO $ createLink src file
+			thawContent file
 		, do
 			fromAnnex key file
 			logStatus key InfoMissing

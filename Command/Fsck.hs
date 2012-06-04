@@ -85,7 +85,7 @@ performRemote key file backend numcopies remote =
 			t <- fromRepo gitAnnexTmpDir
 			let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
 			liftIO $ createDirectoryIfMissing True t
-			let cleanup = liftIO $ catchIO (removeFile tmp) (const $ return ())
+			let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 			cleanup
 			cleanup `after` a tmp
 		getfile tmp =
@@ -166,10 +166,9 @@ verifyLocationLog key desc = do
 	-- Since we're checking that a key's file is present, throw
 	-- in a permission fixup here too.
 	when present $ do
-		f <- inRepo $ gitAnnexLocation key
-		liftIO $ do
-			preventWrite f
-			preventWrite (parentDir f)
+		file <- inRepo $ gitAnnexLocation key
+		freezeContent file
+		freezeContentDir file
 
 	u <- getUUID
 	verifyLocationLog' key desc present u (logChange key u)

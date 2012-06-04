@@ -6,8 +6,8 @@ See [[tips/using_Amazon_S3]] and
 
 ## configuration
 
-The standard environment variables `ANNEX_S3_ACCESS_KEY_ID` and 
-`ANNEX_S3_SECRET_ACCESS_KEY` are used to supply login credentials
+The standard environment variables `AWS_ACCESS_KEY_ID` and 
+`AWS_SECRET_ACCESS_KEY` are used to supply login credentials
 for Amazon. When encryption is enabled, they are stored in encrypted form
 by `git annex initremote`, so you do not need to keep the environment
 variables set after the initial initalization of the remote.

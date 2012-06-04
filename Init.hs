@@ -29,7 +29,9 @@ initialize mdescription = do
 	maybe (recordUUID u) (describeUUID u) mdescription
 
 uninitialize :: Annex ()
-uninitialize = gitPreCommitHookUnWrite
+uninitialize = do
+	gitPreCommitHookUnWrite
+	removeRepoUUID
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init
@@ -70,7 +72,7 @@ unlessBare :: Annex () -> Annex ()
 unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
 
 preCommitHook :: Annex FilePath
-preCommitHook = (</>) <$> fromRepo Git.gitDir <*> pure "hooks/pre-commit"
+preCommitHook = (</>) <$> fromRepo Git.localGitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = 

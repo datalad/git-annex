@@ -1,6 +1,6 @@
 {- running git commands
  -
- - Copyright 2010, 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,11 +18,12 @@ import Git.Types
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
-gitCommandLine params repo@(Repo { location = Dir _ } ) =
-	-- force use of specified repo via --git-dir and --work-tree
-	[ Param ("--git-dir=" ++ gitDir repo)
-	, Param ("--work-tree=" ++ workTree repo)
-	] ++ params
+gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ params
+	where
+		setdir = Param $ "--git-dir=" ++ gitdir l
+		settree = case worktree l of
+			Nothing -> []
+			Just t -> [Param $ "--work-tree=" ++ t]
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
@@ -79,5 +80,5 @@ pipeNullSplit params repo =
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes
-	r <- catchDefaultIO (getAnyProcessStatus False True) Nothing
-	maybe (return ()) (const reap) r
+	catchDefaultIO (getAnyProcessStatus False True) Nothing
+		>>= maybe noop (const reap)

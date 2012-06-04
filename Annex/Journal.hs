@@ -16,6 +16,7 @@ import System.IO.Binary
 import Common.Annex
 import Annex.Exception
 import qualified Git
+import Annex.Perms
 
 {- Records content for a file in the branch to the journal.
  -
@@ -23,22 +24,20 @@ import qualified Git
  - avoids git needing to rewrite the index after every change. -}
 setJournalFile :: FilePath -> String -> Annex ()
 setJournalFile file content = do
-	g <- gitRepo
-	liftIO $ doRedo (write g) $ do
-		createDirectoryIfMissing True $ gitAnnexJournalDir g
-		createDirectoryIfMissing True $ gitAnnexTmpDir g
-	where
-		-- journal file is written atomically
-		write g = do
-			let jfile = journalFile g file
-			let tmpfile = gitAnnexTmpDir g </> takeFileName jfile
-			writeBinaryFile tmpfile content
-			moveFile tmpfile jfile
+	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
+	createAnnexDirectory =<< fromRepo gitAnnexTmpDir
+	-- journal file is written atomically
+	jfile <- fromRepo $ journalFile file
+	tmp <- fromRepo gitAnnexTmpDir
+	let tmpfile = tmp </> takeFileName jfile
+	liftIO $ do
+		writeBinaryFile tmpfile content
+		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
 getJournalFile :: FilePath -> Annex (Maybe String)
 getJournalFile file = inRepo $ \g -> catchMaybeIO $
-	readFileStrict $ journalFile g file
+	readFileStrict $ journalFile file g
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: Annex [FilePath]
@@ -62,8 +61,8 @@ journalDirty = not . null <$> getJournalFiles
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
-journalFile :: Git.Repo -> FilePath -> FilePath
-journalFile repo file = gitAnnexJournalDir repo </> concatMap mangle file
+journalFile :: FilePath -> Git.Repo -> FilePath
+journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
 	where
 		mangle '/' = "_"
 		mangle '_' = "__"
@@ -79,16 +78,12 @@ fileJournal = replace "//" "_" . replace "_" "/"
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
 	file <- fromRepo gitAnnexJournalLock
-	bracketIO (lock file) unlock a
+	createAnnexDirectory $ takeDirectory file
+	mode <- annexFileMode
+	bracketIO (lock file mode) unlock a
 	where
-		lock file = do
-			l <- doRedo (createFile file stdFileMode) $
-				createDirectoryIfMissing True $ takeDirectory file
+		lock file mode = do
+			l <- noUmask mode $ createFile file mode
 			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 			return l
 		unlock = closeFd
-
-{- Runs an action, catching failure and running something to fix it up, and
- - retrying if necessary. -}
-doRedo :: IO a -> IO b -> IO a
-doRedo a b = catchIO a $ const $ b >> a

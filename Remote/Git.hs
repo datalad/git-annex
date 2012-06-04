@@ -94,7 +94,9 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.config r = return r -- already read
 	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
-	| Git.repoIsHttp r = store $ safely geturlconfig
+	| Git.repoIsHttp r = do
+		headers <- getHttpHeaders
+		store $ safely $ geturlconfig headers
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
@@ -109,8 +111,8 @@ tryGitConfigRead r
 			pOpen ReadFromPipe cmd (toCommand params) $
 				Git.Config.hRead r
 
-		geturlconfig = do
-			s <- Url.get (Git.repoLocation r ++ "/config")
+		geturlconfig headers = do
+			s <- Url.get (Git.repoLocation r ++ "/config") headers
 			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
@@ -136,16 +138,16 @@ tryGitConfigRead r
  -}
 inAnnex :: Git.Repo -> Key -> Annex (Either String Bool)
 inAnnex r key
-	| Git.repoIsHttp r = checkhttp
+	| Git.repoIsHttp r = checkhttp =<< getHttpHeaders
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
 	where
-		checkhttp = liftIO $ go undefined $ keyUrls r key
+		checkhttp headers = liftIO $ go undefined $ keyUrls r key
 			where
 				go e [] = return $ Left e
 				go _ (u:us) = do
 					res <- catchMsgIO $
-						Url.check u (keySize key)
+						Url.check u headers (keySize key)
 					case res of
 						Left e -> go e us
 						v -> return v
@@ -177,12 +179,8 @@ repoAvail r
  - monad using that repository. -}
 onLocal :: Git.Repo -> Annex a -> IO a
 onLocal r a = do
-	-- Avoid re-reading the repository's configuration if it was
-	-- already read.
-	state <- if M.null $ Git.config r
-		then Annex.new r
-		else return $ Annex.newState r
-	Annex.eval state $ do
+	s <- Annex.new r
+	Annex.eval s $ do
 		-- No need to update the branch; its data is not used
 		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
@@ -312,8 +310,9 @@ commitOnCleanup r a = go `after` a
 		go = Annex.addCleanup (Git.repoLocation r) cleanup
 		cleanup
 			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
-				Annex.Branch.commit "update"
-			| otherwise = do
+				doQuietSideAction $
+					Annex.Branch.commit "update"
+			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
 					git_annex_shell r "commit" []
 				-- Throw away stderr, since the remote may not
@@ -322,6 +321,4 @@ commitOnCleanup r a = go `after` a
 				let cmd = shellcmd ++ " "
 					++ unwords (map shellEscape $ toCommand shellparams)
 					++ ">/dev/null 2>/dev/null"
-				_ <- liftIO $
-					boolSystem "sh" [Param "-c", Param cmd]
-				return ()
+				liftIO $ boolSystem "sh" [Param "-c", Param cmd]

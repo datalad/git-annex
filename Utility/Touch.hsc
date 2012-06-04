@@ -106,9 +106,8 @@ touchBoth file atime mtime follow =
 	withFilePath file $ \f -> do
 		pokeArray ptr [atime, mtime]
 		r <- syscall f ptr
-		if (r /= 0)
-			then throwErrno "touchBoth"
-			else return ()
+		when (r /= 0) $
+			throwErrno "touchBoth"
 	where
 		syscall = if follow
 			then c_lutimes

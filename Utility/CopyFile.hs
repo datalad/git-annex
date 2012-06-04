@@ -1,16 +1,13 @@
 {- git-annex file copying
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Utility.CopyFile (copyFileExternal) where
 
-import System.Directory (doesFileExist, removeFile)
-import Control.Monad.IfElse
-
-import Utility.SafeCommand
+import Common
 import qualified Build.SysConfig as SysConfig
 
 {- The cp command is used, because I hate reinventing the wheel,
@@ -19,10 +16,10 @@ copyFileExternal :: FilePath -> FilePath -> IO Bool
 copyFileExternal src dest = do
 	whenM (doesFileExist dest) $
 		removeFile dest
-	boolSystem "cp" [params, File src, File dest]
+	boolSystem "cp" $ params ++ [File src, File dest]
 	where
-		params
-			| SysConfig.cp_reflink_auto = Params "--reflink=auto"
-			| SysConfig.cp_a = Params "-a"
-			| SysConfig.cp_p = Params "-p"
-			| otherwise = Params ""
+		params = map snd $ filter fst
+			[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
+			, (SysConfig.cp_a, Param "-a")
+			, (SysConfig.cp_p && not SysConfig.cp_a, Param "-p")
+			]

@@ -36,7 +36,7 @@ configSet u c = do
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = (simpleMap . parseLog parseConfig) <$> Annex.Branch.get remoteLog
+readRemoteLog = simpleMap . parseLog parseConfig <$> Annex.Branch.get remoteLog
 
 parseConfig :: String -> Maybe RemoteConfig
 parseConfig = Just . keyValToConfig . words
@@ -59,7 +59,7 @@ configToKeyVal m = map toword $ sort $ M.toList m
 		toword (k, v) = k ++ "=" ++ configEscape v
 
 configEscape :: String -> String
-configEscape = (>>= escape)
+configEscape = concatMap escape
 	where
 		escape c
 			| isSpace c || c `elem` "&" = "&" ++ show (ord c) ++ ";"

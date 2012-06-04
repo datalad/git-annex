@@ -46,19 +46,19 @@ dispatch fuzzyok allargs allcmds commonoptions header getgitrepo = do
 	where
 		err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
 		cmd = Prelude.head cmds
-		(cmds, name, args) = findCmd fuzzyok allargs allcmds err
+		(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
 		(flags, params) = getOptCmd args cmd commonoptions err
-		checkfuzzy = when (length cmds > 1) $
+		checkfuzzy = when fuzzy $
 			inRepo $ Git.AutoCorrect.prepare name cmdname cmds
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
  - Does fuzzy matching if necessary, which may result in multiple Commands. -}
-findCmd :: Bool -> Params -> [Command] -> (String -> String) -> ([Command], String, Params)
+findCmd :: Bool -> Params -> [Command] -> (String -> String) -> (Bool, [Command], String, Params)
 findCmd fuzzyok argv cmds err
 	| isNothing name = error $ err "missing command"
-	| not (null exactcmds) = (exactcmds, fromJust name, args)
-	| fuzzyok && not (null inexactcmds) = (inexactcmds, fromJust name, args)
+	| not (null exactcmds) = (False, exactcmds, fromJust name, args)
+	| fuzzyok && not (null inexactcmds) = (True, inexactcmds, fromJust name, args)
 	| otherwise = error $ err $ "unknown command " ++ fromJust name
 	where
 		(name, args) = findname argv []
@@ -88,7 +88,7 @@ tryRun = tryRun' 0
 tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
 tryRun' errnum _ cmd []
 	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
-	| otherwise = return ()
+	| otherwise = noop
 tryRun' errnum state cmd (a:as) = do
 	r <- run
 	handle $! r

@@ -61,6 +61,8 @@ paramUrl :: String
 paramUrl = "URL"
 paramNumber :: String
 paramNumber = "NUMBER"
+paramNumRange :: String
+paramNumRange = "NUM|RANGE"
 paramRemote :: String
 paramRemote = "REMOTE"
 paramGlob :: String

@@ -36,6 +36,7 @@ import qualified Git.UnionMerge
 import Git.HashObject
 import qualified Git.Index
 import Annex.CatFile
+import Annex.Perms
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -64,9 +65,7 @@ siblingBranches = inRepo $ Git.Ref.matchingUniq name
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = do
-	_ <- getBranch
-	return ()
+create = void $ getBranch
 
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref
@@ -308,6 +307,7 @@ setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
         lock <- fromRepo gitAnnexIndexLock
 	liftIO $ writeFile lock $ show ref ++ "\n"
+	setAnnexPerm lock
 
 {- Checks if there are uncommitted changes in the branch's index or journal. -}
 unCommitted :: Annex Bool
@@ -323,14 +323,14 @@ setUnCommitted = do
 	liftIO $ writeFile file "1"
 
 setCommitted :: Annex ()
-setCommitted = do
+setCommitted = void $ do
 	file <- fromRepo gitAnnexIndexDirty
-	_ <- liftIO $ tryIO $ removeFile file
-	return ()
+	liftIO $ tryIO $ removeFile file
 
 {- Stages the journal into the index. -}
 stageJournal :: Annex ()
 stageJournal = do
+	showStoringStateAction
 	fs <- getJournalFiles
 	g <- gitRepo
 	withIndex $ liftIO $ do

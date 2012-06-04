@@ -1,0 +1,8 @@
+The IA would find it useful to be able to control the http headers
+git-annex get, addurl, etc uses. This will allow setting cookies, for
+example.
+
+* annex-web-headers=blah 
+* Perhaps also annex-web-headers-command=blah
+
+[[done]]

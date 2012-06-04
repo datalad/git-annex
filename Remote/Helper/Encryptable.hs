@@ -14,20 +14,26 @@ import Types.Remote
 import Crypto
 import qualified Annex
 import Config
+import Utility.Base64
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is
- - updated to be accessible to an additional encryption key. -}
+ - updated to be accessible to an additional encryption key. Or the user
+ - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> Annex RemoteConfig
-encryptionSetup c =
-	case (M.lookup "encryption" c, extractCipher c) of
-		(Nothing, Nothing) -> error "Specify encryption=key or encryption=none"
-		(Just "none", Nothing) -> return c
-		(Just "none", Just _) -> error "Cannot change encryption type of existing remote."
-		(Nothing, Just _) -> return c
-		(Just _, Nothing) -> use "encryption setup" $ genCipher c
-		(Just _, Just v) -> use "encryption updated" $ updateCipher c v
+encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
+	(Nothing, Nothing) -> error "Specify encryption=key or encryption=none or encryption=shared"
+	(Just "none", Nothing) -> return c
+	(Nothing, Just _) -> return c
+	(Just "shared", Just (SharedCipher _)) -> return c
+	(Just "none", Just _) -> cannotchange
+	(Just "shared", Just (EncryptedCipher _ _)) -> cannotchange
+	(Just _, Just (SharedCipher _)) -> cannotchange
+	(Just "shared", Nothing) -> use "encryption setup" $ genSharedCipher
+	(Just keyid, Nothing) -> use "encryption setup" $ genEncryptedCipher keyid
+	(Just keyid, Just v) -> use "encryption updated" $ updateEncryptedCipher keyid v
 	where
+		cannotchange = error "Cannot change encryption type of existing remote."
 		use m a = do
 			cipher <- liftIO a
 			showNote $ m ++ " " ++ describeCipher cipher
@@ -78,7 +84,7 @@ remoteCipher c = go $ extractCipher c
 				Nothing -> decrypt encipher cache
 		decrypt encipher cache = do
 			showNote "gpg"
-			cipher <- liftIO $ decryptCipher c encipher
+			cipher <- liftIO $ decryptCipher encipher
 			Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 			return $ Just cipher
 
@@ -88,3 +94,21 @@ cipherKey Nothing _ = return Nothing
 cipherKey (Just c) k = maybe Nothing encrypt <$> remoteCipher c
 	where
 		encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)
+
+{- Stores an StorableCipher in a remote's configuration. -}
+storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
+storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
+storeCipher c (EncryptedCipher t ks) = 
+	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
+	where
+		showkeys (KeyIds l) = join "," l
+
+{- Extracts an StorableCipher from a remote's configuration. -}
+extractCipher :: RemoteConfig -> Maybe StorableCipher
+extractCipher c = 
+	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
+		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
+		(Just t, Nothing) -> Just $ SharedCipher (fromB64 t)
+		_ -> Nothing
+	where
+		readkeys = KeyIds . split ","

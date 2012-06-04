@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joey.kitenet.net/"
- nickname="joey"
- subject="comment 4"
- date="2012-03-05T21:32:00Z"
- content="""
-Hmm, I was able to produce exactly the same build error, and then I downloaded the patch I linked to before, and did
-`patch -p1 < debian/patches/class-constraints.diff` and that fixed the build nicely.
-"""]]

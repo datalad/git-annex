@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnoUOqs_lbuWyZBqyU6unHgUduJwDDgiKY"
+ nickname="Matt"
+ subject="comment 2"
+ date="2012-05-30T00:40:45Z"
+ content="""
+It's strange. I've done some testing on another machine, and this one, and the issue seems to be with adding only certain sub-directories of the git-annex directory. Would it cause an issue with git-annex if a sub-directory was a git repo?
+"""]]

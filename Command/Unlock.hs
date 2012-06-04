@@ -11,7 +11,6 @@ import Common.Annex
 import Command
 import Annex.Content
 import Utility.CopyFile
-import Utility.FileMode
 
 def :: [Command]
 def =
@@ -34,8 +33,7 @@ start file (key, _) = do
 perform :: FilePath -> Key -> CommandPerform
 perform dest key = do
 	unlessM (inAnnex key) $ error "content not present"
-	
-	checkDiskSpace key
+	unlessM (checkDiskSpace Nothing key 0) $ error "cannot unlock"
 
 	src <- inRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key
@@ -47,6 +45,6 @@ perform dest key = do
 			liftIO $ do
 				removeFile dest
 				moveFile tmpdest dest
-				allowWrite dest
+			thawContent dest
 			next $ return True
                 else error "copy failed!"

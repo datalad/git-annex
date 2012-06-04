@@ -1,4 +1,12 @@
-Unfortunately there is currently no git-annex rpm available for openSUSE; however it is possible to build it via cabal or from source as described on the [[install]] page.  Fulfilling the dependencies listed on that page should not be a problem, except for obtaining a suitable version of the Haskell library.
+Unfortunately there is currently no git-annex rpm available for openSUSE;
+however it is possible to build it via cabal or from source as described on
+the [[install]] page.  Fulfilling the dependencies listed on that page
+should not be a problem, except for obtaining a suitable version of the
+Haskell library.
 
-The last [official release of Haskell for openSUSE](https://build.opensuse.org/project/show?project=devel:languages:haskell) is quite old, and may not satisfy the dependencies needed by git-annex.  Fortunately [searching the openSUSE build service](http://software.opensuse.org/search?q=cabal&baseproject=openSUSE%3A11.4&lang=en&include_home=true&exclude_debug=true) reveals that Peter Trommler has built a [newer Haskell suite](https://build.opensuse.org/project/show?project=home%3Aptrommler%3Adevel%3Alanguages%3Ahaskell) based on ghc 7.2.
-To install this, simply click on the relevant "1-Click Install" link in the openSUSE build service search results.
+The last [official release of Haskell for openSUSE](https://build.opensuse.org/project/show?project=devel:languages:haskell)
+is quite old, and may not satisfy the dependencies needed by git-annex.
+Fortunately [searching the openSUSE build service](http://software.opensuse.org/search?q=cabal&baseproject=openSUSE%3A11.4&lang=en&include_home=true&exclude_debug=true)
+reveals that Peter Trommler has built a [newer Haskell suite](https://build.opensuse.org/project/show?project=home%3Aptrommler%3Adevel%3Alanguages%3Ahaskell)
+based on ghc 7.2. To install this, simply click on the relevant
+"1-Click Install" link in the openSUSE build service search results.

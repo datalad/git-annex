@@ -8,6 +8,7 @@
 * [[openSUSE]]
 * [[ArchLinux]]
 * [[NixOS]]
+* [[Gentoo]]
 * Windows: [[sorry, not possible yet|todo/windows_support]]
 
 ## Using cabal
@@ -15,6 +16,9 @@
 As a haskell package, git-annex can be installed using cabal. For example:
 
 	cabal install git-annex --bindir=$HOME/bin
+
+The above downloads the latest release. Alternatively, you can [[download]]
+it yourself and [[manually_build_with_cabal|install/cabal]].
 
 ## Installation by hand
 
@@ -32,7 +36,7 @@ To build and use git-annex, you will need:
   * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [HTTP](http://hackage.haskell.org/package/HTTP)
-  * [hS3](http://hackage.haskell.org/package/hS3)
+  * [hS3](http://hackage.haskell.org/package/hS3) (optional)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)

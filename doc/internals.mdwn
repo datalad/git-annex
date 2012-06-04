@@ -39,6 +39,9 @@ space and then the description, followed by a timestamp. Example:
 	e605dca6-446a-11e0-8b2a-002170d25c55 laptop timestamp=1317929189.157237s
 	26339d22-446b-11e0-9101-002170d25c55 usb disk timestamp=1317929330.769997s
 
+If there are multiple lines for the same uuid, the one with the most recent
+timestamp wins. git-annex union merges this and other files.
+
 ## `remotes.log`
 
 Holds persistent configuration settings for [[special_remotes]] such as
@@ -80,7 +83,7 @@ Example:
 These files are designed to be auto-merged using git's [[union merge driver|git-union-merge]].
 The timestamps allow the most recent information to be identified.
 
-## `remote/web/aaa/bbb/*.log`
+## `aaa/bbb/*.log.web`
 
 These log files record urls used by the
 [[web_special_remote|special_remotes/web]]. Their format is similar

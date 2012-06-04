@@ -74,14 +74,14 @@ hookEnv k f = Just $ fileenv f ++ keyenv
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
-	command <- getConfig hookname ""
+	command <- getConfig (annexConfig hookname) ""
 	if null command
 		then do
 			warning $ "missing configuration for " ++ hookname
 			return Nothing
 		else return $ Just command
 	where
-		hookname =  "annex." ++ hooktype ++ "-" ++ hook ++ "-hook"
+		hookname = hooktype ++ "-" ++ hook ++ "-hook"
 
 runHook :: String -> String -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
 runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype hook

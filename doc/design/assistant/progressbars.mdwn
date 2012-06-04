@@ -1,0 +1,14 @@
+Currently, git-annex takes a very lazy approch to displaying
+progress into. It just lets rsync or whatever display the progress
+for it, in the terminal.
+
+Something better is needed for the [[webapp]]. There needs to be a
+way for the web app to know what the current progress is of all transfers.
+
+To get this info for downloads, git-annex can watch the file as it arrives
+and use its size.
+
+TODO: What about uploads? Will i have to parse rsync's progresss output?
+Feed it via a named pipe? Ugh.
+
+This is one of those potentially hidden but time consuming problems.

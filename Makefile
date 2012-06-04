@@ -1,6 +1,6 @@
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3
 GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE
@@ -12,7 +12,7 @@ GHCMAKE=ghc $(GHCFLAGS) --make
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs
-clibs=Utility/diskfree.o
+clibs=Utility/libdiskfree.o
 
 all=$(bins) $(mans) docs
 

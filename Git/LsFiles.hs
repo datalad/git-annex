@@ -69,7 +69,7 @@ typeChanged' ps l repo = do
 	fs <- pipeNullSplit (prefix ++ ps ++ suffix) repo
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
-	let top = workTree repo
+	let top = repoPath repo
 	cwd <- getCurrentDirectory
 	return $ map (\f -> relPathDirToFile cwd $ top </> f) fs
 	where

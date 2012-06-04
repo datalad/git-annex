@@ -10,7 +10,7 @@ module Remote.Directory (remote) where
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as S
 import qualified Data.Map as M
-import Control.Exception (bracket)
+import qualified Control.Exception as E
 
 import Common.Annex
 import Types.Remote
@@ -22,6 +22,7 @@ import Remote.Helper.Encryptable
 import Crypto
 import Utility.DataUnits
 import Data.Int
+import Annex.Content
 
 remote :: RemoteType
 remote = RemoteType {
@@ -125,7 +126,7 @@ store :: FilePath -> ChunkSize -> Key -> Annex Bool
 store d chunksize k = do
 	src <- inRepo $ gitAnnexLocation k
 	metered k $ \meterupdate -> 
-		liftIO $ catchBoolIO $ storeHelper d chunksize k $ \dests ->
+		storeHelper d chunksize k $ \dests ->
 			case chunksize of
 				Nothing -> do
 					let dest = Prelude.head dests
@@ -140,7 +141,7 @@ storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted d chunksize (cipher, enck) k = do
 	src <- inRepo $ gitAnnexLocation k
 	metered k $ \meterupdate ->
-		liftIO $ catchBoolIO $ storeHelper d chunksize enck $ \dests ->
+		storeHelper d chunksize enck $ \dests ->
 			withEncryptedContent cipher (L.readFile src) $ \s ->
 				case chunksize of
 					Nothing -> do
@@ -165,7 +166,7 @@ storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath
 storeSplit' _ _ [] _ _ = error "ran out of dests"
 storeSplit' _ _  _ [] c = return $ reverse c
 storeSplit' meterupdate chunksize (d:dests) bs c = do
-	bs' <- bracket (openFile d WriteMode) hClose (feed chunksize bs)
+	bs' <- E.bracket (openFile d WriteMode) hClose (feed chunksize bs)
 	storeSplit' meterupdate chunksize dests bs' (d:c)
 	where
 		feed _ [] _ = return []
@@ -190,11 +191,12 @@ meteredWriteFile meterupdate dest b =
  - meter after each chunk. The feeder is called to get more chunks. -}
 meteredWriteFile' :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
 meteredWriteFile' meterupdate dest startstate feeder =
-	bracket (openFile dest WriteMode) hClose (feed startstate [])
+	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
 	where
 		feed state [] h = do
 			(state', cs) <- feeder state
-			if null cs then return () else feed state' cs h
+			unless (null cs) $
+				feed state' cs h
 		feed state (c:cs) h = do
 			S.hPut h c
 			meterupdate $ toInteger $ S.length c
@@ -207,31 +209,38 @@ meteredWriteFile' meterupdate dest startstate feeder =
  - The stored files are only put into their final place once storage is
  - complete.
  -}
-storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> IO Bool
-storeHelper d chunksize key a = do
-	let dir = parentDir desttemplate
-	createDirectoryIfMissing True dir
-	allowWrite dir
-	stored <- a tmpdests
-	forM_ stored $ \f -> do
-		let dest = detmpprefix f
-		renameFile f dest
-		preventWrite dest
-	when (chunksize /= Nothing) $ do
-		let chunkcount = chunkCount desttemplate
-		_ <- tryIO $ allowWrite chunkcount
-		writeFile chunkcount (show $ length stored)
-		preventWrite chunkcount
-	preventWrite dir
-	return (not $ null stored)
+storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
+storeHelper d chunksize key a = prep <&&> check <&&> go
 	where
 		desttemplate = Prelude.head $ locations d key
+		dir = parentDir desttemplate
 		tmpdests = case chunksize of
 			Nothing -> [desttemplate ++ tmpprefix]
 			Just _ -> map (++ tmpprefix) (chunkStream desttemplate)
 		tmpprefix = ".tmp"
 		detmpprefix f = take (length f - tmpprefixlen) f
 		tmpprefixlen = length tmpprefix
+		prep = liftIO $ catchBoolIO $ do
+			createDirectoryIfMissing True dir
+			allowWrite dir
+			return True
+		{- The size is not exactly known when encrypting the key;
+		 - this assumes that at least the size of the key is
+		 - needed as free space. -}
+		check = checkDiskSpace (Just dir) key 0
+		go = liftIO $ catchBoolIO $ do
+			stored <- a tmpdests
+			forM_ stored $ \f -> do
+				let dest = detmpprefix f
+				renameFile f dest
+				preventWrite dest
+			when (chunksize /= Nothing) $ do
+				let chunkcount = chunkCount desttemplate
+				_ <- tryIO $ allowWrite chunkcount
+				writeFile chunkcount (show $ length stored)
+				preventWrite chunkcount
+			preventWrite dir
+			return (not $ null stored)
 
 retrieve :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieve d chunksize k f = metered k $ \meterupdate ->

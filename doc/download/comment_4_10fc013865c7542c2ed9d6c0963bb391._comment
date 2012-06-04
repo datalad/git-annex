@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnOvt3TwSSDOLnoVzDNbOP1qO9OmNH5s0s"
- nickname="Fraser"
- subject="gitweb supplies --no-name as of 1.7.5.1"
- date="2011-05-19T08:19:02Z"
- content="""
-git v1.7.5.1 fixes the gitweb gzip issue.  If the git instance is updated we
-can have stable distributions (and I can finally write a FreeBSD port ^_^)
-"""]]

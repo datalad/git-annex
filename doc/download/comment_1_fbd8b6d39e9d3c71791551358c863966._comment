@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://peter-simons.myopenid.com/"
- ip="84.189.2.244"
- subject="Please provide stable tarballs or zipfiles"
- date="2011-03-22T13:06:58Z"
- content="""
-I'm trying to package git annex for ArchLinux and NixOS. That task would be a *lot* easier, if there were proper release archives available for download. The Gitweb site offers to create snapshot tarballs on the fly, but those tarballs have a different SHA hash every time they're generated, so they cannot be used for the purposes of a distribution. A simple solution for this problem would be to enable snapshots in zip format (because zip files look the same every time they're generated).
-"""]]

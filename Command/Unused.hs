@@ -19,9 +19,9 @@ import Control.Monad.ST
 
 import Common.Annex
 import Command
+import Logs.Unused
 import Annex.Content
 import Utility.FileMode
-import Utility.TempFile
 import Logs.Location
 import Config
 import qualified Annex
@@ -91,18 +91,12 @@ check file msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $ showLongNote $ msg unusedlist
-	writeUnusedFile file unusedlist
+	writeUnusedLog file unusedlist
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]
 number _ [] = []
 number n (x:xs) = (n+1, x) : number (n+1) xs
-
-writeUnusedFile :: FilePath -> [(Int, Key)] -> Annex ()
-writeUnusedFile prefix l = do
-	logfile <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ viaTmp writeFile logfile $
-		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
 
 table :: [(Int, Key)] -> [String]
 table l = "  NUMBER  KEY" : map cols l
@@ -189,10 +183,10 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  -}
 bloomCapacity :: Annex Int
 bloomCapacity = fromMaybe 500000 . readish
-	<$> getConfig "annex.bloomcapacity" ""
+	<$> getConfig (annexConfig "bloomcapacity") ""
 bloomAccuracy :: Annex Int
 bloomAccuracy = fromMaybe 1000 . readish
-	<$> getConfig "annex.bloomaccuracy" ""
+	<$> getConfig (annexConfig "bloomaccuracy") ""
 bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity
@@ -237,7 +231,7 @@ withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
 withKeysReferenced' initial a = go initial =<< files
 	where
 		files = do
-			top <- fromRepo Git.workTree
+			top <- fromRepo Git.repoPath
 			inRepo $ LsFiles.inRepo [top]
 		go v [] = return v
 		go v (f:fs) = do
@@ -268,7 +262,7 @@ withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
 	go =<< inRepo (LsTree.lsTree ref)
 	where
-		go [] = return ()
+		go [] = noop
 		go (l:ls)
 			| isSymLink (LsTree.mode l) = do
 				content <- L.decodeUtf8 <$> catFile ref (LsTree.file l)

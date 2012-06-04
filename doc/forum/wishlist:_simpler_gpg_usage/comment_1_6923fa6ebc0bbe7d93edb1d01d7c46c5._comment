@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2012-04-29T01:41:57Z"
+ content="""
+Thinking about this more, I think minimally git-annex could support a
+
+    remote.<name>.gpg-options
+
+or
+
+    remote.<name>.gpg-keyring
+
+for options to be passed to gpg.  I'm not sure how automatically setting it to $ANNEX_ROOT/.gnupg/.. would work.
+
+
+I need to read the encryption code to fully understand it, but I also wonder if there is not also a way to just bypass gpg entirely and store the remote-encryption keys locally in plain text.
+"""]]

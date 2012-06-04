@@ -1,0 +1,4 @@
+Hi,
+Is there any way I can move or copy file content of older version without doing checkout to that version, by passing commit hash as parameter in move command itself? 
+
+Thank you
