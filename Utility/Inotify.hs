@@ -98,15 +98,24 @@ watchDir i dir ignored add addsymlink del deldir
 		go (MovedIn { filePath = f }) = walk f
 		go (MovedOut { isDirectory = True, filePath = d }) = deldir <@> d
 		go (MovedOut { filePath = f }) = del <@> f
-		go (Deleted { isDirectory = True, filePath = d }) = deldir <@> d
-		go (Deleted { filePath = f }) = del <@> f
+		go (Deleted { isDirectory = True, filePath = d }) =
+			notexist d $ deldir <@> d
+		go (Deleted { filePath = f }) =
+			notexist f $ del <@> f
 		go _ = noop
 
 		Just a <@> f = a $ indir f
 		Nothing <@> _ = noop
 
 		indir f = dir </> f
+
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
+
+		-- Check that a file or directory does not exist.
+		-- This is used when there could be a spurious deletion
+		-- event for an item in a directory that has been moved away
+		-- but is still being watched.
+		notexist f = unlessM (filetype (const True) f)
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
