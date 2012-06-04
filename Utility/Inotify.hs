@@ -10,12 +10,10 @@
 module Utility.Inotify where
 
 import Common hiding (isDirectory)
+import Utility.ThreadLock
+
 import System.INotify
 import qualified System.Posix.Files as Files
-import System.Posix.Terminal
-import Control.Concurrent.MVar
-import System.Posix.Signals
-import Control.Exception as E
 
 type Hook = Maybe (FilePath -> IO ())
 
@@ -53,10 +51,10 @@ watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook ->
 watchDir i dir ignored add addsymlink del deldir
 	| ignored dir = noop
 	| otherwise = do
-		mvar <- newEmptyMVar
+		lock <- newLock
 		void $ addWatch i watchevents dir $ \event ->
-			serialized mvar (void $ go event)
-		serialized mvar $
+			withLock lock (void $ go event)
+		withLock lock $
 			mapM_ walk =<< filter (not . dirCruft) <$>
 				getDirectoryContents dir
 	where
@@ -120,23 +118,3 @@ watchDir i dir ignored add addsymlink del deldir
 		indir f = dir </> f
 
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
-
-{- Uses an MVar to serialize an action, so that only one thread at a time
- - runs it. -}
-serialized :: MVar () -> IO () -> IO ()
-serialized mvar a = void $ do
-	putMVar mvar () -- blocks if action already running
-	_ <- E.try a :: IO (Either E.SomeException ())
-	takeMVar mvar -- allow next action to run
-
-{- Pauses the main thread, letting children run until program termination. -}
-waitForTermination :: IO ()
-waitForTermination = do
-	mvar <- newEmptyMVar
-	check softwareTermination mvar
-	whenM (queryTerminal stdInput) $
-		check keyboardSignal mvar
-	takeMVar mvar
-	where
-		check sig mvar = void $
-			installHandler sig (CatchOnce $ putMVar mvar ()) Nothing

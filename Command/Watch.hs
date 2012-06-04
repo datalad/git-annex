@@ -11,6 +11,7 @@ import CmdLine
 import Common.Annex
 import Command
 import Utility.Inotify
+import Utility.ThreadLock
 import qualified Annex
 import qualified Command.Add as Add
 import qualified Git.Command
