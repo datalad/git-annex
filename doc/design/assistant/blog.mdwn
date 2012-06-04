@@ -1,1 +1,1 @@
-See [[assistant]].
+[[!inline pages="page(design/assistant/blog/*)" show=30]]

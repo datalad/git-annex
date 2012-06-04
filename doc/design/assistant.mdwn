@@ -21,7 +21,5 @@ Feel free to chip in with comments! --[[Joey]]
 
 ## blog
 
-I'll be blogging about my progress here on a semi-daily basis. Follow
-along!
-
-[[!inline pages="page(design/assistant/blog/*)" show=30]]
+I'll be blogging about my progress in the [[blog]] on a semi-daily basis.
+Follow along!
