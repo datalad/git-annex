@@ -8,7 +8,7 @@ really useful, it needs to:
 - on startup, fix the symlinks for any renamed links **done**
 - on startup, stage any files that have been deleted since last run
   (seems to require a `git commit -a` on startup, or at least a
-  `git add --update`, which will notice deleted files)
+  `git add --update`, which will notice deleted files) **done**
 - notice new files, and git annex add **done**
 - notice renamed files, auto-fix the symlink, and stage the new file location
   **done**
@@ -18,6 +18,7 @@ really useful, it needs to:
   contents from the index **done**
 - notice deleted files and stage the deletion
   (tricky; there's a race with add since it replaces the file with a symlink..)
+  **done**
 - periodically auto-commit staged changes (avoid autocommitting when
   lots of changes are coming in)
 - tunable delays before adding new files, etc
@@ -32,9 +33,6 @@ really useful, it needs to:
   unannex its contents.
 - Gracefully handle when the default limit of 8192 inotified directories
   is exceeded. This can be tuned by root, so help the user fix it.
-
-Also to do:
-
 - Support OSes other than Linux; it only uses inotify currently.
   OSX and FreeBSD use the same mechanism, and there is a Haskell interface
   for it,
