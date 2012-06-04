@@ -62,7 +62,7 @@ run startstate a f = do
  - The git queue is immediately flushed, so the file is added to git
  - now, rather than later (when it may have been already moved or deleted!) -}
 onAdd :: FilePath -> Annex ()
-onAdd file = do
+onAdd file = doQuietSideAction $ do
 	void $ doCommand $ do
 		showStart "add" file
 		next $ Add.perform file
