@@ -28,6 +28,8 @@ really useful, it needs to:
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
+- Possibly, when a directory is moved out of the annex location,
+  unannex its contents.
 
 Also to do:
 
