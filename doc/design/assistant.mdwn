@@ -18,3 +18,8 @@ Feel free to chip in with comments! --[[Joey]]
 * [[desymlink]]
 * [[deltas]]
 * In my overfunded nighmares: [[Windows]]
+
+## blog
+
+I'll be blogging about my progress in the [[blog]] on a semi-daily basis.
+Follow along!
