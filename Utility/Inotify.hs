@@ -83,8 +83,8 @@ watchDir i dir ignored add addsymlink del deldir
 		-- Ignore creation events for regular files, which won't be
 		-- done being written when initially created, but handle for
 		-- directories and symlinks.
-		go (Created { isDirectory = True, filePath = subdir }) = recurse $ indir subdir
-		go (Created { isDirectory = False, filePath = f })
+		go (Created { isDirectory = isd, filePath = f })
+			| isd = recurse $ indir f
 			| isJust addsymlink =
 				whenM (filetype Files.isSymbolicLink f) $
 					addsymlink <@> f
@@ -96,12 +96,18 @@ watchDir i dir ignored add addsymlink del deldir
 		-- When a file or directory is moved in, walk it to add new
 		-- stuff.
 		go (MovedIn { filePath = f }) = walk f
-		go (MovedOut { isDirectory = True, filePath = d }) = deldir <@> d
-		go (MovedOut { filePath = f }) = del <@> f
-		go (Deleted { isDirectory = True, filePath = d }) =
-			notexist d $ deldir <@> d
-		go (Deleted { filePath = f }) =
-			notexist f $ del <@> f
+		go (MovedOut { isDirectory = isd, filePath = f })
+			| isd = deldir <@> f
+			| otherwise = del <@> f
+		-- Verify that the deleted item really doesn't exist,
+		-- since there can be spurious deletion events for items
+		-- in a directory that has been moved out, but is still
+		-- being watched.
+		go (Deleted { isDirectory = isd, filePath = f })
+			| isd = guarded $ deldir <@> f
+			| otherwise = guarded $ del <@> f
+			where
+				guarded = unlessM (filetype (const True) f)
 		go _ = noop
 
 		Just a <@> f = a $ indir f
@@ -110,12 +116,6 @@ watchDir i dir ignored add addsymlink del deldir
 		indir f = dir </> f
 
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
-
-		-- Check that a file or directory does not exist.
-		-- This is used when there could be a spurious deletion
-		-- event for an item in a directory that has been moved away
-		-- but is still being watched.
-		notexist f = unlessM (filetype (const True) f)
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
