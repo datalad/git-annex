@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-06-04T20:02:23Z"
+ content="""
+Seems you built it using `make` .. could you try instead building with cabal, ie run `cabal install git-annex` or `cabal build` in the source tree. I think cabal will probably do the right thing.
+
+I could fix the Makefile, I suppose. What does this say: `ghc -e 'print System.Info.arch'
+"""]]
