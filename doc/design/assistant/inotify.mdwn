@@ -8,7 +8,7 @@ really useful, it needs to:
 - on startup, fix the symlinks for any renamed links **done**
 - on startup, stage any files that have been deleted since last run
   (seems to require a `git commit -a` on startup, or at least a
-  `git add --update`, which will notice deleted files)
+  `git add --update`, which will notice deleted files) **done**
 - notice new files, and git annex add **done**
 - notice renamed files, auto-fix the symlink, and stage the new file location
   **done**
@@ -18,9 +18,13 @@ really useful, it needs to:
   contents from the index **done**
 - notice deleted files and stage the deletion
   (tricky; there's a race with add since it replaces the file with a symlink..)
+  **done**
 - periodically auto-commit staged changes (avoid autocommitting when
   lots of changes are coming in)
 - tunable delays before adding new files, etc
+- Coleasce related add/rm events. See commit
+  cbdaccd44aa8f0ca30afba23fc06dd244c242075 for some details of the problems
+  with doing this.
 - don't annex `.gitignore` and `.gitattributes` files, but do auto-stage
   changes to them
 - configurable option to only annex files meeting certian size or
@@ -32,9 +36,37 @@ really useful, it needs to:
   unannex its contents.
 - Gracefully handle when the default limit of 8192 inotified directories
   is exceeded. This can be tuned by root, so help the user fix it.
-
-Also to do:
-
 - Support OSes other than Linux; it only uses inotify currently.
   OSX and FreeBSD use the same mechanism, and there is a Haskell interface
   for it,
+
+## the races
+
+Many races need to be dealt with by this code. Here are some of them.
+
+* File is added and then removed before the annex add finishes.
+  
+  Currently unfixed; The annex add re-adds the file as a symlink and then
+  the remove event does nothing since the file exists.
+
+* File is added and then replaced with another file before the annex add
+  makes its symlink.
+
+  Currently unfixed; The annex add will fail creating its symlink since
+  the file exists. The second add event will add the new file.
+
+* File is added and then replaced with another file before the annex add
+  moves its content into the annex.
+
+  Currently unfixed; The new content will be moved to the annex under the
+  old checksum, and fsck will later catch this inconsistency.
+
+* File is removed and then re-added before the removal event finishes.
+
+  Not a problem; The removal event removes the old file from the index, and
+  the add event adds the new one.
+
+* File is removed and then re-added before the removal event starts.
+
+  Not a problem; The removal event does nothing since the file exists,
+  and the add event replaces it in git with the new one.
