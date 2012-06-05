@@ -8,6 +8,7 @@ git-annex (3.20120523) UNRELEASED; urgency=low
     unsupported backend.
   * Require that the SHA256 backend can be used when building, since it's the
     default.
+  * Preserve parent environment when running hooks of the hook special remote.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 27 May 2012 20:55:29 -0400
 
