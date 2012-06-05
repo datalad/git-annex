@@ -14,6 +14,7 @@ module Annex (
 	newState,
 	run,
 	eval,
+	exec,
 	getState,
 	changeState,
 	setFlag,
@@ -134,6 +135,8 @@ run :: AnnexState -> Annex a -> IO (a, AnnexState)
 run s a = runStateT (runAnnex a) s
 eval :: AnnexState -> Annex a -> IO a
 eval s a = evalStateT (runAnnex a) s
+exec :: AnnexState -> Annex a -> IO AnnexState
+exec s a = execStateT (runAnnex a) s
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()

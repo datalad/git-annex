@@ -5,14 +5,16 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Command.Watch where
 
-import CmdLine
 import Common.Annex
 import Command
 import Utility.Inotify
 import Utility.ThreadLock
 import qualified Annex
+import qualified Annex.Queue
 import qualified Command.Add as Add
 import qualified Git.Command
 import qualified Backend
@@ -20,6 +22,7 @@ import Annex.Content
 
 import Control.Exception as E
 import System.INotify
+import Control.Concurrent.MVar
 
 def :: [Command]
 def = [command "watch" paramPaths seek "watch for changes"]
@@ -33,8 +36,9 @@ start = notBareRepo $ do
 	showAction "scanning"
 	inRepo $ Git.Command.run "add" [Param "--update"]
 	state <- Annex.getState id
+	mvar <- liftIO $ newMVar state
 	next $ next $ liftIO $ withINotify $ \i -> do
-		let hook a = Just $ run state a
+		let hook a = Just $ runAnnex mvar a
 		watchDir i "." (not . gitdir)
 			(hook onAdd) (hook onAddSymlink)
 			(hook onDel) (hook onDelDir)
@@ -44,31 +48,33 @@ start = notBareRepo $ do
 	where
 		gitdir dir = takeFileName dir /= ".git"
 
-{- Inotify events are run in separate threads, and so each is a
- - self-contained Annex monad.
+{- Runs a handler, inside the Annex monad.
  -
- - Exceptions by the handlers are ignored,
- - otherwise a whole watcher thread could be crashed.
+ - Exceptions by the handlers are ignored, otherwise a whole watcher
+ - thread could be crashed.
  -}
-run :: Annex.AnnexState -> (FilePath -> Annex a) -> FilePath -> IO ()
-run startstate a f = do
-	r <- E.try go :: IO (Either E.SomeException ())
+runAnnex :: MVar Annex.AnnexState -> (FilePath -> Annex a) -> FilePath -> IO ()
+runAnnex mvar a f = do
+	startstate <- takeMVar mvar
+	r <- E.try (go startstate) :: IO (Either E.SomeException Annex.AnnexState)
 	case r of
-		Left e -> putStrLn (show e)
-		_ -> return ()
+		Left e -> do
+			putStrLn (show e)
+			putMVar mvar startstate
+		Right !newstate ->
+			putMVar mvar newstate
 	where
-		go = Annex.eval startstate $ do
-			_ <- a f
-			_ <- shutdown True
-			return ()
+		go state = Annex.exec state $ a f
 
 {- Adding a file is the same as git-annex add.
  - The git queue is immediately flushed, so the file is added to git
  - now, rather than later (when it may have been already moved or deleted!) -}
 onAdd :: FilePath -> Annex ()
-onAdd file = void $ doCommand $ do
-	showStart "add" file
-	next $ Add.perform file
+onAdd file = do
+	void $ doCommand $ do
+		showStart "add" file
+		next $ Add.perform file
+	Annex.Queue.flush
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -92,7 +98,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 
 onDel :: FilePath -> Annex ()
 onDel file = inRepo $ Git.Command.run "rm"
-	[Params "--quiet --cached --ignore-unmatch --", File file]
+	[Params "--quiet --cached --ignore-unmatch --", File file] 
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. -}
