@@ -44,16 +44,28 @@ really useful, it needs to:
 
 Many races need to be dealt with by this code. Here are some of them.
 
-* File is added and then removed before the annex add finishes.
+* File is added and then removed before the add event starts.
+
+  Not a problem; The add event does nothing since the file is not present.
+
+* File is added and then removed before the add event has finished
+  processing it.
+  
+  Minor problem; When the add's processing of the file (checksum and so
+  on) fails due to it going away, there is an ugly error message, but
+  things are otherwise ok.
+
+* File is added and then removed before the add event finishes.
   
   Currently unfixed; The annex add re-adds the file as a symlink and then
-  the remove event does nothing since the file exists.
+  the remove event does nothing since the symlink exists.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
 
-  Currently unfixed; The annex add will fail creating its symlink since
-  the file exists. The second add event will add the new file.
+  Minor problem; The annex add will fail creating its symlink since
+  the file exists. There is an ugly error message, but the second add
+  event will add the new file.
 
 * File is added and then replaced with another file before the annex add
   moves its content into the annex.
@@ -61,12 +73,22 @@ Many races need to be dealt with by this code. Here are some of them.
   Currently unfixed; The new content will be moved to the annex under the
   old checksum, and fsck will later catch this inconsistency.
 
-* File is removed and then re-added before the removal event finishes.
+  Possible fix: Move content someplace before doing checksumming.
 
-  Not a problem; The removal event removes the old file from the index, and
-  the add event adds the new one.
+* File is added and then replaced with another file before the annex add
+  stages the symlink in git.
+
+  Currently unfixed; `git add` will be run on the new file, which is
+  not at all good when it's big. Could be dealt with by using `git
+  update-index` to manually put the symlink into the index without git
+  looking at what's currently on disk.
 
 * File is removed and then re-added before the removal event starts.
 
   Not a problem; The removal event does nothing since the file exists,
   and the add event replaces it in git with the new one.
+
+* File is removed and then re-added before the removal event finishes.
+
+  Not a problem; The removal event removes the old file from the index, and
+  the add event adds the new one.
