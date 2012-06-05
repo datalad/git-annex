@@ -51,34 +51,29 @@ Many races need to be dealt with by this code. Here are some of them.
 * File is added and then removed before the add event has finished
   processing it.
   
-  Minor problem; When the add's processing of the file (checksum and so
+  **Minor problem**; When the add's processing of the file (checksum and so
   on) fails due to it going away, there is an ugly error message, but
   things are otherwise ok.
-
-* File is added and then removed before the add event finishes.
-  
-  Currently unfixed; The annex add re-adds the file as a symlink and then
-  the remove event does nothing since the symlink exists.
-
-* File is added and then replaced with another file before the annex add
-  makes its symlink.
-
-  Minor problem; The annex add will fail creating its symlink since
-  the file exists. There is an ugly error message, but the second add
-  event will add the new file.
 
 * File is added and then replaced with another file before the annex add
   moves its content into the annex.
 
-  Currently unfixed; The new content will be moved to the annex under the
+  **Currently unfixed**; The new content will be moved to the annex under the
   old checksum, and fsck will later catch this inconsistency.
 
   Possible fix: Move content someplace before doing checksumming.
 
 * File is added and then replaced with another file before the annex add
+  makes its symlink.
+
+  **Minor problem**; The annex add will fail creating its symlink since
+  the file exists. There is an ugly error message, but the second add
+  event will add the new file.
+
+* File is added and then replaced with another file before the annex add
   stages the symlink in git.
 
-  Currently unfixed; `git add` will be run on the new file, which is
+  **Currently unfixed**; `git add` will be run on the new file, which is
   not at all good when it's big. Could be dealt with by using `git
   update-index` to manually put the symlink into the index without git
   looking at what's currently on disk.
@@ -86,7 +81,7 @@ Many races need to be dealt with by this code. Here are some of them.
 * Link is moved, fixed link is written by fix event, but then that is
   removed by the user and replaced with a file before the event finishes.
 
-  Currently unfixed: `git add` will be run on the file. Basically same
+  **Currently unfixed**: `git add` will be run on the file. Basically same
   effect as previous race above.
 
 * File is removed and then re-added before the removal event starts.
