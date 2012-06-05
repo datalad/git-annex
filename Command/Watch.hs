@@ -95,7 +95,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 
 onDel :: FilePath -> Annex ()
 onDel file = inRepo $ Git.Command.run "rm"
-	[Params "--quiet --cached --", File file]
+	[Params "--quiet --cached --ignore-unmatch --", File file]
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. -}
