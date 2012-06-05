@@ -22,6 +22,9 @@ really useful, it needs to:
 - periodically auto-commit staged changes (avoid autocommitting when
   lots of changes are coming in)
 - tunable delays before adding new files, etc
+- Coleasce related add/rm events. See commit
+  cbdaccd44aa8f0ca30afba23fc06dd244c242075 for some details of the problems
+  with doing this.
 - don't annex `.gitignore` and `.gitattributes` files, but do auto-stage
   changes to them
 - configurable option to only annex files meeting certian size or
