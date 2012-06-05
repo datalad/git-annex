@@ -1,4 +1,4 @@
-git-annex (3.20120522) unstable; urgency=low
+git-annex (3.20120522~bpo60+1) squeeze-backports; urgency=low
 
   * Pass -a to cp even when it supports --reflink=auto, to preserve
     permissions.
