@@ -75,6 +75,14 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Possible fix: Move content someplace before doing checksumming.
 
+* File is added and then replaced with another file before the annex add
+  stages the symlink in git.
+
+  Currently unfixed; `git add` will be run on the new file, which is
+  not at all good when it's big. Could be dealt with by using `git
+  update-index` to manually put the symlink into the index without git
+  looking at what's currently on disk.
+
 * File is removed and then re-added before the removal event starts.
 
   Not a problem; The removal event does nothing since the file exists,
