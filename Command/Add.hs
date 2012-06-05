@@ -12,7 +12,7 @@ import Annex.Exception
 import Command
 import qualified Annex
 import qualified Annex.Queue
-import qualified Backend
+import Backend
 import Logs.Location
 import Annex.Content
 import Utility.Touch
@@ -46,8 +46,9 @@ start file = notBareRepo $ ifAnnexed file fixup add
 
 perform :: FilePath -> CommandPerform
 perform file = do
-	backend <- Backend.chooseBackend file
-	Backend.genKey file backend >>= go
+	let source = KeySource { keyFilename = file, contentLocation = file}
+	backend <- chooseBackend file
+	genKey source backend >>= go
 	where
 		go Nothing = stop
 		go (Just (key, _)) = do

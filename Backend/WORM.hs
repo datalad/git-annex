@@ -15,11 +15,11 @@ backends :: [Backend]
 backends = [backend]
 
 backend :: Backend
-backend = Backend {
-	name = "WORM",
-	getKey = keyValue,
-	fsckKey = Nothing
-}
+backend = Backend
+	{ name = "WORM"
+	, getKey = keyValue
+	, fsckKey = Nothing
+	}
 
 {- The key includes the file size, modification time, and the
  - basename of the filename.
@@ -28,11 +28,11 @@ backend = Backend {
  - while also allowing a file to be moved around while retaining the
  - same key.
  -}
-keyValue :: FilePath -> Annex (Maybe Key)
-keyValue file = do
-	stat <- liftIO $ getFileStatus file
+keyValue :: KeySource -> Annex (Maybe Key)
+keyValue source = do
+	stat <- liftIO $ getFileStatus $ contentLocation source
 	return $ Just Key {
-		keyName = takeFileName file,
+		keyName = takeFileName $ keyFilename source,
 		keyBackendName = name backend,
 		keySize = Just $ fromIntegral $ fileSize stat,
 		keyMtime = Just $ modificationTime stat

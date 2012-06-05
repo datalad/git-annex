@@ -6,6 +6,7 @@
  -}
 
 module Backend (
+	B.KeySource(..),
 	list,
 	orderedList,
 	genKey,
@@ -51,18 +52,19 @@ orderedList = do
 		parseBackendList s = map lookupBackendName $ words s
 
 {- Generates a key for a file, trying each backend in turn until one
- - accepts it. -}
-genKey :: FilePath -> Maybe Backend -> Annex (Maybe (Key, Backend))
-genKey file trybackend = do
+ - accepts it.
+ -}
+genKey :: B.KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
+genKey source trybackend = do
 	bs <- orderedList
 	let bs' = maybe bs (: bs) trybackend
-	genKey' bs' file
-genKey' :: [Backend] -> FilePath -> Annex (Maybe (Key, Backend))
+	genKey' bs' source
+genKey' :: [Backend] -> B.KeySource -> Annex (Maybe (Key, Backend))
 genKey' [] _ = return Nothing
-genKey' (b:bs) file = do
-	r <- B.getKey b file
+genKey' (b:bs) source = do
+	r <- B.getKey b source
 	case r of
-		Nothing -> genKey' bs file
+		Nothing -> genKey' bs source
 		Just k -> return $ Just (makesane k, b)
 	where
 		-- keyNames should not contain newline characters.

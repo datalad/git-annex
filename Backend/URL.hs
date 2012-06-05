@@ -20,11 +20,11 @@ backends :: [Backend]
 backends = [backend]
 
 backend :: Backend
-backend = Backend {
-	name = "URL",
-	getKey = const (return Nothing),
-	fsckKey = Nothing
-}
+backend = Backend
+	{ name = "URL"
+	, getKey = const $ return Nothing
+	, fsckKey = Nothing
+	}
 
 fromUrl :: String -> Maybe Integer -> Key
 fromUrl url size = stubKey
