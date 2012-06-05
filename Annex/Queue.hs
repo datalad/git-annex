@@ -20,7 +20,7 @@ import Config
 add :: String -> [CommandParam] -> [FilePath] -> Annex ()
 add command params files = do
 	q <- get
-	store $ Git.Queue.add q command params files
+	store =<< inRepo (Git.Queue.add q command params files)
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()

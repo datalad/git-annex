@@ -1,6 +1,6 @@
 {- git repository command queue
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -33,6 +33,12 @@ data Action = Action
 	, getParams :: [CommandParam]
 	} deriving (Show, Eq, Ord)
 
+{- Compares two actions by subcommand. -}
+(===) :: Action -> Action -> Bool
+a === b = getSubcommand a == getSubcommand b
+(/==) :: Action -> Action -> Bool
+a /== b = not $ a === b
+
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
  - similar git commands. -}
@@ -59,16 +65,20 @@ defaultLimit = 10240
 new :: Maybe Int -> Queue
 new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 
-{- Adds an action to a queue. -}
-add :: Queue -> String -> [CommandParam] -> [FilePath] -> Queue
-add (Queue cur lim m) subcommand params files = Queue (cur + 1) lim m'
+{- Adds an action to a queue. If the queue already contains a different
+ - action, it will be flushed; this is to ensure that conflicting actions,
+ - like add and rm, are run in the right order. -}
+add :: Queue -> String -> [CommandParam] -> [FilePath] -> Repo -> IO Queue
+add q@(Queue _ _ m) subcommand params files repo
+	| null (filter (/== action) (M.keys m)) = go q
+	| otherwise = go =<< flush q repo
 	where
 		action = Action subcommand params
-		-- There are probably few items in the map, but there
-		-- can be a lot of files per item. So, optimise adding
-		-- files.
-		m' = M.insertWith' const action fs m
-		!fs = files ++ M.findWithDefault [] action m
+		go (Queue cur lim m') =
+			return $ Queue (cur + 1) lim $
+				M.insertWith' const action fs m'
+			where
+				!fs = files ++ M.findWithDefault [] action m'
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue -> Bool
