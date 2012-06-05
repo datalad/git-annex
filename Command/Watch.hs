@@ -15,7 +15,6 @@ import Utility.ThreadLock
 import qualified Annex
 import qualified Command.Add as Add
 import qualified Git.Command
-import qualified Annex.Queue
 import qualified Backend
 import Annex.Content
 
@@ -67,11 +66,9 @@ run startstate a f = do
  - The git queue is immediately flushed, so the file is added to git
  - now, rather than later (when it may have been already moved or deleted!) -}
 onAdd :: FilePath -> Annex ()
-onAdd file = doQuietSideAction $ do
-	void $ doCommand $ do
-		showStart "add" file
-		next $ Add.perform file
-	Annex.Queue.flush
+onAdd file = void $ doCommand $ do
+	showStart "add" file
+	next $ Add.perform file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
