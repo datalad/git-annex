@@ -39,3 +39,48 @@ really useful, it needs to:
 - Support OSes other than Linux; it only uses inotify currently.
   OSX and FreeBSD use the same mechanism, and there is a Haskell interface
   for it,
+
+## the races
+
+Many races need to be dealt with by this code. Here are some of them.
+
+* File is added and then removed before the add event starts.
+
+  Not a problem; The add event does nothing since the file is not present.
+
+* File is added and then removed before the add event has finished
+  processing it.
+  
+  Minor problem; When the add's processing of the file (checksum and so
+  on) fails due to it going away, there is an ugly error message, but
+  things are otherwise ok.
+
+* File is added and then removed before the add event finishes.
+  
+  Currently unfixed; The annex add re-adds the file as a symlink and then
+  the remove event does nothing since the symlink exists.
+
+* File is added and then replaced with another file before the annex add
+  makes its symlink.
+
+  Minor problem; The annex add will fail creating its symlink since
+  the file exists. There is an ugly error message, but the second add
+  event will add the new file.
+
+* File is added and then replaced with another file before the annex add
+  moves its content into the annex.
+
+  Currently unfixed; The new content will be moved to the annex under the
+  old checksum, and fsck will later catch this inconsistency.
+
+  Possible fix: Move content someplace before doing checksumming.
+
+* File is removed and then re-added before the removal event starts.
+
+  Not a problem; The removal event does nothing since the file exists,
+  and the add event replaces it in git with the new one.
+
+* File is removed and then re-added before the removal event finishes.
+
+  Not a problem; The removal event removes the old file from the index, and
+  the add event adds the new one.
