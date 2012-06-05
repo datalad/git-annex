@@ -83,6 +83,12 @@ Many races need to be dealt with by this code. Here are some of them.
   update-index` to manually put the symlink into the index without git
   looking at what's currently on disk.
 
+* Link is moved, fixed link is written by fix event, but then that is
+  removed by the user and replaced with a file before the event finishes.
+
+  Currently unfixed: `git add` will be run on the file. Basically same
+  effect as previous race above.
+
 * File is removed and then re-added before the removal event starts.
 
   Not a problem; The removal event does nothing since the file exists,
@@ -92,3 +98,4 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
+
