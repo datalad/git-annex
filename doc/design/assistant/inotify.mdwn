@@ -67,10 +67,18 @@ Many races need to be dealt with by this code. Here are some of them.
   **Currently unfixed**; This changes content in the annex, and fsck will
   later catch the inconsistency.
 
-  Possible fixes: Somehow track or detect if a file is open for write
-  by any processes. Or, when possible, making a copy on write copy
-  before adding the file would avoid this.  Or, as a last resort, make
-  an expensive copy of the file and add that.
+  Possible fixes: 
+
+  * Somehow track or detect if a file is open for write by any processes.
+  * Or, when possible, making a copy on write copy before adding the file
+    would avoid this.
+  * Or, as a last resort, make an expensive copy of the file and add that.
+  * Tracking file opens and closes with inotify could tell if any other
+    processes have the file open. But there are problems.. It doesn't
+    seem to differentiate between files opened for read and for write.
+    And there would still be a race after the last close and before it's
+    injected into the annex, where it could be opened for write again.
+    Would need to detect that and undo the annex injection or something.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
