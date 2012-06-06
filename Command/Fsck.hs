@@ -16,6 +16,7 @@ import qualified Types.Backend
 import qualified Types.Key
 import qualified Backend
 import Annex.Content
+import Annex.Perms
 import Logs.Location
 import Logs.Trust
 import Annex.UUID
@@ -83,8 +84,8 @@ performRemote key file backend numcopies remote =
 		withtmp a = do
 			pid <- liftIO getProcessID
 			t <- fromRepo gitAnnexTmpDir
+			createAnnexDirectory t
 			let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
-			liftIO $ createDirectoryIfMissing True t
 			let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 			cleanup
 			cleanup `after` a tmp

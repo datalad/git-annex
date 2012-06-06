@@ -19,6 +19,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Utility.RsyncFile
+import Annex.Perms
 
 type RsyncUrl = String
 
@@ -176,6 +177,7 @@ withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
 	pid <- liftIO getProcessID
 	t <- fromRepo gitAnnexTmpDir
+	createAnnexDirectory t
 	let tmp = t </> "rsynctmp" </> show pid
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
