@@ -43,14 +43,17 @@ start = notBareRepo $ do
 	mvar <- liftIO $ newMVar state
 	next $ next $ liftIO $ withINotify $ \i -> do
 		let hook a = Just $ runAnnex mvar a
-		watchDir i "." (not . pruned)
+		watchDir i "." (ignored . takeFileName)
 			(hook onAdd) (hook onAddSymlink)
 			(hook onDel) (hook onDelDir)
 		putStrLn "(started)"
 		waitForTermination
 		return True
 	where
-		pruned dir = takeFileName dir /= ".git"
+		ignored ".git" = True
+		ignored ".gitignore" = True
+		ignored ".gitattributes" = True
+		ignored _ = False
 
 {- Runs a handler, inside the Annex monad.
  -

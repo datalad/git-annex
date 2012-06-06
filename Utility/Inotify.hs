@@ -48,15 +48,13 @@ type Hook = Maybe (FilePath -> IO ())
  - So this will fail if there are too many subdirectories.
  -}
 watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook -> Hook -> IO ()
-watchDir i dir ignored add addsymlink del deldir
-	| ignored dir = noop
-	| otherwise = do
-		lock <- newLock
-		void $ addWatch i watchevents dir $ \event ->
-			withLock lock (void $ go event)
-		withLock lock $
-			mapM_ walk =<< filter (not . dirCruft) <$>
-				getDirectoryContents dir
+watchDir i dir ignored add addsymlink del deldir = unless (ignored dir) $ do
+	lock <- newLock
+	void $ addWatch i watchevents dir $ \event ->
+		withLock lock (void $ go event)
+	withLock lock $
+		mapM_ walk =<< filter (not . dirCruft) <$>
+			getDirectoryContents dir
 	where
 		recurse d = watchDir i d ignored add addsymlink del deldir
 
@@ -71,7 +69,7 @@ watchDir i dir ignored add addsymlink del deldir
 			| isJust del || isJust deldir = [MoveOut, Delete]
 			| otherwise = []
 
-		walk f = do
+		walk f = unless (ignored f) $ do
 			let fullf = indir f
 			r <- catchMaybeIO $ getSymbolicLinkStatus fullf
 			case r of
@@ -112,7 +110,7 @@ watchDir i dir ignored add addsymlink del deldir
 				guarded = unlessM (filetype (const True) f)
 		go _ = noop
 
-		Just a <@> f = a $ indir f
+		Just a <@> f = unless (ignored f) $ a $ indir f
 		Nothing <@> _ = noop
 
 		indir f = dir </> f
