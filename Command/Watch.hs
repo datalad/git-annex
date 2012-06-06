@@ -44,6 +44,7 @@ start = notBareRepo $ do
 	next $ next $ liftIO $ withINotify $ \i -> do
 		let hook a = Just $ runAnnex mvar a
 		watchDir i "." (ignored . takeFileName)
+			(hook onTooMany)
 			(hook onAdd) (hook onAddSymlink)
 			(hook onDel) (hook onDelDir)
 		putStrLn "(started)"
@@ -118,6 +119,32 @@ onDel file = inRepo $ Git.Command.run "rm"
 onDelDir :: FilePath -> Annex ()
 onDelDir dir = inRepo $ Git.Command.run "rm"
 	[Params "--quiet -r --cached --ignore-unmatch --", File dir]
+
+{- There are too many directories for inotify to watch them all. -}
+onTooMany :: FilePath -> Annex ()
+onTooMany dir = do
+	sysctlval <- liftIO $ runsysctl [Param maxwatches]
+	warning $ unlines $
+		basewarning : maybe withoutsysctl withsysctl sysctlval
+	where
+		maxwatches = "fs.inotify.max_user_watches"
+		basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"
+		withoutsysctl = ["Increase the value in /proc/sys/fs/inotify/max_user_watches"]
+		withsysctl n = let new = n * 10 in
+			[ "Increase the limit by running:"
+			, "  echo " ++ maxwatches ++ "=" ++ show new ++
+			  " | sudo tee -a /etc/sysctl.conf; sudo sysctl -p"
+			]
+		runsysctl ps = do
+			v <- catchMaybeIO $ hPipeFrom "sysctl" $ toCommand ps
+			case v of
+				Nothing -> return Nothing
+				Just (pid, h) -> do
+					val <- parsesysctl <$> liftIO (hGetContentsStrict h)
+					void $ getProcessStatus True False $ processID pid
+					return val
+		parsesysctl :: String -> Maybe Integer
+		parsesysctl s = readish =<< lastMaybe (words s)
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. -}

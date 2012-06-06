@@ -14,6 +14,8 @@ import Utility.ThreadLock
 
 import System.INotify
 import qualified System.Posix.Files as Files
+import System.IO.Error
+import Control.Exception (throw)
 
 type Hook = Maybe (FilePath -> IO ())
 
@@ -45,18 +47,22 @@ type Hook = Maybe (FilePath -> IO ())
  -
  - Note: inotify has a limit to the number of watches allowed,
  - /proc/sys/fs/inotify/max_user_watches (default 8192).
- - So this will fail if there are too many subdirectories.
+ - So this will fail if there are too many subdirectories. The
+ - toomany hook is called when this happens.
  -}
-watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook -> Hook -> IO ()
-watchDir i dir ignored add addsymlink del deldir = unless (ignored dir) $ do
-	lock <- newLock
-	void $ addWatch i watchevents dir $ \event ->
-		withLock lock (void $ go event)
-	withLock lock $
-		mapM_ walk =<< filter (not . dirCruft) <$>
-			getDirectoryContents dir
+watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Hook -> Hook -> Hook -> Hook -> Hook -> IO ()
+watchDir i dir ignored toomany add addsymlink del deldir
+	| ignored dir = noop
+	| otherwise = do
+		lock <- newLock
+		let handler event = withLock lock (void $ go event)
+		void (addWatch i watchevents dir handler)
+			`catchIO` failedaddwatch
+		withLock lock $
+			mapM_ walk =<< filter (not . dirCruft) <$>
+				getDirectoryContents dir
 	where
-		recurse d = watchDir i d ignored add addsymlink del deldir
+		recurse d = watchDir i d ignored toomany add addsymlink del deldir
 
 		-- Select only inotify events required by the enabled
 		-- hooks, but always include Create so new directories can
@@ -116,3 +122,12 @@ watchDir i dir ignored add addsymlink del deldir = unless (ignored dir) $ do
 		indir f = dir </> f
 
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
+
+		-- Inotify fails when there are too many watches with a
+		-- disk full error.
+		failedaddwatch e
+			| isFullError e =
+				case toomany of
+					Nothing -> throw e
+					Just hook -> hook dir
+			| otherwise = throw e
