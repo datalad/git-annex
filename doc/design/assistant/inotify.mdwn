@@ -58,12 +58,18 @@ Many races need to be dealt with by this code. Here are some of them.
 * File is added and then replaced with another file before the annex add
   moves its content into the annex.
 
-  **Currently unfixed**; The new content will be moved to the annex under the
-  old checksum, and fsck will later catch this inconsistency.
+  Fixed this problem; Now it hard links the file to a temp directory and
+  operates on the hard link, which is also made unwritable.
 
-  Possible fix: Move content someplace before doing checksumming. Perhaps
-  using a hard link and removing the write bit to prevent modification 
-  while checksumming.
+* A process has a file open for write, another one closes it, and so it's
+  added. Then the first process modifies it.
+
+  **Currently unfixed**; This changes content in the annex, and fsck will
+  later catch the inconsistency.
+
+  Possible fixes: Somehow track or detect if a file is open for write
+  by any processes. Or, when possible, making a copy on write copy
+  before adding the file would avoid this.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
