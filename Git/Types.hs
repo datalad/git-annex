@@ -63,3 +63,11 @@ readObjectType "commit" = Just CommitObject
 readObjectType "tree" = Just TreeObject
 readObjectType _ = Nothing
 
+{- Types of blobs. -}
+data BlobType = FileBlob | ExecutableBlob | SymlinkBlob
+
+{- Git uses magic numbers to denote the type of a blob. -}
+instance Show BlobType where
+	show FileBlob = "100644"
+	show ExecutableBlob = "100755"
+	show SymlinkBlob = "120000"

@@ -22,6 +22,7 @@ import Git.Command
 import Git.UpdateIndex
 import Git.HashObject
 import Git.Types
+import Git.FilePath
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -79,7 +80,7 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 		[_colonmode, _bmode, asha, bsha, _status] = words info
 		getcontents s = map L.unpack . L.lines .
 			L.decodeUtf8 <$> catObject h s
-		use sha = return $ Just $ update_index_line sha file
+		use sha = return $ Just $ update_index_line sha FileBlob $ asTopFilePath file
 
 {- Calculates a union merge between a list of refs, with contents.
  -
