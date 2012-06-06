@@ -69,7 +69,8 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Possible fixes: Somehow track or detect if a file is open for write
   by any processes. Or, when possible, making a copy on write copy
-  before adding the file would avoid this.
+  before adding the file would avoid this.  Or, as a last resort, make
+  an expensive copy of the file and add that.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
