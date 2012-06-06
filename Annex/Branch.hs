@@ -35,6 +35,8 @@ import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
 import Git.HashObject
+import Git.Types
+import Git.FilePath
 import qualified Git.Index
 import Annex.CatFile
 import Annex.Perms
@@ -344,5 +346,5 @@ stageJournal = do
 			let path = dir </> file
 			sha <- hashFile h path
 			_ <- streamer $ Git.UpdateIndex.update_index_line
-				sha (fileJournal file)
+				sha FileBlob (asTopFilePath $ fileJournal file)
 			removeFile path

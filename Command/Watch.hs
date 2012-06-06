@@ -14,9 +14,13 @@ import Command
 import Utility.Inotify
 import Utility.ThreadLock
 import qualified Annex
-import qualified Annex.Queue
-import qualified Command.Add as Add
+import qualified Command.Add
+import qualified Git
 import qualified Git.Command
+import qualified Git.UpdateIndex
+import Git.HashObject
+import Git.Types
+import Git.FilePath
 import qualified Backend
 import Annex.Content
 
@@ -39,14 +43,14 @@ start = notBareRepo $ do
 	mvar <- liftIO $ newMVar state
 	next $ next $ liftIO $ withINotify $ \i -> do
 		let hook a = Just $ runAnnex mvar a
-		watchDir i "." (not . gitdir)
+		watchDir i "." (not . pruned)
 			(hook onAdd) (hook onAddSymlink)
 			(hook onDel) (hook onDelDir)
 		putStrLn "(started)"
 		waitForTermination
 		return True
 	where
-		gitdir dir = takeFileName dir /= ".git"
+		pruned dir = takeFileName dir /= ".git"
 
 {- Runs a handler, inside the Annex monad.
  -
@@ -66,15 +70,20 @@ runAnnex mvar a f = do
 	where
 		go state = Annex.exec state $ a f
 
-{- Adding a file is the same as git-annex add.
- - The git queue is immediately flushed, so the file is added to git
- - now, rather than later (when it may have been already moved or deleted!) -}
+{- Adding a file is tricky; the file has to be replaced with a symlink
+ - but this is race prone, as the symlink could be changed immediately
+ - after creation. To avoid that race, git add is not used to stage the
+ - symlink. -}
 onAdd :: FilePath -> Annex ()
 onAdd file = do
-	void $ doCommand $ do
-		showStart "add" file
-		next $ Add.perform file
-	Annex.Queue.flush
+	showStart "add" file
+	Command.Add.ingest file >>= go
+	where
+		go Nothing = showEndFail
+		go (Just key) = do
+			link <- Command.Add.link file key True
+			inRepo $ stageSymlink file link
+			showEndOk
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -83,19 +92,20 @@ onAdd file = do
 onAddSymlink :: FilePath -> Annex ()
 onAddSymlink file = go =<< Backend.lookupFile file
 	where
-		go Nothing = addlink
+		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( addlink
+				( addlink link
 				, do
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
-					addlink
+					addlink link
 				)
-		addlink = inRepo $ Git.Command.run "add"
-			[Params "--force --", File file]
+		addlink link = inRepo $ stageSymlink file link
 
+{- The file could reappear at any time, so --cached is used, to only delete
+ - it from the index. -}
 onDel :: FilePath -> Annex ()
 onDel file = inRepo $ Git.Command.run "rm"
 	[Params "--quiet --cached --ignore-unmatch --", File file] 
@@ -105,3 +115,15 @@ onDel file = inRepo $ Git.Command.run "rm"
 onDelDir :: FilePath -> Annex ()
 onDelDir dir = inRepo $ Git.Command.run "rm"
 	[Params "--quiet -r --cached --ignore-unmatch --", File dir]
+
+{- Adds a symlink to the index, without ever accessing the actual symlink
+ - on disk. -}
+stageSymlink :: FilePath -> String -> Git.Repo -> IO ()
+stageSymlink file linktext repo = Git.UpdateIndex.stream_update_index repo [stage]
+	where
+		stage streamer = do
+			line <- Git.UpdateIndex.update_index_line
+				<$> (hashObject repo BlobObject linktext)
+				<*> pure SymlinkBlob
+				<*> toTopFilePath file repo
+			streamer line
