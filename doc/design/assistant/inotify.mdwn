@@ -61,7 +61,9 @@ Many races need to be dealt with by this code. Here are some of them.
   **Currently unfixed**; The new content will be moved to the annex under the
   old checksum, and fsck will later catch this inconsistency.
 
-  Possible fix: Move content someplace before doing checksumming.
+  Possible fix: Move content someplace before doing checksumming. Perhaps
+  using a hard link and removing the write bit to prevent modification 
+  while checksumming.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
