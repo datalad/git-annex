@@ -33,6 +33,7 @@ import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.UnionMerge
+import qualified Git.UpdateIndex
 import Git.HashObject
 import qualified Git.Index
 import Annex.CatFile
@@ -258,8 +259,8 @@ files = withIndexUpdate $ do
  - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
-genIndex g = Git.UnionMerge.stream_update_index g
-	[Git.UnionMerge.ls_tree fullname g]
+genIndex g = Git.UpdateIndex.stream_update_index g
+	[Git.UpdateIndex.ls_tree fullname g]
 
 {- Merges the specified refs into the index.
  - Any changes staged in the index will be preserved. -}
@@ -335,13 +336,13 @@ stageJournal = do
 	g <- gitRepo
 	withIndex $ liftIO $ do
 		h <- hashObjectStart g
-		Git.UnionMerge.stream_update_index g
+		Git.UpdateIndex.stream_update_index g
 			[genstream (gitAnnexJournalDir g) h fs]
 		hashObjectStop h
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file
 			sha <- hashFile h path
-			_ <- streamer $ Git.UnionMerge.update_index_line
+			_ <- streamer $ Git.UpdateIndex.update_index_line
 				sha (fileJournal file)
 			removeFile path
