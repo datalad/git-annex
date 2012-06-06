@@ -48,3 +48,18 @@ instance Show Ref where
 type Branch = Ref
 type Sha = Ref
 type Tag = Ref
+
+{- Types of objects that can be stored in git. -}
+data ObjectType = BlobObject | CommitObject | TreeObject
+
+instance Show ObjectType where
+	show BlobObject = "blob"
+	show CommitObject = "commit"
+	show TreeObject = "tree"
+
+readObjectType :: String -> Maybe ObjectType
+readObjectType "blob" = Just BlobObject
+readObjectType "commit" = Just CommitObject
+readObjectType "tree" = Just TreeObject
+readObjectType _ = Nothing
+

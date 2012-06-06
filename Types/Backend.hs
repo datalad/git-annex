@@ -18,14 +18,11 @@ data KeySource = KeySource
 	, contentLocation :: FilePath
 	}
 
-data BackendA a = Backend {
-	-- name of this backend
-	name :: String,
-	-- gets the key to use for a given content
-	getKey :: KeySource -> a (Maybe Key),
-	-- called during fsck to check a key, if the backend has its own checks
-	fsckKey :: Maybe (Key -> FilePath -> a Bool)
-}
+data BackendA a = Backend
+	{ name :: String
+	, getKey :: KeySource -> a (Maybe Key) 
+	, fsckKey :: Maybe (Key -> FilePath -> a Bool)
+	}
 
 instance Show (BackendA a) where
 	show backend = "Backend { name =\"" ++ name backend ++ "\" }"
