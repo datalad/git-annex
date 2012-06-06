@@ -50,8 +50,8 @@ start file = notBareRepo $ ifAnnexed file fixup add
  - to prevent it from being modified in between. It's hard linked into a
  - temporary location, and its writable bits are removed. It could still be
  - written to by a process that already has it open for writing. -}
-perform :: FilePath -> CommandPerform
-perform file = do
+lockDown :: FilePath -> Annex FilePath
+lockDown file = do
 	liftIO $ preventWrite file
 	tmp <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory tmp
@@ -59,18 +59,27 @@ perform file = do
 	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
 	nuke tmpfile
 	liftIO $ createLink file tmpfile
+	return tmpfile
+
+nuke :: FilePath -> Annex ()
+nuke file = liftIO $ whenM (doesFileExist file) $ removeFile file
+
+{- Moves the file into the annex. -}
+ingest :: FilePath -> Annex (Maybe Key)
+ingest file = do
+	tmpfile <- lockDown file
 	let source = KeySource { keyFilename = file, contentLocation = tmpfile }
 	backend <- chooseBackend file
 	genKey source backend >>= go tmpfile
 	where
-		go _ Nothing = stop
+		go _ Nothing = return Nothing
 		go tmpfile (Just (key, _)) = do
 			handle (undo file key) $ moveAnnex key tmpfile
 			nuke file
-			next $ cleanup file key True
+			return $ Just key
 
-nuke :: FilePath -> Annex ()
-nuke file = liftIO $ whenM (doesFileExist file) $ removeFile file
+perform :: FilePath -> CommandPerform
+perform file = maybe stop (\key -> next $ cleanup file key True) =<< ingest file
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
@@ -88,21 +97,26 @@ undo file key e = do
 			src <- inRepo $ gitAnnexLocation key
 			liftIO $ moveFile src file
 
+{- Creates the symlink to the annexed content. -}
+link :: FilePath -> Key -> Bool -> Annex ()
+link file key hascontent = handle (undo file key) $ do
+	l <- calcGitLink file key
+	liftIO $ createSymbolicLink l file
+
+	when hascontent $ do
+		logStatus key InfoPresent
+	
+		-- touch the symlink to have the same mtime as the
+		-- file it points to
+		liftIO $ do
+			mtime <- modificationTime <$> getFileStatus file
+			touch file (TimeSpec mtime) False
+
+{- Note: Several other commands call this, and expect it to 
+ - create the symlink and add it. -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
-	handle (undo file key) $ do
-		link <- calcGitLink file key
-		liftIO $ createSymbolicLink link file
-
-		when hascontent $ do
-			logStatus key InfoPresent
-	
-			-- touch the symlink to have the same mtime as the
-			-- file it points to
-			liftIO $ do
-				mtime <- modificationTime <$> getFileStatus file
-				touch file (TimeSpec mtime) False
-
+	link file key hascontent
 	params <- ifM (Annex.getState Annex.force)
 		( return [Param "-f"]
 		, return []
