@@ -82,16 +82,14 @@ Many races need to be dealt with by this code. Here are some of them.
 * File is added and then replaced with another file before the annex add
   stages the symlink in git.
 
-  **Currently unfixed**; `git add` will be run on the new file, which is
-  not at all good when it's big. Could be dealt with by using `git
-  update-index` to manually put the symlink into the index without git
+  Now fixed; `git annex watch` avoids running `git add` because of this
+  race. Instead, it stages symlinks directly into the index, without
   looking at what's currently on disk.
 
 * Link is moved, fixed link is written by fix event, but then that is
   removed by the user and replaced with a file before the event finishes.
 
-  **Currently unfixed**: `git add` will be run on the file. Basically same
-  effect as previous race above.
+  Now fixed; same fix as previous race above.
 
 * File is removed and then re-added before the removal event starts.
 
