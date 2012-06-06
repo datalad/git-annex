@@ -28,7 +28,7 @@ setup :: Git.Repo -> IO ()
 setup = cleanup -- idempotency
 
 cleanup :: Git.Repo -> IO ()
-cleanup g = whenM (doesFileExist $ tmpIndex g) $ removeFile $ tmpIndex g
+cleanup g = nukeFile $ tmpIndex g
 
 parseArgs :: IO [String]
 parseArgs = do

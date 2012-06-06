@@ -88,6 +88,13 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 				(Left _) -> return False
 				(Right s) -> return $ isDirectory s
 
+{- Removes a file, which may or may not exist.
+ -
+ - Note that an exception is thrown if the file exists but
+ - cannot be removed. -}
+nukeFile :: FilePath -> IO ()
+nukeFile file = whenM (doesFileExist file) $ removeFile file
+
 {- Runs an action in another directory. -}
 bracketCd :: FilePath -> IO a -> IO a
 bracketCd dir a = go =<< getCurrentDirectory

@@ -40,5 +40,5 @@ perform key = maybe droplocal dropremote =<< Remote.byName =<< from
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
 	f <- fromRepo $ filespec key
-	liftIO $ whenM (doesFileExist f) $ removeFile f
+	liftIO $ nukeFile f
 	next $ return True

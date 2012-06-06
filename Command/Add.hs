@@ -57,12 +57,9 @@ lockDown file = do
 	createAnnexDirectory tmp
 	pid <- liftIO getProcessID
 	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
-	nuke tmpfile
+	liftIO $ nukeFile tmpfile
 	liftIO $ createLink file tmpfile
 	return tmpfile
-
-nuke :: FilePath -> Annex ()
-nuke file = liftIO $ whenM (doesFileExist file) $ removeFile file
 
 {- Moves the file into the annex. -}
 ingest :: FilePath -> Annex (Maybe Key)
@@ -75,7 +72,7 @@ ingest file = do
 		go _ Nothing = return Nothing
 		go tmpfile (Just (key, _)) = do
 			handle (undo file key) $ moveAnnex key tmpfile
-			nuke file
+			liftIO $ nukeFile file
 			return $ Just key
 
 perform :: FilePath -> CommandPerform
@@ -86,7 +83,7 @@ perform file = maybe stop (\key -> next $ cleanup file key True) =<< ingest file
 undo :: FilePath -> Key -> IOException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
-		nuke file
+		liftIO $ nukeFile file
 		handle tryharder $ fromAnnex key file
 		logStatus key InfoMissing
 	throw e

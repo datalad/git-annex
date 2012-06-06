@@ -168,7 +168,7 @@ withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	liftIO $ whenM (doesFileExist tmp) $ liftIO $ removeFile tmp
+	liftIO $ nukeFile tmp
 	return res
 
 {- Checks that there is disk space available to store a given key,
