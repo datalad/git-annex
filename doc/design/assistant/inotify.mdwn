@@ -23,10 +23,10 @@ really useful, it needs to:
   lots of changes are coming in)
 - tunable delays before adding new files, etc
 - coleasce related add/rm events for speed and less disk IO
-- don't annex `.gitignore` and `.gitattributes` files, but do auto-stage
-  changes to them
+- don't annex `.gitignore` and `.gitattributes` files **done**
 - configurable option to only annex files meeting certian size or
   filename criteria
+- option to check files not meeting annex criteria into git directly
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
