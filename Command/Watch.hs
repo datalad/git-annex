@@ -59,15 +59,15 @@ start = notBareRepo $ do
 		putStrLn "(started)"
 		waitForTermination
 		return True
-	where
-		ignored ".git" = True
-		ignored ".gitignore" = True
-		ignored ".gitattributes" = True
-		ignored _ = False
-
 #else
 start = error "watch mode is so far only available on Linux"
 #endif
+
+ignored :: FilePath -> Bool
+ignored ".git" = True
+ignored ".gitignore" = True
+ignored ".gitattributes" = True
+ignored _ = False
 
 {- Runs a handler, inside the Annex monad.
  -
