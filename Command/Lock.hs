@@ -24,5 +24,5 @@ start file = do
 
 perform :: FilePath -> CommandPerform
 perform file = do
-	Annex.Queue.add "checkout" [Param "--"] [file]
+	Annex.Queue.addCommand "checkout" [Param "--"] [file]
 	next $ return True -- no cleanup needed

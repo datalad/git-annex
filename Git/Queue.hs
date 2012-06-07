@@ -10,7 +10,8 @@
 module Git.Queue (
 	Queue,
 	new,
-	add,
+	addCommand,
+	addUpdateIndex,
 	size,
 	full,
 	flush,
@@ -25,19 +26,31 @@ import Utility.SafeCommand
 import Common
 import Git
 import Git.Command
+import qualified Git.UpdateIndex
+	
+{- Queable actions that can be performed in a git repository.
+ -}
+data Action
+	{- Updating the index file, using a list of streamers that can
+	 - be added to as the queue grows. -}
+	= UpdateIndexAction
+		{ getStreamers :: [Git.UpdateIndex.Streamer]
+		}
+	{- A git command to run, on a list of files that can be added to
+	 - as the queue grows. -}
+	| CommandAction 
+		{ getSubcommand :: String
+		, getParams :: [CommandParam]
+		, getFiles :: [FilePath]
+		} 
 
-{- An action to perform in a git repository. The file to act on
- - is not included, and must be able to be appended after the params. -}
-data Action = Action
-	{ getSubcommand :: String
-	, getParams :: [CommandParam]
-	} deriving (Show, Eq, Ord)
+{- A key that can uniquely represent an action in a Map. -}
+data ActionKey = UpdateIndexActionKey | CommandActionKey String
+	deriving (Eq, Ord)
 
-{- Compares two actions by subcommand. -}
-(===) :: Action -> Action -> Bool
-a === b = getSubcommand a == getSubcommand b
-(/==) :: Action -> Action -> Bool
-a /== b = not $ a === b
+actionKey :: Action -> ActionKey
+actionKey (UpdateIndexAction _) = UpdateIndexActionKey
+actionKey CommandAction { getSubcommand = s } = CommandActionKey s
 
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
@@ -45,9 +58,8 @@ a /== b = not $ a === b
 data Queue = Queue
 	{ size :: Int
 	, _limit :: Int
-	, _items :: M.Map Action [FilePath]
+	, items :: M.Map ActionKey Action
 	}
-	deriving (Show, Eq)
 
 {- A recommended maximum size for the queue, after which it should be
  - run.
@@ -65,20 +77,58 @@ defaultLimit = 10240
 new :: Maybe Int -> Queue
 new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 
-{- Adds an action to a queue. If the queue already contains a different
+{- Adds a command to a queue. If the queue already contains a different
  - action, it will be flushed; this is to ensure that conflicting actions,
- - like add and rm, are run in the right order. -}
-add :: Queue -> String -> [CommandParam] -> [FilePath] -> Repo -> IO Queue
-add q@(Queue _ _ m) subcommand params files repo
-	| null (filter (/== action) (M.keys m)) = go q
-	| otherwise = go =<< flush q repo
+ - like add and rm, are run in the right order. 
+ -
+ - Actions with the same subcommand but different parameters are
+ - roughly equivilant; assumed equivilant enough to perform in any order
+ - with the same result.
+ -}
+addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
+addCommand subcommand params files q repo =
+	updateQueue action different (length newfiles) q repo
 	where
-		action = Action subcommand params
-		go (Queue cur lim m') =
-			return $ Queue (cur + 1) lim $
-				M.insertWith' const action fs m'
-			where
-				!fs = files ++ M.findWithDefault [] action m'
+		key = actionKey action
+		action = CommandAction
+			{ getSubcommand = subcommand
+			, getParams = params
+			, getFiles = newfiles
+			}
+		newfiles = files ++ maybe [] getFiles (M.lookup key $ items q)
+		
+		different (CommandAction { getSubcommand = s }) = s /= subcommand
+		different _ = True
+
+addUpdateIndex :: Git.UpdateIndex.Streamer -> Queue -> Repo -> IO Queue
+addUpdateIndex streamer q repo =
+	updateQueue action different 0 q repo
+	where
+		key = actionKey action
+		-- streamer is added to the end of the list, since
+		-- order does matter for update-index input
+		action = UpdateIndexAction $ streamers ++ [streamer]
+		streamers = maybe [] getStreamers $ M.lookup key $ items q
+
+		different (UpdateIndexAction _) = False
+		different _ = True
+
+{- Updates or adds an action in the queue. If the queue already contains a
+ - different action, it will be flushed; this is to ensure that conflicting
+ - actions, like add and rm, are run in the right order.-}
+updateQueue :: Action -> (Action -> Bool) -> Int -> Queue -> Repo -> IO Queue
+updateQueue action different sizeincrease q repo
+	| null (filter different (M.elems (items q))) = return $ go q
+	| otherwise = go <$> flush q repo
+	where
+		go q' = newq
+			where		
+				!newq = q'
+					{ size = newsize
+					, items = newitems
+					}
+				!newsize = size q' + sizeincrease
+				!newitems = M.insertWith' const (actionKey action) action (items q')
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue -> Bool
@@ -87,7 +137,7 @@ full (Queue cur lim  _) = cur > lim
 {- Runs a queue on a git repository. -}
 flush :: Queue -> Repo -> IO Queue
 flush (Queue _ lim m) repo = do
-	forM_ (M.toList m) $ uncurry $ runAction repo
+	forM_ (M.elems m) $ runAction repo
 	return $ Queue 0 lim M.empty
 
 {- Runs an Action on a list of files in a git repository.
@@ -96,12 +146,13 @@ flush (Queue _ lim m) repo = do
  -
  - Intentionally runs the command even if the list of files is empty;
  - this allows queueing commands that do not need a list of files. -}
-runAction :: Repo -> Action -> [FilePath] -> IO ()
-runAction repo action files =
+runAction :: Repo -> Action -> IO ()
+runAction _repo _action@(UpdateIndexAction {}) = error "TODO"
+runAction repo action@(CommandAction {}) =
 	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
 	where
 		params = toCommand $ gitCommandLine
 			(Param (getSubcommand action):getParams action) repo
 		feedxargs h = do
 			fileEncoding h
-			hPutStr h $ join "\0" files
+			hPutStr h $ join "\0" $ getFiles action

@@ -121,5 +121,5 @@ cleanup file key hascontent = do
 		( return [Param "-f"]
 		, return []
 		)
-	Annex.Queue.add "add" (params++[Param "--"]) [file]
+	Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
 	return True

@@ -155,7 +155,7 @@ fixLink key file = do
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		liftIO $ removeFile file
 		liftIO $ createSymbolicLink want file
-		Annex.Queue.add "add" [Param "--force", Param "--"] [file]
+		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
 	return True
 
 {- Checks that the location log reflects the current status of the key,

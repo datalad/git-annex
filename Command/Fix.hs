@@ -36,5 +36,5 @@ perform file link = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	Annex.Queue.add "add" [Param "--force", Param "--"] [file]
+	Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
 	return True

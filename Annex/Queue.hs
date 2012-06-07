@@ -6,7 +6,7 @@
  -}
 
 module Annex.Queue (
-	add,
+	addCommand,
 	flush,
 	flushWhenFull
 ) where
@@ -17,10 +17,10 @@ import qualified Git.Queue
 import Config
 
 {- Adds a git command to the queue. -}
-add :: String -> [CommandParam] -> [FilePath] -> Annex ()
-add command params files = do
+addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
+addCommand command params files = do
 	q <- get
-	store =<< inRepo (Git.Queue.add q command params files)
+	store =<< inRepo (Git.Queue.addCommand command params files q)
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()
