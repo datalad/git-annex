@@ -1,5 +1,8 @@
 git-annex (3.20120606) UNRELEASED; urgency=low
 
+  * watch: New subcommand, which uses inotify to watch for changes to
+    files and automatically annexes new files, etc, so you don't need
+    to manually run git commands when manipulating files.
   * add: Prevent (most) modifications from being made to a file while it
     is being added to the annex.
 
