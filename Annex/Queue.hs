@@ -1,12 +1,13 @@
 {- git-annex command queue
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011, 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.Queue (
 	addCommand,
+	addUpdateIndex,
 	flush,
 	flushWhenFull
 ) where
@@ -14,6 +15,7 @@ module Annex.Queue (
 import Common.Annex
 import Annex hiding (new)
 import qualified Git.Queue
+import qualified Git.UpdateIndex
 import Config
 
 {- Adds a git command to the queue. -}
@@ -21,6 +23,12 @@ addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
 addCommand command params files = do
 	q <- get
 	store =<< inRepo (Git.Queue.addCommand command params files q)
+
+{- Adds an update-index stream to the queue. -}
+addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()
+addUpdateIndex streamer = do
+	q <- get
+	store =<< inRepo (Git.Queue.addUpdateIndex streamer q)
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()

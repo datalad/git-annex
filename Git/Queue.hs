@@ -77,13 +77,11 @@ defaultLimit = 10240
 new :: Maybe Int -> Queue
 new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 
-{- Adds a command to a queue. If the queue already contains a different
- - action, it will be flushed; this is to ensure that conflicting actions,
- - like add and rm, are run in the right order. 
+{- Adds an git command to the queue.
  -
- - Actions with the same subcommand but different parameters are
- - roughly equivilant; assumed equivilant enough to perform in any order
- - with the same result.
+ - Git commands with the same subcommand but different parameters are
+ - assumed to be equivilant enough to perform in any order with the same
+ - result.
  -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
 addCommand subcommand params files q repo =
@@ -100,6 +98,11 @@ addCommand subcommand params files q repo =
 		different (CommandAction { getSubcommand = s }) = s /= subcommand
 		different _ = True
 
+{- Adds an update-index streamer to the queue. 
+ -
+ - Note that this does not increase the queue size, because data is
+ - streamed into update-index, so command-line length limits are not
+ - involved. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Queue -> Repo -> IO Queue
 addUpdateIndex streamer q repo =
 	updateQueue action different 0 q repo
@@ -147,7 +150,8 @@ flush (Queue _ lim m) repo = do
  - Intentionally runs the command even if the list of files is empty;
  - this allows queueing commands that do not need a list of files. -}
 runAction :: Repo -> Action -> IO ()
-runAction _repo _action@(UpdateIndexAction {}) = error "TODO"
+runAction repo (UpdateIndexAction streamers) =
+	Git.UpdateIndex.stream_update_index repo streamers
 runAction repo action@(CommandAction {}) =
 	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
 	where

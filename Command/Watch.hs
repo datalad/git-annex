@@ -15,8 +15,8 @@ import Command
 import Utility.Inotify
 import Utility.ThreadLock
 import qualified Annex
+import qualified Annex.Queue
 import qualified Command.Add
-import qualified Git
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import Git.HashObject
@@ -99,7 +99,7 @@ onAdd file = do
 		go Nothing = showEndFail
 		go (Just key) = do
 			link <- Command.Add.link file key True
-			inRepo $ stageSymlink file link
+			stageSymlink file link
 			showEndOk
 
 {- A symlink might be an arbitrary symlink, which is just added.
@@ -119,7 +119,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
 				)
-		addlink link = inRepo $ stageSymlink file link
+		addlink link = stageSymlink file link
 
 {- The file could reappear at any time, so --cached is used, to only delete
  - it from the index. -}
@@ -139,12 +139,10 @@ onErr = warning
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. -}
-stageSymlink :: FilePath -> String -> Git.Repo -> IO ()
-stageSymlink file linktext repo = Git.UpdateIndex.stream_update_index repo [stage]
-	where
-		stage streamer = do
-			line <- Git.UpdateIndex.update_index_line
-				<$> (hashObject repo BlobObject linktext)
-				<*> pure SymlinkBlob
-				<*> toTopFilePath file repo
-			streamer line
+stageSymlink :: FilePath -> String -> Annex ()
+stageSymlink file linktext = do
+	line <- Git.UpdateIndex.update_index_line
+		<$> inRepo (hashObject BlobObject linktext)
+		<*> pure SymlinkBlob
+		<*> inRepo (toTopFilePath file)
+	Annex.Queue.addUpdateIndex $ \streamer -> streamer line

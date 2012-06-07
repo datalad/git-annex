@@ -74,8 +74,9 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
-	shas -> use =<< either return (hashObject repo BlobObject . unlines) =<<
-		calcMerge . zip shas <$> mapM getcontents shas
+	shas -> use
+		=<< either return (\s -> hashObject BlobObject (unlines s) repo)
+		=<< calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
 		getcontents s = map L.unpack . L.lines .
