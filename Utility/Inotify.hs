@@ -150,9 +150,11 @@ tooManyWatches hook dir = do
 		basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"
 		withoutsysctl = ["Increase the value in /proc/sys/fs/inotify/max_user_watches"]
 		withsysctl n = let new = n * 10 in
-			[ "Increase the limit by running:"
+			[ "Increase the limit permanently by running:"
 			, "  echo " ++ maxwatches ++ "=" ++ show new ++
 			  " | sudo tee -a /etc/sysctl.conf; sudo sysctl -p"
+			, "Or temporarily by running:"
+			, "  sudo sysctl -w " ++ maxwatches ++ "=" ++ show new
 			]
 
 querySysctl :: Read a => [CommandParam] -> IO (Maybe a)
