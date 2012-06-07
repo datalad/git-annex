@@ -2,6 +2,7 @@ git-annex (3.20120606) UNRELEASED; urgency=low
 
   * add: Prevent (most) modifications from being made to a file while it
     is being added to the annex.
+  * initremote: Automatically describe a remote when creating it.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 05 Jun 2012 20:25:51 -0400
 
