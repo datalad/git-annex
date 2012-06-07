@@ -5,6 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE BangPatterns #-}
 
 module Command.Watch where
@@ -25,8 +26,11 @@ import qualified Backend
 import Annex.Content
 
 import Control.Exception as E
-import System.INotify
 import Control.Concurrent.MVar
+
+#if defined linux_HOST_OS
+import System.INotify
+#endif
 
 def :: [Command]
 def = [command "watch" paramPaths seek "watch for changes"]
@@ -35,6 +39,7 @@ seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
+#if defined linux_HOST_OS
 start = notBareRepo $ do
 	showStart "watch" "."
 	showAction "scanning"
@@ -55,6 +60,10 @@ start = notBareRepo $ do
 		ignored ".gitignore" = True
 		ignored ".gitattributes" = True
 		ignored _ = False
+
+#else
+start = error "watch mode is so far only available on Linux"
+#endif
 
 {- Runs a handler, inside the Annex monad.
  -
