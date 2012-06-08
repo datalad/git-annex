@@ -124,14 +124,14 @@ onAddSymlink file = go =<< Backend.lookupFile file
 {- The file could reappear at any time, so --cached is used, to only delete
  - it from the index. -}
 onDel :: FilePath -> Annex ()
-onDel file = inRepo $ Git.Command.run "rm"
-	[Params "--quiet --cached --ignore-unmatch --", File file] 
+onDel file = Annex.Queue.addCommand "rm"
+	[Params "--quiet --cached --ignore-unmatch --"] [file]
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. -}
 onDelDir :: FilePath -> Annex ()
-onDelDir dir = inRepo $ Git.Command.run "rm"
-	[Params "--quiet -r --cached --ignore-unmatch --", File dir]
+onDelDir dir = Annex.Queue.addCommand "rm"
+	[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 
 {- Called when there's an error with inotify. -}
 onErr :: String -> Annex ()
