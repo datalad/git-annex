@@ -261,15 +261,15 @@ files = withIndexUpdate $ do
  - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
-genIndex g = Git.UpdateIndex.stream_update_index g
-	[Git.UpdateIndex.ls_tree fullname g]
+genIndex g = Git.UpdateIndex.streamUpdateIndex g
+	[Git.UpdateIndex.lsTree fullname g]
 
 {- Merges the specified refs into the index.
  - Any changes staged in the index will be preserved. -}
 mergeIndex :: [Git.Ref] -> Annex ()
 mergeIndex branches = do
 	h <- catFileHandle
-	inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+	inRepo $ \g -> Git.UnionMerge.mergeIndex h g branches
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
@@ -338,13 +338,13 @@ stageJournal = do
 	g <- gitRepo
 	withIndex $ liftIO $ do
 		h <- hashObjectStart g
-		Git.UpdateIndex.stream_update_index g
+		Git.UpdateIndex.streamUpdateIndex g
 			[genstream (gitAnnexJournalDir g) h fs]
 		hashObjectStop h
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file
 			sha <- hashFile h path
-			_ <- streamer $ Git.UpdateIndex.update_index_line
+			_ <- streamer $ Git.UpdateIndex.updateIndexLine
 				sha FileBlob (asTopFilePath $ fileJournal file)
 			removeFile path

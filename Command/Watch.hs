@@ -19,9 +19,6 @@ import qualified Annex.Queue
 import qualified Command.Add
 import qualified Git.Command
 import qualified Git.UpdateIndex
-import Git.HashObject
-import Git.Types
-import Git.FilePath
 import qualified Backend
 import Annex.Content
 
@@ -140,9 +137,6 @@ onErr = warning
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. -}
 stageSymlink :: FilePath -> String -> Annex ()
-stageSymlink file linktext = do
-	line <- Git.UpdateIndex.update_index_line
-		<$> inRepo (hashObject BlobObject linktext)
-		<*> pure SymlinkBlob
-		<*> inRepo (toTopFilePath file)
-	Annex.Queue.addUpdateIndex $ \streamer -> streamer line
+stageSymlink file linktext =
+	Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.stageSymlink file linktext)

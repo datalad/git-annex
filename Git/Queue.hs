@@ -151,7 +151,7 @@ flush (Queue _ lim m) repo = do
  - this allows queueing commands that do not need a list of files. -}
 runAction :: Repo -> Action -> IO ()
 runAction repo (UpdateIndexAction streamers) =
-	Git.UpdateIndex.stream_update_index repo streamers
+	Git.UpdateIndex.streamUpdateIndex repo streamers
 runAction repo action@(CommandAction {}) =
 	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
 	where
