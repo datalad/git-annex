@@ -35,6 +35,10 @@ install pkg_descr lbi userhooks flags = do
 -- Based on pandoc's 'Setup.installManpages' and 'postInst' hook.
 -- Would be easier to just use 'rawSystem' as above.
 --
+-- XXX: lhs2tex installs man pages with the 'postCopy' hook. 
+-- I chose 'postInst'.  Pandoc uses both :P  So, probably
+-- to use the 'postCopy' hook.
+--
 -- XXX: fix tabs!
 installManpages :: InstallFlags -> PackageDescription -> LocalBuildInfo -> IO ()
 installManpages flags pkg lbi =
