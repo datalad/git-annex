@@ -1,1 +1,12 @@
 The [Web special remote](http://git-annex.branchable.com/special_remotes/web/) could possibly be improved by detecting when URLs reference a Youtube video page and using [youtube-dl](http://rg3.github.com/youtube-dl/) instead of wget to download the page. Youtube-dl can also handle several other video sites such as vimeo.com and blip.tv, so if this idea were to be implemented, it might make sense to borrow the regular expressions that youtube-dl uses to identify video URLs. A quick grep through the youtube-dl source for the identifier _VALID_URL should find those regexes (in Python's regex format).
+
+> This is something I've thought about doing for a while.. 
+> Two things I have not figured out:
+> 
+> * Seems that this should really be user-configurable or a plugin system,
+>   to handle more than just this one case.
+> * Youtube-dl breaks from time to time, I really trust these urls a lot
+>   less than regular urls. Perhaps per-url trust levels are called for by
+>   this.
+> 
+> --[[Joey]] 
