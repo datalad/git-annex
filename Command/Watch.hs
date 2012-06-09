@@ -12,7 +12,9 @@ module Command.Watch where
 
 import Common.Annex
 import Command
+#if defined linux_HOST_OS
 import Utility.Inotify
+#endif
 import Utility.ThreadLock
 import qualified Annex
 import qualified Annex.Queue
