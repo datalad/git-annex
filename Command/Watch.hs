@@ -18,12 +18,17 @@ import qualified Annex.Queue
 import qualified Command.Add
 import qualified Git.Command
 import qualified Git.UpdateIndex
+import qualified Git.HashObject
 import qualified Backend
 import Annex.Content
+import Annex.CatFile
+import Git.Types
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Time.Clock
+import Data.Bits.Utils
+import qualified Data.ByteString.Lazy as L
 
 #if defined linux_HOST_OS
 import Utility.Inotify
@@ -127,6 +132,9 @@ madeChange :: FilePath -> String -> Annex (Maybe Change)
 madeChange file desc = liftIO $ 
 	Just <$> (Change <$> getCurrentTime <*> pure file <*> pure desc)
 
+noChange :: Annex (Maybe Change)
+noChange = return Nothing
+
 {- Adding a file is tricky; the file has to be replaced with a symlink
  - but this is race prone, as the symlink could be changed immediately
  - after creation. To avoid that race, git add is not used to stage the
@@ -139,7 +147,7 @@ onAdd :: Handler
 onAdd file = do
 	showStart "add" file
 	handle =<< Command.Add.ingest file
-	return Nothing
+	noChange
 	where
 		handle Nothing = showEndFail
 		handle (Just key) = do
@@ -153,22 +161,35 @@ onAdd file = do
 onAddSymlink :: Handler
 onAddSymlink file = go =<< Backend.lookupFile file
 	where
-		go Nothing = do
-			addlink =<< liftIO (readSymbolicLink file)
-			madeChange file "add"
+		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( do
-					addlink link
-					madeChange file "add"
+				( addlink link
 				, do
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
-					madeChange file "fix"
 				)
-		addlink link = stageSymlink file link
+		{- This is often called on symlinks that are already staged
+		 - correctly, especially during the startup scan. A symlink
+		 - may have been deleted and re-added, or added when
+		 - the watcher was not running; so it always stages
+		 - even symlinks that already exist.
+		 -
+		 - So for speed, tries to reuse the existing blob for
+		 - the symlink target. -}
+		addlink link = do
+			v <- catObjectDetails $ Ref $ ":" ++ file
+			case v of
+				Just (currlink, sha)
+					| s2w8 link == L.unpack currlink ->
+						stageSymlink file sha
+				_ -> do
+					sha <- inRepo $
+						Git.HashObject.hashObject BlobObject link
+					stageSymlink file sha
+			madeChange file "link"
 
 onDel :: Handler
 onDel file = do
@@ -197,10 +218,10 @@ onErr msg = do
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. -}
-stageSymlink :: FilePath -> String -> Annex ()
-stageSymlink file linktext =
+stageSymlink :: FilePath -> Sha -> Annex ()
+stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageSymlink file linktext)
+		inRepo (Git.UpdateIndex.stageSymlink file sha)
 
 {- Signals that a change has been made, that needs to get committed. -}
 signalChange :: ChangeChan -> Change -> Annex ()

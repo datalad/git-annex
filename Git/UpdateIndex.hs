@@ -24,7 +24,6 @@ import Git
 import Git.Types
 import Git.Command
 import Git.FilePath
-import Git.HashObject
 import Git.Sha
 
 {- Streamers are passed a callback and should feed it lines in the form
@@ -70,10 +69,10 @@ unstageFile file repo = do
 	return $ pureStreamer $ "0 " ++ show nullSha ++ "\t" ++ getTopFilePath p
 
 {- A streamer that adds a symlink to the index. -}
-stageSymlink :: FilePath -> String -> Repo -> IO Streamer
-stageSymlink file linktext repo = do
+stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer
+stageSymlink file sha repo = do
 	line <- updateIndexLine
-		<$> hashObject BlobObject linktext repo
+		<$> pure sha
 		<*> pure SymlinkBlob
 		<*> toTopFilePath file repo
 	return $ pureStreamer line

@@ -8,6 +8,7 @@
 module Annex.CatFile (
 	catFile,
 	catObject,
+	catObjectDetails,
 	catFileHandle
 ) where
 
@@ -17,6 +18,7 @@ import Common.Annex
 import qualified Git
 import qualified Git.CatFile
 import qualified Annex
+import Git.Types
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -27,6 +29,11 @@ catObject :: Git.Ref -> Annex L.ByteString
 catObject ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObject h ref
+
+catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha))
+catObjectDetails ref = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catObjectDetails h ref
 
 catFileHandle :: Annex Git.CatFile.CatFileHandle
 catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
