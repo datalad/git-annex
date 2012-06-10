@@ -98,14 +98,10 @@ addCommand subcommand params files q repo =
 		different (CommandAction { getSubcommand = s }) = s /= subcommand
 		different _ = True
 
-{- Adds an update-index streamer to the queue. 
- -
- - Note that this does not increase the queue size, because data is
- - streamed into update-index, so command-line length limits are not
- - involved. -}
+{- Adds an update-index streamer to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Queue -> Repo -> IO Queue
 addUpdateIndex streamer q repo =
-	updateQueue action different 0 q repo
+	updateQueue action different 1 q repo
 	where
 		key = actionKey action
 		-- streamer is added to the end of the list, since

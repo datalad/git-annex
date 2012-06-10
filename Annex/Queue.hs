@@ -9,7 +9,8 @@ module Annex.Queue (
 	addCommand,
 	addUpdateIndex,
 	flush,
-	flushWhenFull
+	flushWhenFull,
+	size
 ) where
 
 import Common.Annex
@@ -44,6 +45,10 @@ flush = do
 		showStoringStateAction
 		q' <- inRepo $ Git.Queue.flush q
 		store q'
+
+{- Gets the size of the queue. -}
+size :: Annex Int
+size = Git.Queue.size <$> get
 
 get :: Annex Git.Queue.Queue
 get = maybe new return =<< getState repoqueue
