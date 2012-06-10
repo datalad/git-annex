@@ -31,4 +31,4 @@ if [ "$?" = 1 ]; then
 fi
 </pre>
 
-It's also using the branches-local script for sorting and prioritising the branches to build, this branches-local script can be found at the [autobuild-ceph](https://github.com/ceph/autobuild-ceph/blob/master/branches-local) repository. If there are other people interested in setting up their own instances of gitbuilder for git-annex, please let me know and I will setup an aggregator page to collect status of the builds.
+It's also using the branches-local script for sorting and prioritising the branches to build, this branches-local script can be found at the [autobuild-ceph](https://github.com/ceph/autobuild-ceph/blob/master/branches-local) repository. If there are other people interested in setting up their own instances of gitbuilder for git-annex, please let me know and I will setup an aggregator page to collect status of the builds. The builder runs and updates the webpage every 30mins.
