@@ -197,26 +197,28 @@ refillChanges chan cs = atomically $ mapM_ (writeTChan chan) cs
 commitThread :: MVar Annex.AnnexState -> ChangeChan -> IO ()
 commitThread st changechan = forever $ do
 	-- First, a simple rate limiter.
-	threadDelay $ oneSecond
-	liftIO $ putStrLn "running"
+	threadDelay oneSecond
 	-- Next, wait until at least one change has been made.
 	cs <- getChanges changechan
 	-- Now see if now's a good time to commit.
-	ifM (shouldCommit <$> getCurrentTime <*> pure cs) $
-		( commit
-		, do
-			liftIO $ putStrLn $ "no commit now " ++ show (length cs)
-			refillChanges changechan cs
-		)
+	time <- getCurrentTime
+	if shouldCommit time cs
+		then commit
+		else refillChanges changechan cs
 	where
 		commit = void $ tryIO $ runStateMVar st $ do
 			Annex.Queue.flush
-			{- Empty commits may be made if tree
-			 - changes cancel each other out, etc. -}
 			inRepo $ Git.Command.run "commit"
 				[ Param "--allow-empty-message"
 				, Param "-m", Param ""
+				-- Empty commits may be made if tree
+				-- changes cancel each other out, etc
 				, Param "--allow-empty"
+				-- Avoid running the usual git-annex
+				-- pre-commit hook; watch does the same
+				-- symlink fixing, and we don't want to
+				-- deal with unlocked files in these
+				-- commits.
 				, Param "--quiet"
 				]
 		oneSecond = 1000000 -- microseconds
