@@ -14,7 +14,7 @@ import qualified Build.Configure as Configure
 main = defaultMainWithHooks simpleUserHooks
 	{ preConf = configure
 	, postInst = myPostInst
-        , postCopy = myPostCopy
+	, postCopy = myPostCopy
 	}
 
 configure _ _ = do
@@ -24,11 +24,11 @@ configure _ _ = do
 myPostInst :: Args -> InstallFlags -> PackageDescription
            -> LocalBuildInfo -> IO ()
 myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
-  installGitAnnexShell dest verbosity pkg lbi
-  installManpages      dest verbosity pkg lbi
-  where
-    dest      = NoCopyDest
-    verbosity = fromFlag installVerbosity
+	installGitAnnexShell dest verbosity pkg lbi
+	installManpages      dest verbosity pkg lbi
+	where
+		dest      = NoCopyDest
+		verbosity = fromFlag installVerbosity
 
 -- ???: Not sure how you're supposed to use this.  E.g., when I do
 --
@@ -43,19 +43,19 @@ myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
 myPostCopy :: Args -> CopyFlags -> PackageDescription
            -> LocalBuildInfo -> IO ()
 myPostCopy _ (CopyFlags { copyDest, copyVerbosity }) pkg lbi = do
-  installGitAnnexShell dest verbosity pkg lbi
-  installManpages      dest verbosity pkg lbi
-  where
-    dest      = fromFlag copyDest
-    verbosity = fromFlag copyVerbosity
+	installGitAnnexShell dest verbosity pkg lbi
+	installManpages      dest verbosity pkg lbi
+	where
+		dest      = fromFlag copyDest
+		verbosity = fromFlag copyVerbosity
 
 installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription
                      -> LocalBuildInfo -> IO ()
 installGitAnnexShell copyDest verbosity pkg lbi =
-  rawSystemExit verbosity "ln"
-    ["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
-  where
-    dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
+	rawSystemExit verbosity "ln"
+		["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
+	where
+		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
 -- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages.
 --
@@ -79,14 +79,12 @@ installGitAnnexShell copyDest verbosity pkg lbi =
 -- http://www.haskell.org/pipermail/libraries/2008-March/009416.html
 -- Although that sounds desirable, it's not true, as the reply and
 -- experiments indicate.
---
--- XXX: fix tabs!
 installManpages :: CopyDest -> Verbosity -> PackageDescription
                 -> LocalBuildInfo -> IO ()
 installManpages copyDest verbosity pkg lbi =
-  installOrdinaryFiles verbosity dstManDir srcManpages
-  where
-    dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-    srcManpages = zip (repeat srcManDir) manpages
-    srcManDir   = ""
-    manpages    = ["git-annex.1", "git-annex-shell.1"]
+	installOrdinaryFiles verbosity dstManDir srcManpages
+	where
+		dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
+		srcManpages = zip (repeat srcManDir) manpages
+		srcManDir   = ""
+		manpages    = ["git-annex.1", "git-annex-shell.1"]
