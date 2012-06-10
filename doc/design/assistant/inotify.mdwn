@@ -23,9 +23,9 @@ really useful, it needs to:
   is exceeded. This can be tuned by root, so help the user fix it.
   **done**
 - periodically auto-commit staged changes (avoid autocommitting when
-  lots of changes are coming in)
+  lots of changes are coming in) **done**
 - tunable delays before adding new files, etc
-- coleasce related add/rm events for speed and less disk IO
+- coleasce related add/rm events for speed and less disk IO **done**
 - don't annex `.gitignore` and `.gitattributes` files **done**
 - configurable option to only annex files meeting certian size or
   filename criteria
@@ -107,7 +107,3 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
-
-* At startup, `git add --update` is run, to notice deleted files.
-  Then inotify starts up. Files deleted in between won't have their
-  removals staged.
