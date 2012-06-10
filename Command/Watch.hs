@@ -39,12 +39,17 @@ seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
-#if defined linux_HOST_OS
 start = notBareRepo $ do
 	showStart "watch" "."
+	watch
+	stop
+
+watch :: Annex ()
+#if defined linux_HOST_OS
+watch = do
 	showAction "scanning"
 	inRepo $ Git.Command.run "add" [Param "--update"]
-	next $ next $ withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
+	withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
 		changechan <- atomically newTChan
 		_ <- forkIO $ commitThread st changechan
 		let hook a = Just $ runHook st changechan a
@@ -58,9 +63,8 @@ start = notBareRepo $ do
 		watchDir i "." (ignored . takeFileName) hooks
 		putStrLn "(started)"
 		waitForTermination
-		return True
 #else
-start = error "watch mode is so far only available on Linux"
+watch = error "watch mode is so far only available on Linux"
 #endif
 
 ignored :: FilePath -> Bool
