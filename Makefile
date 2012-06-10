@@ -103,6 +103,7 @@ clean:
 # Workaround for cabal sdist not running Setup hooks, so I cannot
 # generate a file list there.
 sdist: clean
+	@make $(mans)
 	@if [ ! -e git-annex.cabal.orig ]; then cp git-annex.cabal git-annex.cabal.orig; fi
 	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
 	@cabal sdist
