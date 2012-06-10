@@ -24,7 +24,6 @@ import qualified Git.UpdateIndex
 import qualified Backend
 import Annex.Content
 
-import Control.Exception as E
 import Control.Concurrent.MVar
 
 #if defined linux_HOST_OS
@@ -43,10 +42,8 @@ start = notBareRepo $ do
 	showStart "watch" "."
 	showAction "scanning"
 	inRepo $ Git.Command.run "add" [Param "--update"]
-	state <- Annex.getState id
-	mvar <- liftIO $ newMVar state
-	next $ next $ liftIO $ withINotify $ \i -> do
-		let hook a = Just $ runAnnex mvar a
+	next $ next $ withStateMVar $ \mvar -> liftIO $ withINotify $ \i -> do
+		let hook a = Just $ runHook mvar a
 		let hooks = WatchHooks
 			{ addHook = hook onAdd
 			, delHook = hook onDel
@@ -68,23 +65,36 @@ ignored ".gitignore" = True
 ignored ".gitattributes" = True
 ignored _ = False
 
-{- Runs a handler, inside the Annex monad.
+{- Stores the Annex state in a MVar, so that threaded actions can access
+ - it.
  -
- - Exceptions by the handlers are ignored, otherwise a whole watcher
- - thread could be crashed.
+ - Once the action is finished, retrieves the state from the MVar.
  -}
-runAnnex :: MVar Annex.AnnexState -> (FilePath -> Annex a) -> FilePath -> IO ()
-runAnnex mvar a f = do
+withStateMVar :: (MVar Annex.AnnexState -> Annex a) -> Annex a
+withStateMVar a = do
+	state <- Annex.getState id
+	mvar <- liftIO $ newMVar state
+	r <- a mvar
+	newstate <- liftIO $ takeMVar mvar
+	Annex.changeState (const newstate)
+	return r
+
+{- Runs an Annex action, using the state from the MVar. -}
+runStateMVar :: MVar Annex.AnnexState -> Annex () -> IO ()
+runStateMVar mvar a = do
 	startstate <- takeMVar mvar
-	r <- E.try (go startstate) :: IO (Either E.SomeException Annex.AnnexState)
-	case r of
-		Left e -> do
-			putStrLn (show e)
-			putMVar mvar startstate
-		Right !newstate ->
-			putMVar mvar newstate
+	!newstate <- Annex.exec startstate a
+	putMVar mvar newstate
+
+{- Runs a hook, inside the Annex monad.
+ -
+ - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
+ -}
+runHook :: MVar Annex.AnnexState -> (FilePath -> Annex ()) -> FilePath -> IO ()
+runHook mvar a f = handle =<< tryIO (runStateMVar mvar $ a f)
 	where
-		go state = Annex.exec state $ a f
+		handle (Right ()) = return ()
+		handle (Left e) = putStrLn $ show e
 
 {- Adding a file is tricky; the file has to be replaced with a symlink
  - but this is race prone, as the symlink could be changed immediately
@@ -120,8 +130,6 @@ onAddSymlink file = go =<< Backend.lookupFile file
 				)
 		addlink link = stageSymlink file link
 
-{- The file could reappear at any time, so --cached is used, to only delete
- - it from the index. -}
 onDel :: FilePath -> Annex ()
 onDel file = Annex.Queue.addUpdateIndex =<<
 	inRepo (Git.UpdateIndex.unstageFile file)
