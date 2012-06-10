@@ -24,7 +24,7 @@ import qualified Git.UpdateIndex
 import qualified Backend
 import Annex.Content
 
-import Control.Concurrent.MVar
+import Control.Concurrent
 
 #if defined linux_HOST_OS
 import System.INotify
@@ -52,6 +52,7 @@ start = notBareRepo $ do
 			, errHook = hook onErr
 			}
 		watchDir i "." (ignored . takeFileName) hooks
+		_ <- forkIO $ commitThread mvar
 		putStrLn "(started)"
 		waitForTermination
 		return True
@@ -91,8 +92,11 @@ runStateMVar mvar a = do
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
 runHook :: MVar Annex.AnnexState -> (FilePath -> Annex ()) -> FilePath -> IO ()
-runHook mvar a f = handle =<< tryIO (runStateMVar mvar $ a f)
+runHook mvar a f = handle =<< tryIO (runStateMVar mvar go)
 	where
+		go = do
+			a f
+			Annex.Queue.flushWhenFull
 		handle (Right ()) = return ()
 		handle (Left e) = putStrLn $ show e
 
@@ -155,3 +159,21 @@ stageSymlink :: FilePath -> String -> Annex ()
 stageSymlink file linktext =
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.stageSymlink file linktext)
+
+{- This thread wakes up periodically and makes git commits. -}
+commitThread :: MVar Annex.AnnexState -> IO ()
+commitThread mvar = forever $ do
+	threadDelay 1000000 -- 1 second
+	commit
+	where
+		commit = tryIO $ runStateMVar mvar $
+			whenM ((>) <$> Annex.Queue.size <*> pure 0) $ do
+				Annex.Queue.flush
+				{- Empty commits may be made if tree
+				 - changes cancel each other out, etc. -}
+				inRepo $ Git.Command.run "commit"
+					[ Param "--allow-empty-message"
+					, Param "-m", Param ""
+					, Param "--allow-empty"
+					, Param "--quiet"
+					]
