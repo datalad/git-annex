@@ -1,55 +1,92 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {- cabal setup file -}
 
 import Distribution.Simple
 import Distribution.Simple.LocalBuildInfo
 import Distribution.Simple.Setup
-import Distribution.Simple.Utils (installOrdinaryFiles)
+import Distribution.Simple.Utils (installOrdinaryFiles, rawSystemExit)
 import Distribution.PackageDescription (PackageDescription(..))
 import Distribution.Verbosity (Verbosity)
-import System.Cmd
 import System.FilePath
 
 import qualified Build.Configure as Configure
 
 main = defaultMainWithHooks simpleUserHooks
 	{ preConf = configure
-	, instHook = install
-        , postInst = const installManpages
+	, postInst = myPostInst
+        , postCopy = myPostCopy
 	}
 
 configure _ _ = do
 	Configure.run Configure.tests
 	return (Nothing, [])
 
-install pkg_descr lbi userhooks flags = do
-	r <- (instHook simpleUserHooks) pkg_descr lbi userhooks flags
-	_ <- rawSystem "ln" ["-sf", "git-annex", 
-		bindir installDirs </> "git-annex-shell"]
-	return r
-	where
-		installDirs = absoluteInstallDirs pkg_descr lbi $
-			fromFlag (copyDest defaultCopyFlags)
+myPostInst :: Args -> InstallFlags -> PackageDescription
+           -> LocalBuildInfo -> IO ()
+myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
+  installGitAnnexShell dest verbosity pkg lbi
+  installManpages      dest verbosity pkg lbi
+  where
+    dest      = NoCopyDest
+    verbosity = fromFlag installVerbosity
+
+-- ???: Not sure how you're supposed to use this.  E.g., when I do
+--
+--    cabal install --prefix=/tmp/git-annex-install
+--    cabal copy --deistdir=/tmp/git-annex-copy
+--
+-- I get the copy under
+--
+--   /tmp/git-annex-copy/tmp/git-annex-install
+--
+-- Also, `cabal install` fails when given a relative --prefix.
+myPostCopy :: Args -> CopyFlags -> PackageDescription
+           -> LocalBuildInfo -> IO ()
+myPostCopy _ (CopyFlags { copyDest, copyVerbosity }) pkg lbi = do
+  installGitAnnexShell dest verbosity pkg lbi
+  installManpages      dest verbosity pkg lbi
+  where
+    dest      = fromFlag copyDest
+    verbosity = fromFlag copyVerbosity
+
+installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription
+                     -> LocalBuildInfo -> IO ()
+installGitAnnexShell copyDest verbosity pkg lbi =
+  rawSystemExit verbosity "ln"
+    ["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
+  where
+    dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
 -- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages.
 --
--- Based on pandoc's 'Setup.installManpages' and 'postInst' hook.
--- Would be easier to just use 'rawSystem' as above.
+-- Based on pandoc's and lhs2tex's 'Setup.installManpages' and
+-- 'postInst' hooks.
 --
--- XXX: lhs2tex installs man pages with the 'postCopy' hook. 
--- I chose 'postInst'.  Pandoc uses both :P  So, probably
--- to use the 'postCopy' hook.
+-- My understanding: 'postCopy' is run for `cabal copy`, 'postInst' is
+-- run for `cabal inst`, and copy is not a generalized install, so you
+-- have to write two nearly identical hooks. 
+--
+-- Summary of hooks:
+-- http://www.haskell.org/cabal/release/cabal-latest/doc/API/Cabal/Distribution-Simple-UserHooks.htm--
+-- Other people are also confused:
+--
+-- * Bug: 'postCopy' and 'postInst' are confusing:
+-- http://hackage.haskell.org/trac/hackage/ticket/718
+--
+-- * A cabal maintainer suggests using 'postCopy' instead of
+-- 'postInst', because `cabal install` is `cabal copy` followed by
+-- `cabal register`:
+-- http://www.haskell.org/pipermail/libraries/2008-March/009416.html
+-- Although that sounds desirable, it's not true, as the reply and
+-- experiments indicate.
 --
 -- XXX: fix tabs!
-installManpages :: InstallFlags -> PackageDescription -> LocalBuildInfo -> IO ()
-installManpages flags pkg lbi =
-  installOrdinaryFiles verbosity dstManDir manpages
+installManpages :: CopyDest -> Verbosity -> PackageDescription
+                -> LocalBuildInfo -> IO ()
+installManpages copyDest verbosity pkg lbi =
+  installOrdinaryFiles verbosity dstManDir srcManpages
   where
-    srcManDir = ""
-    -- The 'NoCopyDest' means "don't add an additional path prefix".
-    -- The pandoc Setup.hs uses 'NoCopyDest' in the post install hook
-    -- and the 'CopyDest' from the copy flags in the post copy hook.
-    dstManDir = mandir (absoluteInstallDirs pkg lbi NoCopyDest) </> "man1"
-    manpages  = zip (repeat srcManDir)
-                    [ "git-annex.1"
-                    , "git-annex-shell.1" ]
-    verbosity = fromFlag $ installVerbosity flags
+    dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
+    srcManpages = zip (repeat srcManDir) manpages
+    srcManDir   = ""
+    manpages    = ["git-annex.1", "git-annex-shell.1"]
