@@ -108,3 +108,6 @@ Many races need to be dealt with by this code. Here are some of them.
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
 
+* At startup, `git add --update` is run, to notice deleted files.
+  Then inotify starts up. Files deleted in between won't have their
+  removals staged.
