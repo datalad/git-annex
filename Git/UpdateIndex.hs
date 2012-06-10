@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Git.UpdateIndex (
 	Streamer,
 	pureStreamer,
@@ -29,7 +31,7 @@ type Streamer = (String -> IO ()) -> IO ()
 
 {- A streamer with a precalculated value. -}
 pureStreamer :: String -> Streamer
-pureStreamer s = \streamer -> streamer s
+pureStreamer !s = \streamer -> streamer s
 
 {- Streams content into update-index from a list of Streamers. -}
 streamUpdateIndex :: Repo -> [Streamer] -> IO ()
