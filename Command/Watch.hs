@@ -57,10 +57,8 @@ watch :: Annex ()
 #if defined linux_HOST_OS
 watch = do
 	showAction "scanning"
-	inRepo $ Git.Command.run "add" [Param "--update"]
 	withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
 		changechan <- atomically newTChan
-		_ <- forkIO $ commitThread st changechan
 		let hook a = Just $ runHandler st changechan a
 		let hooks = WatchHooks
 			{ addHook = hook onAdd
@@ -69,7 +67,17 @@ watch = do
 			, delDirHook = hook onDelDir
 			, errHook = hook onErr
 			}
+		-- The commit thread is started early, so that the user
+		-- can immediately begin adding files and having them
+		-- committed, even while the inotify scan is taking place.
+		_ <- forkIO $ commitThread st changechan
+		-- This does not return until the inotify scan is done.
+		-- That can take some time for large trees.
 		watchDir i "." (ignored . takeFileName) hooks
+		-- Notice any files that were deleted before inotify
+		-- was started.
+		runStateMVar st $
+			inRepo $ Git.Command.run "add" [Param "--update"]
 		putStrLn "(started)"
 		waitForTermination
 #else
