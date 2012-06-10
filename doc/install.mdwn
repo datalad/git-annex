@@ -41,7 +41,8 @@ To build and use git-annex, you will need:
   * [IfElse](http://hackage.haskell.org/package/IfElse)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
   * [edit-distance](http://hackage.haskell.org/package/edit-distance)
-  * [hinotify](http://hackage.haskell.org/package/hinotify)
+  * [stm](http://hackage.haskell.org/package/stm)
+  * [hinotify](http://hackage.haskell.org/package/hinotify) (on Linux only)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)
