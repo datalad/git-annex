@@ -94,9 +94,8 @@ undo file key e = do
 			src <- inRepo $ gitAnnexLocation key
 			liftIO $ moveFile src file
 
-{- Creates the symlink to the annexed content, and also returns the link's
- - text. -}
-link :: FilePath -> Key -> Bool -> Annex FilePath
+{- Creates the symlink to the annexed content. -}
+link :: FilePath -> Key -> Bool -> Annex ()
 link file key hascontent = handle (undo file key) $ do
 	l <- calcGitLink file key
 	liftIO $ createSymbolicLink l file
@@ -109,8 +108,6 @@ link file key hascontent = handle (undo file key) $ do
 		liftIO $ do
 			mtime <- modificationTime <$> getFileStatus file
 			touch file (TimeSpec mtime) False
-
-	return l
 
 {- Note: Several other commands call this, and expect it to 
  - create the symlink and add it. -}

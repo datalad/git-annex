@@ -30,7 +30,16 @@ import Utility.Inotify
 import System.INotify
 #endif
 
-type ChangeChan = TChan UTCTime
+type ChangeChan = TChan Change
+
+type Handler = FilePath -> Annex (Maybe Change)
+
+data Change = Change
+	{ changeTime :: UTCTime
+	, changeFile :: FilePath
+	, changeDesc :: String
+	}
+	deriving (Show)
 
 def :: [Command]
 def = [command "watch" paramPaths seek "watch for changes"]
@@ -52,7 +61,7 @@ watch = do
 	withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
 		changechan <- atomically newTChan
 		_ <- forkIO $ commitThread st changechan
-		let hook a = Just $ runHook st changechan a
+		let hook a = Just $ runHandler st changechan a
 		let hooks = WatchHooks
 			{ addHook = hook onAdd
 			, delHook = hook onDel
@@ -94,56 +103,70 @@ runStateMVar mvar a = do
 	!newstate <- Annex.exec startstate a
 	putMVar mvar newstate
 
-{- Runs a hook, inside the Annex monad.
+{- Runs an action handler, inside the Annex monad.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHook :: MVar Annex.AnnexState -> ChangeChan -> (FilePath -> Annex ()) -> FilePath -> IO ()
-runHook st changetimes a f = handle =<< tryIO (runStateMVar st go)
+runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO ()
+runHandler st changechan hook file = handle =<< tryIO (runStateMVar st go)
 	where
-		go = do
-			a f
-			signalChange changetimes
+		go = maybe noop (signalChange changechan) =<< hook file
 		handle (Right ()) = return ()
 		handle (Left e) = putStrLn $ show e
+
+{- Handlers call this when they made a change that needs to get committed. -}
+madeChange :: FilePath -> String -> Annex (Maybe Change)
+madeChange file desc = liftIO $ 
+	Just <$> (Change <$> getCurrentTime <*> pure file <*> pure desc)
 
 {- Adding a file is tricky; the file has to be replaced with a symlink
  - but this is race prone, as the symlink could be changed immediately
  - after creation. To avoid that race, git add is not used to stage the
- - symlink. -}
-onAdd :: FilePath -> Annex ()
+ - symlink.
+ -
+ - Inotify will notice the new symlink, so this Handler does not stage it
+ - or return a Change, leaving that to onAddSymlink.
+ -}
+onAdd :: Handler
 onAdd file = do
 	showStart "add" file
-	Command.Add.ingest file >>= go
+	handle =<< Command.Add.ingest file
+	return Nothing
 	where
-		go Nothing = showEndFail
-		go (Just key) = do
-			link <- Command.Add.link file key True
-			stageSymlink file link
+		handle Nothing = showEndFail
+		handle (Just key) = do
+			Command.Add.link file key True
 			showEndOk
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
-onAddSymlink :: FilePath -> Annex ()
+onAddSymlink :: Handler
 onAddSymlink file = go =<< Backend.lookupFile file
 	where
-		go Nothing = addlink =<< liftIO (readSymbolicLink file)
+		go Nothing = do
+			addlink =<< liftIO (readSymbolicLink file)
+			madeChange file "add"
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( addlink link
+				( do
+					addlink link
+					madeChange file "add"
 				, do
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
+					madeChange file "fix"
 				)
 		addlink link = stageSymlink file link
 
-onDel :: FilePath -> Annex ()
-onDel file = Annex.Queue.addUpdateIndex =<<
-	inRepo (Git.UpdateIndex.unstageFile file)
+onDel :: Handler
+onDel file = do
+	Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.unstageFile file)
+	madeChange file "rm"
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -152,13 +175,17 @@ onDel file = Annex.Queue.addUpdateIndex =<<
  - Note: This could use unstageFile, but would need to run another git
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
-onDelDir :: FilePath -> Annex ()
-onDelDir dir = Annex.Queue.addCommand "rm"
-	[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
+onDelDir :: Handler
+onDelDir dir = do
+	Annex.Queue.addCommand "rm"
+		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
+	madeChange dir "rmdir"
 
 {- Called when there's an error with inotify. -}
-onErr :: String -> Annex ()
-onErr = warning
+onErr :: Handler
+onErr msg = do
+	warning msg
+	return Nothing
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. -}
@@ -168,16 +195,17 @@ stageSymlink file linktext =
 		inRepo (Git.UpdateIndex.stageSymlink file linktext)
 
 {- Signals that a change has been made, that needs to get committed. -}
-signalChange :: ChangeChan -> Annex ()
-signalChange chan = do
-	liftIO $ (atomically . writeTChan chan) =<< getCurrentTime
+signalChange :: ChangeChan -> Change -> Annex ()
+signalChange chan change = do
+	liftIO $ atomically $ writeTChan chan change
+
 	-- Just in case the commit thread is not flushing
 	-- the queue fast enough.
 	Annex.Queue.flushWhenFull
 
-{- Gets the times of all unhandled changes.
+{- Gets all unhandled changes.
  - Blocks until at least one change is made. -}
-getChanges :: ChangeChan -> IO [UTCTime]
+getChanges :: ChangeChan -> IO [Change]
 getChanges chan = atomically $ do
 	c <- readTChan chan
 	go [c]
@@ -190,10 +218,10 @@ getChanges chan = atomically $ do
 
 {- Puts unhandled changes back into the channel.
  - Note: Original order is not preserved. -}
-refillChanges :: ChangeChan -> [UTCTime] -> IO ()
+refillChanges :: ChangeChan -> [Change] -> IO ()
 refillChanges chan cs = atomically $ mapM_ (writeTChan chan) cs
 
-{- This thread makes git commits. -}
+{- This thread makes git commits at appropriate times. -}
 commitThread :: MVar Annex.AnnexState -> ChangeChan -> IO ()
 commitThread st changechan = forever $ do
 	-- First, a simple rate limiter.
@@ -203,25 +231,25 @@ commitThread st changechan = forever $ do
 	-- Now see if now's a good time to commit.
 	time <- getCurrentTime
 	if shouldCommit time cs
-		then commit
+		then void $ tryIO $ runStateMVar st $ commitStaged
 		else refillChanges changechan cs
 	where
-		commit = void $ tryIO $ runStateMVar st $ do
-			Annex.Queue.flush
-			inRepo $ Git.Command.run "commit"
-				[ Param "--allow-empty-message"
-				, Param "-m", Param ""
-				-- Empty commits may be made if tree
-				-- changes cancel each other out, etc
-				, Param "--allow-empty"
-				-- Avoid running the usual git-annex
-				-- pre-commit hook; watch does the same
-				-- symlink fixing, and we don't want to
-				-- deal with unlocked files in these
-				-- commits.
-				, Param "--quiet"
-				]
 		oneSecond = 1000000 -- microseconds
+
+commitStaged :: Annex ()
+commitStaged = do
+	Annex.Queue.flush
+	inRepo $ Git.Command.run "commit"
+		[ Param "--allow-empty-message"
+		, Param "-m", Param ""
+		-- Empty commits may be made if tree changes cancel
+		-- each other out, etc
+		, Param "--allow-empty"
+		-- Avoid running the usual git-annex pre-commit hook;
+		-- watch does the same symlink fixing, and we don't want
+		-- to deal with unlocked files in these commits.
+		, Param "--quiet"
+		]
 
 {- Decide if now is a good time to make a commit.
  - Note that the list of change times has an undefined order.
@@ -229,12 +257,12 @@ commitThread st changechan = forever $ do
  - Current strategy: If there have been 10 commits within the past second,
  - a batch activity is taking place, so wait for later.
  -}
-shouldCommit :: UTCTime -> [UTCTime] -> Bool
-shouldCommit now changetimes
+shouldCommit :: UTCTime -> [Change] -> Bool
+shouldCommit now changes
 	| len == 0 = False
 	| len > 4096 = True -- avoid bloating queue too much
-	| length (filter thisSecond changetimes) < 10 = True
+	| length (filter thisSecond changes) < 10 = True
 	| otherwise = False -- batch activity
 	where
-		len = length changetimes
-		thisSecond t = now `diffUTCTime` t <= 1
+		len = length changes
+		thisSecond c = now `diffUTCTime` changeTime c <= 1
