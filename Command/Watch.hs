@@ -12,9 +12,6 @@ module Command.Watch where
 
 import Common.Annex
 import Command
-#if defined linux_HOST_OS
-import Utility.Inotify
-#endif
 import Utility.ThreadLock
 import qualified Annex
 import qualified Annex.Queue
@@ -25,10 +22,15 @@ import qualified Backend
 import Annex.Content
 
 import Control.Concurrent
+import Control.Concurrent.STM
+import Data.Time.Clock
 
 #if defined linux_HOST_OS
+import Utility.Inotify
 import System.INotify
 #endif
+
+type ChangeChan = TChan UTCTime
 
 def :: [Command]
 def = [command "watch" paramPaths seek "watch for changes"]
@@ -42,8 +44,10 @@ start = notBareRepo $ do
 	showStart "watch" "."
 	showAction "scanning"
 	inRepo $ Git.Command.run "add" [Param "--update"]
-	next $ next $ withStateMVar $ \mvar -> liftIO $ withINotify $ \i -> do
-		let hook a = Just $ runHook mvar a
+	next $ next $ withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
+		changechan <- atomically newTChan
+		_ <- forkIO $ commitThread st changechan
+		let hook a = Just $ runHook st changechan a
 		let hooks = WatchHooks
 			{ addHook = hook onAdd
 			, delHook = hook onDel
@@ -52,7 +56,6 @@ start = notBareRepo $ do
 			, errHook = hook onErr
 			}
 		watchDir i "." (ignored . takeFileName) hooks
-		_ <- forkIO $ commitThread mvar
 		putStrLn "(started)"
 		waitForTermination
 		return True
@@ -91,12 +94,12 @@ runStateMVar mvar a = do
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHook :: MVar Annex.AnnexState -> (FilePath -> Annex ()) -> FilePath -> IO ()
-runHook mvar a f = handle =<< tryIO (runStateMVar mvar go)
+runHook :: MVar Annex.AnnexState -> ChangeChan -> (FilePath -> Annex ()) -> FilePath -> IO ()
+runHook st changetimes a f = handle =<< tryIO (runStateMVar st go)
 	where
 		go = do
 			a f
-			Annex.Queue.flushWhenFull
+			signalChange changetimes
 		handle (Right ()) = return ()
 		handle (Left e) = putStrLn $ show e
 
@@ -160,20 +163,72 @@ stageSymlink file linktext =
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.stageSymlink file linktext)
 
-{- This thread wakes up periodically and makes git commits. -}
-commitThread :: MVar Annex.AnnexState -> IO ()
-commitThread mvar = forever $ do
-	threadDelay 1000000 -- 1 second
-	commit
+{- Signals that a change has been made, that needs to get committed. -}
+signalChange :: ChangeChan -> Annex ()
+signalChange chan = do
+	liftIO $ (atomically . writeTChan chan) =<< getCurrentTime
+	-- Just in case the commit thread is not flushing
+	-- the queue fast enough.
+	Annex.Queue.flushWhenFull
+
+{- Gets the times of all unhandled changes.
+ - Blocks until at least one change is made. -}
+getChanges :: ChangeChan -> IO [UTCTime]
+getChanges chan = atomically $ do
+	c <- readTChan chan
+	go [c]
 	where
-		commit = tryIO $ runStateMVar mvar $
-			whenM ((>) <$> Annex.Queue.size <*> pure 0) $ do
-				Annex.Queue.flush
-				{- Empty commits may be made if tree
-				 - changes cancel each other out, etc. -}
-				inRepo $ Git.Command.run "commit"
-					[ Param "--allow-empty-message"
-					, Param "-m", Param ""
-					, Param "--allow-empty"
-					, Param "--quiet"
-					]
+		go l = do
+			v <- tryReadTChan chan
+			case v of
+				Nothing -> return l
+				Just c -> go (c:l)
+
+{- Puts unhandled changes back into the channel.
+ - Note: Original order is not preserved. -}
+refillChanges :: ChangeChan -> [UTCTime] -> IO ()
+refillChanges chan cs = atomically $ mapM_ (writeTChan chan) cs
+
+{- This thread makes git commits. -}
+commitThread :: MVar Annex.AnnexState -> ChangeChan -> IO ()
+commitThread st changechan = forever $ do
+	-- First, a simple rate limiter.
+	threadDelay $ oneSecond
+	liftIO $ putStrLn "running"
+	-- Next, wait until at least one change has been made.
+	cs <- getChanges changechan
+	-- Now see if now's a good time to commit.
+	ifM (shouldCommit <$> getCurrentTime <*> pure cs) $
+		( commit
+		, do
+			liftIO $ putStrLn $ "no commit now " ++ show (length cs)
+			refillChanges changechan cs
+		)
+	where
+		commit = void $ tryIO $ runStateMVar st $ do
+			Annex.Queue.flush
+			{- Empty commits may be made if tree
+			 - changes cancel each other out, etc. -}
+			inRepo $ Git.Command.run "commit"
+				[ Param "--allow-empty-message"
+				, Param "-m", Param ""
+				, Param "--allow-empty"
+				, Param "--quiet"
+				]
+		oneSecond = 1000000 -- microseconds
+
+{- Decide if now is a good time to make a commit.
+ - Note that the list of change times has an undefined order.
+ -
+ - Current strategy: If there have been 10 commits within the past second,
+ - a batch activity is taking place, so wait for later.
+ -}
+shouldCommit :: UTCTime -> [UTCTime] -> Bool
+shouldCommit now changetimes
+	| len == 0 = False
+	| len > 4096 = True -- avoid bloating queue too much
+	| length (filter thisSecond changetimes) < 10 = True
+	| otherwise = False -- batch activity
+	where
+		len = length changetimes
+		thisSecond t = now `diffUTCTime` t <= 1

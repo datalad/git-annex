@@ -21,6 +21,7 @@ Build-Depends:
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
 	libghc-hinotify-dev,
+	libghc-stm-dev,
 	ikiwiki,
 	perlmagick,
 	git,
