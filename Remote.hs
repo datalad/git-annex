@@ -54,9 +54,9 @@ remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
 remoteMap c = M.fromList . map (\r -> (uuid r, c r)) .
 	filter (\r -> uuid r /= NoUUID) <$> remoteList
 
-{- Map of UUIDs and their descriptions.
+{- Map of UUIDs of remotes and their descriptions.
  - The names of Remotes are added to suppliment any description that has
- - been set for a repository. -}
+ - been set for a repository.  -}
 uuidDescriptions :: Annex (M.Map UUID String)
 uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
 
@@ -101,9 +101,6 @@ nameToUUID n = byName' n >>= go
 		double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
- -
- - Shows descriptions from the uuid log, falling back to remote names,
- - as some remotes may not be in the uuid log.
  -
  - When JSON is enabled, also generates a machine-readable description
  - of the UUIDs. -}

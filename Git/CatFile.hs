@@ -21,6 +21,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
+import Git.Types
 import qualified Utility.CoProcess as CoProcess
 
 type CatFileHandle = CoProcess.CoProcessHandle
@@ -52,7 +53,7 @@ catObject h object = CoProcess.query h send receive
 			case words header of
 				[sha, objtype, size]
 					| length sha == shaSize &&
-					  validobjtype objtype -> 
+					  isJust (readObjectType objtype) -> 
 						case reads size of
 							[(bytes, "")] -> readcontent bytes from
 							_ -> dne
@@ -67,8 +68,3 @@ catObject h object = CoProcess.query h send receive
 				error "missing newline from git cat-file"
 			return $ L.fromChunks [content]
 		dne = return L.empty
-		validobjtype t
-			| t == "blob" = True
-			| t == "commit" = True
-			| t == "tree" = True
-			| otherwise = False

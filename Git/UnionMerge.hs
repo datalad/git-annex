@@ -7,14 +7,9 @@
 
 module Git.UnionMerge (
 	merge,
-	merge_index,
-	update_index,
-	stream_update_index,
-	update_index_line,
-	ls_tree
+	merge_index
 ) where
 
-import System.Cmd.Utils
 import qualified Data.Text.Lazy as L
 import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Set as S
@@ -24,8 +19,9 @@ import Git
 import Git.Sha
 import Git.CatFile
 import Git.Command
-
-type Streamer = (String -> IO ()) -> IO ()
+import Git.UpdateIndex
+import Git.HashObject
+import Git.Types
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -46,38 +42,6 @@ merge x y repo = do
 merge_index :: CatFileHandle -> Repo -> [Ref] -> IO ()
 merge_index h repo bs =
 	stream_update_index repo $ map (\b -> merge_tree_index b h repo) bs
-
-{- Feeds content into update-index. Later items in the list can override
- - earlier ones, so the list can be generated from any combination of
- - ls_tree, merge_trees, and merge_tree_index. -}
-update_index :: Repo -> [String] -> IO ()
-update_index repo ls = stream_update_index repo [(`mapM_` ls)]
-
-{- Streams content into update-index. -}
-stream_update_index :: Repo -> [Streamer] -> IO ()
-stream_update_index repo as = do
-	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
-	fileEncoding h
-	forM_ as (stream h)
-	hClose h
-	forceSuccess p
-	where
-		params = map Param ["update-index", "-z", "--index-info"]
-		stream h a = a (streamer h)
-		streamer h s = do
-			hPutStr h s
-			hPutStr h "\0"
-
-{- Generates a line suitable to be fed into update-index, to add
- - a given file with a given sha. -}
-update_index_line :: Sha -> FilePath -> String
-update_index_line sha file = "100644 blob " ++ show sha ++ "\t" ++ file
-
-{- Gets the current tree for a ref. -}
-ls_tree :: Ref -> Repo -> Streamer
-ls_tree (Ref x) repo streamer = mapM_ streamer =<< pipeNullSplit params repo
-	where
-		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- For merging two trees. -}
 merge_trees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
@@ -109,25 +73,13 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
-	shas -> use =<< either return (hashObject repo . unlines) =<<
+	shas -> use =<< either return (hashObject repo BlobObject . unlines) =<<
 		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
 		getcontents s = map L.unpack . L.lines .
 			L.decodeUtf8 <$> catObject h s
 		use sha = return $ Just $ update_index_line sha file
-
-{- Injects some content into git, returning its Sha. -}
-hashObject :: Repo -> String -> IO Sha
-hashObject repo content = getSha subcmd $ do
-	(h, s) <- pipeWriteRead (map Param params) content repo
-	length s `seq` do
-		forceSuccess h
-		reap -- XXX unsure why this is needed
-		return s
-	where
-		subcmd = "hash-object"
-		params = [subcmd, "-w", "--stdin"]
 
 {- Calculates a union merge between a list of refs, with contents.
  -

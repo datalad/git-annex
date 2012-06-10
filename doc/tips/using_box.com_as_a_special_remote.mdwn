@@ -24,7 +24,7 @@ With a little setup, git-annex can use Box as a
 * Create `~/.davfs2/davfs2.conf` with some important settings:
 
         mkdir ~/.davfs2/
-        echo use_locks 0 >> ~/.davfs2/davfs2.conf
+        echo use_locks 0 > ~/.davfs2/davfs2.conf
         echo cache_size 1 >> ~/.davfs2/davfs2.conf
         echo delay_upload 0 >> ~/.davfs2/davfs2.conf
 

@@ -19,23 +19,22 @@ really useful, it needs to:
 - notice deleted files and stage the deletion
   (tricky; there's a race with add since it replaces the file with a symlink..)
   **done**
+- Gracefully handle when the default limit of 8192 inotified directories
+  is exceeded. This can be tuned by root, so help the user fix it.
+  **done**
 - periodically auto-commit staged changes (avoid autocommitting when
   lots of changes are coming in)
 - tunable delays before adding new files, etc
-- Coleasce related add/rm events. See commit
-  cbdaccd44aa8f0ca30afba23fc06dd244c242075 for some details of the problems
-  with doing this.
-- don't annex `.gitignore` and `.gitattributes` files, but do auto-stage
-  changes to them
+- coleasce related add/rm events for speed and less disk IO
+- don't annex `.gitignore` and `.gitattributes` files **done**
 - configurable option to only annex files meeting certian size or
   filename criteria
+- option to check files not meeting annex criteria into git directly
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
 - Possibly, when a directory is moved out of the annex location,
   unannex its contents.
-- Gracefully handle when the default limit of 8192 inotified directories
-  is exceeded. This can be tuned by root, so help the user fix it.
 - Support OSes other than Linux; it only uses inotify currently.
   OSX and FreeBSD use the same mechanism, and there is a Haskell interface
   for it,
@@ -67,9 +66,18 @@ Many races need to be dealt with by this code. Here are some of them.
   **Currently unfixed**; This changes content in the annex, and fsck will
   later catch the inconsistency.
 
-  Possible fixes: Somehow track or detect if a file is open for write
-  by any processes. Or, when possible, making a copy on write copy
-  before adding the file would avoid this.
+  Possible fixes: 
+
+  * Somehow track or detect if a file is open for write by any processes.
+  * Or, when possible, making a copy on write copy before adding the file
+    would avoid this.
+  * Or, as a last resort, make an expensive copy of the file and add that.
+  * Tracking file opens and closes with inotify could tell if any other
+    processes have the file open. But there are problems.. It doesn't
+    seem to differentiate between files opened for read and for write.
+    And there would still be a race after the last close and before it's
+    injected into the annex, where it could be opened for write again.
+    Would need to detect that and undo the annex injection or something.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
@@ -81,16 +89,14 @@ Many races need to be dealt with by this code. Here are some of them.
 * File is added and then replaced with another file before the annex add
   stages the symlink in git.
 
-  **Currently unfixed**; `git add` will be run on the new file, which is
-  not at all good when it's big. Could be dealt with by using `git
-  update-index` to manually put the symlink into the index without git
+  Now fixed; `git annex watch` avoids running `git add` because of this
+  race. Instead, it stages symlinks directly into the index, without
   looking at what's currently on disk.
 
 * Link is moved, fixed link is written by fix event, but then that is
   removed by the user and replaced with a file before the event finishes.
 
-  **Currently unfixed**: `git add` will be run on the file. Basically same
-  effect as previous race above.
+  Now fixed; same fix as previous race above.
 
 * File is removed and then re-added before the removal event starts.
 
@@ -102,3 +108,6 @@ Many races need to be dealt with by this code. Here are some of them.
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
 
+* At startup, `git add --update` is run, to notice deleted files.
+  Then inotify starts up. Files deleted in between won't have their
+  removals staged.

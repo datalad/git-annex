@@ -15,6 +15,7 @@ import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import Annex.UUID
+import Logs.UUID
 
 def :: [Command]
 def = [command "initremote"
@@ -60,6 +61,7 @@ findByName name = do
 	where
 		generate = do
 			uuid <- liftIO genUUID
+			describeUUID uuid name
 			return (uuid, M.insert nameKey name M.empty)
 
 findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)
