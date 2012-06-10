@@ -123,11 +123,16 @@ onAddSymlink file = go =<< Backend.lookupFile file
 {- The file could reappear at any time, so --cached is used, to only delete
  - it from the index. -}
 onDel :: FilePath -> Annex ()
-onDel file = Annex.Queue.addCommand "rm"
-	[Params "--quiet --cached --ignore-unmatch --"] [file]
+onDel file = Annex.Queue.addUpdateIndex =<<
+	inRepo (Git.UpdateIndex.unstageFile file)
 
 {- A directory has been deleted, or moved, so tell git to remove anything
- - that was inside it from its cache. -}
+ - that was inside it from its cache. Since it could reappear at any time,
+ - use --cached to only delete it from the index. 
+ -
+ - Note: This could use unstageFile, but would need to run another git
+ - command to get the recursive list of files in the directory, so rm is
+ - just as good. -}
 onDelDir :: FilePath -> Annex ()
 onDelDir dir = Annex.Queue.addCommand "rm"
 	[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
