@@ -34,7 +34,7 @@ be an entirely pure function, so it's really easy to change the strategy.
 This part of the committer thread is so nice and clean, that here's the
 current code, for your viewing pleasure:
 
-[[format haskell """
+[[!format haskell """
 {- Decide if now is a good time to make a commit.
  - Note that the list of change times has an undefined order.
  -
