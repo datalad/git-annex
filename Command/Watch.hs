@@ -67,7 +67,8 @@ start foreground = notBareRepo $ withStateMVar $ \st -> do
 			liftIO $ watch st
 		else do
 			logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
-			liftIO $ daemonize logfd False $ watch st
+			pidfile <- fromRepo gitAnnexPidFile
+			liftIO $ daemonize logfd (Just pidfile) False $ watch st
 	stop
 
 watch :: MVar Annex.AnnexState -> IO ()

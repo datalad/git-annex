@@ -1,4 +1,4 @@
-{- daemon functions
+{- daemon support
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -7,24 +7,28 @@
 
 module Utility.Daemon where
 
+import Common
+
 import System.Posix
-import System.Directory
-import System.Exit
-import Control.Monad
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -
- - Does not return. -}
-daemonize :: Fd -> Bool -> IO () -> IO ()
-daemonize logfd changedirectory a = do
-	_ <- forkProcess child1
-	end
+ - Can write its pid to a file, to guard against multiple instances
+ - running and allow easy termination.
+ -
+ - When successful, does not return. -}
+daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
+daemonize logfd pidfile changedirectory a = do
+	pidfd <- lockpidfile
+	_ <- forkProcess $ child1 pidfd
+	out
 	where
-		child1 = do
+		child1 pidfd = do
 			_ <- createSession
-			_ <- forkProcess child2
-			end
-		child2 = do
+			_ <- forkProcess $ child2 pidfd
+			out
+		child2 pidfd = do
+			writepidfile pidfd
 			when changedirectory $
 				setCurrentDirectory "/"
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
@@ -32,8 +36,19 @@ daemonize logfd changedirectory a = do
 			mapM_ (redir logfd) [stdOutput, stdError]
 			closeFd logfd
 			a
-			end
+			out
+		lockpidfile = case pidfile of
+			Just file -> do
+				fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
+				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+				return $ Just fd
+			Nothing -> return Nothing
+		writepidfile pidfd = 
+			case pidfd of
+				Just fd -> void $
+					fdWrite fd =<< show <$> getProcessID
+				Nothing -> return ()
 		redir newh h = do
 			closeFd h
 			dupTo newh h
-		end = exitImmediately ExitSuccess
+		out = exitImmediately ExitSuccess
