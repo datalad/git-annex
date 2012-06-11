@@ -23,9 +23,13 @@ def = [addCheck check $ command "uninit" paramPaths seek
 
 check :: Annex ()
 check = do
-	b <- current_branch	
+	b <- current_branch
 	when (b == Annex.Branch.name) $ error $
 		"cannot uninit when the " ++ show b ++ " branch is checked out"
+	top <- fromRepo Git.repoPath
+	cwd <- liftIO getCurrentDirectory
+	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $ error $
+		"can only run uninit from the top of the git repository"
 	where
 		current_branch = Git.Ref . Prelude.head . lines <$> revhead
 		revhead = inRepo $ Git.Command.pipeRead 
