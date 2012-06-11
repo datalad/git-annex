@@ -50,26 +50,35 @@ data Change = Change
 	deriving (Show)
 
 def :: [Command]
-def = [withOptions [foregroundOption] $ 
+def = [withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramPaths seek "watch for changes"]
 
 seek :: [CommandSeek]
-seek = [withFlag foregroundOption $ withNothing . start]
+seek = [withFlag stopOption $ \stopdaemon -> 
+	withFlag foregroundOption $ \foreground ->
+	withNothing $ start foreground stopdaemon]
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"
 
-start :: Bool -> CommandStart
-start foreground = notBareRepo $ withStateMVar $ \st -> do
-	if foreground
-		then do
-			showStart "watch" "."
-			liftIO $ watch st
-		else do
-			logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
-			pidfile <- fromRepo gitAnnexPidFile
-			liftIO $ daemonize logfd (Just pidfile) False $ watch st
+stopOption :: Option
+stopOption = Option.flag [] "stop" "stop daemon"
+
+start :: Bool -> Bool -> CommandStart
+start foreground stopdaemon = notBareRepo $ do
+	if stopdaemon
+		then liftIO . stopDaemon =<< fromRepo gitAnnexPidFile
+		else withStateMVar $ startDaemon (not foreground)
 	stop
+
+startDaemon :: Bool -> MVar Annex.AnnexState -> Annex ()
+startDaemon False st = do
+	showStart "watch" "."
+	liftIO $ watch st
+startDaemon True st = do
+	logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
+	pidfile <- fromRepo gitAnnexPidFile
+	liftIO $ daemonize logfd (Just pidfile) False $ watch st
 
 watch :: MVar Annex.AnnexState -> IO ()
 #if defined linux_HOST_OS

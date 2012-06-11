@@ -27,7 +27,7 @@ daemonize logfd pidfile changedirectory a = do
 			_ <- forkProcess child2
 			out
 		child2 = do
-			maybe noop lockPidFile pidfile
+			maybe noop (lockPidFile True alreadyrunning) pidfile 
 			when changedirectory $
 				setCurrentDirectory "/"
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
@@ -39,12 +39,31 @@ daemonize logfd pidfile changedirectory a = do
 		redir newh h = do
 			closeFd h
 			dupTo newh h
+		alreadyrunning = error "Daemon is already running."
 		out = exitImmediately ExitSuccess
 
-lockPidFile :: FilePath -> IO ()
-lockPidFile file = void $ do
+lockPidFile :: Bool -> IO () -> FilePath -> IO ()
+lockPidFile write onfailure file = do
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
-	catchIO
-		(setLock fd (WriteLock, AbsoluteSeek, 0, 0))
-		(const $ error "Daemon is already running.")
-	fdWrite fd =<< show <$> getProcessID
+	when (write) $ void $
+		fdWrite fd =<< show <$> getProcessID
+	catchIO (setLock fd (locktype, AbsoluteSeek, 0, 0)) (const onfailure)
+	where
+		locktype
+			| write = WriteLock
+			| otherwise = ReadLock
+
+{- Stops the daemon.
+ -
+ - The pid file is used to get the daemon's pid.
+ -
+ - To guard against a stale pid, try to take a nonblocking shared lock
+ - of the pid file. If this *fails*, the daemon must be running,
+ - and have the exclusive lock, so the pid file is trustworthy.
+ -}
+stopDaemon :: FilePath -> IO ()
+stopDaemon pidfile = lockPidFile False go pidfile
+	where
+		go = do
+			pid <- readish <$> readFile pidfile
+			maybe noop (signalProcess sigTERM) pid
