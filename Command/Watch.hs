@@ -3,11 +3,16 @@
 
 {- git-annex watch daemon
  -
+ - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -
  - Overview of threads and MVars, etc:
  -
- - Thread 1: Parent
+ - Thread 1: parent
  - 	The initial thread run, double forks to background, starts other
- - 	threads, and then stops, waiting for them to terminate.
+ - 	threads, and then stops, waiting for them to terminate,
+ - 	or for a ctrl-c.
  - Thread 2: inotify
  - 	Notices new files, and calls handlers for events, queuing changes.
  - Thread 3: inotify internal
@@ -18,17 +23,13 @@
  - 	index, then commits.
  -
  - State MVar:
- - 	The Annex state is stored here, which allows recuscitating the
+ - 	The Annex state is stored here, which allows resuscitating the
  - 	Annex monad in IO actions run by the inotify and committer
  - 	threads. Thus, a single state is shared amoung the threads, and
  - 	only one at a time can access it.
  - ChangeChan STM TChan:
  - 	Changes are indicated by writing to this channel. The committer
  - 	reads from it.
- -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
- -
- - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Command.Watch where
