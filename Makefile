@@ -98,16 +98,20 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist $(clibs)
+		doc/.ikiwiki html dist $(clibs) git-annex.cabal
 
 # Workaround for cabal sdist not running Setup hooks, so I cannot
 # generate a file list there.
-sdist: clean
-	@make $(mans)
-	@if [ ! -e git-annex.cabal.orig ]; then cp git-annex.cabal git-annex.cabal.orig; fi
-	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
-	@cabal sdist
-	@mv git-annex.cabal.orig git-annex.cabal
+sdist: clean $(mans)
+  # Could make this a .PHONY, but it needs to be rerun each time,
+  # unless we want to list a *lot* of dependencies.
+	./git-annex.cabal.template.sh > git-annex.cabal
+  # Complains about not running 'configure' first, but adding
+  #
+  #   cabal configure
+  #
+  # does not help.
+	cabal sdist
 
 # Upload to hackage.
 hackage: sdist

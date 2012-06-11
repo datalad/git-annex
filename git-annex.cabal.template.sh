@@ -1,3 +1,9 @@
+#!/bin/bash
+
+# Template for git-annex.cabal: the 'Other-Module:' fields are
+# dynamically generated.
+
+cat <<EOF
 Name: git-annex
 Version: 3.20120605
 Cabal-Version: >= 1.8
@@ -7,7 +13,6 @@ Author: Joey Hess
 Stability: Stable
 Copyright: 2010-2012 Joey Hess
 License-File: GPL
-Extra-Source-Files: use-make-sdist-instead
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
 Category: Utility
@@ -25,6 +30,9 @@ Description:
  versioned files, which is convenient for maintaining documents, Makefiles,
  etc that are associated with annexed files but that benefit from full
  revision control.
+Extra-Source-Files:
+  git-annex.1 git-annex-shell.1
+  INSTALL README CHANGELOG NEWS GPL
 
 Flag S3
   Description: Enable S3 support
@@ -36,7 +44,10 @@ Executable git-annex
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
-  Other-Modules: Utility.Touch
+  Other-Modules:
+   Utility.Touch
+   -- Auto-generated list of all Haskell modules:
+`./gen-other-modules.sh | xargs -n1 -i echo '   '{}`
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
 
@@ -53,8 +64,13 @@ Test-Suite test
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
   C-Sources: Utility/libdiskfree.c
+  Other-Modules:
+   Utility.Touch
+   -- Auto-generated list of all Haskell modules:
+`./gen-other-modules.sh | xargs -n1 -i echo '   '{}`
   Extensions: CPP
 
 source-repository head
   type: git
   location: git://git-annex.branchable.com/
+EOF

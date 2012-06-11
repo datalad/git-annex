@@ -3,6 +3,7 @@ test
 configure
 Build/SysConfig.hs
 git-annex
+git-annex.cabal
 git-annex.1
 git-annex-shell.1
 git-union-merge.1
