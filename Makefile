@@ -1,5 +1,5 @@
 PREFIX=/usr
-IGNORE=-ignore-package monads-fd
+IGNORE=-ignore-package monads-fd -ignore-package monads-tf
 BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3
 GHCFLAGS=-O2 $(BASEFLAGS)
 
