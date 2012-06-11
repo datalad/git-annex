@@ -13,3 +13,4 @@ html
 Utility/Touch.hs
 Utility/libdiskfree.o
 dist
+cabal-dev
