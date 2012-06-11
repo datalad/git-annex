@@ -19,16 +19,15 @@ import System.Posix
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
 daemonize logfd pidfile changedirectory a = do
-	pidfd <- lockpidfile
-	_ <- forkProcess $ child1 pidfd
+	_ <- forkProcess child1
 	out
 	where
-		child1 pidfd = do
+		child1 = do
 			_ <- createSession
-			_ <- forkProcess $ child2 pidfd
+			_ <- forkProcess child2
 			out
-		child2 pidfd = do
-			writepidfile pidfd
+		child2 = do
+			maybe noop lockPidFile pidfile
 			when changedirectory $
 				setCurrentDirectory "/"
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
@@ -37,18 +36,15 @@ daemonize logfd pidfile changedirectory a = do
 			closeFd logfd
 			a
 			out
-		lockpidfile = case pidfile of
-			Just file -> do
-				fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
-				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-				return $ Just fd
-			Nothing -> return Nothing
-		writepidfile pidfd = 
-			case pidfd of
-				Just fd -> void $
-					fdWrite fd =<< show <$> getProcessID
-				Nothing -> return ()
 		redir newh h = do
 			closeFd h
 			dupTo newh h
 		out = exitImmediately ExitSuccess
+
+lockPidFile :: FilePath -> IO ()
+lockPidFile file = void $ do
+	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
+	catchIO
+		(setLock fd (WriteLock, AbsoluteSeek, 0, 0))
+		(const $ error "Daemon is already running.")
+	fdWrite fd =<< show <$> getProcessID
