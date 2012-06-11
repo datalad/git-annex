@@ -142,11 +142,10 @@ runStateMVar mvar a = do
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
 runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO ()
-runHandler st changechan hook file = handle =<< tryIO (runStateMVar st go)
+runHandler st changechan handler file = 
+	either (putStrLn . show) return =<< tryIO (runStateMVar st go)
 	where
-		go = maybe noop (signalChange changechan) =<< hook file
-		handle (Right ()) = return ()
-		handle (Left e) = putStrLn $ show e
+		go = maybe noop (signalChange changechan) =<< handler file
 
 {- Handlers call this when they made a change that needs to get committed. -}
 madeChange :: FilePath -> String -> Annex (Maybe Change)
