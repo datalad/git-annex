@@ -22,3 +22,15 @@ Or I could try to use Cygwin.
 ## Deeper system integration
 
 [NTFS Reparse Points](http://msdn.microsoft.com/en-us/library/aa365503%28v=VS.85%29.aspx) allow a program to define how the OS will interpret a file or directory in arbitrary ways.  This requires writing a file system filter.
+
+## Developement environment
+
+Someone wrote in to say:
+
+> For Windows Development you can easily qualify
+> for Bizspark - http://www.microsoft.com/bizspark/
+> 
+> This will get you 100% free Windows OS licenses and
+> Dev tools, plus a free Azure account for cloud testing.
+> (You can also now deploy Linux VMs to Azure as well)
+> No money required at all.
