@@ -12,6 +12,8 @@ module Command.Watch where
 
 import Common.Annex
 import Command
+import Utility.Daemon
+import Utility.LogFile
 import Utility.ThreadLock
 import qualified Annex
 import qualified Annex.Queue
@@ -23,6 +25,7 @@ import qualified Backend
 import Annex.Content
 import Annex.CatFile
 import Git.Types
+import Option
 
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -47,44 +50,52 @@ data Change = Change
 	deriving (Show)
 
 def :: [Command]
-def = [command "watch" paramPaths seek "watch for changes"]
+def = [withOptions [foregroundOption] $ 
+	command "watch" paramPaths seek "watch for changes"]
 
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek = [withFlag foregroundOption $ withNothing . start]
 
-start :: CommandStart
-start = notBareRepo $ do
-	showStart "watch" "."
-	watch
+foregroundOption :: Option
+foregroundOption = Option.flag [] "foreground" "do not daemonize"
+
+start :: Bool -> CommandStart
+start foreground = notBareRepo $ withStateMVar $ \st -> do
+	if foreground
+		then do
+			showStart "watch" "."
+			liftIO $ watch st
+		else do
+			logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
+			liftIO $ daemonize logfd False $ watch st
 	stop
 
-watch :: Annex ()
+watch :: MVar Annex.AnnexState -> IO ()
 #if defined linux_HOST_OS
-watch = do
-	showAction "scanning"
-	withStateMVar $ \st -> liftIO $ withINotify $ \i -> do
-		changechan <- atomically newTChan
-		let hook a = Just $ runHandler st changechan a
-		let hooks = WatchHooks
-			{ addHook = hook onAdd
-			, delHook = hook onDel
-			, addSymlinkHook = hook onAddSymlink
-			, delDirHook = hook onDelDir
-			, errHook = hook onErr
-			}
-		-- The commit thread is started early, so that the user
-		-- can immediately begin adding files and having them
-		-- committed, even while the inotify scan is taking place.
-		_ <- forkIO $ commitThread st changechan
-		-- This does not return until the inotify scan is done.
-		-- That can take some time for large trees.
-		watchDir i "." (ignored . takeFileName) hooks
-		-- Notice any files that were deleted before inotify
-		-- was started.
-		runStateMVar st $
-			inRepo $ Git.Command.run "add" [Param "--update"]
-		putStrLn "(started)"
-		waitForTermination
+watch st = withINotify $ \i -> do
+	changechan <- atomically newTChan
+	let hook a = Just $ runHandler st changechan a
+	let hooks = WatchHooks
+		{ addHook = hook onAdd
+		, delHook = hook onDel
+		, addSymlinkHook = hook onAddSymlink
+		, delDirHook = hook onDelDir
+		, errHook = hook onErr
+		}
+	-- The commit thread is started early, so that the user
+	-- can immediately begin adding files and having them
+	-- committed, even while the inotify scan is taking place.
+	_ <- forkIO $ commitThread st changechan
+	-- This does not return until the inotify scan is done.
+	-- That can take some time for large trees.
+	watchDir i "." (ignored . takeFileName) hooks
+	runStateMVar st $ showAction "scanning"
+	-- Notice any files that were deleted before inotify
+	-- was started.
+	runStateMVar st $ do
+		inRepo $ Git.Command.run "add" [Param "--update"]
+		showAction "started"
+	waitForTermination
 #else
 watch = error "watch mode is so far only available on Linux"
 #endif

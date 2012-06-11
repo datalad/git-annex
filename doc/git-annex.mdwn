@@ -173,8 +173,11 @@ subdirectories).
 
   Watches for changes to files in the current directory and its subdirectories,
   and takes care of automatically adding new files, as well as dealing with
-  deleted, copied, and moved files. Run this in the background, and you
-  no longer need to manually run git commands when manipulating your files.
+  deleted, copied, and moved files. With this running as a daemon in the
+  background, you no longer need to manually run git commands when
+  manipulating your files.
+
+  To not daemonize, run with --foreground
 
 # REPOSITORY SETUP COMMANDS
 

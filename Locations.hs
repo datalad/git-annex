@@ -23,6 +23,7 @@ module Locations (
 	gitAnnexIndex,
 	gitAnnexIndexLock,
 	gitAnnexIndexDirty,
+	gitAnnexLogFile,
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	isLinkToAnnex,
@@ -144,6 +145,10 @@ gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
 {- Flag file for .git/annex/index. -}
 gitAnnexIndexDirty :: Git.Repo -> FilePath
 gitAnnexIndexDirty r = gitAnnexDir r </> "index.dirty"
+
+{- Log file for daemon mode. -}
+gitAnnexLogFile :: Git.Repo -> FilePath
+gitAnnexLogFile r = gitAnnexDir r </> "daemon.log"
 
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> FilePath
