@@ -3,6 +3,7 @@ git-annex (3.20120612) UNRELEASED; urgency=low
   * watch: New subcommand, which uses inotify to watch for changes to
     files and automatically annexes new files, etc, so you don't need
     to manually run git commands when manipulating files.
+  * Build with ghc's threaded runtime, so threaded code does not busy-wait.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 05 Jun 2012 20:25:51 -0400
 
