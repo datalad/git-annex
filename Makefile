@@ -62,7 +62,7 @@ install: all install-docs
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 
-test:
+test: $(sources) $(clibs)
 	@if ! $(GHCMAKE) -O0 test $(clibs); then \
 		echo "** failed to build the test suite" >&2; \
 		exit 1; \
