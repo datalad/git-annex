@@ -32,7 +32,7 @@ Description:
  revision control.
 Extra-Source-Files:
   git-annex.1 git-annex-shell.1
-  INSTALL README CHANGELOG NEWS GPL
+  INSTALL README CHANGELOG NEWS GPL COPYRIGHT
 
 Flag S3
   Description: Enable S3 support
