@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # Create target directory
-cabal sdist
-sdist_dir=$(basename dist/*.tar.gz .tar.gz)
-rm -f dist/*.tar.gz
-mkdir dist/$sdist_dir
+sdist_dir=git-annex-$(grep '^Version:' git-annex.cabal | sed -re 's/Version: *//')
+mkdir --parents dist/$sdist_dir
 
 find . \( -name .git -or -name dist -or -name cabal-dev \) -prune \
 	-or -not -name \\*.orig -not -type d -print \
