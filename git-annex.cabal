@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120611
+Version: 3.20120612
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -44,7 +44,6 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
--- XXX: Broken.
 Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs
