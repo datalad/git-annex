@@ -359,7 +359,7 @@ commitStaged = do
 shouldCommit :: UTCTime -> [Change] -> Bool
 shouldCommit now changes
 	| len == 0 = False
-	| len > 4096 = True -- avoid bloating queue too much
+	| len > 10000 = True -- avoid bloating queue too much
 	| length (filter thisSecond changes) < 10 = True
 	| otherwise = False -- batch activity
 	where
