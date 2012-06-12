@@ -1,3 +1,10 @@
+git-annex (3.20120612) UNRELEASED; urgency=low
+
+  * Install man page when run by cabal, in a location where man will
+    find it, even when installing under $HOME. Thanks, Nathan Collins
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 12 Jun 2012 11:35:59 -0400
+
 git-annex (3.20120611) unstable; urgency=medium
 
   * add: Prevent (most) modifications from being made to a file while it
