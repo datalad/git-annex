@@ -15,7 +15,11 @@ import qualified System.Posix.Files as Files
 import System.IO.Error
 import Control.Exception (throw)
 
-type Hook a = Maybe (a -> IO ())
+{- A hook is passed some value to act on.
+ -
+ - The Bool is False when we're in the intial scan of a directory tree,
+ - rather than having received a genuine inotify event. -}
+type Hook a = Maybe (a -> Bool -> IO ())
 
 data WatchHooks = WatchHooks
 	{ addHook :: Hook FilePath
@@ -31,7 +35,7 @@ data WatchHooks = WatchHooks
  - made for different events.
  -
  - Inotify is weak at recursive directory watching; the whole directory
- - tree must be walked and watches set explicitly for each subdirectory.
+ - tree must be scanned and watches set explicitly for each subdirectory.
  -
  - To notice newly created subdirectories, inotify is used, and
  - watches are registered for those directories. There is a race there;
@@ -65,14 +69,14 @@ watchDir i dir ignored hooks
 		void (addWatch i watchevents dir handler)
 			`catchIO` failedaddwatch
 		withLock lock $
-			mapM_ walk =<< filter (not . dirCruft) <$>
+			mapM_ scan =<< filter (not . dirCruft) <$>
 				getDirectoryContents dir
 	where
 		recurse d = watchDir i d ignored hooks
 
 		-- Select only inotify events required by the enabled
 		-- hooks, but always include Create so new directories can
-		-- be walked.
+		-- be scanned.
 		watchevents = Create : addevents ++ delevents
 		addevents
 			| hashook addHook || hashook addSymlinkHook = [MoveIn, CloseWrite]
@@ -81,15 +85,15 @@ watchDir i dir ignored hooks
 			| hashook delHook || hashook delDirHook = [MoveOut, Delete]
 			| otherwise = []
 
-		walk f = unless (ignored f) $ do
+		scan f = unless (ignored f) $ do
 			let fullf = indir f
 			r <- catchMaybeIO $ getSymbolicLinkStatus fullf
 			case r of
 				Nothing -> return ()
 				Just s
 					| Files.isDirectory s -> recurse fullf
-					| Files.isSymbolicLink s -> addSymlinkHook <@> f
-					| Files.isRegularFile s -> addHook <@> f
+					| Files.isSymbolicLink s -> addSymlinkHook <@?> f
+					| Files.isRegularFile s -> addHook <@?> f
 					| otherwise -> return ()
 
 		-- Ignore creation events for regular files, which won't be
@@ -105,9 +109,9 @@ watchDir i dir ignored hooks
 		go (Closed { isDirectory = False, maybeFilePath = Just f }) =
 			whenM (filetype Files.isRegularFile f) $
 				addHook <@> f
-		-- When a file or directory is moved in, walk it to add new
+		-- When a file or directory is moved in, scan it to add new
 		-- stuff.
-		go (MovedIn { filePath = f }) = walk f
+		go (MovedIn { filePath = f }) = scan f
 		go (MovedOut { isDirectory = isd, filePath = f })
 			| isd = delDirHook <@> f
 			| otherwise = delHook <@> f
@@ -124,9 +128,11 @@ watchDir i dir ignored hooks
 
 		hashook h = isJust $ h hooks
 
-		h <@> f
+		runhook h f inscan
 			| ignored f = noop
-			| otherwise = maybe noop (\a -> a $ indir f) (h hooks)
+			| otherwise = maybe noop (\a -> a (indir f) inscan) (h hooks)
+		h <@> f = runhook h f False
+		h <@?> f = runhook h f True
 
 		indir f = dir </> f
 
@@ -141,10 +147,10 @@ watchDir i dir ignored hooks
 					Just hook -> tooManyWatches hook dir
 			| otherwise = throw e
 
-tooManyWatches :: (String -> IO ()) -> FilePath -> IO ()
+tooManyWatches :: (String -> Bool -> IO ()) -> FilePath -> IO ()
 tooManyWatches hook dir = do
 	sysctlval <- querySysctl [Param maxwatches] :: IO (Maybe Integer)
-	hook $ unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval
+	hook (unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval) False
 	where
 		maxwatches = "fs.inotify.max_user_watches"
 		basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"

@@ -18,7 +18,10 @@
  - Thread 3: inotify internal
  - 	Used by haskell inotify library to ensure inotify event buffer is
  - 	kept drained.
- - Thread 4: committer
+ - Thread 4: inotify initial scan
+ -	A MVar lock is used to prevent other inotify handlers from running
+ -	until this is complete.
+ - Thread 5: committer
  - 	Waits for changes to occur, and runs the git queue to update its
  - 	index, then commits.
  -
