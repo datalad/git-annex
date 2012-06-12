@@ -2,6 +2,6 @@
 
 This project uses tabs for indentation and the code looks fine with
 any tab width. If you are using Emacs, and have it configured to use
-spaces for indentation, then you can add a ./.dir-locals.el to use
+spaces for indentation, then you can add a `./.dir-locals.el` to use
 tabs for files in this project. See
-http://www.emacswiki.org/emacs/DirectoryVariables.
+<http://www.emacswiki.org/emacs/DirectoryVariables>.
