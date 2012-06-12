@@ -157,10 +157,8 @@ withStateMVar a = do
 {- Runs an Annex action, using the state from the MVar. -}
 runStateMVar :: MVar Annex.AnnexState -> Annex a -> IO a
 runStateMVar mvar a = do
-	liftIO $ putStrLn "takeMVar"
 	startstate <- takeMVar mvar
 	!(r, newstate) <- Annex.run startstate a
-	liftIO $ putStrLn "putMVar"
 	putMVar mvar newstate
 	return r
 
