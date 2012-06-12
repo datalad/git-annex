@@ -64,6 +64,8 @@ watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> WatchHooks -> IO ()
 watchDir i dir ignored hooks
 	| ignored dir = noop
 	| otherwise = do
+		-- Use a lock to make sure events generated during initial
+		-- scan come before real inotify events.
 		lock <- newLock
 		let handler event = withLock lock (void $ go event)
 		void (addWatch i watchevents dir handler)

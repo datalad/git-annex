@@ -48,6 +48,7 @@ import qualified Command.Add
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
+import qualified Git.LsFiles
 import qualified Backend
 import Annex.Content
 import Annex.CatFile
@@ -67,7 +68,7 @@ import System.INotify
 
 type ChangeChan = TChan Change
 
-type Handler = FilePath -> Annex (Maybe Change)
+type Handler = FilePath -> Bool -> Annex (Maybe Change)
 
 data Change = Change
 	{ changeTime :: UTCTime
@@ -173,9 +174,9 @@ runChangeChan = atomically
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO ()
-runHandler st changechan handler file = void $ do
-	r <- tryIO (runStateMVar st $ handler file)
+runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> Bool -> IO ()
+runHandler st changechan handler file inscan = void $ do
+	r <- tryIO (runStateMVar st $ handler file inscan)
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
@@ -201,7 +202,7 @@ noChange = return Nothing
  - or return a Change, leaving that to onAddSymlink.
  -}
 onAdd :: Handler
-onAdd file = do
+onAdd file False = do
 	showStart "add" file
 	handle =<< Command.Add.ingest file
 	noChange
@@ -210,13 +211,23 @@ onAdd file = do
 		handle (Just key) = do
 			Command.Add.link file key True
 			showEndOk
+{- During initial directory scan, this will be run for any files that
+ - are already checked into git. We don't want to turn those into symlinks,
+ - so do a check. This is rather expensive, but only happens during
+ - startup, and when a directory is moved into the tree. -}
+onAdd file True = do
+	liftIO $ putStrLn $ "expensive check for " ++ file
+	ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
+		( noChange
+		, onAdd file False
+		)
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink file = go =<< Backend.lookupFile file
+onAddSymlink file _inscan = go =<< Backend.lookupFile file
 	where
 		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
@@ -249,7 +260,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 			madeChange file "link"
 
 onDel :: Handler
-onDel file = do
+onDel file _inscan = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file "rm"
@@ -262,14 +273,14 @@ onDel file = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir = do
+onDelDir dir _inscan = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir "rmdir"
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg = do
+onErr msg _inscan = do
 	warning msg
 	return Nothing
 
