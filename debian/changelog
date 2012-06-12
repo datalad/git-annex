@@ -1,10 +1,11 @@
-git-annex (3.20120606) UNRELEASED; urgency=low
+git-annex (3.20120611) unstable; urgency=medium
 
   * add: Prevent (most) modifications from being made to a file while it
     is being added to the annex.
   * initremote: Automatically describe a remote when creating it.
+  * uninit: Refuse to run in a subdirectory. Closes: #677076
 
- -- Joey Hess <joeyh@debian.org>  Tue, 05 Jun 2012 20:25:51 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 11 Jun 2012 10:32:01 -0400
 
 git-annex (3.20120605) unstable; urgency=low
 
