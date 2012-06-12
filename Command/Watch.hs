@@ -79,7 +79,7 @@ data Change = Change
 
 def :: [Command]
 def = [withOptions [foregroundOption, stopOption] $ 
-	command "watch" paramPaths seek "watch for changes"]
+	command "watch" paramNothing seek "watch for changes"]
 
 seek :: [CommandSeek]
 seek = [withFlag stopOption $ \stopdaemon -> 
