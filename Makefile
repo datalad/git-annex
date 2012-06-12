@@ -98,20 +98,12 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist $(clibs) git-annex.cabal
+		doc/.ikiwiki html dist $(clibs)
 
-# Workaround for cabal sdist not running Setup hooks, so I cannot
-# generate a file list there.
+# Workaround for `cabal sdist` requiring all included files to be listed
+# in .cabal.
 sdist: clean $(mans)
-  # Could make this a .PHONY, but it needs to be rerun each time,
-  # unless we want to list a *lot* of dependencies.
-	./git-annex.cabal.template.sh > git-annex.cabal
-  # Complains about not running 'configure' first, but adding
-  #
-  #   cabal configure
-  #
-  # does not help.
-	cabal sdist
+	./make-sdist.sh
 
 # Upload to hackage.
 hackage: sdist
