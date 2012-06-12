@@ -15,11 +15,7 @@ import qualified System.Posix.Files as Files
 import System.IO.Error
 import Control.Exception (throw)
 
-{- A hook is passed some value to act on.
- -
- - The Bool is False when we're in the intial scan of a directory tree,
- - rather than having received a genuine inotify event. -}
-type Hook a = Maybe (a -> Bool -> IO ())
+type Hook a = Maybe (a -> IO ())
 
 data WatchHooks = WatchHooks
 	{ addHook :: Hook FilePath
@@ -94,8 +90,8 @@ watchDir i dir ignored hooks
 				Nothing -> return ()
 				Just s
 					| Files.isDirectory s -> recurse fullf
-					| Files.isSymbolicLink s -> addSymlinkHook <@?> f
-					| Files.isRegularFile s -> addHook <@?> f
+					| Files.isSymbolicLink s -> addSymlinkHook <@> f
+					| Files.isRegularFile s -> addHook <@> f
 					| otherwise -> return ()
 
 		-- Ignore creation events for regular files, which won't be
@@ -130,11 +126,10 @@ watchDir i dir ignored hooks
 
 		hashook h = isJust $ h hooks
 
-		runhook h f inscan
+		runhook h f
 			| ignored f = noop
-			| otherwise = maybe noop (\a -> a (indir f) inscan) (h hooks)
-		h <@> f = runhook h f False
-		h <@?> f = runhook h f True
+			| otherwise = maybe noop (\a -> a $ indir f) (h hooks)
+		h <@> f = runhook h f
 
 		indir f = dir </> f
 
@@ -149,10 +144,10 @@ watchDir i dir ignored hooks
 					Just hook -> tooManyWatches hook dir
 			| otherwise = throw e
 
-tooManyWatches :: (String -> Bool -> IO ()) -> FilePath -> IO ()
+tooManyWatches :: (String -> IO ()) -> FilePath -> IO ()
 tooManyWatches hook dir = do
 	sysctlval <- querySysctl [Param maxwatches] :: IO (Maybe Integer)
-	hook (unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval) False
+	hook $ unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval
 	where
 		maxwatches = "fs.inotify.max_user_watches"
 		basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"

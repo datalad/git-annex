@@ -68,7 +68,7 @@ import System.INotify
 
 type ChangeChan = TChan Change
 
-type Handler = FilePath -> Bool -> Annex (Maybe Change)
+type Handler = FilePath -> Annex (Maybe Change)
 
 data Change = Change
 	{ changeTime :: UTCTime
@@ -122,18 +122,25 @@ watch st = withINotify $ \i -> do
 		}
 	-- The commit thread is started early, so that the user
 	-- can immediately begin adding files and having them
-	-- committed, even while the inotify scan is taking place.
+	-- committed, even while the startup scan is taking place.
 	_ <- forkIO $ commitThread st changechan
-	-- This does not return until the inotify scan is done.
+	-- The fast flag is abused somewhat, to tell when the startup
+	-- scan is still running.
+	runStateMVar st $ do
+		setfast False
+		showAction "scanning"
+	-- This does not return until the startup scan is done.
 	-- That can take some time for large trees.
 	watchDir i "." (ignored . takeFileName) hooks
-	runStateMVar st $ showAction "scanning"
+	runStateMVar st $ setfast True
 	-- Notice any files that were deleted before inotify
 	-- was started.
 	runStateMVar st $ do
 		inRepo $ Git.Command.run "add" [Param "--update"]
 		showAction "started"
 	waitForTermination
+	where
+		setfast v= Annex.changeState $ \s -> s { Annex.fast = v }
 #else
 watch = error "watch mode is so far only available on Linux"
 #endif
@@ -174,9 +181,9 @@ runChangeChan = atomically
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> Bool -> IO ()
-runHandler st changechan handler file inscan = void $ do
-	r <- tryIO (runStateMVar st $ handler file inscan)
+runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO ()
+runHandler st changechan handler file = void $ do
+	r <- tryIO (runStateMVar st $ handler file)
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
@@ -200,34 +207,38 @@ noChange = return Nothing
  -
  - Inotify will notice the new symlink, so this Handler does not stage it
  - or return a Change, leaving that to onAddSymlink.
+ -
+ - During initial directory scan, this will be run for any files that
+ - are already checked into git. We don't want to turn those into symlinks,
+ - so do a check. This is rather expensive, but only happens during
+ - startup.
  -}
 onAdd :: Handler
-onAdd file False = do
-	showStart "add" file
-	handle =<< Command.Add.ingest file
-	noChange
+onAdd file = do
+	ifM (Annex.getState Annex.fast)
+		( go -- initial directory scan is complete
+		, do -- expensive check done only during startup scan
+			ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
+				( noChange
+				, go
+				)
+		)
 	where
+		go = do
+			showStart "add" file
+			handle =<< Command.Add.ingest file
+			noChange
 		handle Nothing = showEndFail
 		handle (Just key) = do
 			Command.Add.link file key True
 			showEndOk
-{- During initial directory scan, this will be run for any files that
- - are already checked into git. We don't want to turn those into symlinks,
- - so do a check. This is rather expensive, but only happens during
- - startup, and when a directory is moved into the tree. -}
-onAdd file True = do
-	liftIO $ putStrLn $ "expensive check for " ++ file
-	ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
-		( noChange
-		, onAdd file False
-		)
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink file _inscan = go =<< Backend.lookupFile file
+onAddSymlink file = go =<< Backend.lookupFile file
 	where
 		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
@@ -260,7 +271,7 @@ onAddSymlink file _inscan = go =<< Backend.lookupFile file
 			madeChange file "link"
 
 onDel :: Handler
-onDel file _inscan = do
+onDel file = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file "rm"
@@ -273,14 +284,14 @@ onDel file _inscan = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir _inscan = do
+onDelDir dir = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir "rmdir"
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg _inscan = do
+onErr msg = do
 	warning msg
 	return Nothing
 
