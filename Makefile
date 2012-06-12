@@ -47,18 +47,22 @@ git-annex-shell.1: doc/git-annex-shell.mdwn
 git-union-merge.1: doc/git-union-merge.mdwn
 	./mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 
-install: all
-	install -d $(DESTDIR)$(PREFIX)/bin
-	install $(bins) $(DESTDIR)$(PREFIX)/bin
-	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+install-mans: $(mans)
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
+
+install-docs: docs install-mans
 	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex
 	if [ -d html ]; then \
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-test:
+install: all install-docs
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install $(bins) $(DESTDIR)$(PREFIX)/bin
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+
+test: $(sources) $(clibs)
 	@if ! $(GHCMAKE) -O0 test $(clibs); then \
 		echo "** failed to build the test suite" >&2; \
 		exit 1; \
@@ -96,13 +100,10 @@ clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs)
 
-# Workaround for cabal sdist not running Setup hooks, so I cannot
-# generate a file list there.
-sdist: clean
-	@if [ ! -e git-annex.cabal.orig ]; then cp git-annex.cabal git-annex.cabal.orig; fi
-	@sed -e "s!\(Extra-Source-Files: \).*!\1$(shell find . -name .git -prune -or -not -name \\*.orig -not -type d -print | perl -ne 'print unless length >= 100')!i" < git-annex.cabal.orig > git-annex.cabal
-	@cabal sdist
-	@mv git-annex.cabal.orig git-annex.cabal
+# Workaround for `cabal sdist` requiring all included files to be listed
+# in .cabal.
+sdist: clean $(mans)
+	./make-sdist.sh
 
 # Upload to hackage.
 hackage: sdist
