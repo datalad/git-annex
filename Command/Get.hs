@@ -26,7 +26,7 @@ start from file (key, _) = stopUnless (not <$> inAnnex key) $
 	autoCopies file key (<) $ \_numcopies ->
 		case from of
 			Nothing -> go $ perform key
-			Just src -> do
+			Just src ->
 				-- get --from = copy --from
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src False key

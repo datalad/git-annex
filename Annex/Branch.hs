@@ -68,7 +68,7 @@ siblingBranches = inRepo $ Git.Ref.matchingUniq name
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = void $ getBranch
+create = void getBranch
 
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref

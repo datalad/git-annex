@@ -165,7 +165,7 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = ("/" ++ d) `isInfixOf` s || d `isPrefixOf` s
+isLinkToAnnex s = ('/':d) `isInfixOf` s || d `isPrefixOf` s
 	where
 		d = ".git" </> objectDir
 

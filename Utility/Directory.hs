@@ -10,12 +10,11 @@ module Utility.Directory where
 import System.IO.Error
 import System.Posix.Files
 import System.Directory
-import Control.Exception (throw)
+import Control.Exception (throw, bracket_)
 import Control.Monad
 import Control.Monad.IfElse
 import System.FilePath
 import Control.Applicative
-import Control.Exception (bracket_)
 import System.Posix.Directory
 import System.IO.Unsafe (unsafeInterleaveIO)
 

@@ -176,7 +176,7 @@ runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO (
 runHandler st changechan handler file = void $ do
 	r <- tryIO (runStateMVar st $ handler file)
 	case r of
-		Left e -> putStrLn $ show e
+		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> void $
 			runChangeChan $ writeTChan changechan change
@@ -236,7 +236,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 		 - So for speed, tries to reuse the existing blob for
 		 - the symlink target. -}
 		addlink link = do
-			v <- catObjectDetails $ Ref $ ":" ++ file
+			v <- catObjectDetails $ Ref $ ':':file
 			case v of
 				Just (currlink, sha)
 					| s2w8 link == L.unpack currlink ->
@@ -307,7 +307,7 @@ commitThread st changechan = forever $ do
 	-- Now see if now's a good time to commit.
 	time <- getCurrentTime
 	if shouldCommit time cs
-		then void $ tryIO $ runStateMVar st $ commitStaged
+		then void $ tryIO $ runStateMVar st commitStaged
 		else refillChanges changechan cs
 	where
 		oneSecond = 1000000 -- microseconds

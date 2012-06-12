@@ -28,8 +28,8 @@ check = do
 		"cannot uninit when the " ++ show b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
 	cwd <- liftIO getCurrentDirectory
-	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $ error $
-		"can only run uninit from the top of the git repository"
+	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $
+		error "can only run uninit from the top of the git repository"
 	where
 		current_branch = Git.Ref . Prelude.head . lines <$> revhead
 		revhead = inRepo $ Git.Command.pipeRead 

@@ -87,7 +87,7 @@ lockContent key a = do
 		 - to fiddle with permissions to open for an exclusive lock. -}
 		openforlock f = catchMaybeIO $ ifM (doesFileExist f)
 			( withModifiedFileMode f
-				(\cur -> cur `unionFileModes` ownerWriteMode)
+				(`unionFileModes` ownerWriteMode)
 				open
 			, open
 			)
