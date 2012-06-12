@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+
 {- cabal setup file -}
 
 import Distribution.Simple
