@@ -71,7 +71,7 @@ unstageFile file repo = do
 {- A streamer that adds a symlink to the index. -}
 stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer
 stageSymlink file sha repo = do
-	line <- updateIndexLine
+	!line <- updateIndexLine
 		<$> pure sha
 		<*> pure SymlinkBlob
 		<*> toTopFilePath file repo

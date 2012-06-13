@@ -34,7 +34,7 @@ data Action
 	{- Updating the index file, using a list of streamers that can
 	 - be added to as the queue grows. -}
 	= UpdateIndexAction
-		{ getStreamers :: [Git.UpdateIndex.Streamer]
+		{ getStreamers :: [Git.UpdateIndex.Streamer] -- in reverse order
 		}
 	{- A git command to run, on a list of files that can be added to
 	 - as the queue grows. -}
@@ -104,9 +104,8 @@ addUpdateIndex streamer q repo =
 	updateQueue action different 1 q repo
 	where
 		key = actionKey action
-		-- streamer is added to the end of the list, since
-		-- order does matter for update-index input
-		action = UpdateIndexAction $ streamers ++ [streamer]
+		-- the list is built in reverse order
+		action = UpdateIndexAction $ streamer : streamers
 		streamers = maybe [] getStreamers $ M.lookup key $ items q
 
 		different (UpdateIndexAction _) = False
@@ -116,7 +115,7 @@ addUpdateIndex streamer q repo =
  - different action, it will be flushed; this is to ensure that conflicting
  - actions, like add and rm, are run in the right order.-}
 updateQueue :: Action -> (Action -> Bool) -> Int -> Queue -> Repo -> IO Queue
-updateQueue action different sizeincrease q repo
+updateQueue !action different sizeincrease q repo
 	| null (filter different (M.elems (items q))) = return $ go q
 	| otherwise = go <$> flush q repo
 	where
@@ -147,7 +146,8 @@ flush (Queue _ lim m) repo = do
  - this allows queueing commands that do not need a list of files. -}
 runAction :: Repo -> Action -> IO ()
 runAction repo (UpdateIndexAction streamers) =
-	Git.UpdateIndex.streamUpdateIndex repo streamers
+	-- list is stored in reverse order
+	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
 runAction repo action@(CommandAction {}) =
 	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
 	where
