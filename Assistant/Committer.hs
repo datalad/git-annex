@@ -9,8 +9,8 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import qualified Annex.Queue
 import qualified Git.Command
+import Utility.ThreadScheduler
 
-import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Time.Clock
 
@@ -59,9 +59,8 @@ refillChanges chan cs = runChangeChan $ mapM_ (writeTChan chan) cs
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: ThreadState -> ChangeChan -> IO ()
-commitThread st changechan = forever $ do
-	-- First, a simple rate limiter.
-	threadDelay oneSecond
+commitThread st changechan = runEvery (Seconds 1) $ do
+	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change has been made.
 	cs <- getChanges changechan
 	-- Now see if now's a good time to commit.
@@ -69,8 +68,6 @@ commitThread st changechan = forever $ do
 	if shouldCommit time cs
 		then void $ tryIO $ runThreadState st commitStaged
 		else refillChanges changechan cs
-	where
-		oneSecond = 1000000 -- microseconds
 
 commitStaged :: Annex ()
 commitStaged = do

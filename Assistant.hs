@@ -45,6 +45,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Watcher
 import Assistant.Committer
+import Assistant.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
 
@@ -71,6 +72,7 @@ startDaemon foreground
 				-- is taking place.
 				_ <- forkIO $ commitThread st changechan
 				_ <- forkIO $ daemonStatusThread st dstatus
+				_ <- forkIO $ sanityCheckerThread st dstatus
 				watchThread st dstatus changechan
 
 stopDaemon :: Annex ()

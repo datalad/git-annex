@@ -6,8 +6,9 @@
 module Assistant.DaemonStatus where
 
 import Common.Annex
-import Utility.TempFile
 import Assistant.ThreadedMonad
+import Utility.ThreadScheduler
+import Utility.TempFile
 
 import Control.Concurrent
 import System.Posix.Types
@@ -20,6 +21,10 @@ data DaemonStatus = DaemonStatus
 	{ scanComplete :: Bool
 	-- Time when a previous process of the daemon was running ok
 	, lastRunning :: Maybe POSIXTime
+	-- True when the sanity checker is running
+	, sanityCheckRunning :: Bool
+	-- Last time the sanity checker ran
+	, lastSanityCheck :: Maybe POSIXTime
 	}
 	deriving (Show)
 
@@ -29,6 +34,8 @@ newDaemonStatus :: DaemonStatus
 newDaemonStatus = DaemonStatus
 	{ scanComplete = False
 	, lastRunning = Nothing
+	, sanityCheckRunning = False
+	, lastSanityCheck = Nothing
 	}
 
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
@@ -44,21 +51,21 @@ startDaemonStatus = do
 	file <- fromRepo gitAnnexDaemonStatusFile
 	status <- liftIO $
 		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
-	liftIO $ newMVar status { scanComplete = False }
+	liftIO $ newMVar status
+		{ scanComplete = False
+		, sanityCheckRunning = False
+		}
 
 {- This thread wakes up periodically and writes the daemon status to disk. -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
 daemonStatusThread st handle = do
 	checkpoint
-	forever $ do
-		threadDelay (tenMinutes * oneSecond)
-		checkpoint
+	runEvery (Seconds tenMinutes) checkpoint
 	where
 		checkpoint = runThreadState st $ do
 			file <- fromRepo gitAnnexDaemonStatusFile
 			status <- getDaemonStatus handle
 			liftIO $ writeDaemonStatusFile file status
-		oneSecond = 1000000 -- microseconds
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}
@@ -69,6 +76,8 @@ writeDaemonStatusFile file status =
 		serialized now = unlines
 			[ "lastRunning:" ++ show now
 			, "scanComplete:" ++ show (scanComplete status)
+			, "sanityCheckRunning:" ++ show (sanityCheckRunning status)
+			, "lastSanityCheck:" ++ show (lastSanityCheck status)
 			]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
@@ -80,6 +89,10 @@ readDaemonStatusFile file = parse <$> readFile file
 				status { lastRunning = Just v }
 			| key == "scanComplete" = parseval readish $ \v ->
 				status { scanComplete = v }
+			| key == "sanityCheckRunning" = parseval readish $ \v ->
+				status { sanityCheckRunning = v }
+			| key == "lastSanityCheck" = parseval readtime $ \v ->
+				status { lastSanityCheck = Just v }
 			| otherwise = status -- unparsable line
 			where
 				(key, value) = separate (== ':') line
