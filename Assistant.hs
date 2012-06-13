@@ -60,15 +60,18 @@ startDaemon foreground
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
 	where
-		go a = withThreadState $ \st -> liftIO $ a $ do
+		go a = withThreadState $ \st -> do
 			dstatus <- startDaemonStatus
-			changechan <- newChangeChan
-			-- The commit thread is started early, so that the user
-			-- can immediately begin adding files and having them
-			-- committed, even while the startup scan is taking
-			-- place.
-			_ <- forkIO $ commitThread st changechan
-			watchThread st dstatus changechan
+			liftIO $ a $ do
+				changechan <- newChangeChan
+				-- The commit thread is started early,
+				-- so that the user can immediately
+				-- begin adding files and having them
+				-- committed, even while the startup scan
+				-- is taking place.
+				_ <- forkIO $ commitThread st changechan
+				_ <- forkIO $ daemonStatusThread st dstatus
+				watchThread st dstatus changechan
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile

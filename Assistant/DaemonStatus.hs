@@ -7,6 +7,7 @@ module Assistant.DaemonStatus where
 
 import Common.Annex
 import Utility.TempFile
+import Assistant.ThreadedMonad
 
 import Control.Concurrent
 import System.Posix.Types
@@ -30,14 +31,34 @@ newDaemonStatus = DaemonStatus
 	, lastRunning = Nothing
 	}
 
-startDaemonStatus :: IO DaemonStatusHandle
-startDaemonStatus = newMVar newDaemonStatus
-
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
 getDaemonStatus = liftIO . readMVar
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
 modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
+
+{- Load any previous daemon status file, and store it in the MVar for this
+ - process to use as its DaemonStatus. -}
+startDaemonStatus :: Annex DaemonStatusHandle
+startDaemonStatus = do
+	file <- fromRepo gitAnnexDaemonStatusFile
+	status <- liftIO $
+		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
+	liftIO $ newMVar status { scanComplete = False }
+
+{- This thread wakes up periodically and writes the daemon status to disk. -}
+daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
+daemonStatusThread st handle = do
+	checkpoint
+	forever $ do
+		threadDelay tenMinutes
+		checkpoint
+	where
+		checkpoint = runThreadState st $ do
+			file <- fromRepo gitAnnexDaemonStatusFile
+			status <- getDaemonStatus handle
+			liftIO $ writeDaemonStatusFile file status
+		tenMinutes = 10 * 60 * 1000000 -- microseconds
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}
@@ -76,7 +97,7 @@ readDaemonStatusFile file = parse <$> readFile file
  - If the daemon has never ran before, this always returns False.
  -}
 afterLastDaemonRun :: EpochTime -> DaemonStatus -> Bool
-afterLastDaemonRun timestamp status = maybe True (< t) (lastRunning status)
+afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
 	where
 		t = realToFrac (timestamp + slop) :: POSIXTime
 		slop = 10 * 60
