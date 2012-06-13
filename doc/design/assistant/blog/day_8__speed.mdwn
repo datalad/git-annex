@@ -36,7 +36,7 @@ Stracing its startup scan, it's fairly tight now. There are some repeated
 
 ----
 
-Added the sanity check thread. Thread #8! It currently only does one sanity
+Added the sanity check thread. Thread #7! It currently only does one sanity
 check per day, but the sanity check is a fairly lightweight job,
 so I may make it run more frequently. OTOH, it may never ever find a
 problem, so once per day seems a good compromise. 
