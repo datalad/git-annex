@@ -68,7 +68,7 @@ import System.INotify
 
 type ChangeChan = TChan Change
 
-type Handler = FilePath -> Annex (Maybe Change)
+type Handler = FilePath -> Maybe FileStatus -> Annex (Maybe Change)
 
 data Change = Change
 	{ changeTime :: UTCTime
@@ -181,9 +181,9 @@ runChangeChan = atomically
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> IO ()
-runHandler st changechan handler file = void $ do
-	r <- tryIO (runStateMVar st $ handler file)
+runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st changechan handler file filestatus = void $ do
+	r <- tryIO (runStateMVar st $ handler file filestatus)
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
@@ -214,7 +214,7 @@ noChange = return Nothing
  - startup.
  -}
 onAdd :: Handler
-onAdd file = do
+onAdd file _filestatus = do
 	ifM (Annex.getState Annex.fast)
 		( go -- initial directory scan is complete
 		, do -- expensive check done only during startup scan
@@ -243,7 +243,7 @@ onAdd file = do
  - already exist.
  -}
 onAddSymlink :: Handler
-onAddSymlink file = go =<< Backend.lookupFile file
+onAddSymlink file filestatus = go =<< Backend.lookupFile file
 	where
 		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
@@ -270,7 +270,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 			madeChange file "link"
 
 onDel :: Handler
-onDel file = do
+onDel file _filestatus = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file "rm"
@@ -283,14 +283,14 @@ onDel file = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir = do
+onDelDir dir _filestatus = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir "rmdir"
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg = do
+onErr msg _ = do
 	warning msg
 	return Nothing
 

@@ -15,7 +15,7 @@ import qualified System.Posix.Files as Files
 import System.IO.Error
 import Control.Exception (throw)
 
-type Hook a = Maybe (a -> IO ())
+type Hook a = Maybe (a -> Maybe FileStatus -> IO ())
 
 data WatchHooks = WatchHooks
 	{ addHook :: Hook FilePath
@@ -84,15 +84,18 @@ watchDir i dir ignored hooks
 			| otherwise = []
 
 		scan f = unless (ignored f) $ do
-			let fullf = indir f
-			r <- catchMaybeIO $ getSymbolicLinkStatus fullf
-			case r of
+			ms <- getstatus f
+			case ms of
 				Nothing -> return ()
 				Just s
-					| Files.isDirectory s -> recurse fullf
-					| Files.isSymbolicLink s -> addSymlinkHook <@> f
-					| Files.isRegularFile s -> addHook <@> f
-					| otherwise -> return ()
+					| Files.isDirectory s ->
+						recurse $ indir f
+					| Files.isSymbolicLink s ->
+						runhook addSymlinkHook f ms
+					| Files.isRegularFile s ->
+						runhook addHook f ms
+					| otherwise ->
+						noop
 
 		-- Ignore creation events for regular files, which won't be
 		-- done being written when initially created, but handle for
@@ -100,39 +103,43 @@ watchDir i dir ignored hooks
 		go (Created { isDirectory = isd, filePath = f })
 			| isd = recurse $ indir f
 			| hashook addSymlinkHook =
-				whenM (filetype Files.isSymbolicLink f) $
-					addSymlinkHook <@> f
+				checkfiletype Files.isSymbolicLink addSymlinkHook f
 			| otherwise = noop
 		-- Closing a file is assumed to mean it's done being written.
 		go (Closed { isDirectory = False, maybeFilePath = Just f }) =
-			whenM (filetype Files.isRegularFile f) $
-				addHook <@> f
+				checkfiletype Files.isRegularFile addHook f
 		-- When a file or directory is moved in, scan it to add new
 		-- stuff.
 		go (MovedIn { filePath = f }) = scan f
 		go (MovedOut { isDirectory = isd, filePath = f })
-			| isd = delDirHook <@> f
-			| otherwise = delHook <@> f
+			| isd = runhook delDirHook f Nothing
+			| otherwise = runhook delHook f Nothing
 		-- Verify that the deleted item really doesn't exist,
 		-- since there can be spurious deletion events for items
 		-- in a directory that has been moved out, but is still
 		-- being watched.
 		go (Deleted { isDirectory = isd, filePath = f })
-			| isd = guarded $ delDirHook <@> f
-			| otherwise = guarded $ delHook <@> f
+			| isd = guarded $ runhook delDirHook f Nothing
+			| otherwise = guarded $ runhook delHook f Nothing
 			where
 				guarded = unlessM (filetype (const True) f)
 		go _ = noop
 
 		hashook h = isJust $ h hooks
 
-		runhook h f
+		runhook h f s
 			| ignored f = noop
-			| otherwise = maybe noop (\a -> a $ indir f) (h hooks)
-		h <@> f = runhook h f
+			| otherwise = maybe noop (\a -> a (indir f) s) (h hooks)
 
 		indir f = dir </> f
 
+		getstatus f = catchMaybeIO $ getSymbolicLinkStatus $ indir f
+		checkfiletype check h f = do
+			ms <- getstatus f
+			case ms of
+				Just s
+					| check s -> runhook h f ms
+				_ -> noop
 		filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
 
 		-- Inotify fails when there are too many watches with a
@@ -144,10 +151,10 @@ watchDir i dir ignored hooks
 					Just hook -> tooManyWatches hook dir
 			| otherwise = throw e
 
-tooManyWatches :: (String -> IO ()) -> FilePath -> IO ()
+tooManyWatches :: (String -> Maybe FileStatus -> IO ()) -> FilePath -> IO ()
 tooManyWatches hook dir = do
 	sysctlval <- querySysctl [Param maxwatches] :: IO (Maybe Integer)
-	hook $ unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval
+	hook (unlines $ basewarning : maybe withoutsysctl withsysctl sysctlval) Nothing
 	where
 		maxwatches = "fs.inotify.max_user_watches"
 		basewarning = "Too many directories to watch! (Not watching " ++ dir ++")"
