@@ -34,6 +34,8 @@ There is a `watch` branch in git that adds the command.
   (or merged, etc), it will be converted into an annexed file.
   See [[blog/day_7__bugfixes]]
 
+* When you `git annex unlock` a file, it will immediately be re-locked.
+
 ## todo
 
 - Support OSes other than Linux; it only uses inotify currently.
