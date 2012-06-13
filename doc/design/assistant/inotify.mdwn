@@ -1,44 +1,53 @@
 Finish "git annex watch" command, which runs, in the background, watching via
 inotify for changes, and automatically annexing new files, etc.
 
-There is a `watch` branch in git that adds such a command. To make this
-really useful, it needs to:
+There is a `watch` branch in git that adds the command.
 
-- on startup, add any files that have appeared since last run **done**
-- on startup, fix the symlinks for any renamed links **done**
-- on startup, stage any files that have been deleted since last run
-  (seems to require a `git commit -a` on startup, or at least a
-  `git add --update`, which will notice deleted files) **done**
-- notice new files, and git annex add **done**
-- notice renamed files, auto-fix the symlink, and stage the new file location
-  **done**
-- handle cases where directories are moved outside the repo, and stop
-  watching them **done**
-- when a whole directory is deleted or moved, stage removal of its
-  contents from the index **done**
-- notice deleted files and stage the deletion
-  (tricky; there's a race with add since it replaces the file with a symlink..)
-  **done**
-- Gracefully handle when the default limit of 8192 inotified directories
-  is exceeded. This can be tuned by root, so help the user fix it.
-  **done**
-- periodically auto-commit staged changes (avoid autocommitting when
-  lots of changes are coming in) **done**
-- coleasce related add/rm events for speed and less disk IO **done**
-- don't annex `.gitignore` and `.gitattributes` files **done**
-- run as a daemon **done**
-- tunable delays before adding new files, etc
+## known bugs
+
+* A process has a file open for write, another one closes it,
+  and so it's added. Then the first process modifies it.
+
+  Or, a process has a file open for write when `git annex watch` starts
+  up, it will be added to the annex. If the process later continues
+  writing, it will change content in the annex.
+
+  This changes content in the annex, and fsck will later catch
+  the inconsistency.
+
+  Possible fixes: 
+
+  * Somehow track or detect if a file is open for write by any processes.
+  * Or, when possible, making a copy on write copy before adding the file
+    would avoid this.
+  * Or, as a last resort, make an expensive copy of the file and add that.
+  * Tracking file opens and closes with inotify could tell if any other
+    processes have the file open. But there are problems.. It doesn't
+    seem to differentiate between files opened for read and for write.
+    And there would still be a race after the last close and before it's
+    injected into the annex, where it could be opened for write again.
+    Would need to detect that and undo the annex injection or something.
+
+* If a file is checked into git as a normal file and gets modified
+  (or merged, etc), it will be converted into an annexed file.
+  See [[blog/day_7__bugfixes]]
+
+## todo
+
+- Support OSes other than Linux; it only uses inotify currently.
+  OSX and FreeBSD use the same mechanism, and there is a Haskell interface
+  for it,
+- Run niced and ioniced? Seems to make sense, this is a background job.
 - configurable option to only annex files meeting certian size or
   filename criteria
-- option to check files not meeting annex criteria into git directly
+- option to check files not meeting annex criteria into git directly,
+  automatically
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
 - Possibly, when a directory is moved out of the annex location,
-  unannex its contents.
-- Support OSes other than Linux; it only uses inotify currently.
-  OSX and FreeBSD use the same mechanism, and there is a Haskell interface
-  for it,
+  unannex its contents. (Does inotify tell us where the directory moved
+  to so we can access it?)
 
 ## the races
 
@@ -60,25 +69,6 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Fixed this problem; Now it hard links the file to a temp directory and
   operates on the hard link, which is also made unwritable.
-
-* A process has a file open for write, another one closes it, and so it's
-  added. Then the first process modifies it.
-
-  **Currently unfixed**; This changes content in the annex, and fsck will
-  later catch the inconsistency.
-
-  Possible fixes: 
-
-  * Somehow track or detect if a file is open for write by any processes.
-  * Or, when possible, making a copy on write copy before adding the file
-    would avoid this.
-  * Or, as a last resort, make an expensive copy of the file and add that.
-  * Tracking file opens and closes with inotify could tell if any other
-    processes have the file open. But there are problems.. It doesn't
-    seem to differentiate between files opened for read and for write.
-    And there would still be a race after the last close and before it's
-    injected into the annex, where it could be opened for write again.
-    Would need to detect that and undo the annex injection or something.
 
 * File is added and then replaced with another file before the annex add
   makes its symlink.
@@ -108,3 +98,29 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
+
+## done
+
+- on startup, add any files that have appeared since last run **done**
+- on startup, fix the symlinks for any renamed links **done**
+- on startup, stage any files that have been deleted since last run
+  (seems to require a `git commit -a` on startup, or at least a
+  `git add --update`, which will notice deleted files) **done**
+- notice new files, and git annex add **done**
+- notice renamed files, auto-fix the symlink, and stage the new file location
+  **done**
+- handle cases where directories are moved outside the repo, and stop
+  watching them **done**
+- when a whole directory is deleted or moved, stage removal of its
+  contents from the index **done**
+- notice deleted files and stage the deletion
+  (tricky; there's a race with add since it replaces the file with a symlink..)
+  **done**
+- Gracefully handle when the default limit of 8192 inotified directories
+  is exceeded. This can be tuned by root, so help the user fix it.
+  **done**
+- periodically auto-commit staged changes (avoid autocommitting when
+  lots of changes are coming in) **done**
+- coleasce related add/rm events for speed and less disk IO **done**
+- don't annex `.gitignore` and `.gitattributes` files **done**
+- run as a daemon **done**
