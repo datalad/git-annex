@@ -154,10 +154,8 @@ onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 			| scanComplete daemonstatus = addlink link
 			| otherwise = case filestatus of
 				Just s
-					| safe (statusChangeTime s) -> noChange
+					| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
 				_ -> addlink link
-			where
-				safe t = maybe True (> t) (lastRunning daemonstatus)
 
 		{- For speed, tries to reuse the existing blob for
 		 - the symlink target. -}

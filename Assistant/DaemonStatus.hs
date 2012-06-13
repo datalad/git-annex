@@ -6,16 +6,21 @@
 module Assistant.DaemonStatus where
 
 import Common.Annex
+import Utility.TempFile
 
 import Control.Concurrent
 import System.Posix.Types
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Locale
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan
 	{ scanComplete :: Bool
 	-- Time when a previous process of the daemon was running ok
-	, lastRunning :: Maybe EpochTime
+	, lastRunning :: Maybe POSIXTime
 	}
+	deriving (Show)
 
 type DaemonStatusHandle = MVar DaemonStatus
 
@@ -32,4 +37,46 @@ getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
 getDaemonStatus = liftIO . readMVar
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus status a = liftIO $ modifyMVar_ status (return . a)
+modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
+
+{- Don't just dump out the structure, because it will change over time,
+ - and parts of it are not relevant. -}
+writeDaemonStatusFile :: FilePath -> DaemonStatus -> IO ()
+writeDaemonStatusFile file status = 
+	viaTmp writeFile file =<< serialized <$> getPOSIXTime
+	where
+		serialized now = unlines
+			[ "lastRunning:" ++ show now
+			, "scanComplete:" ++ show (scanComplete status)
+			]
+
+readDaemonStatusFile :: FilePath -> IO DaemonStatus
+readDaemonStatusFile file = parse <$> readFile file
+	where
+		parse = foldr parseline newDaemonStatus . lines
+		parseline line status
+			| key == "lastRunning" = parseval readtime $ \v ->
+				status { lastRunning = Just v }
+			| key == "scanComplete" = parseval readish $ \v ->
+				status { scanComplete = v }
+			| otherwise = status -- unparsable line
+			where
+				(key, value) = separate (== ':') line
+				parseval parser a = maybe status a (parser value)
+				readtime s = do
+					d <- parseTime defaultTimeLocale "%s%Qs" s
+					Just $ utcTimeToPOSIXSeconds d
+
+{- Checks if a time stamp was made after the daemon was lastRunning.
+ -
+ - Some slop is built in; this really checks if the time stamp was made
+ - at least ten minutes after the daemon was lastRunning. This is to
+ - ensure the daemon shut down cleanly, and deal with minor clock skew.
+ -
+ - If the daemon has never ran before, this always returns False.
+ -}
+afterLastDaemonRun :: EpochTime -> DaemonStatus -> Bool
+afterLastDaemonRun timestamp status = maybe True (< t) (lastRunning status)
+	where
+		t = realToFrac (timestamp + slop) :: POSIXTime
+		slop = 10 * 60
