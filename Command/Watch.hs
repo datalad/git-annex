@@ -24,12 +24,18 @@
  - Thread 5: committer
  - 	Waits for changes to occur, and runs the git queue to update its
  - 	index, then commits.
+ - Thread 6: status logger
+ - 	Wakes up periodically and records the daemon's status to disk.
  -
  - State MVar:
  - 	The Annex state is stored here, which allows resuscitating the
  - 	Annex monad in IO actions run by the inotify and committer
  - 	threads. Thus, a single state is shared amoung the threads, and
  - 	only one at a time can access it.
+ - DaemonStatus MVar:
+ - 	The daemon's current status. This MVar should only be manipulated
+ - 	from inside the Annex monad, which ensures it's accessed only
+ - 	after the State MVar.
  - ChangeChan STM TChan:
  - 	Changes are indicated by writing to this channel. The committer
  - 	reads from it.
@@ -59,6 +65,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Time.Clock
 import Data.Bits.Utils
+import System.Posix.Types
 import qualified Data.ByteString.Lazy as L
 
 #if defined linux_HOST_OS
@@ -66,9 +73,28 @@ import Utility.Inotify
 import System.INotify
 #endif
 
+data DaemonStatus = DaemonStatus
+	-- False when the daemon is performing its startup scan
+	{ scanComplete :: Bool
+	-- Time when a previous process of the daemon was running ok
+	, lastRunning :: Maybe EpochTime
+	}
+
+newDaemonStatus :: Annex DaemonStatus
+newDaemonStatus = return $ DaemonStatus
+	{ scanComplete = False
+	, lastRunning = Nothing
+	}
+
+getDaemonStatus :: MVar DaemonStatus -> Annex DaemonStatus
+getDaemonStatus = liftIO . readMVar
+
+modifyDaemonStatus :: MVar DaemonStatus -> (DaemonStatus -> DaemonStatus) -> Annex ()
+modifyDaemonStatus status a = liftIO $ modifyMVar_ status (return . a)
+
 type ChangeChan = TChan Change
 
-type Handler = FilePath -> Maybe FileStatus -> Annex (Maybe Change)
+type Handler = FilePath -> Maybe FileStatus -> MVar DaemonStatus -> Annex (Maybe Change)
 
 data Change = Change
 	{ changeTime :: UTCTime
@@ -96,43 +122,40 @@ start :: Bool -> Bool -> CommandStart
 start foreground stopdaemon = notBareRepo $ do
 	if stopdaemon
 		then liftIO . stopDaemon =<< fromRepo gitAnnexPidFile
-		else withStateMVar $ startDaemon (not foreground)
+		else withStateMVar $ startDaemon foreground
 	stop
 
 startDaemon :: Bool -> MVar Annex.AnnexState -> Annex ()
-startDaemon False st = do
-	showStart "watch" "."
-	liftIO $ watch st
-startDaemon True st = do
-	logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
-	pidfile <- fromRepo gitAnnexPidFile
-	liftIO $ daemonize logfd (Just pidfile) False $ watch st
+startDaemon foreground st
+	| foreground = do
+		showStart "watch" "."
+		go id
+	| otherwise = do
+		logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
+		pidfile <- fromRepo gitAnnexPidFile
+		go $ daemonize logfd (Just pidfile) False
+	where
+		go a = do
+			daemonstatus <- newDaemonStatus
+			liftIO $ a $ do
+				dstatus <- newMVar daemonstatus
+				changechan <- runChangeChan newTChan
+				watch st dstatus changechan
 
-watch :: MVar Annex.AnnexState -> IO ()
+watch :: MVar Annex.AnnexState -> MVar DaemonStatus -> ChangeChan -> IO ()
 #if defined linux_HOST_OS
-watch st = withINotify $ \i -> do
-	changechan <- runChangeChan newTChan
-	let hook a = Just $ runHandler st changechan a
-	let hooks = WatchHooks
-		{ addHook = hook onAdd
-		, delHook = hook onDel
-		, addSymlinkHook = hook onAddSymlink
-		, delDirHook = hook onDelDir
-		, errHook = hook onErr
-		}
+watch st dstatus changechan = withINotify $ \i -> do
 	-- The commit thread is started early, so that the user
 	-- can immediately begin adding files and having them
 	-- committed, even while the startup scan is taking place.
 	_ <- forkIO $ commitThread st changechan
-	-- The fast flag is abused somewhat, to tell when the startup
-	-- scan is still running.
-	runStateMVar st $ do
-		setfast False
+	runStateMVar st $
 		showAction "scanning"
 	-- This does not return until the startup scan is done.
 	-- That can take some time for large trees.
 	watchDir i "." (ignored . takeFileName) hooks
-	runStateMVar st $ setfast True
+	runStateMVar st $
+		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
 	-- Notice any files that were deleted before inotify
 	-- was started.
 	runStateMVar st $ do
@@ -140,7 +163,14 @@ watch st = withINotify $ \i -> do
 		showAction "started"
 	waitForTermination
 	where
-		setfast v= Annex.changeState $ \s -> s { Annex.fast = v }
+		hook a = Just $ runHandler st dstatus changechan a
+		hooks = WatchHooks
+			{ addHook = hook onAdd
+			, delHook = hook onDel
+			, addSymlinkHook = hook onAddSymlink
+			, delDirHook = hook onDelDir
+			, errHook = hook onErr
+			}
 #else
 watch = error "watch mode is so far only available on Linux"
 #endif
@@ -181,14 +211,16 @@ runChangeChan = atomically
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: MVar Annex.AnnexState -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st changechan handler file filestatus = void $ do
-	r <- tryIO (runStateMVar st $ handler file filestatus)
+runHandler :: MVar Annex.AnnexState -> MVar DaemonStatus -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st dstatus changechan handler file filestatus = void $ do
+	r <- tryIO go
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> void $
 			runChangeChan $ writeTChan changechan change
+	where
+		go = runStateMVar st $ handler file filestatus dstatus
 
 {- Handlers call this when they made a change that needs to get committed. -}
 madeChange :: FilePath -> String -> Annex (Maybe Change)
@@ -214,14 +246,13 @@ noChange = return Nothing
  - startup.
  -}
 onAdd :: Handler
-onAdd file _filestatus = do
-	ifM (Annex.getState Annex.fast)
-		( go -- initial directory scan is complete
-		, do -- expensive check done only during startup scan
-			ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
-				( noChange
-				, go
-				)
+onAdd file _filestatus dstatus = do
+	ifM (scanComplete <$> getDaemonStatus dstatus)
+		( go
+		, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
+			( noChange
+			, go
+			)
 		)
 	where
 		go = do
@@ -237,24 +268,43 @@ onAdd file _filestatus = do
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  - 
- - This is often called on symlinks that are already staged correctly.
- - A symlink may have been deleted and being re-added, or added when
- - the watcher was not running; so it always stages even symlinks that
- - already exist.
  -}
 onAddSymlink :: Handler
-onAddSymlink file filestatus = go =<< Backend.lookupFile file
+onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 	where
-		go Nothing = addlink =<< liftIO (readSymbolicLink file)
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( addlink link
+				( ensurestaged link =<< getDaemonStatus dstatus
 				, do
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
 				)
+		go Nothing = do -- other symlink
+			link <- liftIO (readSymbolicLink file)
+			ensurestaged link =<< getDaemonStatus dstatus
+
+		{- This is often called on symlinks that are already
+		 - staged correctly. A symlink may have been deleted
+		 - and being re-added, or added when the watcher was
+		 - not running. So they're normally restaged to make sure.
+		 -
+		 - As an optimisation, during the status scan, avoid
+		 - restaging everything. Only links that were created since
+		 - the last time the daemon was running are staged.
+		 - (If the daemon has never ran before, avoid staging
+		 - links too.)
+		 -}
+		ensurestaged link daemonstatus
+			| scanComplete daemonstatus = addlink link
+			| otherwise = case filestatus of
+				Just s
+					| safe (statusChangeTime s) -> noChange
+				_ -> addlink link
+			where
+				safe t = maybe True (> t) (lastRunning daemonstatus)
+
 		{- For speed, tries to reuse the existing blob for
 		 - the symlink target. -}
 		addlink link = do
@@ -270,7 +320,7 @@ onAddSymlink file filestatus = go =<< Backend.lookupFile file
 			madeChange file "link"
 
 onDel :: Handler
-onDel file _filestatus = do
+onDel file _ _dstatus = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file "rm"
@@ -283,14 +333,14 @@ onDel file _filestatus = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir _filestatus = do
+onDelDir dir _ _dstatus = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir "rmdir"
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg _ = do
+onErr msg _ _dstatus = do
 	warning msg
 	return Nothing
 
