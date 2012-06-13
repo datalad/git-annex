@@ -72,7 +72,7 @@ startDaemon foreground
 				-- is taking place.
 				_ <- forkIO $ commitThread st changechan
 				_ <- forkIO $ daemonStatusThread st dstatus
-				_ <- forkIO $ sanityCheckerThread st dstatus
+				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				watchThread st dstatus changechan
 
 stopDaemon :: Annex ()

@@ -77,7 +77,7 @@ writeDaemonStatusFile file status =
 			[ "lastRunning:" ++ show now
 			, "scanComplete:" ++ show (scanComplete status)
 			, "sanityCheckRunning:" ++ show (sanityCheckRunning status)
-			, "lastSanityCheck:" ++ show (lastSanityCheck status)
+			, "lastSanityCheck:" ++ maybe "" show (lastSanityCheck status)
 			]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
