@@ -51,14 +51,14 @@ daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
 daemonStatusThread st handle = do
 	checkpoint
 	forever $ do
-		threadDelay tenMinutes
+		threadDelay (tenMinutes * oneSecond)
 		checkpoint
 	where
 		checkpoint = runThreadState st $ do
 			file <- fromRepo gitAnnexDaemonStatusFile
 			status <- getDaemonStatus handle
 			liftIO $ writeDaemonStatusFile file status
-		tenMinutes = 10 * 60 * 1000000 -- microseconds
+		oneSecond = 1000000 -- microseconds
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}
@@ -100,4 +100,7 @@ afterLastDaemonRun :: EpochTime -> DaemonStatus -> Bool
 afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
 	where
 		t = realToFrac (timestamp + slop) :: POSIXTime
-		slop = 10 * 60
+		slop = fromIntegral tenMinutes
+
+tenMinutes :: Int
+tenMinutes = 10 * 60
