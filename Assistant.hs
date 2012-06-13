@@ -10,12 +10,13 @@
  - 	The initial thread run, double forks to background, starts other
  - 	threads, and then stops, waiting for them to terminate,
  - 	or for a ctrl-c.
- - Thread 2: inotify
+ - Thread 2: watcher
  - 	Notices new files, and calls handlers for events, queuing changes.
  - Thread 3: inotify internal
  - 	Used by haskell inotify library to ensure inotify event buffer is
  - 	kept drained.
- - Thread 4: inotify initial scan
+ - Thread 4: inotify startup scanner
+ - 	Scans the tree and registers inotify watches for each directory.
  -	A MVar lock is used to prevent other inotify handlers from running
  -	until this is complete.
  - Thread 5: committer
@@ -23,6 +24,8 @@
  - 	index, then commits.
  - Thread 6: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
+ - Thread 7: sanity checker
+ - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
