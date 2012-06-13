@@ -236,6 +236,11 @@ onAdd file = do
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
+ - 
+ - This is often called on symlinks that are already staged correctly.
+ - A symlink may have been deleted and being re-added, or added when
+ - the watcher was not running; so it always stages even symlinks that
+ - already exist.
  -}
 onAddSymlink :: Handler
 onAddSymlink file = go =<< Backend.lookupFile file
@@ -250,13 +255,7 @@ onAddSymlink file = go =<< Backend.lookupFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
 				)
-		{- This is often called on symlinks that are already staged
-		 - correctly, especially during the startup scan. A symlink
-		 - may have been deleted and re-added, or added when
-		 - the watcher was not running; so it always stages
-		 - even symlinks that already exist.
-		 -
-		 - So for speed, tries to reuse the existing blob for
+		{- For speed, tries to reuse the existing blob for
 		 - the symlink target. -}
 		addlink link = do
 			v <- catObjectDetails $ Ref $ ':':file
