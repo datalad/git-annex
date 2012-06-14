@@ -57,8 +57,6 @@ version git-annex dependend upon existing on the phone. (Maybe the phone
 would have to be always considered an untrusted repo, which probably
 makes sense anyway.)
 
-Problem: 
-
 #### crazy `LD_PRELOAD` wrapper
 
 Need I say more? (Also, Android's linker may not even support it.)
