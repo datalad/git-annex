@@ -23,13 +23,13 @@ import Config
 addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
 addCommand command params files = do
 	q <- get
-	store =<< inRepo (Git.Queue.addCommand command params files q)
+	store <=< inRepo $ Git.Queue.addCommand command params files q
 
 {- Adds an update-index stream to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()
 addUpdateIndex streamer = do
 	q <- get
-	store =<< inRepo (Git.Queue.addUpdateIndex streamer q)
+	store <=< inRepo $ Git.Queue.addUpdateIndex streamer q
 
 {- Runs the queue if it is full. Should be called periodically. -}
 flushWhenFull :: Annex ()

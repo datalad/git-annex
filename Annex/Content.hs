@@ -242,7 +242,7 @@ cleanObjectLoc key = do
 		removeparents file n = do
 			let dir = parentDir file
 			maybe noop (const $ removeparents dir (n-1))
-				=<< catchMaybeIO (removeDirectory dir)
+				<=< catchMaybeIO $ removeDirectory dir
 
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: Key -> Annex ()

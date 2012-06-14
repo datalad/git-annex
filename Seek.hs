@@ -95,7 +95,7 @@ withValue v a params = do
  -}
 withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
 withField option converter = withValue $
-	converter =<< Annex.getField (Option.name option)
+	converter <=< Annex.getField $ Option.name option
 
 withFlag :: Option -> (Bool -> CommandSeek) -> CommandSeek
 withFlag option = withValue $ Annex.getFlag (Option.name option)

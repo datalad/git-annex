@@ -84,7 +84,7 @@ checkRemoteUnused name = go =<< fromJust <$> Remote.byName (Just name)
 			_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
 			next $ return True
 		remoteunused r =
-			excludeReferenced =<< loggedKeysFor (Remote.uuid r)
+			excludeReferenced <=< loggedKeysFor $ Remote.uuid r
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
@@ -260,7 +260,7 @@ withKeysReferencedInGit a = do
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	go =<< inRepo (LsTree.lsTree ref)
+	go <=< inRepo $ LsTree.lsTree ref
 	where
 		go [] = noop
 		go (l:ls)
