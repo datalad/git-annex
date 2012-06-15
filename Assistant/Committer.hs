@@ -84,23 +84,20 @@ commitThread st changechan = runEvery (Seconds 1) $ do
  - for write by some other process.
  -
  - When a file is added, Inotify will notice the new symlink. So this waits
- - for one new LinkChange to be received per file that's successfully
- - added, to ensure that its symlink has been staged before returning.
+ - for additional Changes to arrive, so that the symlink has hopefully been
+ - staged before returning.
  -}
 handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
 handleAdds st changechan cs
 	| null added = noop
 	| otherwise = do
-		r <- forM added $ catchBoolIO . runThreadState st . add
-		let numadded = length $ filter id r
-		handleAdds st changechan =<< waitforlinkchanges [] numadded
+		forM_ added $ catchBoolIO . runThreadState st . add
+		handleAdds st changechan =<< getChanges changechan
 	where
 		added = map changeFile $ filter isPendingAdd cs
 
 		isPendingAdd (Change { changeType = PendingAddChange }) = True
 		isPendingAdd _ = False
-		isLinkChange (Change { changeType = LinkChange }) = True
-		isLinkChange _ = False
 
 		add file = do
 			showStart "add" file
@@ -113,14 +110,6 @@ handleAdds st changechan cs
 			Command.Add.link file key True
 			showEndOk
 			return True
-
-		waitforlinkchanges c n
-			| n < 1 = return $ concat c
-			| otherwise = do
-				(done, rest) <- partition isLinkChange 
-					<$> getChanges changechan
-				let n' = (n - length done)
-				waitforlinkchanges (rest:c) n'
 
 commitStaged :: Annex ()
 commitStaged = do
