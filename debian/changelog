@@ -1,5 +1,7 @@
 git-annex (3.20120612) UNRELEASED; urgency=low
 
+  * addurl: Was broken by a typo introduced 2 released ago, now fixed.
+    Closes: #677576
   * Install man page when run by cabal, in a location where man will
     find it, even when installing under $HOME. Thanks, Nathan Collins
 
