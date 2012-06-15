@@ -14,6 +14,18 @@ available in the App Store.
 * git (not all git commands are needed,
   but core plumbing and a few like `git-add` are.)
 
+## GHC Android?
+
+Android's native SDK does not use glibc. GHC's runtime links with glibc.
+This could be an enormous problem. Other people want to see GHC able to
+target Android, of course, so someone may solve it before I get stuck on
+it.
+
+References:
+
+* <http://stackoverflow.com/questions/5151858/running-a-haskell-program-on-the-android-os>
+* <http://www.reddit.com/r/haskell/comments/ful84/haskell_on_android/>
+
 ### Android specific features
 
 The app should be aware of power status, and avoid expensive background
@@ -56,8 +68,6 @@ Problem: Would leave files unlocked to modification, which might lose a
 version git-annex dependend upon existing on the phone. (Maybe the phone
 would have to be always considered an untrusted repo, which probably
 makes sense anyway.)
-
-Problem: 
 
 #### crazy `LD_PRELOAD` wrapper
 

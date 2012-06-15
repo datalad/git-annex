@@ -18,8 +18,20 @@ There is a `watch` branch in git that adds the command.
   Possible fixes: 
 
   * Somehow track or detect if a file is open for write by any processes.
-    `lsof` could be used, although it would be a little slow, and not
-    avoid every possible race.
+    `lsof` could be used, although it would be a little slow.
+
+    Here's one way to avoid the slowdown: When a file is being added,
+    set it read-only, and hard-link it into a quarantine directory,
+    remembering both filenames.
+    Then use the batch change mode code to detect batch adds and bundle
+    them together.
+    Just before committing, lsof the quarantine directory. Any files in
+    it that are still open for write can just have their write bit turned
+    back on and be deleted from quarantine, to be handled when their writer
+    closes. Files that pass quarantine get added as usual. This avoids
+    repeated lsof calls slowing down adds, but does add a constant factor
+    overhead (0.25 seconds lsof call) before any add gets committed.
+
   * Or, when possible, making a copy on write copy before adding the file
     would avoid this.
   * Or, as a last resort, make an expensive copy of the file and add that.

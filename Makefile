@@ -100,8 +100,6 @@ clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs)
 
-# Workaround for `cabal sdist` requiring all included files to be listed
-# in .cabal.
 sdist: clean $(mans)
 	./make-sdist.sh
 

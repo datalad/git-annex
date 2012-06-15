@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmURXBzaYE1gmVc-X9eLAyDat_6rHPl670"
+ nickname="Bram"
+ subject="Error when installing from Hackage"
+ date="2012-06-15T17:39:45Z"
+ content="""
+I get this error when trying to install (actually upgrade) from Hackage:
+
+    bram@falafel% cabal install git-annex
+    Resolving dependencies...
+    Downloading git-annex-3.20120614...
+    cabal: Error: some packages failed to install:
+    git-annex-3.20120614 failed while unpacking the package. The exception was:
+    user error (File in tar archive is not in the expected directory
+    \"git-annex-3.20120614\")
+"""]]
