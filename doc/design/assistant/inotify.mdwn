@@ -18,6 +18,7 @@ There is a `watch` branch in git that adds the command.
   Possible fixes: 
 
   * Somehow track or detect if a file is open for write by any processes.
+    `lsof` could be used, although it would be a little slow.
   * Or, when possible, making a copy on write copy before adding the file
     would avoid this.
   * Or, as a last resort, make an expensive copy of the file and add that.
