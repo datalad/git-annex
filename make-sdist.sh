@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Workaround for `cabal sdist` requiring all included files to be listed
 # in .cabal.
