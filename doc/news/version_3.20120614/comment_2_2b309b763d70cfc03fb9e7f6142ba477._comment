@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.135"
+ subject="comment 2"
+ date="2012-06-15T18:21:03Z"
+ content="""
+My, cabal is picky about the tarballs it will accept. Doesn't understand longlinks in tarballs. I've uploaded a new release.
+"""]]
