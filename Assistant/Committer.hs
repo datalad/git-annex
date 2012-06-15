@@ -91,18 +91,18 @@ handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
 handleAdds st changechan cs
 	| null added = noop
 	| otherwise = do
-		numadded <- length . filter id <$>
-			runThreadState st (forM added add)
-		waitforlinkchanges numadded
+		r <- forM added $ catchBoolIO . runThreadState st . add
+		let numadded = length $ filter id r
+		handleAdds st changechan =<< waitforlinkchanges [] numadded
 	where
-		added = filter isPendingAdd cs
+		added = map changeFile $ filter isPendingAdd cs
 
 		isPendingAdd (Change { changeType = PendingAddChange }) = True
 		isPendingAdd _ = False
 		isLinkChange (Change { changeType = LinkChange }) = True
 		isLinkChange _ = False
 
-		add (Change { changeFile = file }) = do
+		add file = do
 			showStart "add" file
 			handle file =<< Command.Add.ingest file
 
@@ -114,14 +114,13 @@ handleAdds st changechan cs
 			showEndOk
 			return True
 
-		waitforlinkchanges 0 = noop
-		waitforlinkchanges n = do
-			c <- runChangeChan $ readTChan changechan
-			if (isLinkChange c)
-				then waitforlinkchanges (n-1)
-				else do
-					handleAdds st changechan [c]
-					waitforlinkchanges n
+		waitforlinkchanges c n
+			| n < 1 = return $ concat c
+			| otherwise = do
+				(done, rest) <- partition isLinkChange 
+					<$> getChanges changechan
+				let n' = (n - length done)
+				waitforlinkchanges (rest:c) n'
 
 commitStaged :: Annex ()
 commitStaged = do
