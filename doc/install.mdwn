@@ -10,6 +10,7 @@
 * [[NixOS]]
 * [[Gentoo]]
 * Windows: [[sorry, not possible yet|todo/windows_support]]
+* [[ScientificLinux5]] - This should cover RHEL5 clones such as CentOS5 and so on
 
 ## Using cabal
 
