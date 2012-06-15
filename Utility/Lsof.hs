@@ -14,17 +14,20 @@ import Common
 import System.Cmd.Utils
 import System.Posix.Types
 
-data OpenMode = ReadWrite | ReadOnly | WriteOnly | Unknown
+data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
+	deriving (Show)
 
 type CmdLine = String
 
 data ProcessInfo = ProcessInfo ProcessID CmdLine
+	deriving (Show)
 
-query :: FilePath -> IO [(FilePath, OpenMode, ProcessInfo)]
+query :: FilePath -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query p = do
-	(h, s) <- pipeFrom "lsof" ["-F0can", "--", p]
-	!r <- parse s
-	forceSuccess h
+	(pid, s) <- pipeFrom "lsof" ["-F0can", "--", p]
+	let !r = parse s
+	-- ignore nonzero exit code; lsof returns that when no files are open
+	void $ getProcessStatus True False $ processID pid
 	return r
 
 {- Parsing null-delimited output like:
@@ -37,35 +40,42 @@ query p = do
  - Where each new process block is started by a pid, and a process can
  - have multiple files open.
  -}
-parse :: String -> [(FilePath, OpenMode, ProcessInfo)]
-parse s = go [] $ lines s
+parse :: String -> [(FilePath, LsofOpenMode, ProcessInfo)]
+parse s = bundle $ go [] $ lines s
 	where
+		bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
+
 		go c [] = c
 		go c (l@(t:r):ls)
-			| t == 'p' = parseprocess r
+			| t == 'p' =
+				let (fs, ls') = parsefiles [] ls
+				in go ((fs, parseprocess r):c) ls'
 			| otherwise = parsefail
 		go _ _ = parsefail
 
 		parseprocess l =
 			case splitnull l of
-				[pid, 'c':cmdline] ->
+				[pid, 'c':cmdline, ""] ->
 					case readish pid of
 						(Just n) -> ProcessInfo n cmdline
 						Nothing -> parsefail
 				_ -> parsefail
 
-		parsefile l =
+		parsefiles c [] = (c, [])
+		parsefiles c (l:ls) = 
 			case splitnull l of
-				['a':mode, 'n':file] -> (file, parsemode mode)
+				['a':mode, 'n':file, ""] ->
+					parsefiles ((file, parsemode mode):c) ls
+				(('p':_):_) -> (c, l:ls)
 				_ -> parsefail
 
-		parsemode ('r':_) = ReadOnly
-		parsemode ('w':_) = WriteOnly
-		parsemode ('u':_) = ReadWrite
-		parsemode _ = Unknown
+		parsemode ('r':_) = OpenReadOnly
+		parsemode ('w':_) = OpenWriteOnly
+		parsemode ('u':_) = OpenReadWrite
+		parsemode _ = OpenUnknown
 
 		ls = lines s
 
 		splitnull = split "\0"
 
-		parsefail = error "failed to parse lsof output: " ++ show s
+		parsefail = error $ "failed to parse lsof output: " ++ show s
