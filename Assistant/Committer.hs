@@ -9,17 +9,21 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import qualified Annex.Queue
 import qualified Git.Command
+import qualified Command.Add
 import Utility.ThreadScheduler
 
 import Control.Concurrent.STM
 import Data.Time.Clock
+
+data ChangeType = PendingAddChange | LinkChange | RmChange | RmDirChange
+	deriving (Show, Eq)
 
 type ChangeChan = TChan Change
 
 data Change = Change
 	{ changeTime :: UTCTime
 	, changeFile :: FilePath
-	, changeDesc :: String
+	, changeType :: ChangeType
 	}
 	deriving (Show)
 
@@ -30,11 +34,12 @@ newChangeChan :: IO ChangeChan
 newChangeChan = atomically newTChan
 
 {- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> String -> Annex (Maybe Change)
-madeChange file desc = do
+madeChange :: FilePath -> ChangeType -> Annex (Maybe Change)
+madeChange f t = do
 	-- Just in case the commit thread is not flushing the queue fast enough.
-	Annex.Queue.flushWhenFull
-	liftIO $ Just <$> (Change <$> getCurrentTime <*> pure file <*> pure desc)
+	when (t /= PendingAddChange) $
+		Annex.Queue.flushWhenFull
+	liftIO $ Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
 
 noChange :: Annex (Maybe Change)
 noChange = return Nothing
@@ -66,8 +71,57 @@ commitThread st changechan = runEvery (Seconds 1) $ do
 	-- Now see if now's a good time to commit.
 	time <- getCurrentTime
 	if shouldCommit time cs
-		then void $ tryIO $ runThreadState st commitStaged
+		then do
+			handleAdds st changechan cs
+			void $ tryIO $ runThreadState st commitStaged
 		else refillChanges changechan cs
+
+{- If there are PendingAddChanges, the files have not yet actually been
+ - added to the annex, and that has to be done now, before committing.
+ -
+ - Deferring the adds to this point causes batches to be bundled together,
+ - which allows faster checking with lsof that the files are not still open
+ - for write by some other process.
+ -
+ - When a file is added, Inotify will notice the new symlink. So this waits
+ - for one new LinkChange to be received per file that's successfully
+ - added, to ensure that its symlink has been staged before returning.
+ -}
+handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
+handleAdds st changechan cs
+	| null added = noop
+	| otherwise = do
+		numadded <- length . filter id <$>
+			runThreadState st (forM added add)
+		waitforlinkchanges numadded
+	where
+		added = filter isPendingAdd cs
+
+		isPendingAdd (Change { changeType = PendingAddChange }) = True
+		isPendingAdd _ = False
+		isLinkChange (Change { changeType = LinkChange }) = True
+		isLinkChange _ = False
+
+		add (Change { changeFile = file }) = do
+			showStart "add" file
+			handle file =<< Command.Add.ingest file
+
+		handle _ Nothing = do
+			showEndFail
+			return False
+		handle file (Just key) = do
+			Command.Add.link file key True
+			showEndOk
+			return True
+
+		waitforlinkchanges 0 = noop
+		waitforlinkchanges n = do
+			c <- runChangeChan $ readTChan changechan
+			if (isLinkChange c)
+				then waitforlinkchanges (n-1)
+				else do
+					handleAdds st changechan [c]
+					waitforlinkchanges n
 
 commitStaged :: Annex ()
 commitStaged = do
@@ -87,7 +141,7 @@ commitStaged = do
 {- Decide if now is a good time to make a commit.
  - Note that the list of change times has an undefined order.
  -
- - Current strategy: If there have been 10 commits within the past second,
+ - Current strategy: If there have been 10 changes within the past second,
  - a batch activity is taking place, so wait for later.
  -}
 shouldCommit :: UTCTime -> [Change] -> Bool

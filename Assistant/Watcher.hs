@@ -15,7 +15,6 @@ import Assistant.DaemonStatus
 import Assistant.Committer
 import Utility.ThreadLock
 import qualified Annex.Queue
-import qualified Command.Add
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
@@ -87,18 +86,20 @@ runHandler st dstatus changechan handler file filestatus = void $ do
 	where
 		go = runThreadState st $ handler file filestatus dstatus
 
-{- Adding a file is tricky; the file has to be replaced with a symlink
- - but this is race prone, as the symlink could be changed immediately
- - after creation. To avoid that race, git add is not used to stage the
- - symlink.
+{- During initial directory scan, this will be run for any regular files
+ - that are already checked into git. We don't want to turn those into
+ - symlinks, so do a check. This is rather expensive, but only happens
+ - during startup.
  -
- - Inotify will notice the new symlink, so this Handler does not stage it
- - or return a Change, leaving that to onAddSymlink.
+ - It's possible for the file to still be open for write by some process.
+ - This can happen in a few ways; one is if two processes had the file open
+ - and only one has just closed it. We want to avoid adding a file to the
+ - annex that is open for write, to avoid anything being able to change it.
  -
- - During initial directory scan, this will be run for any files that
- - are already checked into git. We don't want to turn those into symlinks,
- - so do a check. This is rather expensive, but only happens during
- - startup.
+ - We could run lsof on the file here to check for other writer.
+ - But, that's slow. Instead, a Change is returned that indicates this file
+ - still needs to be added. The committer will handle bundles of these
+ - Changes at once.
  -}
 onAdd :: Handler
 onAdd file _filestatus dstatus = do
@@ -110,14 +111,7 @@ onAdd file _filestatus dstatus = do
 			)
 		)
 	where
-		go = do
-			showStart "add" file
-			handle =<< Command.Add.ingest file
-			noChange
-		handle Nothing = showEndFail
-		handle (Just key) = do
-			Command.Add.link file key True
-			showEndOk
+		go = madeChange file PendingAddChange
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -169,13 +163,13 @@ onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 					sha <- inRepo $
 						Git.HashObject.hashObject BlobObject link
 					stageSymlink file sha
-			madeChange file "link"
+			madeChange file LinkChange
 
 onDel :: Handler
 onDel file _ _dstatus = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
-	madeChange file "rm"
+	madeChange file RmChange
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -188,7 +182,7 @@ onDelDir :: Handler
 onDelDir dir _ _dstatus = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
-	madeChange dir "rmdir"
+	madeChange dir RmDirChange
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
@@ -197,7 +191,9 @@ onErr msg _ _dstatus = do
 	return Nothing
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
- - on disk. -}
+ - on disk. This avoids a race if git add is used, where the symlink is
+ - changed to something else immediately after creation.
+ -}
 stageSymlink :: FilePath -> Sha -> Annex ()
 stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
