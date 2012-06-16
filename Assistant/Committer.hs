@@ -76,41 +76,6 @@ commitThread st changechan = runEvery (Seconds 1) $ do
 			void $ tryIO $ runThreadState st commitStaged
 		else refillChanges changechan cs
 
-{- If there are PendingAddChanges, the files have not yet actually been
- - added to the annex, and that has to be done now, before committing.
- -
- - Deferring the adds to this point causes batches to be bundled together,
- - which allows faster checking with lsof that the files are not still open
- - for write by some other process.
- -
- - When a file is added, Inotify will notice the new symlink. So this waits
- - for additional Changes to arrive, so that the symlink has hopefully been
- - staged before returning.
- -}
-handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
-handleAdds st changechan cs
-	| null added = noop
-	| otherwise = do
-		forM_ added $ catchBoolIO . runThreadState st . add
-		handleAdds st changechan =<< getChanges changechan
-	where
-		added = map changeFile $ filter isPendingAdd cs
-
-		isPendingAdd (Change { changeType = PendingAddChange }) = True
-		isPendingAdd _ = False
-
-		add file = do
-			showStart "add" file
-			handle file =<< Command.Add.ingest file
-
-		handle _ Nothing = do
-			showEndFail
-			return False
-		handle file (Just key) = do
-			Command.Add.link file key True
-			showEndOk
-			return True
-
 commitStaged :: Annex ()
 commitStaged = do
 	Annex.Queue.flush
@@ -141,3 +106,48 @@ shouldCommit now changes
 	where
 		len = length changes
 		thisSecond c = now `diffUTCTime` changeTime c <= 1
+
+{- If there are PendingAddChanges, the files have not yet actually been
+ - added to the annex (probably), and that has to be done now, before
+ - committing.
+ -
+ - Deferring the adds to this point causes batches to be bundled together,
+ - which allows faster checking with lsof that the files are not still open
+ - for write by some other process.
+ -
+ - When a file is added, Inotify will notice the new symlink. So this waits
+ - for additional Changes to arrive, so that the symlink has hopefully been
+ - staged before returning, and will be committed.
+ -}
+handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
+handleAdds st changechan cs
+	| null toadd = noop
+	| otherwise = do
+		added <- filter id <$> forM toadd go
+		unless (null added) $
+			handleAdds st changechan =<< getChanges changechan
+	where
+		toadd = map changeFile $ filter isPendingAdd cs
+
+		isPendingAdd (Change { changeType = PendingAddChange }) = True
+		isPendingAdd _ = False
+
+		go file = do
+			ms <- catchMaybeIO $ getSymbolicLinkStatus file
+			case ms of
+				Just s
+					| isRegularFile s -> catchBoolIO $
+						runThreadState st $ add file
+				_ -> return False
+
+		add file = do
+			showStart "add" file
+			handle file =<< Command.Add.ingest file
+
+		handle _ Nothing = do
+			showEndFail
+			return False
+		handle file (Just key) = do
+			Command.Add.link file key True
+			showEndOk
+			return True
