@@ -50,7 +50,7 @@ start file = notBareRepo $ ifAnnexed file fixup add
  - to prevent it from being modified in between. It's hard linked into a
  - temporary location, and its writable bits are removed. It could still be
  - written to by a process that already has it open for writing. -}
-lockDown :: FilePath -> Annex FilePath
+lockDown :: FilePath -> Annex KeySource
 lockDown file = do
 	liftIO $ preventWrite file
 	tmp <- fromRepo gitAnnexTmpDir
@@ -59,24 +59,27 @@ lockDown file = do
 	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
 	liftIO $ nukeFile tmpfile
 	liftIO $ createLink file tmpfile
-	return tmpfile
+	return $ KeySource { keyFilename = file , contentLocation = tmpfile }
 
-{- Moves the file into the annex. -}
-ingest :: FilePath -> Annex (Maybe Key)
-ingest file = do
-	tmpfile <- lockDown file
-	let source = KeySource { keyFilename = file, contentLocation = tmpfile }
-	backend <- chooseBackend file
-	genKey source backend >>= go tmpfile
+{- Moves a locked down file into the annex. -}
+ingest :: KeySource -> Annex (Maybe Key)
+ingest source = do
+	backend <- chooseBackend $ keyFilename source
+	genKey source backend >>= go
 	where
-		go _ Nothing = return Nothing
-		go tmpfile (Just (key, _)) = do
-			handle (undo file key) $ moveAnnex key tmpfile
-			liftIO $ nukeFile file
+		go Nothing = do
+			liftIO $ nukeFile $ contentLocation source
+			return Nothing
+		go (Just (key, _)) = do
+			handle (undo (keyFilename source) key) $
+				moveAnnex key $ contentLocation source
+			liftIO $ nukeFile $ keyFilename source
 			return $ Just key
 
 perform :: FilePath -> CommandPerform
-perform file = maybe stop (\key -> next $ cleanup file key True) =<< ingest file
+perform file = 
+	maybe stop (\key -> next $ cleanup file key True)
+		=<< ingest =<< lockDown file
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
