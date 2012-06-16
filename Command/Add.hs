@@ -55,11 +55,10 @@ lockDown file = do
 	liftIO $ preventWrite file
 	tmp <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory tmp
-	pid <- liftIO getProcessID
-	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
-	liftIO $ nukeFile tmpfile
-	liftIO $ createLink file tmpfile
-	return $ KeySource { keyFilename = file , contentLocation = tmpfile }
+	liftIO $ do
+		(tmpfile, _handle) <- openTempFile tmp (takeFileName file)
+		createLink file tmpfile
+		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
 
 {- Moves a locked down file into the annex. -}
 ingest :: KeySource -> Annex (Maybe Key)
