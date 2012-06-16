@@ -35,7 +35,7 @@ Executable git-annex
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   hinotify, STM
+   hinotify, stm
   -- Need to list this because it's generated from a .hsc file.
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
@@ -53,7 +53,7 @@ Test-Suite test
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   hinotify, STM
+   hinotify, stm
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
