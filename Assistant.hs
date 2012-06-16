@@ -52,7 +52,6 @@ import Assistant.SanityChecker
 import qualified Annex
 import qualified Utility.Daemon
 import Utility.LogFile
-import qualified Build.SysConfig as SysConfig
 
 import Control.Concurrent
 
@@ -66,11 +65,11 @@ startDaemon foreground
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
 	where
-		go a
-			| SysConfig.lsof = start a
-			| otherwise =
-				ifM (Annex.getState Annex.force)
-					(start a, needlsof)
+		go a = ifM (liftIO $ inPath "lsof")
+			( go a
+			, ifM (Annex.getState Annex.force)
+				(start a, needlsof)	
+			)
 		start a = withThreadState $ \st -> do
 			dstatus <- startDaemonStatus
 			liftIO $ a $ do
@@ -85,16 +84,11 @@ startDaemon foreground
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				watchThread st dstatus changechan
 
-		-- this message is optimised away when lsof is available
 		needlsof = error $ unlines
-			[ "The lsof command is needed for watch mode to be safe."
-			, "But this build of git-annex was made without lsof available. Giving up..."
-			, ""
-			, "You can use --force if lsof is available now. Please make very sure it is."
-			, "If run with --force and without lsof available, files can be added to the"
-			, "annex while a process still has them opened for writing. This can"
-			, "corrupt data in the annex, and make fsck complain."
-			, "Use the --force with caution, Luke!"
+			[ "The lsof command is needed for watch mode to be safe, and is not in PATH."
+			, "To override lsof checks to ensure that files are not open for writing"
+			, "when added to the annex, you can use --force"
+			, "Be warned: This can corrupt data in the annex, and make fsck complain."
 			]
 
 stopDaemon :: Annex ()
