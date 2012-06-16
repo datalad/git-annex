@@ -54,6 +54,8 @@ To build and use git-annex, you will need:
   * [sha1sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional, but recommended;
     a sha1 command will also do)
   * [gpg](http://gnupg.org/) (optional; needed for encryption)
+  * [lsof](ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/)
+    (needed for watch mode)
   * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)
 
 Then just [[download]] git-annex and run: `make; make install`

@@ -26,11 +26,16 @@ data ProcessInfo = ProcessInfo ProcessID CmdLine
 queryDir :: FilePath -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 queryDir path = query ["+d", path]
 
+{- Runs lsof with some parameters.
+ -
+ - Ignores nonzero exit code; lsof returns that when no files are open.
+ -
+ - Note: If lsof is not available, this always returns [] !
+ -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query opts = do
 	(pid, s) <- pipeFrom "lsof" ("-F0can" : opts)
 	let !r = parse s
-	-- ignore nonzero exit code; lsof returns that when no files are open
 	void $ getProcessStatus True False $ processID pid
 	return r
 
