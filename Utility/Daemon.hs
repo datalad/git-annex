@@ -44,7 +44,8 @@ daemonize logfd pidfile changedirectory a = do
 
 lockPidFile :: Bool -> IO () -> FilePath -> IO ()
 lockPidFile write onfailure file = do
-	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
+	fd <- openFd file ReadWrite (Just stdFileMode)
+		defaultFileFlags { trunc = write }
 	locked <- catchMaybeIO $ setLock fd (locktype, AbsoluteSeek, 0, 0)
 	case locked of
 		Nothing -> onfailure
