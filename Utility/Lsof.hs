@@ -21,9 +21,14 @@ type CmdLine = String
 data ProcessInfo = ProcessInfo ProcessID CmdLine
 	deriving (Show)
 
-query :: FilePath -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
-query p = do
-	(pid, s) <- pipeFrom "lsof" ["-F0can", "--", p]
+{- Checks each of the files in a directory to find open files.
+ - Note that this will find hard links to files elsewhere that are open. -}
+queryDir :: FilePath -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
+queryDir path = query ["+d", path]
+
+query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
+query opts = do
+	(pid, s) <- pipeFrom "lsof" ("-F0can" : opts)
 	let !r = parse s
 	-- ignore nonzero exit code; lsof returns that when no files are open
 	void $ getProcessStatus True False $ processID pid
