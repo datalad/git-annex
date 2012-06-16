@@ -11,11 +11,10 @@ module Utility.Lsof where
 
 import Common
 
-import System.Cmd.Utils
 import System.Posix.Types
 
 data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
-	deriving (Show)
+	deriving (Show, Eq)
 
 type CmdLine = String
 
@@ -46,7 +45,7 @@ parse s = bundle $ go [] $ lines s
 		bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
 
 		go c [] = c
-		go c (l@(t:r):ls)
+		go c ((t:r):ls)
 			| t == 'p' =
 				let (fs, ls') = parsefiles [] ls
 				in go ((fs, parseprocess r):c) ls'
@@ -73,8 +72,6 @@ parse s = bundle $ go [] $ lines s
 		parsemode ('w':_) = OpenWriteOnly
 		parsemode ('u':_) = OpenReadWrite
 		parsemode _ = OpenUnknown
-
-		ls = lines s
 
 		splitnull = split "\0"
 
