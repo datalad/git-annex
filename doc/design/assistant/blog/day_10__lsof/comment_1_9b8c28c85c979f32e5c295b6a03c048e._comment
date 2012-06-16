@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="comment 1"
+ date="2012-06-16T09:14:26Z"
+ content="""
+maybe at some point, your tool could show \"warning, the following files are still open and are hence not being annexed\"
+to avoid any nasty surprises of a file not being annexed and the user not realizing it.
+"""]]
