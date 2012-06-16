@@ -57,6 +57,7 @@ lockDown file = do
 	createAnnexDirectory tmp
 	liftIO $ do
 		(tmpfile, _handle) <- openTempFile tmp (takeFileName file)
+		nukeFile tmpfile
 		createLink file tmpfile
 		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
 
