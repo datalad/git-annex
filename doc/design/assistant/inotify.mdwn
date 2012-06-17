@@ -3,6 +3,8 @@ inotify for changes, and automatically annexing new files, etc.
 
 There is a `watch` branch in git that adds the command.
 
+[[!toc]]
+
 ## known bugs
 
 * If a file is checked into git as a normal file and gets modified
@@ -10,6 +12,35 @@ There is a `watch` branch in git that adds the command.
   See [[blog/day_7__bugfixes]]
 
 * When you `git annex unlock` a file, it will immediately be re-locked.
+
+## beyond Linux
+
+I'd also like to support OSX and if possible the BSDs.
+
+* kqueue ([haskell bindings](http://hackage.haskell.org/package/kqueue))
+  is supported by FreeBSD, OSX, and other BSDs.
+
+  From what I can find, kqueue does not provide full directory watching
+  capabilities. To watch a file, you have to have an open file descriptor
+  to the file. This wouldn't scale.
+
+  Gamin does the best it can with just kqueue, supplimented by polling.
+  The source file `server/gam_kqueue.c` makes for interesting reading.
+  Using gamin to do the heavy lifting is one option. 
+  ([haskell bindings](http://hackage.haskell.org/package/hlibfam) for FAM;
+  gamin shares the API)
+
+* hfsevents ([haskell bindings](http://hackage.haskell.org/package/hfsevents))
+  is OSX specific.
+
+  Originally it was only directory level, and you were only told a
+  directory had changed and not which file. Based on the haskell
+  binding's code, from OSX 10.7.0, file level events were added.
+
+  This will be harder for me to develop for, since I don't have access to
+  OSX machines..
+
+* Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
 
 ## todo
 
