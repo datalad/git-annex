@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://denis.laxalde.org/"
+ nickname="dlax"
+ subject="nautilus"
+ date="2012-06-15T19:57:31Z"
+ content="""
+Ah! I was fooled by nautilus which is not able to properly handle symlinks when copying. It copies links instead of target [[!gnomebug 623580]].
+"""]]
