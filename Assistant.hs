@@ -49,7 +49,6 @@ import Assistant.DaemonStatus
 import Assistant.Watcher
 import Assistant.Committer
 import Assistant.SanityChecker
-import qualified Annex
 import qualified Utility.Daemon
 import Utility.LogFile
 
@@ -65,12 +64,8 @@ startDaemon foreground
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
 	where
-		go a = ifM (liftIO $ inPath "lsof")
-			( go a
-			, ifM (Annex.getState Annex.force)
-				(start a, needlsof)	
-			)
-		start a = withThreadState $ \st -> do
+		go a = withThreadState $ \st -> do
+			checkCanWatch
 			dstatus <- startDaemonStatus
 			liftIO $ a $ do
 				changechan <- newChangeChan
@@ -83,13 +78,6 @@ startDaemon foreground
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				watchThread st dstatus changechan
-
-		needlsof = error $ unlines
-			[ "The lsof command is needed for watch mode to be safe, and is not in PATH."
-			, "To override lsof checks to ensure that files are not open for writing"
-			, "when added to the annex, you can use --force"
-			, "Be warned: This can corrupt data in the annex, and make fsck complain."
-			]
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile

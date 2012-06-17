@@ -13,13 +13,14 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Committer
-import Utility.ThreadLock
+import Utility.ThreadScheduler
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
 import qualified Git.LsFiles
 import qualified Backend
+import qualified Annex
 import Annex.Content
 import Annex.CatFile
 import Git.Types
@@ -34,6 +35,23 @@ import System.INotify
 #endif
 
 type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
+
+checkCanWatch :: Annex ()
+checkCanWatch = do
+#if defined linux_HOST_OS
+	unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
+		needLsof
+#else
+		error "watch mode is currently only available in Linux"
+#endif
+
+needLsof :: Annex ()
+needLsof = error $ unlines
+	[ "The lsof command is needed for watch mode to be safe, and is not in PATH."
+	, "To override lsof checks to ensure that files are not open for writing"
+	, "when added to the annex, you can use --force"
+	, "Be warned: This can corrupt data in the annex, and make fsck complain."
+	]
 
 watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
 #if defined linux_HOST_OS
@@ -61,7 +79,7 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			, errHook = hook onErr
 			}
 #else
-watchThread = error "so far only available on Linux"
+watchThread = undefined
 #endif
 
 ignored :: FilePath -> Bool
