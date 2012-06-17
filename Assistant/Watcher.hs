@@ -29,7 +29,7 @@ import Control.Concurrent.STM
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
 
-#if defined linux_HOST_OS
+#ifdef WITH_INOTIFY
 import Utility.Inotify
 import System.INotify
 #endif
@@ -38,11 +38,14 @@ type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Mayb
 
 checkCanWatch :: Annex ()
 checkCanWatch = do
-#if defined linux_HOST_OS
+#ifdef WITH_INOTIFY
 	unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
 		needLsof
 #else
-		error "watch mode is currently only available in Linux"
+#if defined linux_HOST_OS
+#warning "Building without inotify support; watch mode will be disabled."
+#endif
+	error "watch mode is not available on this system"
 #endif
 
 needLsof :: Annex ()
@@ -54,7 +57,7 @@ needLsof = error $ unlines
 	]
 
 watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-#if defined linux_HOST_OS
+#ifdef WITH_INOTIFY
 watchThread st dstatus changechan = withINotify $ \i -> do
 	runThreadState st $
 		showAction "scanning"

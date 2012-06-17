@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120614
+Version: 3.20120616
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -28,14 +28,16 @@ Description:
 Flag S3
   Description: Enable S3 support
 
+Flag Inotify
+  Description: Enable inotify support
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   hinotify, stm
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, stm
   -- Need to list this because it's generated from a .hsc file.
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
@@ -45,6 +47,10 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
+  if flag(Inotify)
+    Build-Depends: hinotify
+    CPP-Options: -DWITH_INOTIFY
+
 Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs
@@ -52,8 +58,7 @@ Test-Suite test
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance,
-   hinotify, stm
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, stm
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP

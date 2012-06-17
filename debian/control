@@ -20,7 +20,7 @@ Build-Depends:
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
-	libghc-hinotify-dev,
+	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev,
 	ikiwiki,
 	perlmagick,
