@@ -40,6 +40,9 @@ I'd also like to support OSX and if possible the BSDs.
   This will be harder for me to develop for, since I don't have access to
   OSX machines..
 
+  [This perl module](http://search.cpan.org/~agrundma/Mac-FSEvents-0.02/lib/Mac/FSEvents/Event.pm)
+  has the best description I've found of what the flags mean.
+
 * Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
 
 ## todo
