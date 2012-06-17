@@ -20,15 +20,24 @@ I'd also like to support OSX and if possible the BSDs.
 * kqueue ([haskell bindings](http://hackage.haskell.org/package/kqueue))
   is supported by FreeBSD, OSX, and other BSDs.
 
-  From what I can find, kqueue does not provide full directory watching
-  capabilities. To watch a file, you have to have an open file descriptor
-  to the file. This wouldn't scale.
+  In kqueue, to watch for changes to a file, you have to have an open file
+  descriptor to the file. This wouldn't scale. 
+
+  Apparently, a directory can be watched, and events are generated when
+  files are added/removed from it. You then have to scan to find which
+  files changed. [example](https://developer.apple.com/library/mac/#samplecode/FileNotification/Listings/Main_c.html#//apple_ref/doc/uid/DTS10003143-Main_c-DontLinkElementID_3)
 
   Gamin does the best it can with just kqueue, supplimented by polling.
   The source file `server/gam_kqueue.c` makes for interesting reading.
   Using gamin to do the heavy lifting is one option. 
   ([haskell bindings](http://hackage.haskell.org/package/hlibfam) for FAM;
   gamin shares the API)
+
+  kqueue does not seem to provide a way to tell when a file gets closed,
+  only when it's initially created. Poses problems..
+
+  * [man page](http://www.freebsd.org/cgi/man.cgi?query=kqueue&apropos=0&sektion=0&format=html)
+  * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/kqueue.py> (good example program)
 
 * hfsevents ([haskell bindings](http://hackage.haskell.org/package/hfsevents))
   is OSX specific.
@@ -40,8 +49,12 @@ I'd also like to support OSX and if possible the BSDs.
   This will be harder for me to develop for, since I don't have access to
   OSX machines..
 
-  [This perl module](http://search.cpan.org/~agrundma/Mac-FSEvents-0.02/lib/Mac/FSEvents/Event.pm)
-  has the best description I've found of what the flags mean.
+  hfsevents does not seem to provide a way to tell when a file gets closed,
+  only when it's initially created. Poses problems..
+
+  * <https://developer.apple.com/library/mac/#documentation/Darwin/Conceptual/FSEvents_ProgGuide/Introduction/Introduction.html>
+  * <http://pypi.python.org/pypi/MacFSEvents/0.2.8> (good example program)
+  * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/fsevents.py> (good example program)
 
 * Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
 
