@@ -9,7 +9,10 @@
 module Utility.ThreadScheduler where
 
 import Common
+
 import Control.Concurrent
+import System.Posix.Terminal
+import System.Posix.Signals
 
 newtype Seconds = Seconds { fromSeconds :: Int }
 	deriving (Eq, Ord, Show)
@@ -40,3 +43,15 @@ unboundDelay time = do
 	let maxWait = min time $ toInteger (maxBound :: Int)
 	threadDelay $ fromInteger maxWait
 	when (maxWait /= time) $ unboundDelay (time - maxWait)
+
+{- Pauses the main thread, letting children run until program termination. -}
+waitForTermination :: IO ()
+waitForTermination = do
+	lock <- newEmptyMVar
+	check softwareTermination lock
+	whenM (queryTerminal stdInput) $
+		check keyboardSignal lock
+	takeMVar lock
+	where
+		check sig lock = void $
+			installHandler sig (CatchOnce $ putMVar lock ()) Nothing
