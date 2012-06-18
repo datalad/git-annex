@@ -45,8 +45,12 @@ addSubDir :: DirMap -> FilePath -> (FilePath -> Bool) -> IO DirMap
 addSubDir dirmap dir prune = M.union dirmap <$> scanRecursive dir prune
 
 {- Removes a subdirectory (and all its subdirectories) from a directory map. -}
-removeSubDir :: FilePath -> DirMap -> DirMap
-removeSubDir dir = M.filter (not . dirContains dir)
+removeSubDir :: FilePath -> DirMap -> IO DirMap
+removeSubDir dir dirmap = do
+	mapM_ closeFd $ M.keys toremove) $ closeFd
+	return rest
+	where
+		(toremove, rest) = M.partition (dirContains dir) dirmap
 
 foreign import ccall unsafe "libkqueue.h init_kqueue" c_init_kqueue
 	:: CInt -> Ptr Fd -> IO Fd
