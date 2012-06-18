@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <sys/event.h>
 #include <sys/time.h>
+#include <errno.h>
 
 /* The specified fds are added to the set of fds being watched for changes.
  * Fds passed to prior calls still take effect, so it's most efficient to
@@ -30,7 +31,11 @@ signed int helper(const int kq, const int fdcnt, const int *fdlist,
 			0, 0);
 	}
 
-	nev = kevent(kq, chlist, fdcnt, evlist, 1, timeout);
+	while ((nev = kevent(kq, chlist, fdcnt, evlist, 1, timeout))) {
+		if (!(nev == -1 && errno == EINTR)) {
+			break;
+		}
+	}
 
 	if (nev == 1)
 		return evlist[0].ident;
