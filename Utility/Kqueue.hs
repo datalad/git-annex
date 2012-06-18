@@ -25,6 +25,8 @@ import qualified Data.Map as M
 
 type DirMap = M.Map Fd FilePath
 
+data Kqueue = Kqueue Fd DirMap
+
 {- Builds a map of directories in a tree, possibly pruning some.
  - Opens each directory in the tree. -}
 scanRecursive :: FilePath -> (FilePath -> Bool) -> IO DirMap
@@ -43,25 +45,33 @@ addSubDir dirmap dir prune = M.union dirmap <$> scanRecursive dir prune
 removeSubDir :: FilePath -> DirMap -> DirMap
 removeSubDir dir = M.filter (not . dirContains dir)
 
-foreign import ccall unsafe "libkqueue.h waitchange" c_waitchange
-	:: Ptr Fd -> IO Fd
+foreign import ccall unsafe "libkqueue.h init_kqueue" c_init_kqueue
+	:: CInt -> Ptr Fd -> IO Fd
+foreign import ccall unsafe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
+	:: Fd -> IO Fd
 
-{- Waits for a change in a map of directories, and returns the directory
- - where the change took place. 
+{- Initializes a Kqueue to watch a map of directories. -}
+initKqueue :: DirMap -> IO Kqueue
+initKqueue dirmap = withArrayLen (M.keys dirmap) $ \fdcnt c_fds ->
+	h <- c_init_kqueue (fromIntegral fdcnt) c_fds
+	return $ Kqueue h dirmap
+
+{- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
+ - so it can be reused.  -}
+stopKqueue :: Kqueue -> IO
+stopKqueue (Kqueue h _) = closeFd h
+
+{- Waits for a change on a Kqueue, and returns the directory
+ - or directories where a change took place.
  -
  - The kqueue interface does not tell what type of change took place in
  - the directory; it could be an added file, a deleted file, a renamed
  - file, a new subdirectory, or a deleted subdirectory, or a moved
  - subdirectory.
  -
- - Note that if subdirectories have changed, the caller will want to
- - update the map before calling this again. -}
-waitChange :: DirMap -> IO (Maybe FilePath)
-waitChange dirmap = withArray (M.keys dirmap) $ \c_fds -> do
-	changed <- c_waitchange c_fds
-	ifM (safeErrno <$> getErrno)
-		( return $ M.lookup changed dirmap
-		, return Nothing
-		)
-	where
-		safeErrno (Errno v) = v == 0
+ - Note that if subdirectories have changed, the caller should re-run
+ - initKqueue to get them watched. -}
+waitChange :: Kqueue -> IO [FilePath]
+waitChange (Kqueue h dirmap) = do
+	changed <- c_waitchange_kqueue h
+	return $ M.lookup changed dirmap
