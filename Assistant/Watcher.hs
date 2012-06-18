@@ -33,12 +33,15 @@ import qualified Data.ByteString.Lazy as L
 import Utility.Inotify
 import System.INotify
 #endif
+#ifdef WITH_KQUEUE
+import Utility.Kqueue
+#endif
 
 type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
 
 checkCanWatch :: Annex ()
 checkCanWatch = do
-#ifdef WITH_INOTIFY
+#if (WITH_INOTIFY || WITH_KQUEUE)
 	unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
 		needLsof
 #else
@@ -82,8 +85,13 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			, errHook = hook onErr
 			}
 #else
+#ifdef WITH_KQUEUE
+watchThread st dstatus changechan = do
+	print =<< waitChange [stdError, stdOutput]
+#else
 watchThread = undefined
-#endif
+#endif /* WITH_KQUEUE */
+#endif /* WITH_INOTIFY */
 
 ignored :: FilePath -> Bool
 ignored ".git" = True
