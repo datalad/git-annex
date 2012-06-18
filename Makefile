@@ -1,6 +1,12 @@
+OS:=$(shell uname | sed 's/[-_].*//')
+
+ifeq ($(OS),Linux)
+BASEFLAGS_OPTS+=-DWITH_INOTIFY
+endif
+
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3 -DWITH_INOTIFY
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3 $(BASEFLAGS_OPTS)
 GHCFLAGS=-O2 $(BASEFLAGS)
 
 ifdef PROFILE
