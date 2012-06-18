@@ -37,8 +37,6 @@ import System.INotify
 import Utility.Kqueue
 #endif
 
-type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
-
 checkCanWatch :: Annex ()
 checkCanWatch = do
 #if (WITH_INOTIFY || WITH_KQUEUE)
@@ -66,7 +64,7 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 		showAction "scanning"
 	-- This does not return until the startup scan is done.
 	-- That can take some time for large trees.
-	watchDir i "." (ignored . takeFileName) hooks
+	watchDir i "." ignored hooks
 	runThreadState st $
 		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
 	-- Notice any files that were deleted before inotify
@@ -86,18 +84,24 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			}
 #else
 #ifdef WITH_KQUEUE
-watchThread st dstatus changechan = do
-	print =<< waitChange [stdError, stdOutput]
+watchThread st dstatus changechan = forever $ do
+	dirs <- scanRecursive "." ignored
+	changeddir <- waitChange dirs
+	print $ "detected a change in " ++ show changeddir
 #else
 watchThread = undefined
 #endif /* WITH_KQUEUE */
 #endif /* WITH_INOTIFY */
 
 ignored :: FilePath -> Bool
-ignored ".git" = True
-ignored ".gitignore" = True
-ignored ".gitattributes" = True
-ignored _ = False
+ignored = ig . takeFileName
+	where
+	ig ".git" = True
+	ig ".gitignore" = True
+	ig ".gitattributes" = True
+	ig _ = False
+
+type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
 
 {- Runs an action handler, inside the Annex monad, and if there was a
  - change, adds it to the ChangeChan.
