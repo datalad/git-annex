@@ -11,6 +11,10 @@ module Utility.Kqueue (
 	scanRecursive,
 	addSubDir,
 	removeSubDir,
+
+	initKqueue,
+	stopKqueue,
+
 	waitChange,
 ) where
 
@@ -18,7 +22,6 @@ import Common
 
 import System.Posix.Types
 import Foreign.C.Types
-import Foreign.C.Error
 import Foreign.Ptr
 import Foreign.Marshal
 import qualified Data.Map as M
@@ -52,17 +55,17 @@ foreign import ccall unsafe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
 
 {- Initializes a Kqueue to watch a map of directories. -}
 initKqueue :: DirMap -> IO Kqueue
-initKqueue dirmap = withArrayLen (M.keys dirmap) $ \fdcnt c_fds ->
+initKqueue dirmap = withArrayLen (M.keys dirmap) $ \fdcnt c_fds -> do
 	h <- c_init_kqueue (fromIntegral fdcnt) c_fds
 	return $ Kqueue h dirmap
 
 {- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
  - so it can be reused.  -}
-stopKqueue :: Kqueue -> IO
+stopKqueue :: Kqueue -> IO ()
 stopKqueue (Kqueue h _) = closeFd h
 
 {- Waits for a change on a Kqueue, and returns the directory
- - or directories where a change took place.
+ - where a change took place.
  -
  - The kqueue interface does not tell what type of change took place in
  - the directory; it could be an added file, a deleted file, a renamed
@@ -71,7 +74,7 @@ stopKqueue (Kqueue h _) = closeFd h
  -
  - Note that if subdirectories have changed, the caller should re-run
  - initKqueue to get them watched. -}
-waitChange :: Kqueue -> IO [FilePath]
+waitChange :: Kqueue -> IO (Maybe FilePath)
 waitChange (Kqueue h dirmap) = do
 	changed <- c_waitchange_kqueue h
 	return $ M.lookup changed dirmap

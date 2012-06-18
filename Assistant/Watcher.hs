@@ -84,10 +84,12 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			}
 #else
 #ifdef WITH_KQUEUE
-watchThread st dstatus changechan = forever $ do
+watchThread st dstatus changechan = do
 	dirs <- scanRecursive "." ignored
-	changeddir <- waitChange dirs
-	print $ "detected a change in " ++ show changeddir
+	kqueue <- initKqueue dirs
+	forever $ do
+		changeddir <- waitChange kqueue
+		print $ "detected a change in " ++ show changeddir
 #else
 watchThread = undefined
 #endif /* WITH_KQUEUE */
