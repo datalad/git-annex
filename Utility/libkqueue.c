@@ -63,3 +63,13 @@ int init_kqueue(const int fdcnt, const int *fdlist) {
 signed int waitchange_kqueue(const int kq) {
 	return helper(kq, 0, NULL, NULL);
 }
+
+/*
+main () {
+	int list[1];
+	int kq;
+	list[0]=open(".", O_RDONLY);
+	kq = init_kqueue(1, list);
+	printf("change: %i\n", waitchange_kqueue(kq));
+}
+*/
