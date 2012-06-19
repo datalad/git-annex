@@ -34,7 +34,7 @@ import Utility.Inotify
 import System.INotify
 #endif
 #ifdef WITH_KQUEUE
-import Utility.Kqueue
+import qualified Utility.Kqueue as Kqueue
 #endif
 
 checkCanWatch :: Annex ()
@@ -84,12 +84,12 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			}
 #else
 #ifdef WITH_KQUEUE
-watchThread st dstatus changechan = do
-	dirs <- scanRecursive "." ignored
-	kqueue <- initKqueue dirs
-	forever $ do
-		changeddir <- waitChange kqueue
-		print $ "detected a change in " ++ show changeddir
+watchThread st dstatus changechan = go =<< Kqueue.initKqueue "." ignored
+	where
+		go kq = do
+			(kq', changes) <- Kqueue.waitChange kq
+			print $ "detected a change in " ++ show changes
+			go kq'
 #else
 watchThread = undefined
 #endif /* WITH_KQUEUE */
