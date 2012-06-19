@@ -18,11 +18,12 @@
  * Fds passed to prior calls still take effect, so it's most efficient to
  * not pass the same fds repeatedly.
  */
-signed int helper(const int kq, const int fdcnt, const int *fdlist,
-		struct timespec *timeout) {
+signed int helper(const int kq, const int fdcnt, const int *fdlist, int nodelay) {
 	int i, nev;
 	struct kevent evlist[1];
 	struct kevent chlist[fdcnt];
+	struct timespec avoiddelay = {0, 0};
+	struct timespec *timeout = nodelay ? &avoiddelay : NULL;
 	
 	for (i = 0; i < fdcnt; i++) {
 		EV_SET(&chlist[i], fdlist[i], EVFILT_VNODE,
@@ -43,22 +44,19 @@ signed int helper(const int kq, const int fdcnt, const int *fdlist,
 		return -1;
 }
 
-/* Initializes a kqueue, with a list of fds to watch for changes.
- * Returns the kqueue's handle. */
+/* Initializes a new, empty kqueue. */
 int init_kqueue(const int fdcnt, const int *fdlist) {
-	struct timespec nodelay = {0, 0};
 	int kq;
-
 	if ((kq = kqueue()) == -1) {
 		perror("kqueue");
 		exit(1);
 	}
-
-	/* Prime the pump with the list of fds, but don't wait for any
-	 * change events. */
-	helper(kq, fdcnt, fdlist, &nodelay);
-
 	return kq;
+}
+
+/* Adds fds to the set that should be watched. */
+void addfds_kqueue(const int kq, const int fdcnt, const int *fdlist) {
+	helper(kq, fdcnt, fdlist, 1);
 }
 
 /* Waits for a change event on a kqueue.
@@ -66,7 +64,7 @@ int init_kqueue(const int fdcnt, const int *fdlist) {
  * Returns the fd that changed, or -1 on error.
  */
 signed int waitchange_kqueue(const int kq) {
-	return helper(kq, 0, NULL, NULL);
+	return helper(kq, 0, NULL, 0);
 }
 
 /*
@@ -74,7 +72,8 @@ main () {
 	int list[1];
 	int kq;
 	list[0]=open(".", O_RDONLY);
-	kq = init_kqueue(1, list);
+	kq = init_kqueue();
+	addfds_kqueue(kq, 1, list)
 	printf("change: %i\n", waitchange_kqueue(kq));
 }
 */

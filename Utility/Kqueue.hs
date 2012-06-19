@@ -100,7 +100,9 @@ removeSubDir dirmap dir = do
 		(toremove, rest) = M.partition (dirContains dir . dirName) dirmap
 
 foreign import ccall unsafe "libkqueue.h init_kqueue" c_init_kqueue
-	:: CInt -> Ptr Fd -> IO Fd
+	:: IO Fd
+foreign import ccall unsafe "libkqueue.h addfds_kqueue" c_addfds_kqueue
+	:: Fd -> CInt -> Ptr Fd -> IO ()
 foreign import ccall unsafe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
 	:: Fd -> IO Fd
 
@@ -108,9 +110,16 @@ foreign import ccall unsafe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
 initKqueue :: FilePath -> Pruner -> IO Kqueue
 initKqueue dir pruned = do
 	dirmap <- scanRecursive dir pruned
+	h <- c_init_kqueue
+	let kq = Kqueue h dirmap pruned
+	updateKqueue kq
+	return kq
+
+{- Updates a Kqueue, adding watches for its map. -}
+updateKqueue :: Kqueue -> IO ()
+updateKqueue (Kqueue h dirmap _) =
 	withArrayLen (M.keys dirmap) $ \fdcnt c_fds -> do
-		h <- c_init_kqueue (fromIntegral fdcnt) c_fds
-		return $ Kqueue h dirmap pruned
+		c_addfds_kqueue h (fromIntegral fdcnt) c_fds
 
 {- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
  - so it can be reused.  -}
@@ -155,10 +164,16 @@ handleChange kq@(Kqueue h dirmap pruner) fd olddirinfo =
 
 			-- Update the cached dirinfo just looked up.
 			let newmap'' = M.insertWith' const fd newdirinfo newmap'
-			ret (newmap'', changes)
+
+			-- When new directories were added, need to update
+			-- the kqueue to watch them.
+			let kq' = Kqueue h newmap'' pruner
+			unless (null newdirinfos) $
+				updateKqueue kq'
+
+			return (kq', changes)
 		go Nothing = do
 			-- The directory has been moved or deleted, so
 			-- remove it from our map.
 			newmap <- removeSubDir dirmap (dirName olddirinfo)
-			ret (newmap, [])
-		ret (newmap, changes) = return $ (Kqueue h newmap pruner, changes)
+			return (Kqueue h newmap pruner, [])
