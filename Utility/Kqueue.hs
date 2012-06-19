@@ -12,6 +12,9 @@ module Utility.Kqueue (
 	stopKqueue,
 	waitChange,
 	Change(..),
+	changedFile,
+	isAdd,
+	isDelete,
 ) where
 
 import Common
@@ -60,10 +63,10 @@ getDirInfo dir = do
 
 {- Difference between the dirCaches of two DirInfos. -}
 (//) :: DirInfo -> DirInfo -> [Change]
-old // new = deleted ++ added
+oldc // newc = deleted ++ added
 	where
-		deleted = calc Deleted old new
-		added   = calc Added new old
+		deleted = calc Deleted oldc newc
+		added   = calc Added newc oldc
 		calc a x y = map a . map (dirName x </>) $
 			S.toList $ S.difference (dirCache x) (dirCache y)
 
@@ -76,11 +79,18 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 		walk c (dir:rest)
 			| prune dir = walk c rest
 			| otherwise = do
-				info <- getDirInfo dir
-				fd <- openFd dir ReadOnly Nothing defaultFileFlags
-				dirs <- filterM (\d -> doesDirectoryExist $ dir </> d)
-					(S.toList $ dirCache info)
-				walk ((fd, info):c) (dirs++rest)
+				minfo <- catchMaybeIO $ getDirInfo dir
+				case minfo of
+					Nothing -> walk c rest
+					Just info -> do
+						mfd <- catchMaybeIO $
+							openFd dir ReadOnly Nothing defaultFileFlags
+						case mfd of
+							Nothing -> walk c rest
+							Just fd -> do
+								let subdirs = map (dir </>) $
+									S.toList $ dirCache info
+								walk ((fd, info):c) (subdirs ++ rest)
 
 {- Adds a list of subdirectories (and all their children), unless pruned to a
  - directory map. Adding a subdirectory that's already in the map will
@@ -146,7 +156,7 @@ waitChange kq@(Kqueue h dirmap _) = do
  - directories as necessary.
  -}
 handleChange :: Kqueue -> Fd -> DirInfo -> IO (Kqueue, [Change])
-handleChange kq@(Kqueue h dirmap pruner) fd olddirinfo =
+handleChange (Kqueue h dirmap pruner) fd olddirinfo =
 	go =<< catchMaybeIO (getDirInfo $ dirName olddirinfo)
 	where
 		go (Just newdirinfo) = do
