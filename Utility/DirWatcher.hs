@@ -35,6 +35,24 @@ canWatch = True
 canWatch = False
 #endif
 
+/* With inotify, discrete events will be received when making multiple changes
+ * to the same filename. For example, adding it, deleting it, and adding it
+ * again will be three events.
+ * 
+ * OTOH, with kqueue, often only one event is received, indicating the most
+ * recent state of the file.
+ */
+eventsCoalesce :: Bool
+#if WITH_INOTIFY
+eventsCoalesce = False
+#else
+#if WITH_KQUEUE
+eventsCoalesce = True
+#else
+eventsCoalesce = undefined
+#endif
+#endif
+
 #if WITH_INOTIFY
 watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO ()
 watchDir dir prune hooks runstartup = INotify.withINotify $ \i -> do
