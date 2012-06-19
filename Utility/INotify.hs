@@ -5,25 +5,16 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.Inotify where
+module Utility.INotify where
 
 import Common hiding (isDirectory)
 import Utility.ThreadLock
+import Utility.Types.DirWatcher
 
 import System.INotify
 import qualified System.Posix.Files as Files
 import System.IO.Error
 import Control.Exception (throw)
-
-type Hook a = Maybe (a -> Maybe FileStatus -> IO ())
-
-data WatchHooks = WatchHooks
-	{ addHook :: Hook FilePath
-	, addSymlinkHook :: Hook FilePath
-	, delHook :: Hook FilePath
-	, delDirHook :: Hook FilePath
-	, errHook :: Hook String -- error message
-	}
 
 {- Watches for changes to files in a directory, and all its subdirectories
  - that are not ignored, using inotify. This function returns after

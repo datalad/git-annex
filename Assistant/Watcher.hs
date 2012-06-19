@@ -13,7 +13,8 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Committer
-import Utility.ThreadScheduler
+import Utility.DirWatcher
+import Utility.Types.DirWatcher
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.UpdateIndex
@@ -29,25 +30,12 @@ import Control.Concurrent.STM
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
 
-#ifdef WITH_INOTIFY
-import Utility.Inotify
-import System.INotify
-#endif
-#ifdef WITH_KQUEUE
-import qualified Utility.Kqueue as Kqueue
-#endif
-
 checkCanWatch :: Annex ()
-checkCanWatch = do
-#if (WITH_INOTIFY || WITH_KQUEUE)
-	unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
-		needLsof
-#else
-#if defined linux_HOST_OS
-#warning "Building without inotify support; watch mode will be disabled."
-#endif
-	error "watch mode is not available on this system"
-#endif
+checkCanWatch
+	| canWatch = 
+		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
+			needLsof
+	| otherwise = error "watch mode is not available on this system"
 
 needLsof :: Annex ()
 needLsof = error $ unlines
@@ -58,13 +46,9 @@ needLsof = error $ unlines
 	]
 
 watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-#ifdef WITH_INOTIFY
-watchThread st dstatus changechan = withINotify $ \i -> do
-	statupScan st dstatus $
-		watchDir i "." ignored hooks
-	-- Let the inotify thread run.
-	waitForTermination
+watchThread st dstatus changechan = watchDir "." ignored hooks startup
 	where
+		startup = statupScan st dstatus
 		hook a = Just $ runHandler st dstatus changechan a
 		hooks = WatchHooks
 			{ addHook = hook onAdd
@@ -73,21 +57,6 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			, delDirHook = hook onDelDir
 			, errHook = hook onErr
 			}
-#else
-#ifdef WITH_KQUEUE
-watchThread st dstatus changechan = do
-	kq <- statupScan st dstatus $
-		Kqueue.initKqueue "." ignored
-	go kq
-	where
-		go kq = do
-			(kq', changes) <- Kqueue.waitChange kq
-			print $ "detected a change in " ++ show changes
-			go kq'
-#else
-watchThread = undefined
-#endif /* WITH_KQUEUE */
-#endif /* WITH_INOTIFY */
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
 statupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a

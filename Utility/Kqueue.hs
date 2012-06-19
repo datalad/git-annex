@@ -15,9 +15,11 @@ module Utility.Kqueue (
 	changedFile,
 	isAdd,
 	isDelete,
+	runHooks,
 ) where
 
 import Common
+import Utility.Types.DirWatcher
 
 import System.Posix.Types
 import Foreign.C.Types
@@ -187,3 +189,26 @@ handleChange (Kqueue h dirmap pruner) fd olddirinfo =
 			-- remove it from our map.
 			newmap <- removeSubDir dirmap (dirName olddirinfo)
 			return (Kqueue h newmap pruner, [])
+
+{- Processes changes on the Kqueue, calling the hooks as appropriate.
+ - Never returns. -}
+runHooks :: Kqueue -> WatchHooks -> IO ()
+runHooks kq hooks = do
+	(kq', changes) <- Kqueue.waitChange kq
+	forM_ changes $ dispatch kq'
+	runHooks kq' hooks
+	where
+		-- Kqueue returns changes for both whole directories
+		-- being added and deleted, and individual files being
+		-- added and deleted.
+		dispatch q change status
+			| isAdd change = withstatus s (dispatchadd q)
+			| isDelete change = callhook delDirHook change
+		dispatchadd q change s
+			| Files.isSymbolicLink = callhook addSymlinkHook change
+			| Files.isDirectory = print $ "TODO: recursive directory add: " ++ show change
+			| Files.isRegularFile = callhook addHook change
+			| otherwise = noop
+		callhook h change = hooks h $ changedFile change
+		withstatus change a = maybe noop (a change) =<<
+			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)
