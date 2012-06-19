@@ -8,6 +8,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 module Utility.Kqueue (
+	Kqueue,
 	initKqueue,
 	stopKqueue,
 	waitChange,
@@ -27,6 +28,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified System.Posix.Files as Files
 
 data Change
 	= Deleted FilePath
@@ -194,21 +196,25 @@ handleChange (Kqueue h dirmap pruner) fd olddirinfo =
  - Never returns. -}
 runHooks :: Kqueue -> WatchHooks -> IO ()
 runHooks kq hooks = do
-	(kq', changes) <- Kqueue.waitChange kq
-	forM_ changes $ dispatch kq'
+	(kq', changes) <- waitChange kq
+	forM_ changes $ \c -> do
+		print c
+		dispatch kq' c
 	runHooks kq' hooks
 	where
 		-- Kqueue returns changes for both whole directories
 		-- being added and deleted, and individual files being
 		-- added and deleted.
-		dispatch q change status
-			| isAdd change = withstatus s (dispatchadd q)
-			| isDelete change = callhook delDirHook change
+		dispatch q change
+			| isAdd change = withstatus change $ dispatchadd q
+			| otherwise = callhook delDirHook Nothing change
 		dispatchadd q change s
-			| Files.isSymbolicLink = callhook addSymlinkHook change
-			| Files.isDirectory = print $ "TODO: recursive directory add: " ++ show change
-			| Files.isRegularFile = callhook addHook change
+			| Files.isSymbolicLink s = callhook addSymlinkHook (Just s) change
+			| Files.isDirectory s = print $ "TODO: recursive directory add: " ++ show change
+			| Files.isRegularFile s = callhook addHook (Just s) change
 			| otherwise = noop
-		callhook h change = hooks h $ changedFile change
+		callhook h s change = case h hooks of
+			Nothing -> noop
+			Just a -> a (changedFile change) s
 		withstatus change a = maybe noop (a change) =<<
-			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)
+			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)))
