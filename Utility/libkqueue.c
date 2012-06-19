@@ -42,7 +42,7 @@ signed int helper(const int kq, const int fdcnt, const int *fdlist, int nodelay)
 }
 
 /* Initializes a new, empty kqueue. */
-int init_kqueue(const int fdcnt, const int *fdlist) {
+int init_kqueue() {
 	int kq;
 	if ((kq = kqueue()) == -1) {
 		perror("kqueue");
