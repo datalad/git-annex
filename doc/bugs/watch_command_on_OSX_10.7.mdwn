@@ -25,6 +25,6 @@ laplace:annex jtang$ git status
 nothing added to commit but untracked files present (use "git add" to track)
 </pre>
 
-It seems to not do a git add and commit afterwards of the symlinks, manually doing this makes it all happy again till more files are added.
+It seems to not do a git add and commit afterw the creation of the symlinks, manually doing this makes it all happy again till more files are added.
 
 note: i had posted a commend in the blog post, but posting the issue here is probably more appropriate.
