@@ -60,18 +60,9 @@ needLsof = error $ unlines
 watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
 #ifdef WITH_INOTIFY
 watchThread st dstatus changechan = withINotify $ \i -> do
-	runThreadState st $
-		showAction "scanning"
-	-- This does not return until the startup scan is done.
-	-- That can take some time for large trees.
-	watchDir i "." ignored hooks
-	runThreadState st $
-		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
-	-- Notice any files that were deleted before inotify
-	-- was started.
-	runThreadState st $ do
-		inRepo $ Git.Command.run "add" [Param "--update"]
-		showAction "started"
+	statupScan st dstatus $
+		watchDir i "." ignored hooks
+	-- Let the inotify thread run.
 	waitForTermination
 	where
 		hook a = Just $ runHandler st dstatus changechan a
@@ -84,7 +75,10 @@ watchThread st dstatus changechan = withINotify $ \i -> do
 			}
 #else
 #ifdef WITH_KQUEUE
-watchThread st dstatus changechan = go =<< Kqueue.initKqueue "." ignored
+watchThread st dstatus changechan = do
+	kq <- statupScan st dstatus $
+		Kqueue.initKqueue "." ignored
+	go kq
 	where
 		go kq = do
 			(kq', changes) <- Kqueue.waitChange kq
@@ -94,6 +88,22 @@ watchThread st dstatus changechan = go =<< Kqueue.initKqueue "." ignored
 watchThread = undefined
 #endif /* WITH_KQUEUE */
 #endif /* WITH_INOTIFY */
+
+{- Initial scartup scan. The action should return once the scan is complete. -}
+statupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
+statupScan st dstatus scanner = do
+	runThreadState st $
+		showAction "scanning"
+	r <- scanner
+	runThreadState st $
+		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
+
+	-- Notice any files that were deleted before watching was started.
+	runThreadState st $ do
+		inRepo $ Git.Command.run "add" [Param "--update"]
+		showAction "started"
+
+	return r
 
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName
