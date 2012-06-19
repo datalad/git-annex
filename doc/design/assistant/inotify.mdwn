@@ -13,7 +13,7 @@ There is a `watch` branch in git that adds the command.
 
 * When you `git annex unlock` a file, it will immediately be re-locked.
 
-* With kqueue, if a while is created and still has a writer, it'll
+* With kqueue, if a file is created and still has a writer, it'll
   give up adding it, and it will never get added. This is because kqueue
   cannot track file closes. Need to go back and check these files every
   second or something.
