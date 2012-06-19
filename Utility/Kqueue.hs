@@ -48,7 +48,11 @@ changedFile :: Change -> FilePath
 changedFile (Added f) = f
 changedFile (Deleted f) = f
 
-data Kqueue = Kqueue Fd DirMap Pruner
+data Kqueue = Kqueue 
+	{ kqueueFd :: Fd
+	, kqueueMap :: DirMap
+	, kqueuePruner :: Pruner
+	}
 
 type Pruner = FilePath -> Bool
 
@@ -115,6 +119,13 @@ removeSubDir dirmap dir = do
 	where
 		(toremove, rest) = M.partition (dirContains dir . dirName) dirmap
 
+findDirContents :: DirMap -> FilePath -> [FilePath]
+findDirContents dirmap dir = concatMap absolutecontents $ search
+	where
+		absolutecontents i = map (dirName i </>) (S.toList $ dirCache i)
+		search = map snd $ M.toList $
+			M.filter (\i -> dirName i == dir) dirmap
+
 foreign import ccall unsafe "libkqueue.h init_kqueue" c_init_kqueue
 	:: IO Fd
 foreign import ccall unsafe "libkqueue.h addfds_kqueue" c_addfds_kqueue
@@ -140,7 +151,7 @@ updateKqueue (Kqueue h dirmap _) =
 {- Stops a Kqueue. Note: Does not directly close the Fds in the dirmap,
  - so it can be reused.  -}
 stopKqueue :: Kqueue -> IO ()
-stopKqueue (Kqueue h _ _) = closeFd h
+stopKqueue = closeFd . kqueueFd
 
 {- Waits for a change on a Kqueue.
  - May update the Kqueue.
@@ -206,22 +217,30 @@ runHooks kq hooks = do
 	(kq', changes) <- waitChange kq
 	forM_ changes $ \c -> do
 		print c
-		dispatch kq' c
+		dispatch (kqueueMap kq') c
 	runHooks kq' hooks
 	where
 		-- Kqueue returns changes for both whole directories
 		-- being added and deleted, and individual files being
 		-- added and deleted.
-		dispatch q change
-			| isAdd change = withstatus change $ dispatchadd q
+		dispatch dirmap change
+			| isAdd change = withstatus change $ dispatchadd dirmap
 			| otherwise = callhook delDirHook Nothing change
-		dispatchadd q change s
-			| Files.isSymbolicLink s = callhook addSymlinkHook (Just s) change
-			| Files.isDirectory s = print $ "TODO: recursive directory add: " ++ show change
-			| Files.isRegularFile s = callhook addHook (Just s) change
-			| otherwise = print "not a file??"
+		dispatchadd dirmap change s
+			| Files.isSymbolicLink s =
+				callhook addSymlinkHook (Just s) change
+			| Files.isDirectory s = do
+				-- Recursively add directory contents.
+				let contents = findDirContents dirmap $
+					changedFile change
+				forM_ contents $ \f ->
+					withstatus (Added f) $
+						dispatchadd dirmap
+			| Files.isRegularFile s =
+				callhook addHook (Just s) change
+			| otherwise = noop
 		callhook h s change = case h hooks of
-			Nothing -> print "missing hook??"
+			Nothing -> noop
 			Just a -> a (changedFile change) s
 		withstatus change a = maybe noop (a change) =<<
 			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)))
