@@ -53,6 +53,25 @@ eventsCoalesce = undefined
 #endif
 #endif
 
+/* With inotify, file closing is tracked to some extent, so an add event
+ * will always be received for a file once its writer closes it, and
+ * (typically) not before. This may mean multiple add events for the same file.
+ *
+ * OTOH, with kqueue, add events will often be received while a file is
+ * still being written to, and then no add event will be received once the
+ * writer closes it.
+ */
+closingTracked :: Bool
+#if WITH_INOTIFY
+closingTracked = True
+#else
+#if WITH_KQUEUE
+closingTracked = False
+#else
+eventsCoalesce = undefined
+#endif
+#endif
+
 #if WITH_INOTIFY
 watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO ()
 watchDir dir prune hooks runstartup = INotify.withINotify $ \i -> do
