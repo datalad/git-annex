@@ -50,8 +50,9 @@ changedFile (Deleted f) = f
 
 data Kqueue = Kqueue 
 	{ kqueueFd :: Fd
+	, kqueueTop :: FilePath
 	, kqueueMap :: DirMap
-	, kqueuePruner :: Pruner
+	, _kqueuePruner :: Pruner
 	}
 
 type Pruner = FilePath -> Bool
@@ -138,13 +139,13 @@ initKqueue :: FilePath -> Pruner -> IO Kqueue
 initKqueue dir pruned = do
 	dirmap <- scanRecursive dir pruned
 	h <- c_init_kqueue
-	let kq = Kqueue h dirmap pruned
+	let kq = Kqueue h dir dirmap pruned
 	updateKqueue kq
 	return kq
 
 {- Updates a Kqueue, adding watches for its map. -}
 updateKqueue :: Kqueue -> IO ()
-updateKqueue (Kqueue h dirmap _) =
+updateKqueue (Kqueue h _ dirmap _) =
 	withArrayLen (M.keys dirmap) $ \fdcnt c_fds -> do
 		c_addfds_kqueue h (fromIntegral fdcnt) c_fds
 
@@ -157,7 +158,7 @@ stopKqueue = closeFd . kqueueFd
  - May update the Kqueue.
  -}
 waitChange :: Kqueue -> IO (Kqueue, [Change])
-waitChange kq@(Kqueue h dirmap _) = do
+waitChange kq@(Kqueue h _ dirmap _) = do
 	changedfd <- c_waitchange_kqueue h
 	if changedfd == -1
 		then ifM ((==) eINTR <$> getErrno)
@@ -178,7 +179,7 @@ waitChange kq@(Kqueue h dirmap _) = do
  - directories as necessary.
  -}
 handleChange :: Kqueue -> Fd -> DirInfo -> IO (Kqueue, [Change])
-handleChange (Kqueue h dirmap pruner) fd olddirinfo =
+handleChange kq@(Kqueue _ _ dirmap pruner) fd olddirinfo =
 	go =<< catchMaybeIO (getDirInfo $ dirName olddirinfo)
 	where
 		go (Just newdirinfo) = do
@@ -199,7 +200,7 @@ handleChange (Kqueue h dirmap pruner) fd olddirinfo =
 
 			-- When new directories were added, need to update
 			-- the kqueue to watch them.
-			let kq' = Kqueue h newmap'' pruner
+			let kq' = kq { kqueueMap = newmap'' }
 			unless (null newdirinfos) $
 				updateKqueue kq'
 
@@ -208,18 +209,21 @@ handleChange (Kqueue h dirmap pruner) fd olddirinfo =
 			-- The directory has been moved or deleted, so
 			-- remove it from our map.
 			newmap <- removeSubDir dirmap (dirName olddirinfo)
-			return (Kqueue h newmap pruner, [])
+			return (kq { kqueueMap = newmap }, [])
 
 {- Processes changes on the Kqueue, calling the hooks as appropriate.
  - Never returns. -}
 runHooks :: Kqueue -> WatchHooks -> IO ()
 runHooks kq hooks = do
-	(kq', changes) <- waitChange kq
-	forM_ changes $ \c -> do
-		print c
-		dispatch (kqueueMap kq') c
-	runHooks kq' hooks
+	-- First, synthetic add events for the whole directory tree contents,
+	-- to catch any files created beforehand.
+	recursiveadd (kqueueMap kq) (Added $ kqueueTop kq)
+	loop kq
 	where
+		loop q = do
+			(q', changes) <- waitChange q
+			forM_ changes $ dispatch (kqueueMap q')
+			loop q'
 		-- Kqueue returns changes for both whole directories
 		-- being added and deleted, and individual files being
 		-- added and deleted.
@@ -229,16 +233,14 @@ runHooks kq hooks = do
 		dispatchadd dirmap change s
 			| Files.isSymbolicLink s =
 				callhook addSymlinkHook (Just s) change
-			| Files.isDirectory s = do
-				-- Recursively add directory contents.
-				let contents = findDirContents dirmap $
-					changedFile change
-				forM_ contents $ \f ->
-					withstatus (Added f) $
-						dispatchadd dirmap
+			| Files.isDirectory s = recursiveadd dirmap change
 			| Files.isRegularFile s =
 				callhook addHook (Just s) change
 			| otherwise = noop
+		recursiveadd dirmap change = do
+			let contents = findDirContents dirmap $ changedFile change
+			forM_ contents $ \f ->
+				withstatus (Added f) $ dispatchadd dirmap
 		callhook h s change = case h hooks of
 			Nothing -> noop
 			Just a -> a (changedFile change) s
