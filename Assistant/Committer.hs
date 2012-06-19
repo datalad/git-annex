@@ -7,6 +7,7 @@ module Assistant.Committer where
 
 import Common.Annex
 import Assistant.ThreadedMonad
+import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Command.Add
@@ -153,18 +154,21 @@ handleAdds st changechan cs
 
 {- Checks which of a set of files can safely be added.
  - Files are locked down as hard links in a temp directory,
- - with their write bits disabled. But some may have already
- - been opened for write, so lsof is run on the temp directory
+ - with their write bits disabled. But some may still be
+ - opened for write, so lsof is run on the temp directory
  - to check them.
  -}
 safeToAdd :: ThreadState -> [FilePath] -> IO [KeySource]
 safeToAdd st files = do
 	locked <- catMaybes <$> lockdown files
-	runThreadState st $ do
-		tmpdir <- fromRepo gitAnnexTmpDir
-		open <- S.fromList . map fst3 . filter openwrite <$>
-			liftIO (Lsof.queryDir tmpdir)
-		catMaybes <$> forM locked (go open)
+	runThreadState st $ ifM (Annex.getState Annex.force)
+		( return locked -- force bypasses lsof check
+		, do
+			tmpdir <- fromRepo gitAnnexTmpDir
+			open <- S.fromList . map fst3 . filter openwrite <$>
+				liftIO (Lsof.queryDir tmpdir)
+			catMaybes <$> forM locked (go open)
+		)
 	where
 		go open keysource
 			| S.member (contentLocation keysource) open = do
