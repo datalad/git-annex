@@ -32,3 +32,6 @@ note: i had posted a commend in the blog post, but posting the issue here is pro
 > Yeah, this is the issue I was struggling with last night. 
 > I think it's fixed in 57cf65eb6d811ba7fd19eb62a54e3b83a0c2dfa7,
 > but the kqueue watch still needs a lot of work. --[[Joey]]
+
+>> Confirmed this is fixed, but do note the known kqueue bugs in 
+>> [[design/assistant/inotify]]! [[done]] --[[Joey]]
