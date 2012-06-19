@@ -1,4 +1,4 @@
-{- git-annex assistant change tracking and committing
+{- git-annex assistant commit thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -}
@@ -6,66 +6,23 @@
 module Assistant.Committer where
 
 import Common.Annex
+import Assistant.Changes
 import Assistant.ThreadedMonad
+import Assistant.Watcher
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
+import qualified Git.HashObject
+import Git.Types
 import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
+import qualified Utility.DirWatcher as DirWatcher
 import Types.Backend
 
-import Control.Concurrent.STM
 import Data.Time.Clock
 import Data.Tuple.Utils
 import qualified Data.Set as S
-
-data ChangeType = PendingAddChange | LinkChange | RmChange | RmDirChange
-	deriving (Show, Eq)
-
-type ChangeChan = TChan Change
-
-data Change = Change
-	{ changeTime :: UTCTime
-	, changeFile :: FilePath
-	, changeType :: ChangeType
-	}
-	deriving (Show)
-
-runChangeChan :: STM a -> IO a
-runChangeChan = atomically
-
-newChangeChan :: IO ChangeChan
-newChangeChan = atomically newTChan
-
-{- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> ChangeType -> Annex (Maybe Change)
-madeChange f t = do
-	-- Just in case the commit thread is not flushing the queue fast enough.
-	when (t /= PendingAddChange) $
-		Annex.Queue.flushWhenFull
-	liftIO $ Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
-
-noChange :: Annex (Maybe Change)
-noChange = return Nothing
-
-{- Gets all unhandled changes.
- - Blocks until at least one change is made. -}
-getChanges :: ChangeChan -> IO [Change]
-getChanges chan = runChangeChan $ do
-	c <- readTChan chan
-	go [c]
-	where
-		go l = do
-			v <- tryReadTChan chan
-			case v of
-				Nothing -> return l
-				Just c -> go (c:l)
-
-{- Puts unhandled changes back into the channel.
- - Note: Original order is not preserved. -}
-refillChanges :: ChangeChan -> [Change] -> IO ()
-refillChanges chan cs = runChangeChan $ mapM_ (writeTChan chan) cs
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: ThreadState -> ChangeChan -> IO ()
@@ -122,7 +79,9 @@ shouldCommit now changes
  -
  - When a file is added, Inotify will notice the new symlink. So this waits
  - for additional Changes to arrive, so that the symlink has hopefully been
- - staged before returning, and will be committed.
+ - staged before returning, and will be committed immediately. OTOH, for
+ - kqueue, eventsCoalesce, so instead the symlink is directly created and
+ - staged.
  -}
 handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
 handleAdds st changechan cs
@@ -131,8 +90,9 @@ handleAdds st changechan cs
 		toadd' <- safeToAdd st toadd
 		unless (null toadd') $ do
 			added <- filter id <$> forM toadd' add
-			unless (null added) $
-				handleAdds st changechan =<< getChanges changechan
+			when (DirWatcher.eventsCoalesce && not (null added)) $
+				handleAdds st changechan
+					=<< getChanges changechan
 	where
 		toadd = map changeFile $ filter isPendingAdd cs
 
@@ -148,7 +108,11 @@ handleAdds st changechan cs
 			showEndFail
 			return False
 		handle file (Just key) = do
-			Command.Add.link file key True
+			link <- Command.Add.link file key True
+			when DirWatcher.eventsCoalesce $ do
+				sha <- inRepo $
+					Git.HashObject.hashObject BlobObject link
+				stageSymlink file sha
 			showEndOk
 			return True
 

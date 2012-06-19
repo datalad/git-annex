@@ -12,7 +12,7 @@ module Assistant.Watcher where
 import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
-import Assistant.Committer
+import Assistant.Changes
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Annex.Queue
