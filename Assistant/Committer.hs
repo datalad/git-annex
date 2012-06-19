@@ -90,7 +90,7 @@ handleAdds st changechan cs
 		toadd' <- safeToAdd st toadd
 		unless (null toadd') $ do
 			added <- filter id <$> forM toadd' add
-			when (DirWatcher.eventsCoalesce && not (null added)) $
+			unless (DirWatcher.eventsCoalesce || null added) $
 				handleAdds st changechan
 					=<< getChanges changechan
 	where
