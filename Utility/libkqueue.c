@@ -17,6 +17,8 @@
 /* The specified fds are added to the set of fds being watched for changes.
  * Fds passed to prior calls still take effect, so it's most efficient to
  * not pass the same fds repeatedly.
+ *
+ * Returns the fd that changed, or -1 on error.
  */
 signed int helper(const int kq, const int fdcnt, const int *fdlist, int nodelay) {
 	int i, nev;
@@ -32,12 +34,7 @@ signed int helper(const int kq, const int fdcnt, const int *fdlist, int nodelay)
 			0, 0);
 	}
 
-	while ((nev = kevent(kq, chlist, fdcnt, evlist, 1, timeout))) {
-		if (!(nev == -1 && errno == EINTR)) {
-			break;
-		}
-	}
-
+	nev = kevent(kq, chlist, fdcnt, evlist, 1, timeout);
 	if (nev == 1)
 		return evlist[0].ident;
 	else
@@ -59,10 +56,7 @@ void addfds_kqueue(const int kq, const int fdcnt, const int *fdlist) {
 	helper(kq, fdcnt, fdlist, 1);
 }
 
-/* Waits for a change event on a kqueue.
- *
- * Returns the fd that changed, or -1 on error.
- */
+/* Waits for a change event on a kqueue. */
 signed int waitchange_kqueue(const int kq) {
 	return helper(kq, 0, NULL, 0);
 }

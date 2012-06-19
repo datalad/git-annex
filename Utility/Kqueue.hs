@@ -24,11 +24,13 @@ import Utility.Types.DirWatcher
 
 import System.Posix.Types
 import Foreign.C.Types
+import Foreign.C.Error
 import Foreign.Ptr
 import Foreign.Marshal
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified System.Posix.Files as Files
+import Control.Concurrent
 
 data Change
 	= Deleted FilePath
@@ -146,9 +148,14 @@ stopKqueue (Kqueue h _ _) = closeFd h
 waitChange :: Kqueue -> IO (Kqueue, [Change])
 waitChange kq@(Kqueue h dirmap _) = do
 	changedfd <- c_waitchange_kqueue h
-	case M.lookup changedfd dirmap of
-		Nothing -> return (kq, [])
-		Just info -> handleChange kq changedfd info
+	if changedfd == -1
+		then ifM ((==) eINTR <$> getErrno)
+			(yield >> waitChange kq, nochange)
+		else case M.lookup changedfd dirmap of
+			Nothing -> nochange
+			Just info -> handleChange kq changedfd info
+	where
+		nochange = return (kq, [])
 
 {- The kqueue interface does not tell what type of change took place in
  - the directory; it could be an added file, a deleted file, a renamed
@@ -212,9 +219,9 @@ runHooks kq hooks = do
 			| Files.isSymbolicLink s = callhook addSymlinkHook (Just s) change
 			| Files.isDirectory s = print $ "TODO: recursive directory add: " ++ show change
 			| Files.isRegularFile s = callhook addHook (Just s) change
-			| otherwise = noop
+			| otherwise = print "not a file??"
 		callhook h s change = case h hooks of
-			Nothing -> noop
+			Nothing -> print "missing hook??"
 			Just a -> a (changedFile change) s
 		withstatus change a = maybe noop (a change) =<<
 			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)))
