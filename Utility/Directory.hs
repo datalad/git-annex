@@ -56,33 +56,6 @@ dirContentsRecursive' topdir (dir:dirs) = unsafeInterleaveIO $ do
 					, collect (dirEntry:files) dirs' entries
 					)			
 
-{- Gets the subdirectories in a directory, and their subdirectories,
- - recursively, and lazily. Prunes sections of the tree matching a
- - condition. -}
-dirTree :: FilePath -> (FilePath -> Bool) -> IO [FilePath]
-dirTree topdir prune
-	| prune topdir = return []
-	| otherwise = (:) topdir <$> dirTree' topdir prune [""]
-
-dirTree' :: FilePath -> (FilePath -> Bool) -> [FilePath] -> IO [FilePath]
-dirTree' _ _ [] = return []
-dirTree' topdir prune (dir:dirs)
-	| prune dir = dirTree' topdir prune dirs
-	| otherwise = unsafeInterleaveIO $ do
-		subdirs <- collect [] =<< dirContents (topdir </> dir)
-		subdirs' <- dirTree' topdir prune (subdirs ++ dirs)
-		return $ subdirs ++ subdirs'
-	where
-		collect dirs' [] = return dirs'
-		collect dirs' (entry:entries)
-			| dirCruft entry || prune entry = collect dirs' entries
-			| otherwise = do
-				let dirEntry = dir </> entry
-				ifM (doesDirectoryExist $ topdir </> dirEntry)
-					( collect (dirEntry:dirs') entries
-					, collect dirs' entries
-					)			
-
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
 moveFile :: FilePath -> FilePath -> IO ()
