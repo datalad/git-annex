@@ -12,7 +12,7 @@ module Annex.CatFile (
 	catFileHandle
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 
 import Common.Annex
 import qualified Git

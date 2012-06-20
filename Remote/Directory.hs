@@ -7,8 +7,8 @@
 
 module Remote.Directory (remote) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 import qualified Data.Map as M
 import qualified Control.Exception as E
 

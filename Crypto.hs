@@ -26,7 +26,7 @@ module Crypto (
 	prop_hmacWithCipher_sane
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Control.Applicative
