@@ -20,6 +20,7 @@ import Annex.Content
 import Logs.Web
 import qualified Option
 import Types.Key
+import Types.KeySource
 import Config
 
 def :: [Command]

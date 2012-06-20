@@ -6,7 +6,6 @@
  -}
 
 module Backend (
-	B.KeySource(..),
 	list,
 	orderedList,
 	genKey,
@@ -23,6 +22,7 @@ import Config
 import qualified Annex
 import Annex.CheckAttr
 import Types.Key
+import Types.KeySource
 import qualified Types.Backend as B
 
 -- When adding a new backend, import it here and add it to the list.
@@ -54,12 +54,12 @@ orderedList = do
 {- Generates a key for a file, trying each backend in turn until one
  - accepts it.
  -}
-genKey :: B.KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
+genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
 genKey source trybackend = do
 	bs <- orderedList
 	let bs' = maybe bs (: bs) trybackend
 	genKey' bs' source
-genKey' :: [Backend] -> B.KeySource -> Annex (Maybe (Key, Backend))
+genKey' :: [Backend] -> KeySource -> Annex (Maybe (Key, Backend))
 genKey' [] _ = return Nothing
 genKey' (b:bs) source = do
 	r <- B.getKey b source

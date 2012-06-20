@@ -10,6 +10,7 @@ module Backend.WORM (backends) where
 import Common.Annex
 import Types.Backend
 import Types.Key
+import Types.KeySource
 
 backends :: [Backend]
 backends = [backend]

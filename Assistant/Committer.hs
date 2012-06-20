@@ -7,6 +7,7 @@ module Assistant.Committer where
 
 import Common.Annex
 import Assistant.Changes
+import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Watcher
 import qualified Annex
@@ -18,15 +19,15 @@ import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
-import Types.Backend
+import Types.KeySource
 
 import Data.Time.Clock
 import Data.Tuple.Utils
 import qualified Data.Set as S
 
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> IO ()
-commitThread st changechan = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
+commitThread st dstatus changechan = runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change has been made.
 	cs <- getChanges changechan
@@ -34,7 +35,7 @@ commitThread st changechan = runEvery (Seconds 1) $ do
 	time <- getCurrentTime
 	if shouldCommit time cs
 		then do
-			handleAdds st changechan cs
+			handleAdds st dstatus changechan cs
 			void $ tryIO $ runThreadState st commitStaged
 		else refillChanges changechan cs
 
@@ -79,19 +80,20 @@ shouldCommit now changes
  -
  - When a file is added, Inotify will notice the new symlink. So this waits
  - for additional Changes to arrive, so that the symlink has hopefully been
- - staged before returning, and will be committed immediately. OTOH, for
- - kqueue, eventsCoalesce, so instead the symlink is directly created and
- - staged.
+ - staged before returning, and will be committed immediately.
+ -
+ - OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
+ - created and staged, if the file is not open.
  -}
-handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO ()
-handleAdds st changechan cs
+handleAdds :: ThreadState -> DaemonStatusHandle -> ChangeChan -> [Change] -> IO ()
+handleAdds st dstatus changechan cs
 	| null toadd = noop
 	| otherwise = do
-		toadd' <- safeToAdd st toadd
+		toadd' <- safeToAdd st dstatus toadd
 		unless (null toadd') $ do
 			added <- filter id <$> forM toadd' add
 			unless (DirWatcher.eventsCoalesce || null added) $
-				handleAdds st changechan
+				handleAdds st dstatus changechan
 					=<< getChanges changechan
 	where
 		toadd = map changeFile $ filter isPendingAdd cs
@@ -122,8 +124,8 @@ handleAdds st changechan cs
  - opened for write, so lsof is run on the temp directory
  - to check them.
  -}
-safeToAdd :: ThreadState -> [FilePath] -> IO [KeySource]
-safeToAdd st files = do
+safeToAdd :: ThreadState -> DaemonStatusHandle -> [FilePath] -> IO [KeySource]
+safeToAdd st dstatus files = do
 	locked <- catMaybes <$> lockdown files
 	runThreadState st $ ifM (Annex.getState Annex.force)
 		( return locked -- force bypasses lsof check
@@ -134,15 +136,32 @@ safeToAdd st files = do
 			catMaybes <$> forM locked (go open)
 		)
 	where
+ 		{- When a file is still open, it can be put into pendingAdd
+		 - to be checked again later. However when closingTracked
+		 - is supported, another event will be received once it's
+		 - closed, so there's no point in doing so. -}
 		go open keysource
 			| S.member (contentLocation keysource) open = do
-				warning $ keyFilename keysource
-					++ " still has writers, not adding"
-				-- remove the hard link
-				--_ <- liftIO $ tryIO $
-				--	removeFile $ contentLocation keysource
+				if DirWatcher.closingTracked
+					then do
+						warning $ keyFilename keysource
+							++ " still has writers, not adding"
+						void $ liftIO $ canceladd keysource
+					else void $ addpending keysource
 				return Nothing
 			| otherwise = return $ Just keysource
+
+		canceladd keysource = tryIO $
+			-- remove the hard link
+			removeFile $ contentLocation keysource
+
+		{- The same file (or a file with the same name)
+		 - could already be pending add; if so this KeySource
+		 - superscedes the old one. -}
+		addpending keysource = modifyDaemonStatusM dstatus $ \s -> do
+			let set = pendingAdd s
+			mapM_ canceladd $ S.toList $ S.filter (== keysource) set
+			return $ s { pendingAdd = S.insert keysource set }
 
 		lockdown = mapM $ \file -> do
 			ms <- catchMaybeIO $ getSymbolicLinkStatus file

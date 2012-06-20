@@ -11,6 +11,7 @@ import Common.Annex
 import qualified Annex
 import Types.Backend
 import Types.Key
+import Types.KeySource
 import qualified Build.SysConfig as SysConfig
 
 type SHASize = Int

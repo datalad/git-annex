@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Backend
 import qualified Types.Key
+import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
 

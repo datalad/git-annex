@@ -9,12 +9,14 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Utility.ThreadScheduler
 import Utility.TempFile
+import Types.KeySource
 
 import Control.Concurrent
 import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
+import qualified Data.Set as S
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan
@@ -25,6 +27,8 @@ data DaemonStatus = DaemonStatus
 	, sanityCheckRunning :: Bool
 	-- Last time the sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
+	-- Files that are in the process of being added to the annex.
+	, pendingAdd :: S.Set KeySource
 	}
 	deriving (Show)
 
@@ -36,13 +40,17 @@ newDaemonStatus = DaemonStatus
 	, lastRunning = Nothing
 	, sanityCheckRunning = False
 	, lastSanityCheck = Nothing
+	, pendingAdd = S.empty
 	}
 
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
 getDaemonStatus = liftIO . readMVar
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
+modifyDaemonStatus handle a = modifyDaemonStatusM handle (return . a)
+
+modifyDaemonStatusM :: DaemonStatusHandle -> (DaemonStatus -> IO DaemonStatus) -> Annex ()
+modifyDaemonStatusM handle a = liftIO $ modifyMVar_ handle a
 
 {- Load any previous daemon status file, and store it in the MVar for this
  - process to use as its DaemonStatus. -}

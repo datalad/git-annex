@@ -12,6 +12,7 @@ import Annex.Exception
 import Command
 import qualified Annex
 import qualified Annex.Queue
+import Types.KeySource
 import Backend
 import Logs.Location
 import Annex.Content
