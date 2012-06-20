@@ -10,8 +10,7 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.Encoding as L
+import qualified Data.ByteString.Lazy as L
 import Data.BloomFilter
 import Data.BloomFilter.Easy
 import Data.BloomFilter.Hash
@@ -265,8 +264,9 @@ withKeysReferencedInGitRef a ref = do
 		go [] = noop
 		go (l:ls)
 			| isSymLink (LsTree.mode l) = do
-				content <- L.decodeUtf8 <$> catFile ref (LsTree.file l)
-				case fileKey (takeFileName $ L.unpack content) of
+				content <- encodeW8 . L.unpack
+					<$> catFile ref (LsTree.file l)
+				case fileKey (takeFileName content) of
 					Nothing -> go ls
 					Just k -> do
 						a k
