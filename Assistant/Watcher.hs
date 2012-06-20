@@ -15,13 +15,14 @@ import Assistant.DaemonStatus
 import Assistant.Changes
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
 import qualified Git.LsFiles
 import qualified Backend
-import qualified Annex
+import qualified Command.Add
 import Annex.Content
 import Annex.CatFile
 import Git.Types
@@ -110,22 +111,27 @@ runHandler st dstatus changechan handler file filestatus = void $ do
  - and only one has just closed it. We want to avoid adding a file to the
  - annex that is open for write, to avoid anything being able to change it.
  -
- - We could run lsof on the file here to check for other writer.
- - But, that's slow. Instead, a Change is returned that indicates this file
- - still needs to be added. The committer will handle bundles of these
- - Changes at once.
+ - We could run lsof on the file here to check for other writers.
+ - But, that's slow, and even if there is currently a writer, we will want
+ - to add the file *eventually*. Instead, the file is locked down as a hard
+ - link in a temp directory, with its write bits disabled, for later
+ - checking with lsof, and a Change is returned containing a KeySource
+ - using that hard link. The committer handles running lsof and finishing
+ - the add.
  -}
 onAdd :: Handler
-onAdd file _filestatus dstatus = do
-	ifM (scanComplete <$> getDaemonStatus dstatus)
-		( go
-		, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
-			( noChange
-			, go
+onAdd file filestatus dstatus
+	| maybe False isRegularFile filestatus = do
+		ifM (scanComplete <$> getDaemonStatus dstatus)
+			( go
+			, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
+				( noChange
+				, go
+				)
 			)
-		)
+	| otherwise = noChange
 	where
-		go = madeChange file PendingAddChange
+		go = pendingAddChange =<< Command.Add.lockDown file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content

@@ -7,20 +7,26 @@ module Assistant.Changes where
 
 import Common.Annex
 import qualified Annex.Queue
+import Types.KeySource
 
 import Control.Concurrent.STM
 import Data.Time.Clock
 
-data ChangeType = PendingAddChange | LinkChange | RmChange | RmDirChange
+data ChangeType = AddChange | LinkChange | RmChange | RmDirChange
 	deriving (Show, Eq)
 
 type ChangeChan = TChan Change
 
-data Change = Change
-	{ changeTime :: UTCTime
-	, changeFile :: FilePath
-	, changeType :: ChangeType
-	}
+data Change
+	= Change 
+		{ changeTime :: UTCTime
+		, changeFile :: FilePath
+		, changeType :: ChangeType
+		}
+	| PendingAddChange
+		{ changeTime ::UTCTime
+		, keySource :: KeySource
+		}
 	deriving (Show)
 
 runChangeChan :: STM a -> IO a
@@ -33,12 +39,28 @@ newChangeChan = atomically newTChan
 madeChange :: FilePath -> ChangeType -> Annex (Maybe Change)
 madeChange f t = do
 	-- Just in case the commit thread is not flushing the queue fast enough.
-	when (t /= PendingAddChange) $
-		Annex.Queue.flushWhenFull
+	Annex.Queue.flushWhenFull
 	liftIO $ Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
 
 noChange :: Annex (Maybe Change)
 noChange = return Nothing
+
+{- Indicates an add is in progress. -}
+pendingAddChange :: KeySource -> Annex (Maybe Change)
+pendingAddChange ks =
+	liftIO $ Just <$> (PendingAddChange <$> getCurrentTime <*> pure ks)
+
+isPendingAddChange :: Change -> Bool
+isPendingAddChange (PendingAddChange {}) = True
+isPendingAddChange _ = False
+
+finishedChange :: Change -> Change
+finishedChange c@(PendingAddChange { keySource = ks }) = Change
+	{ changeTime = changeTime c
+	, changeFile = keyFilename ks
+	, changeType = AddChange
+	}
+finishedChange c = c
 
 {- Gets all unhandled changes.
  - Blocks until at least one change is made. -}

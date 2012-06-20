@@ -7,7 +7,6 @@ module Assistant.Committer where
 
 import Common.Annex
 import Assistant.Changes
-import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Watcher
 import qualified Annex
@@ -24,20 +23,25 @@ import Types.KeySource
 import Data.Time.Clock
 import Data.Tuple.Utils
 import qualified Data.Set as S
+import Data.Either
 
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-commitThread st dstatus changechan = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> ChangeChan -> IO ()
+commitThread st changechan = runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
-	-- Next, wait until at least one change has been made.
-	cs <- getChanges changechan
+	-- Next, wait until at least one change is available for
+	-- processing.
+	changes <- getChanges changechan
 	-- Now see if now's a good time to commit.
 	time <- getCurrentTime
-	if shouldCommit time cs
+	if shouldCommit time changes
 		then do
-			handleAdds st dstatus changechan cs
-			void $ tryIO $ runThreadState st commitStaged
-		else refillChanges changechan cs
+			readychanges <- handleAdds st changechan changes
+			if shouldCommit time readychanges
+				then do
+					void $ tryIO $ runThreadState st commitStaged
+				else refillChanges changechan readychanges
+		else refillChanges changechan changes
 
 commitStaged :: Annex ()
 commitStaged = do
@@ -83,95 +87,99 @@ shouldCommit now changes
  - staged before returning, and will be committed immediately.
  -
  - OTOH, for kqueue, eventsCoalesce, so instead the symlink is directly
- - created and staged, if the file is not open.
+ - created and staged.
+ -
+ - Returns a list of all changes that are ready to be committed.
+ - Any pending adds that are not ready yet are put back into the ChangeChan,
+ - where they will be retried later.
  -}
-handleAdds :: ThreadState -> DaemonStatusHandle -> ChangeChan -> [Change] -> IO ()
-handleAdds st dstatus changechan cs
-	| null toadd = noop
-	| otherwise = do
-		toadd' <- safeToAdd st dstatus toadd
-		unless (null toadd') $ do
-			added <- filter id <$> forM toadd' add
-			unless (DirWatcher.eventsCoalesce || null added) $
-				handleAdds st dstatus changechan
+handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO [Change]
+handleAdds st changechan cs = returnWhen (null pendingadds) $ do
+	(postponed, toadd) <- partitionEithers <$>
+		safeToAdd st pendingadds
+
+	unless (null postponed) $
+		refillChanges changechan postponed
+
+	returnWhen (null toadd) $ do
+		added <- catMaybes <$> forM toadd add
+		if (DirWatcher.eventsCoalesce || null added)
+			then return $ added ++ otherchanges
+			else do
+				r <- handleAdds st changechan
 					=<< getChanges changechan
+				return $ r ++ added ++ otherchanges
 	where
-		toadd = map changeFile $ filter isPendingAdd cs
+		(pendingadds, otherchanges) = partition isPendingAddChange cs
 
-		isPendingAdd (Change { changeType = PendingAddChange }) = True
-		isPendingAdd _ = False
+		returnWhen c a
+			| c = return otherchanges
+			| otherwise = a
 
-		add keysource = catchBoolIO $ runThreadState st $ do
-			showStart "add" $ keyFilename keysource
-			handle (keyFilename keysource)
-				=<< Command.Add.ingest keysource
+		add :: Change -> IO (Maybe Change)
+		add change@(PendingAddChange { keySource = ks }) = do
+			r <- catchMaybeIO $ runThreadState st $ do
+				showStart "add" $ keyFilename ks
+				handle (finishedChange change) (keyFilename ks)
+					=<< Command.Add.ingest ks
+			return $ maybeMaybe r
+		add _ = return Nothing
 
-		handle _ Nothing = do
+		maybeMaybe (Just j@(Just _)) = j
+		maybeMaybe _ = Nothing
+
+		handle _ _ Nothing = do
 			showEndFail
-			return False
-		handle file (Just key) = do
+			return Nothing
+		handle change file (Just key) = do
 			link <- Command.Add.link file key True
 			when DirWatcher.eventsCoalesce $ do
 				sha <- inRepo $
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
 			showEndOk
-			return True
+			return $ Just change
 
-{- Checks which of a set of files can safely be added.
- - Files are locked down as hard links in a temp directory,
- - with their write bits disabled. But some may still be
- - opened for write, so lsof is run on the temp directory
- - to check them.
+{- PendingAddChanges can Either be Right to be added now,
+ - or are unsafe, and must be Left for later.
+ -
+ - Check by running lsof on the temp directory, which
+ - the KeySources are locked down in.
  -}
-safeToAdd :: ThreadState -> DaemonStatusHandle -> [FilePath] -> IO [KeySource]
-safeToAdd st dstatus files = do
-	locked <- catMaybes <$> lockdown files
-	runThreadState st $ ifM (Annex.getState Annex.force)
-		( return locked -- force bypasses lsof check
+safeToAdd :: ThreadState -> [Change] -> IO [Either Change Change]
+safeToAdd st changes = runThreadState st $
+	ifM (Annex.getState Annex.force)
+		( allRight changes -- force bypasses lsof check
 		, do
 			tmpdir <- fromRepo gitAnnexTmpDir
-			open <- S.fromList . map fst3 . filter openwrite <$>
+			openfiles <- S.fromList . map fst3 . filter openwrite <$>
 				liftIO (Lsof.queryDir tmpdir)
-			catMaybes <$> forM locked (go open)
+			
+			let checked = map (check openfiles) changes
+
+			{- If new events are received when files are closed,
+			 - there's no need to retry any changes that cannot
+			 - be done now. -}
+			if DirWatcher.closingTracked
+				then do
+					mapM_ canceladd $ lefts checked
+					allRight $ rights checked
+				else return checked
 		)
 	where
- 		{- When a file is still open, it can be put into pendingAdd
-		 - to be checked again later. However when closingTracked
-		 - is supported, another event will be received once it's
-		 - closed, so there's no point in doing so. -}
-		go open keysource
-			| S.member (contentLocation keysource) open = do
-				if DirWatcher.closingTracked
-					then do
-						warning $ keyFilename keysource
-							++ " still has writers, not adding"
-						void $ liftIO $ canceladd keysource
-					else void $ addpending keysource
-				return Nothing
-			| otherwise = return $ Just keysource
+		check openfiles change@(PendingAddChange { keySource = ks })
+			| S.member (contentLocation ks) openfiles = Left change
+		check _ change = Right change
 
-		canceladd keysource = tryIO $
+		canceladd (PendingAddChange { keySource = ks }) = do
+			warning $ keyFilename ks
+				++ " still has writers, not adding"
 			-- remove the hard link
-			removeFile $ contentLocation keysource
-
-		{- The same file (or a file with the same name)
-		 - could already be pending add; if so this KeySource
-		 - superscedes the old one. -}
-		addpending keysource = modifyDaemonStatusM dstatus $ \s -> do
-			let set = pendingAdd s
-			mapM_ canceladd $ S.toList $ S.filter (== keysource) set
-			return $ s { pendingAdd = S.insert keysource set }
-
-		lockdown = mapM $ \file -> do
-			ms <- catchMaybeIO $ getSymbolicLinkStatus file
-			case ms of
-				Just s
-					| isRegularFile s -> 
-						catchMaybeIO $ runThreadState st $
-							Command.Add.lockDown file
-				_ -> return Nothing
-	
+			void $ liftIO $ tryIO $
+				removeFile $ contentLocation ks
+		canceladd _ = noop
 
 		openwrite (_file, mode, _pid) =
 			mode == Lsof.OpenWriteOnly || mode == Lsof.OpenReadWrite
+
+		allRight = return . map Right

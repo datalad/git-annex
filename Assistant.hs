@@ -75,8 +75,8 @@ startDaemon foreground
 				-- begin adding files and having them
 				-- committed, even while the startup scan
 				-- is taking place.
+				_ <- forkIO $ commitThread st changechan
 				_ <- forkIO $ daemonStatusThread st dstatus
-				_ <- forkIO $ commitThread st dstatus changechan
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				-- Does not return.
 				watchThread st dstatus changechan
