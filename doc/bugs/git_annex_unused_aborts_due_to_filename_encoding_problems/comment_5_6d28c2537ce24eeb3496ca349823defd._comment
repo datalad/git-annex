@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXgp-iIaBK5pnk22xqMVERQb97VyXaejs"
+ nickname="Kristian"
+ subject="comment 5"
+ date="2012-06-20T14:55:33Z"
+ content="""
+I checkout out the git annex branch and using 
+
+    find * | grep -P \"[\xb4]\"
+
+I found a file
+
+    43e/b16/WORM-s4118528-m1245167306--Jerry Lee Lewis - Whole Lotta Shakin\302\264 Going\302\264 On.mp3.log   
+
+The corresponding file also existed in the master branch (as a link).
+
+I moved both these files to a folder outside my repository and synched my git-annex branch with by master server. I still get the same error. Is there any other place where information about this file is stored?
+
+"""]]

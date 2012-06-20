@@ -7,7 +7,7 @@
 
 module Remote.Hook (remote) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.Exit
 import System.Environment
