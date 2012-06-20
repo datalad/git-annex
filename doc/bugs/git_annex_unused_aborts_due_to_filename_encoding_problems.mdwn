@@ -11,4 +11,5 @@ Most likely I have added some file with a strange encoding that git-annex can't 
 What version of git-annex are you using? On what operating system?
  3.20120522, Debian testing
 
-Please provide any additional information below.
+> I've just fixed this bug in git, will be in the next release. --[[Joey]]
+> [[done]]
