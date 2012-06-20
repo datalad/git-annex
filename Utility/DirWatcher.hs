@@ -68,7 +68,7 @@ closingTracked = True
 #if WITH_KQUEUE
 closingTracked = False
 #else
-eventsCoalesce = undefined
+closingTracked = undefined
 #endif
 #endif
 
