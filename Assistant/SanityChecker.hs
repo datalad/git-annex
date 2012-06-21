@@ -11,7 +11,7 @@ import Common.Annex
 import qualified Git.LsFiles
 import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
-import Assistant.Committer
+import Assistant.Changes
 import Utility.ThreadScheduler
 import qualified Assistant.Watcher
 

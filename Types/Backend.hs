@@ -10,13 +10,7 @@
 module Types.Backend where
 
 import Types.Key
-
-{- The source used to generate a key. The location of the content
- - may be different from the filename associated with the key. -}
-data KeySource = KeySource
-	{ keyFilename :: FilePath
-	, contentLocation :: FilePath
-	}
+import Types.KeySource
 
 data BackendA a = Backend
 	{ name :: String

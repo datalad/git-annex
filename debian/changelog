@@ -1,9 +1,10 @@
 git-annex (3.20120616) UNRELEASED; urgency=low
 
-  * watch: New subcommand, which uses inotify to watch for changes to
-    files and automatically annexes new files, etc, so you don't need
-    to manually run git commands when manipulating files.
-  * Enable diskfree on kfreebsd, using statvfs.
+  * watch: New subcommand, a daemon which notices changes to
+    files and automatically annexes new files, etc, so you don't
+    need to manually run git commands when manipulating files.
+    Available on Linux, BSDs, and OSX!
+  * Enable diskfree on kfreebsd, using kqueue.
   * unused: Fix crash when key names contain invalid utf8.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 12 Jun 2012 11:35:59 -0400

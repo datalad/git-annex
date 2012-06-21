@@ -34,7 +34,7 @@ dirCruft _ = False
 dirContents :: FilePath -> IO [FilePath]
 dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 
-{- Gets contents of directory, and then its subdirectories, recursively,
+{- Gets files in a directory, and then its subdirectories, recursively,
  - and lazily. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
 dirContentsRecursive topdir = dirContentsRecursive' topdir [""]

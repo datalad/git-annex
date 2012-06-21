@@ -46,6 +46,7 @@ module Assistant where
 import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.Changes
 import Assistant.Watcher
 import Assistant.Committer
 import Assistant.SanityChecker
