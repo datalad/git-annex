@@ -118,7 +118,7 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 
 		add :: Change -> IO (Maybe Change)
 		add change@(PendingAddChange { keySource = ks }) = do
-			r <- catchMaybeIO $ runThreadState st $ do
+			r <- catchMaybeIO $ sanitycheck ks $ runThreadState st $ do
 				showStart "add" $ keyFilename ks
 				handle (finishedChange change) (keyFilename ks)
 					=<< Command.Add.ingest ks
@@ -139,6 +139,16 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 				stageSymlink file sha
 			showEndOk
 			return $ Just change
+
+		{- Check that the keysource's keyFilename still exists,
+		 - and is still a hard link to its contentLocation,
+		 - before ingesting it. -}
+		sanitycheck keysource a = do
+			fs <- getSymbolicLinkStatus $ keyFilename keysource
+			ks <- getSymbolicLinkStatus $ contentLocation keysource
+			if deviceID ks == deviceID fs && fileID ks == fileID fs
+				then a
+				else return Nothing
 
 {- PendingAddChanges can Either be Right to be added now,
  - or are unsafe, and must be Left for later.
