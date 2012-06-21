@@ -7,8 +7,6 @@
 
 module Types.KeySource where
 
-import Data.Ord
-
 {- When content is in the process of being added to the annex,
  - and a Key generated from it, this data type is used. 
  -
@@ -22,12 +20,3 @@ data KeySource = KeySource
 	, contentLocation :: FilePath
 	}
 	deriving (Show)
-
-{- KeySources are assumed to be equal when the same filename is associated
- - with the key. The contentLocation can be a random temp file.
- -}
-instance Eq KeySource where
-	x == y = keyFilename x == keyFilename y
-
-instance Ord KeySource where
-	compare = comparing keyFilename
