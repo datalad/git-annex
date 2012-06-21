@@ -1,7 +1,6 @@
-Finish "git annex watch" command, which runs, in the background, watching via
-inotify for changes, and automatically annexing new files, etc.
-
-There is a `watch` branch in git that adds the command.
+"git annex watch" command, which runs, in the background, watching via
+inotify for changes, and automatically annexing new files, etc. Now
+available!
 
 [[!toc]]
 
