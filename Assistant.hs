@@ -22,11 +22,17 @@
  - Thread 5: committer
  - 	Waits for changes to occur, and runs the git queue to update its
  - 	index, then commits.
- - Thread 6: syncer
- - 	Waits for commits to be made, and syncs the git repo to remotes.
- - Thread 7: status logger
+ - Thread 6: pusher
+ - 	Waits for commits to be made, and pushes updated branches to remotes,
+ - 	in parallel. (Forks a process for each git push.)
+ - Thread 7: merger
+ - 	Waits for pushes to be received from remotes, and merges the
+ - 	updated branches into the current branch. This uses inotify
+ - 	on .git/refs/heads, so there are additional inotify threads
+ - 	associated with it, too.
+ - Thread 8: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 8: sanity checker
+ - Thread 9: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
@@ -41,6 +47,9 @@
  - ChangeChan: (STM TChan)
  - 	Changes are indicated by writing to this channel. The committer
  - 	reads from it.
+ - CommitChan: (STM TChan)
+ - 	Commits are indicated by writing to this channel. The pusher reads
+ - 	from it.
  -}
 
 module Assistant where
@@ -52,7 +61,8 @@ import Assistant.Changes
 import Assistant.Commits
 import Assistant.Watcher
 import Assistant.Committer
-import Assistant.Syncer
+import Assistant.Pusher
+import Assistant.Merger
 import Assistant.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
@@ -76,7 +86,8 @@ startDaemon assistant foreground
 				changechan <- newChangeChan
 				commitchan <- newCommitChan
 				_ <- forkIO $ commitThread st changechan commitchan
-				_ <- forkIO $ syncThread st commitchan
+				_ <- forkIO $ pushThread st commitchan
+				_ <- forkIO $ mergeThread st
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				-- Does not return.

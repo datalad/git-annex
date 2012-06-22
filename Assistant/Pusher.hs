@@ -1,9 +1,9 @@
-{- git-annex assistant git syncing thread
+{- git-annex assistant git pushing thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -}
 
-module Assistant.Syncer where
+module Assistant.Pusher where
 
 import Common.Annex
 import Assistant.Commits
@@ -14,39 +14,39 @@ import Utility.Parallel
 
 import Data.Time.Clock
 
-data FailedSync = FailedSync 
+data FailedPush = FailedPush 
 	{ failedRemote :: Remote
 	, failedTimeStamp :: UTCTime
 	}
 
-{- This thread syncs git commits out to remotes. -}
-syncThread :: ThreadState -> CommitChan -> IO ()
-syncThread st commitchan = do
+{- This thread pushes git commits out to remotes. -}
+pushThread :: ThreadState -> CommitChan -> IO ()
+pushThread st commitchan = do
 	remotes <- runThreadState st $ Command.Sync.syncRemotes []
-	runEveryWith (Seconds 2) [] $ \failedsyncs -> do
+	runEveryWith (Seconds 2) [] $ \failedpushes -> do
 		-- We already waited two seconds as a simple rate limiter.
 		-- Next, wait until at least one commit has been made
 		commits <- getCommits commitchan
-		-- Now see if now's a good time to sync.
+		-- Now see if now's a good time to push.
 		time <- getCurrentTime
-		if shouldSync time commits failedsyncs
-			then syncToRemotes time st remotes
+		if shouldPush time commits failedpushes
+			then pushToRemotes time st remotes
 			else do
 				refillCommits commitchan commits
-				return failedsyncs
+				return failedpushes
 
-{- Decide if now is a good time to sync to remotes.
+{- Decide if now is a good time to push to remotes.
  -
- - Current strategy: Immediately sync all commits. The commit machinery
+ - Current strategy: Immediately push all commits. The commit machinery
  - already determines batches of changes, so we can't easily determine
  - batches better.
  -
- - TODO: FailedSyncs are only retried the next time there's a commit.
+ - TODO: FailedPushs are only retried the next time there's a commit.
  - Should retry them periodically, or when a remote that was not available
  - becomes available.
  -}
-shouldSync :: UTCTime -> [Commit] -> [FailedSync] -> Bool
-shouldSync _now commits _failedremotes
+shouldPush :: UTCTime -> [Commit] -> [FailedPush] -> Bool
+shouldPush _now commits _failedremotes
 	| not (null commits) = True
 	| otherwise = False
 
@@ -55,13 +55,13 @@ shouldSync _now commits _failedremotes
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads. -}
-syncToRemotes :: UTCTime -> ThreadState -> [Remote] -> IO [FailedSync]
-syncToRemotes now st remotes = do
+pushToRemotes :: UTCTime -> ThreadState -> [Remote] -> IO [FailedPush]
+pushToRemotes now st remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> Command.Sync.currentBranch
 	Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-	map (`FailedSync` now) <$> inParallel (go g branch) remotes
+	map (`FailedPush` now) <$> inParallel (push g branch) remotes
 	where
-		go g branch remote =
+		push g branch remote =
 			ifM (Command.Sync.pushBranch remote branch g)
 				( exitSuccess, exitFailure)
