@@ -5,7 +5,7 @@ all the other git clones, at both the git level and the key/value level.
 
 1. Can use `git annex sync`, which already handles bidirectional syncing.
    When a change is committed, launch the part of `git annex sync` that pushes
-   out changes.
+   out changes. **done**; changes are pushed out to all remotes in parallel
 1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
    another node via `git annex sync`), and run the part of `git annex sync`
    that merges in received changes, and follow it by the part that pushes out
