@@ -22,9 +22,11 @@
  - Thread 5: committer
  - 	Waits for changes to occur, and runs the git queue to update its
  - 	index, then commits.
- - Thread 6: status logger
+ - Thread 6: syncer
+ - 	Waits for commits to be made, and syncs the git repo to remotes.
+ - Thread 7: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 7: sanity checker
+ - Thread 8: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
@@ -47,8 +49,10 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
+import Assistant.Commits
 import Assistant.Watcher
 import Assistant.Committer
+import Assistant.Syncer
 import Assistant.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
@@ -70,12 +74,9 @@ startDaemon assistant foreground
 			dstatus <- startDaemonStatus
 			liftIO $ a $ do
 				changechan <- newChangeChan
-				-- The commit thread is started early,
-				-- so that the user can immediately
-				-- begin adding files and having them
-				-- committed, even while the startup scan
-				-- is taking place.
-				_ <- forkIO $ commitThread st changechan
+				commitchan <- newCommitChan
+				_ <- forkIO $ commitThread st changechan commitchan
+				_ <- forkIO $ syncThread st commitchan
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
 				-- Does not return.

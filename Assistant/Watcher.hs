@@ -27,7 +27,6 @@ import Annex.Content
 import Annex.CatFile
 import Git.Types
 
-import Control.Concurrent.STM
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
 
@@ -96,8 +95,7 @@ runHandler st dstatus changechan handler file filestatus = void $ do
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
-		Right (Just change) -> void $
-			runChangeChan $ writeTChan changechan change
+		Right (Just change) -> recordChange changechan change
 	where
 		go = runThreadState st $ handler file filestatus dstatus
 

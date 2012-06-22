@@ -32,7 +32,8 @@ withThreadState a = do
 
 {- Runs an Annex action, using the state from the MVar. 
  -
- - This serializes calls by threads. -}
+ - This serializes calls by threads; only one thread can run in Annex at a
+ - time. -}
 runThreadState :: ThreadState -> Annex a -> IO a
 runThreadState mvar a = do
 	startstate <- takeMVar mvar

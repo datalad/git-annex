@@ -7,6 +7,7 @@ module Assistant.Committer where
 
 import Common.Annex
 import Assistant.Changes
+import Assistant.Commits
 import Assistant.ThreadedMonad
 import Assistant.Watcher
 import qualified Annex
@@ -26,8 +27,8 @@ import qualified Data.Set as S
 import Data.Either
 
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> IO ()
-commitThread st changechan = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> ChangeChan -> CommitChan -> IO ()
+commitThread st changechan commitchan = runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change is available for
 	-- processing.
@@ -40,6 +41,7 @@ commitThread st changechan = runEvery (Seconds 1) $ do
 			if shouldCommit time readychanges
 				then do
 					void $ tryIO $ runThreadState st commitStaged
+					recordCommit commitchan (Commit time)
 				else refillChanges changechan readychanges
 		else refillChanges changechan changes
 
