@@ -24,6 +24,12 @@ runEvery n a = forever $ do
 	threadDelaySeconds n
 	a
 
+runEveryWith :: Seconds -> a -> (a -> IO a) -> IO ()
+runEveryWith n val a = do
+	threadDelaySeconds n
+	val' <- a val
+	runEveryWith n val' a
+
 threadDelaySeconds :: Seconds -> IO ()
 threadDelaySeconds (Seconds n) = unboundDelay (fromIntegral n * oneSecond)
 	where

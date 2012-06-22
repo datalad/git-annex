@@ -31,7 +31,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
+	branch <- currentBranch
 	remotes <- syncRemotes rs
 	return $ concat
 		[ [ commit ]
@@ -41,6 +41,11 @@ seek rs = do
 		, [ pushLocal branch ]
 		, [ pushRemote remote branch | remote <- remotes ]
 		]
+
+currentBranch :: Annex Git.Ref
+currentBranch = do
+	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
+	return branch
 	where
 		nobranch = error "no branch is checked out"
 
@@ -90,7 +95,7 @@ mergeLocal branch = go =<< needmerge
 		syncbranch = syncBranch branch
 		needmerge = do
 			unlessM (inRepo $ Git.Ref.exists syncbranch) $
-				updateBranch syncbranch
+				inRepo $ updateBranch syncbranch
 			inRepo $ Git.Branch.changed branch syncbranch
 		go False = stop
 		go True = do
@@ -99,17 +104,17 @@ mergeLocal branch = go =<< needmerge
 
 pushLocal :: Git.Ref -> CommandStart
 pushLocal branch = do
-	updateBranch $ syncBranch branch
+	inRepo $ updateBranch $ syncBranch branch
 	stop
 
-updateBranch :: Git.Ref -> Annex ()
-updateBranch syncbranch = 
+updateBranch :: Git.Ref -> Git.Repo -> IO ()
+updateBranch syncbranch g = 
 	unlessM go $ error $ "failed to update " ++ show syncbranch
 	where
-		go = inRepo $ Git.Command.runBool "branch"
+		go = Git.Command.runBool "branch"
 			[ Param "-f"
 			, Param $ show $ Git.Ref.base syncbranch
-			]
+			] g
 
 pullRemote :: Remote -> Git.Ref -> CommandStart
 pullRemote remote branch = do
@@ -135,19 +140,27 @@ mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
 pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
 	where
-		needpush = anyM (newer remote) [syncbranch, Annex.Branch.name]
+		needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 		go False = stop
 		go True = do
 			showStart "push" (Remote.name remote)
 			next $ next $ do
 				showOutput
-				inRepo $ Git.Command.runBool "push"
-					[ Param (Remote.name remote)
-					, Param (show Annex.Branch.name)
-					, Param refspec
-					]
-		refspec = show (Git.Ref.base branch) ++ ":" ++ show (Git.Ref.base syncbranch)
-		syncbranch = syncBranch branch
+				inRepo $ pushBranch remote branch
+
+pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
+pushBranch remote branch g =
+	Git.Command.runBool "push"
+		[ Param (Remote.name remote)
+		, Param (show Annex.Branch.name)
+		, Param refspec
+		] g
+	where
+		refspec = concat 
+			[ show $ Git.Ref.base branch
+			,  ":"
+			, show $ Git.Ref.base $ syncBranch branch
+			]
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
