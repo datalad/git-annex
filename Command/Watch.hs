@@ -1,6 +1,3 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE BangPatterns #-}
-
 {- git-annex watch command
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
@@ -19,10 +16,13 @@ def :: [Command]
 def = [withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek "watch for changes"]
 
-seek :: [CommandSeek]
-seek = [withFlag stopOption $ \stopdaemon -> 
+mkSeek :: Bool -> [CommandSeek]
+mkSeek assistant = [withFlag stopOption $ \stopdaemon -> 
 	withFlag foregroundOption $ \foreground ->
-	withNothing $ start foreground stopdaemon]
+	withNothing $ start assistant foreground stopdaemon]
+
+seek :: [CommandSeek]
+seek = mkSeek False
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"
@@ -30,9 +30,9 @@ foregroundOption = Option.flag [] "foreground" "do not daemonize"
 stopOption :: Option
 stopOption = Option.flag [] "stop" "stop daemon"
 
-start :: Bool -> Bool -> CommandStart
-start foreground stopdaemon = notBareRepo $ do
+start :: Bool -> Bool -> Bool -> CommandStart
+start assistant foreground stopdaemon = notBareRepo $ do
 	if stopdaemon
 		then stopDaemon
-		else startDaemon foreground -- does not return
+		else startDaemon assistant foreground -- does not return
 	stop

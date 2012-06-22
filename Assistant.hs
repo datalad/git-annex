@@ -55,10 +55,10 @@ import Utility.LogFile
 
 import Control.Concurrent
 
-startDaemon :: Bool -> Annex ()
-startDaemon foreground
+startDaemon :: Bool -> Bool -> Annex ()
+startDaemon assistant foreground
 	| foreground = do
-		showStart "watch" "."
+		showStart (if assistant then "assistant" else "watch") "."
 		go id
 	| otherwise = do
 		logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile

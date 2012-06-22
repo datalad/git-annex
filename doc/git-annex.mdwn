@@ -180,6 +180,10 @@ subdirectories).
   To not daemonize, run with --foreground ; to stop a running daemon,
   run with --stop
 
+* assistant
+
+  Like watch, but also automatically syncs changes to other remotes.
+
 # REPOSITORY SETUP COMMANDS
 
 * init [description]

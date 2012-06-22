@@ -59,6 +59,7 @@ import qualified Command.Map
 import qualified Command.Upgrade
 import qualified Command.Version
 import qualified Command.Watch
+import qualified Command.Assistant
 
 cmds :: [Command]
 cmds = concat
@@ -101,6 +102,7 @@ cmds = concat
 	, Command.Upgrade.def
 	, Command.Version.def
 	, Command.Watch.def
+	, Command.Assistant.def
 	]
 
 options :: [Option]
