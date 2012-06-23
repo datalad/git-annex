@@ -5,13 +5,16 @@ all the other git clones, at both the git level and the key/value level.
 
 1. Can use `git annex sync`, which already handles bidirectional syncing.
    When a change is committed, launch the part of `git annex sync` that pushes
-   out changes.
+   out changes. **done**; changes are pushed out to all remotes in parallel
 1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
    another node via `git annex sync`), and run the part of `git annex sync`
    that merges in received changes, and follow it by the part that pushes out
    changes (sending them to any other remotes).
    [The watching can be done with the existing inotify code! This avoids needing
-   any special mechanism to notify a remote that it's been synced to.]
+   any special mechanism to notify a remote that it's been synced to.]  
+   **done**
+1. Periodically retry pushes that failed. Also, detect if a push failed
+   due to not being up-to-date, pull, and repush.
 2. Use a git merge driver that adds both conflicting files,
    so conflicts never break a sync.
 3. Investigate the XMPP approach like dvcs-autosync does, or other ways of

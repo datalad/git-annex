@@ -1,0 +1,1 @@
+Logging to file would be nice when running git-annex as a daemon so when something fails or when certain events happens one can look at the logs to see what has failed, unless I'm missing something this probably should be on the wishlist or roadmap.

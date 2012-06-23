@@ -16,6 +16,7 @@ import qualified Remote
 import qualified Annex
 import qualified Annex.Branch
 import qualified Git.Command
+import qualified Git.Merge
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git
@@ -170,7 +171,7 @@ mergeAnnex = do
 mergeFrom :: Git.Ref -> CommandCleanup
 mergeFrom branch = do
 	showOutput
-	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
+	inRepo $ Git.Merge.mergeNonInteractive branch
 
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
