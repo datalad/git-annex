@@ -65,7 +65,6 @@ onAdd g file _
 	| otherwise = do
 		let branch = Git.Ref $ "refs" </> "heads" </> takeFileName file
 		current <- Git.Branch.current g
-		print (branch, current)
 		when (Just branch == current) $
 			void $ mergeBranch branch g
 
