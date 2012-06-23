@@ -12,9 +12,9 @@ import Common
 {- Runs an action in parallel with a set of values.
  - Returns values that caused the action to fail. -}
 inParallel :: (v -> IO ()) -> [v] -> IO [v]
-inParallel a v = do
-	pids <- mapM (forkProcess . a) v
+inParallel a l = do
+	pids <- mapM (forkProcess . a) l
 	statuses <- mapM (getProcessStatus True False) pids
-	return $ map fst $ filter failed $ zip v statuses
+	return $ map fst $ filter (failed . snd) $ zip l statuses
 	where
-		failed (_, status) = status /= Just (Exited ExitSuccess)
+		failed v = v /= Just (Exited ExitSuccess)
