@@ -6,6 +6,7 @@ git-annex (3.20120616) UNRELEASED; urgency=low
     Available on Linux, BSDs, and OSX!
   * Enable diskfree on kfreebsd, using kqueue.
   * unused: Fix crash when key names contain invalid utf8.
+  * sync: Avoid recent git's interactive merge.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 12 Jun 2012 11:35:59 -0400
 
