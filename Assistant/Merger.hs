@@ -1,6 +1,8 @@
 {- git-annex assistant git merge thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Merger where
