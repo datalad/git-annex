@@ -12,7 +12,7 @@ import Assistant.ThreadedMonad
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Git
-import qualified Git.Command
+import qualified Git.Merge
 import qualified Git.Branch
 import qualified Command.Sync
 
@@ -69,5 +69,4 @@ onAdd g file _
 			void $ mergeBranch branch g
 
 mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
-mergeBranch branch = Git.Command.runBool "merge"
-	[Param $ show $ Command.Sync.syncBranch branch]
+mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
