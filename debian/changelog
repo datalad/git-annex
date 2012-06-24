@@ -1,4 +1,4 @@
-git-annex (3.20120616) UNRELEASED; urgency=low
+git-annex (3.20120624) unstable; urgency=low
 
   * watch: New subcommand, a daemon which notices changes to
     files and automatically annexes new files, etc, so you don't
@@ -8,7 +8,7 @@ git-annex (3.20120616) UNRELEASED; urgency=low
   * unused: Fix crash when key names contain invalid utf8.
   * sync: Avoid recent git's interactive merge.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 12 Jun 2012 11:35:59 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 24 Jun 2012 12:36:50 -0400
 
 git-annex (3.20120614) unstable; urgency=medium
 
