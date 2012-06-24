@@ -1,0 +1,25 @@
+The git-annex assistant is being
+[crowd funded on Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
+
+This is my design and plan for developing it.
+Still being fleshed out, still many ideas and use cases to add.
+Feel free to chip in with comments! --[[Joey]]
+
+## roadmap
+
+* Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
+* Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
+* Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
+* Month 4 "polishing": [[!traillink cloud]] [[!traillink leftovers]]
+* Months 5-6 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]]
+
+## not yet on the map:
+
+* [[desymlink]]
+* [[deltas]]
+* In my overfunded nighmares: [[Windows]]
+
+## blog
+
+I'll be blogging about my progress in the [[blog]] on a semi-daily basis.
+Follow along!

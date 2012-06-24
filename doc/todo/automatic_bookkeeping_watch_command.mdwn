@@ -4,39 +4,9 @@ It would run, in the background, watching via inotify for changes, and
 automatically annexing new files, etc.
 
 The blue sky goal would be something automated like dropbox, except fully
-distributed. All files put into the repository would propigate out
+distributed. All files put into the repository would propagate out
 to all the other clones of it, as network links allow. Note that while
 dropbox allows modifying files, git-annex freezes them upon creation,
-so this would not be 100% equivilant to dropbox. --[[Joey]]
+so this would not be 100% equivalent to dropbox. --[[Joey]]
 
-----
-
-There is a `watch` branch in git that adds such a command, although currently
-it only handles adding new files, and nothing else. To make this really
-useful, it needs to:
-
-- notice deleted files and stage the deletion
-  (tricky; there's a race with add..)
-- notice renamed files, auto-fix the symlink, and stage the new file location
-- periodically auto-commit staged changes
-- honor .gitignore, not adding files it excludes
-    
-Also nice to have would be:
-    
-- Somehow sync remotes, possibly using a push sync like dvcs-autosync
-  does, so they are immediately updated.
-- Somehow get content that is unavilable. This is problimatic with inotify,
-  since we only get an event once the user has tried (and failed) to read
-  from the file. Perhaps instead, automatically copy content that is added
-  out to remotes, with the goal of all repos eventually getting a copy,
-  if df allows.
-- Drop files that have not been used lately, or meet some other criteria
-  (as long as there's a copy elsewhere).
-- Perhaps automatically dropunused files that have been deleted,
-  although I cannot see a way to do that, since by the time the inotify
-  deletion event arrives, the file is deleted, and we cannot see what
-  its symlink pointed to! Alternatievely, perhaps automatically
-  do an expensive unused/dropunused cleanup process.
-- Support OSes other than Linux; it only uses inotify currently.
-
-
+This is a big project with its own [[design pages|design/assistant]].

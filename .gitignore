@@ -13,3 +13,7 @@ html
 Utility/Touch.hs
 Utility/libdiskfree.o
 dist
+# Sandboxed builds
+cabal-dev
+# Project-local emacs configuration
+.dir-locals.el

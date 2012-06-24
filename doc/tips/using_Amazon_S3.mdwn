@@ -4,8 +4,8 @@ Amazon S3, and use git-annex to transfer files into the cloud.
 
 First, export your S3 credentials:
 
-	# export ANNEX_S3_ACCESS_KEY_ID="08TJMT99S3511WOZEP91"
-	# export ANNEX_S3_SECRET_ACCESS_KEY="s3kr1t"
+	# export AWS_ACCESS_KEY_ID="08TJMT99S3511WOZEP91"
+	# export AWS_SECRET_ACCESS_KEY="s3kr1t"
 
 Now, create a gpg key, if you don't already have one. This will be used
 to encrypt everything stored in S3, for your privacy. Once you have

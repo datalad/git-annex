@@ -1,0 +1,15 @@
+Things that don't fit anywhere else:
+
+* Automatically start daemon on boot or when user logs in.
+* Somehow get content that is unavailable. This is problematic with inotify,
+  since we only get an event once the user has tried (and failed) to read
+  from the file. This is only needed if all the files in the directory 
+  are not kept synced, but in some situations (ie, low disk space phones),
+  that is likely.
+* Drop files that have not been used lately, or meet some other criteria
+  (as long as there's a copy elsewhere).
+* Perhaps automatically dropunused files that have been deleted,
+  although I cannot see a way to do that, since by the time the inotify
+  deletion event arrives, the file is deleted, and we cannot see what
+  its symlink pointed to! Alternatively, perhaps automatically
+  do an expensive unused/dropunused cleanup process.

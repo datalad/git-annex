@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~gdr-go2"
+ nickname="gdr-go2"
+ subject="FAT symlinks"
+ date="2012-05-28T18:12:10Z"
+ content="""
+It's a linux kernel so perhaps another option would be to create a big file and mount -o loop
+"""]]

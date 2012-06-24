@@ -1,3 +1,35 @@
+git-annex (3.20120614) unstable; urgency=medium
+
+  * addurl: Was broken by a typo introduced 2 released ago, now fixed.
+    Closes: #677576
+  * Install man page when run by cabal, in a location where man will
+    find it, even when installing under $HOME. Thanks, Nathan Collins
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 14 Jun 2012 20:21:29 -0400
+
+git-annex (3.20120611) unstable; urgency=medium
+
+  * add: Prevent (most) modifications from being made to a file while it
+    is being added to the annex.
+  * initremote: Automatically describe a remote when creating it.
+  * uninit: Refuse to run in a subdirectory. Closes: #677076
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 11 Jun 2012 10:32:01 -0400
+
+git-annex (3.20120605) unstable; urgency=low
+
+  * sync: Show a nicer message if a user tries to sync to a special remote.
+  * lock: Reset unlocked file to index, rather than to branch head.
+  * import: New subcommand, pulls files from a directory outside the annex
+    and adds them.
+  * Fix display of warning message when encountering a file that uses an
+    unsupported backend.
+  * Require that the SHA256 backend can be used when building, since it's the
+    default.
+  * Preserve parent environment when running hooks of the hook special remote.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 05 Jun 2012 14:03:39 -0400
+
 git-annex (3.20120522~bpo60+1) squeeze-backports; urgency=low
 
   * Pass -a to cp even when it supports --reflink=auto, to preserve

@@ -171,7 +171,8 @@ test_reinject :: Test
 test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ Types.Backend.getKey backendSHA1 tmp
+	r <- annexeval $ Types.Backend.getKey backendSHA1 $
+		Types.Backend.KeySource { Types.Backend.keyFilename = tmp, Types.Backend.contentLocation = tmp }
 	let key = show $ fromJust r
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"

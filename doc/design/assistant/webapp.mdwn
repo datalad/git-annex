@@ -1,0 +1,38 @@
+The webapp is a web server that displays a shiny interface.
+
+## security
+
+* Listen only to localhost.
+* Instruct the user's web browser to open an url that contains a secret
+  token. This guards against other users on the same system.
+* I would like to avoid passwords or other authentication methods,
+  it's your local system.
+* Alternative for Linux at least would be to write a small program using
+  GTK+ Webkit, that runs the webapp, and can know what user ran it, avoiding
+  needing authentication.
+
+## interface
+
+* list of files uploading and downloading
+* progress bars for each file
+* drag and drop to reorder
+* cancel and pause
+* keep it usable w/o javascript, and accessible to blind, etc
+
+## other features
+
+* there could be a UI to export a file, which would make it be served up
+  over http by the web app
+* Display any relevant warning messages. One is the `inotify max_user_watches`
+  exceeded message.
+
+## implementation
+
+Hope to use Yesod.
+
+TODO: Ensure that Yesod will work on arm. Necessary for later Android port.
+Will its template haskell cause a problem? Does new GHC support TH on ARM?
+Will it use too much memory or be too slow?
+
+Hopefully Yesod comes with some good UI widgets. Otherwise, need to use
+Jquery or similar.

@@ -6,6 +6,7 @@ import System.Directory
 import Data.List
 import System.Cmd.Utils
 import Control.Applicative
+import System.FilePath
 
 import Build.TestConfig
 import Utility.SafeCommand
@@ -26,15 +27,21 @@ tests =
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "ssh connection caching" getSshConnectionCaching
-	] ++ shaTestCases [1, 256, 512, 224, 384]
+	] ++ shaTestCases False [1, 512, 224, 384] ++ shaTestCases True [256]
 
-shaTestCases :: [Int] -> [TestCase]
-shaTestCases l = map make l
-	where make n =
-		let
-			cmds = map (\x -> "sha" ++ show n ++ x) ["", "sum"]
-			key = "sha" ++ show n
-		in TestCase key $ maybeSelectCmd key cmds "</dev/null"
+shaTestCases :: Bool -> [Int] -> [TestCase]
+shaTestCases required l = map make l
+	where
+		make n = TestCase key $ selector key (shacmds n) "</dev/null"
+			where
+				key = "sha" ++ show n
+		selector = if required then selectCmd else maybeSelectCmd
+		shacmds n = concatMap (\x -> [x, osxpath </> x]) $
+			map (\x -> "sha" ++ show n ++ x) ["", "sum"]
+		-- Max OSX puts GNU tools outside PATH, so look in
+		-- the location it uses, and remember where to run them
+		-- from.
+		osxpath = "/opt/local/libexec/gnubin"
 
 tmpDir :: String
 tmpDir = "tmp"

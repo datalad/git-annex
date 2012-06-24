@@ -1,0 +1,74 @@
+Porting git-annex to Android will use the Android native SDK.
+
+A hopefully small Java app will be developed, which runs the webapp
+daemon, and a web browser to display it.
+
+### programs to port
+
+These will probably need to be bundled into the Android app, unless already
+available in the App Store.
+
+* ssh (native ssh needed for scp, not a client like ConnectBot)
+* rsync
+* gpg
+* git (not all git commands are needed,
+  but core plumbing and a few like `git-add` are.)
+
+## GHC Android?
+
+Android's native SDK does not use glibc. GHC's runtime links with glibc.
+This could be an enormous problem. Other people want to see GHC able to
+target Android, of course, so someone may solve it before I get stuck on
+it.
+
+References:
+
+* <http://stackoverflow.com/questions/5151858/running-a-haskell-program-on-the-android-os>
+* <http://www.reddit.com/r/haskell/comments/ful84/haskell_on_android/>
+
+### Android specific features
+
+The app should be aware of power status, and avoid expensive background
+jobs when low on battery or run flat out when plugged in.
+
+The app should be aware of network status, and avoid expensive data
+transfers when not on wifi. This may need to be configurable.
+
+### FAT sucks
+
+The main media partition will use some awful FAT filesystem format from
+1982 that cannot support git-annex's symlinks. (Hopefully it can at least
+handle all of git's filenames.) Possible approaches to this follow.
+
+(May want to consider which of these would make a Windows port easier too.)
+
+#### bare git repo with file browser
+
+Keep only a bare git repo on Android. The app would then need to include
+a file browser to access the files in there, and adding a file would move
+it into the repo.
+
+Not ideal.
+
+Could be improved some by registering git-annex as a file handling app on
+Android, allowing you to "send to" git-annex.
+
+#### implement git smudge filters
+
+See [[todo/smudge]].
+
+Difficult. Would make git-annex generally better.
+
+#### keep files outside bare git repo
+
+Use a bare git repo but don't keep files in `annex/objects`, instead
+leave them outside the repo, and add some local mapping to find them.
+
+Problem: Would leave files unlocked to modification, which might lose a
+version git-annex dependend upon existing on the phone. (Maybe the phone
+would have to be always considered an untrusted repo, which probably
+makes sense anyway.)
+
+#### crazy `LD_PRELOAD` wrapper
+
+Need I say more? (Also, Android's linker may not even support it.)

@@ -12,10 +12,12 @@ import Annex.Exception
 import Command
 import qualified Annex
 import qualified Annex.Queue
-import qualified Backend
+import Backend
 import Logs.Location
 import Annex.Content
+import Annex.Perms
 import Utility.Touch
+import Utility.FileMode
 
 def :: [Command]
 def = [command "add" paramPaths seek "add files to annex"]
@@ -44,22 +46,38 @@ start file = notBareRepo $ ifAnnexed file fixup add
 			liftIO $ removeFile file
 			next $ next $ cleanup file key =<< inAnnex key
 
+{- The file that's being added is locked down before a key is generated,
+ - to prevent it from being modified in between. It's hard linked into a
+ - temporary location, and its writable bits are removed. It could still be
+ - written to by a process that already has it open for writing. -}
 perform :: FilePath -> CommandPerform
 perform file = do
-	backend <- Backend.chooseBackend file
-	Backend.genKey file backend >>= go
+	liftIO $ preventWrite file
+	tmp <- fromRepo gitAnnexTmpDir
+	createAnnexDirectory tmp
+	pid <- liftIO getProcessID
+	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
+	nuke tmpfile
+	liftIO $ createLink file tmpfile
+	let source = KeySource { keyFilename = file, contentLocation = tmpfile }
+	backend <- chooseBackend file
+	genKey source backend >>= go tmpfile
 	where
-		go Nothing = stop
-		go (Just (key, _)) = do
-			handle (undo file key) $ moveAnnex key file
+		go _ Nothing = stop
+		go tmpfile (Just (key, _)) = do
+			handle (undo file key) $ moveAnnex key tmpfile
+			nuke file
 			next $ cleanup file key True
+
+nuke :: FilePath -> Annex ()
+nuke file = liftIO $ whenM (doesFileExist file) $ removeFile file
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
 undo :: FilePath -> Key -> IOException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
-		liftIO $ whenM (doesFileExist file) $ removeFile file
+		nuke file
 		handle tryharder $ fromAnnex key file
 		logStatus key InfoMissing
 	throw e

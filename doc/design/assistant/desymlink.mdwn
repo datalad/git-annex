@@ -1,0 +1,5 @@
+While dropbox allows modifying files in the folder, git-annex freezes
+them upon creation.
+
+To allow editing files in its folder, something like [[todo/smudge]] is
+needed, to get rid of the symlinks that stand in for the files.

@@ -2,23 +2,23 @@ A walkthrough of the basic features of git-annex.
 
 [[!toc]]
 
-[[!inline feeds=no show=0 template=walkthrough pagenames="""
-	creating_a_repository
-	adding_a_remote
-	adding_files
-	renaming_files
-	getting_file_content
-	syncing
-	transferring_files:_When_things_go_wrong
-	removing_files
-	removing_files:_When_things_go_wrong
-	modifying_annexed_files
-	using_ssh_remotes
-	moving_file_content_between_repositories
-	unused_data
-	fsck:_verifying_your_data
-	fsck:_when_things_go_wrong
-	backups
-	automatically_managing_content
-	more
+[[!inline feeds=no trail=yes show=0 template=walkthrough pagenames="""
+	walkthrough/creating_a_repository
+	walkthrough/adding_a_remote
+	walkthrough/adding_files
+	walkthrough/renaming_files
+	walkthrough/getting_file_content
+	walkthrough/syncing
+	walkthrough/transferring_files:_When_things_go_wrong
+	walkthrough/removing_files
+	walkthrough/removing_files:_When_things_go_wrong
+	walkthrough/modifying_annexed_files
+	walkthrough/using_ssh_remotes
+	walkthrough/moving_file_content_between_repositories
+	walkthrough/unused_data
+	walkthrough/fsck:_verifying_your_data
+	walkthrough/fsck:_when_things_go_wrong
+	walkthrough/backups
+	walkthrough/automatically_managing_content
+	walkthrough/more
 """]]

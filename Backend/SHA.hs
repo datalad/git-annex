@@ -45,7 +45,7 @@ genBackendE size =
 
 shaCommand :: SHASize -> Maybe String
 shaCommand 1 = SysConfig.sha1
-shaCommand 256 = SysConfig.sha256
+shaCommand 256 = Just SysConfig.sha256
 shaCommand 224 = SysConfig.sha224
 shaCommand 384 = SysConfig.sha384
 shaCommand 512 = SysConfig.sha512
@@ -69,9 +69,10 @@ shaN size file = do
 		command = fromJust $ shaCommand size
 
 {- A key is a checksum of its contents. -}
-keyValue :: SHASize -> FilePath -> Annex (Maybe Key)
-keyValue size file = do
-	s <- shaN size file	
+keyValue :: SHASize -> KeySource -> Annex (Maybe Key)
+keyValue size source = do
+	let file = contentLocation source
+	s <- shaN size file
 	stat <- liftIO $ getFileStatus file
 	return $ Just $ stubKey
 		{ keyName = s
@@ -80,14 +81,14 @@ keyValue size file = do
 		}
 
 {- Extension preserving keys. -}
-keyValueE :: SHASize -> FilePath -> Annex (Maybe Key)
-keyValueE size file = keyValue size file >>= maybe (return Nothing) addE
+keyValueE :: SHASize -> KeySource -> Annex (Maybe Key)
+keyValueE size source = keyValue size source >>= maybe (return Nothing) addE
 	where
 		addE k = return $ Just $ k
 			{ keyName = keyName k ++ extension
 			, keyBackendName = shaNameE size
 			}
-		naiveextension = takeExtension file
+		naiveextension = takeExtension $ keyFilename source
 		extension
 			-- long or newline containing extensions are 
 			-- probably not really an extension

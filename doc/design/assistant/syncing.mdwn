@@ -1,0 +1,36 @@
+Once files are added (or removed or moved), need to send those changes to
+all the other git clones, at both the git level and the key/value level.
+
+## git syncing
+
+1. At regular intervals, just run `git annex sync`, which already handles
+   bidirectional syncing.
+2. Use a git merge driver that adds both conflicting files,
+   so conflicts never break a sync.
+3. Investigate the XMPP approach like dvcs-autosync does, or other ways of
+   signaling a change out of band.
+4. Add a hook, so when there's a change to sync, a program can be run.
+
+## data syncing
+
+There are two parts to data syncing. First, map the network and second,
+decide what to sync when.
+
+Mapping the network can reuse code in `git annex map`. Once the map is
+built, we want to find paths through the network that reach all nodes
+eventually, with the least cost. This is a minimum spanning tree problem,
+except with a directed graph, so really a Arborescence problem.
+
+With the map, we can determine which nodes to push new content to. Then we
+need to control those data transfers, sending to the cheapest nodes first,
+and with appropriate rate limiting and control facilities.
+
+This probably will need lots of refinements to get working well.
+
+## other considerations
+
+It would be nice if, when a USB drive is connected,
+syncing starts automatically.
+
+This assumes the network is connected. It's often not, so the
+[[cloud]] needs to be used to bridge between LANs.

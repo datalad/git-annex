@@ -10,6 +10,7 @@ module Remote.Hook (remote) where
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import System.Exit
+import System.Environment
 
 import Common.Annex
 import Types.Remote
@@ -59,9 +60,12 @@ hookSetup u c = do
 	gitConfigSpecialRemote u c' "hooktype" hooktype
 	return c'
 
-hookEnv :: Key -> Maybe FilePath -> Maybe [(String, String)]
-hookEnv k f = Just $ fileenv f ++ keyenv
+hookEnv :: Key -> Maybe FilePath -> IO (Maybe [(String, String)])
+hookEnv k f = Just <$> mergeenv (fileenv f ++ keyenv)
 	where
+		mergeenv l = M.toList .
+			M.union (M.fromList l) 
+				<$> M.fromList <$> getEnvironment
 		env s v = ("ANNEX_" ++ s, v)
 		keyenv =
 			[ env "KEY" (show k)
@@ -88,8 +92,9 @@ runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype h
 	where
 		run command = do
 			showOutput -- make way for hook output
-			ifM (liftIO $ boolSystemEnv
-				"sh" [Param "-c", Param command] $ hookEnv k f)
+			ifM (liftIO $
+				boolSystemEnv "sh" [Param "-c", Param command]
+					=<< hookEnv k f)
 				( a
 				, do
 					warning $ hook ++ " hook exited nonzero!"
@@ -129,14 +134,14 @@ checkPresent r h k = do
 	liftIO $ catchMsgIO $ check v
 	where
 		findkey s = show k `elem` lines s
-		env = hookEnv k Nothing
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
 			(frompipe, topipe) <- createPipe
 			pid <- forkProcess $ do
 				_ <- dupTo topipe stdOutput
 				closeFd frompipe
-				executeFile "sh" True ["-c", hook] env
+				executeFile "sh" True ["-c", hook]
+					=<< hookEnv k Nothing
 			closeFd topipe
 			fromh <- fdToHandle frompipe
 			reply <- hGetContentsStrict fromh

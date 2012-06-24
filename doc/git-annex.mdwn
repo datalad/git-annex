@@ -160,6 +160,15 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
+* import [path ...]
+
+  Moves files from somewhere outside the git working copy, and adds them to
+  the annex. Individual files to import can be specified. 
+  If a directory is specified, all files in it are imported, and any
+  subdirectory structure inside it is preserved.
+
+	git annex import /media/camera/DCIM/
+
 # REPOSITORY SETUP COMMANDS
 
 * init [description]
