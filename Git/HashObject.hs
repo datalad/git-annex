@@ -14,6 +14,8 @@ import Git.Command
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
 
+import qualified Data.ByteString.Lazy.Char8 as L
+
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
@@ -36,13 +38,13 @@ hashFile h file = CoProcess.query h send receive
 		receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects some content into git, returning its Sha. -}
-hashObject :: Repo -> ObjectType -> String -> IO Sha
+hashObject :: Repo -> ObjectType -> L.ByteString -> IO Sha
 hashObject repo objtype content = getSha subcmd $ do
 	(h, s) <- pipeWriteRead (map Param params) content repo
-	length s `seq` do
+	L.length s `seq` do
 		forceSuccess h
 		reap -- XXX unsure why this is needed
-		return s
+		return $ L.unpack s
 	where
 		subcmd = "hash-object"
 		params = [subcmd, "-t", show objtype, "-w", "--stdin"]

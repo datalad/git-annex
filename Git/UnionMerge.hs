@@ -10,7 +10,6 @@ module Git.UnionMerge (
 	merge_index
 ) where
 
-import System.Cmd.Utils
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 
@@ -73,7 +72,7 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
-	shas -> use =<< either return (hashObject repo BlobObject . unlines) =<<
+	shas -> use =<< either return (hashObject repo BlobObject . L.unlines) =<<
 		calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
