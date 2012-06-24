@@ -1,0 +1,9 @@
+git-annex 3.20120624 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * watch: New subcommand, a daemon which notices changes to
+     files and automatically annexes new files, etc, so you don't
+     need to manually run git commands when manipulating files.
+     Available on Linux, BSDs, and OSX!
+   * Enable diskfree on kfreebsd, using kqueue.
+   * unused: Fix crash when key names contain invalid utf8.
+   * sync: Avoid recent git's interactive merge."""]]
