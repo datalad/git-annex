@@ -46,7 +46,7 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
   This runs rsync in server mode to transfer out the content of a key.
 
-* commit
+* commit directory
 
   This commits any staged changes to the git-annex branch.
   It also runs the annex-content hook.
