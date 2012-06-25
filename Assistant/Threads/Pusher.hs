@@ -1,4 +1,4 @@
-{- git-annex assistant git pushing thread
+{- git-annex assistant git pushing threads
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -9,6 +9,7 @@ module Assistant.Threads.Pusher where
 
 import Common.Annex
 import Assistant.Commits
+import Assistant.Pushes
 import Assistant.ThreadedMonad
 import qualified Command.Sync
 import Utility.ThreadScheduler
@@ -16,39 +17,45 @@ import Utility.Parallel
 
 import Data.Time.Clock
 
-data FailedPush = FailedPush 
-	{ failedRemote :: Remote
-	, failedTimeStamp :: UTCTime
-	}
+{- This thread retries pushes that failed before. -}
+pushRetryThread :: ThreadState -> FailedPushChan -> IO ()
+pushRetryThread st pushchan = runEvery (Seconds halfhour) $ do
+	-- We already waited half an hour, now wait until there are failed
+	-- pushes to retry.
+	pushes <- getFailedPushes pushchan
+	-- Check times, to avoid repushing a push that's too new.
+	now <- getCurrentTime
+	let (newpushes, oldpushes) = partition (toorecent now . failedTimeStamp) pushes
+	unless (null newpushes) $
+		refillFailedPushes pushchan newpushes
+	unless (null oldpushes) $
+		pushToRemotes now st pushchan $ map failedRemote oldpushes
+	where
+		halfhour = 1800
+		toorecent now time = now `diffUTCTime` time < fromIntegral halfhour
 
-{- This thread pushes git commits out to remotes. -}
-pushThread :: ThreadState -> CommitChan -> IO ()
-pushThread st commitchan = do
+{- This thread pushes git commits out to remotes soon after they are made. -}
+pushThread :: ThreadState -> CommitChan -> FailedPushChan -> IO ()
+pushThread st commitchan pushchan = do
 	remotes <- runThreadState st $ Command.Sync.syncRemotes []
-	runEveryWith (Seconds 2) [] $ \failedpushes -> do
+	runEvery (Seconds 2) $ do
 		-- We already waited two seconds as a simple rate limiter.
 		-- Next, wait until at least one commit has been made
 		commits <- getCommits commitchan
 		-- Now see if now's a good time to push.
-		time <- getCurrentTime
-		if shouldPush time commits failedpushes
-			then pushToRemotes time st remotes
-			else do
-				refillCommits commitchan commits
-				return failedpushes
+		now <- getCurrentTime
+		if shouldPush now commits
+			then pushToRemotes now st pushchan remotes
+			else refillCommits commitchan commits
 
 {- Decide if now is a good time to push to remotes.
  -
  - Current strategy: Immediately push all commits. The commit machinery
  - already determines batches of changes, so we can't easily determine
  - batches better.
- -
- - TODO: FailedPushs are only retried the next time there's a commit.
- - Should retry them periodically, or when a remote that was not available
- - becomes available.
  -}
-shouldPush :: UTCTime -> [Commit] -> [FailedPush] -> Bool
-shouldPush _now commits _failedremotes
+shouldPush :: UTCTime -> [Commit] -> Bool
+shouldPush _now commits
 	| not (null commits) = True
 	| otherwise = False
 
@@ -57,12 +64,14 @@ shouldPush _now commits _failedremotes
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads. -}
-pushToRemotes :: UTCTime -> ThreadState -> [Remote] -> IO [FailedPush]
-pushToRemotes now st remotes = do
+pushToRemotes :: UTCTime -> ThreadState -> FailedPushChan -> [Remote] -> IO ()
+pushToRemotes now st pushchan remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> Command.Sync.currentBranch
 	Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-	map (`FailedPush` now) <$> inParallel (push g branch) remotes
+	failed <- map (`FailedPush` now) <$> inParallel (push g branch) remotes
+	unless (null failed) $
+		refillFailedPushes pushchan failed
 	where
 		push g branch remote =
 			ifM (Command.Sync.pushBranch remote branch g)

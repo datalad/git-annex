@@ -25,14 +25,17 @@
  - Thread 6: pusher
  - 	Waits for commits to be made, and pushes updated branches to remotes,
  - 	in parallel. (Forks a process for each git push.)
- - Thread 7: merger
+ - Thread 7: push retryer
+ - 	Runs every 30 minutes when there are failed pushes, and retries
+ - 	them.
+ - Thread 8: merger
  - 	Waits for pushes to be received from remotes, and merges the
  - 	updated branches into the current branch. This uses inotify
  - 	on .git/refs/heads, so there are additional inotify threads
  - 	associated with it, too.
- - Thread 8: status logger
+ - Thread 9: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 9: sanity checker
+ - Thread 10: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
@@ -59,6 +62,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.Commits
+import Assistant.Pushes
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
@@ -85,8 +89,10 @@ startDaemon assistant foreground
 			liftIO $ a $ do
 				changechan <- newChangeChan
 				commitchan <- newCommitChan
+				pushchan <- newFailedPushChan
 				_ <- forkIO $ commitThread st changechan commitchan
-				_ <- forkIO $ pushThread st commitchan
+				_ <- forkIO $ pushThread st commitchan pushchan
+				_ <- forkIO $ pushRetryThread st pushchan
 				_ <- forkIO $ mergeThread st
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
