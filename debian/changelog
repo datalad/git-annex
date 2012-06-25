@@ -1,3 +1,9 @@
+git-annex (3.20120625) UNRELEASED; urgency=low
+
+  * cabal: Only try to use inotify on Linux.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 25 Jun 2012 11:38:12 -0400
+
 git-annex (3.20120624) unstable; urgency=low
 
   * watch: New subcommand, a daemon which notices changes to
