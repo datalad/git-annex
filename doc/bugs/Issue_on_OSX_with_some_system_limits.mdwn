@@ -15,3 +15,5 @@ Also this was appearing in the logs
     x00:annex jtang$ tail -f .git/annex/daemon.log
     (scanning...) Already up-to-date.
     kqueue: Too many open files
+
+To be precise, I suspect that the kqueue limit is 256, I had 325 files in the 'queue', I ended up doing a _git annex add_ manually and all was fine.
