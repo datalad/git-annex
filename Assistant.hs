@@ -59,11 +59,11 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.Commits
-import Assistant.Watcher
-import Assistant.Committer
-import Assistant.Pusher
-import Assistant.Merger
-import Assistant.SanityChecker
+import Assistant.Threads.Watcher
+import Assistant.Threads.Committer
+import Assistant.Threads.Pusher
+import Assistant.Threads.Merger
+import Assistant.Threads.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
 

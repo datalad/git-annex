@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Assistant.Watcher where
+module Assistant.Threads.Watcher where
 
 import Common.Annex
 import Assistant.ThreadedMonad

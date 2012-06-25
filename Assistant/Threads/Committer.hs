@@ -5,13 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Committer where
+module Assistant.Threads.Committer where
 
 import Common.Annex
 import Assistant.Changes
 import Assistant.Commits
 import Assistant.ThreadedMonad
-import Assistant.Watcher
+import Assistant.Threads.Watcher
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command

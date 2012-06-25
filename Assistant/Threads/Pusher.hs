@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Pusher where
+module Assistant.Threads.Pusher where
 
 import Common.Annex
 import Assistant.Commits

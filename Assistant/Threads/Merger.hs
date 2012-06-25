@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Merger where
+module Assistant.Threads.Merger where
 
 import Common.Annex
 import Assistant.ThreadedMonad

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.SanityChecker (
+module Assistant.Threads.SanityChecker (
 	sanityCheckerThread
 ) where
 
@@ -15,7 +15,7 @@ import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Changes
 import Utility.ThreadScheduler
-import qualified Assistant.Watcher
+import qualified Assistant.Threads.Watcher as Watcher
 
 import Data.Time.Clock.POSIX
 
@@ -79,5 +79,5 @@ check st status changechan = do
 		insanity m = runThreadState st $ warning m
 		addsymlink file s = do
 			insanity $ "found unstaged symlink: " ++ file
-			Assistant.Watcher.runHandler st status changechan
-				Assistant.Watcher.onAddSymlink file s
+			Watcher.runHandler st status changechan
+				Watcher.onAddSymlink file s
