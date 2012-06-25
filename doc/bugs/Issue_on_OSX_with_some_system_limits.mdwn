@@ -1,0 +1,11 @@
+I was dumping ~gigs of files of approximately 3-6megs a pop (my music collection) so I could track the files that I want to listen to when I'm on the go. I had the git watch command running from the assistant branch.
+
+I was getting something along the lines of...
+
+    /Users/jtang/annex/.git/annex/tmp/: openTempFile: resource exhausted (Too many open files)
+
+and
+
+    git-annex: createPipe: resource exhausted (Too many open files)
+
+I also noticed that I somehow ended up with 256 ssh-agent's running on one of my machines, I'm not sure if the two issues are related or not, I had not noticed this type of behaviour up until recently.
