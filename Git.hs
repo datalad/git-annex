@@ -19,6 +19,7 @@ module Git (
 	repoIsHttp,
 	repoIsLocal,
 	repoIsLocalBare,
+	repoIsLocalUnknown,
 	repoDescribe,
 	repoLocation,
 	repoPath,
@@ -98,6 +99,10 @@ repoIsLocal _ = False
 repoIsLocalBare :: Repo -> Bool
 repoIsLocalBare Repo { location = Local { worktree = Nothing } } = True
 repoIsLocalBare _ = False
+
+repoIsLocalUnknown :: Repo -> Bool
+repoIsLocalUnknown Repo { location = LocalUnknown { } } = True
+repoIsLocalUnknown _ = False
 
 assertLocal :: Repo -> a -> a
 assertLocal repo action
