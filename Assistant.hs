@@ -53,6 +53,9 @@
  - CommitChan: (STM TChan)
  - 	Commits are indicated by writing to this channel. The pusher reads
  - 	from it.
+ - FailedPushMap (STM TMVar)
+ - 	Failed pushes are indicated by writing to this TMVar. The push
+ - 	retrier blocks until they're available.
  -}
 
 module Assistant where
@@ -89,10 +92,10 @@ startDaemon assistant foreground
 			liftIO $ a $ do
 				changechan <- newChangeChan
 				commitchan <- newCommitChan
-				pushchan <- newFailedPushChan
+				pushmap <- newFailedPushMap
 				_ <- forkIO $ commitThread st changechan commitchan
-				_ <- forkIO $ pushThread st commitchan pushchan
-				_ <- forkIO $ pushRetryThread st pushchan
+				_ <- forkIO $ pushThread st commitchan pushmap
+				_ <- forkIO $ pushRetryThread st pushmap
 				_ <- forkIO $ mergeThread st
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan

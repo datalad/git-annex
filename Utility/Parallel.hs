@@ -10,11 +10,13 @@ module Utility.Parallel where
 import Common
 
 {- Runs an action in parallel with a set of values.
- - Returns values that caused the action to fail. -}
-inParallel :: (v -> IO ()) -> [v] -> IO [v]
+ - Returns the values partitioned into ones with which the action succeeded,
+ - and ones with which it failed. -}
+inParallel :: (v -> IO ()) -> [v] -> IO ([v], [v])
 inParallel a l = do
 	pids <- mapM (forkProcess . a) l
 	statuses <- mapM (getProcessStatus True False) pids
-	return $ map fst $ filter (failed . snd) $ zip l statuses
+	return $ reduce $ partition (succeeded . snd) $ zip l statuses
 	where
-		failed v = v /= Just (Exited ExitSuccess)
+		succeeded v = v == Just (Exited ExitSuccess)
+		reduce (x,y) = (map fst x, map fst y)
