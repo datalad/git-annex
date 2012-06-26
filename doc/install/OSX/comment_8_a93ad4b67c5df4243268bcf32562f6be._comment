@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwR9uOA38yi5kEUvcEWNtRiZwpxXskayE"
+ nickname="Agustin"
+ subject="Installation not working on OS X 10.6.8"
+ date="2012-06-25T02:21:40Z"
+ content="""
+I try installing with brew because I already had brew setup in my machine, but all run ok but when I try to run cabal install git-annex I got an error with the hinotify-0.3.2 library complaining about a header file.
+
+Full trace:
+
+~~~
+sudo cabal install git-annex
+Resolving dependencies...
+Configuring hinotify-0.3.2...
+Building hinotify-0.3.2...
+Preprocessing library hinotify-0.3.2...
+INotify.hsc:35:25: error: sys/inotify.h: No such file or directory
+INotify.hsc: In function ‘main’:
+INotify.hsc:259: error: invalid use of undefined type ‘struct inotify_event’
+INotify.hsc:260: error: invalid use of undefined type ‘struct inotify_event’
+INotify.hsc:261: error: invalid use of undefined type ‘struct inotify_event’
+INotify.hsc:262: error: invalid use of undefined type ‘struct inotify_event’
+INotify.hsc:265: error: invalid use of undefined type ‘struct inotify_event’
+INotify.hsc:266: error: invalid application of ‘sizeof’ to incomplete type ‘struct inotify_event’ 
+compiling dist/build/System/INotify_hsc_make.c failed (exit code 1)
+command was: /usr/bin/gcc -c dist/build/System/INotify_hsc_make.c -o dist/build/System/INotify_hsc_make.o -m64 -fno-stack-protector -m64 -D__GLASGOW_HASKELL__=704 -Ddarwin_BUILD_OS -Ddarwin_HOST_OS -Dx86_64_BUILD_ARCH -Dx86_64_HOST_ARCH -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/directory-1.1.0.2/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/unix-2.5.1.0/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/old-time-1.1.0.0/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/bytestring-0.9.2.1/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/base-4.5.0.0/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/include -Idist/build/autogen -include dist/build/autogen/cabal_macros.h -I/usr/local/Cellar/ghc/7.4.1/lib/ghc-7.4.1/include/
+cabal: Error: some packages failed to install:
+git-annex-3.20120624 depends on hinotify-0.3.2 which failed to install.
+hinotify-0.3.2 failed during the building phase. The exception was:
+ExitFailure 1
+~~~
+
+Anyone has an idea how can I solve this.
+
+Thanks for the time!
+
+Agustin
+
+"""]]
