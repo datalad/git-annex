@@ -8,29 +8,30 @@
 module Assistant.Pushes where
 
 import Common.Annex
-import Utility.TSet
+import Control.Concurrent.SampleVar
 
 import Data.Time.Clock
+import qualified Data.Map as M
 
-type FailedPushChan = TSet FailedPush
-
-data FailedPush = FailedPush
-        { failedRemote :: Remote
-        , failedTimeStamp :: UTCTime
-        }
+{- Track the most recent push failure for each remote. -}
+type PushMap = M.Map Remote UTCTime
+type FailedPushes = SampleVar PushMap
 
 newFailedPushChan :: IO FailedPushChan
-newFailedPushChan = newTSet
+newFailedPushChan = newEmptySampleVar
 
-{- Gets all failed pushes. Blocks until there is at least one failed push. -}
-getFailedPushes :: FailedPushChan -> IO [FailedPush]
-getFailedPushes = getTSet
+{- Gets all failed pushes. Blocks until set. -}
+getFailedPushes :: FailedPushChan -> IO PushMap
+getFailedPushes = readSampleVar
 
-{- Puts failed pushes back into the channel.
- - Note: Original order is not preserved. -}
-refillFailedPushes :: FailedPushChan -> [FailedPush] -> IO ()
-refillFailedPushes = putTSet
+{- Sets all failed pushes to passed PushMap -}
+setFailedPushes :: FailedPushChan -> PushMap -> IO ()
+setFailedPushes = writeSampleVar
 
-{- Records a failed push in the channel. -}
-recordFailedPush :: FailedPushChan -> FailedPush -> IO ()
-recordFailedPush = putTSet1
+{- Indicates a failure to push to a single remote. -}
+failedPush :: FailedPushChan -> Remote -> IO ()
+failedPush c r = 
+
+{- Indicates that a remote was pushed to successfully. -}
+successfulPush :: FailedPushChan -> Remote -> IO ()
+successfulPush c r = 
