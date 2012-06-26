@@ -75,7 +75,7 @@ byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
 	where
-		handle [] = Left $ "there is no git remote named \"" ++ n ++ "\""
+		handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
 		handle match = Right $ Prelude.head match
 		matching r = n == name r || toUUID n == uuid r
 
