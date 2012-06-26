@@ -11,6 +11,7 @@ import Common.Annex
 import Assistant.Commits
 import Assistant.Pushes
 import Assistant.ThreadedMonad
+import Assistant.Threads.Merger
 import qualified Command.Sync
 import Utility.ThreadScheduler
 import Utility.Parallel
@@ -68,11 +69,19 @@ pushToRemotes :: UTCTime -> ThreadState -> FailedPushChan -> [Remote] -> IO ()
 pushToRemotes now st pushchan remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> Command.Sync.currentBranch
-	Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-	failed <- map (`FailedPush` now) <$> inParallel (push g branch) remotes
-	unless (null failed) $
-		refillFailedPushes pushchan failed
+	go True branch g remotes
 	where
+		go shouldretry branch g rs = do
+			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+			failed <- inParallel (push g branch) rs
+			unless (null failed) $
+				if shouldretry
+					then retry branch g rs
+					else refillFailedPushes pushchan $
+						map (`FailedPush` now) failed
 		push g branch remote =
 			ifM (Command.Sync.pushBranch remote branch g)
 				( exitSuccess, exitFailure)
+		retry branch g rs = do
+			runThreadState st $ manualPull branch rs
+			go False branch g rs

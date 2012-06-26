@@ -70,3 +70,11 @@ onAdd g file _
 
 mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
 mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
+
+{- Manually pull from remotes and merge their branches. Called by the pusher
+ - when a push fails, which can happen due to a remote not having pushed
+ - changes to us. That could be because it doesn't have us as a remote, or
+ - because the assistant is not running there, or other reasons. -}
+manualPull :: Git.Ref -> [Remote] -> Annex ()
+manualPull currentbranch remotes = forM_ remotes $ \r ->
+	Command.Sync.mergeRemote r currentbranch
