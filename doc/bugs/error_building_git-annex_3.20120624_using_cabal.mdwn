@@ -1,4 +1,3 @@
-What steps will reproduce the problem?
 I am trying to install git-annex 3.20120624 using cabal.  My currently installed version of git-annex is 3.20120615.  After a "cabal update", the build of git-annex fails:
 
     bram@falafel% cabal install git-annex
