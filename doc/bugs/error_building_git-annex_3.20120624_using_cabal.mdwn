@@ -152,3 +152,8 @@ I am trying to install git-annex 3.20120624 using cabal.  My currently installed
     ExitFailure 1
 
 This is using haskell-platform 2012.1.0.0~debian1 on Ubuntu 12.04.
+
+> Turns out it needs version 2.3 of the STM library. (libghc-stm-dev
+> package). I've made cabal detect an older version and skip building
+> the new `git annex watch` command, so you'll be able to build the next
+> release. [[done]] --[[Joey]]

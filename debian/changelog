@@ -1,6 +1,8 @@
 git-annex (3.20120625) UNRELEASED; urgency=low
 
   * cabal: Only try to use inotify on Linux.
+  * Version build dependency on STM, and allow building without it,
+    which disables the watch command.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Jun 2012 11:38:12 -0400
 

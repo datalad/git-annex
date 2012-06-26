@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module GitAnnex where
 
 import System.Console.GetOpt
@@ -58,7 +60,9 @@ import qualified Command.Import
 import qualified Command.Map
 import qualified Command.Upgrade
 import qualified Command.Version
+#ifdef WITH_ASSISTANT
 import qualified Command.Watch
+#endif
 
 cmds :: [Command]
 cmds = concat
@@ -100,7 +104,9 @@ cmds = concat
 	, Command.Map.def
 	, Command.Upgrade.def
 	, Command.Version.def
+#ifdef WITH_ASSISTANT
 	, Command.Watch.def
+#endif
 	]
 
 options :: [Option]
