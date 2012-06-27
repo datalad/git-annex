@@ -251,11 +251,11 @@ mergeFile file key
 	| doubleconflict = go $ show key
 	| otherwise = go $ shortHash $ show key
 	where
-		vermarker = ".version-"
+		varmarker = ".variant-"
 		doubleconflict = vermarker `isSuffixOf` (dropExtension file)
 		go v = takeDirectory file
 			</> dropExtension (takeFileName file)
-			++ vermarker ++ v
+			++ varmarker ++ v
 			++ takeExtension file
 		
 shortHash :: String -> String
