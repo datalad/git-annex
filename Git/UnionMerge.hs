@@ -10,8 +10,7 @@ module Git.UnionMerge (
 	mergeIndex
 ) where
 
-import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.Encoding as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 
 import Common
@@ -79,10 +78,14 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 		=<< calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
-		getcontents s = map L.unpack . L.lines .
-			L.decodeUtf8 <$> catObject h s
 		use sha = return $ Just $
 			updateIndexLine sha FileBlob $ asTopFilePath file
+		-- We don't know how the file is encoded, but need to
+		-- split it into lines to union merge. Using the
+		-- FileSystemEncoding for this is a hack, but ensures there
+		-- are no decoding errors. Note that this works because
+		-- streamUpdateIndex sets fileEncoding on its write handle.
+		getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -

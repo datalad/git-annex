@@ -54,6 +54,10 @@ read' repo = go repo
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
 hRead repo h = do
+	-- We use the FileSystemEncoding when reading from git-config,
+	-- because it can contain arbitrary filepaths (and other strings)
+	-- in any encoding.
+	fileEncoding h
 	val <- hGetContentsStrict h
 	store val repo
 

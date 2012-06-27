@@ -1,0 +1,34 @@
+What steps will reproduce the problem?
+
+    alip@hayalet /tmp/aaa (git)-[master] % git annex init aaa
+    init aaa ok
+    (Recording state in git...)
+    alip@hayalet /tmp/aaa (git)-[master] % git remote add çüş /tmp/çüş
+    alip@hayalet /tmp/aaa (git)-[master] % git annex sync --debug
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","symbolic-ref","HEAD"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","show-ref","git-annex"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","show-ref","--hash","refs/heads/git-annex"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","log","refs/heads/git-annex..bc45cd9c2cb7c9b0c7a12a4c0210fe6a262abac9","--oneline","-n1"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","log","refs/heads/git-annex..9220bfedd1e13b2d791c918e2d59901af353825f","--oneline","-n1"]
+    (merging origin/git-annex into git-annex...)
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","cat-file","--batch"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","update-index","-z","--index-info"]
+    git ["--git-dir=/tmp/aaa/.git","--work-tree=/tmp/aaa","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","9220bfedd1e13b2d791c918e2d59901af353825f"]
+    git-annex: Cannot decode byte '\xfc': Data.Text.Encoding.decodeUtf8: Invalid UTF-8 stream
+    1 alip@hayalet /tmp/aaa (git)-[master] % 
+
+What is the expected output? What do you see instead?
+
+Syncing a repository under a path with utf-8 characters in its name fails.
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 3.20120624
+
+On Exherbo, linux-3.4
+
+Please provide any additional information below.
+
+'\xfc' is valid UTF-8: 'LATIN SMALL LETTER U WITH DIAERESIS'
+
+> closing as non-reproducible and presumably fixed. [[done]] --[[Joey]] 

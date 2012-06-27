@@ -135,6 +135,11 @@ subdirectories).
   commands to do each of those steps by hand, or if you don't want to
   worry about the details, you can use sync.
 
+  Merge conflicts are automatically resolved by sync. When two conflicting
+  versions of a file have been committed, both will be added to the tree,
+  under different filenames. For example, file "foo" would be replaced
+  with "foo.somekey" and "foo.otherkey".
+
   Note that syncing with a remote will not update the remote's working
   tree with changes made to the local repository. However, those changes
   are pushed to the remote, so can be merged into its working tree
