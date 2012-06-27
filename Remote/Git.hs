@@ -43,7 +43,7 @@ list :: Annex [Git.Repo]
 list = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< fromRepo Git.remotes
-	catMaybes <$> mapM configread rs
+	mapM configread rs
 	where
 		annexurl n = "remote." ++ n ++ ".annexurl"
 		tweakurl c r = do
@@ -61,16 +61,11 @@ list = do
 		configread r = do
 			notignored <- repoNotIgnored r
 			u <- getRepoUUID r
-			r' <- case (repoCheap r, notignored, u) of
+			case (repoCheap r, notignored, u) of
 				(_, False, _) -> return r
 				(True, _, _) -> tryGitConfigRead r
 				(False, _, NoUUID) -> tryGitConfigRead r
 				_ -> return r
-			{- A repo with a LocalUnknown location is not currently
-			 - accessible, so skip it. -}
-			if Git.repoIsLocalUnknown r'
-				then return Nothing
-				else return $ Just r'
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
@@ -94,6 +89,21 @@ gen r u _ = new <$> remoteCost r defcst
 			repo = r,
 			remotetype = remote
 		}
+
+{- Checks relatively inexpensively if a repository is available for use. -}
+repoAvail :: Git.Repo -> Annex Bool
+repoAvail r 
+	| Git.repoIsHttp r = return True
+	| Git.repoIsUrl r = return True
+	| Git.repoIsLocalUnknown r = return False
+	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
+
+{- Avoids performing an action on a local repository that's not usable.
+ - Does not check that the repository is still available on disk. -}
+guardUsable :: Git.Repo -> a -> Annex a -> Annex a
+guardUsable r onerr a
+	| Git.repoIsLocalUnknown r = return onerr
+	| otherwise = a
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
@@ -166,7 +176,7 @@ inAnnex r key
 				dispatch ExitSuccess = Right True
 				dispatch (ExitFailure 1) = Right False
 				dispatch _ = unknown
-		checklocal = dispatch <$> check
+		checklocal = guardUsable r unknown $ dispatch <$> check
 			where
 				check = liftIO $ catchMsgIO $ onLocal r $
 					Annex.Content.inAnnexSafe key
@@ -174,13 +184,6 @@ inAnnex r key
 				dispatch (Right (Just b)) = Right b
 				dispatch (Right Nothing) = unknown
 		unknown = Left $ "unable to check " ++ Git.repoDescribe r
-
-{- Checks inexpensively if a repository is available for use. -}
-repoAvail :: Git.Repo -> Annex Bool
-repoAvail r 
-	| Git.repoIsHttp r = return True
-	| Git.repoIsUrl r = return True
-	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}
@@ -200,14 +203,15 @@ keyUrls r key = map tourl (annexLocations key)
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
-	| not $ Git.repoIsUrl r = commitOnCleanup r $ liftIO $ onLocal r $ do
-		ensureInitialized
-		whenM (Annex.Content.inAnnex key) $ do
-			Annex.Content.lockContent key $
-				Annex.Content.removeAnnex key
-			Annex.Content.logStatus key InfoMissing
-			Annex.Content.saveState True
-		return True
+	| not $ Git.repoIsUrl r =
+		guardUsable r False $ commitOnCleanup r $ liftIO $ onLocal r $ do
+			ensureInitialized
+			whenM (Annex.Content.inAnnex key) $ do
+				Annex.Content.lockContent key $
+					Annex.Content.removeAnnex key
+				Annex.Content.logStatus key InfoMissing
+				Annex.Content.saveState True
+			return True
 	| Git.repoIsHttp r = error "dropping from http repo not supported"
 	| otherwise = commitOnCleanup r $ onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
@@ -217,7 +221,7 @@ dropKey r key
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemote r key file
-	| not $ Git.repoIsUrl r = do
+	| not $ Git.repoIsUrl r = guardUsable r False $ do
 		params <- rsyncParams r
 		loc <- liftIO $ gitAnnexLocation key r
 		rsyncOrCopyFile params loc file
@@ -227,7 +231,7 @@ copyFromRemote r key file
 
 copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
-	| not $ Git.repoIsUrl r = do
+	| not $ Git.repoIsUrl r = guardUsable r False $ do
 		loc <- liftIO $ gitAnnexLocation key r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh r =
@@ -240,7 +244,7 @@ copyFromRemoteCheap r key file
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> Annex Bool
 copyToRemote r key
-	| not $ Git.repoIsUrl r = commitOnCleanup r $ do
+	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
 		-- run copy from perspective of remote
