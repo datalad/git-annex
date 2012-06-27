@@ -195,19 +195,21 @@ resolveMerge = do
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool
 resolveMerge' u
-	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
-		keyUs <- getkey LsFiles.valUs
-		keyThem <- getkey LsFiles.valThem
-		if (keyUs == keyThem)
-			then makelink keyUs (file ++ "." ++ show keyUs)
-			else do
+	| issymlink LsFiles.valUs && issymlink LsFiles.valThem =
+		withKey LsFiles.valUs $ \keyUs ->
+		withKey LsFiles.valThem $ \keyThem -> go keyUs keyThem
+	| otherwise = return False
+	where
+		go keyUs keyThem
+			| keyUs == keyThem = do
+				makelink keyUs (file ++ "." ++ show keyUs)
+				return True
+			| otherwise = do
 				void $ liftIO $ tryIO $ removeFile file
 				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
 				makelink keyUs (file ++ "." ++ show keyUs)
 				makelink keyThem (file ++ "." ++ show keyThem)
-		return True
-	| otherwise = return False
-	where
+				return True
 		file = LsFiles.unmergedFile u
 		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
 			[Just SymlinkBlob, Nothing]
@@ -216,12 +218,15 @@ resolveMerge' u
 			liftIO $ createSymbolicLink l f
 			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [f]
 		makelink _ _ = noop
-		getkey select = do
+		withKey select a = do
 			let msha = select $ LsFiles.unmergedSha u
 			case msha of
-				Nothing -> return Nothing
-				Just sha -> fileKey . takeFileName
-					. encodeW8 . L.unpack <$> catObject sha
+				Nothing -> a Nothing
+				Just sha -> do
+					key <- fileKey . takeFileName
+						. encodeW8 . L.unpack 
+						<$> catObject sha
+					maybe (return False) (a . Just) key
 				
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
