@@ -202,22 +202,23 @@ resolveMerge' u
 	where
 		go keyUs keyThem
 			| keyUs == keyThem = do
-				makelink keyUs (file ++ "." ++ show keyUs)
+				makelink keyUs
 				return True
 			| otherwise = do
 				void $ liftIO $ tryIO $ removeFile file
 				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
-				makelink keyUs (file ++ "." ++ show keyUs)
-				makelink keyThem (file ++ "." ++ show keyThem)
+				makelink keyUs
+				makelink keyThem
 				return True
 		file = LsFiles.unmergedFile u
 		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
 			[Just SymlinkBlob, Nothing]
-		makelink (Just key) f = do
-			l <- calcGitLink file key
-			liftIO $ createSymbolicLink l f
-			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [f]
-		makelink _ _ = noop
+		makelink (Just key) = do
+			let dest = file ++ "." ++ show key
+			l <- calcGitLink dest key
+			liftIO $ createSymbolicLink l dest
+			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
+		makelink _ = noop
 		withKey select a = do
 			let msha = select $ LsFiles.unmergedSha u
 			case msha of
