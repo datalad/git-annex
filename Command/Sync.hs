@@ -155,10 +155,30 @@ mergeAnnex = do
 	Annex.Branch.forceUpdate
 	stop
 
-mergeFrom :: Git.Ref -> CommandCleanup
+mergeFrom :: Git.Ref -> Annex Bool
 mergeFrom branch = do
 	showOutput
-	inRepo $ Git.Merge.mergeNonInteractive branch
+	ok <- inRepo $ Git.Merge.mergeNonInteractive branch
+	if ok
+		then return ok
+		else resolveMerge
+
+{- Resolves a conflicted merge. It's important that any conflicts be
+ - resolved in a way that itself avoids later merge conflicts, since
+ - multiple repositories may be doing this concurrently.
+ -
+ - Only annexed files are resolved; other files are left for the user to
+ - handle.
+ -
+ - This uses the Keys pointed to by the files to construct new
+ - filenames. So a conflicted merge of file foo will delete it,
+ - and add files foo.KEYA and foo.KEYB. 
+ -
+ - A conflict can also result due to 
+ -}
+resolveMerge :: Annex Bool
+resolveMerge = do
+	
 
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
