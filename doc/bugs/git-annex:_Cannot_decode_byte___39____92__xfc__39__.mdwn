@@ -30,3 +30,5 @@ On Exherbo, linux-3.4
 Please provide any additional information below.
 
 '\xfc' is valid UTF-8: 'LATIN SMALL LETTER U WITH DIAERESIS'
+
+> closing as non-reproducible and presumably fixed. [[done]] --[[Joey]] 
