@@ -30,6 +30,7 @@ import qualified Remote.Git
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import Data.Hash.MD5
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -191,7 +192,7 @@ resolveMerge = do
 	when merged $ do
 		Annex.Queue.flush
 		void $ inRepo $ Git.Command.runBool "commit"
-			[Param "-m", Param "git-annex automatic merge resolution"]
+			[Param "-m", Param "git-annex automatic merge conflict fix"]
 	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool
@@ -206,7 +207,7 @@ resolveMerge' u
 				makelink keyUs
 				return True
 			| otherwise = do
-				void $ liftIO $ tryIO $ removeFile file
+				liftIO $ nukeFile file
 				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
 				makelink keyUs
 				makelink keyThem
@@ -215,9 +216,11 @@ resolveMerge' u
 		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
 			[Just SymlinkBlob, Nothing]
 		makelink (Just key) = do
-			let dest = file ++ "." ++ show key
+			let dest = mergeFile file key
 			l <- calcGitLink dest key
-			liftIO $ createSymbolicLink l dest
+			liftIO $ do
+				nukeFile dest
+				createSymbolicLink l dest
 			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
 		makelink _ = noop
 		withKey select a = do
@@ -229,7 +232,35 @@ resolveMerge' u
 						. encodeW8 . L.unpack 
 						<$> catObject sha
 					maybe (return False) (a . Just) key
-				
+
+{- The filename to use when resolving a conflicted merge of a file,
+ - that points to a key.
+ -
+ - Something derived from the key needs to be included in the filename,
+ - but rather than exposing the whole key to the user, a very weak hash
+ - is used. There is a very real, although still unlikely, chance of
+ - conflicts using this hash.
+ -
+ - In the event that there is a conflict with the filename generated
+ - for some other key, that conflict will itself be handled by the
+ - conflicted merge resolution code. That case is detected, and the full
+ - key is used in the filename.
+ -}
+mergeFile :: FilePath -> Key -> FilePath
+mergeFile file key
+	| doubleconflict = go $ show key
+	| otherwise = go $ shortHash $ show key
+	where
+		vermarker = ".version-"
+		doubleconflict = vermarker `isSuffixOf` (dropExtension file)
+		go v = takeDirectory file
+			</> dropExtension (takeFileName file)
+			++ vermarker ++ v
+			++ takeExtension file
+		
+shortHash :: String -> String
+shortHash = take 4 . md5s . encodeFilePath
+
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
 	let r = remoteBranch remote b
