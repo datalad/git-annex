@@ -15,15 +15,21 @@ import Command
 import qualified Remote
 import qualified Annex
 import qualified Annex.Branch
+import qualified Annex.Queue
+import Annex.Content
+import Annex.CatFile
 import qualified Git.Command
+import qualified Git.LsFiles as LsFiles
 import qualified Git.Merge
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git
+import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -161,7 +167,11 @@ mergeFrom branch = do
 	ok <- inRepo $ Git.Merge.mergeNonInteractive branch
 	if ok
 		then return ok
-		else resolveMerge
+		else do
+			merged <- resolveMerge
+			when merged $
+				showNote "merge conflict automatically resolved"
+			return merged
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
@@ -171,15 +181,48 @@ mergeFrom branch = do
  - handle.
  -
  - This uses the Keys pointed to by the files to construct new
- - filenames. So a conflicted merge of file foo will delete it,
- - and add files foo.KEYA and foo.KEYB. 
+ - filenames. So when both sides modified file foo, 
+ - it will be deleted, and replaced with files foo.KEYA and foo.KEYB.
  -
- - A conflict can also result due to 
+ - On the other hand, when one side deleted foo, and the other modified it,
+ - it will be deleted, and the modified version stored as file
+ - foo.KEYA (or KEYB).
  -}
 resolveMerge :: Annex Bool
 resolveMerge = do
-	
+	top <- fromRepo Git.repoPath
+	all id <$> (mapM resolveMerge' =<< inRepo (LsFiles.unmerged [top]))
 
+resolveMerge' :: LsFiles.Unmerged -> Annex Bool
+resolveMerge' u
+	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
+		keyUs <- getkey LsFiles.valUs
+		keyThem <- getkey LsFiles.valThem
+		if (keyUs == keyThem)
+			then makelink keyUs (file ++ "." ++ show keyUs)
+			else do
+				void $ liftIO $ tryIO $ removeFile file
+				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+				makelink keyUs (file ++ "." ++ show keyUs)
+				makelink keyThem (file ++ "." ++ show keyThem)
+		return True
+	| otherwise = return False
+	where
+		file = LsFiles.unmergedFile u
+		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
+			[Just SymlinkBlob, Nothing]
+		makelink (Just key) f = do
+			l <- calcGitLink file key
+			liftIO $ createSymbolicLink l f
+			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [f]
+		makelink _ _ = noop
+		getkey select = do
+			let msha = select $ LsFiles.unmergedSha u
+			case msha of
+				Nothing -> return Nothing
+				Just sha -> fileKey . takeFileName
+					. encodeW8 . L.unpack <$> catObject sha
+				
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
 	let r = remoteBranch remote b

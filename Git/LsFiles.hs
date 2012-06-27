@@ -88,9 +88,6 @@ data Conflicting v = Conflicting
 	, valThem :: Maybe v
 	} deriving (Show)
 
-isConflicting :: Eq a => Conflicting a -> Bool
-isConflicting (Conflicting a b) = a /= b
-
 data Unmerged = Unmerged
 	{ unmergedFile :: FilePath
 	, unmergedBlobType :: Conflicting BlobType
@@ -124,7 +121,7 @@ parseUnmerged :: String -> Maybe InternalUnmerged
 parseUnmerged s
 	| null file || length ws < 3 = Nothing
 	| otherwise = do
-		stage <- readish (ws !! 2)
+		stage <- readish (ws !! 2) :: Maybe Int
 		unless (stage == 2 || stage == 3) $
 			fail undefined -- skip stage 1
 		blobtype <- readBlobType (ws !! 0)
@@ -148,9 +145,9 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
 			, unmergedSha = Conflicting shaA shaB
 			}
 		findsib templatei [] = ([], deleted templatei)
-		findsib templatei (i:is)
-			| ifile i == ifile templatei = (is, i)
-			| otherwise = (i:is, deleted templatei)
+		findsib templatei (l:ls)
+			| ifile l == ifile templatei = (ls, l)
+			| otherwise = (l:ls, deleted templatei)
 		deleted templatei = templatei
 			{ isus = not (isus templatei)
 			, iblobtype = Nothing

@@ -9,6 +9,7 @@ git-annex (3.20120625) UNRELEASED; urgency=low
   * Accept arbitrarily encoded repository filepaths etc when reading
     git config output. This fixes support for remotes with unusual characters
     in their names.
+  * sync: Automatically resolves merge conflicts.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Jun 2012 11:38:12 -0400
 
