@@ -51,9 +51,9 @@ code, and make `git annex sync` use it. Here's how it looks:
 	nothing to commit (working directory clean)
 	ok
 	merge synced/master 
-	CONFLICT (modify/delete): passwd deleted in refs/heads/synced/master and modified in HEAD. Version HEAD of passwd left in tree.
+	CONFLICT (modify/delete): bar.png deleted in refs/heads/synced/master and modified in HEAD. Version HEAD of bar.png left in tree.
 	Automatic merge failed; fix conflicts and then commit the result.
-	passwd: needs merge
+	bar.png: needs merge
 	(Recording state in git...)
 	[master 0354a67] git-annex automatic merge conflict fix
 	ok
