@@ -13,6 +13,9 @@ module Git.LsFiles (
 	changedUnstaged,
 	typeChanged,
 	typeChangedStaged,
+	Conflicting(..),
+	Unmerged(..),
+	unmerged,
 ) where
 
 import Common
@@ -78,25 +81,75 @@ typeChanged' ps l repo = do
 		prefix = [Params "diff --name-only --diff-filter=T -z"]
 		suffix = Param "--" : map File l
 
+{- A item in conflict has two possible values.
+ - Either can be Nothing, when that side deleted the file. -}
+data Conflicting v = Conflicting
+	{ valUs :: Maybe v
+	, valThem :: Maybe v
+	} deriving (Show)
+
 data Unmerged = Unmerged
 	{ unmergedFile :: FilePath
-	, unmergedBlobType :: BlobType
-	, unmergedSha :: Sha
-	}
+	, unmergedBlobType :: Conflicting BlobType
+	, unmergedSha :: Conflicting Sha
+	} deriving (Show)
 
 {- Returns a list of the files in the specified locations that have
- - unresolved merge conflicts. Each unmerged file will have duplicates
- - in the list for each unmerged version (typically two). -}
+ - unresolved merge conflicts.
+ -
+ - ls-files outputs multiple lines per conflicting file, each with its own
+ - stage number:
+ -   1 = old version, can be ignored
+ -   2 = us
+ -   3 = them
+ - If a line is omitted, that side deleted the file.
+ -}
 unmerged :: [FilePath] -> Repo -> IO [Unmerged]
-unmerged l repo = catMaybes . map parse <$> list repo
+unmerged l repo = reduceUnmerged [] . catMaybes . map parseUnmerged <$> list repo
 	where
-		list = pipeNullSplit $ Params "ls-files --unmerged -z --" : map File l
-		parse s
-			| null file || length ws < 2 = Nothing
-			| otherwise = do
-				blobtype <- readBlobType (ws !! 0)
-				sha <- extractSha (ws !! 1)
-				return $ Unmerged file blobtype sha
-			where
-				(metadata, file) = separate (== '\t') s
-				ws = words metadata
+		files = map File l
+		list = pipeNullSplit $ Params "ls-files --unmerged -z --" : files
+
+data InternalUnmerged = InternalUnmerged
+	{ isus :: Bool
+	, ifile :: FilePath
+	, iblobtype :: Maybe BlobType
+	, isha :: Maybe Sha
+	} deriving (Show)
+
+parseUnmerged :: String -> Maybe InternalUnmerged
+parseUnmerged s
+	| null file || length ws < 3 = Nothing
+	| otherwise = do
+		stage <- readish (ws !! 2) :: Maybe Int
+		unless (stage == 2 || stage == 3) $
+			fail undefined -- skip stage 1
+		blobtype <- readBlobType (ws !! 0)
+		sha <- extractSha (ws !! 1)
+		return $ InternalUnmerged (stage == 2) file (Just blobtype) (Just sha)
+	where
+		(metadata, file) = separate (== '\t') s
+		ws = words metadata
+
+reduceUnmerged :: [Unmerged] -> [InternalUnmerged] -> [Unmerged]
+reduceUnmerged c [] = c
+reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
+	where
+		(rest, sibi) = findsib i is
+		(blobtypeA, blobtypeB, shaA, shaB)
+			| isus i    = (iblobtype i, iblobtype sibi, isha i, isha sibi)
+			| otherwise = (iblobtype sibi, iblobtype i, isha sibi, isha i)
+		new = Unmerged
+			{ unmergedFile = ifile i
+			, unmergedBlobType = Conflicting blobtypeA blobtypeB
+			, unmergedSha = Conflicting shaA shaB
+			}
+		findsib templatei [] = ([], deleted templatei)
+		findsib templatei (l:ls)
+			| ifile l == ifile templatei = (ls, l)
+			| otherwise = (l:ls, deleted templatei)
+		deleted templatei = templatei
+			{ isus = not (isus templatei)
+			, iblobtype = Nothing
+			, isha = Nothing
+			}
