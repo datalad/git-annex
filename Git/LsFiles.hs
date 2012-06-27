@@ -1,6 +1,6 @@
 {- git ls-files interface
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,8 @@ module Git.LsFiles (
 import Common
 import Git
 import Git.Command
+import Git.Types
+import Git.Sha
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO [FilePath]
@@ -75,3 +77,26 @@ typeChanged' ps l repo = do
 	where
 		prefix = [Params "diff --name-only --diff-filter=T -z"]
 		suffix = Param "--" : map File l
+
+data Unmerged = Unmerged
+	{ unmergedFile :: FilePath
+	, unmergedBlobType :: BlobType
+	, unmergedSha :: Sha
+	}
+
+{- Returns a list of the files in the specified locations that have
+ - unresolved merge conflicts. Each unmerged file will have duplicates
+ - in the list for each unmerged version (typically two). -}
+unmerged :: [FilePath] -> Repo -> IO [Unmerged]
+unmerged l repo = catMaybes . map parse <$> list repo
+	where
+		list = pipeNullSplit $ Params "ls-files --unmerged -z --" : map File l
+		parse s
+			| null file || length ws < 2 = Nothing
+			| otherwise = do
+				blobtype <- readBlobType (ws !! 0)
+				sha <- extractSha (ws !! 1)
+				return $ Unmerged file blobtype sha
+			where
+				(metadata, file) = separate (== '\t') s
+				ws = words metadata
