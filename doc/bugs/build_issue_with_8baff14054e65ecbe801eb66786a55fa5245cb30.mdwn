@@ -1,0 +1,11 @@
+Building commit 8baff14054e65ecbe801eb66786a55fa5245cb30 yields this...
+
+
+<pre>
+[164 of 189] Compiling Command.Sync ( Command/Sync.hs, tmp/Command/Sync.o )
+Command/Sync.hs:268:34:
+Not in scope: `vermarker'
+Perhaps you meant `varmarker' (line 267)
+make: *** [git-annex] Error 1
+</pre>
+
