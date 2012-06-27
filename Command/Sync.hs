@@ -167,11 +167,7 @@ mergeFrom branch = do
 	ok <- inRepo $ Git.Merge.mergeNonInteractive branch
 	if ok
 		then return ok
-		else do
-			merged <- resolveMerge
-			when merged $
-				showNote "merge conflict automatically resolved"
-			return merged
+		else resolveMerge
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
@@ -191,7 +187,12 @@ mergeFrom branch = do
 resolveMerge :: Annex Bool
 resolveMerge = do
 	top <- fromRepo Git.repoPath
-	all id <$> (mapM resolveMerge' =<< inRepo (LsFiles.unmerged [top]))
+	merged <- all id <$> (mapM resolveMerge' =<< inRepo (LsFiles.unmerged [top]))
+	when merged $ do
+		Annex.Queue.flush
+		void $ inRepo $ Git.Command.runBool "commit"
+			[Param "-m", Param "git-annex automatic merge resolution"]
+	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool
 resolveMerge' u
