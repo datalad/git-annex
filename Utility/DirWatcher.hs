@@ -20,6 +20,7 @@ import qualified System.INotify as INotify
 #endif
 #if WITH_KQUEUE
 import qualified Utility.Kqueue as Kqueue
+import Control.Concurrent
 #endif
 
 type Pruner = FilePath -> Bool
