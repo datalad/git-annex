@@ -46,7 +46,7 @@ needLsof = error $ unlines
 	]
 
 watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-watchThread st dstatus changechan = watchDir "." ignored hooks startup
+watchThread st dstatus changechan = void $ watchDir "." ignored hooks startup
 	where
 		startup = statupScan st dstatus
 		hook a = Just $ runHandler st dstatus changechan a

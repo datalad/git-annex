@@ -17,7 +17,6 @@ import Utility.Types.DirWatcher
 #if WITH_INOTIFY
 import qualified Utility.INotify as INotify
 import qualified System.INotify as INotify
-import Utility.ThreadScheduler
 #endif
 #if WITH_KQUEUE
 import qualified Utility.Kqueue as Kqueue
@@ -72,19 +71,41 @@ closingTracked = undefined
 #endif
 #endif
 
+/* Starts a watcher thread. The runStartup action is passed a scanner action
+ * to run, that will return once the initial directory scan is complete.
+ * Once runStartup returns, the watcher thread continues running,
+ * and processing events. Returns a DirWatcherHandle that can be used
+ * to shutdown later.  */
 #if WITH_INOTIFY
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO ()
-watchDir dir prune hooks runstartup = INotify.withINotify $ \i -> do
+type DirWatcherHandle = INotify.INotify
+watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
+watchDir dir prune hooks runstartup = do
+	i <- INotify.initINotify
 	runstartup $ INotify.watchDir i dir prune hooks
-	waitForTermination -- Let the inotify thread run.
+	return i
 #else
 #if WITH_KQUEUE
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO ()
+type DirWatcherHandle = ThreadID
+watchDir :: FilePath -> Pruner -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
 watchDir dir ignored hooks runstartup = do
 	kq <- runstartup $ Kqueue.initKqueue dir ignored
-	Kqueue.runHooks kq hooks
+	forkIO $ Kqueue.runHooks kq hooks
 #else
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO ()
+type DirWatcherHandle = ()
+watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
 watchDir = undefined
+#endif
+#endif
+
+#if WITH_INOTIFY
+stopWatchDir :: DirWatcherHandle -> IO ()
+stopWatchDir = INotify.killINotify
+#else
+#if WITH_KQUEUE
+stopWatchDir :: DirWatcherHandle -> IO ()
+stopWatchDir = killThread
+#else
+stopWatchDir :: DirWatcherHandle -> IO ()
+stopWatchDir = undefined
 #endif
 #endif

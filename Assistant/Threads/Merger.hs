@@ -35,7 +35,7 @@ mergeThread st = do
 		{ addHook = hook onAdd
 		, errHook = hook onErr
 		}
-	watchDir dir (const False) hooks id
+	void $ watchDir dir (const False) hooks id
 
 type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 

@@ -73,6 +73,7 @@ import Assistant.Threads.Merger
 import Assistant.Threads.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
+import Utility.ThreadScheduler
 
 import Control.Concurrent
 
@@ -99,8 +100,8 @@ startDaemon assistant foreground
 				_ <- forkIO $ mergeThread st
 				_ <- forkIO $ daemonStatusThread st dstatus
 				_ <- forkIO $ sanityCheckerThread st dstatus changechan
-				-- Does not return.
-				watchThread st dstatus changechan
+				_ <- forkIO $ watchThread st dstatus changechan
+				waitForTermination
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
