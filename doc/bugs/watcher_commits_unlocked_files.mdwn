@@ -1,0 +1,43 @@
+When having "git annex watch" running, unlocking files causes the watcher to immediately lock/commit them.  Observe:
+
+    bram@falafel% git annex unlock
+    unlock 01 - Crunchy Joe (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 02 - Get Busy Living (featuring Emily Bruce).flac (copying...) ok
+    unlock 03 - Show You How.flac (copying...) ok
+    unlock 04 - Call Me (featuring Monique Hellenberg).flac (copying...) ok
+    unlock 05 - Humbug (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 06 - Brush Your Hair.flac (copying...) ok
+    unlock 07 - We Come Together (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 08 - In Too Deep (featuring Emily Bruce).flac (copying...) ok
+    unlock 09 - My Rainbow.flac (copying...) ok
+    unlock 10 - Big Band Wolf.flac (copying...) ok
+    (Recording state in git...)
+    bram@falafel% ls -l 01\ -\ Crunchy\ Joe\ \(featuring\ Sakhile\ Moleshe\).flac 
+    lrwxrwxrwx 1 bram bram 208 Jul 18  2011 01 - Crunchy Joe (featuring Sakhile Moleshe).flac -> ../../.git/annex/objects/KX/15/SHA256E-s23981083--5ffd30042e313f8e10cf51ded59c369dd03a600fa3b8c13962f833694af449b5.flac/SHA256E-s23981083--5ffd30042e313f8e10cf51ded59c369dd03a600fa3b8c13962f833694af449b5.flac
+    bram@falafel% tail ~/Media/.git/annex/daemon.log 
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/04 - Call Me (featuring Monique Hellenberg).flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/03 - Show You How.flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/02 - Get Busy Living (featuring Emily Bruce).flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/10 - Big Band Wolf.flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/09 - My Rainbow.flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/08 - In Too Deep (featuring Emily Bruce).flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/07 - We Come Together (featuring Sakhile Moleshe).flac (checksum...) ok
+    add ./Uncategorized/Goldfish - Get Busy Living (2010)/06 - Brush Your Hair.flac (checksum...) ok
+    (Recording state in git...)
+    (Recording state in git...)
+    bram@falafel% git annex watch --stop
+    bram@falafel% git annex unlock
+    unlock 01 - Crunchy Joe (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 02 - Get Busy Living (featuring Emily Bruce).flac (copying...) ok
+    unlock 03 - Show You How.flac (copying...) ok
+    unlock 04 - Call Me (featuring Monique Hellenberg).flac (copying...) ok
+    unlock 05 - Humbug (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 06 - Brush Your Hair.flac (copying...) ok
+    unlock 07 - We Come Together (featuring Sakhile Moleshe).flac (copying...) ok
+    unlock 08 - In Too Deep (featuring Emily Bruce).flac (copying...) ok
+    unlock 09 - My Rainbow.flac (copying...) ok
+    unlock 10 - Big Band Wolf.flac (copying...) ok
+    bram@falafel% ls -l 01\ -\ Crunchy\ Joe\ \(featuring\ Sakhile\ Moleshe\).flac 
+    -rw-r--r-- 1 bram bram 23981083 Jul 18  2011 01 - Crunchy Joe (featuring Sakhile Moleshe).flac
+
+This is using git-annex 3.20120624 on Ubuntu, compiled with cabal (I upgraded my libghc-stm-dev package, as you mentioned in another bug, to get the watch command working on this version).
