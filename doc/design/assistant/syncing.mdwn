@@ -17,11 +17,17 @@ all the other git clones, at both the git level and the key/value level.
 1. Also, detect if a push failed due to not being up-to-date, pull,
    and repush. **done**
 2. Use a git merge driver that adds both conflicting files,
-   so conflicts never break a sync.
+   so conflicts never break a sync. **done**
 3. Investigate the XMPP approach like dvcs-autosync does, or other ways of
    signaling a change out of band.
 4. Add a hook, so when there's a change to sync, a program can be run
    and do its own signaling.
+
+## misc todo
+
+* --debug will show often unnecessary work being done. Optimise.
+* It would be nice if, when a USB drive is connected, 
+  syncing starts automatically. Use dbus on Linux?
 
 ## data syncing
 
@@ -40,9 +46,6 @@ and with appropriate rate limiting and control facilities.
 This probably will need lots of refinements to get working well.
 
 ## other considerations
-
-It would be nice if, when a USB drive is connected,
-syncing starts automatically. Use dbus on Linux?
 
 This assumes the network is connected. It's often not, so the
 [[cloud]] needs to be used to bridge between LANs.
