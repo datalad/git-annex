@@ -24,7 +24,7 @@ mergeThread st = do
 	g <- runThreadState st $ fromRepo id
 	let dir = Git.localGitDir g </> "refs" </> "heads" </> "synced"
 	createDirectoryIfMissing True dir
-	let hook a = Just $ runHandler g a
+	let hook a = Just $ runHandler st g a
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, errHook = hook onErr
@@ -32,21 +32,21 @@ mergeThread st = do
 	watchDir dir (const False) hooks id
 	where
 
-type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
+type Handler = ThreadState -> Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler g handler file filestatus = void $ do
+runHandler :: ThreadState -> Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st g handler file filestatus = void $ do
         either print (const noop) =<< tryIO go
         where
-                go = handler g file filestatus
+                go = handler st g file filestatus
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr _ msg _ = error msg
+onErr _ _ msg _ = error msg
 
 {- Called when a new branch ref is written.
  -
@@ -60,16 +60,21 @@ onErr _ msg _ = error msg
  - ran are merged in.
  -}
 onAdd :: Handler
-onAdd g file _
+onAdd st g file _
 	| ".lock" `isSuffixOf` file = noop
 	| otherwise = do
-		let branch = Git.Ref $ "refs" </> "heads" </> takeFileName file
+		let changedbranch = Git.Ref $
+			"refs" </> "heads" </> takeFileName file
 		current <- Git.Branch.current g
-		when (Just branch == current) $
-			void $ mergeBranch branch g
+		when (Just changedbranch == current) $
+			void $ mergeBranch st changedbranch g
 
-mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
-mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
+mergeBranch :: ThreadState -> Git.Ref -> Git.Repo -> IO Bool
+mergeBranch st branch repo = do
+	ok <- Git.Merge.mergeNonInteractive (Command.Sync.syncBranch branch) repo
+	if ok
+		then return ok
+		else runThreadState st Command.Sync.resolveMerge
 
 {- Manually pull from remotes and merge their branches. Called by the pusher
  - when a push fails, which can happen due to a remote not having pushed
