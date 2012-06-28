@@ -12,9 +12,11 @@ import Assistant.ThreadedMonad
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Git
+import qualified Git.Command
 import qualified Git.Merge
 import qualified Git.Branch
 import qualified Command.Sync
+import qualified Remote
 
 {- This thread watches for changes to .git/refs/heads/synced/*,
  - which indicate incoming pushes. It merges those pushes into the
@@ -81,5 +83,6 @@ mergeBranch st branch repo = do
  - changes to us. That could be because it doesn't have us as a remote, or
  - because the assistant is not running there, or other reasons. -}
 manualPull :: Git.Ref -> [Remote] -> Annex ()
-manualPull currentbranch remotes = forM_ remotes $ \r ->
+manualPull currentbranch remotes = forM_ remotes $ \r -> do
+	void $ inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
 	Command.Sync.mergeRemote r currentbranch
