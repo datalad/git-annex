@@ -125,6 +125,17 @@ Many races need to be dealt with by this code. Here are some of them.
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
 
+* Symlink appears, but is then deleted before it can be processed.
+
+  Leads to an ugly message, otherwise no problem:
+
+	./me: readSymbolicLink: does not exist (No such file or directory)
+
+  Here `me` is a file that was in a conflicted merge, which got
+  removed as part of the resolution. This is probably coming from the watcher
+  thread, which sees the newly added symlink (created by the git merge),
+  but finds it deleted (by the conflict resolver) by the time it processes it.
+
 ## done
 
 - on startup, add any files that have appeared since last run **done**
