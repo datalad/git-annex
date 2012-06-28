@@ -28,9 +28,6 @@ mergeThread st = do
 	let dir = Git.localGitDir g </> "refs" </> "heads" </> "synced"
 	createDirectoryIfMissing True dir
 	let hook a = Just $ runHandler g a
-	-- XXX: For reasons currently unknown, using the ThreadState
-	-- inside the watch hooks leads to a MVar deadlock.
-	-- Luckily, we don't currently need to do that.
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, errHook = hook onErr
