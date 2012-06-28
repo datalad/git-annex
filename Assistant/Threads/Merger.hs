@@ -11,6 +11,7 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import qualified Annex.Branch
 import qualified Git
 import qualified Git.Command
 import qualified Git.Merge
@@ -26,7 +27,10 @@ mergeThread st = do
 	g <- runThreadState st $ fromRepo id
 	let dir = Git.localGitDir g </> "refs" </> "heads" </> "synced"
 	createDirectoryIfMissing True dir
-	let hook a = Just $ runHandler st g a
+	let hook a = Just $ runHandler g a
+	-- XXX: For reasons currently unknown, using the ThreadState
+	-- inside the watch hooks leads to a MVar deadlock.
+	-- Luckily, we don't currently need to do that.
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, errHook = hook onErr
@@ -34,21 +38,21 @@ mergeThread st = do
 	watchDir dir (const False) hooks id
 	where
 
-type Handler = ThreadState -> Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
+type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: ThreadState -> Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st g handler file filestatus = void $ do
+runHandler :: Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler g handler file filestatus = void $ do
         either print (const noop) =<< tryIO go
         where
-                go = handler st g file filestatus
+                go = handler g file filestatus
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr _ _ msg _ = error msg
+onErr _ msg _ = error msg
 
 {- Called when a new branch ref is written.
  -
@@ -62,27 +66,26 @@ onErr _ _ msg _ = error msg
  - ran are merged in.
  -}
 onAdd :: Handler
-onAdd st g file _
+onAdd g file _
 	| ".lock" `isSuffixOf` file = noop
 	| otherwise = do
 		let changedbranch = Git.Ref $
 			"refs" </> "heads" </> takeFileName file
 		current <- Git.Branch.current g
 		when (Just changedbranch == current) $
-			void $ mergeBranch st changedbranch g
+			void $ mergeBranch changedbranch g
 
-mergeBranch :: ThreadState -> Git.Ref -> Git.Repo -> IO Bool
-mergeBranch st branch repo = do
-	ok <- Git.Merge.mergeNonInteractive (Command.Sync.syncBranch branch) repo
-	if ok
-		then return ok
-		else runThreadState st Command.Sync.resolveMerge
+mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
+mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
 
 {- Manually pull from remotes and merge their branches. Called by the pusher
  - when a push fails, which can happen due to a remote not having pushed
  - changes to us. That could be because it doesn't have us as a remote, or
  - because the assistant is not running there, or other reasons. -}
 manualPull :: Git.Ref -> [Remote] -> Annex ()
-manualPull currentbranch remotes = forM_ remotes $ \r -> do
-	void $ inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
-	Command.Sync.mergeRemote r currentbranch
+manualPull currentbranch remotes = do
+	forM_ remotes $ \r ->
+		inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
+	Annex.Branch.forceUpdate
+	forM_ remotes $ \r ->
+		Command.Sync.mergeRemote r currentbranch
