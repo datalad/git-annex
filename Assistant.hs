@@ -40,7 +40,7 @@
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
- - 	Annex monad in IO actions run by the inotify and committer
+ - 	Annex monad in IO actions run by the watcher and committer
  - 	threads. Thus, a single state is shared amoung the threads, and
  - 	only one at a time can access it.
  - DaemonStatusHandle: (MVar)

@@ -36,7 +36,6 @@ mergeThread st = do
 		, errHook = hook onErr
 		}
 	watchDir dir (const False) hooks id
-	where
 
 type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 
