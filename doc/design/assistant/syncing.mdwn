@@ -48,20 +48,24 @@ anyway.
 
 ### transfer tracking
 
-	data ToTransfer = ToUpload Key | ToDownload Key
-	type ToTransferChan = TChan [ToTransfer]
-
-* ToUpload added by the watcher thread when it adds content.
-* ToDownload added by the watcher thread when it seens new symlinks
+* Upload added to queue by the watcher thread when it adds content.
+* Download added to queue by the watcher thread when it seens new symlinks
   that lack content.
-
-Transfer threads started/stopped as necessary to move data.
-May sometimes want multiple threads downloading, or uploading, or even both.
+* Transfer threads started/stopped as necessary to move data.
+  (May sometimes want multiple threads downloading, or uploading, or even both.)
+	
+	type TransferQueue = TChan [Transfer]
+	data Transfer = Upload Key Remote | Download Key Remote
 
 	data TransferID = TransferThread ThreadID | TransferProcess Pid
-	data Direction = Uploading | Downloading
-	data Transfer = Transfer Direction Key TransferID EpochTime Integer
-	-- add [Transfer] to DaemonStatus
+	type AmountComplete = Integer
+	type StartedTime = EpochTime
+	data TransferInfo = TransferInfo TransferID StartedTime AmountComplete
+	-- add (M.Map Transfer TransferInfo) to DaemonStatus
+
+	startTransfer :: Transfer -> Annex TransferID
+
+	stopTransfer :: TransferID -> IO ()
 
 The assistant needs to find out when `git-annex-shell` is receiving or
 sending (triggered by another remote), so it can add data for those too.
