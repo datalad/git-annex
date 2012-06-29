@@ -46,6 +46,8 @@ reachable remote. This is worth doing first, since it's the simplest way to
 get the basic functionality of the assistant to work. And we'll need this
 anyway.
 
+### transfer tracking
+
 	data ToTransfer = ToUpload Key | ToDownload Key
 	type ToTransferChan = TChan [ToTransfer]
 
