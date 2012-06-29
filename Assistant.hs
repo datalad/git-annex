@@ -87,21 +87,24 @@ startDaemon assistant foreground
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
 	where
-		go a = withThreadState $ \st -> do
+		go daemonize = withThreadState $ \st -> do
 			checkCanWatch
 			dstatus <- startDaemonStatus
-			liftIO $ a $ do
-				changechan <- newChangeChan
-				commitchan <- newCommitChan
-				pushmap <- newFailedPushMap
-				_ <- forkIO $ commitThread st changechan commitchan
-				_ <- forkIO $ pushThread st commitchan pushmap
-				_ <- forkIO $ pushRetryThread st pushmap
-				_ <- forkIO $ mergeThread st
-				_ <- forkIO $ daemonStatusThread st dstatus
-				_ <- forkIO $ sanityCheckerThread st dstatus changechan
-				_ <- forkIO $ watchThread st dstatus changechan
-				waitForTermination
+			liftIO $ daemonize $ run dstatus st
+		run dstatus st = do
+			changechan <- newChangeChan
+			commitchan <- newCommitChan
+			pushmap <- newFailedPushMap
+			mapM_ (void . forkIO)
+				[ commitThread st changechan commitchan
+				, pushThread st commitchan pushmap
+				, pushRetryThread st pushmap
+				, mergeThread st
+				, daemonStatusThread st dstatus
+				, sanityCheckerThread st dstatus changechan
+				, watchThread st dstatus changechan
+				]
+			waitForTermination
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
