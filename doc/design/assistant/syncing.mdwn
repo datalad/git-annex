@@ -58,9 +58,9 @@ anyway.
 	data Transfer = Upload Key Remote | Download Key Remote
 
 	data TransferID = TransferThread ThreadID | TransferProcess Pid
-	type AmountComplete = Integer
+	type BytesComplete = Integer
 	type StartedTime = EpochTime
-	data TransferInfo = TransferInfo TransferID StartedTime AmountComplete
+	data TransferInfo = TransferInfo TransferID StartedTime BytesComplete
 	-- add (M.Map Transfer TransferInfo) to DaemonStatus
 
 	startTransfer :: Transfer -> Annex TransferID

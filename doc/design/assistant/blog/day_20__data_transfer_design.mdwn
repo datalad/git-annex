@@ -1,0 +1,51 @@
+Today is a planning day. I have only a few days left before I'm off to
+Nicaragua for [DebConf](http://debconf12.debconf.org/), where I'll only
+have smaller chunks of time without interruptions. So it's important to get
+some well-defined smallish chunks designed that I can work on later. See
+bulleted action items below. Each should be around 1-2 hours unless it
+turns out to be 8 hours... :)
+
+First, worked on writing down a design, and some data types, for data transfer
+tracking (see [[syncing]] page). Found that writing down these simple data
+types before I started slinging code has clarified things a lot for me.
+
+Most importantly, I realized that I will need to modify `git-annex-shell`
+to record on disk what transfers it's doing, so the assistant can get that
+information and use it to both avoid redundant transfers (potentially a big
+problem!), and later to allow the user to control them using the web app.
+
+So these will be the first steps as I move toward implementing data
+transfer tracking and naive flood fill transferring.
+
+* on-disk transfers in progress information files (read/write/enumerate)
+* locking for the files, so redundant transfer races can be detected,
+  and failed transfers noticed
+* update files as transfers proceed. See [[progressbars]]
+  (updating for downloads is easy; for uploads is hard)
+* add Transfer queue TChan
+* enqueue Transfers (Uploads) as new files are added to the annex by
+  Watcher.
+* enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
+  Watcher.
+* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
+* Poll transfer in progress info files for changes (use inotify again!
+  wow! hammer, meet nail..), and update the TransferInfo Map
+* Write basic Transfer handling thread. Multiple such threads need to be
+  able to be run at once. Each will need its own independant copy of the 
+  Annex state monad.
+* Write transfer control thread, which decides when to launch transfers.
+* At startup, and possibly periodically, look for files we have that
+  location tracking indicates remotes do not, and enqueue Uploads for
+  them. Also, enqueue Downloads for any files we're missing.
+
+While eventually the user will be able to use the web app to prioritize
+transfers, stop and start, throttle, etc, it's important to get the default
+behavior right. So I'm thinking about things like how to prioritize uploads
+vs downloads, when it's appropriate to have multiple downloads running at
+once, etc.
+
+* Find a way to probe available outgoing bandwidth, to throttle so
+  we don't bufferbloat the network to death.
+* git-annex needs a simple speed control knob, which can be plumbed
+  through to, at least, rsync. A good job for an hour in an
+  airport somewhere.
