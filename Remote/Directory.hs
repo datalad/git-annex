@@ -272,7 +272,7 @@ retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
 remove :: FilePath -> ChunkSize -> Key -> Annex Bool
 remove d chunksize k = liftIO $ withStoredFiles chunksize d k go
 	where
-		go files = all id <$> mapM removefile files
+		go = all id <$$> mapM removefile
 		removefile file = catchBoolIO $ do
 			let dir = parentDir file
 			allowWrite dir

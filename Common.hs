@@ -26,6 +26,7 @@ import Utility.SafeCommand as X
 import Utility.Path as X
 import Utility.Directory as X
 import Utility.Monad as X
+import Utility.Applicative as X
 import Utility.FileSystemEncoding as X
 
 import Utility.PartialPrelude as X

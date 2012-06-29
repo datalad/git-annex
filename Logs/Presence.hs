@@ -48,7 +48,7 @@ addLog file line = Annex.Branch.change file $ \s ->
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
 readLog :: FilePath -> Annex [LogLine]
-readLog file = parseLog <$> Annex.Branch.get file
+readLog = parseLog <$$> Annex.Branch.get
 
 {- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: String -> [LogLine]
