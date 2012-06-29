@@ -5,15 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module Assistant.ThreadedMonad where
 
 import Common.Annex
 import qualified Annex
 
 import Control.Concurrent
-import Control.Exception (throw)
+import Data.Tuple
 
 {- The Annex state is stored in a MVar, so that threaded actions can access
  - it. -}
@@ -37,11 +35,4 @@ withThreadState a = do
  - This serializes calls by threads; only one thread can run in Annex at a
  - time. -}
 runThreadState :: ThreadState -> Annex a -> IO a
-runThreadState mvar a = do
-	startstate <- takeMVar mvar
-	-- catch IO errors and rethrow after restoring the MVar
-	!(r, newstate) <- catchIO (Annex.run startstate a) $ \e -> do
-		putMVar mvar startstate
-		throw e
-	putMVar mvar newstate
-	return r
+runThreadState mvar a = modifyMVar mvar $ \state -> swap <$> Annex.run state a
