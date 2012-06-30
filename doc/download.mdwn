@@ -18,6 +18,7 @@ others need some manual work. See [[install]] for details.
 
 The git repository has some branches:
 
+* `assistant` contains the new change-tracking daemon
 * `ghc7.0` supports versions of ghc older than 7.4, which
   had a major change to filename encoding.
 * `old-monad-control` is for systems that don't have a newer monad-control
@@ -25,6 +26,7 @@ The git repository has some branches:
 * `no-ifelse` avoids using the IFelse library
   (merge it into master if you need it)
 * `no-bloom` avoids using bloom filters. (merge it into master if you need it)
+* `no-s3` avoids using the S3 library (merge it into master if you need it)
 * `debian-stable` contains the latest backport of git-annex to Debian
   stable.
 * `tweak-fetch` adds support for the git tweak-fetch hook, which has
