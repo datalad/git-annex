@@ -1,3 +1,10 @@
+git-annex (3.20120630) UNRELEASED; urgency=low
+
+  * get, move, copy: Now refuse to do anything when the requested file
+    transfer is already in progress by another process.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 01 Jul 2012 15:04:37 -0400
+
 git-annex (3.20120629) unstable; urgency=low
 
   * cabal: Only try to use inotify on Linux.
