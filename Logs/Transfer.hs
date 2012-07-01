@@ -1,4 +1,4 @@
-{- git-annex transfer log files
+{- git-annex transfer information files
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -16,7 +16,6 @@ import qualified Git
 
 import qualified Data.Map as M
 import Control.Concurrent
-import System.Posix.Process
 import System.Posix.Types
 import Data.Time.Clock
 
@@ -46,14 +45,20 @@ readDirection "upload" = Just Upload
 readDirection "download" = Just Download
 readDirection _ = Nothing
 
+upload :: Remote -> Key -> FilePath -> Annex a -> Annex a
+upload remote key file a = transfer (Transfer Upload remote key) (Just file) a
+
+download :: Remote -> Key -> FilePath -> Annex a -> Annex a
+download remote key file a = transfer (Transfer Download remote key) (Just file) a
+
 {- Runs a transfer action. Creates and locks the transfer information file
  - while the action is running. Will throw an error if the transfer is
  - already in progress.
  -}
 transfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
-transfer transfer file a = do
-	createAnnexDirectory =<< fromRepo gitAnnexTransferDir
-	tfile <- fromRepo $ transferFile transfer
+transfer t file a = do
+	tfile <- fromRepo $ transferFile t
+	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode
 	info <- liftIO $ TransferInfo
 		<$> pure Nothing -- pid not stored in file, so omitted for speed
@@ -61,16 +66,18 @@ transfer transfer file a = do
 		<*> getCurrentTime
 		<*> pure Nothing -- not 0; transfer may be resuming
 		<*> pure file
-	bracketIO (setup tfile mode info) (cleanup tfile) a
+	bracketIO (prep tfile mode info) (cleanup tfile) a
 	where
-		setup tfile mode info = do
+		prep tfile mode info = do
 			fd <- openFd tfile ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			when (locked == Nothing) $
 				error $ "transfer already in progress"
-			fdWrite fd $ writeTransferInfo info
+			h <- fdToHandle fd
+			hPutStr h $ writeTransferInfo info
+			hFlush h
 			return fd
 		cleanup tfile fd = do
 			removeFile tfile
@@ -78,9 +85,9 @@ transfer transfer file a = do
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
-checkTransfer transfer = do
+checkTransfer t = do
 	mode <- annexFileMode
-	tfile <- fromRepo $ transferFile transfer
+	tfile <- fromRepo $ transferFile t
 	mfd <- liftIO $ catchMaybeIO $
 		openFd tfile ReadOnly (Just mode) defaultFileFlags
 	case mfd of
@@ -93,9 +100,9 @@ checkTransfer transfer = do
 					liftIO $ closeFd fd
 					return Nothing
 				Just (pid, _) -> liftIO $ do
-					handle <- fdToHandle fd
+					h <- fdToHandle fd
 					info <- readTransferInfo pid
-						<$> hGetContentsStrict handle
+						<$> hGetContentsStrict h
 					closeFd fd
 					return info
 
@@ -114,32 +121,31 @@ getTransfers = do
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
-transferFile (Transfer direction remote key) repo = 
-	gitAnnexTransferDir repo 
-		</> show direction 
-		</> show (uuid remote) 
-		</> keyFile key
+transferFile (Transfer direction remote key) r = gitAnnexTransferDir r
+	</> show direction 
+	</> fromUUID (uuid remote) 
+	</> keyFile key
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: M.Map UUID Remote -> FilePath -> Maybe Transfer
 parseTransferFile uuidmap file = 
 	case drop (length bits - 3) bits of
-		[direction, uuid, key] -> Transfer
+		[direction, u, key] -> Transfer
 			<$> readDirection direction
-			<*> M.lookup (toUUID uuid) uuidmap
+			<*> M.lookup (toUUID u) uuidmap
 			<*> fileKey key
 		_ -> Nothing
 	where
 		bits = splitDirectories file
 
 writeTransferInfo :: TransferInfo -> String
-writeTransferInfo info = unwords
+writeTransferInfo info = unlines
 	-- transferPid is not included; instead obtained by looking at
 	-- the process that locks the file.
 	-- transferThread is not included; not relevant for other processes
 	[ show $ startedTime info
 	-- bytesComplete is not included; changes too fast 
-	, fromMaybe "" $ associatedFile info -- comes last, may contain spaces
+	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
 readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
@@ -153,7 +159,7 @@ readTransferInfo pid s =
 			<*> pure filename
 		_ -> Nothing
 	where
-		(bits, filebits) = splitAt 1 $ split " " s 
+		(bits, filebits) = splitAt 1 $ lines s 
 		filename
 			| null filebits = Nothing
-			| otherwise = Just $ join " " filebits
+			| otherwise = Just $ unlines filebits
