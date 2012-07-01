@@ -21,20 +21,25 @@ import Data.Time.Clock
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
-data Transfer = Transfer Direction Remote Key
-	deriving (Show)
+data Transfer = Transfer
+	{ transferDirection :: Direction
+	, transferRemote :: Remote
+	, transferKey :: Key
+	}
+	deriving (Show, Eq, Ord)
 
 {- Information about a Transfer, stored in the transfer information file. -}
 data TransferInfo = TransferInfo
-	{ transferPid :: Maybe ProcessID
+	{ startedTime :: UTCTime
+	, transferPid :: Maybe ProcessID
 	, transferThread :: Maybe ThreadId
-	, startedTime :: UTCTime
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
 	}
-	deriving (Show)
+	deriving (Show, Eq, Ord)
 
 data Direction = Upload | Download
+	deriving (Eq, Ord)
 
 instance Show Direction where
 	show Upload = "upload"
@@ -61,9 +66,9 @@ transfer t file a = do
 	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode
 	info <- liftIO $ TransferInfo
-		<$> pure Nothing -- pid not stored in file, so omitted for speed
+		<$> getCurrentTime
+		<*> pure Nothing -- pid not stored in file, so omitted for speed
 		<*> pure Nothing -- threadid not stored in file, so omitted for speed
-		<*> getCurrentTime
 		<*> pure Nothing -- not 0; transfer may be resuming
 		<*> pure file
 	bracketIO (prep tfile mode info) (cleanup tfile) a
@@ -103,7 +108,7 @@ checkTransfer t = do
 					h <- fdToHandle fd
 					info <- readTransferInfo pid
 						<$> hGetContentsStrict h
-					closeFd fd
+					hClose h
 					return info
 
 {- Gets all currently running transfers. -}
@@ -152,9 +157,9 @@ readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
 readTransferInfo pid s =
 	case bits of
 		[time] -> TransferInfo
-			<$> pure (Just pid)
+			<$> readish time
+			<*> pure (Just pid)
 			<*> pure Nothing
-			<*> readish time
 			<*> pure Nothing
 			<*> pure filename
 		_ -> Nothing
@@ -162,4 +167,4 @@ readTransferInfo pid s =
 		(bits, filebits) = splitAt 1 $ lines s 
 		filename
 			| null filebits = Nothing
-			| otherwise = Just $ unlines filebits
+			| otherwise = Just $ join "\n" filebits
