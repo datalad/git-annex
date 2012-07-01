@@ -18,6 +18,7 @@ module Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
+	gitAnnexTransferDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexIndex,
@@ -126,6 +127,11 @@ gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 {- .git/annex/foounused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
+
+{- .git/annex/transfer/ is used is used to record keys currently
+ - being transferred. -}
+gitAnnexTransferDir :: Git.Repo -> FilePath
+gitAnnexTransferDir r = addTrailingPathSeparator $ gitAnnexDir r </> "transfer"
 
 {- .git/annex/journal/ is used to journal changes made to the git-annex
  - branch -}
