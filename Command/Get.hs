@@ -65,7 +65,7 @@ getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
 			| Remote.hasKeyCheap r =
 				either (const False) id <$> Remote.hasKey r key
 			| otherwise = return True
-		docopy r continue = download r key file $ do
+		docopy r continue = download (Remote.uuid r) key (Just file) $ do
 			showAction $ "from " ++ Remote.name r
-			ifM (Remote.retrieveKeyFile r key dest)
+			ifM (Remote.retrieveKeyFile r key (Just file) dest)
 				( return True , continue)

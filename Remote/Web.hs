@@ -51,21 +51,21 @@ gen r _ _ =
 		remotetype = remote
 	}
 
-downloadKey :: Key -> FilePath -> Annex Bool
-downloadKey key file = get =<< getUrls key
+downloadKey :: Key -> AssociatedFile -> FilePath -> Annex Bool
+downloadKey key _file dest = get =<< getUrls key
 	where
 		get [] = do
 			warning "no known url"
 			return False
 		get urls = do
 			showOutput -- make way for download progress bar
-			downloadUrl urls file
+			downloadUrl urls dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
 
-uploadKey :: Key -> Annex Bool
-uploadKey _ = do
+uploadKey :: Key -> AssociatedFile -> Annex Bool
+uploadKey _ _ = do
 	warning "upload to web not supported"
 	return False
 

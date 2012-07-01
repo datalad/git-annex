@@ -31,6 +31,7 @@ import Logs.Trust
 import Remote
 import Config
 import Utility.Percentage
+import Logs.Transfer
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -70,6 +71,7 @@ fast_stats =
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
 	, remote_list DeadTrusted "dead"
+	, transfer_list
 	, disk_size
 	]
 slow_stats :: [Stat]
@@ -169,6 +171,24 @@ bloom_info = stat "bloom filter size" $ json id $ do
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
+
+transfer_list :: Stat
+transfer_list = stat "transfers in progress" $ nojson $ lift $ do
+	uuidmap <- Remote.remoteMap id
+	ts <- getTransfers
+	if null ts
+		then return "none"
+		else return $ pp uuidmap "" $ sort ts
+	where
+		pp _ c [] = c
+		pp uuidmap c ((t, i):xs) = "\n\t" ++ line uuidmap t i ++ pp uuidmap c xs
+		line uuidmap t i = unwords
+			[ show (transferDirection t) ++ "ing"
+			, fromMaybe (show $ transferKey t) (associatedFile i)
+			, if transferDirection t == Upload then "to" else "from"
+			, maybe (fromUUID $ transferRemote t) Remote.name $
+				M.lookup (transferRemote t) uuidmap
+			]
 
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $

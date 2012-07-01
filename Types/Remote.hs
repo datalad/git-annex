@@ -33,6 +33,9 @@ data RemoteTypeA a = RemoteType {
 instance Eq (RemoteTypeA a) where
 	x == y = typename x == typename y
 
+{- A filename associated with a Key, for display to user. -}
+type AssociatedFile = Maybe FilePath
+
 {- An individual remote. -}
 data RemoteA a = Remote {
 	-- each Remote has a unique uuid
@@ -42,9 +45,9 @@ data RemoteA a = Remote {
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Int,
 	-- Transfers a key to the remote.
-	storeKey :: Key -> a Bool,
+	storeKey :: Key -> AssociatedFile -> a Bool,
 	-- retrieves a key's contents to a file
-	retrieveKeyFile :: Key -> FilePath -> a Bool,
+	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> a Bool,
 	-- retrieves a key's contents to a tmp file, if it can be done cheaply
 	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
 	-- removes a key's contents

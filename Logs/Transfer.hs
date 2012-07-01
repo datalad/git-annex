@@ -8,13 +8,11 @@
 module Logs.Transfer where
 
 import Common.Annex
-import Types.Remote
-import Remote
 import Annex.Perms
 import Annex.Exception
 import qualified Git
+import Types.Remote
 
-import qualified Data.Map as M
 import Control.Concurrent
 import System.Posix.Types
 import Data.Time.Clock
@@ -23,7 +21,7 @@ import Data.Time.Clock
  - of the transfer information file. -}
 data Transfer = Transfer
 	{ transferDirection :: Direction
-	, transferRemote :: Remote
+	, transferRemote :: UUID
 	, transferKey :: Key
 	}
 	deriving (Show, Eq, Ord)
@@ -50,11 +48,11 @@ readDirection "upload" = Just Upload
 readDirection "download" = Just Download
 readDirection _ = Nothing
 
-upload :: Remote -> Key -> FilePath -> Annex a -> Annex a
-upload remote key file a = transfer (Transfer Upload remote key) (Just file) a
+upload :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
+upload u key file a = transfer (Transfer Upload u key) file a
 
-download :: Remote -> Key -> FilePath -> Annex a -> Annex a
-download remote key file a = transfer (Transfer Download remote key) (Just file) a
+download :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
+download u key file a = transfer (Transfer Download u key) file a
 
 {- Runs a transfer action. Creates and locks the transfer information file
  - while the action is running. Will throw an error if the transfer is
@@ -83,10 +81,10 @@ transfer t file a = do
 			h <- fdToHandle fd
 			hPutStr h $ writeTransferInfo info
 			hFlush h
-			return fd
-		cleanup tfile fd = do
+			return h
+		cleanup tfile h = do
 			removeFile tfile
-			closeFd fd
+			hClose h
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -114,8 +112,7 @@ checkTransfer t = do
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
 getTransfers = do
-	uuidmap <- remoteMap id
-	transfers <- catMaybes . map (parseTransferFile uuidmap) <$> findfiles
+	transfers <- catMaybes . map parseTransferFile <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
@@ -126,18 +123,18 @@ getTransfers = do
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
-transferFile (Transfer direction remote key) r = gitAnnexTransferDir r
+transferFile (Transfer direction u key) r = gitAnnexTransferDir r
 	</> show direction 
-	</> fromUUID (uuid remote) 
+	</> fromUUID u
 	</> keyFile key
 
 {- Parses a transfer information filename to a Transfer. -}
-parseTransferFile :: M.Map UUID Remote -> FilePath -> Maybe Transfer
-parseTransferFile uuidmap file = 
+parseTransferFile :: FilePath -> Maybe Transfer
+parseTransferFile file = 
 	case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> readDirection direction
-			<*> M.lookup (toUUID u) uuidmap
+			<*> pure (toUUID u)
 			<*> fileKey key
 		_ -> Nothing
 	where

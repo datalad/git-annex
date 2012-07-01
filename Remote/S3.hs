@@ -113,8 +113,8 @@ s3Setup u c = handlehost $ M.lookup "host" c
 					-- be human-readable
 					M.delete "bucket" defaults
 
-store :: Remote -> Key -> Annex Bool
-store r k = s3Action r False $ \(conn, bucket) -> do
+store :: Remote -> Key -> AssociatedFile -> Annex Bool
+store r k _f = s3Action r False $ \(conn, bucket) -> do
 	dest <- inRepo $ gitAnnexLocation k
 	res <- liftIO $ storeHelper (conn, bucket) r k dest
 	s3Bool res
@@ -149,12 +149,12 @@ storeHelper (conn, bucket) r k file = do
 		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 		isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
-retrieve :: Remote -> Key -> FilePath -> Annex Bool
-retrieve r k f = s3Action r False $ \(conn, bucket) -> do
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve r k _f d = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket k
 	case res of
 		Right o -> do
-			liftIO $ L.writeFile f $ obj_data o
+			liftIO $ L.writeFile d $ obj_data o
 			return True
 		Left e -> s3Warning e
 

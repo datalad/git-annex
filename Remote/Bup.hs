@@ -108,8 +108,8 @@ bupSplitParams r buprepo k src = do
 	return $ bupParams "split" buprepo 
 		(os ++ [Param "-n", Param (bupRef k), src])
 
-store :: Git.Repo -> BupRepo -> Key -> Annex Bool
-store r buprepo k = do
+store :: Git.Repo -> BupRepo -> Key -> AssociatedFile -> Annex Bool
+store r buprepo k _f = do
 	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k (File src)
 	liftIO $ boolSystem "bup" params
@@ -122,11 +122,11 @@ storeEncrypted r buprepo (cipher, enck) k = do
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
 
-retrieve :: BupRepo -> Key -> FilePath -> Annex Bool
-retrieve buprepo k f = do
+retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve buprepo k _f d = do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
 	liftIO $ catchBoolIO $ do
-		tofile <- openFile f WriteMode
+		tofile <- openFile d WriteMode
 		pipeBup params Nothing (Just tofile)
 
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
