@@ -10,12 +10,13 @@ all the other git clones, at both the git level and the key/value level.
 * transfer info for git-annex-shell **done**
 * update files as transfers proceed. See [[progressbars]]
   (updating for downloads is easy; for uploads is hard)
-* add Transfer queue TChan
+* add Transfer queue TChan **done**
+* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
+  **done**
 * enqueue Transfers (Uploads) as new files are added to the annex by
   Watcher.
 * enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
   Watcher.
-* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
 * Poll transfer in progress info files for changes (use inotify again!
   wow! hammer, meet nail..), and update the TransferInfo Map
 * Write basic Transfer handling thread. Multiple such threads need to be
@@ -52,6 +53,9 @@ all the other git clones, at both the git level and the key/value level.
    signaling a change out of band.
 4. Add a hook, so when there's a change to sync, a program can be run
    and do its own signaling.
+5. --debug will show often unnecessary work being done. Optimise.
+6. It would be nice if, when a USB drive is connected, 
+   syncing starts automatically. Use dbus on Linux?
 
 ## data syncing
 
@@ -83,13 +87,12 @@ anyway.
   that lack content.
 * Transfer threads started/stopped as necessary to move data.
   (May sometimes want multiple threads downloading, or uploading, or even both.)
-	
-	type TransferQueue = TChan [Transfer]
-	-- add (M.Map Transfer TransferInfo) to DaemonStatus
 
-	startTransfer :: Transfer -> Annex TransferID
+	startTransfer :: TransferQueue -> Transfer -> Annex ()
+	startTransfer q transfer = error "TODO"
 
-	stopTransfer :: TransferID -> IO ()
+	stopTransfer :: TransferQueue -> TransferID -> Annex ()
+	stopTransfer q transfer = error "TODO"
 
 The assistant needs to find out when `git-annex-shell` is receiving or
 sending (triggered by another remote), so it can add data for those too.
