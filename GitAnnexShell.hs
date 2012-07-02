@@ -9,7 +9,6 @@ module GitAnnexShell where
 
 import System.Environment
 import System.Console.GetOpt
-import Data.Char
 
 import Common.Annex
 import qualified Git.Construct
@@ -17,6 +16,7 @@ import CmdLine
 import Command
 import Annex.UUID
 import qualified Option
+import Fields
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -49,7 +49,6 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 options :: [OptDescr (Annex ())]
 options = Option.common ++
 	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
-	, Option [] ["remote-uuid"] (ReqArg checkuuid paramUUID) "remote repository uuid"
 	]
 	where
 		checkuuid expected = getUUID >>= check
@@ -116,12 +115,8 @@ parseFields = map (separate (== '='))
  - Make sure that field values make sense. -}
 checkField :: (String, String) -> IO Bool
 checkField (field, value)
-	| field == "remoteuuid" = return $
-		-- does it look like a UUID?
-		all (\c -> isAlphaNum c || c == '-') value
-	| field == "associatedfile" =
-		-- is the file located within the current directory?
-		dirContains <$> getCurrentDirectory <*> pure value
+	| field == fieldName remoteUUID = fieldCheck remoteUUID value
+	| field == fieldName associatedFile = fieldCheck associatedFile value
 	| otherwise = return False
 
 failure :: IO ()

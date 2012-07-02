@@ -76,4 +76,3 @@ field short opt paramdesc description =
 {- The flag or field name used for an option. -}
 name :: Option -> String
 name (Option _ o _ _) = Prelude.head o
-
