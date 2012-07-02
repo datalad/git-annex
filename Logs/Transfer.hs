@@ -165,10 +165,8 @@ readTransferInfo pid s =
 			<*> pure (Just pid)
 			<*> pure Nothing
 			<*> pure Nothing
-			<*> pure filename
+			<*> pure (if null filename then Nothing else Just filename)
 		_ -> Nothing
 	where
 		(bits, filebits) = splitAt 1 $ lines s 
-		filename
-			| null filebits = Nothing
-			| otherwise = Just $ join "\n" filebits
+		filename = join "\n" filebits
