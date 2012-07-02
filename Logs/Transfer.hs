@@ -34,7 +34,7 @@ data Transfer = Transfer
  - of some repository, that was acted on to initiate the transfer.
  -}
 data TransferInfo = TransferInfo
-	{ startedTime :: UTCTime
+	{ startedTime :: Maybe UTCTime
 	, transferPid :: Maybe ProcessID
 	, transferThread :: Maybe ThreadId
 	, bytesComplete :: Maybe Integer
@@ -76,7 +76,7 @@ transfer t file a = do
 	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode
 	info <- liftIO $ TransferInfo
-		<$> getCurrentTime
+		<$> (Just <$> getCurrentTime)
 		<*> pure Nothing -- pid not stored in file, so omitted for speed
 		<*> pure Nothing -- threadid not stored in file, so omitted for speed
 		<*> pure Nothing -- not 0; transfer may be resuming
