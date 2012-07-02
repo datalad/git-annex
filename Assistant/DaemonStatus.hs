@@ -17,6 +17,8 @@ import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
+import Logs.Transfer
+import qualified Data.Map as M
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan
@@ -27,6 +29,8 @@ data DaemonStatus = DaemonStatus
 	, sanityCheckRunning :: Bool
 	-- Last time the sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
+	-- Currently running file content transfers
+	, currentTransfers :: M.Map Transfer TransferInfo
 	}
 	deriving (Show)
 
@@ -38,6 +42,7 @@ newDaemonStatus = DaemonStatus
 	, lastRunning = Nothing
 	, sanityCheckRunning = False
 	, lastSanityCheck = Nothing
+	, currentTransfers = M.empty
 	}
 
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
@@ -47,15 +52,17 @@ modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> An
 modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
 
 {- Load any previous daemon status file, and store it in the MVar for this
- - process to use as its DaemonStatus. -}
+ - process to use as its DaemonStatus. Also gets current transfer status. -}
 startDaemonStatus :: Annex DaemonStatusHandle
 startDaemonStatus = do
 	file <- fromRepo gitAnnexDaemonStatusFile
 	status <- liftIO $
 		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
+	transfers <- M.fromList <$> getTransfers
 	liftIO $ newMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
+		, currentTransfers = transfers
 		}
 
 {- This thread wakes up periodically and writes the daemon status to disk. -}
