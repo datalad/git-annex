@@ -35,14 +35,15 @@ dirContents :: FilePath -> IO [FilePath]
 dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 
 {- Gets files in a directory, and then its subdirectories, recursively,
- - and lazily. -}
+ - and lazily. If the directory does not exist, no exception is thrown,
+ - instead, [] is returned. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
 dirContentsRecursive topdir = dirContentsRecursive' topdir [""]
 
 dirContentsRecursive' :: FilePath -> [FilePath] -> IO [FilePath]
 dirContentsRecursive' _ [] = return []
 dirContentsRecursive' topdir (dir:dirs) = unsafeInterleaveIO $ do
-	(files, dirs') <- collect [] [] =<< dirContents (topdir </> dir)
+	(files, dirs') <- collect [] [] =<< catchDefaultIO (dirContents (topdir </> dir)) []
 	files' <- dirContentsRecursive' topdir (dirs' ++ dirs)
 	return (files ++ files')
 	where
