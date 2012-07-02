@@ -59,14 +59,14 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		cost = cost r + encryptedRemoteCostAdj
 	}
 	where
-		store k = cip k >>= maybe
-			(storeKey r k)
+		store k f = cip k >>= maybe
+			(storeKey r k f)
 			(`storeKeyEncrypted` k)
-		retrieve k f = cip k >>= maybe
-			(retrieveKeyFile r k f)
-			(\enck -> retrieveKeyFileEncrypted enck k f)
-		retrieveCheap k f = cip k >>= maybe
-			(retrieveKeyFileCheap r k f)
+		retrieve k f d = cip k >>= maybe
+			(retrieveKeyFile r k f d)
+			(\enck -> retrieveKeyFileEncrypted enck k d)
+		retrieveCheap k d = cip k >>= maybe
+			(retrieveKeyFileCheap r k d)
 			(\_ -> return False)
 		withkey a k = cip k >>= maybe (a k) (a . snd)
 		cip = cipherKey c

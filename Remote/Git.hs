@@ -21,6 +21,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Annex
 import Logs.Presence
+import Logs.Transfer
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
@@ -219,14 +220,19 @@ dropKey r key
 		]
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Git.Repo -> Key -> FilePath -> Annex Bool
-copyFromRemote r key file
+copyFromRemote :: Git.Repo -> Key -> AssociatedFile -> FilePath -> Annex Bool
+copyFromRemote r key file dest
 	| not $ Git.repoIsUrl r = guardUsable r False $ do
 		params <- rsyncParams r
-		loc <- liftIO $ gitAnnexLocation key r
-		rsyncOrCopyFile params loc file
-	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key file
-	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) file
+		u <- getUUID
+		-- run copy from perspective of remote
+		liftIO $ onLocal r $ do
+			ensureInitialized
+			loc <- inRepo $ gitAnnexLocation key
+			upload u key file $
+				rsyncOrCopyFile params loc dest
+	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key dest
+	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 
 copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool
@@ -236,23 +242,25 @@ copyFromRemoteCheap r key file
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh r =
 		ifM (Annex.Content.preseedTmp key file)
-			( copyFromRemote r key file
+			( copyFromRemote r key Nothing file
 			, return False
 			)
 	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Git.Repo -> Key -> Annex Bool
-copyToRemote r key
+copyToRemote :: Git.Repo -> Key -> AssociatedFile -> Annex Bool
+copyToRemote r key file
 	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
+		u <- getUUID
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			Annex.Content.saveState True `after`
-				Annex.Content.getViaTmp key
-					(rsyncOrCopyFile params keysrc)
+			download u key file $
+				Annex.Content.saveState True `after`
+					Annex.Content.getViaTmp key
+						(rsyncOrCopyFile params keysrc)
 	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc

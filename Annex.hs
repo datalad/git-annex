@@ -128,7 +128,7 @@ newState gitrepo = AnnexState
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState <$> Git.Config.read gitrepo
+new = newState <$$> Git.Config.read
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)

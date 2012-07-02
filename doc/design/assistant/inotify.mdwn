@@ -8,13 +8,15 @@ available!
 
 * If a file is checked into git as a normal file and gets modified
   (or merged, etc), it will be converted into an annexed file.
-  See [[blog/day_7__bugfixes]]
+  See [[blog/day_7__bugfixes]].
 
 * When you `git annex unlock` a file, it will immediately be re-locked.
+  See [[bugs/watcher_commits_unlocked_files]].
 
 * Kqueue has to open every directory it watches, so too many directories
   will run it out of the max number of open files (typically 1024), and fail.
   I may need to fork off multiple watcher processes to handle this.
+  See [[bugs/Issue_on_OSX_with_some_system_limits]].
 
 ## beyond Linux
 
@@ -41,6 +43,8 @@ I'd also like to support OSX and if possible the BSDs.
 
   * [man page](http://www.freebsd.org/cgi/man.cgi?query=kqueue&apropos=0&sektion=0&format=html)
   * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/kqueue.py> (good example program)
+
+  *kqueue is now supported*
 
 * hfsevents ([haskell bindings](http://hackage.haskell.org/package/hfsevents))
   is OSX specific.
@@ -71,9 +75,6 @@ I'd also like to support OSX and if possible the BSDs.
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
-- Possibly, when a directory is moved out of the annex location,
-  unannex its contents. (Does inotify tell us where the directory moved
-  to so we can access it?)
 
 ## the races
 
@@ -124,6 +125,17 @@ Many races need to be dealt with by this code. Here are some of them.
 
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
+
+* Symlink appears, but is then deleted before it can be processed.
+
+  Leads to an ugly message, otherwise no problem:
+
+	./me: readSymbolicLink: does not exist (No such file or directory)
+
+  Here `me` is a file that was in a conflicted merge, which got
+  removed as part of the resolution. This is probably coming from the watcher
+  thread, which sees the newly added symlink (created by the git merge),
+  but finds it deleted (by the conflict resolver) by the time it processes it.
 
 ## done
 

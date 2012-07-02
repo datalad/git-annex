@@ -1,0 +1,12 @@
+git-annex 3.20120629 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * cabal: Only try to use inotify on Linux.
+   * Version build dependency on STM, and allow building without it,
+     which disables the watch command.
+   * Avoid ugly failure mode when moving content from a local repository
+     that is not available.
+   * Got rid of the last place that did utf8 decoding.
+   * Accept arbitrarily encoded repository filepaths etc when reading
+     git config output. This fixes support for remotes with unusual characters
+     in their names.
+   * sync: Automatically resolves merge conflicts."""]]

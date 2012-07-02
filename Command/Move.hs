@@ -16,6 +16,7 @@ import qualified Remote
 import Annex.UUID
 import qualified Option
 import Logs.Presence
+import Logs.Transfer
 
 def :: [Command]
 def = [withOptions options $ command "move" paramPaths seek
@@ -68,9 +69,9 @@ toStart dest move file key = do
 		then stop -- not here, so nothing to do
 		else do
 			showMoveAction move file
-			next $ toPerform dest move key
-toPerform :: Remote -> Bool -> Key -> CommandPerform
-toPerform dest move key = moveLock move key $ do
+			next $ toPerform dest move key file
+toPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
+toPerform dest move key file = moveLock move key $ do
 	-- Checking the remote is expensive, so not done in the start step.
 	-- In fast mode, location tracking is assumed to be correct,
 	-- and an explicit check is not done, when copying. When moving,
@@ -88,7 +89,8 @@ toPerform dest move key = moveLock move key $ do
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
-			ok <- Remote.storeKey dest key
+			ok <- upload (Remote.uuid dest) key (Just file) $
+				Remote.storeKey dest key (Just file)
 			if ok
 				then finish
 				else do
@@ -118,7 +120,7 @@ fromStart src move file key
 	where
 		go = stopUnless (fromOk src key) $ do
 			showMoveAction move file
-			next $ fromPerform src move key
+			next $ fromPerform src move key file
 fromOk :: Remote -> Key -> Annex Bool
 fromOk src key
 	| Remote.hasKeyCheap src =
@@ -129,13 +131,14 @@ fromOk src key
 			u <- getUUID
 			remotes <- Remote.keyPossibilities key
 			return $ u /= Remote.uuid src && elem src remotes
-fromPerform :: Remote -> Bool -> Key -> CommandPerform
-fromPerform src move key = moveLock move key $
+fromPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
+fromPerform src move key file = moveLock move key $
 	ifM (inAnnex key)
 		( handle move True
-		, do
+		, download (Remote.uuid src) key (Just file) $ do
 			showAction $ "from " ++ Remote.name src
-			ok <- getViaTmp key $ Remote.retrieveKeyFile src key
+			ok <- getViaTmp key $
+				Remote.retrieveKeyFile src key (Just file)
 			handle move ok
 		)
 	where

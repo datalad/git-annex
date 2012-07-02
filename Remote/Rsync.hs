@@ -99,8 +99,8 @@ rsyncUrls o k = map use annexHashes
 		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
                 f = keyFile k
 
-store :: RsyncOpts -> Key -> Annex Bool
-store o k = rsyncSend o k <=< inRepo $ gitAnnexLocation k
+store :: RsyncOpts -> Key -> AssociatedFile -> Annex Bool
+store o k _f = rsyncSend o k <=< inRepo $ gitAnnexLocation k
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
@@ -108,8 +108,8 @@ storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	rsyncSend o enck tmp
 
-retrieve :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
+retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
 	-- use inplace when retrieving to support resuming
 	[ Param "--inplace"
 	, Param u
@@ -117,11 +117,11 @@ retrieve o k f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
 	]
 
 retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieveCheap o k f = ifM (preseedTmp k f) ( retrieve o k f , return False )
+retrieveCheap o k f = ifM (preseedTmp k f) ( retrieve o k undefined f , return False )
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp -> do
-	ifM (retrieve o enck tmp)
+	ifM (retrieve o enck undefined tmp)
 		( liftIO $ catchBoolIO $ do
 			withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
 			return True

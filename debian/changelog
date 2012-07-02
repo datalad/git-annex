@@ -1,4 +1,12 @@
-git-annex (3.20120625) UNRELEASED; urgency=low
+git-annex (3.20120630) UNRELEASED; urgency=low
+
+  * get, move, copy: Now refuse to do anything when the requested file
+    transfer is already in progress by another process.
+  * status: Lists transfers that are currently in progress.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 01 Jul 2012 15:04:37 -0400
+
+git-annex (3.20120629) unstable; urgency=low
 
   * cabal: Only try to use inotify on Linux.
   * Version build dependency on STM, and allow building without it,
@@ -11,7 +19,7 @@ git-annex (3.20120625) UNRELEASED; urgency=low
     in their names.
   * sync: Automatically resolves merge conflicts.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 25 Jun 2012 11:38:12 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 29 Jun 2012 10:17:49 -0400
 
 git-annex (3.20120624) unstable; urgency=low
 

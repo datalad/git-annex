@@ -1,6 +1,37 @@
 Once files are added (or removed or moved), need to send those changes to
 all the other git clones, at both the git level and the key/value level.
 
+## action items
+
+* on-disk transfers in progress information files (read/write/enumerate)
+  **done**
+* locking for the files, so redundant transfer races can be detected,
+  and failed transfers noticed **done**
+* transfer info for git-annex-shell (problem: how to add a switch 
+  with the necessary info w/o breaking backwards compatability?)
+* update files as transfers proceed. See [[progressbars]]
+  (updating for downloads is easy; for uploads is hard)
+* add Transfer queue TChan
+* enqueue Transfers (Uploads) as new files are added to the annex by
+  Watcher.
+* enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
+  Watcher.
+* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
+* Poll transfer in progress info files for changes (use inotify again!
+  wow! hammer, meet nail..), and update the TransferInfo Map
+* Write basic Transfer handling thread. Multiple such threads need to be
+  able to be run at once. Each will need its own independant copy of the 
+  Annex state monad.
+* Write transfer control thread, which decides when to launch transfers.
+* At startup, and possibly periodically, look for files we have that
+  location tracking indicates remotes do not, and enqueue Uploads for
+  them. Also, enqueue Downloads for any files we're missing.
+* Find a way to probe available outgoing bandwidth, to throttle so
+  we don't bufferbloat the network to death.
+* git-annex needs a simple speed control knob, which can be plumbed
+  through to, at least, rsync. A good job for an hour in an
+  airport somewhere.
+
 ## git syncing
 
 1. Can use `git annex sync`, which already handles bidirectional syncing.
@@ -44,6 +75,46 @@ need to control those data transfers, sending to the cheapest nodes first,
 and with appropriate rate limiting and control facilities.
 
 This probably will need lots of refinements to get working well.
+
+### first pass: flood syncing
+
+Before mapping the network, the best we can do is flood all files out to every
+reachable remote. This is worth doing first, since it's the simplest way to
+get the basic functionality of the assistant to work. And we'll need this
+anyway.
+
+### transfer tracking
+
+* Upload added to queue by the watcher thread when it adds content.
+* Download added to queue by the watcher thread when it seens new symlinks
+  that lack content.
+* Transfer threads started/stopped as necessary to move data.
+  (May sometimes want multiple threads downloading, or uploading, or even both.)
+	
+	type TransferQueue = TChan [Transfer]
+	-- add (M.Map Transfer TransferInfo) to DaemonStatus
+
+	startTransfer :: Transfer -> Annex TransferID
+
+	stopTransfer :: TransferID -> IO ()
+
+The assistant needs to find out when `git-annex-shell` is receiving or
+sending (triggered by another remote), so it can add data for those too.
+This is important to avoid uploading content to a remote that is already
+downloading it from us, or vice versa, as well as to in future let the web
+app manage transfers as user desires. 
+
+For files being received, it can see the temp file, but other than lsof
+there's no good way to find the pid (and I'd rather not kill blindly).
+
+For files being sent, there's no filesystem indication. So git-annex-shell
+(and other git-annex transfer processes) should write a status file to disk.
+
+Can use file locking on these status files to claim upload/download rights,
+which will avoid races.
+
+This status file can also be updated periodically to show amount of transfer
+complete (necessary for tracking uploads).
 
 ## other considerations
 

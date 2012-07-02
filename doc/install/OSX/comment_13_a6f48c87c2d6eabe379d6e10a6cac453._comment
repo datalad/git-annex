@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHrjHxJAm39x8DR4bnbazQO6H0nMNuY9c"
+ nickname="Damien"
+ subject="gnu commands"
+ date="2012-07-01T17:03:57Z"
+ content="""
+…and another approach to the same problem: apparently git-annex also relies on the GNU coreutils (for instance, when doing `git annex get .`, `cp` complains about `illegal option -- -`). I do have the GNU coreutils installed with Homebrew, but they are all prefixed with `g`. So maybe you should try `gsha256sum` and `gcp` before `sha256sum` and `cp`, that seems like a more general solution.
+"""]]

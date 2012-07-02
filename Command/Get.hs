@@ -12,6 +12,7 @@ import Command
 import qualified Remote
 import Annex.Content
 import qualified Command.Move
+import Logs.Transfer
 
 def :: [Command]
 def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
@@ -25,24 +26,24 @@ start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = stopUnless (not <$> inAnnex key) $
 	autoCopies file key (<) $ \_numcopies ->
 		case from of
-			Nothing -> go $ perform key
+			Nothing -> go $ perform key file
 			Just src ->
 				-- get --from = copy --from
 				stopUnless (Command.Move.fromOk src key) $
-					go $ Command.Move.fromPerform src False key
+					go $ Command.Move.fromPerform src False key file
 	where
 		go a = do
 			showStart "get" file
-			next a	
+			next a
 
-perform :: Key -> CommandPerform
-perform key = stopUnless (getViaTmp key $ getKeyFile key) $
+perform :: Key -> FilePath -> CommandPerform
+perform key file = stopUnless (getViaTmp key $ getKeyFile key file) $
 	next $ return True -- no cleanup needed
 
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
-getKeyFile :: Key -> FilePath -> Annex Bool
-getKeyFile key file = dispatch =<< Remote.keyPossibilities key
+getKeyFile :: Key -> FilePath -> FilePath -> Annex Bool
+getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
 	where
 		dispatch [] = do
 			showNote "not available"
@@ -64,7 +65,7 @@ getKeyFile key file = dispatch =<< Remote.keyPossibilities key
 			| Remote.hasKeyCheap r =
 				either (const False) id <$> Remote.hasKey r key
 			| otherwise = return True
-		docopy r continue = do
+		docopy r continue = download (Remote.uuid r) key (Just file) $ do
 			showAction $ "from " ++ Remote.name r
-			ifM (Remote.retrieveKeyFile r key file)
+			ifM (Remote.retrieveKeyFile r key (Just file) dest)
 				( return True , continue)

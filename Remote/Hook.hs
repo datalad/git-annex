@@ -101,8 +101,8 @@ runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype h
 					return False
 				)
 
-store :: String -> Key -> Annex Bool
-store h k = do
+store :: String -> Key -> AssociatedFile -> Annex Bool
+store h k _f = do
 	src <- inRepo $ gitAnnexLocation k
 	runHook h "store" k (Just src) $ return True
 
@@ -112,8 +112,8 @@ storeEncrypted h (cipher, enck) k = withTmp enck $ \tmp -> do
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	runHook h "store" enck (Just tmp) $ return True
 
-retrieve :: String -> Key -> FilePath -> Annex Bool
-retrieve h k f = runHook h "retrieve" k (Just f) $ return True
+retrieve :: String -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve h k _f d = runHook h "retrieve" k (Just d) $ return True
 
 retrieveCheap :: String -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False

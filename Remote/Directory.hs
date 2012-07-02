@@ -122,8 +122,8 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withStoredFiles = withCheckedFiles doesFileExist
 
-store :: FilePath -> ChunkSize -> Key -> Annex Bool
-store d chunksize k = do
+store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> Annex Bool
+store d chunksize k _f = do
 	src <- inRepo $ gitAnnexLocation k
 	metered k $ \meterupdate -> 
 		storeHelper d chunksize k $ \dests ->
@@ -242,8 +242,8 @@ storeHelper d chunksize key a = prep <&&> check <&&> go
 			preventWrite dir
 			return (not $ null stored)
 
-retrieve :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
-retrieve d chunksize k f = metered k $ \meterupdate ->
+retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve d chunksize k _ f = metered k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
 			meteredWriteFile' meterupdate f files feeder
@@ -272,7 +272,7 @@ retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
 remove :: FilePath -> ChunkSize -> Key -> Annex Bool
 remove d chunksize k = liftIO $ withStoredFiles chunksize d k go
 	where
-		go files = all id <$> mapM removefile files
+		go = all id <$$> mapM removefile
 		removefile file = catchBoolIO $ do
 			let dir = parentDir file
 			allowWrite dir
