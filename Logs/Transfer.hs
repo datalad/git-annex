@@ -27,7 +27,12 @@ data Transfer = Transfer
 	}
 	deriving (Show, Eq, Ord)
 
-{- Information about a Transfer, stored in the transfer information file. -}
+{- Information about a Transfer, stored in the transfer information file.
+ -
+ - Note that the associatedFile may not correspond to a file in the local
+ - git repository. It's some file, possibly relative to some directory,
+ - of some repository, that was acted on to initiate the transfer.
+ -}
 data TransferInfo = TransferInfo
 	{ startedTime :: UTCTime
 	, transferPid :: Maybe ProcessID

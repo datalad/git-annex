@@ -7,8 +7,7 @@ all the other git clones, at both the git level and the key/value level.
   **done**
 * locking for the files, so redundant transfer races can be detected,
   and failed transfers noticed **done**
-* transfer info for git-annex-shell (problem: how to add a switch 
-  with the necessary info w/o breaking backwards compatability?)
+* transfer info for git-annex-shell **done**
 * update files as transfers proceed. See [[progressbars]]
   (updating for downloads is easy; for uploads is hard)
 * add Transfer queue TChan
