@@ -12,6 +12,7 @@ import Command
 import CmdLine
 import Annex.Content
 import Utility.RsyncFile
+import Logs.Transfer
 
 def :: [Command]
 def = [oneShot $ command "recvkey" paramKey seek
@@ -21,14 +22,15 @@ seek :: [CommandSeek]
 seek = [withKeys start]
 
 start :: Key -> CommandStart
-start key = do
-	whenM (inAnnex key) $ error "key is already present in annex"
-	
-	ok <- getViaTmp key (liftIO . rsyncServerReceive)
-	if ok
-		then do
-			-- forcibly quit after receiving one key,
-			-- and shutdown cleanly
-			_ <- shutdown True
-			liftIO exitSuccess
-		else liftIO exitFailure
+start key = ifM (inAnnex key)
+	( error "key is already present in annex"
+	, fieldTransfer Download key $ do
+		ifM (getViaTmp key $ liftIO . rsyncServerReceive)
+			( do
+				-- forcibly quit after receiving one key,
+				-- and shutdown cleanly
+				_ <- shutdown True
+				liftIO exitSuccess
+			, liftIO exitFailure
+			)
+	)

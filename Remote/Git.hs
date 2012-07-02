@@ -31,6 +31,7 @@ import Utility.TempFile
 import Config
 import Init
 import Types.Key
+import qualified Fields
 
 remote :: RemoteType
 remote = RemoteType {
@@ -111,7 +112,7 @@ guardUsable r onerr a
 tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.config r = return r -- already read
-	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" []
+	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" [] []
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ safely $ geturlconfig headers
@@ -171,7 +172,7 @@ inAnnex r key
 						v -> return v
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
-			onRemote r (check, unknown) "inannex" [Param (show key)]
+			onRemote r (check, unknown) "inannex" [Param (show key)] []
 			where
 				check c p = dispatch <$> safeSystem c p
 				dispatch ExitSuccess = Right True
@@ -218,6 +219,7 @@ dropKey r key
 		[ Params "--quiet --force"
 		, Param $ show key
 		]
+		[]
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
 copyFromRemote :: Git.Repo -> Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -231,7 +233,7 @@ copyFromRemote r key file dest
 			loc <- inRepo $ gitAnnexLocation key
 			upload u key file $
 				rsyncOrCopyFile params loc dest
-	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key dest
+	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key dest file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 
@@ -263,7 +265,7 @@ copyToRemote r key file
 						(rsyncOrCopyFile params keysrc)
 	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
-		rsyncHelper =<< rsyncParamsRemote r False key keysrc
+		rsyncHelper =<< rsyncParamsRemote r False key keysrc file
 	| otherwise = error "copying to non-ssh repo not supported"
 
 rsyncHelper :: [CommandParam] -> Annex Bool
@@ -290,23 +292,26 @@ rsyncOrCopyFile rsyncparams src dest =
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
-rsyncParamsRemote :: Git.Repo -> Bool -> Key -> FilePath -> Annex [CommandParam]
-rsyncParamsRemote r sending key file = do
+rsyncParamsRemote :: Git.Repo -> Bool -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
+rsyncParamsRemote r sending key file afile = do
+	u <- getUUID
+	let fields = (Fields.remoteUUID, fromUUID u)
+		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 	Just (shellcmd, shellparams) <- git_annex_shell r
 		(if sending then "sendkey" else "recvkey")
-		[ Param $ show key
-		-- Command is terminated with "--", because
-		-- rsync will tack on its own options afterwards,
-		-- and they need to be ignored.
-		, Param "--"
-		]
+		[ Param $ show key ]
+		fields
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)
 	o <- rsyncParams r
 	if sending
-		then return $ o ++ eparam ++ [dummy, File file]
-		else return $ o ++ eparam ++ [File file, dummy]
+		then return $ o ++ rsyncopts eparam dummy (File file)
+		else return $ o ++ rsyncopts eparam (File file) dummy
 	where
+		rsyncopts ps source dest
+			| end ps == [dashdash] = ps ++ [source, dest]
+			| otherwise = ps ++ [dashdash, source, dest]
+		dashdash = Param "--"
 		-- The rsync shell parameter controls where rsync
 		-- goes, so the source/dest parameter can be a dummy value,
 		-- that just enables remote rsync mode.
@@ -333,7 +338,7 @@ commitOnCleanup r a = go `after` a
 					Annex.Branch.commit "update"
 			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
-					git_annex_shell r "commit" []
+					git_annex_shell r "commit" [] []
 				-- Throw away stderr, since the remote may not
 				-- have a new enough git-annex shell to
 				-- support committing.

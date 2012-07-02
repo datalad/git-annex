@@ -1,6 +1,6 @@
 {- git-annex remote access with ssh
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011.2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import qualified Git.Url
 import Config
 import Annex.UUID
 import Annex.Ssh
+import Fields
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
@@ -25,9 +26,9 @@ sshToRepo repo sshcmd = do
 
 {- Generates parameters to run a git-annex-shell command on a remote
  - repository. -}
-git_annex_shell :: Git.Repo -> String -> [CommandParam] -> Annex (Maybe (FilePath, [CommandParam]))
-git_annex_shell r command params
-	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts)
+git_annex_shell :: Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> Annex (Maybe (FilePath, [CommandParam]))
+git_annex_shell r command params fields
+	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts ++ fieldopts)
 	| Git.repoIsSsh r = do
 		uuid <- getRepoUUID r
 		sshparams <- sshToRepo r [Param $ sshcmd uuid ]
@@ -39,9 +40,16 @@ git_annex_shell r command params
 		shellopts = Param command : File dir : params
 		sshcmd uuid = unwords $
 			shellcmd : map shellEscape (toCommand shellopts) ++
-			uuidcheck uuid
+			uuidcheck uuid ++
+			map shellEscape (toCommand fieldopts)
 		uuidcheck NoUUID = []
 		uuidcheck (UUID u) = ["--uuid", u]
+		fieldopts
+			| null fields = []
+			| otherwise = fieldsep : map fieldopt fields ++ [fieldsep]
+		fieldsep = Param "--"
+		fieldopt (field, value) = Param $
+			fieldName field ++ "=" ++ value
 
 {- Uses a supplied function (such as boolSystem) to run a git-annex-shell
  - command on a remote.
@@ -53,9 +61,10 @@ onRemote
 	-> (FilePath -> [CommandParam] -> IO a, a)
 	-> String
 	-> [CommandParam]
+	-> [(Field, String)]
 	-> Annex a
-onRemote r (with, errorval) command params = do
-	s <- git_annex_shell r command params
+onRemote r (with, errorval) command params fields = do
+	s <- git_annex_shell r command params fields
 	case s of
 		Just (c, ps) -> liftIO $ with c ps
 		Nothing -> return errorval

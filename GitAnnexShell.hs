@@ -16,6 +16,7 @@ import CmdLine
 import Command
 import Annex.UUID
 import qualified Option
+import Fields
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -47,7 +48,7 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 
 options :: [OptDescr (Annex ())]
 options = Option.common ++
-	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
 	]
 	where
 		checkuuid expected = getUUID >>= check
@@ -83,21 +84,40 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	dispatch False (cmd : filterparams params) cmds options header $
+	let (params', fieldparams) = partitionParams params
+	let fields = filter checkField $ parseFields fieldparams
+	dispatch False (cmd : params') cmds options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()
 external params = do
 	checkNotLimited
-	unlessM (boolSystem "git-shell" $ map Param $ "-c":filterparams params) $
+	unlessM (boolSystem "git-shell" $ map Param $ "-c":fst (partitionParams params)) $
 		error "git-shell failed"
 
--- Drop all args after "--".
--- These tend to be passed by rsync and not useful.
-filterparams :: [String] -> [String]
-filterparams [] = []
-filterparams ("--":_) = []
-filterparams (a:as) = a:filterparams as
+{- Parameters between two -- markers are field settings, in the form:
+ - field=value field=value
+ -
+ - Parameters after the last -- are ignored, these tend to be passed by
+ - rsync and not be useful.
+ -}
+partitionParams :: [String] -> ([String], [String])
+partitionParams params
+	| length segments < 2 = (segments !! 0, [])
+	| otherwise = (segments !! 0, segments !! 1)
+	where
+		segments = segment (== "--") params
+
+parseFields :: [String] -> [(String, String)]
+parseFields = map (separate (== '='))
+
+{- Only allow known fields to be set, ignore others.
+ - Make sure that field values make sense. -}
+checkField :: (String, String) -> Bool
+checkField (field, value)
+	| field == fieldName remoteUUID = fieldCheck remoteUUID value
+	| field == fieldName associatedFile = fieldCheck associatedFile value
+	| otherwise = False
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage header cmds options

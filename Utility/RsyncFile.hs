@@ -22,9 +22,9 @@ rsyncShell command = [Param "-e", Param $ unwords $ map escape (toCommand comman
                  - string is a single quote. -}
 		escape s = "'" ++  join "''" (split "'" s) ++ "'"
 
-{- Runs rsync in server mode to send a file, and exits. -}
-rsyncServerSend :: FilePath -> IO ()
-rsyncServerSend file = rsyncExec $
+{- Runs rsync in server mode to send a file. -}
+rsyncServerSend :: FilePath -> IO Bool
+rsyncServerSend file = rsync $
 	rsyncServerParams ++ [Param "--sender", File file]
 
 {- Runs rsync in server mode to receive a file. -}
@@ -47,11 +47,8 @@ rsyncServerParams =
 rsync :: [CommandParam] -> IO Bool
 rsync = boolSystem "rsync"
 
-rsyncExec :: [CommandParam] -> IO ()
-rsyncExec params = executeFile "rsync" True (toCommand params) Nothing
-
 {- Checks if an rsync url involves the remote shell (ssh or rsh).
- - Use of such urls with rsync or rsyncExec requires additional shell
+ - Use of such urls with rsync requires additional shell
  - escaping. -}
 rsyncUrlIsShell :: String -> Bool
 rsyncUrlIsShell s

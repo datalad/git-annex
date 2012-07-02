@@ -12,6 +12,7 @@ import Annex.Perms
 import Annex.Exception
 import qualified Git
 import Types.Remote
+import qualified Fields
 
 import Control.Concurrent
 import System.Posix.Types
@@ -26,7 +27,12 @@ data Transfer = Transfer
 	}
 	deriving (Show, Eq, Ord)
 
-{- Information about a Transfer, stored in the transfer information file. -}
+{- Information about a Transfer, stored in the transfer information file.
+ -
+ - Note that the associatedFile may not correspond to a file in the local
+ - git repository. It's some file, possibly relative to some directory,
+ - of some repository, that was acted on to initiate the transfer.
+ -}
 data TransferInfo = TransferInfo
 	{ startedTime :: UTCTime
 	, transferPid :: Maybe ProcessID
@@ -53,6 +59,12 @@ upload u key file a = transfer (Transfer Upload u key) file a
 
 download :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
 download u key file a = transfer (Transfer Download u key) file a
+
+fieldTransfer :: Direction -> Key -> Annex a -> Annex a
+fieldTransfer direction key a = do
+	afile <- Fields.getField Fields.associatedFile
+	maybe a (\u -> transfer (Transfer direction (toUUID u) key) afile a)
+		=<< Fields.getField Fields.remoteUUID
 
 {- Runs a transfer action. Creates and locks the transfer information file
  - while the action is running. Will throw an error if the transfer is
@@ -158,10 +170,8 @@ readTransferInfo pid s =
 			<*> pure (Just pid)
 			<*> pure Nothing
 			<*> pure Nothing
-			<*> pure filename
+			<*> pure (if null filename then Nothing else Just filename)
 		_ -> Nothing
 	where
 		(bits, filebits) = splitAt 1 $ lines s 
-		filename
-			| null filebits = Nothing
-			| otherwise = Just $ join "\n" filebits
+		filename = join "\n" filebits

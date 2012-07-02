@@ -203,7 +203,7 @@ tryScan r
 				Git.Config.hRead r
 
 		configlist =
-			onRemote r (pipedconfig, Nothing) "configlist" []
+			onRemote r (pipedconfig, Nothing) "configlist" [] []
 		manualconfiglist = do
 			sshparams <- sshToRepo r [Param sshcmd]
 			liftIO $ pipedconfig "ssh" sshparams
