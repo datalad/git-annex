@@ -47,7 +47,8 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 
 options :: [OptDescr (Annex ())]
 options = Option.common ++
-	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
+	, Option [] ["remote-uuid"] (ReqArg checkuuid paramUUID) "remote repository uuid"
 	]
 	where
 		checkuuid expected = getUUID >>= check
@@ -83,21 +84,31 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	dispatch False (cmd : filterparams params) cmds options header $
+	let (params', fields) = partitionParams params
+	dispatch False (cmd : params') cmds options (parseFields fields) header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()
 external params = do
 	checkNotLimited
-	unlessM (boolSystem "git-shell" $ map Param $ "-c":filterparams params) $
+	unlessM (boolSystem "git-shell" $ map Param $ "-c":fst (partitionParams params)) $
 		error "git-shell failed"
 
--- Drop all args after "--".
--- These tend to be passed by rsync and not useful.
-filterparams :: [String] -> [String]
-filterparams [] = []
-filterparams ("--":_) = []
-filterparams (a:as) = a:filterparams as
+{- Parameters between two -- markers are field settings, in the form:
+ - field=value field=value
+ -
+ - Parameters after the last -- are ignored, these tend to be passed by
+ - rsync and not be useful.
+ -}
+partitionParams :: [String] -> ([String], [String])
+partitionParams params
+	| length segments < 2 = (segments !! 0, [])
+	| otherwise = (segments !! 0, segments !! 1)
+	where
+		segments = segment (== "--") params
+
+parseFields :: [String] -> [(String, String)]
+parseFields = map (separate (== '='))
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage header cmds options

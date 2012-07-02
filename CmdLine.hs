@@ -30,8 +30,8 @@ type Params = [String]
 type Flags = [Annex ()]
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> Params -> [Command] -> [Option] -> String -> IO Git.Repo -> IO ()
-dispatch fuzzyok allargs allcmds commonoptions header getgitrepo = do
+dispatch :: Bool -> Params -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
+dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
@@ -40,6 +40,7 @@ dispatch fuzzyok allargs allcmds commonoptions header getgitrepo = do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do
 				checkfuzzy
+				forM_ fields $ \(f, v) -> Annex.setField f v
 				sequence_ flags
 				prepCommand cmd params
 		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]

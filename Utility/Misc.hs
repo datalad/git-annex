@@ -35,3 +35,13 @@ separate c l = unbreak $ break c l
 {- Breaks out the first line. -}
 firstLine :: String-> String
 firstLine = takeWhile (/= '\n')
+
+{- Splits a list into segments that are delimited by items matching
+ - a predicate. (The delimiters are not included in the segments.) -}
+segment :: (a -> Bool) -> [a] -> [[a]]
+segment p l = map reverse $ go [] [] l
+	where
+		go c r [] = reverse $ c:r
+		go c r (i:is)
+			| p i = go [] (c:r) is
+			| otherwise = go (i:c) r is
