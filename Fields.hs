@@ -15,18 +15,18 @@ import Data.Char
 {- A field, stored in Annex state, with a value sanity checker. -}
 data Field = Field
 	{ fieldName :: String
-	, fieldCheck :: String -> IO Bool
+	, fieldCheck :: String -> Bool
 	}
 
 remoteUUID :: Field
 remoteUUID = Field "remoteuuid" $
 	-- does it look like a UUID?
-	return . all (\c -> isAlphaNum c || c == '-')
+	all (\c -> isAlphaNum c || c == '-')
 
 associatedFile :: Field
-associatedFile = Field "associatedfile" $ \value ->
-	-- is the file located within the current directory?
-	dirContains <$> getCurrentDirectory <*> pure value
+associatedFile = Field "associatedfile" $ \f ->
+	-- is the file a safe relative filename?
+	not (isAbsolute f) && not ("../" `isPrefixOf` f)
 
 getField :: Field -> Annex (Maybe String)
 getField = Annex.getField . fieldName

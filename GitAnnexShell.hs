@@ -85,7 +85,7 @@ builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
 	let (params', fieldparams) = partitionParams params
-	fields <- filterM checkField $ parseFields fieldparams
+	let fields = filter checkField $ parseFields fieldparams
 	dispatch False (cmd : params') cmds options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
@@ -113,11 +113,11 @@ parseFields = map (separate (== '='))
 
 {- Only allow known fields to be set, ignore others.
  - Make sure that field values make sense. -}
-checkField :: (String, String) -> IO Bool
+checkField :: (String, String) -> Bool
 checkField (field, value)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID value
 	| field == fieldName associatedFile = fieldCheck associatedFile value
-	| otherwise = return False
+	| otherwise = False
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage header cmds options
