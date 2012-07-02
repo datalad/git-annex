@@ -10,6 +10,7 @@ module Logs.Transfer where
 import Common.Annex
 import Annex.Perms
 import Annex.Exception
+import qualified Annex
 import qualified Git
 import Types.Remote
 
@@ -53,6 +54,12 @@ upload u key file a = transfer (Transfer Upload u key) file a
 
 download :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
 download u key file a = transfer (Transfer Download u key) file a
+
+fieldTransfer :: Direction -> Key -> Annex a -> Annex a
+fieldTransfer direction key a = do
+	afile <- Annex.getField "associatedfile"
+	maybe a (\u -> transfer (Transfer direction (toUUID u) key) afile a)
+		=<< Annex.getField "remoteuuid"
 
 {- Runs a transfer action. Creates and locks the transfer information file
  - while the action is running. Will throw an error if the transfer is

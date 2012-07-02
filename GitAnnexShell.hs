@@ -9,6 +9,7 @@ module GitAnnexShell where
 
 import System.Environment
 import System.Console.GetOpt
+import Data.Char
 
 import Common.Annex
 import qualified Git.Construct
@@ -84,8 +85,9 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
-	let (params', fields) = partitionParams params
-	dispatch False (cmd : params') cmds options (parseFields fields) header $
+	let (params', fieldparams) = partitionParams params
+	fields <- filterM checkField $ parseFields fieldparams
+	dispatch False (cmd : params') cmds options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
 
 external :: [String] -> IO ()
@@ -109,6 +111,18 @@ partitionParams params
 
 parseFields :: [String] -> [(String, String)]
 parseFields = map (separate (== '='))
+
+{- Only allow known fields to be set, ignore others.
+ - Make sure that field values make sense. -}
+checkField :: (String, String) -> IO Bool
+checkField (field, value)
+	| field == "remoteuuid" = return $
+		-- does it look like a UUID?
+		all (\c -> isAlphaNum c || c == '-') value
+	| field == "associatedfile" =
+		-- is the file located within the current directory?
+		dirContains <$> getCurrentDirectory <*> pure value
+	| otherwise = return False
 
 failure :: IO ()
 failure = error $ "bad parameters\n\n" ++ usage header cmds options
