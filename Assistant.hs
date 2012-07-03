@@ -33,9 +33,14 @@
  - 	updated branches into the current branch. This uses inotify
  - 	on .git/refs/heads, so there are additional inotify threads
  - 	associated with it, too.
- - Thread 9: status logger
+ - Thread 9: transfer watcher
+ - 	Watches for transfer information files being created and removed,
+ - 	and maintains the DaemonStatus currentTransfers map. This uses
+ - 	inotify on .git/annex/transfer/, so there are additional inotify
+ - 	threads associated with it, too.
+ - Thread 10: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 10: sanity checker
+ - Thread 11: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
@@ -56,6 +61,8 @@
  - FailedPushMap (STM TMVar)
  - 	Failed pushes are indicated by writing to this TMVar. The push
  - 	retrier blocks until they're available.
+ - TransferQueue (STM TChan)
+ - 	Transfers to make are indicated by writing to this channel.
  -}
 
 module Assistant where
@@ -70,6 +77,7 @@ import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
 import Assistant.Threads.Merger
+import Assistant.Threads.TransferWatcher
 import Assistant.Threads.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
@@ -100,6 +108,7 @@ startDaemon assistant foreground
 				, pushThread st commitchan pushmap
 				, pushRetryThread st pushmap
 				, mergeThread st
+				, transferWatcherThread st dstatus
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus changechan
 				, watchThread st dstatus changechan
