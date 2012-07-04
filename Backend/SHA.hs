@@ -42,28 +42,16 @@ genBackendE size = do
 		, getKey = keyValueE size
 		}
 
-shaCommand :: SHASize -> Either (L.ByteString -> String) String
-shaCommand sz
-	| sz == 1 = use SysConfig.sha1 sha1
-	| sz == 256 = use SysConfig.sha256 sha256
-	| sz == 224 = use SysConfig.sha224 sha224
-	| sz == 384 = use SysConfig.sha384 sha384
-	| sz == 512 = use SysConfig.sha512 sha512
-	| otherwise = error $ "bad sha size " ++ show sz
-	where
-		use Nothing sha = Left $ showDigest . sha
-		use (Just c) _ = Right c
-
 shaName :: SHASize -> String
 shaName size = "SHA" ++ show size
 
 shaNameE :: SHASize -> String
 shaNameE size = shaName size ++ "E"
 
-shaN :: SHASize -> FilePath -> Annex String
-shaN size file = do
+shaN :: SHASize -> FilePath -> Integer -> Annex String
+shaN shasize file filesize = do
 	showAction "checksum"
-	case shaCommand size of
+	case shaCommand shasize filesize of
 		Left sha -> liftIO $ sha <$> L.readFile file
 		Right command -> liftIO $ runcommand command
 	where
@@ -74,16 +62,34 @@ shaN size file = do
 					then error $ command ++ " parse error"
 					else return sha
 
+shaCommand :: SHASize -> Integer -> Either (L.ByteString -> String) String
+shaCommand shasize filesize
+	| shasize == 1 = use SysConfig.sha1 sha1
+	| shasize == 256 = use SysConfig.sha256 sha256
+	| shasize == 224 = use SysConfig.sha224 sha224
+	| shasize == 384 = use SysConfig.sha384 sha384
+	| shasize == 512 = use SysConfig.sha512 sha512
+	| otherwise = error $ "bad sha size " ++ show shasize
+	where
+		use Nothing sha = Left $ showDigest . sha
+		use (Just c) sha
+			-- use builtin, but slower sha for small files
+			-- benchmarking indicates it's faster up to
+			-- and slightly beyond 50 kb files
+			| filesize < 51200 = use Nothing sha
+			| otherwise = Right c
+
 {- A key is a checksum of its contents. -}
 keyValue :: SHASize -> KeySource -> Annex (Maybe Key)
-keyValue size source = do
+keyValue shasize source = do
 	let file = contentLocation source
-	s <- shaN size file
 	stat <- liftIO $ getFileStatus file
+	let filesize = fromIntegral $ fileSize stat
+	s <- shaN shasize file filesize
 	return $ Just $ stubKey
 		{ keyName = s
-		, keyBackendName = shaName size
-		, keySize = Just $ fromIntegral $ fileSize stat
+		, keyBackendName = shaName shasize
+		, keySize = Just filesize
 		}
 
 {- Extension preserving keys. -}
@@ -106,10 +112,12 @@ keyValueE size source = keyValue size source >>= maybe (return Nothing) addE
 checkKeyChecksum :: SHASize -> Key -> FilePath -> Annex Bool
 checkKeyChecksum size key file = do
 	fast <- Annex.getState Annex.fast
-	present <- liftIO $ doesFileExist file
-	if not present || fast
-		then return True
-		else check <$> shaN size file
+	mstat <- liftIO $ catchMaybeIO $ getFileStatus file
+	case (mstat, fast) of
+		(Just stat, False) -> do
+			let filesize = fromIntegral $ fileSize stat
+			check <$> shaN size file filesize
+		_ -> return True
 	where
 		check s
 			| s == dropExtension (keyName key) = True
