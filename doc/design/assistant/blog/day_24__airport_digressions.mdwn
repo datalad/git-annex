@@ -84,3 +84,16 @@ so can alternate people watching, spacing out, and analizing results.
 It's possible to get nice graphical reports out of Criterion, but 
 this is clear enough, so I stopped here. 50 kb seems a reasonable
 cutoff point.
+
+I also used this to benchmark the SHA256 in Haskell's Crypto package.
+Surprisingly, it's a *lot* slower than even the Pure.SHA code.
+On a 50 kb file:
+
+	benchmarking sha256/Crypto
+	collecting 100 samples, 1 iterations each, in estimated 6.073809 s
+	mean: 69.89037 ms, lb 69.15831 ms, ub 70.71845 ms, ci 0.950
+	std dev: 3.995397 ms, lb 3.435775 ms, ub 4.721952 ms, ci 0.950
+
+
+There's another Haskell library, [SHA2](http://hackage.haskell.org/package/SHA2),
+which I should try some time.
