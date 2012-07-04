@@ -1,0 +1,10 @@
+We need a way to calculate space taken by certain files.
+
+Use cases: I want to drop some files from my small disk. I need to figure out things that take most space, and drop them.
+
+Usage examples:
+
+    git annex du -hs *.mp3
+    git annex du -sBm --in=here *.ogg
+
+Would be nice if it was compatible with standard unix `df`.
