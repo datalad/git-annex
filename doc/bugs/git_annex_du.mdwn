@@ -8,3 +8,7 @@ Usage examples:
     git annex du -sBm --in=here *.ogg
 
 Would be nice if it was compatible with standard unix `df`.
+
+> `du -L` works.
+> 
+> See also: [[forum/Wishlist:_getting_the_disk_used_by_a_subtree_of_files]]
