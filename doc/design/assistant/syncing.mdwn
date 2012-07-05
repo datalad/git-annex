@@ -16,7 +16,7 @@ all the other git clones, at both the git level and the key/value level.
 * Poll transfer in progress info files for changes (use inotify again!
   wow! hammer, meet nail..), and update the TransferInfo Map **done**
 * enqueue Transfers (Uploads) as new files are added to the annex by
-  Watcher.
+  Watcher. **done**
 * enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
   Watcher.
 * Write basic Transfer handling thread. Multiple such threads need to be
@@ -82,11 +82,8 @@ anyway.
 
 ### transfer tracking
 
-* Upload added to queue by the watcher thread when it adds content.
-* Download added to queue by the watcher thread when it seens new symlinks
-  that lack content.
-* Transfer threads started/stopped as necessary to move data.
-  (May sometimes want multiple threads downloading, or uploading, or even both.)
+Transfer threads started/stopped as necessary to move data.
+(May sometimes want multiple threads downloading, or uploading, or even both.)
 
 	startTransfer :: TransferQueue -> Transfer -> Annex ()
 	startTransfer q transfer = error "TODO"
