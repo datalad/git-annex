@@ -26,6 +26,7 @@ all the other git clones, at both the git level and the key/value level.
   **done**
 * Check that download transfer triggering code works (when a symlink appears
   and the remote does *not* upload to us.
+* Investigate why transfers seem to block other git-annex assistant work.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
