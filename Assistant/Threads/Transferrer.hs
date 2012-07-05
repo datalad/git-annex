@@ -53,14 +53,14 @@ transfererThread st dstatus transferqueue = do
 		shouldtransfer t info = do
 			current <- currentTransfers <$> getDaemonStatus dstatus
 			if M.member t current
-				then ifM (validtransfer t)
+				then return False
+				else ifM (validtransfer t)
 					( do
 						adjustTransfers dstatus $
 							M.insertWith' const t info
 						return True
 					, return False
 					)
-				else return False
 
 		validtransfer t
 			| transferDirection t == Download =
