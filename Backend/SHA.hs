@@ -97,16 +97,17 @@ keyValueE :: SHASize -> KeySource -> Annex (Maybe Key)
 keyValueE size source = keyValue size source >>= maybe (return Nothing) addE
 	where
 		addE k = return $ Just $ k
-			{ keyName = keyName k ++ extension
+			{ keyName = keyName k ++ selectExtension (keyFilename source)
 			, keyBackendName = shaNameE size
 			}
-		naiveextension = takeExtension $ keyFilename source
-		extension
-			-- long or newline containing extensions are 
-			-- probably not really an extension
-			| length naiveextension > 6 ||
-			  '\n' `elem` naiveextension = ""
-			| otherwise = naiveextension
+
+selectExtension :: FilePath -> String
+selectExtension = join "." . reverse . take 2 . takeWhile shortenough .
+	reverse . split "." . takeExtensions
+	where
+		shortenough e
+			| '\n' `elem` e = False -- newline in extension?!
+			| otherwise = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> FilePath -> Annex Bool
