@@ -30,13 +30,26 @@ stubInfo f = TransferInfo
 	}
 
 {- Adds pending transfers to the end of the queue for some of the known
- - remotes. (TBD: a smaller set of remotes that are sufficient to transfer to,
- - rather than transferring to all.) -}
+ - remotes. -}
 queueTransfers :: TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers q daemonstatus k f direction =
 	mapM_ (liftIO . queueTransfer q f . gentransfer)
-		=<< knownRemotes <$> getDaemonStatus daemonstatus
+		=<< sufficientremotes . knownRemotes
+			<$> getDaemonStatus daemonstatus
 	where
+		sufficientremotes l
+			-- Queue downloads from all remotes, with the
+			-- cheapest ones first. More expensive ones will
+			-- only be tried if downloading from a cheap one
+			-- fails.
+			-- TODO: avoid downloading from remotes that don't
+			-- have the key.
+			| direction == Download = l
+			-- TODO: Determine a smaller set of remotes that
+			-- can be uploaded to, in order to ensure all
+			-- remotes can access the content. Currently,
+			-- send to every remote we can.
+			| otherwise = l
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k
