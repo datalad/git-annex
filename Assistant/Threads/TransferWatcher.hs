@@ -58,21 +58,17 @@ onAdd :: Handler
 onAdd st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
-		minfo <- runThreadState st $ checkTransfer t
 		pid <- getProcessID
-		case minfo of
-			Nothing -> noop -- transfer already finished
-			Just info
-				| transferPid info == Just pid -> noop
-				| otherwise -> adjustTransfers st dstatus
-				(M.insertWith' const t info)
+		runThreadState st $ go t pid =<< checkTransfer t
+	where
+		go _ _ Nothing = noop -- transfer already finished
+		go t pid (Just info)
+			| transferPid info == Just pid = noop
+			| otherwise = adjustTransfers dstatus $
+				M.insertWith' const t info
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
 onDel st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> adjustTransfers st dstatus (M.delete t)
-
-adjustTransfers :: ThreadState -> DaemonStatusHandle -> (M.Map Transfer TransferInfo -> M.Map Transfer TransferInfo) -> IO ()
-adjustTransfers st dstatus a = runThreadState st $ modifyDaemonStatus dstatus $
-	\s -> s { currentTransfers = a (currentTransfers s) }
+	Just t -> runThreadState st $ adjustTransfers dstatus $ M.delete t

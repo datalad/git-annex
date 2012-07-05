@@ -39,9 +39,11 @@
  - 	and maintains the DaemonStatus currentTransfers map. This uses
  - 	inotify on .git/annex/transfer/, so there are additional inotify
  - 	threads associated with it, too.
- - Thread 10: status logger
+ - Thread 10: transferrer
+ - 	Waits for Transfers to be queued and does them.
+ - Thread 11: status logger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 11: sanity checker
+ - Thread 12: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
  -
  - ThreadState: (MVar)
@@ -80,6 +82,7 @@ import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
 import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
+import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
 import qualified Utility.Daemon
 import Utility.LogFile
@@ -114,6 +117,7 @@ startDaemon assistant foreground
 				, transferWatcherThread st dstatus
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan
+				, transfererThread st dstatus transferqueue
 				, watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination

@@ -25,6 +25,7 @@ stubInfo f = TransferInfo
 	{ startedTime = Nothing
 	, transferPid = Nothing
 	, transferThread = Nothing
+	, transferRemote = Nothing
 	, bytesComplete = Nothing
 	, associatedFile = f
 	}
@@ -33,7 +34,7 @@ stubInfo f = TransferInfo
  - remotes. -}
 queueTransfers :: TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers q daemonstatus k f direction =
-	mapM_ (liftIO . queueTransfer q f . gentransfer)
+	mapM_ (\r -> queue r $ gentransfer r)
 		=<< sufficientremotes . knownRemotes
 			<$> getDaemonStatus daemonstatus
 	where
@@ -53,8 +54,11 @@ queueTransfers q daemonstatus k f direction =
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k
-			, transferRemote = Remote.uuid r
+			, transferUUID = Remote.uuid r
 			}
+		queue r t = liftIO $ void $ atomically $ do
+			let info = (stubInfo f) { transferRemote = Just r }
+			writeTChan q (t, info)
 
 {- Adds a pending transfer to the end of the queue. -}
 queueTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()

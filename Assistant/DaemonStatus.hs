@@ -31,11 +31,13 @@ data DaemonStatus = DaemonStatus
 	-- Last time the sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
 	-- Currently running file content transfers
-	, currentTransfers :: M.Map Transfer TransferInfo
+	, currentTransfers :: TransferMap
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
 	}
 	deriving (Show)
+
+type TransferMap = M.Map Transfer TransferInfo
 
 type DaemonStatusHandle = MVar DaemonStatus
 
@@ -132,3 +134,8 @@ afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
 
 tenMinutes :: Int
 tenMinutes = 10 * 60
+
+{- Mutates the transfer map. -}
+adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> Annex ()
+adjustTransfers dstatus a = modifyDaemonStatus dstatus $
+	\s -> s { currentTransfers = a (currentTransfers s) }

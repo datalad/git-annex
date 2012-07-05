@@ -186,8 +186,8 @@ transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 			[ show (transferDirection t) ++ "ing"
 			, fromMaybe (show $ transferKey t) (associatedFile i)
 			, if transferDirection t == Upload then "to" else "from"
-			, maybe (fromUUID $ transferRemote t) Remote.name $
-				M.lookup (transferRemote t) uuidmap
+			, maybe (fromUUID $ transferUUID t) Remote.name $
+				M.lookup (transferUUID t) uuidmap
 			]
 
 disk_size :: Stat

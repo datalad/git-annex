@@ -22,7 +22,7 @@ import Data.Time.Clock
  - of the transfer information file. -}
 data Transfer = Transfer
 	{ transferDirection :: Direction
-	, transferRemote :: UUID
+	, transferUUID :: UUID
 	, transferKey :: Key
 	}
 	deriving (Show, Eq, Ord)
@@ -37,6 +37,7 @@ data TransferInfo = TransferInfo
 	{ startedTime :: Maybe UTCTime
 	, transferPid :: Maybe ProcessID
 	, transferThread :: Maybe ThreadId
+	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
 	}
@@ -80,6 +81,7 @@ transfer t file a = do
 		<*> pure Nothing -- pid not stored in file, so omitted for speed
 		<*> pure Nothing -- threadid not stored in file, so omitted for speed
 		<*> pure Nothing -- not 0; transfer may be resuming
+		<*> pure Nothing
 		<*> pure file
 	bracketIO (prep tfile mode info) (cleanup tfile) a
 	where
@@ -168,6 +170,7 @@ readTransferInfo pid s =
 		[time] -> TransferInfo
 			<$> readish time
 			<*> pure (Just pid)
+			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure (if null filename then Nothing else Just filename)
