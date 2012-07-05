@@ -9,6 +9,8 @@ git-annex (3.20120630) UNRELEASED; urgency=low
     but avoids portability problems.
   * Use SHA library for files less than 50 kb in size, at which point it's
     faster than forking the more optimised external program.
+  * SHAnE backends are now smarter about composite extensions, such as
+    .tar.gz Closes: #680450
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Jul 2012 15:04:37 -0400
 
