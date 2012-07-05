@@ -21,8 +21,11 @@ all the other git clones, at both the git level and the key/value level.
   Watcher. **done**
 * Write basic Transfer handling thread. Multiple such threads need to be
   able to be run at once. Each will need its own independant copy of the 
-  Annex state monad.
+  Annex state monad. **done**
 * Write transfer control thread, which decides when to launch transfers.
+  **done**
+* Check that download transfer triggering code works (when a symlink appears
+  and the remote does *not* upload to us.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
@@ -79,35 +82,6 @@ Before mapping the network, the best we can do is flood all files out to every
 reachable remote. This is worth doing first, since it's the simplest way to
 get the basic functionality of the assistant to work. And we'll need this
 anyway.
-
-### transfer tracking
-
-Transfer threads started/stopped as necessary to move data.
-(May sometimes want multiple threads downloading, or uploading, or even both.)
-
-	startTransfer :: TransferQueue -> Transfer -> Annex ()
-	startTransfer q transfer = error "TODO"
-
-	stopTransfer :: TransferQueue -> TransferID -> Annex ()
-	stopTransfer q transfer = error "TODO"
-
-The assistant needs to find out when `git-annex-shell` is receiving or
-sending (triggered by another remote), so it can add data for those too.
-This is important to avoid uploading content to a remote that is already
-downloading it from us, or vice versa, as well as to in future let the web
-app manage transfers as user desires. 
-
-For files being received, it can see the temp file, but other than lsof
-there's no good way to find the pid (and I'd rather not kill blindly).
-
-For files being sent, there's no filesystem indication. So git-annex-shell
-(and other git-annex transfer processes) should write a status file to disk.
-
-Can use file locking on these status files to claim upload/download rights,
-which will avoid races.
-
-This status file can also be updated periodically to show amount of transfer
-complete (necessary for tracking uploads).
 
 ## other considerations
 
