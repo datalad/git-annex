@@ -18,7 +18,7 @@ all the other git clones, at both the git level and the key/value level.
 * enqueue Transfers (Uploads) as new files are added to the annex by
   Watcher. **done**
 * enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
-  Watcher.
+  Watcher. **done**
 * Write basic Transfer handling thread. Multiple such threads need to be
   able to be run at once. Each will need its own independant copy of the 
   Annex state monad.
