@@ -8,9 +8,10 @@
 module Assistant.TransferQueue where
 
 import Common.Annex
-import Utility.TSet
+import Assistant.DaemonStatus
 import Logs.Transfer
 import Types.Remote
+import qualified Remote
 
 import Control.Concurrent.STM
 
@@ -28,15 +29,29 @@ stubInfo f = TransferInfo
 	, associatedFile = f
 	}
 
+{- Adds pending transfers to the end of the queue for some of the known
+ - remotes. (TBD: a smaller set of remotes that are sufficient to transfer to,
+ - rather than transferring to all.) -}
+queueTransfers :: TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
+queueTransfers q daemonstatus k f direction =
+	mapM_ (liftIO . queueTransfer q f . gentransfer)
+		=<< knownRemotes <$> getDaemonStatus daemonstatus
+	where
+		gentransfer r = Transfer
+			{ transferDirection = direction
+			, transferKey = k
+			, transferRemote = Remote.uuid r
+			}
+
 {- Adds a pending transfer to the end of the queue. -}
-queueTransfer :: TransferQueue -> Transfer -> AssociatedFile -> IO ()
-queueTransfer q transfer f = void $ atomically $
-	writeTChan q (transfer, stubInfo f)
+queueTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()
+queueTransfer q f t = void $ atomically $
+	writeTChan q (t, stubInfo f)
 
 {- Adds a pending transfer to the start of the queue, to be processed next. -}
-queueNextTransfer :: TransferQueue -> Transfer -> AssociatedFile -> IO ()
-queueNextTransfer q transfer f = void $ atomically $
-	unGetTChan q (transfer, stubInfo f)
+queueNextTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()
+queueNextTransfer q f t = void $ atomically $
+	unGetTChan q (t, stubInfo f)
 
 {- Blocks until a pending transfer is available in the queue. -}
 getNextTransfer :: TransferQueue -> IO (Transfer, TransferInfo)

@@ -12,6 +12,9 @@ import Assistant.Changes
 import Assistant.Commits
 import Assistant.ThreadedMonad
 import Assistant.Threads.Watcher
+import Assistant.TransferQueue
+import Assistant.DaemonStatus
+import Logs.Transfer
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
@@ -29,8 +32,8 @@ import qualified Data.Set as S
 import Data.Either
 
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> CommitChan -> IO ()
-commitThread st changechan commitchan = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> IO ()
+commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change is available for
 	-- processing.
@@ -39,7 +42,7 @@ commitThread st changechan commitchan = runEvery (Seconds 1) $ do
 	time <- getCurrentTime
 	if shouldCommit time changes
 		then do
-			readychanges <- handleAdds st changechan changes
+			readychanges <- handleAdds st changechan transferqueue dstatus changes
 			if shouldCommit time readychanges
 				then do
 					void $ tryIO $ runThreadState st commitStaged
@@ -97,8 +100,8 @@ shouldCommit now changes
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO [Change]
-handleAdds st changechan cs = returnWhen (null pendingadds) $ do
+handleAdds :: ThreadState -> ChangeChan -> TransferQueue -> DaemonStatusHandle -> [Change] -> IO [Change]
+handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds) $ do
 	(postponed, toadd) <- partitionEithers <$>
 		safeToAdd st pendingadds
 
@@ -110,7 +113,7 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 		if (DirWatcher.eventsCoalesce || null added)
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds st changechan
+				r <- handleAdds st changechan transferqueue dstatus
 					=<< getChanges changechan
 				return $ r ++ added ++ otherchanges
 	where
@@ -121,12 +124,12 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 			| otherwise = a
 
 		add :: Change -> IO (Maybe Change)
-		add change@(PendingAddChange { keySource = ks }) = do
-			r <- catchMaybeIO $ sanitycheck ks $ runThreadState st $ do
-				showStart "add" $ keyFilename ks
-				handle (finishedChange change) (keyFilename ks)
-					=<< Command.Add.ingest ks
-			return $ maybeMaybe r
+		add change@(PendingAddChange { keySource = ks }) =
+			liftM maybeMaybe $ catchMaybeIO $
+				sanitycheck ks $ runThreadState st $ do
+					showStart "add" $ keyFilename ks
+					key <- Command.Add.ingest ks
+					handle (finishedChange change) (keyFilename ks) key
 		add _ = return Nothing
 
 		maybeMaybe (Just j@(Just _)) = j
@@ -141,6 +144,7 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 				sha <- inRepo $
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
+			queueTransfers transferqueue dstatus key (Just file) Upload
 			showEndOk
 			return $ Just change
 

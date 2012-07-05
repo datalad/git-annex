@@ -11,13 +11,14 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Utility.ThreadScheduler
 import Utility.TempFile
+import Logs.Transfer
+import qualified Command.Sync
 
 import Control.Concurrent
 import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-import Logs.Transfer
 import qualified Data.Map as M
 
 data DaemonStatus = DaemonStatus
@@ -31,6 +32,8 @@ data DaemonStatus = DaemonStatus
 	, lastSanityCheck :: Maybe POSIXTime
 	-- Currently running file content transfers
 	, currentTransfers :: M.Map Transfer TransferInfo
+	-- Ordered list of remotes to talk to.
+	, knownRemotes :: [Remote]
 	}
 	deriving (Show)
 
@@ -43,6 +46,7 @@ newDaemonStatus = DaemonStatus
 	, sanityCheckRunning = False
 	, lastSanityCheck = Nothing
 	, currentTransfers = M.empty
+	, knownRemotes = []
 	}
 
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
@@ -59,10 +63,12 @@ startDaemonStatus = do
 	status <- liftIO $
 		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
+	remotes <- Command.Sync.syncRemotes []
 	liftIO $ newMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
+		, knownRemotes = remotes
 		}
 
 {- This thread wakes up periodically and writes the daemon status to disk. -}

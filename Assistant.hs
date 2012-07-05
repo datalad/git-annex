@@ -21,7 +21,8 @@
  -	until this is complete.
  - Thread 5: committer
  - 	Waits for changes to occur, and runs the git queue to update its
- - 	index, then commits.
+ - 	index, then commits. Also queues Transfer events to send added
+ - 	files to other remotes.
  - Thread 6: pusher
  - 	Waits for commits to be made, and pushes updated branches to remotes,
  - 	in parallel. (Forks a process for each git push.)
@@ -73,6 +74,7 @@ import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.Commits
 import Assistant.Pushes
+import Assistant.TransferQueue
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
@@ -103,9 +105,10 @@ startDaemon assistant foreground
 			changechan <- newChangeChan
 			commitchan <- newCommitChan
 			pushmap <- newFailedPushMap
+			transferqueue <- newTransferQueue
 			mapM_ (void . forkIO)
-				[ commitThread st changechan commitchan
-				, pushThread st commitchan pushmap
+				[ commitThread st changechan commitchan transferqueue dstatus
+				, pushThread st dstatus commitchan pushmap
 				, pushRetryThread st pushmap
 				, mergeThread st
 				, transferWatcherThread st dstatus

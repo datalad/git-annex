@@ -10,6 +10,7 @@ module Assistant.Threads.Pusher where
 import Common.Annex
 import Assistant.Commits
 import Assistant.Pushes
+import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Threads.Merger
 import qualified Command.Sync
@@ -32,9 +33,8 @@ pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
 		halfhour = 1800
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
-pushThread :: ThreadState -> CommitChan -> FailedPushMap -> IO ()
-pushThread st commitchan pushmap = do
-	remotes <- runThreadState st $ Command.Sync.syncRemotes []
+pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> IO ()
+pushThread st daemonstatus commitchan pushmap = do
 	runEvery (Seconds 2) $ do
 		-- We already waited two seconds as a simple rate limiter.
 		-- Next, wait until at least one commit has been made
@@ -42,7 +42,10 @@ pushThread st commitchan pushmap = do
 		-- Now see if now's a good time to push.
 		now <- getCurrentTime
 		if shouldPush now commits
-			then pushToRemotes now st pushmap remotes
+			then do
+				remotes <- runThreadState st $
+					knownRemotes <$> getDaemonStatus daemonstatus
+				pushToRemotes now st pushmap remotes
 			else refillCommits commitchan commits
 
 {- Decide if now is a good time to push to remotes.
