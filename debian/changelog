@@ -4,6 +4,11 @@ git-annex (3.20120630) UNRELEASED; urgency=low
     transfer is already in progress by another process.
   * status: Lists transfers that are currently in progress.
   * Fix passing --uuid to git-annex-shell.
+  * When shaNsum commands cannot be found, use the Haskell SHA library
+    (already a dependency) to do the checksumming. This may be slower,
+    but avoids portability problems.
+  * Use SHA library for files less than 50 kb in size, at which point it's
+    faster than forking the more optimised external program.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Jul 2012 15:04:37 -0400
 

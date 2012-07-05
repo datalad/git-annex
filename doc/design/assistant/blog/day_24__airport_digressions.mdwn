@@ -1,0 +1,99 @@
+In a series of airport layovers all day. Since I woke up at 3:45 am, 
+didn't feel up to doing serious new work, so instead I worked through some
+OSX support backlog.
+
+git-annex will now use Haskell's SHA library if the `sha256sum`
+command is not available. That library is slow, but it's guaranteed to be
+available; git-annex already depended on it to calculate HMACs.
+
+Then I decided to see if it makes sense to use the SHA library
+when adding smaller files. At some point, its slower implementation should
+win over needing to fork and parse the output of `sha256sum`. This was 
+the first time I tried out Haskell's 
+[Criterion](http://hackage.haskell.org/package/criterion) benchmarker,
+and I built this simple benchmark in short order.
+
+[[!format haskell """
+import Data.Digest.Pure.SHA
+import Data.ByteString.Lazy as L
+import Criterion.Main
+import Common
+
+testfile :: FilePath
+testfile = "/tmp/bar" -- on ram disk
+
+main = defaultMain
+        [ bgroup "sha256"
+                [ bench "internal" $ whnfIO internal
+                , bench "external" $ whnfIO external
+                ]
+        ]
+
+internal :: IO String
+internal = showDigest . sha256 <$> L.readFile testfile
+
+external :: IO String
+external = pOpen ReadFromPipe "sha256sum" [testfile] $ \h ->
+        fst . separate (== ' ') <$> hGetLine h
+"""]]
+
+The nice thing about benchmarking in Airports is when you're running a
+benchmark locally, you don't want to do anything else with the computer,
+so can alternate people watching, spacing out, and analizing results.
+
+100 kb file:
+
+	benchmarking sha256/internal
+	mean: 15.64729 ms, lb 15.29590 ms, ub 16.10119 ms, ci 0.950
+	std dev: 2.032476 ms, lb 1.638016 ms, ub 2.527089 ms, ci 0.950
+
+	benchmarking sha256/external
+	mean: 8.217700 ms, lb 7.931324 ms, ub 8.568805 ms, ci 0.950
+	std dev: 1.614786 ms, lb 1.357791 ms, ub 2.009682 ms, ci 0.950
+
+75 kb file:
+
+	benchmarking sha256/internal
+	mean: 12.16099 ms, lb 11.89566 ms, ub 12.50317 ms, ci 0.950
+	std dev: 1.531108 ms, lb 1.232353 ms, ub 1.929141 ms, ci 0.950
+
+	benchmarking sha256/external
+	mean: 8.818731 ms, lb 8.425744 ms, ub 9.269550 ms, ci 0.950
+	std dev: 2.158530 ms, lb 1.916067 ms, ub 2.487242 ms, ci 0.950
+
+50 kb file:
+
+	benchmarking sha256/internal
+	mean: 7.699274 ms, lb 7.560254 ms, ub 7.876605 ms, ci 0.950
+	std dev: 801.5292 us, lb 655.3344 us, ub 990.4117 us, ci 0.950
+
+	benchmarking sha256/external
+	mean: 8.715779 ms, lb 8.330540 ms, ub 9.102232 ms, ci 0.950
+	std dev: 1.988089 ms, lb 1.821582 ms, ub 2.181676 ms, ci 0.950
+
+10 kb file:
+
+	benchmarking sha256/internal
+	mean: 1.586105 ms, lb 1.574512 ms, ub 1.604922 ms, ci 0.950
+	std dev: 74.07235 us, lb 51.71688 us, ub 108.1348 us, ci 0.950
+
+	benchmarking sha256/external
+	mean: 6.873742 ms, lb 6.582765 ms, ub 7.252911 ms, ci 0.950
+	std dev: 1.689662 ms, lb 1.346310 ms, ub 2.640399 ms, ci 0.950
+
+It's possible to get nice graphical reports out of Criterion, but 
+this is clear enough, so I stopped here. 50 kb seems a reasonable
+cutoff point.
+
+I also used this to benchmark the SHA256 in Haskell's Crypto package.
+Surprisingly, it's a *lot* slower than even the Pure.SHA code.
+On a 50 kb file:
+
+	benchmarking sha256/Crypto
+	collecting 100 samples, 1 iterations each, in estimated 6.073809 s
+	mean: 69.89037 ms, lb 69.15831 ms, ub 70.71845 ms, ci 0.950
+	std dev: 3.995397 ms, lb 3.435775 ms, ub 4.721952 ms, ci 0.950
+
+
+There's another Haskell library, [SHA2](http://hackage.haskell.org/package/SHA2),
+which I should try some time.

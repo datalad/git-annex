@@ -28,15 +28,14 @@ tests =
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "lsof" $ testCmd "lsof" "lsof -v >/dev/null 2>&1"
 	, TestCase "ssh connection caching" getSshConnectionCaching
-	] ++ shaTestCases False [1, 512, 224, 384] ++ shaTestCases True [256]
+	] ++ shaTestCases [1, 256, 512, 224, 384]
 
-shaTestCases :: Bool -> [Int] -> [TestCase]
-shaTestCases required l = map make l
+shaTestCases :: [Int] -> [TestCase]
+shaTestCases l = map make l
 	where
-		make n = TestCase key $ selector key (shacmds n) "</dev/null"
+		make n = TestCase key $ maybeSelectCmd key (shacmds n) "</dev/null"
 			where
 				key = "sha" ++ show n
-		selector = if required then selectCmd else maybeSelectCmd
 		shacmds n = concatMap (\x -> [x, osxpath </> x]) $
 			map (\x -> "sha" ++ show n ++ x) ["", "sum"]
 		-- Max OSX puts GNU tools outside PATH, so look in
