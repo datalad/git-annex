@@ -14,14 +14,15 @@ import qualified Git.LsFiles
 import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Changes
+import Assistant.TransferQueue
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 
 import Data.Time.Clock.POSIX
 
 {- This thread wakes up occasionally to make sure the tree is in good shape. -}
-sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-sanityCheckerThread st status changechan = forever $ do
+sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
+sanityCheckerThread st status transferqueue changechan = forever $ do
 	waitForNextCheck st status
 
 	runThreadState st $
@@ -29,7 +30,7 @@ sanityCheckerThread st status changechan = forever $ do
 				{ sanityCheckRunning = True }
 
 	now <- getPOSIXTime -- before check started
-	catchIO (check st status changechan)
+	catchIO (check st status transferqueue changechan)
 		(runThreadState st . warning . show)
 
 	runThreadState st $ do
@@ -58,8 +59,8 @@ oneDay = 24 * 60 * 60
 {- It's important to stay out of the Annex monad as much as possible while
  - running potentially expensive parts of this check, since remaining in it
  - will block the watcher. -}
-check :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO () 
-check st status changechan = do
+check :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO () 
+check st status transferqueue changechan = do
 	g <- runThreadState st $ do
 		showSideAction "Running daily check"
 		fromRepo id
@@ -79,5 +80,5 @@ check st status changechan = do
 		insanity m = runThreadState st $ warning m
 		addsymlink file s = do
 			insanity $ "found unstaged symlink: " ++ file
-			Watcher.runHandler st status changechan
+			Watcher.runHandler st status transferqueue changechan
 				Watcher.onAddSymlink file s

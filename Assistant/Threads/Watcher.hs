@@ -13,6 +13,8 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
+import Assistant.TransferQueue
+import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Annex
@@ -45,11 +47,11 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
-watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-watchThread st dstatus changechan = void $ watchDir "." ignored hooks startup
+watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
+watchThread st dstatus transferqueue changechan = void $ watchDir "." ignored hooks startup
 	where
 		startup = statupScan st dstatus
-		hook a = Just $ runHandler st dstatus changechan a
+		hook a = Just $ runHandler st dstatus transferqueue changechan a
 		hooks = WatchHooks
 			{ addHook = hook onAdd
 			, delHook = hook onDel
@@ -82,22 +84,22 @@ ignored = ig . takeFileName
 	ig ".gitattributes" = True
 	ig _ = False
 
-type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
+type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
 
 {- Runs an action handler, inside the Annex monad, and if there was a
  - change, adds it to the ChangeChan.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: ThreadState -> DaemonStatusHandle -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st dstatus changechan handler file filestatus = void $ do
+runHandler :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st dstatus transferqueue changechan handler file filestatus = void $ do
 	r <- tryIO go
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange changechan change
 	where
-		go = runThreadState st $ handler file filestatus dstatus
+		go = runThreadState st $ handler file filestatus dstatus transferqueue
 
 {- During initial directory scan, this will be run for any regular files
  - that are already checked into git. We don't want to turn those into
@@ -118,7 +120,7 @@ runHandler st dstatus changechan handler file filestatus = void $ do
  - the add.
  -}
 onAdd :: Handler
-onAdd file filestatus dstatus
+onAdd file filestatus dstatus _
 	| maybe False isRegularFile filestatus = do
 		ifM (scanComplete <$> getDaemonStatus dstatus)
 			( go
@@ -136,12 +138,15 @@ onAdd file filestatus dstatus
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
+onAddSymlink file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
 	where
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( ensurestaged link =<< getDaemonStatus dstatus
+				( do
+					s <- getDaemonStatus dstatus
+					checkcontent key s
+					ensurestaged link s
 				, do
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
@@ -183,8 +188,16 @@ onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 					stageSymlink file sha
 			madeChange file LinkChange
 
+		{- When a new link appears, after the startup scan,
+		 - try to get the key's content. -}
+		checkcontent key daemonstatus
+			| scanComplete daemonstatus = unlessM (inAnnex key) $
+				queueTransfers transferqueue dstatus
+					key (Just file) Download
+			| otherwise = noop
+
 onDel :: Handler
-onDel file _ _dstatus = do
+onDel file _ _dstatus _ = do
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file RmChange
@@ -197,14 +210,14 @@ onDel file _ _dstatus = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir _ _dstatus = do
+onDelDir dir _ _dstatus _ = do
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir RmDirChange
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg _ _dstatus = do
+onErr msg _ _dstatus _ = do
 	warning msg
 	return Nothing
 

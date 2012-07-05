@@ -113,8 +113,8 @@ startDaemon assistant foreground
 				, mergeThread st
 				, transferWatcherThread st dstatus
 				, daemonStatusThread st dstatus
-				, sanityCheckerThread st dstatus changechan
-				, watchThread st dstatus changechan
+				, sanityCheckerThread st dstatus transferqueue changechan
+				, watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
 
