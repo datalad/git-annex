@@ -97,6 +97,6 @@ runTransfer st t info
 		inthread a = do
 			mvar <- newEmptyMVar
 			void $ forkIO $
-				runThreadState st a `E.finally` putMVar mvar ()
+				unsafeRunThreadState st a `E.finally` putMVar mvar ()
 			void $ takeMVar mvar -- wait for transfer thread
 			runThreadState st invalidateCache
