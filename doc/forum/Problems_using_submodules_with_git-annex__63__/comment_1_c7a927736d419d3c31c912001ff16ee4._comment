@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-07-05T17:04:34Z"
+ content="""
+I haven't tried it either, but I think it should work ok, as long as you bear in mind that to git-annex, each submodule will be treated as a separate git repository.
+"""]]
