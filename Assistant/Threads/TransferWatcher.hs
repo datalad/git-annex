@@ -47,13 +47,7 @@ runHandler st dstatus handler file filestatus = void $ do
 onErr :: Handler
 onErr _ _ msg _ = error msg
 
-{- Called when a new transfer information file is written. 
- -
- - When another thread of the assistant writes a transfer info file,
- - this will notice that too, but should skip it, because the thread
- - will be managing the transfer itself, and will have stored a more
- - complete TransferInfo than is stored in the file.
- -}
+{- Called when a new transfer information file is written. -}
 onAdd :: Handler
 onAdd st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
@@ -62,10 +56,8 @@ onAdd st dstatus file _ = case parseTransferFile file of
 		runThreadState st $ go t pid =<< checkTransfer t
 	where
 		go _ _ Nothing = noop -- transfer already finished
-		go t pid (Just info)
-			| transferPid info == Just pid = noop
-			| otherwise = adjustTransfers dstatus $
-				M.insertWith' const t info
+		go t pid (Just info) = adjustTransfers dstatus $
+			M.insertWith' const t info
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
