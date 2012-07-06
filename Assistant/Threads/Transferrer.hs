@@ -13,13 +13,10 @@ import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Logs.Transfer
 import Annex.Content
-import Annex.BranchState
 import Utility.ThreadScheduler
 import Command
 import qualified Command.Move
 
-import Control.Exception as E
-import Control.Concurrent
 import Data.Time.Clock
 import qualified Data.Map as M
 
@@ -31,11 +28,11 @@ maxTransfers = 1
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> IO ()
 transfererThread st dstatus transferqueue = runEvery (Seconds 1) $ do
 	(t, info) <- getNextTransfer transferqueue
-	go =<< runThreadState st $ shouldTransfer t
-	where
-		go Yes = runTransfer st t
-		go No = noop
-		go TooMany = waitTransfer >> go Yes
+	c <- runThreadState st $ shouldTransfer dstatus t
+	case c of
+		Yes -> void $ runTransfer st dstatus t info
+		Skip -> noop
+		TooMany -> void $ waitTransfer >> runTransfer st dstatus t info
 
 data ShouldTransfer = Yes | Skip | TooMany
 
@@ -51,7 +48,8 @@ shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
 			| M.member t m = return Skip
 			| M.size m > maxTransfers = return TooMany
 			| transferDirection t == Download =
-				ifM (inAnnex $ transferKey t) (No, Yes)
+				ifM (inAnnex $ transferKey t)
+					(return Skip, return Yes)
 			| otherwise = return Yes
 
 {- Waits for any of the transfers in the map to complete. -}
@@ -74,8 +72,8 @@ waitTransfer = error "TODO"
  - effectively running in oneshot mode, without committing changes to the
  - git-annex branch, and transfers should never queue git commands to run.
  -}
-runTransfer :: ThreadState -> Transfer -> TransferInfo -> IO ProcessID
-runTransfer st t info
+runTransfer :: ThreadState -> DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
+runTransfer st dstatus t info
 	| transferDirection t == Download = go Command.Move.fromStart
 	| otherwise = go Command.Move.toStart
 	where
@@ -84,10 +82,11 @@ runTransfer st t info
 			(_, Nothing) -> noop
 			(Just remote, Just file) -> do
 				now <- getCurrentTime
-				pid <- forkProcess $ unsafeRunThreadState st $
+				pid <- forkProcess $ unsafeRunThreadState st $ void $
 					doCommand $ cmd remote False file (transferKey t)
-				adjustTransfers dstatus $
-					M.insertWith' const t info
-						{ startedTime = Just now
-						, transferPid = Just pid
-						}
+				runThreadState st $ 
+					adjustTransfers dstatus $
+						M.insertWith' const t info
+							{ startedTime = Just now
+							, transferPid = Just pid
+							}
