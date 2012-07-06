@@ -84,6 +84,7 @@ import Assistant.Changes
 import Assistant.Commits
 import Assistant.Pushes
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
@@ -122,7 +123,7 @@ startDaemon assistant foreground
 				, pushThread st dstatus commitchan pushmap
 				, pushRetryThread st pushmap
 				, mergeThread st
-				, transferWatcherThread st dstatus transferslots
+				, transferWatcherThread st dstatus
 				, transfererThread st dstatus transferqueue transferslots
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan

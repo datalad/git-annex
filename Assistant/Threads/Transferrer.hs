@@ -11,6 +11,7 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Logs.Transfer
 import Annex.Content
 import Utility.ThreadScheduler
@@ -25,14 +26,16 @@ maxTransfers :: Int
 maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
-transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> IO ()
-transfererThread st dstatus transferqueue = runEvery (Seconds 1) $ do
+transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
+transfererThread st dstatus transferqueue slots = runEvery (Seconds 1) $ do
 	(t, info) <- getNextTransfer transferqueue
 	c <- runThreadState st $ shouldTransfer dstatus t
+	let run = void $ inTransferSlot slots $
+		runTransfer st dstatus t info
 	case c of
-		Yes -> void $ runTransfer st dstatus t info
+		Yes -> run
 		Skip -> noop
-		TooMany -> void $ waitTransfer >> runTransfer st dstatus t info
+		TooMany -> waitTransfer >> run
 
 data ShouldTransfer = Yes | Skip | TooMany
 
