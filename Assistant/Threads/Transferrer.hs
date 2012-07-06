@@ -41,7 +41,7 @@ shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
 		go m
 			| M.member t m = return False
 			| transferDirection t == Download =
-				inAnnex $ transferKey t
+				not <$> inAnnex (transferKey t)
 			| otherwise = return True
 
 {- Waits for any of the transfers in the map to complete. -}
