@@ -14,6 +14,8 @@ all the other git clones, at both the git level and the key/value level.
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
   airport somewhere.
+* file transfers run in background processes, which means they
+  probably don't participate in ssh connection caching. Verify this and fix.
 
 ## longer-term TODO
 
