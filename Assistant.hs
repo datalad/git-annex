@@ -31,14 +31,15 @@
  - 	them.
  - Thread 8: merger
  - 	Waits for pushes to be received from remotes, and merges the
- - 	updated branches into the current branch. This uses inotify
- - 	on .git/refs/heads, so there are additional inotify threads
- - 	associated with it, too.
+ - 	updated branches into the current branch.
+ - 	(This uses inotify on .git/refs/heads, so there are additional
+ - 	inotify threads associated with it, too.)
  - Thread 9: transfer watcher
  - 	Watches for transfer information files being created and removed,
- - 	and maintains the DaemonStatus currentTransfers map. This uses
- - 	inotify on .git/annex/transfer/, so there are additional inotify
- - 	threads associated with it, too.
+ - 	and maintains the DaemonStatus currentTransfers map and the
+ - 	TransferSlots QSemN. 
+ - 	(This uses inotify on .git/annex/transfer/, so there are
+ - 	additional inotify threads associated with it, too.)
  - Thread 10: transferrer
  - 	Waits for Transfers to be queued and does them.
  - Thread 11: status logger
@@ -66,6 +67,12 @@
  - 	retrier blocks until they're available.
  - TransferQueue (STM TChan)
  - 	Transfers to make are indicated by writing to this channel.
+ - TransferSlots (QSemN)
+ - 	Count of the number of currently available transfer slots.
+ - 	Updated by the transfer watcher, this allows other threads
+ - 	to block until a slot is available.
+ - 	This MVar should only be manipulated from inside the Annex monad,
+ - 	which ensures it's accessed only after the ThreadState MVar.
  -}
 
 module Assistant where
@@ -109,15 +116,16 @@ startDaemon assistant foreground
 			commitchan <- newCommitChan
 			pushmap <- newFailedPushMap
 			transferqueue <- newTransferQueue
+			transferslots <- newTransferSlots
 			mapM_ (void . forkIO)
 				[ commitThread st changechan commitchan transferqueue dstatus
 				, pushThread st dstatus commitchan pushmap
 				, pushRetryThread st pushmap
 				, mergeThread st
-				, transferWatcherThread st dstatus
+				, transferWatcherThread st dstatus transferslots
+				, transfererThread st dstatus transferqueue transferslots
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan
-				, transfererThread st dstatus transferqueue
 				, watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination

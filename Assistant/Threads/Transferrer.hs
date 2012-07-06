@@ -14,6 +14,7 @@ import Assistant.TransferQueue
 import Logs.Transfer
 import Annex.Content
 import Annex.BranchState
+import Utility.ThreadScheduler
 import Command
 import qualified Command.Move
 
@@ -22,68 +23,58 @@ import Control.Concurrent
 import Data.Time.Clock
 import qualified Data.Map as M
 
-{- Dispatches transfers from the queue.
- -
- - This is currently very simplistic, and runs only one transfer at a time.
- -}
+{- For now only one transfer is run at a time. -}
+maxTransfers :: Int
+maxTransfers = 1
+
+{- Dispatches transfers from the queue. -}
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> IO ()
-transfererThread st dstatus transferqueue = do
-	mypid <- getProcessID
-	mytid <- myThreadId
-	go mypid mytid
+transfererThread st dstatus transferqueue = runEvery (Seconds 1) $ do
+	(t, info) <- getNextTransfer transferqueue
+	go =<< runThreadState st $ shouldTransfer t
 	where
-		go mypid mytid = do
-			(t, info) <- getNextTransfer transferqueue
+		go Yes = runTransfer st t
+		go No = noop
+		go TooMany = waitTransfer >> go Yes
 
-			now <- getCurrentTime
-			let info' = info
-				{ startedTime = Just now
-				, transferPid = Just mypid
-				, transferThread = Just mytid
-				}
+data ShouldTransfer = Yes | Skip | TooMany
 
-			ifM (runThreadState st $ shouldtransfer t info')
-				( runTransfer st t info'
-				, noop
-				)
-			go mypid mytid
-
-		-- Check if the transfer is already running,
-		-- and if not, add it to the TransferMap.
-		shouldtransfer t info = do
-			current <- currentTransfers <$> getDaemonStatus dstatus
-			if M.member t current
-				then return False
-				else ifM (validtransfer t)
-					( do
-						adjustTransfers dstatus $
-							M.insertWith' const t info
-						return True
-					, return False
-					)
-
-		validtransfer t
+{- Checks if the requested transfer is already running, or
+ - the file to download is already present.
+ -
+ - There also may be too many transfers already running to service this
+ - transfer yet. -}
+shouldTransfer :: DaemonStatusHandle -> Transfer -> Annex ShouldTransfer
+shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
+	where
+		go m
+			| M.member t m = return Skip
+			| M.size m > maxTransfers = return TooMany
 			| transferDirection t == Download =
-				not <$> inAnnex (transferKey t)
-			| otherwise = return True
+				ifM (inAnnex $ transferKey t) (No, Yes)
+			| otherwise = return Yes
 
-{- A transfer is run in a separate thread, with a *copy* of the Annex
+{- Waits for any of the transfers in the map to complete. -}
+waitTransfer :: IO ()
+waitTransfer = error "TODO"
+--			getProcessStatus True False pid
+--			runThreadState st invalidateCache
+
+{- A transfer is run in a separate process, with a *copy* of the Annex
  - state. This is necessary to avoid blocking the rest of the assistant
  - on the transfer completing, and also to allow multiple transfers to run
  - at once. 
  -
- - However, it means that the transfer threads are responsible
+ - However, it means that the transfer processes are responsible
  - for doing any necessary shutdown cleanups, and that the parent
- - thread's cache must be invalidated, as changes may have been made to the
- - git-annex branch. 
+ - thread's cache must be invalidated once a transfer completes, as
+ - changes may have been made to the git-annex branch. 
  -
- - Currently a minimal shutdown is done; the transfer threads are
+ - Currently a minimal shutdown is done; the transfer processes are
  - effectively running in oneshot mode, without committing changes to the
  - git-annex branch, and transfers should never queue git commands to run.
- -
- - Note: It is unsafe to call getDaemonStatus inside the transfer thread.
  -}
-runTransfer :: ThreadState -> Transfer -> TransferInfo -> IO ()
+runTransfer :: ThreadState -> Transfer -> TransferInfo -> IO ProcessID
 runTransfer st t info
 	| transferDirection t == Download = go Command.Move.fromStart
 	| otherwise = go Command.Move.toStart
@@ -91,12 +82,12 @@ runTransfer st t info
 		go cmd = case (transferRemote info, associatedFile info) of
 			(Nothing, _) -> noop
 			(_, Nothing) -> noop
-			(Just remote, Just file) -> 
-				inthread $ void $ doCommand $
-					cmd remote False file (transferKey t)
-		inthread a = do
-			mvar <- newEmptyMVar
-			void $ forkIO $
-				unsafeRunThreadState st a `E.finally` putMVar mvar ()
-			void $ takeMVar mvar -- wait for transfer thread
-			runThreadState st invalidateCache
+			(Just remote, Just file) -> do
+				now <- getCurrentTime
+				pid <- forkProcess $ unsafeRunThreadState st $
+					doCommand $ cmd remote False file (transferKey t)
+				adjustTransfers dstatus $
+					M.insertWith' const t info
+						{ startedTime = Just now
+						, transferPid = Just pid
+						}

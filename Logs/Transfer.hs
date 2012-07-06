@@ -14,7 +14,6 @@ import qualified Git
 import Types.Remote
 import qualified Fields
 
-import Control.Concurrent
 import System.Posix.Types
 import Data.Time.Clock
 
@@ -36,7 +35,6 @@ data Transfer = Transfer
 data TransferInfo = TransferInfo
 	{ startedTime :: Maybe UTCTime
 	, transferPid :: Maybe ProcessID
-	, transferThread :: Maybe ThreadId
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
@@ -79,7 +77,6 @@ transfer t file a = do
 	info <- liftIO $ TransferInfo
 		<$> (Just <$> getCurrentTime)
 		<*> pure Nothing -- pid not stored in file, so omitted for speed
-		<*> pure Nothing -- threadid not stored in file, so omitted for speed
 		<*> pure Nothing -- not 0; transfer may be resuming
 		<*> pure Nothing
 		<*> pure file
@@ -158,7 +155,6 @@ writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	-- transferPid is not included; instead obtained by looking at
 	-- the process that locks the file.
-	-- transferThread is not included; not relevant for other processes
 	[ show $ startedTime info
 	-- bytesComplete is not included; changes too fast 
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
@@ -170,7 +166,6 @@ readTransferInfo pid s =
 		[time] -> TransferInfo
 			<$> readish time
 			<*> pure (Just pid)
-			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure (if null filename then Nothing else Just filename)
