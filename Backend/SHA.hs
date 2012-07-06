@@ -102,9 +102,13 @@ keyValueE size source = keyValue size source >>= maybe (return Nothing) addE
 			}
 
 selectExtension :: FilePath -> String
-selectExtension = join "." . reverse . take 2 . takeWhile shortenough .
-	reverse . split "." . takeExtensions
+selectExtension f
+	| null es = ""
+	| otherwise = join "." ("":es)
 	where
+		es = filter (not . null) $ reverse $
+			take 2 $ takeWhile shortenough $
+			reverse $ split "." $ takeExtensions f
 		shortenough e
 			| '\n' `elem` e = False -- newline in extension?!
 			| otherwise = length e <= 4 -- long enough for "jpeg"
