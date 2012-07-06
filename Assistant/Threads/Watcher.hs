@@ -67,7 +67,7 @@ statupScan st dstatus scanner = do
 		showAction "scanning"
 	r <- scanner
 	runThreadState st $
-		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
+		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 	-- Notice any files that were deleted before watching was started.
 	runThreadState st $ do

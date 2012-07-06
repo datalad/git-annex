@@ -13,6 +13,7 @@ import Assistant.DaemonStatus
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import Annex.BranchState
 
 import Data.Map as M
 
@@ -51,16 +52,27 @@ onErr _ _ msg _ = error msg
 onAdd :: Handler
 onAdd st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> do
-		pid <- getProcessID
-		runThreadState st $ go t pid =<< checkTransfer t
+	Just t -> runThreadState st $ go t =<< checkTransfer t
 	where
-		go _ _ Nothing = noop -- transfer already finished
-		go t pid (Just info) = adjustTransfers dstatus $
+		go _ Nothing = noop -- transfer already finished
+		go t (Just info) = adjustTransfers dstatus $
 			M.insertWith' const t info
 
-{- Called when a transfer information file is removed. -}
+{- Called when a transfer information file is removed.
+ -
+ - When the transfer process is a child of this process, wait on it
+ - to avoid zombies.
+ -}
 onDel :: Handler
 onDel st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> runThreadState st $ adjustTransfers dstatus $ M.delete t
+	Just t -> maybe noop waitchild
+		=<< runThreadState st (removeTransfer dstatus t)
+	where
+		waitchild info
+			| shouldWait info = case transferPid info of
+				Nothing -> noop
+				Just pid -> do
+					void $ getProcessStatus True False pid
+					runThreadState st invalidateCache
+			| otherwise = noop	

@@ -27,6 +27,7 @@ stubInfo f = TransferInfo
 	, transferRemote = Nothing
 	, bytesComplete = Nothing
 	, associatedFile = f
+	, shouldWait = False
 	}
 
 {- Adds pending transfers to the end of the queue for some of the known

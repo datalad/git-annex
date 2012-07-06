@@ -38,6 +38,7 @@ data TransferInfo = TransferInfo
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
+	, shouldWait :: Bool
 	}
 	deriving (Show, Eq, Ord)
 
@@ -80,6 +81,7 @@ transfer t file a = do
 		<*> pure Nothing -- not 0; transfer may be resuming
 		<*> pure Nothing
 		<*> pure file
+		<*> pure False
 	bracketIO (prep tfile mode info) (cleanup tfile) a
 	where
 		prep tfile mode info = do
@@ -169,6 +171,7 @@ readTransferInfo pid s =
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure (if null filename then Nothing else Just filename)
+			<*> pure False
 		_ -> Nothing
 	where
 		(bits, filebits) = splitAt 1 $ lines s 

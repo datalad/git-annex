@@ -44,12 +44,6 @@ shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
 				not <$> inAnnex (transferKey t)
 			| otherwise = return True
 
-{- Waits for any of the transfers in the map to complete. -}
-waitTransfer :: IO ()
-waitTransfer = error "TODO"
---			getProcessStatus True False pid
---			runThreadState st invalidateCache
-
 {- A transfer is run in a separate process, with a *copy* of the Annex
  - state. This is necessary to avoid blocking the rest of the assistant
  - on the transfer completing, and also to allow multiple transfers to run
@@ -81,4 +75,5 @@ runTransfer st dstatus t info
 						M.insertWith' const t info
 							{ startedTime = Just now
 							, transferPid = Just pid
+							, shouldWait = True
 							}

@@ -26,7 +26,7 @@ sanityCheckerThread st status transferqueue changechan = forever $ do
 	waitForNextCheck st status
 
 	runThreadState st $
-		modifyDaemonStatus status $ \s -> s
+		modifyDaemonStatus_ status $ \s -> s
 				{ sanityCheckRunning = True }
 
 	now <- getPOSIXTime -- before check started
@@ -34,7 +34,7 @@ sanityCheckerThread st status transferqueue changechan = forever $ do
 		(runThreadState st . warning . show)
 
 	runThreadState st $ do
-		modifyDaemonStatus status $ \s -> s
+		modifyDaemonStatus_ status $ \s -> s
 			{ sanityCheckRunning = False
 			, lastSanityCheck = Just now
 			}

@@ -54,8 +54,11 @@ newDaemonStatus = DaemonStatus
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
 getDaemonStatus = liftIO . readMVar
 
-modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
+modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
+modifyDaemonStatus_ handle a = liftIO $ modifyMVar_ handle (return . a)
+
+modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> Annex b
+modifyDaemonStatus handle a = liftIO $ modifyMVar handle (return . a)
 
 {- Load any previous daemon status file, and store it in the MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
@@ -137,5 +140,15 @@ tenMinutes = 10 * 60
 
 {- Mutates the transfer map. -}
 adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> Annex ()
-adjustTransfers dstatus a = modifyDaemonStatus dstatus $
+adjustTransfers dstatus a = modifyDaemonStatus_ dstatus $
 	\s -> s { currentTransfers = a (currentTransfers s) }
+
+{- Removes a transfer from the map, and returns its info. -}
+removeTransfer :: DaemonStatusHandle -> Transfer -> Annex (Maybe TransferInfo)
+removeTransfer dstatus t = modifyDaemonStatus dstatus go
+	where
+		go s =
+			let (info, ts) = M.updateLookupWithKey
+				(\_k _v -> Nothing)
+				t (currentTransfers s)
+			in (s { currentTransfers = ts }, info)
