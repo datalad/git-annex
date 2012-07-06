@@ -29,31 +29,20 @@ maxTransfers = 1
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
 transfererThread st dstatus transferqueue slots = runEvery (Seconds 1) $ do
 	(t, info) <- getNextTransfer transferqueue
-	c <- runThreadState st $ shouldTransfer dstatus t
-	let run = void $ inTransferSlot slots $
-		runTransfer st dstatus t info
-	case c of
-		Yes -> run
-		Skip -> noop
-		TooMany -> waitTransfer >> run
-
-data ShouldTransfer = Yes | Skip | TooMany
+	whenM (runThreadState st $ shouldTransfer dstatus t) $ 
+		void $ inTransferSlot slots $
+			runTransfer st dstatus t info
 
 {- Checks if the requested transfer is already running, or
- - the file to download is already present.
- -
- - There also may be too many transfers already running to service this
- - transfer yet. -}
-shouldTransfer :: DaemonStatusHandle -> Transfer -> Annex ShouldTransfer
+ - the file to download is already present. -}
+shouldTransfer :: DaemonStatusHandle -> Transfer -> Annex Bool
 shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
 	where
 		go m
-			| M.member t m = return Skip
-			| M.size m > maxTransfers = return TooMany
+			| M.member t m = return False
 			| transferDirection t == Download =
-				ifM (inAnnex $ transferKey t)
-					(return Skip, return Yes)
-			| otherwise = return Yes
+				inAnnex $ transferKey t
+			| otherwise = return True
 
 {- Waits for any of the transfers in the map to complete. -}
 waitTransfer :: IO ()
