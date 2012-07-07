@@ -18,6 +18,17 @@ available!
   I may need to fork off multiple watcher processes to handle this.
   See [[bugs/Issue_on_OSX_with_some_system_limits]].
 
+## todo
+
+* Run niced and ioniced? Seems to make sense, this is a background job.
+* configurable option to only annex files meeting certian size or
+  filename criteria
+* option to check files not meeting annex criteria into git directly,
+  automatically
+* honor .gitignore, not adding files it excludes (difficult, probably
+  needs my own .gitignore parser to avoid excessive running of git commands
+  to check for ignored files)
+
 ## beyond Linux
 
 I'd also like to support OSX and if possible the BSDs.
@@ -64,17 +75,6 @@ I'd also like to support OSX and if possible the BSDs.
   * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/fsevents.py> (good example program)
 
 * Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
-
-## todo
-
-- Run niced and ioniced? Seems to make sense, this is a background job.
-- configurable option to only annex files meeting certian size or
-  filename criteria
-- option to check files not meeting annex criteria into git directly,
-  automatically
-- honor .gitignore, not adding files it excludes (difficult, probably
-  needs my own .gitignore parser to avoid excessive running of git commands
-  to check for ignored files)
 
 ## the races
 

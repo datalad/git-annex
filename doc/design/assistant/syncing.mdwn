@@ -10,7 +10,8 @@ all the other git clones, at both the git level and the key/value level.
   them. Also, enqueue Downloads for any files we're missing.
 * The TransferWatcher does not notice ongoing transfers, because inotify is
   waiting for the info file to be closed, but that never happens, it's left
-  open to keep it locked.
+  open to keep it locked. May need to separate the transfer info files
+  into an info file, and a lock file.
 
 ## longer-term TODO
 
@@ -32,10 +33,6 @@ all the other git clones, at both the git level and the key/value level.
   only uploading new files but not downloading, and only downloading
   files in some directories and not others. See for use cases:
   [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
-* Running external commands from one thread blocks all of them until
-  it completes. Try to switch to haskell's threaded runtime, which I 
-  think fixes this. Failing that, make sure all network accessing
-  commands are run by separate processes or something.
 
 ## data syncing
 
