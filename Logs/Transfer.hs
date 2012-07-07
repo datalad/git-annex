@@ -1,4 +1,4 @@
-{- git-annex transfer information files
+{- git-annex transfer information files and lock files
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -66,9 +66,9 @@ fieldTransfer direction key a = do
 	maybe a (\u -> transfer (Transfer direction (toUUID u) key) afile a)
 		=<< Fields.getField Fields.remoteUUID
 
-{- Runs a transfer action. Creates and locks the transfer information file
- - while the action is running. Will throw an error if the transfer is
- - already in progress.
+{- Runs a transfer action. Creates and locks the lock file while the
+ - action is running, and stores into in the transfer information
+ - file. Will throw an error if the transfer is already in progress.
  -}
 transfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
 transfer t file a = do
@@ -85,19 +85,18 @@ transfer t file a = do
 	bracketIO (prep tfile mode info) (cleanup tfile) a
 	where
 		prep tfile mode info = do
-			fd <- openFd tfile ReadWrite (Just mode)
+			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			when (locked == Nothing) $
 				error $ "transfer already in progress"
-			h <- fdToHandle fd
-			hPutStr h $ writeTransferInfo info
-			hFlush h
-			return h
-		cleanup tfile h = do
+			writeFile tfile $ writeTransferInfo info
+			return fd
+		cleanup tfile fd = do
 			removeFile tfile
-			hClose h
+			removeFile $ transferLockFile tfile
+			closeFd fd
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -105,22 +104,19 @@ checkTransfer t = do
 	mode <- annexFileMode
 	tfile <- fromRepo $ transferFile t
 	mfd <- liftIO $ catchMaybeIO $
-		openFd tfile ReadOnly (Just mode) defaultFileFlags
+		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags
 	case mfd of
 		Nothing -> return Nothing -- failed to open file; not running
 		Just fd -> do
 			locked <- liftIO $
 				getLock fd (WriteLock, AbsoluteSeek, 0, 0)
+			liftIO $ closeFd fd
 			case locked of
-				Nothing -> do
-					liftIO $ closeFd fd
-					return Nothing
-				Just (pid, _) -> liftIO $ do
-					h <- fdToHandle fd
-					info <- readTransferInfo pid
-						<$> hGetContentsStrict h
-					hClose h
-					return info
+				Nothing -> return Nothing
+				Just (pid, _) -> liftIO $
+					flip catchDefaultIO Nothing $
+						readTransferInfo pid 
+							<$> readFile tfile
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
@@ -140,6 +136,10 @@ transferFile (Transfer direction u key) r = gitAnnexTransferDir r
 	</> show direction 
 	</> fromUUID u
 	</> keyFile key
+
+{- The transfer lock file corresponding to a given transfer info file. -}
+transferLockFile :: FilePath -> FilePath
+transferLockFile infofile = infofile ++ ".lck"
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
