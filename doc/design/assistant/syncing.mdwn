@@ -3,27 +3,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## action items
 
-* on-disk transfers in progress information files (read/write/enumerate)
-  **done**
-* locking for the files, so redundant transfer races can be detected,
-  and failed transfers noticed **done**
-* transfer info for git-annex-shell **done**
-* update files as transfers proceed. See [[progressbars]]
-  (updating for downloads is easy; for uploads is hard)
-* add Transfer queue TChan **done**
-* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
-  **done**
-* Poll transfer in progress info files for changes (use inotify again!
-  wow! hammer, meet nail..), and update the TransferInfo Map **done**
-* enqueue Transfers (Uploads) as new files are added to the annex by
-  Watcher. **done**
-* enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
-  Watcher. **done**
-* Write basic Transfer handling thread. Multiple such threads need to be
-  able to be run at once. Each will need its own independant copy of the 
-  Annex state monad. **done**
-* Write transfer control thread, which decides when to launch transfers.
-  **done**
 * Check that download transfer triggering code works (when a symlink appears
   and the remote does *not* upload to us.
 * Investigate why transfers seem to block other git-annex assistant work.
@@ -35,31 +14,23 @@ all the other git clones, at both the git level and the key/value level.
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
   airport somewhere.
+* file transfer processes are not waited for, contain the zombies.
 
-## git syncing
+## longer-term TODO
 
-1. Can use `git annex sync`, which already handles bidirectional syncing.
-   When a change is committed, launch the part of `git annex sync` that pushes
-   out changes. **done**; changes are pushed out to all remotes in parallel
-1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
-   another node via `git annex sync`), and run the part of `git annex sync`
-   that merges in received changes, and follow it by the part that pushes out
-   changes (sending them to any other remotes).
-   [The watching can be done with the existing inotify code! This avoids needing
-   any special mechanism to notify a remote that it's been synced to.]  
-   **done**
-1. Periodically retry pushes that failed.  **done** (every half an hour)
-1. Also, detect if a push failed due to not being up-to-date, pull,
-   and repush. **done**
-2. Use a git merge driver that adds both conflicting files,
-   so conflicts never break a sync. **done**
-3. Investigate the XMPP approach like dvcs-autosync does, or other ways of
+* Investigate the XMPP approach like dvcs-autosync does, or other ways of
    signaling a change out of band.
-4. Add a hook, so when there's a change to sync, a program can be run
+* Add a hook, so when there's a change to sync, a program can be run
    and do its own signaling.
-5. --debug will show often unnecessary work being done. Optimise.
-6. It would be nice if, when a USB drive is connected, 
+* --debug will show often unnecessary work being done. Optimise.
+* It would be nice if, when a USB drive is connected, 
    syncing starts automatically. Use dbus on Linux?
+* This assumes the network is connected. It's often not, so the
+  [[cloud]] needs to be used to bridge between LANs.
+* Configurablity, including only enabling git syncing but not data transfer;
+  only uploading new files but not downloading, and only downloading
+  files in some directories and not others. See for use cases:
+  [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
 
 ## misc todo
 
@@ -90,7 +61,42 @@ reachable remote. This is worth doing first, since it's the simplest way to
 get the basic functionality of the assistant to work. And we'll need this
 anyway.
 
-## other considerations
+## done
 
-This assumes the network is connected. It's often not, so the
-[[cloud]] needs to be used to bridge between LANs.
+1. Can use `git annex sync`, which already handles bidirectional syncing.
+   When a change is committed, launch the part of `git annex sync` that pushes
+   out changes. **done**; changes are pushed out to all remotes in parallel
+1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
+   another node via `git annex sync`), and run the part of `git annex sync`
+   that merges in received changes, and follow it by the part that pushes out
+   changes (sending them to any other remotes).
+   [The watching can be done with the existing inotify code! This avoids needing
+   any special mechanism to notify a remote that it's been synced to.]  
+   **done**
+1. Periodically retry pushes that failed.  **done** (every half an hour)
+1. Also, detect if a push failed due to not being up-to-date, pull,
+   and repush. **done**
+2. Use a git merge driver that adds both conflicting files,
+   so conflicts never break a sync. **done**
+
+* on-disk transfers in progress information files (read/write/enumerate)
+  **done**
+* locking for the files, so redundant transfer races can be detected,
+  and failed transfers noticed **done**
+* transfer info for git-annex-shell **done**
+* update files as transfers proceed. See [[progressbars]]
+  (updating for downloads is easy; for uploads is hard)
+* add Transfer queue TChan **done**
+* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
+  **done**
+* Poll transfer in progress info files for changes (use inotify again!
+  wow! hammer, meet nail..), and update the TransferInfo Map **done**
+* enqueue Transfers (Uploads) as new files are added to the annex by
+  Watcher. **done**
+* enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
+  Watcher. **done**
+* Write basic Transfer handling thread. Multiple such threads need to be
+  able to be run at once. Each will need its own independant copy of the 
+  Annex state monad. **done**
+* Write transfer control thread, which decides when to launch transfers.
+  **done**
