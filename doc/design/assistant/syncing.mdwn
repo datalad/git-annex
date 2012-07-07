@@ -8,10 +8,6 @@ all the other git clones, at both the git level and the key/value level.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
-* The TransferWatcher does not notice ongoing transfers, because inotify is
-  waiting for the info file to be closed, but that never happens, it's left
-  open to keep it locked. May need to separate the transfer info files
-  into an info file, and a lock file.
 
 ## longer-term TODO
 
