@@ -24,7 +24,16 @@ newTransferSlots :: IO TransferSlots
 newTransferSlots = newQSemN numSlots
 
 {- Waits until a transfer slot becomes available, and runs a transfer
- - action in the slot.
+ - action in the slot. If the action throws an exception, its slot is
+ - freed here, otherwise it should be freed by the TransferWatcher when
+ - the transfer is complete.
  -}
 inTransferSlot :: TransferSlots -> IO a -> IO a
-inTransferSlot s = bracket_ (waitQSemN s 1) (signalQSemN s 1)
+inTransferSlot s a = bracketOnError
+	(waitQSemN s 1)
+	(const $ signalQSemN s 1)
+	(const a)
+
+{- Call when a transfer is complete. -}
+transferComplete :: TransferSlots -> IO ()
+transferComplete s = signalQSemN s 1
