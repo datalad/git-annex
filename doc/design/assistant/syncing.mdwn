@@ -1,23 +1,25 @@
 Once files are added (or removed or moved), need to send those changes to
 all the other git clones, at both the git level and the key/value level.
 
-## action items
+## immediate action items
 
 * Check that download transfer triggering code works (when a symlink appears
   and the remote does *not* upload to us.
-* Investigate why transfers seem to block other git-annex assistant work.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
-* Find a way to probe available outgoing bandwidth, to throttle so
-  we don't bufferbloat the network to death.
-* git-annex needs a simple speed control knob, which can be plumbed
-  through to, at least, rsync. A good job for an hour in an
-  airport somewhere.
-* file transfer processes are not waited for, contain the zombies.
+* The TransferWatcher does not notice ongoing transfers, because inotify is
+  waiting for the info file to be closed, but that never happens, it's left
+  open to keep it locked. May need to separate the transfer info files
+  into an info file, and a lock file.
 
 ## longer-term TODO
 
+* git-annex needs a simple speed control knob, which can be plumbed
+  through to, at least, rsync. A good job for an hour in an
+  airport somewhere.
+* Find a way to probe available outgoing bandwidth, to throttle so
+  we don't bufferbloat the network to death.
 * Investigate the XMPP approach like dvcs-autosync does, or other ways of
    signaling a change out of band.
 * Add a hook, so when there's a change to sync, a program can be run
