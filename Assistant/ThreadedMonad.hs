@@ -12,6 +12,7 @@ import qualified Annex
 
 import Control.Concurrent
 import Data.Tuple
+import System.Posix.Types
 
 {- The Annex state is stored in a MVar, so that threaded actions can access
  - it. -}
@@ -37,14 +38,14 @@ withThreadState a = do
 runThreadState :: ThreadState -> Annex a -> IO a
 runThreadState mvar a = modifyMVar mvar $ \state -> swap <$> Annex.run state a
 
-{- Runs an Annex action, using a copy of the state from the MVar.
+{- Runs an Annex action in a separate process, using a copy of the state
+ - from the MVar.
  -
- - The state modified by the action is thrown away, so it's up to the
- - action to perform any necessary shutdown tasks in order for state to not
- - be lost. And it's up to the caller to resynchronise with any changes
- - the action makes to eg, the git-annex branch.
+ - It's up to the action to perform any necessary shutdown tasks in order
+ - for state to not be lost. And it's up to the caller to resynchronise
+ - with any changes the action makes to eg, the git-annex branch.
  -}
-unsafeRunThreadState :: ThreadState -> Annex a -> IO a
-unsafeRunThreadState mvar a = do
+unsafeForkProcessThreadState :: ThreadState -> Annex a -> IO ProcessID
+unsafeForkProcessThreadState mvar a = do
 	state <- readMVar mvar
-	Annex.eval state a
+	forkProcess $ void $ Annex.eval state a

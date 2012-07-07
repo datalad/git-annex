@@ -14,7 +14,6 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Logs.Transfer
 import Annex.Content
-import Utility.ThreadScheduler
 import Command
 import qualified Command.Move
 
@@ -27,11 +26,14 @@ maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
-transfererThread st dstatus transferqueue slots = runEvery (Seconds 1) $ do
-	(t, info) <- getNextTransfer transferqueue
-	whenM (runThreadState st $ shouldTransfer dstatus t) $ 
-		void $ inTransferSlot slots $
-			runTransfer st dstatus t info
+transfererThread st dstatus transferqueue slots = go
+	where
+		go = do
+			(t, info) <- getNextTransfer transferqueue
+			whenM (runThreadState st $ shouldTransfer dstatus t) $
+				void $ inTransferSlot slots $
+					runTransfer st dstatus t info
+			go
 
 {- Checks if the requested transfer is already running, or
  - the file to download is already present. -}
@@ -68,7 +70,7 @@ runTransfer st dstatus t info
 			(_, Nothing) -> noop
 			(Just remote, Just file) -> do
 				now <- getCurrentTime
-				pid <- forkProcess $ unsafeRunThreadState st $ void $
+				pid <- unsafeForkProcessThreadState st $
 					doCommand $ cmd remote False file (transferKey t)
 				runThreadState st $ 
 					adjustTransfers dstatus $
