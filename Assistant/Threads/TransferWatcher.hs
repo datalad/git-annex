@@ -57,7 +57,9 @@ onAdd st dstatus _ file _ = case parseTransferFile file of
 	where
 		go _ Nothing = noop -- transfer already finished
 		go t (Just info) = adjustTransfers dstatus $
-			M.insertWith' const t info
+			M.insertWith' merge t info
+		-- preseve shouldWait flag, which is not written to disk
+		merge new old = new { shouldWait = shouldWait old }
 
 {- Called when a transfer information file is removed.
  -
