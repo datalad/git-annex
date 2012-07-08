@@ -10,13 +10,13 @@ But it's not all easy. Syncing should happen as fast as possible, so
 changes show up without delay. Eventually it'll need to support syncing
 between nodes that cannot directly contact one-another. Syncing needs to
 deal with nodes coming and going; one example of that is a USB drive being
-plugged in, which should immediatly be synced, but network can also come
+plugged in, which should immediately be synced, but network can also come
 and go, so it should periodically retry nodes it failed to sync with. To
 start with, I'll be focusing on fast syncing between directly connected
 nodes, but I have to keep this wider problem space in mind.
 
 One problem with `git annex sync` is that it has to be run in both clones
-in order for changes to fully propigate. This is because git doesn't allow
+in order for changes to fully propagate. This is because git doesn't allow
 pushing changes into a non-bare repository; so instead it drops off a new
 branch in `.git/refs/remotes/$foo/synced/master`. Then when it's run locally
 it merges that new branch into `master`. 

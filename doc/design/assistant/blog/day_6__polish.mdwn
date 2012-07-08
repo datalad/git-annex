@@ -24,7 +24,7 @@ symlinks might have just been deleted and re-added, or changed, and
 the index still have the old value.
 
 Instead, I got creative. :) We can't trust what the index says about the
-symlink, but if the index happens to contian a symlink that looks right,
+symlink, but if the index happens to contain a symlink that looks right,
 we can trust that the SHA1 of its blob is the right SHA1, and reuse it
 when re-staging the symlink. Wham! Massive speedup!
 

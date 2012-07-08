@@ -12,7 +12,7 @@ not sufficient. There are two problems with it:
 So, instead, git-annex will use a regular `git merge`, and if it fails, it
 will fix up the conflicts.
 
-That presented its own difficully, of finding which files in the tree
+That presented its own difficulty, of finding which files in the tree
 conflict. `git ls-files --unmerged` is the way to do that, but its output
 is a quite raw form:
 
@@ -21,9 +21,9 @@ is a quite raw form:
 	100644 1eabec834c255a127e2e835dadc2d7733742ed9a 2	bar
 	100644 36902d4d842a114e8b8912c02d239b2d7059c02b 3	bar
 
-I had to stare at the rather inpenetrable documentation for hours and
+I had to stare at the rather impenetrable documentation for hours and
 write a lot of parsing and processing code to get from that to these mostly
-self expanatory data types:
+self explanatory data types:
 
 	data Conflicting v = Conflicting
 	        { valUs :: Maybe v

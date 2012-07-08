@@ -1,6 +1,6 @@
 Last night I got `git annex watch` to also handle deletion of files.
 This was not as tricky as feared; the key is using `git rm --ignore-unmatch`,
-which avoids most problimatic situations (such as a just deleted file
+which avoids most problematic situations (such as a just deleted file
 being added back before git is run).
 
 Also fixed some races when `git annex watch` is doing its startup scan of

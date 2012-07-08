@@ -35,7 +35,7 @@ more threads:
 1. Uploads new data to every configured remote. Triggered by the watcher
    thread when it adds content. Easy; just use a `TSet` of Keys to send.
 
-2. Downloads new data from the cheapest remote that has it. COuld be 
+2. Downloads new data from the cheapest remote that has it. Could be 
    triggered by the
    merger thread, after it merges in a git sync. Rather hard; how does it
    work out what new keys are in the tree without scanning it all? Scan

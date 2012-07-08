@@ -3,13 +3,13 @@ to `kqueue`, and Haskell code to use that library. By now I think I
 understand kqueue fairly well -- there are some very tricky parts to the
 interface.
 
-But... it still did't work. After building all this, my code was
+But... it still didn't work. After building all this, my code was
 failing the same way that the
 [haskell kqueue library failed](https://github.com/hesselink/kqueue/issues/1)
 yesterday. I filed a [bug report with a testcase]().
 
 Then I thought to ask on #haskell. Got sorted out in quick order! The
-problem turns out to be that haskell's runtime has a peridic SIGALARM,
+problem turns out to be that haskell's runtime has a periodic SIGALARM,
 that is interrupting my kevent call. It can be worked around with `+RTS -V0`,
 but I put in a fix to retry to kevent when it's interrupted.
 
