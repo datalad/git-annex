@@ -16,4 +16,4 @@ I get a git remote -- but the data available on the rsync server is not accessib
 
 > git-annex: whereis: 19631 failed
 
-The original is a git annex from cabal, the cloned repository uses 3.20120522.
+The original is a git annex 3.20120629, the cloned repository uses 3.20120522.
