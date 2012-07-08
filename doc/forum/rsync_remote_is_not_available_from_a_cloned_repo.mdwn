@@ -1,0 +1,19 @@
+I have a git annex repository, and a sync to a remote rsync server (with shared encryption), named "rsync".
+
+When I clone the repository, I thought it would work as described for S3 (http://git-annex.branchable.com/tips/using_Amazon_S3/):
+
+> $ git annex initremote rsync
+
+> git-annex: Specify the type of remote with type=
+
+When I run
+
+> $ git initremote rsync type=rsync rsyncurl=ssh.example.com:/myrsync encryption=shared
+
+I get a git remote -- but the data available on the rsync server is not accessible locally
+
+> $ git whereis
+
+> git-annex: whereis: 19631 failed
+
+The original is a git annex from cabal, the cloned repository uses 3.20120522.
