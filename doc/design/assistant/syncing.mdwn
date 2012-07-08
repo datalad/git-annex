@@ -6,6 +6,8 @@ all the other git clones, at both the git level and the key/value level.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
+* After git sync, identify content that we don't have that is now available
+  on remotes, and transfer.
 
 ## longer-term TODO
 
