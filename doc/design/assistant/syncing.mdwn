@@ -29,6 +29,7 @@ all the other git clones, at both the git level and the key/value level.
   only uploading new files but not downloading, and only downloading
   files in some directories and not others. See for use cases:
   [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
+* speed up git syncing by using the cached ssh connection for it too
 
 ## data syncing
 
