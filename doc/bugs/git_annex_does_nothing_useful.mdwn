@@ -1,5 +1,3 @@
-
-
 As you can see, I'm running a pretty recent build of git-annex (ac799c3f363e0008b23e9c174e6fedc35e6fa92a),
 
     $ git annex version
