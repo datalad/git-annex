@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 7"
+ date="2012-07-10T12:37:43Z"
+ content="""
+But how was the goldnerlab:data repository created?  That looks to be where the problem is..
+
+I have a slightly older version, but in general it should work the same..
+you can see right away, when I do git annex status it shows \"known annex keys: 1\".
+if you do git annex status on goldnerlab, does it say you have any annex keys?
+
+
+    $ git-annex version
+    git-annex version: 3.20120614~bpo60+1
+    $ mkdir a
+    $ cd a
+    $ git init
+    Initialized empty Git repository in /tmp/a/.git/
+    $ git annex init a
+    init a ok
+    (Recording state in git...)
+    $ echo hi > file
+    $ git annex add file
+    add file (checksum...) ok
+    (Recording state in git...)
+    $ git commit -m added
+    fatal: No HEAD commit to compare with (yet)
+    fatal: No HEAD commit to compare with (yet)
+    [master (root-commit) cfa9049] added
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 file
+    $ cd ..
+    $ git clone a a_clone
+    Cloning into a_clone...
+    done.
+    $ cd a_clone
+    $ git annex status
+    (merging origin/git-annex into git-annex...)
+    supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
+    supported remote types: git bup directory rsync web hook
+    trusted repositories: 0
+    semitrusted repositories: 3
+            00000000-0000-0000-0000-000000000001 -- web
+            445d616e-ca8b-11e1-b170-ff8b03c54243 -- origin (a)
+            5d3db51c-ca8b-11e1-bbc3-039dd06ab47b -- here
+    untrusted repositories: 0
+    dead repositories: 0
+    available local disk space: 63 megabytes (+1 megabyte reserved)
+    local annex keys: 0
+    local annex size: 0 bytes
+    known annex keys: 1
+    known annex size: 3 bytes
+    backend usage:
+            SHA256: 1
+    (Recording state in git...)
+    $ ls
+    file
+    $ cat file
+    cat: file: No such file or directory
+    $ git annex get file
+    get file (from origin...) ok
+    (Recording state in git...)
+    $ cat file
+    hi
+
+"""]]
