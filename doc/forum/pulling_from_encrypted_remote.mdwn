@@ -1,6 +1,7 @@
 Is there a way to pull from an encrypted remote?
 
 Use case:
+
 1. Have annex in an encrypted public rsync remote
 2. Have USB stick with PGP keys (but not the annex repository)
 3. Get to a new computer
