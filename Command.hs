@@ -21,6 +21,7 @@ module Command (
 	isBareRepo,
 	numCopies,
 	autoCopies,
+	autoCopiesWith,
 	module ReExported
 ) where
 
@@ -112,8 +113,18 @@ numCopies file = readish <$> checkAttr "annex.numcopies" file
  - In auto mode, first checks that the number of known
  - copies of the key is > or < than the numcopies setting, before running
  - the action. -}
-autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
-autoCopies file key vs a = do
+autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> CommandStart -> CommandStart
+autoCopies file key vs a = Annex.getState Annex.auto >>= go
+	where
+		go False = a
+		go True = do
+			numcopiesattr <- numCopies file
+			needed <- getNumCopies numcopiesattr
+			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
+			if length have `vs` needed then a else stop
+
+autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
+autoCopiesWith file key vs a = do
 	numcopiesattr <- numCopies file
 	Annex.getState Annex.auto >>= auto numcopiesattr
 	where

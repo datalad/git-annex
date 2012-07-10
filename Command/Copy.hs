@@ -24,5 +24,5 @@ seek = [withField Command.Move.toOption Remote.byName $ \to ->
 -- A copy is just a move that does not delete the source file.
 -- However, --auto mode avoids unnecessary copies.
 start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start to from file (key, backend) = autoCopies file key (<) $ \_numcopies ->
+start to from file (key, backend) = autoCopies file key (<) $
 	Command.Move.start to from False file (key, backend)

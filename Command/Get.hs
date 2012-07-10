@@ -24,7 +24,7 @@ seek = [withField Command.Move.fromOption Remote.byName $ \from ->
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = stopUnless (not <$> inAnnex key) $
-	autoCopies file key (<) $ \_numcopies ->
+	autoCopies file key (<) $
 		case from of
 			Nothing -> go $ perform key file
 			Just src ->
