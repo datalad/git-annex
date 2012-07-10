@@ -169,7 +169,7 @@ checkPresent r o k = do
  - ensure that files are only moved into place once complete
  -}
 partialParams :: CommandParam
-partialParams = Params "--no-inplace --partial --partial-dir=.rsync-partial"
+partialParams = Params "--partial --partial-dir=.rsync-partial"
 
 {- Runs an action in an empty scratch directory that can be used to build
  - up trees for rsync. -}
