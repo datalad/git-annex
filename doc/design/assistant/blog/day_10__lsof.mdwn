@@ -23,7 +23,7 @@ In other words, I was lost in the weeds for a lot of those hours...
 
 At one point, something glorious happened, and it was always making exactly
 one commit for batch mode modifications of a lot of files (like untarring
-them). Unfortunatly, I had to lose that gloriousness due to another
+them). Unfortunately, I had to lose that gloriousness due to another
 potential race, which, while unlikely, would have made the program deadlock
 if it happened. 
 
@@ -40,7 +40,7 @@ are still open for write.
 
 This works great! Starting up `git annex watch` when processes have files
 open is no longer a problem, and even if you're evil enough to try having
-muliple processes open the same file, it will complain and not annex it
+multiple processes open the same file, it will complain and not annex it
 until all the writers close it.
 
 (Well, someone really evil could turn the write bit back on after git annex

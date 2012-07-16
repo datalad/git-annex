@@ -11,7 +11,7 @@ things slow and ugly. This was not unexpected.
 
 So next, I added some smarts to it. First, I wanted to stop it waking up
 every second when there was nothing to do, and instead blocking wait on a
-change occuring. Secondly, I wanted it to know when past changes happened,
+change occurring. Secondly, I wanted it to know when past changes happened,
 so it could detect batch mode scenarios, and avoid committing too
 frequently. 
 
@@ -52,6 +52,6 @@ shouldCommit now changetimes
                thisSecond t = now `diffUTCTime` t <= 1
 """]]
 
-Still some polishing to do to eliminate minor innefficiencies and deal
+Still some polishing to do to eliminate minor inefficiencies and deal
 with more races, but this part of the git-annex assistant is now very usable,
 and will be going out to my beta testers soon!

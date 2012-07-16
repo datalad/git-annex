@@ -10,7 +10,7 @@ own git index parser (or use one from Hackage), this check requires running
 tree of files is being moved or unpacked into the watched directory.
 
 Instead, I made it only do the check during `git annex watch`'s initial
-scan of the tree. This should be ok, because once it's running, you
+scan of the tree. This should be OK, because once it's running, you
 won't be adding new  files to git anyway, since it'll automatically annex
 new files. This is good enough for now, but there are at least two problems
 with it:

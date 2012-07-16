@@ -72,7 +72,7 @@ getVersionString = do
 getGitVersion :: Test
 getGitVersion = do
 	(_, s) <- pipeFrom "git" ["--version"]
-	let version = last $ words $ head $ lines s
+	let version = unwords $ drop 2 $ words $ head $ lines s
 	return $ Config "gitversion" (StringConfig version)
 
 getSshConnectionCaching :: Test

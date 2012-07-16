@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 4"
+ date="2012-07-08T18:13:58Z"
+ content="""
+On kFreeBSD, I get this:
+
+    $ sysctl kern.maxfilesperproc
+    kern.maxfilesperproc: 11095
+
+But ulimit still has 1024 limit, so you'd need to adjust both, as root. Messy..
+"""]]

@@ -12,12 +12,13 @@ Feel free to chip in with comments! --[[Joey]]
 * Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
 * Month 4 "polishing": [[!traillink cloud]] [[!traillink leftovers]]
 * Months 5-6 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]]
+* Months 7-11: user-driven features and polishing
+* Month 12: "Windows purgatory" [[Windows]]
 
 ## not yet on the map:
 
 * [[desymlink]]
 * [[deltas]]
-* In my overfunded nighmares: [[Windows]]
 
 ## blog
 

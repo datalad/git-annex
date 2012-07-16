@@ -3,11 +3,11 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* Check that download transfer triggering code works (when a symlink appears
-  and the remote does *not* upload to us.
 * At startup, and possibly periodically, look for files we have that
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
+* After git sync, identify content that we don't have that is now available
+  on remotes, and transfer.
 
 ## longer-term TODO
 
@@ -29,6 +29,9 @@ all the other git clones, at both the git level and the key/value level.
   only uploading new files but not downloading, and only downloading
   files in some directories and not others. See for use cases:
   [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
+* speed up git syncing by using the cached ssh connection for it too
+  (will need to use `GIT_SSH`, which needs to point to a command to run,
+  not a shell command line)
 
 ## misc todo
 

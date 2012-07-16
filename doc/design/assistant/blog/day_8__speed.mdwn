@@ -16,7 +16,7 @@ quickly is really only important so people don't think it's a resource hog.
 First impressions are important. :)
 
 But what does "made recently" mean exactly? Well, my answer is possibly
-overengineered, but most of it is really groundwork for things I'll need
+over engineered, but most of it is really groundwork for things I'll need
 later anyway. I added a new data structure for tracking the status of the
 daemon, which is periodically written to disk by another thread (thread #6!)
 to `.git/annex/daemon.status` Currently it looks like this; I anticipate

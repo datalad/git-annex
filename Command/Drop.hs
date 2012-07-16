@@ -30,7 +30,7 @@ seek = [withField fromOption Remote.byName $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = autoCopies file key (>) $ \numcopies ->
+start from file (key, _) = autoCopiesWith file key (>) $ \numcopies ->
 	case from of
 		Nothing -> startLocal file numcopies key
 		Just remote -> do

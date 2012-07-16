@@ -16,7 +16,7 @@ thread that wakes up periodically, flushes the queue, and autocommits.
 (This will, in fact, be the start of the [[syncing]] phase of my roadmap!)
 There's lots of room here for smart behavior. Like, if a lot of changes are
 being made close together, wait for them to die down before committing. Or,
-if it's been idle and a single file appears, commit it immediatly, since
+if it's been idle and a single file appears, commit it immediately, since
 this is probably something the user wants synced out right away. I'll start
 with something stupid and then add the smarts.
 

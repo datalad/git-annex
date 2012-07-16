@@ -1,0 +1,17 @@
+I didn't plan to work on git-annex much while at DebConf, because the conference
+always prevents the kind of concentration I need. But I unexpectedly also had to deal
+with [three dead drives](http://joeyh.name/blog/entry/I_am_become_Joey_destroyer_of_drives/)
+and illness this week. 
+
+That said, I have been trying to debug a problem with git-annex and Haskell's threaded
+runtime all week. It just hangs, randomly. No luck so far isolating why, although I now
+have a branch that hangs fairly reliably, and in which I am trying to whittle the entire
+git-annex code base (all 18 thousand lines!) into a nice test case.
+
+This threaded runtime problem doesn't affect the assistant yet, but if I want to use
+Yesod in developing the webapp, I'll need the threaded runtime, and using the threaded
+runtime in the assistant generally would make it more responsive and less hacky.
+
+Since this is a task I can work on without much concentration, I'll probably keep beating
+on it until I return home. Then I need to spend some quality thinking time on where
+to go next in the assistant.

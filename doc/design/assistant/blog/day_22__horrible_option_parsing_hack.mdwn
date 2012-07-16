@@ -1,6 +1,6 @@
 Well, sometimes you just have to go for the hack. Trying to find a way
 to add additional options to git-annex-shell without breaking backwards
-compatability, I noticed that it ignores all options after `--`, because
+compatibility, I noticed that it ignores all options after `--`, because
 those tend to be random rsync options due to the way rsync runs it.
 
 So, I've added a new class of options, that come in between, like
