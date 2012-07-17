@@ -69,10 +69,10 @@ data DirInfo = DirInfo
 getDirInfo :: FilePath -> IO DirInfo
 getDirInfo dir = do
 	l <- filter (not . dirCruft) <$> getDirectoryContents dir
-	contents <- S.fromList <$> mapM addinode l
+	contents <- S.fromList . catMaybes <$> mapM addinode l
 	return $ DirInfo dir contents
 	where
-		addinode f = do
+		addinode f = catchMaybeIO $ do
 			inode <- fileID <$> getFileStatus (dir </> f)
 			return (f, inode)
 
