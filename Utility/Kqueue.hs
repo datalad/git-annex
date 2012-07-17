@@ -14,8 +14,6 @@ module Utility.Kqueue (
 	waitChange,
 	Change(..),
 	changedFile,
-	isAdd,
-	isDelete,
 	runHooks,
 ) where
 
@@ -34,15 +32,14 @@ import Control.Concurrent
 
 data Change
 	= Deleted FilePath
+	| DeletedDir FilePath
 	| Added FilePath
 	deriving (Show)
 
 isAdd :: Change -> Bool
 isAdd (Added _) = True
 isAdd (Deleted _) = False
-
-isDelete :: Change -> Bool
-isDelete = not . isAdd
+isAdd (DeletedDir _) = False
 
 changedFile :: Change -> FilePath
 changedFile (Added f) = f
@@ -59,31 +56,43 @@ type Pruner = FilePath -> Bool
 
 type DirMap = M.Map Fd DirInfo
 
-{- A directory, and its last known contents (with filenames relative to it) -}
+{- Enough information to uniquely identify a file in a directory,
+ - but not too much. -}
+data DirEnt = DirEnt
+	{ dirEnt :: FilePath -- relative to the parent directory
+	, _dirInode :: FileID -- included to notice file replacements
+	, isSubDir :: Bool
+	}
+	deriving (Eq, Ord, Show)
+
+{- A directory, and its last known contents. -}
 data DirInfo = DirInfo
 	{ dirName :: FilePath
-	, dirCache :: S.Set (FilePath, FileID)
+	, dirCache :: S.Set DirEnt
 	}
 	deriving (Show)
 
 getDirInfo :: FilePath -> IO DirInfo
 getDirInfo dir = do
 	l <- filter (not . dirCruft) <$> getDirectoryContents dir
-	contents <- S.fromList . catMaybes <$> mapM addinode l
+	contents <- S.fromList . catMaybes <$> mapM getDirEnt l
 	return $ DirInfo dir contents
 	where
-		addinode f = catchMaybeIO $ do
-			inode <- fileID <$> getFileStatus (dir </> f)
-			return (f, inode)
+		getDirEnt f = catchMaybeIO $ do
+			s <- getFileStatus (dir </> f)
+			return $ DirEnt f (fileID s) (isDirectory s)
 
 {- Difference between the dirCaches of two DirInfos. -}
 (//) :: DirInfo -> DirInfo -> [Change]
 oldc // newc = deleted ++ added
 	where
-		deleted = calc Deleted oldc newc
-		added   = calc Added newc oldc
-		calc a x y = map a . map (dirName x </>) . map fst $
-			S.toList $ S.difference (dirCache x) (dirCache y)
+		deleted = calc gendel oldc newc
+		added   = calc genadd newc oldc
+		gendel x = (if isSubDir x then DeletedDir else Deleted) $
+			dirName oldc </> dirEnt x
+		genadd x = Added $ dirName newc </> dirEnt x
+		calc a x y = map a $ S.toList $
+			S.difference (dirCache x) (dirCache y)
 
 {- Builds a map of directories in a tree, possibly pruning some.
  - Opens each directory in the tree, and records its current contents. -}
@@ -103,7 +112,7 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 						case mfd of
 							Nothing -> walk c rest
 							Just fd -> do
-								let subdirs = map (dir </>) . map fst $
+								let subdirs = map (dir </>) . map dirEnt $
 									S.toList $ dirCache info
 								walk ((fd, info):c) (subdirs ++ rest)
 
@@ -128,7 +137,7 @@ findDirContents :: DirMap -> FilePath -> [FilePath]
 findDirContents dirmap dir = concatMap absolutecontents $ search
 	where
 		absolutecontents i = map (dirName i </>)
-			(map fst $ S.toList $ dirCache i)
+			(map dirEnt $ S.toList $ dirCache i)
 		search = map snd $ M.toList $
 			M.filter (\i -> dirName i == dir) dirmap
 
@@ -229,12 +238,14 @@ runHooks kq hooks = do
 			(q', changes) <- waitChange q
 			forM_ changes $ dispatch (kqueueMap q')
 			loop q'
-		-- Kqueue returns changes for both whole directories
-		-- being added and deleted, and individual files being
-		-- added and deleted.
-		dispatch dirmap change
-			| isAdd change = withstatus change $ dispatchadd dirmap
-			| otherwise = callhook delDirHook Nothing change
+
+		dispatch dirmap change@(Deleted _) = 
+			callhook delHook Nothing change
+		dispatch dirmap change@(DeletedDir _) =
+			callhook delDirHook Nothing change
+		dispatch dirmap change@(Added _) =
+			withstatus change $ dispatchadd dirmap
+		
 		dispatchadd dirmap change s
 			| Files.isSymbolicLink s =
 				callhook addSymlinkHook (Just s) change
@@ -242,12 +253,15 @@ runHooks kq hooks = do
 			| Files.isRegularFile s =
 				callhook addHook (Just s) change
 			| otherwise = noop
+
 		recursiveadd dirmap change = do
 			let contents = findDirContents dirmap $ changedFile change
 			forM_ contents $ \f ->
 				withstatus (Added f) $ dispatchadd dirmap
+
 		callhook h s change = case h hooks of
 			Nothing -> noop
 			Just a -> a (changedFile change) s
+
 		withstatus change a = maybe noop (a change) =<<
 			(catchMaybeIO (getSymbolicLinkStatus (changedFile change)))
