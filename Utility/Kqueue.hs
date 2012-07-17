@@ -22,6 +22,7 @@ module Utility.Kqueue (
 import Common
 import Utility.Types.DirWatcher
 
+import System.Posix.Directory
 import System.Posix.Types
 import Foreign.C.Types
 import Foreign.C.Error
@@ -62,15 +63,19 @@ type DirMap = M.Map Fd DirInfo
 {- A directory, and its last known contents (with filenames relative to it) -}
 data DirInfo = DirInfo
 	{ dirName :: FilePath
-	, dirCache :: S.Set FilePath
+	, dirCache :: S.Set (FilePath, FileID)
 	}
 	deriving (Show)
 
 getDirInfo :: FilePath -> IO DirInfo
 getDirInfo dir = do
-	contents <- S.fromList . filter (not . dirCruft)
-		<$> getDirectoryContents dir
+	l <- filter (not . dirCruft) <$> getDirectoryContents dir
+	contents <- S.fromList <$> mapM addinode l
 	return $ DirInfo dir contents
+	where
+		addinode f = do
+			inode <- fileID <$> getFileStatus (dir </> f)
+			return (f, inode)
 
 {- Difference between the dirCaches of two DirInfos. -}
 (//) :: DirInfo -> DirInfo -> [Change]
@@ -78,7 +83,7 @@ oldc // newc = deleted ++ added
 	where
 		deleted = calc Deleted oldc newc
 		added   = calc Added newc oldc
-		calc a x y = map a . map (dirName x </>) $
+		calc a x y = map a . map (dirName x </>) . map fst $
 			S.toList $ S.difference (dirCache x) (dirCache y)
 
 {- Builds a map of directories in a tree, possibly pruning some.
@@ -99,7 +104,7 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 						case mfd of
 							Nothing -> walk c rest
 							Just fd -> do
-								let subdirs = map (dir </>) $
+								let subdirs = map (dir </>) . map fst $
 									S.toList $ dirCache info
 								walk ((fd, info):c) (subdirs ++ rest)
 
@@ -123,7 +128,8 @@ removeSubDir dirmap dir = do
 findDirContents :: DirMap -> FilePath -> [FilePath]
 findDirContents dirmap dir = concatMap absolutecontents $ search
 	where
-		absolutecontents i = map (dirName i </>) (S.toList $ dirCache i)
+		absolutecontents i = map (dirName i </>)
+			(map fst $ S.toList $ dirCache i)
 		search = map snd $ M.toList $
 			M.filter (\i -> dirName i == dir) dirmap
 
