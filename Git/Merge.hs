@@ -15,5 +15,5 @@ import Git.Version
 {- Avoids recent git's interactive merge. -}
 mergeNonInteractive :: Ref -> Repo -> IO Bool
 mergeNonInteractive branch
-	| older 1.7.7.6 = runBool "merge" [Param $ show branch]
+	| older "1.7.7.6" = runBool "merge" [Param $ show branch]
 	| otherwise = runBool "merge" [Param "--no-edit", Param $ show branch]
