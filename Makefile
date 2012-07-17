@@ -14,7 +14,7 @@ endif
 
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
+BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
 GHCFLAGS=-O2 $(BASEFLAGS)
 CFLAGS=-Wall
 
