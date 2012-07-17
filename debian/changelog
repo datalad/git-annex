@@ -1,3 +1,10 @@
+git-annex (3.20120629~bpo60+2) squeeze-backports; urgency=low
+
+  * Avoid passing --no-edit to git merge when the version of git doesn't
+    support it.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Sep 2012 23:30:38 -0400
+
 git-annex (3.20120629~bpo60+1) squeeze-backports; urgency=low
 
   * cabal: Only try to use inotify on Linux.

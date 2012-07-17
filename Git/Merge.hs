@@ -10,8 +10,12 @@ module Git.Merge where
 import Common
 import Git
 import Git.Command
+import Git.Version
 
 {- Avoids recent git's interactive merge. -}
 mergeNonInteractive :: Ref -> Repo -> IO Bool
-mergeNonInteractive branch = runBool "merge"
-	[Param "--no-edit", Param $ show branch]
+mergeNonInteractive branch r =
+	ifM (older "1.7.7.6")
+		( runBool "merge" [Param $ show branch] r
+		, runBool "merge" [Param "--no-edit", Param $ show branch] r
+		)
