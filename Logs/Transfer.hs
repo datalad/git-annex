@@ -144,8 +144,9 @@ transferLockFile infofile = let (d,f) = splitFileName infofile in
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
-parseTransferFile file = 
-	case drop (length bits - 3) bits of
+parseTransferFile file
+	| "lck." `isPrefixOf` (takeFileName file) = Nothing
+	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> readDirection direction
 			<*> pure (toUUID u)
