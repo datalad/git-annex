@@ -7,7 +7,9 @@ all the other git clones, at both the git level and the key/value level.
   location tracking indicates remotes do not, and enqueue Uploads for
   them. Also, enqueue Downloads for any files we're missing.
 * After git sync, identify content that we don't have that is now available
-  on remotes, and transfer.
+  on remotes, and transfer. But first, need to ensure that when a remote
+  receives content, and updates its location log, it syncs that update
+  out.
 
 ## longer-term TODO
 
@@ -96,6 +98,8 @@ anyway.
   Watcher. **done**
 * enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
   Watcher. **done**
+  (Note: Needs git-annex branch to be merged before the tree is merged,
+  so it knows where to download from. Checked and this is the case.)
 * Write basic Transfer handling thread. Multiple such threads need to be
   able to be run at once. Each will need its own independant copy of the 
   Annex state monad. **done**

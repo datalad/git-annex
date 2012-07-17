@@ -39,6 +39,8 @@ start = do
 
 	umap <- uuidMap
 	trusted <- trustGet Trusted
+		
+	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
 
 	liftIO $ writeFile file (drawMap rs umap trusted)
 	next $ next $
@@ -49,8 +51,6 @@ start = do
 				showOutput
 				liftIO $ boolSystem "dot" [Param "-Tx11", File file]
 			)
-	where
-		file = "map.dot"
 
 {- Generates a graph for dot(1). Each repository, and any other uuids, are
  - displayed as a node, and each of its remotes is represented as an edge

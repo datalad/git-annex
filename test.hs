@@ -550,9 +550,6 @@ test_map = "git-annex map" ~: intmpclonerepo $ do
 	git_annex "describe" ["origin", "origin repo"] @? "describe 2 failed"
 	-- --fast avoids it running graphviz, not a build dependency
 	git_annex "map" ["--fast"] @? "map failed"
-	doesFileExist "map.dot" @? "map.dot not generated"
-	c <- readFile "map.dot"
-	("this repo" `isInfixOf` c && "origin repo" `isInfixOf` c) @? ("map.dot bad content: " ++ c)
 
 test_uninit :: Test
 test_uninit = "git-annex uninit" ~: intmpclonerepo $ do
