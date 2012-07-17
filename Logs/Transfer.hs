@@ -139,7 +139,8 @@ transferFile (Transfer direction u key) r = gitAnnexTransferDir r
 
 {- The transfer lock file corresponding to a given transfer info file. -}
 transferLockFile :: FilePath -> FilePath
-transferLockFile infofile = "lck." ++ infofile
+transferLockFile infofile = let (d,f) = splitFileName infofile in
+	combine d ("lck." ++ f)
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
