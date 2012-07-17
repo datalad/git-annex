@@ -240,9 +240,9 @@ runHooks kq hooks = do
 			forM_ changes $ dispatch (kqueueMap q')
 			loop q'
 
-		dispatch dirmap change@(Deleted _) = 
+		dispatch _ change@(Deleted _) = 
 			callhook delHook Nothing change
-		dispatch dirmap change@(DeletedDir _) =
+		dispatch _ change@(DeletedDir _) =
 			callhook delDirHook Nothing change
 		dispatch dirmap change@(Added _) =
 			withstatus change $ dispatchadd dirmap
