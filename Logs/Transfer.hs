@@ -67,7 +67,7 @@ fieldTransfer direction key a = do
 		=<< Fields.getField Fields.remoteUUID
 
 {- Runs a transfer action. Creates and locks the lock file while the
- - action is running, and stores into in the transfer information
+ - action is running, and stores info in the transfer information
  - file. Will throw an error if the transfer is already in progress.
  -}
 transfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
@@ -139,7 +139,7 @@ transferFile (Transfer direction u key) r = gitAnnexTransferDir r
 
 {- The transfer lock file corresponding to a given transfer info file. -}
 transferLockFile :: FilePath -> FilePath
-transferLockFile infofile = infofile ++ ".lck"
+transferLockFile infofile = "lck." ++ infofile
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
