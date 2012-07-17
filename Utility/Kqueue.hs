@@ -44,6 +44,7 @@ isAdd (DeletedDir _) = False
 changedFile :: Change -> FilePath
 changedFile (Added f) = f
 changedFile (Deleted f) = f
+changedFile (DeletedDir f) = f
 
 data Kqueue = Kqueue 
 	{ kqueueFd :: Fd
