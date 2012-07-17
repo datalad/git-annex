@@ -22,7 +22,6 @@ module Utility.Kqueue (
 import Common
 import Utility.Types.DirWatcher
 
-import System.Posix.Directory
 import System.Posix.Types
 import Foreign.C.Types
 import Foreign.C.Error
