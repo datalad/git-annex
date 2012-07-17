@@ -57,16 +57,18 @@ pipeWrite params s repo = assertLocal repo $ do
 	hClose h
 	return p
 
-{- Runs a git subcommand, feeding it input, and returning its output.
- - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: [CommandParam] -> String -> Repo -> IO (PipeHandle, String)
+{- Runs a git subcommand, feeding it input, and returning its output,
+ - which is expected to be fairly small, since it's all read into memory
+ - strictly. -}
+pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
 pipeWriteRead params s repo = assertLocal repo $ do
 	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
 	fileEncoding to
 	fileEncoding from
 	_ <- forkIO $ finally (hPutStr to s) (hClose to)
-	c <- hGetContents from
-	return (p, c)
+	c <- hGetContentsStrict from
+	forceSuccess p
+	return c
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}

@@ -179,7 +179,7 @@ Not available on Windows or with Hugs.
 -}
 hPipeFrom :: FilePath -> [String] -> IO (PipeHandle, Handle)
 hPipeFrom fp args =
-    ddd "hPipeFrom" $ do
+    ddd (show ("hPipeFrom", fp, args)) $ do
        pipepair <- createPipe
        let childstuff = do dupTo (snd pipepair) stdOutput
                            closeFd (fst pipepair)
@@ -281,7 +281,7 @@ Not available on Windows.
 -}
 hPipeBoth :: FilePath -> [String] -> IO (PipeHandle, Handle, Handle)
 hPipeBoth fp args =
-    ddd "hPipeBoth" $ do
+    ddd (show ("hPipeBoth", fp, args)) $ do
        frompair <- createPipe
        topair <- createPipe
        let childstuff = do dupTo (snd frompair) stdOutput

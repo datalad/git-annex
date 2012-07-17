@@ -40,7 +40,10 @@ exists ref = runBool "show-ref"
 
 {- Get the sha of a fully qualified git ref, if it exists. -}
 sha :: Branch -> Repo -> IO (Maybe Sha)
-sha branch repo = process <$> showref repo
+sha branch repo = do
+	r <- process <$> showref repo
+	print r
+	return r
 	where
 		showref = pipeRead [Param "show-ref",
 			Param "--hash", -- get the hash

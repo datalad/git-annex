@@ -78,8 +78,8 @@ safeSystemEnv command params env = do
 {- executeFile with debug logging -}
 executeFile :: FilePath -> Bool -> [String] -> Maybe [(String, String)] -> IO ()
 executeFile c path p e = do
-	debugM "Utility.SafeCommand.executeFile" $
-		"Running: " ++ c ++ " " ++ show p ++ " " ++ maybe "" show e
+	--debugM "Utility.SafeCommand.executeFile" $
+	--	"Running: " ++ c ++ " " ++ show p ++ " " ++ maybe "" show e
 	System.Posix.Process.executeFile c path p e
 
 {- Escapes a filename or other parameter to be safely able to be exposed to

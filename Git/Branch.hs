@@ -73,12 +73,12 @@ commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
 commit message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
 		pipeRead [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $
-		ignorehandle $ pipeWriteRead
-			(map Param $ ["commit-tree", show tree] ++ ps)
-			message repo
+	sha <- getSha "commit-tree" $ pipeWriteRead
+		(map Param $ ["commit-tree", show tree] ++ ps)
+		message repo
+	print ("got", sha)
 	run "update-ref" [Param $ show branch, Param $ show sha] repo
+	print ("update-ref done", sha)
 	return sha
 	where
-		ignorehandle a = snd <$> a
 		ps = concatMap (\r -> ["-p", show r]) parentrefs
