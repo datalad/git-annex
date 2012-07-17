@@ -31,20 +31,32 @@ transfererThread st dstatus transferqueue slots = go
 	where
 		go = do
 			(t, info) <- getNextTransfer transferqueue
-			whenM (runThreadState st $ shouldTransfer dstatus t) $
+			whenM (runThreadState st $ shouldTransfer dstatus t info) $
 				runTransfer st dstatus slots t info
 			go
 
 {- Checks if the requested transfer is already running, or
- - the file to download is already present. -}
-shouldTransfer :: DaemonStatusHandle -> Transfer -> Annex Bool
-shouldTransfer dstatus t = go =<< currentTransfers <$> getDaemonStatus dstatus
+ - the file to download is already present, or the remote
+ - being uploaded to isn't known to have the file. -}
+shouldTransfer :: DaemonStatusHandle -> Transfer -> TransferInfo -> Annex Bool
+shouldTransfer dstatus t info =
+	go =<< currentTransfers <$> getDaemonStatus dstatus
 	where
 		go m
 			| M.member t m = return False
 			| transferDirection t == Download =
-				not <$> inAnnex (transferKey t)
-			| otherwise = return True
+				not <$> inAnnex key
+			| transferDirection t == Upload =
+				{- Trust the location log to check if the
+				 - remote already has the key. This avoids
+				 - a roundtrip to the remote. -}
+				case transferRemote info of
+					Nothing -> return False
+					Just remote -> 
+						notElem (Remote.uuid remote)
+							<$> loggedLocations key
+			| otherwise = return False
+		key = transferKey t
 
 {- A transfer is run in a separate process, with a *copy* of the Annex
  - state. This is necessary to avoid blocking the rest of the assistant
@@ -60,7 +72,7 @@ runTransfer :: ThreadState -> DaemonStatusHandle -> TransferSlots -> Transfer ->
 runTransfer st dstatus slots t info = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
-	(Just remote, Just file) -> whenM (shouldtransfer remote) $ do
+	(Just remote, Just file) -> do
 		pid <- inTransferSlot slots $
 			unsafeForkProcessThreadState st $
 				transferprocess remote file
@@ -77,15 +89,6 @@ runTransfer st dstatus slots t info = case (transferRemote info, associatedFile 
 			| isdownload = "from"
 			| otherwise = "to"
 		key = transferKey t
-
-		shouldtransfer remote
-			| isdownload = return True
-			| otherwise = runThreadState st $
-				{- Trust the location log to check if the
-				 - remote already has the key. This avoids
-				 - a roundtrip to the remote. -}
-				notElem (Remote.uuid remote)
-					<$> loggedLocations key
 
 		transferprocess remote file = do
 			showStart "copy" file
