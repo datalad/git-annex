@@ -76,9 +76,7 @@ commit message branch parentrefs repo = do
 	sha <- getSha "commit-tree" $ pipeWriteRead
 		(map Param $ ["commit-tree", show tree] ++ ps)
 		message repo
-	print ("got", sha)
 	run "update-ref" [Param $ show branch, Param $ show sha] repo
-	print ("update-ref done", sha)
 	return sha
 	where
 		ps = concatMap (\r -> ["-p", show r]) parentrefs

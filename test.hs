@@ -14,6 +14,7 @@ import Test.QuickCheck
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import System.Posix.Env
+import System.Posix.Process
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))

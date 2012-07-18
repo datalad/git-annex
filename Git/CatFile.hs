@@ -50,16 +50,11 @@ catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha))
 catObjectDetails h object = CoProcess.query h send receive
 	where
 		send to = do
-			putStrLn "catObjectDetails send start"
 			fileEncoding to
 			hPutStrLn to $ show object
-			putStrLn $ "catObjectDetails send done " ++ show object
 		receive from = do
-			putStrLn "catObjectDetails read header start"
 			fileEncoding from
-			putStrLn "catObjectDetails read header start2"
 			header <- hGetLine from
-			putStrLn "catObjectDetails read header done"
 			case words header of
 				[sha, objtype, size]
 					| length sha == shaSize &&
@@ -72,14 +67,9 @@ catObjectDetails h object = CoProcess.query h send receive
 					| header == show object ++ " missing" -> dne
 					| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
 		readcontent bytes from sha = do
-			putStrLn "readcontent start"
 			content <- S.hGet from bytes
-			putStrLn "readcontent end"
 			c <- hGetChar from
-			putStrLn "readcontent newline read"
 			when (c /= '\n') $
 				error "missing newline from git cat-file"
 			return $ Just (L.fromChunks [content], Ref sha)
-		dne = do
-			putStrLn "dne"
-			return Nothing
+		dne = return Nothing

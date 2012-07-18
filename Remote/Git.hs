@@ -9,6 +9,7 @@ module Remote.Git (remote, repoAvail) where
 
 import qualified Data.Map as M
 import Control.Exception.Extensible
+import System.Process
 
 import Common.Annex
 import Utility.CopyFile
@@ -126,17 +127,20 @@ tryGitConfigRead r
 		safely a = either (const $ return r) return
 				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-		pipedconfig cmd params = safely $
-			pOpen ReadFromPipe cmd (toCommand params) $
-				Git.Config.hRead r
+		pipedconfig cmd params = safely $ do
+			(_, Just h, _, pid) <-
+				createProcess (proc cmd $ toCommand params)
+					{ std_out = CreatePipe }
+			r' <- Git.Config.hRead r h
+			forceSuccessProcess pid cmd $ toCommand params
+			return r'
 
 		geturlconfig headers = do
 			s <- Url.get (Git.repoLocation r ++ "/config") headers
 			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
-				pOpen ReadFromPipe "git" ["config", "--null", "--list", "--file", tmpfile] $
-					Git.Config.hRead r
+				pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 
 		store = observe $ \r' -> do
 			g <- gitRepo

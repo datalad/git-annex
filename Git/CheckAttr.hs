@@ -44,15 +44,11 @@ checkAttr (h, attrs, cwd) want file = do
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
 	where
 		send to = do
-			putStrLn "checkAttr send start"
 			fileEncoding to
 			hPutStr to $ file' ++ "\0"
-			putStrLn "checkAttr send end"
 		receive from = forM attrs $ \attr -> do
-			putStrLn "checkAttr receive start"
 			fileEncoding from
 			l <- hGetLine from
-			putStrLn "checkAttr receive end"
 			return (attr, attrvalue attr l)
 		{- Before git 1.7.7, git check-attr worked best with
 		 - absolute filenames; using them worked around some bugs

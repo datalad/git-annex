@@ -23,6 +23,9 @@ git-annex does not otherwise use threads, so this is surprising. --[[Joey]]
 > I've spent a lot of time debugging this, and trying to fix it, in the
 > "threaded" branch. There are still deadlocks. --[[Joey]]
 
+>> Fixed, by switching from `System.Cmd.Utils` to `System.Process`
+>> --[[Joey]] 
+
 ---
 
 It would be possible to not use the threaded runtime. Instead, we could

@@ -164,9 +164,7 @@ get' staleok file = fromcache =<< getCache file
 		fromjournal Nothing
 			| staleok = withIndex frombranch
 			| otherwise = withIndexUpdate $ frombranch >>= cache
-		frombranch = do
-			liftIO $ putStrLn $ "frombranch " ++ file
-			L.unpack <$> catFile fullname file
+		frombranch = L.unpack <$> catFile fullname file
 		cache content = do
 			setCache file content
 			return content

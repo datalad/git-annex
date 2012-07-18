@@ -20,6 +20,8 @@ module Annex.UUID (
 	removeRepoUUID,
 ) where
 
+import System.Process
+
 import Common.Annex
 import qualified Git
 import qualified Git.Config
@@ -32,8 +34,10 @@ configkey = annexConfig "uuid"
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
 genUUID :: IO UUID
-genUUID = pOpen ReadFromPipe command params $ liftM toUUID . hGetLine
+genUUID = gen . lines <$> readProcess command params []
 	where
+		gen [] = error $ "no output from " ++ command
+		gen (l:_) = toUUID l
 		command = SysConfig.uuid
 		params
 			-- request a random uuid be generated

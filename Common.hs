@@ -13,16 +13,15 @@ import Data.String.Utils as X
 import System.Path as X
 import System.FilePath as X
 import System.Directory as X
-import System.Cmd.Utils as X hiding (safeSystem)
 import System.IO as X hiding (FilePath)
 import System.Posix.Files as X
 import System.Posix.IO as X
-import System.Posix.Process as X hiding (executeFile)
 import System.Exit as X
 
 import Utility.Misc as X
 import Utility.Exception as X
 import Utility.SafeCommand as X
+import Utility.Process as X
 import Utility.Path as X
 import Utility.Directory as X
 import Utility.Monad as X

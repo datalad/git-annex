@@ -1,6 +1,6 @@
 {- safely running shell commands
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,11 +8,8 @@
 module Utility.SafeCommand where
 
 import System.Exit
-import qualified System.Posix.Process
-import System.Posix.Process hiding (executeFile)
-import System.Posix.Signals
+import System.Process
 import Data.String.Utils
-import System.Log.Logger
 import Control.Applicative
 
 {- A type for parameters passed to a shell command. A command can
@@ -42,7 +39,7 @@ boolSystem :: FilePath -> [CommandParam] -> IO Bool
 boolSystem command params = boolSystemEnv command params Nothing
 
 boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-boolSystemEnv command params env = dispatch <$> safeSystemEnv command params env
+boolSystemEnv command params environ = dispatch <$> safeSystemEnv command params environ
 	where
 		dispatch ExitSuccess = True
 		dispatch _ = False
@@ -51,41 +48,13 @@ boolSystemEnv command params env = dispatch <$> safeSystemEnv command params env
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
 safeSystem command params = safeSystemEnv command params Nothing
 
-{- SIGINT(ctrl-c) is allowed to propigate and will terminate the program. -}
+{- Unlike many implementations of system, SIGINT(ctrl-c) is allowed
+ - to propigate and will terminate the program. -}
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
-safeSystemEnv command params env = do
-	putStrLn "safeSystemEnv start"
-	-- Going low-level because all the high-level system functions
-	-- block SIGINT etc. We need to block SIGCHLD, but allow
-	-- SIGINT to do its default program termination.
-	let sigset = addSignal sigCHLD emptySignalSet
-	oldint <- installHandler sigINT Default Nothing
-	oldset <- getSignalMask
-	blockSignals sigset
-	childpid <- forkProcess $ childaction oldint oldset
-	mps <- getProcessStatus True False childpid
-	restoresignals oldint oldset
-	case mps of
-		Just (Exited code) -> do
-			putStrLn "safeSystemEnv end"
-			return code
-		_ -> error $ "unknown error running " ++ command
-	where
-		restoresignals oldint oldset = do
-			_ <- installHandler sigINT oldint Nothing
-			setSignalMask oldset
-		childaction oldint oldset = do
-			restoresignals oldint oldset
-			executeFile command True (toCommand params) env
-
-{- executeFile with debug logging -}
-executeFile :: FilePath -> Bool -> [String] -> Maybe [(String, String)] -> IO ()
-executeFile c path p e = do
-	putStrLn "executeFile start"
-	--debugM "Utility.SafeCommand.executeFile" $
-	--	"Running: " ++ c ++ " " ++ show p ++ " " ++ maybe "" show e
-	System.Posix.Process.executeFile c path p e
-	putStrLn "executeFile end"
+safeSystemEnv command params environ = do
+	(_, _, _, pid) <- createProcess (proc command $ toCommand params)
+		{ env = environ }
+	waitForProcess pid
 
 {- Escapes a filename or other parameter to be safely able to be exposed to
  - the shell. -}

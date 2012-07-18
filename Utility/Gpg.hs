@@ -11,9 +11,9 @@ import qualified Data.ByteString.Lazy as L
 import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
-import Control.Exception (finally, bracket)
-import System.Exit
+import Control.Exception (bracket)
 import System.Posix.Env (setEnv, unsetEnv, getEnv)	
+import System.Process
 
 import Common
 
@@ -39,18 +39,30 @@ stdParams params = do
 readStrict :: [CommandParam] -> IO String
 readStrict params = do
 	params' <- stdParams params
-	pOpen ReadFromPipe "gpg" params' hGetContentsStrict
+	(_, Just from, _, pid)
+		<- createProcess (proc "gpg" params')
+			{ std_out = CreatePipe }
+	hSetBinaryMode from True
+	r <- hGetContentsStrict from
+	forceSuccessProcess pid "gpg" params'
+	return r
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
 pipeStrict :: [CommandParam] -> String -> IO String
 pipeStrict params input = do
 	params' <- stdParams params
-	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	_ <- forkIO $ finally (hPutStr toh input) (hClose toh)
-	output <- hGetContentsStrict fromh
-	forceSuccess pid
-	return output
+	(Just to, Just from, _, pid)
+		<- createProcess (proc "gpg" params')
+			{ std_in = CreatePipe
+			, std_out = CreatePipe }
+	hSetBinaryMode to True
+	hSetBinaryMode from True
+	hPutStr to input
+	hClose to
+	r <- hGetContentsStrict from
+	forceSuccessProcess pid "gpg" params'
+	return r
 
 {- Runs gpg with some parameters, first feeding it a passphrase via
  - --passphrase-fd, then feeding it an input, and passing a handle
@@ -70,17 +82,14 @@ passphraseHandle params passphrase a b = do
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
 	params' <- stdParams $ passphrasefd ++ params
-	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	pid2 <- forkProcess $ do
-		L.hPut toh =<< a
-		hClose toh
-		exitSuccess
+	(Just toh, Just fromh, _, pid) <- createProcess (proc "gpg" params')
+		{ std_in = CreatePipe, std_out = CreatePipe }
+	L.hPut toh =<< a
 	hClose toh
 	ret <- b fromh
 
 	-- cleanup
-	forceSuccess pid
-	_ <- getProcessStatus True False pid2
+	forceSuccessProcess pid "gpg" params'
 	closeFd frompipe
 	return ret
 
