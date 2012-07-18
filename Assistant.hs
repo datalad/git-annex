@@ -123,7 +123,7 @@ startDaemon assistant foreground
 				, pushThread st dstatus commitchan pushmap
 				, pushRetryThread st pushmap
 				, mergeThread st
-				, transferWatcherThread st dstatus transferslots
+				, transferWatcherThread st dstatus
 				, transfererThread st dstatus transferqueue transferslots
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan

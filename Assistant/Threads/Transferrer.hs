@@ -74,9 +74,8 @@ runTransfer st dstatus slots t info = case (transferRemote info, associatedFile 
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
-		tid <- inTransferSlot slots $
-			unsafeForkIOThreadState st $
-				transferprocess remote file
+		tid <- inTransferSlot slots st $
+			transferprocess remote file
 		now <- getCurrentTime
 		runThreadState st $ adjustTransfers dstatus $
 			M.insertWith' const t info

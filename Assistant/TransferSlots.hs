@@ -10,6 +10,9 @@ module Assistant.TransferSlots where
 import Control.Exception
 import Control.Concurrent
 
+import Common.Annex
+import Assistant.ThreadedMonad
+
 type TransferSlots = QSemN
 
 {- Number of concurrent transfers allowed to be run from the assistant.
@@ -24,16 +27,13 @@ newTransferSlots :: IO TransferSlots
 newTransferSlots = newQSemN numSlots
 
 {- Waits until a transfer slot becomes available, and runs a transfer
- - action in the slot. If the action throws an exception, its slot is
- - freed here, otherwise it should be freed by the TransferWatcher when
- - the transfer is complete.
- -}
-inTransferSlot :: TransferSlots -> IO a -> IO a
-inTransferSlot s a = bracketOnError start abort run
+ - action in the slot, in its own thread. -}
+inTransferSlot :: TransferSlots -> ThreadState -> Annex a -> IO ThreadId
+inTransferSlot s st a = forkIO $ bracket_ start done run
 	where
 		start = waitQSemN s 1
-		abort = const $ transferComplete s
-		run = const a
+		done = transferComplete s
+		run = unsafeRunThreadState st a
 
 {- Call when a transfer is complete. -}
 transferComplete :: TransferSlots -> IO ()
