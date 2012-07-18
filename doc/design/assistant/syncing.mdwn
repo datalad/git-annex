@@ -10,13 +10,6 @@ all the other git clones, at both the git level and the key/value level.
   on remotes, and transfer. But first, need to ensure that when a remote
   receives content, and updates its location log, it syncs that update
   out.
-* Transfer watching has a race on kqueue systems, which makes finished
-  fast transfers not be noticed by the TransferWatcher. Which in turn
-  prevents the transfer slot being freed and any further transfers
-  from happening. So, this approach is too fragile to rely on for
-  maintaining the TransferSlots. Instead, need [[todo/assistant_threaded_runtime]],
-  which would allow running something for sure when a transfer thread
-  finishes.
 
 ## longer-term TODO
 
@@ -106,3 +99,10 @@ anyway.
   Annex state monad. **done**
 * Write transfer control thread, which decides when to launch transfers.
   **done**
+* Transfer watching has a race on kqueue systems, which makes finished
+  fast transfers not be noticed by the TransferWatcher. Which in turn
+  prevents the transfer slot being freed and any further transfers
+  from happening. So, this approach is too fragile to rely on for
+  maintaining the TransferSlots. Instead, need [[todo/assistant_threaded_runtime]],
+  which would allow running something for sure when a transfer thread
+  finishes. **done**
