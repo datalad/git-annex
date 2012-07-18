@@ -20,6 +20,9 @@ The test suite tends to hang when testing add. `git-annex` occasionally
 hangs, apparently in a futex lock. This is not the assistant hanging, and
 git-annex does not otherwise use threads, so this is surprising. --[[Joey]]
 
+> I've spent a lot of time debugging this, and trying to fix it, in the
+> "threaded" branch. There are still deadlocks. --[[Joey]]
+
 ---
 
 It would be possible to not use the threaded runtime. Instead, we could
