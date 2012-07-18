@@ -501,7 +501,7 @@ pOpen3 :: Maybe Fd                      -- ^ Send stdin to this fd
        -> (ProcessID -> IO a)           -- ^ Action to run in parent
        -> IO ()                         -- ^ Action to run in child before execing (if you don't need something, set this to @return ()@) -- IGNORED IN HUGS
        -> IO a
-pOpen3 pin pout perr fp args func childfunc = ddd "pOpen3" $
+pOpen3 pin pout perr fp args func childfunc = ddd (show ("pOpen3", fp, args)) $
     do pid <- pOpen3Raw pin pout perr fp args childfunc
        putStrLn "got pid"
        retval <- func $! pid

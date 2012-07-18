@@ -54,6 +54,7 @@ safeSystem command params = safeSystemEnv command params Nothing
 {- SIGINT(ctrl-c) is allowed to propigate and will terminate the program. -}
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
 safeSystemEnv command params env = do
+	putStrLn "safeSystemEnv start"
 	-- Going low-level because all the high-level system functions
 	-- block SIGINT etc. We need to block SIGCHLD, but allow
 	-- SIGINT to do its default program termination.
@@ -65,7 +66,9 @@ safeSystemEnv command params env = do
 	mps <- getProcessStatus True False childpid
 	restoresignals oldint oldset
 	case mps of
-		Just (Exited code) -> return code
+		Just (Exited code) -> do
+			putStrLn "safeSystemEnv end"
+			return code
 		_ -> error $ "unknown error running " ++ command
 	where
 		restoresignals oldint oldset = do
@@ -78,9 +81,11 @@ safeSystemEnv command params env = do
 {- executeFile with debug logging -}
 executeFile :: FilePath -> Bool -> [String] -> Maybe [(String, String)] -> IO ()
 executeFile c path p e = do
+	putStrLn "executeFile start"
 	--debugM "Utility.SafeCommand.executeFile" $
 	--	"Running: " ++ c ++ " " ++ show p ++ " " ++ maybe "" show e
 	System.Posix.Process.executeFile c path p e
+	putStrLn "executeFile end"
 
 {- Escapes a filename or other parameter to be safely able to be exposed to
  - the shell. -}
