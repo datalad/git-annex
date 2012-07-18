@@ -9,6 +9,8 @@ module Utility.Parallel where
 
 import Common
 
+import System.Posix.Process
+
 {- Runs an action in parallel with a set of values.
  - Returns the values partitioned into ones with which the action succeeded,
  - and ones with which it failed. -}

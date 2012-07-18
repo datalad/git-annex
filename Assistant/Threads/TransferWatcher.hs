@@ -17,6 +17,7 @@ import Utility.Types.DirWatcher
 import Annex.BranchState
 
 import Data.Map as M
+import System.Posix.Process
 
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}

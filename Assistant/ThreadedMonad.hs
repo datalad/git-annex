@@ -13,6 +13,7 @@ import qualified Annex
 import Control.Concurrent
 import Data.Tuple
 import System.Posix.Types
+import System.Posix.Process
 
 {- The Annex state is stored in a MVar, so that threaded actions can access
  - it. -}
