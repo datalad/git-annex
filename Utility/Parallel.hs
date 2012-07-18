@@ -1,4 +1,4 @@
-{- parallel processes
+{- parallel processing via threads
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -9,16 +9,27 @@ module Utility.Parallel where
 
 import Common
 
-import System.Posix.Process
+import Control.Concurrent
+import Control.Exception
 
-{- Runs an action in parallel with a set of values.
+{- Runs an action in parallel with a set of values, in a set of threads.
+ - In order for the actions to truely run in parallel, requires GHC's
+ - threaded runtime, 
+ -
  - Returns the values partitioned into ones with which the action succeeded,
  - and ones with which it failed. -}
 inParallel :: (v -> IO ()) -> [v] -> IO ([v], [v])
 inParallel a l = do
-	pids <- mapM (forkProcess . a) l
-	statuses <- mapM (getProcessStatus True False) pids
-	return $ reduce $ partition (succeeded . snd) $ zip l statuses
+	mvars <- mapM thread l
+	statuses <- mapM takeMVar mvars
+	return $ reduce $ partition snd $ zip l statuses
 	where
-		succeeded v = v == Just (Exited ExitSuccess)
 		reduce (x,y) = (map fst x, map fst y)
+		thread v = do
+			mvar <- newEmptyMVar
+			_ <- forkIO $ do
+				r <- try (a v) :: IO (Either SomeException ())
+				case r of
+					Left _ -> putMVar mvar False
+					Right _ -> putMVar mvar True
+			return mvar
