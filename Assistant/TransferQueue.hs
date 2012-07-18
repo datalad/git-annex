@@ -24,6 +24,7 @@ stubInfo :: AssociatedFile -> TransferInfo
 stubInfo f = TransferInfo
 	{ startedTime = Nothing
 	, transferPid = Nothing
+	, transferTid = Nothing
 	, transferRemote = Nothing
 	, bytesComplete = Nothing
 	, associatedFile = f

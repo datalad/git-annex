@@ -18,6 +18,7 @@ import Logs.Location
 import Annex.Content
 import qualified Remote
 
+import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import qualified Data.Map as M
 
@@ -58,12 +59,12 @@ shouldTransfer dstatus t info =
 			| otherwise = return False
 		key = transferKey t
 
-{- A transfer is run in a separate process, with a *copy* of the Annex
+{- A transfer is run in a separate thread, with a *copy* of the Annex
  - state. This is necessary to avoid blocking the rest of the assistant
  - on the transfer completing, and also to allow multiple transfers to run
- - at once.
+ - at once. This requires GHC's threaded runtime to work!
  -
- - However, it means that the transfer processes are responsible
+ - The copy of state  means that the transfer processes are responsible
  - for doing any necessary shutdown cleanups, and that the parent
  - thread's cache must be invalidated once a transfer completes, as
  - changes may have been made to the git-annex branch.
@@ -73,15 +74,14 @@ runTransfer st dstatus slots t info = case (transferRemote info, associatedFile 
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
-		pid <- inTransferSlot slots $
-			unsafeForkProcessThreadState st $
+		tid <- inTransferSlot slots $
+			unsafeForkIOThreadState st $
 				transferprocess remote file
 		now <- getCurrentTime
 		runThreadState st $ adjustTransfers dstatus $
 			M.insertWith' const t info
-				{ startedTime = Just now
-				, transferPid = Just pid
-				, shouldWait = True
+				{ startedTime = Just $ utcTimeToPOSIXSeconds now
+				, transferTid = Just tid
 				}
 	where
 		isdownload = transferDirection t == Download

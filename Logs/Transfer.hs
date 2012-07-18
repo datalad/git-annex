@@ -16,6 +16,10 @@ import qualified Fields
 
 import System.Posix.Types
 import Data.Time.Clock
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Locale
+import Control.Concurrent
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -33,8 +37,9 @@ data Transfer = Transfer
  - of some repository, that was acted on to initiate the transfer.
  -}
 data TransferInfo = TransferInfo
-	{ startedTime :: Maybe UTCTime
+	{ startedTime :: Maybe POSIXTime
 	, transferPid :: Maybe ProcessID
+	, transferTid :: Maybe ThreadId
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
@@ -76,8 +81,9 @@ transfer t file a = do
 	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode
 	info <- liftIO $ TransferInfo
-		<$> (Just <$> getCurrentTime)
+		<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
 		<*> pure Nothing -- pid not stored in file, so omitted for speed
+		<*> pure Nothing -- tid ditto
 		<*> pure Nothing -- not 0; transfer may be resuming
 		<*> pure Nothing
 		<*> pure file
@@ -168,8 +174,9 @@ readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
 readTransferInfo pid s =
 	case bits of
 		[time] -> TransferInfo
-			<$> readish time
+			<$> parsetime time
 			<*> pure (Just pid)
+			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure (if null filename then Nothing else Just filename)
@@ -178,3 +185,5 @@ readTransferInfo pid s =
 	where
 		(bits, filebits) = splitAt 1 $ lines s 
 		filename = join "\n" filebits
+		parsetime t = Just . utcTimeToPOSIXSeconds
+			<$> parseTime defaultTimeLocale "%s%Qs" t
