@@ -136,9 +136,11 @@ retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted buprepo (cipher, enck) _ f = do
 	let params = bupParams "join" buprepo [Param $ bupRef enck]
 	liftIO $ catchBoolIO $ do
-		(pid, h) <- hPipeFrom "bup" $ toCommand params
+		(_, Just h, _, pid)
+			<- createProcess (proc "bup" $ toCommand params)
+				{ std_out = CreatePipe }
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
-		forceSuccess pid
+		forceSuccessProcess pid "bup" $ toCommand params
 		return True
 
 remove :: Key -> Annex Bool

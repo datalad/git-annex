@@ -9,7 +9,7 @@ module Utility.TempFile where
 
 import Control.Exception (bracket)
 import System.IO
-import System.Posix.Process hiding (executeFile)
+import System.Posix.Process
 import System.Directory
 
 import Utility.Exception

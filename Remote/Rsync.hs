@@ -9,6 +9,7 @@ module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import System.Posix.Process (getProcessID)
 
 import Common.Annex
 import Types.Remote

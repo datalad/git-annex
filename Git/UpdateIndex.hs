@@ -17,7 +17,7 @@ module Git.UpdateIndex (
 	stageSymlink
 ) where
 
-import System.Cmd.Utils
+import System.Process
 
 import Common
 import Git
@@ -37,12 +37,13 @@ pureStreamer !s = \streamer -> streamer s
 {- Streams content into update-index from a list of Streamers. -}
 streamUpdateIndex :: Repo -> [Streamer] -> IO ()
 streamUpdateIndex repo as = do
-	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
+	(Just h, _, _, p) <- createProcess (proc "git" ps) { std_in = CreatePipe }
 	fileEncoding h
 	forM_ as (stream h)
 	hClose h
-	forceSuccess p
+	forceSuccessProcess p "git" ps
 	where
+		ps = toCommand $ gitCommandLine params repo
 		params = map Param ["update-index", "-z", "--index-info"]
 		stream h a = a (streamer h)
 		streamer h s = do

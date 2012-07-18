@@ -12,6 +12,7 @@ module Utility.Lsof where
 import Common
 
 import System.Posix.Types
+import System.Process
 
 data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
 	deriving (Show, Eq)
@@ -34,10 +35,8 @@ queryDir path = query ["+d", path]
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query opts = do
-	(pid, s) <- pipeFrom "lsof" ("-F0can" : opts)
-	let !r = parse s
-	void $ getProcessStatus True False $ processID pid
-	return r
+	(_, s, _) <- readProcessWithExitCode "lsof" ("-F0can" : opts) []
+	return $ parse s
 
 {- Parsing null-delimited output like:
  -

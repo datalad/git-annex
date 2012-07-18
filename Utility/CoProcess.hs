@@ -13,23 +13,25 @@ module Utility.CoProcess (
 	query
 ) where
 
-import System.Cmd.Utils
+import System.Process
 
 import Common
 
-type CoProcessHandle = (PipeHandle, Handle, Handle)
+type CoProcessHandle = (ProcessHandle, Handle, Handle, FilePath, [String])
 
 start :: FilePath -> [String] -> IO CoProcessHandle
-start command params = hPipeBoth command params
+start command params = do
+	(from, to, _err, pid) <- runInteractiveProcess command params Nothing Nothing
+	return (pid, to, from, command, params)
 
 stop :: CoProcessHandle -> IO ()
-stop (pid, from, to) = do
+stop (pid, from, to, command, params) = do
 	hClose to
 	hClose from
-	forceSuccess pid
+	forceSuccessProcess pid command params
 
 query :: CoProcessHandle -> (Handle -> IO a) -> (Handle -> IO b) -> IO b
-query (_, from, to) send receive = do
+query (_, from, to, _, _) send receive = do
 	_ <- send to
 	hFlush to
 	receive from

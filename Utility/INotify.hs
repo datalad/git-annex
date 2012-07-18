@@ -10,6 +10,7 @@ module Utility.INotify where
 import Common hiding (isDirectory)
 import Utility.ThreadLock
 import Utility.Types.DirWatcher
+import System.Process
 
 import System.INotify
 import qualified System.Posix.Files as Files
@@ -160,12 +161,9 @@ tooManyWatches hook dir = do
 
 querySysctl :: Read a => [CommandParam] -> IO (Maybe a)
 querySysctl ps = do
-	v <- catchMaybeIO $ hPipeFrom "sysctl" $ toCommand ps
+	v <- catchMaybeIO $ readProcess "sysctl" (toCommand ps) []
 	case v of
 		Nothing -> return Nothing
-		Just (pid, h) -> do
-			val <- parsesysctl <$> hGetContentsStrict h
-			void $ getProcessStatus True False $ processID pid
-			return val
+		Just s -> return $ parsesysctl s
 	where
 		parsesysctl s = readish =<< lastMaybe (words s)

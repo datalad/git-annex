@@ -9,7 +9,6 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import System.Exit
 import System.Environment
 
 import Common.Annex
@@ -136,17 +135,5 @@ checkPresent r h k = do
 		findkey s = show k `elem` lines s
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
-			(frompipe, topipe) <- createPipe
-			pid <- forkProcess $ do
-				_ <- dupTo topipe stdOutput
-				closeFd frompipe
-				executeFile "sh" True ["-c", hook]
-					=<< hookEnv k Nothing
-			closeFd topipe
-			fromh <- fdToHandle frompipe
-			reply <- hGetContentsStrict fromh
-			hClose fromh
-			s <- getProcessStatus True False pid
-			case s of
-				Just (Exited ExitSuccess) -> return $ findkey reply
-				_ -> error "checkpresent hook failed"
+			env <- hookEnv k Nothing
+			findkey <$> readProcessEnv "sh" ["-c", hook] env

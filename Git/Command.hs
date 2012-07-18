@@ -7,10 +7,8 @@
 
 module Git.Command where
 
-import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.IO as L
-import Control.Concurrent
-import Control.Exception (finally)
+import System.Process
+import System.Posix.Process (getAnyProcessStatus)
 
 import Common
 import Git
@@ -44,29 +42,18 @@ run subcommand params repo = assertLocal repo $
  -}
 pipeRead :: [CommandParam] -> Repo -> IO String
 pipeRead params repo = assertLocal repo $ do
-	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine params repo
+	(_, Just h, _, _) <- createProcess
+		(proc "git" $ toCommand $ gitCommandLine params repo)
+			{ std_out = CreatePipe }
 	fileEncoding h
 	hGetContents h
 
-{- Runs a git subcommand, feeding it input.
- - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: [CommandParam] -> L.Text -> Repo -> IO PipeHandle
-pipeWrite params s repo = assertLocal repo $ do
-	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
-	L.hPutStr h s
-	hClose h
-	return p
-
-{- Runs a git subcommand, feeding it input, and returning its output.
- - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: [CommandParam] -> String -> Repo -> IO (PipeHandle, String)
-pipeWriteRead params s repo = assertLocal repo $ do
-	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
-	fileEncoding to
-	fileEncoding from
-	_ <- forkIO $ finally (hPutStr to s) (hClose to)
-	c <- hGetContents from
-	return (p, c)
+{- Runs a git subcommand, feeding it input, and returning its output,
+ - which is expected to be fairly small, since it's all read into memory
+ - strictly. -}
+pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
+pipeWriteRead params s repo = assertLocal repo $
+	readProcess "git" (toCommand $ gitCommandLine params repo) s
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}

@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120629
+Version: 3.20120630
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -40,11 +40,12 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   -- Need to list this because it's generated from a .hsc file.
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
+  GHC-Options: -threaded
 
   if flag(S3)
     Build-Depends: hS3
@@ -65,10 +66,11 @@ Test-Suite test
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   Other-Modules: Utility.Touch
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
+  GHC-Options: -threaded
 
 source-repository head
   type: git

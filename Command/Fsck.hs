@@ -7,6 +7,8 @@
 
 module Command.Fsck where
 
+import System.Posix.Process (getProcessID)
+
 import Common.Annex
 import Command
 import qualified Annex

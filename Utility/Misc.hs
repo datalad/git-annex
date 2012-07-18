@@ -33,7 +33,7 @@ separate c l = unbreak $ break c l
 			| otherwise = (a, tail b)
 
 {- Breaks out the first line. -}
-firstLine :: String-> String
+firstLine :: String -> String
 firstLine = takeWhile (/= '\n')
 
 {- Splits a list into segments that are delimited by items matching
