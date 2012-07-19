@@ -118,7 +118,7 @@ checkTransfer t = do
 			case locked of
 				Nothing -> return Nothing
 				Just (pid, _) -> liftIO $
-					flip catchDefaultIO Nothing $
+					flip catchDefaultIO Nothing $ do
 						readTransferInfo pid 
 							<$> readFile tfile
 
@@ -163,7 +163,7 @@ writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	-- transferPid is not included; instead obtained by looking at
 	-- the process that locks the file.
-	[ show $ startedTime info
+	[ maybe "" show $ startedTime info
 	-- bytesComplete is not included; changes too fast 
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
@@ -172,7 +172,7 @@ readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
 readTransferInfo pid s =
 	case bits of
 		[time] -> TransferInfo
-			<$> parsetime time
+			<$> (Just <$> parsePOSIXTime time)
 			<*> pure (Just pid)
 			<*> pure Nothing
 			<*> pure Nothing
@@ -182,5 +182,7 @@ readTransferInfo pid s =
 	where
 		(bits, filebits) = splitAt 1 $ lines s 
 		filename = join "\n" filebits
-		parsetime t = Just . utcTimeToPOSIXSeconds
-			<$> parseTime defaultTimeLocale "%s%Qs" t
+
+parsePOSIXTime :: String -> Maybe POSIXTime
+parsePOSIXTime s = utcTimeToPOSIXSeconds
+	<$> parseTime defaultTimeLocale "%s%Qs" s
