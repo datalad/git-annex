@@ -22,6 +22,7 @@ module Utility.Process (
 	withBothHandles,
 	createProcess,
 	runInteractiveProcess,
+	writeReadProcess,
 	readProcess
 ) where
 
@@ -192,11 +193,22 @@ runInteractiveProcess f args c e = do
 			}
 	System.Process.runInteractiveProcess f args c e
 
-readProcess
+{- I think this is a more descriptive name than System.Process.readProcess. -}
+writeReadProcess
 	:: FilePath	
 	-> [String]	
 	-> String	
 	-> IO String
-readProcess f args input = do
-	debugProcess $ (proc f args) { std_out = CreatePipe }
+writeReadProcess f args input = do
+	debugProcess $ (proc f args) { std_out = CreatePipe, std_in = CreatePipe }
 	System.Process.readProcess f args input
+
+{- Normally, when reading from a process, it does not need to be fed any
+ - input. -}
+readProcess
+	:: FilePath	
+	-> [String]	
+	-> IO String
+readProcess f args = do
+	debugProcess $ (proc f args) { std_out = CreatePipe }
+	System.Process.readProcess f args []

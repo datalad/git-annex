@@ -32,7 +32,7 @@ configkey = annexConfig "uuid"
 {- Generates a UUID. There is a library for this, but it's not packaged,
  - so use the command line tool. -}
 genUUID :: IO UUID
-genUUID = gen . lines <$> readProcess command params []
+genUUID = gen . lines <$> readProcess command params
 	where
 		gen [] = error $ "no output from " ++ command
 		gen (l:_) = toUUID l

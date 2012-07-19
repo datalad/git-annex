@@ -56,7 +56,7 @@ remoteCost r def = do
 	cmd <- getRemoteConfig r "cost-command" ""
 	(fromMaybe def . readish) <$>
 		if not $ null cmd
-			then liftIO $ readProcess "sh" ["-c", cmd] ""
+			then liftIO $ readProcess "sh" ["-c", cmd]
 			else getRemoteConfig r "cost" ""
 
 cheapRemoteCost :: Int
@@ -116,4 +116,4 @@ getHttpHeaders = do
 	cmd <- getConfig (annexConfig "http-headers-command") ""
 	if null cmd
 		then fromRepo $ Git.Config.getList "annex.http-headers"
-		else lines <$> liftIO (readProcess "sh" ["-c", cmd] "")
+		else lines <$> liftIO (readProcess "sh" ["-c", cmd])

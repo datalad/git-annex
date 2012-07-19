@@ -54,7 +54,7 @@ shaN shasize file filesize = do
 	case shaCommand shasize filesize of
 		Left sha -> liftIO $ sha <$> L.readFile file
 		Right command -> liftIO $ parse command . lines <$>
-			readProcess command (toCommand [File file]) ""
+			readProcess command (toCommand [File file])
 	where
 		parse command [] = bad command
 		parse command (l:_)

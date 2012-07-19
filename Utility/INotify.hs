@@ -160,7 +160,7 @@ tooManyWatches hook dir = do
 
 querySysctl :: Read a => [CommandParam] -> IO (Maybe a)
 querySysctl ps = do
-	v <- catchMaybeIO $ readProcess "sysctl" (toCommand ps) []
+	v <- catchMaybeIO $ readProcess "sysctl" (toCommand ps)
 	case v of
 		Nothing -> return Nothing
 		Just s -> return $ parsesysctl s

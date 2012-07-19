@@ -52,7 +52,7 @@ pipeRead params repo = assertLocal repo $
  - strictly. -}
 pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
 pipeWriteRead params s repo = assertLocal repo $
-	readProcess "git" (toCommand $ gitCommandLine params repo) s
+	writeReadProcess "git" (toCommand $ gitCommandLine params repo) s
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
