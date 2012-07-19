@@ -12,7 +12,6 @@ import qualified Annex
 import Types.Backend
 import Types.Key
 import Types.KeySource
-import System.Process
 
 import qualified Build.SysConfig as SysConfig
 import Data.Digest.Pure.SHA

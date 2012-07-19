@@ -9,7 +9,6 @@ module Remote.Git (remote, repoAvail) where
 
 import qualified Data.Map as M
 import Control.Exception.Extensible
-import System.Process
 
 import Common.Annex
 import Utility.CopyFile
@@ -127,13 +126,11 @@ tryGitConfigRead r
 		safely a = either (const $ return r) return
 				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-		pipedconfig cmd params = safely $ do
-			(_, Just h, _, pid) <-
-				createProcess (proc cmd $ toCommand params)
-					{ std_out = CreatePipe }
-			r' <- Git.Config.hRead r h
-			forceSuccessProcess pid cmd $ toCommand params
-			return r'
+		pipedconfig cmd params = safely $
+			withHandle StdoutHandle createProcessSuccess p $
+				Git.Config.hRead r
+			where
+				p = proc cmd $ toCommand params
 
 		geturlconfig headers = do
 			s <- Url.get (Git.repoLocation r ++ "/config") headers

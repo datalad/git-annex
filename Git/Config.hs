@@ -9,7 +9,7 @@ module Git.Config where
 
 import qualified Data.Map as M
 import Data.Char
-import System.Process
+import System.Process (cwd)
 
 import Common
 import Git
@@ -48,14 +48,11 @@ read' repo = go repo
 		go Repo { location = Local { gitdir = d } } = git_config d
 		go Repo { location = LocalUnknown d } = git_config d
 		go _ = assertLocal repo $ error "internal"
-		git_config d = do
-			(_, Just h, _, pid)
-				<- createProcess (proc "git" params)
-					{ std_out = CreatePipe, cwd = Just d }
-			repo' <- hRead repo h
-			forceSuccessProcess pid "git" params
-			return repo'
-		params = ["config", "--null", "--list"]
+		git_config d = withHandle StdoutHandle createProcessSuccess p $
+			hRead repo
+			where
+				params = ["config", "--null", "--list"]
+				p = (proc "git" params) { cwd = Just d }
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo

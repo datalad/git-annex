@@ -12,7 +12,6 @@ module Utility.Lsof where
 import Common
 
 import System.Posix.Types
-import System.Process
 
 data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
 	deriving (Show, Eq)
@@ -34,9 +33,11 @@ queryDir path = query ["+d", path]
  - Note: If lsof is not available, this always returns [] !
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
-query opts = do
-	(_, s, _) <- readProcessWithExitCode "lsof" ("-F0can" : opts) []
-	return $ parse s
+query opts =
+	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
+		parse <$> hGetContentsStrict h
+	where
+		p = proc "lsof" ("-F0can" : opts)
 
 {- Parsing null-delimited output like:
  -

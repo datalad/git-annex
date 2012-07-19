@@ -9,7 +9,6 @@ module Command.Map where
 
 import Control.Exception.Extensible
 import qualified Data.Map as M
-import System.Process
 
 import Common.Annex
 import Command
@@ -199,13 +198,11 @@ tryScan r
 			case result of
 				Left _ -> return Nothing
 				Right r' -> return $ Just r'
-		pipedconfig cmd params = safely $ do
-			(_, Just h, _, pid) <-
-				createProcess (proc cmd $ toCommand params)
-					{ std_out = CreatePipe }
-			r' <- Git.Config.hRead r h
-			forceSuccessProcess pid cmd $ toCommand params
-			return r'
+		pipedconfig cmd params = safely $
+			withHandle StdoutHandle createProcessSuccess p $
+				Git.Config.hRead r
+			where
+				p = proc cmd $ toCommand params
 
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" [] []

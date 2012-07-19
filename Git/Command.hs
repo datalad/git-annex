@@ -7,7 +7,6 @@
 
 module Git.Command where
 
-import System.Process
 import System.Posix.Process (getAnyProcessStatus)
 
 import Common
@@ -41,12 +40,12 @@ run subcommand params repo = assertLocal repo $
  - result unless reap is called.
  -}
 pipeRead :: [CommandParam] -> Repo -> IO String
-pipeRead params repo = assertLocal repo $ do
-	(_, Just h, _, _) <- createProcess
-		(proc "git" $ toCommand $ gitCommandLine params repo)
-			{ std_out = CreatePipe }
-	fileEncoding h
-	hGetContents h
+pipeRead params repo = assertLocal repo $
+	withHandle StdoutHandle createBackgroundProcess p $ \h -> do
+		fileEncoding h
+		hGetContents h
+	where
+		p  = proc "git" $ toCommand $ gitCommandLine params repo
 
 {- Runs a git subcommand, feeding it input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory

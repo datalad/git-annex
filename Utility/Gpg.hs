@@ -13,7 +13,6 @@ import Control.Applicative
 import Control.Concurrent
 import Control.Exception (bracket)
 import System.Posix.Env (setEnv, unsetEnv, getEnv)	
-import System.Process
 
 import Common
 
@@ -39,30 +38,21 @@ stdParams params = do
 readStrict :: [CommandParam] -> IO String
 readStrict params = do
 	params' <- stdParams params
-	(_, Just from, _, pid)
-		<- createProcess (proc "gpg" params')
-			{ std_out = CreatePipe }
-	hSetBinaryMode from True
-	r <- hGetContentsStrict from
-	forceSuccessProcess pid "gpg" params'
-	return r
+	withHandle StdoutHandle createProcessSuccess (proc "gpg" params') $ \h -> do
+		hSetBinaryMode h True
+		hGetContentsStrict h
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
 pipeStrict :: [CommandParam] -> String -> IO String
 pipeStrict params input = do
 	params' <- stdParams params
-	(Just to, Just from, _, pid)
-		<- createProcess (proc "gpg" params')
-			{ std_in = CreatePipe
-			, std_out = CreatePipe }
-	hSetBinaryMode to True
-	hSetBinaryMode from True
-	hPutStr to input
-	hClose to
-	r <- hGetContentsStrict from
-	forceSuccessProcess pid "gpg" params'
-	return r
+	withBothHandles createProcessSuccess (proc "gpg" params') $ \(to, from) -> do
+		hSetBinaryMode to True
+		hSetBinaryMode from True
+		hPutStr to input
+		hClose to
+		hGetContentsStrict from
 
 {- Runs gpg with some parameters, first feeding it a passphrase via
  - --passphrase-fd, then feeding it an input, and passing a handle
@@ -82,16 +72,13 @@ passphraseHandle params passphrase a b = do
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
 	params' <- stdParams $ passphrasefd ++ params
-	(Just toh, Just fromh, _, pid) <- createProcess (proc "gpg" params')
-		{ std_in = CreatePipe, std_out = CreatePipe }
-	L.hPut toh =<< a
-	hClose toh
-	ret <- b fromh
-
-	-- cleanup
-	forceSuccessProcess pid "gpg" params'
-	closeFd frompipe
-	return ret
+	closeFd frompipe `after`
+		withBothHandles createProcessSuccess (proc "gpg" params') go
+	where
+		go (to, from) = do
+			L.hPut to =<< a
+			hClose to
+			b from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name. -}

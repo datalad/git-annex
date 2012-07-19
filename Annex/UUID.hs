@@ -20,8 +20,6 @@ module Annex.UUID (
 	removeRepoUUID,
 ) where
 
-import System.Process
-
 import Common.Annex
 import qualified Git
 import qualified Git.Config

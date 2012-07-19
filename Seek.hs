@@ -108,9 +108,9 @@ withNothing _ _ = error "This command takes no parameters."
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
-	map (proc matcher) <$> fs
+	map (process matcher) <$> fs
 	where
-		proc matcher f = do
+		process matcher f = do
 			ok <- matcher f
 			if ok then a f else return Nothing
 
