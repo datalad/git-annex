@@ -8,6 +8,13 @@ License: GPL-3+
  this package's source, or in /usr/share/common-licenses/GPL-3 on
  Debian systems.
 
+Files: Utility/Mtab.hcs
+Copyright: Volker Wysk <hsss@volker-wysk.de>
+License: LGPL-2.1+
+ the full text of version 2.1 of the LGPL is distributed as doc/LGPL
+ in this package's source, or in /usr/share/common-licences/LGPL-2.1
+ on Debian systems.
+
 Files: doc/logo.png doc/logo_small.png doc/favicon.png
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>
