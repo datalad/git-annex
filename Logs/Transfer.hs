@@ -1,4 +1,4 @@
-{- git-annex transfer information files
+{- git-annex transfer information files and lock files
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -14,15 +14,18 @@ import qualified Git
 import Types.Remote
 import qualified Fields
 
-import Control.Concurrent
 import System.Posix.Types
 import Data.Time.Clock
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Locale
+import Control.Concurrent
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
 data Transfer = Transfer
 	{ transferDirection :: Direction
-	, transferRemote :: UUID
+	, transferUUID :: UUID
 	, transferKey :: Key
 	}
 	deriving (Show, Eq, Ord)
@@ -34,9 +37,10 @@ data Transfer = Transfer
  - of some repository, that was acted on to initiate the transfer.
  -}
 data TransferInfo = TransferInfo
-	{ startedTime :: Maybe UTCTime
+	{ startedTime :: Maybe POSIXTime
 	, transferPid :: Maybe ProcessID
-	, transferThread :: Maybe ThreadId
+	, transferTid :: Maybe ThreadId
+	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
 	, associatedFile :: Maybe FilePath
 	}
@@ -66,9 +70,9 @@ fieldTransfer direction key a = do
 	maybe a (\u -> transfer (Transfer direction (toUUID u) key) afile a)
 		=<< Fields.getField Fields.remoteUUID
 
-{- Runs a transfer action. Creates and locks the transfer information file
- - while the action is running. Will throw an error if the transfer is
- - already in progress.
+{- Runs a transfer action. Creates and locks the lock file while the
+ - action is running, and stores info in the transfer information
+ - file. Will throw an error if the transfer is already in progress.
  -}
 transfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
 transfer t file a = do
@@ -76,27 +80,27 @@ transfer t file a = do
 	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode
 	info <- liftIO $ TransferInfo
-		<$> (Just <$> getCurrentTime)
+		<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
 		<*> pure Nothing -- pid not stored in file, so omitted for speed
-		<*> pure Nothing -- threadid not stored in file, so omitted for speed
+		<*> pure Nothing -- tid ditto
 		<*> pure Nothing -- not 0; transfer may be resuming
+		<*> pure Nothing
 		<*> pure file
 	bracketIO (prep tfile mode info) (cleanup tfile) a
 	where
 		prep tfile mode info = do
-			fd <- openFd tfile ReadWrite (Just mode)
+			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			when (locked == Nothing) $
 				error $ "transfer already in progress"
-			h <- fdToHandle fd
-			hPutStr h $ writeTransferInfo info
-			hFlush h
-			return h
-		cleanup tfile h = do
+			writeFile tfile $ writeTransferInfo info
+			return fd
+		cleanup tfile fd = do
 			removeFile tfile
-			hClose h
+			removeFile $ transferLockFile tfile
+			closeFd fd
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -104,22 +108,19 @@ checkTransfer t = do
 	mode <- annexFileMode
 	tfile <- fromRepo $ transferFile t
 	mfd <- liftIO $ catchMaybeIO $
-		openFd tfile ReadOnly (Just mode) defaultFileFlags
+		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags
 	case mfd of
 		Nothing -> return Nothing -- failed to open file; not running
 		Just fd -> do
 			locked <- liftIO $
 				getLock fd (WriteLock, AbsoluteSeek, 0, 0)
+			liftIO $ closeFd fd
 			case locked of
-				Nothing -> do
-					liftIO $ closeFd fd
-					return Nothing
-				Just (pid, _) -> liftIO $ do
-					h <- fdToHandle fd
-					info <- readTransferInfo pid
-						<$> hGetContentsStrict h
-					hClose h
-					return info
+				Nothing -> return Nothing
+				Just (pid, _) -> liftIO $
+					flip catchDefaultIO Nothing $ do
+						readTransferInfo pid 
+							<$> readFile tfile
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
@@ -140,10 +141,16 @@ transferFile (Transfer direction u key) r = gitAnnexTransferDir r
 	</> fromUUID u
 	</> keyFile key
 
+{- The transfer lock file corresponding to a given transfer info file. -}
+transferLockFile :: FilePath -> FilePath
+transferLockFile infofile = let (d,f) = splitFileName infofile in
+	combine d ("lck." ++ f)
+
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
-parseTransferFile file = 
-	case drop (length bits - 3) bits of
+parseTransferFile file
+	| "lck." `isPrefixOf` (takeFileName file) = Nothing
+	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> readDirection direction
 			<*> pure (toUUID u)
@@ -156,8 +163,7 @@ writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	-- transferPid is not included; instead obtained by looking at
 	-- the process that locks the file.
-	-- transferThread is not included; not relevant for other processes
-	[ show $ startedTime info
+	[ maybe "" show $ startedTime info
 	-- bytesComplete is not included; changes too fast 
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
@@ -166,8 +172,9 @@ readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
 readTransferInfo pid s =
 	case bits of
 		[time] -> TransferInfo
-			<$> readish time
+			<$> (Just <$> parsePOSIXTime time)
 			<*> pure (Just pid)
+			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure (if null filename then Nothing else Just filename)
@@ -175,3 +182,7 @@ readTransferInfo pid s =
 	where
 		(bits, filebits) = splitAt 1 $ lines s 
 		filename = join "\n" filebits
+
+parsePOSIXTime :: String -> Maybe POSIXTime
+parsePOSIXTime s = utcTimeToPOSIXSeconds
+	<$> parseTime defaultTimeLocale "%s%Qs" s
