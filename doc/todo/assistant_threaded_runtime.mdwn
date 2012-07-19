@@ -13,6 +13,11 @@ When pulling, pushing, and merging, the assistant runs external git
 commands, and this does block all other threads. The threaded runtime would
 really help here.
 
+[[done]]; the assistant now builds with the threaded runtime.
+Some work still remains to run certian long-running external git commands
+in their own threads to prevent them blocking things, but that is easy to
+do, now. --[[Joey]] 
+
 ---
 
 Currently, git-annex seems unstable when built with the threaded runtime.
