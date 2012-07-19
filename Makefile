@@ -1,11 +1,11 @@
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
-sources=Build/SysConfig.hs Utility/Touch.hs
+sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-BASEFLAGS_OPTS+=-DWITH_INOTIFY
+BASEFLAGS_OPTS+=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o
 else
 BASEFLAGS_OPTS+=-DWITH_KQUEUE

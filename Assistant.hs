@@ -46,6 +46,11 @@
  - 	Wakes up periodically and records the daemon's status to disk.
  - Thread 12: sanity checker
  - 	Wakes up periodically (rarely) and does sanity checks.
+ - Thread 13: mount watcher
+ - 	Either uses dbus to watch for drive mount events, or, when
+ - 	there's no dbus, polls to find newly mounted filesystems.
+ - 	Once a filesystem that contains a remote is mounted, syncs
+ - 	with it.
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
@@ -92,6 +97,7 @@ import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
+import Assistant.Threads.MountWatcher
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -127,6 +133,7 @@ startDaemon assistant foreground
 				, transfererThread st dstatus transferqueue transferslots
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan
+				, mountWatcherThread st dstatus
 				, watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination

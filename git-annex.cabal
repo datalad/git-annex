@@ -31,6 +31,9 @@ Flag S3
 Flag Inotify
   Description: Enable inotify support
 
+Flag Dbus
+  Description: Enable dbus support
+
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
@@ -41,8 +44,8 @@ Executable git-annex
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
-  -- Need to list this because it's generated from a .hsc file.
-  Other-Modules: Utility.Touch
+  -- Need to list these because they're generated from .hsc files.
+  Other-Modules: Utility.Touch Utility.Mounts
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
   GHC-Options: -threaded
@@ -58,6 +61,10 @@ Executable git-annex
   if os(linux) && flag(Inotify)
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
+
+  if flag(Dbus)
+    Build-Depends: dbus
+    CPP-Options: -DWITH_DBUS
 
 Test-Suite test
   Type: exitcode-stdio-1.0
