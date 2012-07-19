@@ -46,6 +46,8 @@ To build and use git-annex, you will need:
     (optional; version 2.3 or newer)
   * [hinotify](http://hackage.haskell.org/package/hinotify)
     (optional; Linux only)
+  * [dbus](http://hackage.haskell.org/package/dbus)
+    (optional)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)
