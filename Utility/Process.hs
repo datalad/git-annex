@@ -28,7 +28,7 @@ module Utility.Process (
 
 import qualified System.Process
 import System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import System.Process hiding (createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode)
+import System.Process hiding (createProcess, runInteractiveProcess, readProcess)
 import System.Exit
 import System.IO
 import System.Log.Logger
