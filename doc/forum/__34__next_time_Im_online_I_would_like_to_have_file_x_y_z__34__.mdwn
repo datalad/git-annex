@@ -1,0 +1,5 @@
+git-annex is seriously cool, however I havent figured out an important detail:
+in the short presentation Richard Hartmann mentions the Nomad use case and says "... next time Im online I would like to have file x y z ... "
+How can this be achieved exactly? If I do a git annex copy/get then it will want to do it instantly, not queuing it.
+thanks a lot!
+Aron
