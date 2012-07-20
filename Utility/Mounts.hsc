@@ -57,11 +57,13 @@ getMounts = do
 						}
 					getmntent h (ent:c)
 
+{- Using unsafe imports because the C functions are belived to never block.
+ - Note that getmntinfo is called with MNT_NOWAIT to avoid possibly blocking;
+ - while getmntent only accesses a file in /etc (or /proc) that should not
+ - block. -}
 foreign import ccall unsafe "libmounts.h mounts_start" c_mounts_start
         :: IO (Ptr ())
-
 foreign import ccall unsafe "libmounts.h mounts_next" c_mounts_next
         :: Ptr () -> IO (Ptr ())
-
 foreign import ccall unsafe "libmounts.h mounts_end" c_mounts_end
         :: Ptr () -> IO CInt
