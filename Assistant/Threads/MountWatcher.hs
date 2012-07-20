@@ -19,6 +19,7 @@ import Utility.Mounts
 import Control.Concurrent
 import qualified Control.Exception as E
 import qualified Data.Set as S
+import System.Log.Logger
 
 #if WITH_DBUS
 import DBus.Client
@@ -48,10 +49,11 @@ dbusThread st handle = E.catch (go =<< connectSession) onerr
 				 - work out the mount point from the dbus
 				 - message, but this is easier. -}
 				mvar <- newMVar =<< currentMountPoints
-				listen client mountAdded $ \_event -> do
-					nowmounted <- currentMountPoints
-					wasmounted <- swapMVar mvar nowmounted
-					handleMounts st handle wasmounted nowmounted			
+				forM_ mountAdded $ \matcher ->
+					listen client matcher $ \_event -> do
+						nowmounted <- currentMountPoints
+						wasmounted <- swapMVar mvar nowmounted
+						handleMounts st handle wasmounted nowmounted
 			, do
 				runThreadState st $
 					warning "No known volume monitor available through dbus; falling back to mtab polling"
@@ -64,8 +66,10 @@ dbusThread st handle = E.catch (go =<< connectSession) onerr
 			pollinstead
 		pollinstead = pollingThread st handle
 
-listClientNames :: Client -> IO [String]
-listClientNames client = do
+type ServiceName = String
+
+listServiceNames :: Client -> IO [ServiceName]
+listServiceNames client = do
 	reply <- callDBus client "ListNames" []
 	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
 
@@ -76,31 +80,53 @@ callDBus client name params = call_ client $
 		, methodCallBody = params
 		}
 
-{- Examine the list of clients connected to dbus, to see if there
+{- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor mounts. If not, will attempt to start one. -}
 checkMountMonitor :: Client -> IO Bool
-checkMountMonitor client = ifM isrunning
-	( return True
-	, startclient knownclients
-	)
+checkMountMonitor client = do
+	running <- filter (`elem` usableservices)
+		<$> listServiceNames client
+	if null running
+		then startOneService client startableservices
+		else do
+			myDebug [ "Using running DBUS service"
+				, Prelude.head running
+				, "to monitor mount events."
+				]
+			return True
 	where
-		isrunning = any (`elem` knownclients) <$> listClientNames client
-		knownclients = ["org.gtk.Private.GduVolumeMonitor"]
-		startclient [] = return False
-		startclient (c:cs) = do
-			_ <- callDBus client "StartServiceByName"
-				[toVariant c, toVariant (0 :: Word32)]
-			ifM isrunning
-				( return True
-				, startclient cs
-				)
+		startableservices = [gvfs]
+		usableservices = startableservices ++ [kde]
+		gvfs = "org.gtk.Private.GduVolumeMonitor"
+		kde = "org.kde.DeviceNotifications"
+
+startOneService :: Client -> [ServiceName] -> IO Bool
+startOneService _ [] = return False
+startOneService client (x:xs) = do
+	_ <- callDBus client "StartServiceByName"
+		[toVariant x, toVariant (0 :: Word32)]
+	ifM (elem x <$> listServiceNames client)
+		( do
+			myDebug [ "Started DBUS service"
+				, x
+				, "to monitor mount events."
+				]
+			return True
+		, startOneService client xs
+		)
 
 {- Filter matching events recieved when drives are mounted. -}	
-mountAdded ::MatchRule
-mountAdded = matchAny
-	{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
-	, matchMember = Just "MountAdded"
-	}
+mountAdded :: [MatchRule]
+mountAdded = [gvfs, kde]
+	where
+		gvfs = matchAny
+			{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+			, matchMember = Just "MountAdded"
+			}
+		kde = matchAny
+			{ matchInterface = Just "org.kde.Solid.Device"
+			, matchMember = Just "setupDone"
+			}
 
 #endif
 
@@ -119,7 +145,7 @@ handleMounts st handle wasmounted nowmounted = mapM_ (handleMount st handle) $
 
 handleMount :: ThreadState -> DaemonStatusHandle -> Mntent -> IO ()
 handleMount st handle mntent = do
-	putStrLn $ "mounted: " ++ mnt_dir mntent
+	myDebug ["detected mount of",  mnt_dir mntent]
 
 type MountPoints = S.Set Mntent
 
@@ -130,3 +156,6 @@ currentMountPoints = S.fromList <$> getMounts
 {- Finds new mount points, given an old and a new set. -}
 newMountPoints :: MountPoints -> MountPoints -> MountPoints
 newMountPoints old new = S.difference new old
+
+myDebug :: [String] -> IO ()
+myDebug ms = debugM "MountWatcher" $ unwords ("MountWatcher:":ms)
