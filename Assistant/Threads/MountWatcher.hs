@@ -22,6 +22,7 @@ import qualified Data.Set as S
 #if WITH_DBUS
 import DBus.Client
 import DBus
+import Data.Word (Word32)
 #else
 #warning Building without dbus support; will use mtab polling
 #endif
@@ -63,16 +64,34 @@ dbusThread st handle = (go =<< connectSession) `catchIO` onerr
 
 listClientNames :: Client -> IO [String]
 listClientNames client = do
-	reply <- call_ client (methodCall "/org/freedesktop/DBus" "org.freedesktop.DBus" "ListNames")
-		{ methodCallDestination = Just "org.freedesktop.DBus" }
+	reply <- callDBus client "ListNames" []
 	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
 
+callDBus :: Client -> MemberName -> [Variant] -> IO MethodReturn
+callDBus client name params = call_ client $
+	(methodCall "/org/freedesktop/DBus" "org.freedesktop.DBus" name)
+		{ methodCallDestination = Just "org.freedesktop.DBus"
+		, methodCallBody = params
+		}
+
 {- Examine the list of clients connected to dbus, to see if there
- - are any we can use to monitor mounts. -}
+ - are any we can use to monitor mounts. If not, will attempt to start one. -}
 checkMountMonitor :: Client -> IO Bool
-checkMountMonitor client = any (`elem` knownclients) <$> listClientNames client
+checkMountMonitor client = ifM isrunning
+	( return True
+	, startclient knownclients
+	)
 	where
+		isrunning = any (`elem` knownclients) <$> listClientNames client
 		knownclients = ["org.gtk.Private.GduVolumeMonitor"]
+		startclient [] = return False
+		startclient (c:cs) = do
+			_ <- callDBus client "StartServiceByName"
+				[toVariant c, toVariant (0 :: Word32)]
+			ifM isrunning
+				( return True
+				, startclient cs
+				)
 
 {- Filter matching events recieved when drives are mounted. -}	
 mountAdded ::MatchRule
