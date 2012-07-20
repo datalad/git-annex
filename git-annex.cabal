@@ -46,7 +46,7 @@ Executable git-annex
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
-  C-Sources: Utility/libdiskfree.c
+  C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   Extensions: CPP
   GHC-Options: -threaded
 

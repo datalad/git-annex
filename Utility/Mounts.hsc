@@ -2,6 +2,9 @@
  - 
  - Derived from hsshellscript, originally written by
  - Volker Wysk <hsss@volker-wysk.de>
+ - 
+ - Modified to support BSD and Mac OS X by
+ - Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU LGPL version 2.1 or higher.
  -}
@@ -10,8 +13,7 @@
 
 module Utility.Mounts (
 	Mntent(..),
-	read_mtab,
-	read_fstab,
+	getMounts
 ) where
 
 import Control.Monad
@@ -20,62 +22,46 @@ import Foreign.C
 import GHC.IO hiding (finally, bracket)
 import Prelude hiding (catch)
 
-#include <stdio.h>
-#include <mntent.h>
+#include "libmounts.h"
 
+{- This is a stripped down mntent, containing only
+ - fields available everywhere. -}
 data Mntent = Mntent
 	{ mnt_fsname :: String
 	, mnt_dir :: String
 	, mnt_type :: String
-	, mnt_opts :: String
-	, mnt_freq :: Int
-	, mnt_passno :: Int
 	} deriving (Read, Show, Eq)
 
-read_mounts :: String -> IO [Mntent]
-read_mounts path = do
-	h <- withCString path $ \cpath ->
-		withCString "r" $ \r ->
-			c_setmntent cpath r
+getMounts :: IO [Mntent]
+getMounts = do
+	h <- c_mounts_start
 	when (h == nullPtr) $
-		throwErrno "setmntent"
+		throwErrno "getMounts"
 	mntent <- getmntent h []
-	_ <- c_endmntent h
+	_ <- c_mounts_end h
 	return mntent
 
 	where
-		getmntent h l = do
-			ptr <- c_getmntent h
+		getmntent h c = do
+			ptr <- c_mounts_next h
 			if (ptr == nullPtr)
-				then return $ reverse l
+				then return $ reverse c
 				else do
 					mnt_fsname_str <- #{peek struct mntent, mnt_fsname} ptr >>= peekCString
 					mnt_dir_str <- #{peek struct mntent, mnt_dir} ptr >>= peekCString
 					mnt_type_str <- #{peek struct mntent, mnt_type} ptr >>= peekCString
-					mnt_opts_str <- #{peek struct mntent, mnt_opts} ptr >>= peekCString
-					mnt_freq_int <- #{peek struct mntent, mnt_freq} ptr
-					mnt_passno_int <- #{peek struct mntent, mnt_passno} ptr
 					let ent = Mntent
 						{ mnt_fsname = mnt_fsname_str
 						, mnt_dir = mnt_dir_str
 						, mnt_type = mnt_type_str
-						, mnt_opts = mnt_opts_str
-						, mnt_freq = mnt_freq_int
-						, mnt_passno = mnt_passno_int
 						}
-					getmntent h (ent:l)
+					getmntent h (ent:c)
 
-read_mtab :: IO [Mntent]
-read_mtab = read_mounts "/etc/mtab"
+foreign import ccall unsafe "libmounts.h mounts_start" c_mounts_start
+        :: IO (Ptr ())
 
-read_fstab :: IO [Mntent]
-read_fstab = read_mounts "/etc/fstab"
+foreign import ccall unsafe "libmounts.h mounts_next" c_mounts_next
+        :: Ptr () -> IO (Ptr ())
 
-foreign import ccall safe "setmntent"
-	c_setmntent :: ((Ptr CChar) -> ((Ptr CChar) -> (IO (Ptr ()))))
-
-foreign import ccall safe "endmntent"
-	c_endmntent :: ((Ptr ()) -> (IO CInt))
-
-foreign import ccall safe "getmntent"
-	c_getmntent :: ((Ptr ()) -> (IO (Ptr ())))
+foreign import ccall unsafe "libmounts.h mounts_end" c_mounts_end
+        :: Ptr () -> IO CInt

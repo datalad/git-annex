@@ -82,7 +82,7 @@ type MountPoints = S.Set FilePath
 
 {- Reads mtab, getting the current set of mount points. -}
 currentMountPoints :: IO MountPoints
-currentMountPoints = S.fromList . map mnt_dir <$> read_mtab
+currentMountPoints = S.fromList . map mnt_dir <$> getMounts
 
 {- Finds new mount points, given an old and a new set. -}
 newMountPoints :: MountPoints -> MountPoints -> MountPoints

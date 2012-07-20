@@ -6,10 +6,10 @@ all=$(bins) $(mans) docs
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
 BASEFLAGS_OPTS+=-DWITH_INOTIFY -DWITH_DBUS
-clibs=Utility/libdiskfree.o
+clibs=Utility/libdiskfree.o Utility/libmounts.o
 else
 BASEFLAGS_OPTS+=-DWITH_KQUEUE
-clibs=Utility/libdiskfree.o Utility/libkqueue.o
+clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 endif
 
 PREFIX=/usr
