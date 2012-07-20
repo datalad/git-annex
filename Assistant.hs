@@ -124,7 +124,7 @@ startDaemon assistant foreground
 			pushmap <- newFailedPushMap
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
-			mapM_ (void . forkIO)
+			mapM_ forkIO
 				[ commitThread st changechan commitchan transferqueue dstatus
 				, pushThread st dstatus commitchan pushmap
 				, pushRetryThread st pushmap
