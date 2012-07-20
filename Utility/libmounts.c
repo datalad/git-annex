@@ -34,6 +34,9 @@
 
 #include "libmounts.h"
 
+#include <errno.h>
+#include <stdio.h>
+
 #ifdef GETMNTENT
 /* direct passthrough the getmntent */
 FILE *mounts_start (void) {
@@ -47,7 +50,7 @@ struct mntent *mounts_next (FILE *fp) {
 }
 #endif
 
-#ifdef GETMNTINFOCALL
+#ifdef GETMNTINFO
 /* getmntent emulation using getmntinfo */
 FILE *mounts_start (void) {
 	return ((FILE *)0x1); /* dummy non-NULL FILE pointer, not used */
@@ -58,7 +61,7 @@ int mounts_end (FILE *fp) {
 
 static struct mntent _mntent;
 
-static struct mntent *statfs_to_mntent (struct MNTINFOSTRUCT *mntbuf) {
+static struct mntent *statfs_to_mntent (struct statfs *mntbuf) {
 	_mntent.mnt_fsname = mntbuf->f_mntfromname;
 	_mntent.mnt_dir = mntbuf->f_mntonname;
 	_mntent.mnt_type = mntbuf->f_fstypename;
@@ -72,15 +75,16 @@ static struct mntent *statfs_to_mntent (struct MNTINFOSTRUCT *mntbuf) {
 
 static int pos = -1;
 static int mntsize = -1;
+struct statfs *mntbuf = NULL;
 
 struct mntent *mounts_next (FILE *fp) {
-	struct MNTINFOSTRUCT *mntbuf;
 
 	if (pos == -1 || mntsize == -1)
-		mntsize = GETMNTINFOCALL(&mntbuf, MNT_NOWAIT);
+		mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
 	++pos;
 	if (pos == mntsize) {
 		pos = mntsize = -1;
+		mntbuf = NULL;
 		return NULL;
 	}
 
