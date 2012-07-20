@@ -36,3 +36,6 @@ virtual memory          (kbytes, -v) unlimited
 </pre>
 
 Please close or merge this report if it's a duplicate.
+
+> I've fixed this, it works in my (so far limited) tests. [[done]]
+> --[[Joey]] 
