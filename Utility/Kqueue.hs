@@ -142,11 +142,11 @@ findDirContents dirmap dir = concatMap absolutecontents $ search
 		search = map snd $ M.toList $
 			M.filter (\i -> dirName i == dir) dirmap
 
-foreign import ccall unsafe "libkqueue.h init_kqueue" c_init_kqueue
+foreign import ccall safe "libkqueue.h init_kqueue" c_init_kqueue
 	:: IO Fd
-foreign import ccall unsafe "libkqueue.h addfds_kqueue" c_addfds_kqueue
+foreign import ccall safe "libkqueue.h addfds_kqueue" c_addfds_kqueue
 	:: Fd -> CInt -> Ptr Fd -> IO ()
-foreign import ccall unsafe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
+foreign import ccall safe "libkqueue.h waitchange_kqueue" c_waitchange_kqueue
 	:: Fd -> IO Fd
 
 {- Initializes a Kqueue to watch a directory, and all its subdirectories. -}
