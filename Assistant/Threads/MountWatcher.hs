@@ -21,6 +21,7 @@ import qualified Data.Set as S
 
 #if WITH_DBUS
 import DBus.Client
+import DBus
 #else
 #warning Building without dbus support; will use mtab polling
 #endif
@@ -34,30 +35,51 @@ mountWatcherThread st handle =
 #endif
 
 #if WITH_DBUS
+
 dbusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-dbusThread st handle = do
-	r <- tryIO connectSession
-	case r of
-		Left e -> do
-			print $ "Failed to connect to dbus; falling back to mtab polling (" ++ show e ++ ")"
-			pollingThread st handle
-		Right client -> do
-			{- Store the current mount points in an mvar,
-			 - to be compared later. We could in theory work
-			 - out the mount point from the dbus message, but
-			 - this is easier. -}
-			mvar <- newMVar =<< currentMountPoints
-			-- Spawn a listener thread, and returns.
-			listen client mountadded (go mvar)
+dbusThread st handle = (go =<< connectSession) `catchIO` onerr
 	where
-		mountadded = matchAny
-			{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
-			, matchMember = Just "MountAdded"
-			}
-		go mvar event = do
-			nowmounted <- currentMountPoints
-			wasmounted <- swapMVar mvar nowmounted
-			handleMounts st handle wasmounted nowmounted
+		go client = ifM (checkMountMonitor client)
+			( do
+				{- Store the current mount points in an mvar,
+				 - to be compared later. We could in theory
+				 - work out the mount point from the dbus
+				 - message, but this is easier. -}
+				mvar <- newMVar =<< currentMountPoints
+				listen client mountAdded $ \_event -> do
+					nowmounted <- currentMountPoints
+					wasmounted <- swapMVar mvar nowmounted
+					handleMounts st handle wasmounted nowmounted			
+			, do
+				runThreadState st $
+					warning "No known volume monitor available through dbus; falling back to mtab polling"
+				pollinstead
+			)
+		onerr e = do
+			runThreadState st $
+				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
+			pollinstead
+		pollinstead = pollingThread st handle
+
+listClientNames :: Client -> IO [String]
+listClientNames client = do
+	reply <- call_ client (methodCall "/org/freedesktop/DBus" "org.freedesktop.DBus" "ListNames")
+		{ methodCallDestination = Just "org.freedesktop.DBus" }
+	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
+
+{- Examine the list of clients connected to dbus, to see if there
+ - are any we can use to monitor mounts. -}
+checkMountMonitor :: Client -> IO Bool
+checkMountMonitor client = any (`elem` knownclients) <$> listClientNames client
+	where
+		knownclients = ["org.gtk.Private.GduVolumeMonitor"]
+
+{- Filter matching events recieved when drives are mounted. -}	
+mountAdded ::MatchRule
+mountAdded = matchAny
+	{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+	, matchMember = Just "MountAdded"
+	}
 
 #endif
 
