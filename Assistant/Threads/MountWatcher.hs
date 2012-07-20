@@ -74,15 +74,15 @@ handleMounts :: ThreadState -> DaemonStatusHandle -> MountPoints -> MountPoints 
 handleMounts st handle wasmounted nowmounted = mapM_ (handleMount st handle) $
 	S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: ThreadState -> DaemonStatusHandle -> FilePath -> IO ()
-handleMount st handle mountpoint = do
-	putStrLn $ "mounted: " ++ mountpoint
+handleMount :: ThreadState -> DaemonStatusHandle -> Mntent -> IO ()
+handleMount st handle mntent = do
+	putStrLn $ "mounted: " ++ mnt_dir mntent
 
-type MountPoints = S.Set FilePath
+type MountPoints = S.Set Mntent
 
 {- Reads mtab, getting the current set of mount points. -}
 currentMountPoints :: IO MountPoints
-currentMountPoints = S.fromList . map mnt_dir <$> getMounts
+currentMountPoints = S.fromList <$> getMounts
 
 {- Finds new mount points, given an old and a new set. -}
 newMountPoints :: MountPoints -> MountPoints -> MountPoints

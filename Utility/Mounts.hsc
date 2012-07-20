@@ -30,7 +30,7 @@ data Mntent = Mntent
 	{ mnt_fsname :: String
 	, mnt_dir :: String
 	, mnt_type :: String
-	} deriving (Read, Show, Eq)
+	} deriving (Read, Show, Eq, Ord)
 
 getMounts :: IO [Mntent]
 getMounts = do
