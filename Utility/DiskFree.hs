@@ -15,7 +15,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Error
 
-foreign import ccall unsafe "libdiskfree.h diskfree" c_diskfree
+foreign import ccall safe "libdiskfree.h diskfree" c_diskfree
 	:: CString -> IO CULLong
 
 getDiskFree :: FilePath -> IO (Maybe Integer)
