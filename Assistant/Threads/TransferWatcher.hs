@@ -7,7 +7,7 @@
 
 module Assistant.Threads.TransferWatcher where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Logs.Transfer
@@ -15,6 +15,9 @@ import Utility.DirWatcher
 import Utility.Types.DirWatcher
 
 import Data.Map as M
+
+thisThread :: ThreadName
+thisThread = "TransferWatcher"
 
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
@@ -30,6 +33,7 @@ transferWatcherThread st dstatus = do
 		, errHook = hook onErr
 		}
 	void $ watchDir dir (const False) hooks id
+	debug thisThread ["watching for transfers"]
 
 type Handler = ThreadState -> DaemonStatusHandle -> FilePath -> Maybe FileStatus -> IO ()
 
@@ -51,11 +55,17 @@ onErr _ _ msg _ = error msg
 onAdd :: Handler
 onAdd st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> runThreadState st $ go t =<< checkTransfer t
+	Just t -> do
+		runThreadState st $ go t =<< checkTransfer t
 	where
 		go _ Nothing = noop -- transfer already finished
-		go t (Just info) = adjustTransfers dstatus $
-			M.insertWith' merge t info
+		go t (Just info) = do
+			liftIO $ debug thisThread
+				[ "transfer starting:"
+				, show t
+				]
+			adjustTransfers dstatus $
+				M.insertWith' merge t info
 		-- preseve transferTid, which is not written to disk
 		merge new old = new { transferTid = transferTid old }
 
@@ -63,4 +73,9 @@ onAdd st dstatus file _ = case parseTransferFile file of
 onDel :: Handler
 onDel st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> void $ runThreadState st $ removeTransfer dstatus t
+	Just t -> do
+		debug thisThread
+			[ "transfer finishing:"
+			, show t
+			]
+		void $ runThreadState st $ removeTransfer dstatus t

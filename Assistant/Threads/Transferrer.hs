@@ -7,7 +7,7 @@
 
 module Assistant.Threads.Transferrer where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
@@ -22,6 +22,9 @@ import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import qualified Data.Map as M
 
+thisThread :: ThreadName
+thisThread = "Transferrer"
+
 {- For now only one transfer is run at a time. -}
 maxTransfers :: Int
 maxTransfers = 1
@@ -32,8 +35,12 @@ transfererThread st dstatus transferqueue slots = go
 	where
 		go = do
 			(t, info) <- getNextTransfer transferqueue
-			whenM (runThreadState st $ shouldTransfer dstatus t info) $
-				runTransfer st dstatus slots t info
+			ifM (runThreadState st $ shouldTransfer dstatus t info)
+				( do
+					debug thisThread [ "Transferring:" , show t ]
+					runTransfer st dstatus slots t info
+				, debug thisThread [ "Skipping unnecessary transfer:" , show t ]
+				)
 			go
 
 {- Checks if the requested transfer is already running, or

@@ -5,9 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Threads.Merger where
+module Assistant.Threads.Merger (
+	mergeThread,
+	manualPull,
+) where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
@@ -18,6 +21,9 @@ import qualified Git.Merge
 import qualified Git.Branch
 import qualified Command.Sync
 import qualified Remote
+
+thisThread :: ThreadName
+thisThread = "Merger"
 
 {- This thread watches for changes to .git/refs/heads/synced/*,
  - which indicate incoming pushes. It merges those pushes into the
@@ -33,6 +39,7 @@ mergeThread st = do
 		, errHook = hook onErr
 		}
 	void $ watchDir dir (const False) hooks id
+	debug thisThread ["watching", dir]
 
 type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 
@@ -68,7 +75,11 @@ onAdd g file _
 		let changedbranch = Git.Ref $
 			"refs" </> "heads" </> takeFileName file
 		current <- Git.Branch.current g
-		when (Just changedbranch == current) $
+		when (Just changedbranch == current) $ do
+			liftIO $ debug thisThread
+				[ "merging changes into"
+				, show current
+				]
 			void $ mergeBranch changedbranch g
 
 mergeBranch :: Git.Ref -> Git.Repo -> IO Bool

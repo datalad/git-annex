@@ -7,7 +7,7 @@
 
 module Assistant.Threads.Pusher where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.Commits
 import Assistant.Pushes
 import Assistant.DaemonStatus
@@ -20,6 +20,9 @@ import Utility.Parallel
 import Data.Time.Clock
 import qualified Data.Map as M
 
+thisThread :: ThreadName
+thisThread = "Pusher"
+
 {- This thread retries pushes that failed before. -}
 pushRetryThread :: ThreadState -> FailedPushMap -> IO ()
 pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
@@ -27,6 +30,11 @@ pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
 	-- pushes to retry.
 	topush <- getFailedPushesBefore pushmap (fromIntegral halfhour)
 	unless (null topush) $ do
+		debug thisThread
+			[ "retrying"
+			, show (length topush)
+			, "failed pushes"
+			]
 		now <- getCurrentTime
 		pushToRemotes now st pushmap topush
 	where
@@ -46,7 +54,13 @@ pushThread st daemonstatus commitchan pushmap = do
 				remotes <- runThreadState st $
 					knownRemotes <$> getDaemonStatus daemonstatus
 				pushToRemotes now st pushmap remotes
-			else refillCommits commitchan commits
+			else do
+				debug thisThread
+					[ "delaying push of"
+					, show (length commits)
+					, "commits"
+					]
+				refillCommits commitchan commits
 
 {- Decide if now is a good time to push to remotes.
  -
@@ -71,11 +85,20 @@ pushToRemotes now st pushmap remotes = do
 	go True branch g remotes
 	where
 		go shouldretry branch g rs = do
+			debug thisThread
+				[ "pushing to"
+				, show rs
+				]
 			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 			(succeeded, failed) <- inParallel (push g branch) rs
 			changeFailedPushMap pushmap $ \m ->
 				M.union (makemap failed) $
 					M.difference m (makemap succeeded)
+			unless (null failed) $
+				debug thisThread
+					[ "failed to push to"
+					, show failed
+					]
 			unless (null failed || not shouldretry) $
 				retry branch g failed
 
@@ -86,5 +109,6 @@ pushToRemotes now st pushmap remotes = do
 				( exitSuccess, exitFailure)
 
 		retry branch g rs = do
+			debug thisThread [ "trying manual pull to resolve failed pushes" ]
 			runThreadState st $ manualPull branch rs
 			go False branch g rs

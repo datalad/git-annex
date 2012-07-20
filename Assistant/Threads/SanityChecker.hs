@@ -9,21 +9,26 @@ module Assistant.Threads.SanityChecker (
 	sanityCheckerThread
 ) where
 
-import Common.Annex
-import qualified Git.LsFiles
+import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
 import Assistant.Changes
 import Assistant.TransferQueue
+import qualified Git.LsFiles
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 
 import Data.Time.Clock.POSIX
 
+thisThread :: ThreadName
+thisThread = "SanityChecker"
+
 {- This thread wakes up occasionally to make sure the tree is in good shape. -}
 sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
 sanityCheckerThread st status transferqueue changechan = forever $ do
 	waitForNextCheck st status
+
+	debug thisThread ["starting sanity check"]
 
 	runThreadState st $
 		modifyDaemonStatus_ status $ \s -> s
@@ -38,6 +43,9 @@ sanityCheckerThread st status transferqueue changechan = forever $ do
 			{ sanityCheckRunning = False
 			, lastSanityCheck = Just now
 			}
+	
+	debug thisThread ["sanity check complete"]
+
 
 {- Only run one check per day, from the time of the last check. -}
 waitForNextCheck :: ThreadState -> DaemonStatusHandle -> IO ()
@@ -80,5 +88,6 @@ check st status transferqueue changechan = do
 		insanity m = runThreadState st $ warning m
 		addsymlink file s = do
 			insanity $ "found unstaged symlink: " ++ file
-			Watcher.runHandler st status transferqueue changechan
+			Watcher.runHandler thisThread st status
+				transferqueue changechan
 				Watcher.onAddSymlink file s

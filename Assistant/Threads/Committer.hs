@@ -7,7 +7,7 @@
 
 module Assistant.Threads.Committer where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.Changes
 import Assistant.Commits
 import Assistant.ThreadedMonad
@@ -31,6 +31,9 @@ import Data.Tuple.Utils
 import qualified Data.Set as S
 import Data.Either
 
+thisThread :: ThreadName
+thisThread = "Committer"
+
 {- This thread makes git commits at appropriate times. -}
 commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> IO ()
 commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 1) $ do
@@ -45,10 +48,24 @@ commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 
 			readychanges <- handleAdds st changechan transferqueue dstatus changes
 			if shouldCommit time readychanges
 				then do
+					debug thisThread
+						[ "committing"
+						, show (length readychanges)
+						, "changes"
+						]
 					void $ tryIO $ runThreadState st commitStaged
 					recordCommit commitchan (Commit time)
-				else refillChanges changechan readychanges
-		else refillChanges changechan changes
+				else refill readychanges
+		else refill changes
+	where
+		refill cs = do
+			debug thisThread
+				[ "delaying commit of"
+				, show (length cs)
+				, "changes"
+				]
+			refillChanges changechan cs
+			
 
 commitStaged :: Annex ()
 commitStaged = do

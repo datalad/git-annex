@@ -82,7 +82,7 @@
 
 module Assistant where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
@@ -136,6 +136,8 @@ startDaemon assistant foreground
 				, mountWatcherThread st dstatus
 				, watchThread st dstatus transferqueue changechan
 				]
+			debug "assistant"
+				["all git-annex assistant threads started"]
 			waitForTermination
 
 stopDaemon :: Annex ()

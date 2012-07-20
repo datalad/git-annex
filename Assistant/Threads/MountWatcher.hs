@@ -10,7 +10,7 @@
 
 module Assistant.Threads.MountWatcher where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
@@ -19,7 +19,6 @@ import Utility.Mounts
 import Control.Concurrent
 import qualified Control.Exception as E
 import qualified Data.Set as S
-import System.Log.Logger
 
 #if WITH_DBUS
 import DBus.Client
@@ -28,6 +27,9 @@ import Data.Word (Word32)
 #else
 #warning Building without dbus support; will use mtab polling
 #endif
+
+thisThread :: ThreadName
+thisThread = "MountWatcher"
 
 mountWatcherThread :: ThreadState -> DaemonStatusHandle -> IO ()
 mountWatcherThread st handle =
@@ -89,7 +91,7 @@ checkMountMonitor client = do
 	if null running
 		then startOneService client startableservices
 		else do
-			myDebug [ "Using running DBUS service"
+			debug thisThread [ "Using running DBUS service"
 				, Prelude.head running
 				, "to monitor mount events."
 				]
@@ -107,7 +109,7 @@ startOneService client (x:xs) = do
 		[toVariant x, toVariant (0 :: Word32)]
 	ifM (elem x <$> listServiceNames client)
 		( do
-			myDebug [ "Started DBUS service"
+			debug thisThread [ "Started DBUS service"
 				, x
 				, "to monitor mount events."
 				]
@@ -145,7 +147,7 @@ handleMounts st handle wasmounted nowmounted = mapM_ (handleMount st handle) $
 
 handleMount :: ThreadState -> DaemonStatusHandle -> Mntent -> IO ()
 handleMount st handle mntent = do
-	myDebug ["detected mount of",  mnt_dir mntent]
+	debug thisThread ["detected mount of",  mnt_dir mntent]
 
 type MountPoints = S.Set Mntent
 
@@ -156,6 +158,3 @@ currentMountPoints = S.fromList <$> getMounts
 {- Finds new mount points, given an old and a new set. -}
 newMountPoints :: MountPoints -> MountPoints -> MountPoints
 newMountPoints old new = S.difference new old
-
-myDebug :: [String] -> IO ()
-myDebug ms = debugM "MountWatcher" $ unwords ("MountWatcher:":ms)
