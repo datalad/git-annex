@@ -10,9 +10,15 @@ all the other git clones, at both the git level and the key/value level.
   on remotes, and transfer. But first, need to ensure that when a remote
   receives content, and updates its location log, it syncs that update
   out.
+* When MountWatcher detects a newly mounted drive, rescan git remotes
+  in order to get ones on the drive, and do a git sync and file transfers
+  to sync any repositories on it.
 
 ## longer-term TODO
 
+* Test MountWatcher on KDE, and add whatever dbus events KDE emits when
+  drives are mounted.
+* Test MountWatcher on Gnome (should work ok) and LXDE (dunno).
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
   airport somewhere.
@@ -23,8 +29,6 @@ all the other git clones, at both the git level and the key/value level.
 * Add a hook, so when there's a change to sync, a program can be run
    and do its own signaling.
 * --debug will show often unnecessary work being done. Optimise.
-* It would be nice if, when a USB drive is connected, 
-   syncing starts automatically. Use dbus on Linux?
 * This assumes the network is connected. It's often not, so the
   [[cloud]] needs to be used to bridge between LANs.
 * Configurablity, including only enabling git syncing but not data transfer;
