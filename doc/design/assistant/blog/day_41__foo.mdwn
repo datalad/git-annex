@@ -5,9 +5,11 @@ to support users who manually mount things -- if they have gvfs
 installed, it'll be used to detect their manual mounts, even when a desktop
 is not running, and if they don't have gvfs, they get polling.
 
-Support for KDE still needs to be added. I think it uses something other
-than gvfs. If someone with KDE can run `dbus-monitor`, plug in a drive, get
-it mounted, and send me a transcript, I can probably add it quickly.
+Also, I got the MountWatcher to work with KDE. Found a dbus event that's
+emitted when KDE mounts a drive, and this is also used. If anyone with
+some other desktop environment wants me to add support for it, and it uses
+dbus, it should be easy: Run `dbus-monitor`, plug in a drive, get
+it mounted, and send me a transcript.
 
 Of course, it'd also be nice to support anything similar on OSX that can
 provide mount event notifications. Not a priority though, since the polling
