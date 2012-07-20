@@ -34,9 +34,6 @@
 
 #include "libmounts.h"
 
-#include <errno.h>
-#include <stdio.h>
-
 #ifdef GETMNTENT
 /* direct passthrough the getmntent */
 FILE *mounts_start (void) {
