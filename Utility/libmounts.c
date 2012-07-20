@@ -34,9 +34,6 @@
 
 #include "libmounts.h"
 
-#include <errno.h>
-#include <stdio.h>
-
 #ifdef GETMNTENT
 /* direct passthrough the getmntent */
 FILE *mounts_start (void) {
@@ -53,7 +50,7 @@ struct mntent *mounts_next (FILE *fp) {
 #ifdef GETMNTINFOCALL
 /* getmntent emulation using getmntinfo */
 FILE *mounts_start (void) {
-	return ((FILE *)0x1) /* dummy non-NULL FILE pointer, not used */
+	return ((FILE *)0x1); /* dummy non-NULL FILE pointer, not used */
 }
 int mounts_end (FILE *fp) {
 	return 1;

@@ -27,12 +27,9 @@
 #endif
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <stdio.h>
 
 #ifndef GETMNTENT
-#warning "boo"
 struct mntent {
 	char *mnt_fsname;
 	char *mnt_dir;
