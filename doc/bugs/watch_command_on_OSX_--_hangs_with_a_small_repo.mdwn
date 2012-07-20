@@ -1,0 +1,14 @@
+I had started a fresh repo to test out the watch command again on OSX and noticed that it's borked, I'm not sure when it was broken.
+
+The snippet of the log message and command is
+
+<pre>
+$ git annex watch --foreground -d -v
+watch . read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","show-ref","git-annex"] 
+read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","show-ref","--hash","refs/heads/git-annex"] 
+read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","log","refs/heads/git-annex..6702e5361146450800ae5af0b63e97bd9c55d70b","--oneline","-n1"] 
+chat: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","cat-file","--batch"] 
+(scanning...) call: git ["--git-dir=/Users/jtan
+</pre>
+
+I had run git-annex with a new repo with just doing a git init and git annex init, I just threw in one or two small text files to see if it was working. It just hangs and does nothing. I had also tried it out on one of my bigger repos and it does the same thing it just hangs at _(scanning...)_ There isn't much to go on, I wonder if it's hitting the [[Issue on OSX with some system limits]] or if its just a thread/fork issue on OSX.
