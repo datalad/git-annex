@@ -17,6 +17,7 @@ import Utility.ThreadScheduler
 import Utility.Mounts
 
 import Control.Concurrent
+import qualified Control.Exception as E
 import qualified Data.Set as S
 
 #if WITH_DBUS
@@ -38,7 +39,7 @@ mountWatcherThread st handle =
 #if WITH_DBUS
 
 dbusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-dbusThread st handle = (go =<< connectSession) `catchIO` onerr
+dbusThread st handle = E.catch (go =<< connectSession) onerr
 	where
 		go client = ifM (checkMountMonitor client)
 			( do
@@ -56,6 +57,7 @@ dbusThread st handle = (go =<< connectSession) `catchIO` onerr
 					warning "No known volume monitor available through dbus; falling back to mtab polling"
 				pollinstead
 			)
+		onerr :: E.SomeException -> IO ()
 		onerr e = do
 			runThreadState st $
 				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
