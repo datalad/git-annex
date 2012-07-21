@@ -7,10 +7,10 @@
 
 module Git.UnionMerge (
 	merge,
-	merge_index
+	mergeIndex
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 
 import Common
@@ -21,6 +21,7 @@ import Git.Command
 import Git.UpdateIndex
 import Git.HashObject
 import Git.Types
+import Git.FilePath
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.
@@ -30,40 +31,40 @@ import Git.Types
 merge :: Ref -> Ref -> Repo -> IO ()
 merge x y repo = do
 	h <- catFileStart repo
-	stream_update_index repo
-		[ ls_tree x repo
-		, merge_trees x y h repo
+	streamUpdateIndex repo
+		[ lsTree x repo
+		, mergeTrees x y h repo
 		]
 	catFileStop h
 
-{- Merges a list of branches into the index. Previously staged changed in
+{- Merges a list of branches into the index. Previously staged changes in
  - the index are preserved (and participate in the merge). -}
-merge_index :: CatFileHandle -> Repo -> [Ref] -> IO ()
-merge_index h repo bs =
-	stream_update_index repo $ map (\b -> merge_tree_index b h repo) bs
+mergeIndex :: CatFileHandle -> Repo -> [Ref] -> IO ()
+mergeIndex h repo bs =
+	streamUpdateIndex repo $ map (\b -> mergeTreeIndex b h repo) bs
 
 {- For merging two trees. -}
-merge_trees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
-merge_trees (Ref x) (Ref y) h = calc_merge h $ "diff-tree":diff_opts ++ [x, y]
+mergeTrees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
+mergeTrees (Ref x) (Ref y) h = doMerge h $ "diff-tree":diffOpts ++ [x, y]
 
 {- For merging a single tree into the index. -}
-merge_tree_index :: Ref -> CatFileHandle -> Repo -> Streamer
-merge_tree_index (Ref x) h = calc_merge h $
-	"diff-index" : diff_opts ++ ["--cached", x]
+mergeTreeIndex :: Ref -> CatFileHandle -> Repo -> Streamer
+mergeTreeIndex (Ref x) h = doMerge h $
+	"diff-index" : diffOpts ++ ["--cached", x]
 
-diff_opts :: [String]
-diff_opts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
+diffOpts :: [String]
+diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 
-{- Calculates how to perform a merge, using git to get a raw diff,
- - and generating update-index input. -}
-calc_merge :: CatFileHandle -> [String] -> Repo -> Streamer
-calc_merge ch differ repo streamer = gendiff >>= go
+{- Streams update-index changes to perform a merge,
+ - using git to get a raw diff. -}
+doMerge :: CatFileHandle -> [String] -> Repo -> Streamer
+doMerge ch differ repo streamer = gendiff >>= go
 	where
 		gendiff = pipeNullSplit (map Param differ) repo
 		go [] = noop
 		go (info:file:rest) = mergeFile info file ch repo >>=
 			maybe (go rest) (\l -> streamer l >> go rest)
-		go (_:[]) = error "calc_merge parse error"
+		go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
@@ -72,12 +73,19 @@ mergeFile :: String -> FilePath -> CatFileHandle -> Repo -> IO (Maybe String)
 mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
-	shas -> use =<< either return (hashObject repo BlobObject . L.unlines) =<<
-		calcMerge . zip shas <$> mapM getcontents shas
+	shas -> use
+		=<< either return (\s -> hashObject BlobObject (unlines s) repo)
+		=<< calcMerge . zip shas <$> mapM getcontents shas
 	where
 		[_colonmode, _bmode, asha, bsha, _status] = words info
-		getcontents s = L.lines <$> catObject h s
-		use sha = return $ Just $ update_index_line sha file
+		use sha = return $ Just $
+			updateIndexLine sha FileBlob $ asTopFilePath file
+		-- We don't know how the file is encoded, but need to
+		-- split it into lines to union merge. Using the
+		-- FileSystemEncoding for this is a hack, but ensures there
+		-- are no decoding errors. Note that this works because
+		-- streamUpdateIndex sets fileEncoding on its write handle.
+		getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -

@@ -26,7 +26,7 @@ module Crypto (
 	prop_hmacWithCipher_sane
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Control.Applicative
@@ -138,7 +138,7 @@ withDecryptedContent = pass withDecryptedHandle
 
 pass :: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
       -> Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
-pass to n s a = to n s $ \h -> a =<< L.hGetContents h
+pass to n s a = to n s $ a <=< L.hGetContents
 
 hmacWithCipher :: Cipher -> String -> String
 hmacWithCipher c = hmacWithCipher' (cipherHmac c) 

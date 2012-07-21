@@ -145,17 +145,17 @@ fixLink key file = do
 		 -}
 		whenM (liftIO $ doesFileExist file) $
 			unlessM (inAnnex key) $ do
-				showNote $ "fixing content location"
+				showNote "fixing content location"
 				dir <- liftIO $ parentDir <$> absPath file
 				let content = absPathFrom dir have
 				liftIO $ allowWrite (parentDir content)
 				moveAnnex key content
 
-		showNote $ "fixing link"
+		showNote "fixing link"
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		liftIO $ removeFile file
 		liftIO $ createSymbolicLink want file
-		Annex.Queue.add "add" [Param "--force", Param "--"] [file]
+		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
 	return True
 
 {- Checks that the location log reflects the current status of the key,
@@ -220,7 +220,7 @@ checkKeySize' key file bad = case Types.Key.keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- fromIntegral . fileSize
-			<$> (liftIO $ getFileStatus file)
+			<$> liftIO (getFileStatus file)
 		comparesizes size size'
 	where
 		comparesizes a b = do

@@ -3,13 +3,25 @@ all the other git clones, at both the git level and the key/value level.
 
 ## git syncing
 
-1. At regular intervals, just run `git annex sync`, which already handles
-   bidirectional syncing.
+1. Can use `git annex sync`, which already handles bidirectional syncing.
+   When a change is committed, launch the part of `git annex sync` that pushes
+   out changes. **done**; changes are pushed out to all remotes in parallel
+1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
+   another node via `git annex sync`), and run the part of `git annex sync`
+   that merges in received changes, and follow it by the part that pushes out
+   changes (sending them to any other remotes).
+   [The watching can be done with the existing inotify code! This avoids needing
+   any special mechanism to notify a remote that it's been synced to.]  
+   **done**
+1. Periodically retry pushes that failed.  **done** (every half an hour)
+1. Also, detect if a push failed due to not being up-to-date, pull,
+   and repush. **done**
 2. Use a git merge driver that adds both conflicting files,
-   so conflicts never break a sync.
+   so conflicts never break a sync. **done**
 3. Investigate the XMPP approach like dvcs-autosync does, or other ways of
    signaling a change out of band.
-4. Add a hook, so when there's a change to sync, a program can be run.
+4. Add a hook, so when there's a change to sync, a program can be run
+   and do its own signaling.
 
 ## data syncing
 
@@ -27,10 +39,50 @@ and with appropriate rate limiting and control facilities.
 
 This probably will need lots of refinements to get working well.
 
+### first pass: flood syncing
+
+Before mapping the network, the best we can do is flood all files out to every
+reachable remote. This is worth doing first, since it's the simplest way to
+get the basic functionality of the assistant to work. And we'll need this
+anyway.
+
+	data ToTransfer = ToUpload Key | ToDownload Key
+	type ToTransferChan = TChan [ToTransfer]
+
+* ToUpload added by the watcher thread when it adds content.
+* ToDownload added by the watcher thread when it seens new symlinks
+  that lack content.
+
+Transfer threads started/stopped as necessary to move data.
+May sometimes want multiple threads downloading, or uploading, or even both.
+
+	data TransferID = TransferThread ThreadID | TransferProcess Pid
+	data Direction = Uploading | Downloading
+	data Transfer = Transfer Direction Key TransferID EpochTime Integer
+	-- add [Transfer] to DaemonStatus
+
+The assistant needs to find out when `git-annex-shell` is receiving or
+sending (triggered by another remote), so it can add data for those too.
+This is important to avoid uploading content to a remote that is already
+downloading it from us, or vice versa, as well as to in future let the web
+app manage transfers as user desires. 
+
+For files being received, it can see the temp file, but other than lsof
+there's no good way to find the pid (and I'd rather not kill blindly).
+
+For files being sent, there's no filesystem indication. So git-annex-shell
+(and other git-annex transfer processes) should write a status file to disk.
+
+Can use file locking on these status files to claim upload/download rights,
+which will avoid races.
+
+This status file can also be updated periodically to show amount of transfer
+complete (necessary for tracking uploads).
+
 ## other considerations
 
 It would be nice if, when a USB drive is connected,
-syncing starts automatically.
+syncing starts automatically. Use dbus on Linux?
 
 This assumes the network is connected. It's often not, so the
 [[cloud]] needs to be used to bridge between LANs.

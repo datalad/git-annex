@@ -15,14 +15,22 @@ import Command
 import qualified Remote
 import qualified Annex
 import qualified Annex.Branch
+import qualified Annex.Queue
+import Annex.Content
+import Annex.CatFile
 import qualified Git.Command
+import qualified Git.LsFiles as LsFiles
+import qualified Git.Merge
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git
+import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
+import Data.Hash.MD5
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -154,10 +162,104 @@ mergeAnnex = do
 	Annex.Branch.forceUpdate
 	stop
 
-mergeFrom :: Git.Ref -> CommandCleanup
+mergeFrom :: Git.Ref -> Annex Bool
 mergeFrom branch = do
 	showOutput
-	inRepo $ Git.Command.runBool "merge" [Param $ show branch]
+	ok <- inRepo $ Git.Merge.mergeNonInteractive branch
+	if ok
+		then return ok
+		else resolveMerge
+
+{- Resolves a conflicted merge. It's important that any conflicts be
+ - resolved in a way that itself avoids later merge conflicts, since
+ - multiple repositories may be doing this concurrently.
+ -
+ - Only annexed files are resolved; other files are left for the user to
+ - handle.
+ -
+ - This uses the Keys pointed to by the files to construct new
+ - filenames. So when both sides modified file foo, 
+ - it will be deleted, and replaced with files foo.KEYA and foo.KEYB.
+ -
+ - On the other hand, when one side deleted foo, and the other modified it,
+ - it will be deleted, and the modified version stored as file
+ - foo.KEYA (or KEYB).
+ -}
+resolveMerge :: Annex Bool
+resolveMerge = do
+	top <- fromRepo Git.repoPath
+	merged <- all id <$> (mapM resolveMerge' =<< inRepo (LsFiles.unmerged [top]))
+	when merged $ do
+		Annex.Queue.flush
+		void $ inRepo $ Git.Command.runBool "commit"
+			[Param "-m", Param "git-annex automatic merge conflict fix"]
+	return merged
+
+resolveMerge' :: LsFiles.Unmerged -> Annex Bool
+resolveMerge' u
+	| issymlink LsFiles.valUs && issymlink LsFiles.valThem =
+		withKey LsFiles.valUs $ \keyUs ->
+		withKey LsFiles.valThem $ \keyThem -> go keyUs keyThem
+	| otherwise = return False
+	where
+		go keyUs keyThem
+			| keyUs == keyThem = do
+				makelink keyUs
+				return True
+			| otherwise = do
+				liftIO $ nukeFile file
+				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+				makelink keyUs
+				makelink keyThem
+				return True
+		file = LsFiles.unmergedFile u
+		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
+			[Just SymlinkBlob, Nothing]
+		makelink (Just key) = do
+			let dest = mergeFile file key
+			l <- calcGitLink dest key
+			liftIO $ do
+				nukeFile dest
+				createSymbolicLink l dest
+			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
+		makelink _ = noop
+		withKey select a = do
+			let msha = select $ LsFiles.unmergedSha u
+			case msha of
+				Nothing -> a Nothing
+				Just sha -> do
+					key <- fileKey . takeFileName
+						. encodeW8 . L.unpack 
+						<$> catObject sha
+					maybe (return False) (a . Just) key
+
+{- The filename to use when resolving a conflicted merge of a file,
+ - that points to a key.
+ -
+ - Something derived from the key needs to be included in the filename,
+ - but rather than exposing the whole key to the user, a very weak hash
+ - is used. There is a very real, although still unlikely, chance of
+ - conflicts using this hash.
+ -
+ - In the event that there is a conflict with the filename generated
+ - for some other key, that conflict will itself be handled by the
+ - conflicted merge resolution code. That case is detected, and the full
+ - key is used in the filename.
+ -}
+mergeFile :: FilePath -> Key -> FilePath
+mergeFile file key
+	| doubleconflict = go $ show key
+	| otherwise = go $ shortHash $ show key
+	where
+		varmarker = ".variant-"
+		doubleconflict = varmarker `isSuffixOf` (dropExtension file)
+		go v = takeDirectory file
+			</> dropExtension (takeFileName file)
+			++ varmarker ++ v
+			++ takeExtension file
+		
+shortHash :: String -> String
+shortHash = take 4 . md5s . encodeFilePath
 
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do

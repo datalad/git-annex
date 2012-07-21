@@ -84,7 +84,7 @@ inject source dest = do
 
 logFiles :: FilePath -> Annex [FilePath]
 logFiles dir = return . filter (".log" `isSuffixOf`)
-		=<< liftIO (getDirectoryContents dir)
+		<=< liftIO $ getDirectoryContents dir
 
 push :: Annex ()
 push = do

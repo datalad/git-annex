@@ -7,8 +7,8 @@
 
 module Remote.Directory (remote) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
-import qualified Data.ByteString.Char8 as S
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 import qualified Data.Map as M
 import qualified Control.Exception as E
 
@@ -272,7 +272,7 @@ retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
 remove :: FilePath -> ChunkSize -> Key -> Annex Bool
 remove d chunksize k = liftIO $ withStoredFiles chunksize d k go
 	where
-		go files = all id <$> mapM removefile files
+		go = all id <$$> mapM removefile
 		removefile file = catchBoolIO $ do
 			let dir = parentDir file
 			allowWrite dir

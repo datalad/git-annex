@@ -94,7 +94,7 @@ updateSymlinks = do
 					link <- calcGitLink f k
 					liftIO $ removeFile f
 					liftIO $ createSymbolicLink link f
-					Annex.Queue.add "add" [Param "--"] [f]
+					Annex.Queue.addCommand "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
@@ -121,9 +121,9 @@ moveLocationLogs = do
 				old <- liftIO $ readLog1 f
 				new <- liftIO $ readLog1 dest
 				liftIO $ writeLog1 dest (old++new)
-				Annex.Queue.add "add" [Param "--"] [dest]
-				Annex.Queue.add "add" [Param "--"] [f]
-				Annex.Queue.add "rm" [Param "--quiet", Param "-f", Param "--"] [f]
+				Annex.Queue.addCommand "add" [Param "--"] [dest]
+				Annex.Queue.addCommand "add" [Param "--"] [f]
+				Annex.Queue.addCommand "rm" [Param "--quiet", Param "-f", Param "--"] [f]
 		
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l

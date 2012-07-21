@@ -14,6 +14,7 @@ module Annex (
 	newState,
 	run,
 	eval,
+	exec,
 	getState,
 	changeState,
 	setFlag,
@@ -119,13 +120,15 @@ newState gitrepo = AnnexState
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already. -}
 new :: Git.Repo -> IO AnnexState
-new gitrepo = newState <$> Git.Config.read gitrepo
+new = newState <$$> Git.Config.read
 
 {- performs an action in the Annex monad -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
 run s a = runStateT (runAnnex a) s
 eval :: AnnexState -> Annex a -> IO a
 eval s a = evalStateT (runAnnex a) s
+exec :: AnnexState -> Annex a -> IO AnnexState
+exec s a = execStateT (runAnnex a) s
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()

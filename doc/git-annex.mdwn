@@ -135,6 +135,11 @@ subdirectories).
   commands to do each of those steps by hand, or if you don't want to
   worry about the details, you can use sync.
 
+  Merge conflicts are automatically resolved by sync. When two conflicting
+  versions of a file have been committed, both will be added to the tree,
+  under different filenames. For example, file "foo" would be replaced
+  with "foo.somekey" and "foo.otherkey".
+
   Note that syncing with a remote will not update the remote's working
   tree with changes made to the local repository. However, those changes
   are pushed to the remote, so can be merged into its working tree
@@ -168,6 +173,17 @@ subdirectories).
   subdirectory structure inside it is preserved.
 
 	git annex import /media/camera/DCIM/
+
+* watch
+
+  Watches for changes to files in the current directory and its subdirectories,
+  and takes care of automatically adding new files, as well as dealing with
+  deleted, copied, and moved files. With this running as a daemon in the
+  background, you no longer need to manually run git commands when
+  manipulating your files.
+
+  To not daemonize, run with --foreground ; to stop a running daemon,
+  run with --stop
 
 # REPOSITORY SETUP COMMANDS
 

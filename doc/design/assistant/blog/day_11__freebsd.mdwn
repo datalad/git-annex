@@ -1,0 +1,50 @@
+I've been investigating how to make `git annex watch` work on
+FreeBSD, and by extension, OSX.
+
+One option is kqueue, which works on both operating systems, and allows
+very basic monitoring of file changes. There's also an OSX specific
+hfsevents interface.
+
+Kqueue is far from optimal for `git annex watch`, because it provides even
+less information than inotify (which didn't really provide everything I
+needed, thus the lsof hack). Kqueue doesn't have events for files being
+closed, only an event when a file is created. So it will be difficult for
+`git annex watch` to know when a file is done being written to and can be
+annexed. git annex will probably need to run lsof periodically to check when
+recently added files are complete. (hsevents shares this limitation)
+
+Kqueue also doesn't provide specific events when a file or directory is
+moved. Indeed, it doesn't provide specific events about what changed at
+all. All you get with kqueue is a generic "oh hey, the directory you're
+watching changed in some way", and it's up to you to scan it to work out
+how. So git annex will probably need to run `git ls-tree --others`
+to find changes in the directory tree. This could be expensive with large
+trees. (hsevents has per-file events on current versions of OSX)
+
+Despite these warts, I want to try kqueue first, since it's more portable
+than hfsevents, and will surely be easier for me to develop support for,
+since I don't have direct access to OSX.
+
+So I went to a handy Debian kFreeBSD porter box, and tried some kqueue
+stuff to get a feel for it. I got a python program that does basic
+directory monitoring with kqueue to work, so I know it's usable there.
+
+Next step was getting kqueue working from Haskell. Should be easy, there's
+a Haskell library already. I spent a while trying to get it to work on
+Debian kFreeBSD, but ran into a
+[problem](https://github.com/hesselink/kqueue/issues/1) that could be
+caused by the Debian kFreeBSD being different, or just a bug in the Haskell
+library. I didn't want to spend too long shaving this yak; I might install
+"real" FreeBSD on a spare laptop and try to get it working there instead.
+
+But for now, I've dropped down to C instead, and have a simple C program
+that can monitor a directory with kqueue. Next I'll turn it into a simple
+library, which can easily be linked into my Haskell code. The Haskell code
+will pass it a set of open directory descriptors, and it'll return the
+one that it gets an event on. This is necessary because kqueue doesn't
+recurse into subdirectories on its own.
+
+I've generally had good luck with this approach to adding stuff in Haskell;
+rather than writing a bit-banging and structure packing low level interface
+in Haskell, write it in C, with a simpler interface between C and
+Haskell.

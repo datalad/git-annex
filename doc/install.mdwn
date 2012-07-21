@@ -10,6 +10,7 @@
 * [[NixOS]]
 * [[Gentoo]]
 * Windows: [[sorry, not possible yet|todo/windows_support]]
+* [[ScientificLinux5]] - This should cover RHEL5 clones such as CentOS5 and so on
 
 ## Using cabal
 
@@ -34,11 +35,15 @@ To build and use git-annex, you will need:
   * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [HTTP](http://hackage.haskell.org/package/HTTP)
-  * [hS3](http://hackage.haskell.org/package/hS3) (optional)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
   * [edit-distance](http://hackage.haskell.org/package/edit-distance)
+  * [hS3](http://hackage.haskell.org/package/hS3) (optional)
+  * [stm](http://hackage.haskell.org/package/stm)
+    (optional; version 2.3 or newer)
+  * [hinotify](http://hackage.haskell.org/package/hinotify)
+    (optional; Linux only)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)
@@ -49,6 +54,8 @@ To build and use git-annex, you will need:
   * [sha1sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional, but recommended;
     a sha1 command will also do)
   * [gpg](http://gnupg.org/) (optional; needed for encryption)
+  * [lsof](ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/)
+    (optional; recommended for watch mode)
   * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)
 
 Then just [[download]] git-annex and run: `make; make install`

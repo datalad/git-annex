@@ -11,7 +11,7 @@ html
 *.tix
 .hpc
 Utility/Touch.hs
-Utility/libdiskfree.o
+Utility/*.o
 dist
 # Sandboxed builds
 cabal-dev

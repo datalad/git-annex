@@ -26,6 +26,7 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
+	, TestCase "lsof" $ testCmd "lsof" "lsof -v >/dev/null 2>&1"
 	, TestCase "ssh connection caching" getSshConnectionCaching
 	] ++ shaTestCases False [1, 512, 224, 384] ++ shaTestCases True [256]
 

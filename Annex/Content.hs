@@ -87,7 +87,7 @@ lockContent key a = do
 		 - to fiddle with permissions to open for an exclusive lock. -}
 		openforlock f = catchMaybeIO $ ifM (doesFileExist f)
 			( withModifiedFileMode f
-				(\cur -> cur `unionFileModes` ownerWriteMode)
+				(`unionFileModes` ownerWriteMode)
 				open
 			, open
 			)
@@ -168,7 +168,7 @@ withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	liftIO $ whenM (doesFileExist tmp) $ liftIO $ removeFile tmp
+	liftIO $ nukeFile tmp
 	return res
 
 {- Checks that there is disk space available to store a given key,
@@ -242,7 +242,7 @@ cleanObjectLoc key = do
 		removeparents file n = do
 			let dir = parentDir file
 			maybe noop (const $ removeparents dir (n-1))
-				=<< catchMaybeIO (removeDirectory dir)
+				<=< catchMaybeIO $ removeDirectory dir
 
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: Key -> Annex ()

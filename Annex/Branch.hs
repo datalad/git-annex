@@ -35,6 +35,8 @@ import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
 import Git.HashObject
+import Git.Types
+import Git.FilePath
 import qualified Git.Index
 import Annex.CatFile
 import Annex.Perms
@@ -66,7 +68,7 @@ siblingBranches = inRepo $ Git.Ref.matchingUniq name
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()
-create = void $ getBranch
+create = void getBranch
 
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref
@@ -259,15 +261,15 @@ files = withIndexUpdate $ do
  - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()
-genIndex g = Git.UpdateIndex.stream_update_index g
-	[Git.UpdateIndex.ls_tree fullname g]
+genIndex g = Git.UpdateIndex.streamUpdateIndex g
+	[Git.UpdateIndex.lsTree fullname g]
 
 {- Merges the specified refs into the index.
  - Any changes staged in the index will be preserved. -}
 mergeIndex :: [Git.Ref] -> Annex ()
 mergeIndex branches = do
 	h <- catFileHandle
-	inRepo $ \g -> Git.UnionMerge.merge_index h g branches
+	inRepo $ \g -> Git.UnionMerge.mergeIndex h g branches
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
@@ -336,13 +338,13 @@ stageJournal = do
 	g <- gitRepo
 	withIndex $ liftIO $ do
 		h <- hashObjectStart g
-		Git.UpdateIndex.stream_update_index g
+		Git.UpdateIndex.streamUpdateIndex g
 			[genstream (gitAnnexJournalDir g) h fs]
 		hashObjectStop h
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file
 			sha <- hashFile h path
-			_ <- streamer $ Git.UpdateIndex.update_index_line
-				sha (fileJournal file)
+			_ <- streamer $ Git.UpdateIndex.updateIndexLine
+				sha FileBlob (asTopFilePath $ fileJournal file)
 			removeFile path

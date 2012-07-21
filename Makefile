@@ -1,19 +1,28 @@
+bins=git-annex
+mans=git-annex.1 git-annex-shell.1
+sources=Build/SysConfig.hs Utility/Touch.hs
+all=$(bins) $(mans) docs
+
+OS:=$(shell uname | sed 's/[-_].*//')
+ifeq ($(OS),Linux)
+BASEFLAGS_OPTS+=-DWITH_INOTIFY
+clibs=Utility/libdiskfree.o
+else
+BASEFLAGS_OPTS+=-DWITH_KQUEUE
+clibs=Utility/libdiskfree.o Utility/libkqueue.o
+endif
+
 PREFIX=/usr
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility
+IGNORE=-ignore-package monads-fd -ignore-package monads-tf
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
 GHCFLAGS=-O2 $(BASEFLAGS)
+CFLAGS=-Wall
 
 ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
-
-bins=git-annex
-mans=git-annex.1 git-annex-shell.1
-sources=Build/SysConfig.hs Utility/Touch.hs
-clibs=Utility/libdiskfree.o
-
-all=$(bins) $(mans) docs
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -99,8 +108,6 @@ clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs)
 
-# Workaround for `cabal sdist` requiring all included files to be listed
-# in .cabal.
 sdist: clean $(mans)
 	./make-sdist.sh
 

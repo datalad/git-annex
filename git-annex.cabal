@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20120614~bpo60+1
+Version: 3.20120629
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -28,6 +28,12 @@ Description:
 Flag S3
   Description: Enable S3 support
 
+Flag Inotify
+  Description: Enable inotify support
+
+Flag Assistant
+  Description: Enable git-annex assistant and watch command
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -43,6 +49,14 @@ Executable git-annex
   if flag(S3)
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
+
+  if flag(Assistant)
+    Build-Depends: stm >= 2.3
+    CPP-Options: -DWITH_ASSISTANT
+
+  if os(linux) && flag(Inotify)
+    Build-Depends: hinotify
+    CPP-Options: -DWITH_INOTIFY
 
 Test-Suite test
   Type: exitcode-stdio-1.0

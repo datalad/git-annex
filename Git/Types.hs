@@ -51,6 +51,7 @@ type Tag = Ref
 
 {- Types of objects that can be stored in git. -}
 data ObjectType = BlobObject | CommitObject | TreeObject
+	deriving (Eq)
 
 instance Show ObjectType where
 	show BlobObject = "blob"
@@ -63,3 +64,18 @@ readObjectType "commit" = Just CommitObject
 readObjectType "tree" = Just TreeObject
 readObjectType _ = Nothing
 
+{- Types of blobs. -}
+data BlobType = FileBlob | ExecutableBlob | SymlinkBlob
+	deriving (Eq)
+
+{- Git uses magic numbers to denote the type of a blob. -}
+instance Show BlobType where
+	show FileBlob = "100644"
+	show ExecutableBlob = "100755"
+	show SymlinkBlob = "120000"
+
+readBlobType :: String -> Maybe BlobType
+readBlobType "100644" = Just FileBlob
+readBlobType "100755" = Just ExecutableBlob
+readBlobType "120000" = Just SymlinkBlob
+readBlobType _ = Nothing

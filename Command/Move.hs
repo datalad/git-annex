@@ -128,9 +128,9 @@ fromOk src key
 		expensive = do
 			u <- getUUID
 			remotes <- Remote.keyPossibilities key
-			return $ u /= Remote.uuid src && any (== src) remotes
+			return $ u /= Remote.uuid src && elem src remotes
 fromPerform :: Remote -> Bool -> Key -> CommandPerform
-fromPerform src move key = moveLock move key $ do
+fromPerform src move key = moveLock move key $
 	ifM (inAnnex key)
 		( handle move True
 		, do

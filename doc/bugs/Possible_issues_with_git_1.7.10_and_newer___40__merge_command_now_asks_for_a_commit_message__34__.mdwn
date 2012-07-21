@@ -1,0 +1,18 @@
+running 'git annex sync' doesn't merge the branches as expected (from the
+limited testing I have done) with git 1.7.10, the behaviour of merge has
+changed, it now asks for a commit message. I would expect setting
+_GIT_MERGE_AUTOEDIT=no_ should resolve this issue.
+
+I had to manually do a merge (or set that variable) to get the branches
+back in sync again, this confused me a bit when git-annex watch was running
+in the background on a remote and it did not pick up the changes.
+
+> Yeah, I tend to miss these since the first thing I did when this
+> misfeature was being posted was to write a mail discouraging them from
+> doing it (sadly ignored), and then set in ~/.environment:
+
+	# My time is more valuable than git's new, bad default
+	GIT_MERGE_AUTOEDIT=no
+	export GIT_MERGE_AUTOEDIT
+
+> Anyway, I've made sync run merge with --no-edit now. [[done]] --[[Joey]]

@@ -10,11 +10,10 @@ module Utility.Directory where
 import System.IO.Error
 import System.Posix.Files
 import System.Directory
-import Control.Exception (throw)
+import Control.Exception (throw, bracket_)
 import Control.Monad
 import System.FilePath
 import Control.Applicative
-import Control.Exception (bracket_)
 import System.Posix.Directory
 import System.IO.Unsafe (unsafeInterleaveIO)
 
@@ -35,7 +34,7 @@ dirCruft _ = False
 dirContents :: FilePath -> IO [FilePath]
 dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 
-{- Gets contents of directory, and then its subdirectories, recursively,
+{- Gets files in a directory, and then its subdirectories, recursively,
  - and lazily. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
 dirContentsRecursive topdir = dirContentsRecursive' topdir [""]
@@ -87,6 +86,13 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			case r of
 				(Left _) -> return False
 				(Right s) -> return $ isDirectory s
+
+{- Removes a file, which may or may not exist.
+ -
+ - Note that an exception is thrown if the file exists but
+ - cannot be removed. -}
+nukeFile :: FilePath -> IO ()
+nukeFile file = whenM (doesFileExist file) $ removeFile file
 
 {- Runs an action in another directory. -}
 bracketCd :: FilePath -> IO a -> IO a

@@ -10,7 +10,7 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 
 import Common.Annex
 import Command
@@ -79,7 +79,7 @@ checkRemoteUnused name = go =<< fromJust <$> Remote.byName (Just name)
 			_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
 			next $ return True
 		remoteunused r =
-			excludeReferenced =<< loggedKeysFor (Remote.uuid r)
+			excludeReferenced <=< loggedKeysFor $ Remote.uuid r
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
@@ -188,14 +188,15 @@ withKeysReferenced initial a = go initial =<< files
 withKeysReferencedInGit :: Git.Ref -> v -> (Key -> v -> v) -> Annex v
 withKeysReferencedInGit ref initial a = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	go initial =<< inRepo (LsTree.lsTree ref)
+	go <=< inRepo $ LsTree.lsTree ref
 	where
 		go v [] = return v
 		go v (l:ls)
 			| isSymLink (LsTree.mode l) = do
-				content <- catFile ref $ LsTree.file l
-				case fileKey (takeFileName $ L.unpack content) of
-					Nothing -> go v ls
+				content <- encodeW8 . L.unpack
+					<$> catFile ref (LsTree.file l)
+				case fileKey (takeFileName content) of
+					Nothing -> go ls
 					Just k -> do
 						let !v' = a k v
 						go v' ls

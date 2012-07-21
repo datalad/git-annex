@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlc1og3PqIGudOMkFNrCCNg66vB7s-jLpc"
+ nickname="Paul"
+ subject="how is this different than rsync?"
+ date="2012-06-22T22:10:19Z"
+ content="""
+Thanks for this great tool! I was wondering what the differences are between using `type=directory`, `type=rsync`, or a bare git repo for directories? 
+
+I guess I can't use just a regular repo because my USB drive is formatted as `vfat` -- which threw me for a loop the first time I heard about `git-annex` about a year ago, because I followed the walkthrough, and it didn't work as expected and gave up (now I know it was just a case of PEBKAC). It might be worth adding a note about [vfat](http://git-annex.branchable.com/bugs/fat_support/) to the \"Adding a remote\" section of the [walkthrough](http://git-annex.branchable.com/walkthrough/), since the unstated assumption there is that the USB drive is formatted as a filesystem that supports symlinks.
+
+Thanks again, my scientific data management just got a lot more sane!
+"""]]

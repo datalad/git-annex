@@ -37,7 +37,7 @@ perform remotemap key = do
 	unless (null safelocations) $ showLongNote pp
 	pp' <- prettyPrintUUIDs "untrusted" untrustedlocations
 	unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
-	forM_ (catMaybes $ map (`M.lookup` remotemap) locations) $
+	forM_ (mapMaybe (`M.lookup` remotemap) locations) $
 		performRemote key
 	if null safelocations then stop else next $ return True
 	where

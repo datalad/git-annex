@@ -7,7 +7,7 @@
 
 module Utility.Gpg where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent

@@ -39,5 +39,5 @@ perform key file = do
 
 cleanup :: FilePath -> CommandCleanup
 cleanup file = do
-	Annex.Queue.add "add" [Param "--"] [file]
+	Annex.Queue.addCommand "add" [Param "--"] [file]
 	return True

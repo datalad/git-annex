@@ -28,6 +28,7 @@ import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations
+import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types
 import qualified GitAnnex
@@ -172,7 +173,7 @@ test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 $
-		Types.Backend.KeySource { Types.Backend.keyFilename = tmp, Types.Backend.contentLocation = tmp }
+		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp }
 	let key = show $ fromJust r
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"

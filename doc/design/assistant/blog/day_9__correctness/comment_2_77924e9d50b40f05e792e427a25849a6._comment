@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="filesystem number of open file handles on a file"
+ date="2012-06-15T08:21:37Z"
+ content="""
+wasn't there some filesystem functionality that could tell you the amount of open file handles on a certain file?  I thought this was tracked per-file too.
+Or maybe i'm just confusing it with the number of hard links (which stat can tell you), anyway something to look into.
+"""]]

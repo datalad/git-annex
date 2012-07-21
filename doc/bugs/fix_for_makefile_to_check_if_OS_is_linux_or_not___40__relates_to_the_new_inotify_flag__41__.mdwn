@@ -1,0 +1,36 @@
+Since the watch branch is now merged into master, it doesn't quite build cleanly on non-linux systems anymore. So here's a small change to the Makefile to work around the problem for now.
+
+<pre>
+From 707cb47744775c324060febe11987db5f10ed9ff Mon Sep 17 00:00:00 2001
+From: Jimmy Tang <jtang@tchpc.tcd.ie>
+Date: Mon, 18 Jun 2012 09:20:35 +0100
+Subject: [PATCH] Teach _Makefile_ to only do _-DWITH_INOTIFY_ when on a Linux
+ machine.
+
+---
+ Makefile |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 6d36e8b..8884b5c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,12 @@
++OS:=$(shell uname | sed 's/[-_].*//')
++
++ifeq ($(OS),Linux)
++BASEFLAGS_OPTS+=-DWITH_INOTIFY
++endif
++
+ PREFIX=/usr
+ IGNORE=-ignore-package monads-fd -ignore-package monads-tf
+-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3 -DWITH_INOTIFY
++BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_S3 $(BASEFLAGS_OPTS)
+ GHCFLAGS=-O2 $(BASEFLAGS)
+ 
+ ifdef PROFILE
+-- 
+1.7.10.4
+</pre>
+
+[[done]], thanks --[[Joey]] 

@@ -7,7 +7,7 @@
 
 module Remote.Rsync (remote) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
 import Common.Annex
@@ -100,7 +100,7 @@ rsyncUrls o k = map use annexHashes
                 f = keyFile k
 
 store :: RsyncOpts -> Key -> Annex Bool
-store o k = rsyncSend o k =<< inRepo (gitAnnexLocation k)
+store o k = rsyncSend o k <=< inRepo $ gitAnnexLocation k
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
 storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do

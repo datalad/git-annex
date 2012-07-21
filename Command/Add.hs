@@ -12,6 +12,7 @@ import Annex.Exception
 import Command
 import qualified Annex
 import qualified Annex.Queue
+import Types.KeySource
 import Backend
 import Logs.Location
 import Annex.Content
@@ -50,34 +51,43 @@ start file = notBareRepo $ ifAnnexed file fixup add
  - to prevent it from being modified in between. It's hard linked into a
  - temporary location, and its writable bits are removed. It could still be
  - written to by a process that already has it open for writing. -}
-perform :: FilePath -> CommandPerform
-perform file = do
+lockDown :: FilePath -> Annex KeySource
+lockDown file = do
 	liftIO $ preventWrite file
 	tmp <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory tmp
-	pid <- liftIO getProcessID
-	let tmpfile = tmp </> "add" ++ show pid ++ "." ++ takeFileName file
-	nuke tmpfile
-	liftIO $ createLink file tmpfile
-	let source = KeySource { keyFilename = file, contentLocation = tmpfile }
-	backend <- chooseBackend file
-	genKey source backend >>= go tmpfile
-	where
-		go _ Nothing = stop
-		go tmpfile (Just (key, _)) = do
-			handle (undo file key) $ moveAnnex key tmpfile
-			nuke file
-			next $ cleanup file key True
+	liftIO $ do
+		(tmpfile, _handle) <- openTempFile tmp (takeFileName file)
+		nukeFile tmpfile
+		createLink file tmpfile
+		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
 
-nuke :: FilePath -> Annex ()
-nuke file = liftIO $ whenM (doesFileExist file) $ removeFile file
+{- Moves a locked down file into the annex. -}
+ingest :: KeySource -> Annex (Maybe Key)
+ingest source = do
+	backend <- chooseBackend $ keyFilename source
+	genKey source backend >>= go
+	where
+		go Nothing = do
+			liftIO $ nukeFile $ contentLocation source
+			return Nothing
+		go (Just (key, _)) = do
+			handle (undo (keyFilename source) key) $
+				moveAnnex key $ contentLocation source
+			liftIO $ nukeFile $ keyFilename source
+			return $ Just key
+
+perform :: FilePath -> CommandPerform
+perform file = 
+	maybe stop (\key -> next $ cleanup file key True)
+		=<< ingest =<< lockDown file
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
 undo :: FilePath -> Key -> IOException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
-		nuke file
+		liftIO $ nukeFile file
 		handle tryharder $ fromAnnex key file
 		logStatus key InfoMissing
 	throw e
@@ -88,24 +98,31 @@ undo file key e = do
 			src <- inRepo $ gitAnnexLocation key
 			liftIO $ moveFile src file
 
+{- Creates the symlink to the annexed content, returns the link target. -}
+link :: FilePath -> Key -> Bool -> Annex String
+link file key hascontent = handle (undo file key) $ do
+	l <- calcGitLink file key
+	liftIO $ createSymbolicLink l file
+
+	when hascontent $ do
+		logStatus key InfoPresent
+	
+		-- touch the symlink to have the same mtime as the
+		-- file it points to
+		liftIO $ do
+			mtime <- modificationTime <$> getFileStatus file
+			touch file (TimeSpec mtime) False
+
+	return l
+
+{- Note: Several other commands call this, and expect it to 
+ - create the symlink and add it. -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
-	handle (undo file key) $ do
-		link <- calcGitLink file key
-		liftIO $ createSymbolicLink link file
-
-		when hascontent $ do
-			logStatus key InfoPresent
-	
-			-- touch the symlink to have the same mtime as the
-			-- file it points to
-			liftIO $ do
-				mtime <- modificationTime <$> getFileStatus file
-				touch file (TimeSpec mtime) False
-
+	_ <- link file key hascontent
 	params <- ifM (Annex.getState Annex.force)
 		( return [Param "-f"]
 		, return []
 		)
-	Annex.Queue.add "add" (params++[Param "--"]) [file]
+	Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
 	return True

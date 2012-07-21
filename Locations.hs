@@ -23,6 +23,9 @@ module Locations (
 	gitAnnexIndex,
 	gitAnnexIndexLock,
 	gitAnnexIndexDirty,
+	gitAnnexPidFile,
+	gitAnnexDaemonStatusFile,
+	gitAnnexLogFile,
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	isLinkToAnnex,
@@ -145,6 +148,18 @@ gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
 gitAnnexIndexDirty :: Git.Repo -> FilePath
 gitAnnexIndexDirty r = gitAnnexDir r </> "index.dirty"
 
+{- Pid file for daemon mode. -}
+gitAnnexPidFile :: Git.Repo -> FilePath
+gitAnnexPidFile r = gitAnnexDir r </> "daemon.pid"
+
+{- Status file for daemon mode. -}
+gitAnnexDaemonStatusFile :: Git.Repo -> FilePath
+gitAnnexDaemonStatusFile r = gitAnnexDir r </> "daemon.status"
+
+{- Log file for daemon mode. -}
+gitAnnexLogFile :: Git.Repo -> FilePath
+gitAnnexLogFile r = gitAnnexDir r </> "daemon.log"
+
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> FilePath
 gitAnnexSshDir r = addTrailingPathSeparator $ gitAnnexDir r </> "ssh"
@@ -155,7 +170,7 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = ("/" ++ d) `isInfixOf` s || d `isPrefixOf` s
+isLinkToAnnex s = ('/':d) `isInfixOf` s || d `isPrefixOf` s
 	where
 		d = ".git" </> objectDir
 

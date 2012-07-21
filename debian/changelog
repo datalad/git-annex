@@ -1,3 +1,30 @@
+git-annex (3.20120629) unstable; urgency=low
+
+  * cabal: Only try to use inotify on Linux.
+  * Version build dependency on STM, and allow building without it,
+    which disables the watch command.
+  * Avoid ugly failure mode when moving content from a local repository
+    that is not available.
+  * Got rid of the last place that did utf8 decoding.
+  * Accept arbitrarily encoded repository filepaths etc when reading
+    git config output. This fixes support for remotes with unusual characters
+    in their names.
+  * sync: Automatically resolves merge conflicts.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 29 Jun 2012 10:17:49 -0400
+
+git-annex (3.20120624) unstable; urgency=low
+
+  * watch: New subcommand, a daemon which notices changes to
+    files and automatically annexes new files, etc, so you don't
+    need to manually run git commands when manipulating files.
+    Available on Linux, BSDs, and OSX!
+  * Enable diskfree on kfreebsd, using kqueue.
+  * unused: Fix crash when key names contain invalid utf8.
+  * sync: Avoid recent git's interactive merge.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 24 Jun 2012 12:36:50 -0400
+
 git-annex (3.20120614~bpo60+1) squeeze-backports; urgency=medium
 
   * addurl: Was broken by a typo introduced 2 released ago, now fixed.

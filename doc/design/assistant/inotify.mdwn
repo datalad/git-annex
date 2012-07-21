@@ -1,45 +1,72 @@
-Finish "git annex watch" command, which runs, in the background, watching via
-inotify for changes, and automatically annexing new files, etc.
+"git annex watch" command, which runs, in the background, watching via
+inotify for changes, and automatically annexing new files, etc. Now
+available!
 
-There is a `watch` branch in git that adds the command.
+[[!toc]]
 
 ## known bugs
 
-* A process has a file open for write, another one closes it,
-  and so it's added. Then the first process modifies it.
-
-  Or, a process has a file open for write when `git annex watch` starts
-  up, it will be added to the annex. If the process later continues
-  writing, it will change content in the annex.
-
-  This changes content in the annex, and fsck will later catch
-  the inconsistency.
-
-  Possible fixes: 
-
-  * Somehow track or detect if a file is open for write by any processes.
-    `lsof` could be used, although it would be a little slow.
-  * Or, when possible, making a copy on write copy before adding the file
-    would avoid this.
-  * Or, as a last resort, make an expensive copy of the file and add that.
-  * Tracking file opens and closes with inotify could tell if any other
-    processes have the file open. But there are problems.. It doesn't
-    seem to differentiate between files opened for read and for write.
-    And there would still be a race after the last close and before it's
-    injected into the annex, where it could be opened for write again.
-    Would need to detect that and undo the annex injection or something.
-
 * If a file is checked into git as a normal file and gets modified
   (or merged, etc), it will be converted into an annexed file.
-  See [[blog/day_7__bugfixes]]
+  See [[blog/day_7__bugfixes]].
 
 * When you `git annex unlock` a file, it will immediately be re-locked.
+  See [[bugs/watcher_commits_unlocked_files]].
+
+* Kqueue has to open every directory it watches, so too many directories
+  will run it out of the max number of open files (typically 1024), and fail.
+  I may need to fork off multiple watcher processes to handle this.
+  See [[bugs/Issue_on_OSX_with_some_system_limits]].
+
+## beyond Linux
+
+I'd also like to support OSX and if possible the BSDs.
+
+* kqueue ([haskell bindings](http://hackage.haskell.org/package/kqueue))
+  is supported by FreeBSD, OSX, and other BSDs.
+
+  In kqueue, to watch for changes to a file, you have to have an open file
+  descriptor to the file. This wouldn't scale. 
+
+  Apparently, a directory can be watched, and events are generated when
+  files are added/removed from it. You then have to scan to find which
+  files changed. [example](https://developer.apple.com/library/mac/#samplecode/FileNotification/Listings/Main_c.html#//apple_ref/doc/uid/DTS10003143-Main_c-DontLinkElementID_3)
+
+  Gamin does the best it can with just kqueue, supplimented by polling.
+  The source file `server/gam_kqueue.c` makes for interesting reading.
+  Using gamin to do the heavy lifting is one option. 
+  ([haskell bindings](http://hackage.haskell.org/package/hlibfam) for FAM;
+  gamin shares the API)
+
+  kqueue does not seem to provide a way to tell when a file gets closed,
+  only when it's initially created. Poses problems..
+
+  * [man page](http://www.freebsd.org/cgi/man.cgi?query=kqueue&apropos=0&sektion=0&format=html)
+  * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/kqueue.py> (good example program)
+
+  *kqueue is now supported*
+
+* hfsevents ([haskell bindings](http://hackage.haskell.org/package/hfsevents))
+  is OSX specific.
+
+  Originally it was only directory level, and you were only told a
+  directory had changed and not which file. Based on the haskell
+  binding's code, from OSX 10.7.0, file level events were added.
+
+  This will be harder for me to develop for, since I don't have access to
+  OSX machines..
+
+  hfsevents does not seem to provide a way to tell when a file gets closed,
+  only when it's initially created. Poses problems..
+
+  * <https://developer.apple.com/library/mac/#documentation/Darwin/Conceptual/FSEvents_ProgGuide/Introduction/Introduction.html>
+  * <http://pypi.python.org/pypi/MacFSEvents/0.2.8> (good example program)
+  * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/fsevents.py> (good example program)
+
+* Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
 
 ## todo
 
-- Support OSes other than Linux; it only uses inotify currently.
-  OSX and FreeBSD use the same mechanism, and there is a Haskell interface
-  for it,
 - Run niced and ioniced? Seems to make sense, this is a background job.
 - configurable option to only annex files meeting certian size or
   filename criteria
@@ -48,9 +75,6 @@ There is a `watch` branch in git that adds the command.
 - honor .gitignore, not adding files it excludes (difficult, probably
   needs my own .gitignore parser to avoid excessive running of git commands
   to check for ignored files)
-- Possibly, when a directory is moved out of the annex location,
-  unannex its contents. (Does inotify tell us where the directory moved
-  to so we can access it?)
 
 ## the races
 
@@ -102,6 +126,17 @@ Many races need to be dealt with by this code. Here are some of them.
   Not a problem; The removal event removes the old file from the index, and
   the add event adds the new one.
 
+* Symlink appears, but is then deleted before it can be processed.
+
+  Leads to an ugly message, otherwise no problem:
+
+	./me: readSymbolicLink: does not exist (No such file or directory)
+
+  Here `me` is a file that was in a conflicted merge, which got
+  removed as part of the resolution. This is probably coming from the watcher
+  thread, which sees the newly added symlink (created by the git merge),
+  but finds it deleted (by the conflict resolver) by the time it processes it.
+
 ## done
 
 - on startup, add any files that have appeared since last run **done**
@@ -127,3 +162,40 @@ Many races need to be dealt with by this code. Here are some of them.
 - coleasce related add/rm events for speed and less disk IO **done**
 - don't annex `.gitignore` and `.gitattributes` files **done**
 - run as a daemon **done**
+- A process has a file open for write, another one closes it,
+  and so it's added. Then the first process modifies it.
+
+  Or, a process has a file open for write when `git annex watch` starts
+  up, it will be added to the annex. If the process later continues
+  writing, it will change content in the annex.
+
+  This changes content in the annex, and fsck will later catch
+  the inconsistency.
+
+  Possible fixes: 
+
+  * Somehow track or detect if a file is open for write by any processes.
+    `lsof` could be used, although it would be a little slow.
+
+    Here's one way to avoid the slowdown: When a file is being added,
+    set it read-only, and hard-link it into a quarantine directory,
+    remembering both filenames.
+    Then use the batch change mode code to detect batch adds and bundle
+    them together.
+    Just before committing, lsof the quarantine directory. Any files in
+    it that are still open for write can just have their write bit turned
+    back on and be deleted from quarantine, to be handled when their writer
+    closes. Files that pass quarantine get added as usual. This avoids
+    repeated lsof calls slowing down adds, but does add a constant factor
+    overhead (0.25 seconds lsof call) before any add gets committed. **done**
+
+  * Or, when possible, making a copy on write copy before adding the file
+    would avoid this.
+  * Or, as a last resort, make an expensive copy of the file and add that.
+  * Tracking file opens and closes with inotify could tell if any other
+    processes have the file open. But there are problems.. It doesn't
+    seem to differentiate between files opened for read and for write.
+    And there would still be a race after the last close and before it's
+    injected into the annex, where it could be opened for write again.
+    Would need to detect that and undo the annex injection or something.
+

@@ -188,7 +188,7 @@ setupConsole = do
 	hSetBinaryMode stderr True
 
 handle :: IO () -> IO () -> Annex ()
-handle json normal = withOutputType $ go
+handle json normal = withOutputType go
 	where
 		go NormalOutput = liftIO normal
 		go QuietOutput = q
