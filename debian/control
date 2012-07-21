@@ -33,12 +33,8 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	uuid,
 	rsync,
 	wget | curl,
-<<<<<<< HEAD
 	openssh-client
-=======
-	openssh-client (>= 1:5.6p1)
 Recommends: lsof
->>>>>>> 3.20120629
 Suggests: graphviz, bup, gnupg
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file

@@ -5,16 +5,16 @@ all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-BASEFLAGS_OPTS+=-DWITH_INOTIFY
+#BASEFLAGS_OPTS+=-DWITH_INOTIFY
 clibs=Utility/libdiskfree.o
 else
-BASEFLAGS_OPTS+=-DWITH_KQUEUE
+#BASEFLAGS_OPTS+=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libkqueue.o
 endif
 
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
+BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility $(BASEFLAGS_OPTS)
 GHCFLAGS=-O2 $(BASEFLAGS)
 CFLAGS=-Wall
 

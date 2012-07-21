@@ -40,9 +40,7 @@ withFilePath fp f = useAsCString (pack fp) f
  - effects.
  -}
 encodeFilePath :: FilePath -> MD5.Str
-encodeFilePath fp = MD5.Str $ unsafePerformIO $ do
-	enc <- Encoding.getFileSystemEncoding
-	GHC.withCString enc fp $ GHC.peekCString Encoding.char8
+encodeFilePath fp = MD5.Str fp
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
@@ -52,6 +50,4 @@ encodeFilePath fp = MD5.Str $ unsafePerformIO $ do
  -}
 {-# NOINLINE encodeW8 #-}
 encodeW8 :: [Word8] -> FilePath
-encodeW8 w8 = unsafePerformIO $ do
-	enc <- Encoding.getFileSystemEncoding
-	GHC.withCString Encoding.char8 (w82s w8) $ GHC.peekCString enc
+encodeW8 w8 = w82s w8

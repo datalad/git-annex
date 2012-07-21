@@ -40,7 +40,7 @@ hashFile h file = CoProcess.query h send receive
 {- Injects some content into git, returning its Sha. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha
 hashObject objtype content repo = getSha subcmd $ do
-	(h, s) <- pipeWriteRead (map Param params) content repo
+	(h, s) <- pipeWriteRead (map Param params) (L.pack content) repo
 	L.length s `seq` do
 		forceSuccess h
 		reap -- XXX unsure why this is needed

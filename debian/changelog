@@ -1,4 +1,4 @@
-git-annex (3.20120629) unstable; urgency=low
+git-annex (3.20120629~bpo60+1) squeeze-backports; urgency=low
 
   * cabal: Only try to use inotify on Linux.
   * Version build dependency on STM, and allow building without it,
@@ -10,6 +10,7 @@ git-annex (3.20120629) unstable; urgency=low
     git config output. This fixes support for remotes with unusual characters
     in their names.
   * sync: Automatically resolves merge conflicts.
+  * Note: watch command is disabled in this backport.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 29 Jun 2012 10:17:49 -0400
 
