@@ -60,6 +60,14 @@ modifyDaemonStatus_ handle a = liftIO $ modifyMVar_ handle (return . a)
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> Annex b
 modifyDaemonStatus handle a = liftIO $ modifyMVar handle (return . a)
 
+{- Updates the cached ordered list of remotes from the list in Annex
+ - state. -}
+updateKnownRemotes :: DaemonStatusHandle -> Annex ()
+updateKnownRemotes dstatus = do
+	remotes <- Command.Sync.syncRemotes []
+	modifyDaemonStatus_ dstatus $
+		\s -> s { knownRemotes = remotes }
+
 {- Load any previous daemon status file, and store it in the MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
 startDaemonStatus :: Annex DaemonStatusHandle

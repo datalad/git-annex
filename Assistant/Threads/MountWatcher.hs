@@ -13,8 +13,16 @@ module Assistant.Threads.MountWatcher where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import qualified Annex
+import qualified Git
 import Utility.ThreadScheduler
 import Utility.Mounts
+import Remote.List
+import qualified Types.Remote as Remote
+import qualified Remote.Git
+import qualified Command.Sync
+import Assistant.Threads.Merger
+import Logs.Remote
 
 import Control.Concurrent
 import qualified Control.Exception as E
@@ -42,7 +50,7 @@ mountWatcherThread st handle =
 #if WITH_DBUS
 
 dbusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-dbusThread st handle = E.catch (go =<< connectSession) onerr
+dbusThread st dstatus = E.catch (go =<< connectSession) onerr
 	where
 		go client = ifM (checkMountMonitor client)
 			( do
@@ -55,7 +63,7 @@ dbusThread st handle = E.catch (go =<< connectSession) onerr
 					listen client matcher $ \_event -> do
 						nowmounted <- currentMountPoints
 						wasmounted <- swapMVar mvar nowmounted
-						handleMounts st handle wasmounted nowmounted
+						handleMounts st dstatus wasmounted nowmounted
 			, do
 				runThreadState st $
 					warning "No known volume monitor available through dbus; falling back to mtab polling"
@@ -66,7 +74,7 @@ dbusThread st handle = E.catch (go =<< connectSession) onerr
 			runThreadState st $
 				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
 			pollinstead
-		pollinstead = pollingThread st handle
+		pollinstead = pollingThread st dstatus
 
 type ServiceName = String
 
@@ -133,28 +141,70 @@ mountAdded = [gvfs, kde]
 #endif
 
 pollingThread :: ThreadState -> DaemonStatusHandle -> IO ()
-pollingThread st handle = go =<< currentMountPoints
+pollingThread st dstatus = go =<< currentMountPoints
 	where
 		go wasmounted = do
 			threadDelaySeconds (Seconds 10)
 			nowmounted <- currentMountPoints
-			handleMounts st handle wasmounted nowmounted
+			handleMounts st dstatus wasmounted nowmounted
 			go nowmounted
 
 handleMounts :: ThreadState -> DaemonStatusHandle -> MountPoints -> MountPoints -> IO ()
-handleMounts st handle wasmounted nowmounted = mapM_ (handleMount st handle) $
+handleMounts st dstatus wasmounted nowmounted = mapM_ (handleMount st dstatus) $
 	S.toList $ newMountPoints wasmounted nowmounted
 
 handleMount :: ThreadState -> DaemonStatusHandle -> Mntent -> IO ()
-handleMount st handle mntent = do
-	debug thisThread ["detected mount of",  mnt_dir mntent]
+handleMount st dstatus mntent = do
+	debug thisThread ["detected mount of", mnt_dir mntent]
+	rs <- remotesUnder st dstatus mntent
+	unless (null rs) $ do
+		branch <- runThreadState st $ Command.Sync.currentBranch
+		debug thisThread ["pulling from", show rs]
+		runThreadState st $ manualPull branch rs
+		-- TODO queue transfers for new files in both directions
+	where
+
+{- Finds remotes located underneath the mount point.
+ -
+ - Updates state to include the remotes.
+ -
+ - The config of git remotes is re-read, as it may not have been available
+ - at startup time, or may have changed (it could even be a different
+ - repository at the same remote location..)
+ -}
+remotesUnder :: ThreadState -> DaemonStatusHandle -> Mntent -> IO [Remote]
+remotesUnder st dstatus mntent = runThreadState st $ do
+	repotop <- fromRepo Git.repoPath
+	rs <- remoteList
+	pairs <- mapM (checkremote repotop) rs
+	let (waschanged, rs') = unzip pairs
+	when (any id waschanged) $ do
+		Annex.changeState $ \s -> s { Annex.remotes = rs' }
+		updateKnownRemotes dstatus
+	return $ map snd $ filter fst pairs
+	where
+		checkremote repotop r = case Remote.path r of
+			Just p | under mntent (absPathFrom repotop p) ->
+				(,) <$> pure True <*> updateremote r
+			_ -> return (False, r)
+		updateremote r = do
+			liftIO $ debug thisThread ["updating", show r]
+			m <- readRemoteLog
+			repo <- updaterepo $ Remote.repo r
+			remoteGen m (Remote.remotetype r) repo
+		updaterepo repo
+			| Git.repoIsLocal repo || Git.repoIsLocalUnknown repo =
+				Remote.Git.configRead repo
+			| otherwise = return repo
 
 type MountPoints = S.Set Mntent
 
-{- Reads mtab, getting the current set of mount points. -}
 currentMountPoints :: IO MountPoints
 currentMountPoints = S.fromList <$> getMounts
 
-{- Finds new mount points, given an old and a new set. -}
 newMountPoints :: MountPoints -> MountPoints -> MountPoints
 newMountPoints old new = S.difference new old
+
+{- Checks if a mount point contains a path. The path must be absolute. -}
+under :: Mntent -> FilePath -> Bool
+under = dirContains . mnt_dir
