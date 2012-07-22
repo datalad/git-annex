@@ -60,6 +60,7 @@ gen' r u c cst =
 			whereisKey = Nothing,
 			config = c,
 			repo = r,
+			path = Nothing,
 			remotetype = remote
 		}
 

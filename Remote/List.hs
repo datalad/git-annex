@@ -2,7 +2,7 @@
 
 {- git-annex remote list
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import Types.Remote
 import Annex.UUID
 import Config
 import Remote.Helper.Hooks
+import qualified Git
 
 import qualified Remote.Git
 #ifdef WITH_S3
@@ -55,10 +56,13 @@ remoteList = do
 			return rs'
 		else return rs
 	where
-		process m t = enumerate t >>= mapM (gen m t)
-		gen m t r = do
-			u <- getRepoUUID r
-			addHooks =<< generate t r u (M.lookup u m)
+		process m t = enumerate t >>= mapM (remoteGen m t)
+
+{- Generates a Remote. -}
+remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
+remoteGen m t r = do
+	u <- getRepoUUID r
+	addHooks =<< generate t r u (M.lookup u m)
 
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]

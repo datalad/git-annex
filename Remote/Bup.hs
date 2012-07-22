@@ -46,21 +46,24 @@ gen r u c = do
 	return $ encryptableRemote c
 		(storeEncrypted r buprepo)
 		(retrieveEncrypted buprepo)
-		Remote {
-			uuid = u',
-			cost = cst,
-			name = Git.repoDescribe r,
- 			storeKey = store r buprepo,
-			retrieveKeyFile = retrieve buprepo,
-			retrieveKeyFileCheap = retrieveCheap buprepo,
-			removeKey = remove,
-			hasKey = checkPresent r bupr',
-			hasKeyCheap = bupLocal buprepo,
-			whereisKey = Nothing,
-			config = c,
-			repo = r,
-			remotetype = remote
-		}
+		Remote
+			{ uuid = u'
+			, cost = cst
+			, name = Git.repoDescribe r
+ 			, storeKey = store r buprepo
+			, retrieveKeyFile = retrieve buprepo
+			, retrieveKeyFileCheap = retrieveCheap buprepo
+			, removeKey = remove
+			, hasKey = checkPresent r bupr'
+			, hasKeyCheap = bupLocal buprepo
+			, whereisKey = Nothing
+			, config = c
+			, repo = r
+			, path = if bupLocal buprepo && not (null buprepo)
+				then Just buprepo
+				else Nothing
+			, remotetype = remote
+			}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 bupSetup u c = do

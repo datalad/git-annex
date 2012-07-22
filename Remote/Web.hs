@@ -47,6 +47,7 @@ gen r _ _ =
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
 		config = Nothing,
+		path = Nothing,
 		repo = r,
 		remotetype = remote
 	}

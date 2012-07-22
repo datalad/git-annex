@@ -5,7 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Git (remote, repoAvail) where
+module Remote.Git (
+	remote,
+	configRead,
+	repoAvail,
+) where
 
 import qualified Data.Map as M
 import Control.Exception.Extensible
@@ -45,7 +49,7 @@ list :: Annex [Git.Repo]
 list = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< fromRepo Git.remotes
-	mapM configread rs
+	mapM configRead rs
 	where
 		annexurl n = "remote." ++ n ++ ".annexurl"
 		tweakurl c r = do
@@ -55,19 +59,21 @@ list = do
 				Just url -> inRepo $ \g ->
 					Git.Construct.remoteNamed n $
 						Git.Construct.fromRemoteLocation url g
-		{- It's assumed to be cheap to read the config of non-URL
-		 - remotes, so this is done each time git-annex is run
-		 - in a way that uses remotes.
-		 - Conversely, the config of an URL remote is only read
-		 - when there is no cached UUID value. -}
-		configread r = do
-			notignored <- repoNotIgnored r
-			u <- getRepoUUID r
-			case (repoCheap r, notignored, u) of
-				(_, False, _) -> return r
-				(True, _, _) -> tryGitConfigRead r
-				(False, _, NoUUID) -> tryGitConfigRead r
-				_ -> return r
+
+{- It's assumed to be cheap to read the config of non-URL remotes, so this is
+ - done each time git-annex is run in a way that uses remotes.
+ -
+ - Conversely, the config of an URL remote is only read when there is no
+ - cached UUID value. -}
+configRead :: Git.Repo -> Annex Git.Repo
+configRead r = do
+	notignored <- repoNotIgnored r
+	u <- getRepoUUID r
+	case (repoCheap r, notignored, u) of
+		(_, False, _) -> return r
+		(True, _, _) -> tryGitConfigRead r
+		(False, _, NoUUID) -> tryGitConfigRead r
+		_ -> return r
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
@@ -76,21 +82,25 @@ gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u _ = new <$> remoteCost r defcst
 	where
 		defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-		new cst = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-			storeKey = copyToRemote r,
-			retrieveKeyFile = copyFromRemote r,
-			retrieveKeyFileCheap = copyFromRemoteCheap r,
-			removeKey = dropKey r,
-			hasKey = inAnnex r,
-			hasKeyCheap = repoCheap r,
-			whereisKey = Nothing,
-			config = Nothing,
-			repo = r,
-			remotetype = remote
-		}
+		new cst = Remote 
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+			, storeKey = copyToRemote r
+			, retrieveKeyFile = copyFromRemote r
+			, retrieveKeyFileCheap = copyFromRemoteCheap r
+			, removeKey = dropKey r
+			, hasKey = inAnnex r
+			, hasKeyCheap = repoCheap r
+			, whereisKey = Nothing
+			, config = Nothing
+			, path = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
+				then Just $ Git.repoPath r
+				else Nothing
+			, repo = r
+			, remotetype = remote
+			}
+		
 
 {- Checks relatively inexpensively if a repository is available for use. -}
 repoAvail :: Git.Repo -> Annex Bool
