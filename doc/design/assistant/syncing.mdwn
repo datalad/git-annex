@@ -16,8 +16,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## longer-term TODO
 
-* Test MountWatcher on KDE, and add whatever dbus events KDE emits when
-  drives are mounted.
 * Test MountWatcher on Gnome (should work ok) and LXDE (dunno).
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
@@ -116,3 +114,5 @@ anyway.
   maintaining the TransferSlots. Instead, need [[todo/assistant_threaded_runtime]],
   which would allow running something for sure when a transfer thread
   finishes. **done**
+* Test MountWatcher on KDE, and add whatever dbus events KDE emits when
+  drives are mounted. **done**

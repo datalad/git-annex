@@ -1,0 +1,14 @@
+git-annex 3.20120721 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * get, move, copy: Now refuse to do anything when the requested file
+     transfer is already in progress by another process.
+   * status: Lists transfers that are currently in progress.
+   * Fix passing --uuid to git-annex-shell.
+   * When shaNsum commands cannot be found, use the Haskell SHA library
+     (already a dependency) to do the checksumming. This may be slower,
+     but avoids portability problems.
+   * Use SHA library for files less than 50 kb in size, at which point it's
+     faster than forking the more optimised external program.
+   * SHAnE backends are now smarter about composite extensions, such as
+     .tar.gz Closes: #[680450](http://bugs.debian.org/680450)
+   * map: Write map.dot to .git/annex, which avoids watch trying to annex it."""]]

@@ -1,7 +1,7 @@
 Installation recipe for Fedora 14 thruough 17.
 
 <pre>
-sudo yum install ghc cabal-install
+sudo yum install ghc cabal-install pcre-devel
 git clone git://git-annex.branchable.com/ git-annex
 cd git-annex
 git checkout ghc7.0
