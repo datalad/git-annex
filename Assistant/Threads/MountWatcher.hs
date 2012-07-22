@@ -159,8 +159,9 @@ handleMount st dstatus mntent = do
 	rs <- remotesUnder st dstatus mntent
 	unless (null rs) $ do
 		branch <- runThreadState st $ Command.Sync.currentBranch
-		debug thisThread ["pulling from", show rs]
-		runThreadState st $ manualPull branch rs
+		let pullrs = filter Git.repoIsLocal rs
+		debug thisThread ["pulling from", show pullrs]
+		runThreadState st $ manualPull branch pullrs
 		-- TODO queue transfers for new files in both directions
 	where
 
