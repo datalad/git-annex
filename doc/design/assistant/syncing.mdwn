@@ -55,7 +55,7 @@ redone to check it.
 
 ## longer-term TODO
 
-* Test MountWatcher on Gnome (should work ok) and LXDE (dunno).
+* Test MountWatcher on LXDE.
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
   airport somewhere.
