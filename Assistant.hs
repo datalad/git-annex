@@ -36,8 +36,7 @@
  - 	inotify threads associated with it, too.)
  - Thread 9: transfer watcher
  - 	Watches for transfer information files being created and removed,
- - 	and maintains the DaemonStatus currentTransfers map and the
- - 	TransferSlots QSemN. 
+ - 	and maintains the DaemonStatus currentTransfers map.
  - 	(This uses inotify on .git/annex/transfer/, so there are
  - 	additional inotify threads associated with it, too.)
  - Thread 10: transferrer
@@ -49,8 +48,14 @@
  - Thread 13: mount watcher
  - 	Either uses dbus to watch for drive mount events, or, when
  - 	there's no dbus, polls to find newly mounted filesystems.
- - 	Once a filesystem that contains a remote is mounted, syncs
- - 	with it.
+ - 	Once a filesystem that contains a remote is mounted, updates
+ - 	state about that remote, pulls from it, and queues a push to it,
+ - 	as well as an update, and queues it onto the
+ - 	ConnectedRemoteChan
+ - Thread 14: transfer scanner
+ - 	Does potentially expensive checks to find data that needs to be
+ - 	transferred from or to remotes, and queues Transfers.
+ - 	Uses the ScanRemotes map.
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
@@ -78,6 +83,9 @@
  - 	to block until a slot is available.
  - 	This MVar should only be manipulated from inside the Annex monad,
  - 	which ensures it's accessed only after the ThreadState MVar.
+ - ScanRemotes (STM TMVar)
+ - 	Remotes that have been disconnected, and should be scanned
+ - 	are indicated by writing to this TMVar.
  -}
 
 module Assistant where
@@ -88,6 +96,7 @@ import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.Commits
 import Assistant.Pushes
+import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Threads.Watcher
@@ -98,6 +107,7 @@ import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.MountWatcher
+import Assistant.Threads.TransferScanner
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -124,6 +134,7 @@ startDaemon assistant foreground
 			pushmap <- newFailedPushMap
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
+			scanremotes <- newScanRemoteMap
 			mapM_ forkIO
 				[ commitThread st changechan commitchan transferqueue dstatus
 				, pushThread st dstatus commitchan pushmap
@@ -133,7 +144,8 @@ startDaemon assistant foreground
 				, transfererThread st dstatus transferqueue transferslots
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan
-				, mountWatcherThread st dstatus
+				, mountWatcherThread st dstatus scanremotes
+				, transferScannerThread st scanremotes transferqueue
 				, watchThread st dstatus transferqueue changechan
 				]
 			debug "assistant"

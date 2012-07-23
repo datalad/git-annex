@@ -1,4 +1,4 @@
-{- git-annex assistant git pushing threads
+{- git-annex assistant git pushing thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -36,7 +36,7 @@ pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
 			, "failed pushes"
 			]
 		now <- getCurrentTime
-		pushToRemotes now st pushmap topush
+		pushToRemotes thisThread now st (Just pushmap) topush
 	where
 		halfhour = 1800
 
@@ -53,7 +53,7 @@ pushThread st daemonstatus commitchan pushmap = do
 			then do
 				remotes <- runThreadState st $
 					knownRemotes <$> getDaemonStatus daemonstatus
-				pushToRemotes now st pushmap remotes
+				pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread
 					[ "delaying push of"
@@ -78,24 +78,27 @@ shouldPush _now commits
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads. -}
-pushToRemotes :: UTCTime -> ThreadState -> FailedPushMap -> [Remote] -> IO ()
-pushToRemotes now st pushmap remotes = do
+pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> (Maybe FailedPushMap) -> [Remote] -> IO ()
+pushToRemotes threadname now st mpushmap remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> Command.Sync.currentBranch
 	go True branch g remotes
 	where
 		go shouldretry branch g rs = do
-			debug thisThread
+			debug threadname
 				[ "pushing to"
 				, show rs
 				]
 			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 			(succeeded, failed) <- inParallel (push g branch) rs
-			changeFailedPushMap pushmap $ \m ->
-				M.union (makemap failed) $
-					M.difference m (makemap succeeded)
+			case mpushmap of
+				Nothing -> noop
+				Just pushmap -> 
+					changeFailedPushMap pushmap $ \m ->
+						M.union (makemap failed) $
+							M.difference m (makemap succeeded)
 			unless (null failed) $
-				debug thisThread
+				debug threadname
 					[ "failed to push to"
 					, show failed
 					]
@@ -109,6 +112,6 @@ pushToRemotes now st pushmap remotes = do
 				( exitSuccess, exitFailure)
 
 		retry branch g rs = do
-			debug thisThread [ "trying manual pull to resolve failed pushes" ]
+			debug threadname [ "trying manual pull to resolve failed pushes" ]
 			runThreadState st $ manualPull branch rs
 			go False branch g rs

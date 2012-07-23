@@ -38,19 +38,19 @@ queueTransfers q daemonstatus k f direction = do
 	mapM_ (\r -> queue r $ gentransfer r)
 		=<< sufficientremotes rs
 	where
-		sufficientremotes l
+		sufficientremotes rs
 			-- Queue downloads from all remotes that
 			-- have the key, with the cheapest ones first.
 			-- More expensive ones will only be tried if
 			-- downloading from a cheap one fails.
 			| direction == Download = do
 				uuids <- Remote.keyLocations k
-				return $ filter (\r -> uuid r `elem` uuids) l
+				return $ filter (\r -> uuid r `elem` uuids) rs
 			-- TODO: Determine a smaller set of remotes that
 			-- can be uploaded to, in order to ensure all
 			-- remotes can access the content. Currently,
 			-- send to every remote we can.
-			| otherwise = return l
+			| otherwise = return rs
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k
@@ -60,12 +60,12 @@ queueTransfers q daemonstatus k f direction = do
 			let info = (stubInfo f) { transferRemote = Just r }
 			writeTChan q (t, info)
 
-{- Adds a pending transfer to the end of the queue. -}
-queueTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()
-queueTransfer q f t = void $ atomically $
+{- Adds a transfer to the end of the queue, to be processed later. -}
+queueLaterTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()
+queueLaterTransfer q f t = void $ atomically $
 	writeTChan q (t, stubInfo f)
 
-{- Adds a pending transfer to the start of the queue, to be processed next. -}
+{- Adds a transfer to the start of the queue, to be processed next. -}
 queueNextTransfer :: TransferQueue -> AssociatedFile -> Transfer -> IO ()
 queueNextTransfer q f t = void $ atomically $
 	unGetTChan q (t, stubInfo f)

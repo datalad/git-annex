@@ -13,6 +13,8 @@ module Assistant.Threads.MountWatcher where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.ScanRemotes
+import Assistant.Threads.Pusher (pushToRemotes)
 import qualified Annex
 import qualified Git
 import Utility.ThreadScheduler
@@ -27,6 +29,7 @@ import Logs.Remote
 import Control.Concurrent
 import qualified Control.Exception as E
 import qualified Data.Set as S
+import Data.Time.Clock
 
 #if WITH_DBUS
 import DBus.Client
@@ -39,18 +42,18 @@ import Data.Word (Word32)
 thisThread :: ThreadName
 thisThread = "MountWatcher"
 
-mountWatcherThread :: ThreadState -> DaemonStatusHandle -> IO ()
-mountWatcherThread st handle =
+mountWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
+mountWatcherThread st handle scanremotes =
 #if WITH_DBUS
-	dbusThread st handle
+	dbusThread st handle scanremotes
 #else
-	pollingThread st handle
+	pollingThread st handle scanremotes
 #endif
 
 #if WITH_DBUS
 
-dbusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-dbusThread st dstatus = E.catch (go =<< connectSession) onerr
+dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
+dbusThread st dstatus scanremotes = E.catch (go =<< connectSession) onerr
 	where
 		go client = ifM (checkMountMonitor client)
 			( do
@@ -63,7 +66,7 @@ dbusThread st dstatus = E.catch (go =<< connectSession) onerr
 					listen client matcher $ \_event -> do
 						nowmounted <- currentMountPoints
 						wasmounted <- swapMVar mvar nowmounted
-						handleMounts st dstatus wasmounted nowmounted
+						handleMounts st dstatus scanremotes wasmounted nowmounted
 			, do
 				runThreadState st $
 					warning "No known volume monitor available through dbus; falling back to mtab polling"
@@ -74,7 +77,7 @@ dbusThread st dstatus = E.catch (go =<< connectSession) onerr
 			runThreadState st $
 				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
 			pollinstead
-		pollinstead = pollingThread st dstatus
+		pollinstead = pollingThread st dstatus scanremotes
 
 type ServiceName = String
 
@@ -140,30 +143,32 @@ mountAdded = [gvfs, kde]
 
 #endif
 
-pollingThread :: ThreadState -> DaemonStatusHandle -> IO ()
-pollingThread st dstatus = go =<< currentMountPoints
+pollingThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
+pollingThread st dstatus scanremotes = go =<< currentMountPoints
 	where
 		go wasmounted = do
 			threadDelaySeconds (Seconds 10)
 			nowmounted <- currentMountPoints
-			handleMounts st dstatus wasmounted nowmounted
+			handleMounts st dstatus scanremotes wasmounted nowmounted
 			go nowmounted
 
-handleMounts :: ThreadState -> DaemonStatusHandle -> MountPoints -> MountPoints -> IO ()
-handleMounts st dstatus wasmounted nowmounted = mapM_ (handleMount st dstatus) $
+handleMounts :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> MountPoints -> MountPoints -> IO ()
+handleMounts st dstatus scanremotes wasmounted nowmounted = mapM_ (handleMount st dstatus scanremotes) $
 	S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: ThreadState -> DaemonStatusHandle -> Mntent -> IO ()
-handleMount st dstatus mntent = do
+handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Mntent -> IO ()
+handleMount st dstatus scanremotes mntent = do
 	debug thisThread ["detected mount of", mnt_dir mntent]
 	rs <- remotesUnder st dstatus mntent
 	unless (null rs) $ do
 		branch <- runThreadState st $ Command.Sync.currentBranch
-		let pullrs = filter Git.repoIsLocal rs
-		debug thisThread ["pulling from", show pullrs]
-		runThreadState st $ manualPull branch pullrs
-		-- TODO queue transfers for new files in both directions
-	where
+		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
+		unless (null nonspecial) $ do
+			debug thisThread ["pulling from", show nonspecial]
+			runThreadState st $ manualPull branch nonspecial
+			now <- getCurrentTime	
+			pushToRemotes thisThread now st Nothing nonspecial
+		addScanRemotes scanremotes rs
 
 {- Finds remotes located underneath the mount point.
  -
