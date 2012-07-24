@@ -1,6 +1,0 @@
-git-annex 3.20120611 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * add: Prevent (most) modifications from being made to a file while it
-     is being added to the annex.
-   * initremote: Automatically describe a remote when creating it.
-   * uninit: Refuse to run in a subdirectory. Closes: #[677076](http://bugs.debian.org/677076)"""]]
