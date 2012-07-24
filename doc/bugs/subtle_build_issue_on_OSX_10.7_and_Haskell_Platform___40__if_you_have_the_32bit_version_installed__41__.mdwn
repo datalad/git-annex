@@ -46,3 +46,5 @@ Or just telling users to use the 64bit version of the haskell platform?
 It may also be possible to get osx's c compiler to output a universal binary 
 to give you everything, but that be going down the _being too platform 
 specific route_.
+
+> [[done]], it'll detect this and force -m32. --[[Joey]]
