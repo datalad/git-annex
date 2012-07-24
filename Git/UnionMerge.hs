@@ -92,7 +92,7 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
  - When possible, reuses the content of an existing ref, rather than
  - generating new content.
  -}
-calcMerge :: [(Ref, [L.ByteString])] -> Either Ref [L.ByteString]
+calcMerge :: [(Ref, [String])] -> Either Ref [String]
 calcMerge shacontents
 	| null reuseable = Right $ new
 	| otherwise = Left $ fst $ Prelude.head reuseable

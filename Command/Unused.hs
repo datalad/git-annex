@@ -145,7 +145,7 @@ excludeReferenced l = do
 		refs = map (Git.Ref .  snd) .
 			nubBy uniqref .
 			filter ourbranches .
-			map (separate (== ' ')) . lines . L.unpack
+			map (separate (== ' ')) . lines . encodeW8 . L.unpack
 		uniqref (a, _) (b, _) = a == b
 		ourbranchend = '/' : show Annex.Branch.name
 		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
@@ -188,7 +188,7 @@ withKeysReferenced initial a = go initial =<< files
 withKeysReferencedInGit :: Git.Ref -> v -> (Key -> v -> v) -> Annex v
 withKeysReferencedInGit ref initial a = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	go <=< inRepo $ LsTree.lsTree ref
+	go initial <=< inRepo $ LsTree.lsTree ref
 	where
 		go v [] = return v
 		go v (l:ls)
@@ -196,7 +196,7 @@ withKeysReferencedInGit ref initial a = do
 				content <- encodeW8 . L.unpack
 					<$> catFile ref (LsTree.file l)
 				case fileKey (takeFileName content) of
-					Nothing -> go ls
+					Nothing -> go v ls
 					Just k -> do
 						let !v' = a k v
 						go v' ls
