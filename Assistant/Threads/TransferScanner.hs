@@ -12,8 +12,13 @@ import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.ThreadedMonad
 import Logs.Transfer
+import Logs.Location
 import Types.Remote
+import qualified Remote
 import Utility.ThreadScheduler
+import qualified Git.LsFiles as LsFiles
+import Command
+import Annex.Content
 
 thisThread :: ThreadName
 thisThread = "TransferScanner"
@@ -28,14 +33,39 @@ transferScannerThread :: ThreadState -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
-		needtransfer <- scan st r
+		liftIO $ debug thisThread ["starting scan of", show r]
+		needtransfer <- runThreadState st $ scan r
 		forM_ needtransfer $ \(f, t) ->
-			queueTransferAt smallsize Later transferqueue f t
+			queueTransferAt smallsize Later transferqueue f t r
+		liftIO $ debug thisThread ["finished scan of", show r]
 	where
 		smallsize = 10
 
-{-  -}
-scan :: ThreadState -> Remote -> IO [(AssociatedFile, Transfer)]
-scan st r = do
-	debug thisThread ["scanning", show r]
-	return [] -- TODO 
+{- This is a naive scan through the git work tree. -}
+scan :: Remote -> Annex [(AssociatedFile, Transfer)]
+scan r = do
+	files <- inRepo $ LsFiles.inRepo []
+	catMaybes <$> forM files (whenAnnexed go)
+	where
+		u = Remote.uuid r
+
+		go file (key, _) =
+			ifM (inAnnex key)
+				( check Upload False =<< remotehas key
+				, check Download True =<< remotehas key
+				)
+			where
+				check direction x y
+					| x == y = return $
+						Just (Just file, Transfer direction u key)
+					| otherwise = return Nothing
+
+		{- Look directly in remote for the key when it's cheap;
+		 - otherwise rely on the location log. -}
+		remotehas key
+			| Remote.hasKeyCheap r = (==)
+				<$> pure (Right True)
+				<*> Remote.hasKey r key
+			| otherwise = elem
+				<$> pure u
+				<*> loggedLocations key
