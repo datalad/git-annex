@@ -16,4 +16,4 @@ are present.
 If you later found the drive, you could let git-annex know it's found
 like so:
 
-	git annex semitrusted usbdrive
+	git annex semitrust usbdrive
