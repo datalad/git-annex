@@ -19,7 +19,7 @@ thisThread :: ThreadName
 thisThread = "TransferScanner"
 
 {- This thread scans remotes, to find transfers that need to be made to
- - keep their data in sync. The transfers are queued with lot priority. -}
+ - keep their data in sync. The transfers are queued with low priority. -}
 transferScannerThread :: ThreadState -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do

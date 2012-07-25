@@ -29,9 +29,10 @@ newTransferSlots = newQSemN numSlots
 {- Waits until a transfer slot becomes available, and runs a transfer
  - action in the slot, in its own thread. -}
 inTransferSlot :: TransferSlots -> ThreadState -> Annex a -> IO ThreadId
-inTransferSlot s st a = forkIO $ bracket_ start done run
+inTransferSlot s st a = do
+	waitQSemN s 1
+	forkIO $ bracket_ noop done run	
 	where
-		start = waitQSemN s 1
 		done = transferComplete s
 		run = unsafeRunThreadState st a
 
