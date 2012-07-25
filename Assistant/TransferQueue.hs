@@ -28,17 +28,17 @@ data Schedule = Next | Later
 newTransferQueue :: IO TransferQueue
 newTransferQueue = atomically $ TransferQueue <$> newTChan <*> newTVar 0
 
-stubInfo :: AssociatedFile -> TransferInfo
-stubInfo f = TransferInfo
+stubInfo :: AssociatedFile -> Remote -> TransferInfo
+stubInfo f r = TransferInfo
 	{ startedTime = Nothing
 	, transferPid = Nothing
 	, transferTid = Nothing
-	, transferRemote = Nothing
+	, transferRemote = Just r
 	, bytesComplete = Nothing
 	, associatedFile = f
 	}
 
-{- Adds pending transfers to queue for some of the known remotes. -}
+{- Adds transfers to queue for some of the known remotes. -}
 queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers schedule q daemonstatus k f direction = do
 	rs <- knownRemotes <$> getDaemonStatus daemonstatus
@@ -62,9 +62,8 @@ queueTransfers schedule q daemonstatus k f direction = do
 			, transferKey = k
 			, transferUUID = Remote.uuid r
 			}
-		go r = liftIO $ atomically $ do
-			let info = (stubInfo f) { transferRemote = Just r }
-			enqueue schedule q (gentransfer r) info
+		go r = liftIO $ atomically $
+			enqueue schedule q (gentransfer r) (stubInfo f r)
 
 enqueue :: Schedule -> TransferQueue -> Transfer -> TransferInfo -> STM ()
 enqueue schedule q t info
@@ -76,16 +75,17 @@ enqueue schedule q t info
 			void $ modifyTVar' (queuesize q) succ
 
 {- Adds a transfer to the queue. -}
-queueTransfer :: Schedule -> TransferQueue -> AssociatedFile -> Transfer -> IO ()
-queueTransfer schedule q f t = atomically $ enqueue schedule q t (stubInfo f)
+queueTransfer :: Schedule -> TransferQueue -> AssociatedFile -> Transfer -> Remote -> IO ()
+queueTransfer schedule q f t remote = atomically $
+	enqueue schedule q t (stubInfo f remote)
 
 {- Blocks until the queue is no larger than a given size, and then adds a
  - transfer to the queue. -}
-queueTransferAt :: Integer -> Schedule -> TransferQueue -> AssociatedFile -> Transfer -> IO ()
-queueTransferAt wantsz schedule q f t = atomically $ do
+queueTransferAt :: Integer -> Schedule -> TransferQueue -> AssociatedFile -> Transfer -> Remote -> IO ()
+queueTransferAt wantsz schedule q f t remote = atomically $ do
 	sz <- readTVar (queuesize q)
 	if sz <= wantsz
-		then enqueue schedule q t (stubInfo f)
+		then enqueue schedule q t (stubInfo f remote)
 		else retry -- blocks until queuesize changes
 
 {- Blocks until a pending transfer is available from the queue. -}
