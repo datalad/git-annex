@@ -18,16 +18,23 @@ import Utility.ThreadScheduler
 thisThread :: ThreadName
 thisThread = "TransferScanner"
 
-{- This thread scans remotes, to find transfers that need to be made to
- - keep their data in sync. The transfers are queued with low priority. -}
+{- This thread waits until a remote needs to be scanned, to find transfers
+ - that need to be made, to keep data in sync.
+ -
+ - Remotes are scanned in the background; the scan is blocked when the
+ - transfer queue gets too large.
+ -}
 transferScannerThread :: ThreadState -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
 		needtransfer <- scan st r
 		forM_ needtransfer $ \(f, t) ->
-			queueLaterTransfer transferqueue f t
+			queueTransferAt smallsize Later transferqueue f t
+	where
+		smallsize = 10
 
+{-  -}
 scan :: ThreadState -> Remote -> IO [(AssociatedFile, Transfer)]
 scan st r = do
 	debug thisThread ["scanning", show r]

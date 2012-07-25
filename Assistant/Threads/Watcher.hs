@@ -206,7 +206,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 		 - try to get the key's content. -}
 		checkcontent key daemonstatus
 			| scanComplete daemonstatus = unlessM (inAnnex key) $
-				queueTransfers transferqueue dstatus
+				queueTransfers Next transferqueue dstatus
 					key (Just file) Download
 			| otherwise = noop
 
