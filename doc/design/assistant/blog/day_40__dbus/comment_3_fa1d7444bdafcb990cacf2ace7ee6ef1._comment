@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.169"
+ subject="comment 3"
+ date="2012-07-22T16:03:52Z"
+ content="""
+How did I not think about using my favorite hammer on this problem too? But, no, /proc/mounts cannot be watched with inotify it seems, and of course the BSDs don't seem to have a file at all.
+
+I think the dbus stuff is sorted out for manual users, see later blog entries.
+"""]]

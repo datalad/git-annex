@@ -3,20 +3,29 @@ mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
 
+CFLAGS=-Wall
+
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-BASEFLAGS_OPTS+=-DWITH_INOTIFY -DWITH_DBUS
+BASEFLAGS_OPTS=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 else
-BASEFLAGS_OPTS+=-DWITH_KQUEUE
+# BSD system
+BASEFLAGS_OPTS=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+ifeq ($(OS),Darwin)
+# Ensure OSX compiler builds for 32 bit when using 32 bit ghc
+GHCARCH:=$(shell ghc -e 'print System.Info.arch')
+ifeq ($(GHCARCH),i386)
+CFLAGS=-Wall -m32
+endif
+endif
 endif
 
 PREFIX=/usr
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
 BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
 GHCFLAGS=-O2 $(BASEFLAGS)
-CFLAGS=-Wall
 
 ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)

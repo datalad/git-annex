@@ -3,20 +3,59 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* At startup, and possibly periodically, look for files we have that
-  location tracking indicates remotes do not, and enqueue Uploads for
-  them. Also, enqueue Downloads for any files we're missing.
+* At startup, and possibly periodically, or when the network connection
+  changes, or some heuristic suggests that a remote was disconnected from
+  us for a while, queue remotes for processing by the TransferScanner,
+  to queue Transfers of files it or we're missing.
 * After git sync, identify content that we don't have that is now available
-  on remotes, and transfer. But first, need to ensure that when a remote
+  on remotes, and transfer. (Needed when we have a uni-directional connection
+  to a remote, so it won't be uploading content to us.) 
+  But first, need to ensure that when a remote
   receives content, and updates its location log, it syncs that update
   out.
-* When MountWatcher detects a newly mounted drive, rescan git remotes
-  in order to get ones on the drive, and do a git sync and file transfers
-  to sync any repositories on it.
+
+## TransferScanner
+
+The TransferScanner thread needs to find keys that need to be Uploaded
+to a remote, or Downloaded from it.
+
+How to find the keys to transfer? I'd like to avoid potentially
+expensive traversals of the whole git working copy if I can.
+
+One way would be to do a git diff between the (unmerged) git-annex branches
+of the git repo, and its remote. Parse that for lines that add a key to
+either, and queue transfers. That should work fairly efficiently when the
+remote is a git repository. Indeed, git-annex already does such a diff
+when it's doing a union merge of data into the git-annex branch. It
+might even be possible to have the union merge and scan use the same
+git diff data.
+
+But that approach has several problems:
+
+1. The list of keys it would generate wouldn't have associated git
+   filenames, so the UI couldn't show the user what files were being
+   transferred.
+2. Worse, without filenames, any later features to exclude
+   files/directories from being transferred wouldn't work.
+3. Looking at a git diff of the git-annex branches would find keys
+   that were added to either side while the two repos were disconnected.
+   But if the two repos' keys were not fully in sync before they
+   disconnected (which is quite possible; transfers could be incomplete),
+   the diff would not show those older out of sync keys.
+
+The remote could also be a special remote. In this case, I have to either
+traverse the git working copy, or perhaps traverse the whole git-annex
+branch (which would have the same problems with filesnames not being
+available).
+
+If a traversal is done, should check all remotes, not just
+one. Probably worth handling the case where a remote is connected
+while in the middle of such a scan, so part of the scan needs to be
+redone to check it.
 
 ## longer-term TODO
 
-* Test MountWatcher on Gnome (should work ok) and LXDE (dunno).
+* Test MountWatcher on LXDE.
 * git-annex needs a simple speed control knob, which can be plumbed
   through to, at least, rsync. A good job for an hour in an
   airport somewhere.
