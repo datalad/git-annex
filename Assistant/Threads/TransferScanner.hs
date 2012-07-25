@@ -13,7 +13,6 @@ import Assistant.TransferQueue
 import Assistant.ThreadedMonad
 import Logs.Transfer
 import Logs.Location
-import Types.Remote
 import qualified Remote
 import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
@@ -25,40 +24,47 @@ thisThread = "TransferScanner"
 
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
- -
- - Remotes are scanned in the background; the scan is blocked when the
- - transfer queue gets too large.
  -}
 transferScannerThread :: ThreadState -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
 		liftIO $ debug thisThread ["starting scan of", show r]
-		needtransfer <- runThreadState st $ scan r
-		forM_ needtransfer $ \(f, t) ->
-			queueTransferAt smallsize Later transferqueue f t r
+		scan st transferqueue r
 		liftIO $ debug thisThread ["finished scan of", show r]
 	where
-		smallsize = 10
 
-{- This is a naive scan through the git work tree. -}
-scan :: Remote -> Annex [(AssociatedFile, Transfer)]
-scan r = do
-	files <- inRepo $ LsFiles.inRepo []
-	catMaybes <$> forM files (whenAnnexed go)
+{- This is a naive scan through the git work tree.
+ - 
+ - The scan is blocked when the transfer queue gets too large. -}
+scan :: ThreadState -> TransferQueue -> Remote -> IO ()
+scan st transferqueue r = do
+	g <- runThreadState st $ fromRepo id
+	files <- LsFiles.inRepo [] g
+	go files
 	where
-		u = Remote.uuid r
-
-		go file (key, _) =
-			ifM (inAnnex key)
-				( check Upload False =<< remotehas key
-				, check Download True =<< remotehas key
-				)
+		go [] = return ()
+		go (f:fs) = do
+			v <- runThreadState st $ whenAnnexed check f
+			case v of
+				Nothing -> noop
+				Just t -> do
+					debug thisThread ["queuing", show t]
+					enqueue f t
+			go fs
 			where
-				check direction x y
+				check _ (key, _) = ifM (inAnnex key)
+					( helper key Upload False =<< remotehas key
+					, helper key Download True =<< remotehas key
+					)
+				helper key direction x y
 					| x == y = return $
-						Just (Just file, Transfer direction u key)
+						Just $ Transfer direction u key
 					| otherwise = return Nothing
+				
+		u = Remote.uuid r
+		enqueue f t = queueTransferAt smallsize Later transferqueue (Just f) t r
+		smallsize = 10
 
 		{- Look directly in remote for the key when it's cheap;
 		 - otherwise rely on the location log. -}

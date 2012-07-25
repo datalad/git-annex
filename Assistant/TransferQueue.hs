@@ -5,7 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.TransferQueue where
+module Assistant.TransferQueue (
+	TransferQueue,
+	Schedule(..),
+	newTransferQueue,
+	queueTransfers,
+	queueTransfer,
+	queueTransferAt,
+	getNextTransfer
+) where
 
 import Common.Annex
 import Assistant.DaemonStatus
