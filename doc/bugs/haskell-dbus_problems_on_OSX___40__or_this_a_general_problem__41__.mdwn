@@ -85,4 +85,12 @@ Utility/Url.hs:98:65:
 make: *** [git-annex] Error 1
 </pre>
 
-The latest version of the network package in hackage is network-2.3.0.14 which I have installed, this might also be the reason why dbus is broken.
+The latest version of the network package in hackage is network-2.3.0.14 which I have installed, this might also be the reason why dbus is broken. removing network-2.3.0.14 at least makes it happy again.
+
+to remove the network-2.3.0.14 package
+
+<pre>
+ghc-pkg unregister network-2.3.0.14
+</pre>
+
+Hope the above isn't too random of bug/issue report.
