@@ -1,0 +1,25 @@
+// Uses long-polling to update a div with id=poll.
+// The PollR route should return a new div, also with id=poll.
+
+(function( $ ) {
+
+$.LongPoll = (function() {
+	return {
+		send : function() {           
+			$.ajax({
+				'url': '@{PollR}',
+				'dataType': 'html',
+				'success': function(data, status, jqxhr) {
+					$('#poll').replaceWith(data);
+					setTimeout($.LongPoll.send, 3000);
+				},
+			});
+		}
+	}
+}());
+
+$(document).bind('ready.app', function() {
+	setTimeout($.LongPoll.send, 40);
+});
+
+})( jQuery );

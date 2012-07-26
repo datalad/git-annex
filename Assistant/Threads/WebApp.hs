@@ -21,9 +21,11 @@ import Git
 import Yesod
 import Yesod.Static
 import Text.Hamlet
+import Text.Julius
 import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text
+import Data.Time.Clock
 
 thisThread :: String
 thisThread = "WebApp"
@@ -39,6 +41,7 @@ staticFiles "static"
 
 mkYesod "WebApp" [parseRoutes|
 / HomeR GET
+/poll PollR GET
 /config ConfigR GET
 /static StaticR Static getStatic
 |]
@@ -61,10 +64,25 @@ instance Yesod WebApp where
 			excludeStatic (p:_) = p /= "static"
 
 	makeSessionBackend = webAppSessionBackend
+	jsLoader _ = BottomOfHeadBlocking
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
-	[whamlet|Hello, World<p><a href="@{ConfigR}">config|]
+	[whamlet|<div id="poll">Starting ...|]
+	addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
+	toWidgetBody $(juliusFile $ juliusTemplate "longpolling")
+	[whamlet|<p><a href="@{ConfigR}">config|]
+
+{- Called by client to poll for a new webapp status display.
+ -
+ - Should block until the status has changed, and then return a div
+ - containing the new status, which will be inserted into the calling page.
+ -}
+getPollR :: Handler RepHtml
+getPollR = do
+	webapp <- getYesod
+	time <- show <$> liftIO getCurrentTime
+	hamletToRepHtml $(hamletFile $ hamletTemplate "poll")
 
 getConfigR :: Handler RepHtml
 getConfigR = defaultLayout $ do

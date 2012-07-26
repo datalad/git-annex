@@ -16,3 +16,7 @@ template f = "templates" </> f
 {- A hamlet template file. -}
 hamletTemplate :: FilePath -> FilePath
 hamletTemplate f = template f ++ ".hamlet"
+
+{- A julius template file. -}
+juliusTemplate :: FilePath -> FilePath
+juliusTemplate f = template f ++ ".julius"

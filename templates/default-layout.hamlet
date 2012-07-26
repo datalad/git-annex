@@ -3,7 +3,6 @@ $doctype 5
   <head>
     <title>#{baseTitle webapp} #{pageTitle page}
     <link rel="icon" href=@{StaticR favicon_ico} type="image/x-icon">
-
     ^{pageHead page}
   <body>
       $maybe msg <- mmsg
