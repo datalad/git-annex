@@ -26,3 +26,22 @@ The above isn't a git-annex problem but a dbus problem, at first I thought I did
 On a slightly different note, based on the makefile DBUS is not enabled on OSX/BSD so I did not expect the cabal file to use dbus as well, I'm currently interested in poking at the webapp stuff ;)
 
 Although DBUS is available on OSX from macports I get the feeling that the haskell-dbus package might need some poking before it works properly.
+
+To continue, pulling, installing the dependancies (dbus is still boned) and building commit 6cecc26206c4a539999b04664136c6f785211a41
+
+<pre>
+[ 92 of 205] Compiling Utility.Url      ( Utility/Url.hs, tmp/Utility/Url.o )
+
+Utility/Url.hs:39:14: Not in scope: `parseURI'
+
+Utility/Url.hs:73:14: Not in scope: `parseURI'
+
+Utility/Url.hs:88:12: Not in scope: type constructor or class `URI'
+
+Utility/Url.hs:91:30: Not in scope: type constructor or class `URI'
+
+Utility/Url.hs:107:38: Not in scope: `parseURIReference'
+
+Utility/Url.hs:111:95: Not in scope: `relativeTo'
+make: *** [git-annex] Error 1
+</pre>
