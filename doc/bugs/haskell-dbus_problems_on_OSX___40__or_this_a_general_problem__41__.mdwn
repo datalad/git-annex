@@ -94,3 +94,7 @@ ghc-pkg unregister network-2.3.0.14
 </pre>
 
 Hope the above isn't too random of bug/issue report.
+
+----
+
+going through <http://hackage.haskell.org/packages/archive/network/2.3.0.14/doc/html/Network-Socket.html> shows that getPeerCred is only available on systems where SO_PEERCRED is supported, *sigh* OSX isn't supported and thus haskell-dbus is broken. Apparently getpeerid is more portable but it isnt supported in the network package. It looks like dbus support on OSX isn't really going to work too well till haskell-dbus gets fixed on OSX (or BSD?)
