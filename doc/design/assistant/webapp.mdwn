@@ -7,6 +7,9 @@ The webapp is a web server that displays a shiny interface.
   token. This guards against other users on the same system. **done**
   (I would like to avoid passwords or other authentication methods,
   it's your local system.)
+* Don't pass the url with secret token directly to the web browser,
+  as that exposes it to `ps`. Instead, write a html file only the user can read,
+  that redirects to the webapp. **done**
 * Alternative for Linux at least would be to write a small program using
   GTK+ Webkit, that runs the webapp, and can know what user ran it, avoiding
   needing authentication.
