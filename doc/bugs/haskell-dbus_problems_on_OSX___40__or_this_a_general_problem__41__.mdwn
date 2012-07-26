@@ -45,3 +45,22 @@ Utility/Url.hs:107:38: Not in scope: `parseURIReference'
 Utility/Url.hs:111:95: Not in scope: `relativeTo'
 make: *** [git-annex] Error 1
 </pre>
+
+Which then lead me to doing a "cabal install -f-DBus" which spits out the following when trying to link the binary
+
+<pre>
+[206 of 206] Compiling Main             ( git-annex.hs, dist/build/git-annex/git-annex-tmp/Main.o )
+Linking dist/build/git-annex/git-annex ...
+Undefined symbols for architecture x86_64:
+  "_addfds_kqueue", referenced from:
+      _s16v6_info in Kqueue.o
+  "_init_kqueue", referenced from:
+      _s16v3_info in Kqueue.o
+  "_waitchange_kqueue", referenced from:
+      _UtilityziKqueue_zdwa1_info in Kqueue.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+cabal: Error: some packages failed to install:
+git-annex-3.20120721 failed during the building phase. The exception was:
+ExitFailure 1
+</pre>
