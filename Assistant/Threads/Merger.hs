@@ -25,7 +25,7 @@ import qualified Remote
 thisThread :: ThreadName
 thisThread = "Merger"
 
-{- This thread watches for changes to .git/refs/heads/synced/*,
+{- This thread watches for changes to .git/refs/heads/synced/,
  - which indicate incoming pushes. It merges those pushes into the
  - currently checked out branch. -}
 mergeThread :: ThreadState -> IO ()
