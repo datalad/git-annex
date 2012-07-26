@@ -1,0 +1,83 @@
+After an all-nighter, I have `git annex webapp` launching a WebApp!
+
+It doesn't do anything useful yet, just uses Yesod to display a couple of
+hyperlinked pages and a favicon, securely.
+
+The binary size grew rather alarmingly, BTW. :) Indeed, it's been growing
+for months..
+
+	-rwxr-xr-x 1 root root 9.4M Jul 21 16:59 git-annex-no-assistant-stripped
+	-rwxr-xr-x 1 joey joey  12M Jul 25 20:54 git-annex-no-webapp-stripped
+	-rwxr-xr-x 1 joey joey  17M Jul 25 20:52 git-annex-with-webapp-stripped
+
+----
+
+Along the way, some Not Invented Here occurred:
+
+I didn't use the yesod scaffolded site, because it's a lot of what
+seems mostly to be cruft in this use case. And because I don't like
+code generated from templates that people are then expected to edit. Ugh.
+That's my least favorite part of Yesod. This added some pain, since
+I had to do everything the hard way.
+
+I didn't use [wai-handler-launch](http://hackage.haskell.org/package/wai-handler-launch)
+because:
+
+  * It seems broken on IPv6 capable machines (it always opens
+    `http://127.0.0.1:port/` even though it apparently doesn't always
+    listen there.. I think it was listening on my machine's ipv6 address
+    instead. I know, I know; I should file a bug about this..)
+  * It always uses port 4587, which is **insane**. What if you have two
+    webapps?
+  * It requires javascript in the web browser, which
+    is used to ping the server, and shut it down when the web browser closes
+    (which behavior is wrong for git-annex anyway, since the daemon should
+    stay running across browser closes).
+  * It opens the webapp on web server startup, which is wrong for git-annex; 
+    instead the command `git annex webapp` will open the webapp,
+    after `git annex assistant` started the web server.
+
+Instead, I rolled my own WAI webapp laucher, that binds to any free port
+on localhost, It does use `xdg-open` to launch the web browser, 
+like wai-handler-launch (or just `open` on OS X).
+
+Also, I wrote my own WAI logger, which logs using System.Log.Logger,
+instead of to stdout, like `runDebug` does.
+
+----
+
+The webapp only listens for connections from localhost, but that's
+not sufficient "security". Instead, I added a secret token to
+every url in the webapp, that only `git annex webapp` knows about.
+
+But, if that token is passed to `xdg-open` on its command line,
+it will be briefly visible to local attackers in the parameters of
+`xdg-open`.. And if the web browser's not already running, it'll run
+with it as a parameter, and be *very* visible.
+
+So instead, I used a nasty hack. On startup, the assistant
+will create a html file, readably only by the user, that redirects
+the user to the real site url. Then `git annex webapp` will run
+xdg-open on that file.
+
+----
+
+Making Yesod check the `auth=` parameter (to verify that the secret token
+is right) is when using Yesod started to pay off. Yesod has a simple
+`isAuthorized` method that can be overridden to do your own authentication
+like this.
+
+But Yesod really started to shine when I went to add the `auth=` parameter
+to every url in the webapp. There's a `joinPath` method can can be used
+to override the default url builder. And every type-safe url in the
+application goes through there, so it's perfect for this.
+
+I just had to be careful to make it not add `auth=` to the url for the
+favicon, which is included in the "Permission Denied" error page. That'd be
+an amusing security hole..
+
+----
+
+Next up: Doing some AJAX to get a dynamic view of the state of the daemon,
+including currently running transfers, in the webapp. AKA stuff I've never
+done before, and that, unlike all this heavy Haskell Yesod, scares me. :)
