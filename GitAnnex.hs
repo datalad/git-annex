@@ -63,6 +63,9 @@ import qualified Command.Version
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
 import qualified Command.Assistant
+#ifdef WITH_WEBAPP
+import qualified Command.WebApp
+#endif
 #endif
 
 cmds :: [Command]
@@ -108,6 +111,9 @@ cmds = concat
 #ifdef WITH_ASSISTANT
 	, Command.Watch.def
 	, Command.Assistant.def
+#ifdef WITH_WEBAPP
+	, Command.WebApp.def
+#endif
 #endif
 	]
 
