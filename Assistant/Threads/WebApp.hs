@@ -38,9 +38,9 @@ data WebApp = WebApp
 staticFiles "static"
 
 mkYesod "WebApp" [parseRoutes|
-/static StaticR Static getStatic
 / HomeR GET
 /config ConfigR GET
+/static StaticR Static getStatic
 |]
 
 instance Yesod WebApp where
@@ -62,12 +62,12 @@ instance Yesod WebApp where
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
-	[whamlet|Hello, World<p><a href=@{ConfigR}>config|]
+	[whamlet|Hello, World<p><a href="@{ConfigR}">config|]
 
 getConfigR :: Handler RepHtml
 getConfigR = defaultLayout $ do
 	setTitle "configuration"
-	[whamlet|<a href=@{HomeR}>main|]
+	[whamlet|<a href="@{HomeR}">main|]
 
 webAppThread :: ThreadState -> DaemonStatusHandle -> IO ()
 webAppThread st dstatus = do

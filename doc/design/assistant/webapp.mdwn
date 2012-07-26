@@ -4,7 +4,7 @@ The webapp is a web server that displays a shiny interface.
 
 * Listen only to localhost. **done**
 * Instruct the user's web browser to open an url that contains a secret
-  token. This guards against other users on the same system.
+  token. This guards against other users on the same system. **done**
 * I would like to avoid passwords or other authentication methods,
   it's your local system.
 * Alternative for Linux at least would be to write a small program using
