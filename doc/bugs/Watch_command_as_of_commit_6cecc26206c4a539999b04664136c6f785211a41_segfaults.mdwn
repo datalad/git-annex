@@ -15,3 +15,7 @@ watch . [2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git"
 </pre>
 
 The above was done on the usual OSX 10.7 system that I have.
+
+---
+
+I'll try and bisect it and find out where the problem first appeared, does the tests currently test the watch command? (also my comments seem to get moderated whether i use my openid account with google or with the native ikiwiki account, so some comments might be hidden)
