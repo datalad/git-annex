@@ -69,7 +69,7 @@ Executable git-annex
     if (! os(windows))
       CPP-Options: -DWITH_KQUEUE
 
-  if flag(Dbus)
+  if os(linux) && flag(Dbus)
     Build-Depends: dbus
     CPP-Options: -DWITH_DBUS
 
@@ -79,7 +79,7 @@ Executable git-annex
      crypto-api, hamlet
     CPP-Options: -DWITH_WEBAPP
 
-  if (os(darwin))
+  if os(darwin)
     CPP-Options: -DOSX
 
 Test-Suite test
