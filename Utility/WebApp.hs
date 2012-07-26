@@ -24,6 +24,7 @@ import Network.Socket
 import Control.Exception
 import Crypto.Random
 import Data.Digest.Pure.SHA
+import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -112,7 +113,19 @@ logRequest req = do
 lookupRequestField :: CI.CI Ascii -> Wai.Request -> Ascii
 lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
-{- Generates a 512 byte random token, suitable to be used for an
+{- Rather than storing a session key on disk, use a random key
+ - that will only be valid for this run of the webapp. -}
+webAppSessionBackend :: Yesod y => y -> IO (Maybe (SessionBackend y))
+webAppSessionBackend _ = do
+	g <- newGenIO :: IO SystemRandom
+	case genBytes 96 g of
+		Left e -> error $ "failed to generate random key: " ++ show e
+		Right (s, _) -> case CS.initKey s of
+			Left e -> error $ "failed to initialize key: " ++ show e
+			Right key -> return $ Just $
+				clientSessionBackend key 120
+
+{- Generates a random sha512 string, suitable to be used for an
  - authentication secret. -}
 genRandomToken :: IO String
 genRandomToken = do

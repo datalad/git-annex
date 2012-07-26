@@ -60,8 +60,7 @@ instance Yesod WebApp where
 			excludeStatic [] = True
 			excludeStatic (p:_) = p /= "static"
 
-	{- Sessions are overkill for a local webapp with 1 user. -}
-	makeSessionBackend _ = return Nothing
+	makeSessionBackend = webAppSessionBackend
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
