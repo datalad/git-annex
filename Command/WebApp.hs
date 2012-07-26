@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import Assistant
 import Utility.WebApp
-import Utility.Daemon
+import Utility.Daemon (checkDaemon)
 import qualified Annex
 
 import Control.Concurrent
@@ -25,9 +25,17 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = notBareRepo $ do
-	r <- checkpid
-	when (r == Nothing) $
-		startassistant
+	ifM (Annex.getState Annex.force)
+		( do
+			stopDaemon
+			liftIO . catchMaybeIO . removeFile
+				=<< fromRepo gitAnnexPidFile
+			startassistant
+		, do
+			r <- checkpid
+			when (r == Nothing) $
+				startassistant
+		)
 	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 	let url = "file://" ++ f
 	ifM (liftIO $ runBrowser url)

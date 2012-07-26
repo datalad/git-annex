@@ -84,7 +84,7 @@ checkDaemon pidfile = do
 			| otherwise = error $
 				"stale pid in " ++ pidfile ++ 
 				" (got " ++ show pid' ++ 
-				"; expected" ++ show pid ++ " )"
+				"; expected " ++ show pid ++ " )"
 
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
