@@ -25,7 +25,7 @@ import Control.Exception
 import Crypto.Random
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
-import Data.AssocList
+import Data.List
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -130,7 +130,7 @@ checkAuthToken extractToken = do
 	webapp <- getYesod
 	req <- getRequest
 	let params = reqGetParams req
-	if lookupDef "" "auth" params == extractToken webapp
+	if lookup "auth" params == Just (extractToken webapp)
 		then return Authorized
 		else return AuthenticationRequired
 
