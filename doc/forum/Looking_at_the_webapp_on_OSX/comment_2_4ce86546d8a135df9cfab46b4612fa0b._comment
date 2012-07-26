@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="jtang"
+ ip="79.97.135.214"
+ subject="comment 2"
+ date="2012-07-26T20:42:37Z"
+ content="""
+The last few commits fixed the webapp startup quirk, it doesn't work yet for me as the watch command is probably failing
+
+<pre>
+laplace:annex jtang$ git annex webapp  -d
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"show-ref\",\"git-annex\"] 
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"] 
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"log\",\"refs/heads/git-annex..731005d121426a38b206c4544da02cdb3b974974\",\"--oneline\",\"-n1\"] 
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"log\",\"refs/heads/git-annex..d36d8d88847decc2320f0be22892ad94a8abe594\",\"--oneline\",\"-n1\"] 
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"log\",\"refs/heads/git-annex..57bcddc14d03b61028f7002e2dabcc5181d74f3d\",\"--oneline\",\"-n1\"] 
+[2012-07-26 21:41:15 IST] read: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"log\",\"refs/heads/git-annex..372aceaf49b60ebe31cc3fe2e52ba4fbe99c134f\",\"--oneline\",\"-n1\"] 
+[2012-07-26 21:41:15 IST] chat: git [\"--git-dir=/Users/jtang/annex/.git\",\"--work-tree=/Users/jtang/annex\",\"cat-file\",\"--batch\"] 
+[2012-07-26 21:41:15 IST] read: git [\"config\",\"--null\",\"--list\"] 
+git-annex: failed to start git-annex assistant
+</pre>
+
+it doesn't segfault or anything, it just states that the assistant command failed to start :P
+"""]]
