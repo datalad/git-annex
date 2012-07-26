@@ -31,39 +31,34 @@ seek = [withFlag restartOption $ \restart -> withNothing $ start restart]
 start :: Bool -> CommandStart
 start restart = notBareRepo $ do
 	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
-	ok <- liftIO $ doesFileExist f
-	if restart || not ok
+	if restart
 		then do
 			stopDaemon
-			void $ liftIO . catchMaybeIO . removeFile
-				=<< fromRepo gitAnnexPidFile
-			startassistant
-		else do
-			r <- checkpid
-			when (r == Nothing) $
-				startassistant
+			nuke =<< fromRepo gitAnnexPidFile
+			startassistant f
+		else unlessM (checkpid f) $
+			startassistant f
 	let url = "file://" ++ f
 	ifM (liftIO $ runBrowser url)
 		( stop
 		, error $ "failed to start web browser on url " ++ url
 		)
 	where
-		checkpid = do
+		nuke f = void $ liftIO $ catchMaybeIO $ removeFile f
+		checkpid f = do
 			pidfile <- fromRepo gitAnnexPidFile
-			liftIO $ checkDaemon pidfile
-		startassistant = do
+			liftIO $
+				doesFileExist f <&&> (isJust <$> checkDaemon pidfile)
+		startassistant f = do
+			nuke f
 			{- Fork a separate process to run the assistant,
 			 - with a copy of the Annex state. -}
 			state <- Annex.getState id
 			liftIO $ void $ forkProcess $
 				Annex.eval state $ startDaemon True False
-			waitdaemon (100 :: Int)
-		waitdaemon 0 = error "failed to start git-annex assistant"
-		waitdaemon n = do
-			r <- checkpid
-			case r of
-				Just _ -> return ()
-				Nothing -> do
-					-- wait 0.1 seconds before retry
-					liftIO $ threadDelay 100000
-					waitdaemon (n - 1)
+			waitdaemon f (100 :: Int)
+		waitdaemon _ 0 = error "failed to start git-annex assistant"
+		waitdaemon f n = unlessM (checkpid f) $ do
+			-- wait 0.1 seconds before retry
+			liftIO $ threadDelay 100000
+			waitdaemon f (n - 1)
