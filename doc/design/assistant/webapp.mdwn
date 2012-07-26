@@ -28,11 +28,12 @@ The webapp is a web server that displays a shiny interface.
 
 ## implementation
 
-Hope to use Yesod.
-
-TODO: Ensure that Yesod will work on arm. Necessary for later Android port.
-Will its template haskell cause a problem? Does new GHC support TH on ARM?
-Will it use too much memory or be too slow?
-
-Hopefully Yesod comes with some good UI widgets. Otherwise, need to use
-Jquery or similar.
+* use `addStaticContent` to make /favicon.ico work. Return `Right (route, query)`
+  and I think the route can be `favicon_ico`.
+* perhaps define a custom `errorHandler`, which could avoid the potential
+  of leaking auth tokens on error pages
+* possibly lose the ugly auth= token past the first page,
+  and use a client-side session. It could be encrypted using the token
+  as the `encryptKey`. Note: Would need to set the session duration
+  to infinite (how?)
+* look up "server-sent events" sent using `sendWaiResponse`
