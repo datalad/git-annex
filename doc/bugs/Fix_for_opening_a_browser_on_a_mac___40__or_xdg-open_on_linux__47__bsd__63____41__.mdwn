@@ -16,4 +16,11 @@ index 6936c66..0593dda 100644
                 cmd = "xdg-open"
 </pre>
 
-I guess I should really clone the repo and submit a stream of minor changes :P, @joeyh please let me know if you're getting annoyed with copy and pasting the small fixes from the bug/forums section.
+> [[done]], thanks
+
+I guess I should really clone the repo and submit a stream of minor changes
+:P, @joeyh please let me know if you're getting annoyed with copy and
+pasting the small fixes from the bug/forums section.
+
+> If you're going to be writing some patches, a git repo I can pull from
+> would make my life easier. --[[Joey]]
