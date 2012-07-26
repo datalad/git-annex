@@ -23,6 +23,7 @@ Build-Depends:
 	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev (>= 2.3),
 	libghc-dbus-dev,
+	libghc-yesod-dev,
 	ikiwiki,
 	perlmagick,
 	git,

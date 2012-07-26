@@ -1,19 +1,23 @@
+CFLAGS=-Wall
+IGNORE=-ignore-package monads-fd -ignore-package monads-tf
+BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir tmp -IUtility
+FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP
+
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
 
-CFLAGS=-Wall
-
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-BASEFLAGS_OPTS=-DWITH_INOTIFY -DWITH_DBUS
+OPTFLAGS=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 else
 # BSD system
-BASEFLAGS_OPTS=-DWITH_KQUEUE
+OPTFLAGS=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
+OPTFLAGS=-DWITH_KQUEUE -DOSX
 # Ensure OSX compiler builds for 32 bit when using 32 bit ghc
 GHCARCH:=$(shell ghc -e 'print System.Info.arch')
 ifeq ($(GHCARCH),i386)
@@ -23,12 +27,10 @@ endif
 endif
 
 PREFIX=/usr
-IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
-GHCFLAGS=-O2 $(BASEFLAGS)
+GHCFLAGS=-O2 $(BASEFLAGS) $(FEATURES)
 
 ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)
+GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
@@ -43,7 +45,7 @@ all: $(all)
 sources: $(sources)
 
 # Disables optimisation. Not for production use.
-fast: GHCFLAGS=$(BASEFLAGS)
+fast: GHCFLAGS=$(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs

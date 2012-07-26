@@ -48,6 +48,8 @@ To build and use git-annex, you will need:
     (optional; Linux only)
   * [dbus](http://hackage.haskell.org/package/dbus)
     (optional)
+  * [yesod](http://hackage.haskell.org/package/yesod)
+    (optional; for webapp)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)

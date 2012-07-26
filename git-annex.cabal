@@ -37,6 +37,9 @@ Flag Dbus
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
+Flag Webapp
+  Description: Enable git-annex webapp
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -61,10 +64,20 @@ Executable git-annex
   if os(linux) && flag(Inotify)
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
+  else
+    if (! os(windows))
+      CPP-Options: -DWITH_KQUEUE
 
   if flag(Dbus)
     Build-Depends: dbus
     CPP-Options: -DWITH_DBUS
+
+  if flag(Webapp)
+    Build-Depends: yesod
+    CPP-Options: -DWITH_WEBAPP
+
+  if (os(darwin))
+    CPP-Options: -DOSX
 
 Test-Suite test
   Type: exitcode-stdio-1.0

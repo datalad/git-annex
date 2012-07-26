@@ -88,6 +88,8 @@
  - 	are indicated by writing to this TMVar.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant where
 
 import Assistant.Common
@@ -108,6 +110,9 @@ import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.MountWatcher
 import Assistant.Threads.TransferScanner
+#ifdef WITH_WEBAPP
+import Assistant.Threads.WebApp
+#endif
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -146,6 +151,9 @@ startDaemon assistant foreground
 				, sanityCheckerThread st dstatus transferqueue changechan
 				, mountWatcherThread st dstatus scanremotes
 				, transferScannerThread st scanremotes transferqueue
+#ifdef WITH_WEBAPP
+				, webAppThread dstatus
+#endif
 				, watchThread st dstatus transferqueue changechan
 				]
 			debug "assistant"

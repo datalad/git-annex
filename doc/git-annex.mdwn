@@ -188,6 +188,12 @@ subdirectories).
 * assistant
 
   Like watch, but also automatically syncs changes to other remotes.
+  Typically started at boot, or when you log in.
+
+* webapp
+
+  Opens a web browser, viewing the git-annex assistant's web app.
+  (If the assistant is not already running, it will be automatically started.)
 
 # REPOSITORY SETUP COMMANDS
 
