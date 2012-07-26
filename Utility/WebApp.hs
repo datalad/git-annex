@@ -1,30 +1,37 @@
-{- WAI webapp
+{- Yesod webapp
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings, CPP, RankNTypes #-}
 
 module Utility.WebApp where
 
 import Common
 
-import Network.Wai
+import Yesod
+import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Logger
 import Control.Monad.IO.Class
 import Network.HTTP.Types
 import System.Log.Logger
 import Data.ByteString.Lazy.UTF8
-import Data.ByteString.Lazy
-import Data.CaseInsensitive as CI
+import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import Control.Exception
 import Crypto.Random
 import Data.Digest.Pure.SHA
-import Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy as L
+import Data.AssocList
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Blaze.ByteString.Builder.Char.Utf8 (fromText)
+import Blaze.ByteString.Builder (Builder)
+import Data.Monoid
+import Control.Arrow ((***))
 
 localhost :: String
 localhost = "localhost"
@@ -85,26 +92,26 @@ debugEnabled = do
  - Recommend only inserting this middleware when debugging is actually
  - enabled, as it's not optimised at all.
  -}
-httpDebugLogger :: Middleware
+httpDebugLogger :: Wai.Middleware
 httpDebugLogger waiApp req = do
 	logRequest req
 	waiApp req
 
-logRequest :: MonadIO m => Request -> m ()
+logRequest :: MonadIO m => Wai.Request -> m ()
 logRequest req = do
 	liftIO $ debugM "WebApp" $ unwords
-		[ showSockAddr $ remoteHost req
-		, frombs $ requestMethod req
-		, frombs $ rawPathInfo req
-		--, show $ httpVersion req
+		[ showSockAddr $ Wai.remoteHost req
+		, frombs $ Wai.requestMethod req
+		, frombs $ Wai.rawPathInfo req
+		--, show $ Wai.httpVersion req
 		--, frombs $ lookupRequestField "referer" req
 		, frombs $ lookupRequestField "user-agent" req
 		]
 	where
-		frombs v = toString $ fromChunks [v]
+		frombs v = toString $ L.fromChunks [v]
 
-lookupRequestField :: CI Ascii -> Request -> Ascii
-lookupRequestField k req = fromMaybe "" . lookup k $ requestHeaders req
+lookupRequestField :: CI.CI Ascii -> Wai.Request -> Ascii
+lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Generates a 512 byte random token, suitable to be used for an
  - authentication secret. -}
@@ -115,3 +122,39 @@ genRandomToken = do
 		case genBytes 512 g of
 			Left e -> error $ "failed to generate secret token: " ++ show e
 			Right (s, _) -> showDigest $ sha512 $ L.fromChunks [s]
+
+{- A Yesod isAuthorized method, which checks the auth cgi parameter
+ - against a token extracted from the Yesod application. -}
+checkAuthToken :: forall t sub. (t -> T.Text) -> GHandler sub t AuthResult
+checkAuthToken extractToken = do
+	webapp <- getYesod
+	req <- getRequest
+	let params = reqGetParams req
+	if lookupDef "" "auth" params == extractToken webapp
+		then return Authorized
+		else return AuthenticationRequired
+
+{- A Yesod joinPath method, which adds an auth cgi parameter to every
+ - url matching a predicate, containing a token extracted from the
+ - Yesod application.
+ - 
+ - A typical predicate would exclude files under /static.
+ -}
+insertAuthToken :: forall y. (y -> T.Text)
+	-> ([T.Text] -> Bool)
+	-> y
+	-> T.Text
+	-> [T.Text]
+	-> [(T.Text, T.Text)]
+	-> Builder
+insertAuthToken extractToken predicate webapp root pathbits params =
+	fromText root `mappend` encodePath pathbits' encodedparams
+	where
+		pathbits' = if null pathbits then [T.empty] else pathbits
+		encodedparams = map (TE.encodeUtf8 *** go) params'
+		go "" = Nothing
+		go x = Just $ TE.encodeUtf8 x
+		authparam = (T.pack "auth", extractToken webapp)
+		params'
+			| predicate pathbits = authparam:params
+			| otherwise = params

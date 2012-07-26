@@ -23,10 +23,14 @@ import Yesod.Static
 import Text.Hamlet
 import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
+import Data.Text
+
+thisThread :: String
+thisThread = "WebApp"
 
 data WebApp = WebApp
 	{ daemonStatus :: DaemonStatusHandle
-	, secretToken :: String
+	, secretToken :: Text
 	, baseTitle :: String
 	, getStatic :: Static
 	}
@@ -45,6 +49,16 @@ instance Yesod WebApp where
 		mmsg <- getMessage
 		webapp <- getYesod
 		hamletToRepHtml $(hamletFile $ hamletTemplate "default-layout")
+
+	{- Require an auth token be set when accessing any (non-static route) -}
+	isAuthorized _ _ = checkAuthToken secretToken
+
+	{- Add the auth token to every url generated, except static subsite
+         - urls (which can show up in Permission Denied pages). -}
+	joinPath = insertAuthToken secretToken excludeStatic
+		where
+			excludeStatic [] = True
+			excludeStatic (p:_) = p /= "static"
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
@@ -75,14 +89,16 @@ mkWebApp st dstatus = do
 	token <- genRandomToken 
 	return $ WebApp 
 		{ daemonStatus = dstatus
-		, secretToken = token
+		, secretToken = pack token
 		, baseTitle = reldir
 		, getStatic = $(embed "static")
 		}
 
-{- Creates a html shim file that's used to redirect into the webapp. -}
+{- Creates a html shim file that's used to redirect into the webapp,
+ - to avoid exposing the secretToken when launching the web browser. -}
 writeHtmlShim :: WebApp -> PortNumber -> Annex ()
 writeHtmlShim webapp port = do
+	liftIO $ debug thisThread ["running on port", show port]
 	htmlshim <- fromRepo gitAnnexHtmlShim
 	liftIO $ viaTmp go htmlshim $ genHtmlShim webapp port
 	where
@@ -96,4 +112,5 @@ writeHtmlShim webapp port = do
 genHtmlShim :: WebApp -> PortNumber -> String
 genHtmlShim webapp port = renderHtml $(shamletFile $ hamletTemplate "htmlshim")
 	where
-		url = "http://localhost:" ++ show port ++ "/?" ++ secretToken webapp
+		url = "http://localhost:" ++ show port ++
+			"/?auth=" ++ unpack (secretToken webapp)
