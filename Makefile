@@ -27,7 +27,7 @@ endif
 endif
 
 PREFIX=/usr
-GHCFLAGS=-O2 $(BASEFLAGS) $(FEATURES)
+GHCFLAGS=-O2 $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 
 ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
