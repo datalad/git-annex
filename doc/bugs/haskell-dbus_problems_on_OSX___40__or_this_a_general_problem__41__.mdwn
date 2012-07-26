@@ -103,7 +103,11 @@ going through <http://hackage.haskell.org/packages/archive/network/2.3.0.14/doc/
 > use something like `dbus-monitor` to see events when
 > plugging in removable drives? If so, this might be worth spending time
 > on.
+
+>> No OSX does not come with dbus by default, the user must install it
+
 > 
 > Currently though, dbus is not supposed to be built on non-Linux systems.
 > (Well, it might work on Freebsd or something, but I've not tried it.)
 > I've fixed the cabal file to only enable it on Linux.
+
