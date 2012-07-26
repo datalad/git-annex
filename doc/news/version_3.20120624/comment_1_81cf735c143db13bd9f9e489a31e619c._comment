@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmURXBzaYE1gmVc-X9eLAyDat_6rHPl670"
+ nickname="Bram"
+ subject="Build failure using Cabal"
+ date="2012-06-24T19:46:13Z"
+ content="""
+Unfortunately I get a build failure when building this version using Cabal:
+
+    [113 of 183] Compiling Assistant.Changes ( Assistant/Changes.hs, dist/build/git-annex/git-annex-tmp/Assistant/Changes.o )
+
+    Assistant/Changes.hs:73:30:
+        Not in scope: `tryReadTChan'
+        Perhaps you meant `readTChan' (imported from Control.Concurrent.STM)
+    cabal: Error: some packages failed to install:
+    git-annex-3.20120624 failed during the building phase. The exception was:
+    ExitFailure 1
+
+The complete build log is at <http://paste.debian.net/176125/>.  I'm looking forward to trying out the new watch behaviour!
+"""]]

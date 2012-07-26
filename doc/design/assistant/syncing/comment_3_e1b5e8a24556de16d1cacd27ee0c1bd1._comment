@@ -1,0 +1,80 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2012-07-03T08:26:43Z"
+ content="""
+On \"git syncing\" point number 9, on OSX you could potentially do this on a semi-regular basis
+
+<pre>
+system_profiler SPNetworkVolumeDataType
+Volumes:
+
+    net:
+
+      Type: autofs
+      Mount Point: /net
+      Mounted From: map -hosts
+      Automounted: Yes
+
+    home:
+
+      Type: autofs
+      Mount Point: /home
+      Mounted From: map auto_home
+      Automounted: Yes
+</pre>
+
+and
+
+<pre>
+x00:~ jtang$ system_profiler SPUSBDataType
+USB:
+
+    USB High-Speed Bus:
+
+      Host Controller Location: Built-in USB
+      Host Controller Driver: AppleUSBEHCI
+      PCI Device ID: 0x0aa9 
+      PCI Revision ID: 0x00b1 
+      PCI Vendor ID: 0x10de 
+      Bus Number: 0x26 
+
+        Hub:
+
+          Product ID: 0x2504
+          Vendor ID: 0x0424  (SMSC)
+          Version: 0.01
+          Speed: Up to 480 Mb/sec
+          Location ID: 0x26200000 / 3
+          Current Available (mA): 500
+          Current Required (mA): 2
+
+            USB to ATA/ATAPI Bridge:
+
+              Capacity: 750.16 GB (750,156,374,016 bytes)
+              Removable Media: Yes
+              Detachable Drive: Yes
+              BSD Name: disk1
+              Product ID: 0x2338
+              Vendor ID: 0x152d  (JMicron Technology Corp.)
+              Version: 1.00
+              Serial Number: 313541813001
+              Speed: Up to 480 Mb/sec
+              Manufacturer: JMicron
+              Location ID: 0x26240000 / 5
+              Current Available (mA): 500
+              Current Required (mA): 2
+              Partition Map Type: MBR (Master Boot Record)
+              S.M.A.R.T. status: Not Supported
+              Volumes:
+                Porta-Disk:
+                  Capacity: 750.16 GB (750,156,341,760 bytes)
+                  Available: 668.42 GB (668,424,208,384 bytes)
+                  Writable: Yes
+                  File System: ExFAT
+....
+</pre>
+
+I think its possible to programatically get this information either from the CLI (it dumps out XML output if required) or some development library. There is also DBUS in macports, but I have never had much interaction with it, so I don't know if its good or bad on OSX.
+"""]]

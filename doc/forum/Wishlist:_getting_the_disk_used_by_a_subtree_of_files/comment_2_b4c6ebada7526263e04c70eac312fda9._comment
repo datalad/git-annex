@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 2"
+ date="2012-06-27T12:45:42Z"
+ content="""
+I have a hacked up version of sharebox that does this.. I need to fix it up and push it to github..
+
+the short of it is that you can do
+
+    def calculate_size(path):
+        annexfile = os.path.basename(os.readlink(path))
+        #SHA256-s2007550713--....
+        size = annexfile.split(\"-\")[1]
+        return int(size[1:])
+
+to get the size of files.. a 'git-annex du' should be pretty straightforward...
+"""]]

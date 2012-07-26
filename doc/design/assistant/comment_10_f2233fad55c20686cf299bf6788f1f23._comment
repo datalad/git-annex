@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://www.klomp.eu/"
+ ip="95.91.241.82"
+ subject="Watch also possible with git?"
+ date="2012-06-15T17:25:30Z"
+ content="""
+Hi,
+
+it seems that you put a lot of efforts in handling race conditions. Thats great. I wonder if the watch can also be used with git (i.e. changes are commited into git and not as annex)? I know that other projects follow this idea but why using different tools if the git-annex assistant could handle both...
+"""]]
