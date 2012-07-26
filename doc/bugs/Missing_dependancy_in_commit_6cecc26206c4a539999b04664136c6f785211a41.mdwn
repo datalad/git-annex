@@ -29,3 +29,7 @@ index c7d9bf5..4f98d2a 100644
  
    if (os(darwin))
 </pre>
+
+> [[done]].. interestingly, cabal had not complained about there here,
+> as in my version, it's in blaze, not blaze-markup. Added it anyway.
+> --[[Joey]] 
