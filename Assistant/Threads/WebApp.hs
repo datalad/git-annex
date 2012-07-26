@@ -37,12 +37,14 @@ getConfigR = defaultLayout [whamlet|<a href=@{HomeR}>main|]
 
 webAppThread :: ThreadState -> DaemonStatusHandle -> IO ()
 webAppThread st dstatus = do
-	app <- toWaiApp (WebApp dstatus)
+	app <- toWaiApp webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \p -> runThreadState st $ writeHtmlShim p
+	runWebApp app' $ \port -> runThreadState st $ writeHtmlShim port
+	where
+		webapp = WebApp dstatus
 
 {- Creates a html shim file that's used to redirect into the webapp. -}
 writeHtmlShim :: PortNumber -> Annex ()
@@ -53,13 +55,13 @@ writeHtmlShim port = do
 {- TODO: generate this static file using Yesod. -}
 genHtmlShim :: PortNumber -> L.ByteString
 genHtmlShim port = renderHtml [shamlet|
-!!!
+$doctype 5
 <html>
   <head>
     <meta http-equiv="refresh" content="0; URL=#{url}">
   <body>
     <p>
-      <a href="#{url}">Starting webapp...
+      <a href=#{url}">Starting webapp...
 |]
 	where
 		url = "http://localhost:" ++ show port ++ "/"
