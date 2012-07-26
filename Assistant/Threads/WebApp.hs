@@ -60,6 +60,9 @@ instance Yesod WebApp where
 			excludeStatic [] = True
 			excludeStatic (p:_) = p /= "static"
 
+	{- Sessions are overkill for a local webapp with 1 user. -}
+	makeSessionBackend _ = return Nothing
+
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
 	[whamlet|Hello, World<p><a href="@{ConfigR}">config|]
