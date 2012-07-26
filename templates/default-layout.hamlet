@@ -1,0 +1,11 @@
+$doctype 5
+<html>
+  <head>
+    <title>#{baseTitle webapp} #{pageTitle page}
+    <link rel="icon" href=@{StaticR favicon_ico} type="image/x-icon">
+
+    ^{pageHead page}
+  <body>
+      $maybe msg <- mmsg
+        <div #message>#{msg}
+      ^{pageBody page}
