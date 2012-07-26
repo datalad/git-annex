@@ -19,3 +19,9 @@ The above was done on the usual OSX 10.7 system that I have.
 ---
 
 I'll try and bisect it and find out where the problem first appeared, does the tests currently test the watch command? (also my comments seem to get moderated whether i use my openid account with google or with the native ikiwiki account, so some comments might be hidden)
+
+> The test suite does not currently test the watch command, unfortunatly.
+>
+> Wow, I had not noticed the 30 pending moderated comments.. Let them all
+> thru, and I guess I'll turn off comment spam filtering for now, since
+> there has apparently been none. --[[Joey]] 
