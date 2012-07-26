@@ -22,6 +22,9 @@ import Data.ByteString.Lazy
 import Data.CaseInsensitive as CI
 import Network.Socket
 import Control.Exception
+import Crypto.Random
+import Data.Digest.Pure.SHA
+import Data.ByteString.Lazy as L
 
 localhost :: String
 localhost = "localhost"
@@ -102,3 +105,13 @@ logRequest req = do
 
 lookupRequestField :: CI Ascii -> Request -> Ascii
 lookupRequestField k req = fromMaybe "" . lookup k $ requestHeaders req
+
+{- Generates a 512 byte random token, suitable to be used for an
+ - authentication secret. -}
+genRandomToken :: IO String
+genRandomToken = do
+	g <- newGenIO :: IO SystemRandom
+	return $
+		case genBytes 512 g of
+			Left e -> error $ "failed to generate secret token: " ++ show e
+			Right (s, _) -> showDigest $ sha512 $ L.fromChunks [s]

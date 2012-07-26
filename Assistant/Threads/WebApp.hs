@@ -14,17 +14,19 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Utility.WebApp
 import Utility.Yesod
+import Utility.FileMode
+import Utility.TempFile
 import Git
 
 import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Network.Socket (PortNumber)
-import Text.Blaze.Renderer.Utf8
-import Data.ByteString.Lazy as L
+import Text.Blaze.Renderer.String
 
 data WebApp = WebApp
 	{ daemonStatus :: DaemonStatusHandle
+	, secretToken :: String
 	, baseTitle :: String
 	, getStatic :: Static
 	}
@@ -61,7 +63,7 @@ webAppThread st dstatus = do
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> runThreadState st $ writeHtmlShim port
+	runWebApp app' $ \port -> runThreadState st $ writeHtmlShim webapp port
 
 mkWebApp :: ThreadState -> DaemonStatusHandle -> IO WebApp
 mkWebApp st dstatus = do
@@ -70,21 +72,28 @@ mkWebApp st dstatus = do
 	let reldir = if dirContains home dir
 		then relPathDirToFile home dir
 		else dir
-	let s = $(embed "static")
+	token <- genRandomToken 
 	return $ WebApp 
 		{ daemonStatus = dstatus
+		, secretToken = token
 		, baseTitle = reldir
-		, getStatic = s
+		, getStatic = $(embed "static")
 		}
 
 {- Creates a html shim file that's used to redirect into the webapp. -}
-writeHtmlShim :: PortNumber -> Annex ()
-writeHtmlShim port = do
+writeHtmlShim :: WebApp -> PortNumber -> Annex ()
+writeHtmlShim webapp port = do
 	htmlshim <- fromRepo gitAnnexHtmlShim
-	liftIO $ L.writeFile htmlshim $ genHtmlShim port
+	liftIO $ viaTmp go htmlshim $ genHtmlShim webapp port
+	where
+		go file content = do
+			h <- openFile file WriteMode
+			modifyFileMode file $ removeModes [groupReadMode, otherReadMode]
+			hPutStr h content
+			hClose h
 
 {- TODO: generate this static file using Yesod. -}
-genHtmlShim :: PortNumber -> L.ByteString
-genHtmlShim port = renderHtml $(shamletFile $ hamletTemplate "htmlshim")
+genHtmlShim :: WebApp -> PortNumber -> String
+genHtmlShim webapp port = renderHtml $(shamletFile $ hamletTemplate "htmlshim")
 	where
-		url = "http://localhost:" ++ show port ++ "/"
+		url = "http://localhost:" ++ show port ++ "/?" ++ secretToken webapp
