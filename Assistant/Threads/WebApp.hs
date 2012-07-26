@@ -15,7 +15,10 @@ import Assistant.DaemonStatus
 import Utility.WebApp
 
 import Yesod
+import Text.Hamlet
 import Network.Socket (PortNumber)
+import Text.Blaze.Renderer.Utf8
+import Data.ByteString.Lazy as L
 
 data WebApp = WebApp DaemonStatusHandle
 
@@ -45,20 +48,18 @@ webAppThread st dstatus = do
 writeHtmlShim :: PortNumber -> Annex ()
 writeHtmlShim port = do
 	htmlshim <- fromRepo gitAnnexHtmlShim
-	liftIO $ writeFile htmlshim $ genHtmlShim port
+	liftIO $ L.writeFile htmlshim $ genHtmlShim port
 
 {- TODO: generate this static file using Yesod. -}
-genHtmlShim :: PortNumber -> String
-genHtmlShim port = unlines
-	[ "<html>"
-	, "<head>"
-	, "<meta http-equiv=\"refresh\" content=\"0; URL=" ++ url ++ "\">"
-	, "</head>"
-	, "<body>"
-	, "<p>"
-	, "<a href=\"" ++ url ++ "\">Starting webapp...</a>"
-	, "</p>"
-	, "</body>"
-	]
+genHtmlShim :: PortNumber -> L.ByteString
+genHtmlShim port = renderHtml [shamlet|
+!!!
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; URL=#{url}">
+  <body>
+    <p>
+      <a href="#{url}">Starting webapp...
+|]
 	where
 		url = "http://localhost:" ++ show port ++ "/"
