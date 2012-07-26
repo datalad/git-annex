@@ -42,7 +42,7 @@ localhost = "localhost"
 runBrowser :: String -> IO Bool
 runBrowser url = boolSystem cmd [Param url]
 	where
-#if MAC
+#if OSX
 		cmd = "open"
 #else
 		cmd = "xdg-open"
