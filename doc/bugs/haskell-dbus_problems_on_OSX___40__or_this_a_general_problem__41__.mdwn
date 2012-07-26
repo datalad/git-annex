@@ -1,0 +1,28 @@
+Building commit 805d50c69d40be97baa28735371778df63b5fed6
+
+<pre>
+x00:git-annex jtang$ cabal install
+Resolving dependencies...
+Configuring dbus-0.10...
+Building dbus-0.10...
+Preprocessing library dbus-0.10...
+[1 of 9] Compiling DBus.Types       ( lib/DBus/Types.hs, dist/build/DBus/Types.o )
+[2 of 9] Compiling DBus.Message     ( lib/DBus/Message.hs, dist/build/DBus/Message.o )
+[3 of 9] Compiling DBus.Wire        ( lib/DBus/Wire.hs, dist/build/DBus/Wire.o )
+[4 of 9] Compiling DBus.Address     ( lib/DBus/Address.hs, dist/build/DBus/Address.o )
+[5 of 9] Compiling DBus             ( lib/DBus.hs, dist/build/DBus.o )
+[6 of 9] Compiling DBus.Introspection ( lib/DBus/Introspection.hs, dist/build/DBus/Introspection.o )
+[7 of 9] Compiling DBus.Transport   ( lib/DBus/Transport.hs, dist/build/DBus/Transport.o )
+
+lib/DBus/Transport.hs:196:72: Not in scope: `getPeerCred'
+cabal: Error: some packages failed to install:
+dbus-0.10 failed during the building phase. The exception was:
+ExitFailure 1
+git-annex-3.20120721 depends on dbus-0.10 which failed to install.
+</pre>
+
+The above isn't a git-annex problem but a dbus problem, at first I thought I didn't have the network package installed, but did. I should probably report this problem to the haskell dbus author.
+
+On a slightly different note, based on the makefile DBUS is not enabled on OSX/BSD so I did not expect the cabal file to use dbus as well, I'm currently interested in poking at the webapp stuff ;)
+
+Although DBUS is available on OSX from macports I get the feeling that the haskell-dbus package might need some poking before it works properly.
