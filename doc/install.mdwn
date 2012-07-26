@@ -59,8 +59,10 @@ libraries. To build and use git-annex by hand, you will need:
   * [warp](http://hackage.haskell.org/package/warp)
   * [blaze-builder](http://hackage.haskell.org/package/blaze-builder)
   * [blaze-html](http://hackage.haskell.org/package/blaze-html)
+  * [blaze-markup](http://hackage.haskell.org/package/blaze-markup)
   * [crypto-api](http://hackage.haskell.org/package/crypto-api)
   * [hamlet](http://hackage.haskell.org/package/hamlet)
+  * [clientsession](http://hackage.haskell.org/package/clientsession)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)
