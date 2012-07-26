@@ -30,7 +30,9 @@ seek = [withFlag restartOption $ \restart -> withNothing $ start restart]
 
 start :: Bool -> CommandStart
 start restart = notBareRepo $ do
-	if restart
+	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
+	ok <- liftIO $ doesFileExist f
+	if restart || not ok
 		then do
 			stopDaemon
 			void $ liftIO . catchMaybeIO . removeFile
@@ -40,7 +42,6 @@ start restart = notBareRepo $ do
 			r <- checkpid
 			when (r == Nothing) $
 				startassistant
-	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 	let url = "file://" ++ f
 	ifM (liftIO $ runBrowser url)
 		( stop
