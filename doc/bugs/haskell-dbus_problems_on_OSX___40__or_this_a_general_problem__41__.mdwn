@@ -64,3 +64,25 @@ cabal: Error: some packages failed to install:
 git-annex-3.20120721 failed during the building phase. The exception was:
 ExitFailure 1
 </pre>
+
+I then just tried to build commit with 6cecc26206c4a539999b04664136c6f785211a41 (i have the needed dependancies installed), gives me this...
+
+<pre>
+x00:git-annex jtang$ make
+ghc -O2 -threaded -Wall -ignore-package monads-fd -ignore-package monads-tf -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP --make git-annex Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+
+Assistant/Threads/MountWatcher.hs:39:0:
+     warning: #warning Building without dbus support; will use mtab polling
+[ 92 of 205] Compiling Utility.Url      ( Utility/Url.hs, tmp/Utility/Url.o )
+
+Utility/Url.hs:98:65:
+    Couldn't match expected type `network-2.3.0.13:Network.URI.URI'
+                with actual type `URI'
+    In the second argument of `mkRequest', namely `u'
+    In the expression: mkRequest requesttype u :: Request_String
+    In an equation for `req':
+        req = mkRequest requesttype u :: Request_String
+make: *** [git-annex] Error 1
+</pre>
+
+The latest version of the network package in hackage is network-2.3.0.14 which I have installed, this might also be the reason why dbus is broken.
