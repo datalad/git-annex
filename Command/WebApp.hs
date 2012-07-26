@@ -13,29 +13,33 @@ import Assistant
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
 import qualified Annex
+import Option
 
 import Control.Concurrent
 import System.Posix.Process
 
 def :: [Command]
-def = [command "webapp" paramNothing seek "launch webapp"]
+def = [withOptions [restartOption] $
+        command "webapp" paramNothing seek "launch webapp"]
+
+restartOption :: Option
+restartOption = Option.flag [] "restart" "restart the assistant daemon"
 
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek = [withFlag restartOption $ \restart -> withNothing $ start restart]
 
-start :: CommandStart
-start = notBareRepo $ do
-	ifM (Annex.getState Annex.force)
-		( do
+start :: Bool -> CommandStart
+start restart = notBareRepo $ do
+	if restart
+		then do
 			stopDaemon
-			liftIO . catchMaybeIO . removeFile
+			void $ liftIO . catchMaybeIO . removeFile
 				=<< fromRepo gitAnnexPidFile
 			startassistant
-		, do
+		else do
 			r <- checkpid
 			when (r == Nothing) $
 				startassistant
-		)
 	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 	let url = "file://" ++ f
 	ifM (liftIO $ runBrowser url)
