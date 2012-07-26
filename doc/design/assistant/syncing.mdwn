@@ -5,14 +5,72 @@ all the other git clones, at both the git level and the key/value level.
 
 * At startup, and possibly periodically, or when the network connection
   changes, or some heuristic suggests that a remote was disconnected from
-  us for a while, queue remotes for processing by the TransferScanner,
-  to queue Transfers of files it or we're missing.
-* After git sync, identify content that we don't have that is now available
+  us for a while, queue remotes for processing by the TransferScanner.
+* Ensure that when a remote receives content, and updates its location log,
+  it syncs that update back out. Prerequisite for:
+* After git sync, identify new content that we don't have that is now available
   on remotes, and transfer. (Needed when we have a uni-directional connection
-  to a remote, so it won't be uploading content to us.) 
-  But first, need to ensure that when a remote
-  receives content, and updates its location log, it syncs that update
-  out.
+  to a remote, so it won't be uploading content to us.) Note: Does not
+  need to use the TransferScanner, if we get and check a list of the changed
+  files.
+
+## longer-term TODO
+
+* Test MountWatcher on LXDE.
+* git-annex needs a simple speed control knob, which can be plumbed
+  through to, at least, rsync. A good job for an hour in an
+  airport somewhere.
+* Find a way to probe available outgoing bandwidth, to throttle so
+  we don't bufferbloat the network to death.
+* Investigate the XMPP approach like dvcs-autosync does, or other ways of
+   signaling a change out of band.
+* Add a hook, so when there's a change to sync, a program can be run
+   and do its own signaling.
+* --debug will show often unnecessary work being done. Optimise.
+* This assumes the network is connected. It's often not, so the
+  [[cloud]] needs to be used to bridge between LANs.
+* Configurablity, including only enabling git syncing but not data transfer;
+  only uploading new files but not downloading, and only downloading
+  files in some directories and not others. See for use cases:
+  [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
+* speed up git syncing by using the cached ssh connection for it too
+  (will need to use `GIT_SSH`, which needs to point to a command to run,
+  not a shell command line)
+* Map the network of git repos, and use that map to calculate
+  optimal transfers to keep the data in sync. Currently a naive flood fill
+  is done instead.
+* Find a more efficient way for the TransferScanner to find the transfers
+  that need to be done to sync with a remote. Currently it walks the git
+  working copy and checks each file.
+
+## misc todo
+
+* --debug will show often unnecessary work being done. Optimise.
+* It would be nice if, when a USB drive is connected, 
+  syncing starts automatically. Use dbus on Linux?
+
+## data syncing
+
+There are two parts to data syncing. First, map the network and second,
+decide what to sync when.
+
+Mapping the network can reuse code in `git annex map`. Once the map is
+built, we want to find paths through the network that reach all nodes
+eventually, with the least cost. This is a minimum spanning tree problem,
+except with a directed graph, so really a Arborescence problem.
+
+With the map, we can determine which nodes to push new content to. Then we
+need to control those data transfers, sending to the cheapest nodes first,
+and with appropriate rate limiting and control facilities.
+
+This probably will need lots of refinements to get working well.
+
+### first pass: flood syncing
+
+Before mapping the network, the best we can do is flood all files out to every
+reachable remote. This is worth doing first, since it's the simplest way to
+get the basic functionality of the assistant to work. And we'll need this
+anyway.
 
 ## TransferScanner
 
@@ -21,6 +79,8 @@ to a remote, or Downloaded from it.
 
 How to find the keys to transfer? I'd like to avoid potentially
 expensive traversals of the whole git working copy if I can.
+(Currently, the TransferScanner does do the naive and possibly expensive
+scan of the git working copy.)
 
 One way would be to do a git diff between the (unmerged) git-annex branches
 of the git repo, and its remote. Parse that for lines that add a key to
@@ -52,58 +112,6 @@ If a traversal is done, should check all remotes, not just
 one. Probably worth handling the case where a remote is connected
 while in the middle of such a scan, so part of the scan needs to be
 redone to check it.
-
-## longer-term TODO
-
-* Test MountWatcher on LXDE.
-* git-annex needs a simple speed control knob, which can be plumbed
-  through to, at least, rsync. A good job for an hour in an
-  airport somewhere.
-* Find a way to probe available outgoing bandwidth, to throttle so
-  we don't bufferbloat the network to death.
-* Investigate the XMPP approach like dvcs-autosync does, or other ways of
-   signaling a change out of band.
-* Add a hook, so when there's a change to sync, a program can be run
-   and do its own signaling.
-* --debug will show often unnecessary work being done. Optimise.
-* This assumes the network is connected. It's often not, so the
-  [[cloud]] needs to be used to bridge between LANs.
-* Configurablity, including only enabling git syncing but not data transfer;
-  only uploading new files but not downloading, and only downloading
-  files in some directories and not others. See for use cases:
-  [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
-* speed up git syncing by using the cached ssh connection for it too
-  (will need to use `GIT_SSH`, which needs to point to a command to run,
-  not a shell command line)
-
-## misc todo
-
-* --debug will show often unnecessary work being done. Optimise.
-* It would be nice if, when a USB drive is connected, 
-  syncing starts automatically. Use dbus on Linux?
-
-## data syncing
-
-There are two parts to data syncing. First, map the network and second,
-decide what to sync when.
-
-Mapping the network can reuse code in `git annex map`. Once the map is
-built, we want to find paths through the network that reach all nodes
-eventually, with the least cost. This is a minimum spanning tree problem,
-except with a directed graph, so really a Arborescence problem.
-
-With the map, we can determine which nodes to push new content to. Then we
-need to control those data transfers, sending to the cheapest nodes first,
-and with appropriate rate limiting and control facilities.
-
-This probably will need lots of refinements to get working well.
-
-### first pass: flood syncing
-
-Before mapping the network, the best we can do is flood all files out to every
-reachable remote. This is worth doing first, since it's the simplest way to
-get the basic functionality of the assistant to work. And we'll need this
-anyway.
 
 ## done
 
