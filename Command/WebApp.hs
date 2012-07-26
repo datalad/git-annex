@@ -51,8 +51,6 @@ start = notBareRepo $ do
 			case r of
 				Just _ -> return ()
 				Nothing -> do
-					liftIO $
-						threadDelay 100000 -- 0.1 seconds
-					
-
-waitdaemon (n - 1)
+					-- wait 0.1 seconds before retry
+					liftIO $ threadDelay 100000
+					waitdaemon (n - 1)
