@@ -56,7 +56,7 @@ start restart = notBareRepo $ do
 			state <- Annex.getState id
 			liftIO $ void $ forkProcess $
 				Annex.eval state $ startDaemon True False
-			waitdaemon f (100 :: Int)
+			waitdaemon f (1000 :: Int)
 		waitdaemon _ 0 = error "failed to start git-annex assistant"
 		waitdaemon f n = unlessM (checkpid f) $ do
 			-- wait 0.1 seconds before retry
