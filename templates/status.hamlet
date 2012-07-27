@@ -1,2 +1,2 @@
-<div id="poll">
+<div id="#{poll}">
   polled at #{time}
