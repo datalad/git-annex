@@ -20,7 +20,7 @@ Copyright: 1980, 1989, 1993, 1994 The Regents of the University of California
            2001 David Rufino <daverufino@btinternet.com>
            2012 Joey Hess <joey@kitenet.net>
 License: BSD-3-clause
- The full test of the 3 clause BSD license is distributed inside
+ The full text of the 3 clause BSD license is distributed inside
  Utility/libmounts.c in this package's source, or in
  /usr/share/common-licenses/BSD on Debian systems.
 
@@ -35,7 +35,8 @@ Copyright: © 2005-2011 by John Resig, Branden Aaron & Jörn Zaefferer
            © 2011 The Dojo Foundation
 License: MIT or GPL-2
  The full text of version 2 of the GPL is distributed in
- /usr/share/common-licenses/GPL-2 on Debian systems.
+ /usr/share/common-licenses/GPL-2 on Debian systems. The text of the MIT
+ license follows:
  .
  Permission is hereby granted, free of charge, to any person obtaining
  a copy of this software and associated documentation files (the
