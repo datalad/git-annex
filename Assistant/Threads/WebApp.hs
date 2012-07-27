@@ -21,7 +21,6 @@ import Git
 import Yesod
 import Yesod.Static
 import Text.Hamlet
-import Text.Julius
 import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text
@@ -90,7 +89,7 @@ autoUpdate poll gethtml home ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
 	addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
-	toWidgetHead $(juliusFile $ juliusTemplate "longpolling")
+	$(widgetFile "longpolling")
 	where
 		ms_to_seconds :: Int -> Int
 		ms_to_seconds ms = ceiling ((fromIntegral ms :: Double) / 1000)
@@ -102,7 +101,7 @@ statusDisplay = do
 	time <- show <$> liftIO getCurrentTime
 	
 	poll <- lift newIdent
-	$(whamletFile $ hamletTemplate "status")
+	$(widgetFile "status")
 	
 	autoUpdate poll StatusR HomeR (3000 :: Int) (40 :: Int)
 

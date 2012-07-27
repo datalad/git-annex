@@ -1,4 +1,4 @@
-{- Yesod stuff
+{- Yesod stuff, that's typically found in the scaffolded site.
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -7,16 +7,11 @@
 
 module Utility.Yesod where
 
-import System.FilePath
+import Yesod.Default.Util
+import Language.Haskell.TH.Syntax
 
-{- Filename of a template, in the templates/ directory. -}
-template :: FilePath -> FilePath
-template f = "templates" </> f
+widgetFile :: String -> Q Exp
+widgetFile = widgetFileNoReload
 
-{- A hamlet template file. -}
 hamletTemplate :: FilePath -> FilePath
-hamletTemplate f = template f ++ ".hamlet"
-
-{- A julius template file. -}
-juliusTemplate :: FilePath -> FilePath
-juliusTemplate f = template f ++ ".julius"
+hamletTemplate f = globFile "hamlet" f
