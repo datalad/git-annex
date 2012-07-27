@@ -12,37 +12,33 @@ import Command
 import Assistant
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
-import Option
+import qualified Command.Watch
 
 def :: [Command]
-def = [withOptions [restartOption] $
+def = [withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
-restartOption :: Option
-restartOption = Option.flag [] "restart" "restart the assistant daemon"
-
 seek :: [CommandSeek]
-seek = [withFlag restartOption $ \restart -> withNothing $ start restart]
+seek = [withFlag Command.Watch.stopOption $ \stopdaemon ->
+	withFlag Command.Watch.foregroundOption $ \foreground ->
+	withNothing $ start foreground stopdaemon]
 
-start :: Bool -> CommandStart
-start restart = notBareRepo $ do
-	f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
-	if restart
-		then do
-			stopDaemon
-			void $ liftIO . nukeFile =<< fromRepo gitAnnexPidFile
-			startassistant f
-		else ifM (checkpid <&&> checkshim f) $
-			( liftIO $ go f 
-			, startassistant f
-			)
+start :: Bool -> Bool -> CommandStart
+start foreground stopdaemon = notBareRepo $ do
+	if stopdaemon
+		then stopDaemon
+		else do
+			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
+			ifM (checkpid <&&> checkshim f) $
+				( liftIO $ go f 
+				, startDaemon True foreground $ Just $ go f
+				)
 	stop
 	where
 		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
 			liftIO $ isJust <$> checkDaemon pidfile
 		checkshim f = liftIO $ doesFileExist f
-		startassistant = startDaemon True False . Just . go
 		go f = unlessM (runBrowser url) $
 			error $ "failed to start web browser on url " ++ url
 			where
