@@ -10,7 +10,7 @@
  - 	The initial thread run, double forks to background, starts other
  - 	threads, and then stops, waiting for them to terminate,
  - 	or for a ctrl-c.
- - Thread 2: watcher
+ - Thread 2: Watcher
  - 	Notices new files, and calls handlers for events, queuing changes.
  - Thread 3: inotify internal
  - 	Used by haskell inotify library to ensure inotify event buffer is
@@ -19,43 +19,46 @@
  - 	Scans the tree and registers inotify watches for each directory.
  -	A MVar lock is used to prevent other inotify handlers from running
  -	until this is complete.
- - Thread 5: committer
+ - Thread 5: Committer
  - 	Waits for changes to occur, and runs the git queue to update its
  - 	index, then commits. Also queues Transfer events to send added
  - 	files to other remotes.
- - Thread 6: pusher
+ - Thread 6: Pusher
  - 	Waits for commits to be made, and pushes updated branches to remotes,
  - 	in parallel. (Forks a process for each git push.)
- - Thread 7: push retryer
+ - Thread 7: PushRetryer
  - 	Runs every 30 minutes when there are failed pushes, and retries
  - 	them.
- - Thread 8: merger
+ - Thread 8: Merger
  - 	Waits for pushes to be received from remotes, and merges the
  - 	updated branches into the current branch.
  - 	(This uses inotify on .git/refs/heads, so there are additional
  - 	inotify threads associated with it, too.)
- - Thread 9: transfer watcher
+ - Thread 9: TransferWatcher
  - 	Watches for transfer information files being created and removed,
  - 	and maintains the DaemonStatus currentTransfers map.
  - 	(This uses inotify on .git/annex/transfer/, so there are
  - 	additional inotify threads associated with it, too.)
- - Thread 10: transferrer
+ - Thread 10: Transferrer
  - 	Waits for Transfers to be queued and does them.
- - Thread 11: status logger
+ - Thread 11: StatusLogger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 12: sanity checker
+ - Thread 12: SanityChecker
  - 	Wakes up periodically (rarely) and does sanity checks.
- - Thread 13: mount watcher
+ - Thread 13: MountWatcher
  - 	Either uses dbus to watch for drive mount events, or, when
  - 	there's no dbus, polls to find newly mounted filesystems.
  - 	Once a filesystem that contains a remote is mounted, updates
  - 	state about that remote, pulls from it, and queues a push to it,
  - 	as well as an update, and queues it onto the
  - 	ConnectedRemoteChan
- - Thread 14: transfer scanner
+ - Thread 14: TransferScanner
  - 	Does potentially expensive checks to find data that needs to be
  - 	transferred from or to remotes, and queues Transfers.
  - 	Uses the ScanRemotes map.
+ - Thread 15: WebApp
+ - 	Spawns more threads as necessary to handle clients.
+ - 	Displays the DaemonStatus.
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
