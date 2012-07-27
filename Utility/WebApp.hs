@@ -69,7 +69,7 @@ localSocket = do
 	go $ Prelude.head addrs
 	where
 		hints = defaultHints
-			{ addrFlags = [AI_ADDRCONFIG, AI_NUMERICSERV]
+			{ addrFlags = [AI_ADDRCONFIG]
 			, addrSocketType = Stream
 			}
 		go addr = bracketOnError (open addr) close (use addr)
