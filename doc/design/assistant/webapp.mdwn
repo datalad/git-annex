@@ -39,6 +39,3 @@ The webapp is a web server that displays a shiny interface.
   and use a client-side session. It could be encrypted using the token
   as the `encryptKey`. Note: Would need to set the session duration
   to infinite (how?)
-* When long polling fails, retry a time or two, and then give up, and
-  either display an error message, or, possibly, close the browser window.
-  (Currently the display just stops updating.)
