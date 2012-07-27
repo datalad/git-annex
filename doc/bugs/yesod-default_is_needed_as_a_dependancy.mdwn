@@ -7,3 +7,4 @@ Utility/Yesod.hs:10:8:
 make: *** [git-annex] Error 1
 </pre>
 
+> Only on OSX apparently. Weird. Added. [[done]] --[[Joey]] 
