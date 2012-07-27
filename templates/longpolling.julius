@@ -7,6 +7,8 @@
 
 (function( $ ) {
 
+numerrs=0;
+
 $.LongPoll = (function() {
 	return {
 		send : function() {           
@@ -16,6 +18,16 @@ $.LongPoll = (function() {
 				'success': function(data, status, jqxhr) {
 					$('##{poll}').replaceWith(data);
 					setTimeout($.LongPoll.send, #{delay});
+					numerrs=0;
+				},
+				'error': function(jqxhr, msg, e) {
+					numerrs=numerrs+1;
+					if (numerrs > 3) {
+						window.close();
+					}
+					else {
+						setTimeout($.LongPoll.send, #{delay});
+					}
 				},
 			});
 		}
