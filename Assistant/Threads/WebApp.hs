@@ -63,6 +63,7 @@ instance Yesod WebApp where
 			addStylesheet $ StaticR css_bootstrap_responsive_css
 			addScript $ StaticR jquery_full_js
 			addScript $ StaticR js_bootstrap_dropdown_js
+			addScript $ StaticR js_bootstrap_alert_js
 			$(widgetFile "default-layout")
 		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
 
