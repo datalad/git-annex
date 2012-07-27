@@ -51,6 +51,7 @@ libraries. To build and use git-annex by hand, you will need:
   * [dbus](http://hackage.haskell.org/package/dbus)
   * [yesod](http://hackage.haskell.org/package/yesod)
   * [yesod-static](http://hackage.haskell.org/package/yesod-static)
+  * [yesod-default](http://hackage.haskell.org/package/yesod-default)
   * [case-insensitive](http://hackage.haskell.org/package/case-insensitive)
   * [http-types](http://hackage.haskell.org/package/http-types)
   * [transformers](http://hackage.haskell.org/package/transformers)

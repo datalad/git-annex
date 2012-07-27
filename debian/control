@@ -25,6 +25,7 @@ Build-Depends:
 	libghc-dbus-dev,
 	libghc-yesod-dev,
 	libghc-yesod-static-dev,
+	libghc-yesod-default-dev,
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
 	libghc-transformers-dev,

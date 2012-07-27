@@ -74,9 +74,9 @@ Executable git-annex
     CPP-Options: -DWITH_DBUS
 
   if flag(Webapp)
-    Build-Depends: yesod, yesod-static, case-insensitive, http-types,
-     transformers, wai, wai-logger, warp, blaze-builder, blaze-html,
-     blaze-markup, crypto-api, hamlet, clientsession
+    Build-Depends: yesod, yesod-static, yesod-default, case-insensitive,
+     http-types, transformers, wai, wai-logger, warp, blaze-builder,
+     blaze-html, blaze-markup, crypto-api, hamlet, clientsession
     CPP-Options: -DWITH_WEBAPP
 
   if os(darwin)
