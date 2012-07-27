@@ -1,2 +1,26 @@
-<div id="#{poll}">
-  polled at #{time}
+<span id="#{updating}">
+  <div class="hero-unit">
+    <div class="row-fluid">
+      <h3>
+        foo &larr;
+        <small>usb drive</small>
+        <small class="pull-right">40% of 10 mb</small>
+    <div class="progress progress-striped">
+      <div class="bar" style="width: 40%;">
+    <div class="row-fluid">
+      <h3>
+        some_filenames_are_long_and_ugly_like_this_one.mp3 &rarr;
+        <small>Amazon S3</small>
+        <small class="pull-right">10% of 50 mb</small>
+    <div class="progress progress-striped">
+      <div class="bar" style="width: 10%;">
+    <div class="row-fluid">
+      <h3>
+        bigfile &larr;
+        <small>usb drive</small>
+        <small class="pull-right">0% of 512 mb</small>
+    <div class="progress progress-striped">
+      <div class="bar" style="width: 0%;">
+  <footer>
+    <span>
+      polled at #{time}

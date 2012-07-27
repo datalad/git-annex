@@ -47,11 +47,16 @@ mkYesod "WebApp" [parseRoutes|
 |]
 
 instance Yesod WebApp where
-	defaultLayout contents = do
-		page <- widgetToPageContent contents
+	defaultLayout widget = do
 		mmsg <- getMessage
 		webapp <- getYesod
-		hamletToRepHtml $(hamletFile $ hamletTemplate "default-layout")
+		page <- widgetToPageContent $ do
+			addStylesheet $ StaticR css_bootstrap_css
+			addStylesheet $ StaticR css_bootstrap_responsive_css
+			addScript $ StaticR jquery_full_js
+			addScript $ StaticR js_bootstrap_dropdown_js
+			$(widgetFile "default-layout")
+		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
 
 	{- Require an auth token be set when accessing any (non-static route) -}
 	isAuthorized _ _ = checkAuthToken secretToken
@@ -68,7 +73,7 @@ instance Yesod WebApp where
 
 {- Add to any widget to make it auto-update.
  -
- - The widget should have a html element with id=poll, which will be
+ - The widget should have a html element with id=updating, which will be
  - replaced when it's updated.
  - 
  - Updating is done by getting html from the gethtml route.
@@ -80,7 +85,7 @@ instance Yesod WebApp where
  - state.
  -}
 autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Widget
-autoUpdate poll gethtml home ms_delay ms_startdelay = do
+autoUpdate updating gethtml home ms_delay ms_startdelay = do
 	{- Fallback refreshing is provided for non-javascript browsers. -}
 	let delayseconds = show $ ms_to_seconds ms_delay
 	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
@@ -88,7 +93,6 @@ autoUpdate poll gethtml home ms_delay ms_startdelay = do
 	{- Use long polling to update the status display. -}
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
-	addScript $ StaticR jquery_full_js
 	$(widgetFile "longpolling")
 	where
 		ms_to_seconds :: Int -> Int
@@ -100,15 +104,13 @@ statusDisplay = do
 	webapp <- lift getYesod
 	time <- show <$> liftIO getCurrentTime
 	
-	poll <- lift newIdent
+	updating <- lift newIdent
 	$(widgetFile "status")
 	
-	autoUpdate poll StatusR HomeR (3000 :: Int) (40 :: Int)
+	autoUpdate updating StatusR HomeR (3000 :: Int) (40 :: Int)
 
 getHomeR :: Handler RepHtml
-getHomeR = defaultLayout $ do
-	statusDisplay
-	[whamlet|<p><a href="@{ConfigR}">config|]
+getHomeR = defaultLayout statusDisplay
 
 {- Called by client to poll for a new webapp status display.
  -
