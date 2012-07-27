@@ -6,6 +6,7 @@ FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
+thfiles=Assistant/Threads/WebApp.hs
 all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
@@ -55,8 +56,13 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 %.hs: %.hsc
 	hsc2hs $<
 
+# Force GHC to rebuild template haskell files whenever includes
+# change
+$(thfiles): $(shell echo templates/* static/*)
+$(thfiles):
+	touch $(thfiles)
 
-git-annex: $(sources) $(clibs)
+git-annex: $(sources) $(clibs) $(thfiles)
 	$(GHCMAKE) $@ $(clibs)
 
 git-annex.1: doc/git-annex.mdwn
