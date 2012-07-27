@@ -115,6 +115,8 @@ import Assistant.Threads.MountWatcher
 import Assistant.Threads.TransferScanner
 #ifdef WITH_WEBAPP
 import Assistant.Threads.WebApp
+#else
+#warning Building without the webapp. You probably need to install Yesod..
 #endif
 import qualified Utility.Daemon
 import Utility.LogFile
