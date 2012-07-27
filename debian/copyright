@@ -58,7 +58,7 @@ License: MIT or GPL-2
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Files: static/*/bootstrap*
-Copyright: 2011-2012 Twitter, Inc.
+Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
