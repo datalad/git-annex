@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.189"
+ subject="comment 1"
+ date="2012-07-26T18:17:40Z"
+ content="""
+This could happen if you already had an old version of git-annex assistant running in that repository.
+
+Try:
+
+git annex assistant --stop ; git annex webapp
+"""]]

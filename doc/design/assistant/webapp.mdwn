@@ -27,16 +27,15 @@ The webapp is a web server that displays a shiny interface.
 * there could be a UI to export a file, which would make it be served up
   over http by the web app
 * Display any relevant warning messages. One is the `inotify max_user_watches`
-  exceeded message.
+  exceeded message. Need to lift such messages into DaemonStatus
+  so the WebApp can include them in its rendering of DaemonStatus.
 
 ## implementation
 
-* use `addStaticContent` to make /favicon.ico work. Return `Right (route, query)`
-  and I think the route can be `favicon_ico`.
 * perhaps define a custom `errorHandler`, which could avoid the potential
-  of leaking auth tokens on error pages
+  of leaking auth tokens on error pages. Or make the test suite test for
+  leakage.
 * possibly lose the ugly auth= token past the first page,
   and use a client-side session. It could be encrypted using the token
   as the `encryptKey`. Note: Would need to set the session duration
   to infinite (how?)
-* look up "server-sent events" sent using `sendWaiResponse`
