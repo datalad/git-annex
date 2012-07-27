@@ -32,14 +32,9 @@ The webapp is a web server that displays a shiny interface.
 
 ## implementation
 
-* Include jquery into the webapp, preferably minimised at build time.
-  Currently the webapp needs an internet connection to load jquery, which
-  is not ideal.
-* use `addStaticContent` to make /favicon.ico work. Return `Right (route, query)`
-  and I think the route can be `favicon_ico`. (Tried this; couldn't seem
-  to make it work.)
 * perhaps define a custom `errorHandler`, which could avoid the potential
-  of leaking auth tokens on error pages
+  of leaking auth tokens on error pages. Or make the test suite test for
+  leakage.
 * possibly lose the ugly auth= token past the first page,
   and use a client-side session. It could be encrypted using the token
   as the `encryptKey`. Note: Would need to set the session duration
