@@ -31,7 +31,8 @@ thisThread :: String
 thisThread = "WebApp"
 
 data WebApp = WebApp
-	{ daemonStatus :: DaemonStatusHandle
+	{ threadState :: ThreadState
+	, daemonStatus :: DaemonStatusHandle
 	, secretToken :: Text
 	, baseTitle :: String
 	, getStatic :: Static
@@ -148,7 +149,8 @@ mkWebApp st dstatus = do
 		else dir
 	token <- genRandomToken 
 	return $ WebApp 
-		{ daemonStatus = dstatus
+		{ threadState = st
+		, daemonStatus = dstatus
 		, secretToken = pack token
 		, baseTitle = reldir
 		, getStatic = $(embed "static")
