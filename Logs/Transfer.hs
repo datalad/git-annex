@@ -12,7 +12,9 @@ import Annex.Perms
 import Annex.Exception
 import qualified Git
 import Types.Remote
+import Types.Key
 import qualified Fields
+import Utility.Percentage
 
 import System.Posix.Types
 import Data.Time.Clock
@@ -58,24 +60,29 @@ readDirection "upload" = Just Upload
 readDirection "download" = Just Download
 readDirection _ = Nothing
 
+percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
+percentComplete (Transfer { transferKey = key }) (TransferInfo { bytesComplete = Just complete }) =
+	(\size -> percentage size complete) <$> keySize key
+percentComplete _ _ = Nothing
+
 upload :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
-upload u key file a = transfer (Transfer Upload u key) file a
+upload u key file a = runTransfer (Transfer Upload u key) file a
 
 download :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
-download u key file a = transfer (Transfer Download u key) file a
+download u key file a = runTransfer (Transfer Download u key) file a
 
 fieldTransfer :: Direction -> Key -> Annex a -> Annex a
 fieldTransfer direction key a = do
 	afile <- Fields.getField Fields.associatedFile
-	maybe a (\u -> transfer (Transfer direction (toUUID u) key) afile a)
+	maybe a (\u -> runTransfer (Transfer direction (toUUID u) key) afile a)
 		=<< Fields.getField Fields.remoteUUID
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
  - file. Will throw an error if the transfer is already in progress.
  -}
-transfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
-transfer t file a = do
+runTransfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
+runTransfer t file a = do
 	tfile <- fromRepo $ transferFile t
 	createAnnexDirectory $ takeDirectory tfile
 	mode <- annexFileMode

@@ -1,26 +1,30 @@
 <span id="#{updating}">
-  <div class="hero-unit">
-    <div class="row-fluid">
-      <h3>
-        foo &larr;
-        <small>usb drive</small>
-        <small class="pull-right">40% of 10 mb</small>
-    <div class="progress progress-striped">
-      <div class="bar" style="width: 40%;">
-    <div class="row-fluid">
-      <h3>
-        some_filenames_are_long_and_ugly_like_this_one.mp3 &rarr;
-        <small>Amazon S3</small>
-        <small class="pull-right">10% of 50 mb</small>
-    <div class="progress progress-striped">
-      <div class="bar" style="width: 10%;">
-    <div class="row-fluid">
-      <h3>
-        bigfile &larr;
-        <small>usb drive</small>
-        <small class="pull-right">0% of 512 mb</small>
-    <div class="progress progress-striped">
-      <div class="bar" style="width: 0%;">
+  <div class="span9">
+    $if null transfers
+      <h2>No current transfers
+    $else
+      <h2>Transfers
+      $forall (transfer, info) <- transfers
+        $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
+          <div class="row-fluid">
+            <h3>
+              $maybe file <- associatedFile info
+                #{file}
+              $nothing
+                #{show $ transferKey transfer}
+              $case transferDirection transfer
+                $of Upload
+                  &rarr;
+                $of Download
+                  &larr;
+              <small>#{maybe "unknown" Remote.name $ transferRemote info}</small>
+                $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
+                  $if isJust $ startedTime info
+                      <small class="pull-right"><b>#{percent} of #{size}</b></small>
+                  $else
+                      <small class="pull-right">queued (#{size})</small>
+          <div class="progress progress-striped">
+            <div class="bar" style="width: #{percent};">
   <footer>
     <span>
       polled at #{time}

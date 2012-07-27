@@ -12,19 +12,26 @@ module Assistant.Threads.WebApp where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.TransferQueue
 import Utility.WebApp
 import Utility.Yesod
 import Utility.FileMode
 import Utility.TempFile
 import Git
+import Logs.Transfer
+import Utility.Percentage
+import Utility.DataUnits
+import Types.Key
+import qualified Remote
 
 import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
-import Data.Text
+import Data.Text (Text, pack, unpack)
 import Data.Time.Clock
+import qualified Data.Map as M
 
 thisThread :: String
 thisThread = "WebApp"
@@ -32,6 +39,7 @@ thisThread = "WebApp"
 data WebApp = WebApp
 	{ threadState :: ThreadState
 	, daemonStatus :: DaemonStatusHandle
+	, transferQueue :: TransferQueue
 	, secretToken :: Text
 	, baseTitle :: String
 	, getStatic :: Static
@@ -104,6 +112,12 @@ statusDisplay = do
 	webapp <- lift getYesod
 	time <- show <$> liftIO getCurrentTime
 	
+	current <- liftIO $ runThreadState (threadState webapp) $
+		M.toList . currentTransfers
+			<$> getDaemonStatus (daemonStatus webapp)
+	queued <- liftIO $ getTransferQueue $ transferQueue webapp
+	let transfers = current ++ queued
+
 	updating <- lift newIdent
 	$(widgetFile "status")
 	
@@ -131,31 +145,31 @@ getConfigR = defaultLayout $ do
 	setTitle "configuration"
 	[whamlet|<a href="@{HomeR}">main|]
 
-webAppThread :: ThreadState -> DaemonStatusHandle -> IO ()
-webAppThread st dstatus = do
-	webapp <- mkWebApp st dstatus
+webAppThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> IO ()
+webAppThread st dstatus transferqueue = do
+	webapp <- mkWebApp
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
 	runWebApp app' $ \port -> runThreadState st $ writeHtmlShim webapp port
-
-mkWebApp :: ThreadState -> DaemonStatusHandle -> IO WebApp
-mkWebApp st dstatus = do
-	dir <- absPath =<< runThreadState st (fromRepo repoPath)
-	home <- myHomeDir
-	let reldir = if dirContains home dir
-		then relPathDirToFile home dir
-		else dir
-	token <- genRandomToken 
-	return $ WebApp 
-		{ threadState = st
-		, daemonStatus = dstatus
-		, secretToken = pack token
-		, baseTitle = reldir
-		, getStatic = $(embed "static")
-		}
+	where
+		mkWebApp = do
+			dir <- absPath =<< runThreadState st (fromRepo repoPath)
+			home <- myHomeDir
+			let reldir = if dirContains home dir
+				then relPathDirToFile home dir
+				else dir
+			token <- genRandomToken 
+			return $ WebApp 
+				{ threadState = st
+				, daemonStatus = dstatus
+				, transferQueue = transferqueue
+				, secretToken = pack token
+				, baseTitle = reldir
+				, getStatic = $(embed "static")
+				}
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}

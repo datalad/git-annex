@@ -9,6 +9,7 @@ module Assistant.TransferQueue (
 	TransferQueue,
 	Schedule(..),
 	newTransferQueue,
+	getTransferQueue,
 	queueTransfers,
 	queueTransfer,
 	queueTransferAt,
@@ -24,17 +25,26 @@ import qualified Remote
 import Control.Concurrent.STM
 
 {- The transfer queue consists of a channel listing the transfers to make;
- - the size of the queue is also tracked -}
+ - the size of the queue is also tracked, and a list is maintained
+ - in parallel to allow for reading. -}
 data TransferQueue = TransferQueue
 	{ queue :: TChan (Transfer, TransferInfo)
 	, queuesize :: TVar Integer
+	, queuelist :: TVar [(Transfer, TransferInfo)]
 	}
 
 data Schedule = Next | Later
 	deriving (Eq)
 
 newTransferQueue :: IO TransferQueue
-newTransferQueue = atomically $ TransferQueue <$> newTChan <*> newTVar 0
+newTransferQueue = atomically $ TransferQueue
+	<$> newTChan
+	<*> newTVar 0
+	<*> newTVar []
+
+{- Reads the queue's content without blocking or changing it. -}
+getTransferQueue :: TransferQueue -> IO [(Transfer, TransferInfo)]
+getTransferQueue q = atomically $ readTVar $ queuelist q
 
 stubInfo :: AssociatedFile -> Remote -> TransferInfo
 stubInfo f r = TransferInfo
@@ -75,12 +85,14 @@ queueTransfers schedule q daemonstatus k f direction = do
 
 enqueue :: Schedule -> TransferQueue -> Transfer -> TransferInfo -> STM ()
 enqueue schedule q t info
-	| schedule == Next = go unGetTChan
-	| otherwise = go writeTChan
+	| schedule == Next = go unGetTChan (new:)
+	| otherwise = go writeTChan (\l -> l++[new])
 	where
-		go a = do
-			void $ a (queue q) (t, info)
+		new = (t, info)
+		go modqueue modlist = do
+			void $ modqueue (queue q) new
 			void $ modifyTVar' (queuesize q) succ
+			void $ modifyTVar' (queuelist q) modlist
 
 {- Adds a transfer to the queue. -}
 queueTransfer :: Schedule -> TransferQueue -> AssociatedFile -> Transfer -> Remote -> IO ()
@@ -100,4 +112,5 @@ queueTransferAt wantsz schedule q f t remote = atomically $ do
 getNextTransfer :: TransferQueue -> IO (Transfer, TransferInfo)
 getNextTransfer q = atomically $ do
 	void $ modifyTVar' (queuesize q) pred
+	void $ modifyTVar' (queuelist q) (drop 1)
 	readTChan (queue q)

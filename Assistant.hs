@@ -155,7 +155,7 @@ startDaemon assistant foreground
 				, mountWatcherThread st dstatus scanremotes
 				, transferScannerThread st scanremotes transferqueue
 #ifdef WITH_WEBAPP
-				, webAppThread st dstatus
+				, webAppThread st dstatus transferqueue
 #endif
 				, watchThread st dstatus transferqueue changechan
 				]

@@ -38,7 +38,7 @@ transfererThread st dstatus transferqueue slots = go
 			ifM (runThreadState st $ shouldTransfer dstatus t info)
 				( do
 					debug thisThread [ "Transferring:" , show t ]
-					runTransfer st dstatus slots t info
+					transferThread st dstatus slots t info
 				, debug thisThread [ "Skipping unnecessary transfer:" , show t ]
 				)
 			go
@@ -76,8 +76,8 @@ shouldTransfer dstatus t info =
  - thread's cache must be invalidated once a transfer completes, as
  - changes may have been made to the git-annex branch.
  -}
-runTransfer :: ThreadState -> DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> IO ()
-runTransfer st dstatus slots t info = case (transferRemote info, associatedFile info) of
+transferThread :: ThreadState -> DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> IO ()
+transferThread st dstatus slots t info = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
@@ -99,7 +99,7 @@ runTransfer st dstatus slots t info = case (transferRemote info, associatedFile 
 		transferprocess remote file = do
 			showStart "copy" file
 			showAction $ tofrom ++ " " ++ Remote.name remote
-			ok <- transfer t (Just file) $
+			ok <- runTransfer t (Just file) $
 				if isdownload
 					then getViaTmp key $
 						Remote.retrieveKeyFile remote key (Just file)
