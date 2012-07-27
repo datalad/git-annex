@@ -32,6 +32,7 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
 import Data.Monoid
 import Control.Arrow ((***))
+import Control.Concurrent
 
 localhost :: String
 localhost = "localhost"
@@ -52,12 +53,12 @@ runBrowser url = boolSystem cmd [Param url]
  -
  - An IO action can also be run, to do something with the port number,
  - such as start a web browser to view the webapp.
-  -}
+ -}
 runWebApp :: Application -> (PortNumber -> IO ()) -> IO ()
 runWebApp app observer = do
 	sock <- localSocket
+	void $ forkIO $ runSettingsSocket defaultSettings sock app
 	observer =<< socketPort sock
-	runSettingsSocket defaultSettings sock app
 
 {- Binds to a local socket, selecting any free port.
  -

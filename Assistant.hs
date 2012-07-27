@@ -124,8 +124,8 @@ import Utility.ThreadScheduler
 
 import Control.Concurrent
 
-startDaemon :: Bool -> Bool -> Annex ()
-startDaemon assistant foreground
+startDaemon :: Bool -> Bool -> Maybe (IO ()) -> Annex ()
+startDaemon assistant foreground webappwaiter
 	| foreground = do
 		showStart (if assistant then "assistant" else "watch") "."
 		go id
@@ -157,12 +157,11 @@ startDaemon assistant foreground
 				, mountWatcherThread st dstatus scanremotes
 				, transferScannerThread st scanremotes transferqueue
 #ifdef WITH_WEBAPP
-				, webAppThread st dstatus transferqueue
+				, webAppThread st dstatus transferqueue webappwaiter
 #endif
 				, watchThread st dstatus transferqueue changechan
 				]
-			debug "assistant"
-				["all git-annex assistant threads started"]
+			debug "Assistant" ["all threads started"]
 			waitForTermination
 
 stopDaemon :: Annex ()

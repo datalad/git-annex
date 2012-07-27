@@ -145,15 +145,17 @@ getConfigR = defaultLayout $ do
 	setTitle "configuration"
 	[whamlet|<a href="@{HomeR}">main|]
 
-webAppThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> IO ()
-webAppThread st dstatus transferqueue = do
+webAppThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Maybe (IO ()) -> IO ()
+webAppThread st dstatus transferqueue onstartup = do
 	webapp <- mkWebApp
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> runThreadState st $ writeHtmlShim webapp port
+	runWebApp app' $ \port -> do
+		runThreadState st $ writeHtmlShim webapp port
+		maybe noop id onstartup
 	where
 		mkWebApp = do
 			dir <- absPath =<< runThreadState st (fromRepo repoPath)

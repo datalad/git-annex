@@ -12,11 +12,7 @@ import Command
 import Assistant
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
-import qualified Annex
 import Option
-
-import Control.Concurrent
-import System.Posix.Process
 
 def :: [Command]
 def = [withOptions [restartOption] $
@@ -34,31 +30,20 @@ start restart = notBareRepo $ do
 	if restart
 		then do
 			stopDaemon
-			nuke =<< fromRepo gitAnnexPidFile
+			void $ liftIO . nukeFile =<< fromRepo gitAnnexPidFile
 			startassistant f
-		else unlessM (checkpid f) $
-			startassistant f
-	let url = "file://" ++ f
-	ifM (liftIO $ runBrowser url)
-		( stop
-		, error $ "failed to start web browser on url " ++ url
-		)
+		else ifM (checkpid <&&> checkshim f) $
+			( liftIO $ go f 
+			, startassistant f
+			)
+	stop
 	where
-		nuke f = void $ liftIO $ catchMaybeIO $ removeFile f
-		checkpid f = do
+		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
-			liftIO $
-				doesFileExist f <&&> (isJust <$> checkDaemon pidfile)
-		startassistant f = do
-			nuke f
-			{- Fork a separate process to run the assistant,
-			 - with a copy of the Annex state. -}
-			state <- Annex.getState id
-			liftIO $ void $ forkProcess $
-				Annex.eval state $ startDaemon True False
-			waitdaemon f (1000 :: Int)
-		waitdaemon _ 0 = error "failed to start git-annex assistant"
-		waitdaemon f n = unlessM (checkpid f) $ do
-			-- wait 0.1 seconds before retry
-			liftIO $ threadDelay 100000
-			waitdaemon f (n - 1)
+			liftIO $ isJust <$> checkDaemon pidfile
+		checkshim f = liftIO $ doesFileExist f
+		startassistant = startDaemon True False . Just . go
+		go f = unlessM (runBrowser url) $
+			error $ "failed to start web browser on url " ++ url
+			where
+				url = "file://" ++ f
