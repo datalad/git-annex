@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.189"
+ subject="comment 4"
+ date="2012-07-26T17:45:28Z"
+ content="""
+So, Yesod's scaffolded site actually does use bootstrap, but I didn't use the scaffolded site so don't have it. I am not quite to the point of doing any theming of the webapp, but I do have this nice example of how to put in bootstrap right here..
+
+By the way, if anyone would like to play with the html templates for the webapp, the main html template is `templates/default-layout.hamlet`. Uses a slightly weird template markup, but plain html will also work. And there's also the `static/` directory; every file in there will be compiled directly into the git-annex binary, and is available at `http://localhost:port/static/$file` in the webapp. See the favicon link in `default-layout.hamlet` of how to construct a type-safe link to a static file: `href=@{StaticR favicon_ico}`. That's all you really need to theme the webapp, without doing any real programming!
+"""]]
