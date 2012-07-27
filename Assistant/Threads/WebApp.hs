@@ -88,7 +88,7 @@ autoUpdate poll gethtml home ms_delay ms_startdelay = do
 	{- Use long polling to update the status display. -}
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
-	addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
+	addScript $ StaticR jquery_full_js
 	$(widgetFile "longpolling")
 	where
 		ms_to_seconds :: Int -> Int
@@ -132,7 +132,7 @@ getConfigR = defaultLayout $ do
 webAppThread :: ThreadState -> DaemonStatusHandle -> IO ()
 webAppThread st dstatus = do
 	webapp <- mkWebApp st dstatus
-	app <- toWaiApp webapp
+	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
