@@ -153,7 +153,7 @@ startDaemon assistant foreground webappwaiter
 				, daemonStatusThread st dstatus
 				, sanityCheckerThread st dstatus transferqueue changechan
 				, mountWatcherThread st dstatus scanremotes
-				, transferScannerThread st scanremotes transferqueue
+				, transferScannerThread st dstatus scanremotes transferqueue
 #ifdef WITH_WEBAPP
 				, webAppThread st dstatus transferqueue webappwaiter
 #endif

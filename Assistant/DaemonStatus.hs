@@ -36,6 +36,7 @@ data DaemonStatus = DaemonStatus
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
 	-- Clients can use this to wait on changes to the DaemonStatus
+	-- and other related things like the TransferQueue.
 	, notificationBroadcaster :: NotificationBroadcaster
 	}
 
@@ -71,6 +72,12 @@ modifyDaemonStatus handle a = do
 		return $ (b, notificationBroadcaster s)
 	sendNotification nb
 	return b
+
+{- Can be used to send a notification that the daemon status, or other
+ - associated thing, like the TransferQueue, has changed. -}
+notifyDaemonStatusChange :: DaemonStatusHandle -> IO ()
+notifyDaemonStatusChange handle = sendNotification
+	=<< notificationBroadcaster <$> atomically (readTMVar handle)
 
 {- Updates the cached ordered list of remotes from the list in Annex
  - state. -}
@@ -164,7 +171,16 @@ afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
 tenMinutes :: Int
 tenMinutes = 10 * 60
 
-{- Mutates the transfer map. -}
+{- Mutates the transfer map. Runs in STM so that the transfer map can
+ - be modified in the same transaction that modifies the transfer queue.
+ - Note that this does not send a notification of the change; that's left
+ - to the caller. -}
+adjustTransfersSTM :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> STM ()
+adjustTransfersSTM dstatus a = do
+	s <- takeTMVar dstatus
+	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
+
+{- Variant that does send notifications. -}
 adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
 adjustTransfers dstatus a = modifyDaemonStatus_ dstatus $
 	\s -> s { currentTransfers = a (currentTransfers s) }
