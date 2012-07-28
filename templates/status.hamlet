@@ -1,12 +1,12 @@
-<span id="#{updating}">
-  <div class="span9">
+<span ##{updating}>
+  <div .span9>
     $if null transfers
       <h2>No current transfers
     $else
       <h2>Transfers
       $forall (transfer, info) <- transfers
         $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
-          <div class="row-fluid">
+          <div .row-fluid>
             <h3>
               $maybe file <- associatedFile info
                 #{file}
@@ -20,11 +20,11 @@
               <small>#{maybe "unknown" Remote.name $ transferRemote info}</small>
                 $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
                   $if isJust $ startedTime info
-                      <small class="pull-right"><b>#{percent} of #{size}</b></small>
+                      <small .pull-right><b>#{percent} of #{size}</b></small>
                   $else
-                      <small class="pull-right">queued (#{size})</small>
-          <div class="progress progress-striped">
-            <div class="bar" style="width: #{percent};">
+                      <small .pull-right>queued (#{size})</small>
+          <div .progress .progress-striped>
+            <div .bar style="width: #{percent};">
   <footer>
     <span>
       polled at #{time}
