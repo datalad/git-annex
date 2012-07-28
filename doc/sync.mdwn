@@ -1,7 +1,7 @@
 The `git annex sync` command provides an easy way to keep several
 repositories in sync. 
 
-Often git is used in a centralized fashion with a central bare repositry
+Often git is used in a centralized fashion with a central bare repository
 which changes are pulled and pushed to using normal git commands.
 That works fine, if you don't mind having a central repository.
 
