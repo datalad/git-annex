@@ -61,11 +61,10 @@ instance Yesod WebApp where
 		page <- widgetToPageContent $ do
 			addStylesheet $ StaticR css_bootstrap_css
 			addStylesheet $ StaticR css_bootstrap_responsive_css
-			addStylesheet $ StaticR css_webapp_css
 			addScript $ StaticR jquery_full_js
 			addScript $ StaticR js_bootstrap_dropdown_js
 			addScript $ StaticR js_bootstrap_alert_js
-			$(widgetFile "default-layout")
+			$(widgetFile "page")
 		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
 
 	{- Require an auth token be set when accessing any (non-static route) -}

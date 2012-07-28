@@ -6,42 +6,4 @@ $doctype 5
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     ^{pageHead page}
   <body>
-
-    <div .navbar .navbar-fixed-top>
-      <div .navbar-inner>
-        <div .container>
-          <a .brand href="#">
-            git-annex
-          <ul .nav>
-            <li .active>
-              <a href="#">Dashboard</a>
-            <li>
-              <a href="@{ConfigR}">Config</a>
-          <ul .nav .pull-right>
-            <li .dropdown #menu1>
-              <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
-                Current Repository: #{baseTitle webapp}
-                <b .caret></b>
-              <ul .dropdown-menu>
-                 <li><a href="#">#{baseTitle webapp}</a></li>
-                 <li .divider></li>
-                 <li><a href="#">Add new repository</a></li>
-
-    <div .container-fluid>
-      <div .row-fluid>
-        <div .span3>
-          <div .sidebar-nav>
-            <div .alert .alert-info>
-              <a .close data-dismiss="alert" href="#">&times;</a>
-              <b>This is just a demo.</b> If this were not just a demo,
-              I'd not be filling this sidebar with silly alerts.
-            <div .alert .alert-success>
-              <a .close data-dismiss="alert" href="#">&times;</a>
-              <b>Well done!</b>
-              You successfully read this important alert message.
-            <div .alert .alert-error>
-              <a .close data-dismiss="alert" href="#">&times;</a>
-              <b>Whoops!</b>
-              Unable to connect to blah blah..
-        <div .span9>
-          ^{pageBody page}
+    ^{pageBody page}
