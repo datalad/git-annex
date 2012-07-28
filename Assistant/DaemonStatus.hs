@@ -11,6 +11,7 @@ import Common.Annex
 import Assistant.ThreadedMonad
 import Utility.ThreadScheduler
 import Utility.TempFile
+import Utility.NotificationBroadcaster
 import Logs.Transfer
 import qualified Command.Sync
 
@@ -34,31 +35,43 @@ data DaemonStatus = DaemonStatus
 	, currentTransfers :: TransferMap
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
+	-- Clients can use this to wait on changes to the DaemonStatus
+	, notificationBroadcaster :: NotificationBroadcaster
 	}
-	deriving (Show)
 
 type TransferMap = M.Map Transfer TransferInfo
 
 type DaemonStatusHandle = MVar DaemonStatus
 
-newDaemonStatus :: DaemonStatus
-newDaemonStatus = DaemonStatus
-	{ scanComplete = False
-	, lastRunning = Nothing
-	, sanityCheckRunning = False
-	, lastSanityCheck = Nothing
-	, currentTransfers = M.empty
-	, knownRemotes = []
-	}
+newDaemonStatus :: IO DaemonStatus
+newDaemonStatus = do
+	nb <- newNotificationBroadcaster
+	return $ DaemonStatus
+		{ scanComplete = False
+		, lastRunning = Nothing
+		, sanityCheckRunning = False
+		, lastSanityCheck = Nothing
+		, currentTransfers = M.empty
+		, knownRemotes = []
+		, notificationBroadcaster = nb
+		}
 
 getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
 getDaemonStatus = liftIO . readMVar
 
 modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus_ handle a = liftIO $ modifyMVar_ handle (return . a)
+modifyDaemonStatus_ handle a = do
+	nb <- liftIO $ modifyMVar handle $ \s -> return
+		(a s, notificationBroadcaster s)
+	liftIO $ sendNotification nb
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> Annex b
-modifyDaemonStatus handle a = liftIO $ modifyMVar handle (return . a)
+modifyDaemonStatus handle a = do
+	(b, nb) <- liftIO $ modifyMVar handle $ \s -> do
+		let (s', b) = a s
+		return $ (s', (b, notificationBroadcaster s))
+	liftIO $ sendNotification nb
+	return b
 
 {- Updates the cached ordered list of remotes from the list in Annex
  - state. -}
@@ -74,7 +87,7 @@ startDaemonStatus :: Annex DaemonStatusHandle
 startDaemonStatus = do
 	file <- fromRepo gitAnnexDaemonStatusFile
 	status <- liftIO $
-		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
+		catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
 	remotes <- Command.Sync.syncRemotes []
 	liftIO $ newMVar status
@@ -84,11 +97,18 @@ startDaemonStatus = do
 		, knownRemotes = remotes
 		}
 
-{- This thread wakes up periodically and writes the daemon status to disk. -}
+{- This writes the daemon status to disk, when it changes, but no more
+ - frequently than once every ten minutes.
+ -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
 daemonStatusThread st handle = do
+	bhandle <- runThreadState st $ 
+		liftIO . newNotificationHandle
+			=<< notificationBroadcaster <$> getDaemonStatus handle
 	checkpoint
-	runEvery (Seconds tenMinutes) checkpoint
+	runEvery (Seconds tenMinutes) $ do
+		liftIO $ waitNotification bhandle
+		checkpoint
 	where
 		checkpoint = runThreadState st $ do
 			file <- fromRepo gitAnnexDaemonStatusFile
@@ -109,9 +129,9 @@ writeDaemonStatusFile file status =
 			]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
-readDaemonStatusFile file = parse <$> readFile file
+readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
 	where
-		parse = foldr parseline newDaemonStatus . lines
+		parse status = foldr parseline status . lines
 		parseline line status
 			| key == "lastRunning" = parseval readtime $ \v ->
 				status { lastRunning = Just v }

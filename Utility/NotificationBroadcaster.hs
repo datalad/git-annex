@@ -11,10 +11,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.NotificationBroadCaster (
-	NotificationBroadCaster,
+module Utility.NotificationBroadcaster (
+	NotificationBroadcaster,
 	NotificationHandle,
-	newNotificationBroadCaster,
+	newNotificationBroadcaster,
 	newNotificationHandle,
 	notificationHandleToId,
 	notificationHandleFromId,
@@ -28,21 +28,21 @@ import Control.Concurrent.STM
 import Control.Concurrent.SampleVar
 
 {- One SampleVar per client. The TMVar is never empty, so never blocks. -}
-type NotificationBroadCaster = TMVar [SampleVar ()]
+type NotificationBroadcaster = TMVar [SampleVar ()]
 
 {- Handle given out to an individual client. -}
-data NotificationHandle = NotificationHandle NotificationBroadCaster Int
+data NotificationHandle = NotificationHandle NotificationBroadcaster Int
 
-newNotificationBroadCaster :: IO NotificationBroadCaster
-newNotificationBroadCaster = atomically (newTMVar [])
+newNotificationBroadcaster :: IO NotificationBroadcaster
+newNotificationBroadcaster = atomically (newTMVar [])
 
 {- Allocates a notification handle for a client to use. -}
-newNotificationHandle :: NotificationBroadCaster -> IO NotificationHandle
+newNotificationHandle :: NotificationBroadcaster -> IO NotificationHandle
 newNotificationHandle b = NotificationHandle
 	<$> pure b
-	<*> addclient b
+	<*> addclient
 	where
-		addclient b = do
+		addclient = do
 			s <- newEmptySampleVar
 			atomically $ do
 				l <- readTMVar b
@@ -54,13 +54,13 @@ newNotificationHandle b = NotificationHandle
 notificationHandleToId :: NotificationHandle -> Int
 notificationHandleToId (NotificationHandle _ i) = i
 
-{- Given a NotificationBroadCaster, and an Int identifier, recreates the
+{- Given a NotificationBroadcaster, and an Int identifier, recreates the
  - NotificationHandle. -}
-notificationHandleFromId :: NotificationBroadCaster -> Int -> NotificationHandle
+notificationHandleFromId :: NotificationBroadcaster -> Int -> NotificationHandle
 notificationHandleFromId = NotificationHandle
 
 {- Sends a notification to all clients. -}
-sendNotification :: NotificationBroadCaster -> IO ()
+sendNotification :: NotificationBroadcaster -> IO ()
 sendNotification b = do
 	l <- atomically $ readTMVar b
 	mapM_ notify l
