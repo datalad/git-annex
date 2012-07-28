@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.20"
+ subject="comment 8"
+ date="2012-07-27T18:10:06Z"
+ content="""
+I've reproduced a crash on OSX, involving not kqueue, but the WebApp's use of getaddrinfo. I've fixed that, but several things you've said in this bug report don't 100% add up to this being the same crash you've been seeing (for one thing, this can't affect `git annex watch`), so I'll wait for you to confirm.
+"""]]

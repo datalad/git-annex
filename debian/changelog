@@ -1,3 +1,10 @@
+git-annex (3.20120722) UNRELEASED; urgency=low
+
+  * initremote: Avoid recording remote's description before checking
+    that its config is valid.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 27 Jul 2012 21:04:47 -0400
+
 git-annex (3.20120721) unstable; urgency=low
 
   * get, move, copy: Now refuse to do anything when the requested file

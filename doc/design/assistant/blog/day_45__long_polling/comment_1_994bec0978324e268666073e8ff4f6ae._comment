@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="auth token length"
+ date="2012-07-27T18:52:19Z"
+ content="""
+Your auth token looks a little short. Aren't you worried about people brute-forcing it? ;)
+"""]]

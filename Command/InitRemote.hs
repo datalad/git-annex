@@ -38,18 +38,19 @@ start (name:ws) = do
 	t <- findType fullconfig
 
 	showStart "initremote" name
-	next $ perform t u $ M.union config c
+	next $ perform t u name $ M.union config c
 
 	where
 		config = Logs.Remote.keyValToConfig ws
 
-perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
-perform t u c = do
+perform :: RemoteType -> UUID -> String -> R.RemoteConfig -> CommandPerform
+perform t u name c = do
 	c' <- R.setup t u c
-	next $ cleanup u c'
+	next $ cleanup u name c'
 
-cleanup :: UUID -> R.RemoteConfig -> CommandCleanup
-cleanup u c = do
+cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
+cleanup u name c = do
+	describeUUID u name
 	Logs.Remote.configSet u c
         return True
 
@@ -61,7 +62,6 @@ findByName name = do
 	where
 		generate = do
 			uuid <- liftIO genUUID
-			describeUUID uuid name
 			return (uuid, M.insert nameKey name M.empty)
 
 findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)

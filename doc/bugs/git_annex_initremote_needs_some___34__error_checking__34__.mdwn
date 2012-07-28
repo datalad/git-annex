@@ -60,3 +60,6 @@ bloom filter size: 16 mebibytes (0% full)
 backend usage: 
 x00:atest jtang$ 
 </pre>
+
+> Indeed, I broke that in June by making it record the name in a much too
+> early stage. Now fixed. [[done]] --[[Joey]]
