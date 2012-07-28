@@ -26,32 +26,28 @@ thisThread = "SanityChecker"
 {- This thread wakes up occasionally to make sure the tree is in good shape. -}
 sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
 sanityCheckerThread st status transferqueue changechan = forever $ do
-	waitForNextCheck st status
+	waitForNextCheck status
 
 	debug thisThread ["starting sanity check"]
 
-	runThreadState st $
-		modifyDaemonStatus_ status $ \s -> s
-				{ sanityCheckRunning = True }
+	modifyDaemonStatus_ status $ \s -> s
+		{ sanityCheckRunning = True }
 
 	now <- getPOSIXTime -- before check started
 	catchIO (check st status transferqueue changechan)
 		(runThreadState st . warning . show)
 
-	runThreadState st $ do
-		modifyDaemonStatus_ status $ \s -> s
-			{ sanityCheckRunning = False
-			, lastSanityCheck = Just now
-			}
+	modifyDaemonStatus_ status $ \s -> s
+		{ sanityCheckRunning = False
+		, lastSanityCheck = Just now
+		}
 	
 	debug thisThread ["sanity check complete"]
 
-
 {- Only run one check per day, from the time of the last check. -}
-waitForNextCheck :: ThreadState -> DaemonStatusHandle -> IO ()
-waitForNextCheck st status = do
-	v <- runThreadState st $
-		lastSanityCheck <$> getDaemonStatus status
+waitForNextCheck :: DaemonStatusHandle -> IO ()
+waitForNextCheck status = do
+	v <- lastSanityCheck <$> getDaemonStatus status
 	now <- getPOSIXTime
 	threadDelaySeconds $ Seconds $ calcdelay now v
 	where

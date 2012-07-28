@@ -51,8 +51,7 @@ pushThread st daemonstatus commitchan pushmap = do
 		now <- getCurrentTime
 		if shouldPush now commits
 			then do
-				remotes <- runThreadState st $
-					knownRemotes <$> getDaemonStatus daemonstatus
+				remotes <- knownRemotes <$> getDaemonStatus daemonstatus
 				pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread

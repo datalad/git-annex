@@ -115,7 +115,7 @@ statusDisplay = do
 	
 	current <- liftIO $ runThreadState (threadState webapp) $
 		M.toList . currentTransfers
-			<$> getDaemonStatus (daemonStatus webapp)
+			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let transfers = current ++ queued
 

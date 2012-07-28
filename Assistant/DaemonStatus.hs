@@ -15,7 +15,7 @@ import Utility.NotificationBroadcaster
 import Logs.Transfer
 import qualified Command.Sync
 
-import Control.Concurrent
+import Control.Concurrent.STM
 import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -41,7 +41,8 @@ data DaemonStatus = DaemonStatus
 
 type TransferMap = M.Map Transfer TransferInfo
 
-type DaemonStatusHandle = MVar DaemonStatus
+{- This TMVar is never left empty, so accessing it will never block. -}
+type DaemonStatusHandle = TMVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = do
@@ -56,21 +57,19 @@ newDaemonStatus = do
 		, notificationBroadcaster = nb
 		}
 
-getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
-getDaemonStatus = liftIO . readMVar
+getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
+getDaemonStatus = atomically . readTMVar
 
-modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus_ handle a = do
-	nb <- liftIO $ modifyMVar handle $ \s -> return
-		(a s, notificationBroadcaster s)
-	liftIO $ sendNotification nb
+modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
+modifyDaemonStatus_ handle a = modifyDaemonStatus handle $ \s -> (a s, ())
 
-modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> Annex b
+modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
 modifyDaemonStatus handle a = do
-	(b, nb) <- liftIO $ modifyMVar handle $ \s -> do
-		let (s', b) = a s
-		return $ (s', (b, notificationBroadcaster s))
-	liftIO $ sendNotification nb
+	(b, nb) <- atomically $ do
+		(s, b) <- a <$> takeTMVar handle
+		putTMVar handle s
+		return $ (b, notificationBroadcaster s)
+	sendNotification nb
 	return b
 
 {- Updates the cached ordered list of remotes from the list in Annex
@@ -78,10 +77,10 @@ modifyDaemonStatus handle a = do
 updateKnownRemotes :: DaemonStatusHandle -> Annex ()
 updateKnownRemotes dstatus = do
 	remotes <- Command.Sync.syncRemotes []
-	modifyDaemonStatus_ dstatus $
+	liftIO $ modifyDaemonStatus_ dstatus $
 		\s -> s { knownRemotes = remotes }
 
-{- Load any previous daemon status file, and store it in the MVar for this
+{- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
 startDaemonStatus :: Annex DaemonStatusHandle
 startDaemonStatus = do
@@ -90,7 +89,7 @@ startDaemonStatus = do
 		catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
 	remotes <- Command.Sync.syncRemotes []
-	liftIO $ newMVar status
+	liftIO $ atomically $ newTMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
@@ -102,18 +101,17 @@ startDaemonStatus = do
  -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
 daemonStatusThread st handle = do
-	bhandle <- runThreadState st $ 
-		liftIO . newNotificationHandle
-			=<< notificationBroadcaster <$> getDaemonStatus handle
+	bhandle <- newNotificationHandle
+		=<< notificationBroadcaster <$> getDaemonStatus handle
 	checkpoint
 	runEvery (Seconds tenMinutes) $ do
-		liftIO $ waitNotification bhandle
+		waitNotification bhandle
 		checkpoint
 	where
-		checkpoint = runThreadState st $ do
-			file <- fromRepo gitAnnexDaemonStatusFile
+		checkpoint = do
 			status <- getDaemonStatus handle
-			liftIO $ writeDaemonStatusFile file status
+			file <- runThreadState st $ fromRepo gitAnnexDaemonStatusFile
+			writeDaemonStatusFile file status
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}
@@ -167,12 +165,12 @@ tenMinutes :: Int
 tenMinutes = 10 * 60
 
 {- Mutates the transfer map. -}
-adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> Annex ()
+adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
 adjustTransfers dstatus a = modifyDaemonStatus_ dstatus $
 	\s -> s { currentTransfers = a (currentTransfers s) }
 
 {- Removes a transfer from the map, and returns its info. -}
-removeTransfer :: DaemonStatusHandle -> Transfer -> Annex (Maybe TransferInfo)
+removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
 removeTransfer dstatus t = modifyDaemonStatus dstatus go
 	where
 		go s =

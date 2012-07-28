@@ -48,7 +48,7 @@ transfererThread st dstatus transferqueue slots = go
  - being uploaded to isn't known to have the file. -}
 shouldTransfer :: DaemonStatusHandle -> Transfer -> TransferInfo -> Annex Bool
 shouldTransfer dstatus t info =
-	go =<< currentTransfers <$> getDaemonStatus dstatus
+	go =<< currentTransfers <$> liftIO (getDaemonStatus dstatus)
 	where
 		go m
 			| M.member t m = return False
@@ -84,7 +84,7 @@ transferThread st dstatus slots t info = case (transferRemote info, associatedFi
 		tid <- inTransferSlot slots st $
 			transferprocess remote file
 		now <- getCurrentTime
-		runThreadState st $ adjustTransfers dstatus $
+		adjustTransfers dstatus $
 			M.insertWith' const t info
 				{ startedTime = Just $ utcTimeToPOSIXSeconds now
 				, transferTid = Just tid

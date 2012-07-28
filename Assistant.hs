@@ -65,10 +65,8 @@
  - 	Annex monad in IO actions run by the watcher and committer
  - 	threads. Thus, a single state is shared amoung the threads, and
  - 	only one at a time can access it.
- - DaemonStatusHandle: (MVar)
- - 	The daemon's current status. This MVar should only be manipulated
- - 	from inside the Annex monad, which ensures it's accessed only
- - 	after the ThreadState MVar.
+ - DaemonStatusHandle: (STM TMVar)
+ - 	The daemon's current status.
  - ChangeChan: (STM TChan)
  - 	Changes are indicated by writing to this channel. The committer
  - 	reads from it.

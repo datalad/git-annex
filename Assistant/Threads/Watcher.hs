@@ -76,8 +76,7 @@ statupScan st dstatus scanner = do
 	runThreadState st $
 		showAction "scanning"
 	r <- scanner
-	runThreadState st $
-		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
+	modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 	-- Notice any files that were deleted before watching was started.
 	runThreadState st $ do
@@ -132,7 +131,7 @@ runHandler threadname st dstatus transferqueue changechan handler file filestatu
 onAdd :: Handler
 onAdd threadname file filestatus dstatus _
 	| maybe False isRegularFile filestatus = do
-		ifM (scanComplete <$> getDaemonStatus dstatus)
+		ifM (scanComplete <$> liftIO (getDaemonStatus dstatus))
 			( go
 			, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
 				( noChange
@@ -156,7 +155,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
 				( do
-					s <- getDaemonStatus dstatus
+					s <- liftIO $ getDaemonStatus dstatus
 					checkcontent key s
 					ensurestaged link s
 				, do
@@ -167,7 +166,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 				)
 		go Nothing = do -- other symlink
 			link <- liftIO (readSymbolicLink file)
-			ensurestaged link =<< getDaemonStatus dstatus
+			ensurestaged link =<< liftIO (getDaemonStatus dstatus)
 
 		{- This is often called on symlinks that are already
 		 - staged correctly. A symlink may have been deleted

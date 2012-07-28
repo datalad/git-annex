@@ -55,12 +55,11 @@ onErr _ _ msg _ = error msg
 onAdd :: Handler
 onAdd st dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
-	Just t -> do
-		runThreadState st $ go t =<< checkTransfer t
+	Just t -> go t =<< runThreadState st (checkTransfer t)
 	where
 		go _ Nothing = noop -- transfer already finished
 		go t (Just info) = do
-			liftIO $ debug thisThread
+			debug thisThread
 				[ "transfer starting:"
 				, show t
 				]
@@ -71,11 +70,11 @@ onAdd st dstatus file _ = case parseTransferFile file of
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
-onDel st dstatus file _ = case parseTransferFile file of
+onDel _ dstatus file _ = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
 		debug thisThread
 			[ "transfer finishing:"
 			, show t
 			]
-		void $ runThreadState st $ removeTransfer dstatus t
+		void $ removeTransfer dstatus t

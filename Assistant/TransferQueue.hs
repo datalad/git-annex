@@ -59,7 +59,7 @@ stubInfo f r = TransferInfo
 {- Adds transfers to queue for some of the known remotes. -}
 queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers schedule q daemonstatus k f direction = do
-	rs <- knownRemotes <$> getDaemonStatus daemonstatus
+	rs <- knownRemotes <$> liftIO (getDaemonStatus daemonstatus)
 	mapM_ go =<< sufficientremotes rs
 	where
 		sufficientremotes rs
