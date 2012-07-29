@@ -39,7 +39,7 @@ that route got it and was able to use it:
 	{- Block until there is an updated status to display. -}
 	b <- liftIO $ getNotificationBroadcaster webapp
 	liftIO $ waitNotification $ notificationHandleFromId b nid
-""]]
+"""]]
 
 And now the WebApp is able to display transfers in realtime!
 When I have both the WebApp and `git annex get` running on the same screen,
