@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
 
@@ -13,6 +14,7 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
 import Utility.FileMode
@@ -49,10 +51,14 @@ staticFiles "static"
 
 mkYesod "WebApp" [parseRoutes|
 / HomeR GET
-/status StatusR GET
+/status/#NotificationId StatusR GET
 /config ConfigR GET
 /static StaticR Static getStatic
 |]
+
+instance PathPiece NotificationId where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
 
 instance Yesod WebApp where
 	defaultLayout widget = do
@@ -107,7 +113,7 @@ autoUpdate updating gethtml home ms_delay ms_startdelay = do
 		ms_to_seconds :: Int -> Int
 		ms_to_seconds ms = ceiling ((fromIntegral ms :: Double) / 1000)
 
-{- Continually updating status display. -}
+{- A dynamically updating status display. -}
 statusDisplay :: Widget
 statusDisplay = do
 	webapp <- lift getYesod
@@ -122,7 +128,13 @@ statusDisplay = do
 	updating <- lift newIdent
 	$(widgetFile "status")
 	
-	autoUpdate updating StatusR HomeR (3000 :: Int) (40 :: Int)
+	nid <- liftIO $ notificationHandleToId <$>
+		(newNotificationHandle =<< getNotificationBroadcaster webapp)
+	autoUpdate updating (StatusR nid) HomeR (3000 :: Int) (40 :: Int)
+
+getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
+getNotificationBroadcaster webapp = notificationBroadcaster
+		<$> getDaemonStatus (daemonStatus webapp)
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout statusDisplay
@@ -136,8 +148,13 @@ getHomeR = defaultLayout statusDisplay
  - body is. To get the widget head content, the widget is also 
  - inserted onto the getHomeR page.
  -}
-getStatusR :: Handler RepHtml
-getStatusR = do
+getStatusR :: NotificationId -> Handler RepHtml
+getStatusR nid = do
+	{- Block until there is an updated status to display. -}
+	webapp <- getYesod
+	b <- liftIO $ getNotificationBroadcaster webapp
+	liftIO $ waitNotification $ notificationHandleFromId b nid
+
 	page <- widgetToPageContent statusDisplay
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 

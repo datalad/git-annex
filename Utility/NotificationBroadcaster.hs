@@ -32,10 +32,7 @@ import Control.Concurrent.SampleVar
 type NotificationBroadcaster = TMVar [SampleVar ()]
 
 newtype NotificationId = NotificationId Int
-	deriving (Read, Eq, Ord)
-
-instance Show NotificationId where
-	show (NotificationId i) = show i
+	deriving (Read, Show, Eq, Ord)
 
 {- Handle given out to an individual client. -}
 data NotificationHandle = NotificationHandle NotificationBroadcaster NotificationId
