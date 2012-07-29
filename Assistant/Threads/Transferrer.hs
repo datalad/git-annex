@@ -33,9 +33,10 @@ maxTransfers = 1
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
 transfererThread st dstatus transferqueue slots = go
 	where
-		go = do
-			(t, info) <- getNextTransfer transferqueue dstatus
-			ifM (runThreadState st $ shouldTransfer dstatus t info)
+		go = getNextTransfer transferqueue dstatus notrunning >>= handle
+		handle Nothing = go
+		handle (Just (t, info)) = do
+			ifM (runThreadState st $ shouldTransfer t info)
 				( do
 					debug thisThread [ "Transferring:" , show t ]
 					notifyTransfer dstatus
@@ -47,28 +48,26 @@ transfererThread st dstatus transferqueue slots = go
 					void $ removeTransfer dstatus t
 				)
 			go
+		{- Skip transfers that are already running. -}
+		notrunning i = startedTime i == Nothing
 
-{- Checks if the requested transfer is already running, or
- - the file to download is already present, or the remote
+{- Checks if the file to download is already present, or the remote
  - being uploaded to isn't known to have the file. -}
-shouldTransfer :: DaemonStatusHandle -> Transfer -> TransferInfo -> Annex Bool
-shouldTransfer dstatus t info =
-	go =<< currentTransfers <$> liftIO (getDaemonStatus dstatus)
+shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
+shouldTransfer t info
+	| transferDirection t == Download =
+		not <$> inAnnex key
+	| transferDirection t == Upload =
+		{- Trust the location log to check if the
+		 - remote already has the key. This avoids
+		 - a roundtrip to the remote. -}
+		case transferRemote info of
+			Nothing -> return False
+			Just remote -> 
+				notElem (Remote.uuid remote)
+					<$> loggedLocations key
+	| otherwise = return False
 	where
-		go m
-			| M.member t m = return False
-			| transferDirection t == Download =
-				not <$> inAnnex key
-			| transferDirection t == Upload =
-				{- Trust the location log to check if the
-				 - remote already has the key. This avoids
-				 - a roundtrip to the remote. -}
-				case transferRemote info of
-					Nothing -> return False
-					Just remote -> 
-						notElem (Remote.uuid remote)
-							<$> loggedLocations key
-			| otherwise = return False
 		key = transferKey t
 
 {- A transfer is run in a separate thread, with a *copy* of the Annex

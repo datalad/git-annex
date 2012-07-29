@@ -113,16 +113,22 @@ queueTransferAt wantsz schedule q dstatus f t remote = do
 			else retry -- blocks until queuesize changes
 	enqueue schedule q dstatus t (stubInfo f remote)
 
-{- Blocks until a pending transfer is available from the queue.
- - The transfer is removed from the transfer queue, and added to
- - the daemon status currentTransfers map. This is done in a single STM
- - transaction, so there is no window where an observer sees an
- - inconsistent status. -}
-getNextTransfer :: TransferQueue -> DaemonStatusHandle -> IO (Transfer, TransferInfo)
-getNextTransfer q dstatus = atomically $ do
+{- Blocks until a pending transfer is available from the queue,
+ - and removes it.
+ -
+ - Checks that it's acceptable, before adding it to the
+ - the currentTransfers map. If it's not acceptable, it's discarded.
+ -
+ - This is done in a single STM transaction, so there is no window
+ - where an observer sees an inconsistent status. -}
+getNextTransfer :: TransferQueue -> DaemonStatusHandle -> (TransferInfo -> Bool) -> IO (Maybe (Transfer, TransferInfo))
+getNextTransfer q dstatus acceptable = atomically $ do
 	void $ modifyTVar' (queuesize q) pred
 	void $ modifyTVar' (queuelist q) (drop 1)
 	r@(t, info) <- readTChan (queue q)
-	adjustTransfersSTM dstatus $
-		M.insertWith' const t info
-	return r
+	if acceptable info
+		then do
+			adjustTransfersSTM dstatus $
+				M.insertWith' const t info
+			return $ Just r
+		else return Nothing
