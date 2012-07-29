@@ -204,7 +204,7 @@ sideBarDisplay noScript = do
  -}
 getSideBarR :: NotificationId -> Handler RepHtml
 getSideBarR nid = do
-	waitNotifier transferNotifier nid
+	waitNotifier alertNotifier nid
 
 	page <- widgetToPageContent $ sideBarDisplay True
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
