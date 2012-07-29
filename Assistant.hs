@@ -146,7 +146,7 @@ startDaemon assistant foreground webappwaiter
 			mapM_ forkIO
 				[ commitThread st changechan commitchan transferqueue dstatus
 				, pushThread st dstatus commitchan pushmap
-				, pushRetryThread st pushmap
+				, pushRetryThread st dstatus pushmap
 				, mergeThread st
 				, transferWatcherThread st dstatus
 				, transfererThread st dstatus transferqueue transferslots

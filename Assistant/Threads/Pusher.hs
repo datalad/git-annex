@@ -10,12 +10,14 @@ module Assistant.Threads.Pusher where
 import Assistant.Common
 import Assistant.Commits
 import Assistant.Pushes
-import Assistant.DaemonStatus
+import Assistant.Alert
 import Assistant.ThreadedMonad
 import Assistant.Threads.Merger
+import Assistant.DaemonStatus
 import qualified Command.Sync
 import Utility.ThreadScheduler
 import Utility.Parallel
+import qualified Remote
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -24,8 +26,8 @@ thisThread :: ThreadName
 thisThread = "Pusher"
 
 {- This thread retries pushes that failed before. -}
-pushRetryThread :: ThreadState -> FailedPushMap -> IO ()
-pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
+pushRetryThread :: ThreadState -> DaemonStatusHandle -> FailedPushMap -> IO ()
+pushRetryThread st dstatus pushmap = runEvery (Seconds halfhour) $ do
 	-- We already waited half an hour, now wait until there are failed
 	-- pushes to retry.
 	topush <- getFailedPushesBefore pushmap (fromIntegral halfhour)
@@ -36,13 +38,16 @@ pushRetryThread st pushmap = runEvery (Seconds halfhour) $ do
 			, "failed pushes"
 			]
 		now <- getCurrentTime
-		pushToRemotes thisThread now st (Just pushmap) topush
+		alertWhile dstatus (alert topush) $
+			pushToRemotes thisThread now st (Just pushmap) topush
 	where
 		halfhour = 1800
+		alert rs = activityAlert (Just "Retrying sync") $
+			"with " ++ unwords (map Remote.name rs) ++ ", which failed earlier."
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
 pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> IO ()
-pushThread st daemonstatus commitchan pushmap = do
+pushThread st dstatus commitchan pushmap = do
 	runEvery (Seconds 2) $ do
 		-- We already waited two seconds as a simple rate limiter.
 		-- Next, wait until at least one commit has been made
@@ -51,8 +56,9 @@ pushThread st daemonstatus commitchan pushmap = do
 		now <- getCurrentTime
 		if shouldPush now commits
 			then do
-				remotes <- knownRemotes <$> getDaemonStatus daemonstatus
-				pushToRemotes thisThread now st (Just pushmap) remotes
+				remotes <- knownRemotes <$> getDaemonStatus dstatus
+				alertWhile dstatus (syncalert remotes) $
+					pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread
 					[ "delaying push of"
@@ -60,6 +66,9 @@ pushThread st daemonstatus commitchan pushmap = do
 					, "commits"
 					]
 				refillCommits commitchan commits
+	where
+		syncalert rs = activityAlert Nothing $
+			"Syncing with " ++ unwords (map Remote.name rs)
 
 {- Decide if now is a good time to push to remotes.
  -
