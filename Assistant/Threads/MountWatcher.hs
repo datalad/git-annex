@@ -15,6 +15,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.Threads.Pusher (pushToRemotes)
+import Assistant.Alert
 import qualified Annex
 import qualified Git
 import Utility.ThreadScheduler
@@ -158,17 +159,29 @@ handleMounts st dstatus scanremotes wasmounted nowmounted = mapM_ (handleMount s
 
 handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Mntent -> IO ()
 handleMount st dstatus scanremotes mntent = do
-	debug thisThread ["detected mount of", mnt_dir mntent]
+	debug thisThread ["detected mount of", dir]
 	rs <- remotesUnder st dstatus mntent
 	unless (null rs) $ do
 		branch <- runThreadState st $ Command.Sync.currentBranch
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
-		unless (null nonspecial) $ do
-			debug thisThread ["pulling from", show nonspecial]
-			runThreadState st $ manualPull branch nonspecial
-			now <- getCurrentTime	
-			pushToRemotes thisThread now st Nothing nonspecial
+		unless (null nonspecial) $
+			alertWhile dstatus (syncalert nonspecial) $ do
+				debug thisThread ["syncing with", show nonspecial]
+				runThreadState st $ manualPull branch nonspecial
+				now <- getCurrentTime	
+				pushToRemotes thisThread now st Nothing nonspecial
 		addScanRemotes scanremotes rs
+	where
+		dir = mnt_dir mntent
+		syncalert rs = Alert
+			{ alertClass = Activity
+			, alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
+			, alertMessage = StringAlert $ unwords
+				["I noticed you plugged in", dir,
+				 " -- let's get it in sync!"]
+			, alertBlockDisplay = True
+			}
+			
 
 {- Finds remotes located underneath the mount point.
  -

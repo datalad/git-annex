@@ -12,6 +12,7 @@ import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
 import qualified Remote
@@ -31,9 +32,18 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
 		liftIO $ debug thisThread ["starting scan of", show r]
-		scan st dstatus transferqueue r
+		alertWhile dstatus (scanalert r) $
+			scan st dstatus transferqueue r
 		liftIO $ debug thisThread ["finished scan of", show r]
 	where
+		scanalert r = Alert
+			{ alertClass = Activity
+			, alertHeader = Just $ "Scanning " ++ Remote.name r
+			, alertMessage = StringAlert $ unwords
+				[ "Ensuring that ", Remote.name r
+				, "is fully in sync." ]
+			, alertBlockDisplay = True
+			}
 
 {- This is a naive scan through the git work tree.
  - 
