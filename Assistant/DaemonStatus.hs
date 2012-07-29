@@ -9,6 +9,7 @@ module Assistant.DaemonStatus where
 
 import Common.Annex
 import Assistant.ThreadedMonad
+import Assistant.Alert
 import Utility.ThreadScheduler
 import Utility.TempFile
 import Utility.NotificationBroadcaster
@@ -21,6 +22,7 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+import Control.Exception
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan
@@ -33,45 +35,52 @@ data DaemonStatus = DaemonStatus
 	, lastSanityCheck :: Maybe POSIXTime
 	-- Currently running file content transfers
 	, currentTransfers :: TransferMap
+	-- Messages to display to the user.
+	, alertMap :: AlertMap
+	, alertMax :: AlertId
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
 	-- Broadcasts notifications about all changes to the DaemonStatus
 	, changeNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when queued or running transfers change.
+	-- Broadcasts notifications when queued or current transfers change.
 	, transferNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when there's a change to the alerts
+	, alertNotifier :: NotificationBroadcaster
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
+
+type AlertMap = M.Map AlertId Alert
+type AlertId = Integer
 
 {- This TMVar is never left empty, so accessing it will never block. -}
 type DaemonStatusHandle = TMVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
-newDaemonStatus = do
-	cn <- newNotificationBroadcaster
-	tn <- newNotificationBroadcaster
-	return $ DaemonStatus
-		{ scanComplete = False
-		, lastRunning = Nothing
-		, sanityCheckRunning = False
-		, lastSanityCheck = Nothing
-		, currentTransfers = M.empty
-		, knownRemotes = []
-		, changeNotifier = cn
-		, transferNotifier = tn
-		}
+newDaemonStatus = DaemonStatus
+	<$> pure False
+	<*> pure Nothing
+	<*> pure False
+	<*> pure Nothing
+	<*> pure M.empty
+	<*> pure M.empty
+	<*> pure 0
+	<*> pure []
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
 
 getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
 getDaemonStatus = atomically . readTMVar
 
 modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
-modifyDaemonStatus_ handle a = modifyDaemonStatus handle $ \s -> (a s, ())
+modifyDaemonStatus_ dstatus a = modifyDaemonStatus dstatus $ \s -> (a s, ())
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
-modifyDaemonStatus handle a = do
+modifyDaemonStatus dstatus a = do
 	(s, b) <- atomically $ do
-		r@(s, _) <- a <$> takeTMVar handle
-		putTMVar handle s
+		r@(s, _) <- a <$> takeTMVar dstatus
+		putTMVar dstatus s
 		return r
 	sendNotification $ changeNotifier s
 	return b
@@ -104,16 +113,16 @@ startDaemonStatus = do
  - frequently than once every ten minutes.
  -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-daemonStatusThread st handle = do
+daemonStatusThread st dstatus = do
 	notifier <- newNotificationHandle
-		=<< changeNotifier <$> getDaemonStatus handle
+		=<< changeNotifier <$> getDaemonStatus dstatus
 	checkpoint
 	runEvery (Seconds tenMinutes) $ do
 		waitNotification notifier
 		checkpoint
 	where
 		checkpoint = do
-			status <- getDaemonStatus handle
+			status <- getDaemonStatus dstatus
 			file <- runThreadState st $ fromRepo gitAnnexDaemonStatusFile
 			writeDaemonStatusFile file status
 
@@ -197,5 +206,30 @@ removeTransfer dstatus t =
 
 {- Send a notification when a transfer is changed. -}
 notifyTransfer :: DaemonStatusHandle -> IO ()
-notifyTransfer handle = sendNotification
-	=<< transferNotifier <$> atomically (readTMVar handle)
+notifyTransfer dstatus = sendNotification
+	=<< transferNotifier <$> atomically (readTMVar dstatus)
+
+{- Send a notification when alerts are changed. -}
+notifyAlert :: DaemonStatusHandle -> IO ()
+notifyAlert dstatus = sendNotification
+	=<< alertNotifier <$> atomically (readTMVar dstatus)
+
+{- Returns the alert's identifier, which can be used to remove it. -}
+addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
+addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
+	where
+		go s = (s { alertMax = i, alertMap = m }, i)
+			where
+				i = alertMax s + 1
+				m = M.insertWith' const i alert (alertMap s)
+
+removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
+removeAlert dstatus i = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { alertMap = M.delete i (alertMap s) }
+
+{- Displays an alert while performing an activity, then removes it. -}
+alertWhile :: DaemonStatusHandle -> Alert -> IO a -> IO a
+alertWhile dstatus alert a = do
+	let alert' = alert { alertClass = Activity }
+	bracket (addAlert dstatus alert') (removeAlert dstatus) (const a)
