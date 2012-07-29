@@ -137,7 +137,11 @@ genRandomToken = do
 			Right (s, _) -> showDigest $ sha512 $ L.fromChunks [s]
 
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
- - against a token extracted from the Yesod application. -}
+ - against a token extracted from the Yesod application.
+ -
+ - Note that the usual Yesod error page is bypassed on error, to avoid
+ - possibly leaking the auth token in urls on that page!
+ -}
 checkAuthToken :: forall t sub. (t -> T.Text) -> GHandler sub t AuthResult
 checkAuthToken extractToken = do
 	webapp <- getYesod
@@ -145,7 +149,7 @@ checkAuthToken extractToken = do
 	let params = reqGetParams req
 	if lookup "auth" params == Just (extractToken webapp)
 		then return Authorized
-		else return AuthenticationRequired
+		else sendResponseStatus unauthorized401 ()
 
 {- A Yesod joinPath method, which adds an auth cgi parameter to every
  - url matching a predicate, containing a token extracted from the
