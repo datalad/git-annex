@@ -1,0 +1,18 @@
+<div .span3 ##{ident}>
+  <div .sidebar-nav>
+    $maybe msg <- mmsg
+      <div .alert .alert-info>
+        <a .close data-dismiss="alert" href="#">&times;</a>
+          #{msg}
+    <div .alert .alert-info>
+      <a .close data-dismiss="alert" href="#">&times;</a>
+      <b>This is just a demo.</b> If this were not just a demo,
+      I'd not be filling this sidebar with silly alerts.
+    <div .alert .alert-success>
+      <a .close data-dismiss="alert" href="#">&times;</a>
+      <b>Well done!</b>
+      You successfully read this important alert message.
+    <div .alert .alert-error>
+      <a .close data-dismiss="alert" href="#">&times;</a>
+      <b>Whoops!</b>
+      Unable to connect to blah blah.. #{date}

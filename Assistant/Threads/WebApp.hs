@@ -33,6 +33,7 @@ import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text (Text, pack, unpack)
 import qualified Data.Map as M
+import Data.Time.Clock
 
 thisThread :: String
 thisThread = "WebApp"
@@ -46,6 +47,10 @@ data WebApp = WebApp
 	, getStatic :: Static
 	}
 
+getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
+getNotificationBroadcaster webapp = notificationBroadcaster
+		<$> getDaemonStatus (daemonStatus webapp)
+
 staticFiles "static"
 
 mkYesod "WebApp" [parseRoutes|
@@ -53,6 +58,7 @@ mkYesod "WebApp" [parseRoutes|
 /noscript NoScriptR GET
 /noscriptauto NoScriptAutoR GET
 /transfers/#NotificationId TransfersR GET
+/sidebar/#NotificationId SideBarR GET
 /config ConfigR GET
 /static StaticR Static getStatic
 |]
@@ -62,8 +68,7 @@ instance PathPiece NotificationId where
     fromPathPiece = readish . unpack
 
 instance Yesod WebApp where
-	defaultLayout widget = do
-		mmsg <- getMessage
+	defaultLayout content = do
 		webapp <- getYesod
 		page <- widgetToPageContent $ do
 			addStylesheet $ StaticR css_bootstrap_css
@@ -93,14 +98,12 @@ instance Yesod WebApp where
  - replaced when it's updated.
  - 
  - Updating is done by getting html from the gethtml route.
- - Or, the home route is used if the whole page has to be refreshed to
- - update.
  -
  - ms_delay is how long to delay between AJAX updates
  - ms_startdelay is how long to delay before updating with AJAX at the start
  -}
-autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Widget
-autoUpdate ident gethtml home ms_delay ms_startdelay = do
+autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
+autoUpdate ident gethtml ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
 	$(widgetFile "longpolling")
@@ -120,39 +123,6 @@ transfersDisplay warnNoScript = do
 transfersDisplayIdent :: Text
 transfersDisplayIdent = "transfers"
 
-getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
-getNotificationBroadcaster webapp = notificationBroadcaster
-		<$> getDaemonStatus (daemonStatus webapp)
-
-dashboard :: Bool -> Widget
-dashboard warnNoScript = transfersDisplay warnNoScript
-
-getHomeR :: Handler RepHtml
-getHomeR = defaultLayout $ do
-	{- Set up automatic updates for the transfers display. -}
-	webapp <- lift getYesod
-	nid <- liftIO $ notificationHandleToId <$>
-		(newNotificationHandle =<< getNotificationBroadcaster webapp)
-	autoUpdate transfersDisplayIdent (TransfersR nid) HomeR
-		(10 :: Int) (10 :: Int)
-	
-	dashboard True
-
-{- Same as HomeR, except with no javascript, so it doesn't allocate
- - new resources each time the page is refreshed, and with autorefreshing
- - via meta refresh. -}
-getNoScriptAutoR :: Handler RepHtml
-getNoScriptAutoR = defaultLayout $ do
-	let ident = NoScriptR
-	let delayseconds = 3 :: Int
-	let this = NoScriptAutoR
-	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
-	dashboard False
-
-getNoScriptR :: Handler RepHtml
-getNoScriptR = defaultLayout $
-	dashboard True
-
 {- Called by client to get a display of currently in process transfers.
  -
  - Returns a div, which will be inserted into the calling page.
@@ -171,8 +141,70 @@ getTransfersR nid = do
 	page <- widgetToPageContent $ transfersDisplay False
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
+sideBarDisplay :: Bool -> Widget
+sideBarDisplay noScript = do
+	date <- liftIO $ show <$> getCurrentTime
+	ident <- lift newIdent
+	mmsg <- lift getMessage
+	$(widgetFile "sidebar")
+	unless noScript $ do
+		{- Set up automatic updates of the sidebar. -}
+		webapp <- lift getYesod
+		nid <- liftIO $ notificationHandleToId <$>
+			(newNotificationHandle =<< getNotificationBroadcaster webapp)
+		autoUpdate ident (SideBarR nid) (10 :: Int) (10 :: Int)
+
+{- Called by client to get a sidebar display.
+ -
+ - Returns a div, which will be inserted into the calling page.
+ -
+ - Note that the head of the widget is not included, only its
+ - body is. To get the widget head content, the widget is also 
+ - inserted onto all pages.
+ -}
+getSideBarR :: NotificationId -> Handler RepHtml
+getSideBarR nid = do
+	{- Block until there is a change from last time. -}
+	webapp <- getYesod
+	b <- liftIO $ getNotificationBroadcaster webapp
+	liftIO $ waitNotification $ notificationHandleFromId b nid
+
+	page <- widgetToPageContent $ sideBarDisplay True
+	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+
+dashboard :: Bool -> Bool -> Widget
+dashboard noScript warnNoScript = do
+	sideBarDisplay noScript
+	transfersDisplay warnNoScript
+
+getHomeR :: Handler RepHtml
+getHomeR = defaultLayout $ do
+	{- Set up automatic updates for the transfers display. -}
+	webapp <- lift getYesod
+	nid <- liftIO $ notificationHandleToId <$>
+		(newNotificationHandle =<< getNotificationBroadcaster webapp)
+	autoUpdate transfersDisplayIdent (TransfersR nid) (10 :: Int) (10 :: Int)
+	
+	dashboard False True
+
+{- Same as HomeR, except with no javascript, so it doesn't allocate
+ - new resources each time the page is refreshed, and with autorefreshing
+ - via meta refresh. -}
+getNoScriptAutoR :: Handler RepHtml
+getNoScriptAutoR = defaultLayout $ do
+	let ident = NoScriptR
+	let delayseconds = 3 :: Int
+	let this = NoScriptAutoR
+	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
+	dashboard True False
+
+getNoScriptR :: Handler RepHtml
+getNoScriptR = defaultLayout $
+	dashboard True True
+
 getConfigR :: Handler RepHtml
 getConfigR = defaultLayout $ do
+	sideBarDisplay False
 	setTitle "configuration"
 	[whamlet|<a href="@{HomeR}">main|]
 

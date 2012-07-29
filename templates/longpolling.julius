@@ -9,7 +9,7 @@
 
 numerrs=0;
 
-$.LongPoll = (function() {
+$.LongPoll#{ident} = (function() {
 	return {
 		send : function() {           
 			$.ajax({
@@ -17,7 +17,7 @@ $.LongPoll = (function() {
 				'dataType': 'html',
 				'success': function(data, status, jqxhr) {
 					$('##{ident}').replaceWith(data);
-					setTimeout($.LongPoll.send, #{show delay});
+					setTimeout($.LongPoll#{ident}.send, #{show delay});
 					numerrs=0;
 				},
 				'error': function(jqxhr, msg, e) {
@@ -26,7 +26,7 @@ $.LongPoll = (function() {
 						window.close();
 					}
 					else {
-						setTimeout($.LongPoll.send, #{show delay});
+						setTimeout($.LongPoll#{ident}.send, #{show delay});
 					}
 				},
 			});
@@ -35,7 +35,7 @@ $.LongPoll = (function() {
 }());
 
 $(document).bind('ready.app', function() {
-	setTimeout($.LongPoll.send, #{show startdelay});
+	setTimeout($.LongPoll#{ident}.send, #{show startdelay});
 });
 
 })( jQuery );
