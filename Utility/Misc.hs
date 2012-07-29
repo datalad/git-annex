@@ -45,3 +45,10 @@ segment p l = map reverse $ go [] [] l
 		go c r (i:is)
 			| p i = go [] (c:r) is
 			| otherwise = go (i:c) r is
+
+{- Given two orderings, returns the second if the first is EQ and returns
+ - the first otherwise. -}
+thenOrd :: Ordering -> Ordering -> Ordering
+thenOrd EQ x = x
+thenOrd x _ = x
+{-# INLINE thenOrd #-}

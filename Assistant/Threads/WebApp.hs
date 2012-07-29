@@ -34,7 +34,6 @@ import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text (Text, pack, unpack)
 import qualified Data.Map as M
-import Data.Function
 
 thisThread :: String
 thisThread = "WebApp"
@@ -158,10 +157,9 @@ sideBarDisplay noScript = do
 	
 		{- Add newest 10 alerts to the sidebar. -}
 		webapp <- lift getYesod
-		alerts <- M.toList . alertMap
+		alertpairs <- M.toList . alertMap
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
-		mapM_ renderalert $
-			take 10 $ reverse $ sortBy (compare `on` fst) alerts
+		mapM_ renderalert $ take 10 $ sortAlertPairs alertpairs
 	ident <- lift newIdent
 	$(widgetFile "sidebar")
 
@@ -180,7 +178,7 @@ sideBarDisplay noScript = do
 		renderalert (alertid, alert) = addalert
 			(show alertid)
 			-- Activity alerts auto-close
-			(not noScript && alertClass alert /= Activity)
+			(alertClass alert /= Activity)
 			(alertBlockDisplay alert)
 			(bootstrapclass $ alertClass alert)
 			(alertHeader alert)

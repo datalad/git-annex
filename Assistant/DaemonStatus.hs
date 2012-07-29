@@ -51,7 +51,6 @@ data DaemonStatus = DaemonStatus
 type TransferMap = M.Map Transfer TransferInfo
 
 type AlertMap = M.Map AlertId Alert
-type AlertId = Integer
 
 {- This TMVar is never left empty, so accessing it will never block. -}
 type DaemonStatusHandle = TMVar DaemonStatus

@@ -75,13 +75,18 @@ watchThread st dstatus transferqueue changechan = do
 startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
 startupScan st dstatus scanner = do
 	runThreadState st $ showAction "scanning"
-	r <- alertWhile dstatus startupScanAlert scanner
-	modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
+	r <- alertWhile dstatus startupScanAlert $ do
+		r <- scanner
+		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
-	-- Notice any files that were deleted before watching was started.
-	runThreadState st $ do
-		inRepo $ Git.Command.run "add" [Param "--update"]
-		showAction "started"
+		-- Notice any files that were deleted before
+		-- watching was started.
+		runThreadState st $ do
+			inRepo $ Git.Command.run "add" [Param "--update"]
+			showAction "started"
+		return r
+	
+	void $ addAlert dstatus runningAlert
 
 	return r
 

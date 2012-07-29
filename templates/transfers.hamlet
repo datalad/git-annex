@@ -1,6 +1,5 @@
 <div .span9 ##{ident}>
   $if null transfers
-    <h2>No current transfers
   $else
     <h2>Transfers
     $forall (transfer, info) <- transfers
