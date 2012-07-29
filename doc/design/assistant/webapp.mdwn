@@ -27,15 +27,14 @@ The webapp is a web server that displays a shiny interface.
 * there could be a UI to export a file, which would make it be served up
   over http by the web app
 * Display any relevant warning messages. One is the `inotify max_user_watches`
-  exceeded message. Need to lift such messages into DaemonStatus
-  so the WebApp can include them in its rendering of DaemonStatus.
+  exceeded message.
 
 ## implementation
 
-* perhaps define a custom `errorHandler`, which could avoid the potential
-  of leaking auth tokens on error pages. Or make the test suite test for
-  leakage.
 * possibly lose the ugly auth= token past the first page,
   and use a client-side session. It could be encrypted using the token
   as the `encryptKey`. Note: Would need to set the session duration
   to infinite (how?)
+* Fix notification handle leakage on pages other than the main page.
+  The javascript should use AJAX to request handles, that way
+  they won't be allocated at all in noscript.
