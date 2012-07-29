@@ -177,8 +177,7 @@ sideBarDisplay noScript = do
 
 		renderalert (alertid, alert) = addalert
 			(show alertid)
-			-- Activity alerts auto-close
-			(alertClass alert /= Activity)
+			(alertClosable alert)
 			(alertBlockDisplay alert)
 			(bootstrapclass $ alertClass alert)
 			(alertHeader alert)

@@ -28,6 +28,7 @@ data Alert = Alert
 	, alertHeader :: Maybe String
 	, alertMessage :: AlertMessage
 	, alertBlockDisplay :: Bool
+	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
 	}
 
@@ -36,11 +37,12 @@ type AlertId = Integer
 
 type AlertPair = (AlertId, Alert)
 
-data AlertPriority = Low | Medium | High
+data AlertPriority = Low | Medium | High | Pinned
 	deriving (Eq, Ord)
 
 {- The desired order is the reverse of:
  -
+ - - Pinned alerts
  - - High priority alerts, newest first
  - - Medium priority Activity, newest first (mostly used for Activity)
  - - Low priority alwerts, newest first
@@ -57,22 +59,30 @@ compareAlertPairs
 sortAlertPairs :: [AlertPair] -> [AlertPair]
 sortAlertPairs = reverse . sortBy compareAlertPairs
 
-activityAlert :: Maybe String -> String -> Alert
-activityAlert header message = Alert
+baseActivityAlert :: Alert
+baseActivityAlert = Alert
 	{ alertClass = Activity
-	, alertHeader = header
-	, alertMessage = StringAlert message
+	, alertHeader = Nothing
+	, alertMessage = StringAlert ""
 	, alertBlockDisplay = False
+	, alertClosable = False
 	, alertPriority = Medium
+	}
+
+activityAlert :: Maybe String -> String -> Alert
+activityAlert header message = baseActivityAlert
+	{ alertHeader = header
+	, alertMessage = StringAlert message
 	}
 
 startupScanAlert :: Alert
 startupScanAlert = activityAlert Nothing "Performing startup scan"
 
 runningAlert :: Alert
-runningAlert = (activityAlert Nothing "Running")
+runningAlert = baseActivityAlert
 	{ alertClass = Success
-	, alertPriority = High -- pin above the other activity alerts
+	, alertMessage = StringAlert "Running"
+	, alertPriority = Pinned
 	}
 
 pushAlert :: [Remote] -> Alert
@@ -84,9 +94,8 @@ pushRetryAlert rs = activityAlert (Just "Retrying sync") $
 	"with " ++ unwords (map Remote.name rs) ++ ", which failed earlier."
 
 syncMountAlert :: FilePath -> [Remote] -> Alert
-syncMountAlert dir rs = Alert
-	{ alertClass = Activity
-	, alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
+syncMountAlert dir rs = baseActivityAlert
+	{ alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
 	, alertMessage = StringAlert $ unwords
 		["I noticed you plugged in"
 		, dir
@@ -97,9 +106,8 @@ syncMountAlert dir rs = Alert
         }
 
 scanAlert :: Remote -> Alert
-scanAlert r = Alert
-	{ alertClass = Activity
-	, alertHeader = Just $ "Scanning " ++ Remote.name r
+scanAlert r = baseActivityAlert
+	{ alertHeader = Just $ "Scanning " ++ Remote.name r
 	, alertMessage = StringAlert $ unwords
 		[ "Ensuring that ", Remote.name r
 		, "is fully in sync." ]
@@ -122,4 +130,5 @@ sanityCheckFixAlert msg = Alert
 		]
 	, alertBlockDisplay = True
 	, alertPriority = High
+	, alertClosable = True
 	}
