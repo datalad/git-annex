@@ -50,6 +50,7 @@ staticFiles "static"
 
 mkYesod "WebApp" [parseRoutes|
 / HomeR GET
+/noscript NoScriptR GET
 /transfers/#NotificationId TransfersR GET
 /config ConfigR GET
 /static StaticR Static getStatic
@@ -101,7 +102,7 @@ instance Yesod WebApp where
 autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Int -> Widget
 autoUpdate ident gethtml home ms_delay ms_startdelay ms_refreshdelay = do
 	{- Fallback refreshing is provided for non-javascript browsers. -}
-	let delayseconds = show $ ms_to_seconds ms_refreshdelay
+	let delayseconds = ms_to_seconds ms_refreshdelay
 	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
 
 	{- Use long polling to update the transfers display. -}
@@ -131,6 +132,9 @@ getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
 getNotificationBroadcaster webapp = notificationBroadcaster
 		<$> getDaemonStatus (daemonStatus webapp)
 
+dashboard :: Widget
+dashboard = transfersDisplay
+
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
 	{- Set up automatic updates for the transfers display. -}
@@ -139,7 +143,17 @@ getHomeR = defaultLayout $ do
 		(newNotificationHandle =<< getNotificationBroadcaster webapp)
 	autoUpdate transfersDisplayIdent (TransfersR nid) HomeR
 		(10 :: Int) (10 :: Int) (3000 :: Int)
-	transfersDisplay
+	
+	dashboard
+
+{- Same as HomeR, except with no javascript, so it doesn't allocate
+ - new resources each time the page is refreshed. -}
+getNoScriptR :: Handler RepHtml
+getNoScriptR = defaultLayout $ do
+	let ident = NoScriptR
+	let delayseconds = 3 :: Int
+	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
+	dashboard
 
 {- Called by client to get a display of currently in process transfers.
  -
