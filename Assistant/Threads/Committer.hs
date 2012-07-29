@@ -190,6 +190,13 @@ safeToAdd st changes = runThreadState st $
 			tmpdir <- fromRepo gitAnnexTmpDir
 			openfiles <- S.fromList . map fst3 . filter openwrite <$>
 				liftIO (Lsof.queryDir tmpdir)
+
+			liftIO $ debug thisThread
+				[ "checking changes:"
+				, show changes
+				, "vs open files:"
+				, show openfiles
+				]
 			
 			let checked = map (check openfiles) changes
 
