@@ -1,5 +1,5 @@
 
-// Uses long-polling to update a div with id=#{updating}
+// Uses long-polling to update a div with id=#{ident}
 // The gethtml route should return a new div, with the same id.
 //
 // Maximum update frequency is controlled by #{startdelay}
@@ -16,7 +16,7 @@ $.LongPoll = (function() {
 				'url': '@{gethtml}',
 				'dataType': 'html',
 				'success': function(data, status, jqxhr) {
-					$('##{updating}').replaceWith(data);
+					$('##{ident}').replaceWith(data);
 					setTimeout($.LongPoll.send, #{delay});
 					numerrs=0;
 				},

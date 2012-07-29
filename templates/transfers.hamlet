@@ -1,4 +1,4 @@
-<span ##{updating}>
+<span ##{ident}>
   <div .span9>
     $if null transfers
       <h2>No current transfers
@@ -25,6 +25,3 @@
                       <small .pull-right>queued (#{size})</small>
           <div .progress .progress-striped>
             <div .bar style="width: #{percent};">
-  <footer>
-    <span>
-      polled at #{time}
