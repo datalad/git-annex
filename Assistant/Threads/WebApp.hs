@@ -95,14 +95,14 @@ instance Yesod WebApp where
  - Or, the home route is used if the whole page has to be refreshed to
  - update.
  -
- - ms_delay is how long to delay between updates.
- - ms_startdelay is how long to delay before updating the widget at the
- - state.
+ - ms_delay is how long to delay between AJAX updates
+ - ms_startdelay is how long to delay before updating with AJAX at the start
+ - ms_refreshdelay is how long to delay between refreshes, when not using AJAX
  -}
-autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Widget
-autoUpdate updating gethtml home ms_delay ms_startdelay = do
+autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Int -> Widget
+autoUpdate updating gethtml home ms_delay ms_startdelay ms_refreshdelay = do
 	{- Fallback refreshing is provided for non-javascript browsers. -}
-	let delayseconds = show $ ms_to_seconds ms_delay
+	let delayseconds = show $ ms_to_seconds ms_refreshdelay
 	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
 
 	{- Use long polling to update the status display. -}
@@ -130,7 +130,7 @@ statusDisplay = do
 	
 	nid <- liftIO $ notificationHandleToId <$>
 		(newNotificationHandle =<< getNotificationBroadcaster webapp)
-	autoUpdate updating (StatusR nid) HomeR (3000 :: Int) (40 :: Int)
+	autoUpdate updating (StatusR nid) HomeR (10 :: Int) (10 :: Int) (3000 :: Int)
 
 getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
 getNotificationBroadcaster webapp = notificationBroadcaster
