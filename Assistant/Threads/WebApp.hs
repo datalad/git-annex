@@ -14,6 +14,7 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.Alert hiding (Widget)
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
@@ -33,7 +34,7 @@ import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text (Text, pack, unpack)
 import qualified Data.Map as M
-import Data.Time.Clock
+import Data.Function
 
 thisThread :: String
 thisThread = "WebApp"
@@ -151,14 +152,47 @@ getTransfersR nid = do
 
 sideBarDisplay :: Bool -> Widget
 sideBarDisplay noScript = do
-	date <- liftIO $ show <$> getCurrentTime
+	let content = do
+		{- Any yesod message appears as the first alert. -}
+		maybe noop rendermessage =<< lift getMessage
+	
+		{- Add newest 10 alerts to the sidebar. -}
+		webapp <- lift getYesod
+		alerts <- M.toList . alertMap
+			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
+		mapM_ renderalert $
+			take 10 $ reverse $ sortBy (compare `on` fst) alerts
 	ident <- lift newIdent
-	mmsg <- lift getMessage
 	$(widgetFile "sidebar")
+
 	unless noScript $ do
-		{- Set up automatic updates of the sidebar. -}
-		nid <- lift $ newNotifier transferNotifier
+		{- Set up automatic updates of the sidebar
+		 - when alerts come in. -}
+		nid <- lift $ newNotifier alertNotifier
 		autoUpdate ident (SideBarR nid) (10 :: Int) (10 :: Int)
+	where
+		bootstrapclass Activity = "alert-info"
+		bootstrapclass Warning = "alert"
+		bootstrapclass Error = "alert-error"
+		bootstrapclass Success = "alert-success"
+		bootstrapclass Message = "alert-info"
+
+		renderalert (alertid, alert) = addalert
+			(show alertid)
+			-- Activity alerts auto-close
+			(not noScript && alertClass alert /= Activity)
+			(alertBlockDisplay alert)
+			(bootstrapclass $ alertClass alert)
+			(alertHeader alert)
+			$ case alertMessage alert of
+				StringAlert s -> [whamlet|#{s}|]
+				WidgetAlert w -> w
+
+		rendermessage msg = addalert "yesodmessage" True False
+			"alert-info" Nothing [whamlet|#{msg}|]
+
+		addalert :: String -> Bool -> Bool -> Text -> Maybe String -> Widget -> Widget
+		addalert alertid closable block divclass heading widget = $(widgetFile "alert")
 
 {- Called by client to get a sidebar display.
  -

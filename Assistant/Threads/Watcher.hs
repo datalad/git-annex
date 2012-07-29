@@ -19,6 +19,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.TransferQueue
+import Assistant.Alert
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
@@ -60,7 +61,7 @@ watchThread st dstatus transferqueue changechan = do
 	void $ watchDir "." ignored hooks startup
 	debug thisThread [ "watching", "."]
 	where
-		startup = statupScan st dstatus
+		startup = startupScan st dstatus
 		hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
 		hooks = WatchHooks
 			{ addHook = hook onAdd
@@ -71,11 +72,12 @@ watchThread st dstatus transferqueue changechan = do
 			}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
-statupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
-statupScan st dstatus scanner = do
+startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
+startupScan st dstatus scanner = do
 	runThreadState st $
 		showAction "scanning"
-	r <- scanner
+	let alert = activityAlert Nothing "Performing startup scan"
+	r <- alertWhile dstatus alert scanner
 	modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 	-- Notice any files that were deleted before watching was started.
