@@ -38,14 +38,13 @@ transfererThread st dstatus transferqueue slots = go
 			ifM (runThreadState st $ shouldTransfer dstatus t info)
 				( do
 					debug thisThread [ "Transferring:" , show t ]
-					notifyDaemonStatusChange dstatus
+					notifyTransfer dstatus
 					transferThread st dstatus slots t info
 				, do
 					debug thisThread [ "Skipping unnecessary transfer:" , show t ]
 					-- getNextTransfer added t to the
 					-- daemonstatus's transfer map.
 					void $ removeTransfer dstatus t
-					notifyDaemonStatusChange dstatus
 				)
 			go
 

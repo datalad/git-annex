@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
@@ -47,9 +47,20 @@ data WebApp = WebApp
 	, getStatic :: Static
 	}
 
-getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
-getNotificationBroadcaster webapp = notificationBroadcaster
-		<$> getDaemonStatus (daemonStatus webapp)
+waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
+waitNotifier selector nid = do
+	notifier <- getNotifier selector
+	liftIO $ waitNotification $ notificationHandleFromId notifier nid
+
+newNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationId
+newNotifier selector = do
+	notifier <- getNotifier selector
+	liftIO $ notificationHandleToId <$> newNotificationHandle notifier
+
+getNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationBroadcaster
+getNotifier selector = do
+	webapp <- getYesod
+	liftIO $ selector <$> getDaemonStatus (daemonStatus webapp)
 
 staticFiles "static"
 
@@ -133,10 +144,7 @@ transfersDisplayIdent = "transfers"
  -}
 getTransfersR :: NotificationId -> Handler RepHtml
 getTransfersR nid = do
-	{- Block until there is a change from last time. -}
-	webapp <- getYesod
-	b <- liftIO $ getNotificationBroadcaster webapp
-	liftIO $ waitNotification $ notificationHandleFromId b nid
+	waitNotifier transferNotifier nid
 
 	page <- widgetToPageContent $ transfersDisplay False
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
@@ -149,9 +157,7 @@ sideBarDisplay noScript = do
 	$(widgetFile "sidebar")
 	unless noScript $ do
 		{- Set up automatic updates of the sidebar. -}
-		webapp <- lift getYesod
-		nid <- liftIO $ notificationHandleToId <$>
-			(newNotificationHandle =<< getNotificationBroadcaster webapp)
+		nid <- lift $ newNotifier transferNotifier
 		autoUpdate ident (SideBarR nid) (10 :: Int) (10 :: Int)
 
 {- Called by client to get a sidebar display.
@@ -164,10 +170,7 @@ sideBarDisplay noScript = do
  -}
 getSideBarR :: NotificationId -> Handler RepHtml
 getSideBarR nid = do
-	{- Block until there is a change from last time. -}
-	webapp <- getYesod
-	b <- liftIO $ getNotificationBroadcaster webapp
-	liftIO $ waitNotification $ notificationHandleFromId b nid
+	waitNotifier transferNotifier nid
 
 	page <- widgetToPageContent $ sideBarDisplay True
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
@@ -180,9 +183,7 @@ dashboard noScript warnNoScript = do
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
 	{- Set up automatic updates for the transfers display. -}
-	webapp <- lift getYesod
-	nid <- liftIO $ notificationHandleToId <$>
-		(newNotificationHandle =<< getNotificationBroadcaster webapp)
+	nid <- lift $ newNotifier transferNotifier
 	autoUpdate transfersDisplayIdent (TransfersR nid) (10 :: Int) (10 :: Int)
 	
 	dashboard False True

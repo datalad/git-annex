@@ -95,7 +95,7 @@ enqueue schedule q dstatus t info
 				void $ modqueue (queue q) new
 				void $ modifyTVar' (queuesize q) succ
 				void $ modifyTVar' (queuelist q) modlist
-			void $ notifyDaemonStatusChange dstatus
+			void $ notifyTransfer dstatus
 
 {- Adds a transfer to the queue. -}
 queueTransfer :: Schedule -> TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()

@@ -35,9 +35,10 @@ data DaemonStatus = DaemonStatus
 	, currentTransfers :: TransferMap
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
-	-- Clients can use this to wait on changes to the DaemonStatus
-	-- and other related things like the TransferQueue.
-	, notificationBroadcaster :: NotificationBroadcaster
+	-- Broadcasts notifications about all changes to the DaemonStatus
+	, changeNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when queued or running transfers change.
+	, transferNotifier :: NotificationBroadcaster
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
@@ -47,7 +48,8 @@ type DaemonStatusHandle = TMVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = do
-	nb <- newNotificationBroadcaster
+	cn <- newNotificationBroadcaster
+	tn <- newNotificationBroadcaster
 	return $ DaemonStatus
 		{ scanComplete = False
 		, lastRunning = Nothing
@@ -55,7 +57,8 @@ newDaemonStatus = do
 		, lastSanityCheck = Nothing
 		, currentTransfers = M.empty
 		, knownRemotes = []
-		, notificationBroadcaster = nb
+		, changeNotifier = cn
+		, transferNotifier = tn
 		}
 
 getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
@@ -66,18 +69,12 @@ modifyDaemonStatus_ handle a = modifyDaemonStatus handle $ \s -> (a s, ())
 
 modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
 modifyDaemonStatus handle a = do
-	(b, nb) <- atomically $ do
-		(s, b) <- a <$> takeTMVar handle
+	(s, b) <- atomically $ do
+		r@(s, _) <- a <$> takeTMVar handle
 		putTMVar handle s
-		return $ (b, notificationBroadcaster s)
-	sendNotification nb
+		return r
+	sendNotification $ changeNotifier s
 	return b
-
-{- Can be used to send a notification that the daemon status, or other
- - associated thing, like the TransferQueue, has changed. -}
-notifyDaemonStatusChange :: DaemonStatusHandle -> IO ()
-notifyDaemonStatusChange handle = sendNotification
-	=<< notificationBroadcaster <$> atomically (readTMVar handle)
 
 {- Updates the cached ordered list of remotes from the list in Annex
  - state. -}
@@ -108,11 +105,11 @@ startDaemonStatus = do
  -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
 daemonStatusThread st handle = do
-	bhandle <- newNotificationHandle
-		=<< notificationBroadcaster <$> getDaemonStatus handle
+	notifier <- newNotificationHandle
+		=<< changeNotifier <$> getDaemonStatus handle
 	checkpoint
 	runEvery (Seconds tenMinutes) $ do
-		waitNotification bhandle
+		waitNotification notifier
 		checkpoint
 	where
 		checkpoint = do
@@ -182,15 +179,23 @@ adjustTransfersSTM dstatus a = do
 
 {- Variant that does send notifications. -}
 adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
-adjustTransfers dstatus a = modifyDaemonStatus_ dstatus $
-	\s -> s { currentTransfers = a (currentTransfers s) }
+adjustTransfers dstatus a = 
+	notifyTransfer dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { currentTransfers = a (currentTransfers s) }
 
 {- Removes a transfer from the map, and returns its info. -}
 removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
-removeTransfer dstatus t = modifyDaemonStatus dstatus go
+removeTransfer dstatus t = 
+	notifyTransfer dstatus `after` modifyDaemonStatus dstatus go
 	where
 		go s =
 			let (info, ts) = M.updateLookupWithKey
 				(\_k _v -> Nothing)
 				t (currentTransfers s)
 			in (s { currentTransfers = ts }, info)
+
+{- Send a notification when a transfer is changed. -}
+notifyTransfer :: DaemonStatusHandle -> IO ()
+notifyTransfer handle = sendNotification
+	=<< transferNotifier <$> atomically (readTMVar handle)
