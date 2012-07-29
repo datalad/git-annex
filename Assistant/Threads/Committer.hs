@@ -58,6 +58,7 @@ commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 
 				else refill readychanges
 		else refill changes
 	where
+		refill [] = noop
 		refill cs = do
 			debug thisThread
 				[ "delaying commit of"
