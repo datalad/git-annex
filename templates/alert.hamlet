@@ -1,0 +1,9 @@
+<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid}>
+  $if closable
+    <a .close data-dismiss="alert" href="#">&times;</a>
+  $maybe h <- heading
+    $if block
+      <h4 class="alert-heading">#{h}</h4>
+    $else
+      <strong>#{h}</strong>
+  ^{widget}
