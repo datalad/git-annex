@@ -165,7 +165,7 @@ handleMount st dstatus scanremotes mntent = do
 		branch <- runThreadState st $ Command.Sync.currentBranch
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
 		unless (null nonspecial) $
-			alertWhile dstatus (syncalert nonspecial) $ do
+			alertWhile dstatus (syncMountAlert dir nonspecial) $ do
 				debug thisThread ["syncing with", show nonspecial]
 				runThreadState st $ manualPull branch nonspecial
 				now <- getCurrentTime	
@@ -173,15 +173,6 @@ handleMount st dstatus scanremotes mntent = do
 		addScanRemotes scanremotes rs
 	where
 		dir = mnt_dir mntent
-		syncalert rs = Alert
-			{ alertClass = Activity
-			, alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
-			, alertMessage = StringAlert $ unwords
-				["I noticed you plugged in", dir,
-				 " -- let's get it in sync!"]
-			, alertBlockDisplay = True
-			}
-			
 
 {- Finds remotes located underneath the mount point.
  -

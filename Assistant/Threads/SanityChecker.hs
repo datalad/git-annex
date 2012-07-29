@@ -31,7 +31,7 @@ sanityCheckerThread st dstatus transferqueue changechan = forever $ do
 
 	debug thisThread ["starting sanity check"]
 
-	alertWhile dstatus alert go
+	alertWhile dstatus sanityCheckAlert go
 	
 	debug thisThread ["sanity check complete"]
 	where
@@ -47,8 +47,6 @@ sanityCheckerThread st dstatus transferqueue changechan = forever $ do
 				{ sanityCheckRunning = False
 				, lastSanityCheck = Just now
 				}
-		alert = activityAlert (Just "Running daily sanity check")
-			"to make sure I've not missed anything."
 
 {- Only run one check per day, from the time of the last check. -}
 waitForNextCheck :: DaemonStatusHandle -> IO ()
@@ -87,18 +85,9 @@ check st dstatus transferqueue changechan = do
 		slop = fromIntegral tenMinutes
 		insanity msg = do
 			runThreadState st $ warning msg
-			void $ addAlert dstatus $ Alert
-			        { alertClass = Warning
-			        , alertHeader = Just "Fixed a problem"
-			        , alertMessage = StringAlert $ unwords
-					[ "The daily sanity check found and fixed a problem:"
-					, msg
-					, "If these problems persist, consider filing a bug report."
-					]
-			        , alertBlockDisplay = True
-		        }
+			void $ addAlert dstatus $ sanityCheckFixAlert msg
 		addsymlink file s = do
-			insanity $ "found unstaged symlink: " ++ file
 			Watcher.runHandler thisThread st dstatus
 				transferqueue changechan
 				Watcher.onAddSymlink file s
+			insanity $ "found unstaged symlink: " ++ file

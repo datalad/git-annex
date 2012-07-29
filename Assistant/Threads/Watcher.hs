@@ -75,7 +75,7 @@ watchThread st dstatus transferqueue changechan = do
 startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
 startupScan st dstatus scanner = do
 	runThreadState st $ showAction "scanning"
-	r <- alertWhile dstatus alert scanner
+	r <- alertWhile dstatus startupScanAlert scanner
 	modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 	-- Notice any files that were deleted before watching was started.
@@ -84,9 +84,6 @@ startupScan st dstatus scanner = do
 		showAction "started"
 
 	return r
-	
-	where
-		alert = activityAlert Nothing "Performing startup scan"
 
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName

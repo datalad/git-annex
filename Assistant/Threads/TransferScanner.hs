@@ -32,18 +32,9 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
 		liftIO $ debug thisThread ["starting scan of", show r]
-		alertWhile dstatus (scanalert r) $
+		alertWhile dstatus (scanAlert r) $
 			scan st dstatus transferqueue r
 		liftIO $ debug thisThread ["finished scan of", show r]
-	where
-		scanalert r = Alert
-			{ alertClass = Activity
-			, alertHeader = Just $ "Scanning " ++ Remote.name r
-			, alertMessage = StringAlert $ unwords
-				[ "Ensuring that ", Remote.name r
-				, "is fully in sync." ]
-			, alertBlockDisplay = True
-			}
 
 {- This is a naive scan through the git work tree.
  - 

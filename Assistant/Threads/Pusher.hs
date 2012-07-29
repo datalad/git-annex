@@ -17,7 +17,6 @@ import Assistant.DaemonStatus
 import qualified Command.Sync
 import Utility.ThreadScheduler
 import Utility.Parallel
-import qualified Remote
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -38,12 +37,10 @@ pushRetryThread st dstatus pushmap = runEvery (Seconds halfhour) $ do
 			, "failed pushes"
 			]
 		now <- getCurrentTime
-		alertWhile dstatus (alert topush) $
+		alertWhile dstatus (pushRetryAlert topush) $
 			pushToRemotes thisThread now st (Just pushmap) topush
 	where
 		halfhour = 1800
-		alert rs = activityAlert (Just "Retrying sync") $
-			"with " ++ unwords (map Remote.name rs) ++ ", which failed earlier."
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
 pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> IO ()
@@ -57,7 +54,7 @@ pushThread st dstatus commitchan pushmap = do
 		if shouldPush now commits
 			then do
 				remotes <- knownRemotes <$> getDaemonStatus dstatus
-				alertWhile dstatus (syncalert remotes) $
+				alertWhile dstatus (pushAlert remotes) $
 					pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread
@@ -66,9 +63,6 @@ pushThread st dstatus commitchan pushmap = do
 					, "commits"
 					]
 				refillCommits commitchan commits
-	where
-		syncalert rs = activityAlert Nothing $
-			"Syncing with " ++ unwords (map Remote.name rs)
 
 {- Decide if now is a good time to push to remotes.
  -
