@@ -14,6 +14,7 @@
 module Utility.NotificationBroadcaster (
 	NotificationBroadcaster,
 	NotificationHandle,
+	NotificationId,
 	newNotificationBroadcaster,
 	newNotificationHandle,
 	notificationHandleToId,
@@ -31,6 +32,7 @@ import Control.Concurrent.SampleVar
 type NotificationBroadcaster = TMVar [SampleVar ()]
 
 newtype NotificationId = NotificationId Int
+	deriving (Read, Eq, Ord)
 
 instance Show NotificationId where
 	show (NotificationId i) = show i
@@ -39,7 +41,7 @@ instance Show NotificationId where
 data NotificationHandle = NotificationHandle NotificationBroadcaster NotificationId
 
 newNotificationBroadcaster :: IO NotificationBroadcaster
-newNotificationBroadcaster = atomically (newTMVar [])
+newNotificationBroadcaster = atomically $ newTMVar []
 
 {- Allocates a notification handle for a client to use. -}
 newNotificationHandle :: NotificationBroadcaster -> IO NotificationHandle
@@ -50,7 +52,7 @@ newNotificationHandle b = NotificationHandle
 		addclient = do
 			s <- newEmptySampleVar
 			atomically $ do
-				l <- readTMVar b
+				l <- takeTMVar b
 				putTMVar b $ l ++ [s]
 				return $ NotificationId $ length l
 
