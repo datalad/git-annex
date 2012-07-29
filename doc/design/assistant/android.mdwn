@@ -26,6 +26,10 @@ References:
 * <http://stackoverflow.com/questions/5151858/running-a-haskell-program-on-the-android-os>
 * <http://www.reddit.com/r/haskell/comments/ful84/haskell_on_android/>
 
+I've heard anecdoally that ipwnstudios not only has an IPhone GHC port,
+but also Android. Need to get in touch with them.
+<http://ipwnstudios.com/>
+
 ### Android specific features
 
 The app should be aware of power status, and avoid expensive background
