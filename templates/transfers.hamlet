@@ -1,4 +1,17 @@
 <span ##{ident}>
+  $if warnNoScript
+    <noscript>
+      <div .alert .alert-block>
+        <h4 .alert-heading>Javascript is disabled
+        <p>
+          This display cannot update in real-time without Javascript. #
+          Can you turn it on?
+        <p>
+          Otherwise, there are two options:
+        <p>
+          <div .btn-group>
+            <a .btn href="@{NoScriptAutoR}">Auto-refresh every 3 seconds #
+            <a .btn href="@{NoScriptR}">Manually refresh
   <div .span9>
     $if null transfers
       <h2>No current transfers

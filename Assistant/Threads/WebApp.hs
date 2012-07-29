@@ -51,6 +51,7 @@ staticFiles "static"
 mkYesod "WebApp" [parseRoutes|
 / HomeR GET
 /noscript NoScriptR GET
+/noscriptauto NoScriptAutoR GET
 /transfers/#NotificationId TransfersR GET
 /config ConfigR GET
 /static StaticR Static getStatic
@@ -86,7 +87,7 @@ instance Yesod WebApp where
 	makeSessionBackend = webAppSessionBackend
 	jsLoader _ = BottomOfHeadBlocking
 
-{- Add to any widget to make it auto-update.
+{- Add to any widget to make it auto-update using long polling.
  -
  - The widget should have a html element with an id=ident, which will be
  - replaced when it's updated.
@@ -97,25 +98,16 @@ instance Yesod WebApp where
  -
  - ms_delay is how long to delay between AJAX updates
  - ms_startdelay is how long to delay before updating with AJAX at the start
- - ms_refreshdelay is how long to delay between refreshes, when not using AJAX
  -}
-autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Int -> Widget
-autoUpdate ident gethtml home ms_delay ms_startdelay ms_refreshdelay = do
-	{- Fallback refreshing is provided for non-javascript browsers. -}
-	let delayseconds = ms_to_seconds ms_refreshdelay
-	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
-
-	{- Use long polling to update the transfers display. -}
+autoUpdate :: Text -> Route WebApp -> Route WebApp -> Int -> Int -> Widget
+autoUpdate ident gethtml home ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
 	$(widgetFile "longpolling")
-	where
-		ms_to_seconds :: Int -> Int
-		ms_to_seconds ms = ceiling ((fromIntegral ms :: Double) / 1000)
 
 {- A display of currently running and queued transfers. -}
-transfersDisplay :: Widget
-transfersDisplay = do
+transfersDisplay :: Bool -> Widget
+transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
 	current <- liftIO $ runThreadState (threadState webapp) $
 		M.toList . currentTransfers
@@ -132,8 +124,8 @@ getNotificationBroadcaster :: WebApp -> IO NotificationBroadcaster
 getNotificationBroadcaster webapp = notificationBroadcaster
 		<$> getDaemonStatus (daemonStatus webapp)
 
-dashboard :: Widget
-dashboard = transfersDisplay
+dashboard :: Bool -> Widget
+dashboard warnNoScript = transfersDisplay warnNoScript
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ do
@@ -142,18 +134,24 @@ getHomeR = defaultLayout $ do
 	nid <- liftIO $ notificationHandleToId <$>
 		(newNotificationHandle =<< getNotificationBroadcaster webapp)
 	autoUpdate transfersDisplayIdent (TransfersR nid) HomeR
-		(10 :: Int) (10 :: Int) (3000 :: Int)
+		(10 :: Int) (10 :: Int)
 	
-	dashboard
+	dashboard True
 
 {- Same as HomeR, except with no javascript, so it doesn't allocate
- - new resources each time the page is refreshed. -}
-getNoScriptR :: Handler RepHtml
-getNoScriptR = defaultLayout $ do
+ - new resources each time the page is refreshed, and with autorefreshing
+ - via meta refresh. -}
+getNoScriptAutoR :: Handler RepHtml
+getNoScriptAutoR = defaultLayout $ do
 	let ident = NoScriptR
 	let delayseconds = 3 :: Int
+	let this = NoScriptAutoR
 	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
-	dashboard
+	dashboard False
+
+getNoScriptR :: Handler RepHtml
+getNoScriptR = defaultLayout $
+	dashboard True
 
 {- Called by client to get a display of currently in process transfers.
  -
@@ -170,7 +168,7 @@ getTransfersR nid = do
 	b <- liftIO $ getNotificationBroadcaster webapp
 	liftIO $ waitNotification $ notificationHandleFromId b nid
 
-	page <- widgetToPageContent transfersDisplay
+	page <- widgetToPageContent $ transfersDisplay False
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
 getConfigR :: Handler RepHtml

@@ -1,2 +1,2 @@
 <noscript>
-  <meta http-equiv="refresh" content="#{show delayseconds}; URL=@{NoScriptR}">
+  <meta http-equiv="refresh" content="#{show delayseconds}; URL=@{this}">
