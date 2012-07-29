@@ -30,8 +30,13 @@ import Control.Concurrent.SampleVar
 {- One SampleVar per client. The TMVar is never empty, so never blocks. -}
 type NotificationBroadcaster = TMVar [SampleVar ()]
 
+newtype NotificationId = NotificationId Int
+
+instance Show NotificationId where
+	show (NotificationId i) = show i
+
 {- Handle given out to an individual client. -}
-data NotificationHandle = NotificationHandle NotificationBroadcaster Int
+data NotificationHandle = NotificationHandle NotificationBroadcaster NotificationId
 
 newNotificationBroadcaster :: IO NotificationBroadcaster
 newNotificationBroadcaster = atomically (newTMVar [])
@@ -47,16 +52,14 @@ newNotificationHandle b = NotificationHandle
 			atomically $ do
 				l <- readTMVar b
 				putTMVar b $ l ++ [s]
-				return $ length l
+				return $ NotificationId $ length l
 
-{- Extracts the Int identifier from a notification handle.
+{- Extracts the identifier from a notification handle.
  - This can be used to eg, pass the identifier through to a WebApp. -}
-notificationHandleToId :: NotificationHandle -> Int
+notificationHandleToId :: NotificationHandle -> NotificationId
 notificationHandleToId (NotificationHandle _ i) = i
 
-{- Given a NotificationBroadcaster, and an Int identifier, recreates the
- - NotificationHandle. -}
-notificationHandleFromId :: NotificationBroadcaster -> Int -> NotificationHandle
+notificationHandleFromId :: NotificationBroadcaster -> NotificationId -> NotificationHandle
 notificationHandleFromId = NotificationHandle
 
 {- Sends a notification to all clients. -}
@@ -70,6 +73,6 @@ sendNotification b = do
 {- Used by a client to block until a new notification is available since
  - the last time it tried. -}
 waitNotification :: NotificationHandle -> IO ()
-waitNotification (NotificationHandle b i) = do
+waitNotification (NotificationHandle b (NotificationId i)) = do
 	l <- atomically $ readTMVar b
 	readSampleVar (l !! i)
