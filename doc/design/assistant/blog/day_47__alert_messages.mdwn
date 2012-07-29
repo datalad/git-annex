@@ -9,8 +9,6 @@ finishes, and long-term alerts that are displayed until the user closes
 them. It even supports rendering arbitrary Yesod widgets as alerts, so
 they can also be used for asking questions, etc.
 
-Time for a screencast! For some reason `recordmydesktop` has the sound
-running around 1 second ahead of the video in this, but I think you'll
-still get the idea.
+Time for a screencast!
 
 <video controls src="http://joeyh.name/screencasts/git-annex-webapp.ogg"></video>
