@@ -5,9 +5,9 @@
 // Maximum update frequency is controlled by #{startdelay}
 // and #{delay}, both in milliseconds.
 
-(function( $ ) {
+$dead=0;
 
-numerrs=0;
+(function( $ ) {
 
 $.LongPoll#{ident} = (function() {
 	return {
@@ -21,12 +21,11 @@ $.LongPoll#{ident} = (function() {
 					numerrs=0;
 				},
 				'error': function(jqxhr, msg, e) {
-					numerrs=numerrs+1;
-					if (numerrs > 3) {
+					if (! $dead) {
+						$dead=1;
+						// blocked by many browsers
 						window.close();
-					}
-					else {
-						setTimeout($.LongPoll#{ident}.send, #{show delay});
+						$('#lostconnection').modal('show');
 					}
 				},
 			});

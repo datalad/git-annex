@@ -21,3 +21,10 @@
 <div .container-fluid>
   <div .row-fluid>
     ^{content}
+<div #lostconnection .modal .fade>
+  <div .modal-header>
+     <h3>
+       git-annex has shut down
+     <div .modal-body>
+       <p>
+         You can now close this browser window.
