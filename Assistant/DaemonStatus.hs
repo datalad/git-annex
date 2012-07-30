@@ -50,8 +50,6 @@ data DaemonStatus = DaemonStatus
 
 type TransferMap = M.Map Transfer TransferInfo
 
-type AlertMap = M.Map AlertId Alert
-
 {- This TMVar is never left empty, so accessing it will never block. -}
 type DaemonStatusHandle = TMVar DaemonStatus
 
@@ -242,10 +240,5 @@ alertWhile dstatus alert a = do
 	let alert' = alert { alertClass = Activity }
 	i <- addAlert dstatus alert'
 	r <- bracket_ noop noop a
-	updateAlertMap dstatus $ makeold i (makeAlertFiller r)
+	updateAlertMap dstatus $ convertToFiller i r
 	return r
-	where
-		-- TODO prune old filler
-		makeold i filler m
-			| M.size m < 20 = M.adjust filler i m
-			| otherwise = M.adjust filler i m

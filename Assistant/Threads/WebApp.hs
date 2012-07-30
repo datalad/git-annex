@@ -204,11 +204,12 @@ sideBarDisplay noScript = do
 		{- Any yesod message appears as the first alert. -}
 		maybe noop rendermessage =<< lift getMessage
 	
-		{- Add newest 10 alerts to the sidebar. -}
+		{- Add newest alerts to the sidebar. -}
 		webapp <- lift getYesod
 		alertpairs <- M.toList . alertMap
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
-		mapM_ renderalert $ take 10 $ sortAlertPairs alertpairs
+		mapM_ renderalert $
+			take displayAlerts $ reverse $ sortAlertPairs alertpairs
 	ident <- lift newIdent
 	$(widgetFile "sidebar")
 
