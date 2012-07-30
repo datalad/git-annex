@@ -146,6 +146,7 @@ autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
 autoUpdate ident gethtml ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
+	addScript $ StaticR longpolling_js
 	$(widgetFile "longpolling")
 
 {- A display of currently running and queued transfers.

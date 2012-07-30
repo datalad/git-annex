@@ -1,54 +1,11 @@
-
-// Uses long-polling to update a div with id=#{ident}
-// The gethtml route should return a new div, with the same id.
-//
-// Maximum update frequency is controlled by #{startdelay}
-// and #{delay}, both in milliseconds.
-
-connfails=0;
-
-connfailed=
-  '<div id="modal" class="modal fade">' +
-  '  <div class="modal-header">' +
-  '    <h3>git-annex has shut down</h3>' +
-  '  </div>' +
-  '  <div class="modal-body">' +
-  '    You can now close this browser window.' +
-  '  </div>' +
-  '</div>' ;
-
-(function( $ ) {
-
-$.LongPoll#{ident} = (function() {
-	return {
-		send : function() {           
-			$.ajax({
-				'url': '@{gethtml}',
-				'dataType': 'html',
-				'success': function(data, status, jqxhr) {
-					$('##{ident}').replaceWith(data);
-					setTimeout($.LongPoll#{ident}.send, #{show delay});
-					numerrs=0;
-				},
-				'error': function(jqxhr, msg, e) {
-					connfails=connfails+1;
-					if (connfails > 3) {
-						// blocked by many browsers
-						window.close();
-						$('#modal').replaceWith(connfailed);
-						$('#modal').modal('show');
-					}
-					else {
-						setTimeout($.LongPoll#{ident}.send, #{show delay});
-					}
-				},
-			});
-		}
+// longpolling for #{ident}
+function poller#{ident}() {
+	if (longpoll('@{gethtml}', '#{ident}')) {
+		setTimeout(poller#{ident}, #{delay});
 	}
-}());
-
-$(document).bind('ready.app', function() {
-	setTimeout($.LongPoll#{ident}.send, #{show startdelay});
-});
-
+}
+(function( $ ) {
+	$(document).bind('ready.app', function() {
+		setTimeout(poller#{ident}, #{startdelay});
+	});
 })( jQuery );
