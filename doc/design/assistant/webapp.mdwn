@@ -38,5 +38,3 @@ The webapp is a web server that displays a shiny interface.
 * Fix notification handle leakage on pages other than the main page.
   The javascript should use AJAX to request handles, that way
   they won't be allocated at all in noscript.
-* Hook up notificaton close button to a callback that removes the notification
-  from the list. Otherwise reloading brings them back.
