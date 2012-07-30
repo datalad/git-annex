@@ -21,3 +21,5 @@ Assistant/Threads/Watcher.hs:61:43:
       `watchDir "." ignored hooks startup'
 make: *** [git-annex] Error 1
 </pre>
+
+> [[fixed|done]] --[[Joey]] 
