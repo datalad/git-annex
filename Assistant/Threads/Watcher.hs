@@ -87,8 +87,6 @@ startupScan st dstatus scanner = do
 		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 		return (True, r)
-	
-	void $ addAlert dstatus runningAlert
 
 	return r
 

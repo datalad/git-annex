@@ -174,13 +174,6 @@ activityAlert header message = baseActivityAlert
 startupScanAlert :: Alert
 startupScanAlert = activityAlert Nothing "Performing startup scan"
 
-runningAlert :: Alert
-runningAlert = baseActivityAlert
-	{ alertClass = Success
-	, alertMessage = StringAlert "Running"
-	, alertPriority = Pinned
-	}
-
 pushAlert :: [Remote] -> Alert
 pushAlert rs = activityAlert Nothing $
 	"Syncing with " ++ unwords (map Remote.name rs)
