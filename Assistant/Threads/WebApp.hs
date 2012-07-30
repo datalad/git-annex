@@ -171,17 +171,20 @@ introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
 	let reldir = relDir webapp
-	remotelist <- liftIO $ runThreadState (threadState webapp) $ do
+	l <- liftIO $ runThreadState (threadState webapp) $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList
 		rs' <- snd <$> trustPartition DeadTrusted rs
 		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs'
-	let n = length remotelist
+	let remotelist = zip counter l
+	let n = length l
 	let numrepos = show n
 	let notenough = n < 2
 	let barelyenough = n == 2
 	let morethanenough = n > 2
 	$(widgetFile "intro")
+	where
+		counter = map show ([1..] :: [Int])
 
 {- Called by client to get a display of currently in process transfers.
  -
