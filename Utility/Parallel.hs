@@ -18,7 +18,7 @@ import Control.Exception
  -
  - Returns the values partitioned into ones with which the action succeeded,
  - and ones with which it failed. -}
-inParallel :: (v -> IO ()) -> [v] -> IO ([v], [v])
+inParallel :: (v -> IO Bool) -> [v] -> IO ([v], [v])
 inParallel a l = do
 	mvars <- mapM thread l
 	statuses <- mapM takeMVar mvars
@@ -28,8 +28,8 @@ inParallel a l = do
 		thread v = do
 			mvar <- newEmptyMVar
 			_ <- forkIO $ do
-				r <- try (a v) :: IO (Either SomeException ())
+				r <- try (a v) :: IO (Either SomeException Bool)
 				case r of
 					Left _ -> putMVar mvar False
-					Right _ -> putMVar mvar True
+					Right b -> putMVar mvar b
 			return mvar

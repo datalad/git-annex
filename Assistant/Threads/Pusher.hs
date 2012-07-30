@@ -92,33 +92,26 @@ pushToRemotes threadname now st mpushmap remotes = do
 				, show rs
 				]
 			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-			{- TODO git push exits nonzero if the remote
-			 - is already up-to-date. This code does not tell
-			 - the difference between the two. Could perhaps
-			 - be check the refs when it seemed to fail?
-			 - Note bewloe  -}
 			(succeeded, failed) <- inParallel (push g branch) rs
+			let ok = null failed
 			case mpushmap of
 				Nothing -> noop
 				Just pushmap -> 
 					changeFailedPushMap pushmap $ \m ->
 						M.union (makemap failed) $
 							M.difference m (makemap succeeded)
-			unless (null failed) $
+			unless (ok) $
 				debug threadname
 					[ "failed to push to"
 					, show failed
 					]
-			if (null failed || not shouldretry)
-				{- TODO see above TODO item -}
-				then return True -- return $ null failed 
+			if (ok || not shouldretry)
+				then return ok
 				else retry branch g failed
 
 		makemap l = M.fromList $ zip l (repeat now)
 
-		push g branch remote =
-			ifM (Command.Sync.pushBranch remote branch g)
-				( exitSuccess, exitFailure)
+		push g branch remote = Command.Sync.pushBranch remote branch g
 
 		retry branch g rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
