@@ -93,12 +93,17 @@ mkYesod "WebApp" [parseRoutes|
 /noscriptauto NoScriptAutoR GET
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET
+/closealert/#AlertId CloseAlert GET
 /config ConfigR GET
 /addrepository AddRepositoryR GET
 /static StaticR Static getStatic
 |]
 
 instance PathPiece NotificationId where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece AlertId where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
 
@@ -110,7 +115,6 @@ instance Yesod WebApp where
 			addStylesheet $ StaticR css_bootstrap_responsive_css
 			addScript $ StaticR jquery_full_js
 			addScript $ StaticR js_bootstrap_dropdown_js
-			addScript $ StaticR js_bootstrap_alert_js
 			$(widgetFile "page")
 		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
 
@@ -229,7 +233,7 @@ sideBarDisplay noScript = do
 		bootstrapclass Message = "alert-info"
 
 		renderalert (alertid, alert) = addalert
-			(show alertid)
+			alertid
 			(alertClosable alert)
 			(alertBlockDisplay alert)
 			(bootstrapclass $ alertClass alert)
@@ -238,11 +242,14 @@ sideBarDisplay noScript = do
 				StringAlert s -> [whamlet|#{s}|]
 				WidgetAlert w -> w alert
 
-		rendermessage msg = addalert "yesodmessage" True False
+		rendermessage msg = addalert firstAlertId True False
 			"alert-info" Nothing [whamlet|#{msg}|]
 
-		addalert :: String -> Bool -> Bool -> Text -> Maybe String -> Widget -> Widget
-		addalert alertid closable block divclass heading widget = $(widgetFile "alert")
+		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe String -> Widget -> Widget
+		addalert i closable block divclass heading widget = do
+			let alertid = show i
+			let closealert = CloseAlert i
+			$(widgetFile "alert")
 
 {- Called by client to get a sidebar display.
  -
@@ -258,6 +265,12 @@ getSideBarR nid = do
 
 	page <- widgetToPageContent $ sideBarDisplay True
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+
+{- Called by the client to close an alert. -}
+getCloseAlert :: AlertId -> Handler ()
+getCloseAlert i = do
+	webapp <- getYesod
+	void $ liftIO $ removeAlert (daemonStatus webapp) i
 
 dashboard :: Bool -> Bool -> Widget
 dashboard noScript warnNoScript = do

@@ -61,7 +61,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure Nothing
 	<*> pure M.empty
 	<*> pure M.empty
-	<*> pure 0
+	<*> pure firstAlertId
 	<*> pure []
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
@@ -217,7 +217,7 @@ addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus 
 	where
 		go s = (s { alertMax = i, alertMap = m }, i)
 			where
-				i = alertMax s + 1
+				i = nextAlertId $ alertMax s
 				m = M.insertWith' const i alert (alertMap s)
 
 removeAlert :: DaemonStatusHandle -> AlertId -> IO ()

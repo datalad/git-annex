@@ -37,7 +37,15 @@ data Alert = Alert
 	}
 
 {- Higher AlertId indicates a more recent alert. -}
-type AlertId = Integer
+newtype AlertId = AlertId Integer
+        deriving (Read, Show, Eq, Ord)
+
+{- Note: This first alert id is used for yesod's message. -}
+firstAlertId :: AlertId
+firstAlertId = AlertId 0
+
+nextAlertId :: AlertId -> AlertId
+nextAlertId (AlertId i) = AlertId $ succ i
 
 type AlertPair = (AlertId, Alert)
 

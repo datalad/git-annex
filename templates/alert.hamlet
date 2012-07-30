@@ -1,4 +1,4 @@
-<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid}>
+<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid} :closable:onclick="(function( $ ) { $.get('@{closealert}') })( jQuery );">
   $if closable
     <a .close data-dismiss="alert" href="#">&times;</a>
   $maybe h <- heading
