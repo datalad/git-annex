@@ -5,7 +5,17 @@
 // Maximum update frequency is controlled by #{startdelay}
 // and #{delay}, both in milliseconds.
 
-$dead=0;
+$dead = 0;
+
+$connfailed = 
+  '<div id="modal" class="modal fade">' +
+  '  <div .modal-header>' +
+  '    <h3>git-annex has shut down</h2>' +
+  '  </div>' +
+  '  <div class="modal-body">' +
+  '    You can now close this browser window.' +
+  '  </div>' +
+  '</div>' ;
 
 (function( $ ) {
 
@@ -25,7 +35,8 @@ $.LongPoll#{ident} = (function() {
 						$dead=1;
 						// blocked by many browsers
 						window.close();
-						$('#lostconnection').modal('show');
+						$('#modal').replaceWith($connfailed);
+						$('#modal').modal('show');
 					}
 				},
 			});
