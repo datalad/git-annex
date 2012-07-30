@@ -16,7 +16,7 @@
           <ul .dropdown-menu>
              <li><a href="#">#{relDir webapp}</a></li>
              <li .divider></li>
-             <li><a href="@{AddRepositoryR}">Add new repository</a></li>
+             <li><a href="@{AddRepositoryR}">Add another repository</a></li>
 
 <div .container-fluid>
   <div .row-fluid>
