@@ -1,0 +1,14 @@
+Some days I spend 2 hours chasing red herrings (like "perhaps my JSON ajax
+calls arn't running asynchronoously?") that turn out to be a simple
+one-word typo. This was one of them.
+
+However, I did get the sidebar displaying alert messages, which can be
+easily sent to the user from any part of the assistant. This includes
+transient alerts of things it's doing, which disappear once the action
+finishes, and long-term alerts that are displayed until the user closes
+them. It even supports rendering arbitrary Yesod widgets as alerts, so
+they can also be used for asking questions, etc.
+
+Time for a screencast!
+
+<video controls src="http://joeyh.name/screencasts/git-annex-webapp.ogg"></video>
