@@ -27,6 +27,7 @@ import Utility.DataUnits
 import Types.Key
 import qualified Remote
 import Logs.Web (webUUID)
+import Annex.UUID (getUUID)
 
 import Yesod
 import Yesod.Static
@@ -169,11 +170,11 @@ introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
 	let reldir = relDir webapp
-	remotelist <- liftIO $ runThreadState (threadState webapp) $
-		Remote.prettyListUUIDs
-			=<< filter (/= webUUID) . nub . map Remote.uuid
-				<$> Remote.remoteList
-	let n = (length remotelist) + 1 -- plus this one
+	remotelist <- liftIO $ runThreadState (threadState webapp) $ do
+		u <- getUUID
+		rs <- map Remote.uuid <$> Remote.remoteList
+		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs
+	let n = length remotelist
 	let numrepos = show n
 	let notenough = n < 2
 	let barelyenough = n == 2

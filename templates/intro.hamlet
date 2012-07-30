@@ -15,9 +15,8 @@
         <span .badge .badge-success>#{numrepos}</span>
       \ repositories and devices:
       <ul>
-        <li>here
         $forall name <- remotelist
           <li>#{name}
       <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
-      <div>
+      <p>
         Or just sit back, watch the magic, and get on with using your files.
