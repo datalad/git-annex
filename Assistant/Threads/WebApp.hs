@@ -27,6 +27,7 @@ import Utility.DataUnits
 import Types.Key
 import qualified Remote
 import Logs.Web (webUUID)
+import Logs.Trust
 import Annex.UUID (getUUID)
 
 import Yesod
@@ -173,7 +174,8 @@ introDisplay ident = do
 	remotelist <- liftIO $ runThreadState (threadState webapp) $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList
-		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs
+		rs' <- snd <$> trustPartition DeadTrusted rs
+		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs'
 	let n = length remotelist
 	let numrepos = show n
 	let notenough = n < 2
