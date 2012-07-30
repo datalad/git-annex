@@ -83,6 +83,7 @@ makeAlertFiller success alert
 		, alertPriority = Filler
 		, alertHeader = finished <$> h
 		, alertMessage = massage m
+		, alertClosable = True
 		}
 	where
 		h = alertHeader alert
