@@ -5,7 +5,7 @@
 // Maximum update frequency is controlled by #{startdelay}
 // and #{delay}, both in milliseconds.
 
-$dead = 0;
+$connfails = 0;
 
 $connfailed = 
   '<div id="modal" class="modal fade">' +
@@ -31,8 +31,8 @@ $.LongPoll#{ident} = (function() {
 					numerrs=0;
 				},
 				'error': function(jqxhr, msg, e) {
-					if (! $dead) {
-						$dead=1;
+					$connfails = $confails + 1;
+					if (! $connfails > 3) {
 						// blocked by many browsers
 						window.close();
 						$('#modal').replaceWith($connfailed);
