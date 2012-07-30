@@ -165,7 +165,7 @@ handleMount st dstatus scanremotes mntent = do
 		branch <- runThreadState st $ Command.Sync.currentBranch
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
 		unless (null nonspecial) $
-			alertWhile dstatus (syncMountAlert dir nonspecial) $ do
+			void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
 				debug thisThread ["syncing with", show nonspecial]
 				runThreadState st $ manualPull branch nonspecial
 				now <- getCurrentTime	

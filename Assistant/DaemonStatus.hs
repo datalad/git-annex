@@ -223,12 +223,29 @@ addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus 
 				m = M.insertWith' const i alert (alertMap s)
 
 removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
-removeAlert dstatus i = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
-	where
-		go s = s { alertMap = M.delete i (alertMap s) }
+removeAlert dstatus i = updateAlert dstatus i (const Nothing)
 
-{- Displays an alert while performing an activity, then removes it. -}
-alertWhile :: DaemonStatusHandle -> Alert -> IO a -> IO a
+updateAlert :: DaemonStatusHandle -> AlertId -> (Alert -> Maybe Alert) -> IO ()
+updateAlert dstatus i a = updateAlertMap dstatus $ \m -> M.update a i m
+
+updateAlertMap :: DaemonStatusHandle -> (AlertMap -> AlertMap) -> IO ()
+updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { alertMap = a (alertMap s) }
+
+{- Displays an alert while performing an activity.
+ -
+ - The alert is left visible afterwards, as filler.
+ - Old filler is pruned, to prevent the map growing too large. -}
+alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
 alertWhile dstatus alert a = do
 	let alert' = alert { alertClass = Activity }
-	bracket (addAlert dstatus alert') (removeAlert dstatus) (const a)
+	i <- addAlert dstatus alert'
+	r <- bracket_ noop noop a
+	updateAlertMap dstatus $ makeold i (makeAlertFiller r)
+	return r
+	where
+		-- TODO prune old filler
+		makeold i filler m
+			| M.size m < 20 = M.adjust filler i m
+			| otherwise = M.adjust filler i m

@@ -31,7 +31,7 @@ sanityCheckerThread st dstatus transferqueue changechan = forever $ do
 
 	debug thisThread ["starting sanity check"]
 
-	alertWhile dstatus sanityCheckAlert go
+	void $ alertWhile dstatus sanityCheckAlert go
 	
 	debug thisThread ["sanity check complete"]
 	where
@@ -40,13 +40,17 @@ sanityCheckerThread st dstatus transferqueue changechan = forever $ do
 				{ sanityCheckRunning = True }
 
 			now <- getPOSIXTime -- before check started
-			catchIO (check st dstatus transferqueue changechan)
-				(runThreadState st . warning . show)
+			r <- catchIO (check st dstatus transferqueue changechan)
+				$ \e -> do
+					runThreadState st $ warning $ show e
+					return False
 
 			modifyDaemonStatus_ dstatus $ \s -> s
 				{ sanityCheckRunning = False
 				, lastSanityCheck = Just now
 				}
+
+			return r
 
 {- Only run one check per day, from the time of the last check. -}
 waitForNextCheck :: DaemonStatusHandle -> IO ()
@@ -67,7 +71,7 @@ oneDay = 24 * 60 * 60
 {- It's important to stay out of the Annex monad as much as possible while
  - running potentially expensive parts of this check, since remaining in it
  - will block the watcher. -}
-check :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO () 
+check :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO Bool
 check st dstatus transferqueue changechan = do
 	g <- runThreadState st $ fromRepo id
 	-- Find old unstaged symlinks, and add them to git.
@@ -80,6 +84,7 @@ check st dstatus transferqueue changechan = do
 				| isSymbolicLink s ->
 					addsymlink file ms
 			_ -> noop
+	return True
 	where
 		toonew timestamp now = now < (realToFrac (timestamp + slop) :: POSIXTime)
 		slop = fromIntegral tenMinutes

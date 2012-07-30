@@ -37,7 +37,7 @@ pushRetryThread st dstatus pushmap = runEvery (Seconds halfhour) $ do
 			, "failed pushes"
 			]
 		now <- getCurrentTime
-		alertWhile dstatus (pushRetryAlert topush) $
+		void $ alertWhile dstatus (pushRetryAlert topush) $
 			pushToRemotes thisThread now st (Just pushmap) topush
 	where
 		halfhour = 1800
@@ -54,7 +54,7 @@ pushThread st dstatus commitchan pushmap = do
 		if shouldPush now commits
 			then do
 				remotes <- knownRemotes <$> getDaemonStatus dstatus
-				alertWhile dstatus (pushAlert remotes) $
+				void $ alertWhile dstatus (pushAlert remotes) $
 					pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread
@@ -80,7 +80,7 @@ shouldPush _now commits
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads. -}
-pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> (Maybe FailedPushMap) -> [Remote] -> IO ()
+pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> (Maybe FailedPushMap) -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushmap remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> Command.Sync.currentBranch
@@ -92,6 +92,11 @@ pushToRemotes threadname now st mpushmap remotes = do
 				, show rs
 				]
 			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+			{- TODO git push exits nonzero if the remote
+			 - is already up-to-date. This code does not tell
+			 - the difference between the two. Could perhaps
+			 - be check the refs when it seemed to fail?
+			 - Note bewloe  -}
 			(succeeded, failed) <- inParallel (push g branch) rs
 			case mpushmap of
 				Nothing -> noop
@@ -104,8 +109,10 @@ pushToRemotes threadname now st mpushmap remotes = do
 					[ "failed to push to"
 					, show failed
 					]
-			unless (null failed || not shouldretry) $
-				retry branch g failed
+			if (null failed || not shouldretry)
+				{- TODO see above TODO item -}
+				then return True -- return $ null failed 
+				else retry branch g failed
 
 		makemap l = M.fromList $ zip l (repeat now)
 

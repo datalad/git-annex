@@ -20,8 +20,8 @@ type Widget = forall sub master. GWidget sub master ()
 data AlertClass = Success | Message | Activity | Warning | Error
 	deriving (Eq, Ord)
 
-{- An alert can be a simple message, or an arbitrary Yesod Widget -}
-data AlertMessage = StringAlert String | WidgetAlert Widget
+{- An alert can be a simple message, or an arbitrary Yesod Widget. -}
+data AlertMessage = StringAlert String | WidgetAlert (Alert -> Widget)
 
 data Alert = Alert
 	{ alertClass :: AlertClass
@@ -37,7 +37,7 @@ type AlertId = Integer
 
 type AlertPair = (AlertId, Alert)
 
-data AlertPriority = Low | Medium | High | Pinned
+data AlertPriority = Filler | Low | Medium | High | Pinned
 	deriving (Eq, Ord)
 
 {- The desired order is the reverse of:
@@ -45,7 +45,8 @@ data AlertPriority = Low | Medium | High | Pinned
  - - Pinned alerts
  - - High priority alerts, newest first
  - - Medium priority Activity, newest first (mostly used for Activity)
- - - Low priority alwerts, newest first
+ - - Low priority alerts, newest first
+ - - Filler priorty alerts, newest first
  - - Ties are broken by the AlertClass, with Errors etc coming first.
  -}
 compareAlertPairs :: AlertPair -> AlertPair -> Ordering
@@ -55,6 +56,31 @@ compareAlertPairs
 	 = compare aprio bprio
 		`thenOrd` compare aid bid
 			`thenOrd` compare aclass bclass
+
+makeAlertFiller :: Bool -> Alert -> Alert
+makeAlertFiller success alert
+	| alertPriority alert == Filler = alert
+	| otherwise = alert
+		{ alertClass = if c == Activity then c' else c
+		, alertPriority = Filler
+		, alertHeader = finished <$> h
+		, alertMessage = massage m
+		}
+	where
+		h = alertHeader alert
+		m = alertMessage alert
+		c = alertClass alert
+		c'
+			| success = Success
+			| otherwise = Error
+
+		massage (WidgetAlert w) = WidgetAlert w -- renders old on its own
+		massage (StringAlert s) = StringAlert $
+			maybe (finished s) (const s) h
+
+		finished s
+			| success = s ++ ": Succeeded"
+			| otherwise = s ++ ": Failed"
 
 sortAlertPairs :: [AlertPair] -> [AlertPair]
 sortAlertPairs = reverse . sortBy compareAlertPairs

@@ -232,7 +232,7 @@ sideBarDisplay noScript = do
 			(alertHeader alert)
 			$ case alertMessage alert of
 				StringAlert s -> [whamlet|#{s}|]
-				WidgetAlert w -> w
+				WidgetAlert w -> w alert
 
 		rendermessage msg = addalert "yesodmessage" True False
 			"alert-info" Nothing [whamlet|#{msg}|]

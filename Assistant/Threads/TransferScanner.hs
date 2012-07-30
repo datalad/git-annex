@@ -32,18 +32,19 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 	runEvery (Seconds 2) $ do
 		r <- getScanRemote scanremotes
 		liftIO $ debug thisThread ["starting scan of", show r]
-		alertWhile dstatus (scanAlert r) $
+		void $ alertWhile dstatus (scanAlert r) $
 			scan st dstatus transferqueue r
 		liftIO $ debug thisThread ["finished scan of", show r]
 
 {- This is a naive scan through the git work tree.
  - 
  - The scan is blocked when the transfer queue gets too large. -}
-scan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
+scan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO Bool
 scan st dstatus transferqueue r = do
 	g <- runThreadState st $ fromRepo id
 	files <- LsFiles.inRepo [] g
 	go files
+	return True
 	where
 		go [] = return ()
 		go (f:fs) = do

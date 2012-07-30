@@ -72,23 +72,22 @@ watchThread st dstatus transferqueue changechan = do
 			}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
-startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
+startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO ()
 startupScan st dstatus scanner = do
 	runThreadState st $ showAction "scanning"
-	r <- alertWhile dstatus startupScanAlert $ do
-		r <- scanner
-		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
+	void $ alertWhile dstatus startupScanAlert $ do
+		void $ scanner
 
 		-- Notice any files that were deleted before
 		-- watching was started.
 		runThreadState st $ do
 			inRepo $ Git.Command.run "add" [Param "--update"]
 			showAction "started"
-		return r
+		
+		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
+		return True
 	
 	void $ addAlert dstatus runningAlert
-
-	return r
 
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName
