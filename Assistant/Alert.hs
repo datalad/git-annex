@@ -97,7 +97,7 @@ syncMountAlert :: FilePath -> [Remote] -> Alert
 syncMountAlert dir rs = baseActivityAlert
 	{ alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
 	, alertMessage = StringAlert $ unwords
-		["I noticed you plugged in"
+		["You plugged in"
 		, dir
 		, " -- let's get it in sync!"
 		]
@@ -117,7 +117,7 @@ scanAlert r = baseActivityAlert
 
 sanityCheckAlert :: Alert
 sanityCheckAlert = activityAlert (Just "Running daily sanity check")
-	"to make sure I've not missed anything."
+	"to make sure everything is ok."
 
 sanityCheckFixAlert :: String -> Alert
 sanityCheckFixAlert msg = Alert
