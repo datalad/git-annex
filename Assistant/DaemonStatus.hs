@@ -236,9 +236,14 @@ updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstat
  - The alert is left visible afterwards, as filler.
  - Old filler is pruned, to prevent the map growing too large. -}
 alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
-alertWhile dstatus alert a = do
+alertWhile dstatus alert a = alertWhile' dstatus alert $ do
+	r <- a
+	return $ (r, r)
+
+alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
+alertWhile' dstatus alert a = do
 	let alert' = alert { alertClass = Activity }
 	i <- addAlert dstatus alert'
-	r <- bracket_ noop noop a
-	updateAlertMap dstatus $ convertToFiller i r
+	(ok, r) <- bracket_ noop noop a
+	updateAlertMap dstatus $ convertToFiller i ok
 	return r
