@@ -1,0 +1,23 @@
+<div .span9 ##{ident} .hero-unit>
+  <h2>
+    git-annex is watching over your files in <small><tt>#{reldir}</tt></small>
+  <p>
+    It will automatically notice changes, and keep files in sync between #
+    $if notenough
+      repositories on your devices ...
+      <h2>
+        But no other repositories are set up yet.
+      <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
+    $else
+      these #
+      $if barelyenough
+        <span .badge .badge-warning>#{numrepos}</span>
+      $else
+        <span .badge .badge-success>#{numrepos}</span>
+      \ repositories and devices:
+      <ul>
+        $forall name <- remotelist
+          <li>#{name}
+      <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
+      <div>
+        Or just sit back, watch the magic, and get on with using your files.

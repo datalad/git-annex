@@ -26,6 +26,7 @@ import Utility.Percentage
 import Utility.DataUnits
 import Types.Key
 import qualified Remote
+import Logs.Web (webUUID)
 
 import Yesod
 import Yesod.Static
@@ -34,6 +35,7 @@ import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text (Text, pack, unpack)
 import qualified Data.Map as M
+import Control.Concurrent.STM
 
 thisThread :: String
 thisThread = "WebApp"
@@ -43,9 +45,28 @@ data WebApp = WebApp
 	, daemonStatus :: DaemonStatusHandle
 	, transferQueue :: TransferQueue
 	, secretToken :: Text
-	, baseTitle :: String
+	, relDir :: FilePath
 	, getStatic :: Static
+	, webAppState :: TMVar WebAppState
 	}
+
+data WebAppState = WebAppState
+	{ showIntro :: Bool
+	}
+
+newWebAppState :: IO (TMVar WebAppState)
+newWebAppState = liftIO $ atomically $
+	newTMVar $ WebAppState { showIntro = True }
+
+getWebAppState :: forall sub. GHandler sub WebApp WebAppState
+getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
+
+modifyWebAppState :: forall sub. (WebAppState -> WebAppState) -> GHandler sub WebApp ()
+modifyWebAppState a = go =<< webAppState <$> getYesod
+	where
+		go s = liftIO $ atomically $ do
+			v <- takeTMVar s
+			putTMVar s $ a v
 
 waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier selector nid = do
@@ -71,6 +92,7 @@ mkYesod "WebApp" [parseRoutes|
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET
 /config ConfigR GET
+/addrepository AddRepositoryR GET
 /static StaticR Static getStatic
 |]
 
@@ -119,7 +141,9 @@ autoUpdate ident gethtml ms_delay ms_startdelay = do
 	let startdelay = show ms_startdelay
 	$(widgetFile "longpolling")
 
-{- A display of currently running and queued transfers. -}
+{- A display of currently running and queued transfers.
+ -
+ - Or, if there have never been any this run, an intro display. -}
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
@@ -127,12 +151,34 @@ transfersDisplay warnNoScript = do
 		M.toList . currentTransfers
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
-	let transfers = current ++ queued
 	let ident = transfersDisplayIdent
-	$(widgetFile "transfers")
+	let transfers = current ++ queued
+	if null transfers
+		then ifM (lift $ showIntro <$> getWebAppState)
+			( introDisplay ident
+			, noop
+			)
+		else do
+			lift $ modifyWebAppState $ \s -> s { showIntro = False }
+			$(widgetFile "transfers")
 
 transfersDisplayIdent :: Text
 transfersDisplayIdent = "transfers"
+
+introDisplay :: Text -> Widget
+introDisplay ident = do
+	webapp <- lift getYesod
+	let reldir = relDir webapp
+	remotelist <- liftIO $ runThreadState (threadState webapp) $
+		Remote.prettyListUUIDs
+			=<< filter (/= webUUID) . nub . map Remote.uuid
+				<$> Remote.remoteList
+	let n = (length remotelist) + 1 -- plus this one
+	let numrepos = show n
+	let notenough = n < 2
+	let barelyenough = n == 2
+	let morethanenough = n > 2
+	$(widgetFile "intro")
 
 {- Called by client to get a display of currently in process transfers.
  -
@@ -237,7 +283,13 @@ getNoScriptR = defaultLayout $
 getConfigR :: Handler RepHtml
 getConfigR = defaultLayout $ do
 	sideBarDisplay False
-	setTitle "configuration"
+	setTitle "Configuration"
+	[whamlet|<a href="@{HomeR}">main|]
+
+getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR = defaultLayout $ do
+	sideBarDisplay False
+	setTitle "Add repository"
 	[whamlet|<a href="@{HomeR}">main|]
 
 webAppThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Maybe (IO ()) -> IO ()
@@ -259,13 +311,15 @@ webAppThread st dstatus transferqueue onstartup = do
 				then relPathDirToFile home dir
 				else dir
 			token <- genRandomToken 
+			s <- newWebAppState
 			return $ WebApp 
 				{ threadState = st
 				, daemonStatus = dstatus
 				, transferQueue = transferqueue
 				, secretToken = pack token
-				, baseTitle = reldir
+				, relDir = reldir
 				, getStatic = $(embed "static")
+				, webAppState = s
 				}
 
 {- Creates a html shim file that's used to redirect into the webapp,

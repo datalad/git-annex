@@ -11,12 +11,12 @@
       <ul .nav .pull-right>
         <li .dropdown #menu1>
           <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
-            Current Repository: #{baseTitle webapp}
+            Current Repository: #{relDir webapp}
             <b .caret></b>
           <ul .dropdown-menu>
-             <li><a href="#">#{baseTitle webapp}</a></li>
+             <li><a href="#">#{relDir webapp}</a></li>
              <li .divider></li>
-             <li><a href="#">Add new repository</a></li>
+             <li><a href="@{AddRepositoryR}">Add new repository</a></li>
 
 <div .container-fluid>
   <div .row-fluid>

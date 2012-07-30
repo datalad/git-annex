@@ -24,6 +24,7 @@ module Remote (
 	uuidDescriptions,
 	byName,
 	prettyPrintUUIDs,
+	prettyListUUIDs,
 	remotesWithUUID,
 	remotesWithoutUUID,
 	keyLocations,
@@ -127,6 +128,15 @@ prettyPrintUUIDs desc uuids = do
 			, ("description", toJSON $ finddescription m u)
 			, ("here", toJSON $ hereu == u)
 			]
+
+{- List of remote names and/or descriptions, for human display. 
+ - Omits the current repisitory. -}
+prettyListUUIDs :: [UUID] -> Annex [String]
+prettyListUUIDs uuids = do
+	hereu <- getUUID
+	m <- uuidDescriptions
+	return $ map (\u -> M.findWithDefault "" u m) $ 
+		filter (/= hereu) uuids
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote] -> [UUID] -> [Remote]
