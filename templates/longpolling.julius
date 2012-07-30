@@ -5,9 +5,9 @@
 // Maximum update frequency is controlled by #{startdelay}
 // and #{delay}, both in milliseconds.
 
-$connfails = 0;
+connfails=0;
 
-$connfailed = 
+connfailed=
   '<div id="modal" class="modal fade">' +
   '  <div .modal-header>' +
   '    <h3>git-annex has shut down</h2>' +
@@ -31,12 +31,15 @@ $.LongPoll#{ident} = (function() {
 					numerrs=0;
 				},
 				'error': function(jqxhr, msg, e) {
-					$connfails = $confails + 1;
-					if (! $connfails > 3) {
+					connfails=connfails+1;
+					if (connfails > 3) {
 						// blocked by many browsers
 						window.close();
-						$('#modal').replaceWith($connfailed);
+						$('#modal').replaceWith(connfailed);
 						$('#modal').modal('show');
+					}
+					else {
+						setTimeout($.LongPoll#{ident}.send, #{show delay});
 					}
 				},
 			});
