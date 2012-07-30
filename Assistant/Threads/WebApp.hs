@@ -164,11 +164,9 @@ transfersDisplay warnNoScript = do
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
 			( introDisplay ident
-			, noop
+			, $(widgetFile "transfers")
 			)
-		else do
-			lift $ modifyWebAppState $ \s -> s { showIntro = False }
-			$(widgetFile "transfers")
+		else $(widgetFile "transfers")
 
 transfersDisplayIdent :: Text
 transfersDisplayIdent = "transfers"
@@ -189,6 +187,7 @@ introDisplay ident = do
 	let barelyenough = n == 2
 	let morethanenough = n > 2
 	$(widgetFile "intro")
+	lift $ modifyWebAppState $ \s -> s { showIntro = False }
 	where
 		counter = map show ([1..] :: [Int])
 
