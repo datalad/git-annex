@@ -36,6 +36,10 @@ data Alert = Alert
 	, alertPriority :: AlertPriority
 	}
 
+type AlertPair = (AlertId, Alert)
+
+type AlertMap = M.Map AlertId Alert
+
 {- Higher AlertId indicates a more recent alert. -}
 newtype AlertId = AlertId Integer
         deriving (Read, Show, Eq, Ord)
@@ -47,15 +51,11 @@ firstAlertId = AlertId 0
 nextAlertId :: AlertId -> AlertId
 nextAlertId (AlertId i) = AlertId $ succ i
 
-type AlertPair = (AlertId, Alert)
-
-type AlertMap = M.Map AlertId Alert
-
 {- This is as many alerts as it makes sense to display at a time.
  - A display might be smaller ,or larger, the point is to not overwhelm the
  - user with a ton of alerts. -}
 displayAlerts :: Int
-displayAlerts = 10
+displayAlerts = 6
 
 {- This is not a hard maximum, but there's no point in keeping a great
  - many filler alerts in an AlertMap, so when there's more than this many,
@@ -74,14 +74,33 @@ maxAlerts = displayAlerts * 2
  -}
 compareAlertPairs :: AlertPair -> AlertPair -> Ordering
 compareAlertPairs
-	(aid, Alert {alertClass = aclass, alertPriority = aprio})
-	(bid, Alert {alertClass = bclass, alertPriority = bprio})
+	(aid, Alert { alertClass = aclass, alertPriority = aprio })
+	(bid, Alert { alertClass = bclass, alertPriority = bprio })
 	 = compare aprio bprio
 		`thenOrd` compare aid bid
 			`thenOrd` compare aclass bclass
 
 sortAlertPairs :: [AlertPair] -> [AlertPair]
 sortAlertPairs = sortBy compareAlertPairs
+
+{- Checks if two alerts display the same.
+ - Yesod Widgets cannot be compared, as they run code. -}
+effectivelySameAlert :: Alert -> Alert -> Bool
+effectivelySameAlert x y
+	| uncomparable x || uncomparable y = False
+	| otherwise = all id 
+		[ alertClass x == alertClass y
+		, alertHeader x == alertHeader y
+		, extract (alertMessage x) == extract (alertMessage y)
+		, alertBlockDisplay x == alertBlockDisplay y
+		, alertClosable x == alertClosable y
+		, alertPriority x == alertPriority y
+		]
+	where
+		uncomparable (Alert { alertMessage = StringAlert _ }) = False
+		uncomparable _ = True
+		extract (StringAlert s) = s
+		extract _ = ""
 
 makeAlertFiller :: Bool -> Alert -> Alert
 makeAlertFiller success alert
@@ -114,18 +133,27 @@ isFiller alert = alertPriority alert == Filler
 
 {- Converts a given alert into filler, manipulating it in the AlertMap.
  -
+ - Any old filler that looks the same as the reference alert is removed.
+ -
  - Old filler alerts are pruned once maxAlerts is reached.
  -}
 convertToFiller :: AlertId -> Bool -> AlertMap -> AlertMap
-convertToFiller i success m
-	| bloat > 0 = M.fromList $ prune $ M.toList m'
-	| otherwise = m'
+convertToFiller i success m = case M.lookup i m of
+	Nothing -> m
+	Just al -> 
+		let al' = makeAlertFiller success al
+		in pruneBloat $ M.filterWithKey (pruneSame al') $
+			M.insertWith' const i al' m
 	where
-		bloat = M.size m - maxAlerts
-		m' = M.adjust (\al -> makeAlertFiller success al) i m
-		prune l =
-			let (f, rest) = partition (\(_, al) -> isFiller al) l
-			in drop bloat f ++ rest
+		pruneSame ref k al = k == i || not (effectivelySameAlert ref al)
+		pruneBloat m'
+			| bloat > 0 = M.fromList $ pruneold $ M.toList m'
+			| otherwise = m'
+			where
+				bloat = M.size m' - maxAlerts
+				pruneold l =
+			 		let (f, rest) = partition (\(_, al) -> isFiller al) l
+					in drop bloat f ++ rest
 
 baseActivityAlert :: Alert
 baseActivityAlert = Alert
