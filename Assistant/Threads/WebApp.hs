@@ -59,7 +59,7 @@ webAppThread st dstatus transferqueue onstartup = do
 			token <- genRandomToken 
 			s <- newWebAppState
 			return $ WebApp 
-				{ threadState = st
+				{ threadState = Just st
 				, daemonStatus = dstatus
 				, transferQueue = transferqueue
 				, secretToken = pack token

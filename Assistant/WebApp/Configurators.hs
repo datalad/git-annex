@@ -12,7 +12,6 @@ module Assistant.WebApp.Configurators where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.SideBar
-import Assistant.ThreadedMonad
 import Utility.Yesod
 import qualified Remote
 import Logs.Web (webUUID)
@@ -27,7 +26,7 @@ introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
 	let reldir = relDir webapp
-	l <- liftIO $ runThreadState (threadState webapp) $ do
+	l <- lift $ runAnnex [] $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList
 		rs' <- snd <$> trustPartition DeadTrusted rs

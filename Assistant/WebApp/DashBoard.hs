@@ -14,7 +14,6 @@ import Assistant.WebApp
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Utility.NotificationBroadcaster
@@ -35,7 +34,7 @@ import qualified Data.Map as M
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
-	current <- liftIO $ runThreadState (threadState webapp) $
+	current <- lift $ runAnnex [] $
 		M.toList . currentTransfers
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp

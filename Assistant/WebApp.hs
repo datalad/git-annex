@@ -30,7 +30,7 @@ staticFiles "static"
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 data WebApp = WebApp
-	{ threadState :: ThreadState
+	{ threadState :: Maybe ThreadState
 	, daemonStatus :: DaemonStatusHandle
 	, transferQueue :: TransferQueue
 	, secretToken :: Text
@@ -103,6 +103,16 @@ modifyWebAppState a = go =<< webAppState <$> getYesod
 		go s = liftIO $ atomically $ do
 			v <- takeTMVar s
 			putTMVar s $ a v
+
+{- Runs an Annex action from the webapp.
+ -
+ - When the webapp is run outside a git-annex repository, the fallback
+ - value is returned.
+ -}
+runAnnex :: forall sub a. a -> Annex a -> GHandler sub WebApp a
+runAnnex fallback a = maybe (return fallback) go =<< threadState <$> getYesod
+	where
+		go st = liftIO $ runThreadState st a
 
 waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier selector nid = do
