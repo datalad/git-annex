@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 4"
+ date="2012-07-31T15:41:43Z"
+ content="""
+Yes, git-annex is available for every Debian architecture which supports Haskell, including all arm ports:
+
+<pre>git-annex | 3.20120629         | wheezy            | source, amd64, armel, armhf, i386, kfreebsd-amd64, kfreebsd-i386, mips, mipsel, powerpc, s390, s390x, sparc</pre>
+"""]]
