@@ -1,7 +1,7 @@
 <div .navbar .navbar-fixed-top>
   <div .navbar-inner>
     <div .container>
-      <a .brand href="#">
+      <a .brand>
         git-annex
       <ul .nav>
         $forall (name, route, isactive) <- navbar
