@@ -1,0 +1,13 @@
+/ HomeR GET
+/noscript NoScriptR GET
+/noscriptauto NoScriptAutoR GET
+/config ConfigR GET
+/addrepository AddRepositoryR GET
+
+/transfers/#NotificationId TransfersR GET
+/sidebar/#NotificationId SideBarR GET
+/notifier/transfers NotifierTransfersR GET
+/notifier/sidebar NotifierSideBarR GET
+/closealert/#AlertId CloseAlert GET
+
+/static StaticR Static getStatic
