@@ -7,6 +7,7 @@
 
 module Init (
 	ensureInitialized,
+	isInitialized,
 	initialize,
 	uninitialize
 ) where
@@ -44,6 +45,10 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 				( initialize Nothing
 				, error "First run: git-annex init"
 				)
+
+{- Checks if a repository is initialized. Does not check version for ugrade. -}
+isInitialized :: Annex Bool
+isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 
 {- set up a git pre-commit hook, if one is not already present -}
 gitPreCommitHookWrite :: Annex ()

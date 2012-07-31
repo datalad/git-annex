@@ -16,12 +16,13 @@ import Assistant.Threads.WebApp
 import Utility.WebApp
 import Utility.ThreadScheduler
 import Utility.Daemon (checkDaemon)
+import Init
 import qualified Command.Watch
 
 import Control.Concurrent.STM
 
 def :: [Command]
-def = [oneShot $ noRepo firstRun $
+def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
 	withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
@@ -34,14 +35,15 @@ start :: Bool -> Bool -> CommandStart
 start foreground stopdaemon = notBareRepo $ do
 	if stopdaemon
 		then stopDaemon
-		else do
+		else ifM (isInitialized) ( go , liftIO firstRun )
+	stop
+	where
+		go = do
 			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 			ifM (checkpid <&&> checkshim f) $
 				( liftIO $ openBrowser f 
 				, startDaemon True foreground $ Just openBrowser
 				)
-	stop
-	where
 		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
 			liftIO $ isJust <$> checkDaemon pidfile
