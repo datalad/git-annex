@@ -3,6 +3,7 @@
 /noscriptauto NoScriptAutoR GET
 /config ConfigR GET
 /addrepository AddRepositoryR GET
+/about AboutR GET
 
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET

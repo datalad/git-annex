@@ -7,3 +7,4 @@ $doctype 5
     ^{pageHead page}
   <body>
     ^{pageBody page}
+    <div #modal></div>

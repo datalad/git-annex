@@ -16,6 +16,7 @@ import Assistant.WebApp.DashBoard
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
+import Assistant.WebApp.Documentation
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue

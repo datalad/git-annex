@@ -4,10 +4,9 @@
       <a .brand href="#">
         git-annex
       <ul .nav>
-        <li .active>
-          <a href="#">Dashboard</a>
-        <li>
-          <a href="@{ConfigR}">Config</a>
+        $forall (name, route, isactive) <- navbar
+          <li :isactive:.active>
+            <a href="@{route}">#{name}</a>
       <ul .nav .pull-right>
         <li .dropdown #menu1>
           <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
@@ -21,4 +20,3 @@
 <div .container-fluid>
   <div .row-fluid>
     ^{content}
-<div #modal></div>

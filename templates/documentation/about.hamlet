@@ -1,0 +1,16 @@
+<div .span9 .hero-unit>
+  <h2>
+    git-annex watches over your files
+  <p>
+    It will automatically notice changes, and keep files in sync between #
+    repositories and devices.
+  <p>
+    For full details, see #
+    <a href="http://git-annex.branchable.com/">the git-annex website</a>.
+  <hr>
+    git-annex is © 2010-2012 Joey Hess. It is free software, licensed #
+    under the terms of the GNU General Public License, version 3 or above. #
+    Its development was made possible by #
+    <a href="http://git-annex.branchable.com/design/assistant/thanks/">
+      many excellent people
+    .

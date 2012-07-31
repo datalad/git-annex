@@ -39,18 +39,40 @@ data WebApp = WebApp
 	, webAppState :: TMVar WebAppState
 	}
 
-instance Yesod WebApp where
-	defaultLayout content = do
-		webapp <- getYesod
-		page <- widgetToPageContent $ do
-			addStylesheet $ StaticR css_bootstrap_css
-			addStylesheet $ StaticR css_bootstrap_responsive_css
-			addScript $ StaticR jquery_full_js
-			addScript $ StaticR js_bootstrap_dropdown_js
-			addScript $ StaticR js_bootstrap_modal_js
-			$(widgetFile "page")
-		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+data NavBarItem = DashBoard | Config | About
+	deriving (Eq)
 
+navBarName :: NavBarItem -> Text
+navBarName DashBoard = "Dashboard"
+navBarName Config = "Configuration"
+navBarName About = "About"
+
+navBarRoute :: NavBarItem -> Route WebApp
+navBarRoute DashBoard = HomeR
+navBarRoute Config = ConfigR
+navBarRoute About = AboutR
+
+navBar :: Maybe NavBarItem -> [(Text, Route WebApp, Bool)]
+navBar r = map details [DashBoard, Config, About]
+	where
+		details i = (navBarName i, navBarRoute i, Just i == r)
+
+{- Used instead of defaultContent; highlights the current page if it's
+ - on the navbar. -}
+bootstrap :: Maybe NavBarItem -> Widget -> Handler RepHtml
+bootstrap navbaritem content = do
+	webapp <- getYesod
+	page <- widgetToPageContent $ do
+		addStylesheet $ StaticR css_bootstrap_css
+		addStylesheet $ StaticR css_bootstrap_responsive_css
+		addScript $ StaticR jquery_full_js
+		addScript $ StaticR js_bootstrap_dropdown_js
+		addScript $ StaticR js_bootstrap_modal_js
+		let navbar = navBar navbaritem
+		$(widgetFile "page")
+	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+
+instance Yesod WebApp where
 	{- Require an auth token be set when accessing any (non-static route) -}
 	isAuthorized _ _ = checkAuthToken secretToken
 

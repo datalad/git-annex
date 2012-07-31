@@ -44,13 +44,12 @@ introDisplay ident = do
 		counter = map show ([1..] :: [Int])
 
 getConfigR :: Handler RepHtml
-getConfigR = defaultLayout $ do
+getConfigR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Configuration"
-	[whamlet|<a href="@{HomeR}">main|]
+	$(widgetFile "configurators/main")
 
 getAddRepositoryR :: Handler RepHtml
-getAddRepositoryR = defaultLayout $ do
+getAddRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Add repository"
-	[whamlet|<a href="@{HomeR}">main|]
