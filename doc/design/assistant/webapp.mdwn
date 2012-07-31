@@ -20,6 +20,7 @@ The webapp is a web server that displays a shiny interface.
 * progress bars for each file
 * drag and drop to reorder
 * cancel and pause
+* button to open file browser on repo (`xdg-open $DIR`)
 * keep it usable w/o javascript, and accessible to blind, etc
 
 ## other features
@@ -28,6 +29,10 @@ The webapp is a web server that displays a shiny interface.
   over http by the web app
 * Display any relevant warning messages. One is the `inotify max_user_watches`
   exceeded message.
+
+## first start
+
+* make git repo
 
 ## implementation
 
