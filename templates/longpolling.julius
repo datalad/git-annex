@@ -1,11 +1,9 @@
 // longpolling for #{ident}
 function poller#{ident}() {
-	if (longpoll('@{gethtml}', '#{ident}')) {
+	longpoll('@{gethtml}', '#{ident}', function() {
 		setTimeout(poller#{ident}, #{delay});
-	}
-}
-(function( $ ) {
-	$(document).bind('ready.app', function() {
-		setTimeout(poller#{ident}, #{startdelay});
 	});
-})( jQuery );
+}
+$(function() {
+	setTimeout(poller#{ident}, #{startdelay});
+});

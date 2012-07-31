@@ -13,29 +13,26 @@ connfailed=
   '  </div>' +
   '</div>' ;
 
-function longpoll(url, divid) {
-	(function( $ ) {
-		$.ajax({
-			'url': url,
-			'dataType': 'html',
-			'success': function(data, status, jqxhr) {
-				$('#' + divid).replaceWith(data);
-				connfails=0;
-				return 1;
-			},
-			'error': function(jqxhr, msg, e) {
-				connfails=connfails+1;
-				if (connfails > 3) {
-					// blocked by many browsers
-					window.close();
-					$('#modal').replaceWith(connfailed);
-					$('#modal').modal('show');
-					return 0;
-				}
-				else {
-					return 1;
-				}
+function longpoll(url, divid, cont) {
+	$.ajax({
+		'url': url,
+		'dataType': 'html',
+		'success': function(data, status, jqxhr) {
+			$('#' + divid).replaceWith(data);
+			connfails=0;
+			cont();
+		},
+		'error': function(jqxhr, msg, e) {
+			connfails=connfails+1;
+			if (connfails > 3) {
+				// blocked by many browsers
+				window.close();
+				$('#modal').replaceWith(connfailed);
+				$('#modal').modal('show');
 			}
-		});
-	})( jQuery );
+			else {
+				cont();
+			}
+		}
+	});
 }
