@@ -35,6 +35,3 @@ The webapp is a web server that displays a shiny interface.
   and use a client-side session. It could be encrypted using the token
   as the `encryptKey`. Note: Would need to set the session duration
   to infinite (how?)
-* Fix notification handle leakage on pages other than the main page.
-  The javascript should use AJAX to request handles, that way
-  they won't be allocated at all in noscript.
