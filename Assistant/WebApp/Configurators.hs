@@ -53,3 +53,4 @@ getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Add repository"
+	$(widgetFile "configurators/addrepository")
