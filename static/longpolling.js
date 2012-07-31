@@ -3,17 +3,7 @@
 
 connfails=0;
 
-connfailed=
-  '<div id="modal" class="modal fade">' +
-  '  <div class="modal-header">' +
-  '    <h3>git-annex has shut down</h3>' +
-  '  </div>' +
-  '  <div class="modal-body">' +
-  '    You can now close this browser window.' +
-  '  </div>' +
-  '</div>' ;
-
-function longpoll(url, divid, cont) {
+function longpoll(url, divid, cont, fail) {
 	$.ajax({
 		'url': url,
 		'dataType': 'html',
@@ -25,10 +15,7 @@ function longpoll(url, divid, cont) {
 		'error': function(jqxhr, msg, e) {
 			connfails=connfails+1;
 			if (connfails > 3) {
-				// blocked by many browsers
-				window.close();
-				$('#modal').replaceWith(connfailed);
-				$('#modal').modal('show');
+				fail();
 			}
 			else {
 				cont();

@@ -1,8 +1,9 @@
 // longpolling for #{ident}
 function poller#{ident}() {
-	longpoll('@{gethtml}', '#{ident}', function() {
-		setTimeout(poller#{ident}, #{delay});
-	});
+	longpoll('@{gethtml}', '#{ident}'
+		, function() { setTimeout(poller#{ident}, #{delay}); }
+		, function() { webapp_disconnected(); }
+	);
 }
 $(function() {
 	setTimeout(poller#{ident}, #{startdelay});
