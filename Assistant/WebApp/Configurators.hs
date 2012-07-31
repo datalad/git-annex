@@ -48,24 +48,10 @@ addRepositoryForm :: Form RepositoryPath
 addRepositoryForm msg = do
 	cwd <- liftIO $ getCurrentDirectory
 	(pathRes, pathView) <- mreq textField "" (Just $ pack cwd)
-	let widget = do
+	let form = do
 		webAppFormAuthToken
-		toWidget [julius|
-$(function() {
-	$('##{fvId pathView}').focus();
-})
-|]
-		[whamlet|
-#{msg}
-<p>
-  <div .input-prepend .input-append>
-    <span .add-on>
-      <i .icon-folder-open></i>
-    ^{fvInput pathView}
-    <button type=submit .btn>
-      Make Repository
-|]
-	return (RepositoryPath <$> pathRes, widget)
+		$(widgetFile "configurators/addrepository/form")
+	return (RepositoryPath <$> pathRes, form)
 
 addRepository :: Bool -> Widget
 addRepository firstrun = do

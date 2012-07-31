@@ -1,0 +1,8 @@
+#{msg}
+<p>
+  <div .input-prepend .input-append>
+    <span .add-on>
+      <i .icon-folder-open></i>
+    ^{fvInput pathView}
+    <button type=submit .btn>
+      Make Repository
