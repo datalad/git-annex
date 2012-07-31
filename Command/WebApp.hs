@@ -21,7 +21,7 @@ import qualified Command.Watch
 import Control.Concurrent.STM
 
 def :: [Command]
-def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
+def = [oneShot $ noRepo firstRun $
 	withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
