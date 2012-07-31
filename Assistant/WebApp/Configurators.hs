@@ -25,7 +25,6 @@ import Data.Text (Text)
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	let reldir = relDir webapp
 	l <- lift $ runAnnex [] $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList

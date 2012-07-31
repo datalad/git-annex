@@ -1,4 +1,4 @@
-{- git-annex assistant webapp
+{- git-annex assistant webapp thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -38,47 +38,46 @@ thisThread = "WebApp"
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
-webAppThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Maybe (IO ()) -> IO ()
-webAppThread st dstatus transferqueue onstartup = do
-	webapp <- mkWebApp
+webAppThread :: (Maybe ThreadState) -> DaemonStatusHandle -> TransferQueue -> Maybe (FilePath -> IO ()) -> IO ()
+webAppThread mst dstatus transferqueue onstartup = do
+	webapp <- WebApp
+		<$> pure mst
+		<*> pure dstatus
+		<*> pure transferqueue
+		<*> (pack <$> genRandomToken)
+		<*> getreldir mst
+		<*> pure $(embed "static")
+		<*> newWebAppState
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> do
-		runThreadState st $ writeHtmlShim webapp port
-		maybe noop id onstartup
+	runWebApp app' $ \port -> case mst of
+		Nothing -> withTempFile "webapp.html" $ \tmpfile _ -> go port webapp tmpfile
+		Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
 	where
-		mkWebApp = do
+		getreldir Nothing = return Nothing
+		getreldir (Just st) = do
 			dir <- absPath =<< runThreadState st (fromRepo repoPath)
 			home <- myHomeDir
-			let reldir = if dirContains home dir
+			return $ Just $ if dirContains home dir
 				then relPathDirToFile home dir
 				else dir
-			token <- genRandomToken 
-			s <- newWebAppState
-			return $ WebApp 
-				{ threadState = Just st
-				, daemonStatus = dstatus
-				, transferQueue = transferqueue
-				, secretToken = pack token
-				, relDir = reldir
-				, getStatic = $(embed "static")
-				, webAppState = s
-				}
+		go port webapp htmlshim = do
+			writeHtmlShim webapp port htmlshim
+			maybe noop (\a -> a htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
-writeHtmlShim :: WebApp -> PortNumber -> Annex ()
-writeHtmlShim webapp port = do
-	liftIO $ debug thisThread ["running on port", show port]
-	htmlshim <- fromRepo gitAnnexHtmlShim
-	liftIO $ viaTmp go htmlshim $ genHtmlShim webapp port
+writeHtmlShim :: WebApp -> PortNumber -> FilePath -> IO ()
+writeHtmlShim webapp port file = do
+	debug thisThread ["running on port", show port]
+	viaTmp go file $ genHtmlShim webapp port
 	where
-		go file content = do
-			h <- openFile file WriteMode
-			modifyFileMode file $ removeModes [groupReadMode, otherReadMode]
+		go tmpfile content = do
+			h <- openFile tmpfile WriteMode
+			modifyFileMode tmpfile $ removeModes [groupReadMode, otherReadMode]
 			hPutStr h content
 			hClose h
 

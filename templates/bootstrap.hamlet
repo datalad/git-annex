@@ -1,7 +1,11 @@
 $doctype 5
 <html>
   <head>
-    <title>#{relDir webapp} #{pageTitle page}
+    <title>
+     $maybe reldir <- relDir webapp
+       #{reldir} #{pageTitle page}
+     $nothing
+       #{pageTitle page}
     <link rel="icon" href=@{StaticR favicon_ico} type="image/x-icon">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     ^{pageHead page}

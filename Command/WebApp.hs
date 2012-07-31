@@ -10,12 +10,19 @@ module Command.WebApp where
 import Common.Annex
 import Command
 import Assistant
+import Assistant.DaemonStatus
+import Assistant.TransferQueue
+import Assistant.Threads.WebApp
 import Utility.WebApp
+import Utility.ThreadScheduler
 import Utility.Daemon (checkDaemon)
 import qualified Command.Watch
 
+import Control.Concurrent.STM
+
 def :: [Command]
-def = [withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
+def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
+	withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]
@@ -30,8 +37,8 @@ start foreground stopdaemon = notBareRepo $ do
 		else do
 			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 			ifM (checkpid <&&> checkshim f) $
-				( liftIO $ go f 
-				, startDaemon True foreground $ Just $ go f
+				( liftIO $ openBrowser f 
+				, startDaemon True foreground $ Just openBrowser
 				)
 	stop
 	where
@@ -39,7 +46,17 @@ start foreground stopdaemon = notBareRepo $ do
 			pidfile <- fromRepo gitAnnexPidFile
 			liftIO $ isJust <$> checkDaemon pidfile
 		checkshim f = liftIO $ doesFileExist f
-		go f = unlessM (runBrowser url) $
-			error $ "failed to start web browser on url " ++ url
-			where
-				url = "file://" ++ f
+
+openBrowser :: FilePath -> IO ()
+openBrowser htmlshim = unlessM (runBrowser url) $
+	error $ "failed to start web browser on url " ++ url
+	where
+		url = "file://" ++ htmlshim
+
+firstRun :: IO ()
+firstRun = do
+	dstatus <- atomically . newTMVar =<< newDaemonStatus
+	transferqueue <- newTransferQueue
+	webAppThread Nothing dstatus transferqueue $ Just $ \f -> do
+		openBrowser f
+		waitForTermination

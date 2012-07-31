@@ -7,16 +7,17 @@
         $forall (name, route, isactive) <- navbar
           <li :isactive:.active>
             <a href="@{route}">#{name}</a>
-      <ul .nav .pull-right>
-        <li .dropdown #menu1>
-          <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
-            Current Repository: #{relDir webapp}
-            <b .caret></b>
-          <ul .dropdown-menu>
-             <li><a href="#">#{relDir webapp}</a></li>
-             <li .divider></li>
-             <li><a href="@{AddRepositoryR}">Add another repository</a></li>
-
+      $maybe reldir <- relDir webapp
+        <ul .nav .pull-right>
+          <li .dropdown #menu1>
+            <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
+              Current Repository: #{reldir}
+              <b .caret></b>
+            <ul .dropdown-menu>
+               <li><a href="#">#{reldir}</a></li>
+               <li .divider></li>
+               <li><a href="@{AddRepositoryR}">Add another repository</a></li>
+      $nothing
 <div .container-fluid>
   <div .row-fluid>
     ^{content}

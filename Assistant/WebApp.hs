@@ -34,7 +34,7 @@ data WebApp = WebApp
 	, daemonStatus :: DaemonStatusHandle
 	, transferQueue :: TransferQueue
 	, secretToken :: Text
-	, relDir :: FilePath
+	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, webAppState :: TMVar WebAppState
 	}

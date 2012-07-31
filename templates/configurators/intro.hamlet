@@ -1,27 +1,28 @@
 <div .span9 ##{ident} .hero-unit>
-  <h2>
-    git-annex is watching over your files in <small><tt>#{reldir}</tt></small>
-  <p>
-    It will automatically notice changes, and keep files in sync between #
-    $if notenough
-      repositories on your devices ...
-      <h2>
-        But no other repositories are set up yet.
-      <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
-    $else
-      $if barelyenough
-        <span .badge .badge-warning>#{numrepos}</span>
+  $maybe reldir <- relDir webapp
+   <h2>
+      git-annex is watching over your files in <small><tt>#{reldir}</tt></small>
+    <p>
+      It will automatically notice changes, and keep files in sync between #
+      $if notenough
+        repositories on your devices ...
+        <h2>
+          But no other repositories are set up yet.
+        <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
       $else
-        <span .badge .badge-success>#{numrepos}</span>
-      \ repositories and devices:
-      <table .table .table-striped .table-condensed>
-        <tbody>
-          $forall (num, name) <- remotelist
-            <tr>
-              <td>
-                #{num}
-              <td>
-                #{name}
-      <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
-      <p>
-        Or just sit back, watch the magic, and get on with using your files.
+        $if barelyenough
+          <span .badge .badge-warning>#{numrepos}</span>
+        $else
+          <span .badge .badge-success>#{numrepos}</span>
+        \ repositories and devices:
+        <table .table .table-striped .table-condensed>
+          <tbody>
+            $forall (num, name) <- remotelist
+              <tr>
+                <td>
+                  #{num}
+                <td>
+                  #{name}
+        <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
+        <p>
+          Or just sit back, watch the magic, and get on with using your files.

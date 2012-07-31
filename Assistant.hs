@@ -122,7 +122,7 @@ import Utility.ThreadScheduler
 
 import Control.Concurrent
 
-startDaemon :: Bool -> Bool -> Maybe (IO ()) -> Annex ()
+startDaemon :: Bool -> Bool -> Maybe (FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground webappwaiter
 	| foreground = do
 		showStart (if assistant then "assistant" else "watch") "."
@@ -155,7 +155,7 @@ startDaemon assistant foreground webappwaiter
 				, mountWatcherThread st dstatus scanremotes
 				, transferScannerThread st dstatus scanremotes transferqueue
 #ifdef WITH_WEBAPP
-				, webAppThread st dstatus transferqueue webappwaiter
+				, webAppThread (Just st) dstatus transferqueue webappwaiter
 #endif
 				, watchThread st dstatus transferqueue changechan
 				]
