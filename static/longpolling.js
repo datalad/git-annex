@@ -1,5 +1,5 @@
-// Uses long-polling to update a div with a specified id,
-// by polling an url, which should return a new div, with the same id.
+// Updates a div with a specified id, by polling an url,
+// which should return a new div, with the same id.
 
 connfails=0;
 

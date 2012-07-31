@@ -36,6 +36,7 @@ import Text.Hamlet
 import Network.Socket (PortNumber)
 import Text.Blaze.Renderer.String
 import Data.Text (Text, pack, unpack)
+import qualified Data.Text as T
 import qualified Data.Map as M
 import Control.Concurrent.STM
 
@@ -93,6 +94,8 @@ mkYesod "WebApp" [parseRoutes|
 /noscriptauto NoScriptAutoR GET
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET
+/notifier/transfers NotifierTransfersR GET
+/notifier/sidebar NotifierSideBarR GET
 /closealert/#AlertId CloseAlert GET
 /config ConfigR GET
 /addrepository AddRepositoryR GET
@@ -136,18 +139,39 @@ instance Yesod WebApp where
  -
  - The widget should have a html element with an id=ident, which will be
  - replaced when it's updated.
- - 
- - Updating is done by getting html from the gethtml route.
+ -
+ - The geturl route should return the notifier url to use for polling.
  -
  - ms_delay is how long to delay between AJAX updates
  - ms_startdelay is how long to delay before updating with AJAX at the start
  -}
 autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
-autoUpdate ident gethtml ms_delay ms_startdelay = do
+autoUpdate ident geturl ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
 	addScript $ StaticR longpolling_js
 	$(widgetFile "longpolling")
+
+{- Notifier urls are requested by the javascript, to avoid allocation
+ - of NotificationIds when noscript pages are loaded. This constructs a
+ - notifier url for a given Route and NotificationBroadcaster.
+ -}
+notifierUrl :: (NotificationId -> Route WebApp) -> (DaemonStatus -> NotificationBroadcaster) -> Handler RepPlain
+notifierUrl route selector = do
+	(urlbits, _params) <- renderRoute . route <$> newNotifier selector
+	webapp <- getYesod
+	return $ RepPlain $ toContent $ T.concat
+		[ "/"
+		, T.intercalate "/" urlbits
+		, "?auth="
+		, secretToken webapp
+		]
+
+getNotifierTransfersR :: Handler RepPlain
+getNotifierTransfersR = notifierUrl TransfersR transferNotifier
+
+getNotifierSideBarR :: Handler RepPlain
+getNotifierSideBarR = notifierUrl SideBarR alertNotifier
 
 {- A display of currently running and queued transfers.
  -
@@ -159,7 +183,8 @@ transfersDisplay warnNoScript = do
 		M.toList . currentTransfers
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
-	let ident = transfersDisplayIdent
+	let ident = "transfers"
+	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = current ++ queued
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
@@ -168,9 +193,7 @@ transfersDisplay warnNoScript = do
 			)
 		else $(widgetFile "transfers")
 
-transfersDisplayIdent :: Text
-transfersDisplayIdent = "transfers"
-
+{- An intro message, and list of repositories. -}
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
@@ -206,8 +229,8 @@ getTransfersR nid = do
 	page <- widgetToPageContent $ transfersDisplay False
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
-sideBarDisplay :: Bool -> Widget
-sideBarDisplay noScript = do
+sideBarDisplay :: Widget
+sideBarDisplay = do
 	let content = do
 		{- Any yesod message appears as the first alert. -}
 		maybe noop rendermessage =<< lift getMessage
@@ -218,14 +241,9 @@ sideBarDisplay noScript = do
 			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs
-	ident <- lift newIdent
+	let ident = "sidebar"
 	$(widgetFile "sidebar")
-
-	unless noScript $ do
-		{- Set up automatic updates of the sidebar
-		 - when alerts come in. -}
-		nid <- lift $ newNotifier alertNotifier
-		autoUpdate ident (SideBarR nid) (10 :: Int) (10 :: Int)
+	autoUpdate ident NotifierSideBarR (10 :: Int) (10 :: Int)
 	where
 		bootstrapclass Activity = "alert-info"
 		bootstrapclass Warning = "alert"
@@ -264,7 +282,7 @@ getSideBarR :: NotificationId -> Handler RepHtml
 getSideBarR nid = do
 	waitNotifier alertNotifier nid
 
-	page <- widgetToPageContent $ sideBarDisplay True
+	page <- widgetToPageContent sideBarDisplay
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
 {- Called by the client to close an alert. -}
@@ -273,43 +291,39 @@ getCloseAlert i = do
 	webapp <- getYesod
 	void $ liftIO $ removeAlert (daemonStatus webapp) i
 
-dashboard :: Bool -> Bool -> Widget
-dashboard noScript warnNoScript = do
-	sideBarDisplay noScript
-	transfersDisplay warnNoScript
+{- The main dashboard. -}
+dashboard :: Bool -> Widget
+dashboard warnNoScript = do
+	sideBarDisplay
+	let content = transfersDisplay warnNoScript
+	$(widgetFile "dashboard")
 
 getHomeR :: Handler RepHtml
-getHomeR = defaultLayout $ do
-	{- Set up automatic updates for the transfers display. -}
-	nid <- lift $ newNotifier transferNotifier
-	autoUpdate transfersDisplayIdent (TransfersR nid) (10 :: Int) (10 :: Int)
-	
-	dashboard False True
+getHomeR = defaultLayout $ dashboard True
 
-{- Same as HomeR, except with no javascript, so it doesn't allocate
- - new resources each time the page is refreshed, and with autorefreshing
- - via meta refresh. -}
+{- Same as HomeR, except with autorefreshing via meta refresh. -}
 getNoScriptAutoR :: Handler RepHtml
 getNoScriptAutoR = defaultLayout $ do
 	let ident = NoScriptR
 	let delayseconds = 3 :: Int
 	let this = NoScriptAutoR
 	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
-	dashboard True False
+	dashboard False
 
+{- Same as HomeR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler RepHtml
 getNoScriptR = defaultLayout $
-	dashboard True True
+	dashboard False
 
 getConfigR :: Handler RepHtml
 getConfigR = defaultLayout $ do
-	sideBarDisplay False
+	sideBarDisplay
 	setTitle "Configuration"
 	[whamlet|<a href="@{HomeR}">main|]
 
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = defaultLayout $ do
-	sideBarDisplay False
+	sideBarDisplay
 	setTitle "Add repository"
 	[whamlet|<a href="@{HomeR}">main|]
 

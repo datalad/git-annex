@@ -1,9 +1,12 @@
 function longpoll_#{ident}() {
-	longpoll('@{gethtml}', '#{ident}'
+	longpoll(longpoll_#{ident}_url, '#{ident}'
 		, function() { setTimeout(longpoll_#{ident}, #{delay}); }
 		, function() { webapp_disconnected(); }
 	);
 }
 $(function() {
-	setTimeout(longpoll_#{ident}, #{startdelay});
+	$.get("@{geturl}", function(url){
+		longpoll_#{ident}_url = url;
+		setTimeout(longpoll_#{ident}, #{startdelay});
+	});
 });
