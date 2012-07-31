@@ -95,6 +95,11 @@ instance Yesod WebApp where
 	makeSessionBackend = webAppSessionBackend
 	jsLoader _ = BottomOfHeadBlocking
 
+instance RenderMessage WebApp FormMessage where
+	renderMessage _ _ = defaultFormMessage
+
+type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
+
 data WebAppState = WebAppState
 	{ showIntro :: Bool
 	}
@@ -145,3 +150,10 @@ instance PathPiece NotificationId where
 instance PathPiece AlertId where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
+
+{- Adds the auth parameter as a hidden field on a form. Must be put into
+ - every form. -}
+webAppFormAuthToken :: Widget
+webAppFormAuthToken = do
+	webapp <- lift getYesod
+	[whamlet|<input type="hidden" name="auth" value="#{secretToken webapp}">|]

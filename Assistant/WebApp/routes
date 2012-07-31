@@ -1,9 +1,10 @@
 / HomeR GET
 /noscript NoScriptR GET
 /noscriptauto NoScriptAutoR GET
+/about AboutR GET
+
 /config ConfigR GET
 /config/addrepository AddRepositoryR GET
-/about AboutR GET
 
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET

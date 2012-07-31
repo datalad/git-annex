@@ -19,7 +19,7 @@ import Logs.Trust
 import Annex.UUID (getUUID)
 
 import Yesod
-import Data.Text (Text)
+import Data.Text (Text, pack)
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
@@ -41,10 +41,44 @@ introDisplay ident = do
 	where
 		counter = map show ([1..] :: [Int])
 
+data RepositoryPath = RepositoryPath Text
+	deriving Show
+
+addRepositoryForm :: Form RepositoryPath
+addRepositoryForm msg = do
+	cwd <- liftIO $ getCurrentDirectory
+	(pathRes, pathView) <- mreq textField "" (Just $ pack cwd)
+	let widget = do
+		webAppFormAuthToken
+		toWidget [julius|
+$(function() {
+	$('##{fvId pathView}').focus();
+})
+|]
+		[whamlet|
+#{msg}
+<p>
+  <div .input-prepend .input-append>
+    <span .add-on>
+      <i .icon-folder-open></i>
+    ^{fvInput pathView}
+    <button type=submit .btn>
+      Make Repository
+|]
+	return (RepositoryPath <$> pathRes, widget)
+
 addRepository :: Bool -> Widget
 addRepository firstrun = do
 	setTitle $ if firstrun then "Getting started" else "Add repository"
-	$(widgetFile "configurators/addrepository")
+	((res, form), enctype) <- lift $ runFormGet addRepositoryForm
+	case res of
+		FormSuccess (RepositoryPath p) -> error $ "TODO" ++ show p
+		_ -> $(widgetFile "configurators/addrepository")
+
+getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR = bootstrap (Just Config) $ do
+	sideBarDisplay
+	addRepository False
 
 getConfigR :: Handler RepHtml
 getConfigR = bootstrap (Just Config) $ do
@@ -55,8 +89,3 @@ getConfigR = bootstrap (Just Config) $ do
 			setTitle "Configuration"
 			$(widgetFile "configurators/main")
 		)
-
-getAddRepositoryR :: Handler RepHtml
-getAddRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	addRepository False

@@ -10,7 +10,6 @@
     <p>
       Files in this repository will managed by git-annex, #
       and kept in sync with your repositories on other devices.
-    <form .form-inline>
-      <i class="icon-folder-open"></i> #
-      <input type="text" .input-xlarge placeholder="directory"> #
-      <button type="submit" .btn .btn-primary .btn-large>Make Repository</button>
+    <p>
+    <form .form-inline enctype=#{enctype}>
+      ^{form}
