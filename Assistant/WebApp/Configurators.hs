@@ -38,7 +38,7 @@ introDisplay ident = do
 	let notenough = n < 2
 	let barelyenough = n == 2
 	let morethanenough = n > 2
-	$(widgetFile "intro")
+	$(widgetFile "configurators/intro")
 	lift $ modifyWebAppState $ \s -> s { showIntro = False }
 	where
 		counter = map show ([1..] :: [Int])

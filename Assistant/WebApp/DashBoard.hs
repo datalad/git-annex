@@ -45,9 +45,9 @@ transfersDisplay warnNoScript = do
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
 			( introDisplay ident
-			, $(widgetFile "transfers")
+			, $(widgetFile "dashboard/transfers")
 			)
-		else $(widgetFile "transfers")
+		else $(widgetFile "dashboard/transfers")
 
 {- Called by client to get a display of currently in process transfers.
  -
@@ -69,7 +69,7 @@ dashboard :: Bool -> Widget
 dashboard warnNoScript = do
 	sideBarDisplay
 	let content = transfersDisplay warnNoScript
-	$(widgetFile "dashboard")
+	$(widgetFile "dashboard/main")
 
 getHomeR :: Handler RepHtml
 getHomeR = defaultLayout $ dashboard True
@@ -80,7 +80,7 @@ getNoScriptAutoR = defaultLayout $ do
 	let ident = NoScriptR
 	let delayseconds = 3 :: Int
 	let this = NoScriptAutoR
-	toWidgetHead $(hamletFile $ hamletTemplate "metarefresh")
+	toWidgetHead $(hamletFile $ hamletTemplate "dashboard/metarefresh")
 	dashboard False
 
 {- Same as HomeR, except no autorefresh at all (and no noscript warning). -}

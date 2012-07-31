@@ -34,7 +34,7 @@ sideBarDisplay = do
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs
 	let ident = "sidebar"
-	$(widgetFile "sidebar")
+	$(widgetFile "sidebar/main")
 	autoUpdate ident NotifierSideBarR (10 :: Int) (10 :: Int)
 	where
 		bootstrapclass Activity = "alert-info"
@@ -60,7 +60,7 @@ sideBarDisplay = do
 		addalert i closable block divclass heading widget = do
 			let alertid = show i
 			let closealert = CloseAlert i
-			$(widgetFile "alert")
+			$(widgetFile "sidebar/alert")
 
 {- Called by client to get a sidebar display.
  -

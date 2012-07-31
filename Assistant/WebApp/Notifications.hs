@@ -34,7 +34,7 @@ autoUpdate ident geturl ms_delay ms_startdelay = do
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
 	addScript $ StaticR longpolling_js
-	$(widgetFile "longpolling")
+	$(widgetFile "notifications/longpolling")
 
 {- Notifier urls are requested by the javascript, to avoid allocation
  - of NotificationIds when noscript pages are loaded. This constructs a
