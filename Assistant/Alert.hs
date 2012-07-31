@@ -34,6 +34,7 @@ data Alert = Alert
 	, alertBlockDisplay :: Bool
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
+	, alertIcon :: Maybe String
 	}
 
 type AlertPair = (AlertId, Alert)
@@ -108,25 +109,14 @@ makeAlertFiller success alert
 	| otherwise = alert
 		{ alertClass = if c == Activity then c' else c
 		, alertPriority = Filler
-		, alertHeader = finished <$> h
-		, alertMessage = massage m
 		, alertClosable = True
+		, alertIcon = Just $ if success then "ok" else "exclamation-sign"
 		}
 	where
-		h = alertHeader alert
-		m = alertMessage alert
 		c = alertClass alert
 		c'
 			| success = Success
 			| otherwise = Error
-
-		massage (WidgetAlert w) = WidgetAlert w -- renders old on its own
-		massage (StringAlert s) = StringAlert $
-			maybe (finished s) (const s) h
-
-		finished s
-			| success = s ++ ": Ok"
-			| otherwise = s ++ ": Failed"
 
 isFiller :: Alert -> Bool
 isFiller alert = alertPriority alert == Filler
@@ -163,6 +153,7 @@ baseActivityAlert = Alert
 	, alertBlockDisplay = False
 	, alertClosable = False
 	, alertPriority = Medium
+	, alertIcon = Just "refresh"
 	}
 
 activityAlert :: Maybe String -> String -> Alert
@@ -220,4 +211,5 @@ sanityCheckFixAlert msg = Alert
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
+	, alertIcon = Just "exclamation-sign"
 	}

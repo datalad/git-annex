@@ -1,6 +1,10 @@
 <div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid} :closable:onclick="(function( $ ) { $.get('@{closealert}') })( jQuery );">
   $if closable
     <a .close data-dismiss="alert">&times;</a>
+  $case icon
+    $of Nothing
+    $of Just name
+      <i class="icon-#{name}"></i> #
   $maybe h <- heading
     $if block
       <h4 class="alert-heading">#{h}</h4>

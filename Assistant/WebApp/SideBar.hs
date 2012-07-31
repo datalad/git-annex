@@ -49,15 +49,16 @@ sideBarDisplay = do
 			(alertBlockDisplay alert)
 			(bootstrapclass $ alertClass alert)
 			(alertHeader alert)
+			(alertIcon alert)
 			$ case alertMessage alert of
 				StringAlert s -> [whamlet|#{s}|]
 				WidgetAlert w -> w alert
 
 		rendermessage msg = addalert firstAlertId True False
-			"alert-info" Nothing [whamlet|#{msg}|]
+			"alert-info" Nothing (Just "exclamation-sign") [whamlet|#{msg}|]
 
-		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe String -> Widget -> Widget
-		addalert i closable block divclass heading widget = do
+		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe String -> Maybe String -> Widget -> Widget
+		addalert i closable block divclass heading icon widget = do
 			let alertid = show i
 			let closealert = CloseAlert i
 			$(widgetFile "sidebar/alert")
