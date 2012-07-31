@@ -52,25 +52,34 @@ navBarRoute DashBoard = HomeR
 navBarRoute Config = ConfigR
 navBarRoute About = AboutR
 
-navBar :: Maybe NavBarItem -> [(Text, Route WebApp, Bool)]
-navBar r = map details [DashBoard, Config, About]
-	where
-		details i = (navBarName i, navBarRoute i, Just i == r)
+defaultNavBar :: [NavBarItem]
+defaultNavBar = [DashBoard, Config, About]
+
+firstRunNavBar :: [NavBarItem]
+firstRunNavBar = [Config, About]
+
+selectNavBar :: Handler [NavBarItem]
+selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)
+
+inFirstRun :: Handler Bool
+inFirstRun = isNothing . threadState <$> getYesod
 
 {- Used instead of defaultContent; highlights the current page if it's
  - on the navbar. -}
 bootstrap :: Maybe NavBarItem -> Widget -> Handler RepHtml
 bootstrap navbaritem content = do
 	webapp <- getYesod
+	navbar <- map navdetails <$> selectNavBar
 	page <- widgetToPageContent $ do
 		addStylesheet $ StaticR css_bootstrap_css
 		addStylesheet $ StaticR css_bootstrap_responsive_css
 		addScript $ StaticR jquery_full_js
 		addScript $ StaticR js_bootstrap_dropdown_js
 		addScript $ StaticR js_bootstrap_modal_js
-		let navbar = navBar navbaritem
 		$(widgetFile "page")
 	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+	where
+		navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 
 instance Yesod WebApp where
 	{- Require an auth token be set when accessing any (non-static route) -}

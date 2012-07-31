@@ -71,11 +71,14 @@ dashboard warnNoScript = do
 	$(widgetFile "dashboard/main")
 
 getHomeR :: Handler RepHtml
-getHomeR = bootstrap (Just DashBoard) $ dashboard True
+getHomeR = ifM (inFirstRun)
+	( redirect ConfigR
+	, bootstrap (Just DashBoard) $ dashboard True
+	)
 
 {- Same as HomeR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler RepHtml
-getNoScriptR = bootstrap (Just DashBoard)  $ dashboard False
+getNoScriptR = bootstrap (Just DashBoard) $ dashboard False
 
 {- Same as HomeR, except with autorefreshing via meta refresh. -}
 getNoScriptAutoR :: Handler RepHtml

@@ -1,3 +1,16 @@
 <div .span9 .hero-unit>
-  <h2>
-    Sorry, no configuration is implemented yet...
+    $if firstrun
+      <h2>
+        Welcome to git-annex!
+        <p>
+          There's just one thing to do before you can start using the power #
+          and convenience of git-annex.
+    <h2>
+      Create a git-annex repository
+    <p>
+      Files in this repository will managed by git-annex, #
+      and kept in sync with your repositories on other devices.
+    <form .form-inline>
+      <i class="icon-folder-open"></i> #
+      <input type="text" .input-xlarge placeholder="directory"> #
+      <button type="submit" .btn .btn-primary .btn-large>Make Repository</button>

@@ -41,14 +41,22 @@ introDisplay ident = do
 	where
 		counter = map show ([1..] :: [Int])
 
+addRepository :: Bool -> Widget
+addRepository firstrun = do
+	setTitle $ if firstrun then "Getting started" else "Add repository"
+	$(widgetFile "configurators/addrepository")
+
 getConfigR :: Handler RepHtml
 getConfigR = bootstrap (Just Config) $ do
 	sideBarDisplay
-	setTitle "Configuration"
-	$(widgetFile "configurators/main")
+	ifM (lift inFirstRun)
+		( addRepository True
+		, do
+			setTitle "Configuration"
+			$(widgetFile "configurators/main")
+		)
 
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
-	setTitle "Add repository"
-	$(widgetFile "configurators/addrepository")
+	addRepository False

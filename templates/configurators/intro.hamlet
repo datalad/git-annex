@@ -26,12 +26,3 @@
         <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
         <p>
           Or just sit back, watch the magic, and get on with using your files.
-  $nothing
-    <h2>
-      Creating a git-annex repository
-    <p>
-      Files in this repository will managed by git-annex, #
-      and kept in sync with your repositories on other devices.
-    <form .form-inline>
-      <input type="text" .input-xlarge placeholder="directory"> #
-      <button type="submit" .btn .btn-primary .btn-large>Make Repository</button>
