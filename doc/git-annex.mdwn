@@ -192,8 +192,8 @@ subdirectories).
 
 * webapp
 
-  Opens a web browser, viewing the git-annex assistant's web app.
-  (If the assistant is not already running, it will be automatically started.)
+  Runs a web app, that allows easy setup of a git-annex repository,
+  and control of the git-annex assistant.
 
 # REPOSITORY SETUP COMMANDS
 

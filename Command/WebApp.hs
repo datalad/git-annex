@@ -16,7 +16,6 @@ import Assistant.Threads.WebApp
 import Utility.WebApp
 import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
-import qualified Command.Watch
 import qualified Git.CurrentRepo
 import qualified Annex
 
@@ -25,18 +24,14 @@ import Control.Concurrent.STM
 
 def :: [Command]
 def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
-	withOptions [Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]
-seek = [withFlag Command.Watch.stopOption $ \stopdaemon ->
-	withNothing $ start stopdaemon]
+seek = [withNothing start]
 
-start :: Bool -> CommandStart
-start stopdaemon = notBareRepo $ do
-	if stopdaemon
-		then stopDaemon
-		else ifM (isInitialized) ( go , liftIO firstRun )
+start :: CommandStart
+start = notBareRepo $ do
+	ifM (isInitialized) ( go , liftIO firstRun )
 	stop
 	where
 		go = do
