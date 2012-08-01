@@ -96,15 +96,15 @@ checkRepositoryPath p = do
 		expandTilde home ('~':path) = home </> path
 		expandTilde _ path = path
 
-{- If run in the home directory, default to putting it in ~/Desktop/annex,
- - when a Desktop directory exists, and ~/annex otherwise.
+{- On first run, if run in the home directory, default to putting it in
+ - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
  -
  - If run in another directory, the user probably wants to put it there. -}
-defaultRepositoryPath :: IO FilePath
-defaultRepositoryPath = do
+defaultRepositoryPath :: Bool -> IO FilePath
+defaultRepositoryPath firstrun = do
 	cwd <- liftIO $ getCurrentDirectory
 	home <- myHomeDir
-	if home == cwd
+	if home == cwd && firstRun
 		then ifM (doesDirectoryExist $ home </> "Desktop")
 			(return "~/Desktop/annex", return "~/annex")
 		else return cwd
@@ -112,7 +112,7 @@ defaultRepositoryPath = do
 addRepositoryForm :: Form RepositoryPath
 addRepositoryForm msg = do
 	path <- T.pack . addTrailingPathSeparator
-		<$> liftIO defaultRepositoryPath
+		<$> liftIO defaultRepositoryPath =<< lift inFirstRun
 	(pathRes, pathView) <- mreq (repositoryPathField True) ""(Just path)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
