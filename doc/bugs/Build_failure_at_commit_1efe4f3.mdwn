@@ -42,3 +42,4 @@ Assistant/WebApp/Configurators.hs:114:17:
 make: *** [git-annex] Error 1
 </pre>
 
+> [[fixed|done]] --[[Joey]] 
