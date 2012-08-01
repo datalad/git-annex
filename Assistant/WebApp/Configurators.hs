@@ -17,11 +17,16 @@ import qualified Remote
 import Logs.Web (webUUID)
 import Logs.Trust
 import Annex.UUID (getUUID)
+import Init
+import qualified Git.Construct
+import qualified Git.Config
+import qualified Annex
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
+import System.Posix.Directory
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
@@ -104,7 +109,7 @@ defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 	cwd <- liftIO $ getCurrentDirectory
 	home <- myHomeDir
-	if home == cwd && firstRun
+	if home == cwd && firstrun
 		then ifM (doesDirectoryExist $ home </> "Desktop")
 			(return "~/Desktop/annex", return "~/annex")
 		else return cwd
@@ -112,8 +117,8 @@ defaultRepositoryPath firstrun = do
 addRepositoryForm :: Form RepositoryPath
 addRepositoryForm msg = do
 	path <- T.pack . addTrailingPathSeparator
-		<$> liftIO defaultRepositoryPath =<< lift inFirstRun
-	(pathRes, pathView) <- mreq (repositoryPathField True) ""(Just path)
+		<$> (liftIO . defaultRepositoryPath =<< lift inFirstRun)
+	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just path)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
 		FormFailure l -> (True, concat $ map T.unpack l)
@@ -128,8 +133,36 @@ addRepository firstrun = do
 	setTitle $ if firstrun then "Getting started" else "Add repository"
 	((res, form), enctype) <- lift $ runFormGet addRepositoryForm
 	case res of
-		FormSuccess (RepositoryPath p) -> error $ "TODO" ++ show p
+		FormSuccess (RepositoryPath p) -> go $ T.unpack p
 		_ -> $(widgetFile "configurators/addrepository")
+	where
+		go path
+			| firstrun = lift $ startFullAssistant path
+			| otherwise = error "TODO"
+
+{- Bootstraps from first run mode to a fully running assistant in a
+ - repository, by running the postFirstRun callback, which returns the
+ - url to the new webapp. -}
+startFullAssistant :: FilePath -> Handler ()
+startFullAssistant path = do
+	webapp <- getYesod
+	url <- liftIO $ do
+		makeRepo path
+		changeWorkingDirectory path
+		putStrLn "pre run"
+		r <- fromJust $ postFirstRun webapp
+		putStrLn $ "got " ++ r
+		return r
+	redirect $ T.pack url
+
+{- Makes a new git-annex repository. -}
+makeRepo :: FilePath -> IO ()
+makeRepo path = do
+	unlessM (boolSystem "git" [Param "init", Param "--quiet", File path]) $
+		error "git init failed!"
+	g <- Git.Config.read =<< Git.Construct.fromPath path
+	state <- Annex.new g
+	Annex.eval state $ initialize $ Just "new repo"
 
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = bootstrap (Just Config) $ do

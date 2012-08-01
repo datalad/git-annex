@@ -37,6 +37,7 @@ data WebApp = WebApp
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, webAppState :: TMVar WebAppState
+	, postFirstRun :: Maybe (IO String)
 	}
 
 data NavBarItem = DashBoard | Config | About

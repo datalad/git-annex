@@ -38,8 +38,16 @@ thisThread = "WebApp"
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
-webAppThread :: (Maybe ThreadState) -> DaemonStatusHandle -> TransferQueue -> Maybe (FilePath -> IO ()) -> IO ()
-webAppThread mst dstatus transferqueue onstartup = do
+type Url = String
+
+webAppThread 
+	:: (Maybe ThreadState) 
+	-> DaemonStatusHandle
+	-> TransferQueue
+	-> Maybe (IO String)
+	-> Maybe (Url -> FilePath -> IO ())
+	-> IO ()
+webAppThread mst dstatus transferqueue postfirstrun onstartup = do
 	webapp <- WebApp
 		<$> pure mst
 		<*> pure dstatus
@@ -48,6 +56,7 @@ webAppThread mst dstatus transferqueue onstartup = do
 		<*> getreldir mst
 		<*> pure $(embed "static")
 		<*> newWebAppState
+		<*> pure postfirstrun
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
@@ -66,7 +75,7 @@ webAppThread mst dstatus transferqueue onstartup = do
 				else dir
 		go port webapp htmlshim = do
 			writeHtmlShim webapp port htmlshim
-			maybe noop (\a -> a htmlshim) onstartup
+			maybe noop (\a -> a (myUrl webapp port) htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
@@ -85,5 +94,8 @@ writeHtmlShim webapp port file = do
 genHtmlShim :: WebApp -> PortNumber -> String
 genHtmlShim webapp port = renderHtml $(shamletFile $ hamletTemplate "htmlshim")
 	where
-		url = "http://localhost:" ++ show port ++
-			"/?auth=" ++ unpack (secretToken webapp)
+		url = myUrl webapp port
+
+myUrl :: WebApp -> PortNumber -> Url
+myUrl webapp port = "http://localhost:" ++ show port ++
+	"/?auth=" ++ unpack (secretToken webapp)

@@ -122,7 +122,10 @@ import Utility.ThreadScheduler
 
 import Control.Concurrent
 
-startDaemon :: Bool -> Bool -> Maybe (FilePath -> IO ()) -> Annex ()
+stopDaemon :: Annex ()
+stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
+
+startDaemon :: Bool -> Bool -> Maybe (Url -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground webappwaiter
 	| foreground = do
 		showStart (if assistant then "assistant" else "watch") "."
@@ -132,10 +135,15 @@ startDaemon assistant foreground webappwaiter
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
 	where
-		go daemonize = withThreadState $ \st -> do
-			checkCanWatch
-			dstatus <- startDaemonStatus
-			liftIO $ daemonize $ run dstatus st
+		go d = startAssistant assistant d webappwaiter
+
+startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (Url -> FilePath -> IO ()) -> Annex ()
+startAssistant assistant daemonize webappwaiter = do
+	withThreadState $ \st -> do
+		checkCanWatch
+		dstatus <- startDaemonStatus
+		liftIO $ daemonize $ run dstatus st
+	where
 		run dstatus st = do
 			changechan <- newChangeChan
 			commitchan <- newCommitChan
@@ -155,12 +163,8 @@ startDaemon assistant foreground webappwaiter
 				, mountWatcherThread st dstatus scanremotes
 				, transferScannerThread st dstatus scanremotes transferqueue
 #ifdef WITH_WEBAPP
-				, webAppThread (Just st) dstatus transferqueue webappwaiter
+				, webAppThread (Just st) dstatus transferqueue Nothing webappwaiter
 #endif
 				, watchThread st dstatus transferqueue changechan
 				]
-			debug "Assistant" ["all threads started"]
 			waitForTermination
-
-stopDaemon :: Annex ()
-stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
