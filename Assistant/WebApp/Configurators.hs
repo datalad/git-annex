@@ -106,7 +106,7 @@ defaultRepositoryPath = do
 	home <- myHomeDir
 	if home == cwd
 		then ifM (doesDirectoryExist $ home </> "Desktop")
-			(return "~/Desktop/annex", return "~")
+			(return "~/Desktop/annex", return "~/annex")
 		else return cwd
 
 addRepositoryForm :: Form RepositoryPath
