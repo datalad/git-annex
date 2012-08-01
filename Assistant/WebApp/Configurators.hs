@@ -149,10 +149,7 @@ startFullAssistant path = do
 	url <- liftIO $ do
 		makeRepo path
 		changeWorkingDirectory path
-		putStrLn "pre run"
-		r <- fromJust $ postFirstRun webapp
-		putStrLn $ "got " ++ r
-		return r
+		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 
 {- Makes a new git-annex repository. -}
