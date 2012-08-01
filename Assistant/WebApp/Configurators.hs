@@ -20,6 +20,8 @@ import Annex.UUID (getUUID)
 
 import Yesod
 import Data.Text (Text, pack)
+import qualified Data.Text as T
+import Data.Char
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
@@ -44,10 +46,64 @@ introDisplay ident = do
 data RepositoryPath = RepositoryPath Text
 	deriving Show
 
+{- Custom field display for a RepositoryPath, with an icon etc.
+ -
+ - Validates that the path entered is not empty, and is a safe value
+ - to use as a repository. -}
+repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
+repositoryPathField autofocus = Field { fieldParse = parse, fieldView = view }
+	where
+		view idAttr nameAttr attrs val isReq =
+			[whamlet|<input type="text" *{attrs} id="#{idAttr}" name="#{nameAttr}" :isReq:required :autofocus:autofocus value="#{either id id val}">|]
+
+		parse [path]
+			| T.null path = nopath
+			| otherwise = liftIO $ checkRepositoryPath path
+		parse [] = return $ Right Nothing
+		parse _ = nopath
+
+		nopath = return $ Left "Enter a location for the repository"
+
+{- As well as checking the path for a lot of silly things, tilde is
+ - expanded in the returned path. -}
+checkRepositoryPath :: Text -> IO (Either (SomeMessage WebApp) (Maybe Text))
+checkRepositoryPath p = do
+	home <- myHomeDir
+	let basepath = expandTilde home $ T.unpack p
+	path <- absPath basepath
+	let parent = parentDir path
+	problems <- catMaybes <$> mapM runcheck
+		[ (return $ path == "/", "Enter the full path to use for the repository.")
+		, (return $ all isSpace basepath, "A blank path? Seems unlikely.")
+		, (doesFileExist path, "A file already exists with that name.")
+		, (return $ path == home, "Sorry, using git-annex for your whole home directory is not currently supported.")
+		, (not <$> doesDirectoryExist parent, "Parent directory does not exist.")
+		, (cannotWrite path, "Cannot write a repository there.")
+		]
+	return $ 
+		case headMaybe problems of
+			Nothing -> Right $ Just $ T.pack basepath
+			Just prob -> Left prob
+	where
+		runcheck (chk, msg) = ifM (chk)
+			( return $ Just msg
+			, return Nothing
+			)
+		cannotWrite path = do
+			tocheck <- ifM (doesDirectoryExist path)
+				(return path, return $ parentDir path)
+			not <$> (catchBoolIO $ fileAccess tocheck False True False)
+		expandTilde home ('~':path) = home </> path
+		expandTilde _ path = path
+
 addRepositoryForm :: Form RepositoryPath
 addRepositoryForm msg = do
 	cwd <- liftIO $ getCurrentDirectory
-	(pathRes, pathView) <- mreq textField "" (Just $ pack cwd)
+	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just $ pack $ cwd ++ "/")
+	let (err, errmsg) = case pathRes of
+		FormMissing -> (False, "")
+		FormFailure l -> (True, concat $ map T.unpack l)
+		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
 		$(widgetFile "configurators/addrepository/form")

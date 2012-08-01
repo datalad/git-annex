@@ -6,3 +6,6 @@
     ^{fvInput pathView}
     <button type=submit .btn>
       Make Repository
+$if err
+  <div .alert .alert-error>
+    #{errmsg}
