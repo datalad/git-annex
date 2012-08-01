@@ -19,7 +19,7 @@ import Logs.Trust
 import Annex.UUID (getUUID)
 
 import Yesod
-import Data.Text (Text, pack)
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
 
@@ -96,10 +96,24 @@ checkRepositoryPath p = do
 		expandTilde home ('~':path) = home </> path
 		expandTilde _ path = path
 
+{- If run in the home directory, default to putting it in ~/Desktop/annex,
+ - when a Desktop directory exists, and ~/annex otherwise.
+ -
+ - If run in another directory, the user probably wants to put it there. -}
+defaultRepositoryPath :: IO FilePath
+defaultRepositoryPath = do
+	cwd <- liftIO $ getCurrentDirectory
+	home <- myHomeDir
+	if home == cwd
+		then ifM (doesDirectoryExist $ home </> "Desktop")
+			(return "~/Desktop/annex", return "~")
+		else return cwd
+
 addRepositoryForm :: Form RepositoryPath
 addRepositoryForm msg = do
-	cwd <- liftIO $ getCurrentDirectory
-	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just $ pack $ cwd ++ "/")
+	path <- T.pack . addTrailingPathSeparator
+		<$> liftIO defaultRepositoryPath
+	(pathRes, pathView) <- mreq (repositoryPathField True) ""(Just path)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
 		FormFailure l -> (True, concat $ map T.unpack l)
