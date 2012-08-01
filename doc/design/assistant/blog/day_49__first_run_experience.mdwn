@@ -31,7 +31,7 @@ Time for the first of probably many polls!
 
 What should the default directory name used by the git-annex assistant be?
 
-[[!poll 20 "Annex" 6 "GitAnnex" 8 "Synced" 0 "AutoSynced" 1 "Shared" 6 "something lowercase!"]]
+[[!poll 20 "Annex" 6 "GitAnnex" 9 "Synced" 0 "AutoSynced" 1 "Shared" 6 "something lowercase!"]]
 
 (Note: This is a wiki. You can edit this page to add your own
 [[ikiwiki/directive/poll]] options!)
