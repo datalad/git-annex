@@ -27,7 +27,7 @@ daemonize logfd pidfile changedirectory a = do
 			_ <- forkProcess child2
 			out
 		child2 = do
-			maybe noop (lockPidFile alreadyrunning) pidfile 
+			maybe noop lockPidFile pidfile 
 			when changedirectory $
 				setCurrentDirectory "/"
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
@@ -39,28 +39,28 @@ daemonize logfd pidfile changedirectory a = do
 		redir newh h = do
 			closeFd h
 			dupTo newh h
-		alreadyrunning = error "Daemon is already running."
 		out = exitImmediately ExitSuccess
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
- - Runs an action on failure. On success, writes the pid to the file,
- - fully atomically. -}
-lockPidFile :: IO () -> FilePath -> IO ()
-lockPidFile onfailure file = do
+ - Writes the pid to the file, fully atomically.
+ - Fails if the pid file is already locked by another process. -}
+lockPidFile :: FilePath -> IO ()
+lockPidFile file = do
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
 		{ trunc = True }
 	locked' <- catchMaybeIO $ setLock fd' (WriteLock, AbsoluteSeek, 0, 0)
 	case (locked, locked') of
-		(Nothing, _) -> onfailure
-		(_, Nothing) -> onfailure
+		(Nothing, _) -> alreadyrunning
+		(_, Nothing) -> alreadyrunning
 		_ -> do
 			_ <- fdWrite fd' =<< show <$> getProcessID
 			renameFile newfile file
 			closeFd fd
 	where
 		newfile = file ++ ".new"
+		alreadyrunning = error "Daemon is already running."
 
 {- Checks if the daemon is running, by checking that the pid file
  - is locked by the same process that is listed in the pid file.

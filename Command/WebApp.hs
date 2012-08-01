@@ -14,7 +14,7 @@ import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.Threads.WebApp
 import Utility.WebApp
-import Utility.Daemon (checkDaemon)
+import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
 import qualified Command.Watch
 import qualified Git.CurrentRepo
@@ -94,6 +94,10 @@ firstRun = do
 			_wait <- takeMVar v
 
 			state <- Annex.new =<< Git.CurrentRepo.get
-			Annex.eval state $
+			Annex.eval state $ do
+				dummydaemonize
 				startAssistant True id $ Just $ sendurlback v
 		sendurlback v url _htmlshim = putMVar v url
+		{- Set up the pid file in the new repo. -}
+		dummydaemonize = do
+			liftIO . lockPidFile =<< fromRepo gitAnnexPidFile

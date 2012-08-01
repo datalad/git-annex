@@ -129,6 +129,7 @@ startDaemon :: Bool -> Bool -> Maybe (Url -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground webappwaiter
 	| foreground = do
 		showStart (if assistant then "assistant" else "watch") "."
+		liftIO . Utility.Daemon.lockPidFile =<< fromRepo gitAnnexPidFile
 		go id
 	| otherwise = do
 		logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
