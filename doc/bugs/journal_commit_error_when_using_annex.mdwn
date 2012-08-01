@@ -9,9 +9,5 @@ When it gets to the fourth song, there is a long delay and a bunch of "journal c
 
 Two log outputs:
 
-http://paste.mitechie.com/show/745/
-
-and
-
-http://paste.mitechie.com/show/746/
-
+* <http://paste.mitechie.com/show/745/>
+* <http://paste.mitechie.com/show/746/>
