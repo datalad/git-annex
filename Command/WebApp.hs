@@ -25,16 +25,15 @@ import Control.Concurrent.STM
 
 def :: [Command]
 def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
-	withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption] $
+	withOptions [Command.Watch.stopOption] $
         command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]
 seek = [withFlag Command.Watch.stopOption $ \stopdaemon ->
-	withFlag Command.Watch.foregroundOption $ \foreground ->
-	withNothing $ start foreground stopdaemon]
+	withNothing $ start stopdaemon]
 
-start :: Bool -> Bool -> CommandStart
-start foreground stopdaemon = notBareRepo $ do
+start :: Bool -> CommandStart
+start stopdaemon = notBareRepo $ do
 	if stopdaemon
 		then stopDaemon
 		else ifM (isInitialized) ( go , liftIO firstRun )
@@ -44,7 +43,7 @@ start foreground stopdaemon = notBareRepo $ do
 			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 			ifM (checkpid <&&> checkshim f) $
 				( liftIO $ openBrowser f 
-				, startDaemon True foreground $ Just $
+				, startDaemon True True $ Just $
 					const openBrowser
 				)
 		checkpid = do
@@ -84,10 +83,7 @@ firstRun = do
 	where
 		signaler v = do
 			putMVar v ""
-			putStrLn "signaler waiting..."
-			r <- takeMVar v
-			putStrLn "signaler got value"
-			return r
+			takeMVar v
 		mainthread v _url htmlshim = do
 			openBrowser htmlshim
 
