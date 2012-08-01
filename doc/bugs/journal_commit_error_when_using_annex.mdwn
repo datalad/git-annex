@@ -1,3 +1,5 @@
+Sorry for the noise - notabug - [[done]]
+
 Setup:
 
 * git-annex version: 3.20120629 on Debian unstable.
