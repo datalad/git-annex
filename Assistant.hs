@@ -152,20 +152,25 @@ startAssistant assistant daemonize webappwaiter = do
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
-			mapM_ forkIO
-				[ commitThread st changechan commitchan transferqueue dstatus
-				, pushThread st dstatus commitchan pushmap
-				, pushRetryThread st dstatus pushmap
-				, mergeThread st
-				, transferWatcherThread st dstatus
-				, transfererThread st dstatus transferqueue transferslots
-				, daemonStatusThread st dstatus
-				, sanityCheckerThread st dstatus transferqueue changechan
-				, mountWatcherThread st dstatus scanremotes
-				, transferScannerThread st dstatus scanremotes transferqueue
+			mapM_ startthread
+				[ watch $ commitThread st changechan commitchan transferqueue dstatus
+				, assist $ pushThread st dstatus commitchan pushmap
+				, assist $ pushRetryThread st dstatus pushmap
+				, assist $ mergeThread st
+				, assist $ transferWatcherThread st dstatus
+				, assist $ transfererThread st dstatus transferqueue transferslots
+				, assist $ daemonStatusThread st dstatus
+				, assist $ sanityCheckerThread st dstatus transferqueue changechan
+				, assist $ mountWatcherThread st dstatus scanremotes
+				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 #ifdef WITH_WEBAPP
-				, webAppThread (Just st) dstatus transferqueue Nothing webappwaiter
+				, assist $ webAppThread (Just st) dstatus transferqueue Nothing webappwaiter
 #endif
-				, watchThread st dstatus transferqueue changechan
+				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
+		watch a = (True, a)
+		assist a = (False, a)
+		startthread (watcher, a)
+			| watcher || assistant = void $ forkIO a
+			| otherwise = noop
