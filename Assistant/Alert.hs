@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, BangPatterns #-}
 
 module Assistant.Alert where
 
@@ -272,5 +272,5 @@ messageCombiner combinemessage = Just go
 			| alertName new == alertName old =
 				case combinemessage (alertMessage new) (alertMessage old) of
 					Nothing -> Nothing
-					Just m -> Just $ old { alertMessage = m }
+					Just !m -> Just $! old { alertMessage = m }
 			| otherwise = Nothing
