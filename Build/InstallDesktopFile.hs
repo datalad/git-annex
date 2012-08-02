@@ -10,8 +10,12 @@ module Build.InstallDesktopFile where
 
 import Utility.Exception
 import Utility.FreeDesktop
+import Utility.Path
+import Locations.UserConfig
 
 import Control.Applicative
+import Control.Monad
+import System.Directory
 import System.Environment
 import System.Posix.User
 
@@ -48,7 +52,7 @@ writeDesktop command = do
 
 	when (uid /= 0) $ do
 		programfile <- programFile
-		createDirectoryIfMissing True (parentDir programFile)
+		createDirectoryIfMissing True (parentDir programfile)
 		writeFile programfile command
 
 main = getArgs >>= go
