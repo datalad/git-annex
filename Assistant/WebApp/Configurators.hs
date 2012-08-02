@@ -100,7 +100,7 @@ checkRepositoryPath p = do
 			tocheck <- ifM (doesDirectoryExist path)
 				(return path, return $ parentDir path)
 			not <$> (catchBoolIO $ fileAccess tocheck False True False)
-		expandTilde home ('~':path) = home </> path
+		expandTilde home ('~':'/':path) = home </> path
 		expandTilde _ path = path
 
 {- On first run, if run in the home directory, default to putting it in
