@@ -10,6 +10,7 @@ module Assistant.Threads.Committer where
 import Assistant.Common
 import Assistant.Changes
 import Assistant.Commits
+import Assistant.Alert
 import Assistant.ThreadedMonad
 import Assistant.Threads.Watcher
 import Assistant.TransferQueue
@@ -143,15 +144,16 @@ handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds
 
 		add :: Change -> IO (Maybe Change)
 		add change@(PendingAddChange { keySource = ks }) =
-			liftM maybeMaybe $ catchMaybeIO $
-				sanitycheck ks $ runThreadState st $ do
-					showStart "add" $ keyFilename ks
-					key <- Command.Add.ingest ks
-					handle (finishedChange change) (keyFilename ks) key
+			alertWhile' dstatus (addFileAlert $ keyFilename ks) $
+				liftM maybeMaybe $ catchMaybeIO $
+					sanitycheck ks $ runThreadState st $ do
+						showStart "add" $ keyFilename ks
+						key <- Command.Add.ingest ks
+						handle (finishedChange change) (keyFilename ks) key
 		add _ = return Nothing
 
-		maybeMaybe (Just j@(Just _)) = j
-		maybeMaybe _ = Nothing
+		maybeMaybe (Just j@(Just _)) = (True, j)
+		maybeMaybe _ = (False, Nothing)
 
 		handle _ _ Nothing = do
 			showEndFail

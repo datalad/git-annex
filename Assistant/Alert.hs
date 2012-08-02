@@ -27,6 +27,15 @@ data AlertPriority = Filler | Low | Medium | High | Pinned
 {- An alert can be a simple message, or an arbitrary Yesod Widget. -}
 data AlertMessage = StringAlert String | WidgetAlert (Alert -> Widget)
 
+{- An alert can have an name, which is used to combine it with other similar
+ - alerts. -}
+data AlertName = AddFileAlert | DownloadFailedAlert | SanityCheckFixAlert
+	deriving (Eq)
+
+{- The first alert is the new alert, the second is an old alert.
+ - Should return a modified version of the old alert. -}
+type AlertCombiner = Maybe (Alert -> Alert -> Maybe Alert)
+
 data Alert = Alert
 	{ alertClass :: AlertClass
 	, alertHeader :: Maybe String
@@ -35,6 +44,8 @@ data Alert = Alert
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
 	, alertIcon :: Maybe String
+	, alertCombiner :: AlertCombiner
+	, alertName :: Maybe AlertName
 	}
 
 type AlertPair = (AlertId, Alert)
@@ -123,17 +134,21 @@ isFiller alert = alertPriority alert == Filler
 
 {- Converts a given alert into filler, manipulating it in the AlertMap.
  -
- - Any old filler that looks the same as the reference alert is removed.
+ - Any old filler that looks the same as the reference alert is removed,
+ - or, if the input alert has an alertCombine that combines it with
+ - old filler, the old filler is replaced with the result, and the
+ - input alert is removed.
  -
  - Old filler alerts are pruned once maxAlerts is reached.
  -}
 convertToFiller :: AlertId -> Bool -> AlertMap -> AlertMap
 convertToFiller i success m = case M.lookup i m of
 	Nothing -> m
-	Just al -> 
+ 	Just al ->
 		let al' = makeAlertFiller success al
-		in pruneBloat $ M.filterWithKey (pruneSame al') $
-			M.insertWith' const i al' m
+		in case alertCombiner al' of
+			Nothing -> updatePrune al'
+			Just combiner -> updateCombine combiner al'
 	where
 		pruneSame ref k al = k == i || not (effectivelySameAlert ref al)
 		pruneBloat m'
@@ -144,6 +159,13 @@ convertToFiller i success m = case M.lookup i m of
 				pruneold l =
 			 		let (f, rest) = partition (\(_, al) -> isFiller al) l
 					in drop bloat f ++ rest
+		updatePrune al = pruneBloat $ M.filterWithKey (pruneSame al) $
+			M.insertWith' const i al m
+		updateCombine combiner al = 
+			let combined = M.mapMaybe (combiner al) m
+			in if M.null combined
+				then updatePrune al
+				else M.delete i $ M.union combined m
 
 baseActivityAlert :: Alert
 baseActivityAlert = Alert
@@ -154,6 +176,8 @@ baseActivityAlert = Alert
 	, alertClosable = False
 	, alertPriority = Medium
 	, alertIcon = Just "refresh"
+	, alertCombiner = Nothing
+	, alertName = Nothing
 	}
 
 activityAlert :: Maybe String -> String -> Alert
@@ -203,13 +227,43 @@ sanityCheckFixAlert :: String -> Alert
 sanityCheckFixAlert msg = Alert
 	{ alertClass = Warning
 	, alertHeader = Just "Fixed a problem"
-	, alertMessage = StringAlert $ unwords
-		[ "The daily sanity check found and fixed a problem:"
-		, msg
-		, "If these problems persist, consider filing a bug report."
-		]
+	, alertMessage = StringAlert $ unlines [ alerthead, msg, alertfoot ]
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just "exclamation-sign"
+	, alertName = Just SanityCheckFixAlert
+	, alertCombiner = messageCombiner combinemessage
 	}
+	where
+		alerthead = "The daily sanity check found and fixed a problem:"
+		alertfoot = "If these problems persist, consider filing a bug report."
+		combinemessage (StringAlert new) (StringAlert old) =
+			let newmsg = filter (/= alerthead) $
+				filter (/= alertfoot) $
+				lines old ++ lines new
+			in Just $ StringAlert $
+				unlines $ alerthead : newmsg ++ [alertfoot]
+		combinemessage _ _ = Nothing
+
+addFileAlert :: FilePath -> Alert
+addFileAlert file = (activityAlert (Just "Added") $ takeFileName file)
+	{ alertName = Just AddFileAlert
+	, alertCombiner = messageCombiner combinemessage
+	}
+	where
+		combinemessage (StringAlert new) (StringAlert old) =
+			Just $ StringAlert $
+				unlines $ take 10 $ new : lines old
+		combinemessage _ _ = Nothing
+
+messageCombiner :: (AlertMessage -> AlertMessage -> Maybe AlertMessage) -> AlertCombiner
+messageCombiner combinemessage = Just go
+	where
+		go new old
+			| alertClass new /= alertClass old = Nothing
+			| alertName new == alertName old =
+				case combinemessage (alertMessage new) (alertMessage old) of
+					Nothing -> Nothing
+					Just m -> Just $ old { alertMessage = m }
+			| otherwise = Nothing
