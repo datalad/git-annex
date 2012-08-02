@@ -19,7 +19,8 @@ module Utility.FreeDesktop (
 	systemDataDir,
 	systemConfigDir,
 	userDataDir,
-	userConfigDir	
+	userConfigDir,
+	userDesktopDir
 ) where
 
 import Utility.Exception
@@ -72,10 +73,14 @@ writeDesktopMenuFile d file = do
 	createDirectoryIfMissing True (parentDir file)
 	writeFile file $ buildDesktopMenuFile d
 
+{- Path to use for a desktop menu file, in either the systemDataDir or
+ - the userDataDir -}
 desktopMenuFilePath :: String -> FilePath -> FilePath
 desktopMenuFilePath basename datadir = 
 	datadir </> "applications" </> desktopfile basename
 
+{- Path to use for a desktop autostart file, in either the systemDataDir
+ - or the userDataDir -}
 autoStartPath :: String -> FilePath -> FilePath
 autoStartPath basename configdir =
 	configdir </> "autostart" </> desktopfile basename
@@ -83,21 +88,27 @@ autoStartPath basename configdir =
 desktopfile :: FilePath -> FilePath
 desktopfile f = f ++ ".desktop"
 
+{- Directory used for installation of system wide data files.. -}
 systemDataDir :: FilePath
 systemDataDir = "/usr/share"
 
+{- Directory used for installation of system wide config files. -}
 systemConfigDir :: FilePath
 systemConfigDir = "/etc/xdg"
 
+{- Directory for user data files. -}
 userDataDir :: IO FilePath
-userDataDir = do
-	dir <- xdgEnv "DATA_HOME" =<< myHomeDir
-	return $ dir </> ".local" </> "share"
+userDataDir = xdgEnvHome "DATA_HOME" ".local/share"
 
+{- Directory for user config files. -}
 userConfigDir :: IO FilePath
-userConfigDir = do
-	dir <- xdgEnv "CONFIG_HOME" =<< myHomeDir
-	return $ dir </> ".config"
+userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
 
-xdgEnv :: String -> String -> IO String
-xdgEnv envbase def = catchDefaultIO (getEnv $ "XDG_" ++ envbase) def
+{- Directory for the user's Desktop, may be localized. -}
+userDesktopDir :: IO FilePath
+userDesktopDir = xdgEnvHome "DESKTOP_DIR" "Desktop"
+
+xdgEnvHome :: String -> String -> IO String
+xdgEnvHome envbase homedef = do
+	home <- myHomeDir
+	catchDefaultIO (getEnv $ "XDG_" ++ envbase) (home </> homedef)
