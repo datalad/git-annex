@@ -16,13 +16,10 @@ def :: [Command]
 def = [withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek "watch for changes"]
 
-mkSeek :: Bool -> [CommandSeek]
-mkSeek assistant = [withFlag stopOption $ \stopdaemon -> 
-	withFlag foregroundOption $ \foreground ->
-	withNothing $ start assistant foreground stopdaemon]
-
 seek :: [CommandSeek]
-seek = mkSeek False
+seek = [withFlag stopOption $ \stopdaemon -> 
+	withFlag foregroundOption $ \foreground ->
+	withNothing $ start False foreground stopdaemon]
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"

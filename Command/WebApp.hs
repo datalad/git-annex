@@ -18,12 +18,14 @@ import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
 import qualified Git.CurrentRepo
 import qualified Annex
+import Locations.UserConfig
 
+import System.Posix.Directory
 import Control.Concurrent
 import Control.Concurrent.STM
 
 def :: [Command]
-def = [oneShot $ noRepo firstRun $ dontCheck repoExists $
+def = [oneShot $ noRepo startNoRepo $ dontCheck repoExists $
         command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]
@@ -31,7 +33,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = notBareRepo $ do
-	ifM (isInitialized) ( go , liftIO firstRun )
+	ifM (isInitialized) ( go , liftIO startNoRepo )
 	stop
 	where
 		go = do
@@ -46,14 +48,24 @@ start = notBareRepo $ do
 			liftIO $ isJust <$> checkDaemon pidfile
 		checkshim f = liftIO $ doesFileExist f
 
-openBrowser :: FilePath -> IO ()
-openBrowser htmlshim = unlessM (runBrowser url) $
-	error $ "failed to start web browser on url " ++ url
-	where
-		url = fileUrl htmlshim
+{- When run without a repo, see if there is an autoStartFile,
+ - and if so, start the first available listed repository.
+ - If not, it's our first time being run! -}
+startNoRepo :: IO ()
+startNoRepo = do
+	autostartfile <- autoStartFile
+	ifM (doesFileExist autostartfile) ( autoStart autostartfile , firstRun )
 
-fileUrl :: FilePath -> String
-fileUrl file = "file://" ++ file
+autoStart :: FilePath -> IO ()
+autoStart autostartfile = do
+	dirs <- lines <$> readFile autostartfile
+	edirs <- filterM doesDirectoryExist dirs
+	case edirs of
+		[] -> firstRun -- what else can I do? Nothing works..
+		(d:_) -> do
+			changeWorkingDirectory d
+			state <- Annex.new =<< Git.CurrentRepo.get
+			void $ Annex.eval state $ doCommand start
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
@@ -92,3 +104,12 @@ firstRun = do
 		{- Set up the pid file in the new repo. -}
 		dummydaemonize = do
 			liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
+
+openBrowser :: FilePath -> IO ()
+openBrowser htmlshim = unlessM (runBrowser url) $
+	error $ "failed to start web browser on url " ++ url
+	where
+		url = fileUrl htmlshim
+
+fileUrl :: FilePath -> String
+fileUrl file = "file://" ++ file

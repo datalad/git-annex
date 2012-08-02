@@ -46,6 +46,10 @@ writeDesktop command = do
 	writeDesktopMenuFile (autostart command) $
 		autoStartPath "git-annex" configdir
 
+	programfile <- programFile
+	createDirectoryIfMissing True (parentDir programFile)
+	writeFile programfile command
+
 main = getArgs >>= go
 	where
 		go [] = error "specify git-annex command"

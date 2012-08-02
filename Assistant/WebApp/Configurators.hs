@@ -21,6 +21,7 @@ import Init
 import qualified Git.Construct
 import qualified Git.Config
 import qualified Annex
+import Locations.UserConfig
 
 import Yesod
 import Data.Text (Text)
@@ -159,7 +160,10 @@ makeRepo path = do
 		error "git init failed!"
 	g <- Git.Config.read =<< Git.Construct.fromPath path
 	state <- Annex.new g
-	Annex.eval state $ initialize $ Just "new repo"
+	Annex.eval state $ initialize $ Just "new repo" -- TODO better description
+	autostart <- autoStartFile
+	createDirectoryIfMissing True (parentDir autostart)
+	appendFile autostart $ path ++ "\n"
 
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = bootstrap (Just Config) $ do

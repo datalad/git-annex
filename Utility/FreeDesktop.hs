@@ -23,10 +23,8 @@ module Utility.FreeDesktop (
 ) where
 
 import Utility.Exception
-import Utility.Directory
 import Utility.Path
 
-import System.IO
 import System.Environment
 import System.Directory
 import System.FilePath

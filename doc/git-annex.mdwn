@@ -809,10 +809,17 @@ For example, this makes two copies be needed for wav files:
 
 # FILES
 
-These files are used by git-annex, in your git repository:
+These files are used by git-annex:
 
-`.git/annex/objects/` contains the annexed file contents that are currently
-available. Annexed files in your git repository symlink to that content.
+`.git/annex/objects/` in your git repository contains the annexed file
+contents that are currently available. Annexed files in your git
+repository symlink to that content.
+
+`.git/annex/` in your git repository contains other run-time information
+used by git-annex.
+
+`~/.config/git-annex/autostart` is a list of git repositories
+to start the git-annex assistant in.
 
 # SEE ALSO
 
