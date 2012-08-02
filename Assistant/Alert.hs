@@ -247,11 +247,18 @@ sanityCheckFixAlert msg = Alert
 		combinemessage _ _ = Nothing
 
 addFileAlert :: FilePath -> Alert
-addFileAlert file = (activityAlert (Just "Added") $ takeFileName file)
+addFileAlert file = (activityAlert (Just "Added") $ trim $ takeFileName file)
 	{ alertName = Just AddFileAlert
 	, alertCombiner = messageCombiner combinemessage
 	}
 	where
+		trim f
+			| len < maxlen = f
+			| otherwise = take half f ++ ".." ++ drop (len - half) f
+			where
+				len = length f
+				maxlen = 20
+				half = (maxlen - 2) `div` 2 
 		combinemessage (StringAlert new) (StringAlert old) =
 			Just $ StringAlert $
 				unlines $ take 10 $ new : lines old
