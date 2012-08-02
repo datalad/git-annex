@@ -9,7 +9,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.DesktopMenu (
+module Utility.FreeDesktop (
 	DesktopEntry,	
 	genDesktopEntry,
 	buildDesktopMenuFile,
@@ -47,16 +47,14 @@ toString (ListV l)
 	where
 		escapesemi = join "\\;" . split ";"
 
-genDesktopEntry :: String -> String -> Bool -> FilePath -> FilePath -> [String] -> DesktopEntry
-genDesktopEntry name comment terminal program icon categories =
-	[ item "Encoding" StringV "UTF-8"
-	, item "Type" StringV "Application"
+genDesktopEntry :: String -> String -> Bool -> FilePath -> [String] -> DesktopEntry
+genDesktopEntry name comment terminal program categories =
+	[ item "Type" StringV "Application"
 	, item "Version" NumericV 1.0
 	, item "Name" StringV name
 	, item "Comment" StringV comment
 	, item "Terminal" BoolV terminal
 	, item "Exec" StringV program
-	, item "Icon" StringV icon
 	, item "Categories" ListV (map StringV categories)
 	]
 	where
@@ -75,10 +73,14 @@ writeDesktopMenuFile d file = do
 userDesktopMenuFilePath :: String -> IO FilePath
 userDesktopMenuFilePath basename = do
 	datadir <- userDataDir
-	return $ datadir </> "applications" </> basename
+	return $ datadir </> "applications" </> desktopfile basename
 
 systemDesktopMenuFilePath :: String -> FilePath
-systemDesktopMenuFilePath basename = "/usr/share/applications" </> basename
+systemDesktopMenuFilePath basename =
+	"/usr/share/applications" </> desktopfile basename
+
+desktopfile :: FilePath -> FilePath
+desktopfile f = f ++ ".desktop"
 
 userDataDir :: IO FilePath
 userDataDir = do
