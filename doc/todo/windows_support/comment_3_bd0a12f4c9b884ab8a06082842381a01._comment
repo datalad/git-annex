@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://xolus.net/openid/max"
+ nickname="B0FH"
+ subject="What about NTFS support ?"
+ date="2012-08-02T17:45:10Z"
+ content="""
+Has git-annex been tested with an NTFS-formatted disk under Linux ? NTFS is supposed to be case-sensitive and to allow symlinks, and these are supposed to work with ntfs3g.
+"""]]
