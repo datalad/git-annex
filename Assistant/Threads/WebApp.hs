@@ -21,16 +21,13 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Utility.WebApp
-import Utility.Yesod
 import Utility.FileMode
 import Utility.TempFile
 import Git
 
 import Yesod
 import Yesod.Static
-import Text.Hamlet
 import Network.Socket (PortNumber)
-import Text.Blaze.Renderer.String
 import Data.Text (pack, unpack)
 
 thisThread :: String
@@ -75,7 +72,7 @@ webAppThread mst dstatus transferqueue postfirstrun onstartup = do
 				else dir
 		go port webapp htmlshim = do
 			writeHtmlShim webapp port htmlshim
-			maybe noop (\a -> a (myUrl webapp port) htmlshim) onstartup
+			maybe noop (\a -> a (myUrl webapp port "/") htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
@@ -92,10 +89,21 @@ writeHtmlShim webapp port file = do
 
 {- TODO: generate this static file using Yesod. -}
 genHtmlShim :: WebApp -> PortNumber -> String
-genHtmlShim webapp port = renderHtml $(shamletFile $ hamletTemplate "htmlshim")
+genHtmlShim webapp port = unlines
+	[ "<html>"
+	, "<head>"
+	, "<title>Starting webapp...</title>"
+	, "<meta http-equiv=\"refresh\" content=\"0; URL="++url++"\">"
+	, "<body>"
+	, "<p>"
+	, "<a href=\"" ++ url ++ "\">Starting webapp...</a>"
+	, "</p>"
+	, "</body>"
+	, "</html>"
+	]
 	where
-		url = myUrl webapp port
+		url = myUrl webapp port "/"
 
-myUrl :: WebApp -> PortNumber -> Url
-myUrl webapp port = "http://localhost:" ++ show port ++
-	"/?auth=" ++ unpack (secretToken webapp)
+myUrl :: WebApp -> PortNumber -> FilePath -> Url
+myUrl webapp port page = "http://localhost:" ++ show port ++ page ++
+	"?auth=" ++ unpack (secretToken webapp)
