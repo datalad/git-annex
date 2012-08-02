@@ -145,15 +145,18 @@ handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds
 		add :: Change -> IO (Maybe Change)
 		add change@(PendingAddChange { keySource = ks }) =
 			alertWhile' dstatus (addFileAlert $ keyFilename ks) $
-				liftM maybeMaybe $ catchMaybeIO $
+				liftM ret $ catchMaybeIO $
 					sanitycheck ks $ runThreadState st $ do
 						showStart "add" $ keyFilename ks
 						key <- Command.Add.ingest ks
 						handle (finishedChange change) (keyFilename ks) key
+			where
+				{- Add errors tend to be transient and will
+				 - be automatically dealt with, so don't
+				 - pass to the alert code. -}
+				ret (Just j@(Just _)) = (True, j)
+				ret _ = (True, Nothing)
 		add _ = return Nothing
-
-		maybeMaybe (Just j@(Just _)) = (True, j)
-		maybeMaybe _ = (False, Nothing)
 
 		handle _ _ Nothing = do
 			showEndFail
