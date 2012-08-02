@@ -64,12 +64,9 @@ webAppThread mst dstatus transferqueue postfirstrun onstartup = do
 		Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
 	where
 		getreldir Nothing = return Nothing
-		getreldir (Just st) = do
-			dir <- absPath =<< runThreadState st (fromRepo repoPath)
-			home <- myHomeDir
-			return $ Just $ if dirContains home dir
-				then relPathDirToFile home dir
-				else dir
+		getreldir (Just st) = Just <$>
+			(relHome =<< absPath
+				=<< runThreadState st (fromRepo repoPath))
 		go port webapp htmlshim = do
 			writeHtmlShim webapp port htmlshim
 			maybe noop (\a -> a (myUrl webapp port "/") htmlshim) onstartup

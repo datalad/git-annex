@@ -22,6 +22,7 @@ import qualified Git.Construct
 import qualified Git.Config
 import qualified Annex
 import Locations.UserConfig
+import Utility.FreeDesktop
 
 import Yesod
 import Data.Text (Text)
