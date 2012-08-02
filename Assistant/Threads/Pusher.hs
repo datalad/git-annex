@@ -54,8 +54,9 @@ pushThread st dstatus commitchan pushmap = do
 		if shouldPush now commits
 			then do
 				remotes <- knownRemotes <$> getDaemonStatus dstatus
-				void $ alertWhile dstatus (pushAlert remotes) $
-					pushToRemotes thisThread now st (Just pushmap) remotes
+				unless (null remotes) $ 
+					void $ alertWhile dstatus (pushAlert remotes) $
+						pushToRemotes thisThread now st (Just pushmap) remotes
 			else do
 				debug thisThread
 					[ "delaying push of"
