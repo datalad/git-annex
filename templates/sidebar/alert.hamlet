@@ -7,7 +7,7 @@
       <i class="icon-#{name}"></i> #
   $maybe h <- heading
     $if block
-      <h4 class="alert-heading">#{h}</h4>
+      <h4 class="alert-heading">#{h}</h4> #
     $else
-      <strong>#{h}</strong>
+      <strong>#{h}</strong> #
   ^{widget}
