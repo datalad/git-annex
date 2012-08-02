@@ -10,6 +10,7 @@ import Distribution.PackageDescription (PackageDescription(..))
 import Distribution.Verbosity (Verbosity)
 import System.FilePath
 
+import qualified Build.InstallDesktopFile as InstallDesktopFile
 import qualified Build.Configure as Configure
 
 main = defaultMainWithHooks simpleUserHooks
@@ -25,6 +26,7 @@ myPostInst :: Args -> InstallFlags -> PackageDescription -> LocalBuildInfo -> IO
 myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
 	installGitAnnexShell dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
+	installDesktopFile   dest verbosity pkg lbi
 	where
 		dest      = NoCopyDest
 		verbosity = fromFlag installVerbosity
@@ -47,3 +49,9 @@ installManpages copyDest verbosity pkg lbi =
 		srcManpages = zip (repeat srcManDir) manpages
 		srcManDir   = ""
 		manpages    = ["git-annex.1", "git-annex-shell.1"]
+
+installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
+installDesktopFile copyDest verbosity pkg lbi =
+	InstallDesktopFile.writeDesktop $ InstallDesktopFile.desktop $ dstBinDir </> "git-annex"
+	where
+		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest

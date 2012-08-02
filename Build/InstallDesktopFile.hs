@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Build.Desktop where
+module Build.InstallDesktopFile where
 
 import Utility.Exception
 import Utility.FreeDesktop
@@ -32,3 +32,8 @@ writeDesktop d = do
 		then userDesktopMenuFilePath "git-annex"
 		else return $ systemDesktopMenuFilePath "git-annex"
 	writeDesktopMenuFile d dest
+
+main = getArgs >>= go
+	where
+		go [] = error "specify git-annex command"
+		go (command:_) = writeDesktop $ desktop command

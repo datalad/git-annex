@@ -86,6 +86,7 @@ install: all install-docs
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
 test: $(sources) $(clibs)
 	@if ! $(GHCMAKE) -O0 test $(clibs); then \
