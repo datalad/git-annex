@@ -189,6 +189,9 @@ activityAlert header message = baseActivityAlert
 startupScanAlert :: Alert
 startupScanAlert = activityAlert Nothing "Performing startup scan"
 
+commitAlert :: Alert
+commitAlert = activityAlert Nothing "Committing changes to git"
+
 pushAlert :: [Remote] -> Alert
 pushAlert rs = activityAlert Nothing $
 	"Syncing with " ++ unwords (map Remote.name rs)

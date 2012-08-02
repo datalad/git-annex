@@ -54,7 +54,9 @@ commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 
 						, show (length readychanges)
 						, "changes"
 						]
-					void $ tryIO $ runThreadState st commitStaged
+					void $ alertWhile dstatus commitAlert $
+						tryIO (runThreadState st commitStaged)
+							>> return True
 					recordCommit commitchan (Commit time)
 				else refill readychanges
 		else refill changes
