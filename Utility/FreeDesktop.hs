@@ -14,8 +14,12 @@ module Utility.FreeDesktop (
 	genDesktopEntry,
 	buildDesktopMenuFile,
 	writeDesktopMenuFile,
-	userDesktopMenuFilePath,
-	systemDesktopMenuFilePath		
+	desktopMenuFilePath,
+	autoStartPath,
+	systemDataDir,
+	systemConfigDir,
+	userDataDir,
+	userConfigDir	
 ) where
 
 import Utility.Exception
@@ -70,17 +74,22 @@ writeDesktopMenuFile d file = do
 	createDirectoryIfMissing True (parentDir file)
 	writeFile file $ buildDesktopMenuFile d
 
-userDesktopMenuFilePath :: String -> IO FilePath
-userDesktopMenuFilePath basename = do
-	datadir <- userDataDir
-	return $ datadir </> "applications" </> desktopfile basename
+desktopMenuFilePath :: String -> FilePath -> FilePath
+desktopMenuFilePath basename datadir = 
+	datadir </> "applications" </> desktopfile basename
 
-systemDesktopMenuFilePath :: String -> FilePath
-systemDesktopMenuFilePath basename =
-	"/usr/share/applications" </> desktopfile basename
+autoStartPath :: String -> FilePath -> FilePath
+autoStartPath basename configdir =
+	configdir </> "autostart" </> desktopfile basename
 
 desktopfile :: FilePath -> FilePath
 desktopfile f = f ++ ".desktop"
+
+systemDataDir :: FilePath
+systemDataDir = "/usr/share"
+
+systemConfigDir :: FilePath
+systemConfigDir = "/etc/xdg"
 
 userDataDir :: IO FilePath
 userDataDir = do
@@ -89,7 +98,7 @@ userDataDir = do
 
 userConfigDir :: IO FilePath
 userConfigDir = do
-	dir <- xdgEnv "DATA_HOME" =<< myHomeDir
+	dir <- xdgEnv "CONFIG_HOME" =<< myHomeDir
 	return $ dir </> ".config"
 
 xdgEnv :: String -> String -> IO String

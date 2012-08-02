@@ -1,4 +1,5 @@
-{- Generating and installing a desktop menu entry file.
+{- Generating and installing a desktop menu entry file
+ - and a desktop autostart file.
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -24,16 +25,28 @@ desktop command = genDesktopEntry
 	(command ++ " webapp")
 	["Network", "FileTransfer"]
 
-writeDesktop :: DesktopEntry -> IO ()
-writeDesktop d = do
+autostart :: FilePath -> DesktopEntry
+autostart command = genDesktopEntry
+	"Git Annex Assistant"
+	"Autostart"
+	False
+	(command ++ " assistant --autostart")
+	[]
+
+writeDesktop :: String -> IO ()
+writeDesktop command = do
 	destdir <- catchDefaultIO (getEnv "DESTDIR") ""
 	uid <- fromIntegral <$> getRealUserID
-	dest <- if uid /= 0
-		then userDesktopMenuFilePath "git-annex"
-		else return $ systemDesktopMenuFilePath "git-annex"
-	writeDesktopMenuFile d dest
+
+	datadir <- if uid /= 0 then userDataDir else return systemDataDir
+	writeDesktopMenuFile (desktop command) $
+		desktopMenuFilePath "git-annex" datadir
+
+	configdir <- if uid /= 0 then userConfigDir else return systemConfigDir
+	writeDesktopMenuFile (autostart command) $
+		autoStartPath "git-annex" configdir
 
 main = getArgs >>= go
 	where
 		go [] = error "specify git-annex command"
-		go (command:_) = writeDesktop $ desktop command
+		go (command:_) = writeDesktop command

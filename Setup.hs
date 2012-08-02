@@ -52,6 +52,6 @@ installManpages copyDest verbosity pkg lbi =
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest verbosity pkg lbi =
-	InstallDesktopFile.writeDesktop $ InstallDesktopFile.desktop $ dstBinDir </> "git-annex"
+	InstallDesktopFile.writeDesktop $ dstBinDir </> "git-annex"
 	where
 		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
