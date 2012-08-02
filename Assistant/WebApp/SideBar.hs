@@ -20,6 +20,7 @@ import Utility.Yesod
 import Yesod
 import Data.Text (Text)
 import qualified Data.Map as M
+import Control.Concurrent
 
 sideBarDisplay :: Widget
 sideBarDisplay = do
@@ -74,6 +75,13 @@ sideBarDisplay = do
 getSideBarR :: NotificationId -> Handler RepHtml
 getSideBarR nid = do
 	waitNotifier alertNotifier nid
+
+	{- This 0.1 second delay avoids very transient notifications from
+	 - being displayed and churning the sidebar unnecesarily. 
+	 -
+	 - This needs to be below the level perceptable by the user,
+	 - to avoid slowing down user actions like closing alerts. -}
+	liftIO $ threadDelay 100000
 
 	page <- widgetToPageContent sideBarDisplay
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
