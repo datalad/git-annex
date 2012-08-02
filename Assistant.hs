@@ -154,6 +154,9 @@ startAssistant assistant daemonize webappwaiter = do
 			scanremotes <- newScanRemoteMap
 			mapM_ startthread
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
+#ifdef WITH_WEBAPP
+				, assist $ webAppThread (Just st) dstatus transferqueue Nothing webappwaiter
+#endif
 				, assist $ pushThread st dstatus commitchan pushmap
 				, assist $ pushRetryThread st dstatus pushmap
 				, assist $ mergeThread st
@@ -163,9 +166,6 @@ startAssistant assistant daemonize webappwaiter = do
 				, assist $ sanityCheckerThread st dstatus transferqueue changechan
 				, assist $ mountWatcherThread st dstatus scanremotes
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
-#ifdef WITH_WEBAPP
-				, assist $ webAppThread (Just st) dstatus transferqueue Nothing webappwaiter
-#endif
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
