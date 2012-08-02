@@ -111,8 +111,10 @@ defaultRepositoryPath firstrun = do
 	cwd <- liftIO $ getCurrentDirectory
 	home <- myHomeDir
 	if home == cwd && firstrun
-		then ifM (doesDirectoryExist $ home </> "Desktop")
-			(return "~/Desktop/annex", return "~/annex")
+		then do
+			desktop <- userDesktopDir
+			ifM (doesDirectoryExist desktop)
+				(relHome (desktop </> "annex"), return "~/annex")
 		else return cwd
 
 addRepositoryForm :: Form RepositoryPath
