@@ -25,12 +25,16 @@ module Utility.FreeDesktop (
 
 import Utility.Exception
 import Utility.Path
+import Utility.Process
+import Utility.PartialPrelude
 
 import System.Environment
 import System.Directory
 import System.FilePath
 import Data.List
 import Data.String.Utils
+import Control.Applicative
+import Control.Monad (liftM)
 
 type DesktopEntry = [(Key, Value)]
 
@@ -104,9 +108,18 @@ userDataDir = xdgEnvHome "DATA_HOME" ".local/share"
 userConfigDir :: IO FilePath
 userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
 
-{- Directory for the user's Desktop, may be localized. -}
+{- Directory for the user's Desktop, may be localized. 
+ -
+ - This is not looked up very fast; the config file is in a shell format
+ - that is best parsed by shell, so xdg-user-dir is used, with a fallback
+ - to ~/Desktop. -}
 userDesktopDir :: IO FilePath
-userDesktopDir = xdgEnvHome "DESKTOP_DIR" "Desktop"
+userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
+	where
+		parse = maybe Nothing (headMaybe . lines)
+		xdg_user_dir = catchMaybeIO $
+			readProcess "xdg-user-dir" ["DESKTOP"]
+		fallback = xdgEnvHome "DESKTOP_DIR" "Desktop"
 
 xdgEnvHome :: String -> String -> IO String
 xdgEnvHome envbase homedef = do
