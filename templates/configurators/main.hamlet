@@ -1,9 +1,12 @@
 <div .span9>
+  <h2>
+    Add repositories #
+    <small>
   <div .row-fluid>
     <div .span4>
       <h3>
         <a href="">
-          Clone to removable drive
+          Clone to a removable drive
       <p>
         Clone this repository to a USB drive, memory stick, or other #
         removable media.
@@ -14,13 +17,20 @@
     <div .span4>
       <h3>
         <a href="">
-          Clone to a local computer
+          Pair with a local computer
       <p>
         Automatically keep files in sync between computers on your #
         local network.
       <p>
         For easy sharing with family and friends, or between your devices.
     <div .span4>
+      <h3>
+        <a href="">
+          Connect to your phone
+      <p>
+        Save photos and recordings from your phone.
+      <p>
+        Send selected files to your phone.
   <div .row-fluid>
     <div .span4>
       <h3>
@@ -30,13 +40,14 @@
         Store your data on a third-party cloud platform, #
         including Amazon S3, Box.com, and Rsync.net.
       <p>
-        Pay someone to keep your data safe. With strong encryption to #
-        protect your privacy.
+        Pay someone to keep your data safe and available. #
+        With strong encryption to protect your privacy.
     <div .span4>
       <h3>
         <a href="">
           Clone to a remote server
       <p>
-        Set up a repository on a remote Unix server running SSH.
+        Set up a repository on a remote server using #
+        <tt>ssh</tt> or <tt>rsync</tt>.
       <p>
-        For when you want to run your own cloud.
+        To use your own personal cloud.
