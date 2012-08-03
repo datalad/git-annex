@@ -11,5 +11,6 @@
 /notifier/transfers NotifierTransfersR GET
 /notifier/sidebar NotifierSideBarR GET
 /closealert/#AlertId CloseAlert GET
+/filebrowser FileBrowserR GET POST
 
 /static StaticR Static getStatic

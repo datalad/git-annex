@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.DashBoard where
 
@@ -23,6 +23,7 @@ import Utility.Percentage
 import Utility.DataUnits
 import Types.Key
 import qualified Remote
+import qualified Git
 
 import Yesod
 import Text.Hamlet
@@ -88,3 +89,37 @@ getNoScriptAutoR = bootstrap (Just DashBoard) $ do
 	let this = NoScriptAutoR
 	toWidgetHead $(hamletFile $ hamletTemplate "dashboard/metarefresh")
 	dashboard False
+
+{- The javascript code does a post. -}
+postFileBrowserR :: Handler ()
+postFileBrowserR = void openFileBrowser
+
+{- Used by non-javascript browsers, where clicking on the link actually
+ - opens this page, so we redirect back to the referrer. -}
+getFileBrowserR :: Handler ()
+getFileBrowserR = whenM openFileBrowser $ do
+	clearUltDest
+	setUltDestReferer
+	redirectUltDest HomeR
+
+{- Opens the system file browser on the repo, or, as a fallback,
+ - goes to a file:// url. Returns True if it's ok to redirect away
+ - from the page (ie, the system file browser was opened). -}
+openFileBrowser :: Handler Bool
+openFileBrowser = do
+	path <- runAnnex (error "no configured repository") $
+		fromRepo Git.repoPath
+	ifM (liftIO $ inPath cmd <&&> boolSystem cmd [File path])
+		( return True
+		, do
+			clearUltDest
+			setUltDest $ "file://" ++ path
+			void $ redirectUltDest HomeR
+			return False
+		)
+	where
+#if OSX
+		cmd = "open"
+#else
+		cmd = "xdg-open"
+#endif

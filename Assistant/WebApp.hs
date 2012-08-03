@@ -63,7 +63,7 @@ selectNavBar :: Handler [NavBarItem]
 selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)
 
 inFirstRun :: Handler Bool
-inFirstRun = isNothing . threadState <$> getYesod
+inFirstRun = isNothing . relDir <$> getYesod
 
 {- Used instead of defaultContent; highlights the current page if it's
  - on the navbar. -}
