@@ -28,6 +28,7 @@ import qualified Git
 import Yesod
 import Text.Hamlet
 import qualified Data.Map as M
+import Control.Concurrent
 
 {- A display of currently running and queued transfers.
  -
@@ -104,13 +105,19 @@ getFileBrowserR = whenM openFileBrowser $ do
 
 {- Opens the system file browser on the repo, or, as a fallback,
  - goes to a file:// url. Returns True if it's ok to redirect away
- - from the page (ie, the system file browser was opened). -}
+ - from the page (ie, the system file browser was opened). 
+ -
+ - Note that the command is opened using a different thread, to avoid
+ - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
 	path <- runAnnex (error "no configured repository") $
 		fromRepo Git.repoPath
-	ifM (liftIO $ inPath cmd <&&> boolSystem cmd [File path])
-		( return True
+	ifM (liftIO $ inPath cmd <&&> inPath cmd)
+		( do
+			void $ liftIO $ forkIO $ void $
+				boolSystem cmd [Param path]
+			return True
 		, do
 			clearUltDest
 			setUltDest $ "file://" ++ path
