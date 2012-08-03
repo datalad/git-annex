@@ -29,6 +29,11 @@ The webapp is a web server that displays a shiny interface.
   over http by the web app
 * Display any relevant warning messages. One is the `inotify max_user_watches`
   exceeded message.
+* possibly add a desktop file to the top of the repository that can be used
+  to open the webapp (rather than using the menus). Would be complicated
+  some by the path to git-annex sometimes needing to be hardcoded and varying
+  across systems, so it would need to be a symlink to `.git/annex/desktop`
+  which would be per-system.
 
 ## first start
 
