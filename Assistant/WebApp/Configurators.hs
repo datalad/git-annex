@@ -163,7 +163,7 @@ makeRepo path = do
 		error "git init failed!"
 	g <- Git.Config.read =<< Git.Construct.fromPath path
 	state <- Annex.new g
-	Annex.eval state $ initialize $ Just "new repo" -- TODO better description
+	Annex.eval state $ initialize Nothing
 	autostart <- autoStartFile
 	createDirectoryIfMissing True (parentDir autostart)
 	appendFile autostart $ path ++ "\n"
