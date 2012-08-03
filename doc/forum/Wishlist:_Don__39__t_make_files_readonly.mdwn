@@ -1,0 +1,3 @@
+Maybe this explained somewhere else, but what is the purpose of marking files readonly. To me this is an annoyance that doesn't make sense. I want to be able to change my files, having to go through an unlock step, to do that seems like unnecessary work. Interestingly, Microsoft's Team Foundation Server source control does the same thing and I don't like it there either.
+
+In addition why replace files with symlinks? Why not just leave the real files in place, or do the reverse and put the symlink to the file in the repository.
