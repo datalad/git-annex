@@ -1,3 +1,42 @@
-<div .span9 .hero-unit>
-  <h2>
-    Sorry, no configuration is implemented yet...
+<div .span9>
+  <div .row-fluid>
+    <div .span4>
+      <h3>
+        <a href="">
+          Clone to removable drive
+      <p>
+        Clone this repository to a USB drive, memory stick, or other #
+        removable media.
+      <p>
+        For offline archiving, backups, or to #
+        <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
+        between computers. 
+    <div .span4>
+      <h3>
+        <a href="">
+          Clone to a local computer
+      <p>
+        Automatically keep files in sync between computers on your #
+        local network.
+      <p>
+        For easy sharing with family and friends, or between your devices.
+    <div .span4>
+  <div .row-fluid>
+    <div .span4>
+      <h3>
+        <a href="">
+          Store data in the cloud
+      <p>
+        Store your data on a third-party cloud platform, #
+        including Amazon S3, Box.com, and Rsync.net.
+      <p>
+        Pay someone to keep your data safe. With strong encryption to #
+        protect your privacy.
+    <div .span4>
+      <h3>
+        <a href="">
+          Clone to a remote server
+      <p>
+        Set up a repository on a remote Unix server running SSH.
+      <p>
+        For when you want to run your own cloud.

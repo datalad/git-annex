@@ -1,15 +1,10 @@
-<div .span9 .hero-unit>
-    $if firstrun
-      <h2>
-        Welcome to git-annex!
-        <p>
-          There's just one thing to do before you can start using the power #
-          and convenience of git-annex.
-    <h2>
-      Create a git-annex repository
+<div .row-fluid>
+  <div .span4>
+    <h3>
+      Clone to removable drive
     <p>
-      Files in this repository will managed by git-annex, #
-      and kept in sync with your repositories on other devices.
-    <p>
-    <form .form-inline enctype=#{enctype}>
-      ^{form}
+      Clone this repository to a USB drive, or other removable media, #
+      for offline archiving, backups, or to #
+      <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
+      between computers.
+    

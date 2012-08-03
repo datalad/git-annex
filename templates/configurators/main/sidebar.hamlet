@@ -1,0 +1,18 @@
+<div .alert .alert-info>
+  <h4 .alert-heading>
+    git-annex is managing #
+    $if notenough
+      only #
+      <span .badge .badge-error>#{numrepos}</span> repository. #
+    $else
+      $if barelyenough
+        <span .badge .badge-warning>#{numrepos}</span> repositories. #
+      $else
+        <span .badge .badge-success>#{numrepos}</span> repositories. #
+  $if notenough
+    Recommend you add more clones to avoid data loss.
+  $else
+    $if barelyenough
+      Consider adding more.
+    $else
+      Adding more can't hurt!

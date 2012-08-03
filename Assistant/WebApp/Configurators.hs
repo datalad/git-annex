@@ -30,25 +30,51 @@ import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
 
-{- An intro message, list of repositories, and nudge to make more. -}
-introDisplay :: Text -> Widget
-introDisplay ident = do
-	webapp <- lift getYesod
-	l <- lift $ runAnnex [] $ do
+{- The main configuration screen. -}
+getConfigR :: Handler RepHtml
+getConfigR = ifM (inFirstRun)
+	( getFirstRepositoryR
+	, bootstrap (Just Config) $ do
+		sideBarDisplay $ Just sidebar
+		setTitle "Configuration"
+		$(widgetFile "configurators/main")
+	)
+	where
+		sidebar = do
+			(_repolist, numrepos, notenough, barelyenough, morethanenough)
+				<- lift repoList
+			$(widgetFile "configurators/main/sidebar")
+
+{- Lists different types of repositories that can be added. -}
+getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR = bootstrap (Just Config) $ do
+	sideBarDisplay Nothing
+	setTitle "Add repository"
+	$(widgetFile "configurators/addrepository")
+
+{- A numbered list of known repositories, including the current one,
+ - as well as the total number, and whether that is not enough,
+ - barely enough, or more than enough. -}
+repoList :: Handler ([(String, String)], String, Bool, Bool, Bool)
+repoList = do
+	l <- runAnnex [] $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList
 		rs' <- snd <$> trustPartition DeadTrusted rs
 		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs'
-	let remotelist = zip counter l
 	let n = length l
-	let numrepos = show n
-	let notenough = n < 2
-	let barelyenough = n == 2
-	let morethanenough = n > 2
-	$(widgetFile "configurators/intro")
-	lift $ modifyWebAppState $ \s -> s { showIntro = False }
+	return (zip counter l, show (length l), n < enough, n == enough, n > enough)
 	where
 		counter = map show ([1..] :: [Int])
+		enough = 2
+
+{- An intro message, list of repositories, and nudge to make more. -}
+introDisplay :: Text -> Widget
+introDisplay ident = do
+	webapp <- lift getYesod
+	(repolist, numrepos, notenough, barelyenough, morethanenough) <- lift repoList
+	$(widgetFile "configurators/intro")
+	lift $ modifyWebAppState $ \s -> s { showIntro = False }
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -118,8 +144,8 @@ defaultRepositoryPath firstrun = do
 				(relHome (desktop </> "annex"), return "~/annex")
 		else return cwd
 
-addRepositoryForm :: Form RepositoryPath
-addRepositoryForm msg = do
+addLocalRepositoryForm :: Form RepositoryPath
+addLocalRepositoryForm msg = do
 	path <- T.pack . addTrailingPathSeparator
 		<$> (liftIO . defaultRepositoryPath =<< lift inFirstRun)
 	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just path)
@@ -129,20 +155,18 @@ addRepositoryForm msg = do
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
-		$(widgetFile "configurators/addrepository/form")
+		$(widgetFile "configurators/localrepositoryform")
 	return (RepositoryPath <$> pathRes, form)
 
-addRepository :: Bool -> Widget
-addRepository firstrun = do
-	setTitle $ if firstrun then "Getting started" else "Add repository"
-	((res, form), enctype) <- lift $ runFormGet addRepositoryForm
+getFirstRepositoryR :: Handler RepHtml
+getFirstRepositoryR = bootstrap (Just Config) $ do
+	sideBarDisplay Nothing
+	setTitle "Getting started"
+	((res, form), enctype) <- lift $ runFormGet addLocalRepositoryForm
 	case res of
-		FormSuccess (RepositoryPath p) -> go $ T.unpack p
-		_ -> $(widgetFile "configurators/addrepository")
-	where
-		go path
-			| firstrun = lift $ startFullAssistant path
-			| otherwise = error "TODO"
+		FormSuccess (RepositoryPath p) -> lift $
+			startFullAssistant $ T.unpack p
+		_ -> $(widgetFile "configurators/firstrepository")
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
@@ -167,18 +191,3 @@ makeRepo path = do
 	autostart <- autoStartFile
 	createDirectoryIfMissing True (parentDir autostart)
 	appendFile autostart $ path ++ "\n"
-
-getAddRepositoryR :: Handler RepHtml
-getAddRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	addRepository False
-
-getConfigR :: Handler RepHtml
-getConfigR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	ifM (lift inFirstRun)
-		( addRepository True
-		, do
-			setTitle "Configuration"
-			$(widgetFile "configurators/main")
-		)

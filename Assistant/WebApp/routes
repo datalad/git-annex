@@ -5,6 +5,7 @@
 
 /config ConfigR GET
 /config/addrepository AddRepositoryR GET
+/config/firstrepository FirstRepositoryR GET
 
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET
