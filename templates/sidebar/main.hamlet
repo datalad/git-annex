@@ -1,3 +1,4 @@
-<div .span3 ##{ident}>
-  <div .sidebar-nav>
+<div .span3>
+  ^{perpage}
+  <div .sidebar-nav ##{ident}>
     ^{content}

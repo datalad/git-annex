@@ -24,11 +24,10 @@ import Control.Concurrent
 
 sideBarDisplay :: Maybe Widget -> Widget
 sideBarDisplay onsidebar = do
+	{- If a widget was passed to include on the sidebar, display
+	 - it above alerts. -}
+	let perpage = maybe noop id onsidebar
 	let content = do
-		{- If a widget was passed to include on the sidebar, display
-		 - it above alerts. -}
-		maybe noop id onsidebar
-
 		{- Any yesod message appears as the first alert. -}
 		maybe noop rendermessage =<< lift getMessage
 	
