@@ -5,6 +5,7 @@
 
 /config ConfigR GET
 /config/repository/add AddRepositoryR GET
+/config/repository/add/drive AddDriveR GET
 /config/repository/first FirstRepositoryR GET
 /config/repository/list ListRepositoriesR GET
 

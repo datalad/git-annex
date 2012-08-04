@@ -28,7 +28,7 @@ import Prelude hiding (catch)
  - fields available everywhere. -}
 data Mntent = Mntent
 	{ mnt_fsname :: String
-	, mnt_dir :: String
+	, mnt_dir :: FilePath
 	, mnt_type :: String
 	} deriving (Read, Show, Eq, Ord)
 

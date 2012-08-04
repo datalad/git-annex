@@ -23,12 +23,17 @@ import qualified Git.Config
 import qualified Annex
 import Locations.UserConfig
 import Utility.FreeDesktop
+import Utility.Mounts
+import Utility.DiskFree
+import Utility.DataUnits
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
+import System.Posix.User
+import qualified Control.Exception as E
 
 {- The main configuration screen. -}
 getConfigR :: Handler RepHtml
@@ -117,7 +122,8 @@ checkRepositoryPath p = do
 		, (doesFileExist path, "A file already exists with that name.")
 		, (return $ path == home, "Sorry, using git-annex for your whole home directory is not currently supported.")
 		, (not <$> doesDirectoryExist parent, "Parent directory does not exist.")
-		, (cannotWrite path, "Cannot write a repository there.")
+		, (not <$> canWrite path, "Cannot write a repository there.")
+		, (not <$> canMakeSymlink path, "That directory is on a filesystem that does not support symlinks. Try a different location.")
 		]
 	return $ 
 		case headMaybe problems of
@@ -128,10 +134,6 @@ checkRepositoryPath p = do
 			( return $ Just msg
 			, return Nothing
 			)
-		cannotWrite path = do
-			tocheck <- ifM (doesDirectoryExist path)
-				(return path, return $ parentDir path)
-			not <$> (catchBoolIO $ fileAccess tocheck False True False)
 		expandTilde home ('~':'/':path) = home </> path
 		expandTilde _ path = path
 
@@ -150,8 +152,8 @@ defaultRepositoryPath firstrun = do
 				(relHome (desktop </> "annex"), return "~/annex")
 		else return cwd
 
-addLocalRepositoryForm :: Form RepositoryPath
-addLocalRepositoryForm msg = do
+localRepositoryForm :: Form RepositoryPath
+localRepositoryForm msg = do
 	path <- T.pack . addTrailingPathSeparator
 		<$> (liftIO . defaultRepositoryPath =<< lift inFirstRun)
 	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just path)
@@ -164,15 +166,116 @@ addLocalRepositoryForm msg = do
 		$(widgetFile "configurators/localrepositoryform")
 	return (RepositoryPath <$> pathRes, form)
 
+{- Making the first repository, when starting the webapp for the first time. -}
 getFirstRepositoryR :: Handler RepHtml
 getFirstRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Getting started"
-	((res, form), enctype) <- lift $ runFormGet addLocalRepositoryForm
+	((res, form), enctype) <- lift $ runFormGet localRepositoryForm
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $
 			startFullAssistant $ T.unpack p
 		_ -> $(widgetFile "configurators/firstrepository")
+
+data RemovableDrive = RemovableDrive 
+	{ diskFree :: Maybe Integer
+	, mountPoint :: Text
+	}
+	deriving (Show, Eq, Ord)
+
+selectDriveForm :: [RemovableDrive] -> Maybe RemovableDrive -> Form RemovableDrive
+selectDriveForm drives def = renderBootstrap $ RemovableDrive
+	<$> pure Nothing
+	<*> areq (selectFieldList pairs) "Select drive:" (mountPoint <$> def)
+	where
+		pairs = zip (map describe drives) (map mountPoint drives)
+		describe drive = case diskFree drive of
+			Nothing -> mountPoint drive
+			Just free -> 
+				let sz = roughSize storageUnits True free
+				in T.unwords
+					[ mountPoint drive
+					, T.concat ["(", T.pack sz]
+					, "free)"
+					]
+
+{- Making the first repository, when starting the webapp for the first time. -}
+getAddDriveR :: Handler RepHtml
+getAddDriveR = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Clone to a removable drive"
+	removabledrives <- liftIO $ driveList
+	writabledrives <- liftIO $
+		filterM (canWrite . T.unpack . mountPoint) removabledrives
+	((res, form), enctype) <- lift $ runFormGet $
+		selectDriveForm (sort writabledrives) Nothing
+	case res of
+		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $ do
+			liftIO $ go $ T.unpack d </> "annex"
+			setMessage $ toHtml $ T.unwords ["Added", d]
+			redirect ListRepositoriesR
+		_ -> do
+			let authtoken = webAppFormAuthToken
+			$(widgetFile "configurators/adddrive")
+	where
+		{- There may already be a git-annex repo on the drive.
+		 - If so, avoid re-initualizing it; this will be the 
+		 - case if a user is adding the same removable drive
+		 - to several computers.
+		 -
+		 - Some drives will have FAT or another horrible filesystem
+		 - that does not support symlinks; make a bare repo on those.
+		 -
+		 - Use the basename of the mount point, along with the
+		 - username (but without the hostname as this repo
+		 - travels!), as the repo description, and use the basename
+		 - of the mount point as the git remote name.
+		 -}
+		go dir = do
+			r <- E.try getannex :: IO (Either E.SomeException Annex.AnnexState)
+			state <- case r of
+				Right state -> return state
+				Left _e -> do
+					createDirectoryIfMissing True dir
+					bare <- not <$> canMakeSymlink dir
+					makeRepo dir bare
+					getannex
+			desc <- getdesc
+			Annex.eval state $
+				unlessM isInitialized $
+					initialize $ Just desc
+			where
+				getannex = Annex.new =<< Git.Construct.fromAbsPath dir
+				remotename = takeFileName dir
+				getdesc = do
+					username <- userName <$>
+			                        (getUserEntryForID =<< getEffectiveUserID)
+					return $ concat
+						[ username
+						, ":"
+						, remotename
+						]
+
+{- List of removable drives. -}
+driveList :: IO [RemovableDrive]
+driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
+	where
+		gen dir = RemovableDrive
+			<$> getDiskFree dir
+			<*> pure (T.pack dir)
+		-- filter out some things that are surely not removable drives
+		sane Mntent { mnt_dir = dir, mnt_fsname = dev }
+			-- We want real disks like /dev/foo, not
+			-- dummy mount points like proc or tmpfs or
+			-- gvfs-fuse-daemon
+			| not ('/' `elem` dev) = False
+			-- Just in case: These mount points are surely not
+			-- removable disks.
+			| dir == "/" = False
+			| dir == "/tmp" = False
+			| dir == "/run/shm" = False
+			| dir == "/run/lock" = False
+			| otherwise = True
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
@@ -181,19 +284,53 @@ startFullAssistant :: FilePath -> Handler ()
 startFullAssistant path = do
 	webapp <- getYesod
 	url <- liftIO $ do
-		makeRepo path
+		makeRepo path False
+		initRepo path Nothing
+		addAutoStart path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 
 {- Makes a new git-annex repository. -}
-makeRepo :: FilePath -> IO ()
-makeRepo path = do
-	unlessM (boolSystem "git" [Param "init", Param "--quiet", File path]) $
+makeRepo :: FilePath -> Bool -> IO ()
+makeRepo path bare = do
+	unlessM (boolSystem "git" params) $
 		error "git init failed!"
+	where
+		baseparams = [Param "init", Param "--quiet"]
+		params
+			| bare = baseparams ++ [Param "--bare", File path]
+			| otherwise = baseparams ++ [File path]
+
+{- Initializes a git-annex repository in a directory with a description. -}
+initRepo :: FilePath -> Maybe String -> IO ()
+initRepo path desc = do
 	g <- Git.Config.read =<< Git.Construct.fromPath path
 	state <- Annex.new g
-	Annex.eval state $ initialize Nothing
+	Annex.eval state $ initialize desc
+
+{- Adds a directory to the autostart file. -}
+addAutoStart :: FilePath -> IO ()
+addAutoStart path = do
 	autostart <- autoStartFile
 	createDirectoryIfMissing True (parentDir autostart)
 	appendFile autostart $ path ++ "\n"
+
+{- Checks if the user can write to a directory.
+ -
+ - The directory may be in the process of being created; if so
+ - the parent directory is checked instead. -}
+canWrite :: FilePath -> IO Bool		
+canWrite dir = do
+	tocheck <- ifM (doesDirectoryExist dir)
+		(return dir, return $ parentDir dir)
+	catchBoolIO $ fileAccess tocheck False True False
+
+{- Checks if a directory is on a filesystem that supports symlinks. -}
+canMakeSymlink :: FilePath -> IO Bool
+canMakeSymlink dir = catchBoolIO $ do
+	createSymbolicLink link link
+	removeLink link
+	return True
+	where
+		link = dir </> "delete.me"

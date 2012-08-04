@@ -1,10 +1,8 @@
 <div .span9>
-  <h2>
-    Add repositories
   <div .row-fluid>
     <div .span4>
       <h3>
-        <a href="">
+        <a href="@{AddDriveR}">
           Clone to a removable drive
       <p>
         Clone this repository to a USB drive, memory stick, or other #
