@@ -194,8 +194,7 @@ subdirectories).
   using it in a repository that was not intended to have an annex.
 
   It's useful, but not mandatory, to initialize each new clone
-  of a repository with its own description. If you don't provide one,
-  one will be generated.
+  of a repository with its own description.
 
 * describe repository description
 

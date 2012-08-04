@@ -19,26 +19,6 @@ import Logs.UUID
 import Annex.Version
 import Annex.UUID
 
-import System.Posix.User
-
-genDescription :: Maybe String -> Annex String
-genDescription (Just d) = return d
-genDescription Nothing = do
-	hostname <- getHostname
-	let at = if null hostname then "" else "@"
-	username <- clicketyclickety
-	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
-	return $ concat [username, at, hostname, ":", reldir]
-	where
-		{- Haskell lacks uname(2) bindings, except in the
-		 - Bindings.Uname addon. Rather than depend on that,
-		 - use uname -n when available. -}
-		getHostname = liftIO $ catchDefaultIO uname_node ""
-		uname_node = takeWhile (/= '\n') <$>
-			readProcess "uname" ["-n"]	
-		clicketyclickety = liftIO $ userName <$>
-			(getUserEntryForID =<< getEffectiveUserID)
-
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
@@ -46,7 +26,7 @@ initialize mdescription = do
 	setVersion
 	gitPreCommitHookWrite
 	u <- getUUID
-	describeUUID u =<< genDescription mdescription
+	maybe (recordUUID u) (describeUUID u) mdescription
 
 uninitialize :: Annex ()
 uninitialize = do
