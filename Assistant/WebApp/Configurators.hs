@@ -35,46 +35,52 @@ getConfigR :: Handler RepHtml
 getConfigR = ifM (inFirstRun)
 	( getFirstRepositoryR
 	, bootstrap (Just Config) $ do
-		sideBarDisplay $ Just sidebar
+		sideBarDisplay
 		setTitle "Configuration"
 		$(widgetFile "configurators/main")
 	)
-	where
-		sidebar = do
-			(_repolist, numrepos, notenough, barelyenough, morethanenough)
-				<- lift repoList
-			$(widgetFile "configurators/main/sidebar")
 
 {- Lists different types of repositories that can be added. -}
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay Nothing
+	sideBarDisplay
 	setTitle "Add repository"
 	$(widgetFile "configurators/addrepository")
 
-{- A numbered list of known repositories, including the current one,
- - as well as the total number, and whether that is not enough,
- - barely enough, or more than enough. -}
-repoList :: Handler ([(String, String)], String, Bool, Bool, Bool)
+{- Lists known repositories. -}
+getListRepositoriesR :: Handler RepHtml
+getListRepositoriesR = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Repository list"
+	repolist <- lift repoList
+	$(widgetFile "configurators/listrepositories")
+
+{- A numbered list of known repositories, including the current one. -}
+repoList :: Handler [(String, String)]
 repoList = do
 	l <- runAnnex [] $ do
 		u <- getUUID
 		rs <- map Remote.uuid <$> Remote.remoteList
 		rs' <- snd <$> trustPartition DeadTrusted rs
 		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs'
-	let n = length l
-	return (zip counter l, show (length l), n < enough, n == enough, n > enough)
+	return $ zip counter l
 	where
 		counter = map show ([1..] :: [Int])
-		enough = 2
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	(repolist, numrepos, notenough, barelyenough, morethanenough) <- lift repoList
+	repolist <- lift repoList
+	let n = length repolist
+	let numrepos = show n
+	let notenough = n < enough
+	let barelyenough = n == enough
+	let morethanenough = n > enough
 	$(widgetFile "configurators/intro")
 	lift $ modifyWebAppState $ \s -> s { showIntro = False }
+	where
+		enough = 2
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -160,7 +166,7 @@ addLocalRepositoryForm msg = do
 
 getFirstRepositoryR :: Handler RepHtml
 getFirstRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay Nothing
+	sideBarDisplay
 	setTitle "Getting started"
 	((res, form), enctype) <- lift $ runFormGet addLocalRepositoryForm
 	case res of

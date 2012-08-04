@@ -68,7 +68,7 @@ getTransfersR nid = do
 {- The main dashboard. -}
 dashboard :: Bool -> Widget
 dashboard warnNoScript = do
-	sideBarDisplay Nothing
+	sideBarDisplay
 	let content = transfersDisplay warnNoScript
 	$(widgetFile "dashboard/main")
 

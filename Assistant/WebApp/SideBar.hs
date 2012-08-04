@@ -22,11 +22,8 @@ import Data.Text (Text)
 import qualified Data.Map as M
 import Control.Concurrent
 
-sideBarDisplay :: Maybe Widget -> Widget
-sideBarDisplay onsidebar = do
-	{- If a widget was passed to include on the sidebar, display
-	 - it above alerts. -}
-	let perpage = maybe noop id onsidebar
+sideBarDisplay :: Widget
+sideBarDisplay = do
 	let content = do
 		{- Any yesod message appears as the first alert. -}
 		maybe noop rendermessage =<< lift getMessage
@@ -86,7 +83,7 @@ getSideBarR nid = do
 	 - to avoid slowing down user actions like closing alerts. -}
 	liftIO $ threadDelay 100000
 
-	page <- widgetToPageContent $ sideBarDisplay Nothing
+	page <- widgetToPageContent sideBarDisplay
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
 {- Called by the client to close an alert. -}

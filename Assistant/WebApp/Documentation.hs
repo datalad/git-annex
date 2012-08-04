@@ -17,6 +17,6 @@ import Yesod
 
 getAboutR :: Handler RepHtml
 getAboutR = bootstrap (Just About) $ do
-	sideBarDisplay Nothing
+	sideBarDisplay
 	setTitle "About git-annex"
 	$(widgetFile "documentation/about")
