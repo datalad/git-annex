@@ -118,5 +118,5 @@ pushToRemotes threadname now st mpushmap remotes = do
 
 		retry branch g rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
-			runThreadState st $ manualPull branch rs
+			runThreadState st $ manualPull (Just branch) rs
 			go False (Just branch) g rs

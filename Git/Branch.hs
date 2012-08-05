@@ -23,13 +23,23 @@ import Git.Command
  -}
 current :: Repo -> IO (Maybe Git.Ref)
 current r = do
-	branch <- firstLine <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
-	if null branch
-		then return Nothing
-		else ifM (null <$> pipeRead [Param "show-ref", Param branch] r)
-			( return Nothing
-			, return $ Just $ Git.Ref branch
-			)
+	v <- currentUnsafe r
+	case v of
+		Nothing -> return Nothing
+		Just branch -> 
+			ifM (null <$> pipeRead [Param "show-ref", Param $ show branch] r)
+				( return Nothing
+				, return v
+				)
+
+{- The current branch, which may not really exist yet. -}
+currentUnsafe :: Repo -> IO (Maybe Git.Ref)
+currentUnsafe r = parse . firstLine
+	<$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
+	where
+		parse l
+			| null l = Nothing
+			| otherwise = Just $ Git.Ref l
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}

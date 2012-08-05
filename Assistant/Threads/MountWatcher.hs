@@ -161,18 +161,21 @@ handleMount st dstatus scanremotes dir = do
 	debug thisThread ["detected mount of", dir]
 	rs <- remotesUnder st dstatus dir
 	unless (null rs) $ do
-		go rs =<< runThreadState st (inRepo Git.Branch.current)
+		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
+		unless (null nonspecial) $ do
+			void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
+				debug thisThread ["syncing with", show rs]
+				sync nonspecial =<< runThreadState st (inRepo Git.Branch.current)
+			addScanRemotes scanremotes nonspecial
 	where
-		go _ Nothing = noop
-		go rs (Just branch) = do
-			let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
-			unless (null nonspecial) $
-				void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
-					debug thisThread ["syncing with", show nonspecial]
-					runThreadState st $ manualPull branch nonspecial
-					now <- getCurrentTime	
-					pushToRemotes thisThread now st Nothing nonspecial
-			addScanRemotes scanremotes rs
+		sync rs (Just branch) = do
+			runThreadState st $ manualPull (Just branch) rs
+			now <- getCurrentTime	
+			pushToRemotes thisThread now st Nothing rs
+		{- No local branch exists yet, but we can try pulling. -}
+		sync rs Nothing = do
+			runThreadState st $ manualPull Nothing rs
+			return True
 
 {- Finds remotes located underneath the mount point.
  -

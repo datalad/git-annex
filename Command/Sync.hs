@@ -123,7 +123,7 @@ pullRemote remote branch = do
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote branch
+			next $ mergeRemote remote (Just branch)
 	where
 		fetch = inRepo $ Git.Command.runBool "fetch"
 			[Param $ Remote.name remote]
@@ -132,11 +132,17 @@ pullRemote remote branch = do
  - Which to merge from? Well, the master has whatever latest changes
  - were committed, while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> Git.Ref -> CommandCleanup
-mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
+mergeRemote :: Remote -> (Maybe Git.Ref) -> CommandCleanup
+mergeRemote remote b = case b of
+	Nothing -> do
+		branch <- inRepo Git.Branch.currentUnsafe
+		all id <$> (mapM merge $ branchlist branch)
+	Just _ -> all id <$> (mapM merge =<< tomerge (branchlist b))
 	where
 		merge = mergeFrom . remoteBranch remote
-		tomerge = filterM (changed remote) [branch, syncBranch branch]
+		tomerge branches = filterM (changed remote) branches
+		branchlist Nothing = []
+		branchlist (Just branch) = [branch, syncBranch branch]
 
 pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush

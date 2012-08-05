@@ -89,7 +89,7 @@ mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
  - when a push fails, which can happen due to a remote not having pushed
  - changes to us. That could be because it doesn't have us as a remote, or
  - because the assistant is not running there, or other reasons. -}
-manualPull :: Git.Ref -> [Remote] -> Annex ()
+manualPull :: (Maybe Git.Ref) -> [Remote] -> Annex ()
 manualPull currentbranch remotes = do
 	forM_ remotes $ \r ->
 		inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
