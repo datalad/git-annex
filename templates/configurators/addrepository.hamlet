@@ -3,7 +3,7 @@
     <div .span4>
       <h3>
         <a href="@{AddDriveR}">
-          Clone to a removable drive
+          Add a removable drive
       <p>
         Clone this repository to a USB drive, memory stick, or other #
         removable media.

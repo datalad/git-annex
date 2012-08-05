@@ -207,7 +207,7 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 getAddDriveR :: Handler RepHtml
 getAddDriveR = bootstrap (Just Config) $ do
 	sideBarDisplay
-	setTitle "Clone to a removable drive"
+	setTitle "Add a removable drive"
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
