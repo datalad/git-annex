@@ -4,7 +4,7 @@
     <span .add-on>
       <i .icon-folder-open></i>
     ^{fvInput pathView}
-    <button type=submit .btn>
+    <button type=submit .btn .btn-primary>
       Make Repository
 $if err
   <div .alert .alert-error>
