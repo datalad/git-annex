@@ -8,7 +8,7 @@
         repositories on your devices ...
         <h2>
           But no other repositories are set up yet.
-        <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
+        <a .btn .btn-primary .btn-large href="@{RepositoriesR}">Add another repository</a>
       $else
         $if barelyenough
           <span .badge .badge-warning>#{numrepos}</span>
@@ -23,6 +23,6 @@
                   #{num}
                 <td>
                   #{name}
-        <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">Add another repository</a>
+        <a .btn .btn-primary .btn-large href="@{RepositoriesR}">Add another repository</a>
         <p>
           Or just sit back, watch the magic, and get on with using your files.

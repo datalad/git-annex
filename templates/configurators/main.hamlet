@@ -2,14 +2,8 @@
   <div .row-fluid>
     <div .span4>
       <h3>
-        <a href="@{AddRepositoryR}">
-          Add repositories
+        <a href="@{RepositoriesR}">
+          Manage repositories
      <p>
-       Distribute the files in this repository to other devices;
-       make backups; and more by adding repositories.
-    <div .span4>
-      <h3>
-        <a href="@{ListRepositoriesR}">
-          Repository list
-     <p>
-       An overview of your repositories.
+       Distribute the files in this repository to other devices,
+       make backups, and more, by adding repositories.

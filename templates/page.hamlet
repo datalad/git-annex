@@ -17,7 +17,7 @@
               Current Repository: #{reldir}
               <b .caret></b>
             <ul .dropdown-menu>
-               <li><a href="@{AddRepositoryR}">Add another repository</a></li>
+               <li><a href="@{RepositoriesR}">Add another repository</a></li>
       $nothing
 <div .container-fluid>
   <div .row-fluid>

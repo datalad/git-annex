@@ -1,9 +1,21 @@
 <div .span9>
+  <h2>
+    Your repositories
+  <table .table .table-condensed>
+    <tbody>
+      $forall (num, name) <- repolist
+        <tr>
+          <td>
+            #{num}
+          <td>
+            #{name}
+  <h2>
+    Add more repositories
   <div .row-fluid>
     <div .span4>
       <h3>
         <a href="@{AddDriveR}">
-          Add a removable drive
+          <i .icon-plus></i> Removable drive
       <p>
         Clone this repository to a USB drive, memory stick, or other #
         removable media.
@@ -13,15 +25,15 @@
         between computers. 
     <div .span4>
       <h3>
-        Pair with a local computer
+        <i .icon-plus></i> Local computer
       <p>
-        Automatically keep files in sync between computers on your #
-        local network.
+        Pair with a local computer to automatically keep files in sync #
+        between computers on your local network.
       <p>
         For easy sharing with family and friends, or between your devices.
     <div .span4>
       <h3>
-        Connect to your phone
+        <i .icon-plus></i> Phone
       <p>
         Save photos and recordings from your phone.
       <p>
@@ -29,7 +41,7 @@
   <div .row-fluid>
     <div .span4>
       <h3>
-        Store data in the cloud
+        <i .icon-plus></i> The cloud
       <p>
         Store your data on a third-party cloud platform, #
         including Amazon S3, Box.com, and Rsync.net.
@@ -38,7 +50,7 @@
         With strong encryption to protect your privacy.
     <div .span4>
       <h3>
-        Clone to a remote server
+        <i .icon-plus></i> Remote server
       <p>
         Set up a repository on a remote server using #
         <tt>ssh</tt> or <tt>rsync</tt>.

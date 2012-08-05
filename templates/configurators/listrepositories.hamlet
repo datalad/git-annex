@@ -1,9 +1,0 @@
-<div .span9>
-  <table .table .table-striped .table-condensed>
-    <tbody>
-      $forall (num, name) <- repolist
-        <tr>
-          <td>
-            #{num}
-          <td>
-            #{name}

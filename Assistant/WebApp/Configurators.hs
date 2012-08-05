@@ -49,20 +49,13 @@ getConfigR = ifM (inFirstRun)
 		$(widgetFile "configurators/main")
 	)
 
-{- Lists different types of repositories that can be added. -}
-getAddRepositoryR :: Handler RepHtml
-getAddRepositoryR = bootstrap (Just Config) $ do
+{- Lists known repositories, followed by options to add more. -}
+getRepositoriesR :: Handler RepHtml
+getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
-	setTitle "Add repository"
-	$(widgetFile "configurators/addrepository")
-
-{- Lists known repositories. -}
-getListRepositoriesR :: Handler RepHtml
-getListRepositoriesR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Repository list"
+	setTitle "Repositories"
 	repolist <- lift repoList
-	$(widgetFile "configurators/listrepositories")
+	$(widgetFile "configurators/repositories")
 
 {- A numbered list of known repositories, including the current one. -}
 repoList :: Handler [(String, String)]
@@ -217,7 +210,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $ do
 			go $ T.unpack d
 			setMessage $ toHtml $ T.unwords ["Added", d]
-			redirect ListRepositoriesR
+			redirect RepositoriesR
 		_ -> do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adddrive")
