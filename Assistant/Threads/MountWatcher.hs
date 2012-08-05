@@ -98,11 +98,11 @@ checkMountMonitor :: Client -> IO Bool
 checkMountMonitor client = do
 	running <- filter (`elem` usableservices)
 		<$> listServiceNames client
-	if null running
-		then startOneService client startableservices
-		else do
+	case running of
+		[] -> startOneService client startableservices
+		(service:_) -> do
 			debug thisThread [ "Using running DBUS service"
-				, Prelude.head running
+				, service
 				, "to monitor mount events."
 				]
 			return True

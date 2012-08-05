@@ -67,7 +67,9 @@ runWebApp app observer = do
 localSocket :: IO Socket
 localSocket = do
 	addrs <- getAddrInfo (Just hints) (Just localhost) Nothing
-	go $ Prelude.head addrs
+	case addrs of
+		[] -> error "unable to bind to a local socket"
+		(addr:_) -> go addr
 	where
 		hints = defaultHints
 			{ addrFlags = [AI_ADDRCONFIG]
