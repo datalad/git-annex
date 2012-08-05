@@ -6,8 +6,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module Command.Sync where
 
 import Common.Annex
@@ -39,7 +37,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	branch <- currentBranch
+	branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
 	return $ concat
 		[ [ commit ]
@@ -49,11 +47,6 @@ seek rs = do
 		, [ pushLocal branch ]
 		, [ pushRemote remote branch | remote <- remotes ]
 		]
-
-currentBranch :: Annex Git.Ref
-currentBranch = do
-	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
-	return branch
 	where
 		nobranch = error "no branch is checked out"
 

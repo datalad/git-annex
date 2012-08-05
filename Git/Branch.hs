@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Git.Branch where
 
 import Common
@@ -12,13 +14,22 @@ import Git
 import Git.Sha
 import Git.Command
 
-{- The currently checked out branch. -}
+{- The currently checked out branch.
+ -
+ - In a just initialized git repo before the first commit,
+ - symbolic-ref will show the master branch, even though that
+ - branch is not created yet. So, this also looks at show-ref HEAD
+ - to double-check.
+ -}
 current :: Repo -> IO (Maybe Git.Ref)
-current r = parse <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
-	where
-		parse v
-			| null v = Nothing
-			| otherwise = Just $ Git.Ref $ firstLine v
+current r = do
+	branch <- firstLine <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
+	if null branch
+		then return Nothing
+		else ifM (null <$> pipeRead [Param "show-ref", Param branch] r)
+			( return Nothing
+			, return $ Just $ Git.Ref branch
+			)
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}

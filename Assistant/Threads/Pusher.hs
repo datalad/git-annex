@@ -17,6 +17,7 @@ import Assistant.DaemonStatus
 import qualified Command.Sync
 import Utility.ThreadScheduler
 import Utility.Parallel
+import qualified Git.Branch
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -84,10 +85,11 @@ shouldPush _now commits
 pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> (Maybe FailedPushMap) -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushmap remotes = do
 	(g, branch) <- runThreadState st $
-		(,) <$> fromRepo id <*> Command.Sync.currentBranch
+		(,) <$> fromRepo id <*> inRepo Git.Branch.current
 	go True branch g remotes
 	where
-		go shouldretry branch g rs = do
+		go _ Nothing _ _ = return True -- no branch, so nothing to do
+		go shouldretry (Just branch) g rs = do
 			debug threadname
 				[ "pushing to"
 				, show rs
@@ -117,4 +119,4 @@ pushToRemotes threadname now st mpushmap remotes = do
 		retry branch g rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
 			runThreadState st $ manualPull branch rs
-			go False branch g rs
+			go False (Just branch) g rs

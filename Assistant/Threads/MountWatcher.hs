@@ -22,8 +22,8 @@ import Utility.ThreadScheduler
 import Utility.Mounts
 import Remote.List
 import qualified Types.Remote as Remote
-import qualified Command.Sync
 import Assistant.Threads.Merger
+import qualified Git.Branch
 
 import Control.Concurrent
 import qualified Control.Exception as E
@@ -161,15 +161,18 @@ handleMount st dstatus scanremotes dir = do
 	debug thisThread ["detected mount of", dir]
 	rs <- remotesUnder st dstatus dir
 	unless (null rs) $ do
-		branch <- runThreadState st $ Command.Sync.currentBranch
-		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
-		unless (null nonspecial) $
-			void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
-				debug thisThread ["syncing with", show nonspecial]
-				runThreadState st $ manualPull branch nonspecial
-				now <- getCurrentTime	
-				pushToRemotes thisThread now st Nothing nonspecial
-		addScanRemotes scanremotes rs
+		go rs =<< runThreadState st (inRepo Git.Branch.current)
+	where
+		go _ Nothing = noop
+		go rs (Just branch) = do
+			let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
+			unless (null nonspecial) $
+				void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
+					debug thisThread ["syncing with", show nonspecial]
+					runThreadState st $ manualPull branch nonspecial
+					now <- getCurrentTime	
+					pushToRemotes thisThread now st Nothing nonspecial
+			addScanRemotes scanremotes rs
 
 {- Finds remotes located underneath the mount point.
  -
