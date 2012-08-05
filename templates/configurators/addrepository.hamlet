@@ -13,8 +13,7 @@
         between computers. 
     <div .span4>
       <h3>
-        <a href="">
-          Pair with a local computer
+        Pair with a local computer
       <p>
         Automatically keep files in sync between computers on your #
         local network.
@@ -22,8 +21,7 @@
         For easy sharing with family and friends, or between your devices.
     <div .span4>
       <h3>
-        <a href="">
-          Connect to your phone
+        Connect to your phone
       <p>
         Save photos and recordings from your phone.
       <p>
@@ -31,8 +29,7 @@
   <div .row-fluid>
     <div .span4>
       <h3>
-        <a href="">
-          Store data in the cloud
+        Store data in the cloud
       <p>
         Store your data on a third-party cloud platform, #
         including Amazon S3, Box.com, and Rsync.net.
@@ -41,8 +38,7 @@
         With strong encryption to protect your privacy.
     <div .span4>
       <h3>
-        <a href="">
-          Clone to a remote server
+        Clone to a remote server
       <p>
         Set up a repository on a remote server using #
         <tt>ssh</tt> or <tt>rsync</tt>.
