@@ -19,6 +19,7 @@ import Assistant.WebApp.Configurators
 import Assistant.WebApp.Documentation
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Utility.WebApp
 import Utility.FileMode
@@ -40,14 +41,16 @@ type Url = String
 webAppThread 
 	:: (Maybe ThreadState) 
 	-> DaemonStatusHandle
+	-> ScanRemoteMap
 	-> TransferQueue
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> IO ()
-webAppThread mst dstatus transferqueue postfirstrun onstartup = do
+webAppThread mst dstatus scanremotes transferqueue postfirstrun onstartup = do
 	webapp <- WebApp
 		<$> pure mst
 		<*> pure dstatus
+		<*> pure scanremotes
 		<*> pure transferqueue
 		<*> (pack <$> genRandomToken)
 		<*> getreldir mst

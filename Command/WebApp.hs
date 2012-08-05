@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Assistant
 import Assistant.DaemonStatus
+import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.Threads.WebApp
 import Utility.WebApp
@@ -83,10 +84,12 @@ autoStart autostartfile = do
 firstRun :: IO ()
 firstRun = do
 	dstatus <- atomically . newTMVar =<< newDaemonStatus
+	scanremotes <- newScanRemoteMap
 	transferqueue <- newTransferQueue
 	v <- newEmptyMVar
 	let callback a = Just $ a v
-	webAppThread Nothing dstatus transferqueue (callback signaler) (callback mainthread)
+	webAppThread Nothing dstatus scanremotes transferqueue
+		(callback signaler) (callback mainthread)
 	where
 		signaler v = do
 			putMVar v ""

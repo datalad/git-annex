@@ -154,13 +154,14 @@ pollingThread st dstatus scanremotes = go =<< currentMountPoints
 			go nowmounted
 
 handleMounts :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> MountPoints -> MountPoints -> IO ()
-handleMounts st dstatus scanremotes wasmounted nowmounted = mapM_ (handleMount st dstatus scanremotes) $
-	S.toList $ newMountPoints wasmounted nowmounted
+handleMounts st dstatus scanremotes wasmounted nowmounted =
+	mapM_ (handleMount st dstatus scanremotes . mnt_dir) $
+		S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Mntent -> IO ()
-handleMount st dstatus scanremotes mntent = do
+handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> FilePath -> IO ()
+handleMount st dstatus scanremotes dir = do
 	debug thisThread ["detected mount of", dir]
-	rs <- remotesUnder st dstatus mntent
+	rs <- remotesUnder st dstatus dir
 	unless (null rs) $ do
 		branch <- runThreadState st $ Command.Sync.currentBranch
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
@@ -171,8 +172,6 @@ handleMount st dstatus scanremotes mntent = do
 				now <- getCurrentTime	
 				pushToRemotes thisThread now st Nothing nonspecial
 		addScanRemotes scanremotes rs
-	where
-		dir = mnt_dir mntent
 
 {- Finds remotes located underneath the mount point.
  -
@@ -182,8 +181,8 @@ handleMount st dstatus scanremotes mntent = do
  - at startup time, or may have changed (it could even be a different
  - repository at the same remote location..)
  -}
-remotesUnder :: ThreadState -> DaemonStatusHandle -> Mntent -> IO [Remote]
-remotesUnder st dstatus mntent = runThreadState st $ do
+remotesUnder :: ThreadState -> DaemonStatusHandle -> FilePath -> IO [Remote]
+remotesUnder st dstatus dir = runThreadState st $ do
 	repotop <- fromRepo Git.repoPath
 	rs <- remoteList
 	pairs <- mapM (checkremote repotop) rs
@@ -194,7 +193,7 @@ remotesUnder st dstatus mntent = runThreadState st $ do
 	return $ map snd $ filter fst pairs
 	where
 		checkremote repotop r = case Remote.path r of
-			Just p | under mntent (absPathFrom repotop p) ->
+			Just p | dirContains dir (absPathFrom repotop p) ->
 				(,) <$> pure True <*> updateremote r
 			_ -> return (False, r)
 		updateremote r = do
@@ -214,7 +213,3 @@ currentMountPoints = S.fromList <$> getMounts
 
 newMountPoints :: MountPoints -> MountPoints -> MountPoints
 newMountPoints old new = S.difference new old
-
-{- Checks if a mount point contains a path. The path must be absolute. -}
-under :: Mntent -> FilePath -> Bool
-under = dirContains . mnt_dir

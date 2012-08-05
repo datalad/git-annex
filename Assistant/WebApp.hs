@@ -13,6 +13,7 @@ module Assistant.WebApp where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.Alert hiding (Widget)
 import Utility.NotificationBroadcaster
@@ -32,6 +33,7 @@ mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 data WebApp = WebApp
 	{ threadState :: Maybe ThreadState
 	, daemonStatus :: DaemonStatusHandle
+	, scanRemotes :: ScanRemoteMap
 	, transferQueue :: TransferQueue
 	, secretToken :: Text
 	, relDir :: Maybe FilePath

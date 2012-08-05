@@ -12,6 +12,7 @@ module Assistant.WebApp.Configurators where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.SideBar
+import Assistant.Threads.MountWatcher (handleMount)
 import Utility.Yesod
 import qualified Remote
 import Logs.Web (webUUID)
@@ -32,7 +33,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
-import System.Posix.User
 import qualified Control.Exception as E
 
 {- The main configuration screen. -}
@@ -199,7 +199,7 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 					, "free)"
 					]
 
-{- Making the first repository, when starting the webapp for the first time. -}
+{- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
 getAddDriveR = bootstrap (Just Config) $ do
 	sideBarDisplay
@@ -211,50 +211,38 @@ getAddDriveR = bootstrap (Just Config) $ do
 		selectDriveForm (sort writabledrives) Nothing
 	case res of
 		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $ do
-			liftIO $ go $ T.unpack d </> "annex"
+			webapp <- getYesod
+			liftIO $ go webapp $ T.unpack d </> "annex"
 			setMessage $ toHtml $ T.unwords ["Added", d]
 			redirect ListRepositoriesR
 		_ -> do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adddrive")
 	where
-		{- There may already be a git-annex repo on the drive.
-		 - If so, avoid re-initualizing it; this will be the 
-		 - case if a user is adding the same removable drive
-		 - to several computers.
-		 -
-		 - Some drives will have FAT or another horrible filesystem
-		 - that does not support symlinks; make a bare repo on those.
-		 -
-		 - Use the basename of the mount point, along with the
-		 - username (but without the hostname as this repo
-		 - travels!), as the repo description, and use the basename
-		 - of the mount point as the git remote name.
-		 -}
-		go dir = do
+		go webapp dir = do
 			r <- E.try getannex :: IO (Either E.SomeException Annex.AnnexState)
-			state <- case r of
-				Right state -> return state
+			case r of
+				Right _ -> noop
 				Left _e -> do
 					createDirectoryIfMissing True dir
 					bare <- not <$> canMakeSymlink dir
 					makeRepo dir bare
-					getannex
-			desc <- getdesc
-			Annex.eval state $
-				unlessM isInitialized $
-					initialize $ Just desc
+			initRepo dir $ Just remotename
+
+			-- TODO setup up git remotes
+			-- TODO add it to Annex.remotes
+			
+			{- Now synthesize a mount event of the new
+			 - git repository. This will sync it, and queue
+			 - file transfers. -}
+			handleMount
+				(fromJust $ threadState webapp)
+				(daemonStatus webapp)
+				(scanRemotes webapp)
+				dir
 			where
 				getannex = Annex.new =<< Git.Construct.fromAbsPath dir
 				remotename = takeFileName dir
-				getdesc = do
-					username <- userName <$>
-			                        (getUserEntryForID =<< getEffectiveUserID)
-					return $ concat
-						[ username
-						, ":"
-						, remotename
-						]
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
@@ -265,12 +253,12 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 			<*> pure (T.pack dir)
 		-- filter out some things that are surely not removable drives
 		sane Mntent { mnt_dir = dir, mnt_fsname = dev }
-			-- We want real disks like /dev/foo, not
-			-- dummy mount points like proc or tmpfs or
-			-- gvfs-fuse-daemon
+			{- We want real disks like /dev/foo, not
+			 - dummy mount points like proc or tmpfs or
+			 - gvfs-fuse-daemon. -}
 			| not ('/' `elem` dev) = False
-			-- Just in case: These mount points are surely not
-			-- removable disks.
+			{- Just in case: These mount points are surely not
+			 - removable disks. -}
 			| dir == "/" = False
 			| dir == "/tmp" = False
 			| dir == "/run/shm" = False
@@ -305,9 +293,10 @@ makeRepo path bare = do
 {- Initializes a git-annex repository in a directory with a description. -}
 initRepo :: FilePath -> Maybe String -> IO ()
 initRepo path desc = do
-	g <- Git.Config.read =<< Git.Construct.fromPath path
-	state <- Annex.new g
-	Annex.eval state $ initialize desc
+	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath path
+	Annex.eval state $ 
+		unlessM isInitialized $
+			initialize desc
 
 {- Adds a directory to the autostart file. -}
 addAutoStart :: FilePath -> IO ()
