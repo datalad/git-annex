@@ -19,6 +19,7 @@ import Annex.UUID
 import Config
 import Remote.Helper.Hooks
 import qualified Git
+import qualified Git.Config
 
 import qualified Remote.Git
 #ifdef WITH_S3
@@ -58,11 +59,33 @@ remoteList = do
 	where
 		process m t = enumerate t >>= mapM (remoteGen m t)
 
+{- Forces the remoteList to be re-generated, re-reading the git config. -}
+remoteListRefresh :: Annex [Remote]
+remoteListRefresh = do
+	newg <- inRepo Git.Config.reRead
+	Annex.changeState $ \s -> s 
+		{ Annex.remotes = []
+		, Annex.repo = newg
+		}
+	remoteList
+
 {- Generates a Remote. -}
 remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
 remoteGen m t r = do
 	u <- getRepoUUID r
 	addHooks =<< generate t r u (M.lookup u m)
+
+{- Updates a local git Remote, re-reading its git config. -}
+updateRemote :: Remote -> Annex Remote
+updateRemote remote = do
+	m <- readRemoteLog
+	remote' <- updaterepo $ repo remote
+	remoteGen m (remotetype remote) remote'
+	where
+		updaterepo r
+			| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
+				Remote.Git.configRead r
+			| otherwise = return r
 
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]

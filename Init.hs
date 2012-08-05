@@ -14,6 +14,7 @@ module Init (
 
 import Common.Annex
 import Utility.TempFile
+import Utility.Network
 import qualified Git
 import qualified Annex.Branch
 import Logs.UUID
@@ -25,18 +26,12 @@ import System.Posix.User
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
-	hostname <- getHostname
+	hostname <- maybe "" id <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
 	username <- clicketyclickety
 	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
 	return $ concat [username, at, hostname, ":", reldir]
 	where
-		{- Haskell lacks uname(2) bindings, except in the
-		 - Bindings.Uname addon. Rather than depend on that,
-		 - use uname -n when available. -}
-		getHostname = liftIO $ catchDefaultIO uname_node ""
-		uname_node = takeWhile (/= '\n') <$>
-			readProcess "uname" ["-n"]	
 		clicketyclickety = liftIO $ userName <$>
 			(getUserEntryForID =<< getEffectiveUserID)
 

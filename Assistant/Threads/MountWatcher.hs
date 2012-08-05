@@ -22,10 +22,8 @@ import Utility.ThreadScheduler
 import Utility.Mounts
 import Remote.List
 import qualified Types.Remote as Remote
-import qualified Remote.Git
 import qualified Command.Sync
 import Assistant.Threads.Merger
-import Logs.Remote
 
 import Control.Concurrent
 import qualified Control.Exception as E
@@ -194,17 +192,8 @@ remotesUnder st dstatus dir = runThreadState st $ do
 	where
 		checkremote repotop r = case Remote.path r of
 			Just p | dirContains dir (absPathFrom repotop p) ->
-				(,) <$> pure True <*> updateremote r
+				(,) <$> pure True <*> updateRemote r
 			_ -> return (False, r)
-		updateremote r = do
-			liftIO $ debug thisThread ["updating", show r]
-			m <- readRemoteLog
-			repo <- updaterepo $ Remote.repo r
-			remoteGen m (Remote.remotetype r) repo
-		updaterepo repo
-			| Git.repoIsLocal repo || Git.repoIsLocalUnknown repo =
-				Remote.Git.configRead repo
-			| otherwise = return repo
 
 type MountPoints = S.Set Mntent
 
