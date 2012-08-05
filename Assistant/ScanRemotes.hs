@@ -26,10 +26,14 @@ newScanRemoteMap = atomically newEmptyTMVar
 getScanRemote :: ScanRemoteMap -> IO Remote
 getScanRemote v = atomically $ do
 	m <- takeTMVar v
-	let newest = Prelude.head $ reverse $
-		map fst $ sortBy (compare `on` snd) $ M.toList m
-	putTMVar v $ M.delete newest m
-	return newest
+	let l = reverse $ map fst $ sortBy (compare `on` snd) $ M.toList m
+	case l of
+		[] -> retry -- should never happen
+		(newest:_) -> do
+			let m' = M.delete newest m
+			unless (M.null m') $
+				putTMVar v m'
+			return newest
 
 {- Adds new remotes that need scanning to the map. -}
 addScanRemotes :: ScanRemoteMap -> [Remote] -> IO ()
