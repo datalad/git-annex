@@ -7,7 +7,7 @@ How I see doing this:
 1. Put my annex to an http server with exported-over-http /Public/ directory.
 2. Configure a post-update hook with the following:
 
-    $ git annex fix
+        $ git annex fix
 
 3. Push files on /Public/ to that annex.
 
