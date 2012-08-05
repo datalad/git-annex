@@ -229,9 +229,12 @@ withKeysReferencedM a = withKeysReferenced' () calla
 withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
 withKeysReferenced' initial a = go initial =<< files
 	where
-		files = do
-			top <- fromRepo Git.repoPath
-			inRepo $ LsFiles.inRepo [top]
+		files = ifM isBareRepo
+			( return []
+			, do
+				top <- fromRepo Git.repoPath
+				inRepo $ LsFiles.inRepo [top]
+			)
 		go v [] = return v
 		go v (f:fs) = do
 			x <- Backend.lookupFile f
