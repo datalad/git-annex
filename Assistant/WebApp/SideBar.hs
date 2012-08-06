@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Notifications
 import Assistant.DaemonStatus
-import Assistant.Alert hiding (Widget)
+import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
@@ -25,9 +25,6 @@ import Control.Concurrent
 sideBarDisplay :: Widget
 sideBarDisplay = do
 	let content = do
-		{- Any yesod message appears as the first alert. -}
-		maybe noop rendermessage =<< lift getMessage
-	
 		{- Add newest alerts to the sidebar. -}
 		webapp <- lift getYesod
 		alertpairs <- M.toList . alertMap
@@ -49,17 +46,12 @@ sideBarDisplay = do
 			(alertClosable alert)
 			(alertBlockDisplay alert)
 			(bootstrapclass $ alertClass alert)
-			(alertHeader alert)
+			(renderAlertHeader alert)
+			(renderAlertMessage alert)
 			(alertIcon alert)
-			$ case alertMessage alert of
-				StringAlert s -> [whamlet|#{s}|]
-				WidgetAlert w -> w alert
 
-		rendermessage msg = addalert firstAlertId True False
-			"alert-info" Nothing (Just "exclamation-sign") [whamlet|#{msg}|]
-
-		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe String -> Maybe String -> Widget -> Widget
-		addalert i closable block divclass heading icon widget = do
+		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe Text -> Text -> Maybe String -> Widget
+		addalert i closable block divclass heading message icon = do
 			let alertid = show i
 			let closealert = CloseAlert i
 			$(widgetFile "sidebar/alert")

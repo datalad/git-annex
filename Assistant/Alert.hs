@@ -5,17 +5,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, BangPatterns #-}
+{-# LANGUAGE RankNTypes, BangPatterns, OverloadedStrings #-}
 
 module Assistant.Alert where
 
 import Common.Annex
 import qualified Remote
+import Utility.Tense
 
+import qualified Data.Text as T
 import qualified Data.Map as M
-import Yesod
-
-type Widget = forall sub master. GWidget sub master ()
+import Data.String
 
 {- Different classes of alerts are displayed differently. -}
 data AlertClass = Success | Message | Activity | Warning | Error
@@ -23,9 +23,6 @@ data AlertClass = Success | Message | Activity | Warning | Error
 
 data AlertPriority = Filler | Low | Medium | High | Pinned
 	deriving (Eq, Ord)
-
-{- An alert can be a simple message, or an arbitrary Yesod Widget. -}
-data AlertMessage = StringAlert String | WidgetAlert (Alert -> Widget)
 
 {- An alert can have an name, which is used to combine it with other similar
  - alerts. -}
@@ -38,8 +35,8 @@ type AlertCombiner = Maybe (Alert -> Alert -> Maybe Alert)
 
 data Alert = Alert
 	{ alertClass :: AlertClass
-	, alertHeader :: Maybe String
-	, alertMessage :: AlertMessage
+	, alertHeader :: Maybe TenseText
+	, alertMessage :: TenseText
 	, alertBlockDisplay :: Bool
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
@@ -56,7 +53,6 @@ type AlertMap = M.Map AlertId Alert
 newtype AlertId = AlertId Integer
         deriving (Read, Show, Eq, Ord)
 
-{- Note: This first alert id is used for yesod's message. -}
 firstAlertId :: AlertId
 firstAlertId = AlertId 0
 
@@ -64,7 +60,7 @@ nextAlertId :: AlertId -> AlertId
 nextAlertId (AlertId i) = AlertId $ succ i
 
 {- This is as many alerts as it makes sense to display at a time.
- - A display might be smaller ,or larger, the point is to not overwhelm the
+ - A display might be smaller, or larger, the point is to not overwhelm the
  - user with a ton of alerts. -}
 displayAlerts :: Int
 displayAlerts = 6
@@ -95,24 +91,29 @@ compareAlertPairs
 sortAlertPairs :: [AlertPair] -> [AlertPair]
 sortAlertPairs = sortBy compareAlertPairs
 
-{- Checks if two alerts display the same.
- - Yesod Widgets cannot be compared, as they run code. -}
+{- Renders an alert's header for display, if it has one. -}
+renderAlertHeader :: Alert -> Maybe T.Text
+renderAlertHeader alert = renderTense (alertTense alert) <$> alertHeader alert
+
+{- Renders an alert's message for display. -}
+renderAlertMessage :: Alert -> T.Text
+renderAlertMessage alert = renderTense (alertTense alert) $ alertMessage alert
+
+alertTense :: Alert -> Tense
+alertTense alert
+	| alertClass alert == Activity = Present
+	| otherwise = Past
+
+{- Checks if two alerts display the same. -}
 effectivelySameAlert :: Alert -> Alert -> Bool
-effectivelySameAlert x y
-	| uncomparable x || uncomparable y = False
-	| otherwise = all id 
-		[ alertClass x == alertClass y
-		, alertHeader x == alertHeader y
-		, extract (alertMessage x) == extract (alertMessage y)
-		, alertBlockDisplay x == alertBlockDisplay y
-		, alertClosable x == alertClosable y
-		, alertPriority x == alertPriority y
-		]
-	where
-		uncomparable (Alert { alertMessage = StringAlert _ }) = False
-		uncomparable _ = True
-		extract (StringAlert s) = s
-		extract _ = ""
+effectivelySameAlert x y = all id 
+	[ alertClass x == alertClass y
+	, alertHeader x == alertHeader y
+	, alertMessage x == alertMessage y
+	, alertBlockDisplay x == alertBlockDisplay y
+	, alertClosable x == alertClosable y
+	, alertPriority x == alertPriority y
+	]
 
 makeAlertFiller :: Bool -> Alert -> Alert
 makeAlertFiller success alert
@@ -171,7 +172,7 @@ baseActivityAlert :: Alert
 baseActivityAlert = Alert
 	{ alertClass = Activity
 	, alertHeader = Nothing
-	, alertMessage = StringAlert ""
+	, alertMessage = ""
 	, alertBlockDisplay = False
 	, alertClosable = False
 	, alertPriority = Medium
@@ -180,32 +181,39 @@ baseActivityAlert = Alert
 	, alertName = Nothing
 	}
 
-activityAlert :: Maybe String -> String -> Alert
+activityAlert :: Maybe TenseText -> TenseText -> Alert
 activityAlert header message = baseActivityAlert
 	{ alertHeader = header
-	, alertMessage = StringAlert message
+	, alertMessage = message
 	}
 
 startupScanAlert :: Alert
-startupScanAlert = activityAlert Nothing "Performing startup scan"
+startupScanAlert = activityAlert Nothing $
+	tenseWords [Tensed "Performing" "Performed", "startup scan"]
 
 commitAlert :: Alert
-commitAlert = activityAlert Nothing "Committing changes to git"
+commitAlert = activityAlert Nothing $ tenseWords
+	[Tensed "Committing" "Committed", "changes to git"]
+
+showRemotes :: [Remote] -> TenseChunk
+showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
 
 pushAlert :: [Remote] -> Alert
-pushAlert rs = activityAlert Nothing $
-	"Syncing with " ++ unwords (map Remote.name rs)
+pushAlert rs = activityAlert Nothing $ tenseWords
+	[Tensed "Syncing" "Synced", "with", showRemotes rs]
 
 pushRetryAlert :: [Remote] -> Alert
-pushRetryAlert rs = activityAlert (Just "Retrying sync") $
-	"with " ++ unwords (map Remote.name rs) ++ ", which failed earlier."
+pushRetryAlert rs = activityAlert
+	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
+	(tenseWords ["with", showRemotes rs])
 
 syncMountAlert :: FilePath -> [Remote] -> Alert
 syncMountAlert dir rs = baseActivityAlert
-	{ alertHeader = Just $ "Syncing with " ++ unwords (map Remote.name rs)
-	, alertMessage = StringAlert $ unwords
+	{ alertHeader = Just $ tenseWords
+		[Tensed "Syncing" "Sync", "with", showRemotes rs]
+	, alertMessage = tenseWords $ map UnTensed
 		["You plugged in"
-		, dir
+		, T.pack dir
 		, " -- let's get it in sync!"
 		]
 	, alertBlockDisplay = True
@@ -214,23 +222,29 @@ syncMountAlert dir rs = baseActivityAlert
 
 scanAlert :: Remote -> Alert
 scanAlert r = baseActivityAlert
-	{ alertHeader = Just $ "Scanning " ++ Remote.name r
-	, alertMessage = StringAlert $ unwords
-		[ "Ensuring that ", Remote.name r
-		, "is fully in sync." ]
+	{ alertHeader = Just $ tenseWords
+		[Tensed "Scanning" "Scanned", showRemotes [r]]
+	, alertMessage = tenseWords
+		[ Tensed "Ensuring" "Ensured"
+		, "that"
+		, showRemotes [r]
+		, Tensed "is" "was"
+		, "fully in sync."
+		]
 	, alertBlockDisplay = True
 	, alertPriority = Low
 	}
 
 sanityCheckAlert :: Alert
-sanityCheckAlert = activityAlert (Just "Running daily sanity check")
-	"to make sure everything is ok."
+sanityCheckAlert = activityAlert
+	(Just $ tenseWords [Tensed "Running" "Ran", "daily sanity check"])
+	(tenseWords ["to make sure everything is ok."])
 
 sanityCheckFixAlert :: String -> Alert
 sanityCheckFixAlert msg = Alert
 	{ alertClass = Warning
-	, alertHeader = Just "Fixed a problem"
-	, alertMessage = StringAlert $ unlines [ alerthead, msg, alertfoot ]
+	, alertHeader = Just $ tenseWords ["Fixed a problem"]
+	, alertMessage = buildmsg [ alerthead, T.pack msg, alertfoot ]
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
@@ -241,26 +255,26 @@ sanityCheckFixAlert msg = Alert
 	where
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
-		combinemessage (StringAlert new) (StringAlert old) =
+		combinemessage new old =
 			let newmsg = filter (/= alerthead) $
 				filter (/= alertfoot) $
-				lines old ++ lines new
-			in Just $ StringAlert $
-				unlines $ alerthead : newmsg ++ [alertfoot]
-		combinemessage _ _ = Nothing
+				T.lines (renderTense Past old) ++ T.lines (renderTense Past new)
+			in Just $ buildmsg $ alerthead : newmsg ++ [alertfoot]
+		buildmsg l = TenseText [UnTensed $ T.unlines l]
 
 addFileAlert :: FilePath -> Alert
-addFileAlert file = (activityAlert (Just "Added") $ shortFile $ takeFileName file)
+addFileAlert file = (activityAlert header message)
 	{ alertName = Just AddFileAlert
 	, alertCombiner = messageCombiner combinemessage
 	}
 	where
-		combinemessage (StringAlert new) (StringAlert old) =
-			Just $ StringAlert $
-				unlines $ take 10 $ new : lines old
-		combinemessage _ _ = Nothing
+		header = Just $ tenseWords [Tensed "Adding" "Added"]
+		message = fromString $ shortFile $ takeFileName file
+		combinemessage new old = Just $ buildmsg $ take 10 $
+			(renderTense Past new) : T.lines (renderTense Past old)
+		buildmsg l = TenseText [UnTensed $ T.unlines l]
 
-messageCombiner :: (AlertMessage -> AlertMessage -> Maybe AlertMessage) -> AlertCombiner
+messageCombiner :: (TenseText -> TenseText -> Maybe TenseText) -> AlertCombiner
 messageCombiner combinemessage = Just go
 	where
 		go new old

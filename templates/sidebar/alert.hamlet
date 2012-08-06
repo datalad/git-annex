@@ -10,4 +10,4 @@
       <h4 .alert-heading>#{h}</h4> #
     $else
       <strong>#{h}</strong> #
-  ^{widget}
+  #{message}

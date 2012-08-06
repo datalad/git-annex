@@ -15,7 +15,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
-import Assistant.Alert hiding (Widget)
+import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
