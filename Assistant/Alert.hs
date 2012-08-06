@@ -31,17 +31,18 @@ data AlertName = AddFileAlert | DownloadFailedAlert | SanityCheckFixAlert
 
 {- The first alert is the new alert, the second is an old alert.
  - Should return a modified version of the old alert. -}
-type AlertCombiner = Maybe (Alert -> Alert -> Maybe Alert)
+type AlertCombiner = Alert -> Alert -> Maybe Alert
 
 data Alert = Alert
 	{ alertClass :: AlertClass
 	, alertHeader :: Maybe TenseText
-	, alertMessage :: TenseText
+	, alertMessageRender :: [TenseChunk] -> TenseText
+	, alertData :: [TenseChunk]
 	, alertBlockDisplay :: Bool
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
 	, alertIcon :: Maybe String
-	, alertCombiner :: AlertCombiner
+	, alertCombiner :: Maybe AlertCombiner
 	, alertName :: Maybe AlertName
 	}
 
@@ -97,7 +98,8 @@ renderAlertHeader alert = renderTense (alertTense alert) <$> alertHeader alert
 
 {- Renders an alert's message for display. -}
 renderAlertMessage :: Alert -> T.Text
-renderAlertMessage alert = renderTense (alertTense alert) $ alertMessage alert
+renderAlertMessage alert = renderTense (alertTense alert) $
+	(alertMessageRender alert) (alertData alert)
 
 alertTense :: Alert -> Tense
 alertTense alert
@@ -109,7 +111,7 @@ effectivelySameAlert :: Alert -> Alert -> Bool
 effectivelySameAlert x y = all id 
 	[ alertClass x == alertClass y
 	, alertHeader x == alertHeader y
-	, alertMessage x == alertMessage y
+	, alertData x == alertData y
 	, alertBlockDisplay x == alertBlockDisplay y
 	, alertClosable x == alertClosable y
 	, alertPriority x == alertPriority y
@@ -172,7 +174,8 @@ baseActivityAlert :: Alert
 baseActivityAlert = Alert
 	{ alertClass = Activity
 	, alertHeader = Nothing
-	, alertMessage = ""
+	, alertMessageRender = tenseWords
+	, alertData = []
 	, alertBlockDisplay = False
 	, alertClosable = False
 	, alertPriority = Medium
@@ -181,37 +184,37 @@ baseActivityAlert = Alert
 	, alertName = Nothing
 	}
 
-activityAlert :: Maybe TenseText -> TenseText -> Alert
-activityAlert header message = baseActivityAlert
+activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
+activityAlert header dat = baseActivityAlert
 	{ alertHeader = header
-	, alertMessage = message
+	, alertData = dat
 	}
 
 startupScanAlert :: Alert
 startupScanAlert = activityAlert Nothing $
-	tenseWords [Tensed "Performing" "Performed", "startup scan"]
+	[Tensed "Performing" "Performed", "startup scan"]
 
 commitAlert :: Alert
-commitAlert = activityAlert Nothing $ tenseWords
+commitAlert = activityAlert Nothing $
 	[Tensed "Committing" "Committed", "changes to git"]
 
 showRemotes :: [Remote] -> TenseChunk
 showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
 
 pushAlert :: [Remote] -> Alert
-pushAlert rs = activityAlert Nothing $ tenseWords
+pushAlert rs = activityAlert Nothing $
 	[Tensed "Syncing" "Synced", "with", showRemotes rs]
 
 pushRetryAlert :: [Remote] -> Alert
 pushRetryAlert rs = activityAlert
 	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
-	(tenseWords ["with", showRemotes rs])
+	(["with", showRemotes rs])
 
 syncMountAlert :: FilePath -> [Remote] -> Alert
 syncMountAlert dir rs = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
 		[Tensed "Syncing" "Sync", "with", showRemotes rs]
-	, alertMessage = tenseWords $ map UnTensed
+	, alertData = map UnTensed
 		["You plugged in"
 		, T.pack dir
 		, " -- let's get it in sync!"
@@ -224,7 +227,7 @@ scanAlert :: Remote -> Alert
 scanAlert r = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
 		[Tensed "Scanning" "Scanned", showRemotes [r]]
-	, alertMessage = tenseWords
+	, alertData =
 		[ Tensed "Ensuring" "Ensured"
 		, "that"
 		, showRemotes [r]
@@ -238,52 +241,43 @@ scanAlert r = baseActivityAlert
 sanityCheckAlert :: Alert
 sanityCheckAlert = activityAlert
 	(Just $ tenseWords [Tensed "Running" "Ran", "daily sanity check"])
-	(tenseWords ["to make sure everything is ok."])
+	["to make sure everything is ok."]
 
 sanityCheckFixAlert :: String -> Alert
 sanityCheckFixAlert msg = Alert
 	{ alertClass = Warning
 	, alertHeader = Just $ tenseWords ["Fixed a problem"]
-	, alertMessage = buildmsg [ alerthead, T.pack msg, alertfoot ]
+	, alertMessageRender = render
+	, alertData = [UnTensed $ T.pack msg]
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just "exclamation-sign"
 	, alertName = Just SanityCheckFixAlert
-	, alertCombiner = messageCombiner combinemessage
+	, alertCombiner = Just $ dataCombiner (++)
 	}
 	where
+		render dta = tenseWords $ alerthead : dta ++ [alertfoot]
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
-		combinemessage new old =
-			let newmsg = filter (/= alerthead) $
-				filter (/= alertfoot) $
-				T.lines (renderTense Past old) ++ T.lines (renderTense Past new)
-			in Just $ buildmsg $ alerthead : newmsg ++ [alertfoot]
-		buildmsg l = TenseText [UnTensed $ T.unlines l]
 
 addFileAlert :: FilePath -> Alert
-addFileAlert file = (activityAlert header message)
+addFileAlert file = (activityAlert Nothing [f])
 	{ alertName = Just AddFileAlert
-	, alertCombiner = messageCombiner combinemessage
+	, alertMessageRender = render
+	, alertCombiner = Just $ dataCombiner combiner
 	}
 	where
-		header = Just $ tenseWords [Tensed "Adding" "Added"]
-		message = fromString $ shortFile $ takeFileName file
-		combinemessage new old = Just $ buildmsg $ take 10 $
-			(renderTense Past new) : T.lines (renderTense Past old)
-		buildmsg l = TenseText [UnTensed $ T.unlines l]
+		f = fromString $ shortFile $ takeFileName file
+		render fs = tenseWords $ Tensed "Adding" "Added" : fs
+		combiner new old = take 10 $ new ++ old
 
-messageCombiner :: (TenseText -> TenseText -> Maybe TenseText) -> AlertCombiner
-messageCombiner combinemessage = Just go
-	where
-		go new old
-			| alertClass new /= alertClass old = Nothing
-			| alertName new == alertName old =
-				case combinemessage (alertMessage new) (alertMessage old) of
-					Nothing -> Nothing
-					Just !m -> Just $! old { alertMessage = m }
-			| otherwise = Nothing
+dataCombiner :: ([TenseChunk] -> [TenseChunk] -> [TenseChunk]) -> AlertCombiner
+dataCombiner combiner new old
+	| alertClass new /= alertClass old = Nothing
+	| alertName new == alertName old = 
+		Just $! old { alertData = alertData new `combiner` alertData old }
+	| otherwise = Nothing
 
 shortFile :: FilePath -> String
 shortFile f
