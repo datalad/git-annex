@@ -198,6 +198,8 @@ safeToAdd st changes = runThreadState st $
 			openfiles <- S.fromList . map fst3 . filter openwrite <$>
 				liftIO (Lsof.queryDir tmpdir)
 
+			-- TODO this is here for debugging a problem on
+			-- OSX, and is pretty expensive, so remove later
 			liftIO $ debug thisThread
 				[ "checking changes:"
 				, show changes

@@ -12,6 +12,7 @@ module Assistant.Alert where
 import Common.Annex
 import qualified Remote
 import Utility.Tense
+import Logs.Transfer
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -26,7 +27,7 @@ data AlertPriority = Filler | Low | Medium | High | Pinned
 
 {- An alert can have an name, which is used to combine it with other similar
  - alerts. -}
-data AlertName = AddFileAlert | DownloadFailedAlert | SanityCheckFixAlert
+data AlertName = FileAlert TenseChunk | DownloadFailedAlert | SanityCheckFixAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -135,39 +136,34 @@ makeAlertFiller success alert
 isFiller :: Alert -> Bool
 isFiller alert = alertPriority alert == Filler
 
-{- Converts a given alert into filler, manipulating it in the AlertMap.
+{- Updates the Alertmap, adding or updating an alert.
  -
- - Any old filler that looks the same as the reference alert is removed,
- - or, if the input alert has an alertCombine that combines it with
- - old filler, the old filler is replaced with the result, and the
- - input alert is removed.
+ - Any old filler that looks the same as the alert is removed.
+ -
+ - Or, if the alert has an alertCombiner that combines it with
+ - an old alert, the old alert is replaced with the result, and the
+ - alert is removed.
  -
  - Old filler alerts are pruned once maxAlerts is reached.
  -}
-convertToFiller :: AlertId -> Bool -> AlertMap -> AlertMap
-convertToFiller i success m = case M.lookup i m of
-	Nothing -> m
- 	Just al ->
-		let al' = makeAlertFiller success al
-		in case alertCombiner al' of
-			Nothing -> updatePrune al'
-			Just combiner -> updateCombine combiner al'
+mergeAlert :: AlertId -> Alert -> AlertMap -> AlertMap
+mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
 	where
-		pruneSame ref k al = k == i || not (effectivelySameAlert ref al)
+		pruneSame k al' = k == i || not (effectivelySameAlert al al')
 		pruneBloat m'
 			| bloat > 0 = M.fromList $ pruneold $ M.toList m'
 			| otherwise = m'
 			where
 				bloat = M.size m' - maxAlerts
 				pruneold l =
-			 		let (f, rest) = partition (\(_, al) -> isFiller al) l
+			 		let (f, rest) = partition (\(_, a) -> isFiller a) l
 					in drop bloat f ++ rest
-		updatePrune al = pruneBloat $ M.filterWithKey (pruneSame al) $
+		updatePrune = pruneBloat $ M.filterWithKey pruneSame $
 			M.insertWith' const i al m
-		updateCombine combiner al = 
+		updateCombine combiner = 
 			let combined = M.mapMaybe (combiner al) m
 			in if M.null combined
-				then updatePrune al
+				then updatePrune
 				else M.delete i $ M.union combined m
 
 baseActivityAlert :: Alert
@@ -210,15 +206,11 @@ pushRetryAlert rs = activityAlert
 	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
 	(["with", showRemotes rs])
 
-syncMountAlert :: FilePath -> [Remote] -> Alert
-syncMountAlert dir rs = baseActivityAlert
+syncAlert :: [Remote] -> Alert
+syncAlert rs = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
-		[Tensed "Syncing" "Sync", "with", showRemotes rs]
-	, alertData = map UnTensed
-		["You plugged in"
-		, T.pack dir
-		, " -- let's get it in sync!"
-		]
+		[Tensed "Syncing" "Synced", "with", showRemotes rs]
+	, alertData = []
 	, alertBlockDisplay = True
 	, alertPriority = Low
         }
@@ -261,16 +253,25 @@ sanityCheckFixAlert msg = Alert
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
 
-addFileAlert :: FilePath -> Alert
-addFileAlert file = (activityAlert Nothing [f])
-	{ alertName = Just AddFileAlert
+fileAlert :: TenseChunk -> FilePath -> Alert
+fileAlert msg file = (activityAlert Nothing [f])
+	{ alertName = Just $ FileAlert msg
 	, alertMessageRender = render
 	, alertCombiner = Just $ dataCombiner combiner
 	}
 	where
 		f = fromString $ shortFile $ takeFileName file
-		render fs = tenseWords $ Tensed "Adding" "Added" : fs
+		render fs = tenseWords $ msg : fs
 		combiner new old = take 10 $ new ++ old
+
+addFileAlert :: FilePath -> Alert
+addFileAlert = fileAlert (Tensed "Adding" "Added")
+
+{- This is only used as a success alert after a transfer, not during it. -}
+transferFileAlert :: Direction -> FilePath -> Alert
+transferFileAlert direction 
+	| direction == Upload = fileAlert "Uploaded"
+	| otherwise = fileAlert "Downloaded"
 
 dataCombiner :: ([TenseChunk] -> [TenseChunk] -> [TenseChunk]) -> AlertCombiner
 dataCombiner combiner new old

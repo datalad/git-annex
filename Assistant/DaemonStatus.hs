@@ -37,7 +37,7 @@ data DaemonStatus = DaemonStatus
 	, currentTransfers :: TransferMap
 	-- Messages to display to the user.
 	, alertMap :: AlertMap
-	, alertMax :: AlertId
+	, lastAlertId :: AlertId
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
 	-- Broadcasts notifications about all changes to the DaemonStatus
@@ -215,10 +215,10 @@ notifyAlert dstatus = sendNotification
 addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
 addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
 	where
-		go s = (s { alertMax = i, alertMap = m }, i)
+		go s = (s { lastAlertId = i, alertMap = m }, i)
 			where
-				i = nextAlertId $ alertMax s
-				m = M.insertWith' const i alert (alertMap s)
+				i = nextAlertId $ lastAlertId s
+				m = mergeAlert i alert (alertMap s)
 
 removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
 removeAlert dstatus i = updateAlert dstatus i (const Nothing)
@@ -245,5 +245,5 @@ alertWhile' dstatus alert a = do
 	let alert' = alert { alertClass = Activity }
 	i <- addAlert dstatus alert'
 	(ok, r) <- bracket_ noop noop a
-	updateAlertMap dstatus $ convertToFiller i ok
+	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
 	return r

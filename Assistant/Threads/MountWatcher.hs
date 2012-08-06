@@ -163,7 +163,7 @@ handleMount st dstatus scanremotes dir = do
 	unless (null rs) $ do
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
 		unless (null nonspecial) $ do
-			void $ alertWhile dstatus (syncMountAlert dir nonspecial) $ do
+			void $ alertWhile dstatus (syncAlert nonspecial) $ do
 				debug thisThread ["syncing with", show rs]
 				sync nonspecial =<< runThreadState st (inRepo Git.Branch.current)
 			addScanRemotes scanremotes nonspecial

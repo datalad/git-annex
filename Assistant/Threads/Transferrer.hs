@@ -12,6 +12,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import Assistant.Alert
 import Logs.Transfer
 import Logs.Presence
 import Logs.Location
@@ -94,7 +95,8 @@ transferThread st dstatus slots t info = case (transferRemote info, associatedFi
 				, transferTid = Just tid
 				}
 	where
-		isdownload = transferDirection t == Download
+		direction = transferDirection t
+		isdownload = direction == Download
 		tofrom
 			| isdownload = "from"
 			| otherwise = "to"
@@ -113,3 +115,6 @@ transferThread st dstatus slots t info = case (transferRemote info, associatedFi
 							Remote.logStatus remote key InfoPresent
 						return ok
 			showEndResult ok
+			liftIO $ addAlert dstatus $
+				makeAlertFiller ok $ 
+					transferFileAlert direction file
