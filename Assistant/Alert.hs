@@ -211,7 +211,6 @@ syncAlert rs = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
 		[Tensed "Syncing" "Synced", "with", showRemotes rs]
 	, alertData = []
-	, alertBlockDisplay = True
 	, alertPriority = Low
         }
 
