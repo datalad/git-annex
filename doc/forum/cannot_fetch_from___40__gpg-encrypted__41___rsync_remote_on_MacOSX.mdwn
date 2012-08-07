@@ -12,3 +12,7 @@ fatal: Could not switch to '../../../.git/annex/objects/Pw/XP/SHA256-s1028494--S
 git-annex: <file descriptor: 6>: hGetLine: end of file
 failed
 git-annex: get: 1 failed
+
+$ git annex version
+git-annex version: 3.20120629
+local repository version: 3
