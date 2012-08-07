@@ -3,30 +3,9 @@
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
- -}
-
-module Utility.DataUnits (
-	dataUnits,
-	storageUnits,
-	memoryUnits,
-	bandwidthUnits,
-	oldSchoolUnits,
-
-	roughSize,
-	compareSizes,
-	readSize
-) where
-
-import Data.List
-import Data.Char
-
-type ByteSize = Integer
-type Name = String
-type Abbrev = String
-data Unit = Unit ByteSize Abbrev Name
-	deriving (Ord, Show, Eq)
-
-{- And now a rant: 
+ -
+ -
+ - And now a rant: 
  -
  - In the beginning, we had powers of two, and they were good.
  -
@@ -55,6 +34,27 @@ data Unit = Unit ByteSize Abbrev Name
  - complain at me for not being standards compliant. And we call this
  - progress?
  -}
+
+module Utility.DataUnits (
+	dataUnits,
+	storageUnits,
+	memoryUnits,
+	bandwidthUnits,
+	oldSchoolUnits,
+
+	roughSize,
+	compareSizes,
+	readSize
+) where
+
+import Data.List
+import Data.Char
+
+type ByteSize = Integer
+type Name = String
+type Abbrev = String
+data Unit = Unit ByteSize Abbrev Name
+	deriving (Ord, Show, Eq)
 
 dataUnits :: [Unit]
 dataUnits = storageUnits ++ memoryUnits
