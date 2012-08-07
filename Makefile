@@ -64,6 +64,7 @@ $(thfiles):
 	touch $(thfiles)
 
 git-annex: $(sources) $(clibs) $(thfiles)
+	install -d $(GIT_ANNEX_TMP_BUILD_DIR)
 	$(GHCMAKE) $@ -o $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex $(clibs)
 	ln -sf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex git-annex
 
