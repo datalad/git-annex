@@ -1,6 +1,7 @@
 CFLAGS=-Wall
+GIT_ANNEX_TMP_BUILD_DIR=tmp
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir tmp -IUtility
+BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP
 
 bins=git-annex
@@ -63,7 +64,8 @@ $(thfiles):
 	touch $(thfiles)
 
 git-annex: $(sources) $(clibs) $(thfiles)
-	$(GHCMAKE) $@ $(clibs)
+	$(GHCMAKE) $@ -o $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex $(clibs)
+	ln -sf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex git-annex
 
 git-annex.1: doc/git-annex.mdwn
 	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
@@ -99,7 +101,7 @@ test: $(sources) $(clibs)
 
 testcoverage:
 	rm -f test.tix test
-	ghc $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
+	ghc $(GHCFLAGS) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR)/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -123,7 +125,7 @@ docs: $(mans)
 		--exclude='news/.*'
 
 clean:
-	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
+	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs)
 
 sdist: clean $(mans)
