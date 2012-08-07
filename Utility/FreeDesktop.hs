@@ -34,7 +34,6 @@ import System.FilePath
 import Data.List
 import Data.String.Utils
 import Control.Applicative
-import Control.Monad (liftM)
 
 type DesktopEntry = [(Key, Value)]
 
