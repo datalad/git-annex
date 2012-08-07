@@ -3,6 +3,8 @@ git-annex (3.20120722) UNRELEASED; urgency=low
   * initremote: Avoid recording remote's description before checking
     that its config is valid.
   * unused, status: Avoid crashing when ran in bare repo.
+  * Avoid crashing when "git annex get" fails to download from one
+    location, and falls back to downloading from a second location.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 27 Jul 2012 21:04:47 -0400
 

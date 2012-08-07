@@ -98,8 +98,8 @@ transfer t file a = do
 			writeFile tfile $ writeTransferInfo info
 			return fd
 		cleanup tfile fd = do
-			removeFile tfile
-			removeFile $ transferLockFile tfile
+			void $ tryIO $ removeFile tfile
+			void $ tryIO $ removeFile $ transferLockFile tfile
 			closeFd fd
 
 {- If a transfer is still running, returns its TransferInfo. -}
