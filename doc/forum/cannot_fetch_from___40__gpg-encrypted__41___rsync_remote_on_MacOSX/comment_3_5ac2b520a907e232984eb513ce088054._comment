@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="hannes"
+ ip="130.226.133.37"
+ subject="also, fsck works"
+ date="2012-08-07T14:12:20Z"
+ content="""
+git annex fsck -fbackup some-local-and-remote-file works fine.
+"""]]
