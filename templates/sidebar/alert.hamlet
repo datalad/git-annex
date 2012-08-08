@@ -7,12 +7,12 @@
         $case icon
           $of Nothing
           $of Just name
-            <i class="icon-#{name}"></i> #
+            <i .icon-#{name}></i> #
         #{h}
     $else
       $case icon
         $of Nothing
         $of Just name
-          <i class="icon-#{name}"></i> #
+          <i .icon-#{name}></i> #
       <strong>#{h}</strong> #
   #{message}

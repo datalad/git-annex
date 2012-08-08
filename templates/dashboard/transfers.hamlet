@@ -5,21 +5,33 @@
     $forall (transfer, info) <- transfers
       $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
         <div .row-fluid>
-          <h3>
-            $maybe file <- associatedFile info
-              #{file}
-            $nothing
-              #{show $ transferKey transfer}
-            $case transferDirection transfer
-              $of Upload
-                &rarr;
-              $of Download
-                &larr;
-            <small>#{maybe "unknown" Remote.name $ transferRemote info}</small>
-              $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
-                $if isJust $ startedTime info
-                    <small .pull-right><b>#{percent} of #{size}</b></small>
-                $else
-                    <small .pull-right>queued (#{size})</small>
-        <div .progress .progress-striped>
-          <div .bar style="width: #{percent};">
+          <div .span10>
+            <div .row-fluid>
+              <h3>
+                $maybe file <- associatedFile info
+                  #{file}
+                $nothing
+                  #{show $ transferKey transfer}
+                $case transferDirection transfer
+                  $of Upload
+                    &rarr;
+                  $of Download
+                    &larr;
+                <small>#{maybe "unknown" Remote.name $ transferRemote info}</small>
+                  $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
+                    $if isJust $ startedTime info
+                        <small .pull-right><b>#{percent} of #{size}</b></small>
+                    $else
+                        <small .pull-right>queued (#{size})</small>
+            <div .row-fluid>
+              <div .progress .progress-striped>
+                <div .bar style="width: #{percent};">
+          <div .btn-group .span2>
+            $if isNothing (startedTime info)
+              <button .btn>
+                <i .icon-play title="start"></i>
+            $else
+              <button .btn>
+                <i .icon-pause title="pause"></i>
+            <button .btn>
+              <i .icon-remove title="cancel"></i>
