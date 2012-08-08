@@ -1,0 +1,8 @@
+A bit under the weather, but got into building buttons to control running
+and queued transfers today. The html and javascript side is done, with
+each transfer now having a cancel button, as well as a pause/start button.
+
+Canceling queued transfers works. Canceling running transfers will
+need some more work, because killing a thread doesn't kill the processes
+being run by that thread. So I'll have to make the assistant run separate
+git-annex processes for transfers, that can be individually sent signals.
