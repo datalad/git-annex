@@ -165,3 +165,11 @@ webAppFormAuthToken :: Widget
 webAppFormAuthToken = do
 	webapp <- lift getYesod
 	[whamlet|<input type="hidden" name="auth" value="#{secretToken webapp}">|]
+
+{- A button with an icon, and maybe label, that can be clicked to perform
+ - some action.
+ - With javascript, clicking it POSTs the Route, and remains on the same
+ - page.
+ - With noscript, clicking it GETs the Route. -}
+actionButton :: Route WebApp -> (Maybe String) -> String -> String -> Widget
+actionButton route label buttonclass iconclass = $(widgetFile "actionbutton")

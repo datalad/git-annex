@@ -10,8 +10,7 @@
       $maybe reldir <- relDir webapp
         <ul .nav .pull-right>
           <li>
-            <a href="@{FileBrowserR}" onclick="(function( $ ) { $.post('@{FileBrowserR}'); })( jQuery ); return false;">
-              <i .icon-folder-open .icon-white></i> Files
+            ^{actionButton FileBrowserR (Just "Files") "" "icon-folder-open icon-white"}
           <li .dropdown #menu1>
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Current Repository: #{reldir}

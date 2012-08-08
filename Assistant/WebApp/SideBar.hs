@@ -53,7 +53,6 @@ sideBarDisplay = do
 		addalert :: AlertId -> Bool -> Bool -> Text -> Maybe Text -> Text -> Maybe String -> Widget
 		addalert i closable block divclass heading message icon = do
 			let alertid = show i
-			let closealert = CloseAlert i
 			$(widgetFile "sidebar/alert")
 
 {- Called by client to get a sidebar display.

@@ -28,10 +28,7 @@
                 <div .bar style="width: #{percent};">
           <div .btn-group .span2>
             $if isNothing (startedTime info)
-              <a .btn href="@{StartTransferR transfer}" onclick="(function( $ ) { $.post('@{StartTransferR transfer}'); })( jQuery ); return false;">
-                <i .icon-play title="start"></i>
+              ^{actionButton (StartTransferR transfer) Nothing "btn" "icon-play"}
             $else
-              <a .btn href="@{PauseTransferR transfer}" onclick="(function( $ ) { $.post('@{PauseTransferR transfer}'); })( jQuery ); return false;">
-                <i .icon-pause title="pause"></i>
-            <a .btn href="@{CancelTransferR transfer}" onclick="(function( $ ) { $.post('@{CancelTransferR transfer}'); })( jQuery ); return false;">
-              <i .icon-remove title="cancel"></i>
+              ^{actionButton (PauseTransferR transfer) Nothing "btn" "icon-pause"}
+            ^{actionButton (CancelTransferR transfer) Nothing "btn" "icon-remove"}
