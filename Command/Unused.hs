@@ -34,6 +34,7 @@ import qualified Remote
 import qualified Annex.Branch
 import qualified Option
 import Annex.CatFile
+import Types.Key
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "unused" paramNothing seek
@@ -100,7 +101,7 @@ number n (x:xs) = (n+1, x) : number (n+1) xs
 table :: [(Int, Key)] -> [String]
 table l = "  NUMBER  KEY" : map cols l
 	where
-		cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ show k
+		cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ key2file k
 		pad n s = s ++ replicate (n - length s) ' '
 
 staleTmpMsg :: [(Int, Key)] -> String

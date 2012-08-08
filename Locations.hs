@@ -199,7 +199,7 @@ isLinkToAnnex s = ('/':d) `isInfixOf` s || d `isPrefixOf` s
  -}
 keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
-	replace "%" "&s" $ replace "&" "&a"  $ show key
+	replace "%" "&s" $ replace "&" "&a"  $ key2file key
 
 {- A location to store a key on the filesystem. A directory hash is used,
  - to protect against filesystems that dislike having many items in a
@@ -220,7 +220,7 @@ keyPaths key = map (keyPath key) annexHashes
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
-fileKey file = readKey $
+fileKey file = file2key $
 	replace "&a" "&" $ replace "&s" "%" $
 		replace "&c" ":" $ replace "%" "/" file
 
@@ -242,12 +242,12 @@ hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
 	where
 		dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-		ABCD (a,b,c,d) = md5 $ encodeFilePath $ show k
+		ABCD (a,b,c,d) = md5 $ encodeFilePath $ key2file k
 
 hashDirLower :: Hasher
 hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
 	where
-		dir = take 6 $ md5s $ encodeFilePath $ show k
+		dir = take 6 $ md5s $ encodeFilePath $ key2file k
 
 {- modified version of display_32bits_as_hex from Data.Hash.MD5
  -   Copyright (C) 2001 Ian Lynagh 

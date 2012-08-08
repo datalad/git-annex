@@ -9,7 +9,7 @@ module Types.UUID where
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
 data UUID = NoUUID | UUID String
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord, Show, Read)
 
 fromUUID :: UUID -> String
 fromUUID (UUID u) = u

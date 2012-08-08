@@ -15,4 +15,8 @@
 /closealert/#AlertId CloseAlert GET
 /filebrowser FileBrowserR GET POST
 
+/transfer/pause/#Transfer PauseTransferR GET POST
+/transfer/start/#Transfer StartTransferR GET POST
+/transfer/cancel/#Transfer CancelTransferR GET POST
+
 /static StaticR Static getStatic

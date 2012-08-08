@@ -11,7 +11,7 @@
                 $maybe file <- associatedFile info
                   #{file}
                 $nothing
-                  #{show $ transferKey transfer}
+                  #{key2file $ transferKey transfer}
                 $case transferDirection transfer
                   $of Upload
                     &rarr;
@@ -28,10 +28,10 @@
                 <div .bar style="width: #{percent};">
           <div .btn-group .span2>
             $if isNothing (startedTime info)
-              <button .btn>
+              <a .btn href="@{StartTransferR transfer}" onclick="(function( $ ) { $.post('@{StartTransferR transfer}'); })( jQuery ); return false;">
                 <i .icon-play title="start"></i>
             $else
-              <button .btn>
+              <a .btn href="@{PauseTransferR transfer}" onclick="(function( $ ) { $.post('@{PauseTransferR transfer}'); })( jQuery ); return false;">
                 <i .icon-pause title="pause"></i>
-            <button .btn>
+            <a .btn href="@{CancelTransferR transfer}" onclick="(function( $ ) { $.post('@{CancelTransferR transfer}'); })( jQuery ); return false;">
               <i .icon-remove title="cancel"></i>

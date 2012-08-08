@@ -183,7 +183,7 @@ inAnnex r key
 						v -> return v
 		checkremote = do
 			showAction $ "checking " ++ Git.repoDescribe r
-			onRemote r (check, unknown) "inannex" [Param (show key)] []
+			onRemote r (check, unknown) "inannex" [Param (key2file key)] []
 			where
 				check c p = dispatch <$> safeSystem c p
 				dispatch ExitSuccess = Right True
@@ -228,7 +228,7 @@ dropKey r key
 	| Git.repoIsHttp r = error "dropping from http repo not supported"
 	| otherwise = commitOnCleanup r $ onRemote r (boolSystem, False) "dropkey"
 		[ Params "--quiet --force"
-		, Param $ show key
+		, Param $ key2file key
 		]
 		[]
 
@@ -310,7 +310,7 @@ rsyncParamsRemote r sending key file afile = do
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 	Just (shellcmd, shellparams) <- git_annex_shell r
 		(if sending then "sendkey" else "recvkey")
-		[ Param $ show key ]
+		[ Param $ key2file key ]
 		fields
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)

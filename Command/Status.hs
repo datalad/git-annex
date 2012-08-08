@@ -183,8 +183,8 @@ transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 		pp _ c [] = c
 		pp uuidmap c ((t, i):xs) = "\n\t" ++ line uuidmap t i ++ pp uuidmap c xs
 		line uuidmap t i = unwords
-			[ show (transferDirection t) ++ "ing"
-			, fromMaybe (show $ transferKey t) (associatedFile i)
+			[ showLcDirection (transferDirection t) ++ "ing"
+			, fromMaybe (key2file $ transferKey t) (associatedFile i)
 			, if transferDirection t == Upload then "to" else "from"
 			, maybe (fromUUID $ transferUUID t) Remote.name $
 				M.lookup (transferUUID t) uuidmap

@@ -13,6 +13,7 @@ import System.Process
 
 import Common.Annex
 import Types.Remote
+import Types.Key
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -243,7 +244,7 @@ bupRef k
 	| Git.Ref.legal True shown = shown
 	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
 	where
-		shown = show k
+		shown = key2file k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'

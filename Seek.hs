@@ -82,7 +82,7 @@ withFilesUnlocked' typechanged a params = do
 withKeys :: (Key -> CommandStart) -> CommandSeek
 withKeys a params = return $ map (a . parse) params
 	where
-		parse p = fromMaybe (error "bad key") $ readKey p
+		parse p = fromMaybe (error "bad key") $ file2key p
 
 withValue :: Annex v -> (v -> CommandSeek) -> CommandSeek
 withValue v a params = do

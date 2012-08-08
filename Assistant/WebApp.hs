@@ -19,6 +19,7 @@ import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
+import Logs.Transfer
 
 import Yesod
 import Yesod.Static
@@ -151,6 +152,10 @@ instance PathPiece NotificationId where
     fromPathPiece = readish . unpack
 
 instance PathPiece AlertId where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece Transfer where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
 

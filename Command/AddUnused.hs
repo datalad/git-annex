@@ -11,6 +11,7 @@ import Common.Annex
 import Logs.Unused
 import Command
 import qualified Command.Add
+import Types.Key
 
 def :: [Command]
 def = [command "addunused" (paramRepeating paramNumRange)
@@ -25,7 +26,7 @@ start = startUnused "addunused" perform (performOther "bad") (performOther "tmp"
 perform :: Key -> CommandPerform
 perform key = next $ Command.Add.cleanup file key True
 	where
-		file = "unused." ++ show key
+		file = "unused." ++ key2file key
 
 {- The content is not in the annex, but in another directory, and
  - it seems better to error out, rather than moving bad/tmp content into

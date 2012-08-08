@@ -25,6 +25,7 @@ import qualified Git
 import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
+import Types.Key
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
@@ -260,8 +261,8 @@ resolveMerge' u
  -}
 mergeFile :: FilePath -> Key -> FilePath
 mergeFile file key
-	| doubleconflict = go $ show key
-	| otherwise = go $ shortHash $ show key
+	| doubleconflict = go $ key2file key
+	| otherwise = go $ shortHash $ key2file key
 	where
 		varmarker = ".variant-"
 		doubleconflict = varmarker `isSuffixOf` (dropExtension file)

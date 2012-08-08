@@ -30,7 +30,7 @@ data Transfer = Transfer
 	, transferUUID :: UUID
 	, transferKey :: Key
 	}
-	deriving (Show, Eq, Ord)
+	deriving (Eq, Ord, Read, Show)
 
 {- Information about a Transfer, stored in the transfer information file.
  -
@@ -49,16 +49,16 @@ data TransferInfo = TransferInfo
 	deriving (Show, Eq, Ord)
 
 data Direction = Upload | Download
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Read, Show)
 
-instance Show Direction where
-	show Upload = "upload"
-	show Download = "download"
+showLcDirection :: Direction -> String
+showLcDirection Upload = "upload"
+showLcDirection Download = "download"
 
-readDirection :: String -> Maybe Direction
-readDirection "upload" = Just Upload
-readDirection "download" = Just Download
-readDirection _ = Nothing
+readLcDirection :: String -> Maybe Direction
+readLcDirection "upload" = Just Upload
+readLcDirection "download" = Just Download
+readLcDirection _ = Nothing
 
 percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) (TransferInfo { bytesComplete = Just complete }) =
@@ -144,7 +144,7 @@ getTransfers = do
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
 transferFile (Transfer direction u key) r = gitAnnexTransferDir r
-	</> show direction 
+	</> showLcDirection direction 
 	</> fromUUID u
 	</> keyFile key
 
@@ -159,7 +159,7 @@ parseTransferFile file
 	| "lck." `isPrefixOf` (takeFileName file) = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
-			<$> readDirection direction
+			<$> readLcDirection direction
 			<*> pure (toUUID u)
 			<*> fileKey key
 		_ -> Nothing

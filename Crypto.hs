@@ -112,7 +112,7 @@ decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict decrypt t
  - on content. It does need to be repeatable. -}
 encryptKey :: Cipher -> Key -> Key
 encryptKey c k = Key
-	{ keyName = hmacWithCipher c (show k)
+	{ keyName = hmacWithCipher c (key2file k)
 	, keyBackendName = "GPGHMACSHA1"
 	, keySize = Nothing -- size and mtime omitted
 	, keyMtime = Nothing -- to avoid leaking data

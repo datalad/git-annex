@@ -77,7 +77,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	[ qctest "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
 	, qctest "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, qctest "prop_idempotent_key_read_show" Types.Key.prop_idempotent_key_read_show
+	, qctest "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
 	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, qctest "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
@@ -175,7 +175,7 @@ test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 $
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp }
-	let key = show $ fromJust r
+	let key = Types.Key.key2file $ fromJust r
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"
 	annexed_present sha1annexedfiledup
@@ -486,7 +486,7 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	checkunused [annexedfilekey, sha1annexedfilekey]
 
 	-- good opportunity to test dropkey also
-	git_annex "dropkey" ["--force", show annexedfilekey]
+	git_annex "dropkey" ["--force", Types.Key.key2file annexedfilekey]
 		@? "dropkey failed"
 	checkunused [sha1annexedfilekey]
 
@@ -840,7 +840,7 @@ checklocationlog f expected = do
 	case r of
 		Just (k, _) -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (show k) ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (Types.Key.key2file k) ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 

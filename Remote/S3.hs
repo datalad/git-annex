@@ -211,7 +211,7 @@ s3Action r noconn action = do
 		_ -> return noconn
 
 bucketFile :: Remote -> Key -> FilePath
-bucketFile r = munge . show
+bucketFile r = munge . key2file
 	where
 		munge s = case M.lookup "mungekeys" $ fromJust $ config r of
 			Just "ia" -> iaMunge s

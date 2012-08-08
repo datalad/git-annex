@@ -42,13 +42,18 @@ transfersDisplay warnNoScript = do
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
-	let transfers = current ++ queued
+	let transfers = current ++ queued ++ dummy
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
 			( introDisplay ident
 			, $(widgetFile "dashboard/transfers")
 			)
 		else $(widgetFile "dashboard/transfers")
+	where
+		dummy = [(t, i), (t, i)]
+		t = Transfer Download (UUID "00000000-0000-0000-0000-000000000001") k
+		k = Types.Key.Key "foo" "bar" Nothing Nothing
+		i = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing
 
 {- Called by client to get a display of currently in process transfers.
  -
@@ -98,7 +103,10 @@ postFileBrowserR = void openFileBrowser
 {- Used by non-javascript browsers, where clicking on the link actually
  - opens this page, so we redirect back to the referrer. -}
 getFileBrowserR :: Handler ()
-getFileBrowserR = whenM openFileBrowser $ do
+getFileBrowserR = whenM openFileBrowser $ redirectBack
+
+redirectBack :: Handler ()
+redirectBack = do
 	clearUltDest
 	setUltDestReferer
 	redirectUltDest HomeR
@@ -130,3 +138,27 @@ openFileBrowser = do
 #else
 		cmd = "xdg-open"
 #endif
+
+{- Transfer controls. The GET is done in noscript mode and redirects back
+ - to the referring page. The POST is called by javascript. -}
+getPauseTransferR :: Transfer -> Handler ()
+getPauseTransferR t = pauseTransfer t >> redirectBack
+postPauseTransferR :: Transfer -> Handler ()
+postPauseTransferR t = pauseTransfer t
+getStartTransferR :: Transfer -> Handler ()
+getStartTransferR t = startTransfer t >> redirectBack
+postStartTransferR :: Transfer -> Handler ()
+postStartTransferR t = startTransfer t
+getCancelTransferR :: Transfer -> Handler ()
+getCancelTransferR t = cancelTransfer t >> redirectBack
+postCancelTransferR :: Transfer -> Handler ()
+postCancelTransferR t = cancelTransfer t
+
+pauseTransfer :: Transfer -> Handler ()
+pauseTransfer t = liftIO $ putStrLn "pause"
+
+startTransfer :: Transfer -> Handler ()
+startTransfer t = liftIO $ putStrLn "start"
+
+cancelTransfer :: Transfer -> Handler ()
+cancelTransfer t = liftIO $ putStrLn "cancel"

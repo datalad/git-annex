@@ -13,6 +13,7 @@ import System.Environment
 
 import Common.Annex
 import Types.Remote
+import Types.Key
 import qualified Git
 import Config
 import Annex.Content
@@ -68,7 +69,7 @@ hookEnv k f = Just <$> mergeenv (fileenv f ++ keyenv)
 				<$> M.fromList <$> getEnvironment
 		env s v = ("ANNEX_" ++ s, v)
 		keyenv =
-			[ env "KEY" (show k)
+			[ env "KEY" (key2file k)
 			, env "HASH_1" (hashbits !! 0)
 			, env "HASH_2" (hashbits !! 1)
 			]
@@ -133,7 +134,7 @@ checkPresent r h k = do
 	v <- lookupHook h "checkpresent"
 	liftIO $ catchMsgIO $ check v
 	where
-		findkey s = show k `elem` lines s
+		findkey s = key2file k `elem` lines s
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
 			env <- hookEnv k Nothing
