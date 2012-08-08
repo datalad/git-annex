@@ -46,6 +46,7 @@ daemonize logfd pidfile changedirectory a = do
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
 lockPidFile file = do
+	createDirectoryIfMissing True (parentDir file)
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
