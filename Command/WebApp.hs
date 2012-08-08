@@ -17,6 +17,8 @@ import Assistant.Threads.WebApp
 import Utility.WebApp
 import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
+import qualified Git
+import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
 import Locations.UserConfig
@@ -38,11 +40,12 @@ start = notBareRepo $ do
 	stop
 	where
 		go = do
+			browser <- fromRepo webBrowser
 			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 			ifM (checkpid <&&> checkshim f) $
-				( liftIO $ openBrowser f 
+				( liftIO $ openBrowser browser f 
 				, startDaemon True True $ Just $
-					const openBrowser
+					const $ openBrowser browser
 				)
 		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
@@ -95,7 +98,8 @@ firstRun = do
 			putMVar v ""
 			takeMVar v
 		mainthread v _url htmlshim = do
-			openBrowser htmlshim
+			browser <- webBrowser <$> Git.Config.global
+			openBrowser browser htmlshim
 
 			_wait <- takeMVar v
 
@@ -108,11 +112,17 @@ firstRun = do
 		dummydaemonize = do
 			liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
 
-openBrowser :: FilePath -> IO ()
-openBrowser htmlshim = unlessM (runBrowser url) $
-	error $ "failed to start web browser on url " ++ url
+openBrowser :: Maybe FilePath -> FilePath -> IO ()
+openBrowser cmd htmlshim = go $ maybe runBrowser runCustomBrowser cmd
 	where
 		url = fileUrl htmlshim
+		go a = unlessM (a url) $
+			error $ "failed to start web browser on url " ++ url
+		runCustomBrowser c u = boolSystem c [Param u]
+
+{- web.browser is a generic git config setting for a web browser program -}
+webBrowser :: Git.Repo -> Maybe FilePath
+webBrowser = Git.Config.getMaybe "web.browser"
 
 fileUrl :: FilePath -> String
 fileUrl file = "file://" ++ file

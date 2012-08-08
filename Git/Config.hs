@@ -54,6 +54,16 @@ read' repo = go repo
 				params = ["config", "--null", "--list"]
 				p = (proc "git" params) { cwd = Just d }
 
+{- Gets the global git config, returning a dummy Repo containing it. -}
+global :: IO Repo
+global = do
+	repo <- Git.Construct.fromUnknown
+	withHandle StdoutHandle createProcessSuccess p $
+		hRead repo
+	where
+		params = ["config", "--null", "--list", "--global"]
+		p = (proc "git" params)
+
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
 hRead repo h = do
