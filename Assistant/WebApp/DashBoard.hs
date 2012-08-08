@@ -29,6 +29,7 @@ import Yesod
 import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
+import System.Posix.Signals (signalProcess, sigTERM, sigKILL)
 
 {- A display of currently running and queued transfers.
  -
@@ -161,4 +162,21 @@ startTransfer :: Transfer -> Handler ()
 startTransfer t = liftIO $ putStrLn "start"
 
 cancelTransfer :: Transfer -> Handler ()
-cancelTransfer t = liftIO $ putStrLn "cancel"
+cancelTransfer t = do
+	webapp <- getYesod
+	{- Remove if queued. -}
+	void $ liftIO $ dequeueTransfer (transferQueue webapp) t
+	{- When the transfer is running, don't directly remove it from the
+	 - map, instead signal to end the transfer, and rely on the 
+	 - TransferWatcher to notice it's done and update the map. -}
+	mi <- liftIO $ M.lookup t . currentTransfers
+		<$> getDaemonStatus (daemonStatus webapp)
+	case mi of
+		Just (TransferInfo { transferTid = Just tid } ) -> do
+			-- TODO
+			error "TODO"
+		Just (TransferInfo { transferPid = Just pid } ) -> liftIO $ do
+			signalProcess sigTERM pid
+			threadDelay 500000 -- half a second grace period
+			signalProcess sigKILL pid
+		_ -> noop

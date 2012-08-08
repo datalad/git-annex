@@ -27,7 +27,8 @@ newTransferSlots :: IO TransferSlots
 newTransferSlots = newQSemN numSlots
 
 {- Waits until a transfer slot becomes available, and runs a transfer
- - action in the slot, in its own thread. -}
+ - action in the slot, in its own thread. Note that this thread is
+ - subject to being killed when the transfer is canceled. -}
 inTransferSlot :: TransferSlots -> ThreadState -> Annex a -> IO ThreadId
 inTransferSlot s st a = do
 	waitQSemN s 1

@@ -13,7 +13,8 @@ module Assistant.TransferQueue (
 	queueTransfers,
 	queueTransfer,
 	queueTransferAt,
-	getNextTransfer
+	getNextTransfer,
+	dequeueTransfer,
 ) where
 
 import Common.Annex
@@ -30,7 +31,7 @@ import qualified Data.Map as M
  - in parallel to allow for reading. -}
 data TransferQueue = TransferQueue
 	{ queue :: TChan (Transfer, TransferInfo)
-	, queuesize :: TVar Integer
+	, queuesize :: TVar Int
 	, queuelist :: TVar [(Transfer, TransferInfo)]
 	}
 
@@ -104,7 +105,7 @@ queueTransfer schedule q dstatus f t remote =
 
 {- Blocks until the queue is no larger than a given size, and then adds a
  - transfer to the queue. -}
-queueTransferAt :: Integer -> Schedule -> TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()
+queueTransferAt :: Int -> Schedule -> TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()
 queueTransferAt wantsz schedule q dstatus f t remote = do
 	atomically $ do
 		sz <- readTVar (queuesize q)
@@ -132,3 +133,12 @@ getNextTransfer q dstatus acceptable = atomically $ do
 				M.insertWith' const t info
 			return $ Just r
 		else return Nothing
+
+{- Removes a transfer from the queue, if present, and returns True if it
+ - was present. -}
+dequeueTransfer :: TransferQueue -> Transfer -> IO Bool
+dequeueTransfer q t = atomically $ do
+	(l, removed) <- partition (\i -> fst i /= t) <$> readTVar (queuelist q)
+	void $ writeTVar (queuesize q) (length l)
+	void $ writeTVar (queuelist q) l
+	return $ not $ null removed
