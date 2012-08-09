@@ -1,6 +1,6 @@
 Probably won't be doing any big coding on the git-annex assistant in the
 upcoming week, as I'll be traveling and/or slightly ill enough that I can't
-fully get into [[!wikipedia "Flow_(psychology)" desc="flow"].
+fully get into <a href="http://en.wikipedia.org/wiki/Flow_(psychology)">flow</a>.
 
 ---
 
