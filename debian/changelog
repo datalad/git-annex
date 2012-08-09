@@ -1,3 +1,9 @@
+git-annex (3.20120808) UNRELEASED; urgency=low
+
+  * S3: Add fileprefix setting.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 09 Aug 2012 13:51:47 -0400
+
 git-annex (3.20120807) unstable; urgency=low
 
   * initremote: Avoid recording remote's description before checking
