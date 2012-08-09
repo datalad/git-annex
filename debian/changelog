@@ -1,14 +1,19 @@
-git-annex (3.20120722) UNRELEASED; urgency=low
+git-annex (3.20120808) UNRELEASED; urgency=low
+
+  * init: If no description is provided for a new repository, one will
+    automatically be generated, like "joey@gnu:~/foo"
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 07 Aug 2012 13:35:07 -0400
+
+git-annex (3.20120807) unstable; urgency=low
 
   * initremote: Avoid recording remote's description before checking
     that its config is valid.
-  * init: If no description is provided for a new repository, one will
-    automatically be generated, like "joey@gnu:~/foo"
   * unused, status: Avoid crashing when ran in bare repo.
   * Avoid crashing when "git annex get" fails to download from one
     location, and falls back to downloading from a second location.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 27 Jul 2012 21:04:47 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 07 Aug 2012 13:35:07 -0400
 
 git-annex (3.20120721) unstable; urgency=low
 
