@@ -26,6 +26,7 @@ import Crypto.Random
 import Data.Digest.Pure.SHA
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -113,7 +114,7 @@ logRequest req = do
 	where
 		frombs v = toString $ L.fromChunks [v]
 
-lookupRequestField :: CI.CI Ascii -> Wai.Request -> Ascii
+lookupRequestField :: CI.CI B.ByteString -> Wai.Request -> B.ByteString
 lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Rather than storing a session key on disk, use a random key

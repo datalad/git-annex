@@ -2,7 +2,7 @@ CFLAGS=-Wall
 GIT_ANNEX_TMP_BUILD_DIR?=tmp
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
 BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
-FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP
+FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_OLD_YESOD
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
