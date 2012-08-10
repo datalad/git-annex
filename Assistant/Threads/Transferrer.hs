@@ -14,7 +14,6 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Alert
 import Logs.Transfer
-import Logs.Presence
 import Logs.Location
 import Annex.Content
 import qualified Remote
@@ -41,7 +40,7 @@ transfererThread st dstatus transferqueue slots = go
 				( do
 					debug thisThread [ "Transferring:" , show t ]
 					notifyTransfer dstatus
-					transferThread st dstatus slots t info
+					transferThread dstatus slots t info
 				, do
 					debug thisThread [ "Skipping unnecessary transfer:" , show t ]
 					-- getNextTransfer added t to the
@@ -71,22 +70,22 @@ shouldTransfer t info
 	where
 		key = transferKey t
 
-{- A transfer is run in a separate thread, with a *copy* of the Annex
- - state. This is necessary to avoid blocking the rest of the assistant
- - on the transfer completing, and also to allow multiple transfers to run
- - at once. This requires GHC's threaded runtime to work!
+{- A sepeate git-annex process is forked off to run a transfer.
+ - This allows killing the process if the user decides to cancel the
+ - transfer.
  -
- - The copy of state  means that the transfer processes are responsible
- - for doing any necessary shutdown cleanups, and that the parent
- - thread's cache must be invalidated once a transfer completes, as
- - changes may have been made to the git-annex branch.
- -}
-transferThread :: ThreadState -> DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> IO ()
-transferThread st dstatus slots t info = case (transferRemote info, associatedFile info) of
+ - A thread is forked off to run the process, and the thread
+ - occupys one of the transfer slots. If all slots are in use, this will
+ - block until one becomes available. The thread's id is also recorded in
+ - the transfer info; the thread will also be killed when a transfer is
+ - stopped, to avoid it displaying any alert about the transfer having
+ - failed. -}
+transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> IO ()
+transferThread dstatus slots t info = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
-		tid <- inTransferSlot slots st $
+		tid <- inTransferSlot slots $
 			transferprocess remote file
 		now <- getCurrentTime
 		adjustTransfers dstatus $
@@ -97,24 +96,15 @@ transferThread st dstatus slots t info = case (transferRemote info, associatedFi
 	where
 		direction = transferDirection t
 		isdownload = direction == Download
-		tofrom
-			| isdownload = "from"
-			| otherwise = "to"
-		key = transferKey t
 
-		transferprocess remote file = do
-			showStart "copy" file
-			showAction $ tofrom ++ " " ++ Remote.name remote
-			ok <- runTransfer t (Just file) $
-				if isdownload
-					then getViaTmp key $
-						Remote.retrieveKeyFile remote key (Just file)
-					else do
-						ok <- Remote.storeKey remote key $ Just file
-						when ok $
-							Remote.logStatus remote key InfoPresent
-						return ok
-			showEndResult ok
-			liftIO $ addAlert dstatus $
+		transferprocess remote file = void $ do
+			ok <- boolSystem "git-annex"
+				[ Param "copy"
+				, Param "--fast"
+				, Param $ if isdownload then "--from" else "--to"
+				, Param $ Remote.name remote
+				, File file
+				]
+			addAlert dstatus $
 				makeAlertFiller ok $ 
 					transferFileAlert direction file

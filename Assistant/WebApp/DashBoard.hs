@@ -164,19 +164,23 @@ startTransfer t = liftIO $ putStrLn "start"
 cancelTransfer :: Transfer -> Handler ()
 cancelTransfer t = do
 	webapp <- getYesod
-	{- Remove if queued. -}
+	{- remove queued transfer -}
 	void $ liftIO $ dequeueTransfer (transferQueue webapp) t
-	{- When the transfer is running, don't directly remove it from the
-	 - map, instead signal to end the transfer, and rely on the 
-	 - TransferWatcher to notice it's done and update the map. -}
-	mi <- liftIO $ M.lookup t . currentTransfers
-		<$> getDaemonStatus (daemonStatus webapp)
-	case mi of
-		Just (TransferInfo { transferTid = Just tid } ) -> do
-			-- TODO
-			error "TODO"
-		Just (TransferInfo { transferPid = Just pid } ) -> liftIO $ do
-			signalProcess sigTERM pid
-			threadDelay 500000 -- half a second grace period
-			signalProcess sigKILL pid
-		_ -> noop
+	{- stop running transfer -}
+	maybe noop (void . liftIO . stop webapp) =<< running webapp
+	where
+		running webapp = liftIO $ M.lookup t . currentTransfers
+			<$> getDaemonStatus (daemonStatus webapp)
+		stop webapp info = do
+			putStrLn $ "stopping transfer " ++ show info
+			{- When there's a thread associated with the
+			 - transfer, it's killed first, to avoid it
+			 - displaying any alert about the transfer having
+			 - failed when the transfer process is killed. -}
+			maybe noop killThread $ transferTid info
+			maybe noop killproc $ transferPid info
+			removeTransfer (daemonStatus webapp) t
+		killproc pid = do
+			void $ tryIO $ signalProcess sigTERM pid
+			threadDelay 100000 -- 0.1 second grace period
+			void $ tryIO $ signalProcess sigKILL pid

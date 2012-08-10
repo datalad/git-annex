@@ -36,14 +36,3 @@ withThreadState a = do
  - time. -}
 runThreadState :: ThreadState -> Annex a -> IO a
 runThreadState mvar a = modifyMVar mvar $ \state -> swap <$> Annex.run state a
-
-{- Runs an Annex action, using a copy of the state from the MVar.
- -
- - It's up to the action to perform any necessary shutdown tasks in order
- - for state to not be lost. And it's up to the caller to resynchronise
- - with any changes the action makes to eg, the git-annex branch.
- -}
-unsafeRunThreadState :: ThreadState -> Annex a -> IO ()
-unsafeRunThreadState mvar a = do
-	state <- readMVar mvar
-	void $ Annex.eval state a
