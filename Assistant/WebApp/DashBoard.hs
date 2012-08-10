@@ -44,18 +44,13 @@ transfersDisplay warnNoScript = do
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
-	let transfers = current ++ queued ++ dummy
+	let transfers = current ++ queued
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
 			( introDisplay ident
 			, $(widgetFile "dashboard/transfers")
 			)
 		else $(widgetFile "dashboard/transfers")
-	where
-		dummy = [(t, i), (t, i)]
-		t = Transfer Download (UUID "00000000-0000-0000-0000-000000000001") k
-		k = Types.Key.Key "foo" "bar" Nothing Nothing
-		i = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing
 
 {- Called by client to get a display of currently in process transfers.
  -
