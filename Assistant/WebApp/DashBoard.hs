@@ -52,6 +52,9 @@ transfersDisplay warnNoScript = do
 			, $(widgetFile "dashboard/transfers")
 			)
 		else $(widgetFile "dashboard/transfers")
+	where
+		isrunning info = not $
+			transferPaused info || isNothing (startedTime info)
 
 {- Called by client to get a display of currently in process transfers.
  -

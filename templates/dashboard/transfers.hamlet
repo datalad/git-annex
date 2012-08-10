@@ -27,8 +27,8 @@
               <div .progress .progress-striped>
                 <div .bar style="width: #{percent};">
           <div .btn-group .span2>
-            $if isNothing (startedTime info)
-              ^{actionButton (StartTransferR transfer) Nothing "btn" "icon-play"}
-            $else
+            $if isrunning info
               ^{actionButton (PauseTransferR transfer) Nothing "btn" "icon-pause"}
+            $else
+              ^{actionButton (StartTransferR transfer) Nothing "btn" "icon-play"}
             ^{actionButton (CancelTransferR transfer) Nothing "btn" "icon-remove"}
