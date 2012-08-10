@@ -29,7 +29,8 @@ import Yesod
 import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
-import System.Posix.Signals (signalProcess, sigTERM, sigKILL)
+import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+import System.Posix.Process (getProcessGroupIDOf)
 
 {- A display of currently running and queued transfers.
  -
@@ -180,7 +181,11 @@ cancelTransfer t = do
 			maybe noop killThread $ transferTid info
 			maybe noop killproc $ transferPid info
 			removeTransfer (daemonStatus webapp) t
+		{- In order to stop helper processes like rsync,
+		 - kill the whole process group of the process running the 
+		 - transfer. -}
 		killproc pid = do
-			void $ tryIO $ signalProcess sigTERM pid
+			g <- getProcessGroupIDOf pid
+			void $ tryIO $ signalProcessGroup sigTERM g
 			threadDelay 100000 -- 0.1 second grace period
-			void $ tryIO $ signalProcess sigKILL pid
+			void $ tryIO $ signalProcessGroup sigKILL g

@@ -18,9 +18,7 @@ import Logs.Location
 import Annex.Content
 import qualified Remote
 
-import Data.Time.Clock.POSIX
-import Data.Time.Clock
-import qualified Data.Map as M
+import System.Process (create_group)
 
 thisThread :: ThreadName
 thisThread = "Transferrer"
@@ -70,12 +68,12 @@ shouldTransfer t info
 	where
 		key = transferKey t
 
-{- A sepeate git-annex process is forked off to run a transfer.
- - This allows killing the process if the user decides to cancel the
- - transfer.
+{- A sepeate git-annex process is forked off to run a transfer,
+ - running in its own process group. This allows killing it and all its
+ - children if the user decides to cancel the transfer.
  -
  - A thread is forked off to run the process, and the thread
- - occupys one of the transfer slots. If all slots are in use, this will
+ - occupies one of the transfer slots. If all slots are in use, this will
  - block until one becomes available. The thread's id is also recorded in
  - the transfer info; the thread will also be killed when a transfer is
  - stopped, to avoid it displaying any alert about the transfer having
@@ -87,24 +85,27 @@ transferThread dstatus slots t info = case (transferRemote info, associatedFile 
 	(Just remote, Just file) -> do
 		tid <- inTransferSlot slots $
 			transferprocess remote file
-		now <- getCurrentTime
-		adjustTransfers dstatus $
-			M.insertWith' const t info
-				{ startedTime = Just $ utcTimeToPOSIXSeconds now
-				, transferTid = Just tid
-				}
+		updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
 		direction = transferDirection t
 		isdownload = direction == Download
 
 		transferprocess remote file = void $ do
-			ok <- boolSystem "git-annex"
-				[ Param "copy"
-				, Param "--fast"
-				, Param $ if isdownload then "--from" else "--to"
-				, Param $ Remote.name remote
-				, File file
-				]
+			(_, _, _, pid)
+				<- createProcess (proc command $ toCommand params)
+					{ create_group = True }
+			status <- waitForProcess pid
 			addAlert dstatus $
-				makeAlertFiller ok $ 
+				makeAlertFiller (status == ExitSuccess) $ 
 					transferFileAlert direction file
+			where
+				command = "git-annex"
+				params =
+					[ Param "copy"
+					, Param "--fast"
+					, Param $ if isdownload
+						then "--from"
+						else "--to"
+					, Param $ Remote.name remote
+					, File file
+					]

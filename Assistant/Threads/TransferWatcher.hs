@@ -14,8 +14,6 @@ import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 
-import Data.Map as M
-
 thisThread :: ThreadName
 thisThread = "TransferWatcher"
 
@@ -63,10 +61,7 @@ onAdd st dstatus file _ = case parseTransferFile file of
 				[ "transfer starting:"
 				, show t
 				]
-			adjustTransfers dstatus $
-				M.insertWith' merge t info
-		-- preseve transferTid, which is not written to disk
-		merge new old = new { transferTid = transferTid old }
+			updateTransferInfo dstatus t info
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler

@@ -183,12 +183,17 @@ adjustTransfersSTM dstatus a = do
 	s <- takeTMVar dstatus
 	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
 
-{- Variant that does send notifications. -}
-adjustTransfers :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
-adjustTransfers dstatus a = 
+{- Updates a transfer's info. Preserves any transferTid value, which is not
+ - written to disk. -}
+updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
+updateTransferInfo dstatus t info =
 	notifyTransfer dstatus `after` modifyDaemonStatus_ dstatus go
 	where
-		go s = s { currentTransfers = a (currentTransfers s) }
+		go s = s { currentTransfers = update (currentTransfers s) }
+		update m = M.insertWith' merge t info m
+		merge new old = case transferTid old of
+			Nothing -> new
+			Just _ -> new { transferTid = transferTid old }
 
 {- Removes a transfer from the map, and returns its info. -}
 removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
