@@ -16,6 +16,7 @@ import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Logs.Transfer
@@ -147,18 +148,18 @@ getStartTransferR t = startTransfer t >> redirectBack
 postStartTransferR :: Transfer -> Handler ()
 postStartTransferR t = startTransfer t
 getCancelTransferR :: Transfer -> Handler ()
-getCancelTransferR t = cancelTransfer t >> redirectBack
+getCancelTransferR t = cancelTransfer False t >> redirectBack
 postCancelTransferR :: Transfer -> Handler ()
-postCancelTransferR t = cancelTransfer t
-
-pauseTransfer :: Transfer -> Handler ()
-pauseTransfer t = liftIO $ putStrLn "pause"
+postCancelTransferR t = cancelTransfer False t
 
 startTransfer :: Transfer -> Handler ()
 startTransfer t = liftIO $ putStrLn "start"
 
-cancelTransfer :: Transfer -> Handler ()
-cancelTransfer t = do
+pauseTransfer :: Transfer -> Handler ()
+pauseTransfer = cancelTransfer True
+
+cancelTransfer :: Bool -> Transfer-> Handler ()
+cancelTransfer pause t = do
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
 	liftIO $ do
@@ -169,15 +170,22 @@ cancelTransfer t = do
 	where
 		running dstatus = M.lookup t . currentTransfers
 			<$> getDaemonStatus dstatus
-		stop dstatus info = void $ do
-			putStrLn $ "stopping transfer " ++ show info
+		stop dstatus info = do
 			{- When there's a thread associated with the
 			 - transfer, it's killed first, to avoid it
 			 - displaying any alert about the transfer having
 			 - failed when the transfer process is killed. -}
-			maybe noop killThread $ transferTid info
+			maybe noop signalthread $ transferTid info
 			maybe noop killproc $ transferPid info
-			removeTransfer dstatus t
+			if pause
+				then void $
+					updateTransferInfo dstatus t $ info
+						{ transferPaused = True }
+				else void $
+					removeTransfer dstatus t
+		signalthread tid
+			| pause = throwTo tid PauseTransfer
+			| otherwise = killThread tid
 		{- In order to stop helper processes like rsync,
 		 - kill the whole process group of the process running the 
 		 - transfer. -}

@@ -56,6 +56,7 @@ stubInfo f r = TransferInfo
 	, transferRemote = Just r
 	, bytesComplete = Nothing
 	, associatedFile = f
+	, transferPaused = False
 	}
 
 {- Adds transfers to queue for some of the known remotes. -}

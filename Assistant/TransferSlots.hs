@@ -5,14 +5,25 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Assistant.TransferSlots where
 
-import Control.Exception
+import qualified Control.Exception as E
 import Control.Concurrent
+import Data.Typeable
 
 import Common.Annex
+import Utility.ThreadScheduler
 
 type TransferSlots = QSemN
+
+{- A special exception that can be thrown to pause or resume a transfer, while
+ - keeping its slot in use. -}
+data TransferException = PauseTransfer | ResumeTransfer
+	deriving (Show, Eq, Typeable)
+
+instance E.Exception TransferException
 
 {- Number of concurrent transfers allowed to be run from the assistant.
  -
@@ -26,15 +37,26 @@ newTransferSlots :: IO TransferSlots
 newTransferSlots = newQSemN numSlots
 
 {- Waits until a transfer slot becomes available, and runs a transfer
- - action in the slot, in its own thread. Note that this thread is
- - subject to being killed when the transfer is canceled. -}
+ - action in the slot, in its own thread. 
+ -
+ - Note that the action is subject to being killed when the transfer
+ - is canceled or paused.
+ -
+ - A PauseTransfer exception is handled by letting the action be killed,
+ - then pausing the thread until a ResumeTransfer exception is raised,
+ - then rerunning the action.
+ -}
 inTransferSlot :: TransferSlots -> IO () -> IO ThreadId
-inTransferSlot s a = do
+inTransferSlot s transfer = do
 	waitQSemN s 1
-	forkIO $ bracket_ noop done a
+	forkIO $ E.bracket_ noop (signalQSemN s 1) go
 	where
-		done = transferComplete s
-
-{- Call when a transfer is complete. -}
-transferComplete :: TransferSlots -> IO ()
-transferComplete s = signalQSemN s 1
+		go = catchPauseResume transfer
+		pause = catchPauseResume $ runEvery (Seconds 86400) noop
+		catchPauseResume a = E.catch a handlePauseResume
+		handlePauseResume PauseTransfer = do
+			putStrLn "pause"
+			pause
+		handlePauseResume ResumeTransfer = do
+			putStrLn "resume"
+			go
