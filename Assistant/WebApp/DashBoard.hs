@@ -160,14 +160,16 @@ startTransfer t = liftIO $ putStrLn "start"
 cancelTransfer :: Transfer -> Handler ()
 cancelTransfer t = do
 	webapp <- getYesod
-	{- remove queued transfer -}
-	void $ liftIO $ dequeueTransfer (transferQueue webapp) t
-	{- stop running transfer -}
-	maybe noop (void . liftIO . stop webapp) =<< running webapp
+	let dstatus = daemonStatus webapp
+	liftIO $ do
+		{- remove queued transfer -}
+		void $ dequeueTransfer (transferQueue webapp) dstatus t
+		{- stop running transfer -}
+		maybe noop (stop dstatus) =<< running dstatus
 	where
-		running webapp = liftIO $ M.lookup t . currentTransfers
-			<$> getDaemonStatus (daemonStatus webapp)
-		stop webapp info = do
+		running dstatus = M.lookup t . currentTransfers
+			<$> getDaemonStatus dstatus
+		stop dstatus info = void $ do
 			putStrLn $ "stopping transfer " ++ show info
 			{- When there's a thread associated with the
 			 - transfer, it's killed first, to avoid it
@@ -175,7 +177,7 @@ cancelTransfer t = do
 			 - failed when the transfer process is killed. -}
 			maybe noop killThread $ transferTid info
 			maybe noop killproc $ transferPid info
-			removeTransfer (daemonStatus webapp) t
+			removeTransfer dstatus t
 		{- In order to stop helper processes like rsync,
 		 - kill the whole process group of the process running the 
 		 - transfer. -}

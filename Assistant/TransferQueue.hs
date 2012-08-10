@@ -136,9 +136,13 @@ getNextTransfer q dstatus acceptable = atomically $ do
 
 {- Removes a transfer from the queue, if present, and returns True if it
  - was present. -}
-dequeueTransfer :: TransferQueue -> Transfer -> IO Bool
-dequeueTransfer q t = atomically $ do
-	(l, removed) <- partition (\i -> fst i /= t) <$> readTVar (queuelist q)
-	void $ writeTVar (queuesize q) (length l)
-	void $ writeTVar (queuelist q) l
-	return $ not $ null removed
+dequeueTransfer :: TransferQueue -> DaemonStatusHandle -> Transfer -> IO Bool
+dequeueTransfer q dstatus t = do
+	ok <- atomically $ do
+		(l, removed) <- partition (\i -> fst i /= t) <$> readTVar (queuelist q)
+		void $ writeTVar (queuesize q) (length l)
+		void $ writeTVar (queuelist q) l
+		return $ not $ null removed
+	when ok $
+		notifyTransfer dstatus
+	return ok
