@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://claimid.com/strager"
+ nickname="strager"
+ subject="comment 2"
+ date="2012-08-11T04:55:13Z"
+ content="""
+In fact, making a dedicated data type or some typeclasses may be more appropriate:
+
+    class Cancelable a where cancel :: a -> IO ()
+    class Pauseable a where pause :: a -> IO ()
+
+    -- Alternatively:
+
+    data Transfer = Transfer { cancel :: IO (), pause :: IO () }
+
+    -- Or both!
+
+"""]]
