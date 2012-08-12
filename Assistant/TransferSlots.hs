@@ -25,6 +25,8 @@ data TransferException = PauseTransfer | ResumeTransfer
 
 instance E.Exception TransferException
 
+type TransferSlotRunner = TransferSlots -> IO () -> IO ThreadId
+
 {- Number of concurrent transfers allowed to be run from the assistant.
  -
  - Transfers launched by other means, including by remote assistants,
@@ -38,17 +40,24 @@ newTransferSlots = newQSemN numSlots
 
 {- Waits until a transfer slot becomes available, and runs a transfer
  - action in the slot, in its own thread. 
- -
- - Note that the action is subject to being killed when the transfer
+ -}
+inTransferSlot :: TransferSlotRunner
+inTransferSlot = runTransferSlot (\s -> waitQSemN s 1)
+
+{- Runs a transfer action, without waiting for a slot to become available. -}
+inImmediateTransferSlot :: TransferSlotRunner
+inImmediateTransferSlot = runTransferSlot (\s -> signalQSemN s (-1))
+
+{- Note that the action is subject to being killed when the transfer
  - is canceled or paused.
  -
  - A PauseTransfer exception is handled by letting the action be killed,
  - then pausing the thread until a ResumeTransfer exception is raised,
  - then rerunning the action.
  -}
-inTransferSlot :: TransferSlots -> IO () -> IO ThreadId
-inTransferSlot s transfer = do
-	waitQSemN s 1
+runTransferSlot :: (QSemN -> IO ()) -> TransferSlotRunner
+runTransferSlot allocator s transfer = do
+	allocator s
 	forkIO $ E.bracket_ noop (signalQSemN s 1) go
 	where
 		go = catchPauseResume transfer

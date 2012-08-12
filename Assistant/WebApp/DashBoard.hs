@@ -209,7 +209,8 @@ startTransfer t = do
 			 - forget that old pid, and start a new one. -}
 			liftIO $ updateTransferInfo dstatus t $ info
 				{ transferPid = Nothing }
-			liftIO $ Transferrer.transferThread dstatus slots t info
+			liftIO $ Transferrer.transferThread
+				dstatus slots t info inImmediateTransferSlot
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers

@@ -38,7 +38,7 @@ transfererThread st dstatus transferqueue slots = go
 				( do
 					debug thisThread [ "Transferring:" , show t ]
 					notifyTransfer dstatus
-					transferThread dstatus slots t info
+					transferThread dstatus slots t info inTransferSlot
 				, do
 					debug thisThread [ "Skipping unnecessary transfer:" , show t ]
 					-- getNextTransfer added t to the
@@ -78,12 +78,12 @@ shouldTransfer t info
  - the transfer info; the thread will also be killed when a transfer is
  - stopped, to avoid it displaying any alert about the transfer having
  - failed. -}
-transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> IO ()
-transferThread dstatus slots t info = case (transferRemote info, associatedFile info) of
+transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> TransferSlotRunner -> IO ()
+transferThread dstatus slots t info runner = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
-		tid <- inTransferSlot slots $
+		tid <- runner slots $
 			transferprocess remote file
 		updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
