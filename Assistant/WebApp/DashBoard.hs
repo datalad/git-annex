@@ -17,6 +17,7 @@ import Assistant.WebApp.Configurators
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import qualified Assistant.Threads.Transferrer as Transferrer
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Logs.Transfer
@@ -39,9 +40,7 @@ import System.Posix.Process (getProcessGroupIDOf)
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
-	current <- lift $ runAnnex [] $
-		M.toList . currentTransfers
-			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
+	current <- lift $ M.toList <$> getCurrentTransfers
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
@@ -155,9 +154,6 @@ getCancelTransferR t = cancelTransfer False t >> redirectBack
 postCancelTransferR :: Transfer -> Handler ()
 postCancelTransferR t = cancelTransfer False t
 
-startTransfer :: Transfer -> Handler ()
-startTransfer t = liftIO $ putStrLn "start"
-
 pauseTransfer :: Transfer -> Handler ()
 pauseTransfer = cancelTransfer True
 
@@ -165,14 +161,13 @@ cancelTransfer :: Bool -> Transfer-> Handler ()
 cancelTransfer pause t = do
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
+	m <- getCurrentTransfers
 	liftIO $ do
 		{- remove queued transfer -}
 		void $ dequeueTransfer (transferQueue webapp) dstatus t
 		{- stop running transfer -}
-		maybe noop (stop dstatus) =<< running dstatus
+		maybe noop (stop dstatus) (M.lookup t m)
 	where
-		running dstatus = M.lookup t . currentTransfers
-			<$> getDaemonStatus dstatus
 		stop dstatus info = do
 			{- When there's a thread associated with the
 			 - transfer, it's killed first, to avoid it
@@ -197,3 +192,25 @@ cancelTransfer pause t = do
 			void $ tryIO $ signalProcessGroup sigTERM g
 			threadDelay 100000 -- 0.1 second grace period
 			void $ tryIO $ signalProcessGroup sigKILL g
+
+startTransfer :: Transfer -> Handler ()
+startTransfer t = do
+	m <- getCurrentTransfers
+	maybe noop resume (M.lookup t m)
+	-- TODO: handle starting a queued transfer
+	where
+		resume info = maybe (start info) signalthread $ transferTid info
+		signalthread tid = liftIO $ throwTo tid ResumeTransfer
+		start info = do
+			webapp <- getYesod
+			let dstatus = daemonStatus webapp
+			let slots = transferSlots webapp
+			{- This transfer was being run by another process,
+			 - forget that old pid, and start a new one. -}
+			liftIO $ updateTransferInfo dstatus t $ info
+				{ transferPid = Nothing }
+			liftIO $ Transferrer.transferThread dstatus slots t info
+
+getCurrentTransfers :: Handler TransferMap
+getCurrentTransfers = currentTransfers
+	<$> (liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)

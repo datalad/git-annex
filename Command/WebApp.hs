@@ -13,6 +13,7 @@ import Assistant
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Assistant.Threads.WebApp
 import Utility.WebApp
 import Utility.Daemon (checkDaemon, lockPidFile)
@@ -89,9 +90,10 @@ firstRun = do
 	dstatus <- atomically . newTMVar =<< newDaemonStatus
 	scanremotes <- newScanRemoteMap
 	transferqueue <- newTransferQueue
+	transferslots <- newTransferSlots
 	v <- newEmptyMVar
 	let callback a = Just $ a v
-	webAppThread Nothing dstatus scanremotes transferqueue
+	webAppThread Nothing dstatus scanremotes transferqueue transferslots
 		(callback signaler) (callback mainthread)
 	where
 		signaler v = do

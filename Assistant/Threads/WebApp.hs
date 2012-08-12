@@ -21,6 +21,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Utility.WebApp
 import Utility.FileMode
 import Utility.TempFile
@@ -43,15 +44,17 @@ webAppThread
 	-> DaemonStatusHandle
 	-> ScanRemoteMap
 	-> TransferQueue
+	-> TransferSlots
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> IO ()
-webAppThread mst dstatus scanremotes transferqueue postfirstrun onstartup = do
+webAppThread mst dstatus scanremotes transferqueue transferslots postfirstrun onstartup = do
 	webapp <- WebApp
 		<$> pure mst
 		<*> pure dstatus
 		<*> pure scanremotes
 		<*> pure transferqueue
+		<*> pure transferslots
 		<*> (pack <$> genRandomToken)
 		<*> getreldir mst
 		<*> pure $(embed "static")

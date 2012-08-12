@@ -15,6 +15,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.WebApp
@@ -36,6 +37,7 @@ data WebApp = WebApp
 	, daemonStatus :: DaemonStatusHandle
 	, scanRemotes :: ScanRemoteMap
 	, transferQueue :: TransferQueue
+	, transferSlots :: TransferSlots
 	, secretToken :: Text
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
