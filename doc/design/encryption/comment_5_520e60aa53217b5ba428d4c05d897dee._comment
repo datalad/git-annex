@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkS6aFVrEwOrDuQBTMXxtGHtueA69NS_jo"
+ nickname="Hans"
+ subject="using sshfs + cryptmount is more secure"
+ date="2012-08-14T13:41:47Z"
+ content="""
+\"For git-annex, note that an attacker with local machine access can tell at least all the filenames and metadata of files stored in the encrypted remote anyway, and can access whatever content is stored locally.\"
+
+Better security is given by sshfs + cryptmount, which I used when I recently setup a git-annex repository on a free shell account from a provider I do not trust.
+
+See http://code.cjb.net/free-secure-online-backup.html for what I did to get a really secure solution.
+
+Kind regards,
+
+Hans Ekbrand
+"""]]
