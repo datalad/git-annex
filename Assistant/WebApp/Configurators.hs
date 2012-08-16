@@ -133,6 +133,7 @@ checkRepositoryPath p = do
 			)
 		expandTilde home ('~':'/':path) = home </> path
 		expandTilde _ path = path
+		
 
 {- On first run, if run in the home directory, default to putting it in
  - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
@@ -350,9 +351,13 @@ canWrite dir = do
 
 {- Checks if a directory is on a filesystem that supports symlinks. -}
 canMakeSymlink :: FilePath -> IO Bool
-canMakeSymlink dir = catchBoolIO $ do
-	createSymbolicLink link link
-	removeLink link
-	return True
+canMakeSymlink dir = ifM (doesDirectoryExist dir)
+	( catchBoolIO $ test dir
+	, canMakeSymlink (parentDir dir)
+	)
 	where
-		link = dir </> "delete.me"
+		test d = do
+			let link = d </> "delete.me"
+			createSymbolicLink link link
+			removeLink link
+			return True
