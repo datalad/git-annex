@@ -213,9 +213,11 @@ s3Action r noconn action = do
 bucketFile :: Remote -> Key -> FilePath
 bucketFile r = munge . key2file
 	where
-		munge s = case M.lookup "mungekeys" $ fromJust $ config r of
-			Just "ia" -> iaMunge s
-			_ -> s
+		munge s = case M.lookup "mungekeys" c of
+			Just "ia" -> iaMunge $ prefix ++ s
+			_ -> prefix ++ s
+		prefix = M.findWithDefault "" "fileprefix" c
+		c = fromJust $ config r
 
 bucketKey :: Remote -> String -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty

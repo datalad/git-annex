@@ -36,5 +36,11 @@ the S3 remote.
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
 
+* `fileprefix` - By default, git-annex places files in a tree rooted at the
+  top of the S3 bucket. When this is set, it's prefixed to the filenames
+  used. For example, you could set it to "foo/" in one special remote,
+  and to "bar/" in another special remote, and both special remotes could
+  then use the same bucket.
+
 * `x-amz-*` are passed through as http headers when storing keys
   in S3.

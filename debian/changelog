@@ -1,9 +1,10 @@
 git-annex (3.20120808) UNRELEASED; urgency=low
 
+  * S3: Add fileprefix setting.
   * init: If no description is provided for a new repository, one will
     automatically be generated, like "joey@gnu:~/foo"
 
- -- Joey Hess <joeyh@debian.org>  Tue, 07 Aug 2012 13:35:07 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 09 Aug 2012 13:51:47 -0400
 
 git-annex (3.20120807) unstable; urgency=low
 

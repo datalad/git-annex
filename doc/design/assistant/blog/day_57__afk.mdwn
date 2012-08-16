@@ -1,0 +1,40 @@
+Probably won't be doing any big coding on the git-annex assistant in the
+upcoming week, as I'll be traveling and/or slightly ill enough that I can't
+fully get into <a href="http://en.wikipedia.org/wiki/Flow_(psychology)">flow</a>.
+
+---
+
+There was a new Yesod release this week, which required minor changes to
+make the webapp build with it. I managed to keep the old version of Yesod
+also supported, and plan to keep that working so it can be built with the
+version of Yesod available in, eg, Linux distributions. TBD how much pain
+that will involve going forward.
+
+---
+
+I'm mulling over how to support stopping/pausing transfers. The problem
+is that if the assistant is running a transfer in one thread, and the
+webapp is used to cancel it, killing that thread won't necessarily stop the
+transfer, because, at least in Haskell's thread model, killing a thread
+does not kill processes started by the thread (like rsync).
+
+So one option is to have the transfer thread run a separate git-annex
+process, which will run the actual transfer. And killing that process will
+stop the transfer nicely. However, using a separate git-annex process means
+a little startup overhead for each file transferred (I don't know if it'd
+be enough to matter). Also, there's the problem that git-annex is sometimes
+not installed in PATH (wish I understood why cabal does that), which
+makes it kind of hard for it to run itself. (It can't simply fork, sadly.
+See past horrible pain with forking and threads.)
+
+The other option is to change the API for git-annex remotes, so that
+their `storeKey` and `retrieveKeyFile` methods return a pid of the program
+that they run. When they *do* run a program.. not all remotes do. This
+seems like it'd make the code in the remotes hairier, and it is also asking
+for bugs, when a remote's implementation changes. Or I could go
+lower-level, and make every place in the utility libraries that forks a
+process record its pid in a per-thread MVar. Still seems to be asking for
+bugs.
+
+Oh well, at least git-annex is already crash-safe, so once I figure out
+how to kill a transfer process, I can kill it safely. :)

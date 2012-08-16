@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 4"
+ date="2012-08-07T17:53:35Z"
+ content="""
+I recently encountered this problem on OSX, and I'm pretty sure I fixed it. But I don't remember the details of how. I'm sorry I don't have more detail, but I recommend trying a newer version of git-annex. 
+
+And if the problem persists, --debug will show the git commands and should help identify the one that's being passed bad parameters.
+"""]]

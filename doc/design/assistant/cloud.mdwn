@@ -34,7 +34,7 @@ Also needed for USB keys and Android gadgets.
 
 Of course, one option is to just use github etc to store the git repo.
 
-Two things can store git repos in Anazon S3:
+Two things can store git repos in Amazon S3:
 * <http://gabrito.com/post/storing-git-repositories-in-amazon-s3-for-high-availability>
 * <http://wiki.cs.pdx.edu/oss2009/index/projects/gits3.html>
 
