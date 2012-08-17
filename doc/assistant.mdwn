@@ -1,0 +1,13 @@
+The git-annex assistant makes git-annex easy to use by providing a
+automatic management and syncing of your files, and a friendly web frontend
+for configuration.
+
+The git-annex assistant is being
+[crowd funded on
+Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
+[[/assistant/Thanks]] to all my backers.
+
+I blog about my work on the git-annex assistant on a daily basis
+in [[this_blog|design/assistant/blog]]. Follow along!
+
+See also: The [[design|/design/assistant]] pages.

@@ -28,7 +28,7 @@ stdParams params = do
 	b <- getEnv "GPG_BATCH"
 	let batch = if isNothing e && isNothing b
 		then []
-		else ["--batch", "--no-tty"]
+		else ["--batch", "--no-tty", "--use-agent"]
 	return $ batch ++ defaults ++ toCommand params
 	where
 		-- be quiet, even about checking the trustdb

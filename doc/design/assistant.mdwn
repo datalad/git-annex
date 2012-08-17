@@ -1,10 +1,7 @@
-The git-annex assistant is being
-[crowd funded on Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
-[[Thanks]] to all my backers.
+This is the design site for the git-annex [[/assistant]].
 
-This is my design and plan for developing it.
-Still being fleshed out, still many ideas and use cases to add.
-Feel free to chip in with comments! --[[Joey]]
+Parts of the design is still being fleshed out, still many ideas
+and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
 ## roadmap
 
@@ -23,5 +20,5 @@ Feel free to chip in with comments! --[[Joey]]
 
 ## blog
 
-I'll be blogging about my progress in the [[blog]] on a semi-daily basis.
+I'm blogging about my progress in the [[blog]] on a semi-daily basis.
 Follow along!
