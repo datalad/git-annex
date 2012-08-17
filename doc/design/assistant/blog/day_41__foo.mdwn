@@ -31,7 +31,7 @@ Some OS X fixes today..
 ----
 
 I put together a preliminary page thanking everyone who contributed to the
-git-annex Kickstarter. [[thanks]] The wall-o-names is scary crazy humbling.
+git-annex Kickstarter. [[/assistant/thanks]] The wall-o-names is scary crazy humbling.
 
 ----
 
