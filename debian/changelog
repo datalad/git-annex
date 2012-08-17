@@ -1,6 +1,7 @@
 git-annex (3.20120808) UNRELEASED; urgency=low
 
   * S3: Add fileprefix setting.
+  * Pass --use-agent to gpg when in no tty mode. Thanks, Eskild Hustvedt.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 09 Aug 2012 13:51:47 -0400
 

@@ -48,3 +48,6 @@ A patch to fix this issue:
             -- be quiet, even about checking the trustdb
     -- 
     1.7.10.4
+
+> Thanks, [[done]].. I never noticed this since I have use-agent set in
+> gpg.conf. --[[Joey]
