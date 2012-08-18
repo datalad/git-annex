@@ -1,0 +1,79 @@
+What steps will reproduce the problem?
+
+    $ git init a.git
+    Initialized empty Git repository in /var/tmp/git-annex-bug/a.git/.git/
+    $ cd a.git
+    $ git annex init a
+    init a ok
+    (Recording state in git...)
+    $ touch Ren$'\351'
+    $ git annex add Ren$'\351'
+    add René (checksum...) ok
+    (Recording state in git...)
+    $ git ci -m "Added Rene'."
+    [master (root-commit) a61b796] Added Rene'.
+     1 files changed, 1 insertions(+), 0 deletions(-)
+     create mode 120000 "Ren\351"
+    $ cd ..
+    $ git clone -o a a.git b.git
+    Cloning into b.git...
+    remote: Counting objects: 13, done.
+    remote: Compressing objects: 100% (9/9), done.
+    remote: Total 13 (delta 1), reused 0 (delta 0)
+    Receiving objects: 100% (13/13), done.
+    Resolving deltas: 100% (1/1), done.
+    $ cd b.git
+    $ git annex copy --from=a --fast -v
+    (merging a/git-annex into git-annex...)
+    copy René 
+    git-annex: /var/tmp/git-annex-bug/b.git/.git/annex/transfer/download/7c5ee764-e8c6-11e1-b0c5-67c6ec1236d6/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855: commitBuffer: invalid argument (invalid character)
+    failed
+    (Recording state in git...)
+    git-annex: copy: 1 failed
+
+What is the expected output? What do you see instead?
+
+Expect that files will be copied, but they are not.
+
+What version of git-annex are you using? On what operating system?
+
+    $ echo $LANG
+    en_US.UTF-8
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 11.10
+    Release:	11.10
+    Codename:	oneiric
+    $ uname -a
+    Linux pdx-desktop 3.0.0-23-generic #39-Ubuntu SMP Thu Jul 19 19:18:53 UTC 2012 i686 i686 i386 GNU/Linux
+    $ bash --version
+    GNU bash, version 4.2.10(1)-release (i686-pc-linux-gnu)
+    Copyright (C) 2011 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+    This is free software; you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    $ ghc --version
+    The Glorious Glasgow Haskell Compilation System, version 7.4.2
+    $ git annex version
+    git-annex version: 3.20120807
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+Please provide any additional information below.
+
+The problem is related to weird characters in file names.  In the
+above example, the "weird character" is an accented 'e' (entered with
+$'\351' in bash and zsh).  I am able to add the files with weird
+characters in their name to one annex, but I cannot copy them to other
+annexes using `git annex copy`.
+
+The above example is a simplification of a real problem I am
+experiencing.  In my real scenario, the file is not empty.  See the
+attachment for some variations, including with non-empty files.
+
+May be related to these (long-ago fixed) bugs:
+http://git-annex.branchable.com/todo/support-non-utf8-locales/
