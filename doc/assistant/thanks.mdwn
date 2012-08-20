@@ -225,6 +225,8 @@ Cisneros, Mike Skoglund, Kristy Carey
 * The Git developers, for obvious reasons.
 * All of git-annex's early adopters, who turned it from a personal
   toy project into something much more, and showed me the interest was there.
+* Rsync.net, for providing me a free account so I can make sure git-annex
+  works well with it.
 * Anna and Mark, for the loan of the video camera; as well as the rest of
   my family, for your support. Even when I couldn't explain what I was
   working on.
