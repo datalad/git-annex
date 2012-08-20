@@ -1,0 +1,8 @@
+What steps will reproduce the problem?
+What is the expected output? What do you see instead?
+
+I can reproduce it locally, but don't know what's causing it. The file content is the same, I checked with md5sum and sha512sum. But fsck still thinks the content is different. Are there other factors I could check which fsck looks at? I'm using SHA512E backend.
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 3.20120807 Ubuntu 12.04 updated on Aug 20th annex was installed via cabal on Aug 20th, all other packages are from ubuntu.
