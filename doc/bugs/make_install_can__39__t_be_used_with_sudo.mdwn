@@ -16,3 +16,5 @@ One would expect git-annex to be installed in the configured prefix. Unfortunate
     make: *** [git-annex] Error 1
 
 Removing "all" from the dependencies of "install" allows the process to run to completion, although this is clearly not a satisfactory solution.
+
+> [[fixed|done]] using an ugly stamp file. --[[Joey]] 

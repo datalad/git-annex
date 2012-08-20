@@ -38,7 +38,8 @@ ifdef VIM
 all=fast
 endif
 
-all: $(all)
+build: $(all)
+	touch build-stamp
 
 sources: $(sources)
 
@@ -74,7 +75,7 @@ install-docs: docs install-mans
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-install: all install-docs
+install: build-stamp install-docs
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
@@ -115,7 +116,7 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist $(clibs)
+		doc/.ikiwiki html dist $(clibs) build-stamp
 
 sdist: clean $(mans)
 	./make-sdist.sh
