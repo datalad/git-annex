@@ -6,3 +6,5 @@ I can reproduce it locally, but don't know what's causing it. The file content i
 What version of git-annex are you using? On what operating system?
 
 git-annex version: 3.20120807 Ubuntu 12.04 updated on Aug 20th annex was installed via cabal on Aug 20th, all other packages are from ubuntu.
+
+> What is the error message from fsck? --[[Joey]] 
