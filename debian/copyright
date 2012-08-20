@@ -24,7 +24,7 @@ License: BSD-3-clause
  Utility/libmounts.c in this package's source, or in
  /usr/share/common-licenses/BSD on Debian systems.
 
-Files: doc/logo.png doc/logo_small.png */favicon.ico
+Files: doc/logo* */favicon.ico
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>
 License: other

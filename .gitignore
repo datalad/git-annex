@@ -1,6 +1,7 @@
 tmp
 test
 configure
+build-stamp
 Build/SysConfig.hs
 git-annex
 git-annex.1
