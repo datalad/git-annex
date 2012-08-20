@@ -1,27 +1,14 @@
 The webapp is a web server that displays a shiny interface.
 
-## security
-
-* Listen only to localhost. **done**
-* Instruct the user's web browser to open an url that contains a secret
-  token. This guards against other users on the same system. **done**
-  (I would like to avoid passwords or other authentication methods,
-  it's your local system.)
-* Don't pass the url with secret token directly to the web browser,
-  as that exposes it to `ps`. Instead, write a html file only the user can read,
-  that redirects to the webapp. **done**
-* Alternative for Linux at least would be to write a small program using
-  GTK+ Webkit, that runs the webapp, and can know what user ran it, avoiding
-  needing authentication.
-
 ## interface
 
 * list of files uploading and downloading **done**
 * button to open file browser on repo (`xdg-open $DIR`) **done**
 * progress bars for each file (see [[progressbars]])
 * drag and drop to reorder
-* cancel and pause
-* keep it usable w/o javascript, and accessible to blind, etc
+* cancel, pause, and resume **done**
+* keep it usable w/o javascript **done**
+* keep it accessible to blind, etc
 
 ## other features
 
@@ -42,3 +29,17 @@ The webapp is a web server that displays a shiny interface.
 * record repository that was made, and use it next time run **done**
 * write a pid file, to prevent more than one first-start process running
   at once **done**
+
+## security **acceptable/done**
+
+* Listen only to localhost. **done**
+* Instruct the user's web browser to open an url that contains a secret
+  token. This guards against other users on the same system. **done**
+  (I would like to avoid passwords or other authentication methods,
+  it's your local system.)
+* Don't pass the url with secret token directly to the web browser,
+  as that exposes it to `ps`. Instead, write a html file only the user can read,
+  that redirects to the webapp. **done**
+* Alternative for Linux at least would be to write a small program using
+  GTK+ Webkit, that runs the webapp, and can know what user ran it, avoiding
+  needing authentication.
