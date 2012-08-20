@@ -8,7 +8,7 @@ License: GPL-3+
  this package's source, or in /usr/share/common-licenses/GPL-3 on
  Debian systems.
 
-Files: doc/logo.png doc/logo_small.png doc/favicon.png
+Files: doc/logo* doc/favicon.png
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>
 License: other
