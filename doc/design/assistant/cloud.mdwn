@@ -13,6 +13,7 @@ More should be added, such as:
 * Box.com (it's free, and current method is hard to set up and a sorta
   shakey; a better method would be to use its API)
 * Dropbox? That would be ironic.. Via its API, presumably.
+* Amazon Glacier
 
 ## limited space
 
