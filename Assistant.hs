@@ -52,11 +52,17 @@
  - 	state about that remote, pulls from it, and queues a push to it,
  - 	as well as an update, and queues it onto the
  - 	ConnectedRemoteChan
- - Thread 14: TransferScanner
+ - Thread 13: NetWatcher
+ - 	Deals with network connection interruptions, which would cause
+ - 	transfers to fail, and can be recovered from by waiting for a
+ - 	network connection, and syncing with all network remotes.
+ - 	Uses dbus to watch for network connections, or when dbus
+ - 	cannot be used, assumes there's been one every 30 minutes.
+ - Thread 15: TransferScanner
  - 	Does potentially expensive checks to find data that needs to be
  - 	transferred from or to remotes, and queues Transfers.
  - 	Uses the ScanRemotes map.
- - Thread 15: WebApp
+ - Thread 16: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
  -
@@ -110,6 +116,7 @@ import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.MountWatcher
+import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 #ifdef WITH_WEBAPP
 import Assistant.Threads.WebApp
@@ -165,6 +172,7 @@ startAssistant assistant daemonize webappwaiter = do
 				, assist $ daemonStatusThread st dstatus
 				, assist $ sanityCheckerThread st dstatus transferqueue changechan
 				, assist $ mountWatcherThread st dstatus scanremotes
+				, assist $ netWatcherThread st dstatus scanremotes
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, watch $ watchThread st dstatus transferqueue changechan
 				]

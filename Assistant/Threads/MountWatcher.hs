@@ -31,6 +31,7 @@ import qualified Data.Set as S
 import Data.Time.Clock
 
 #if WITH_DBUS
+import Utility.DBus
 import DBus.Client
 import DBus
 import Data.Word (Word32)
@@ -77,20 +78,6 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSession) onerr
 				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
 			pollinstead
 		pollinstead = pollingThread st dstatus scanremotes
-
-type ServiceName = String
-
-listServiceNames :: Client -> IO [ServiceName]
-listServiceNames client = do
-	reply <- callDBus client "ListNames" []
-	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
-
-callDBus :: Client -> MemberName -> [Variant] -> IO MethodReturn
-callDBus client name params = call_ client $
-	(methodCall "/org/freedesktop/DBus" "org.freedesktop.DBus" name)
-		{ methodCallDestination = Just "org.freedesktop.DBus"
-		, methodCallBody = params
-		}
 
 {- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor mounts. If not, will attempt to start one. -}
@@ -164,7 +151,7 @@ handleMount st dstatus scanremotes dir = do
 		let nonspecial = filter (Git.repoIsLocal . Remote.repo) rs
 		unless (null nonspecial) $ do
 			void $ alertWhile dstatus (syncAlert nonspecial) $ do
-				debug thisThread ["syncing with", show rs]
+				debug thisThread ["syncing with", show nonspecial]
 				sync nonspecial =<< runThreadState st (inRepo Git.Branch.current)
 			addScanRemotes scanremotes nonspecial
 	where
