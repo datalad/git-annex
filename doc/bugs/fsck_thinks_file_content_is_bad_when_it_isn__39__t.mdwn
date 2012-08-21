@@ -8,3 +8,13 @@ What version of git-annex are you using? On what operating system?
 git-annex version: 3.20120807 Ubuntu 12.04 updated on Aug 20th annex was installed via cabal on Aug 20th, all other packages are from ubuntu.
 
 > What is the error message from fsck? --[[Joey]] 
+
+This is the output:
+
+> reinject ....Moon.avi (checksum...) 
+> Bad file content; moved to /mnt/.../.git/annex/bad/SHA512E-s94402560--ead9db1f34739014a216239d9624bce74d92fe723de06505f9b94cb4c063142ba42b04546f11d3d33869b736e40ded2ff779cb32b26aa10482f09407df0f3c8d.Moon.avi
+failed
+> (Recording state in git...)
+> git-annex: reinject: 1 failed
+
+The original file also has sha512 ead9db1f34739014a216239d9624bce74d92fe723de06505f9b94cb4c063142ba42b04546f11d3d33869b736e40ded2ff779cb32b26aa10482f09407df0f3c8d
