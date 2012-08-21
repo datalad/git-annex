@@ -18,3 +18,7 @@ failed
 > git-annex: reinject: 1 failed
 
 The original file also has sha512 ead9db1f34739014a216239d9624bce74d92fe723de06505f9b94cb4c063142ba42b04546f11d3d33869b736e40ded2ff779cb32b26aa10482f09407df0f3c8d
+
+>> And what sha512 does the file in .git/annex/bad have **now**? (fsck
+>> preserves the original filename; this says nothing about what the
+>> current checksum is, if the file has been corrupted). --[[Joey]]
