@@ -14,17 +14,13 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
-import Assistant.Threads.Pusher (pushToRemotes)
-import Assistant.Alert
+import Assistant.Sync
 import qualified Git
 import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
-import Assistant.Threads.Merger
-import qualified Git.Branch
 
 import qualified Control.Exception as E
-import Data.Time.Clock
 
 #if WITH_DBUS
 import Utility.DBus
@@ -128,20 +124,9 @@ pollingThread st dstatus scanremotes = runEvery (Seconds 3600) $
 
 handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
 handleConnection st dstatus scanremotes = do
-	rs <- networkRemotes st
-	unless (null rs) $ do
-		let nonspecial = filter (Git.repoIsUrl . Remote.repo) rs
-		unless (null nonspecial) $ do
-			void $ alertWhile dstatus (syncAlert nonspecial) $ do
-				debug thisThread ["syncing with", show nonspecial]
-				sync nonspecial =<< runThreadState st (inRepo Git.Branch.current)
-			addScanRemotes scanremotes nonspecial
-	where
-		sync rs (Just branch) = do
-			runThreadState st $ manualPull (Just branch) rs
-			now <- getCurrentTime
-			pushToRemotes thisThread now st Nothing rs
-		sync _ _ = return True
+	syncRemotes thisThread st dstatus scanremotes =<< 
+		filter (Git.repoIsUrl . Remote.repo)
+			<$> networkRemotes st
 
 {- Finds network remotes. -}
 networkRemotes :: ThreadState -> IO [Remote]

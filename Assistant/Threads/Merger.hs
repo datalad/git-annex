@@ -12,15 +12,13 @@ module Assistant.Threads.Merger (
 
 import Assistant.Common
 import Assistant.ThreadedMonad
+import Assistant.Sync
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
-import qualified Annex.Branch
 import qualified Git
-import qualified Git.Command
 import qualified Git.Merge
 import qualified Git.Branch
 import qualified Command.Sync
-import qualified Remote
 
 thisThread :: ThreadName
 thisThread = "Merger"
@@ -84,15 +82,3 @@ onAdd g file _
 
 mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
 mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
-
-{- Manually pull from remotes and merge their branches. Called by the pusher
- - when a push fails, which can happen due to a remote not having pushed
- - changes to us. That could be because it doesn't have us as a remote, or
- - because the assistant is not running there, or other reasons. -}
-manualPull :: (Maybe Git.Ref) -> [Remote] -> Annex ()
-manualPull currentbranch remotes = do
-	forM_ remotes $ \r ->
-		inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
-	Annex.Branch.forceUpdate
-	forM_ remotes $ \r ->
-		Command.Sync.mergeRemote r currentbranch
