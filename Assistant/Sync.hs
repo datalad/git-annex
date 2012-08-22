@@ -31,9 +31,9 @@ import qualified Data.Map as M
  - if the git-annex branches of the remotes have diverged from the
  - local git-annex branch.
  -}
-syncRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()
-syncRemotes _ _ _ _ [] = noop
-syncRemotes threadname st dstatus scanremotes rs = void $
+reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()
+reconnectRemotes _ _ _ _ [] = noop
+reconnectRemotes threadname st dstatus scanremotes rs = void $
 	alertWhile dstatus (syncAlert rs) $ do
 		sync =<< runThreadState st (inRepo Git.Branch.current)
 	where

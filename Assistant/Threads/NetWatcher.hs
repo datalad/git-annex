@@ -124,7 +124,7 @@ pollingThread st dstatus scanremotes = runEvery (Seconds 3600) $
 
 handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
 handleConnection st dstatus scanremotes = do
-	syncRemotes thisThread st dstatus scanremotes =<< 
+	reconnectRemotes thisThread st dstatus scanremotes =<< 
 		filter (Git.repoIsUrl . Remote.repo)
 			<$> networkRemotes st
 

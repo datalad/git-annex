@@ -142,7 +142,7 @@ handleMounts st dstatus scanremotes wasmounted nowmounted =
 handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> FilePath -> IO ()
 handleMount st dstatus scanremotes dir = do
 	debug thisThread ["detected mount of", dir]
-	syncRemotes thisThread st dstatus scanremotes
+	reconnectRemotes thisThread st dstatus scanremotes
 		=<< filter (Git.repoIsLocal . Remote.repo)
 			<$> remotesUnder st dstatus dir
 
