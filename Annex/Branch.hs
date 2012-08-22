@@ -90,10 +90,10 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
  - called before data is read from it. Runs only once per git-annex run.
  -}
 update :: Annex ()
-update = runUpdateOnce $ updateTo =<< siblingBranches
+update = runUpdateOnce $ void $ updateTo =<< siblingBranches
 
 {- Forces an update even if one has already been run. -}
-forceUpdate :: Annex ()
+forceUpdate :: Annex Bool
 forceUpdate = updateTo =<< siblingBranches
 
 {- Merges the specified Refs into the index, if they have any changes not
@@ -111,8 +111,10 @@ forceUpdate = updateTo =<< siblingBranches
  -
  - The branch is fast-forwarded if possible, otherwise a merge commit is
  - made.
+ -
+ - Returns True if any refs were merged in, False otherwise.
  -}
-updateTo :: [(Git.Ref, Git.Branch)] -> Annex ()
+updateTo :: [(Git.Ref, Git.Branch)] -> Annex Bool
 updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
@@ -139,6 +141,7 @@ updateTo pairs = do
 				else commitBranch branchref merge_desc
 					(nub $ fullname:refs)
 			invalidateCache
+	return $ not $ null refs
 	where
 		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 

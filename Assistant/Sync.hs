@@ -27,21 +27,27 @@ import qualified Data.Map as M
 {- Syncs with remotes that may have been disconnected for a while.
  - 
  - After getting git in sync, queues a scan for file transfers.
+ - To avoid doing that expensive scan unnecessarily, it's only run
+ - if the git-annex branches of the remotes have diverged from the
+ - local git-annex branch.
  -}
 syncRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()
 syncRemotes _ _ _ _ [] = noop
-syncRemotes threadname st dstatus scanremotes rs = do
-	void $ alertWhile dstatus (syncAlert rs) $ do
+syncRemotes threadname st dstatus scanremotes rs = void $
+	alertWhile dstatus (syncAlert rs) $ do
 		sync =<< runThreadState st (inRepo Git.Branch.current)
-	addScanRemotes scanremotes rs
 	where
 		sync (Just branch) = do
-			manualPull st (Just branch) rs
+			haddiverged <- manualPull st (Just branch) rs
+			when haddiverged $
+				addScanRemotes scanremotes rs	
 			now <- getCurrentTime	
 			pushToRemotes threadname now st Nothing rs
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			manualPull st Nothing rs
+			haddiverged <- manualPull st Nothing rs
+			when haddiverged $
+				addScanRemotes scanremotes rs	
 			return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -85,15 +91,16 @@ pushToRemotes threadname now st mpushmap remotes = do
 
 		retry branch g rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
-			manualPull st (Just branch) rs
+			void $ manualPull st (Just branch) rs
 			go False (Just branch) g rs
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: ThreadState -> (Maybe Git.Ref) -> [Remote] -> IO ()
+manualPull :: ThreadState -> (Maybe Git.Ref) -> [Remote] -> IO Bool
 manualPull st currentbranch remotes = do
 	g <- runThreadState st $ fromRepo id
 	forM_ remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
-	runThreadState st $ Annex.Branch.forceUpdate
+	haddiverged <- runThreadState st $ Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		runThreadState st $ Command.Sync.mergeRemote r currentbranch
+	return haddiverged

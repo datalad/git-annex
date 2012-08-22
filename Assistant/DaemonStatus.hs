@@ -238,7 +238,8 @@ updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstat
 	where
 		go s = s { alertMap = a (alertMap s) }
 
-{- Displays an alert while performing an activity.
+{- Displays an alert while performing an activity that returns True on
+ - success.
  -
  - The alert is left visible afterwards, as filler.
  - Old filler is pruned, to prevent the map growing too large. -}
@@ -247,6 +248,7 @@ alertWhile dstatus alert a = alertWhile' dstatus alert $ do
 	r <- a
 	return $ (r, r)
 
+{- Like alertWhile, but allows the activity to return a value too. -}
 alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
 alertWhile' dstatus alert a = do
 	let alert' = alert { alertClass = Activity }

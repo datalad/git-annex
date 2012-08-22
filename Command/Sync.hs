@@ -172,7 +172,7 @@ pushBranch remote branch g =
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
-	Annex.Branch.forceUpdate
+	void $ Annex.Branch.forceUpdate
 	stop
 
 mergeFrom :: Git.Ref -> Annex Bool
