@@ -36,12 +36,12 @@ syncRemotes threadname st dstatus scanremotes rs = do
 	addScanRemotes scanremotes rs
 	where
 		sync (Just branch) = do
-			runThreadState st $ manualPull (Just branch) rs
+			manualPull st (Just branch) rs
 			now <- getCurrentTime	
 			pushToRemotes threadname now st Nothing rs
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			runThreadState st $ manualPull Nothing rs
+			manualPull st Nothing rs
 			return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -85,14 +85,15 @@ pushToRemotes threadname now st mpushmap remotes = do
 
 		retry branch g rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
-			runThreadState st $ manualPull (Just branch) rs
+			manualPull st (Just branch) rs
 			go False (Just branch) g rs
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: (Maybe Git.Ref) -> [Remote] -> Annex ()
-manualPull currentbranch remotes = do
+manualPull :: ThreadState -> (Maybe Git.Ref) -> [Remote] -> IO ()
+manualPull st currentbranch remotes = do
+	g <- runThreadState st $ fromRepo id
 	forM_ remotes $ \r ->
-		inRepo $ Git.Command.runBool "fetch" [Param $ Remote.name r]
-	Annex.Branch.forceUpdate
+		Git.Command.runBool "fetch" [Param $ Remote.name r] g
+	runThreadState st $ Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
-		Command.Sync.mergeRemote r currentbranch
+		runThreadState st $ Command.Sync.mergeRemote r currentbranch
