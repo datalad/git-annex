@@ -3,9 +3,15 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* At startup, and possibly periodically, or when the network connection
-  changes, or some heuristic suggests that a remote was disconnected from
-  us for a while, queue remotes for processing by the TransferScanner.
+* Sync with all available remotes on startup.
+* TransferScanner should avoid unnecessary scanning of remotes.
+  This is paricilarly important for scans queued by the NetWatcher,
+  which can be polling, or could be after a momentary blip in network
+  connectivity. The TransferScanner could check the remote's git-annex
+  branch; if it is not ahead of the local git-annex branch, then
+  there's nothing to transfer. **Except** if the tree was not already
+  up-to-date before the loss of connectivity. So doing this needs
+  tracking of when the tree is not yet fully up-to-date.
 * Ensure that when a remote receives content, and updates its location log,
   it syncs that update back out. Prerequisite for:
 * After git sync, identify new content that we don't have that is now available
@@ -157,3 +163,8 @@ redone to check it.
   finishes. **done**
 * Test MountWatcher on KDE, and add whatever dbus events KDE emits when
   drives are mounted. **done**
+* Possibly periodically, or when the network connection
+  changes, or some heuristic suggests that a remote was disconnected from
+  us for a while, queue remotes for processing by the TransferScanner. 
+  **done**; both network-manager and wicd connection events are supported,
+  and it falls back to polling every 30 minutes when neither is available.
