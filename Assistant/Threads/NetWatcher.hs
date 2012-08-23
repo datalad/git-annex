@@ -21,6 +21,7 @@ import Remote.List
 import qualified Types.Remote as Remote
 
 import qualified Control.Exception as E
+import Control.Concurrent
 
 #if WITH_DBUS
 import Utility.DBus
@@ -35,12 +36,17 @@ thisThread :: ThreadName
 thisThread = "NetWatcher"
 
 netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-netWatcherThread st handle scanremotes =
+netWatcherThread st dstatus scanremotes = do
 #if WITH_DBUS
-	dbusThread st handle scanremotes
-#else
-	pollingThread st handle scanremotes
+	void $ forkIO $ dbusThread st dstatus scanremotes
 #endif
+	{- This is a fallback for when dbus cannot be used to detect
+	 - network connection changes, but it also ensures that
+	 - any networked remotes that may have not been routable for a
+	 - while (despite the local network staying up), are synced with
+	 - periodically. -}
+	runEvery (Seconds 3600) $
+		handleConnection st dstatus scanremotes
 
 #if WITH_DBUS
 
@@ -54,14 +60,10 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSystem) onerr
 			, do
 				runThreadState st $
 					warning "No known network monitor available through dbus; falling back to polling"
-				pollinstead
 			)
 		onerr :: E.SomeException -> IO ()
-		onerr e = do
-			runThreadState st $
-				warning $ "Failed to use dbus; falling back to polling (" ++ show e ++ ")"
-			pollinstead
-		pollinstead = pollingThread st dstatus scanremotes
+		onerr e = runThreadState st $
+			warning $ "Failed to use dbus; falling back to polling (" ++ show e ++ ")"
 		handle = do
 			debug thisThread ["detected network connection"]
 			handleConnection st dstatus scanremotes
@@ -117,10 +119,6 @@ listenWicdConnections client callback =
 		wicd_success = toVariant ("success" :: String)
 
 #endif
-
-pollingThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-pollingThread st dstatus scanremotes = runEvery (Seconds 3600) $
-	handleConnection st dstatus scanremotes
 
 handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
 handleConnection st dstatus scanremotes = do
