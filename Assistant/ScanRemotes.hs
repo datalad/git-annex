@@ -8,13 +8,15 @@
 module Assistant.ScanRemotes where
 
 import Common.Annex
-import Data.Function
+import qualified Types.Remote as Remote
 
+import Data.Function
 import Control.Concurrent.STM
-import Data.Time.Clock
 import qualified Data.Map as M
 
-type ScanRemoteMap = TMVar (M.Map Remote UTCTime)
+type Priority = Int
+
+type ScanRemoteMap = TMVar (M.Map Remote Priority)
 
 {- The TMVar starts empty, and is left empty when there are no remotes
  - to scan. -}
@@ -22,7 +24,7 @@ newScanRemoteMap :: IO ScanRemoteMap
 newScanRemoteMap = atomically newEmptyTMVar
 
 {- Blocks until there is a remote that needs to be scanned.
- - Processes remotes added most recently first. -}
+ - Processes higher priority remotes first. -}
 getScanRemote :: ScanRemoteMap -> IO Remote
 getScanRemote v = atomically $ do
 	m <- takeTMVar v
@@ -37,9 +39,7 @@ getScanRemote v = atomically $ do
 
 {- Adds new remotes that need scanning to the map. -}
 addScanRemotes :: ScanRemoteMap -> [Remote] -> IO ()
-addScanRemotes _ [] = return ()
-addScanRemotes v rs = do
-	now <- getCurrentTime
-	atomically $ do
-		m <- fromMaybe M.empty <$> tryTakeTMVar v
-		putTMVar v $ foldr (`M.insert` now) m rs
+addScanRemotes _ [] = noop
+addScanRemotes v rs = atomically $ do
+	m <- fromMaybe M.empty <$> tryTakeTMVar v
+	putTMVar v $ M.union m $ M.fromList $ map (\r -> (r, Remote.cost r)) rs
