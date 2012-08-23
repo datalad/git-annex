@@ -39,8 +39,6 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 				void $ alertWhile dstatus (scanAlert r) $
 					expensiveScan st dstatus transferqueue r
 				liftIO $ debug thisThread ["finished scan of", show r]
-				runThreadState st $ inRepo $
-					transferScanned $ Remote.uuid r
 			else failedTransferScan st dstatus transferqueue r
 
 {- This is a cheap scan for failed transfers involving a remote. -}
@@ -66,6 +64,8 @@ expensiveScan st dstatus transferqueue r = do
 	g <- runThreadState st $ fromRepo id
 	files <- LsFiles.inRepo [] g
 	go files
+	runThreadState st $ inRepo $
+		transferScanned $ Remote.uuid r
 	return True
 	where
 		go [] = noop
@@ -90,12 +90,6 @@ expensiveScan st dstatus transferqueue r = do
 		u = Remote.uuid r
 		enqueue f t = queueTransferWhenSmall transferqueue dstatus (Just f) t r
 
-		{- Look directly in remote for the key when it's cheap;
-		 - otherwise rely on the location log. -}
-		remotehas key
-			| Remote.hasKeyCheap r = (==)
-				<$> pure (Right True)
-				<*> Remote.hasKey r key
-			| otherwise = elem
-				<$> pure u
-				<*> loggedLocations key
+		remotehas key = elem
+			<$> pure u
+			<*> loggedLocations key
