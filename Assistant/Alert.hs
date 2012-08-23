@@ -218,13 +218,6 @@ scanAlert :: Remote -> Alert
 scanAlert r = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
 		[Tensed "Scanning" "Scanned", showRemotes [r]]
-	, alertData =
-		[ Tensed "Ensuring" "Ensured"
-		, "that"
-		, showRemotes [r]
-		, Tensed "is" "was"
-		, "fully in sync."
-		]
 	, alertBlockDisplay = True
 	, alertPriority = Low
 	}
