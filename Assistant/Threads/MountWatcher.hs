@@ -58,7 +58,7 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSession) onerr
 				 - work out the mount point from the dbus
 				 - message, but this is easier. -}
 				mvar <- newMVar =<< currentMountPoints
-				forM_ mountAdded $ \matcher ->
+				forM_ mountChanged $ \matcher ->
 					listen client matcher $ \_event -> do
 						nowmounted <- currentMountPoints
 						wasmounted <- swapMVar mvar nowmounted
@@ -110,17 +110,27 @@ startOneService client (x:xs) = do
 		, startOneService client xs
 		)
 
-{- Filter matching events recieved when drives are mounted. -}	
-mountAdded :: [MatchRule]
-mountAdded = [gvfs, kde]
+{- Filter matching events recieved when drives are mounted and unmounted. -}	
+mountChanged :: [MatchRule]
+mountChanged = [gvfs True, gvfs False, kde, kdefallback]
 	where
-		gvfs = matchAny
+		{- gvfs reliably generates this event whenever a drive is mounted/unmounted,
+		 - whether automatically, or manually -}
+		gvfs mount = matchAny
 			{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
-			, matchMember = Just "MountAdded"
+			, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
 			}
+		{- This event fires when KDE prompts the user what to do with a drive,
+		 - but maybe not at other times. And it's not received -}
 		kde = matchAny
 			{ matchInterface = Just "org.kde.Solid.Device"
 			, matchMember = Just "setupDone"
+			}
+		{- This event may not be closely related to mounting a drive, but it's
+		 - observed reliably when a drive gets mounted or unmounted. -}
+		kdefallback = matchAny
+			{ matchInterface = Just "org.kde.KDirNotify"
+			, matchMember = Just "enteredDirectory"
 			}
 
 #endif
