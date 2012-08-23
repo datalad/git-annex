@@ -26,10 +26,11 @@ import qualified Data.Map as M
 
 {- Syncs with remotes that may have been disconnected for a while.
  - 
- - After getting git in sync, queues a scan for file transfers.
- - To avoid doing that expensive scan unnecessarily, it's only run
- - if the git-annex branches of the remotes have diverged from the
- - local git-annex branch.
+ - First gets git in sync, and then prepares any necessary file transfers.
+ -
+ - An expensive full scan is queued when the git-annex branches of the
+ - remotes have diverged from the local git-annex branch. Otherwise,
+ - it's sufficient to requeue failed transfers.
  -}
 reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()
 reconnectRemotes _ _ _ _ [] = noop
@@ -38,16 +39,14 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 		sync =<< runThreadState st (inRepo Git.Branch.current)
 	where
 		sync (Just branch) = do
-			haddiverged <- manualPull st (Just branch) rs
-			when haddiverged $
-				addScanRemotes scanremotes rs	
+			diverged <- manualPull st (Just branch) rs
+			addScanRemotes scanremotes rs diverged
 			now <- getCurrentTime	
 			pushToRemotes threadname now st Nothing rs
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			haddiverged <- manualPull st Nothing rs
-			when haddiverged $
-				addScanRemotes scanremotes rs	
+			diverged <- manualPull st Nothing rs
+			addScanRemotes scanremotes rs diverged
 			return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in

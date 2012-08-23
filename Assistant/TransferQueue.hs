@@ -13,6 +13,7 @@ module Assistant.TransferQueue (
 	queueTransfers,
 	queueTransfer,
 	queueTransferAt,
+	queueTransferWhenSmall,
 	getNextTransfer,
 	dequeueTransfer,
 ) where
@@ -114,6 +115,9 @@ queueTransferAt wantsz schedule q dstatus f t remote = do
 			then return ()
 			else retry -- blocks until queuesize changes
 	enqueue schedule q dstatus t (stubInfo f remote)
+
+queueTransferWhenSmall :: TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()
+queueTransferWhenSmall = queueTransferAt 10 Later
 
 {- Blocks until a pending transfer is available from the queue,
  - and removes it.

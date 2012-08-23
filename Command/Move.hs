@@ -135,13 +135,12 @@ fromPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
 fromPerform src move key file = moveLock move key $
 	ifM (inAnnex key)
 		( handle move True
-		, download (Remote.uuid src) key (Just file) $ do
-			showAction $ "from " ++ Remote.name src
-			ok <- getViaTmp key $
-				Remote.retrieveKeyFile src key (Just file)
-			handle move ok
+		, handle move =<< go
 		)
 	where
+		go = download (Remote.uuid src) key (Just file) $ do
+			showAction $ "from " ++ Remote.name src
+			getViaTmp key $ Remote.retrieveKeyFile src key (Just file)
 		handle _ False = stop -- failed
 		handle False True = next $ return True -- copy complete
 		handle True True = do -- finish moving

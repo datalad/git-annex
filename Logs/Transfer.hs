@@ -13,7 +13,6 @@ import Annex.Exception
 import qualified Git
 import Types.Remote
 import Types.Key
-import qualified Fields
 import Utility.Percentage
 
 import System.Posix.Types
@@ -66,23 +65,20 @@ percentComplete (Transfer { transferKey = key }) (TransferInfo { bytesComplete =
 	(\size -> percentage size complete) <$> keySize key
 percentComplete _ _ = Nothing
 
-upload :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
+upload :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
 upload u key file a = runTransfer (Transfer Upload u key) file a
 
-download :: UUID -> Key -> AssociatedFile -> Annex a -> Annex a
+download :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
 download u key file a = runTransfer (Transfer Download u key) file a
-
-fieldTransfer :: Direction -> Key -> Annex a -> Annex a
-fieldTransfer direction key a = do
-	afile <- Fields.getField Fields.associatedFile
-	maybe a (\u -> runTransfer (Transfer direction (toUUID u) key) afile a)
-		=<< Fields.getField Fields.remoteUUID
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
  - file. Will throw an error if the transfer is already in progress.
+ -
+ - If the transfer action returns False, the transfer info is 
+ - left in the failedTransferDir.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> Annex a -> Annex a
+runTransfer :: Transfer -> Maybe FilePath -> Annex Bool -> Annex Bool
 runTransfer t file a = do
 	tfile <- fromRepo $ transferFile t
 	createAnnexDirectory $ takeDirectory tfile
@@ -95,21 +91,28 @@ runTransfer t file a = do
 		<*> pure Nothing
 		<*> pure file
 		<*> pure False
-	bracketIO (prep tfile mode info) (cleanup tfile) a
+	let content = writeTransferInfo info
+	ok <- bracketIO (prep tfile mode content) (cleanup tfile) a
+	unless ok $ failed content
+	return ok
 	where
-		prep tfile mode info = do
+		prep tfile mode content = do
 			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			when (locked == Nothing) $
 				error $ "transfer already in progress"
-			writeFile tfile $ writeTransferInfo info
+			writeFile tfile content
 			return fd
 		cleanup tfile fd = do
 			void $ tryIO $ removeFile tfile
 			void $ tryIO $ removeFile $ transferLockFile tfile
 			closeFd fd
+		failed content = do
+			failedtfile <- fromRepo $ failedTransferFile t
+			createAnnexDirectory $ takeDirectory failedtfile
+			liftIO $ writeFile failedtfile content
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -128,7 +131,7 @@ checkTransfer t = do
 				Nothing -> return Nothing
 				Just (pid, _) -> liftIO $
 					flip catchDefaultIO Nothing $ do
-						readTransferInfo pid 
+						readTransferInfo (Just pid)
 							<$> readFile tfile
 
 {- Gets all currently running transfers. -}
@@ -140,13 +143,33 @@ getTransfers = do
 		filter running $ zip transfers infos
 	where
 		findfiles = liftIO . mapM dirContentsRecursive
-			=<< mapM (fromRepo . transferDir) [Upload, Download]
+			=<< mapM (fromRepo . transferDir)
+				[Download, Upload]
 		running (_, i) = isJust i
+
+{- Gets failed transfers for a given remote UUID. -}
+getFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
+getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles)
+	where
+		getpairs = mapM $ \f -> do
+			let mt = parseTransferFile f
+			mi <- readTransferInfo Nothing <$> readFile f
+			return $ case (mt, mi) of
+				(Just t, Just i) -> Just (t, i)
+				_ -> Nothing
+		findfiles = liftIO . mapM dirContentsRecursive
+			=<< mapM (fromRepo . failedTransferDir u)
+				[Download, Upload]
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
 transferFile (Transfer direction u key) r = transferDir direction r
 	</> fromUUID u
+	</> keyFile key
+
+{- The transfer information file to use to record a failed Transfer -}
+failedTransferFile :: Transfer -> Git.Repo -> FilePath
+failedTransferFile (Transfer direction u key) r = failedTransferDir u direction r
 	</> keyFile key
 
 {- The transfer lock file corresponding to a given transfer info file. -}
@@ -176,12 +199,12 @@ writeTransferInfo info = unlines
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
-readTransferInfo :: ProcessID -> String -> Maybe TransferInfo
-readTransferInfo pid s =
+readTransferInfo :: (Maybe ProcessID) -> String -> Maybe TransferInfo
+readTransferInfo mpid s =
 	case bits of
 		[time] -> TransferInfo
 			<$> (Just <$> parsePOSIXTime time)
-			<*> pure (Just pid)
+			<*> pure mpid
 			<*> pure Nothing
 			<*> pure Nothing
 			<*> pure Nothing
@@ -200,13 +223,21 @@ parsePOSIXTime s = utcTimeToPOSIXSeconds
 transferDir :: Direction -> Git.Repo -> FilePath
 transferDir direction r = gitAnnexTransferDir r </> showLcDirection direction
 
+{- The directory holding failed transfer information files for a given
+ - Direction and UUID -}
+failedTransferDir :: UUID -> Direction -> Git.Repo -> FilePath
+failedTransferDir u direction r = gitAnnexTransferDir r
+	</> "failed"
+	</> showLcDirection direction
+	</> fromUUID u
+
 {- The directory holding remote uuids that have been scanned for transfers. -}
 transferScannedDir :: Git.Repo -> FilePath
 transferScannedDir r = gitAnnexTransferDir r </> "scanned"
 
 {- The file indicating whether a remote uuid has been scanned. -}
 transferScannedFile :: UUID -> Git.Repo -> FilePath
-transferScannedFile u r = transferScannedDir r </> show u 
+transferScannedFile u r = transferScannedDir r </> fromUUID u 
 
 {- Checks if a given remote UUID has been scanned for transfers. -}
 checkTransferScanned :: UUID -> Git.Repo -> IO Bool
