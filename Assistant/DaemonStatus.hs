@@ -246,13 +246,13 @@ updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstat
 alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
 alertWhile dstatus alert a = alertWhile' dstatus alert $ do
 	r <- a
-	return $ (r, r)
+	return (r, r)
 
 {- Like alertWhile, but allows the activity to return a value too. -}
 alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
 alertWhile' dstatus alert a = do
 	let alert' = alert { alertClass = Activity }
 	i <- addAlert dstatus alert'
-	(ok, r) <- bracket_ noop noop a
+	(ok, r) <- a
 	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
 	return r
