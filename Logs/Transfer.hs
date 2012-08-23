@@ -134,19 +134,18 @@ checkTransfer t = do
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
 getTransfers = do
-	transfers <- catMaybes . map parseTransferFile <$> findfiles
+	transfers <- catMaybes . map parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
 	where
-		findfiles = liftIO . dirContentsRecursive
-			=<< fromRepo gitAnnexTransferDir
+		findfiles = liftIO . mapM dirContentsRecursive
+			=<< mapM (fromRepo . transferDir) [Upload, Download]
 		running (_, i) = isJust i
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
-transferFile (Transfer direction u key) r = gitAnnexTransferDir r
-	</> showLcDirection direction 
+transferFile (Transfer direction u key) r = transferDir direction r
 	</> fromUUID u
 	</> keyFile key
 
@@ -196,3 +195,27 @@ readTransferInfo pid s =
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds
 	<$> parseTime defaultTimeLocale "%s%Qs" s
+
+{- The directory holding transfer information files for a given Direction. -}
+transferDir :: Direction -> Git.Repo -> FilePath
+transferDir direction r = gitAnnexTransferDir r </> showLcDirection direction
+
+{- The directory holding remote uuids that have been scanned for transfers. -}
+transferScannedDir :: Git.Repo -> FilePath
+transferScannedDir r = gitAnnexTransferDir r </> "scanned"
+
+{- The file indicating whether a remote uuid has been scanned. -}
+transferScannedFile :: UUID -> Git.Repo -> FilePath
+transferScannedFile u r = transferScannedDir r </> show u 
+
+{- Checks if a given remote UUID has been scanned for transfers. -}
+checkTransferScanned :: UUID -> Git.Repo -> IO Bool
+checkTransferScanned u r = doesFileExist $ transferScannedFile u r
+
+{- Records that a scan has taken place. -}
+transferScanned :: UUID -> Git.Repo -> IO ()
+transferScanned u r = do
+	createDirectoryIfMissing True (parentDir f)
+	writeFile f ""
+	where
+		f = transferScannedFile u r

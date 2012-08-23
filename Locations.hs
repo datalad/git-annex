@@ -130,7 +130,7 @@ gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
 {- .git/annex/transfer/ is used is used to record keys currently
- - being transferred. -}
+ - being transferred, and other transfer bookkeeping info. -}
 gitAnnexTransferDir :: Git.Repo -> FilePath
 gitAnnexTransferDir r = addTrailingPathSeparator $ gitAnnexDir r </> "transfer"
 

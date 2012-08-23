@@ -44,6 +44,7 @@ scan st dstatus transferqueue r = do
 	g <- runThreadState st $ fromRepo id
 	files <- LsFiles.inRepo [] g
 	go files
+	inRepo $ transferScanned $ uuid r
 	return True
 	where
 		go [] = return ()
