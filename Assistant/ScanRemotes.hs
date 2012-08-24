@@ -45,6 +45,10 @@ addScanRemotes :: ScanRemoteMap -> [Remote] -> Bool -> IO ()
 addScanRemotes _ [] _ = noop
 addScanRemotes v rs full = atomically $ do
 	m <- fromMaybe M.empty <$> tryTakeTMVar v
-	putTMVar v $ M.union (M.fromList $ zip rs (map info rs)) m
+	putTMVar v $ M.unionWith merge (M.fromList $ zip rs (map info rs)) m
 	where
 		info r = ScanInfo (Remote.cost r) full
+		merge x y = ScanInfo
+			{ scanPriority = max (scanPriority x) (scanPriority y)
+			, fullScan = fullScan x || fullScan y 
+			}
