@@ -17,6 +17,7 @@ import Logs.Transfer
 import Logs.Location
 import Annex.Content
 import qualified Remote
+import Types.Key
 
 import System.Process (create_group)
 
@@ -101,11 +102,12 @@ transferThread dstatus slots t info runner = case (transferRemote info, associat
 			where
 				command = "git-annex"
 				params =
-					[ Param "copy"
-					, Param "--fast"
+					[ Param "transferkey"
+					, Param $ key2file $ transferKey t
 					, Param $ if isdownload
 						then "--from"
 						else "--to"
 					, Param $ Remote.name remote
+					, Param "--file"
 					, File file
 					]
