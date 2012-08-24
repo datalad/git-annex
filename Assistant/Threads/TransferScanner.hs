@@ -55,8 +55,9 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 		 - are first removed.
 		 -}
 		startupScan = do
-			removeDirectoryRecursive
-				=<< runThreadState st (fromRepo transferScannedDir)
+			void $ tryIO $ 
+				removeDirectoryRecursive
+					=<< runThreadState st (fromRepo transferScannedDir)
 			addScanRemotes scanremotes True
 				=<< knownRemotes <$> getDaemonStatus dstatus
 
