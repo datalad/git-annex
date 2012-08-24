@@ -230,23 +230,3 @@ failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
 	</> showLcDirection direction
 	</> fromUUID u
-
-{- The directory holding remote uuids that have been scanned for transfers. -}
-transferScannedDir :: Git.Repo -> FilePath
-transferScannedDir r = gitAnnexTransferDir r </> "scanned"
-
-{- The file indicating whether a remote uuid has been scanned. -}
-transferScannedFile :: UUID -> Git.Repo -> FilePath
-transferScannedFile u r = transferScannedDir r </> fromUUID u 
-
-{- Checks if a given remote UUID has been scanned for transfers. -}
-checkTransferScanned :: UUID -> Git.Repo -> IO Bool
-checkTransferScanned u r = doesFileExist $ transferScannedFile u r
-
-{- Records that a scan has taken place. -}
-transferScanned :: UUID -> Git.Repo -> IO ()
-transferScanned u r = do
-	createDirectoryIfMissing True (parentDir f)
-	writeFile f ""
-	where
-		f = transferScannedFile u r

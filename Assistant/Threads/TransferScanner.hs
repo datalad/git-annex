@@ -21,6 +21,8 @@ import qualified Git.LsFiles as LsFiles
 import Command
 import Annex.Content
 
+import qualified Data.Set as S
+
 thisThread :: ThreadName
 thisThread = "TransferScanner"
 
@@ -30,16 +32,20 @@ thisThread = "TransferScanner"
 transferScannerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st dstatus scanremotes transferqueue = do
 	startupScan
-	runEvery (Seconds 2) $ do
-		(r, info) <- getScanRemote scanremotes
-		scanned <- runThreadState st $ inRepo $
-			checkTransferScanned $ Remote.uuid r
-		if not scanned || fullScan info
-			then expensiveScan st dstatus transferqueue r
-			else failedTransferScan st dstatus transferqueue r
+	go S.empty
 	where
-		{- All remotes are scanned in full on startup, for multiple
-		 - reasons, including:
+		go scanned = do
+			threadDelaySeconds (Seconds 2)
+			(r, info) <- getScanRemote scanremotes
+			if fullScan info || not (S.member r scanned)
+				then do
+					expensiveScan st dstatus transferqueue r
+					go (S.insert r scanned)
+				else do
+					failedTransferScan st dstatus transferqueue r
+					go scanned
+		{- All available remotes are scanned in full on startup,
+		 - for multiple reasons, including:
 		 -
 		 - * This may be the first run, and there may be remotes
 		 -   already in place, that need to be synced.
@@ -49,17 +55,9 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 		 - * We may have run before, and had transfers queued,
 		 -   and then the system (or us) crashed, and that info was
 		 -   lost.
-		 -
-		 - But not all remotes may be available now. So all
-		 - prior indications that remotes have been scanned
-		 - are first removed.
 		 -}
-		startupScan = do
-			void $ tryIO $ 
-				removeDirectoryRecursive
-					=<< runThreadState st (fromRepo transferScannedDir)
-			addScanRemotes scanremotes True
-				=<< knownRemotes <$> getDaemonStatus dstatus
+		startupScan = addScanRemotes scanremotes True
+			=<< knownRemotes <$> getDaemonStatus dstatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
@@ -104,8 +102,6 @@ expensiveScan st dstatus transferqueue r = do
 		g <- runThreadState st $ fromRepo id
 		files <- LsFiles.inRepo [] g
 		go files
-		runThreadState st $ inRepo $
-			transferScanned $ Remote.uuid r
 		return True
 	liftIO $ debug thisThread ["finished scan of", show r]
 	where
