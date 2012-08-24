@@ -22,7 +22,6 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
-import Control.Exception
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan

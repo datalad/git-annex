@@ -49,12 +49,30 @@ failedTransferScan st dstatus transferqueue r = do
 	go ts
 	where
 		go [] = noop
-		go ((t, info):ts) = do
+		go ((t, info):ts)
+			| transferDirection t == Download = do
+				{- Check if the remote still has the key.
+				 - If not, relies on the expensiveScan to
+				 - get it queued from some other remote. -}
+				ifM (runThreadState st $ remoteHas r $ transferKey t)
+					( requeue t info
+					, dequeue t
+					)
+				go ts
+			| otherwise = do
+				{- The Transferrer checks when uploading
+				 - that the remote doesn't already have the
+				 - key, so it's not redundantly checked
+				 - here. -}
+				requeue t info
+				go ts
+
+		requeue t info = do
 			queueTransferWhenSmall
 				transferqueue dstatus (associatedFile info) t r
-			void $ runThreadState st $ inRepo $
-				liftIO . tryIO . removeFile . failedTransferFile t
-			go ts
+			dequeue t
+		dequeue t = void $ runThreadState st $ inRepo $
+			liftIO . tryIO . removeFile . failedTransferFile t
 
 {- This is a expensive scan through the full git work tree.
  - 
@@ -79,17 +97,17 @@ expensiveScan st dstatus transferqueue r = do
 			go fs
 			where
 				check _ (key, _) = ifM (inAnnex key)
-					( helper key Upload False =<< remotehas key
-					, helper key Download True =<< remotehas key
+					( helper key Upload False =<< remoteHas r key
+					, helper key Download True =<< remoteHas r key
 					)
 				helper key direction x y
-					| x == y = return $
-						Just $ Transfer direction u key
+					| x == y = return $ Just $
+						Transfer direction (Remote.uuid r) key
 					| otherwise = return Nothing
 				
-		u = Remote.uuid r
 		enqueue f t = queueTransferWhenSmall transferqueue dstatus (Just f) t r
 
-		remotehas key = elem
-			<$> pure u
-			<*> loggedLocations key
+remoteHas :: Remote -> Key -> Annex Bool
+remoteHas r key = elem
+	<$> pure (Remote.uuid r)
+	<*> loggedLocations key
