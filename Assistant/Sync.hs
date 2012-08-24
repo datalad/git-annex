@@ -40,13 +40,13 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 	where
 		sync (Just branch) = do
 			diverged <- manualPull st (Just branch) rs
-			addScanRemotes scanremotes rs diverged
+			addScanRemotes scanremotes diverged rs
 			now <- getCurrentTime	
 			pushToRemotes threadname now st Nothing rs
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
 			diverged <- manualPull st Nothing rs
-			addScanRemotes scanremotes rs diverged
+			addScanRemotes scanremotes diverged rs
 			return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in

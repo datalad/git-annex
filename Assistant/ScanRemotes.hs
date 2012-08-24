@@ -41,9 +41,9 @@ getScanRemote v = atomically $ do
 			return ret
 
 {- Adds new remotes that need scanning to the map. -}
-addScanRemotes :: ScanRemoteMap -> [Remote] -> Bool -> IO ()
-addScanRemotes _ [] _ = noop
-addScanRemotes v rs full = atomically $ do
+addScanRemotes :: ScanRemoteMap -> Bool -> [Remote] -> IO ()
+addScanRemotes _ _ [] = noop
+addScanRemotes v full rs = atomically $ do
 	m <- fromMaybe M.empty <$> tryTakeTMVar v
 	putTMVar v $ M.unionWith merge (M.fromList $ zip rs (map info rs)) m
 	where

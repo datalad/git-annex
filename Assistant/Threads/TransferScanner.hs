@@ -29,17 +29,36 @@ thisThread = "TransferScanner"
  -}
 transferScannerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> TransferQueue -> IO ()
 transferScannerThread st dstatus scanremotes transferqueue = do
+	startupScan
 	runEvery (Seconds 2) $ do
 		(r, info) <- getScanRemote scanremotes
 		scanned <- runThreadState st $ inRepo $
 			checkTransferScanned $ Remote.uuid r
 		if not scanned || fullScan info
-			then do
-				liftIO $ debug thisThread ["starting scan of", show r]
-				void $ alertWhile dstatus (scanAlert r) $
-					expensiveScan st dstatus transferqueue r
-				liftIO $ debug thisThread ["finished scan of", show r]
+			then expensiveScan st dstatus transferqueue r
 			else failedTransferScan st dstatus transferqueue r
+	where
+		{- All remotes are scanned in full on startup, for multiple
+		 - reasons, including:
+		 -
+		 - * This may be the first run, and there may be remotes
+		 -   already in place, that need to be synced.
+		 - * We may have run before, and scanned a remote, but
+		 -   only been in a subdirectory of the git remote, and so
+		 -   not synced it all.
+		 - * We may have run before, and had transfers queued,
+		 -   and then the system (or us) crashed, and that info was
+		 -   lost.
+		 -
+		 - But not all remotes may be available now. So all
+		 - prior indications that remotes have been scanned
+		 - are first removed.
+		 -}
+		startupScan = do
+			removeDirectoryRecursive
+				=<< runThreadState st (fromRepo transferScannedDir)
+			addScanRemotes scanremotes True
+				=<< knownRemotes <$> getDaemonStatus dstatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
@@ -77,14 +96,17 @@ failedTransferScan st dstatus transferqueue r = do
 {- This is a expensive scan through the full git work tree.
  - 
  - The scan is blocked when the transfer queue gets too large. -}
-expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO Bool
+expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
 expensiveScan st dstatus transferqueue r = do
-	g <- runThreadState st $ fromRepo id
-	files <- LsFiles.inRepo [] g
-	go files
-	runThreadState st $ inRepo $
-		transferScanned $ Remote.uuid r
-	return True
+	liftIO $ debug thisThread ["starting scan of", show r]
+	void $ alertWhile dstatus (scanAlert r) $ do
+		g <- runThreadState st $ fromRepo id
+		files <- LsFiles.inRepo [] g
+		go files
+		runThreadState st $ inRepo $
+			transferScanned $ Remote.uuid r
+		return True
+	liftIO $ debug thisThread ["finished scan of", show r]
 	where
 		go [] = noop
 		go (f:fs) = do
