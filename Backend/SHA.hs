@@ -125,5 +125,5 @@ checkKeyChecksum size key file = do
 		_ -> return True
 	where
 		check s
-			| s == dropExtension (keyName key) = True
+			| s == dropExtensions (keyName key) = True
 			| otherwise = False
