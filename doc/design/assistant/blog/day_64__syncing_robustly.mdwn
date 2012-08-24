@@ -1,0 +1,33 @@
+Working toward getting the data syncing to happen robustly,
+so a bunch of improvements.
+
+* Got unmount events to be noticed, so unplugging and replugging
+  a removable drive will resume the syncing to it. There's really no
+  good unmount event available on dbus in kde, so it uses a heuristic
+  there.
+* Avoid requeuing a download from a remote that no longer has a key.
+* Run a full scan on startup, for multiple reasons, including dealing with
+  crashes.
+
+Ran into a strange issue: Occasionally the assistant will run `git-annex
+copy` and it will not transfer the requested file. It seems that
+when the copy command runs `git ls-files`, it does not see the file
+it's supposed to act on in its output.
+
+Eventually I figured out what's going on: When updating the git-annex
+branch, it sets `GIT_INDEX_FILE`, and of course environment settings are
+not thread-safe! So there's a race between threads that access
+the git-annex branch, and the Transferrer thread, or any other thread
+that might expect to look at the normal git index.
+
+Unfortunatly, I don't have a fix for this yet.. Git's only interface for
+using a different index file is `GIT_INDEX_FILE`. It seems I have a lot of
+code to tear apart, to push back the setenv until after forking every git
+command. :(
+
+Before I figured out the root problem, I developed a workaround for the
+symptom I was seeing. I added a `git-annex transferkey`, which is
+optimised to be run by the assistant, and avoids running `git ls-files`, so
+avoids the problem. While I plan to fix this environment variable problem
+properly, `transferkey` turns out to be so much faster than how it was
+using `copy` that I'm going to keep it.

@@ -3,11 +3,16 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* Run transfer scan on startup.
 * The syncing code currently doesn't run for special remotes. While
   transfering the git info about special remotes could be a complication,
   if we assume that's synced between existing git remotes, it should be
   possible for them to do file transfers to/from special remotes.
+* Often several remotes will be queued for full TransferScanner scans,
+  and the scan does the same thing for each .. so it would be better to
+  combine them into one scan in such a case.
+* Sometimes a Download gets queued from a slow remote, and then a fast
+  remote becomes available, and a Download is queued from it. Would be
+  good to sort the transfer queue to run fast Downloads (and Uploads) first.
 * Ensure that when a remote receives content, and updates its location log,
   it syncs that update back out. Prerequisite for:
 * After git sync, identify new content that we don't have that is now available
@@ -200,3 +205,4 @@ redone to check it.
   may get content we were uploading from elsewhere, so check the location
   log when queuing a failed Upload too.) **done**
 * Fix MountWatcher to notice umounts and remounts of drives. **done**
+* Run transfer scan on startup. **done**
