@@ -3,12 +3,11 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* Fix MountWatcher to notice umounts and remounts of drives.
-* A remote may lose content it had before, so when requeuing
-  a failed download, check the location log to see if the remote still has
-  the content, and if not, queue a download from elsewhere. (And, a remote
-  may get content we were uploading from elsewhere, so check the location
-  log when queuing a failed Upload too.)
+* Run transfer scan on startup.
+* The syncing code currently doesn't run for special remotes. While
+  transfering the git info about special remotes could be a complication,
+  if we assume that's synced between existing git remotes, it should be
+  possible for them to do file transfers to/from special remotes.
 * Ensure that when a remote receives content, and updates its location log,
   it syncs that update back out. Prerequisite for:
 * After git sync, identify new content that we don't have that is now available
@@ -195,3 +194,9 @@ redone to check it.
   order to retry them later, without the scan. I'm thinking about a
   directory like `.git/annex/transfer/failed/{upload,download}/uuid/`,
   which failed transfer log files could be moved to.
+* A remote may lose content it had before, so when requeuing
+  a failed download, check the location log to see if the remote still has
+  the content, and if not, queue a download from elsewhere. (And, a remote
+  may get content we were uploading from elsewhere, so check the location
+  log when queuing a failed Upload too.) **done**
+* Fix MountWatcher to notice umounts and remounts of drives. **done**
