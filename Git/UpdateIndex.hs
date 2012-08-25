@@ -34,13 +34,11 @@ pureStreamer !s = \streamer -> streamer s
 
 {- Streams content into update-index from a list of Streamers. -}
 streamUpdateIndex :: Repo -> [Streamer] -> IO ()
-streamUpdateIndex repo as =
-	withHandle StdinHandle createProcessSuccess (proc "git" ps) $ \h -> do
-		fileEncoding h
-		forM_ as (stream h)
-		hClose h
+streamUpdateIndex repo as = pipeWrite params repo $ \h -> do
+	fileEncoding h
+	forM_ as (stream h)
+	hClose h
 	where
-		ps = toCommand $ gitCommandLine params repo
 		params = map Param ["update-index", "-z", "--index-info"]
 		stream h a = a (streamer h)
 		streamer h s = do

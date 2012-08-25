@@ -9,7 +9,7 @@ module Git.Config where
 
 import qualified Data.Map as M
 import Data.Char
-import System.Process (cwd)
+import System.Process (cwd, env)
 
 import Common
 import Git
@@ -52,7 +52,10 @@ read' repo = go repo
 			hRead repo
 			where
 				params = ["config", "--null", "--list"]
-				p = (proc "git" params) { cwd = Just d }
+				p = (proc "git" params)
+					{ cwd = Just d
+					, env = gitEnv repo
+					}
 
 {- Gets the global git config, returning a dummy Repo containing it. -}
 global :: IO Repo

@@ -25,7 +25,6 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
-import Annex.Exception
 import Annex.BranchState
 import Annex.Journal
 import qualified Git
@@ -37,9 +36,9 @@ import qualified Git.UpdateIndex
 import Git.HashObject
 import Git.Types
 import Git.FilePath
-import qualified Git.Index
 import Annex.CatFile
 import Annex.Perms
+import qualified Annex
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -280,12 +279,18 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	bracketIO (Git.Index.override f) id $ do
-		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
-			unless bootstrapping create
-			liftIO $ createDirectoryIfMissing True $ takeDirectory f
-			unless bootstrapping $ inRepo genIndex
-		a
+	g <- gitRepo
+	let g' = g { gitEnv = Just [("GIT_INDEX_FILE", f)] }
+
+	Annex.changeState $ \s -> s { Annex.repo = g' }
+	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
+		unless bootstrapping create
+		liftIO $ createDirectoryIfMissing True $ takeDirectory f
+		unless bootstrapping $ inRepo genIndex
+	r <- a
+	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
+
+	return r
 
 {- Runs an action using the branch's index file, first making sure that
  - the branch and index are up-to-date. -}
@@ -338,12 +343,13 @@ stageJournal :: Annex ()
 stageJournal = do
 	showStoringStateAction
 	fs <- getJournalFiles
-	g <- gitRepo
-	withIndex $ liftIO $ do
-		h <- hashObjectStart g
-		Git.UpdateIndex.streamUpdateIndex g
-			[genstream (gitAnnexJournalDir g) h fs]
-		hashObjectStop h
+	withIndex $ do
+		g <- gitRepo
+		liftIO $ do
+			h <- hashObjectStart g
+			Git.UpdateIndex.streamUpdateIndex g
+				[genstream (gitAnnexJournalDir g) h fs]
+			hashObjectStop h
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file

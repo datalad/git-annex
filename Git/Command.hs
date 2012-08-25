@@ -8,6 +8,7 @@
 module Git.Command where
 
 import System.Posix.Process (getAnyProcessStatus)
+import System.Process
 
 import Common
 import Git
@@ -26,7 +27,9 @@ gitCommandLine _ repo = assertLocal repo $ error "internal"
 {- Runs git in the specified repo. -}
 runBool :: String -> [CommandParam] -> Repo -> IO Bool
 runBool subcommand params repo = assertLocal repo $
-	boolSystem "git" $ gitCommandLine (Param subcommand : params) repo
+	boolSystemEnv "git"
+		(gitCommandLine (Param subcommand : params) repo)
+		(gitEnv repo)
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
 run :: String -> [CommandParam] -> Repo -> IO ()
@@ -45,14 +48,23 @@ pipeRead params repo = assertLocal repo $
 		fileEncoding h
 		hGetContents h
 	where
-		p  = proc "git" $ toCommand $ gitCommandLine params repo
+		p  = (proc "git" $ toCommand $ gitCommandLine params repo)
+			{ env = gitEnv repo }
 
 {- Runs a git subcommand, feeding it input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
  - strictly. -}
 pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
 pipeWriteRead params s repo = assertLocal repo $
-	writeReadProcess "git" (toCommand $ gitCommandLine params repo) s
+	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
+		(gitEnv repo) s
+
+{- Runs a git subcommand, feeding it input on a handle with an action. -}
+pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
+pipeWrite params repo = withHandle StdinHandle createProcessSuccess p
+	where
+		p = (proc "git" $ toCommand $ gitCommandLine params repo)
+			{ env = gitEnv repo }
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}

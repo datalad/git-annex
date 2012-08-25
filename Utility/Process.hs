@@ -12,7 +12,9 @@ module Utility.Process (
 	module X,
 	CreateProcess,
 	StdHandle(..),
+	readProcess,
 	readProcessEnv,
+	writeReadProcessEnv,
 	forceSuccessProcess,
 	checkSuccessProcess,
 	createProcessSuccess,
@@ -22,8 +24,6 @@ module Utility.Process (
 	withBothHandles,
 	createProcess,
 	runInteractiveProcess,
-	writeReadProcess,
-	readProcess
 ) where
 
 import qualified System.Process
@@ -32,6 +32,9 @@ import System.Process hiding (createProcess, runInteractiveProcess, readProcess)
 import System.Exit
 import System.IO
 import System.Log.Logger
+import Control.Concurrent
+import qualified Control.Exception as E
+import Control.Monad
 
 import Utility.Misc
 
@@ -40,8 +43,11 @@ type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Hand
 data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 	deriving (Eq)
 
-{- Like readProcess, but allows specifying the environment, and does
- - not mess with stdin. -}
+{- Normally, when reading from a process, it does not need to be fed any
+ - standard input. -}
+readProcess :: FilePath	-> [String] -> IO String
+readProcess cmd args = readProcessEnv cmd args Nothing
+
 readProcessEnv :: FilePath -> [String] -> Maybe [(String, String)] -> IO String
 readProcessEnv cmd args environ =
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
@@ -51,6 +57,43 @@ readProcessEnv cmd args environ =
 	where
 		p = (proc cmd args)
 			{ std_out = CreatePipe
+			, env = environ
+			}
+
+{- Writes stdout to a process, returns its output, and also allows specifying
+ - the environment. -}
+writeReadProcessEnv
+	:: FilePath
+	-> [String]
+	-> Maybe [(String, String)]
+	-> String	
+	-> IO String
+writeReadProcessEnv cmd args environ input = do
+	(Just inh, Just outh, _, pid) <- createProcess p
+
+	-- fork off a thread to start consuming the output
+	output  <- hGetContents outh
+	outMVar <- newEmptyMVar
+	_ <- forkIO $ E.evaluate (length output) >> putMVar outMVar ()
+
+	-- now write and flush any input
+	when (not (null input)) $ do hPutStr inh input; hFlush inh
+	hClose inh -- done with stdin
+
+	-- wait on the output
+	takeMVar outMVar
+	hClose outh
+
+	-- wait on the process
+	forceSuccessProcess p pid
+
+	return output
+
+	where
+		p = (proc cmd args)
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			, std_err = Inherit
 			, env = environ
 			}
 
@@ -192,23 +235,3 @@ runInteractiveProcess f args c e = do
 			, std_err = CreatePipe
 			}
 	System.Process.runInteractiveProcess f args c e
-
-{- I think this is a more descriptive name than System.Process.readProcess. -}
-writeReadProcess
-	:: FilePath	
-	-> [String]	
-	-> String	
-	-> IO String
-writeReadProcess f args input = do
-	debugProcess $ (proc f args) { std_out = CreatePipe, std_in = CreatePipe }
-	System.Process.readProcess f args input
-
-{- Normally, when reading from a process, it does not need to be fed any
- - input. -}
-readProcess
-	:: FilePath	
-	-> [String]	
-	-> IO String
-readProcess f args = do
-	debugProcess $ (proc f args) { std_out = CreatePipe }
-	System.Process.readProcess f args []

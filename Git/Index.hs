@@ -12,7 +12,10 @@ import System.Posix.Env (setEnv, unsetEnv, getEnv)
 {- Forces git to use the specified index file.
  -
  - Returns an action that will reset back to the default
- - index file. -}
+ - index file.
+ -
+ - Warning: Not thread safe.
+ -}
 override :: FilePath -> IO (IO ())
 override index = do
 	res <- getEnv var
