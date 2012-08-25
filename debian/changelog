@@ -1,11 +1,11 @@
-git-annex (3.20120808) UNRELEASED; urgency=low
+git-annex (3.20120825) unstable; urgency=low
 
   * S3: Add fileprefix setting.
   * Pass --use-agent to gpg when in no tty mode. Thanks, Eskild Hustvedt.
   * Bugfix: Fix fsck in SHA*E backends, when the key contains composite
     extensions, as added in 3.20120721.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 09 Aug 2012 13:51:47 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 25 Aug 2012 10:00:10 -0400
 
 git-annex (3.20120807) unstable; urgency=low
 
