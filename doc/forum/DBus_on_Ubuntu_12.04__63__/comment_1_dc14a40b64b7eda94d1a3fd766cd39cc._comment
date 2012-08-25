@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.119"
+ subject="comment 1"
+ date="2012-08-25T13:06:31Z"
+ content="""
+Hmm, let's see... 
+ 
+If the gibberish error is ouyay orgotfay otay otay elltay emay utwhay ethay
+roreay asway, then we can figure it out, surely..
+
+If the gibberish error looks something like Ḩ̶̞̗̓ͯ̅͒ͪͫe̢ͦ̊ͭͭͤͣ̂͏̢̳̦͔̬ͅ ̣̘̹̄̕͢Ç̛͈͔̹̮̗͈͓̞ͨ͂͑ͅo̿ͥͮ̿͢͏̧̹̗̪͇̫m̷̢̞̙͑̊̔ͧ̍ͩ̇̚ę̜͑̀͝s̖̱̝̩̞̻͐͂̐́̂̇̆͂ 
+
+.. your use of cabal  
+has accidentually summoned Cthulu! Back slowly away from the monitor!
+
+Otherwise, you might try installing the `libdbus-1-dev` package with apt, 
+which might make cabal install the haskell dbus bindings successfully. Or
+you could just install the `libghc-dbus-dev` package, which contains the 
+necessary haskell library pre-built. But I don't know if it's in Ubuntu 
+12.04; it only seems to be available in quantal 
+<http://packages.ubuntu.com/search?keywords=libghc-dbus-dev>
+
+Or you could even build it with the Makefile, rather than using cabal.
+The Makefile has a `-DWITH_DBUS` setting in it that can be removed to build
+the fallback mode that doesn't use dbus.
+
+"""]]
