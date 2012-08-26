@@ -98,7 +98,7 @@ gen r u _ = new <$> remoteCost r defcst
 				then Just $ Git.repoPath r
 				else Nothing
 			, repo = r
-			, readonly = False
+			, readonly = Git.repoIsHttp r
 			, remotetype = remote
 			}
 		
