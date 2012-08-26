@@ -7,9 +7,6 @@ all the other git clones, at both the git level and the key/value level.
   transfering the git info about special remotes could be a complication,
   if we assume that's synced between existing git remotes, it should be
   possible for them to do file transfers to/from special remotes.
-* Often several remotes will be queued for full TransferScanner scans,
-  and the scan does the same thing for each .. so it would be better to
-  combine them into one scan in such a case.
 * Sometimes a Download gets queued from a slow remote, and then a fast
   remote becomes available, and a Download is queued from it. Would be
   good to sort the transfer queue to run fast Downloads (and Uploads) first.
@@ -206,3 +203,6 @@ redone to check it.
   log when queuing a failed Upload too.) **done**
 * Fix MountWatcher to notice umounts and remounts of drives. **done**
 * Run transfer scan on startup. **done**
+* Often several remotes will be queued for full TransferScanner scans,
+  and the scan does the same thing for each .. so it would be better to
+  combine them into one scan in such a case. **done**
