@@ -36,13 +36,13 @@ transferScannerThread st dstatus scanremotes transferqueue = do
 	where
 		go scanned = do
 			threadDelaySeconds (Seconds 2)
-			(r, info) <- getScanRemote scanremotes
-			if fullScan info || not (S.member r scanned)
+			(rs, infos) <- unzip <$> getScanRemote scanremotes
+			if any fullScan infos || any (`S.notMember` scanned) rs
 				then do
-					expensiveScan st dstatus transferqueue r
-					go (S.insert r scanned)
+					expensiveScan st dstatus transferqueue rs
+					go (S.union scanned (S.fromList rs))
 				else do
-					failedTransferScan st dstatus transferqueue r
+					mapM_ (failedTransferScan st dstatus transferqueue) rs
 					go scanned
 		{- All available remotes are scanned in full on startup,
 		 - for multiple reasons, including:
@@ -92,39 +92,39 @@ failedTransferScan st dstatus transferqueue r = do
 		dequeue t = void $ runThreadState st $ inRepo $
 			liftIO . tryIO . removeFile . failedTransferFile t
 
-{- This is a expensive scan through the full git work tree.
+{- This is a expensive scan through the full git work tree, finding
+ - files to download from or upload to any of the remotes.
  - 
  - The scan is blocked when the transfer queue gets too large. -}
-expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
-expensiveScan st dstatus transferqueue r = do
-	liftIO $ debug thisThread ["starting scan of", show r]
-	void $ alertWhile dstatus (scanAlert r) $ do
+expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] -> IO ()
+expensiveScan st dstatus transferqueue rs = do
+	liftIO $ debug thisThread ["starting scan of", show rs]
+	void $ alertWhile dstatus (scanAlert rs) $ do
 		g <- runThreadState st $ fromRepo id
 		files <- LsFiles.inRepo [] g
 		go files
 		return True
-	liftIO $ debug thisThread ["finished scan of", show r]
+	liftIO $ debug thisThread ["finished scan of", show rs]
 	where
 		go [] = noop
 		go (f:fs) = do
-			v <- runThreadState st $ whenAnnexed check f
-			case v of
-				Nothing -> noop
-				Just t -> do
-					debug thisThread ["queuing", show t]
-					enqueue f t
+			mapM_ (enqueue f) =<< catMaybes <$> runThreadState st
+				(ifAnnexed f findtransfers $ return [])
 			go fs
-			where
-				check _ (key, _) = ifM (inAnnex key)
-					( helper key Upload False =<< remoteHas r key
-					, helper key Download True =<< remoteHas r key
-					)
-				helper key direction x y
-					| x == y = return $ Just $
-						Transfer direction (Remote.uuid r) key
-					| otherwise = return Nothing
-				
-		enqueue f t = queueTransferWhenSmall transferqueue dstatus (Just f) t r
+		enqueue f (r, t) = do
+			debug thisThread ["queuing", show t]
+			queueTransferWhenSmall transferqueue dstatus (Just f) t r
+		findtransfers (key, _) = do
+			locs <- loggedLocations key
+			let use a = return $ map (a key locs) rs
+			ifM (inAnnex key)
+				( use $ check Upload False
+				, use $ check Download True
+				)
+		check direction want key locs r
+			| (Remote.uuid r `elem` locs) == want = Just $
+				(r, Transfer direction (Remote.uuid r) key)
+			| otherwise = Nothing
 
 remoteHas :: Remote -> Key -> Annex Bool
 remoteHas r key = elem

@@ -28,8 +28,8 @@ import qualified Data.Map as M
  - 
  - First gets git in sync, and then prepares any necessary file transfers.
  -
- - An expensive full scan is queued when the git-annex branches of the
- - remotes have diverged from the local git-annex branch. Otherwise,
+ - An expensive full scan is queued when the git-annex branches of some of
+ - the remotes have diverged from the local git-annex branch. Otherwise,
  - it's sufficient to requeue failed transfers.
  -}
 reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()

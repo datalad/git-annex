@@ -26,21 +26,15 @@ type ScanRemoteMap = TMVar (M.Map Remote ScanInfo)
 newScanRemoteMap :: IO ScanRemoteMap
 newScanRemoteMap = atomically newEmptyTMVar
 
-{- Blocks until there is a remote that needs to be scanned.
- - Processes higher priority remotes first. -}
-getScanRemote :: ScanRemoteMap -> IO (Remote, ScanInfo)
-getScanRemote v = atomically $ do
-	m <- takeTMVar v
-	let l = reverse $ sortBy (compare `on` scanPriority . snd) $ M.toList m
-	case l of
-		[] -> retry -- should never happen
-		(ret@(r, _):_) -> do
-			let m' = M.delete r m
-			unless (M.null m') $
-				putTMVar v m'
-			return ret
+{- Blocks until there is a remote or remotes that need to be scanned.
+ -
+ - The list has higher priority remotes listed first. -}
+getScanRemote :: ScanRemoteMap -> IO [(Remote, ScanInfo)]
+getScanRemote v = atomically $
+	reverse . sortBy (compare `on` scanPriority . snd) . M.toList
+		<$> takeTMVar v
 
-{- Adds new remotes that need scanning to the map. -}
+{- Adds new remotes that need scanning. -}
 addScanRemotes :: ScanRemoteMap -> Bool -> [Remote] -> IO ()
 addScanRemotes _ _ [] = noop
 addScanRemotes v full rs = atomically $ do

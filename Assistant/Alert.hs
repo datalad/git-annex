@@ -214,10 +214,10 @@ syncAlert rs = baseActivityAlert
 	, alertPriority = Low
         }
 
-scanAlert :: Remote -> Alert
-scanAlert r = baseActivityAlert
+scanAlert :: [Remote] -> Alert
+scanAlert rs = baseActivityAlert
 	{ alertHeader = Just $ tenseWords
-		[Tensed "Scanning" "Scanned", showRemotes [r]]
+		[Tensed "Scanning" "Scanned", showRemotes rs]
 	, alertBlockDisplay = True
 	, alertPriority = Low
 	}
