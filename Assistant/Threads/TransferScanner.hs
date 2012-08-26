@@ -15,6 +15,7 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
+import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
@@ -98,15 +99,18 @@ failedTransferScan st dstatus transferqueue r = do
  - 
  - The scan is blocked when the transfer queue gets too large. -}
 expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] -> IO ()
-expensiveScan st dstatus transferqueue rs = do
-	liftIO $ debug thisThread ["starting scan of", show rs]
-	void $ alertWhile dstatus (scanAlert rs) $ do
+expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
+	liftIO $ debug thisThread ["starting scan of", show visiblers]
+	void $ alertWhile dstatus (scanAlert visiblers) $ do
 		g <- runThreadState st $ fromRepo id
 		files <- LsFiles.inRepo [] g
 		go files
 		return True
-	liftIO $ debug thisThread ["finished scan of", show rs]
+	liftIO $ debug thisThread ["finished scan of", show visiblers]
 	where
+		onlyweb = all (== webUUID) $ map Remote.uuid rs
+		visiblers = let rs' = filter (not . Remote.readonly) rs
+			in if null rs' then rs else rs'
 		go [] = noop
 		go (f:fs) = do
 			mapM_ (enqueue f) =<< catMaybes <$> runThreadState st
