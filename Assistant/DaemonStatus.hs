@@ -14,7 +14,7 @@ import Utility.ThreadScheduler
 import Utility.TempFile
 import Utility.NotificationBroadcaster
 import Logs.Transfer
-import qualified Command.Sync
+import qualified Remote
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -81,11 +81,14 @@ modifyDaemonStatus dstatus a = do
 	sendNotification $ changeNotifier s
 	return b
 
+calcKnownRemotes :: Annex [Remote]
+calcKnownRemotes = concat . Remote.byCost <$> Remote.enabledRemoteList
+
 {- Updates the cached ordered list of remotes from the list in Annex
  - state. -}
 updateKnownRemotes :: DaemonStatusHandle -> Annex ()
 updateKnownRemotes dstatus = do
-	remotes <- Command.Sync.syncRemotes []
+	remotes <- calcKnownRemotes
 	liftIO $ modifyDaemonStatus_ dstatus $
 		\s -> s { knownRemotes = remotes }
 
@@ -97,7 +100,7 @@ startDaemonStatus = do
 	status <- liftIO $
 		catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
-	remotes <- Command.Sync.syncRemotes []
+	remotes <- calcKnownRemotes
 	liftIO $ atomically $ newTMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
