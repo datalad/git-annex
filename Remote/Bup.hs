@@ -64,6 +64,7 @@ gen r u c = do
 				then Just buprepo
 				else Nothing
 			, remotetype = remote
+			, readonly = False
 			}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig

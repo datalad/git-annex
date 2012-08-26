@@ -61,6 +61,7 @@ gen r u c = do
 			, localpath = if rsyncUrlIsPath $ rsyncUrl o
 				then Just $ rsyncUrl o
 				else Nothing
+			, readonly = False
 			, remotetype = remote
 			}
 

@@ -50,6 +50,7 @@ gen r u c = do
 			config = Nothing,
 			localpath = Nothing,
 			repo = r,
+			readonly = False,
 			remotetype = remote
 		}
 

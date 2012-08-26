@@ -54,6 +54,7 @@ gen r u c = do
 			config = Nothing,
 			repo = r,
 			localpath = Just dir,
+			readonly = False,
 			remotetype = remote
 		}
 	where

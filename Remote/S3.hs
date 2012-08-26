@@ -61,6 +61,7 @@ gen' r u c cst =
 			config = c,
 			repo = r,
 			localpath = Nothing,
+			readonly = False,
 			remotetype = remote
 		}
 

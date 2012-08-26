@@ -49,6 +49,7 @@ gen r _ _ =
 		config = Nothing,
 		localpath = Nothing,
 		repo = r,
+		readonly = True,
 		remotetype = remote
 	}
 

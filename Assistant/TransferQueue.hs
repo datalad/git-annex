@@ -23,6 +23,7 @@ import Assistant.DaemonStatus
 import Logs.Transfer
 import Types.Remote
 import qualified Remote
+import qualified Types.Remote as Remote
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
@@ -78,7 +79,7 @@ queueTransfers schedule q dstatus k f direction = do
 			-- can be uploaded to, in order to ensure all
 			-- remotes can access the content. Currently,
 			-- send to every remote we can.
-			| otherwise = return rs
+			| otherwise = return $ filter (not . Remote.readonly) rs
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k

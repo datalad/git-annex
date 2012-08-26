@@ -16,6 +16,7 @@ import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
 import qualified Remote
+import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
 import Command
@@ -122,6 +123,7 @@ expensiveScan st dstatus transferqueue rs = do
 				, use $ check Download True
 				)
 		check direction want key locs r
+			| direction == Upload && Remote.readonly r = Nothing
 			| (Remote.uuid r `elem` locs) == want = Just $
 				(r, Transfer direction (Remote.uuid r) key)
 			| otherwise = Nothing

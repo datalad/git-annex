@@ -16,6 +16,7 @@ import Assistant.DaemonStatus
 import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Remote
+import qualified Types.Remote as Remote
 
 import Data.Time.Clock
 
@@ -51,8 +52,8 @@ pushThread st dstatus commitchan pushmap = do
 		now <- getCurrentTime
 		if shouldPush now commits
 			then do
-				remotes <- filter (not . Remote.specialRemote) .
-					knownRemotes <$> getDaemonStatus dstatus
+				remotes <- filter pushable . knownRemotes
+					<$> getDaemonStatus dstatus
 				unless (null remotes) $ 
 					void $ alertWhile dstatus (pushAlert remotes) $
 						pushToRemotes thisThread now st (Just pushmap) remotes
@@ -63,6 +64,11 @@ pushThread st dstatus commitchan pushmap = do
 					, "commits"
 					]
 				refillCommits commitchan commits
+		where
+			pushable r
+				| Remote.specialRemote r = False
+				| Remote.readonly r = False
+				| otherwise = True
 
 {- Decide if now is a good time to push to remotes.
  -

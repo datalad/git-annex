@@ -12,12 +12,12 @@ module Assistant.WebApp.Configurators where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.SideBar
+import Assistant.DaemonStatus
 import Assistant.Threads.MountWatcher (handleMount)
 import Utility.Yesod
 import qualified Remote
+import qualified Types.Remote as Remote
 import Remote.List
-import Logs.Web (webUUID)
-import Logs.Trust
 import Annex.UUID (getUUID)
 import Init
 import qualified Git
@@ -60,11 +60,11 @@ getRepositoriesR = bootstrap (Just Config) $ do
 {- A numbered list of known repositories, including the current one. -}
 repoList :: Handler [(String, String)]
 repoList = do
+	rs <- filter (not . Remote.readonly) . knownRemotes <$>
+		(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
 	l <- runAnnex [] $ do
 		u <- getUUID
-		rs <- map Remote.uuid <$> Remote.remoteList
-		rs' <- snd <$> trustPartition DeadTrusted rs
-		Remote.prettyListUUIDs $ filter (/= webUUID) $ nub $ u:rs'
+		Remote.prettyListUUIDs $ nub $ u:(map Remote.uuid rs)
 	return $ zip counter l
 	where
 		counter = map show ([1..] :: [Int])

@@ -14,6 +14,7 @@ import Utility.ThreadScheduler
 import Utility.TempFile
 import Utility.NotificationBroadcaster
 import Logs.Transfer
+import Logs.Trust
 import qualified Remote
 
 import Control.Concurrent.STM
@@ -81,8 +82,13 @@ modifyDaemonStatus dstatus a = do
 	sendNotification $ changeNotifier s
 	return b
 
+{- Remotes ordered by cost, with dead ones thrown out. -}
 calcKnownRemotes :: Annex [Remote]
-calcKnownRemotes = concat . Remote.byCost <$> Remote.enabledRemoteList
+calcKnownRemotes = do
+	rs <- concat . Remote.byCost <$> Remote.enabledRemoteList
+	alive <- snd <$> trustPartition DeadTrusted (map Remote.uuid rs)
+	let good r = Remote.uuid r `elem` alive
+	return $ filter good rs
 
 {- Updates the cached ordered list of remotes from the list in Annex
  - state. -}
