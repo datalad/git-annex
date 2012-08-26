@@ -94,7 +94,7 @@ gen r u _ = new <$> remoteCost r defcst
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
 			, config = Nothing
-			, path = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
+			, localpath = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
 				then Just $ Git.repoPath r
 				else Nothing
 			, repo = r

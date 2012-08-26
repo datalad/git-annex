@@ -48,7 +48,7 @@ gen r u c = do
 			hasKeyCheap = False,
 			whereisKey = Nothing,
 			config = Nothing,
-			path = Nothing,
+			localpath = Nothing,
 			repo = r,
 			remotetype = remote
 		}

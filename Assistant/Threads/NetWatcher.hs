@@ -128,6 +128,5 @@ handleConnection st dstatus scanremotes = do
 
 {- Finds network remotes. -}
 networkRemotes :: ThreadState -> IO [Remote]
-networkRemotes st = runThreadState st $ do
-	rs <- remoteList
-	return $ filter (isNothing . Remote.path) rs
+networkRemotes st = runThreadState st $
+	filter (isNothing . Remote.localpath) <$> remoteList

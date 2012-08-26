@@ -175,7 +175,7 @@ remotesUnder st dstatus dir = runThreadState st $ do
 		updateKnownRemotes dstatus
 	return $ map snd $ filter fst pairs
 	where
-		checkremote repotop r = case Remote.path r of
+		checkremote repotop r = case Remote.localpath r of
 			Just p | dirContains dir (absPathFrom repotop p) ->
 				(,) <$> pure True <*> updateRemote r
 			_ -> return (False, r)

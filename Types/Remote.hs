@@ -64,8 +64,8 @@ data RemoteA a = Remote {
 	config :: Maybe RemoteConfig,
 	-- git configuration for the remote
 	repo :: Git.Repo,
-	-- a Remote can be assocated with a specific filesystem path
-	path :: Maybe FilePath,
+	-- a Remote can be assocated with a specific local filesystem path
+	localpath :: Maybe FilePath,
 	-- the type of the remote
 	remotetype :: RemoteTypeA a
 }

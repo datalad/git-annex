@@ -60,7 +60,7 @@ gen r u c = do
 			, whereisKey = Nothing
 			, config = c
 			, repo = r
-			, path = if bupLocal buprepo && not (null buprepo)
+			, localpath = if bupLocal buprepo && not (null buprepo)
 				then Just buprepo
 				else Nothing
 			, remotetype = remote

@@ -58,7 +58,7 @@ gen r u c = do
 			, whereisKey = Nothing
 			, config = Nothing
 			, repo = r
-			, path = if rsyncUrlIsPath $ rsyncUrl o
+			, localpath = if rsyncUrlIsPath $ rsyncUrl o
 				then Just $ rsyncUrl o
 				else Nothing
 			, remotetype = remote
