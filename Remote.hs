@@ -24,6 +24,7 @@ module Remote (
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byCost,
 	prettyPrintUUIDs,
 	prettyListUUIDs,
 	remotesWithUUID,
@@ -224,3 +225,10 @@ forceTrust level remotename = do
  - on the remote, but this cannot always be relied on. -}
 logStatus :: Remote -> Key -> LogStatus -> Annex ()
 logStatus remote key = logChange key (uuid remote)
+
+{- Orders remotes by cost, with ones with the lowest cost grouped together. -}
+byCost :: [Remote] -> [[Remote]]
+byCost = map snd . sort . M.toList . costmap
+	where
+		costmap = M.fromListWith (++) . map costpair
+		costpair r = (cost r, [r])

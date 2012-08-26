@@ -27,7 +27,6 @@ import qualified Types.Remote
 import qualified Remote.Git
 import Types.Key
 
-import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import Data.Hash.MD5
 
@@ -62,7 +61,7 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	where
 		pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
 		wanted
-			| null rs = good =<< concat . byspeed <$> available
+			| null rs = good =<< concat . Remote.byCost <$> available
 			| otherwise = listed
 		listed = do
 			l <- catMaybes <$> mapM (Remote.byName . Just) rs
@@ -74,10 +73,7 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		available = filter (not . Remote.specialRemote)
 			<$> Remote.enabledRemoteList
 		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
-		fastest = fromMaybe [] . headMaybe . byspeed
-		byspeed = map snd . sort . M.toList . costmap
-		costmap = M.fromListWith (++) . map costpair
-		costpair r = (Types.Remote.cost r, [r])
+		fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
 commit = do
