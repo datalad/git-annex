@@ -90,3 +90,7 @@ updateRemote remote = do
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]
 enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
+
+{- Checks if a remote is a special remote -}
+specialRemote :: Remote -> Bool
+specialRemote r = remotetype r /= Remote.Git.remote
