@@ -5,14 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Threads.Merger (
-	mergeThread,
-	manualPull,
-) where
+module Assistant.Threads.Merger where
 
 import Assistant.Common
 import Assistant.ThreadedMonad
-import Assistant.Sync
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Git
