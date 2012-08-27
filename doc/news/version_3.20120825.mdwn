@@ -1,0 +1,6 @@
+git-annex 3.20120825 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * S3: Add fileprefix setting.
+   * Pass --use-agent to gpg when in no tty mode. Thanks, Eskild Hustvedt.
+   * Bugfix: Fix fsck in SHA*E backends, when the key contains composite
+     extensions, as added in 3.20120721."""]]

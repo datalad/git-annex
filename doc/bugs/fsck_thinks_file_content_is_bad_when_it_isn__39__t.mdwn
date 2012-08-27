@@ -22,3 +22,14 @@ The original file also has sha512 ead9db1f34739014a216239d9624bce74d92fe723de065
 >> And what sha512 does the file in .git/annex/bad have **now**? (fsck
 >> preserves the original filename; this says nothing about what the
 >> current checksum is, if the file has been corrupted). --[[Joey]]
+
+The same, as it's the file I was trying to inject:
+
+ead9db1f34739014a216239d9624bce74d92fe723de06505f9b94cb4c063142ba42b04546f11d3d33869b736e40ded2ff779cb32b26aa10482f09407df0f3c8d  .git/annex/bad/SHA512E-s94402560--ead9db1f34739014a216239d9624bce74d92fe723de06505f9b94cb4c063142ba42b04546f11d3d33869b736e40ded2ff779cb32b26aa10482f09407df0f3c8d.Moon.avi
+
+That's what puzzles me, it is the same file, but for some weird reason git annex thinks it's not.
+
+> Ok, reproduced and fixed the bug. The "E" backends recently got support
+> for 2 levels of filename extensions, but were not made to drop them both
+> when fscking. [[done]] (I'll release a fixed version probably tomorrow;
+> fix is in git now.) --[[Joey]] 

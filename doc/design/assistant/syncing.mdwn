@@ -3,9 +3,16 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* At startup, and possibly periodically, or when the network connection
-  changes, or some heuristic suggests that a remote was disconnected from
-  us for a while, queue remotes for processing by the TransferScanner.
+* The syncing code currently doesn't run for special remotes. While
+  transfering the git info about special remotes could be a complication,
+  if we assume that's synced between existing git remotes, it should be
+  possible for them to do file transfers to/from special remotes.
+* Often several remotes will be queued for full TransferScanner scans,
+  and the scan does the same thing for each .. so it would be better to
+  combine them into one scan in such a case.
+* Sometimes a Download gets queued from a slow remote, and then a fast
+  remote becomes available, and a Download is queued from it. Would be
+  good to sort the transfer queue to run fast Downloads (and Uploads) first.
 * Ensure that when a remote receives content, and updates its location log,
   it syncs that update back out. Prerequisite for:
 * After git sync, identify new content that we don't have that is now available
@@ -34,14 +41,17 @@ all the other git clones, at both the git level and the key/value level.
   files in some directories and not others. See for use cases:
   [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
 * speed up git syncing by using the cached ssh connection for it too
-  (will need to use `GIT_SSH`, which needs to point to a command to run,
-  not a shell command line)
+  Will need to use `GIT_SSH`, which needs to point to a command to run,
+  not a shell command line. Beware that the network connection may have
+  bounced and the cached ssh connection not be usable.
 * Map the network of git repos, and use that map to calculate
   optimal transfers to keep the data in sync. Currently a naive flood fill
   is done instead.
 * Find a more efficient way for the TransferScanner to find the transfers
   that need to be done to sync with a remote. Currently it walks the git
-  working copy and checks each file.
+  working copy and checks each file. That probably needs to be done once,
+  but further calls to the TransferScanner could eg, look at the delta
+  between the last scan and the current one in the git-annex branch.
 
 ## misc todo
 
@@ -163,3 +173,42 @@ redone to check it.
   finishes. **done**
 * Test MountWatcher on KDE, and add whatever dbus events KDE emits when
   drives are mounted. **done**
+* It would be nice if, when a USB drive is connected, 
+  syncing starts automatically. Use dbus on Linux? **done**
+* Optimisations in 5c3e14649ee7c404f86a1b82b648d896762cbbc2 temporarily
+  broke content syncing in some situations, which need to be added back.
+  **done**
+
+  Now syncing a disconnected remote only starts a transfer scan if the
+  remote's git-annex branch has diverged, which indicates it probably has
+  new files. But that leaves open the cases where the local repo has
+  new files; and where the two repos git branches are in sync, but the
+  content transfers are lagging behind; and where the transfer scan has
+  never been run.
+
+  Need to track locally whether we're believed to be in sync with a remote.
+  This includes:
+  * All local content has been transferred to it successfully.
+  * The remote has been scanned once for data to transfer from it, and all
+    transfers initiated by that scan succeeded.
+
+  Note the complication that, if it's initiated a transfer, our queued
+  transfer will be thrown out as unnecessary. But if its transfer then
+  fails, that needs to be noticed.
+
+  If we're going to track failed transfers, we could just set a flag,
+  and use that flag later to initiate a new transfer scan. We need a flag
+  in any case, to ensure that a transfer scan is run for each new remote.
+  The flag could be `.git/annex/transfer/scanned/uuid`.
+
+  But, if failed transfers are tracked, we could also record them, in 
+  order to retry them later, without the scan. I'm thinking about a
+  directory like `.git/annex/transfer/failed/{upload,download}/uuid/`,
+  which failed transfer log files could be moved to.
+* A remote may lose content it had before, so when requeuing
+  a failed download, check the location log to see if the remote still has
+  the content, and if not, queue a download from elsewhere. (And, a remote
+  may get content we were uploading from elsewhere, so check the location
+  log when queuing a failed Upload too.) **done**
+* Fix MountWatcher to notice umounts and remounts of drives. **done**
+* Run transfer scan on startup. **done**
