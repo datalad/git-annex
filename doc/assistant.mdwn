@@ -3,6 +3,15 @@ it keeps synchronised, so its contents are the same whichever computer it's
 used on. It's very easy to use, and has all the power of git and git-annex
 underneath.
 
+## installation
+
+The git-annex assistant comes as part of git-annex.
+See [[install]] to get it installed.
+
+(Note that it's not yet in the
+released version of git-annex, but is in the "assistant" branch in git.
+This will change soon!)
+
 ## quick start
 
 To get started with the git-annex assistant, just run it from the menu:
