@@ -10,9 +10,10 @@
 module Types.Key (
 	Key(..),
 	stubKey,
-	readKey,
+	key2file,
+	file2key,
 
-	prop_idempotent_key_read_show
+	prop_idempotent_key_encode
 ) where
 
 import System.Posix.Types
@@ -26,7 +27,7 @@ data Key = Key {
 	keyBackendName :: String,
 	keySize :: Maybe Integer,
 	keyMtime :: Maybe EpochTime
-} deriving (Eq, Ord)
+} deriving (Eq, Ord, Read, Show)
 
 stubKey :: Key
 stubKey = Key {
@@ -39,21 +40,21 @@ stubKey = Key {
 fieldSep :: Char
 fieldSep = '-'
 
-{- Keys show as strings that are suitable for use as filenames.
+{- Converts a key to a strings that are suitable for use as a filename.
  - The name field is always shown last, separated by doubled fieldSeps,
  - and is the only field allowed to contain the fieldSep. -}
-instance Show Key where
-	show Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
-		b +++ ('s' ?: s) +++ ('m' ?: m) +++ (fieldSep : n)
-		where
-			"" +++ y = y
-			x +++ "" = x
-			x +++ y = x ++ fieldSep:y
-			c ?: (Just v) = c : show v
-			_ ?: _ = ""
+key2file :: Key -> FilePath
+key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
+	b +++ ('s' ?: s) +++ ('m' ?: m) +++ (fieldSep : n)
+	where
+		"" +++ y = y
+		x +++ "" = x
+		x +++ y = x ++ fieldSep:y
+		c ?: (Just v) = c : show v
+		_ ?: _ = ""
 
-readKey :: String -> Maybe Key
-readKey s = if key == Just stubKey then Nothing else key
+file2key :: FilePath -> Maybe Key
+file2key s = if key == Just stubKey then Nothing else key
 	where
 		key = startbackend stubKey s
 
@@ -73,5 +74,5 @@ readKey s = if key == Just stubKey then Nothing else key
 		addfield 'm' k v = Just k { keyMtime = readish v }
 		addfield _ _ _ = Nothing
 
-prop_idempotent_key_read_show :: Key -> Bool
-prop_idempotent_key_read_show k = Just k == (readKey . show) k
+prop_idempotent_key_encode :: Key -> Bool
+prop_idempotent_key_encode k = Just k == (file2key . key2file) k

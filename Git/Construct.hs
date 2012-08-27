@@ -225,6 +225,7 @@ newFrom l = return Repo
 	, fullconfig = M.empty
 	, remotes = []
 	, remoteName = Nothing
+	, gitEnv = Nothing
 	}
 
 

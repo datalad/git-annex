@@ -132,6 +132,14 @@ runPreserveOrder a files = preserveOrder files <$> a files
 myHomeDir :: IO FilePath
 myHomeDir = homeDirectory <$> (getUserEntryForID =<< getEffectiveUserID)
 
+{- Converts paths in the home directory to use ~/ -}
+relHome :: FilePath -> IO String
+relHome path = do
+	home <- myHomeDir
+	return $ if dirContains home path
+		then "~/" ++ relPathDirToFile home path
+		else path
+
 {- Checks if a command is available in PATH. -}
 inPath :: String -> IO Bool
 inPath command = getSearchPath >>= anyM indir

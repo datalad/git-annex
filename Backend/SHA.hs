@@ -53,14 +53,16 @@ shaN shasize file filesize = do
 	showAction "checksum"
 	case shaCommand shasize filesize of
 		Left sha -> liftIO $ sha <$> L.readFile file
-		Right command -> liftIO $ runcommand command
+		Right command -> liftIO $ parse command . lines <$>
+			readProcess command (toCommand [File file])
 	where
-		runcommand command =
-			pOpen ReadFromPipe command (toCommand [File file]) $ \h -> do
-				sha <- fst . separate (== ' ') <$> hGetLine h
-				if null sha
-					then error $ command ++ " parse error"
-					else return sha
+		parse command [] = bad command
+		parse command (l:_)
+			| null sha = bad command
+			| otherwise = sha
+			where
+				sha = fst $ separate (== ' ') l
+		bad command = error $ command ++ " parse error"
 
 shaCommand :: SHASize -> Integer -> Either (L.ByteString -> String) String
 shaCommand shasize filesize

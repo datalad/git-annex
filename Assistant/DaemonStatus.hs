@@ -1,20 +1,28 @@
 {- git-annex assistant daemon status
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.DaemonStatus where
 
 import Common.Annex
 import Assistant.ThreadedMonad
+import Assistant.Alert
 import Utility.ThreadScheduler
 import Utility.TempFile
+import Utility.NotificationBroadcaster
+import Logs.Transfer
+import Logs.Trust
+import qualified Remote
 
-import Control.Concurrent
+import Control.Concurrent.STM
 import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
+import qualified Data.Map as M
 
 data DaemonStatus = DaemonStatus
 	-- False when the daemon is performing its startup scan
@@ -25,47 +33,103 @@ data DaemonStatus = DaemonStatus
 	, sanityCheckRunning :: Bool
 	-- Last time the sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
+	-- Currently running file content transfers
+	, currentTransfers :: TransferMap
+	-- Messages to display to the user.
+	, alertMap :: AlertMap
+	, lastAlertId :: AlertId
+	-- Ordered list of remotes to talk to.
+	, knownRemotes :: [Remote]
+	-- Broadcasts notifications about all changes to the DaemonStatus
+	, changeNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when queued or current transfers change.
+	, transferNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when there's a change to the alerts
+	, alertNotifier :: NotificationBroadcaster
 	}
-	deriving (Show)
 
-type DaemonStatusHandle = MVar DaemonStatus
+type TransferMap = M.Map Transfer TransferInfo
 
-newDaemonStatus :: DaemonStatus
+{- This TMVar is never left empty, so accessing it will never block. -}
+type DaemonStatusHandle = TMVar DaemonStatus
+
+newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
-	{ scanComplete = False
-	, lastRunning = Nothing
-	, sanityCheckRunning = False
-	, lastSanityCheck = Nothing
-	}
+	<$> pure False
+	<*> pure Nothing
+	<*> pure False
+	<*> pure Nothing
+	<*> pure M.empty
+	<*> pure M.empty
+	<*> pure firstAlertId
+	<*> pure []
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
 
-getDaemonStatus :: DaemonStatusHandle -> Annex DaemonStatus
-getDaemonStatus = liftIO . readMVar
+getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
+getDaemonStatus = atomically . readTMVar
 
-modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> Annex ()
-modifyDaemonStatus handle a = liftIO $ modifyMVar_ handle (return . a)
+modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
+modifyDaemonStatus_ dstatus a = modifyDaemonStatus dstatus $ \s -> (a s, ())
 
-{- Load any previous daemon status file, and store it in the MVar for this
- - process to use as its DaemonStatus. -}
+modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
+modifyDaemonStatus dstatus a = do
+	(s, b) <- atomically $ do
+		r@(s, _) <- a <$> takeTMVar dstatus
+		putTMVar dstatus s
+		return r
+	sendNotification $ changeNotifier s
+	return b
+
+{- Remotes ordered by cost, with dead ones thrown out. -}
+calcKnownRemotes :: Annex [Remote]
+calcKnownRemotes = do
+	rs <- concat . Remote.byCost <$> Remote.enabledRemoteList
+	alive <- snd <$> trustPartition DeadTrusted (map Remote.uuid rs)
+	let good r = Remote.uuid r `elem` alive
+	return $ filter good rs
+
+{- Updates the cached ordered list of remotes from the list in Annex
+ - state. -}
+updateKnownRemotes :: DaemonStatusHandle -> Annex ()
+updateKnownRemotes dstatus = do
+	remotes <- calcKnownRemotes
+	liftIO $ modifyDaemonStatus_ dstatus $
+		\s -> s { knownRemotes = remotes }
+
+{- Load any previous daemon status file, and store it in a MVar for this
+ - process to use as its DaemonStatus. Also gets current transfer status. -}
 startDaemonStatus :: Annex DaemonStatusHandle
 startDaemonStatus = do
 	file <- fromRepo gitAnnexDaemonStatusFile
 	status <- liftIO $
-		catchDefaultIO (readDaemonStatusFile file) newDaemonStatus
-	liftIO $ newMVar status
+		catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
+	transfers <- M.fromList <$> getTransfers
+	remotes <- calcKnownRemotes
+	liftIO $ atomically $ newTMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
+		, currentTransfers = transfers
+		, knownRemotes = remotes
 		}
 
-{- This thread wakes up periodically and writes the daemon status to disk. -}
+{- This writes the daemon status to disk, when it changes, but no more
+ - frequently than once every ten minutes.
+ -}
 daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-daemonStatusThread st handle = do
+daemonStatusThread st dstatus = do
+	notifier <- newNotificationHandle
+		=<< changeNotifier <$> getDaemonStatus dstatus
 	checkpoint
-	runEvery (Seconds tenMinutes) checkpoint
+	runEvery (Seconds tenMinutes) $ do
+		waitNotification notifier
+		checkpoint
 	where
-		checkpoint = runThreadState st $ do
-			file <- fromRepo gitAnnexDaemonStatusFile
-			status <- getDaemonStatus handle
-			liftIO $ writeDaemonStatusFile file status
+		checkpoint = do
+			status <- getDaemonStatus dstatus
+			file <- runThreadState st $ fromRepo gitAnnexDaemonStatusFile
+			writeDaemonStatusFile file status
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}
@@ -81,9 +145,9 @@ writeDaemonStatusFile file status =
 			]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
-readDaemonStatusFile file = parse <$> readFile file
+readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
 	where
-		parse = foldr parseline newDaemonStatus . lines
+		parse status = foldr parseline status . lines
 		parseline line status
 			| key == "lastRunning" = parseval readtime $ \v ->
 				status { lastRunning = Just v }
@@ -117,3 +181,86 @@ afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
 
 tenMinutes :: Int
 tenMinutes = 10 * 60
+
+{- Mutates the transfer map. Runs in STM so that the transfer map can
+ - be modified in the same transaction that modifies the transfer queue.
+ - Note that this does not send a notification of the change; that's left
+ - to the caller. -}
+adjustTransfersSTM :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> STM ()
+adjustTransfersSTM dstatus a = do
+	s <- takeTMVar dstatus
+	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
+
+{- Updates a transfer's info.
+ - Preserves the transferTid and transferPaused values,
+ - which are not written to disk. -}
+updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
+updateTransferInfo dstatus t info =
+	notifyTransfer dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { currentTransfers = update (currentTransfers s) }
+		update m = M.insertWith' merge t info m
+		merge new old = new
+			{ transferTid = maybe (transferTid new) Just (transferTid old)
+			, transferPaused = transferPaused new || transferPaused old
+			}
+
+{- Removes a transfer from the map, and returns its info. -}
+removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
+removeTransfer dstatus t = 
+	notifyTransfer dstatus `after` modifyDaemonStatus dstatus go
+	where
+		go s =
+			let (info, ts) = M.updateLookupWithKey
+				(\_k _v -> Nothing)
+				t (currentTransfers s)
+			in (s { currentTransfers = ts }, info)
+
+{- Send a notification when a transfer is changed. -}
+notifyTransfer :: DaemonStatusHandle -> IO ()
+notifyTransfer dstatus = sendNotification
+	=<< transferNotifier <$> atomically (readTMVar dstatus)
+
+{- Send a notification when alerts are changed. -}
+notifyAlert :: DaemonStatusHandle -> IO ()
+notifyAlert dstatus = sendNotification
+	=<< alertNotifier <$> atomically (readTMVar dstatus)
+
+{- Returns the alert's identifier, which can be used to remove it. -}
+addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
+addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
+	where
+		go s = (s { lastAlertId = i, alertMap = m }, i)
+			where
+				i = nextAlertId $ lastAlertId s
+				m = mergeAlert i alert (alertMap s)
+
+removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
+removeAlert dstatus i = updateAlert dstatus i (const Nothing)
+
+updateAlert :: DaemonStatusHandle -> AlertId -> (Alert -> Maybe Alert) -> IO ()
+updateAlert dstatus i a = updateAlertMap dstatus $ \m -> M.update a i m
+
+updateAlertMap :: DaemonStatusHandle -> (AlertMap -> AlertMap) -> IO ()
+updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { alertMap = a (alertMap s) }
+
+{- Displays an alert while performing an activity that returns True on
+ - success.
+ -
+ - The alert is left visible afterwards, as filler.
+ - Old filler is pruned, to prevent the map growing too large. -}
+alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
+alertWhile dstatus alert a = alertWhile' dstatus alert $ do
+	r <- a
+	return (r, r)
+
+{- Like alertWhile, but allows the activity to return a value too. -}
+alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
+alertWhile' dstatus alert a = do
+	let alert' = alert { alertClass = Activity }
+	i <- addAlert dstatus alert'
+	(ok, r) <- a
+	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
+	return r

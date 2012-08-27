@@ -1,0 +1,7 @@
+These are template files for the git-annex webapp. They use the
+Shakespearean template library, which is documented here:
+http://www.yesodweb.com/book/shakespearean-templates
+
+Note that for most of the templates, it will use files ending in
+.hamlet, .julius, and .cassius if they exist. So if you need to add CSS,
+or javascript, you can create the missing template files.

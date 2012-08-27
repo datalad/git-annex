@@ -53,7 +53,7 @@ start format file (key, _) = do
 	where
 		vars =
 			[ ("file", file)
-			, ("key", show key)
+			, ("key", key2file key)
 			, ("backend", keyBackendName key)
 			, ("bytesize", size show)
 			, ("humansize", size $ roughSize storageUnits True)

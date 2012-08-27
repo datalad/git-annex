@@ -1,6 +1,8 @@
 {- git-annex assistant change tracking
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Changes where
@@ -8,14 +10,14 @@ module Assistant.Changes where
 import Common.Annex
 import qualified Annex.Queue
 import Types.KeySource
+import Utility.TSet
 
-import Control.Concurrent.STM
 import Data.Time.Clock
 
 data ChangeType = AddChange | LinkChange | RmChange | RmDirChange
 	deriving (Show, Eq)
 
-type ChangeChan = TChan Change
+type ChangeChan = TSet Change
 
 data Change
 	= Change 
@@ -29,11 +31,8 @@ data Change
 		}
 	deriving (Show)
 
-runChangeChan :: STM a -> IO a
-runChangeChan = atomically
-
 newChangeChan :: IO ChangeChan
-newChangeChan = atomically newTChan
+newChangeChan = newTSet
 
 {- Handlers call this when they made a change that needs to get committed. -}
 madeChange :: FilePath -> ChangeType -> Annex (Maybe Change)
@@ -65,17 +64,13 @@ finishedChange c = c
 {- Gets all unhandled changes.
  - Blocks until at least one change is made. -}
 getChanges :: ChangeChan -> IO [Change]
-getChanges chan = runChangeChan $ do
-	c <- readTChan chan
-	go [c]
-	where
-		go l = do
-			v <- tryReadTChan chan
-			case v of
-				Nothing -> return l
-				Just c -> go (c:l)
+getChanges = getTSet
 
 {- Puts unhandled changes back into the channel.
  - Note: Original order is not preserved. -}
 refillChanges :: ChangeChan -> [Change] -> IO ()
-refillChanges chan cs = runChangeChan $ mapM_ (writeTChan chan) cs
+refillChanges = putTSet
+
+{- Records a change in the channel. -}
+recordChange :: ChangeChan -> Change -> IO ()
+recordChange = putTSet1

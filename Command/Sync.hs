@@ -6,8 +6,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module Command.Sync where
 
 import Common.Annex
@@ -27,8 +25,8 @@ import qualified Git
 import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
+import Types.Key
 
-import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import Data.Hash.MD5
 
@@ -39,7 +37,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
-	!branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
+	branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
 	return $ concat
 		[ [ commit ]
@@ -63,23 +61,19 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	where
 		pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
 		wanted
-			| null rs = good =<< concat . byspeed <$> available
+			| null rs = good =<< concat . Remote.byCost <$> available
 			| otherwise = listed
 		listed = do
 			l <- catMaybes <$> mapM (Remote.byName . Just) rs
-			let s = filter special l
+			let s = filter Remote.specialRemote l
 			unless (null s) $
 				error $ "cannot sync special remotes: " ++
 					unwords (map Types.Remote.name s)
 			return l
-		available = filter nonspecial <$> Remote.enabledRemoteList
+		available = filter (not . Remote.specialRemote)
+			<$> Remote.enabledRemoteList
 		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
-		nonspecial r = Types.Remote.remotetype r == Remote.Git.remote
-		special = not . nonspecial
-		fastest = fromMaybe [] . headMaybe . byspeed
-		byspeed = map snd . sort . M.toList . costmap
-		costmap = M.fromListWith (++) . map costpair
-		costpair r = (Types.Remote.cost r, [r])
+		fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
 commit = do
@@ -98,7 +92,7 @@ mergeLocal branch = go =<< needmerge
 		syncbranch = syncBranch branch
 		needmerge = do
 			unlessM (inRepo $ Git.Ref.exists syncbranch) $
-				updateBranch syncbranch
+				inRepo $ updateBranch syncbranch
 			inRepo $ Git.Branch.changed branch syncbranch
 		go False = stop
 		go True = do
@@ -107,17 +101,17 @@ mergeLocal branch = go =<< needmerge
 
 pushLocal :: Git.Ref -> CommandStart
 pushLocal branch = do
-	updateBranch $ syncBranch branch
+	inRepo $ updateBranch $ syncBranch branch
 	stop
 
-updateBranch :: Git.Ref -> Annex ()
-updateBranch syncbranch = 
+updateBranch :: Git.Ref -> Git.Repo -> IO ()
+updateBranch syncbranch g = 
 	unlessM go $ error $ "failed to update " ++ show syncbranch
 	where
-		go = inRepo $ Git.Command.runBool "branch"
+		go = Git.Command.runBool "branch"
 			[ Param "-f"
 			, Param $ show $ Git.Ref.base syncbranch
-			]
+			] g
 
 pullRemote :: Remote -> Git.Ref -> CommandStart
 pullRemote remote branch = do
@@ -125,7 +119,7 @@ pullRemote remote branch = do
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote branch
+			next $ mergeRemote remote (Just branch)
 	where
 		fetch = inRepo $ Git.Command.runBool "fetch"
 			[Param $ Remote.name remote]
@@ -134,32 +128,46 @@ pullRemote remote branch = do
  - Which to merge from? Well, the master has whatever latest changes
  - were committed, while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> Git.Ref -> CommandCleanup
-mergeRemote remote branch = all id <$> (mapM merge =<< tomerge)
+mergeRemote :: Remote -> (Maybe Git.Ref) -> CommandCleanup
+mergeRemote remote b = case b of
+	Nothing -> do
+		branch <- inRepo Git.Branch.currentUnsafe
+		all id <$> (mapM merge $ branchlist branch)
+	Just _ -> all id <$> (mapM merge =<< tomerge (branchlist b))
 	where
 		merge = mergeFrom . remoteBranch remote
-		tomerge = filterM (changed remote) [branch, syncBranch branch]
+		tomerge branches = filterM (changed remote) branches
+		branchlist Nothing = []
+		branchlist (Just branch) = [branch, syncBranch branch]
 
 pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
 	where
-		needpush = anyM (newer remote) [syncbranch, Annex.Branch.name]
+		needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 		go False = stop
 		go True = do
 			showStart "push" (Remote.name remote)
 			next $ next $ do
 				showOutput
-				inRepo $ Git.Command.runBool "push"
-					[ Param (Remote.name remote)
-					, Param (show Annex.Branch.name)
-					, Param refspec
-					]
-		refspec = show (Git.Ref.base branch) ++ ":" ++ show (Git.Ref.base syncbranch)
-		syncbranch = syncBranch branch
+				inRepo $ pushBranch remote branch
+
+pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
+pushBranch remote branch g =
+	Git.Command.runBool "push"
+		[ Param (Remote.name remote)
+		, Param (show Annex.Branch.name)
+		, Param refspec
+		] g
+	where
+		refspec = concat 
+			[ show $ Git.Ref.base branch
+			,  ":"
+			, show $ Git.Ref.base $ syncBranch branch
+			]
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
-	Annex.Branch.forceUpdate
+	void $ Annex.Branch.forceUpdate
 	stop
 
 mergeFrom :: Git.Ref -> Annex Bool
@@ -248,8 +256,8 @@ resolveMerge' u
  -}
 mergeFile :: FilePath -> Key -> FilePath
 mergeFile file key
-	| doubleconflict = go $ show key
-	| otherwise = go $ shortHash $ show key
+	| doubleconflict = go $ key2file key
+	| otherwise = go $ shortHash $ key2file key
 	where
 		varmarker = ".variant-"
 		doubleconflict = varmarker `isSuffixOf` (dropExtension file)

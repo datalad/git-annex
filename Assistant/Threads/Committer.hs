@@ -1,14 +1,21 @@
 {- git-annex assistant commit thread
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Committer where
+module Assistant.Threads.Committer where
 
-import Common.Annex
+import Assistant.Common
 import Assistant.Changes
+import Assistant.Commits
+import Assistant.Alert
 import Assistant.ThreadedMonad
-import Assistant.Watcher
+import Assistant.Threads.Watcher
+import Assistant.TransferQueue
+import Assistant.DaemonStatus
+import Logs.Transfer
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
@@ -25,9 +32,12 @@ import Data.Tuple.Utils
 import qualified Data.Set as S
 import Data.Either
 
+thisThread :: ThreadName
+thisThread = "Committer"
+
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> IO ()
-commitThread st changechan = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> IO ()
+commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change is available for
 	-- processing.
@@ -36,12 +46,30 @@ commitThread st changechan = runEvery (Seconds 1) $ do
 	time <- getCurrentTime
 	if shouldCommit time changes
 		then do
-			readychanges <- handleAdds st changechan changes
+			readychanges <- handleAdds st changechan transferqueue dstatus changes
 			if shouldCommit time readychanges
 				then do
-					void $ tryIO $ runThreadState st commitStaged
-				else refillChanges changechan readychanges
-		else refillChanges changechan changes
+					debug thisThread
+						[ "committing"
+						, show (length readychanges)
+						, "changes"
+						]
+					void $ alertWhile dstatus commitAlert $
+						tryIO (runThreadState st commitStaged)
+							>> return True
+					recordCommit commitchan (Commit time)
+				else refill readychanges
+		else refill changes
+	where
+		refill [] = noop
+		refill cs = do
+			debug thisThread
+				[ "delaying commit of"
+				, show (length cs)
+				, "changes"
+				]
+			refillChanges changechan cs
+			
 
 commitStaged :: Annex ()
 commitStaged = do
@@ -93,8 +121,8 @@ shouldCommit now changes
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: ThreadState -> ChangeChan -> [Change] -> IO [Change]
-handleAdds st changechan cs = returnWhen (null pendingadds) $ do
+handleAdds :: ThreadState -> ChangeChan -> TransferQueue -> DaemonStatusHandle -> [Change] -> IO [Change]
+handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds) $ do
 	(postponed, toadd) <- partitionEithers <$>
 		safeToAdd st pendingadds
 
@@ -106,7 +134,7 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 		if (DirWatcher.eventsCoalesce || null added)
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds st changechan
+				r <- handleAdds st changechan transferqueue dstatus
 					=<< getChanges changechan
 				return $ r ++ added ++ otherchanges
 	where
@@ -117,16 +145,20 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 			| otherwise = a
 
 		add :: Change -> IO (Maybe Change)
-		add change@(PendingAddChange { keySource = ks }) = do
-			r <- catchMaybeIO $ sanitycheck ks $ runThreadState st $ do
-				showStart "add" $ keyFilename ks
-				handle (finishedChange change) (keyFilename ks)
-					=<< Command.Add.ingest ks
-			return $ maybeMaybe r
+		add change@(PendingAddChange { keySource = ks }) =
+			alertWhile' dstatus (addFileAlert $ keyFilename ks) $
+				liftM ret $ catchMaybeIO $
+					sanitycheck ks $ runThreadState st $ do
+						showStart "add" $ keyFilename ks
+						key <- Command.Add.ingest ks
+						handle (finishedChange change) (keyFilename ks) key
+			where
+				{- Add errors tend to be transient and will
+				 - be automatically dealt with, so don't
+				 - pass to the alert code. -}
+				ret (Just j@(Just _)) = (True, j)
+				ret _ = (True, Nothing)
 		add _ = return Nothing
-
-		maybeMaybe (Just j@(Just _)) = j
-		maybeMaybe _ = Nothing
 
 		handle _ _ Nothing = do
 			showEndFail
@@ -137,6 +169,7 @@ handleAdds st changechan cs = returnWhen (null pendingadds) $ do
 				sha <- inRepo $
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
+			queueTransfers Next transferqueue dstatus key (Just file) Upload
 			showEndOk
 			return $ Just change
 
@@ -164,6 +197,15 @@ safeToAdd st changes = runThreadState st $
 			tmpdir <- fromRepo gitAnnexTmpDir
 			openfiles <- S.fromList . map fst3 . filter openwrite <$>
 				liftIO (Lsof.queryDir tmpdir)
+
+			-- TODO this is here for debugging a problem on
+			-- OSX, and is pretty expensive, so remove later
+			liftIO $ debug thisThread
+				[ "checking changes:"
+				, show changes
+				, "vs open files:"
+				, show openfiles
+				]
 			
 			let checked = map (check openfiles) changes
 

@@ -5,14 +5,22 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+module Assistant.Threads.Watcher (
+	watchThread,
+	checkCanWatch,
+	needLsof,
+	stageSymlink,
+	onAddSymlink,
+	runHandler,
+) where
 
-module Assistant.Watcher where
-
-import Common.Annex
+import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Changes
+import Assistant.TransferQueue
+import Assistant.Alert
+import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Annex
@@ -27,9 +35,11 @@ import Annex.Content
 import Annex.CatFile
 import Git.Types
 
-import Control.Concurrent.STM
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
+
+thisThread :: ThreadName
+thisThread = "Watcher"
 
 checkCanWatch :: Annex ()
 checkCanWatch
@@ -46,11 +56,13 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
-watchThread :: ThreadState -> DaemonStatusHandle -> ChangeChan -> IO ()
-watchThread st dstatus changechan = watchDir "." ignored hooks startup
+watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
+watchThread st dstatus transferqueue changechan = do
+	void $ watchDir "." ignored hooks startup
+	debug thisThread [ "watching", "."]
 	where
-		startup = statupScan st dstatus
-		hook a = Just $ runHandler st dstatus changechan a
+		startup = startupScan st dstatus
+		hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
 		hooks = WatchHooks
 			{ addHook = hook onAdd
 			, delHook = hook onDel
@@ -60,18 +72,21 @@ watchThread st dstatus changechan = watchDir "." ignored hooks startup
 			}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
-statupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
-statupScan st dstatus scanner = do
-	runThreadState st $
-		showAction "scanning"
-	r <- scanner
-	runThreadState st $
-		modifyDaemonStatus dstatus $ \s -> s { scanComplete = True }
+startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
+startupScan st dstatus scanner = do
+	runThreadState st $ showAction "scanning"
+	r <- alertWhile' dstatus startupScanAlert $ do
+		r <- scanner
 
-	-- Notice any files that were deleted before watching was started.
-	runThreadState st $ do
-		inRepo $ Git.Command.run "add" [Param "--update"]
-		showAction "started"
+		-- Notice any files that were deleted before
+		-- watching was started.
+		runThreadState st $ do
+			inRepo $ Git.Command.run "add" [Param "--update"]
+			showAction "started"
+		
+		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
+
+		return (True, r)
 
 	return r
 
@@ -83,23 +98,22 @@ ignored = ig . takeFileName
 	ig ".gitattributes" = True
 	ig _ = False
 
-type Handler = FilePath -> Maybe FileStatus -> DaemonStatusHandle -> Annex (Maybe Change)
+type Handler = ThreadName -> FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
 
 {- Runs an action handler, inside the Annex monad, and if there was a
  - change, adds it to the ChangeChan.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: ThreadState -> DaemonStatusHandle -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st dstatus changechan handler file filestatus = void $ do
+runHandler :: ThreadName -> ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler threadname st dstatus transferqueue changechan handler file filestatus = void $ do
 	r <- tryIO go
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
-		Right (Just change) -> void $
-			runChangeChan $ writeTChan changechan change
+		Right (Just change) -> recordChange changechan change
 	where
-		go = runThreadState st $ handler file filestatus dstatus
+		go = runThreadState st $ handler threadname file filestatus dstatus transferqueue
 
 {- During initial directory scan, this will be run for any regular files
  - that are already checked into git. We don't want to turn those into
@@ -120,9 +134,9 @@ runHandler st dstatus changechan handler file filestatus = void $ do
  - the add.
  -}
 onAdd :: Handler
-onAdd file filestatus dstatus
+onAdd threadname file filestatus dstatus _
 	| maybe False isRegularFile filestatus = do
-		ifM (scanComplete <$> getDaemonStatus dstatus)
+		ifM (scanComplete <$> liftIO (getDaemonStatus dstatus))
 			( go
 			, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
 				( noChange
@@ -131,27 +145,33 @@ onAdd file filestatus dstatus
 			)
 	| otherwise = noChange
 	where
-		go = pendingAddChange =<< Command.Add.lockDown file
+		go = do
+			liftIO $ debug threadname ["file added", file]
+			pendingAddChange =<< Command.Add.lockDown file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
+onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
 	where
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
 			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( ensurestaged link =<< getDaemonStatus dstatus
+				( do
+					s <- liftIO $ getDaemonStatus dstatus
+					checkcontent key s
+					ensurestaged link s
 				, do
+					liftIO $ debug threadname ["fix symlink", file]
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
 					addlink link
 				)
 		go Nothing = do -- other symlink
 			link <- liftIO (readSymbolicLink file)
-			ensurestaged link =<< getDaemonStatus dstatus
+			ensurestaged link =<< liftIO (getDaemonStatus dstatus)
 
 		{- This is often called on symlinks that are already
 		 - staged correctly. A symlink may have been deleted
@@ -174,6 +194,7 @@ onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 		{- For speed, tries to reuse the existing blob for
 		 - the symlink target. -}
 		addlink link = do
+			liftIO $ debug threadname ["add symlink", file]
 			v <- catObjectDetails $ Ref $ ':':file
 			case v of
 				Just (currlink, sha)
@@ -185,8 +206,17 @@ onAddSymlink file filestatus dstatus = go =<< Backend.lookupFile file
 					stageSymlink file sha
 			madeChange file LinkChange
 
+		{- When a new link appears, after the startup scan,
+		 - try to get the key's content. -}
+		checkcontent key daemonstatus
+			| scanComplete daemonstatus = unlessM (inAnnex key) $
+				queueTransfers Next transferqueue dstatus
+					key (Just file) Download
+			| otherwise = noop
+
 onDel :: Handler
-onDel file _ _dstatus = do
+onDel threadname file _ _dstatus _ = do
+	liftIO $ debug threadname ["file deleted", file]
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file RmChange
@@ -199,14 +229,15 @@ onDel file _ _dstatus = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir dir _ _dstatus = do
+onDelDir threadname dir _ _dstatus _ = do
+	liftIO $ debug threadname ["directory deleted", dir]
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir RmDirChange
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg _ _dstatus = do
+onErr _ msg _ _dstatus _ = do
 	warning msg
 	return Nothing
 

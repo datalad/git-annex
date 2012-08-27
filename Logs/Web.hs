@@ -16,6 +16,7 @@ module Logs.Web (
 import Common.Annex
 import Logs.Presence
 import Logs.Location
+import Types.Key
 
 type URLString = String
 
@@ -29,7 +30,7 @@ urlLog key = hashDirLower key </> keyFile key ++ ".log.web"
 {- Used to store the urls elsewhere. -}
 oldurlLogs :: Key -> [FilePath]
 oldurlLogs key = 
-	[ "remote/web" </> hashDirLower key </> show key ++ ".log"
+	[ "remote/web" </> hashDirLower key </> key2file key ++ ".log"
 	, "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
 	]
 

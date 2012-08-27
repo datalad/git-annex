@@ -26,7 +26,7 @@ seek = [withPairs start]
 start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop
 	where
-		newkey = fromMaybe (error "bad key") $ readKey keyname
+		newkey = fromMaybe (error "bad key") $ file2key keyname
 		go (oldkey, _)
 			| oldkey == newkey = stop
 			| otherwise = do

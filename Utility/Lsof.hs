@@ -33,11 +33,11 @@ queryDir path = query ["+d", path]
  - Note: If lsof is not available, this always returns [] !
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
-query opts = do
-	(pid, s) <- pipeFrom "lsof" ("-F0can" : opts)
-	let !r = parse s
-	void $ getProcessStatus True False $ processID pid
-	return r
+query opts =
+	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
+		parse <$> hGetContentsStrict h
+	where
+		p = proc "lsof" ("-F0can" : opts)
 
 {- Parsing null-delimited output like:
  -

@@ -1,0 +1,22 @@
+/ HomeR GET
+/noscript NoScriptR GET
+/noscript/auto NoScriptAutoR GET
+/about AboutR GET
+
+/config ConfigR GET
+/config/repository RepositoriesR GET
+/config/repository/add/drive AddDriveR GET
+/config/repository/first FirstRepositoryR GET
+
+/transfers/#NotificationId TransfersR GET
+/sidebar/#NotificationId SideBarR GET
+/notifier/transfers NotifierTransfersR GET
+/notifier/sidebar NotifierSideBarR GET
+/closealert/#AlertId CloseAlert GET
+/filebrowser FileBrowserR GET POST
+
+/transfer/pause/#Transfer PauseTransferR GET POST
+/transfer/start/#Transfer StartTransferR GET POST
+/transfer/cancel/#Transfer CancelTransferR GET POST
+
+/static StaticR Static getStatic

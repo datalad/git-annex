@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Git.Branch where
 
 import Common
@@ -12,13 +14,32 @@ import Git
 import Git.Sha
 import Git.Command
 
-{- The currently checked out branch. -}
+{- The currently checked out branch.
+ -
+ - In a just initialized git repo before the first commit,
+ - symbolic-ref will show the master branch, even though that
+ - branch is not created yet. So, this also looks at show-ref HEAD
+ - to double-check.
+ -}
 current :: Repo -> IO (Maybe Git.Ref)
-current r = parse <$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
+current r = do
+	v <- currentUnsafe r
+	case v of
+		Nothing -> return Nothing
+		Just branch -> 
+			ifM (null <$> pipeRead [Param "show-ref", Param $ show branch] r)
+				( return Nothing
+				, return v
+				)
+
+{- The current branch, which may not really exist yet. -}
+currentUnsafe :: Repo -> IO (Maybe Git.Ref)
+currentUnsafe r = parse . firstLine
+	<$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
 	where
-		parse v
-			| null v = Nothing
-			| otherwise = Just $ Git.Ref $ firstLine v
+		parse l
+			| null l = Nothing
+			| otherwise = Just $ Git.Ref l
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
@@ -73,12 +94,10 @@ commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
 commit message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
 		pipeRead [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $
-		ignorehandle $ pipeWriteRead
-			(map Param $ ["commit-tree", show tree] ++ ps)
-			message repo
+	sha <- getSha "commit-tree" $ pipeWriteRead
+		(map Param $ ["commit-tree", show tree] ++ ps)
+		message repo
 	run "update-ref" [Param $ show branch, Param $ show sha] repo
 	return sha
 	where
-		ignorehandle a = snd <$> a
 		ps = concatMap (\r -> ["-p", show r]) parentrefs

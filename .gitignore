@@ -12,6 +12,7 @@ html
 *.tix
 .hpc
 Utility/Touch.hs
+Utility/Mounts.hs
 Utility/*.o
 dist
 # Sandboxed builds

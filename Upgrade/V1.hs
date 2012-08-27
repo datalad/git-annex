@@ -142,7 +142,7 @@ oldlog2key l
 -- as the v2 key that it is.
 readKey1 :: String -> Key
 readKey1 v
-	| mixup = fromJust $ readKey $ join ":" $ Prelude.tail bits
+	| mixup = fromJust $ file2key $ join ":" $ Prelude.tail bits
 	| otherwise = Key
 		{ keyName = n
 		, keyBackendName = b

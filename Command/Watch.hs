@@ -1,6 +1,3 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE BangPatterns #-}
-
 {- git-annex watch command
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
@@ -22,7 +19,7 @@ def = [withOptions [foregroundOption, stopOption] $
 seek :: [CommandSeek]
 seek = [withFlag stopOption $ \stopdaemon -> 
 	withFlag foregroundOption $ \foreground ->
-	withNothing $ start foreground stopdaemon]
+	withNothing $ start False foreground stopdaemon]
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"
@@ -30,9 +27,9 @@ foregroundOption = Option.flag [] "foreground" "do not daemonize"
 stopOption :: Option
 stopOption = Option.flag [] "stop" "stop daemon"
 
-start :: Bool -> Bool -> CommandStart
-start foreground stopdaemon = notBareRepo $ do
+start :: Bool -> Bool -> Bool -> CommandStart
+start assistant foreground stopdaemon = notBareRepo $ do
 	if stopdaemon
 		then stopDaemon
-		else startDaemon foreground -- does not return
+		else startDaemon assistant foreground Nothing -- does not return
 	stop

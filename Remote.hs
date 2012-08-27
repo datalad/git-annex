@@ -20,10 +20,13 @@ module Remote (
 	remoteTypes,
 	remoteList,
 	enabledRemoteList,
+	specialRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byCost,
 	prettyPrintUUIDs,
+	prettyListUUIDs,
 	remotesWithUUID,
 	remotesWithoutUUID,
 	keyLocations,
@@ -128,6 +131,20 @@ prettyPrintUUIDs desc uuids = do
 			, ("here", toJSON $ hereu == u)
 			]
 
+{- List of remote names and/or descriptions, for human display.  -}
+prettyListUUIDs :: [UUID] -> Annex [String]
+prettyListUUIDs uuids = do
+	hereu <- getUUID
+	m <- uuidDescriptions
+	return $ map (\u -> prettify m hereu u) uuids
+	where
+		finddescription m u = M.findWithDefault "" u m
+		prettify m hereu u
+			| u == hereu = addName n "here"
+			| otherwise = n
+			where
+				n = finddescription m u
+
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote] -> [UUID] -> [Remote]
 remotesWithUUID rs us = filter (\r -> uuid r `elem` us) rs
@@ -208,3 +225,10 @@ forceTrust level remotename = do
  - on the remote, but this cannot always be relied on. -}
 logStatus :: Remote -> Key -> LogStatus -> Annex ()
 logStatus remote key = logChange key (uuid remote)
+
+{- Orders remotes by cost, with ones with the lowest cost grouped together. -}
+byCost :: [Remote] -> [[Remote]]
+byCost = map snd . sort . M.toList . costmap
+	where
+		costmap = M.fromListWith (++) . map costpair
+		costpair r = (cost r, [r])

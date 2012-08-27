@@ -4,7 +4,7 @@ module Build.Configure where
 
 import System.Directory
 import Data.List
-import System.Cmd.Utils
+import System.Process
 import Control.Applicative
 import System.FilePath
 
@@ -71,7 +71,7 @@ getVersionString = do
 
 getGitVersion :: Test
 getGitVersion = do
-	(_, s) <- pipeFrom "git" ["--version"]
+	s <- readProcess "git" ["--version"] ""
 	let version = unwords $ drop 2 $ words $ head $ lines s
 	return $ Config "gitversion" (StringConfig version)
 

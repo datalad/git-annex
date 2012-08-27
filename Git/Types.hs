@@ -27,15 +27,17 @@ data RepoLocation
 	| Unknown
 	deriving (Show, Eq)
 
-data Repo = Repo {
-	location :: RepoLocation,
-	config :: M.Map String String,
+data Repo = Repo
+	{ location :: RepoLocation
+	, config :: M.Map String String
 	-- a given git config key can actually have multiple values
-	fullconfig :: M.Map String [String],
-	remotes :: [Repo],
+	, fullconfig :: M.Map String [String]
+	, remotes :: [Repo]
 	-- remoteName holds the name used for this repo in remotes
-	remoteName :: Maybe String 
-} deriving (Show, Eq)
+	, remoteName :: Maybe String
+	-- alternate environment to use when running git commands
+	, gitEnv :: Maybe [(String, String)]
+	} deriving (Show, Eq)
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
 newtype Ref = Ref String

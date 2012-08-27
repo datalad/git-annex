@@ -11,8 +11,7 @@ import qualified Data.ByteString.Lazy as L
 import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
-import Control.Exception (finally, bracket)
-import System.Exit
+import Control.Exception (bracket)
 import System.Posix.Env (setEnv, unsetEnv, getEnv)	
 
 import Common
@@ -39,18 +38,21 @@ stdParams params = do
 readStrict :: [CommandParam] -> IO String
 readStrict params = do
 	params' <- stdParams params
-	pOpen ReadFromPipe "gpg" params' hGetContentsStrict
+	withHandle StdoutHandle createProcessSuccess (proc "gpg" params') $ \h -> do
+		hSetBinaryMode h True
+		hGetContentsStrict h
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
 pipeStrict :: [CommandParam] -> String -> IO String
 pipeStrict params input = do
 	params' <- stdParams params
-	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	_ <- forkIO $ finally (hPutStr toh input) (hClose toh)
-	output <- hGetContentsStrict fromh
-	forceSuccess pid
-	return output
+	withBothHandles createProcessSuccess (proc "gpg" params') $ \(to, from) -> do
+		hSetBinaryMode to True
+		hSetBinaryMode from True
+		hPutStr to input
+		hClose to
+		hGetContentsStrict from
 
 {- Runs gpg with some parameters, first feeding it a passphrase via
  - --passphrase-fd, then feeding it an input, and passing a handle
@@ -70,19 +72,13 @@ passphraseHandle params passphrase a b = do
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
 	params' <- stdParams $ passphrasefd ++ params
-	(pid, fromh, toh) <- hPipeBoth "gpg" params'
-	pid2 <- forkProcess $ do
-		L.hPut toh =<< a
-		hClose toh
-		exitSuccess
-	hClose toh
-	ret <- b fromh
-
-	-- cleanup
-	forceSuccess pid
-	_ <- getProcessStatus True False pid2
-	closeFd frompipe
-	return ret
+	closeFd frompipe `after`
+		withBothHandles createProcessSuccess (proc "gpg" params') go
+	where
+		go (to, from) = do
+			L.hPut to =<< a
+			hClose to
+			b from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name. -}

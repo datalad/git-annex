@@ -19,7 +19,7 @@ module Git.Queue (
 
 import qualified Data.Map as M
 import System.IO
-import System.Cmd.Utils
+import System.Process
 import Data.String.Utils
 
 import Utility.SafeCommand
@@ -149,10 +149,12 @@ runAction repo (UpdateIndexAction streamers) =
 	-- list is stored in reverse order
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
 runAction repo action@(CommandAction {}) =
-	pOpen WriteToPipe "xargs" ("-0":"git":params) feedxargs
+	withHandle StdinHandle createProcessSuccess p $ \h -> do
+		fileEncoding h
+		hPutStr h $ join "\0" $ getFiles action
+		hClose h
 	where
-		params = toCommand $ gitCommandLine
+		p = (proc "xargs" params) { env = gitEnv repo }
+		params = "-0":"git":baseparams
+		baseparams = toCommand $ gitCommandLine
 			(Param (getSubcommand action):getParams action) repo
-		feedxargs h = do
-			fileEncoding h
-			hPutStr h $ join "\0" $ getFiles action

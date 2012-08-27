@@ -64,6 +64,10 @@ data RemoteA a = Remote {
 	config :: Maybe RemoteConfig,
 	-- git configuration for the remote
 	repo :: Git.Repo,
+	-- a Remote can be assocated with a specific local filesystem path
+	localpath :: Maybe FilePath,
+	-- a Remote can be known to be readonly
+	readonly :: Bool,
 	-- the type of the remote
 	remotetype :: RemoteTypeA a
 }

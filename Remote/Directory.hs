@@ -53,6 +53,8 @@ gen r u c = do
 			whereisKey = Nothing,
 			config = Nothing,
 			repo = r,
+			localpath = Just dir,
+			readonly = False,
 			remotetype = remote
 		}
 	where

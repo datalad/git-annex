@@ -60,6 +60,8 @@ gen' r u c cst =
 			whereisKey = Nothing,
 			config = c,
 			repo = r,
+			localpath = Nothing,
+			readonly = False,
 			remotetype = remote
 		}
 
@@ -210,12 +212,12 @@ s3Action r noconn action = do
 		_ -> return noconn
 
 bucketFile :: Remote -> Key -> FilePath
-bucketFile r = munge . show
+bucketFile r = munge . key2file
 	where
 		munge s = case M.lookup "mungekeys" c of
-			Just "ia" -> iaMunge $ prefix ++ s
-			_ -> prefix ++ s
-		prefix = M.findWithDefault "" "fileprefix" c
+			Just "ia" -> iaMunge $ fileprefix ++ s
+			_ -> fileprefix ++ s
+		fileprefix = M.findWithDefault "" "fileprefix" c
 		c = fromJust $ config r
 
 bucketKey :: Remote -> String -> Key -> S3Object

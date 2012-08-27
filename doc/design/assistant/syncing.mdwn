@@ -46,6 +46,12 @@ all the other git clones, at both the git level and the key/value level.
   but further calls to the TransferScanner could eg, look at the delta
   between the last scan and the current one in the git-annex branch.
 
+## misc todo
+
+* --debug will show often unnecessary work being done. Optimise.
+* It would be nice if, when a USB drive is connected, 
+  syncing starts automatically. Use dbus on Linux?
+
 ## data syncing
 
 There are two parts to data syncing. First, map the network and second,

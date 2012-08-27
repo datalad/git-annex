@@ -9,11 +9,11 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import System.Exit
 import System.Environment
 
 import Common.Annex
 import Types.Remote
+import Types.Key
 import qualified Git
 import Config
 import Annex.Content
@@ -48,7 +48,9 @@ gen r u c = do
 			hasKeyCheap = False,
 			whereisKey = Nothing,
 			config = Nothing,
+			localpath = Nothing,
 			repo = r,
+			readonly = False,
 			remotetype = remote
 		}
 
@@ -68,7 +70,7 @@ hookEnv k f = Just <$> mergeenv (fileenv f ++ keyenv)
 				<$> M.fromList <$> getEnvironment
 		env s v = ("ANNEX_" ++ s, v)
 		keyenv =
-			[ env "KEY" (show k)
+			[ env "KEY" (key2file k)
 			, env "HASH_1" (hashbits !! 0)
 			, env "HASH_2" (hashbits !! 1)
 			]
@@ -133,20 +135,8 @@ checkPresent r h k = do
 	v <- lookupHook h "checkpresent"
 	liftIO $ catchMsgIO $ check v
 	where
-		findkey s = show k `elem` lines s
+		findkey s = key2file k `elem` lines s
 		check Nothing = error "checkpresent hook misconfigured"
 		check (Just hook) = do
-			(frompipe, topipe) <- createPipe
-			pid <- forkProcess $ do
-				_ <- dupTo topipe stdOutput
-				closeFd frompipe
-				executeFile "sh" True ["-c", hook]
-					=<< hookEnv k Nothing
-			closeFd topipe
-			fromh <- fdToHandle frompipe
-			reply <- hGetContentsStrict fromh
-			hClose fromh
-			s <- getProcessStatus True False pid
-			case s of
-				Just (Exited ExitSuccess) -> return $ findkey reply
-				_ -> error "checkpresent hook failed"
+			env <- hookEnv k Nothing
+			findkey <$> readProcessEnv "sh" ["-c", hook] env

@@ -13,6 +13,7 @@ import System.Process
 
 import Common.Annex
 import Types.Remote
+import Types.Key
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -46,21 +47,25 @@ gen r u c = do
 	return $ encryptableRemote c
 		(storeEncrypted r buprepo)
 		(retrieveEncrypted buprepo)
-		Remote {
-			uuid = u',
-			cost = cst,
-			name = Git.repoDescribe r,
- 			storeKey = store r buprepo,
-			retrieveKeyFile = retrieve buprepo,
-			retrieveKeyFileCheap = retrieveCheap buprepo,
-			removeKey = remove,
-			hasKey = checkPresent r bupr',
-			hasKeyCheap = bupLocal buprepo,
-			whereisKey = Nothing,
-			config = c,
-			repo = r,
-			remotetype = remote
-		}
+		Remote
+			{ uuid = u'
+			, cost = cst
+			, name = Git.repoDescribe r
+ 			, storeKey = store r buprepo
+			, retrieveKeyFile = retrieve buprepo
+			, retrieveKeyFileCheap = retrieveCheap buprepo
+			, removeKey = remove
+			, hasKey = checkPresent r bupr'
+			, hasKeyCheap = bupLocal buprepo
+			, whereisKey = Nothing
+			, config = c
+			, repo = r
+			, localpath = if bupLocal buprepo && not (null buprepo)
+				then Just buprepo
+				else Nothing
+			, remotetype = remote
+			, readonly = False
+			}
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 bupSetup u c = do
@@ -133,13 +138,13 @@ retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted buprepo (cipher, enck) _ f = do
-	let params = bupParams "join" buprepo [Param $ bupRef enck]
-	liftIO $ catchBoolIO $ do
-		(pid, h) <- hPipeFrom "bup" $ toCommand params
+retrieveEncrypted buprepo (cipher, enck) _ f = liftIO $ catchBoolIO $
+	withHandle StdoutHandle createProcessSuccess p $ \h -> do
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
-		forceSuccess pid
 		return True
+	where
+		params = bupParams "join" buprepo [Param $ bupRef enck]
+		p = proc "bup" $ toCommand params
 
 remove :: Key -> Annex Bool
 remove _ = do
@@ -240,7 +245,7 @@ bupRef k
 	| Git.Ref.legal True shown = shown
 	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
 	where
-		shown = show k
+		shown = key2file k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'

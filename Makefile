@@ -1,19 +1,24 @@
+CFLAGS=-Wall
+GIT_ANNEX_TMP_BUILD_DIR?=tmp
+IGNORE=-ignore-package monads-fd -ignore-package monads-tf
+BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
+FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_OLD_YESOD
+
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
-sources=Build/SysConfig.hs Utility/Touch.hs
+sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
-
-CFLAGS=-Wall
 
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-BASEFLAGS_OPTS=-DWITH_INOTIFY
-clibs=Utility/libdiskfree.o
+OPTFLAGS=-DWITH_INOTIFY -DWITH_DBUS
+clibs=Utility/libdiskfree.o Utility/libmounts.o
 else
 # BSD system
-BASEFLAGS_OPTS=-DWITH_KQUEUE
-clibs=Utility/libdiskfree.o Utility/libkqueue.o
+OPTFLAGS=-DWITH_KQUEUE
+clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
+OPTFLAGS=-DWITH_KQUEUE -DOSX
 # Ensure OSX compiler builds for 32 bit when using 32 bit ghc
 GHCARCH:=$(shell ghc -e 'print System.Info.arch')
 ifeq ($(GHCARCH),i386)
@@ -23,12 +28,10 @@ endif
 endif
 
 PREFIX=/usr
-IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-Wall $(IGNORE) -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 $(BASEFLAGS_OPTS)
-GHCFLAGS=-O2 $(BASEFLAGS)
+GHCFLAGS=-O2 $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 
 ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS)
+GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
@@ -44,7 +47,7 @@ build: $(all)
 sources: $(sources)
 
 # Disables optimisation. Not for production use.
-fast: GHCFLAGS=$(BASEFLAGS)
+fast: GHCFLAGS=$(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
 fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
@@ -54,9 +57,10 @@ Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 %.hs: %.hsc
 	hsc2hs $<
 
-
 git-annex: $(sources) $(clibs)
-	$(GHCMAKE) $@ $(clibs)
+	install -d $(GIT_ANNEX_TMP_BUILD_DIR)
+	$(GHCMAKE) $@ -o $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex $(clibs)
+	ln -sf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex git-annex
 
 git-annex.1: doc/git-annex.mdwn
 	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
@@ -79,6 +83,7 @@ install: build-stamp install-docs
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
 test: $(sources) $(clibs)
 	@if ! $(GHCMAKE) -O0 test $(clibs); then \
@@ -91,7 +96,7 @@ test: $(sources) $(clibs)
 
 testcoverage:
 	rm -f test.tix test
-	ghc $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
+	ghc $(GHCFLAGS) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR)/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -115,7 +120,7 @@ docs: $(mans)
 		--exclude='news/.*'
 
 clean:
-	rm -rf tmp $(bins) $(mans) test configure  *.tix .hpc $(sources) \
+	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs) build-stamp
 
 sdist: clean $(mans)

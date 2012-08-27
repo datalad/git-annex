@@ -18,6 +18,9 @@ data Field = Field
 	, fieldCheck :: String -> Bool
 	}
 
+getField :: Field -> Annex (Maybe String)
+getField = Annex.getField . fieldName
+
 remoteUUID :: Field
 remoteUUID = Field "remoteuuid" $
 	-- does it look like a UUID?
@@ -27,6 +30,3 @@ associatedFile :: Field
 associatedFile = Field "associatedfile" $ \f ->
 	-- is the file a safe relative filename?
 	not (isAbsolute f) && not ("../" `isPrefixOf` f)
-
-getField :: Field -> Annex (Maybe String)
-getField = Annex.getField . fieldName

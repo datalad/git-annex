@@ -27,7 +27,7 @@ daemonize logfd pidfile changedirectory a = do
 			_ <- forkProcess child2
 			out
 		child2 = do
-			maybe noop (lockPidFile alreadyrunning) pidfile 
+			maybe noop lockPidFile pidfile 
 			when changedirectory $
 				setCurrentDirectory "/"
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
@@ -39,47 +39,57 @@ daemonize logfd pidfile changedirectory a = do
 		redir newh h = do
 			closeFd h
 			dupTo newh h
-		alreadyrunning = error "Daemon is already running."
 		out = exitImmediately ExitSuccess
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
- - Runs an action on failure. On success, writes the pid to the file,
- - fully atomically. -}
-lockPidFile :: IO () -> FilePath -> IO ()
-lockPidFile onfailure file = do
+ - Writes the pid to the file, fully atomically.
+ - Fails if the pid file is already locked by another process. -}
+lockPidFile :: FilePath -> IO ()
+lockPidFile file = do
+	createDirectoryIfMissing True (parentDir file)
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
 		{ trunc = True }
 	locked' <- catchMaybeIO $ setLock fd' (WriteLock, AbsoluteSeek, 0, 0)
 	case (locked, locked') of
-		(Nothing, _) -> onfailure
-		(_, Nothing) -> onfailure
+		(Nothing, _) -> alreadyrunning
+		(_, Nothing) -> alreadyrunning
 		_ -> do
 			_ <- fdWrite fd' =<< show <$> getProcessID
 			renameFile newfile file
 			closeFd fd
 	where
 		newfile = file ++ ".new"
+		alreadyrunning = error "Daemon is already running."
 
-{- Stops the daemon.
+{- Checks if the daemon is running, by checking that the pid file
+ - is locked by the same process that is listed in the pid file.
  -
- - The pid file is used to get the daemon's pid.
- -
- - To guard against a stale pid, check the lock of the pid file,
- - and compare the process that has it locked with the file content.
- -}
-stopDaemon :: FilePath -> IO ()
-stopDaemon pidfile = do
-	fd <- openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
-	locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
-	p <- readish <$> readFile pidfile
-	case (locked, p) of
-		(Nothing, _) -> noop
-		(_, Nothing) -> noop
-		(Just (pid, _), Just pid')
-			| pid == pid' -> signalProcess sigTERM pid
-			| otherwise -> error $
+ - If it's running, returns its pid. -}
+checkDaemon :: FilePath -> IO (Maybe ProcessID)
+checkDaemon pidfile = do
+	v <- catchMaybeIO $
+		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
+	case v of
+		Just fd -> do
+			locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
+			p <- readish <$> readFile pidfile
+			return $ check locked p
+		Nothing -> return Nothing
+	where
+		check Nothing _ = Nothing
+		check _ Nothing = Nothing
+		check (Just (pid, _)) (Just pid')
+			| pid == pid' = Just pid
+			| otherwise = error $
 				"stale pid in " ++ pidfile ++ 
 				" (got " ++ show pid' ++ 
-				"; expected" ++ show pid ++ " )"
+				"; expected " ++ show pid ++ " )"
+
+{- Stops the daemon, safely. -}
+stopDaemon :: FilePath -> IO ()
+stopDaemon pidfile = go =<< checkDaemon pidfile
+	where
+		go Nothing = noop
+		go (Just pid) = signalProcess sigTERM pid

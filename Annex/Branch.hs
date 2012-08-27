@@ -25,7 +25,6 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
-import Annex.Exception
 import Annex.BranchState
 import Annex.Journal
 import qualified Git
@@ -37,9 +36,9 @@ import qualified Git.UpdateIndex
 import Git.HashObject
 import Git.Types
 import Git.FilePath
-import qualified Git.Index
 import Annex.CatFile
 import Annex.Perms
+import qualified Annex
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -90,10 +89,10 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
  - called before data is read from it. Runs only once per git-annex run.
  -}
 update :: Annex ()
-update = runUpdateOnce $ updateTo =<< siblingBranches
+update = runUpdateOnce $ void $ updateTo =<< siblingBranches
 
 {- Forces an update even if one has already been run. -}
-forceUpdate :: Annex ()
+forceUpdate :: Annex Bool
 forceUpdate = updateTo =<< siblingBranches
 
 {- Merges the specified Refs into the index, if they have any changes not
@@ -111,8 +110,10 @@ forceUpdate = updateTo =<< siblingBranches
  -
  - The branch is fast-forwarded if possible, otherwise a merge commit is
  - made.
+ -
+ - Returns True if any refs were merged in, False otherwise.
  -}
-updateTo :: [(Git.Ref, Git.Branch)] -> Annex ()
+updateTo :: [(Git.Ref, Git.Branch)] -> Annex Bool
 updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
@@ -139,6 +140,7 @@ updateTo pairs = do
 				else commitBranch branchref merge_desc
 					(nub $ fullname:refs)
 			invalidateCache
+	return $ not $ null refs
 	where
 		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 
@@ -277,12 +279,18 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	bracketIO (Git.Index.override f) id $ do
-		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
-			unless bootstrapping create
-			liftIO $ createDirectoryIfMissing True $ takeDirectory f
-			unless bootstrapping $ inRepo genIndex
-		a
+	g <- gitRepo
+	let g' = g { gitEnv = Just [("GIT_INDEX_FILE", f)] }
+
+	Annex.changeState $ \s -> s { Annex.repo = g' }
+	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
+		unless bootstrapping create
+		liftIO $ createDirectoryIfMissing True $ takeDirectory f
+		unless bootstrapping $ inRepo genIndex
+	r <- a
+	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
+
+	return r
 
 {- Runs an action using the branch's index file, first making sure that
  - the branch and index are up-to-date. -}
@@ -335,12 +343,13 @@ stageJournal :: Annex ()
 stageJournal = do
 	showStoringStateAction
 	fs <- getJournalFiles
-	g <- gitRepo
-	withIndex $ liftIO $ do
-		h <- hashObjectStart g
-		Git.UpdateIndex.streamUpdateIndex g
-			[genstream (gitAnnexJournalDir g) h fs]
-		hashObjectStop h
+	withIndex $ do
+		g <- gitRepo
+		liftIO $ do
+			h <- hashObjectStart g
+			Git.UpdateIndex.streamUpdateIndex g
+				[genstream (gitAnnexJournalDir g) h fs]
+			hashObjectStop h
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file

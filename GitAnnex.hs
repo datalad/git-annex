@@ -30,6 +30,7 @@ import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
+import qualified Command.TransferKey
 import qualified Command.ReKey
 import qualified Command.Reinject
 import qualified Command.Fix
@@ -62,6 +63,10 @@ import qualified Command.Upgrade
 import qualified Command.Version
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
+import qualified Command.Assistant
+#ifdef WITH_WEBAPP
+import qualified Command.WebApp
+#endif
 #endif
 
 cmds :: [Command]
@@ -89,6 +94,7 @@ cmds = concat
 	, Command.Dead.def
 	, Command.FromKey.def
 	, Command.DropKey.def
+	, Command.TransferKey.def
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
@@ -106,6 +112,10 @@ cmds = concat
 	, Command.Version.def
 #ifdef WITH_ASSISTANT
 	, Command.Watch.def
+	, Command.Assistant.def
+#ifdef WITH_WEBAPP
+	, Command.WebApp.def
+#endif
 #endif
 	]
 

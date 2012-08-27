@@ -7,6 +7,8 @@
 
 module Command.Fsck where
 
+import System.Posix.Process (getProcessID)
+
 import Common.Annex
 import Command
 import qualified Annex
@@ -24,6 +26,7 @@ import Utility.DataUnits
 import Utility.FileMode
 import Config
 import qualified Option
+import Types.Key
 
 def :: [Command]
 def = [withOptions options $ command "fsck" paramPaths seek
@@ -112,7 +115,7 @@ startBare :: Key -> CommandStart
 startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 	Nothing -> stop
 	Just backend -> do
-		showStart "fsck" (show key)
+		showStart "fsck" (key2file key)
 		next $ performBare key backend
 
 {- Note that numcopies cannot be checked in a bare repository, because
@@ -120,7 +123,7 @@ startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName ke
  - files. -}
 performBare :: Key -> Backend -> CommandPerform
 performBare key backend = check
-	[ verifyLocationLog key (show key)
+	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key
 	]

@@ -31,8 +31,20 @@ Flag S3
 Flag Inotify
   Description: Enable inotify support
 
+Flag Dbus
+  Description: Enable dbus support
+
 Flag Assistant
   Description: Enable git-annex assistant and watch command
+
+Flag Webapp
+  Description: Enable git-annex webapp
+
+Flag CurrentYesod
+  Description: Using a current version of Yesod
+
+Flag OldYesod
+  Description: Using an old version of Yesod
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -40,11 +52,13 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
-  -- Need to list this because it's generated from a .hsc file.
-  Other-Modules: Utility.Touch
-  C-Sources: Utility/libdiskfree.c
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
+  -- Need to list these because they're generated from .hsc files.
+  Other-Modules: Utility.Touch Utility.Mounts
+  Include-Dirs: Utility
+  C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   Extensions: CPP
+  GHC-Options: -threaded
 
   if flag(S3)
     Build-Depends: hS3
@@ -57,6 +71,30 @@ Executable git-annex
   if os(linux) && flag(Inotify)
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
+  else
+    if (! os(windows))
+      CPP-Options: -DWITH_KQUEUE
+
+  if os(linux) && flag(Dbus)
+    Build-Depends: dbus
+    CPP-Options: -DWITH_DBUS
+
+  if flag(CurrentYesod)
+    Build-Depends: yesod-default (>= 1.1.0)
+
+  if flag(OldYesod)
+    Build-Depends: yesod-default (<= 1.0.1.1)
+    CPP-Options: -DWITH_OLD_YESOD
+
+  if flag(Webapp) && (flag(CurrentYesod) || flag(OldYesod))
+    Build-Depends: yesod, yesod-static, case-insensitive,
+     http-types, transformers, wai, wai-logger, warp, blaze-builder,
+     blaze-html, crypto-api, hamlet, clientsession,
+     template-haskell
+    CPP-Options: -DWITH_WEBAPP
+
+  if os(darwin)
+    CPP-Options: -DOSX
 
 Test-Suite test
   Type: exitcode-stdio-1.0
@@ -65,10 +103,12 @@ Test-Suite test
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   Other-Modules: Utility.Touch
+  Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
+  GHC-Options: -threaded
 
 source-repository head
   type: git

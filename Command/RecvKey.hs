@@ -13,6 +13,7 @@ import CmdLine
 import Annex.Content
 import Utility.RsyncFile
 import Logs.Transfer
+import Command.SendKey (fieldTransfer)
 
 def :: [Command]
 def = [oneShot $ command "recvkey" paramKey seek
@@ -30,7 +31,7 @@ start key = ifM (inAnnex key)
 				-- forcibly quit after receiving one key,
 				-- and shutdown cleanly
 				_ <- shutdown True
-				liftIO exitSuccess
-			, liftIO exitFailure
+				return True
+			, return False
 			)
 	)

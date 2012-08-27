@@ -199,8 +199,10 @@ tryScan r
 				Left _ -> return Nothing
 				Right r' -> return $ Just r'
 		pipedconfig cmd params = safely $
-			pOpen ReadFromPipe cmd (toCommand params) $
+			withHandle StdoutHandle createProcessSuccess p $
 				Git.Config.hRead r
+			where
+				p = proc cmd $ toCommand params
 
 		configlist =
 			onRemote r (pipedconfig, Nothing) "configlist" [] []

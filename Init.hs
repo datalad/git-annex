@@ -7,17 +7,33 @@
 
 module Init (
 	ensureInitialized,
+	isInitialized,
 	initialize,
 	uninitialize
 ) where
 
 import Common.Annex
 import Utility.TempFile
+import Utility.Network
 import qualified Git
 import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
 import Annex.UUID
+
+import System.Posix.User
+
+genDescription :: Maybe String -> Annex String
+genDescription (Just d) = return d
+genDescription Nothing = do
+	hostname <- maybe "" id <$> liftIO getHostname
+	let at = if null hostname then "" else "@"
+	username <- clicketyclickety
+	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
+	return $ concat [username, at, hostname, ":", reldir]
+	where
+		clicketyclickety = liftIO $ userName <$>
+			(getUserEntryForID =<< getEffectiveUserID)
 
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
@@ -26,7 +42,7 @@ initialize mdescription = do
 	setVersion
 	gitPreCommitHookWrite
 	u <- getUUID
-	maybe (recordUUID u) (describeUUID u) mdescription
+	describeUUID u =<< genDescription mdescription
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -44,6 +60,10 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 				( initialize Nothing
 				, error "First run: git-annex init"
 				)
+
+{- Checks if a repository is initialized. Does not check version for ugrade. -}
+isInitialized :: Annex Bool
+isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 
 {- set up a git pre-commit hook, if one is not already present -}
 gitPreCommitHookWrite :: Annex ()

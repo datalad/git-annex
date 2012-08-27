@@ -61,3 +61,9 @@ rsyncUrlIsShell s
 			| c == '/' = False -- got to directory with no colon
 			| c == ':' = not $ ":" `isPrefixOf` cs
 			| otherwise = go cs
+
+{- Checks if a rsync url is really just a local path. -}
+rsyncUrlIsPath :: String -> Bool
+rsyncUrlIsPath s
+	| rsyncUrlIsShell s = False
+	| otherwise = ':' `notElem` s

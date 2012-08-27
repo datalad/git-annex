@@ -33,7 +33,7 @@ separate c l = unbreak $ break c l
 			| otherwise = (a, tail b)
 
 {- Breaks out the first line. -}
-firstLine :: String-> String
+firstLine :: String -> String
 firstLine = takeWhile (/= '\n')
 
 {- Splits a list into segments that are delimited by items matching
@@ -45,3 +45,10 @@ segment p l = map reverse $ go [] [] l
 		go c r (i:is)
 			| p i = go [] (c:r) is
 			| otherwise = go (i:c) r is
+
+{- Given two orderings, returns the second if the first is EQ and returns
+ - the first otherwise. -}
+thenOrd :: Ordering -> Ordering -> Ordering
+thenOrd EQ x = x
+thenOrd x _ = x
+{-# INLINE thenOrd #-}

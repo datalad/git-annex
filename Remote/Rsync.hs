@@ -9,6 +9,7 @@ module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import System.Posix.Process (getProcessID)
 
 import Common.Annex
 import Types.Remote
@@ -44,21 +45,25 @@ gen r u c = do
 	return $ encryptableRemote c
 		(storeEncrypted o)
 		(retrieveEncrypted o)
-		Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
- 			storeKey = store o,
-			retrieveKeyFile = retrieve o,
-			retrieveKeyFileCheap = retrieveCheap o,
-			removeKey = remove o,
-			hasKey = checkPresent r o,
-			hasKeyCheap = False,
-			whereisKey = Nothing,
-			config = Nothing,
-			repo = r,
-			remotetype = remote
-		}
+		Remote
+			{ uuid = u
+			, cost = cst
+			, name = Git.repoDescribe r
+ 			, storeKey = store o
+			, retrieveKeyFile = retrieve o
+			, retrieveKeyFileCheap = retrieveCheap o
+			, removeKey = remove o
+			, hasKey = checkPresent r o
+			, hasKeyCheap = False
+			, whereisKey = Nothing
+			, config = Nothing
+			, repo = r
+			, localpath = if rsyncUrlIsPath $ rsyncUrl o
+				then Just $ rsyncUrl o
+				else Nothing
+			, readonly = False
+			, remotetype = remote
+			}
 
 genRsyncOpts :: Git.Repo -> Maybe RemoteConfig -> Annex RsyncOpts
 genRsyncOpts r c = do

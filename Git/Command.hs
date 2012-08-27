@@ -7,10 +7,8 @@
 
 module Git.Command where
 
-import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.IO as L
-import Control.Concurrent
-import Control.Exception (finally)
+import System.Posix.Process (getAnyProcessStatus)
+import System.Process
 
 import Common
 import Git
@@ -29,7 +27,9 @@ gitCommandLine _ repo = assertLocal repo $ error "internal"
 {- Runs git in the specified repo. -}
 runBool :: String -> [CommandParam] -> Repo -> IO Bool
 runBool subcommand params repo = assertLocal repo $
-	boolSystem "git" $ gitCommandLine (Param subcommand : params) repo
+	boolSystemEnv "git"
+		(gitCommandLine (Param subcommand : params) repo)
+		(gitEnv repo)
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
 run :: String -> [CommandParam] -> Repo -> IO ()
@@ -43,30 +43,28 @@ run subcommand params repo = assertLocal repo $
  - result unless reap is called.
  -}
 pipeRead :: [CommandParam] -> Repo -> IO String
-pipeRead params repo = assertLocal repo $ do
-	(_, h) <- hPipeFrom "git" $ toCommand $ gitCommandLine params repo
-	fileEncoding h
-	hGetContents h
+pipeRead params repo = assertLocal repo $
+	withHandle StdoutHandle createBackgroundProcess p $ \h -> do
+		fileEncoding h
+		hGetContents h
+	where
+		p  = (proc "git" $ toCommand $ gitCommandLine params repo)
+			{ env = gitEnv repo }
 
-{- Runs a git subcommand, feeding it input.
- - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWrite :: [CommandParam] -> L.Text -> Repo -> IO PipeHandle
-pipeWrite params s repo = assertLocal repo $ do
-	(p, h) <- hPipeTo "git" (toCommand $ gitCommandLine params repo)
-	L.hPutStr h s
-	hClose h
-	return p
+{- Runs a git subcommand, feeding it input, and returning its output,
+ - which is expected to be fairly small, since it's all read into memory
+ - strictly. -}
+pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
+pipeWriteRead params s repo = assertLocal repo $
+	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
+		(gitEnv repo) s
 
-{- Runs a git subcommand, feeding it input, and returning its output.
- - You should call either getProcessStatus or forceSuccess on the PipeHandle. -}
-pipeWriteRead :: [CommandParam] -> String -> Repo -> IO (PipeHandle, String)
-pipeWriteRead params s repo = assertLocal repo $ do
-	(p, from, to) <- hPipeBoth "git" (toCommand $ gitCommandLine params repo)
-	fileEncoding to
-	fileEncoding from
-	_ <- forkIO $ finally (hPutStr to s) (hClose to)
-	c <- hGetContents from
-	return (p, c)
+{- Runs a git subcommand, feeding it input on a handle with an action. -}
+pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
+pipeWrite params repo = withHandle StdinHandle createProcessSuccess p
+	where
+		p = (proc "git" $ toCommand $ gitCommandLine params repo)
+			{ env = gitEnv repo }
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}

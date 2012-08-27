@@ -25,7 +25,7 @@ writeUnusedLog :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
 	liftIO $ viaTmp writeFile logfile $
-		unlines $ map (\(n, k) -> show n ++ " " ++ show k) l
+		unlines $ map (\(n, k) -> show n ++ " " ++ key2file k) l
 
 readUnusedLog :: FilePath -> Annex UnusedMap
 readUnusedLog prefix = do
@@ -37,7 +37,7 @@ readUnusedLog prefix = do
 		)
 	where
 		parse line =
-			case (readish tag, readKey rest) of
+			case (readish tag, file2key rest) of
 				(Just num, Just key) -> Just (num, key)
 				_ -> Nothing
 			where

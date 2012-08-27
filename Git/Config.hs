@@ -9,6 +9,7 @@ module Git.Config where
 
 import qualified Data.Map as M
 import Data.Char
+import System.Process (cwd, env)
 
 import Common
 import Git
@@ -39,7 +40,7 @@ reRead :: Repo -> IO Repo
 reRead = read'
 
 {- Cannot use pipeRead because it relies on the config having been already
- - read. Instead, chdir to the repo.
+ - read. Instead, chdir to the repo and run git config.
  -}
 read' :: Repo -> IO Repo
 read' repo = go repo
@@ -47,9 +48,24 @@ read' repo = go repo
 		go Repo { location = Local { gitdir = d } } = git_config d
 		go Repo { location = LocalUnknown d } = git_config d
 		go _ = assertLocal repo $ error "internal"
-		git_config d = bracketCd d $
-			pOpen ReadFromPipe "git" ["config", "--null", "--list"] $
-				hRead repo
+		git_config d = withHandle StdoutHandle createProcessSuccess p $
+			hRead repo
+			where
+				params = ["config", "--null", "--list"]
+				p = (proc "git" params)
+					{ cwd = Just d
+					, env = gitEnv repo
+					}
+
+{- Gets the global git config, returning a dummy Repo containing it. -}
+global :: IO Repo
+global = do
+	repo <- Git.Construct.fromUnknown
+	withHandle StdoutHandle createProcessSuccess p $
+		hRead repo
+	where
+		params = ["config", "--null", "--list", "--global"]
+		p = (proc "git" params)
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
