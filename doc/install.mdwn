@@ -43,7 +43,7 @@ libraries. To build and use git-annex by hand, you will need:
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
   * [edit-distance](http://hackage.haskell.org/package/edit-distance)
   * [hS3](http://hackage.haskell.org/package/hS3) (optional)
-* Optional haskell stuff, used by the assistant and webapp (edit Makefile to disable)
+* Optional haskell stuff, used by the [[assistant]] and its webapp (edit Makefile to disable)
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
   * [hinotify](http://hackage.haskell.org/package/hinotify)
