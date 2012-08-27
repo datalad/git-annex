@@ -18,7 +18,6 @@ others need some manual work. See [[install]] for details.
 
 The git repository has some branches:
 
-* `assistant` contains the new change-tracking daemon
 * `ghc7.0` supports versions of ghc older than 7.4, which
   had a major change to filename encoding.
 * `old-monad-control` is for systems that don't have a newer monad-control
