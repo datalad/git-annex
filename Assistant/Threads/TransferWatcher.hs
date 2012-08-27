@@ -13,6 +13,7 @@ import Assistant.DaemonStatus
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import qualified Remote
 
 thisThread :: ThreadName
 thisThread = "TransferWatcher"
@@ -61,7 +62,11 @@ onAdd st dstatus file _ = case parseTransferFile file of
 				[ "transfer starting:"
 				, show t
 				]
+			r <- headMaybe . filter (sameuuid t) . knownRemotes
+				<$> getDaemonStatus dstatus
 			updateTransferInfo dstatus t info
+				{ transferRemote = r }
+		sameuuid t r = Remote.uuid r == transferUUID t
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
