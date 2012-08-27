@@ -5,8 +5,9 @@ to limitations in memory, time, or disk space.
 
 Even without file content tracking, being able to manage files with git,
 move files around and delete files with versioned directory trees, and use
-branches and distributed clones, are all very handy reasons to use git. And
-annexed files can co-exist in the same git repository with regularly
-versioned files, which is convenient for maintaining documents, Makefiles,
-etc that are associated with annexed files but that benefit from full
-revision control.
+branches and distributed clones, are all very handy reasons to use git.
+
+[[!img align=left assistant/thumbnail.png link=assistant]]
+git-annex is designed for git users who love the command line.
+For everyone else, the [[git-annex assistant|assistant]] turns
+git-annex into an easy to use folder synchroniser.

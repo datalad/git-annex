@@ -1,12 +1,13 @@
 [[!inline raw=yes pages="summary"]]
 
-To get a feel for it, see the [[walkthrough]] or read about [[how_it_works]].
+To get a feel for git-annex, see the [[walkthrough]] or read about [[how_it_works]].
 
 [[!sidebar content="""
 [[!img logo_small.png link=no]]
 
 * **[[download]]**
 * [[install]]
+* [[assistant]]
 * [[tips]]
 * [[bugs]]
 * [[todo]]
