@@ -96,10 +96,10 @@ transferThread dstatus slots t info runner program = case (transferRemote info, 
 			(_, _, _, pid)
 				<- createProcess (proc program $ toCommand params)
 					{ create_group = True }
-			status <- waitForProcess pid
+			ok <- (==) ExitSuccess <$> waitForProcess pid
 			addAlert dstatus $
-				makeAlertFiller (status == ExitSuccess) $ 
-					transferFileAlert direction file
+				makeAlertFiller ok $ 
+					transferFileAlert direction ok file
 			where
 				params =
 					[ Param "transferkey"

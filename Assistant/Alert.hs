@@ -260,10 +260,13 @@ addFileAlert :: FilePath -> Alert
 addFileAlert = fileAlert (Tensed "Adding" "Added")
 
 {- This is only used as a success alert after a transfer, not during it. -}
-transferFileAlert :: Direction -> FilePath -> Alert
-transferFileAlert direction 
+transferFileAlert :: Direction -> Bool -> FilePath -> Alert
+transferFileAlert direction True
 	| direction == Upload = fileAlert "Uploaded"
 	| otherwise = fileAlert "Downloaded"
+transferFileAlert direction False
+	| direction == Upload = fileAlert "Upload failed"
+	| otherwise = fileAlert "Download failed"
 
 dataCombiner :: ([TenseChunk] -> [TenseChunk] -> [TenseChunk]) -> AlertCombiner
 dataCombiner combiner new old
