@@ -18,6 +18,7 @@ import Logs.Location
 import Annex.Content
 import qualified Remote
 import Types.Key
+import Locations.UserConfig
 
 import System.Process (create_group)
 
@@ -30,23 +31,23 @@ maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
-transfererThread st dstatus transferqueue slots = go
+transfererThread st dstatus transferqueue slots = go =<< readProgramFile
 	where
-		go = getNextTransfer transferqueue dstatus notrunning >>= handle
-		handle Nothing = go
-		handle (Just (t, info)) = do
+		go program = getNextTransfer transferqueue dstatus notrunning >>= handle program
+		handle program Nothing = go program
+		handle program (Just (t, info)) = do
 			ifM (runThreadState st $ shouldTransfer t info)
 				( do
 					debug thisThread [ "Transferring:" , show t ]
 					notifyTransfer dstatus
-					transferThread dstatus slots t info inTransferSlot
+					transferThread dstatus slots t info inTransferSlot program
 				, do
 					debug thisThread [ "Skipping unnecessary transfer:" , show t ]
 					-- getNextTransfer added t to the
 					-- daemonstatus's transfer map.
 					void $ removeTransfer dstatus t
 				)
-			go
+			go program
 		{- Skip transfers that are already running. -}
 		notrunning i = startedTime i == Nothing
 
@@ -79,8 +80,8 @@ shouldTransfer t info
  - the transfer info; the thread will also be killed when a transfer is
  - stopped, to avoid it displaying any alert about the transfer having
  - failed. -}
-transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> TransferSlotRunner -> IO ()
-transferThread dstatus slots t info runner = case (transferRemote info, associatedFile info) of
+transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> TransferSlotRunner -> FilePath -> IO ()
+transferThread dstatus slots t info runner program = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
 	(Just remote, Just file) -> do
@@ -93,14 +94,13 @@ transferThread dstatus slots t info runner = case (transferRemote info, associat
 
 		transferprocess remote file = void $ do
 			(_, _, _, pid)
-				<- createProcess (proc command $ toCommand params)
+				<- createProcess (proc program $ toCommand params)
 					{ create_group = True }
 			status <- waitForProcess pid
 			addAlert dstatus $
 				makeAlertFiller (status == ExitSuccess) $ 
 					transferFileAlert direction file
 			where
-				command = "git-annex"
 				params =
 					[ Param "transferkey"
 					, Param $ key2file $ transferKey t

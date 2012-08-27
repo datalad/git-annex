@@ -37,7 +37,7 @@ autostart command = genDesktopEntry
 	(command ++ " assistant --autostart")
 	[]
 
-writeDesktop :: String -> IO ()
+writeDesktop :: FilePath -> IO ()
 writeDesktop command = do
 	destdir <- catchDefaultIO (getEnv "DESTDIR") ""
 	uid <- fromIntegral <$> getRealUserID

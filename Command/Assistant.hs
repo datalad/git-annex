@@ -55,8 +55,7 @@ autoStart = do
 	ifM (doesFileExist autostartfile)
 		( do
 			dirs <- lines <$> readFile autostartfile
-			programfile <- programFile
-			program <- catchDefaultIO (readFile programfile) "git-annex"
+			program <- readProgramFile
 			when (null dirs) nothing
 			forM_ dirs $ \d -> do
 				putStrLn $ "git-annex autostart in " ++ d

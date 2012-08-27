@@ -7,9 +7,8 @@
 
 module Locations.UserConfig where
 
+import Common
 import Utility.FreeDesktop
-
-import System.FilePath
 
 {- ~/.config/git-annex/file -}
 userConfigFile :: FilePath -> IO FilePath
@@ -24,3 +23,9 @@ autoStartFile = userConfigFile "autostart"
  - has installed it to some aweful non-PATH location. -}
 programFile :: IO FilePath
 programFile = userConfigFile "program"
+
+{- Returns a command to run for git-annex. -}
+readProgramFile :: IO FilePath
+readProgramFile = do
+	programfile <- programFile
+	catchDefaultIO (readFile programfile) "git-annex"

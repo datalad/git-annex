@@ -26,6 +26,7 @@ import Utility.DataUnits
 import Types.Key
 import qualified Remote
 import qualified Git
+import Locations.UserConfig
 
 import Yesod
 import Text.Hamlet
@@ -211,6 +212,7 @@ startTransfer t = do
 				{ transferPid = Nothing }
 			liftIO $ Transferrer.transferThread
 				dstatus slots t info inImmediateTransferSlot
+					=<< readProgramFile
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers
