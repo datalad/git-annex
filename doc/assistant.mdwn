@@ -8,8 +8,9 @@ It's very easy to use, and has all the power of git and git-annex
 The git-annex assistant comes as part of git-annex.
 See [[install]] to get it installed.
 
-(Note that it's not yet in the released version of git-annex.
-This will change soon!)
+Note that the git-annex assistant is still beta quality code.
+(And it's not yet in the released version of git-annex.
+That will change soon!)
 
 ## quick start
 
