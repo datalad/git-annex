@@ -39,30 +39,32 @@
  - 	and maintains the DaemonStatus currentTransfers map.
  - 	(This uses inotify on .git/annex/transfer/, so there are
  - 	additional inotify threads associated with it, too.)
- - Thread 10: Transferrer
+ - Thread 10: TransferPoller
+ -	Polls to determine how much of each ongoing transfer is complete.
+ - Thread 11: Transferrer
  - 	Waits for Transfers to be queued and does them.
- - Thread 11: StatusLogger
+ - Thread 12: StatusLogger
  - 	Wakes up periodically and records the daemon's status to disk.
- - Thread 12: SanityChecker
+ - Thread 13: SanityChecker
  - 	Wakes up periodically (rarely) and does sanity checks.
- - Thread 13: MountWatcher
+ - Thread 14: MountWatcher
  - 	Either uses dbus to watch for drive mount events, or, when
  - 	there's no dbus, polls to find newly mounted filesystems.
  - 	Once a filesystem that contains a remote is mounted, updates
  - 	state about that remote, pulls from it, and queues a push to it,
  - 	as well as an update, and queues it onto the
  - 	ConnectedRemoteChan
- - Thread 13: NetWatcher
+ - Thread 15: NetWatcher
  - 	Deals with network connection interruptions, which would cause
  - 	transfers to fail, and can be recovered from by waiting for a
  - 	network connection, and syncing with all network remotes.
  - 	Uses dbus to watch for network connections, or when dbus
  - 	cannot be used, assumes there's been one every 30 minutes.
- - Thread 15: TransferScanner
+ - Thread 16: TransferScanner
  - 	Does potentially expensive checks to find data that needs to be
  - 	transferred from or to remotes, and queues Transfers.
  - 	Uses the ScanRemotes map.
- - Thread 16: WebApp
+ - Thread 17: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
  -
@@ -118,6 +120,7 @@ import Assistant.Threads.SanityChecker
 import Assistant.Threads.MountWatcher
 import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
+import Assistant.Threads.TransferPoller
 #ifdef WITH_WEBAPP
 import Assistant.Threads.WebApp
 #else
@@ -168,6 +171,7 @@ startAssistant assistant daemonize webappwaiter = do
 				, assist $ pushRetryThread st dstatus pushmap
 				, assist $ mergeThread st
 				, assist $ transferWatcherThread st dstatus
+				, assist $ transferPollerThread st dstatus
 				, assist $ transfererThread st dstatus transferqueue transferslots
 				, assist $ daemonStatusThread st dstatus
 				, assist $ sanityCheckerThread st dstatus transferqueue changechan
