@@ -215,6 +215,14 @@ readTransferInfo mpid s =
 		(bits, filebits) = splitAt 1 $ lines s 
 		filename = join "\n" filebits
 
+{- Preserves the old transferTid and transferPaused values,
+ - which are not written to disk. -}
+mergeTransferInfo :: TransferInfo -> TransferInfo -> TransferInfo
+mergeTransferInfo new old = new
+	{ transferTid = maybe (transferTid new) Just (transferTid old)
+	, transferPaused = transferPaused new || transferPaused old
+	}
+
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds
 	<$> parseTime defaultTimeLocale "%s%Qs" s

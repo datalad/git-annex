@@ -41,8 +41,7 @@ transferPollerThread st dstatus = do
 				sz <- catchMaybeIO $
 					fromIntegral . fileSize
 						<$> getFileStatus f
-				when (bytesComplete info /= sz && isJust sz) $ do
-					putStrLn $ "download size " ++ show sz
+				when (bytesComplete info /= sz && isJust sz) $
 					updateTransferInfo dstatus t info
 						{ bytesComplete = sz }
 			{- can't poll uploads -}

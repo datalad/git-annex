@@ -191,19 +191,21 @@ adjustTransfersSTM dstatus a = do
 	s <- takeTMVar dstatus
 	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
 
-{- Updates a transfer's info.
- - Preserves the transferTid and transferPaused values,
- - which are not written to disk. -}
+{- Alters a transfer's info, if the transfer is in the map. -}
+alterTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
+alterTransferInfo dstatus t info = updateTransferInfo' dstatus $
+	M.adjust (mergeTransferInfo info) t
+
+{- Updates a transfer's info. Adds the transfer to the map if necessary. -}
 updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
-updateTransferInfo dstatus t info =
+updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
+	M.insertWith' mergeTransferInfo t info
+
+updateTransferInfo' :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
+updateTransferInfo' dstatus a =
 	notifyTransfer dstatus `after` modifyDaemonStatus_ dstatus go
 	where
-		go s = s { currentTransfers = update (currentTransfers s) }
-		update m = M.insertWith' merge t info m
-		merge new old = new
-			{ transferTid = maybe (transferTid new) Just (transferTid old)
-			, transferPaused = transferPaused new || transferPaused old
-			}
+		go s = s { currentTransfers = a (currentTransfers s) }
 
 {- Removes a transfer from the map, and returns its info. -}
 removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
