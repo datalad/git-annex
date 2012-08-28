@@ -1,6 +1,8 @@
 Things that don't fit anywhere else:
 
-* Automatically start daemon on boot or when user logs in. **done**
+* Automatically start daemon on boot or when user logs in, using
+  freedesktop autostart file. **done**
+* autostart the assistant on OSX, using launchd
 * Somehow get content that is unavailable. This is problematic with inotify,
   since we only get an event once the user has tried (and failed) to read
   from the file. This is only needed if all the files in the directory 

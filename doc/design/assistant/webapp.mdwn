@@ -21,6 +21,7 @@ The webapp is a web server that displays a shiny interface.
   some by the path to git-annex sometimes needing to be hardcoded and varying
   across systems, so it would need to be a symlink to `.git/annex/desktop`
   which would be per-system.
+* add menu item on OSX?
 
 ## first start **done**
 
