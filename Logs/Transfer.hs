@@ -61,9 +61,8 @@ readLcDirection "download" = Just Download
 readLcDirection _ = Nothing
 
 percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
-percentComplete (Transfer { transferKey = key }) (TransferInfo { bytesComplete = Just complete }) =
-	(\size -> percentage size complete) <$> keySize key
-percentComplete _ _ = Nothing
+percentComplete (Transfer { transferKey = key }) info =
+	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
 upload :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
 upload u key file a = runTransfer (Transfer Upload u key) file a
