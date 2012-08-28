@@ -33,21 +33,23 @@ maxTransfers = 1
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
 transfererThread st dstatus transferqueue slots = go =<< readProgramFile
 	where
-		go program = getNextTransfer transferqueue dstatus notrunning >>= handle program
-		handle program Nothing = go program
-		handle program (Just (t, info)) = do
-			ifM (runThreadState st $ shouldTransfer t info)
-				( do
-					debug thisThread [ "Transferring:" , show t ]
-					notifyTransfer dstatus
-					transferThread dstatus slots t info inTransferSlot program
-				, do
-					debug thisThread [ "Skipping unnecessary transfer:" , show t ]
-					-- getNextTransfer added t to the
-					-- daemonstatus's transfer map.
-					void $ removeTransfer dstatus t
-				)
-			go program
+		go program = forever $ inTransferSlot dstatus slots $
+			getNextTransfer transferqueue dstatus notrunning
+				>>= handle program
+		handle _ Nothing = return Nothing
+		handle program (Just (t, info)) = ifM (runThreadState st $ shouldTransfer t info)
+			( do
+				debug thisThread [ "Transferring:" , show t ]
+				notifyTransfer dstatus
+				let a = doTransfer dstatus t info program
+				return $ Just (t, info, a)
+			, do
+				debug thisThread [ "Skipping unnecessary transfer:" , show t ]
+				-- getNextTransfer added t to the
+				-- daemonstatus's transfer map.
+				void $ removeTransfer dstatus t
+				return Nothing
+			)
 		{- Skip transfers that are already running. -}
 		notrunning i = startedTime i == Nothing
 
@@ -70,24 +72,11 @@ shouldTransfer t info
 	where
 		key = transferKey t
 
-{- A sepeate git-annex process is forked off to run a transfer,
- - running in its own process group. This allows killing it and all its
- - children if the user decides to cancel the transfer.
- -
- - A thread is forked off to run the process, and the thread
- - occupies one of the transfer slots. If all slots are in use, this will
- - block until one becomes available. The thread's id is also recorded in
- - the transfer info; the thread will also be killed when a transfer is
- - stopped, to avoid it displaying any alert about the transfer having
- - failed. -}
-transferThread :: DaemonStatusHandle -> TransferSlots -> Transfer -> TransferInfo -> TransferSlotRunner -> FilePath -> IO ()
-transferThread dstatus slots t info runner program = case (transferRemote info, associatedFile info) of
+doTransfer :: DaemonStatusHandle -> Transfer -> TransferInfo -> FilePath -> IO ()
+doTransfer dstatus t info program = case (transferRemote info, associatedFile info) of
 	(Nothing, _) -> noop
 	(_, Nothing) -> noop
-	(Just remote, Just file) -> do
-		tid <- runner slots $
-			transferprocess remote file
-		updateTransferInfo dstatus t $ info { transferTid = Just tid }
+	(Just remote, Just file) -> transferprocess remote file
 	where
 		direction = transferDirection t
 		isdownload = direction == Download

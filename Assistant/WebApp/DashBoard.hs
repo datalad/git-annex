@@ -210,9 +210,10 @@ startTransfer t = do
 			 - forget that old pid, and start a new one. -}
 			liftIO $ updateTransferInfo dstatus t $ info
 				{ transferPid = Nothing }
-			liftIO $ Transferrer.transferThread
-				dstatus slots t info inImmediateTransferSlot
-					=<< readProgramFile
+			liftIO $ inImmediateTransferSlot dstatus slots $ do
+				program <- readProgramFile
+				let a = Transferrer.doTransfer dstatus t info program
+				return $ Just (t, info, a)
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers

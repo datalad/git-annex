@@ -9,12 +9,14 @@
 
 module Assistant.TransferSlots where
 
+import Common.Annex
+import Utility.ThreadScheduler
+import Assistant.DaemonStatus
+import Logs.Transfer
+
 import qualified Control.Exception as E
 import Control.Concurrent
 import Data.Typeable
-
-import Common.Annex
-import Utility.ThreadScheduler
 
 type TransferSlots = QSemN
 
@@ -25,7 +27,8 @@ data TransferException = PauseTransfer | ResumeTransfer
 
 instance E.Exception TransferException
 
-type TransferSlotRunner = TransferSlots -> IO () -> IO ThreadId
+type TransferSlotRunner = DaemonStatusHandle -> TransferSlots -> TransferGenerator -> IO ()
+type TransferGenerator = IO (Maybe (Transfer, TransferInfo, IO ()))
 
 {- Number of concurrent transfers allowed to be run from the assistant.
  -
@@ -38,31 +41,40 @@ numSlots = 1
 newTransferSlots :: IO TransferSlots
 newTransferSlots = newQSemN numSlots
 
-{- Waits until a transfer slot becomes available, and runs a transfer
- - action in the slot, in its own thread. 
+{- Waits until a transfer slot becomes available, then runs a
+ - TransferGenerator, and then runs the transfer action in its own thread. 
  -}
 inTransferSlot :: TransferSlotRunner
-inTransferSlot = runTransferSlot (\s -> waitQSemN s 1)
+inTransferSlot dstatus s gen = do
+	waitQSemN s 1
+	runTransferThread dstatus s =<< gen
 
-{- Runs a transfer action, without waiting for a slot to become available. -}
+{- Runs a TransferGenerator, and its transfer action,
+ - without waiting for a slot to become available. -}
 inImmediateTransferSlot :: TransferSlotRunner
-inImmediateTransferSlot = runTransferSlot (\s -> signalQSemN s (-1))
+inImmediateTransferSlot dstatus s gen = do
+	signalQSemN s (-1)
+	runTransferThread dstatus s =<< gen
 
-{- Note that the action is subject to being killed when the transfer
+{- Runs a transfer action, in an already allocated transfer slot.
+ - Once it finishes, frees the transfer slot.
+ -
+ - Note that the action is subject to being killed when the transfer
  - is canceled or paused.
  -
  - A PauseTransfer exception is handled by letting the action be killed,
  - then pausing the thread until a ResumeTransfer exception is raised,
  - then rerunning the action.
  -}
-runTransferSlot :: (QSemN -> IO ()) -> TransferSlotRunner
-runTransferSlot allocator s transfer = do
-	allocator s
-	forkIO $ E.bracket_ noop (signalQSemN s 1) go
+runTransferThread :: DaemonStatusHandle -> TransferSlots -> Maybe (Transfer, TransferInfo, IO ()) -> IO ()
+runTransferThread _ s  Nothing = signalQSemN s 1
+runTransferThread dstatus s (Just (t, info, a)) = do
+	tid <- forkIO $ E.bracket_ noop (signalQSemN s 1) go
+	updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
-		go = catchPauseResume transfer
+		go = catchPauseResume a
 		pause = catchPauseResume $ runEvery (Seconds 86400) noop
-		catchPauseResume a = E.catch a handlePauseResume
+		catchPauseResume a' = E.catch a' handlePauseResume
 		handlePauseResume PauseTransfer = do
 			putStrLn "pause"
 			pause
