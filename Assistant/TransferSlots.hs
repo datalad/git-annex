@@ -75,9 +75,5 @@ runTransferThread dstatus s (Just (t, info, a)) = do
 		go = catchPauseResume a
 		pause = catchPauseResume $ runEvery (Seconds 86400) noop
 		catchPauseResume a' = E.catch a' handlePauseResume
-		handlePauseResume PauseTransfer = do
-			putStrLn "pause"
-			pause
-		handlePauseResume ResumeTransfer = do
-			putStrLn "resume"
-			go
+		handlePauseResume PauseTransfer = pause
+		handlePauseResume ResumeTransfer = go
