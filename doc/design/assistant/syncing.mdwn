@@ -4,8 +4,7 @@ all the other git clones, at both the git level and the key/value level.
 ## immediate action items
 
 * The TransferScanner queues downloads for a single file from every remote 
-  that has it. If the first is not available, a failure alert is shown.
-  It should not be, if there is another remote to try. Also, it'd be nicer
+  that has it. It'd be nicer
   to only show one queued transfer. Perhaps only queue one, and check
   for other locations if it fails? Or change the queue so each transfer is
   really a list of equivilant transfers.
