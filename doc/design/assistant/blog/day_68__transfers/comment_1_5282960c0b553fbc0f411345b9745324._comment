@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-08-29T21:24:37Z"
+ content="""
+It seems to be a bad idea to cancel everything when I cancel a single transfer.
+
+I may not want to transmit videos and RAW files at the moment, but would still like to know my JPGs are stored in a second location.
+
+Two obvious approaches, ideally both offered at the same time would be to allow the user to cancel, cancel all to this remote, and cancel all plus allowing them to send transfers to the end of the queue.
+
+If this is implemented already then sorry; I did _not_ test if this is available before writing this comment.
+"""]]
