@@ -145,11 +145,15 @@ getNextTransfer q dstatus acceptable = atomically $ do
 dequeueTransfer :: TransferQueue -> DaemonStatusHandle -> Transfer -> IO Bool
 dequeueTransfer q dstatus t = do
 	ok <- atomically $ do
-		(removed, l) <- partition (equivilantTransfer t . fst)
+		(removed, ls) <- partition (equivilantTransfer t . fst)
 			<$> readTVar (queuelist q)
-		void $ writeTVar (queuesize q) (length l)
-		void $ writeTVar (queuelist q) l
+		void $ writeTVar (queuesize q) (length ls)
+		void $ writeTVar (queuelist q) ls
+		drain
+		forM_ ls $ unGetTChan (queue q)
 		return $ not $ null removed
 	when ok $
 		notifyTransfer dstatus
 	return ok
+	where
+		drain = maybe noop (const drain) =<< tryReadTChan (queue q)
