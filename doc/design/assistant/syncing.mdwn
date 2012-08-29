@@ -3,14 +3,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* Ensure that when a remote receives content, and updates its location log,
-  it syncs that update back out. Prerequisite for:
-* After git sync, identify new content that we don't have that is now available
-  on remotes, and transfer. (Needed when we have a uni-directional connection
-  to a remote, so it won't be uploading content to us.) Note: Does not
-  need to use the TransferScanner, if we get and check a list of the changed
-  files.
-
 ## longer-term TODO
 
 * Test MountWatcher on LXDE.
@@ -42,12 +34,13 @@ all the other git clones, at both the git level and the key/value level.
   working copy and checks each file. That probably needs to be done once,
   but further calls to the TransferScanner could eg, look at the delta
   between the last scan and the current one in the git-annex branch.
-
-## misc todo
-
-* --debug will show often unnecessary work being done. Optimise.
-* It would be nice if, when a USB drive is connected, 
-  syncing starts automatically. Use dbus on Linux?
+* Ensure that when a remote receives content, and updates its location log,
+  it syncs that update back out. Prerequisite for:
+* After git sync, identify new content that we don't have that is now available
+  on remotes, and transfer. (Needed when we have a uni-directional connection
+  to a remote, so it won't be uploading content to us.) Note: Does not
+  need to use the TransferScanner, if we get and check a list of the changed
+  files.
 
 ## data syncing
 
