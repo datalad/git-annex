@@ -175,8 +175,9 @@ cancelTransfer pause t = do
 	let dstatus = daemonStatus webapp
 	m <- getCurrentTransfers
 	liftIO $ do
-		{- remove queued transfer -}
-		void $ dequeueTransfer (transferQueue webapp) dstatus t
+		unless pause $
+			{- remove queued transfer -}
+			void $ dequeueTransfer (transferQueue webapp) dstatus t
 		{- stop running transfer -}
 		maybe noop (stop dstatus) (M.lookup t m)
 	where
@@ -190,7 +191,8 @@ cancelTransfer pause t = do
 			if pause
 				then void $
 					alterTransferInfo dstatus t $ info
-						{ transferPaused = True }
+						{ transferPaused = True
+						, transferPid = Nothing }
 				else void $
 					removeTransfer dstatus t
 		signalthread tid
@@ -202,7 +204,7 @@ cancelTransfer pause t = do
 		killproc pid = do
 			g <- getProcessGroupIDOf pid
 			void $ tryIO $ signalProcessGroup sigTERM g
-			threadDelay 100000 -- 0.1 second grace period
+			threadDelay 50000 -- 0.05 second grace period
 			void $ tryIO $ signalProcessGroup sigKILL g
 
 startTransfer :: Transfer -> Handler ()
