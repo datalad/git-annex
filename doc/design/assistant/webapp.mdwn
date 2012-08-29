@@ -1,5 +1,11 @@
 The webapp is a web server that displays a shiny interface.
 
+## bugs
+
+* At least in chromium, clicking on the transfer pause or cancel button
+  sometimes fails. Seen in javascript console:
+  500 error code from web server.
+
 ## interface
 
 * list of files uploading and downloading **done**
