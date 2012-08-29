@@ -15,7 +15,7 @@ module Assistant.TransferQueue (
 	queueTransferAt,
 	queueTransferWhenSmall,
 	getNextTransfer,
-	dequeueTransfer,
+	dequeueTransfers,
 ) where
 
 import Common.Annex
@@ -140,20 +140,20 @@ getNextTransfer q dstatus acceptable = atomically $ do
 			return $ Just r
 		else return Nothing
 
-{- Removes a transfer (as well as any equivilant transfers) from the queue,
- - and returns True if anything was removed. -}
-dequeueTransfer :: TransferQueue -> DaemonStatusHandle -> Transfer -> IO Bool
-dequeueTransfer q dstatus t = do
-	ok <- atomically $ do
-		(removed, ls) <- partition (equivilantTransfer t . fst)
+{- Removes transfers matching a condition from the queue, and returns the
+ - removed transfers. -}
+dequeueTransfers :: TransferQueue -> DaemonStatusHandle -> (Transfer -> Bool) -> IO [(Transfer, TransferInfo)]
+dequeueTransfers q dstatus c = do
+	removed <- atomically $ do
+		(removed, ls) <- partition (c . fst)
 			<$> readTVar (queuelist q)
 		void $ writeTVar (queuesize q) (length ls)
 		void $ writeTVar (queuelist q) ls
 		drain
 		forM_ ls $ unGetTChan (queue q)
-		return $ not $ null removed
-	when ok $
+		return removed
+	unless (null removed) $
 		notifyTransfer dstatus
-	return ok
+	return removed
 	where
 		drain = maybe noop (const drain) =<< tryReadTChan (queue q)

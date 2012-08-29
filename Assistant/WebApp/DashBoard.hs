@@ -175,7 +175,8 @@ cancelTransfer pause t = do
 	liftIO $ do
 		unless pause $
 			{- remove queued transfer -}
-			void $ dequeueTransfer (transferQueue webapp) dstatus t
+			void $ dequeueTransfers (transferQueue webapp) dstatus $
+				equivilantTransfer t
 		{- stop running transfer -}
 		maybe noop (stop dstatus) (M.lookup t m)
 	where
