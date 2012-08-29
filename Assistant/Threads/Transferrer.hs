@@ -39,7 +39,7 @@ transfererThread st dstatus transferqueue slots = go =<< readProgramFile
 		{- Skip transfers that are already running. -}
 		notrunning i = startedTime i == Nothing
 
-{- By the time this is called, the daemonstatis's transfer map should
+{- By the time this is called, the daemonstatus's transfer map should
  - already have been updated to include the transfer. -}
 startTransfer :: ThreadState -> DaemonStatusHandle -> FilePath -> Transfer -> TransferInfo -> TransferGenerator
 startTransfer st dstatus program t info = case (transferRemote info, associatedFile info) of
