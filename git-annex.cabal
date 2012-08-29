@@ -40,12 +40,6 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
-Flag CurrentYesod
-  Description: Using a current version of Yesod
-
-Flag OldYesod
-  Description: Using an old version of Yesod
-
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -79,18 +73,11 @@ Executable git-annex
     Build-Depends: dbus
     CPP-Options: -DWITH_DBUS
 
-  if flag(CurrentYesod)
-    Build-Depends: yesod-default (>= 1.1.0)
-
-  if flag(OldYesod)
-    Build-Depends: yesod-default (<= 1.0.1.1)
-    CPP-Options: -DWITH_OLD_YESOD
-
-  if flag(Webapp) && (flag(CurrentYesod) || flag(OldYesod))
+  if flag(Webapp)
     Build-Depends: yesod, yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
      blaze-html, crypto-api, hamlet, clientsession,
-     template-haskell
+     template-haskell, yesod-default (>= 1.1.0)
     CPP-Options: -DWITH_WEBAPP
 
   if os(darwin)
