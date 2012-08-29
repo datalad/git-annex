@@ -45,7 +45,6 @@ transfersDisplay warnNoScript = do
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
-	liftIO $ print ("current", current)
 	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
