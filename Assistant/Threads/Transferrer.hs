@@ -86,9 +86,10 @@ doTransfer dstatus t info program = case (transferRemote info, associatedFile in
 				<- createProcess (proc program $ toCommand params)
 					{ create_group = True }
 			ok <- (==) ExitSuccess <$> waitForProcess pid
-			addAlert dstatus $
-				makeAlertFiller ok $ 
-					transferFileAlert direction ok file
+			when ok $ void $
+				addAlert dstatus $
+					makeAlertFiller ok $
+						transferFileAlert direction ok file
 			where
 				params =
 					[ Param "transferkey"
