@@ -42,7 +42,7 @@ transferPollerThread st dstatus = do
 					fromIntegral . fileSize
 						<$> getFileStatus f
 				when (bytesComplete info /= sz && isJust sz) $
-					updateTransferInfo dstatus t info
+					alterTransferInfo dstatus t info
 						{ bytesComplete = sz }
 			{- can't poll uploads -}
 			| otherwise = noop

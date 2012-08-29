@@ -64,7 +64,7 @@ onAdd st dstatus file _ = case parseTransferFile file of
 				]
 			r <- headMaybe . filter (sameuuid t) . knownRemotes
 				<$> getDaemonStatus dstatus
-			alterTransferInfo dstatus t info
+			updateTransferInfo dstatus t info
 				{ transferRemote = r }
 		sameuuid t r = Remote.uuid r == transferUUID t
 
