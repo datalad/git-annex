@@ -45,7 +45,7 @@ transfersDisplay warnNoScript = do
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
-	let transfers = current ++ queued
+	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
 			( introDisplay ident
@@ -55,6 +55,16 @@ transfersDisplay warnNoScript = do
 	where
 		isrunning info = not $
 			transferPaused info || isNothing (startedTime info)
+
+{- Simplifies a list of transfers, avoiding display of redundant downloads,
+ - that appear immediately after a download of the same key. -}
+simplifyTransfers :: [(Transfer, TransferInfo)] -> [(Transfer, TransferInfo)]
+simplifyTransfers [] = []
+simplifyTransfers (x:[]) = [x]
+simplifyTransfers (v@(t1, _):r@((t2, _):l))
+	| transferDirection t1 == Download && transferDirection t2 == Download &&
+	  transferKey t1 == transferKey t2 = simplifyTransfers (v:l)
+	| otherwise = v : (simplifyTransfers r)
 
 {- Called by client to get a display of currently in process transfers.
  -
