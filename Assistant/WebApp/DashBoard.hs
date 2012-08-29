@@ -57,14 +57,13 @@ transfersDisplay warnNoScript = do
 		isrunning info = not $
 			transferPaused info || isNothing (startedTime info)
 
-{- Simplifies a list of transfers, avoiding display of redundant downloads,
- - that appear immediately after a download of the same key. -}
+{- Simplifies a list of transfers, avoiding display of redundant
+ - equivilant transfers. -}
 simplifyTransfers :: [(Transfer, TransferInfo)] -> [(Transfer, TransferInfo)]
 simplifyTransfers [] = []
 simplifyTransfers (x:[]) = [x]
 simplifyTransfers (v@(t1, _):r@((t2, _):l))
-	| transferDirection t1 == Download && transferDirection t2 == Download &&
-	  transferKey t1 == transferKey t2 = simplifyTransfers (v:l)
+	| equivilantTransfer t1 t2 = simplifyTransfers (v:l)
 	| otherwise = v : (simplifyTransfers r)
 
 {- Called by client to get a display of currently in process transfers.

@@ -60,6 +60,13 @@ readLcDirection "upload" = Just Upload
 readLcDirection "download" = Just Download
 readLcDirection _ = Nothing
 
+{- Transfers that will accomplish the same task. -}
+equivilantTransfer :: Transfer -> Transfer -> Bool
+equivilantTransfer t1 t2
+	| transferDirection t1 == Download && transferDirection t2 == Download &&
+	  transferUUID t1 == transferUUID t2 = True
+	| otherwise = t1 == t2
+
 percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
