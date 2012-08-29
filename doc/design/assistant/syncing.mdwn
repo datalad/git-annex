@@ -3,11 +3,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* pause, resume, and pause of a transfer fails... The first pause is ok,
-  and the first resume. The second pause seems to block forever when
-  it signals the transfer thread. I've checked: ThreadID is correct. Thread
-  is still running. No exception is thrown. WTF? (One or twice, it worked,
-  but then blocked next time paused.)
 
 ## longer-term TODO
 

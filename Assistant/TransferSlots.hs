@@ -73,7 +73,14 @@ runTransferThread dstatus s (Just (t, info, a)) = do
 	updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
 		go = catchPauseResume a
-		pause = catchPauseResume $ runEvery (Seconds 86400) noop
-		catchPauseResume a' = E.catch a' handlePauseResume
-		handlePauseResume PauseTransfer = pause
-		handlePauseResume ResumeTransfer = go
+		pause = catchPauseResume $ runEvery (Seconds 1) $ print "paused"
+		{- Note: This must use E.try, rather than E.catch.
+		 - When E.catch is used, and has called go in its exception
+		 - handler, Control.Concurrent.throwTo will block sometimes
+		 - when signaling. Using E.try avoids the problem. -}
+		catchPauseResume a' = do
+			r <- E.try a'
+			case r of
+				Right v -> return v
+				Left PauseTransfer -> pause
+				Left ResumeTransfer -> go
