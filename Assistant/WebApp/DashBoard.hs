@@ -45,6 +45,7 @@ transfersDisplay warnNoScript = do
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
 	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
+	liftIO $ print ("current", current)
 	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers
 		then ifM (lift $ showIntro <$> getWebAppState)
@@ -188,7 +189,7 @@ cancelTransfer pause t = do
 			maybe noop killproc $ transferPid info
 			if pause
 				then void $
-					updateTransferInfo dstatus t $ info
+					alterTransferInfo dstatus t $ info
 						{ transferPaused = True }
 				else void $
 					removeTransfer dstatus t
@@ -207,19 +208,25 @@ cancelTransfer pause t = do
 startTransfer :: Transfer -> Handler ()
 startTransfer t = do
 	m <- getCurrentTransfers
-	maybe noop resume (M.lookup t m)
+	maybe noop go (M.lookup t m)
 	-- TODO: handle starting a queued transfer
 	where
-		resume info = maybe (start info) signalthread $ transferTid info
-		signalthread tid = liftIO $ throwTo tid ResumeTransfer
+		go info = maybe (start info) (resume info) $ transferTid info
+		resume info tid = do
+			webapp <- getYesod
+			let dstatus = daemonStatus webapp
+			liftIO $ do
+				alterTransferInfo dstatus t $ info
+					{ transferPaused = False }
+				throwTo tid ResumeTransfer
 		start info = do
 			webapp <- getYesod
 			let dstatus = daemonStatus webapp
 			let slots = transferSlots webapp
 			{- This transfer was being run by another process,
 			 - forget that old pid, and start a new one. -}
-			liftIO $ updateTransferInfo dstatus t $ info
-				{ transferPid = Nothing }
+			liftIO $ alterTransferInfo dstatus t $ info
+				{ transferPid = Nothing, transferPaused = False }
 			liftIO $ inImmediateTransferSlot dstatus slots $ do
 				program <- readProgramFile
 				let a = Transferrer.doTransfer dstatus t info program

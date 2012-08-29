@@ -194,12 +194,19 @@ adjustTransfersSTM dstatus a = do
 {- Alters a transfer's info, if the transfer is in the map. -}
 alterTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
 alterTransferInfo dstatus t info = updateTransferInfo' dstatus $
-	M.adjust (mergeTransferInfo info) t
+	M.adjust (const info) t
 
-{- Updates a transfer's info. Adds the transfer to the map if necessary. -}
+{- Updates a transfer's info. Adds the transfer to the map if necessary,
+ - or if already present, updates it while preserving the old transferTid
+ - and transferPaused values, which are not written to disk. -}
 updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
 updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
-	M.insertWith' mergeTransferInfo t info
+	M.insertWith' merge t info
+	where
+		merge new old = new
+			{ transferTid = maybe (transferTid new) Just (transferTid old)
+			, transferPaused = transferPaused new || transferPaused old
+			}
 
 updateTransferInfo' :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
 updateTransferInfo' dstatus a =
