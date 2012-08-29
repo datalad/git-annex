@@ -34,49 +34,26 @@ transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Transf
 transfererThread st dstatus transferqueue slots = go =<< readProgramFile
 	where
 		go program = forever $ inTransferSlot dstatus slots $
-			getNextTransfer transferqueue dstatus notrunning
-				>>= handle program
-		handle _ Nothing = return Nothing
-		handle program (Just (t, info)) = ifM (runThreadState st $ shouldTransfer t info)
-			( do
-				debug thisThread [ "Transferring:" , show t ]
-				notifyTransfer dstatus
-				let a = doTransfer dstatus t info program
-				return $ Just (t, info, a)
-			, do
-				debug thisThread [ "Skipping unnecessary transfer:" , show t ]
-				-- getNextTransfer added t to the
-				-- daemonstatus's transfer map.
-				void $ removeTransfer dstatus t
-				return Nothing
-			)
+			maybe (return Nothing) (uncurry $ startTransfer st dstatus program)
+				=<< getNextTransfer transferqueue dstatus notrunning
 		{- Skip transfers that are already running. -}
 		notrunning i = startedTime i == Nothing
 
-{- Checks if the file to download is already present, or the remote
- - being uploaded to isn't known to have the file. -}
-shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
-shouldTransfer t info
-	| transferDirection t == Download =
-		not <$> inAnnex key
-	| transferDirection t == Upload =
-		{- Trust the location log to check if the
-		 - remote already has the key. This avoids
-		 - a roundtrip to the remote. -}
-		case transferRemote info of
-			Nothing -> return False
-			Just remote -> 
-				notElem (Remote.uuid remote)
-					<$> loggedLocations key
-	| otherwise = return False
-	where
-		key = transferKey t
-
-doTransfer :: DaemonStatusHandle -> Transfer -> TransferInfo -> FilePath -> IO ()
-doTransfer dstatus t info program = case (transferRemote info, associatedFile info) of
-	(Nothing, _) -> noop
-	(_, Nothing) -> noop
-	(Just remote, Just file) -> transferprocess remote file
+{- By the time this is called, the daemonstatis's transfer map should
+ - already have been updated to include the transfer. -}
+startTransfer :: ThreadState -> DaemonStatusHandle -> FilePath -> Transfer -> TransferInfo -> TransferGenerator
+startTransfer st dstatus program t info = case (transferRemote info, associatedFile info) of
+	(Just remote, Just file) -> ifM (runThreadState st $ shouldTransfer t info)
+		( do
+			debug thisThread [ "Transferring:" , show t ]
+			notifyTransfer dstatus
+			return $ Just (t, info, transferprocess remote file)
+		, do
+			debug thisThread [ "Skipping unnecessary transfer:" , show t ]
+			void $ removeTransfer dstatus t
+			return Nothing
+		)
+	_ -> return Nothing
 	where
 		direction = transferDirection t
 		isdownload = direction == Download
@@ -101,3 +78,22 @@ doTransfer dstatus t info program = case (transferRemote info, associatedFile in
 					, Param "--file"
 					, File file
 					]
+
+{- Checks if the file to download is already present, or the remote
+ - being uploaded to isn't known to have the file. -}
+shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
+shouldTransfer t info
+	| transferDirection t == Download =
+		not <$> inAnnex key
+	| transferDirection t == Upload =
+		{- Trust the location log to check if the
+		 - remote already has the key. This avoids
+		 - a roundtrip to the remote. -}
+		case transferRemote info of
+			Nothing -> return False
+			Just remote -> 
+				notElem (Remote.uuid remote)
+					<$> loggedLocations key
+	| otherwise = return False
+	where
+		key = transferKey t

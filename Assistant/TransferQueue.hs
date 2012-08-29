@@ -15,6 +15,7 @@ module Assistant.TransferQueue (
 	queueTransferAt,
 	queueTransferWhenSmall,
 	getNextTransfer,
+	getMatchingTransfers,
 	dequeueTransfers,
 ) where
 
@@ -140,20 +141,32 @@ getNextTransfer q dstatus acceptable = atomically $ do
 			return $ Just r
 		else return Nothing
 
+{- Moves transfers matching a condition from the queue, to the
+ - currentTransfers map. -}
+getMatchingTransfers :: TransferQueue -> DaemonStatusHandle -> (Transfer -> Bool) -> IO [(Transfer, TransferInfo)]
+getMatchingTransfers q dstatus c = atomically $ do
+	ts <- dequeueTransfersSTM q c
+	unless (null ts) $
+		adjustTransfersSTM dstatus $ \m -> M.union m $ M.fromList ts
+	return ts
+
 {- Removes transfers matching a condition from the queue, and returns the
  - removed transfers. -}
 dequeueTransfers :: TransferQueue -> DaemonStatusHandle -> (Transfer -> Bool) -> IO [(Transfer, TransferInfo)]
 dequeueTransfers q dstatus c = do
-	removed <- atomically $ do
-		(removed, ls) <- partition (c . fst)
-			<$> readTVar (queuelist q)
-		void $ writeTVar (queuesize q) (length ls)
-		void $ writeTVar (queuelist q) ls
-		drain
-		forM_ ls $ unGetTChan (queue q)
-		return removed
+	removed <- atomically $ dequeueTransfersSTM q c
 	unless (null removed) $
 		notifyTransfer dstatus
+	return removed
+
+dequeueTransfersSTM :: TransferQueue -> (Transfer -> Bool) -> STM [(Transfer, TransferInfo)]
+dequeueTransfersSTM q c = do
+	(removed, ts) <- partition (c . fst)
+		<$> readTVar (queuelist q)
+	void $ writeTVar (queuesize q) (length ts)
+	void $ writeTVar (queuelist q) ts
+	drain
+	forM_ ts $ unGetTChan (queue q)
 	return removed
 	where
 		drain = maybe noop (const drain) =<< tryReadTChan (queue q)

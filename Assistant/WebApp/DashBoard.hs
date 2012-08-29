@@ -209,8 +209,14 @@ cancelTransfer pause t = do
 startTransfer :: Transfer -> Handler ()
 startTransfer t = do
 	m <- getCurrentTransfers
+	webapp <- getYesod
+	let dstatus = daemonStatus webapp
+	let q = transferQueue webapp
+	{- resume a paused transfer -}
 	maybe noop go (M.lookup t m)
-	-- TODO: handle starting a queued transfer
+	{- start a queued transfer -}
+	is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
+	maybe noop start $ headMaybe is
 	where
 		go info = maybe (start info) (resume info) $ transferTid info
 		resume info tid = do
@@ -222,6 +228,7 @@ startTransfer t = do
 				throwTo tid ResumeTransfer
 		start info = do
 			webapp <- getYesod
+			let st = fromJust $ threadState webapp
 			let dstatus = daemonStatus webapp
 			let slots = transferSlots webapp
 			{- This transfer was being run by another process,
@@ -230,8 +237,7 @@ startTransfer t = do
 				{ transferPid = Nothing, transferPaused = False }
 			liftIO $ inImmediateTransferSlot dstatus slots $ do
 				program <- readProgramFile
-				let a = Transferrer.doTransfer dstatus t info program
-				return $ Just (t, info, a)
+				Transferrer.startTransfer st dstatus program t info
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers
