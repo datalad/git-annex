@@ -20,7 +20,10 @@
                 <small>#{maybe "unknown" Remote.name $ transferRemote info}</small>
                   $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
                     $if isJust $ startedTime info
+                      $if isrunning info
                         <small .pull-right><b>#{percent} of #{size}</b></small>
+                      $else
+                        <small .pull-right>paused at #{percent} of #{size}</small>
                     $else
                         <small .pull-right>queued (#{size})</small>
             <div .row-fluid>
