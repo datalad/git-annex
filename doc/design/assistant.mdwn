@@ -13,6 +13,10 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Months 7-11: user-driven features and polishing
 * Month 12: "Windows purgatory" [[Windows]]
 
+## porting
+
+* [[OSX]] port is in fairly good shape, but still has some room for improvement
+
 ## not yet on the map:
 
 * [[desymlink]]
