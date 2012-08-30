@@ -135,7 +135,7 @@ import Control.Concurrent
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 
-startDaemon :: Bool -> Bool -> Maybe (Url -> FilePath -> IO ()) -> Annex ()
+startDaemon :: Bool -> Bool -> Maybe (String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground webappwaiter
 	| foreground = do
 		showStart (if assistant then "assistant" else "watch") "."
@@ -148,7 +148,7 @@ startDaemon assistant foreground webappwaiter
 	where
 		go d = startAssistant assistant d webappwaiter
 
-startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (Url -> FilePath -> IO ()) -> Annex ()
+startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()) -> Annex ()
 startAssistant assistant daemonize webappwaiter = do
 	withThreadState $ \st -> do
 		checkCanWatch
