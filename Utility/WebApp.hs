@@ -11,7 +11,7 @@ module Utility.WebApp where
 
 import Common
 
-import Yesod
+import qualified Yesod
 import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Logger
@@ -55,7 +55,7 @@ runBrowser url = boolSystem cmd [Param url]
  - An IO action can also be run, to do something with the port number,
  - such as start a web browser to view the webapp.
  -}
-runWebApp :: Application -> (PortNumber -> IO ()) -> IO ()
+runWebApp :: Wai.Application -> (PortNumber -> IO ()) -> IO ()
 runWebApp app observer = do
 	sock <- localSocket
 	void $ forkIO $ runSettingsSocket defaultSettings sock app
@@ -119,7 +119,7 @@ lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Rather than storing a session key on disk, use a random key
  - that will only be valid for this run of the webapp. -}
-webAppSessionBackend :: Yesod y => y -> IO (Maybe (SessionBackend y))
+webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe (Yesod.SessionBackend y))
 webAppSessionBackend _ = do
 	g <- newGenIO :: IO SystemRandom
 	case genBytes 96 g of
@@ -127,7 +127,7 @@ webAppSessionBackend _ = do
 		Right (s, _) -> case CS.initKey s of
 			Left e -> error $ "failed to initialize key: " ++ show e
 			Right key -> return $ Just $
-				clientSessionBackend key 120
+				Yesod.clientSessionBackend key 120
 
 {- Generates a random sha512 string, suitable to be used for an
  - authentication secret. -}
@@ -145,14 +145,14 @@ genRandomToken = do
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
  -}
-checkAuthToken :: forall t sub. (t -> T.Text) -> GHandler sub t AuthResult
+checkAuthToken :: forall t sub. (t -> T.Text) -> Yesod.GHandler sub t Yesod.AuthResult
 checkAuthToken extractToken = do
-	webapp <- getYesod
-	req <- getRequest
-	let params = reqGetParams req
+	webapp <- Yesod.getYesod
+	req <- Yesod.getRequest
+	let params = Yesod.reqGetParams req
 	if lookup "auth" params == Just (extractToken webapp)
-		then return Authorized
-		else sendResponseStatus unauthorized401 ()
+		then return Yesod.Authorized
+		else Yesod.sendResponseStatus unauthorized401 ()
 
 {- A Yesod joinPath method, which adds an auth cgi parameter to every
  - url matching a predicate, containing a token extracted from the
