@@ -69,7 +69,7 @@ inImmediateTransferSlot dstatus s gen = do
 runTransferThread :: DaemonStatusHandle -> TransferSlots -> Maybe (Transfer, TransferInfo, IO ()) -> IO ()
 runTransferThread _ s  Nothing = signalQSemN s 1
 runTransferThread dstatus s (Just (t, info, a)) = do
-	tid <- forkIO $ E.bracket_ noop (signalQSemN s 1) go
+	tid <- forkIO $ go
 	updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
 		go = catchPauseResume a
@@ -79,8 +79,11 @@ runTransferThread dstatus s (Just (t, info, a)) = do
 		 - handler, Control.Concurrent.throwTo will block sometimes
 		 - when signaling. Using E.try avoids the problem. -}
 		catchPauseResume a' = do
-			r <- E.try a'
+			r <- E.try a' :: IO (Either E.SomeException ())
 			case r of
-				Right v -> return v
-				Left PauseTransfer -> pause
-				Left ResumeTransfer -> go
+				Left e -> case E.fromException e of
+					Just PauseTransfer -> pause
+					Just ResumeTransfer -> go
+					_ -> done
+				_ -> done
+		done = signalQSemN s 1
