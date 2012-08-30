@@ -29,3 +29,5 @@ Arch Linux
 **Please provide any additional information below.**
 
 When I add data-default to git-annex.cabal's Build-Deps it works fine.
+
+> Thanks, [[done]]. --[[Joey]]

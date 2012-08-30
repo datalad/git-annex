@@ -77,7 +77,7 @@ Executable git-annex
     Build-Depends: yesod, yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
      blaze-html, crypto-api, hamlet, clientsession,
-     template-haskell, yesod-default (>= 1.1.0)
+     template-haskell, yesod-default (>= 1.1.0), data-default
     CPP-Options: -DWITH_WEBAPP
 
   if os(darwin)
