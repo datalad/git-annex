@@ -1,5 +1,6 @@
 Misc OSX porting things:
 
 * autostart the assistant on OSX, using launchd
+* add webapp to OSX menu somehow
 * Use OSX's "network reachability functionality" to detect when on a network
   <http://developer.apple.com/library/mac/#documentation/Networking/Conceptual/SystemConfigFrameworks/SC_Intro/SC_Intro.html#//apple_ref/doc/uid/TP40001065>
