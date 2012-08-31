@@ -182,16 +182,15 @@ cancelTransfer pause t = do
 	where
 		stop dstatus info = do
 			{- When there's a thread associated with the
-			 - transfer, it's killed first, to avoid it
+			 - transfer, it's signaled first, to avoid it
 			 - displaying any alert about the transfer having
 			 - failed when the transfer process is killed. -}
 			maybe noop signalthread $ transferTid info
 			maybe noop killproc $ transferPid info
 			if pause
 				then void $
-					alterTransferInfo dstatus t $ info
-						{ transferPaused = True
-						, transferPid = Nothing }
+					alterTransferInfo dstatus t $ \i -> i
+						{ transferPaused = True }
 				else void $
 					removeTransfer dstatus t
 		signalthread tid
@@ -211,18 +210,18 @@ startTransfer t = do
 	m <- getCurrentTransfers
 	maybe startqueued go (M.lookup t m)
 	where
-		go info = maybe (start info) (resume info) $ transferTid info
+		go info = maybe (start info) resume $ transferTid info
 		startqueued = do
 			webapp <- getYesod
 			let dstatus = daemonStatus webapp
 			let q = transferQueue webapp
 			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
 			maybe noop start $ headMaybe is
-		resume info tid = do
+		resume tid = do
 			webapp <- getYesod
 			let dstatus = daemonStatus webapp
 			liftIO $ do
-				alterTransferInfo dstatus t $ info
+				alterTransferInfo dstatus t $ \i -> i
 					{ transferPaused = False }
 				throwTo tid ResumeTransfer
 		start info = do
@@ -230,10 +229,6 @@ startTransfer t = do
 			let st = fromJust $ threadState webapp
 			let dstatus = daemonStatus webapp
 			let slots = transferSlots webapp
-			{- This transfer was being run by another process,
-			 - forget that old pid, and start a new one. -}
-			liftIO $ alterTransferInfo dstatus t $ info
-				{ transferPid = Nothing, transferPaused = False }
 			liftIO $ inImmediateTransferSlot dstatus slots $ do
 				program <- readProgramFile
 				Transferrer.startTransfer st dstatus program t info
