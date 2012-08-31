@@ -3,9 +3,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## immediate action items
 
-* There's apparently a race, as sometimes pausing a transfer causes it to start
-  one of the other queued transfers.
-
 ## longer-term TODO
 
 * Test MountWatcher on LXDE.

@@ -209,16 +209,15 @@ cancelTransfer pause t = do
 startTransfer :: Transfer -> Handler ()
 startTransfer t = do
 	m <- getCurrentTransfers
-	webapp <- getYesod
-	let dstatus = daemonStatus webapp
-	let q = transferQueue webapp
-	{- resume a paused transfer -}
-	maybe noop go (M.lookup t m)
-	{- start a queued transfer -}
-	is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
-	maybe noop start $ headMaybe is
+	maybe startqueued go (M.lookup t m)
 	where
 		go info = maybe (start info) (resume info) $ transferTid info
+		startqueued = do
+			webapp <- getYesod
+			let dstatus = daemonStatus webapp
+			let q = transferQueue webapp
+			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
+			maybe noop start $ headMaybe is
 		resume info tid = do
 			webapp <- getYesod
 			let dstatus = daemonStatus webapp
