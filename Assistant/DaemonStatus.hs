@@ -196,8 +196,8 @@ alterTransferInfo :: DaemonStatusHandle -> Transfer -> (TransferInfo -> Transfer
 alterTransferInfo dstatus t a = updateTransferInfo' dstatus $ M.adjust a t
 
 {- Updates a transfer's info. Adds the transfer to the map if necessary,
- - or if already present, updates it while preserving the old transferTid
- - and transferPaused values, which are not written to disk. -}
+ - or if already present, updates it while preserving the old transferTid,
+ - transferPaused, and bytesComplete values, which are not written to disk. -}
 updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
 updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
 	M.insertWith' merge t info
@@ -205,6 +205,7 @@ updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
 		merge new old = new
 			{ transferTid = maybe (transferTid new) Just (transferTid old)
 			, transferPaused = transferPaused new || transferPaused old
+			, bytesComplete = maybe (bytesComplete new) Just (bytesComplete old)
 			}
 
 updateTransferInfo' :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
