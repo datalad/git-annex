@@ -1,0 +1,7 @@
+bergey has developed an emacs mode for browsing git-annex repositories,
+dired style.
+
+<https://gitorious.org/emacs-contrib/annex-mode>
+
+Locally available files are colored differently, and pressing g runs
+`git annex get` on the file at point.
