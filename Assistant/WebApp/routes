@@ -6,6 +6,7 @@
 /config ConfigR GET
 /config/repository RepositoriesR GET
 /config/repository/add/drive AddDriveR GET
+/config/repository/add/remoteserver AddRemoteServerR GET
 /config/repository/first FirstRepositoryR GET
 
 /transfers/#NotificationId TransfersR GET
