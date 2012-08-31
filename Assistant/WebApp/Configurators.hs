@@ -14,7 +14,6 @@ import Assistant.WebApp
 import Assistant.WebApp.SideBar
 import Assistant.DaemonStatus
 import Assistant.WebApp.Configurators.Local
-import Assistant.WebApp.Configurators.Ssh
 import Utility.Yesod
 import qualified Remote
 import qualified Types.Remote as Remote

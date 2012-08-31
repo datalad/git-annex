@@ -12,13 +12,9 @@ module Assistant.WebApp.Configurators.Local where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.SideBar
-import Assistant.DaemonStatus
 import Assistant.Threads.MountWatcher (handleMount)
 import Utility.Yesod
-import qualified Remote
-import qualified Types.Remote as Remote
 import Remote.List
-import Annex.UUID (getUUID)
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -102,7 +98,9 @@ defaultRepositoryPath firstrun = do
 		then do
 			desktop <- userDesktopDir
 			ifM (doesDirectoryExist desktop)
-				(relHome (desktop </> "annex"), return "~/annex")
+				( relHome $ desktop </> gitAnnexAssistantDefaultDir
+				, return $ "~" </> gitAnnexAssistantDefaultDir
+				)
 		else return cwd
 
 localRepositoryForm :: Form RepositoryPath
@@ -178,7 +176,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 			webapp <- getYesod
 			liftIO $ syncrepo dir webapp
 			where
-				dir = mountpoint </> "annex"
+				dir = mountpoint </> gitAnnexAssistantDefaultDir
 				remotename = takeFileName mountpoint
 		{- The repo may already exist, when adding removable media
 		 - that has already been used elsewhere. -}

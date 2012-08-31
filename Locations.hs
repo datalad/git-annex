@@ -30,6 +30,7 @@ module Locations (
 	gitAnnexHtmlShim,
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
+	gitAnnexAssistantDefaultDir,
 	isLinkToAnnex,
 	annexHashes,
 	hashDirMixed,
@@ -178,6 +179,11 @@ gitAnnexSshDir r = addTrailingPathSeparator $ gitAnnexDir r </> "ssh"
 {- .git/annex/remotes/ is used for remote-specific state. -}
 gitAnnexRemotesDir :: Git.Repo -> FilePath
 gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
+
+{- This is the base directory name used by the assistant when making
+ - repositories, by default. -}
+gitAnnexAssistantDefaultDir :: FilePath
+gitAnnexAssistantDefaultDir = "annex"
 
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
