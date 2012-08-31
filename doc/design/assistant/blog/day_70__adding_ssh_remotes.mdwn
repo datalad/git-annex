@@ -51,13 +51,13 @@ I had only been using that TChan because I wanted a way to block while the
 queue was empty. But now that I'm more comfortable with STM, I know how
 to do that easily using a list:
 
-[[!format haskell ""
+[[!format haskell """
 	getQueuedTransfer q = atomically $ do
 		sz <- readTVar (queuesize q)
 		if sz < 1
 			then retry -- blocks until size changes
 			else ...
-""]]
+"""]]
 
 Ah, the times before [STM](http://en.wikipedia.org/wiki/Software_transactional_memory)
 were dark times indeed. I'm writing more and more STM code lately, building
