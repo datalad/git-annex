@@ -63,11 +63,11 @@ git-annex: $(sources) $(clibs)
 	ln -sf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex git-annex
 
 git-annex.1: doc/git-annex.mdwn
-	./mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
+	./Build/mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
 git-annex-shell.1: doc/git-annex-shell.mdwn
-	./mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
+	./Build/mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
 git-union-merge.1: doc/git-union-merge.mdwn
-	./mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
+	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 
 install-mans: $(mans)
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
@@ -124,7 +124,7 @@ clean:
 		doc/.ikiwiki html dist $(clibs) build-stamp
 
 sdist: clean $(mans)
-	./make-sdist.sh
+	./Build/make-sdist.sh
 
 # Upload to hackage.
 hackage: sdist
