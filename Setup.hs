@@ -9,6 +9,9 @@ import Distribution.Simple.Utils (installOrdinaryFiles, rawSystemExit)
 import Distribution.PackageDescription (PackageDescription(..))
 import Distribution.Verbosity (Verbosity)
 import System.FilePath
+import Control.Applicative
+import Control.Monad
+import System.Directory
 
 import qualified Build.InstallDesktopFile as InstallDesktopFile
 import qualified Build.Configure as Configure
@@ -38,15 +41,18 @@ installGitAnnexShell copyDest verbosity pkg lbi =
 	where
 		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
--- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages.
---
--- Based on pandoc's Setup.hs.
+{- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages
+ -
+ - Man pages are provided prebuilt in the tarball in cabal,
+ - but may not be available otherwise, in which case, skip installing them.
+ -}
 installManpages :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installManpages copyDest verbosity pkg lbi =
-	installOrdinaryFiles verbosity dstManDir srcManpages
+	installOrdinaryFiles verbosity dstManDir =<< srcManpages
 	where
 		dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-		srcManpages = zip (repeat srcManDir) manpages
+		srcManpages = zip (repeat srcManDir)
+			<$> filterM doesFileExist manpages
 		srcManDir   = ""
 		manpages    = ["git-annex.1", "git-annex-shell.1"]
 
