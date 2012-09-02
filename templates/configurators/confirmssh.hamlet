@@ -5,8 +5,6 @@
     <div .span8>
       <p>
         The server at #{sshHostName sshdata} has been verified to be usable.
-        <br>
-        Everything checks out!
       <p>
         <a .btn .btn-primary href="@{MakeSshR sshdata}" onclick="$('#setupmodal').modal('show');">
           Clone this repository to the remote server
@@ -20,7 +18,7 @@
 <div .modal .fade #setupmodal>
   <div .modal-header>
     <h3>
-      Testing server ...
+      Making repository ...
   <div .modal-body>
     <p>
       Setting up repository on the remote server. This could take a minute.

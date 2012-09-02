@@ -74,6 +74,7 @@ data SshData = SshData
 	{ sshHostName :: Text
 	, sshUserName :: Maybe Text
 	, sshDirectory :: Text
+	, sshRepoName :: String
 	, pubKey :: Maybe PubKey
 	, rsyncOnly :: Bool
 	}

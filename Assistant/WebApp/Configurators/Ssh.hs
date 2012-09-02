@@ -14,6 +14,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
+import Assistant.WebApp.Configurators.Local
 
 import Yesod
 import Data.Text (Text)
@@ -21,6 +22,12 @@ import qualified Data.Text as T
 import Network.BSD
 import System.Posix.User
 import System.Process (CreateProcess(..))
+
+sshConfigurator :: Widget -> Handler RepHtml
+sshConfigurator a = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Add a remote server"
+	a
 
 data SshServer = SshServer
 	{ hostname :: Maybe Text
@@ -66,9 +73,7 @@ usable UsableRsyncServer = True
 usable UsableSshServer = True
 
 getAddSshR :: Handler RepHtml
-getAddSshR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a remote server"
+getAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack . userName
 		<$> (getUserEntryForID =<< getEffectiveUserID)
 	((result, form), enctype) <- lift $
@@ -82,6 +87,8 @@ getAddSshR = bootstrap (Just Config) $ do
 						{ sshHostName = fromJust $ hostname sshserver'
 						, sshUserName = username sshserver'
 						, sshDirectory = fromMaybe "" $ directory sshserver'
+						-- use unmangled server for repo name
+						, sshRepoName = genSshRepoName sshserver
 						, pubKey = pubkey
 						, rsyncOnly = (status == UsableRsyncServer)
 						}
@@ -124,18 +131,16 @@ testServer sshserver = do
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
 				]
-			let user = maybe "" (\u -> T.unpack u ++ "@") $ username s
-			let host = user ++ T.unpack (fromJust $ hostname s)
 			let sshopts = nonempty $ extraopts ++
 				{- If this is an already known host, let
 				 - ssh check it as usual.
 				 - Otherwise, trust the host key. -}
 				[ if knownhost then "" else sshopt "StrictHostKeyChecking" "no"
 				, "-n" -- don't read from stdin
-				, host
+				, genSshHost (fromJust $ hostname s) (username s)
 				, remotecommand
 				]
-			parsetranscript <$> sshTranscript sshopts
+			parsetranscript . fst <$> sshTranscript sshopts
 		parsetranscript s
 			| reported "git-annex-shell" = UsableSshServer
 			| reported "rsync" = UsableRsyncServer
@@ -151,8 +156,27 @@ testServer sshserver = do
 		report r = "echo " ++ token r
 		sshopt k v = concat ["-o", k, "=", v]
 
+{- ssh://user@host/path -}
+genSshUrl :: SshData -> Text
+genSshUrl s = T.concat ["ssh://", u, h, d, "/"]
+	where
+		u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName s
+		h = sshHostName s
+		d
+			| "/" `T.isPrefixOf` sshDirectory s = d
+			| otherwise = T.concat ["/~/", sshDirectory s]
+
+{- user@host or host -}
+genSshHost :: Text -> Maybe Text -> String
+genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
+
+{- host_dir -}
+genSshRepoName :: SshServer -> String
+genSshRepoName s = (T.unpack $ fromJust $ hostname s) ++
+	(maybe "" (\d -> '_' : T.unpack d) (directory s))
+
 {- The output of ssh, including both stdout and stderr. -}
-sshTranscript :: [String] -> IO String
+sshTranscript :: [String] -> IO (String, Bool)
 sshTranscript opts = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
@@ -166,8 +190,8 @@ sshTranscript opts = do
 	hClose writeh
 	transcript <- hGetContentsStrict readh
 	hClose readh
-	void $ waitForProcess pid
-	return transcript
+	ok <- checkSuccessProcess pid
+	return (transcript, ok)
 
 {- Returns the public key content, and SshServer with a mangled hostname
  - to use that will enable use of the key. This way we avoid changing the
@@ -209,29 +233,66 @@ knownHost sshdir (SshServer { hostname = Just h }) =
 		, return False
 		)
 
-genSshUrl :: SshData -> Text
-genSshUrl s = T.concat ["ssh://", u, h, d, "/"]
-	where
-		u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName s
-		h = sshHostName s
-		d
-			| "/" `T.isPrefixOf` sshDirectory s = d
-			| otherwise = T.concat ["/~/", sshDirectory s]
-
 getConfirmSshR :: SshData -> Handler RepHtml
-getConfirmSshR sshdata = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a remote server"
+getConfirmSshR sshdata = sshConfigurator $ do
 	let authtoken = webAppFormAuthToken
 	let haspubkey = isJust $ pubKey sshdata
 	$(widgetFile "configurators/confirmssh")
 
+{- Creates the repository on the remote. Does any necessary ssh key setup.
+ - 
+ - This is a one-sided remote setup; the remote server probably does not
+ - have a route to the client here.
+ -}
 getMakeSshR :: SshData -> Handler RepHtml
-getMakeSshR sshdata = error "TODO"
+getMakeSshR sshdata = do
+	(transcript, ok) <- liftIO $ sshTranscript [sshhost, remoteCommand]
+	if ok
+		then do
+			r <- runAnnex undefined $
+				addRemote (sshRepoName sshdata) sshurl
+			syncRemote r
+			redirect RepositoriesR
+		else showerr transcript
 	where
-		makeAuthorizedKeys pubkey = Just $ join ";"
+		sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+		authline = authorizedKeysLine sshdata
+		remotedir = T.unpack $ sshDirectory sshdata
+		sshurl = T.unpack $ genSshUrl sshdata
+		remoteCommand = join "&&" $ catMaybes
+			[ Just $ "mkdir -p " ++ shellEscape remotedir
+			, Just $ "cd " ++ shellEscape remotedir
+			, Just $ join "&&" makerepo
+			, if null authline
+				then Nothing
+				else Just $ join "&&" makeAuthorizedKeys
+			]
+		makerepo
+			| rsyncOnly sshdata = []
+			| otherwise =
+				[ "git init"
+				, "git annex init"
+				]
+		makeAuthorizedKeys =
 			[ "mkdir -p ~/.ssh"
 			, "touch ~/.ssh/authorized_keys"
 			, "chmod 600 ~/.ssh/authorized_keys"
-			, "echo " ++ shellEscape pubkey ++ " >>~/.ssh/authorized_keys"
+			, unwords
+				[ "echo"
+				, shellEscape authline
+				, ">>~/.ssh/authorized_keys"
+				]
 			]
+		showerr msg = sshConfigurator $
+			$(widgetFile "configurators/makessherror")
+		
+authorizedKeysLine :: SshData -> String
+authorizedKeysLine sshdata@(SshData { pubKey = Just pubkey }) 
+	{- TODO: Locking down rsync is difficult, requiring a rather
+	 - long perl script. -}
+	| rsyncOnly sshdata = pubkey
+	| otherwise = limitcommand "git-annex-shell -c" ++ pubkey
+	where
+		limitcommand c = "command=\"perl -e 'exec qw(" ++ c ++ "), $ENV{SSH_ORIGINAL_COMMAND}'\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
+authorizedKeysLine _ = ""
+
