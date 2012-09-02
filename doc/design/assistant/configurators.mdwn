@@ -13,7 +13,8 @@ through setting up common use cases.
 * Make a bare repo on a remote ssh server **done**
 * Clone this repo to another host. (Needs [[pairing]])
 * Set up Amazon S3.
-* Set up rsync remote.
-* Set up encryption.
+* Set up encrypted rsync remote. **done**
+* Rsync.net special case
+* Set up gpg encryption key; gpg key distribution.
 * I lost my USB drive!
 * etc -- many more possibilities
