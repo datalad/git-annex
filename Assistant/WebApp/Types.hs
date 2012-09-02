@@ -5,7 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp.Types where
@@ -77,19 +79,7 @@ data SshData = SshData
 	}
 	deriving (Read, Show, Eq)
 
-instance PathPiece SshData where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
-
-
-instance PathPiece NotificationId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
-
-instance PathPiece AlertId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
-
-instance PathPiece Transfer where
+{- Allow any serializable data type to be used as a PathPiece -}
+instance (Show a, Read a) => PathPiece a where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
