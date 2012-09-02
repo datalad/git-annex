@@ -28,6 +28,8 @@ data SshServer = SshServer
 	}
 	deriving Show
 
+type PubKey = String
+
 sshServerAForm :: Text -> AForm WebApp WebApp SshServer
 sshServerAForm localusername = SshServer
 	<$> aopt check_hostname "Host name" Nothing
@@ -73,7 +75,7 @@ getAddSshR = bootstrap (Just Config) $ do
 		runFormGet $ renderBootstrap $ sshServerAForm u
 	case result of
 		FormSuccess sshserver -> do
-			(status, sshserver') <- liftIO $ testServer sshserver
+			(status, sshserver', pubkey) <- liftIO $ testServer sshserver
 			if usable status
 				then error $ "TODO " ++ show sshserver'
 				else showform form enctype status
@@ -95,46 +97,34 @@ getAddSshR = bootstrap (Just Config) $ do
 {- Test if we can ssh into the server.
  -
  - Two probe attempts are made. First, try sshing in using the existing
- - condfiguration, but don't let ssh prompt for any password. If
+ - configuration, but don't let ssh prompt for any password. If
  - passwordless login is already enabled, use it. Otherwise,
- - a special ssh key is generated just for this server, and the server
- - is configured to allow it.
+ - a special ssh key is generated just for this server.
  -
- - If we can ssh in, check that git-annex-shell is installed. If not, this
- - will need to be a rsync special remote, rather than a git remote, so
- - check that rsync is installed.
- -
- - When ssh asks for a passphrase, we rely on ssh-askpass
- - or an equivilant being used by ssh. Or, if the assistant is
- - running in the foreground, the password will be asked there.
+ - Once logged into the server, probe to see if git-annex-shell is
+ - available, or rsync.
  -}
-testServer :: SshServer -> IO (ServerStatus, SshServer)
+testServer :: SshServer -> IO (ServerStatus, SshServer, Maybe PubKey)
 testServer sshserver@(SshServer { hostname = Nothing }) = return
-	(UnusableServer "Please enter a host name.", sshserver)
+	(UnusableServer "Please enter a host name.", sshserver, Nothing)
 testServer sshserver = do
 	home <- myHomeDir
 	let sshdir = home </> ".ssh"
-	status <- probe sshdir sshserver [sshopt "NumberOfPasswordPrompts" "0"] Nothing
+	status <- probe sshdir sshserver [sshopt "NumberOfPasswordPrompts" "0"]
 	if usable status
-		then return (status, sshserver)
+		then return (status, sshserver, Nothing)
 		else do
 			(pubkey, sshserver') <- genSshKey sshdir sshserver
-			status' <- probe sshdir sshserver' [] $ Just $ join ";"
-				[ "mkdir -p ~/.ssh"
-				, "touch ~/.ssh/authorized_keys"
-				, "chmod 600 ~/.ssh/authorized_keys"
-				, "echo " ++ shellEscape pubkey ++ " >>~/.ssh/authorized_keys"
-				]
-			return (status', sshserver')
+			status' <- probe sshdir sshserver' []
+			return (status', sshserver', Just pubkey)
 	where
-		probe sshdir s extraopts setupcommand = do
+		probe sshdir s extraopts = do
 			{- This checks the unmangled server name in sshserver. -}
 			knownhost <- knownHost sshdir sshserver
-			let remotecommand = join ";" $ nonempty
+			let remotecommand = join ";" $
 				[ report "loggedin"
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
-				, fromMaybe "" setupcommand
 				]
 			let user = maybe "" (\u -> T.unpack u ++ "@") $ username s
 			let host = user ++ T.unpack (fromJust $ hostname s)
@@ -183,7 +173,7 @@ sshTranscript opts = do
 {- Returns the public key content, and SshServer with a mangled hostname
  - to use that will enable use of the key. This way we avoid changing the
  - user's regular ssh experience at all. -}
-genSshKey :: FilePath -> SshServer -> IO (String, SshServer)
+genSshKey :: FilePath -> SshServer -> IO (PubKey, SshServer)
 genSshKey _ (SshServer { hostname = Nothing }) = undefined
 genSshKey sshdir sshserver@(SshServer { hostname = Just h }) = do
 	createDirectoryIfMissing True sshdir
@@ -219,3 +209,10 @@ knownHost sshdir (SshServer { hostname = Just h }) =
 		( not . null <$> readProcess "ssh-keygen" ["-F", T.unpack h]
 		, return False
 		)
+
+makeAuthorizedKeys pubkey = Just $ join ";"
+	[ "mkdir -p ~/.ssh"
+	, "touch ~/.ssh/authorized_keys"
+	, "chmod 600 ~/.ssh/authorized_keys"
+	, "echo " ++ shellEscape pubkey ++ " >>~/.ssh/authorized_keys"
+	]
