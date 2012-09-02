@@ -26,6 +26,14 @@
       <fieldset>
         ^{form}
         ^{authtoken}
-        <button .btn .btn-primary type=submit>Use this drive</button> #
+        <button .btn .btn-primary type=submit onclick="$('#clonemodal').modal('show');">Use this drive</button> #
         <a .btn href="@{AddDriveR}">
           Rescan for removable drives
+<div .modal .fade #clonemodal>
+  <div .modal-header>
+    <h3>
+      Cloning to drive
+  <div .modal-body>
+    <p>
+      Cloning the repository to the drive. This may take a few minutes; #
+      do not remove the drive.
