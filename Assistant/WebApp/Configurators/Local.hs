@@ -195,25 +195,37 @@ getAddDriveR = bootstrap (Just Config) $ do
 			hostname <- maybe "host" id <$> liftIO getHostname
 			hostlocation <- fromRepo Git.repoLocation
 			liftIO $ inDir dir $
-				void $ addRemote' hostname hostlocation
-			addRemote name dir
+				void $ makeGitRemote hostname hostlocation
+			addRemote $ makeGitRemote name dir
 
-{- Adds a remote, if there is not already one with the same location. -}
-addRemote :: String -> String -> Annex Remote
-addRemote name location = do
-	name' <- addRemote' name location
+{- Runs an action that returns a name of the remote, and finishes adding it. -}
+addRemote :: Annex String -> Annex Remote
+addRemote a = do
+	name <- a
 	void $ remoteListRefresh
-	maybe (error "failed to add remote") return =<< Remote.byName (Just name')
+	maybe (error "failed to add remote") return =<< Remote.byName (Just name)
 
-addRemote' :: String -> String -> Annex String
-addRemote' name location = inRepo $ \r ->
+{- Returns the name of the git remote it created. If there's already a
+ - remote at the location, returns its name. -}
+makeGitRemote :: String -> String -> Annex String
+makeGitRemote basename location = makeRemote basename location $ \name ->
+	void $ inRepo $
+		Git.Command.runBool "remote"
+			[Param "add", Param name, Param location]
+
+{- If there's not already a remote at the location, adds it using the
+ - action, which is passed the name of the remote to make.
+ -
+ - Returns the name of the remote. -}
+makeRemote :: String -> String -> (String -> Annex ()) -> Annex String
+makeRemote basename location a = do
+	r <- fromRepo id
 	if (null $ filter samelocation $ Git.remotes r)
 		then do
-			let name' = uniqueRemoteName r name 0
-			void $ Git.Command.runBool "remote"
-				[Param "add", Param name', Param location] r
-			return name'
-		else return name
+			let name = uniqueRemoteName r basename 0
+			a name
+			return name
+		else return basename
 	where
 		samelocation x = Git.repoLocation x == location
 

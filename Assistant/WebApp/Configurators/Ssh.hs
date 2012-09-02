@@ -15,10 +15,16 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
 import Assistant.WebApp.Configurators.Local
+import qualified Types.Remote as R
+import qualified Remote.Rsync as Rsync
+import qualified Command.InitRemote
+import Logs.UUID
+import Logs.Remote
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Map as M
 import Network.BSD
 import System.Posix.User
 import System.Process (CreateProcess(..))
@@ -156,16 +162,6 @@ testServer sshserver = do
 		report r = "echo " ++ token r
 		sshopt k v = concat ["-o", k, "=", v]
 
-{- ssh://user@host/path -}
-genSshUrl :: SshData -> Text
-genSshUrl s = T.concat ["ssh://", u, h, d, "/"]
-	where
-		u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName s
-		h = sshHostName s
-		d
-			| "/" `T.isPrefixOf` sshDirectory s = d
-			| otherwise = T.concat ["/~/", sshDirectory s]
-
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
@@ -239,52 +235,75 @@ getConfirmSshR sshdata = sshConfigurator $ do
 	let haspubkey = isJust $ pubKey sshdata
 	$(widgetFile "configurators/confirmssh")
 
-{- Creates the repository on the remote. Does any necessary ssh key setup.
- - 
- - This is a one-sided remote setup; the remote server probably does not
- - have a route to the client here.
- -}
-getMakeSshR :: SshData -> Handler RepHtml
-getMakeSshR sshdata = do
+getMakeSshGitR :: SshData -> Handler RepHtml
+getMakeSshGitR = makeSsh False
+
+getMakeSshRsyncR :: SshData -> Handler RepHtml
+getMakeSshRsyncR = makeSsh True
+
+makeSsh :: Bool -> SshData -> Handler RepHtml
+makeSsh rsync sshdata = do
 	(transcript, ok) <- liftIO $ sshTranscript [sshhost, remoteCommand]
 	if ok
 		then do
-			r <- runAnnex undefined $
-				addRemote (sshRepoName sshdata) sshurl
+			r <- runAnnex undefined makerepo
 			syncRemote r
 			redirect RepositoriesR
 		else showerr transcript
 	where
 		sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
-		authline = authorizedKeysLine sshdata
 		remotedir = T.unpack $ sshDirectory sshdata
-		sshurl = T.unpack $ genSshUrl sshdata
 		remoteCommand = join "&&" $ catMaybes
 			[ Just $ "mkdir -p " ++ shellEscape remotedir
 			, Just $ "cd " ++ shellEscape remotedir
-			, Just $ join "&&" makerepo
-			, if null authline
-				then Nothing
-				else Just $ join "&&" makeAuthorizedKeys
-			]
-		makerepo
-			| rsyncOnly sshdata = []
-			| otherwise =
-				[ "git init --bare --shared"
-				, "git annex init"
-				]
-		makeAuthorizedKeys =
-			[ "mkdir -p ~/.ssh"
-			, "touch ~/.ssh/authorized_keys"
-			, "chmod 600 ~/.ssh/authorized_keys"
-			, unwords
-				[ "echo"
-				, shellEscape authline
-				, ">>~/.ssh/authorized_keys"
-				]
+			, if rsync then Nothing else Just $ "git init --bare --shared"
+			, if rsync then Nothing else Just $ "git annex init"
+			, makeAuthorizedKeys sshdata
 			]
 		showerr msg = sshConfigurator $
 			$(widgetFile "configurators/makessherror")
+		{- This is a one-sided remote setup; the remote server
+		 - probably does not have a route to the client here. -}
+		makerepo = addRemote $
+			(if rsync then makeRsyncRemote else makeGitRemote)
+				(sshRepoName sshdata) sshurl
+		sshurl = T.unpack $ T.concat $ if rsync
+			then [u, h, ":", sshDirectory sshdata, "/"]
+			else ["ssh://", u, h, d, "/"]
+			where
+				u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName sshdata
+				h = sshHostName sshdata
+				d
+					| "/" `T.isPrefixOf` sshDirectory sshdata = d
+					| otherwise = T.concat ["/~/", sshDirectory sshdata]
+
+{- Inits a rsync special remote, and returns the name of the remote. -}
+makeRsyncRemote :: String -> String -> Annex String
+makeRsyncRemote name location = makeRemote name location $ const $ do
+	(u, c) <- Command.InitRemote.findByName name
+	c' <- R.setup Rsync.remote u $ M.union config c
+	describeUUID u name
+	configSet u c'
+	where
+		config = M.fromList
+			[ ("encryption", "shared")
+			, ("rsyncurl", location)
+			, ("type", "rsync")
+			]
+
+makeAuthorizedKeys :: SshData -> Maybe String
+makeAuthorizedKeys sshdata
+	| pubKey sshdata == Nothing = Nothing
+	| otherwise = Just $ join "&&" $
+		[ "mkdir -p ~/.ssh"
+		, "touch ~/.ssh/authorized_keys"
+		, "chmod 600 ~/.ssh/authorized_keys"
+		, unwords
+			[ "echo"
+			, shellEscape $ authorizedKeysLine sshdata
+			, ">>~/.ssh/authorized_keys"
+			]
+		]
 		
 authorizedKeysLine :: SshData -> String
 authorizedKeysLine sshdata@(SshData { pubKey = Just pubkey }) 

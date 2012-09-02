@@ -6,5 +6,5 @@
   <p>
     Transcript: #{msg}
   <p>
-    <a .btn .btn-primary href="@{MakeSshR sshdata}">
+    <a .btn .btn-primary href="#">
      Retry

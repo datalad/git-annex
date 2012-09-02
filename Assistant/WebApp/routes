@@ -8,7 +8,8 @@
 /config/repository/add/drive AddDriveR GET
 /config/repository/add/ssh AddSshR GET
 /config/repository/add/ssh/confirm/#SshData ConfirmSshR GET
-/config/repository/add/ssh/make/#SshData MakeSshR GET
+/config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
+/config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/first FirstRepositoryR GET
 
 /transfers/#NotificationId TransfersR GET

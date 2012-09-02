@@ -5,9 +5,23 @@
     <div .span8>
       <p>
         The server has been verified to be usable.
+      $if not (rsyncOnly sshdata)
+        <p>
+          You have two options for how to use the server.
+        <p>
+          <a .btn .btn-primary href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
+            Use a git repository on the server
+          <br>
+          All your data will be uploaded to the server. If you set up other #
+          devices to use the same server, they will all be kept in sync, #
+          using the server as a central hub. #
       <p>
-        <a .btn .btn-primary href="@{MakeSshR sshdata}" onclick="$('#setupmodal').modal('show');">
-          Clone this repository to the remote server
+        <a .btn .btn-primary href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
+          Use an encrypted rsync repository on the server
+        <br>
+        The contents of your files will be stored, fully encrypted, on the #
+        server. The server will not store other information about your #
+        git repository.
     <div .span4>
       $if haspubkey
         <div .alert .alert-info>
