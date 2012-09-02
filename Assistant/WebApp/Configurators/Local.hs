@@ -13,9 +13,11 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.Threads.MountWatcher (handleMount)
+import Assistant.Sync
+import Assistant.DaemonStatus
 import Utility.Yesod
 import Remote.List
+import qualified Remote
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -164,7 +166,6 @@ getAddDriveR = bootstrap (Just Config) $ do
 	case res of
 		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $ do
 			go $ T.unpack d
-			setMessage $ toHtml $ T.unwords ["Added", d]
 			redirect RepositoriesR
 		_ -> do
 			let authtoken = webAppFormAuthToken
@@ -173,9 +174,8 @@ getAddDriveR = bootstrap (Just Config) $ do
 		go mountpoint = do
 			liftIO $ makerepo dir
 			liftIO $ initRepo dir $ Just remotename
-			addremotes dir remotename
-			webapp <- getYesod
-			liftIO $ syncrepo dir webapp
+			r <- addremote dir remotename
+			syncRemote r
 			where
 				dir = mountpoint </> gitAnnexAssistantDefaultDir
 				remotename = takeFileName mountpoint
@@ -189,44 +189,57 @@ getAddDriveR = bootstrap (Just Config) $ do
 					createDirectoryIfMissing True dir
 					bare <- not <$> canMakeSymlink dir
 					makeRepo dir bare
-		{- Synthesize a mount event of the new git repository.
-		 - This will sync it, and queue file transfers. -}
-		syncrepo dir webapp =
-			handleMount
-				(fromJust $ threadState webapp)
-				(daemonStatus webapp)
-				(scanRemotes webapp)
-				dir
 		{- Each repository is made a remote of the other. -}
-		addremotes dir name = runAnnex () $ do
+		addremote dir name = runAnnex undefined $ do
 			hostname <- maybe "host" id <$> liftIO getHostname
 			hostlocation <- fromRepo Git.repoLocation
-			void $ liftIO $ inDir dir $
-				addremote hostname hostlocation
-			whenM (addremote name dir) $
-				void $ remoteListRefresh
-		{- Adds a remote only if there is not already one with
-		 - the location. -}
-		addremote name location = inRepo $ \r ->
-			if (null $ filter samelocation $ Git.remotes r)
-				then do
-					let name' = uniqueremotename r name (0 :: Int)
-					Git.Command.runBool "remote"
-						[Param "add", Param name', Param location] r
-				else return False
-			where
-				samelocation x = Git.repoLocation x == location
-		{- Generate an unused name for a remote, adding a number if
-		 - necessary. -}
-		uniqueremotename r basename n
-			| null namecollision = name
-			| otherwise = uniqueremotename r basename (succ n)
-			where
-				namecollision = filter samename (Git.remotes r)
-				samename x = Git.remoteName x == Just name
-				name
-					| n == 0 = basename
-					| otherwise = basename ++ show n
+			liftIO $ inDir dir $
+				void $ addRemote' hostname hostlocation
+			addRemote name dir
+
+{- Adds a remote, if there is not already one with the same location. -}
+addRemote :: String -> String -> Annex Remote
+addRemote name location = do
+	name' <- addRemote' name location
+	void $ remoteListRefresh
+	maybe (error "failed to add remote") return =<< Remote.byName (Just name')
+
+addRemote' :: String -> String -> Annex String
+addRemote' name location = inRepo $ \r ->
+	if (null $ filter samelocation $ Git.remotes r)
+		then do
+			let name' = uniqueRemoteName r name 0
+			void $ Git.Command.runBool "remote"
+				[Param "add", Param name', Param location] r
+			return name'
+		else return name
+	where
+		samelocation x = Git.repoLocation x == location
+
+{- Generate an unused name for a remote, adding a number if
+ - necessary. -}
+uniqueRemoteName :: Git.Repo -> String -> Int -> String
+uniqueRemoteName r basename n
+	| null namecollision = name
+	| otherwise = uniqueRemoteName r basename (succ n)
+	where
+		namecollision = filter samename (Git.remotes r)
+		samename x = Git.remoteName x == Just name
+		name
+			| n == 0 = basename
+			| otherwise = basename ++ show n
+
+{- Start syncing a newly added remote. -}
+syncRemote :: Remote -> Handler ()
+syncRemote remote = do
+	webapp <- getYesod
+	runAnnex () $ updateKnownRemotes (daemonStatus webapp)
+	liftIO $ do
+		reconnectRemotes "WebApp"
+			(fromJust $ threadState webapp)
+			(daemonStatus webapp)
+			(scanRemotes webapp)
+			[remote]
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
