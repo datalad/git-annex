@@ -12,6 +12,7 @@ module Assistant.Threads.WebApp where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.DashBoard
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications

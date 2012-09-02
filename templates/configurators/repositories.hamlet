@@ -54,6 +54,6 @@
           <i .icon-plus-sign></i> Remote server
       <p>
         Set up a repository on a remote server using #
-        <tt>ssh</tt> or <tt>rsync</tt>.
+        <tt>ssh</tt>.
       <p>
         To build your own personal cloud.

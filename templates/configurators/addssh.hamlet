@@ -1,13 +1,13 @@
 <div .span9 .hero-unit>
   <h2>
-    Adding a remote server using ssh or rsync
+    Adding a remote server using ssh
   <p>
-    Clone this repository to a ssh or rsync server. Your data will be #
+    Clone this repository to a ssh server. Your data will be #
     uploaded to the server. If you set up other devices to use the same #
     server, they will all be kept in sync, using the server as a central #
     hub.
   <p>
-    You can use nearly any server that has ssh or rsync. For example, you #
+    You can use nearly any server that has ssh and rsync. For example, you #
     could use a <a href="http://linode.com/">Linode</a> or another VPS, or #
     an account on a friend's server.
   <p>
@@ -25,15 +25,14 @@
         ^{form}
         ^{authtoken}
         <div .form-actions>
-          <button .btn .btn-primary type=submit :willTest status:onclick="$('#testmodal').modal('show');">
-            #{buttonText status}
-$if willTest status
-  <div .modal .fade #testmodal>
-    <div .modal-header>
-      <h3>
-        Testing server ...
-    <div .modal-body>
-      <p>
-        Checking ssh connection to the server. This could take a minute.
-      <p>
-        You may be prompted for your password to log into the server.
+          <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+            Check this server
+<div .modal .fade #testmodal>
+  <div .modal-header>
+    <h3>
+      Testing server ...
+  <div .modal-body>
+    <p>
+      Checking ssh connection to the server. This could take a minute.
+    <p>
+      You may be prompted for your password to log into the server.

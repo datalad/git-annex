@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Local where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.Threads.MountWatcher (handleMount)
 import Utility.Yesod

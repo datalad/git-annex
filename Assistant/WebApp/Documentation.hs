@@ -10,6 +10,7 @@
 module Assistant.WebApp.Documentation where
 
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
 

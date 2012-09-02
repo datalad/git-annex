@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.DaemonStatus
 import Assistant.WebApp.Configurators.Local

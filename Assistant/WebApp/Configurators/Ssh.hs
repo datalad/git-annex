@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Ssh where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
 
@@ -26,9 +27,7 @@ data SshServer = SshServer
 	, username :: Maybe Text
 	, directory :: Maybe Text
 	}
-	deriving Show
-
-type PubKey = String
+	deriving (Show)
 
 sshServerAForm :: Text -> AForm WebApp WebApp SshServer
 sshServerAForm localusername = SshServer
@@ -58,6 +57,7 @@ data ServerStatus
 	| UnusableServer Text -- reason why it's not usable
 	| UsableRsyncServer
 	| UsableSshServer
+	deriving (Eq)
 
 usable :: ServerStatus -> Bool
 usable UntestedServer = False
@@ -77,22 +77,20 @@ getAddSshR = bootstrap (Just Config) $ do
 		FormSuccess sshserver -> do
 			(status, sshserver', pubkey) <- liftIO $ testServer sshserver
 			if usable status
-				then error $ "TODO " ++ show sshserver'
+				then lift $ redirect $ ConfirmSshR $
+					SshData 
+						{ sshHostName = fromJust $ hostname sshserver'
+						, sshUserName = username sshserver'
+						, sshDirectory = fromMaybe "" $ directory sshserver'
+						, pubKey = pubkey
+						, rsyncOnly = (status == UsableRsyncServer)
+						}
 				else showform form enctype status
 		_ -> showform form enctype UntestedServer
 	where
 		showform form enctype status = do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/addssh")
-
-		buttonText :: ServerStatus -> Text
-		buttonText UsableRsyncServer = "Make rsync repository"
-		buttonText UsableSshServer = "Clone repository to ssh server"
-		buttonText _ = "Check this server"
-
-		willTest UntestedServer = True
-		willTest (UnusableServer _) = True
-		willTest _ = False
 
 {- Test if we can ssh into the server.
  -
@@ -153,6 +151,7 @@ testServer sshserver = do
 		report r = "echo " ++ token r
 		sshopt k v = concat ["-o", k, "=", v]
 
+{- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> IO String
 sshTranscript opts = do
 	(readf, writef) <- createPipe
@@ -210,9 +209,29 @@ knownHost sshdir (SshServer { hostname = Just h }) =
 		, return False
 		)
 
-makeAuthorizedKeys pubkey = Just $ join ";"
-	[ "mkdir -p ~/.ssh"
-	, "touch ~/.ssh/authorized_keys"
-	, "chmod 600 ~/.ssh/authorized_keys"
-	, "echo " ++ shellEscape pubkey ++ " >>~/.ssh/authorized_keys"
-	]
+genSshUrl :: SshData -> Text
+genSshUrl s = T.concat ["ssh://", u, h, d, "/"]
+	where
+		u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName s
+		h = sshHostName s
+		d
+			| "/" `T.isPrefixOf` sshDirectory s = d
+			| otherwise = T.concat ["/~/", sshDirectory s]
+
+getConfirmSshR :: SshData -> Handler RepHtml
+getConfirmSshR sshdata = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Add a remote server"
+	let authtoken = webAppFormAuthToken
+	let haspubkey = isJust $ pubKey sshdata
+	$(widgetFile "configurators/confirmssh")
+
+getMakeSshR :: SshData -> Handler RepHtml
+getMakeSshR sshdata = error "TODO"
+	where
+		makeAuthorizedKeys pubkey = Just $ join ";"
+			[ "mkdir -p ~/.ssh"
+			, "touch ~/.ssh/authorized_keys"
+			, "chmod 600 ~/.ssh/authorized_keys"
+			, "echo " ++ shellEscape pubkey ++ " >>~/.ssh/authorized_keys"
+			]

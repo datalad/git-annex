@@ -1,0 +1,31 @@
+<div .span9 .hero-unit>
+  <h2>
+    Ready to add remote server
+  <div .row-fluid>
+    <div .span8>
+      <p>
+        The server at #{sshHostName sshdata} has been verified to be usable.
+        <br>
+        Everything checks out!
+      <p>
+        <a .btn .btn-primary href="@{MakeSshR sshdata}" onclick="$('#setupmodal').modal('show');">
+          Clone this repository to the remote server
+    <div .span4>
+      $if haspubkey
+        <div .alert .alert-info>
+          <i .icon-info-sign></i> #
+          <p>
+            A ssh key will be installed on the server, allowing git-annex to #
+            access it securely without a password.
+<div .modal .fade #setupmodal>
+  <div .modal-header>
+    <h3>
+      Testing server ...
+  <div .modal-body>
+    <p>
+      Setting up repository on the remote server. This could take a minute.
+    $if haspubkey
+      <p>
+        You will be prompted once more for your ssh password. A ssh key
+        is being installed on the server, allowing git-annex to access it
+        securely without a password.

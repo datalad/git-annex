@@ -11,6 +11,7 @@ module Assistant.WebApp.SideBar where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.Notifications
 import Assistant.DaemonStatus
 import Assistant.Alert

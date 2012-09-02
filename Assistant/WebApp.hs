@@ -1,4 +1,4 @@
-{- git-annex assistant webapp data types
+{- git-annex assistant webapp core
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -6,44 +6,20 @@
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp where
 
+import Assistant.WebApp.Types
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
-import Assistant.ScanRemotes
-import Assistant.TransferQueue
-import Assistant.TransferSlots
-import Assistant.Alert
 import Utility.NotificationBroadcaster
-import Utility.WebApp
 import Utility.Yesod
-import Logs.Transfer
 
 import Yesod
-import Yesod.Static
 import Text.Hamlet
-import Data.Text (Text, pack, unpack)
+import Data.Text (Text)
 import Control.Concurrent.STM
-
-staticFiles "static"
-
-mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
-
-data WebApp = WebApp
-	{ threadState :: Maybe ThreadState
-	, daemonStatus :: DaemonStatusHandle
-	, scanRemotes :: ScanRemoteMap
-	, transferQueue :: TransferQueue
-	, transferSlots :: TransferSlots
-	, secretToken :: Text
-	, relDir :: Maybe FilePath
-	, getStatic :: Static
-	, webAppState :: TMVar WebAppState
-	, postFirstRun :: Maybe (IO String)
-	}
 
 data NavBarItem = DashBoard | Config | About
 	deriving (Eq)
@@ -87,29 +63,6 @@ bootstrap navbaritem content = do
 	where
 		navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 
-instance Yesod WebApp where
-	{- Require an auth token be set when accessing any (non-static route) -}
-	isAuthorized _ _ = checkAuthToken secretToken
-
-	{- Add the auth token to every url generated, except static subsite
-         - urls (which can show up in Permission Denied pages). -}
-	joinPath = insertAuthToken secretToken excludeStatic
-		where
-			excludeStatic [] = True
-			excludeStatic (p:_) = p /= "static"
-
-	makeSessionBackend = webAppSessionBackend
-	jsLoader _ = BottomOfHeadBlocking
-
-instance RenderMessage WebApp FormMessage where
-	renderMessage _ _ = defaultFormMessage
-
-type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
-
-data WebAppState = WebAppState
-	{ showIntro :: Bool
-	}
-
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = liftIO $ atomically $
 	newTMVar $ WebAppState { showIntro = True }
@@ -148,18 +101,6 @@ getNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler
 getNotifier selector = do
 	webapp <- getYesod
 	liftIO $ selector <$> getDaemonStatus (daemonStatus webapp)
-
-instance PathPiece NotificationId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
-
-instance PathPiece AlertId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
-
-instance PathPiece Transfer where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
 
 {- Adds the auth parameter as a hidden field on a form. Must be put into
  - every form. -}

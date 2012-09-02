@@ -11,6 +11,7 @@ module Assistant.WebApp.DashBoard where
 
 import Assistant.Common
 import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
