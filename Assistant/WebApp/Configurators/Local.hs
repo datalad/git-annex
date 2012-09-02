@@ -37,6 +37,7 @@ import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
 import qualified Control.Exception as E
+import Control.Concurrent
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -229,12 +230,12 @@ uniqueRemoteName r basename n
 			| n == 0 = basename
 			| otherwise = basename ++ show n
 
-{- Start syncing a newly added remote. -}
+{- Start syncing a newly added remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
 syncRemote remote = do
 	webapp <- getYesod
 	runAnnex () $ updateKnownRemotes (daemonStatus webapp)
-	liftIO $ do
+	void $ liftIO $ forkIO $ do
 		reconnectRemotes "WebApp"
 			(fromJust $ threadState webapp)
 			(daemonStatus webapp)
