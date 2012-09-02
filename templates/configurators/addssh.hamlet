@@ -34,5 +34,6 @@ $if willTest status
         Testing server ...
     <div .modal-body>
       <p>
-        Making a ssh connection to the server to check it. #
+        Checking ssh connection to the server. This could take a minute.
+      <p>
         You may be prompted for your password to log into the server.
