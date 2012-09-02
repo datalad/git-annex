@@ -1,0 +1,26 @@
+Got ssh probing implemented. It checks if it can connect to the server, and
+probes the server to see how it should be used. 
+
+Turned out to need two ssh probes. The first uses the system's existing ssh
+configuration, but disables password prompts. If that's able to get in
+without prompting for a password, then the user must have set that up,
+and doesn't want to be bothered with password prompts, and it'll respect
+that configuration.
+
+Otherwise, it sets up a per-host ssh key, and configures a hostname alias
+in `~/.ssh/config` to use that key, and probes using that. 
+Configuring ssh this way is nice because it avoids changing ssh's
+behavior except when git-annex uses it, and it does not open up the server
+to arbitrary commands being run without password.
+
+--
+
+Next up will be creating the repositories. When there's a per-host key,
+this will also involve setting up `authorized_keys`, locking down the ssh
+key to only allow running git-annex-shell or rsync.
+
+I decided to keep that separate from the ssh probing, even though it means
+the user will be prompted twice for their ssh password. It's cleaner and
+allows the probing to do other checks -- maybe it'll later check the amount
+of free disk space -- and the user should be able to decide after the probe
+whether or not to proceed with making the repository.
