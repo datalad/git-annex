@@ -270,7 +270,7 @@ getMakeSshR sshdata = do
 		makerepo
 			| rsyncOnly sshdata = []
 			| otherwise =
-				[ "git init"
+				[ "git init --bare --shared"
 				, "git annex init"
 				]
 		makeAuthorizedKeys =
