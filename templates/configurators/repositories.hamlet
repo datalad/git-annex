@@ -9,10 +9,11 @@
             #{num}
           <td>
             #{name}
-  <h2>
-    Add more repositories
   <div .row-fluid>
-    <div .span4>
+    <div .span6>
+      <h2>
+        Add more repositories
+
       <h3>
         <a href="@{AddDriveR}">
           <i .icon-plus-sign></i> Removable drive
@@ -23,7 +24,7 @@
         For offline archiving, backups, or to #
         <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
         between computers. 
-    <div .span4>
+
       <h3>
         <i .icon-plus-sign></i> Local computer
       <p>
@@ -31,29 +32,37 @@
         between computers on your local network.
       <p>
         For easy sharing with family and friends, or between your devices.
-    <div .span4>
+
       <h3>
         <i .icon-plus-sign></i> Phone
       <p>
         Save photos and recordings from your phone.
       <p>
         Send selected files to your phone.
-  <div .row-fluid>
-    <div .span4>
+
+    <div .span6>
+      <h2>
+        Store your data in the cloud
+
       <h3>
-        <i .icon-plus-sign></i> The cloud
+        <a href="@{AddRsyncNetR}">
+          <i .icon-plus-sign></i> Rsync.net
       <p>
-        Store your data on a third-party cloud platform, #
-        including Amazon S3, Box.com, and Rsync.net.
+        Works very well with git-annex.
+
+      <h3>
+        <i .icon-plus-sign></i> Amazon S3
       <p>
-        Pay someone to keep your data safe and available. #
-        With strong encryption to protect your privacy.
-    <div .span4>
+        Good choice for professional storage quality and low prices.
+
+      <h3>
+        <i .icon-plus-sign></i> Box.com
+      <p>
+        Provides free cloud storage for small amounts of data.
+
       <h3>
         <a href="@{AddSshR}">
           <i .icon-plus-sign></i> Remote server
       <p>
         Set up a repository on a remote server using #
-        <tt>ssh</tt>.
-      <p>
-        To build your own personal cloud.
+        <tt>ssh</tt>, to build your own personal cloud.
