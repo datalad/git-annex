@@ -42,10 +42,10 @@ data SshServer = SshServer
 	}
 	deriving (Show)
 
-sshServerAForm :: Text -> AForm WebApp WebApp SshServer
+sshServerAForm :: (Maybe Text) -> AForm WebApp WebApp SshServer
 sshServerAForm localusername = SshServer
 	<$> aopt check_hostname "Host name" Nothing
-	<*> aopt check_username "User name" (Just $ Just localusername)
+	<*> aopt check_username "User name" (Just localusername)
 	<*> aopt textField "Directory" (Just $ Just $ T.pack gitAnnexAssistantDefaultDir)
 	where
 		check_hostname = checkM (liftIO . checkdns) textField
@@ -83,7 +83,7 @@ getAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack . userName
 		<$> (getUserEntryForID =<< getEffectiveUserID)
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ sshServerAForm u
+		runFormGet $ renderBootstrap $ sshServerAForm (Just u)
 	case result of
 		FormSuccess sshserver -> do
 			(status, needspubkey) <- liftIO $ testServer sshserver
@@ -320,3 +320,24 @@ genSshKey sshdata = do
 		sshpubkeyfile = sshprivkeyfile ++ ".pub"
 		mangledhost = "git-annex-" ++ T.unpack (sshHostName sshdata) ++ user
 		user = maybe "" (\u -> "-" ++ T.unpack u) (sshUserName sshdata)
+
+getAddRsyncNetR :: Handler RepHtml
+getAddRsyncNetR = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Add a Rsync.net repository"
+	((result, form), enctype) <- lift $
+		runFormGet $ renderBootstrap $ sshServerAForm Nothing
+	let showform status = do
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/addrsync.net")
+	case result of
+		FormSuccess sshserver -> do
+			let host = fromMaybe "" $ hostname sshserver
+			checkhost host showform $ do
+				error "TODO"
+		_ -> showform UntestedServer
+	where
+		checkhost host showform a
+			| ".rsync.net" `T.isSuffixOf` T.toLower host = a
+			| otherwise = showform $ UnusableServer
+				"That is not a rsync.net host name."

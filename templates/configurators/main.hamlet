@@ -5,5 +5,5 @@
         <a href="@{RepositoriesR}">
           Manage repositories
      <p>
-       Distribute the files in this repository to other devices,
+       Distribute the files in this repository to other devices, #
        make backups, and more, by adding repositories.
