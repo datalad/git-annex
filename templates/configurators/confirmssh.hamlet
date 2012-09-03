@@ -4,7 +4,7 @@
   <div .row-fluid>
     <div .span8>
       <p>
-        The server has been verified to be usable.
+        The server #{sshHostName sshdata} has been verified to be usable.
       $if not (rsyncOnly sshdata)
         <p>
           You have two options for how to use the server.
@@ -23,7 +23,7 @@
         server. The server will not store other information about your #
         git repository.
     <div .span4>
-      $if haspubkey
+      $if needsPubKey sshdata
         <div .alert .alert-info>
           <i .icon-info-sign></i> #
           A ssh key will be installed on the server, allowing git-annex to #
@@ -35,7 +35,7 @@
   <div .modal-body>
     <p>
       Setting up repository on the remote server. This could take a minute.
-    $if haspubkey
+    $if needsPubKey sshdata
       <p>
         You will be prompted once more for your ssh password. A ssh key #
         is being installed on the server, allowing git-annex to access it #

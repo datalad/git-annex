@@ -86,16 +86,15 @@ getAddSshR = sshConfigurator $ do
 		runFormGet $ renderBootstrap $ sshServerAForm u
 	case result of
 		FormSuccess sshserver -> do
-			(status, sshserver', pubkey) <- liftIO $ testServer sshserver
+			(status, needspubkey) <- liftIO $ testServer sshserver
 			if usable status
 				then lift $ redirect $ ConfirmSshR $
 					SshData 
-						{ sshHostName = fromJust $ hostname sshserver'
-						, sshUserName = username sshserver'
-						, sshDirectory = fromMaybe "" $ directory sshserver'
-						-- use unmangled server for repo name
+						{ sshHostName = fromJust $ hostname sshserver
+						, sshUserName = username sshserver
+						, sshDirectory = fromMaybe "" $ directory sshserver
 						, sshRepoName = genSshRepoName sshserver
-						, pubKey = pubkey
+						, needsPubKey = needspubkey
 						, rsyncOnly = (status == UsableRsyncServer)
 						}
 				else showform form enctype status
@@ -110,28 +109,24 @@ getAddSshR = sshConfigurator $ do
  - Two probe attempts are made. First, try sshing in using the existing
  - configuration, but don't let ssh prompt for any password. If
  - passwordless login is already enabled, use it. Otherwise,
- - a special ssh key is generated just for this server.
+ - a special ssh key will need to be generated just for this server.
  -
  - Once logged into the server, probe to see if git-annex-shell is
  - available, or rsync.
  -}
-testServer :: SshServer -> IO (ServerStatus, SshServer, Maybe PubKey)
-testServer sshserver@(SshServer { hostname = Nothing }) = return
-	(UnusableServer "Please enter a host name.", sshserver, Nothing)
+testServer :: SshServer -> IO (ServerStatus, Bool)
+testServer (SshServer { hostname = Nothing }) = return
+	(UnusableServer "Please enter a host name.", False)
 testServer sshserver = do
-	home <- myHomeDir
-	let sshdir = home </> ".ssh"
-	status <- probe sshdir sshserver [sshopt "NumberOfPasswordPrompts" "0"]
+	status <- probe sshserver [sshopt "NumberOfPasswordPrompts" "0"]
 	if usable status
-		then return (status, sshserver, Nothing)
+		then return (status, False)
 		else do
-			(pubkey, sshserver') <- genSshKey sshdir sshserver
-			status' <- probe sshdir sshserver' []
-			return (status', sshserver', Just pubkey)
+			status' <- probe sshserver []
+			return (status', True)
 	where
-		probe sshdir s extraopts = do
-			{- This checks the unmangled server name in sshserver. -}
-			knownhost <- knownHost sshdir sshserver
+		probe s extraopts = do
+			knownhost <- knownHost sshserver
 			let remotecommand = join ";" $
 				[ report "loggedin"
 				, checkcommand "git-annex-shell"
@@ -162,6 +157,11 @@ testServer sshserver = do
 		report r = "echo " ++ token r
 		sshopt k v = concat ["-o", k, "=", v]
 
+sshDir :: IO FilePath
+sshDir = do
+	home <- myHomeDir
+	return $ home </> ".ssh"
+
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
@@ -189,41 +189,11 @@ sshTranscript opts = do
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 
-{- Returns the public key content, and SshServer with a mangled hostname
- - to use that will enable use of the key. This way we avoid changing the
- - user's regular ssh experience at all. -}
-genSshKey :: FilePath -> SshServer -> IO (PubKey, SshServer)
-genSshKey _ (SshServer { hostname = Nothing }) = undefined
-genSshKey sshdir sshserver@(SshServer { hostname = Just h }) = do
-	createDirectoryIfMissing True sshdir
-	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $
-		unlessM genkey $
-			error "ssh-keygen failed"
-	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
-		appendFile configfile $ unlines
-			[ ""
-			, "# Added automatically by git-annex"
-			, "Host " ++ mangledhost
-			, "\tHostname " ++ T.unpack h
-			, "\tIdentityFile ~/.ssh/" ++ sshprivkeyfile
-			]
-	pubkey <- readFile $ sshdir </> sshpubkeyfile
-	return (pubkey, sshserver { hostname = Just $ T.pack mangledhost })
-	where
-		configfile = sshdir </> "config"
-		sshprivkeyfile = "key." ++ mangledhost
-		sshpubkeyfile = sshprivkeyfile ++ ".pub"
-		mangledhost = "git-annex-" ++ T.unpack h ++ user
-		user = maybe "" (\u -> "-" ++ T.unpack u) (username sshserver)
-		genkey = boolSystem "ssh-keygen"
-			[ Param "-P", Param "" -- no password
-			, Param "-f", File $ sshdir </> sshprivkeyfile
-			]
-
 {- Does ssh have known_hosts data for a hostname? -}
-knownHost :: FilePath -> SshServer -> IO Bool
-knownHost _ (SshServer { hostname = Nothing }) = return False
-knownHost sshdir (SshServer { hostname = Just h }) =
+knownHost :: SshServer -> IO Bool
+knownHost (SshServer { hostname = Nothing }) = return False
+knownHost (SshServer { hostname = Just h }) = do
+	sshdir <- sshDir
 	ifM (doesFileExist $ sshdir </> "known_hosts")
 		( not . null <$> readProcess "ssh-keygen" ["-F", T.unpack h]
 		, return False
@@ -232,7 +202,6 @@ knownHost sshdir (SshServer { hostname = Just h }) =
 getConfirmSshR :: SshData -> Handler RepHtml
 getConfirmSshR sshdata = sshConfigurator $ do
 	let authtoken = webAppFormAuthToken
-	let haspubkey = isJust $ pubKey sshdata
 	$(widgetFile "configurators/confirmssh")
 
 getMakeSshGitR :: SshData -> Handler RepHtml
@@ -242,7 +211,14 @@ getMakeSshRsyncR :: SshData -> Handler RepHtml
 getMakeSshRsyncR = makeSsh True
 
 makeSsh :: Bool -> SshData -> Handler RepHtml
-makeSsh rsync sshdata = do
+makeSsh rsync sshdata
+	| needsPubKey sshdata = do
+		(pubkey, sshdata') <- liftIO $ genSshKey sshdata
+		makeSsh' rsync sshdata' (Just pubkey)
+	| otherwise = makeSsh' rsync sshdata Nothing
+
+makeSsh' :: Bool -> SshData -> Maybe String -> Handler RepHtml
+makeSsh' rsync sshdata pubkey = do
 	(transcript, ok) <- liftIO $ sshTranscript [sshhost, remoteCommand]
 	if ok
 		then do
@@ -258,7 +234,7 @@ makeSsh rsync sshdata = do
 			, Just $ "cd " ++ shellEscape remotedir
 			, if rsync then Nothing else Just $ "git init --bare --shared"
 			, if rsync then Nothing else Just $ "git annex init"
-			, makeAuthorizedKeys sshdata
+			, maybe Nothing (makeAuthorizedKeys sshdata) pubkey
 			]
 		showerr msg = sshConfigurator $
 			$(widgetFile "configurators/makessherror")
@@ -291,27 +267,56 @@ makeRsyncRemote name location = makeRemote name location $ const $ do
 			, ("type", "rsync")
 			]
 
-makeAuthorizedKeys :: SshData -> Maybe String
-makeAuthorizedKeys sshdata
-	| pubKey sshdata == Nothing = Nothing
-	| otherwise = Just $ join "&&" $
+makeAuthorizedKeys :: SshData -> String -> Maybe String
+makeAuthorizedKeys sshdata pubkey
+	| needsPubKey sshdata = Just $ join "&&" $
 		[ "mkdir -p ~/.ssh"
 		, "touch ~/.ssh/authorized_keys"
 		, "chmod 600 ~/.ssh/authorized_keys"
 		, unwords
 			[ "echo"
-			, shellEscape $ authorizedKeysLine sshdata
+			, shellEscape $ authorizedKeysLine sshdata pubkey
 			, ">>~/.ssh/authorized_keys"
 			]
 		]
+	| otherwise = Nothing
 		
-authorizedKeysLine :: SshData -> String
-authorizedKeysLine sshdata@(SshData { pubKey = Just pubkey }) 
+authorizedKeysLine :: SshData -> String -> String
+authorizedKeysLine sshdata pubkey 
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| rsyncOnly sshdata = pubkey
 	| otherwise = limitcommand "git-annex-shell -c" ++ pubkey
 	where
 		limitcommand c = "command=\"perl -e 'exec qw(" ++ c ++ "), $ENV{SSH_ORIGINAL_COMMAND}'\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
-authorizedKeysLine _ = ""
 
+{- Returns the public key content, and a modified SshData with a
+ - mangled hostname that will enable use of the key.
+ - This way we avoid changing the user's regular ssh experience at all. -}
+genSshKey :: SshData -> IO (String, SshData)
+genSshKey sshdata = do
+	sshdir <- sshDir
+	let configfile = sshdir </> "config"
+	createDirectoryIfMissing True sshdir
+	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $ do
+		ok <- boolSystem "ssh-keygen"
+			[ Param "-P", Param "" -- no password
+			, Param "-f", File $ sshdir </> sshprivkeyfile
+			]
+		unless ok $
+			error "ssh-keygen failed"
+	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
+		appendFile configfile $ unlines
+			[ ""
+			, "# Added automatically by git-annex"
+			, "Host " ++ mangledhost
+			, "\tHostname " ++ T.unpack (sshHostName sshdata)
+			, "\tIdentityFile ~/.ssh/" ++ sshprivkeyfile
+			]
+	pubkey <- readFile $ sshdir </> sshpubkeyfile
+	return (pubkey, sshdata { sshHostName = T.pack mangledhost })
+	where
+		sshprivkeyfile = "key." ++ mangledhost
+		sshpubkeyfile = sshprivkeyfile ++ ".pub"
+		mangledhost = "git-annex-" ++ T.unpack (sshHostName sshdata) ++ user
+		user = maybe "" (\u -> "-" ++ T.unpack u) (sshUserName sshdata)

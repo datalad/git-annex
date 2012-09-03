@@ -68,14 +68,12 @@ data WebAppState = WebAppState
 	{ showIntro :: Bool
 	}
 
-type PubKey = String
-
 data SshData = SshData
 	{ sshHostName :: Text
 	, sshUserName :: Maybe Text
 	, sshDirectory :: Text
 	, sshRepoName :: String
-	, pubKey :: Maybe PubKey
+	, needsPubKey :: Bool
 	, rsyncOnly :: Bool
 	}
 	deriving (Read, Show, Eq)
