@@ -25,9 +25,11 @@ import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
+import qualified Control.Exception as E
 import Network.BSD
 import System.Posix.User
 import System.Process (CreateProcess(..))
+import Control.Concurrent
 
 sshConfigurator :: Widget -> Handler RepHtml
 sshConfigurator a = bootstrap (Just Config) $ do
@@ -41,6 +43,18 @@ data SshServer = SshServer
 	, directory :: Maybe Text
 	}
 	deriving (Show)
+
+{- SshServer is only used for applicative form prompting, this converts
+ - the result of such a form into a SshData. -}
+mkSshData :: SshServer -> SshData
+mkSshData sshserver = SshData 
+	{ sshHostName = fromMaybe "" $ hostname sshserver
+	, sshUserName = username sshserver
+	, sshDirectory = fromMaybe "" $ directory sshserver
+	, sshRepoName = genSshRepoName sshserver
+	, needsPubKey = False
+	, rsyncOnly = False
+	}
 
 sshServerAForm :: (Maybe Text) -> AForm WebApp WebApp SshServer
 sshServerAForm localusername = SshServer
@@ -89,12 +103,8 @@ getAddSshR = sshConfigurator $ do
 			(status, needspubkey) <- liftIO $ testServer sshserver
 			if usable status
 				then lift $ redirect $ ConfirmSshR $
-					SshData 
-						{ sshHostName = fromJust $ hostname sshserver
-						, sshUserName = username sshserver
-						, sshDirectory = fromMaybe "" $ directory sshserver
-						, sshRepoName = genSshRepoName sshserver
-						, needsPubKey = needspubkey
+					(mkSshData sshserver)
+						{ needsPubKey = needspubkey
 						, rsyncOnly = (status == UsableRsyncServer)
 						}
 				else showform form enctype status
@@ -112,36 +122,36 @@ getAddSshR = sshConfigurator $ do
  - a special ssh key will need to be generated just for this server.
  -
  - Once logged into the server, probe to see if git-annex-shell is
- - available, or rsync.
+ - available, or rsync.\
  -}
 testServer :: SshServer -> IO (ServerStatus, Bool)
 testServer (SshServer { hostname = Nothing }) = return
 	(UnusableServer "Please enter a host name.", False)
 testServer sshserver = do
-	status <- probe sshserver [sshopt "NumberOfPasswordPrompts" "0"]
+	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
 	if usable status
 		then return (status, False)
 		else do
-			status' <- probe sshserver []
+			status' <- probe []
 			return (status', True)
 	where
-		probe s extraopts = do
-			knownhost <- knownHost sshserver
+		probe extraopts = do
 			let remotecommand = join ";" $
 				[ report "loggedin"
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
 				]
-			let sshopts = nonempty $ extraopts ++
+			knownhost <- knownHost sshserver
+			let sshopts = filter (not . null) $ extraopts ++
 				{- If this is an already known host, let
 				 - ssh check it as usual.
 				 - Otherwise, trust the host key. -}
-				[ if knownhost then "" else sshopt "StrictHostKeyChecking" "no"
+				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
 				, "-n" -- don't read from stdin
-				, genSshHost (fromJust $ hostname s) (username s)
+				, genSshHost (fromJust $ hostname sshserver) (username sshserver)
 				, remotecommand
 				]
-			parsetranscript . fst <$> sshTranscript sshopts
+			parsetranscript . fst <$> sshTranscript sshopts ""
 		parsetranscript s
 			| reported "git-annex-shell" = UsableSshServer
 			| reported "rsync" = UsableRsyncServer
@@ -151,11 +161,13 @@ testServer sshserver = do
 				"Failed to ssh to the server. Transcript: " ++ s
 			where
 				reported r = token r `isInfixOf` s
-		nonempty = filter $ not . null
 		checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
 		token r = "git-annex-probe " ++ r
 		report r = "echo " ++ token r
-		sshopt k v = concat ["-o", k, "=", v]
+
+{- ssh -ofoo=bar command-line option -}
+sshOpt :: String -> String -> String
+sshOpt k v = concat ["-o", k, "=", v]
 
 sshDir :: IO FilePath
 sshDir = do
@@ -172,22 +184,48 @@ genSshRepoName s = (T.unpack $ fromJust $ hostname s) ++
 	(maybe "" (\d -> '_' : T.unpack d) (directory s))
 
 {- The output of ssh, including both stdout and stderr. -}
-sshTranscript :: [String] -> IO (String, Bool)
-sshTranscript opts = do
+sshTranscript :: [String] -> String -> IO (String, Bool)
+sshTranscript opts input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
 	writeh <- fdToHandle writef
-	(_, _, _, pid) <- createProcess $
+	(Just inh, _, _, pid) <- createProcess $
 		(proc "ssh" opts)
-			{ std_in = Inherit
+			{ std_in = CreatePipe
 			, std_out = UseHandle writeh
 			, std_err = UseHandle writeh
 			}
 	hClose writeh
-	transcript <- hGetContentsStrict readh
+
+	-- fork off a thread to start consuming the output
+	transcript <- hGetContents readh
+	outMVar <- newEmptyMVar
+	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
+
+	-- now write and flush any input
+	when (not (null input)) $ do hPutStr inh input; hFlush inh
+	hClose inh -- done with stdin
+
+	-- wait on the output
+	takeMVar outMVar
 	hClose readh
+
 	ok <- checkSuccessProcess pid
+	return ()
 	return (transcript, ok)
+
+{- Runs a ssh command; if it fails shows the user the transcript,
+ - and if it succeeds, runs an action. -}
+sshSetup :: [String] -> String -> Handler RepHtml -> Handler RepHtml
+sshSetup opts input a = do
+	(transcript, ok) <- liftIO $ sshTranscript opts input
+	if ok
+		then a
+		else showSshErr transcript
+
+showSshErr :: String -> Handler RepHtml
+showSshErr msg = sshConfigurator $
+	$(widgetFile "configurators/makessherror")
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: SshServer -> IO Bool
@@ -218,14 +256,9 @@ makeSsh rsync sshdata
 	| otherwise = makeSsh' rsync sshdata Nothing
 
 makeSsh' :: Bool -> SshData -> Maybe String -> Handler RepHtml
-makeSsh' rsync sshdata pubkey = do
-	(transcript, ok) <- liftIO $ sshTranscript [sshhost, remoteCommand]
-	if ok
-		then do
-			r <- runAnnex undefined makerepo
-			syncRemote r
-			redirect RepositoriesR
-		else showerr transcript
+makeSsh' rsync sshdata pubkey =
+	sshSetup [sshhost, remoteCommand] "" $
+		makeSshRepo rsync sshdata
 	where
 		sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 		remotedir = T.unpack $ sshDirectory sshdata
@@ -236,22 +269,29 @@ makeSsh' rsync sshdata pubkey = do
 			, if rsync then Nothing else Just $ "git annex init"
 			, maybe Nothing (makeAuthorizedKeys sshdata) pubkey
 			]
-		showerr msg = sshConfigurator $
-			$(widgetFile "configurators/makessherror")
-		{- This is a one-sided remote setup; the remote server
-		 - probably does not have a route to the client here. -}
-		makerepo = addRemote $
-			(if rsync then makeRsyncRemote else makeGitRemote)
-				(sshRepoName sshdata) sshurl
-		sshurl = T.unpack $ T.concat $ if rsync
-			then [u, h, ":", sshDirectory sshdata, "/"]
-			else ["ssh://", u, h, d, "/"]
+
+makeSshRepo :: Bool -> SshData -> Handler RepHtml
+makeSshRepo forcersync sshdata = do
+	r <- runAnnex undefined $
+		addRemote $ maker (sshRepoName sshdata) sshurl
+	syncRemote r
+	redirect RepositoriesR
+	where
+		rsync = forcersync || rsyncOnly sshdata
+		maker
+			| rsync = makeRsyncRemote
+			| otherwise = makeGitRemote
+		sshurl = T.unpack $ T.concat $
+			if rsync
+				then [u, h, ":", sshDirectory sshdata, "/"]
+				else ["ssh://", u, h, d, "/"]
 			where
 				u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName sshdata
 				h = sshHostName sshdata
 				d
 					| "/" `T.isPrefixOf` sshDirectory sshdata = d
 					| otherwise = T.concat ["/~/", sshDirectory sshdata]
+	
 
 {- Inits a rsync special remote, and returns the name of the remote. -}
 makeRsyncRemote :: String -> String -> Annex String
@@ -322,19 +362,48 @@ genSshKey sshdata = do
 		user = maybe "" (\u -> "-" ++ T.unpack u) (sshUserName sshdata)
 
 getAddRsyncNetR :: Handler RepHtml
-getAddRsyncNetR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a Rsync.net repository"
-	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ sshServerAForm Nothing
-	let showform status = do
+getAddRsyncNetR = do
+	((result, form), enctype) <- runFormGet $
+		renderBootstrap $ sshServerAForm Nothing
+	let showform status = bootstrap (Just Config) $ do
+		sideBarDisplay
+		setTitle "Add a Rsync.net repository"	
 		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshserver -> do
+			knownhost <- liftIO $ knownHost sshserver
+			(pubkey, sshdata) <- liftIO $ genSshKey $
+				(mkSshData sshserver)
+					{ needsPubKey = True
+					, rsyncOnly = True
+					, sshRepoName = "rsync.net"
+					}
+			{- I'd prefer to separate commands with && , but
+			 - rsync.net's shell does not support that.
+			 -
+			 - The dd method of appending to the
+			 - authorized_keys file is the one recommended by
+			 - rsync.net documentation. I touch the file first
+			 - to not need to use a different method to create
+			 - it.
+			 -}
+			let remotecommand = join ";" $
+				[ "mkdir -p .ssh"
+				, "touch .ssh/authorized_keys"
+				, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
+				, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
+				]
+			let sshopts = filter (not . null) $
+				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
+				, genSshHost (sshHostName sshdata) (sshUserName sshdata)
+				, remotecommand
+				]
+
 			let host = fromMaybe "" $ hostname sshserver
-			checkhost host showform $ do
-				error "TODO"
+			checkhost host showform $
+				sshSetup sshopts pubkey $
+					makeSshRepo True sshdata
 		_ -> showform UntestedServer
 	where
 		checkhost host showform a

@@ -40,4 +40,4 @@
     <p>
       Setting up your rsync.net repository. This could take a minute.
     <p>
-      You may be prompted for your rsync.net password.
+      You may be prompted for your rsync.net ssh password.
