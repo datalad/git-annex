@@ -1,0 +1,17 @@
+Now finished building a special configurator for rsync.net. While
+this is just a rsync remote to git-annex, there are some tricky bits to
+setting up the ssh key using rsync.net's restricted shell. The configurator
+automates that nicely. It took about 3 hours of work, and 49 lines of
+rsync.net specific code to build this.
+
+[[!img /assistant/rsync.net.png]]
+
+Thanks to rsync.net who heard of my Kickstarter and gave me a really
+nice free lifetime account. BTW guys, I wish your restricted shell
+supported '&&' in between commands, and returned a nonzero exit status when
+the command fails. This would make my error handling work better.
+
+I've also reworked the repository management page. Nice to see those
+configurators start to fill in!
+
+[[!img /assistant/repositories.png]]
