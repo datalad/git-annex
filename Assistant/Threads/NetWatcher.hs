@@ -121,10 +121,9 @@ listenWicdConnections client callback =
 #endif
 
 handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-handleConnection st dstatus scanremotes = do
-	reconnectRemotes thisThread st dstatus scanremotes =<< 
-		filter (Git.repoIsUrl . Remote.repo)
-			<$> networkRemotes st
+handleConnection st dstatus scanremotes =
+	reconnectRemotes thisThread st dstatus scanremotes
+		=<< networkRemotes st
 
 {- Finds network remotes. -}
 networkRemotes :: ThreadState -> IO [Remote]

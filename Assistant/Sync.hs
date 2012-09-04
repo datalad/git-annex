@@ -19,6 +19,7 @@ import qualified Git
 import qualified Git.Branch
 import qualified Git.Command
 import qualified Remote
+import qualified Types.Remote as Remote
 import qualified Annex.Branch
 
 import Data.Time.Clock
@@ -36,18 +37,22 @@ reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemot
 reconnectRemotes _ _ _ _ [] = noop
 reconnectRemotes threadname st dstatus scanremotes rs = void $
 	alertWhile dstatus (syncAlert rs) $ do
-		sync =<< runThreadState st (inRepo Git.Branch.current)
+		(ok, diverged) <- sync
+			=<< runThreadState st (inRepo Git.Branch.current)
+		addScanRemotes scanremotes diverged rs
+		return ok
 	where
+		(gitremotes, specialremotes) =
+			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
-			diverged <- manualPull st (Just branch) rs
-			addScanRemotes scanremotes diverged rs
-			now <- getCurrentTime	
-			pushToRemotes threadname now st Nothing rs
+			diverged <- manualPull st (Just branch) gitremotes
+			now <- getCurrentTime
+			ok <- pushToRemotes threadname now st Nothing gitremotes
+			return (ok, diverged)
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			diverged <- manualPull st Nothing rs
-			addScanRemotes scanremotes diverged rs
-			return True
+			diverged <- manualPull st Nothing gitremotes
+			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel.
