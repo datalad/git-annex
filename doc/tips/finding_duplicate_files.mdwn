@@ -8,13 +8,13 @@ the duplicate files.
 
 Here's a command line that will show duplicate sets of files grouped together:
 
-	git annex find --include '*' --format='${file} ${escaped_key}\n' | \
+	git annex find --include '*' --format='${escaped_file} ${escaped_key}\n' | \
 		sort -k2 | uniq --all-repeated=separate -f1 | \
 		sed 's/ [^ ]*$//'
 
 Here's a command line that will remove one of each duplicate set of files:
 
-	git annex find --include '*' --format='${file} ${escaped_key}\n' | \
+	git annex find --include '*' --format='${escaped_file} ${escaped_key}\n' | \
 		sort -k2 | uniq --repeated -f1 | sed 's/ [^ ]*$//' | \
 		xargs -d '\n' git rm
 
