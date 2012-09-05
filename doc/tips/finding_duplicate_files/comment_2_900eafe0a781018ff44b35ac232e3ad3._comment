@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.89.108"
+ subject="problems with spaces in filenames"
+ date="2012-09-05T02:12:18Z"
+ content="""
+note that the sort -k2 doesn't work right for filenames with spaces in them. On the other hand, git-rm doesn't seem to like the escaped names from escaped_file.
+"""]]
