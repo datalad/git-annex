@@ -6,6 +6,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Build.InstallDesktopFile where
 
 import Utility.Exception
@@ -49,8 +51,8 @@ inDestDir f = do
 	destdir <- catchDefaultIO (getEnv "DESTDIR") ""
 	return $ destdir </> f
 
-writeDesktop :: FilePath -> IO ()
-writeDesktop command = do
+writeFDODesktop :: FilePath -> IO ()
+writeFDODesktop command = do
 	datadir <- ifM isRoot ( return systemDataDir, userDataDir )
 	writeDesktopMenuFile (desktop command) 
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
@@ -66,6 +68,38 @@ writeDesktop command = do
 			createDirectoryIfMissing True (parentDir programfile)
 			writeFile programfile command
 		)
+
+writeOSXDesktop :: FilePath -> IO ()
+writeOSXDesktop command = do
+	home <- myHomeDir
+	let base = "Library" </> "LaunchAgents" </> label ++ ".plist"
+	autostart <- ifM isRoot ( return $ "/" </> base , return $ home </> base)
+	writeFile autostart $ unlines
+		[ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+		, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+		, "<plist version=\"1.0\">"
+		, "<dict>"
+		, "<key>Label</key>"
+		, "<string>" ++ label ++ "</string>"
+		, "<key>ProgramArguments</key>"
+		, "<array>"
+		, "<string>" ++ command ++ "</string>"
+		, "<string>assistant</string>"
+		, "<string>--autostart</string>"
+		, "</array>"
+		, "<key>RunAtLoad</key>"
+		, "</dict>"
+		, "</plist>"
+		]
+	where
+		label = "com.branchable.git-annex.assistant"
+
+writeDesktop :: FilePath -> IO ()
+#ifdef darwin_HOST_OS
+writeDesktop = writeOSXDesktop
+#else
+writeDesktop = writeFDODesktop
+#endif
 
 main = getArgs >>= go
 	where
