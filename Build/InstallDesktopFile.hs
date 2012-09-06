@@ -97,9 +97,9 @@ writeOSXDesktop command = do
 	ifM isRoot
 		( return ()
 		, do
-			let commandfile <- home </> "Desktop" </> "git-annex-webapp.command"
+			let commandfile = home </> "Desktop" </> "git-annex-webapp.command"
 			writeFile commandfile $ unwords [command, "webapp"]
-			mode <- fileMode <$> getFileStatus f
+			mode <- fileMode <$> getFileStatus commandfile
 			setFileMode commandfile $ mode `unionFileModes` ownerExecuteMode
 		)
 	
