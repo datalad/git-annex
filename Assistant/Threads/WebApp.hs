@@ -50,8 +50,8 @@ webAppThread
 	-> TransferSlots
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
-	-> IO ()
-webAppThread mst dstatus scanremotes transferqueue transferslots postfirstrun onstartup = do
+	-> NamedThread
+webAppThread mst dstatus scanremotes transferqueue transferslots postfirstrun onstartup = thread $ do
 	webapp <- WebApp
 		<$> pure mst
 		<*> pure dstatus
@@ -72,6 +72,7 @@ webAppThread mst dstatus scanremotes transferqueue transferslots postfirstrun on
 		Nothing -> withTempFile "webapp.html" $ \tmpfile _ -> go port webapp tmpfile
 		Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
 	where
+		thread = NamedThread thisThread
 		getreldir Nothing = return Nothing
 		getreldir (Just st) = Just <$>
 			(relHome =<< absPath

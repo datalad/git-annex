@@ -56,8 +56,8 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
-watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
-watchThread st dstatus transferqueue changechan = do
+watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
+watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
 	void $ watchDir "." ignored hooks startup
 	debug thisThread [ "watching", "."]
 	where

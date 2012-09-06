@@ -8,9 +8,7 @@
 module Assistant.DaemonStatus where
 
 import Common.Annex
-import Assistant.ThreadedMonad
 import Assistant.Alert
-import Utility.ThreadScheduler
 import Utility.TempFile
 import Utility.NotificationBroadcaster
 import Logs.Transfer
@@ -113,23 +111,6 @@ startDaemonStatus = do
 		, currentTransfers = transfers
 		, knownRemotes = remotes
 		}
-
-{- This writes the daemon status to disk, when it changes, but no more
- - frequently than once every ten minutes.
- -}
-daemonStatusThread :: ThreadState -> DaemonStatusHandle -> IO ()
-daemonStatusThread st dstatus = do
-	notifier <- newNotificationHandle
-		=<< changeNotifier <$> getDaemonStatus dstatus
-	checkpoint
-	runEvery (Seconds tenMinutes) $ do
-		waitNotification notifier
-		checkpoint
-	where
-		checkpoint = do
-			status <- getDaemonStatus dstatus
-			file <- runThreadState st $ fromRepo gitAnnexDaemonStatusFile
-			writeDaemonStatusFile file status
 
 {- Don't just dump out the structure, because it will change over time,
  - and parts of it are not relevant. -}

@@ -25,8 +25,8 @@ thisThread :: ThreadName
 thisThread = "SanityChecker"
 
 {- This thread wakes up occasionally to make sure the tree is in good shape. -}
-sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO ()
-sanityCheckerThread st dstatus transferqueue changechan = forever $ do
+sanityCheckerThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
+sanityCheckerThread st dstatus transferqueue changechan = thread $ forever $ do
 	waitForNextCheck dstatus
 
 	debug thisThread ["starting sanity check"]
@@ -35,6 +35,7 @@ sanityCheckerThread st dstatus transferqueue changechan = forever $ do
 	
 	debug thisThread ["sanity check complete"]
 	where
+		thread = NamedThread thisThread
 		go = do
 			modifyDaemonStatus_ dstatus $ \s -> s
 				{ sanityCheckRunning = True }

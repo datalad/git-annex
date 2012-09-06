@@ -21,8 +21,8 @@ thisThread = "TransferPoller"
 
 {- This thread polls the status of ongoing transfers, determining how much
  - of each transfer is complete. -}
-transferPollerThread :: ThreadState -> DaemonStatusHandle -> IO ()
-transferPollerThread st dstatus = do
+transferPollerThread :: ThreadState -> DaemonStatusHandle -> NamedThread
+transferPollerThread st dstatus = thread $ do
 	g <- runThreadState st $ fromRepo id
 	tn <- newNotificationHandle =<<
 		transferNotifier <$> getDaemonStatus dstatus
@@ -33,6 +33,7 @@ transferPollerThread st dstatus = do
 			then waitNotification tn -- block until transfers running
 			else mapM_ (poll g) $ M.toList ts
 	where
+		thread = NamedThread thisThread
 		poll g (t, info)
 			{- Downloads are polled by checking the size of the
 			 - temp file being used for the transfer. -}

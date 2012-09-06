@@ -10,6 +10,7 @@ module Command.WebApp where
 import Common.Annex
 import Command
 import Assistant
+import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
@@ -93,8 +94,9 @@ firstRun = do
 	transferslots <- newTransferSlots
 	v <- newEmptyMVar
 	let callback a = Just $ a v
-	webAppThread Nothing dstatus scanremotes transferqueue transferslots
-		(callback signaler) (callback mainthread)
+	void $ runNamedThread dstatus $
+		webAppThread Nothing dstatus scanremotes transferqueue transferslots
+			(callback signaler) (callback mainthread)
 	where
 		signaler v = do
 			putMVar v ""

@@ -24,8 +24,8 @@ thisThread :: ThreadName
 thisThread = "Pusher"
 
 {- This thread retries pushes that failed before. -}
-pushRetryThread :: ThreadState -> DaemonStatusHandle -> FailedPushMap -> IO ()
-pushRetryThread st dstatus pushmap = runEvery (Seconds halfhour) $ do
+pushRetryThread :: ThreadState -> DaemonStatusHandle -> FailedPushMap -> NamedThread
+pushRetryThread st dstatus pushmap = thread $ runEvery (Seconds halfhour) $ do
 	-- We already waited half an hour, now wait until there are failed
 	-- pushes to retry.
 	topush <- getFailedPushesBefore pushmap (fromIntegral halfhour)
@@ -40,10 +40,11 @@ pushRetryThread st dstatus pushmap = runEvery (Seconds halfhour) $ do
 			pushToRemotes thisThread now st (Just pushmap) topush
 	where
 		halfhour = 1800
+		thread = NamedThread thisThread
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
-pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> IO ()
-pushThread st dstatus commitchan pushmap = do
+pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> NamedThread
+pushThread st dstatus commitchan pushmap = thread $ do
 	runEvery (Seconds 2) $ do
 		-- We already waited two seconds as a simple rate limiter.
 		-- Next, wait until at least one commit has been made
@@ -64,11 +65,12 @@ pushThread st dstatus commitchan pushmap = do
 					, "commits"
 					]
 				refillCommits commitchan commits
-		where
-			pushable r
-				| Remote.specialRemote r = False
-				| Remote.readonly r = False
-				| otherwise = True
+	where
+		thread = NamedThread thisThread
+		pushable r
+			| Remote.specialRemote r = False
+			| Remote.readonly r = False
+			| otherwise = True
 
 {- Decide if now is a good time to push to remotes.
  -

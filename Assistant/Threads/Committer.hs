@@ -36,8 +36,8 @@ thisThread :: ThreadName
 thisThread = "Committer"
 
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> IO ()
-commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 1) $ do
+commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> NamedThread
+commitThread st changechan commitchan transferqueue dstatus = thread $ runEvery (Seconds 1) $ do
 	-- We already waited one second as a simple rate limiter.
 	-- Next, wait until at least one change is available for
 	-- processing.
@@ -61,6 +61,7 @@ commitThread st changechan commitchan transferqueue dstatus = runEvery (Seconds 
 				else refill readychanges
 		else refill changes
 	where
+		thread = NamedThread thisThread
 		refill [] = noop
 		refill cs = do
 			debug thisThread

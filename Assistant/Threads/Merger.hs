@@ -22,8 +22,8 @@ thisThread = "Merger"
 {- This thread watches for changes to .git/refs/heads/synced/,
  - which indicate incoming pushes. It merges those pushes into the
  - currently checked out branch. -}
-mergeThread :: ThreadState -> IO ()
-mergeThread st = do
+mergeThread :: ThreadState -> NamedThread
+mergeThread st = thread $ do
 	g <- runThreadState st $ fromRepo id
 	let dir = Git.localGitDir g </> "refs" </> "heads" </> "synced"
 	createDirectoryIfMissing True dir
@@ -34,6 +34,8 @@ mergeThread st = do
 		}
 	void $ watchDir dir (const False) hooks id
 	debug thisThread ["watching", dir]
+	where
+		thread = NamedThread thisThread
 
 type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 

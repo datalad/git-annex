@@ -15,13 +15,11 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.Sync
-import qualified Git
 import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
 
 import qualified Control.Exception as E
-import Control.Concurrent
 
 #if WITH_DBUS
 import Utility.DBus
@@ -35,18 +33,27 @@ import Data.Word (Word32)
 thisThread :: ThreadName
 thisThread = "NetWatcher"
 
-netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-netWatcherThread st dstatus scanremotes = do
+netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
+netWatcherThread st dstatus scanremotes = thread $ do
 #if WITH_DBUS
-	void $ forkIO $ dbusThread st dstatus scanremotes
+	dbusThread st dstatus scanremotes
+#else
+	noop
 #endif
-	{- This is a fallback for when dbus cannot be used to detect
-	 - network connection changes, but it also ensures that
-	 - any networked remotes that may have not been routable for a
-	 - while (despite the local network staying up), are synced with
-	 - periodically. -}
+	where
+		thread = NamedThread thisThread
+
+{- This is a fallback for when dbus cannot be used to detect
+ - network connection changes, but it also ensures that
+ - any networked remotes that may have not been routable for a
+ - while (despite the local network staying up), are synced with
+ - periodically. -}
+netWatcherFallbackThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
+netWatcherFallbackThread st dstatus scanremotes = thread $ do
 	runEvery (Seconds 3600) $
 		handleConnection st dstatus scanremotes
+	where
+		thread = NamedThread thisThread
 
 #if WITH_DBUS
 

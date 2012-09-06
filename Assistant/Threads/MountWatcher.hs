@@ -38,13 +38,15 @@ import Data.Word (Word32)
 thisThread :: ThreadName
 thisThread = "MountWatcher"
 
-mountWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-mountWatcherThread st handle scanremotes =
+mountWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
+mountWatcherThread st handle scanremotes = thread $
 #if WITH_DBUS
 	dbusThread st handle scanremotes
 #else
 	pollingThread st handle scanremotes
 #endif
+	where
+		thread = NamedThread thisThread
 
 #if WITH_DBUS
 

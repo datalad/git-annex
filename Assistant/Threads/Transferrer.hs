@@ -30,9 +30,10 @@ maxTransfers :: Int
 maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
-transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> IO ()
-transfererThread st dstatus transferqueue slots = go =<< readProgramFile
+transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> NamedThread
+transfererThread st dstatus transferqueue slots = thread $ go =<< readProgramFile
 	where
+		thread = NamedThread thisThread
 		go program = forever $ inTransferSlot dstatus slots $
 			maybe (return Nothing) (uncurry $ startTransfer st dstatus program)
 				=<< getNextTransfer transferqueue dstatus notrunning

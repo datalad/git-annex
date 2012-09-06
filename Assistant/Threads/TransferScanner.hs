@@ -31,11 +31,12 @@ thisThread = "TransferScanner"
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
  -}
-transferScannerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> TransferQueue -> IO ()
-transferScannerThread st dstatus scanremotes transferqueue = do
+transferScannerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> TransferQueue -> NamedThread
+transferScannerThread st dstatus scanremotes transferqueue = thread $ do
 	startupScan
 	go S.empty
 	where
+		thread = NamedThread thisThread
 		go scanned = do
 			threadDelaySeconds (Seconds 2)
 			(rs, infos) <- unzip <$> getScanRemote scanremotes

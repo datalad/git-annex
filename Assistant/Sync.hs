@@ -42,7 +42,7 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 		addScanRemotes scanremotes diverged rs
 		return ok
 	where
-		(gitremotes, specialremotes) =
+		(gitremotes, _specialremotes) =
 			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
 			diverged <- manualPull st (Just branch) gitremotes

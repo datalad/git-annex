@@ -110,6 +110,7 @@ import Assistant.Pushes
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
 import Assistant.Threads.Pusher
@@ -131,6 +132,8 @@ import Utility.LogFile
 import Utility.ThreadScheduler
 
 import Control.Concurrent
+
+type NamedThread = IO () -> IO (String, IO ())
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
@@ -162,7 +165,7 @@ startAssistant assistant daemonize webappwaiter = do
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
-			mapM_ startthread
+			mapM_ (startthread dstatus)
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
 				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots Nothing webappwaiter
@@ -177,12 +180,14 @@ startAssistant assistant daemonize webappwaiter = do
 				, assist $ sanityCheckerThread st dstatus transferqueue changechan
 				, assist $ mountWatcherThread st dstatus scanremotes
 				, assist $ netWatcherThread st dstatus scanremotes
+				, assist $ netWatcherFallbackThread st dstatus scanremotes
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
 		watch a = (True, a)
 		assist a = (False, a)
-		startthread (watcher, a)
-			| watcher || assistant = void $ forkIO a
+		startthread dstatus (watcher, t)
+			| watcher || assistant = void $ forkIO $
+				runNamedThread dstatus t
 			| otherwise = noop

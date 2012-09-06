@@ -20,8 +20,8 @@ thisThread = "TransferWatcher"
 
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
-transferWatcherThread :: ThreadState -> DaemonStatusHandle -> IO ()
-transferWatcherThread st dstatus = do
+transferWatcherThread :: ThreadState -> DaemonStatusHandle -> NamedThread
+transferWatcherThread st dstatus = thread $ do
 	g <- runThreadState st $ fromRepo id
 	let dir = gitAnnexTransferDir g
 	createDirectoryIfMissing True dir
@@ -33,6 +33,8 @@ transferWatcherThread st dstatus = do
 		}
 	void $ watchDir dir (const False) hooks id
 	debug thisThread ["watching for transfers"]
+	where
+		thread = NamedThread thisThread
 
 type Handler = ThreadState -> DaemonStatusHandle -> FilePath -> Maybe FileStatus -> IO ()
 
