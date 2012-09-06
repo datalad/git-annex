@@ -6,6 +6,9 @@ git-annex (3.20120826) UNRELEASED; urgency=low
     and configuring the assistant in a web browser.
   * init: If no description is provided for a new repository, one will
     automatically be generated, like "joey@gnu:~/foo"
+  * test: Set a lot of git environment variables so testing works in strange
+    environments that normally need git config to set names, etc.
+    Closes: #682351 Thanks, gregor herrmann
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 

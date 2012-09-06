@@ -882,8 +882,11 @@ prepare = do
 	setEnv "PATH" (cwd ++ ":" ++ p) True
 	setEnv "TOPDIR" cwd True
 	-- Avoid git complaining if it cannot determine the user's email
-	-- address.
-	setEnv "EMAIL" "git-annex test <test@example.com>" True
+	-- address, or exploding if it doesn't know the user's name.
+	setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
+	setEnv "GIT_AUTHOR_NAME" "git-annex test" True
+	setEnv "GIT_COMMITTER_EMAIL" "test@example.com" True
+	setEnv "GIT_COMMITTER_NAME" "git-annex test" True
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
