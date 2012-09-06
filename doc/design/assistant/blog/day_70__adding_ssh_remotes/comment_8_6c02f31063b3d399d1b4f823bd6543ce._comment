@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 8"
+ date="2012-09-06T18:41:47Z"
+ content="""
+I've tried with rsync and directory(real, mountpoint, and fuse mount), no S3. Same result on all of them.
+
+Here is an strace -f http://pastebin.com/YqCbi7Ue
+
+Funny thing is that now i hitting the failure on smaller files(<500kbyte).
+
+I even did a restart because of that. To see if a clean boot would increate it back to the ~700kbyte, but it made no difference.
+
+The annex hasn't been idle since last time, but i haven't done anything major in it. In total the annex is 204mb(up from 185mb at the time of my first post about this)
+"""]]
