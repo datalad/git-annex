@@ -21,6 +21,7 @@ import Control.Monad
 import System.Directory
 import System.Environment
 import System.Posix.User
+import System.Posix.Files
 import System.FilePath
 
 {- The command can be either just "git-annex", or the full path to use
@@ -92,6 +93,16 @@ writeOSXDesktop command = do
 		, "</dict>"
 		, "</plist>"
 		]
+
+	ifM isRoot
+		( return ()
+		, do
+			let commandfile <- home </> "Desktop" </> "git-annex-webapp.command"
+			writeFile commandfile $ unwords [command, "webapp"]
+			mode <- fileMode <$> getFileStatus f
+			setFileMode commandfile $ mode `unionFileModes` ownerExecuteMode
+		)
+	
 	where
 		label = "com.branchable.git-annex.assistant"
 
