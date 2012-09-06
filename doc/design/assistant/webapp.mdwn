@@ -23,8 +23,8 @@ The webapp is a web server that displays a shiny interface.
 
 * there could be a UI to export a file, which would make it be served up
   over http by the web app
-* Display any relevant warning messages. One is the `inotify max_user_watches`
-  exceeded message.
+* Display the `inotify max_user_watches` exceeded message. **done**
+* Display something sane when kqueue runs out of file descriptors.
 * possibly add a desktop file to the top of the repository that can be used
   to open the webapp (rather than using the menus). Would be complicated
   some by the path to git-annex sometimes needing to be hardcoded and varying

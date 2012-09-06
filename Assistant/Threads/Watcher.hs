@@ -235,10 +235,11 @@ onDelDir threadname dir _ _dstatus _ = do
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir RmDirChange
 
-{- Called when there's an error with inotify. -}
+{- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler
-onErr _ msg _ _dstatus _ = do
+onErr _ msg _ dstatus _ = do
 	warning msg
+	void $ liftIO $ addAlert dstatus $ warningAlert "watcher" msg
 	return Nothing
 
 {- Adds a symlink to the index, without ever accessing the actual symlink

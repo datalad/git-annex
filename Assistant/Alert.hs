@@ -27,7 +27,7 @@ data AlertPriority = Filler | Low | Medium | High | Pinned
 
 {- An alert can have an name, which is used to combine it with other similar
  - alerts. -}
-data AlertName = FileAlert TenseChunk | DownloadFailedAlert | SanityCheckFixAlert
+data AlertName = FileAlert TenseChunk | SanityCheckFixAlert | WarningAlert String
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -178,6 +178,20 @@ baseActivityAlert = Alert
 	, alertIcon = Just "refresh"
 	, alertCombiner = Nothing
 	, alertName = Nothing
+	}
+
+warningAlert :: String -> String -> Alert
+warningAlert name msg = Alert
+	{ alertClass = Warning
+	, alertHeader = Just $ tenseWords ["warning"]
+	, alertMessageRender = tenseWords
+	, alertData = [UnTensed $ T.pack msg]
+	, alertBlockDisplay = True
+	, alertClosable = True
+	, alertPriority = High
+	, alertIcon = Just "exclamation-sign"
+	, alertCombiner = Just $ dataCombiner (++)
+	, alertName = Just $ WarningAlert name
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
