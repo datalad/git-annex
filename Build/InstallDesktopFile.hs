@@ -73,7 +73,7 @@ writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
 	home <- myHomeDir
 	let base = "Library" </> "LaunchAgents" </> label ++ ".plist"
-	autostart <- ifM isRoot ( return $ "/" </> base , return $ home </> base)
+	autostart <- ifM isRoot ( inDestDir $ "/" </> base , inDestDir $ home </> base)
 	writeFile autostart $ unlines
 		[ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 		, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
