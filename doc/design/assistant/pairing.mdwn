@@ -3,11 +3,23 @@ have some way of pairing devices.
 
 It could work like this:
 
-1. Prompt for the hostname (or do avahi local machine discovery). 
-2. Enable the two hosts to ssh to one-another and run git-annex shell.
-   (A tricky problem, if ssh keys need to be added to do that.)
-3. Push over a clone of the repository. (Using git-annex-shell?)
-4. Start [[syncing]].
+1. Prompt for the hostname, or do avahi local machine discovery, or use
+   ZeroMQ with IP multicast, or use haskell's `network-multicast`. That
+   last option seems to work best!
+2. Let user pick host to pair with. Somehow authenticate that this is
+   the host they expected to pair with, and not an imposter. Probably
+   have the users enter a shared secret and use it to HMAC the ssh public
+   keys.
+3. Exchange a hostname or IP address with the pair. Ideally,
+   use `.local`, as it'll work as long as both are on the same subnet.
+   If mDNS is not available, regular DNS or IP addresses might have
+   to be used, but will result in a more fragile pairing. Or perhaps
+   the assistant could broadcast itself queries for current IP addresses,
+   if connecting to a paired host fails.
+4. Enable the two hosts to ssh to one-another and run git-annex shell.
+   (Set up per-host ssh keys.)
+5. Pull over a clone of the repository.
+6. Start [[syncing]].
 
 Also look into the method used by
 <https://support.mozilla.org/en-US/kb/add-a-device-to-firefox-sync>

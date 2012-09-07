@@ -40,6 +40,9 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
+Flag Multicast
+  Description: Enable multicast pairing
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -75,12 +78,16 @@ Executable git-annex
     Build-Depends: dbus
     CPP-Options: -DWITH_DBUS
 
-  if flag(Webapp)
+  if flag(Webapp) && flag(Assistant)
     Build-Depends: yesod, yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
      blaze-html, crypto-api, hamlet, clientsession,
      template-haskell, yesod-default (>= 1.1.0), data-default
     CPP-Options: -DWITH_WEBAPP
+
+  if flag(Multicast) && flag(Webapp)
+    Build-Depends: network-multicast
+    CPP-Options: -DWITH_MULTICAST
 
   if os(darwin)
     CPP-Options: -DOSX
