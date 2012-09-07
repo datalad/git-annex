@@ -1,0 +1,50 @@
+Started reading about ZeroMQ with the hope that it could do some firewall
+traversal thing, to connect mutually-unroutable nodes. Well, it could, but
+it'd need a proxy to run on a server both can contact, and lots of
+users won't have a server to run that on. The XMPP approach used by
+dvcs-autosync is looking like the likeliest way for git-annex to handle
+that use case.
+
+However, ZeroMQ did point in promising directions to handle another use
+case I need to support: Local [[pairing]]. In fairly short order, I got
+ZeroMQ working over IP Multicast (PGM), with multiple publishers sending
+messages that were all seen by multiple clients on the LAN (actually the
+WAN; works over OpenVPN too). I had been thinking about using
+Avahi/ZeroConf for discovery of systems to pair with, but ZeroMQ is rather
+more portable and easy to work with.
+
+Unfortunatly, I wasn't able to get ZeroMQ to behave reliably enough.
+It seems to have some timeout issues the way I'm trying to use it,
+or perhaps its haskell bindings are buggy? Anyway, it's really overkill
+to use PGM when all I need for git-annex pairing discovery is lossy
+UDP Multicast. Haskell has a simple `network-multicast` library for that,
+and it works great.
+
+With discovery out of the way (theoretically), the hard part about
+[[pairing]] is going to be verifying that the desired repository is being
+paired with, and not some imposter. My plan to deal with this involves a
+shared secret, that can be communicated out of band, and HMAC. The webapp
+will prompt both parties to enter the same agreed upon secret (which could
+be any phrase, ideally with 64 bytes of entropy), and will then use it as
+the key for HMAC on the ssh public key. The digest will be sent over the
+wire, along with the ssh public key, and the other side can use the shared
+secret to verifiy the key is correct.
+
+The other hard part about [[pairing]] will be finding the best address to
+use for git, etc to connect to the other host. If MDNS is available, it's
+ideal, but if not the pair may have to rely on local DNS, or even
+hard-coded IPs, which will be much less robust. Or, the assistant could
+broadcast queries for a peer's current IP address itself, as a poor man's
+MDNS.
+
+All right then! That looks like a good week's worth of work to embark on.
+
+---
+
+Slight detour to package the haskell network-multicast library and upload
+to Debian unstable.
+
+Roughed out a data type that models the whole pairing conversation,
+and can be serialized to implement it. And a state machine to run
+that conversation. Not yet hooked up to any transport such as multicast
+UDP.
