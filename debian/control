@@ -39,6 +39,7 @@ Build-Depends:
 	libghc-hamlet-dev,
 	libghc-clientsession-dev,
 	libghc-network-multicast-dev,
+	libghc-network-info-dev,
 	ikiwiki,
 	perlmagick,
 	git,

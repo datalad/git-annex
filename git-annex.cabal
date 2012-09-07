@@ -40,8 +40,8 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
-Flag Multicast
-  Description: Enable multicast pairing
+Flag Pairing
+  Description: Enable pairing
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -85,9 +85,9 @@ Executable git-annex
      template-haskell, yesod-default (>= 1.1.0), data-default
     CPP-Options: -DWITH_WEBAPP
 
-  if flag(Multicast) && flag(Webapp)
-    Build-Depends: network-multicast
-    CPP-Options: -DWITH_MULTICAST
+  if flag(Pairing) && flag(Webapp)
+    Build-Depends: network-multicast, network-info
+    CPP-Options: -DWITH_PAIRING
 
   if os(darwin)
     CPP-Options: -DOSX
