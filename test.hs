@@ -47,6 +47,7 @@ import qualified Utility.FileMode
 import qualified Utility.Gpg
 import qualified Build.SysConfig
 import qualified Utility.Format
+import qualified Utility.Verifiable
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -89,6 +90,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
 	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
 	, qctest "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	]
 
 blackbox :: Test
