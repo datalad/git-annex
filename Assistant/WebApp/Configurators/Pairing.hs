@@ -3,8 +3,8 @@
  - Pairing works like this:
  -
  - * The user opens StartPairR, which prompts them for a secret.
- - * The user submits it. A PairReq is broadcast out. The secret is
- -   stashed away in a list of known pairing secrets.
+ - * The user submits it. The pairing secret is stored for later.
+ -   A PairReq is broadcast out.
  - * On another device, it's received, and that causes its webapp to 
  -   display an Alert.
  - * The user there clicks the button, which opens FinishPairR,
@@ -15,8 +15,8 @@
  - * The PairAck is received back at the device that started the process.
  -   It's verified using the stored secret. The ssh key from the PairAck
  -   is added. An Alert is displayed noting that the pairing has been set
- -   up. Note that multiple other devices could also send PairAcks, and
- -   as long as they're valid, all those devices are paired with.
+ -   up. The pairing secret is removed to prevent anyone cracking the
+ -   crypto.
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -29,6 +29,7 @@ module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Common
 import Assistant.Pairing
+import Assistant.DaemonStatus
 import Utility.Verifiable
 import Assistant.WebApp
 import Assistant.WebApp.Types
@@ -44,35 +45,48 @@ import Data.Char
 import System.Posix.User
 
 getStartPairR :: Handler RepHtml
-getStartPairR = bootstrap (Just Config) $ do
+getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
+	username <- liftIO $ getUserName
+	let sshkey = "" -- TODO generate/read ssh key
+	let mkmsg hostname = PairReqM $ PairReq $
+		mkVerifiable (PairData hostname username sshkey) secret
+	pip <- liftIO $ PairingInProgress secret <$> multicastPairMsg mkmsg
+	dstatus <- daemonStatus <$> lift getYesod
+	liftIO $ modifyDaemonStatus_ dstatus $
+		\s -> s { pairingInProgress = pip : pairingInProgress s }
+	lift $ redirect $ InprogressPairR rawsecret
+
+getInprogressPairR :: Text -> Handler RepHtml
+getInprogressPairR secret = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
-	promptSecret Nothing $ error "TODO"
+	$(widgetFile "configurators/inprogresspairing")
 
 getFinishPairR :: PairReq -> Handler RepHtml
-getFinishPairR req = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
-	promptSecret (Just req) $ error "TODO"
+getFinishPairR req = promptSecret (Just req) $ \_ secret -> do
+	error "TODO"
 
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
-promptSecret :: Maybe PairReq -> Widget -> Widget
-promptSecret req cont = do
+promptSecret :: Maybe PairReq -> (Text -> Secret -> Widget) -> Handler RepHtml
+promptSecret req cont = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Pairing"
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
         case result of
                 FormSuccess v -> do
-			let secret = toSecret $ fromMaybe "" $ secretText v
+			let rawsecret = fromMaybe "" $ secretText v
+			let secret = toSecret rawsecret
 			case req of
 				Nothing -> case secretProblem secret of
-					Nothing -> cont
+					Nothing -> cont rawsecret secret
 					Just problem ->
 						showform form enctype $ Just problem
 				Just r ->
 					if verified (fromPairReq r) secret
-						then cont
+						then cont rawsecret secret
 						else showform form enctype $ Just
 							"That's not the right secret phrase."
                 _ -> showform form enctype Nothing
@@ -84,8 +98,7 @@ promptSecret req cont = do
 			let (username, hostname) = maybe ("", "")
 				(\v -> (T.pack $ remoteUserName v, T.pack $ remoteHostName v))
 				(verifiableVal . fromPairReq <$> req)
-			u <- liftIO $ T.pack . userName
-				<$> (getUserEntryForID =<< getEffectiveUserID)
+			u <- T.pack <$> liftIO getUserName
 			let sameusername = username == u
                         let authtoken = webAppFormAuthToken
                         $(widgetFile "configurators/pairing")
@@ -110,3 +123,6 @@ sampleQuote = T.unwords
 	, "it was the age of wisdom,"
 	, "it was the age of foolishness."
 	]
+
+getUserName :: IO String
+getUserName = userName <$> (getUserEntryForID =<< getEffectiveUserID)

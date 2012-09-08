@@ -9,6 +9,7 @@ module Assistant.DaemonStatus where
 
 import Common.Annex
 import Assistant.Alert
+import Assistant.Pairing
 import Utility.TempFile
 import Utility.NotificationBroadcaster
 import Logs.Transfer
@@ -38,6 +39,8 @@ data DaemonStatus = DaemonStatus
 	, lastAlertId :: AlertId
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
+	-- Pairing requests that are in progress.
+	, pairingInProgress :: [PairingInProgress]
 	-- Broadcasts notifications about all changes to the DaemonStatus
 	, changeNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when queued or current transfers change.
@@ -60,6 +63,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure M.empty
 	<*> pure M.empty
 	<*> pure firstAlertId
+	<*> pure []
 	<*> pure []
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster

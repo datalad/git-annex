@@ -5,7 +5,7 @@
     $if start
       Pair with a computer on your local network (or VPN), and the #
       two git annex repositories will be combined into one, with changes #
-      kept in sync between all paired devices.
+      kept in sync between them.
     $else
       Pairing with #{username}@#{hostname} will combine the two git annex #
       repositories into one, with changes kept in sync between them.
@@ -46,5 +46,5 @@
           A quotation is one good choice, something like: #
           "#{sampleQuote}"
       $else
-        Only letters and numbers matter; punctuation and white space is #
+        Only letters and numbers matter; punctuation and spaces are #
         ignored.
