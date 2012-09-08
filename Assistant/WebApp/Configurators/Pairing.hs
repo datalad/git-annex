@@ -24,11 +24,14 @@
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Common
+#ifdef WITH_PAIRING
 import Assistant.Pairing
+#endif
 import Assistant.DaemonStatus
 import Utility.Verifiable
 import Assistant.WebApp
@@ -46,6 +49,7 @@ import Data.Char
 import System.Posix.User
 
 getStartPairR :: Handler RepHtml
+#ifdef WITH_PAIRING
 getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
 	hostname <- liftIO $ getHostname
 	username <- liftIO $ getUserName
@@ -57,17 +61,29 @@ getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
 	liftIO $ modifyDaemonStatus_ dstatus $
 		\s -> s { pairingInProgress = pip : pairingInProgress s }
 	lift $ redirect $ InprogressPairR rawsecret
+#else
+getStartPairR = noPairing
+#endif
 
 getInprogressPairR :: Text -> Handler RepHtml
+#ifdef WITH_PAIRING
 getInprogressPairR secret = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
 	$(widgetFile "configurators/inprogresspairing")
+#else
+getInprogressPairR _ = noPairing
+#endif
 
 getFinishPairR :: PairReq -> Handler RepHtml
+#ifdef WITH_PAIRING
 getFinishPairR req = promptSecret (Just req) $ \_ secret -> do
 	error "TODO"
+#else
+getFinishPairR _ = noPairing
+#endif
 
+#ifdef WITH_PAIRING
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
 promptSecret :: Maybe PairReq -> (Text -> Secret -> Widget) -> Handler RepHtml
@@ -128,3 +144,13 @@ sampleQuote = T.unwords
 
 getUserName :: IO String
 getUserName = userName <$> (getUserEntryForID =<< getEffectiveUserID)
+
+#else
+
+noPairing :: Handler RepHtml
+noPairing = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Pairing"
+	$(widgetFile "configurators/nopairing")
+
+#endif

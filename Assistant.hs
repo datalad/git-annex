@@ -63,8 +63,10 @@
  - Thread 16: TransferScanner
  - 	Does potentially expensive checks to find data that needs to be
  - 	transferred from or to remotes, and queues Transfers.
- - 	Uses the ScanRemotes map.
- - Thread 17: WebApp
+ - 	Uses the ScanRemotes map.a
+ - Thread 17: PairListener
+ - 	Listens for incoming pairing traffic, and takes action.
+ - Thread 18: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
  -
@@ -124,6 +126,9 @@ import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 #ifdef WITH_WEBAPP
 import Assistant.Threads.WebApp
+#ifdef WITH_PAIRING
+import Assistant.Threads.PairListener
+#endif
 #else
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
@@ -169,6 +174,9 @@ startAssistant assistant daemonize webappwaiter = do
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
 				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots Nothing webappwaiter
+#ifdef WITH_PAIRING
+				, assist $ pairListenerThread st dstatus
+#endif
 #endif
 				, assist $ pushThread st dstatus commitchan pushmap
 				, assist $ pushRetryThread st dstatus pushmap

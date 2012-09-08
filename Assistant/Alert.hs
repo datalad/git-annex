@@ -27,7 +27,11 @@ data AlertPriority = Filler | Low | Medium | High | Pinned
 
 {- An alert can have an name, which is used to combine it with other similar
  - alerts. -}
-data AlertName = FileAlert TenseChunk | SanityCheckFixAlert | WarningAlert String
+data AlertName 
+	= FileAlert TenseChunk
+	| SanityCheckFixAlert
+	| WarningAlert String
+	| PairRequestAlert String
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -258,6 +262,20 @@ sanityCheckFixAlert msg = Alert
 		render dta = tenseWords $ alerthead : dta ++ [alertfoot]
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
+
+pairRequestAlert :: String -> String -> Alert
+pairRequestAlert repo msg = Alert
+	{ alertClass = Message
+	, alertHeader = Just $ tenseWords ["Pair request"]
+	, alertMessageRender = tenseWords
+	, alertData = [UnTensed $ T.pack msg]
+	, alertBlockDisplay = True
+	, alertPriority = High
+	, alertClosable = True
+	, alertIcon = Just "info-sign"
+	, alertName = Just $ PairRequestAlert repo
+	, alertCombiner = Just $ dataCombiner $ const id
+	}
 
 fileAlert :: TenseChunk -> FilePath -> Alert
 fileAlert msg file = (activityAlert Nothing [f])
