@@ -11,6 +11,9 @@
 /config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/rsync.net AddRsyncNetR GET
+/config/repository/pair/start StartPairR GET
+/config/repository/pair/finish/#PairReq FinishPairR GET
+
 /config/repository/first FirstRepositoryR GET
 
 /transfers/#NotificationId TransfersR GET
