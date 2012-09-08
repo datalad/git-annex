@@ -39,13 +39,18 @@ pairListenerThread st dstatus = thread $ withSocketsDo $ do
 				chunksz = 1024
 
 		dispatch Nothing = noop
-		dispatch (Just (PairReqM (PairReq r))) = void $ do
-			let pairdata = verifiableVal r
+		dispatch (Just (PairReqM (PairReq v))) = unlessM (mypair v) $ do
+			let pairdata = verifiableVal v
 			let repo = remoteUserName pairdata ++ "@" ++
 				fromMaybe (showAddr $ remoteAddress pairdata)
 					(remoteHostName pairdata)
 			let msg = repo ++ " is sending a pair request."
 			{- Pair request alerts from the same host combine,
 			 - so repeated requests do not add additional alerts. -}
-			addAlert dstatus $ pairRequestAlert repo msg
+			void $ addAlert dstatus $ pairRequestAlert repo msg
 		dispatch (Just (PairAckM _)) = noop -- TODO
+
+		{- Filter out our own pair requests, by checking if we
+		 - can verify using the secrets of any of them. -}
+		mypair v = any (verified v . inProgressSecret) . pairingInProgress
+			<$> getDaemonStatus dstatus

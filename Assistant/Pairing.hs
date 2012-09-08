@@ -47,7 +47,10 @@ type UserName = String
 
 {- A pairing that is in progress has a secret, and a thread that is
  - broadcasting pairing requests. -}
-data PairingInProgress = PairingInProgress Secret ThreadId
+data PairingInProgress = PairingInProgress
+	{ inProgressSecret :: Secret
+	, inProgressThreadId :: ThreadId
+	}
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6
 	deriving (Ord, Eq, Read, Show)
