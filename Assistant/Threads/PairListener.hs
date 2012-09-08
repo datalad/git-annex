@@ -43,7 +43,8 @@ pairListenerThread st dstatus = thread $ withSocketsDo $ do
 			let pairdata = verifiableVal v
 			let repo = remoteUserName pairdata ++ "@" ++
 				fromMaybe (showAddr $ remoteAddress pairdata)
-					(remoteHostName pairdata)
+					(remoteHostName pairdata) ++
+					(remoteDirectory pairdata)
 			let msg = repo ++ " is sending a pair request."
 			{- Pair request alerts from the same host combine,
 			 - so repeated requests do not add additional alerts. -}

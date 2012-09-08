@@ -36,8 +36,10 @@ data PairMsg
 data PairData = PairData
 	-- uname -n output, not a full domain name
 	{ remoteHostName :: Maybe HostName
+	-- the address is included so that it can be verified, avoiding spoofing
 	, remoteAddress :: SomeAddr
 	, remoteUserName :: UserName
+	, remoteDirectory :: FilePath
 	, sshPubKey :: SshPubKey
 	}
 	deriving (Eq, Read, Show)

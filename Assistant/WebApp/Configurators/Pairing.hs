@@ -56,9 +56,10 @@ getStartPairR :: Handler RepHtml
 getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
 	hostname <- liftIO $ getHostname
 	username <- liftIO $ getUserName
+	reldir <- fromJust . relDir <$> lift getYesod
 	let sshkey = "" -- TODO generate/read ssh key
 	let mkmsg addr = PairReqM $ PairReq $
-		mkVerifiable (PairData hostname addr username sshkey) secret
+		mkVerifiable (PairData hostname addr username reldir sshkey) secret
 	pip <- liftIO $ PairingInProgress secret <$> multicastPairMsg mkmsg
 	dstatus <- daemonStatus <$> lift getYesod
 	liftIO $ modifyDaemonStatus_ dstatus $
