@@ -10,7 +10,6 @@ module Assistant.Pairing where
 import Common
 import Utility.Verifiable
 import Utility.ThreadScheduler
-import Utility.Network
 
 import Network.Multicast
 import Network.Info
@@ -41,7 +40,9 @@ data PairMsg
 	deriving (Eq, Read, Show)
 
 data PairData = PairData
-	{ remoteHostName :: HostName
+	-- uname -n output, not a full domain name
+	{ remoteHostName :: Maybe HostName
+	, remoteAddress :: SomeAddr
 	, remoteUserName :: UserName
 	, sshPubKey :: SshPubKey
 	}
@@ -67,26 +68,21 @@ multicastAddress :: SomeAddr -> HostName
 multicastAddress (IPv4Addr _) = "224.0.0.1"
 multicastAddress (IPv6Addr _) = "ff02::1"
 
-type MkPairMsg = HostName -> PairMsg
-
 {- Multicasts a message repeatedly on all interfaces until its thread
  - is killed, with a 2 second delay between each transmission.
  -
- - The remoteHostName is set to the best host name that can be found for
- - each interface's IP address. When possible, that's a .local name.
- - If not, it's whatever is found in the DNS for the address, or failing
- - that, the IP address.
+ - The remoteHostAddress is set to the interface's IP address.
  -
  - Note that new sockets are opened each time. This is hardly efficient,
  - but it allows new network interfaces to be used as they come up.
  - On the other hand, the expensive DNS lookups are cached.
  -}
-multicastPairMsg :: MkPairMsg -> IO ThreadId
-multicastPairMsg mkmsg = forkIO $ go =<< initMsgCache mkmsg
+multicastPairMsg :: (SomeAddr -> PairMsg) -> IO ThreadId
+multicastPairMsg mkmsg = forkIO $ go M.empty
 	where
 		go cache = do
 			addrs <- activeNetworkAddresses
-			cache' <- updateMsgCache mkmsg cache addrs
+			let cache' = updatecache cache addrs
 			mapM_ (sendinterface cache') addrs
 			threadDelaySeconds (Seconds 2)
 			go cache'
@@ -95,56 +91,53 @@ multicastPairMsg mkmsg = forkIO $ go =<< initMsgCache mkmsg
 				(multicastSender (multicastAddress i) pairingPort)
 				(sClose . fst)
 				(\(sock, addr) -> do
-					setInterface sock (show i)
+					setInterface sock (showAddr i)
 					maybe noop (\s -> void $ sendTo sock s addr)
 						(M.lookup i cache)
 				)
+		updatecache cache [] = cache
+		updatecache cache (i:is)
+			| M.member i cache = updatecache cache is
+			| otherwise = updatecache (M.insert i (show $ mkmsg i) cache) is
 
-{- A cache of serialized messages. -}
-type MsgCache = M.Map SomeAddr String
-
-{- Ensures that the cache has messages for each address. -}
-updateMsgCache :: MkPairMsg -> MsgCache -> [SomeAddr] -> IO MsgCache
-updateMsgCache _ m [] = return m
-updateMsgCache mkmsg m (v:vs)
-	| M.member v m = updateMsgCache mkmsg m vs
-	| otherwise = do
-		let sockaddr = case v of
-			IPv4Addr (IPv4 a) -> SockAddrInet (PortNum 0) a
-			IPv6Addr (IPv6 o1 o2 o3 o4) -> SockAddrInet6 (PortNum 0) 0 (o1, o2, o3, o4) 0
-		mhostname <- catchDefaultIO (fst <$> getNameInfo [] True False sockaddr) Nothing
-		let cache' = M.insert v (show $ mkmsg $ fromMaybe (show v) mhostname) m
-		updateMsgCache mkmsg cache' vs
-
-{- An initial message cache. Look up hostname.local, and if found, 
- - put it in the cache. -}
-initMsgCache :: MkPairMsg -> IO MsgCache
-initMsgCache mkmsg = go =<< getHostname
+{- Finds the best hostname to use for the host that sent the PairData.
+ -
+ - If remoteHostName is set, tries to use a .local address based on it.
+ - That's the most robust, if this system supports .local.
+ - Otherwise, looks up the hostname in the DNS for the remoteAddress,
+ - if any. May fall back to remoteAddress if there's no DNS. Ugh. -}
+bestHostName :: PairData -> IO HostName
+bestHostName d = case remoteHostName d of
+	Just h -> do
+		let localname = h ++ ".local"
+		addrs <- catchDefaultIO (getAddrInfo Nothing (Just localname) Nothing) []
+		maybe fallback (const $ return localname) (headMaybe addrs)
+	Nothing -> fallback
 	where
-		go Nothing = return M.empty
-		go (Just n) = do
-			let localname = n ++ ".local"
-			addrs <- catchDefaultIO (getAddrInfo Nothing (Just localname) Nothing) []
-			case headMaybe addrs of
-				Nothing -> return M.empty
-				Just addr -> case addrAddress addr of
-					SockAddrInet _ a ->
-						use localname $
-							IPv4Addr $ IPv4 a
-					SockAddrInet6 _ _ (o1, o2, o3, o4) _ ->
-						use localname $	
-							IPv6Addr $ IPv6 o1 o2 o3 o4
-					_ -> return M.empty
-		use hostname addr = return $ M.fromList [(addr, show $ mkmsg hostname)]
+		fallback = do
+			let sockaddr = case remoteAddress d of
+				IPv4Addr a -> SockAddrInet (PortNum 0) a
+				IPv6Addr a -> SockAddrInet6 (PortNum 0) 0 a 0
+			fromMaybe (show $ remoteAddress d) 
+				<$> catchDefaultIO (fst <$> getNameInfo [] True False sockaddr) Nothing
 
-data SomeAddr = IPv4Addr IPv4 | IPv6Addr IPv6
-	deriving (Ord, Eq)
+data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6
+	deriving (Ord, Eq, Read, Show)
 
-instance Show SomeAddr where
-	show (IPv4Addr x) = show x
-	show (IPv6Addr x) = show x
+class ToSomeAddr a where
+	toSomeAddr :: a -> SomeAddr
+
+instance ToSomeAddr IPv4 where
+	toSomeAddr (IPv4 a) = IPv4Addr a
+
+instance ToSomeAddr IPv6 where
+	toSomeAddr (IPv6 o1 o2 o3 o4) = IPv6Addr (o1, o2, o3, o4)
+
+showAddr :: SomeAddr -> HostName
+showAddr (IPv4Addr a) = show $ IPv4 a
+showAddr (IPv6Addr (o1, o2, o3, o4)) = show $ IPv6 o1 o2 o3 o4
 
 activeNetworkAddresses :: IO [SomeAddr]
-activeNetworkAddresses = filter (not . all (`elem` "0.:") . show)
-	. concat . map (\ni -> [IPv4Addr $ ipv4 ni, IPv6Addr $ ipv6 ni])
+activeNetworkAddresses = filter (not . all (`elem` "0.:") . showAddr)
+	. concat . map (\ni -> [toSomeAddr $ ipv4 ni, toSomeAddr $ ipv6 ni])
 	<$> getNetworkInterfaces

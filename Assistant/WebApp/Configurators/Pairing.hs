@@ -35,6 +35,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
+import Utility.Network
 
 import Yesod
 import Data.Text (Text)
@@ -46,10 +47,11 @@ import System.Posix.User
 
 getStartPairR :: Handler RepHtml
 getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
+	hostname <- liftIO $ getHostname
 	username <- liftIO $ getUserName
 	let sshkey = "" -- TODO generate/read ssh key
-	let mkmsg hostname = PairReqM $ PairReq $
-		mkVerifiable (PairData hostname username sshkey) secret
+	let mkmsg addr = PairReqM $ PairReq $
+		mkVerifiable (PairData hostname addr username sshkey) secret
 	pip <- liftIO $ PairingInProgress secret <$> multicastPairMsg mkmsg
 	dstatus <- daemonStatus <$> lift getYesod
 	liftIO $ modifyDaemonStatus_ dstatus $
@@ -96,7 +98,7 @@ promptSecret req cont = bootstrap (Just Config) $ do
 			let badphrase = isJust mproblem
 			let msg = fromMaybe "" mproblem
 			let (username, hostname) = maybe ("", "")
-				(\v -> (T.pack $ remoteUserName v, T.pack $ remoteHostName v))
+				(\v -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr $ remoteAddress v) (remoteHostName v)))
 				(verifiableVal . fromPairReq <$> req)
 			u <- T.pack <$> liftIO getUserName
 			let sameusername = username == u
