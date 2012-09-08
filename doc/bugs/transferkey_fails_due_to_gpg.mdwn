@@ -40,3 +40,6 @@ The key which is used for the remote is password protected. The GnuPG Agent asks
         annex-rsyncurl = vserver.dbruhn.de:/annex
         annex-uuid = ea3d6acc-716c-48e8-9b6b-993b90dcc1db
 
+When adding a new rsync-remote with encryption set to 'none' (therefore disabled), everything works, so it really seems a gpg issue.
+
+How can I help debugging?
