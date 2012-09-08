@@ -28,25 +28,28 @@
 
 module Assistant.WebApp.Configurators.Pairing where
 
-import Assistant.Common
-#ifdef WITH_PAIRING
 import Assistant.Pairing
-#endif
+#ifdef WITH_PAIRING
+import Assistant.Pairing.Network
+import Assistant.Common
 import Assistant.DaemonStatus
 import Utility.Verifiable
+import Utility.Network
+#endif
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
-import Utility.Network
 
 import Yesod
 import Data.Text (Text)
+#ifdef WITH_PAIRING
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as B
 import Data.Char
 import System.Posix.User
+#endif
 
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING

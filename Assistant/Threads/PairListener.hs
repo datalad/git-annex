@@ -9,6 +9,7 @@ module Assistant.Threads.PairListener where
 
 import Assistant.Common
 import Assistant.Pairing
+import Assistant.Pairing.Network
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Alert
