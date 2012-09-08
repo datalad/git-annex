@@ -16,8 +16,8 @@ type HMACDigest = String
 
 {- A value, verifiable using a HMAC digest and a secret. -}
 data Verifiable a = Verifiable
-	{ val :: a
-	, digest :: HMACDigest
+	{ verifiableVal :: a
+	, verifiableDigest :: HMACDigest
 	}
 	deriving (Eq, Read, Show)
 
@@ -25,7 +25,7 @@ mkVerifiable :: Show a => a -> Secret -> Verifiable a
 mkVerifiable a secret = Verifiable a (calcDigest (show a) secret)
 
 verified :: (Eq a, Show a) => Verifiable a -> Secret -> Bool
-verified v secret = v == mkVerifiable (val v) secret
+verified v secret = v == mkVerifiable (verifiableVal v) secret
 
 calcDigest :: String -> Secret -> HMACDigest
 calcDigest v secret = showDigest $ hmacSha1 secret $ fromString v

@@ -21,14 +21,20 @@ data PairReq = PairReq (Verifiable PairData)
 data PairAck = PairAck (Verifiable PairData)
 	deriving (Eq, Read, Show)
 
+fromPairReq :: PairReq -> Verifiable PairData
+fromPairReq (PairReq v) = v
+
+fromPairAck :: PairAck -> Verifiable PairData
+fromPairAck (PairAck v) = v
+
 data PairMsg
 	= PairReqM PairReq
 	| PairAckM PairAck
 	deriving (Eq, Read, Show)
 
 data PairData = PairData
-	{ hostName :: HostName
-	, userName :: UserName
+	{ remoteHostName :: HostName
+	, remoteUserName :: UserName
 	, sshPubKey :: Maybe SshPubKey
 	}
 	deriving (Eq, Read, Show)
