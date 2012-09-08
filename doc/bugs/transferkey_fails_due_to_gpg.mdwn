@@ -34,4 +34,9 @@ gpg is 'gpg (GnuPG) 1.4.11'
 
 Please provide any additional information below.
 
-The key which is used for the remote is password protected. The GnuPG Agent asks me for the password, so this seems to work. I do not know what content the gpg expects but does not recieve.
+The key which is used for the remote is password protected. The GnuPG Agent asks me for the password, so this seems to work. I do not know what content the gpg expects but does not recieve. The .git/config entry for the remote looks reasonable:
+
+    [remote "vserver2"]
+        annex-rsyncurl = vserver.dbruhn.de:/annex
+        annex-uuid = ea3d6acc-716c-48e8-9b6b-993b90dcc1db
+
