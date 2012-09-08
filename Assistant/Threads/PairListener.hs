@@ -12,17 +12,20 @@ import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.WebApp
+import Assistant.WebApp.Types
 import Assistant.Alert
 import Utility.Verifiable
 
 import Network.Multicast
 import Network.Socket
+import qualified Data.Text as T
 
 thisThread :: ThreadName
 thisThread = "PairListener"
 
-pairListenerThread :: ThreadState -> DaemonStatusHandle -> NamedThread
-pairListenerThread st dstatus = thread $ withSocketsDo $ do
+pairListenerThread :: ThreadState -> DaemonStatusHandle -> UrlRenderer -> NamedThread
+pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
 	sock <- multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
 	forever $ do
 		msg <- getmsg sock []
@@ -39,19 +42,34 @@ pairListenerThread st dstatus = thread $ withSocketsDo $ do
 				chunksz = 1024
 
 		dispatch Nothing = noop
-		dispatch (Just (PairReqM (PairReq v))) = unlessM (mypair v) $ do
-			let pairdata = verifiableVal v
-			let repo = remoteUserName pairdata ++ "@" ++
-				fromMaybe (showAddr $ remoteAddress pairdata)
-					(remoteHostName pairdata) ++
-					(remoteDirectory pairdata)
-			let msg = repo ++ " is sending a pair request."
-			{- Pair request alerts from the same host combine,
-			 - so repeated requests do not add additional alerts. -}
-			void $ addAlert dstatus $ pairRequestAlert repo msg
-		dispatch (Just (PairAckM _)) = noop -- TODO
+		dispatch (Just (PairReqM r@(PairReq v))) =
+			unlessM (mypair v) $
+				pairReqAlert dstatus urlrenderer r
+		dispatch (Just (PairAckM r@(PairAck v))) =
+			unlessM (mypair v) $
+				pairAckAlert dstatus r
 
 		{- Filter out our own pair requests, by checking if we
 		 - can verify using the secrets of any of them. -}
 		mypair v = any (verified v . inProgressSecret) . pairingInProgress
 			<$> getDaemonStatus dstatus
+
+{- Pair request alerts from the same host combine,
+ - so repeated requests do not add additional alerts. -}
+pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairReq -> IO ()
+pairReqAlert dstatus urlrenderer r@(PairReq v) = do
+	let pairdata = verifiableVal v
+	let repo = remoteUserName pairdata ++ "@" ++
+		fromMaybe (showAddr $ remoteAddress pairdata)
+			(remoteHostName pairdata) ++
+			(remoteDirectory pairdata)
+	let msg = repo ++ " is sending a pair request."
+	url <- renderUrl urlrenderer (FinishPairR r) []
+	void $ addAlert dstatus $ pairRequestAlert repo msg $
+		AlertButton
+			{ buttonUrl = url
+			, buttonLabel = T.pack "Respond"
+			}
+
+pairAckAlert :: DaemonStatusHandle -> PairAck -> IO ()
+pairAckAlert dstatus r@(PairAck v) = error "TODO"

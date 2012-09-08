@@ -20,6 +20,7 @@ import Yesod
 import Text.Hamlet
 import Data.Text (Text)
 import Control.Concurrent.STM
+import Control.Concurrent
 
 data NavBarItem = DashBoard | Config | About
 	deriving (Eq)
@@ -116,3 +117,18 @@ webAppFormAuthToken = do
  - With noscript, clicking it GETs the Route. -}
 actionButton :: Route WebApp -> (Maybe String) -> String -> String -> Widget
 actionButton route label buttonclass iconclass = $(widgetFile "actionbutton")
+
+type UrlRenderFunc = Route WebApp -> [(Text, Text)] -> Text
+type UrlRenderer = MVar (UrlRenderFunc)
+
+newUrlRenderer :: IO UrlRenderer
+newUrlRenderer = newEmptyMVar
+
+setUrlRenderer :: UrlRenderer -> (UrlRenderFunc) -> IO ()
+setUrlRenderer = putMVar
+
+{- Blocks until the webapp is running and has called setUrlRenderer. -}
+renderUrl :: UrlRenderer -> Route WebApp -> [(Text, Text)] -> IO Text
+renderUrl urlrenderer route params = do
+	r <- readMVar urlrenderer
+	return $ r route params

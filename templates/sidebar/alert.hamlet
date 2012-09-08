@@ -1,18 +1,24 @@
-<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid} :closable:onclick="(function( $ ) { $.get('@{CloseAlert i}') })( jQuery );">
+<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid} :closable:onclick="(function( $ ) { $.get('@{CloseAlert aid}') })( jQuery );">
   $if closable
     <a .close>&times;</a>
-  $maybe h <- heading
+  $maybe h <- renderAlertHeader alert
     $if block
       <h4 .alert-heading>
-        $case icon
+        $case alertIcon alert
           $of Nothing
           $of Just name
             <i .icon-#{name}></i> #
         #{h}
     $else
-      $case icon
+      $case alertIcon alert
         $of Nothing
         $of Just name
           <i .icon-#{name}></i> #
       <strong>#{h}</strong> #
-  #{message}
+  #{renderAlertMessage alert}
+  $case alertButton alert
+    $of Nothing
+    $of Just button
+      <br>
+      <a .btn .btn-primary href="#{buttonUrl button}">
+        #{buttonLabel button}

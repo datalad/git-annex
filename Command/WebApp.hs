@@ -16,6 +16,7 @@ import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Threads.WebApp
+import Assistant.WebApp
 import Utility.WebApp
 import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
@@ -92,10 +93,12 @@ firstRun = do
 	scanremotes <- newScanRemoteMap
 	transferqueue <- newTransferQueue
 	transferslots <- newTransferSlots
+	urlrenderer <- newUrlRenderer
 	v <- newEmptyMVar
 	let callback a = Just $ a v
 	void $ runNamedThread dstatus $
-		webAppThread Nothing dstatus scanremotes transferqueue transferslots
+		webAppThread Nothing dstatus scanremotes
+			transferqueue transferslots urlrenderer
 			(callback signaler) (callback mainthread)
 	where
 		signaler v = do

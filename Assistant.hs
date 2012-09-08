@@ -97,6 +97,10 @@
  - ScanRemotes (STM TMVar)
  - 	Remotes that have been disconnected, and should be scanned
  - 	are indicated by writing to this TMVar.
+ - UrlRenderer (MVar)
+ - 	A Yesod route rendering function is stored here. This allows
+ - 	things that need to render Yesod routes to block until the webapp
+ - 	has started up and such rendering is possible.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -125,6 +129,7 @@ import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 #ifdef WITH_WEBAPP
+import Assistant.WebApp
 import Assistant.Threads.WebApp
 #ifdef WITH_PAIRING
 import Assistant.Threads.PairListener
@@ -170,12 +175,13 @@ startAssistant assistant daemonize webappwaiter = do
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
+			urlrenderer <- newUrlRenderer
 			mapM_ (startthread dstatus)
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
-				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots Nothing webappwaiter
+				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots urlrenderer Nothing webappwaiter
 #ifdef WITH_PAIRING
-				, assist $ pairListenerThread st dstatus
+				, assist $ pairListenerThread st dstatus urlrenderer
 #endif
 #endif
 				, assist $ pushThread st dstatus commitchan pushmap

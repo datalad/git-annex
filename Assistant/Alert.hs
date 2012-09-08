@@ -15,6 +15,7 @@ import Utility.Tense
 import Logs.Transfer
 
 import qualified Data.Text as T
+import Data.Text (Text)
 import qualified Data.Map as M
 import Data.String
 
@@ -49,6 +50,12 @@ data Alert = Alert
 	, alertIcon :: Maybe String
 	, alertCombiner :: Maybe AlertCombiner
 	, alertName :: Maybe AlertName
+	, alertButton :: Maybe AlertButton
+	}
+
+data AlertButton = AlertButton
+	{ buttonUrl :: Text
+	, buttonLabel :: Text
 	}
 
 type AlertPair = (AlertId, Alert)
@@ -98,11 +105,11 @@ sortAlertPairs :: [AlertPair] -> [AlertPair]
 sortAlertPairs = sortBy compareAlertPairs
 
 {- Renders an alert's header for display, if it has one. -}
-renderAlertHeader :: Alert -> Maybe T.Text
+renderAlertHeader :: Alert -> Maybe Text
 renderAlertHeader alert = renderTense (alertTense alert) <$> alertHeader alert
 
 {- Renders an alert's message for display. -}
-renderAlertMessage :: Alert -> T.Text
+renderAlertMessage :: Alert -> Text
 renderAlertMessage alert = renderTense (alertTense alert) $
 	(alertMessageRender alert) (alertData alert)
 
@@ -182,6 +189,7 @@ baseActivityAlert = Alert
 	, alertIcon = Just "refresh"
 	, alertCombiner = Nothing
 	, alertName = Nothing
+	, alertButton = Nothing
 	}
 
 warningAlert :: String -> String -> Alert
@@ -196,6 +204,7 @@ warningAlert name msg = Alert
 	, alertIcon = Just "exclamation-sign"
 	, alertCombiner = Just $ dataCombiner (++)
 	, alertName = Just $ WarningAlert name
+	, alertButton = Nothing
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
@@ -257,14 +266,15 @@ sanityCheckFixAlert msg = Alert
 	, alertIcon = Just "exclamation-sign"
 	, alertName = Just SanityCheckFixAlert
 	, alertCombiner = Just $ dataCombiner (++)
+	, alertButton = Nothing
 	}
 	where
 		render dta = tenseWords $ alerthead : dta ++ [alertfoot]
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
 
-pairRequestAlert :: String -> String -> Alert
-pairRequestAlert repo msg = Alert
+pairRequestAlert :: String -> String -> AlertButton -> Alert
+pairRequestAlert repo msg button = Alert
 	{ alertClass = Message
 	, alertHeader = Just $ tenseWords ["Pair request"]
 	, alertMessageRender = tenseWords
@@ -275,6 +285,7 @@ pairRequestAlert repo msg = Alert
 	, alertIcon = Just "info-sign"
 	, alertName = Just $ PairRequestAlert repo
 	, alertCombiner = Just $ dataCombiner $ const id
+	, alertButton = Just button
 	}
 
 fileAlert :: TenseChunk -> FilePath -> Alert
