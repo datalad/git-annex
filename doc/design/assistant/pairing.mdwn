@@ -21,5 +21,10 @@ It could work like this:
 5. Pull over a clone of the repository.
 6. Start [[syncing]].
 
-Also look into the method used by
-<https://support.mozilla.org/en-US/kb/add-a-device-to-firefox-sync>
+## TODO
+
+* pairing over IPV6 only networks does not work. Haskell's
+  `network-multicast` library complains "inet_addr: Malformed address: ff02::1"
+  .. seems it just doesn't support IPv6. The pairing code in git-annex
+  does support ipv6, apart from this, it's just broadcasting the messages
+  that fails. (Pairing over mixed networks is fine.)

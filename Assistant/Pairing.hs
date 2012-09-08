@@ -16,6 +16,7 @@ import Network.Multicast
 import Network.Info
 import Network.Socket
 import Control.Concurrent
+import Control.Exception (bracket)
 import qualified Data.Map as M
 
 {- "I'll pair with anybody who shares the secret that can be used to verify
@@ -62,8 +63,9 @@ pairingPort = 55556
 
 {- This is the All Hosts multicast group, which should reach all hosts
  - on the same network segment. -}
-multicastAddress :: HostName
-multicastAddress = "224.0.0.1"
+multicastAddress :: SomeAddr -> HostName
+multicastAddress (IPv4Addr _) = "224.0.0.1"
+multicastAddress (IPv6Addr _) = "ff02::1"
 
 type MkPairMsg = HostName -> PairMsg
 
@@ -77,7 +79,8 @@ type MkPairMsg = HostName -> PairMsg
  -
  - Note that new sockets are opened each time. This is hardly efficient,
  - but it allows new network interfaces to be used as they come up.
- - On the other hand, the expensive DNS lookups are cached. -}
+ - On the other hand, the expensive DNS lookups are cached.
+ -}
 multicastPairMsg :: MkPairMsg -> IO ThreadId
 multicastPairMsg mkmsg = forkIO $ go =<< initMsgCache mkmsg
 	where
@@ -87,11 +90,15 @@ multicastPairMsg mkmsg = forkIO $ go =<< initMsgCache mkmsg
 			mapM_ (sendinterface cache') addrs
 			threadDelaySeconds (Seconds 2)
 			go cache'
-		sendinterface cache i = void $ catchMaybeIO $ withSocketsDo $ do
-			(sock, addr) <- multicastSender multicastAddress pairingPort
-			setInterface sock (show i)
-			maybe noop (\s -> void $ sendTo sock s addr)
-				(M.lookup i cache)
+		sendinterface cache i = void $ catchMaybeIO $
+			withSocketsDo $ bracket
+				(multicastSender (multicastAddress i) pairingPort)
+				(sClose . fst)
+				(\(sock, addr) -> do
+					setInterface sock (show i)
+					maybe noop (\s -> void $ sendTo sock s addr)
+						(M.lookup i cache)
+				)
 
 {- A cache of serialized messages. -}
 type MsgCache = M.Map SomeAddr String
