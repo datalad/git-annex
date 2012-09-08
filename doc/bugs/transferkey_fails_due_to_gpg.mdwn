@@ -1,10 +1,13 @@
 What steps will reproduce the problem?
 Create a new annex, add a new repository:
- git annex initremote vserver2 type=rsync rsyncurl=vserver.dbruhn.de:/annex encryption=dominik@dbruhn.de
+
+  git annex initremote vserver2 type=rsync rsyncurl=vserver.dbruhn.de:/annex encryption=dominik@dbruhn.de
+
 Add some files, add them to annex, try to transfer them:
-/home/dominik/bin/git-annex transferkey SHA256-s6486446--df84b11a0e9543134224d0ac1e0f2567bcd79d86605117c5af008a1b133cee3a --to vserver2 --file MKBD/OB.mp3 --debug
+  git annex transferkey SHA256-s6486446--df84b11a0e9543134224d0ac1e0f2567bcd79d86605117c5af008a1b133cee3a --to vserver2 --file MKBD/OB.mp3 --debug
 
 What is the expected output? What do you see instead?
+
 I expect the file to be transfered to my remote server. Instead I see a 'gpg>' prompt with nothing happening. When pressing CTRL+C, the following mesage is shown:
 
 gpg: Interrupt caught ... exiting
