@@ -12,16 +12,16 @@ gpg: Interrupt caught ... exiting
 There must be some faults when interfacing gpg. The other console-output is:
 
 -----
-[2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","git-annex"] 
-[2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","--hash","refs/heads/git-annex"] 
-[2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","log","refs/heads/git-annex..245fa80db6733dbbeff6c40d46bd65ed00811548","--oneline","-n1"] 
-[2012-09-08 18:50:12 CEST] chat: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","cat-file","--batch"] 
-(gpg) [2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--decrypt"] 
-[2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","8","--symmetric","--force-mdc"] 
-sdgdg
-dsgdgs
-^C
-gpg: Interrupt caught ... exiting
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","git-annex"] 
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","--hash","refs/heads/git-annex"] 
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","log","refs/heads/gitannex..245fa80db6733dbbeff6c40d46bd65ed00811548","--oneline","-n1"] 
+    [2012-09-08 18:50:12 CEST] chat: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","cat-file","--batch"] 
+    (gpg) [2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--decrypt"] 
+    [2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","8","--symmetric","--force-mdc"] 
+    sdgdg
+    dsgdgs
+    ^C
+    gpg: Interrupt caught ... exiting
 -----
 
 What version of git-annex are you using? On what operating system?
