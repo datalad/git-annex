@@ -14,7 +14,6 @@ import Utility.ThreadScheduler
 import Network.Multicast
 import Network.Info
 import Network.Socket
-import Control.Concurrent
 import Control.Exception (bracket)
 import qualified Data.Map as M
 
@@ -31,8 +30,8 @@ multicastAddress :: SomeAddr -> HostName
 multicastAddress (IPv4Addr _) = "224.0.0.1"
 multicastAddress (IPv6Addr _) = "ff02::1"
 
-{- Multicasts a message repeatedly on all interfaces until its thread
- - is killed, with a 2 second delay between each transmission.
+{- Multicasts a message repeatedly on all interfaces forever,
+ - with a 2 second delay between each transmission.
  -
  - The remoteHostAddress is set to the interface's IP address.
  -
@@ -40,8 +39,8 @@ multicastAddress (IPv6Addr _) = "ff02::1"
  - but it allows new network interfaces to be used as they come up.
  - On the other hand, the expensive DNS lookups are cached.
  -}
-multicastPairMsg :: (SomeAddr -> PairMsg) -> IO ThreadId
-multicastPairMsg mkmsg = forkIO $ go M.empty
+multicastPairMsg :: (SomeAddr -> PairMsg) -> IO ()
+multicastPairMsg mkmsg = go M.empty
 	where
 		go cache = do
 			addrs <- activeNetworkAddresses

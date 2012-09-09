@@ -41,8 +41,8 @@ data DaemonStatus = DaemonStatus
 	, lastAlertId :: AlertId
 	-- Ordered list of remotes to talk to.
 	, knownRemotes :: [Remote]
-	-- Pairing requests that are in progress.
-	, pairingInProgress :: [PairingInProgress]
+	-- Pairing request that is in progress.
+	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus
 	, changeNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when queued or current transfers change.
@@ -66,7 +66,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure M.empty
 	<*> pure firstAlertId
 	<*> pure []
-	<*> pure []
+	<*> pure Nothing
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
@@ -260,3 +260,10 @@ alertWhile' dstatus alert a = do
 	(ok, r) <- a
 	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
 	return r
+
+{- Displays an alert while performing an activity, then removes it. -}
+alertDuring :: DaemonStatusHandle -> Alert -> IO a -> IO a
+alertDuring dstatus alert a = do
+	let alert' = alert { alertClass = Activity }
+	i <- addAlert dstatus alert'
+	removeAlert dstatus i `after` a

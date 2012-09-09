@@ -32,6 +32,7 @@ import Assistant.Pairing
 #ifdef WITH_PAIRING
 import Assistant.Pairing.Network
 import Assistant.Common
+import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
@@ -49,22 +50,49 @@ import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as B
 import Data.Char
 import System.Posix.User
+import qualified Control.Exception as E
+import Control.Concurrent
 #endif
 
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
 getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
+	dstatus <- daemonStatus <$> lift getYesod
+	urlrender <- lift getUrlRender
+	let homeurl = urlrender HomeR
 	hostname <- liftIO $ getHostname
 	username <- liftIO $ getUserName
 	reldir <- fromJust . relDir <$> lift getYesod
 	let sshkey = "" -- TODO generate/read ssh key
 	let mkmsg addr = PairMsg $ mkVerifiable
 		(PairReq, PairData hostname addr username reldir sshkey) secret
-	pip <- liftIO $ PairingInProgress secret <$> multicastPairMsg mkmsg
-	dstatus <- daemonStatus <$> lift getYesod
-	liftIO $ modifyDaemonStatus_ dstatus $
-		\s -> s { pairingInProgress = pip : pairingInProgress s }
+	liftIO $ do
+		pip <- PairingInProgress secret
+			<$> sendrequests mkmsg dstatus homeurl
+		oldpip <- modifyDaemonStatus dstatus $
+			\s -> (s { pairingInProgress = Just pip }, pairingInProgress s)
+		maybe noop stopold oldpip
 	lift $ redirect $ InprogressPairR rawsecret
+	where
+		{- Sends pairing messages until the thread is killed,
+		 - and shows an activity alert while doing it.
+		 -
+		 - The button returns the user to the HomeR. This is
+		 - not ideal, but they have to be sent somewhere, and could
+		 - have been on a page specific to the in-process pairing
+		 - that just stopped.
+		 -}
+		sendrequests mkmsg dstatus homeurl = forkIO $ do
+			tid <- myThreadId
+			let selfdestruct = AlertButton
+				{ buttonLabel = "Cancel"
+				, buttonUrl = homeurl
+				, buttonAction = Just $ const $ killThread tid
+				}
+			alertDuring dstatus (pairRequestAlert selfdestruct) $ do
+				_ <- E.try (multicastPairMsg mkmsg) :: IO (Either E.SomeException ())
+				return ()
+		stopold = killThread  . inProgressThreadId
 #else
 getStartPairR = noPairing
 #endif

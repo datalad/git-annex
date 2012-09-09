@@ -56,7 +56,7 @@ pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
 pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairMsg -> IO ()
 pairReqAlert dstatus urlrenderer msg = unlessM myreq $ do
 	url <- renderUrl urlrenderer (FinishPairR msg) []
-	void $ addAlert dstatus $ pairRequestAlert repo
+	void $ addAlert dstatus $ pairRequestReceivedAlert repo
 		(repo ++ " is sending a pair request.") $
 		AlertButton
 			{ buttonUrl = url
@@ -74,16 +74,18 @@ pairReqAlert dstatus urlrenderer msg = unlessM myreq $ do
 			, ":"
 			, (remoteDirectory pairdata)
 			]
-		{- Filter out our own pair requests, by checking if we
-		 - can verify using the secrets of any of them. -}
-		myreq = any (verified v . inProgressSecret) . pairingInProgress
-			<$> getDaemonStatus dstatus
+		{- Filter out our own pair request, by checking if we
+		 - can verify using its secret. -}
+		myreq = maybe False (verified v . inProgressSecret)
+			. pairingInProgress
+				<$> getDaemonStatus dstatus
 		{- Remove the button when it's clicked, and change the
 		 - alert to be in progress. This alert cannot be entirely
 		 - removed since more pair request messages are coming in
 		 - and would re-add it. -}
 		onclick i = updateAlert dstatus i $ \alert -> Just $ alert
 			{ alertButton = Nothing
+			, alertClass = Activity
 			, alertIcon = Just ActivityIcon
 			, alertData = [UnTensed $ T.pack $ "pair request with " ++ repo ++ " in progress"]
 			}

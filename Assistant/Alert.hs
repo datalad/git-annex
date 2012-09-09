@@ -32,7 +32,7 @@ data AlertName
 	= FileAlert TenseChunk
 	| SanityCheckFixAlert
 	| WarningAlert String
-	| PairRequestAlert String
+	| PairRequestReceivedAlert String
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -148,6 +148,7 @@ makeAlertFiller success alert
 		{ alertClass = if c == Activity then c' else c
 		, alertPriority = Filler
 		, alertClosable = True
+		, alertButton = Nothing
 		, alertIcon = Just $ if success then SuccessIcon else ErrorIcon
 		}
 	where
@@ -285,8 +286,15 @@ sanityCheckFixAlert msg = Alert
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
 
-pairRequestAlert :: String -> String -> AlertButton -> Alert
-pairRequestAlert repo msg button = Alert
+pairRequestAlert :: AlertButton -> Alert
+pairRequestAlert button = baseActivityAlert
+	{ alertData = [ UnTensed "Pairing request in progress" ]
+	, alertPriority = High
+	, alertButton = Just button
+	}
+
+pairRequestReceivedAlert :: String -> String -> AlertButton -> Alert
+pairRequestReceivedAlert repo msg button = Alert
 	{ alertClass = Message
 	, alertHeader = Nothing
 	, alertMessageRender = tenseWords
@@ -295,7 +303,7 @@ pairRequestAlert repo msg button = Alert
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon
-	, alertName = Just $ PairRequestAlert repo
+	, alertName = Just $ PairRequestReceivedAlert repo
 	, alertCombiner = Just $ dataCombiner $ const id
 	, alertButton = Just button
 	}
