@@ -22,15 +22,24 @@ data PairReq = PairReq (Verifiable PairData)
 data PairAck = PairAck (Verifiable PairData)
 	deriving (Eq, Read, Show)
 
+{- "I saw your PairAck; you can stop sending them."
+ - (This is not repeated, it's just sent in response to a valid PairAck) -}
+data PairDone = PairDone (Verifiable PairData)
+	deriving (Eq, Read, Show)
+
 fromPairReq :: PairReq -> Verifiable PairData
 fromPairReq (PairReq v) = v
 
 fromPairAck :: PairAck -> Verifiable PairData
 fromPairAck (PairAck v) = v
 
+fromPairDone :: PairDone -> Verifiable PairData
+fromPairDone (PairDone v) = v
+
 data PairMsg
 	= PairReqM PairReq
 	| PairAckM PairAck
+	| PairDoneM PairDone
 	deriving (Eq, Read, Show)
 
 data PairData = PairData

@@ -27,11 +27,14 @@ thisThread = "PairListener"
 pairListenerThread :: ThreadState -> DaemonStatusHandle -> UrlRenderer -> NamedThread
 pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
 	sock <- multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
-	forever $ do
-		msg <- getmsg sock []
-		dispatch $ readish msg
+	go sock
 	where
 		thread = NamedThread thisThread
+		
+		go sock = do
+			msg <- getmsg sock []
+			dispatch $ readish msg
+			go sock
 
 		getmsg sock c = do
 			(msg, n, _) <- recvFrom sock chunksz
@@ -42,22 +45,17 @@ pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
 				chunksz = 1024
 
 		dispatch Nothing = noop
-		dispatch (Just (PairReqM r@(PairReq v))) =
-			unlessM (mypair v) $
-				pairReqAlert dstatus urlrenderer r
-		dispatch (Just (PairAckM r@(PairAck v))) =
-			unlessM (mypair v) $
-				pairAckAlert dstatus r
-
-		{- Filter out our own pair requests, by checking if we
-		 - can verify using the secrets of any of them. -}
-		mypair v = any (verified v . inProgressSecret) . pairingInProgress
-			<$> getDaemonStatus dstatus
+		dispatch (Just (PairReqM m@(PairReq v))) =
+			pairReqAlert dstatus urlrenderer m
+		dispatch (Just (PairAckM m)) =
+			pairAckAlert dstatus m
+		dispatch (Just (PairDoneM m)) =
+			pairDoneAlert dstatus m
 
 {- Pair request alerts from the same host combine,
  - so repeated requests do not add additional alerts. -}
 pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairReq -> IO ()
-pairReqAlert dstatus urlrenderer r@(PairReq v) = do
+pairReqAlert dstatus urlrenderer r@(PairReq v) = unlessM myreq $ do
 	let pairdata = verifiableVal v
 	let repo = remoteUserName pairdata ++ "@" ++
 		fromMaybe (showAddr $ remoteAddress pairdata)
@@ -70,6 +68,31 @@ pairReqAlert dstatus urlrenderer r@(PairReq v) = do
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
 			}
+	where
+		{- Filter out our own pair requests, by checking if we
+		 - can verify using the secrets of any of them. -}
+		myreq = any (verified v . inProgressSecret) . pairingInProgress
+			<$> getDaemonStatus dstatus
 
+{- When a valid PairAck is seen, a host has successfully paired with
+ - us, and we should finish pairing with them. Then send a PairDone.
+ -
+ - A stale PairAck might also be seen, after we've finished pairing.
+ - Perhaps our PairDone was not received. To handle this, we keep
+ - a list of recently finished pairings, and re-send PairDone in
+ - response to stale PairAcks for them.
+ -}
 pairAckAlert :: DaemonStatusHandle -> PairAck -> IO ()
-pairAckAlert dstatus r@(PairAck v) = error "TODO"
+pairAckAlert dstatus (PairAck v) = error "TODO"
+
+{- If we get a valid PairDone, and are sending PairAcks, we can stop
+ - sending them, as the message has been received.
+ -
+ - Also, now is the time to remove the pair request alert, as pairing is
+ - over. Do that even if the PairDone cannot be validated, as we might
+ - be a third host that did not participate in the pairing.
+ - Note: This does allow a bad actor to squelch pairing on a network
+ - by sending bogus PairDones.
+ -}
+pairDoneAlert :: DaemonStatusHandle -> PairDone -> IO ()
+pairDoneAlert dstatus (PairDone v) = error "TODO"
