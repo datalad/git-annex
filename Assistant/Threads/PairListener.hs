@@ -16,6 +16,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
 import Utility.Verifiable
+import Utility.Tense
 
 import Network.Multicast
 import Network.Socket
@@ -54,24 +55,38 @@ pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
  - so repeated requests do not add additional alerts. -}
 pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairMsg -> IO ()
 pairReqAlert dstatus urlrenderer msg = unlessM myreq $ do
-	let (_, pairdata) = verifiableVal v
-	let repo = remoteUserName pairdata ++ "@" ++
-		fromMaybe (showAddr $ remoteAddress pairdata)
-			(remoteHostName pairdata) ++
-			(remoteDirectory pairdata)
 	url <- renderUrl urlrenderer (FinishPairR msg) []
 	void $ addAlert dstatus $ pairRequestAlert repo
 		(repo ++ " is sending a pair request.") $
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
+			, buttonAction = Just onclick
 			}
 	where
 		v = fromPairMsg msg
+		(_, pairdata) = verifiableVal v
+		repo = concat
+			[ remoteUserName pairdata
+			, "@"
+			, fromMaybe (showAddr $ remoteAddress pairdata)
+				(remoteHostName pairdata)
+			, ":"
+			, (remoteDirectory pairdata)
+			]
 		{- Filter out our own pair requests, by checking if we
 		 - can verify using the secrets of any of them. -}
 		myreq = any (verified v . inProgressSecret) . pairingInProgress
 			<$> getDaemonStatus dstatus
+		{- Remove the button when it's clicked, and convert the
+		 - alert to filler. It cannot be entirely removed since
+		 - more pair request messages are coming in and would
+		 - re-add it. -}
+		onclick i = updateAlert dstatus i $ \alert -> Just $ alert
+			{ alertButton = Nothing
+			, alertPriority = Filler
+			, alertData = [UnTensed $ T.pack $ "pair request with " ++ repo ++ " in progress"]
+			}
 
 {- When a valid PairAck is seen, a host has successfully paired with
  - us, and we should finish pairing with them. Then send a PairDone.

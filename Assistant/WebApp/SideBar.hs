@@ -76,4 +76,19 @@ getSideBarR nid = do
 getCloseAlert :: AlertId -> Handler ()
 getCloseAlert i = do
 	webapp <- getYesod
-	void $ liftIO $ removeAlert (daemonStatus webapp) i
+	liftIO $ removeAlert (daemonStatus webapp) i
+
+{- When an alert with a button is clicked on, the button takes us here. -}
+getClickAlert :: AlertId -> Handler ()
+getClickAlert i = do
+	webapp <- getYesod
+	m <- alertMap <$> liftIO (getDaemonStatus $ daemonStatus webapp)
+	case M.lookup i m of
+		Just (Alert { alertButton = Just b }) -> do
+			{- Spawn a thread to run the action while redirecting. -}
+			case buttonAction b of
+				Nothing -> noop
+				Just a -> liftIO $ void $ forkIO $ a i
+			redirect $ buttonUrl b
+		_ -> redirectBack
+

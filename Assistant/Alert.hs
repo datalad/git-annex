@@ -53,9 +53,13 @@ data Alert = Alert
 	, alertButton :: Maybe AlertButton
 	}
 
+{- When clicked, a button always redirects to a URL
+ - It may also run an IO action in the background, which is useful
+ - to make the button close or otherwise change the alert. -}
 data AlertButton = AlertButton
-	{ buttonUrl :: Text
-	, buttonLabel :: Text
+	{ buttonLabel :: Text
+	, buttonUrl :: Text
+	, buttonAction :: Maybe (AlertId -> IO ())
 	}
 
 type AlertPair = (AlertId, Alert)

@@ -116,12 +116,6 @@ postFileBrowserR = void openFileBrowser
 getFileBrowserR :: Handler ()
 getFileBrowserR = whenM openFileBrowser $ redirectBack
 
-redirectBack :: Handler ()
-redirectBack = do
-	clearUltDest
-	setUltDestReferer
-	redirectUltDest HomeR
-
 {- Opens the system file browser on the repo, or, as a fallback,
  - goes to a file:// url. Returns True if it's ok to redirect away
  - from the page (ie, the system file browser was opened). 

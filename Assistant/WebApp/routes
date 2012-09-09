@@ -21,7 +21,8 @@
 /sidebar/#NotificationId SideBarR GET
 /notifier/transfers NotifierTransfersR GET
 /notifier/sidebar NotifierSideBarR GET
-/closealert/#AlertId CloseAlert GET
+/alert/close/#AlertId CloseAlert GET
+/alert/click/#AlertId ClickAlert GET
 /filebrowser FileBrowserR GET POST
 
 /transfer/pause/#Transfer PauseTransferR GET POST
