@@ -47,11 +47,19 @@ data Alert = Alert
 	, alertBlockDisplay :: Bool
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority
-	, alertIcon :: Maybe String
+	, alertIcon :: Maybe AlertIcon
 	, alertCombiner :: Maybe AlertCombiner
 	, alertName :: Maybe AlertName
 	, alertButton :: Maybe AlertButton
 	}
+
+data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon
+
+bootstrapIcon :: AlertIcon -> String
+bootstrapIcon ActivityIcon = "refresh"
+bootstrapIcon InfoIcon = "info-sign"
+bootstrapIcon SuccessIcon = "ok"
+bootstrapIcon ErrorIcon = "exclamation-sign"
 
 {- When clicked, a button always redirects to a URL
  - It may also run an IO action in the background, which is useful
@@ -140,7 +148,7 @@ makeAlertFiller success alert
 		{ alertClass = if c == Activity then c' else c
 		, alertPriority = Filler
 		, alertClosable = True
-		, alertIcon = Just $ if success then "ok" else "exclamation-sign"
+		, alertIcon = Just $ if success then SuccessIcon else ErrorIcon
 		}
 	where
 		c = alertClass alert
@@ -190,7 +198,7 @@ baseActivityAlert = Alert
 	, alertBlockDisplay = False
 	, alertClosable = False
 	, alertPriority = Medium
-	, alertIcon = Just "refresh"
+	, alertIcon = Just ActivityIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
 	, alertButton = Nothing
@@ -205,7 +213,7 @@ warningAlert name msg = Alert
 	, alertBlockDisplay = True
 	, alertClosable = True
 	, alertPriority = High
-	, alertIcon = Just "exclamation-sign"
+	, alertIcon = Just ErrorIcon
 	, alertCombiner = Just $ dataCombiner (++)
 	, alertName = Just $ WarningAlert name
 	, alertButton = Nothing
@@ -267,7 +275,7 @@ sanityCheckFixAlert msg = Alert
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
-	, alertIcon = Just "exclamation-sign"
+	, alertIcon = Just ErrorIcon
 	, alertName = Just SanityCheckFixAlert
 	, alertCombiner = Just $ dataCombiner (++)
 	, alertButton = Nothing
@@ -286,7 +294,7 @@ pairRequestAlert repo msg button = Alert
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
-	, alertIcon = Just "info-sign"
+	, alertIcon = Just InfoIcon
 	, alertName = Just $ PairRequestAlert repo
 	, alertCombiner = Just $ dataCombiner $ const id
 	, alertButton = Just button
