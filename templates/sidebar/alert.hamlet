@@ -4,21 +4,18 @@
   $maybe h <- renderAlertHeader alert
     $if block
       <h4 .alert-heading>
-        $case alertIcon alert
-          $of Nothing
-          $of Just name
-            <i .icon-#{name}></i> #
+        $maybe name <- alertIcon alert
+          <i .icon-#{name}></i> #
         #{h}
     $else
-      $case alertIcon alert
-        $of Nothing
-        $of Just name
-          <i .icon-#{name}></i> #
+      $maybe name <- alertIcon alert
+        <i .icon-#{name}></i> #
       <strong>#{h}</strong> #
+  $nothing
+    $maybe name <- alertIcon alert
+      <i .icon-#{name}></i> #
   #{renderAlertMessage alert}
-  $case alertButton alert
-    $of Nothing
-    $of Just button
-      <br>
-      <a .btn .btn-primary href="@{ClickAlert aid}">
-        #{buttonLabel button}
+  $maybe button <- alertButton alert
+    <br>
+    <a .btn .btn-primary href="@{ClickAlert aid}">
+      #{buttonLabel button}
