@@ -43,3 +43,9 @@ The key which is used for the remote is password protected. The GnuPG Agent asks
 When adding a new rsync-remote with encryption set to 'none' (therefore disabled), everything works, so it really seems a gpg issue.
 
 How can I help debugging?
+
+> Thanks, I reproduced a deadlock in the gpg code, which was introduced
+> with some of my earlier changes to use threading. No released version of
+> git-annex was affected, and I have developed a fix, which works for me
+> and is now committed to master. Marking this [[done]]; please do check
+> that my fix works for you! --[[Joey]]

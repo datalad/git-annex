@@ -64,7 +64,7 @@ passphraseHandle :: [CommandParam] -> String -> IO L.ByteString -> (Handle -> IO
 passphraseHandle params passphrase a b = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
-	_ <- forkIO $ do
+	void $ forkIO $ do
 		toh <- fdToHandle topipe
 		hPutStrLn toh passphrase
 		hClose toh
@@ -76,8 +76,9 @@ passphraseHandle params passphrase a b = do
 		withBothHandles createProcessSuccess (proc "gpg" params') go
 	where
 		go (to, from) = do
-			L.hPut to =<< a
-			hClose to
+			void $ forkIO $ do
+				L.hPut to =<< a
+				hClose to
 			b from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
