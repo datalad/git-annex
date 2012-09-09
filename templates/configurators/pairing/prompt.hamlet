@@ -20,7 +20,7 @@
         entered on #{hostname} when the pairing was started.
       $else
         For security, a secret phrase has been selected, which you need #
-        to enter here to complete the pairing. If you don't know the #
+        to enter here to finish the pairing. If you don't know the #
         phrase, go ask #{username} ...
   $if badphrase
     <div .alert .alert-error>
@@ -35,7 +35,7 @@
             $if start
               Start pairing
             $else
-              Complete pairing
+              Finish pairing
     <div .alert .alert-info>
       $if start
         <p>
