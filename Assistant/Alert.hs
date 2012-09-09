@@ -288,10 +288,10 @@ sanityCheckFixAlert msg = Alert
 pairRequestAlert :: String -> String -> AlertButton -> Alert
 pairRequestAlert repo msg button = Alert
 	{ alertClass = Message
-	, alertHeader = Just $ tenseWords ["Pair request"]
+	, alertHeader = Nothing
 	, alertMessageRender = tenseWords
 	, alertData = [UnTensed $ T.pack msg]
-	, alertBlockDisplay = True
+	, alertBlockDisplay = False
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon

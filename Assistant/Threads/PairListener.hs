@@ -78,13 +78,13 @@ pairReqAlert dstatus urlrenderer msg = unlessM myreq $ do
 		 - can verify using the secrets of any of them. -}
 		myreq = any (verified v . inProgressSecret) . pairingInProgress
 			<$> getDaemonStatus dstatus
-		{- Remove the button when it's clicked, and convert the
-		 - alert to filler. It cannot be entirely removed since
-		 - more pair request messages are coming in and would
-		 - re-add it. -}
+		{- Remove the button when it's clicked, and change the
+		 - alert to be in progress. This alert cannot be entirely
+		 - removed since more pair request messages are coming in
+		 - and would re-add it. -}
 		onclick i = updateAlert dstatus i $ \alert -> Just $ alert
 			{ alertButton = Nothing
-			, alertPriority = Filler
+			, alertIcon = Just ActivityIcon
 			, alertData = [UnTensed $ T.pack $ "pair request with " ++ repo ++ " in progress"]
 			}
 
