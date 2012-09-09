@@ -83,7 +83,7 @@ webAppThread mst dstatus scanremotes transferqueue transferslots urlrenderer pos
 				=<< runThreadState st (fromRepo repoPath))
 		go port webapp htmlshim = do
 			writeHtmlShim webapp port htmlshim
-			maybe noop (\a -> a (myUrl webapp port "/") htmlshim) onstartup
+			maybe noop (\a -> a (myUrl webapp port HomeR) htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
@@ -113,8 +113,9 @@ genHtmlShim webapp port = unlines
 	, "</html>"
 	]
 	where
-		url = myUrl webapp port "/"
+		url = myUrl webapp port HomeR
 
-myUrl :: WebApp -> PortNumber -> FilePath -> Url
-myUrl webapp port page = "http://localhost:" ++ show port ++ page ++
-	"?auth=" ++ unpack (secretToken webapp)
+myUrl :: WebApp -> PortNumber -> Route WebApp -> Url
+myUrl webapp port route = unpack $ yesodRender webapp urlbase route []
+	where
+		urlbase = pack $ "http://localhost:" ++ show port
