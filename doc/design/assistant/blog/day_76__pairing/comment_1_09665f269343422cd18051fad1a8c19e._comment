@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmubB1Sj2rwFoVdZYvGV0ACaQUJQyiJXJI"
+ nickname="Paul"
+ subject="Hogging memory"
+ date="2012-09-09T15:51:40Z"
+ content="""
+How do you prefer bugs to be reported?
+
+I'm having a problem where git-annex (from git, 1e41c0d85ecc24e8656bff79b2fba46c3663a054) is taking over 20GB of RAM after adding a single file.
+
+To reproduce:
+
+1. Create a new annex (I used the web app, created an annex at ~/annex)
+2. Add box.com as a remote, using encryption (followed <http://git-annex.branchable.com/tips/using_box.com_as_a_special_remote/>, basically `cd ~/annex; git annex initremote box.com type=directory directory=/media/box.com encryption=$GPGID`)
+3. copied a file into the annex (ok, I admit, the file was a bit large, 350MB, but still)
+4. refreshed the web app, nothing happened
+5. closed the web app
+6. started git annex assistant inside ~/annex
+7. git annex webapp
+8. noted that git annex noticed the file, and started transferring
+9. wait
+10. memory usage for the git-annex process goes beyond 21GB RAM
+11. oomkiller kills git-annex
+"""]]
