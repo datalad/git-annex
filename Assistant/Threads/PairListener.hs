@@ -45,30 +45,29 @@ pairListenerThread st dstatus urlrenderer = thread $ withSocketsDo $ do
 				chunksz = 1024
 
 		dispatch Nothing = noop
-		dispatch (Just (PairReqM m@(PairReq v))) =
-			pairReqAlert dstatus urlrenderer m
-		dispatch (Just (PairAckM m)) =
-			pairAckAlert dstatus m
-		dispatch (Just (PairDoneM m)) =
-			pairDoneAlert dstatus m
+		dispatch (Just m) = case pairMsgStage m of
+			PairReq -> pairReqAlert dstatus urlrenderer m
+			PairAck -> pairAckAlert dstatus m
+			PairDone -> pairDoneAlert dstatus m
 
 {- Pair request alerts from the same host combine,
  - so repeated requests do not add additional alerts. -}
-pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairReq -> IO ()
-pairReqAlert dstatus urlrenderer r@(PairReq v) = unlessM myreq $ do
-	let pairdata = verifiableVal v
+pairReqAlert :: DaemonStatusHandle -> UrlRenderer -> PairMsg -> IO ()
+pairReqAlert dstatus urlrenderer msg = unlessM myreq $ do
+	let (_, pairdata) = verifiableVal v
 	let repo = remoteUserName pairdata ++ "@" ++
 		fromMaybe (showAddr $ remoteAddress pairdata)
 			(remoteHostName pairdata) ++
 			(remoteDirectory pairdata)
-	let msg = repo ++ " is sending a pair request."
-	url <- renderUrl urlrenderer (FinishPairR r) []
-	void $ addAlert dstatus $ pairRequestAlert repo msg $
+	url <- renderUrl urlrenderer (FinishPairR msg) []
+	void $ addAlert dstatus $ pairRequestAlert repo
+		(repo ++ " is sending a pair request.") $
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
 			}
 	where
+		v = fromPairMsg msg
 		{- Filter out our own pair requests, by checking if we
 		 - can verify using the secrets of any of them. -}
 		myreq = any (verified v . inProgressSecret) . pairingInProgress
@@ -82,8 +81,8 @@ pairReqAlert dstatus urlrenderer r@(PairReq v) = unlessM myreq $ do
  - a list of recently finished pairings, and re-send PairDone in
  - response to stale PairAcks for them.
  -}
-pairAckAlert :: DaemonStatusHandle -> PairAck -> IO ()
-pairAckAlert dstatus (PairAck v) = error "TODO"
+pairAckAlert :: DaemonStatusHandle -> PairMsg -> IO ()
+pairAckAlert dstatus msg = error "TODO"
 
 {- If we get a valid PairDone, and are sending PairAcks, we can stop
  - sending them, as the message has been received.
@@ -94,5 +93,5 @@ pairAckAlert dstatus (PairAck v) = error "TODO"
  - Note: This does allow a bad actor to squelch pairing on a network
  - by sending bogus PairDones.
  -}
-pairDoneAlert :: DaemonStatusHandle -> PairDone -> IO ()
-pairDoneAlert dstatus (PairDone v) = error "TODO"
+pairDoneAlert :: DaemonStatusHandle -> PairMsg -> IO ()
+pairDoneAlert dstatus msg = error "TODO"

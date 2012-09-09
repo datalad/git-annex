@@ -12,35 +12,26 @@ import Utility.Verifiable
 import Control.Concurrent
 import Network.Socket
 
-{- "I'll pair with anybody who shares the secret that can be used to verify
- - this request." -}
-data PairReq = PairReq (Verifiable PairData)
+data PairStage
+	{- "I'll pair with anybody who shares the secret that can be used
+	 - to verify this request." -}
+	 = PairReq
+	{- "I've verified your request, and you can verify this to see
+	 - that I know the secret. I set up your ssh key already.
+	 - Here's mine for you to set up." -}
+	| PairAck
+	{- "I saw your PairAck; you can stop sending them." -}
+	| PairDone
 	deriving (Eq, Read, Show)
 
-{- "I've verified your request, and you can verify mine to see that I know
- - the secret. I set up your ssh key already. Here's mine for you to set up." -}
-data PairAck = PairAck (Verifiable PairData)
+newtype PairMsg = PairMsg (Verifiable (PairStage, PairData))
 	deriving (Eq, Read, Show)
 
-{- "I saw your PairAck; you can stop sending them."
- - (This is not repeated, it's just sent in response to a valid PairAck) -}
-data PairDone = PairDone (Verifiable PairData)
-	deriving (Eq, Read, Show)
+fromPairMsg :: PairMsg -> (Verifiable (PairStage, PairData))
+fromPairMsg (PairMsg m) = m
 
-fromPairReq :: PairReq -> Verifiable PairData
-fromPairReq (PairReq v) = v
-
-fromPairAck :: PairAck -> Verifiable PairData
-fromPairAck (PairAck v) = v
-
-fromPairDone :: PairDone -> Verifiable PairData
-fromPairDone (PairDone v) = v
-
-data PairMsg
-	= PairReqM PairReq
-	| PairAckM PairAck
-	| PairDoneM PairDone
-	deriving (Eq, Read, Show)
+pairMsgStage :: PairMsg -> PairStage
+pairMsgStage (PairMsg (Verifiable (s, _) _)) = s
 
 data PairData = PairData
 	-- uname -n output, not a full domain name

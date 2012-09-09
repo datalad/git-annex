@@ -58,8 +58,8 @@ getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
 	username <- liftIO $ getUserName
 	reldir <- fromJust . relDir <$> lift getYesod
 	let sshkey = "" -- TODO generate/read ssh key
-	let mkmsg addr = PairReqM $ PairReq $
-		mkVerifiable (PairData hostname addr username reldir sshkey) secret
+	let mkmsg addr = PairMsg $ mkVerifiable
+		(PairReq, PairData hostname addr username reldir sshkey) secret
 	pip <- liftIO $ PairingInProgress secret <$> multicastPairMsg mkmsg
 	dstatus <- daemonStatus <$> lift getYesod
 	liftIO $ modifyDaemonStatus_ dstatus $
@@ -79,9 +79,9 @@ getInprogressPairR secret = bootstrap (Just Config) $ do
 getInprogressPairR _ = noPairing
 #endif
 
-getFinishPairR :: PairReq -> Handler RepHtml
+getFinishPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
-getFinishPairR req = promptSecret (Just req) $ \_ secret -> do
+getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	error "TODO"
 #else
 getFinishPairR _ = noPairing
@@ -90,8 +90,8 @@ getFinishPairR _ = noPairing
 #ifdef WITH_PAIRING
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
-promptSecret :: Maybe PairReq -> (Text -> Secret -> Widget) -> Handler RepHtml
-promptSecret req cont = bootstrap (Just Config) $ do
+promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler RepHtml
+promptSecret msg cont = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
 	((result, form), enctype) <- lift $
@@ -101,25 +101,25 @@ promptSecret req cont = bootstrap (Just Config) $ do
                 FormSuccess v -> do
 			let rawsecret = fromMaybe "" $ secretText v
 			let secret = toSecret rawsecret
-			case req of
+			case msg of
 				Nothing -> case secretProblem secret of
 					Nothing -> cont rawsecret secret
 					Just problem ->
 						showform form enctype $ Just problem
-				Just r ->
-					if verified (fromPairReq r) secret
+				Just m ->
+					if verified (fromPairMsg m) secret
 						then cont rawsecret secret
 						else showform form enctype $ Just
 							"That's not the right secret phrase."
                 _ -> showform form enctype Nothing
         where
                 showform form enctype mproblem = do
-			let start = isNothing req
+			let start = isNothing msg
 			let badphrase = isJust mproblem
-			let msg = fromMaybe "" mproblem
+			let problem = fromMaybe "" mproblem
 			let (username, hostname) = maybe ("", "")
-				(\v -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr $ remoteAddress v) (remoteHostName v)))
-				(verifiableVal . fromPairReq <$> req)
+				(\(_, v) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr $ remoteAddress v) (remoteHostName v)))
+				(verifiableVal . fromPairMsg <$> msg)
 			u <- T.pack <$> liftIO getUserName
 			let sameusername = username == u
                         let authtoken = webAppFormAuthToken

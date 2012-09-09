@@ -93,6 +93,6 @@ instance PathPiece Transfer where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
 
-instance PathPiece PairReq where
+instance PathPiece PairMsg where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
