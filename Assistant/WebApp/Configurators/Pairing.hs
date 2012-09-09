@@ -74,7 +74,7 @@ getInprogressPairR :: Text -> Handler RepHtml
 getInprogressPairR secret = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
-	$(widgetFile "configurators/inprogresspairing")
+	$(widgetFile "configurators/pairing/inprogress")
 #else
 getInprogressPairR _ = noPairing
 #endif
@@ -123,7 +123,7 @@ promptSecret msg cont = bootstrap (Just Config) $ do
 			u <- T.pack <$> liftIO getUserName
 			let sameusername = username == u
                         let authtoken = webAppFormAuthToken
-                        $(widgetFile "configurators/pairing")
+                        $(widgetFile "configurators/pairing/prompt")
 
 {- This counts unicode characters as more than one character,
  - but that's ok; they *do* provide additional entropy. -}
@@ -155,6 +155,6 @@ noPairing :: Handler RepHtml
 noPairing = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
-	$(widgetFile "configurators/nopairing")
+	$(widgetFile "configurators/pairing/disabled")
 
 #endif

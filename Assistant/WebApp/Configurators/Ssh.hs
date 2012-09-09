@@ -112,7 +112,7 @@ getAddSshR = sshConfigurator $ do
 	where
 		showform form enctype status = do
 			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/addssh")
+			$(widgetFile "configurators/ssh/add")
 
 {- Test if we can ssh into the server.
  -
@@ -225,7 +225,7 @@ sshSetup opts input a = do
 
 showSshErr :: String -> Handler RepHtml
 showSshErr msg = sshConfigurator $
-	$(widgetFile "configurators/makessherror")
+	$(widgetFile "configurators/ssh/error")
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: SshServer -> IO Bool
@@ -240,7 +240,7 @@ knownHost (SshServer { hostname = Just h }) = do
 getConfirmSshR :: SshData -> Handler RepHtml
 getConfirmSshR sshdata = sshConfigurator $ do
 	let authtoken = webAppFormAuthToken
-	$(widgetFile "configurators/confirmssh")
+	$(widgetFile "configurators/ssh/confirm")
 
 getMakeSshGitR :: SshData -> Handler RepHtml
 getMakeSshGitR = makeSsh False

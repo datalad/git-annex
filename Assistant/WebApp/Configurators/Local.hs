@@ -107,8 +107,8 @@ defaultRepositoryPath firstrun = do
 				)
 		else return cwd
 
-localRepositoryForm :: Form RepositoryPath
-localRepositoryForm msg = do
+firstRepositoryForm :: Form RepositoryPath
+firstRepositoryForm msg = do
 	path <- T.pack . addTrailingPathSeparator
 		<$> (liftIO . defaultRepositoryPath =<< lift inFirstRun)
 	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just path)
@@ -118,7 +118,7 @@ localRepositoryForm msg = do
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
-		$(widgetFile "configurators/localrepositoryform")
+		$(widgetFile "configurators/firstrepository/form")
 	return (RepositoryPath <$> pathRes, form)
 
 {- Making the first repository, when starting the webapp for the first time. -}
@@ -126,7 +126,7 @@ getFirstRepositoryR :: Handler RepHtml
 getFirstRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Getting started"
-	((res, form), enctype) <- lift $ runFormGet localRepositoryForm
+	((res, form), enctype) <- lift $ runFormGet firstRepositoryForm
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $
 			startFullAssistant $ T.unpack p
