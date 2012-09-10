@@ -14,6 +14,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
+import Utility.TempFile
 import Assistant.WebApp.Configurators.Local
 import qualified Types.Remote as R
 import qualified Remote.Rsync as Rsync
@@ -43,6 +44,11 @@ data SshServer = SshServer
 	, directory :: Maybe Text
 	}
 	deriving (Show)
+
+data SshKeyPair = SshKeyPair
+	{ sshPubKey :: String
+	, sshPrivKey :: String
+	}
 
 {- SshServer is only used for applicative form prompting, this converts
  - the result of such a form into a SshData. -}
@@ -122,7 +128,7 @@ getAddSshR = sshConfigurator $ do
  - a special ssh key will need to be generated just for this server.
  -
  - Once logged into the server, probe to see if git-annex-shell is
- - available, or rsync.\
+ - available, or rsync.
  -}
 testServer :: SshServer -> IO (ServerStatus, Bool)
 testServer (SshServer { hostname = Nothing }) = return
@@ -251,12 +257,13 @@ getMakeSshRsyncR = makeSsh True
 makeSsh :: Bool -> SshData -> Handler RepHtml
 makeSsh rsync sshdata
 	| needsPubKey sshdata = do
-		(pubkey, sshdata') <- liftIO $ genSshKey sshdata
-		makeSsh' rsync sshdata' (Just pubkey)
+		keypair <- liftIO $ genSshKeyPair
+		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
+		makeSsh' rsync sshdata' (Just keypair)
 	| otherwise = makeSsh' rsync sshdata Nothing
 
-makeSsh' :: Bool -> SshData -> Maybe String -> Handler RepHtml
-makeSsh' rsync sshdata pubkey =
+makeSsh' :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
+makeSsh' rsync sshdata keypair =
 	sshSetup [sshhost, remoteCommand] "" $
 		makeSshRepo rsync sshdata
 	where
@@ -267,7 +274,7 @@ makeSsh' rsync sshdata pubkey =
 			, Just $ "cd " ++ shellEscape remotedir
 			, if rsync then Nothing else Just $ "git init --bare --shared"
 			, if rsync then Nothing else Just $ "git annex init"
-			, maybe Nothing (makeAuthorizedKeys sshdata) pubkey
+			, maybe Nothing (makeAuthorizedKeys sshdata) keypair
 			]
 
 makeSshRepo :: Bool -> SshData -> Handler RepHtml
@@ -307,22 +314,22 @@ makeRsyncRemote name location = makeRemote name location $ const $ do
 			, ("type", "rsync")
 			]
 
-makeAuthorizedKeys :: SshData -> String -> Maybe String
-makeAuthorizedKeys sshdata pubkey
+makeAuthorizedKeys :: SshData -> SshKeyPair -> Maybe String
+makeAuthorizedKeys sshdata keypair
 	| needsPubKey sshdata = Just $ join "&&" $
 		[ "mkdir -p ~/.ssh"
 		, "touch ~/.ssh/authorized_keys"
 		, "chmod 600 ~/.ssh/authorized_keys"
 		, unwords
 			[ "echo"
-			, shellEscape $ authorizedKeysLine sshdata pubkey
+			, shellEscape $ authorizedKeysLine sshdata keypair
 			, ">>~/.ssh/authorized_keys"
 			]
 		]
 	| otherwise = Nothing
 		
-authorizedKeysLine :: SshData -> String -> String
-authorizedKeysLine sshdata pubkey 
+authorizedKeysLine :: SshData -> SshKeyPair -> String
+authorizedKeysLine sshdata (SshKeyPair { sshPubKey = pubkey })
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| rsyncOnly sshdata = pubkey
@@ -330,21 +337,38 @@ authorizedKeysLine sshdata pubkey
 	where
 		limitcommand c = "command=\"perl -e 'exec qw(" ++ c ++ "), $ENV{SSH_ORIGINAL_COMMAND}'\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
-{- Returns the public key content, and a modified SshData with a
- - mangled hostname that will enable use of the key.
- - This way we avoid changing the user's regular ssh experience at all. -}
-genSshKey :: SshData -> IO (String, SshData)
-genSshKey sshdata = do
+{- Generates a ssh key pair. -}
+genSshKeyPair :: IO SshKeyPair
+genSshKeyPair = withTempDir "git-annex-keygen" $ \dir -> do
+	ok <- boolSystem "ssh-keygen"
+		[ Param "-P", Param "" -- no password
+		, Param "-f", File $ dir </> "key"
+		]
+	unless ok $
+		error "ssh-keygen failed"
+	SshKeyPair
+		<$> readFile (dir </> "key.pub")
+		<*> readFile (dir </> "key")
+
+{- Installs a ssh key pair, and sets up ssh config with a mangled hostname
+ - that will enable use of the key. This way we avoid changing the user's
+ - regular ssh experience at all. Returns a modified SshData containing the
+ - mangled hostname. -}
+setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
+setupSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
 	let configfile = sshdir </> "config"
 	createDirectoryIfMissing True sshdir
+
 	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $ do
-		ok <- boolSystem "ssh-keygen"
-			[ Param "-P", Param "" -- no password
-			, Param "-f", File $ sshdir </> sshprivkeyfile
-			]
-		unless ok $
-			error "ssh-keygen failed"
+		h <- fdToHandle =<<
+			createFile (sshdir </> sshprivkeyfile)
+				(unionFileModes ownerWriteMode ownerReadMode)
+		hPutStr h (sshPrivKey sshkeypair)
+		hClose h
+	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $ do
+		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
+
 	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
 		appendFile configfile $ unlines
 			[ ""
@@ -353,8 +377,8 @@ genSshKey sshdata = do
 			, "\tHostname " ++ T.unpack (sshHostName sshdata)
 			, "\tIdentityFile ~/.ssh/" ++ sshprivkeyfile
 			]
-	pubkey <- readFile $ sshdir </> sshpubkeyfile
-	return (pubkey, sshdata { sshHostName = T.pack mangledhost })
+
+	return $ sshdata { sshHostName = T.pack mangledhost }
 	where
 		sshprivkeyfile = "key." ++ mangledhost
 		sshpubkeyfile = sshprivkeyfile ++ ".pub"
@@ -373,7 +397,8 @@ getAddRsyncNetR = do
 	case result of
 		FormSuccess sshserver -> do
 			knownhost <- liftIO $ knownHost sshserver
-			(pubkey, sshdata) <- liftIO $ genSshKey $
+			keypair <- liftIO $ genSshKeyPair
+			sshdata <- liftIO $ setupSshKeyPair keypair
 				(mkSshData sshserver)
 					{ needsPubKey = True
 					, rsyncOnly = True
@@ -402,7 +427,7 @@ getAddRsyncNetR = do
 
 			let host = fromMaybe "" $ hostname sshserver
 			checkhost host showform $
-				sshSetup sshopts pubkey $
+				sshSetup sshopts (sshPubKey keypair) $
 					makeSshRepo True sshdata
 		_ -> showform UntestedServer
 	where
