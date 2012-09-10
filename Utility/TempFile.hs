@@ -14,6 +14,7 @@ import System.Directory
 
 import Utility.Exception
 import Utility.Path
+import System.FilePath
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
@@ -39,3 +40,19 @@ withTempFile template a = bracket create remove use
 			hClose handle
 			catchBoolIO (removeFile name >> return True)
 		use (name, handle) = a name handle
+
+{- Runs an action with a temp directory, then removes the directory and
+ - all its contents. -}
+withTempDir :: Template -> (FilePath -> IO a) -> IO a
+withTempDir template = bracket create remove
+	where
+		remove = removeDirectoryRecursive
+		create = do
+			tmpdir <- catchDefaultIO getTemporaryDirectory "."
+			createDirectoryIfMissing True tmpdir
+			pid <- getProcessID
+			makedir tmpdir (template ++ show pid) (0 :: Int)
+		makedir tmpdir t n = do
+			let dir = tmpdir </> t ++ "." ++ show n
+			r <- tryIO $ createDirectory dir
+			either (const $ makedir tmpdir t $ n + 1) (const $ return dir) r
