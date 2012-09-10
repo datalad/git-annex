@@ -29,18 +29,19 @@
 module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
+import Assistant.WebApp
+import Assistant.WebApp.Types
+import Assistant.WebApp.SideBar
+import Utility.Yesod
 #ifdef WITH_PAIRING
 import Assistant.Pairing.Network
+import Assistant.Ssh
 import Assistant.Common
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
 #endif
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
-import Utility.Yesod
 
 import Yesod
 import Data.Text (Text)
@@ -60,15 +61,17 @@ getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
 	dstatus <- daemonStatus <$> lift getYesod
 	urlrender <- lift getUrlRender
 	let homeurl = urlrender HomeR
-	hostname <- liftIO $ getHostname
-	username <- liftIO $ getUserName
+	hostname <- liftIO getHostname
+	username <- liftIO getUserName
 	reldir <- fromJust . relDir <$> lift getYesod
-	let sshkey = "" -- TODO generate/read ssh key
+	keypair <- liftIO genSshKeyPair
+	let pubkey = sshPubKey keypair ++ "foo"
 	let mkmsg addr = PairMsg $ mkVerifiable
-		(PairReq, PairData hostname addr username reldir sshkey) secret
+		(PairReq, PairData hostname addr username reldir pubkey) secret
 	liftIO $ do
 		pip <- PairingInProgress secret
 			<$> sendrequests mkmsg dstatus homeurl
+			<*> pure keypair
 		oldpip <- modifyDaemonStatus dstatus $
 			\s -> (s { pairingInProgress = Just pip }, pairingInProgress s)
 		maybe noop stopold oldpip

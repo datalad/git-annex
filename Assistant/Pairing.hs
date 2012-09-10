@@ -8,6 +8,7 @@
 module Assistant.Pairing where
 
 import Utility.Verifiable
+import Assistant.Ssh
 
 import Control.Concurrent
 import Network.Socket
@@ -40,7 +41,7 @@ data PairData = PairData
 	, remoteAddress :: SomeAddr
 	, remoteUserName :: UserName
 	, remoteDirectory :: FilePath
-	, sshPubKey :: SshPubKey
+	, remoteSshPubKey :: SshPubKey
 	}
 	deriving (Eq, Read, Show)
 
@@ -52,6 +53,7 @@ type UserName = String
 data PairingInProgress = PairingInProgress
 	{ inProgressSecret :: Secret
 	, inProgressThreadId :: ThreadId
+	, inProgressSshKeyPair :: SshKeyPair
 	}
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6

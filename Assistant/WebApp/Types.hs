@@ -11,6 +11,7 @@
 module Assistant.WebApp.Types where
 
 import Assistant.Common
+import Assistant.Ssh
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
@@ -66,16 +67,6 @@ type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
 data WebAppState = WebAppState
 	{ showIntro :: Bool
 	}
-
-data SshData = SshData
-	{ sshHostName :: Text
-	, sshUserName :: Maybe Text
-	, sshDirectory :: Text
-	, sshRepoName :: String
-	, needsPubKey :: Bool
-	, rsyncOnly :: Bool
-	}
-	deriving (Read, Show, Eq)
 
 instance PathPiece SshData where
     toPathPiece = pack . show
