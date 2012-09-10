@@ -286,9 +286,9 @@ sanityCheckFixAlert msg = Alert
 		alerthead = "The daily sanity check found and fixed a problem:"
 		alertfoot = "If these problems persist, consider filing a bug report."
 
-pairRequestAlert :: AlertButton -> Alert
-pairRequestAlert button = baseActivityAlert
-	{ alertData = [ UnTensed "Pairing request in progress" ]
+pairingAlert :: AlertButton -> Alert
+pairingAlert button = baseActivityAlert
+	{ alertData = [ UnTensed "Pairing in progress" ]
 	, alertPriority = High
 	, alertButton = Just button
 	}

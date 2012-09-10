@@ -24,14 +24,14 @@ data Verifiable a = Verifiable
 mkVerifiable :: Show a => a -> Secret -> Verifiable a
 mkVerifiable a secret = Verifiable a (calcDigest (show a) secret)
 
-verified :: (Eq a, Show a) => Verifiable a -> Secret -> Bool
-verified v secret = v == mkVerifiable (verifiableVal v) secret
+verify :: (Eq a, Show a) => Verifiable a -> Secret -> Bool
+verify v secret = v == mkVerifiable (verifiableVal v) secret
 
 calcDigest :: String -> Secret -> HMACDigest
 calcDigest v secret = showDigest $ hmacSha1 secret $ fromString v
 
 {- for quickcheck -}
 prop_verifiable_sane :: String -> String -> Bool
-prop_verifiable_sane a s = verified (mkVerifiable a secret) secret
+prop_verifiable_sane a s = verify (mkVerifiable a secret) secret
 	where
 		secret = fromString s

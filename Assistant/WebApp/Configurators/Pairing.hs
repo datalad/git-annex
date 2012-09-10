@@ -11,12 +11,14 @@
  -   which prompts them for the same secret.
  - * The secret is used to verify the PairReq. If it checks out,
  -   a PairAck is sent, and the other device adds the ssh key from the
- -   PairReq. An Alert is displayed noting that the pairing has been set up.
+ -   PairReq to its authorized_keys, and sets up the remote.
  - * The PairAck is received back at the device that started the process.
  -   It's verified using the stored secret. The ssh key from the PairAck
  -   is added. An Alert is displayed noting that the pairing has been set
  -   up. The pairing secret is removed to prevent anyone cracking the
- -   crypto.
+ -   crypto. Syncing starts. A PairDone is sent.
+ - * The PairDone is received, and an alert shown indicating pairing is
+ -   done.
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -34,9 +36,10 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
 #ifdef WITH_PAIRING
+import Assistant.Common
 import Assistant.Pairing.Network
 import Assistant.Ssh
-import Assistant.Common
+import qualified Assistant.WebApp.Configurators.Ssh as Ssh
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
@@ -57,74 +60,110 @@ import Control.Concurrent
 
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
-getStartPairR = promptSecret Nothing $ \rawsecret secret -> do
-	dstatus <- daemonStatus <$> lift getYesod
-	urlrender <- lift getUrlRender
-	let homeurl = urlrender HomeR
-	hostname <- liftIO getHostname
-	username <- liftIO getUserName
-	reldir <- fromJust . relDir <$> lift getYesod
+getStartPairR = do
 	keypair <- liftIO genSshKeyPair
-	let pubkey = sshPubKey keypair ++ "foo"
-	let mkmsg addr = PairMsg $ mkVerifiable
-		(PairReq, PairData hostname addr username reldir pubkey) secret
-	liftIO $ do
-		pip <- PairingInProgress secret
-			<$> sendrequests mkmsg dstatus homeurl
-			<*> pure keypair
-		oldpip <- modifyDaemonStatus dstatus $
-			\s -> (s { pairingInProgress = Just pip }, pairingInProgress s)
-		maybe noop stopold oldpip
-	lift $ redirect $ InprogressPairR rawsecret
-	where
-		{- Sends pairing messages until the thread is killed,
-		 - and shows an activity alert while doing it.
-		 -
-		 - The button returns the user to the HomeR. This is
-		 - not ideal, but they have to be sent somewhere, and could
-		 - have been on a page specific to the in-process pairing
-		 - that just stopped.
-		 -}
-		sendrequests mkmsg dstatus homeurl = forkIO $ do
-			tid <- myThreadId
-			let selfdestruct = AlertButton
-				{ buttonLabel = "Cancel"
-				, buttonUrl = homeurl
-				, buttonAction = Just $ const $ killThread tid
-				}
-			alertDuring dstatus (pairRequestAlert selfdestruct) $ do
-				_ <- E.try (multicastPairMsg mkmsg) :: IO (Either E.SomeException ())
-				return ()
-		stopold = killThread  . inProgressThreadId
+	promptSecret Nothing $ startPairing PairReq keypair noop
 #else
 getStartPairR = noPairing
-#endif
-
-getInprogressPairR :: Text -> Handler RepHtml
-#ifdef WITH_PAIRING
-getInprogressPairR secret = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
-	$(widgetFile "configurators/pairing/inprogress")
-#else
-getInprogressPairR _ = noPairing
 #endif
 
 getFinishPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	error "TODO"
+	keypair <- setup
+	startPairing PairAck keypair cleanup "" secret
+	where
+		pubkey = remoteSshPubKey $ pairMsgData msg
+		setup  = do
+			unlessM (liftIO $ makeAuthorizedKeys False pubkey) $
+				error "failed setting up ssh authorized keys"
+			keypair <- liftIO genSshKeyPair
+			let d = pairMsgData msg
+			besthostname <- liftIO $ bestHostName d
+			let sshdata = SshData
+				{ sshHostName = T.pack besthostname
+				, sshUserName = Just (T.pack $ remoteUserName d)
+				, sshDirectory = T.pack (remoteDirectory d)
+				, sshRepoName = genSshRepoName besthostname (remoteDirectory d)
+				, needsPubKey = True
+				, rsyncOnly = False
+				}
+			sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
+			void $ lift $ Ssh.makeSshWithKeyPair False sshdata' (Just keypair)
+			return keypair
+		cleanup = error "TODO clean up authorized keys and generated ssh key and remove git remote"
 #else
 getFinishPairR _ = noPairing
 #endif
 
+getInprogressPairR :: Text -> Handler RepHtml
 #ifdef WITH_PAIRING
+getInprogressPairR secret = pairPage $ do
+	$(widgetFile "configurators/pairing/inprogress")
+#else
+getInprogressPairR _ = noPairing
+#endif
+
+#ifdef WITH_PAIRING
+
+{- Starts pairing, at either the PairReq (initiating host) or 
+ - PairAck (responding host) stage.
+ -
+ - Displays an alert, and starts a thread sending the pairing message,
+ - which will continue running until the other host responds, or until
+ - canceled by the user. If canceled by the user, runs the oncancel action.
+ -
+ - Redirects to the pairing in progress page.
+ -}
+startPairing :: PairStage -> SshKeyPair -> IO () -> Text -> Secret -> Widget
+startPairing stage keypair oncancel displaysecret secret = do
+	dstatus <- daemonStatus <$> lift getYesod
+	urlrender <- lift getUrlRender
+	let homeurl = urlrender HomeR
+	sender <- mksender
+	liftIO $ do
+		pip <- PairingInProgress secret
+			<$> sendrequests sender dstatus homeurl
+			<*> pure keypair
+		oldpip <- modifyDaemonStatus dstatus $
+			\s -> (s { pairingInProgress = Just pip }, pairingInProgress s)
+		maybe noop stopold oldpip
+	lift $ redirect $ InprogressPairR displaysecret
+	where
+		mksender = do
+			hostname <- liftIO getHostname
+			username <- liftIO getUserName
+			reldir <- fromJust . relDir <$> lift getYesod
+			return $ multicastPairMsg $ \addr -> PairMsg $ mkVerifiable
+				(stage, PairData hostname addr username reldir (sshPubKey keypair)) secret
+		{- Sends pairing messages until the thread is killed,
+		 - and shows an activity alert while doing it.
+		 -
+		 - The cancel button returns the user to the HomeR. This is
+		 - not ideal, but they have to be sent somewhere, and could
+		 - have been on a page specific to the in-process pairing
+		 - that just stopped, so can't go back there.
+		 -}
+		sendrequests sender dstatus homeurl = forkIO $ do
+			tid <- myThreadId
+			let selfdestruct = AlertButton
+				{ buttonLabel = "Cancel"
+				, buttonUrl = homeurl
+				, buttonAction = Just $ const $ do
+					oncancel
+					killThread tid
+				}
+			alertDuring dstatus (pairingAlert selfdestruct) $ do
+				_ <- E.try sender :: IO (Either E.SomeException ())
+				return ()
+		stopold = killThread  . inProgressThreadId
+
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
+{- If a PairMsg is passed in, ensures that the user enters a secret
+ - that can validate it. -}
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler RepHtml
-promptSecret msg cont = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
+promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
@@ -138,7 +177,7 @@ promptSecret msg cont = bootstrap (Just Config) $ do
 					Just problem ->
 						showform form enctype $ Just problem
 				Just m ->
-					if verified (fromPairMsg m) secret
+					if verify (fromPairMsg m) secret
 						then cont rawsecret secret
 						else showform form enctype $ Just
 							"That's not the right secret phrase."
@@ -168,6 +207,15 @@ secretProblem s
 toSecret :: Text -> Secret
 toSecret s = B.fromChunks [T.encodeUtf8 $ T.toLower $ T.filter isAlphaNum s]
 
+getUserName :: IO String
+getUserName = userName <$> (getUserEntryForID =<< getEffectiveUserID)
+
+pairPage :: Widget -> Handler RepHtml
+pairPage w = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Pairing"
+	w
+
 {- From Dickens -}
 sampleQuote :: Text
 sampleQuote = T.unwords
@@ -177,15 +225,10 @@ sampleQuote = T.unwords
 	, "it was the age of foolishness."
 	]
 
-getUserName :: IO String
-getUserName = userName <$> (getUserEntryForID =<< getEffectiveUserID)
-
 #else
 
 noPairing :: Handler RepHtml
-noPairing = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
+noPairing = pairPage $
 	$(widgetFile "configurators/pairing/disabled")
 
 #endif

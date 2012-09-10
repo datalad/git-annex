@@ -34,6 +34,9 @@ fromPairMsg (PairMsg m) = m
 pairMsgStage :: PairMsg -> PairStage
 pairMsgStage (PairMsg (Verifiable (s, _) _)) = s
 
+pairMsgData :: PairMsg -> PairData
+pairMsgData (PairMsg (Verifiable (_, d) _)) = d
+
 data PairData = PairData
 	-- uname -n output, not a full domain name
 	{ remoteHostName :: Maybe HostName
@@ -45,11 +48,11 @@ data PairData = PairData
 	}
 	deriving (Eq, Read, Show)
 
-type SshPubKey = String
 type UserName = String
 
-{- A pairing that is in progress has a secret, and a thread that is
- - broadcasting pairing requests. -}
+{- A pairing that is in progress has a secret, a thread that is
+ - broadcasting pairing messages, and a SshKeyPair that has not yet been
+ - set up on disk. -}
 data PairingInProgress = PairingInProgress
 	{ inProgressSecret :: Secret
 	, inProgressThreadId :: ThreadId

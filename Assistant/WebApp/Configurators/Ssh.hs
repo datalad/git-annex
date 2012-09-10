@@ -49,7 +49,9 @@ mkSshData sshserver = SshData
 	{ sshHostName = fromMaybe "" $ hostname sshserver
 	, sshUserName = username sshserver
 	, sshDirectory = fromMaybe "" $ directory sshserver
-	, sshRepoName = genSshRepoName sshserver
+	, sshRepoName = genSshRepoName
+		(T.unpack $ fromJust $ hostname sshserver)
+		(maybe "" T.unpack $ directory sshserver)
 	, needsPubKey = False
 	, rsyncOnly = False
 	}
@@ -167,11 +169,6 @@ testServer sshserver = do
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
-{- host_dir -}
-genSshRepoName :: SshServer -> String
-genSshRepoName s = (T.unpack $ fromJust $ hostname s) ++
-	(maybe "" (\d -> '_' : T.unpack d) (directory s))
-
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
 sshSetup :: [String] -> String -> Handler RepHtml -> Handler RepHtml
@@ -211,11 +208,11 @@ makeSsh rsync sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO $ genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSsh' rsync sshdata' (Just keypair)
-	| otherwise = makeSsh' rsync sshdata Nothing
+		makeSshWithKeyPair rsync sshdata' (Just keypair)
+	| otherwise = makeSshWithKeyPair rsync sshdata Nothing
 
-makeSsh' :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
-makeSsh' rsync sshdata keypair =
+makeSshWithKeyPair :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
+makeSshWithKeyPair rsync sshdata keypair =
 	sshSetup [sshhost, remoteCommand] "" $
 		makeSshRepo rsync sshdata
 	where
@@ -226,7 +223,9 @@ makeSsh' rsync sshdata keypair =
 			, Just $ "cd " ++ shellEscape remotedir
 			, if rsync then Nothing else Just $ "git init --bare --shared"
 			, if rsync then Nothing else Just $ "git annex init"
-			, maybe Nothing (makeAuthorizedKeys sshdata) keypair
+			, if needsPubKey sshdata
+				then maybe Nothing (Just . makeAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey) keypair
+				else Nothing
 			]
 
 makeSshRepo :: Bool -> SshData -> Handler RepHtml

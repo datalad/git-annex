@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import qualified Control.Exception as E
 import System.Process (CreateProcess(..))
 import Control.Concurrent
+import Data.Char
 
 data SshData = SshData
 	{ sshHostName :: Text
@@ -31,6 +32,8 @@ data SshKeyPair = SshKeyPair
 	, sshPrivKey :: String
 	}
 
+type SshPubKey = String
+
 {- ssh -ofoo=bar command-line option -}
 sshOpt :: String -> String -> String
 sshOpt k v = concat ["-o", k, "=", v]
@@ -39,6 +42,15 @@ sshDir :: IO FilePath
 sshDir = do
 	home <- myHomeDir
 	return $ home </> ".ssh"
+
+{- host_dir, with all / in dir replaced by _, and bad characters removed -}
+genSshRepoName :: String -> FilePath -> String
+genSshRepoName host dir
+	| null dir = filter legal host
+	| otherwise = filter legal $ host ++ "_" ++ replace "/" "_" dir
+	where
+		legal '_' = True
+		legal c = isAlphaNum c
 
 {- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> String -> IO (String, Bool)
@@ -71,27 +83,30 @@ sshTranscript opts input = do
 	return ()
 	return (transcript, ok)
 
+
+makeAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
+makeAuthorizedKeys rsynconly pubkey = boolSystem "sh"
+	[ Param "-c" , Param $ makeAuthorizedKeysCommand rsynconly pubkey ]
+
 {- Implemented as a shell command, so it can be run on remote servers over
  - ssh. -}
-makeAuthorizedKeys :: SshData -> SshKeyPair -> Maybe String
-makeAuthorizedKeys sshdata keypair
-	| needsPubKey sshdata = Just $ join "&&" $
-		[ "mkdir -p ~/.ssh"
-		, "touch ~/.ssh/authorized_keys"
-		, "chmod 600 ~/.ssh/authorized_keys"
-		, unwords
-			[ "echo"
-			, shellEscape $ authorizedKeysLine sshdata keypair
-			, ">>~/.ssh/authorized_keys"
-			]
+makeAuthorizedKeysCommand :: Bool -> SshPubKey -> String
+makeAuthorizedKeysCommand rsynconly pubkey = join "&&" $
+	[ "mkdir -p ~/.ssh"
+	, "touch ~/.ssh/authorized_keys"
+	, "chmod 600 ~/.ssh/authorized_keys"
+	, unwords
+		[ "echo"
+		, shellEscape $ authorizedKeysLine rsynconly pubkey
+		, ">>~/.ssh/authorized_keys"
 		]
-	| otherwise = Nothing
-		
-authorizedKeysLine :: SshData -> SshKeyPair -> String
-authorizedKeysLine sshdata (SshKeyPair { sshPubKey = pubkey })
+	]
+
+authorizedKeysLine :: Bool -> SshPubKey -> String
+authorizedKeysLine rsynconly pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
-	| rsyncOnly sshdata = pubkey
+	| rsynconly = pubkey
 	| otherwise = limitcommand "git-annex-shell -c" ++ pubkey
 	where
 		limitcommand c = "command=\"perl -e 'exec qw(" ++ c ++ "), $ENV{SSH_ORIGINAL_COMMAND}'\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "

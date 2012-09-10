@@ -30,7 +30,7 @@ multicastAddress :: SomeAddr -> HostName
 multicastAddress (IPv4Addr _) = "224.0.0.1"
 multicastAddress (IPv6Addr _) = "ff02::1"
 
-{- Multicasts a message repeatedly on all interfaces forever,
+{- Multicasts a message repeatedly on all interfaces forever, until killed
  - with a 2 second delay between each transmission.
  -
  - The remoteHostAddress is set to the interface's IP address.
