@@ -75,19 +75,11 @@ getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	where
 		pubkey = remoteSshPubKey $ pairMsgData msg
 		setup  = do
+			validateSshPubKey pubKey
 			unlessM (liftIO $ makeAuthorizedKeys False pubkey) $
 				error "failed setting up ssh authorized keys"
 			keypair <- liftIO genSshKeyPair
-			let d = pairMsgData msg
-			besthostname <- liftIO $ bestHostName d
-			let sshdata = SshData
-				{ sshHostName = T.pack besthostname
-				, sshUserName = Just (T.pack $ remoteUserName d)
-				, sshDirectory = T.pack (remoteDirectory d)
-				, sshRepoName = genSshRepoName besthostname (remoteDirectory d)
-				, needsPubKey = True
-				, rsyncOnly = False
-				}
+			sshdata <- liftIO $ pairMsgToSshData msg
 			sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
 			void $ lift $ Ssh.makeSshWithKeyPair False sshdata' (Just keypair)
 			return keypair
@@ -95,6 +87,26 @@ getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 #else
 getFinishPairR _ = noPairing
 #endif
+
+{- Mostly a straightforward conversion.  Except:
+ -  * Determine the best hostname to use to contact the host.
+ -  * Strip leading ~/ from the directory name.
+ -}
+pairMsgToSshData :: PairMsg -> IO SshData
+pairMsgToSshData msg = do
+	let d = pairMsgData msg
+	hostname <- liftIO $ bestHostName d
+	let dir = case remoteDirectory d of
+		('~':'/':v) -> v
+		v -> v
+	return $ SshData
+		{ sshHostName = T.pack hostname
+		, sshUserName = Just (T.pack $ remoteUserName d)
+		, sshDirectory = T.pack dir
+		, sshRepoName = genSshRepoName besthostname dir
+		, needsPubKey = True
+		, rsyncOnly = False
+		}
 
 getInprogressPairR :: Text -> Handler RepHtml
 #ifdef WITH_PAIRING
