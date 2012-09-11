@@ -12,7 +12,7 @@
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/rsync.net AddRsyncNetR GET
 /config/repository/pair/start StartPairR GET
-/config/repository/pair/inprogress/#Text InprogressPairR GET
+/config/repository/pair/inprogress/#SecretReminder InprogressPairR GET
 /config/repository/pair/finish/#PairMsg FinishPairR GET
 
 /config/repository/first FirstRepositoryR GET

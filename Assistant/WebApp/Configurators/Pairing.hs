@@ -63,9 +63,10 @@ getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 getFinishPairR _ = noPairing
 #endif
 
-getInprogressPairR :: Text -> Handler RepHtml
+getInprogressPairR :: SecretReminder -> Handler RepHtml
 #ifdef WITH_PAIRING
-getInprogressPairR secret = pairPage $ do
+getInprogressPairR s = pairPage $ do
+	let secret = fromSecretReminder s
 	$(widgetFile "configurators/pairing/inprogress")
 #else
 getInprogressPairR _ = noPairing
@@ -97,7 +98,7 @@ startPairing stage oncancel displaysecret secret = do
 		let sender = multicastPairMsg Nothing secret stage pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata
 		startSending dstatus pip $ sendrequests sender dstatus urlrender
-	lift $ redirect $ InprogressPairR displaysecret
+	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
 	where
 		{- Sends pairing messages until the thread is killed,
 		 - and shows an activity alert while doing it.

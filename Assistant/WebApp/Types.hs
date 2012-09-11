@@ -87,3 +87,7 @@ instance PathPiece Transfer where
 instance PathPiece PairMsg where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
+
+instance PathPiece SecretReminder where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack

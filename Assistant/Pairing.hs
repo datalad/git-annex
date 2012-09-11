@@ -13,6 +13,8 @@ import Assistant.Ssh
 
 import Control.Concurrent
 import Network.Socket
+import Data.Char
+import qualified Data.Text as T
 
 data PairStage
 	{- "I'll pair with anybody who shares the secret that can be used
@@ -68,3 +70,14 @@ data PairingInProgress = PairingInProgress
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6
 	deriving (Ord, Eq, Read, Show)
+
+{- This contains the whole secret, just lightly obfuscated to make it not
+ - too obvious. It's only displayed in the user's web browser. -}
+data SecretReminder = SecretReminder [Int]
+	deriving (Show, Eq, Ord, Read)
+
+toSecretReminder :: T.Text -> SecretReminder
+toSecretReminder = SecretReminder . map ord . T.unpack
+
+fromSecretReminder :: SecretReminder -> T.Text
+fromSecretReminder (SecretReminder s) = T.pack $ map chr s
