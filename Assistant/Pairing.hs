@@ -28,6 +28,9 @@ data PairStage
 newtype PairMsg = PairMsg (Verifiable (PairStage, PairData, SomeAddr))
 	deriving (Eq, Read, Show)
 
+verifiedPairMsg :: PairMsg -> PairingInProgress -> Bool
+verifiedPairMsg (PairMsg m) pip = verify m $ inProgressSecret pip
+
 fromPairMsg :: PairMsg -> (Verifiable (PairStage, PairData, SomeAddr))
 fromPairMsg (PairMsg m) = m
 

@@ -17,7 +17,6 @@ import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
-import Utility.Verifiable
 import Utility.Tense
 
 import Network.Multicast
@@ -30,14 +29,31 @@ thisThread = "PairListener"
 pairListenerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> UrlRenderer -> NamedThread
 pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $ do
 	sock <- multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
-	go sock
+	go sock []
 	where
 		thread = NamedThread thisThread
 		
-		go sock = do
-			msg <- getmsg sock []
-			dispatch $ readish msg
-			go sock
+		go sock cache = getmsg sock [] >>= \msg -> case readish msg of
+			Nothing -> go sock cache
+			Just m -> do
+				pip <- pairingInProgress <$> getDaemonStatus dstatus
+				let verified = maybe False (verifiedPairMsg m) pip
+				case pairMsgStage m of
+					PairReq -> do
+						pairReqReceived verified dstatus urlrenderer m
+						go sock $ invalidateCache m cache
+					PairAck -> do
+						pairAckReceived verified pip st dstatus scanremotes m cache
+							>>= go sock
+					PairDone -> do
+						pairDoneReceived verified pip st dstatus scanremotes m
+						go sock	cache
+
+		{- PairReqs invalidate the cache of recently finished pairings.
+		 - This is so that, if a new pairing is started with the
+		 - same secret used before, a bogus PairDone is not sent. -}
+		invalidateCache msg = 
+			filter (\pip -> not $ verifiedPairMsg msg pip)
 
 		getmsg sock c = do
 			(msg, n, _) <- recvFrom sock chunksz
@@ -47,21 +63,12 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 			where
 				chunksz = 1024
 
-		dispatch Nothing = noop
-		dispatch (Just m@(PairMsg v)) = do
-			pip <- pairingInProgress <$> getDaemonStatus dstatus
-			let verified = maybe False (verify v . inProgressSecret) pip
-			case pairMsgStage m of
-				PairReq -> pairReqReceived verified dstatus urlrenderer m
-				PairAck -> pairAckReceived verified pip st dstatus scanremotes m
-				PairDone -> pairDoneReceived verified pip st dstatus scanremotes m
-
 {- Show an alert when a PairReq is seen.
  -
  - Pair request alerts from the same host combine,
  - so repeated requests do not add additional alerts. -}
 pairReqReceived :: Bool -> DaemonStatusHandle -> UrlRenderer -> PairMsg -> IO ()
-pairReqReceived True _ _ _ = noop -- ignore out own PairReq
+pairReqReceived True _ _ _ = noop -- ignore our own PairReq
 pairReqReceived False dstatus urlrenderer msg = do
 	url <- renderUrl urlrenderer (FinishPairR msg) []
 	void $ addAlert dstatus $ pairRequestReceivedAlert repo
@@ -94,29 +101,37 @@ pairReqReceived False dstatus urlrenderer msg = do
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,
- - and send a single PairDone.
- -
- - TODO: A stale PairAck might also be seen, after we've finished pairing.
- - Perhaps our PairDone was not received. To handle this, we keep
- - a list of recently finished pairings, and re-send PairDone in
- - response to stale PairAcks for them.
- -}
-pairAckReceived :: Bool -> Maybe PairingInProgress -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> IO ()
-pairAckReceived False _ _ _ _ _ = noop -- not verified
-pairAckReceived True Nothing _ _ _ _ = noop -- not in progress
-pairAckReceived True (Just pip) st dstatus scanremotes msg = do
+ - and send a single PairDone. -}
+pairAckReceived :: Bool -> Maybe PairingInProgress -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> [PairingInProgress] -> IO [PairingInProgress]
+pairAckReceived True (Just pip) st dstatus scanremotes msg cache = do
 	stopSending dstatus pip
 	setupAuthorizedKeys msg
 	finishedPairing st dstatus scanremotes msg (inProgressSshKeyPair pip)
 	startSending dstatus pip $ multicastPairMsg
 		(Just 1) (inProgressSecret pip) PairDone (inProgressPairData pip)
+	return $ pip:(take 10 cache)
+{- A stale PairAck might also be seen, after we've finished pairing.
+ - Perhaps our PairDone was not received. To handle this, we keep
+ - a cache of recently finished pairings, and re-send PairDone in
+ - response to stale PairAcks for them. -}
+pairAckReceived _ _ _ dstatus _ msg cache = do
+	let pips = filter (verifiedPairMsg msg) cache
+	unless (null pips) $
+		forM_ pips $ \pip ->
+			startSending dstatus pip $ multicastPairMsg
+				(Just 1) (inProgressSecret pip) PairDone (inProgressPairData pip)
+	return cache
 
 {- If we get a verified PairDone, the host has accepted our PairAck, and
  - has paired with us. Stop sending PairAcks, and finish pairing with them.
  -
+ - If we get an unverified PairDone that matches the PairReq 
  - TODO: Should third-party hosts remove their pair request alert when they
  - see a PairDone? How to tell if a PairDone matches with the PairReq 
  - that brought up the alert? Cannot verify it without the secret..
+ - Also, the user could have already clicked on the alert and be entering
+ - the secret. Would be better to start a fresh pair request in this
+ - situation.
  -}
 pairDoneReceived :: Bool -> Maybe PairingInProgress -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> IO ()
 pairDoneReceived False _ _ _ _ _ = noop -- not verified
