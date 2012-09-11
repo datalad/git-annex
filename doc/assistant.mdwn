@@ -28,6 +28,11 @@ interface to add repositories and control the git-annex assistant.
 
 [[!img assistant/running.png]]
 
+## documentation
+
+* Want to make two nearby computers share the same synchronised folder?
+  Follow the [[pairing_walkthrough]].
+
 ## command line start
 
 The git-annex assistant will automatically be started when you log in to
