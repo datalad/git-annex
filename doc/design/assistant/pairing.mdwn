@@ -74,3 +74,10 @@ is escaped before going to the browser.
   .. seems it just doesn't support IPv6. The pairing code in git-annex
   does support ipv6, apart from this, it's just broadcasting the messages
   that fails. (Pairing over mixed networks is fine.)
+* If there are three assistants on the network, and 2 pair, the third is
+  left displaying a "Pair request from foo" alert, until it's close. 
+  Or, if the user clicks the button to pair, it'll get to the 
+  "Pairing in progress" alert, which will show forever (until canceled).
+
+  It should be possible for third parties to tell when pairing is done,
+  but it's actually rather hard since they don't necessarily share the secret.
