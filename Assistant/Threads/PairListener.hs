@@ -40,15 +40,19 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 				sane <- checkSane msg
 				(pip, verified) <- verificationCheck m
 					=<< (pairingInProgress <$> getDaemonStatus dstatus)
-				case (sane, pairMsgStage m) of
-					(False, _) -> go sock cache
-					(_, PairReq) -> do
+				let wrongstage = maybe False (\p -> pairMsgStage m < inProgressPairStage p) pip
+				case (wrongstage, sane, pairMsgStage m) of
+					-- ignore our own messages, and
+					-- out of order messages
+					(True, _, _) -> go sock cache
+					(_, False, _) -> go sock cache
+					(_, _, PairReq) -> do
 						pairReqReceived verified dstatus urlrenderer m
 						go sock $ invalidateCache m cache
-					(_, PairAck) -> do
+					(_, _, PairAck) -> do
 						pairAckReceived verified pip st dstatus scanremotes m cache
 							>>= go sock
-					(_, PairDone) -> do
+					(_, _, PairDone) -> do
 						pairDoneReceived verified pip st dstatus scanremotes m
 						go sock	cache
 
@@ -132,14 +136,15 @@ pairReqReceived False dstatus urlrenderer msg = do
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,
- - and send a single PairDone. -}
+ - and send a single PairDone. 
+ -}
 pairAckReceived :: Bool -> Maybe PairingInProgress -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> [PairingInProgress] -> IO [PairingInProgress]
 pairAckReceived True (Just pip) st dstatus scanremotes msg cache = do
 	stopSending dstatus pip
 	setupAuthorizedKeys msg
 	finishedPairing st dstatus scanremotes msg (inProgressSshKeyPair pip)
-	startSending dstatus pip $ multicastPairMsg
-		(Just 1) (inProgressSecret pip) PairDone (inProgressPairData pip)
+	startSending dstatus pip PairDone $ multicastPairMsg
+		(Just 1) (inProgressSecret pip) (inProgressPairData pip)
 	return $ pip:(take 10 cache)
 {- A stale PairAck might also be seen, after we've finished pairing.
  - Perhaps our PairDone was not received. To handle this, we keep
@@ -149,8 +154,8 @@ pairAckReceived _ _ _ dstatus _ msg cache = do
 	let pips = filter (verifiedPairMsg msg) cache
 	unless (null pips) $
 		forM_ pips $ \pip ->
-			startSending dstatus pip $ multicastPairMsg
-				(Just 1) (inProgressSecret pip) PairDone (inProgressPairData pip)
+			startSending dstatus pip PairDone $ multicastPairMsg
+				(Just 1) (inProgressSecret pip) (inProgressPairData pip)
 	return cache
 
 {- If we get a verified PairDone, the host has accepted our PairAck, and

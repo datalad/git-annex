@@ -95,9 +95,9 @@ startPairing stage oncancel displaysecret secret = do
 		<*> pure (sshPubKey keypair)
 		<*> liftIO genUUID
 	liftIO $ do
-		let sender = multicastPairMsg Nothing secret stage pairdata
-		let pip = PairingInProgress secret Nothing keypair pairdata
-		startSending dstatus pip $ sendrequests sender dstatus urlrender
+		let sender = multicastPairMsg Nothing secret pairdata
+		let pip = PairingInProgress secret Nothing keypair pairdata stage
+		startSending dstatus pip stage $ sendrequests sender dstatus urlrender
 	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
 	where
 		{- Sends pairing messages until the thread is killed,
@@ -108,7 +108,7 @@ startPairing stage oncancel displaysecret secret = do
 		 - have been on a page specific to the in-process pairing
 		 - that just stopped, so can't go back there.
 		 -}
-		sendrequests sender dstatus urlrender = do
+		sendrequests sender dstatus urlrender _stage = do
 			tid <- myThreadId
 			let selfdestruct = AlertButton
 				{ buttonLabel = "Cancel"
@@ -118,7 +118,7 @@ startPairing stage oncancel displaysecret secret = do
 					killThread tid
 				}
 			alertDuring dstatus (pairingAlert selfdestruct) $ do
-				_ <- E.try sender :: IO (Either E.SomeException ())
+				_ <- E.try (sender stage) :: IO (Either E.SomeException ())
 				return ()
 
 data InputSecret = InputSecret { secretText :: Maybe Text }

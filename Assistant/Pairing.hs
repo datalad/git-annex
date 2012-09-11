@@ -26,7 +26,7 @@ data PairStage
 	| PairAck
 	{- "I saw your PairAck; you can stop sending them." -}
 	| PairDone
-	deriving (Eq, Read, Show)
+	deriving (Eq, Read, Show, Ord)
 
 newtype PairMsg = PairMsg (Verifiable (PairStage, PairData, SomeAddr))
 	deriving (Eq, Read, Show)
@@ -66,6 +66,7 @@ data PairingInProgress = PairingInProgress
 	, inProgressThreadId :: Maybe ThreadId
 	, inProgressSshKeyPair :: SshKeyPair
 	, inProgressPairData :: PairData
+	, inProgressPairStage :: PairStage
 	}
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6

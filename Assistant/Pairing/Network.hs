@@ -47,8 +47,8 @@ multicastAddress (IPv6Addr _) = "ff02::1"
  - but it allows new network interfaces to be used as they come up.
  - On the other hand, the expensive DNS lookups are cached.
  -}
-multicastPairMsg :: Maybe Int -> Secret -> PairStage -> PairData -> IO ()
-multicastPairMsg repeats secret stage pairdata = go M.empty repeats
+multicastPairMsg :: Maybe Int -> Secret -> PairData -> PairStage -> IO ()
+multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 	where
 		go _ (Just 0) = noop
 		go cache n = do
@@ -73,13 +73,14 @@ multicastPairMsg repeats secret stage pairdata = go M.empty repeats
 		mkmsg addr = PairMsg $
 			mkVerifiable (stage, pairdata, addr) secret
 
-startSending :: DaemonStatusHandle -> PairingInProgress -> IO () -> IO ()
-startSending dstatus pip sender = do
-	tid <- forkIO sender
-	let pip' = pip { inProgressThreadId = Just tid }
+startSending :: DaemonStatusHandle -> PairingInProgress -> PairStage -> (PairStage -> IO ()) -> IO ()
+startSending dstatus pip stage sender = void $ forkIO $ do
+	tid <- myThreadId
+	let pip' = pip { inProgressPairStage = stage, inProgressThreadId = Just tid }
 	oldpip <- modifyDaemonStatus dstatus $
 		\s -> (s { pairingInProgress = Just pip' }, pairingInProgress s)
 	maybe noop stopold oldpip
+	sender stage
 	where
 		stopold = maybe noop killThread . inProgressThreadId
 
