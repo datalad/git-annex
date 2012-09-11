@@ -141,7 +141,7 @@ pairAckReceived _ _ _ dstatus _ msg cache = do
  - has paired with us. Stop sending PairAcks, and finish pairing with them.
  -
  - TODO: Should third-party hosts remove their pair request alert when they
- - see a PairDone? 
+ - see a PairDone?
  - Complication: The user could have already clicked on the alert and be
  - entering the secret. Would be better to start a fresh pair request in this
  - situation.
