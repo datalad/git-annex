@@ -22,6 +22,7 @@ import Utility.Tense
 import Network.Multicast
 import Network.Socket
 import qualified Data.Text as T
+import Data.Char
 
 thisThread :: ThreadName
 thisThread = "PairListener"
@@ -36,16 +37,18 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 		go sock cache = getmsg sock [] >>= \msg -> case readish msg of
 			Nothing -> go sock cache
 			Just m -> do
+				sane <- checkSane msg
 				(pip, verified) <- verificationCheck m
 					=<< (pairingInProgress <$> getDaemonStatus dstatus)
-				case pairMsgStage m of
-					PairReq -> do
+				case (sane, pairMsgStage m) of
+					(False, _) -> go sock cache
+					(_, PairReq) -> do
 						pairReqReceived verified dstatus urlrenderer m
 						go sock $ invalidateCache m cache
-					PairAck -> do
+					(_, PairAck) -> do
 						pairAckReceived verified pip st dstatus scanremotes m cache
 							>>= go sock
-					PairDone -> do
+					(_, PairDone) -> do
 						pairDoneReceived verified pip st dstatus scanremotes m
 						go sock	cache
 
@@ -53,7 +56,8 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 		 - check its UUID against the UUID we have stored. If
 		 - they're the same, someone is sending bogus messages,
 		 - which could be an attempt to brute force the shared
-		 - secret. -}
+		 - secret.
+		 -}
 		verificationCheck m (Just pip) = do
 			let verified = verifiedPairMsg m pip
 			let sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData $ m)
@@ -65,6 +69,16 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 					return (Nothing, False)
 				else return (Just pip, verified && sameuuid)
 		verificationCheck _ Nothing = return (Nothing, False)
+		
+		{- Various sanity checks on the content of the message. -}
+		checkSane msg 
+			{- Control characters could be used in a
+			 - console poisoning attack. -}
+			| any isControl msg || any (`elem` "\r\n") msg = do
+				runThreadState st $
+					warning "illegal control characters in pairing message; ignoring"
+				return False
+			| otherwise = return True
 
 		{- PairReqs invalidate the cache of recently finished pairings.
 		 - This is so that, if a new pairing is started with the
