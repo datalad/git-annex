@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://mike.magin.org/"
+ nickname="mmagin"
+ subject="comment 2"
+ date="2012-09-11T15:27:58Z"
+ content="""
+I've been using git-annex mostly on Mac OS X, and it rapidly caused me to switch to SHA256E.  I'd certainly be in favor of it being the default.  Aside from [[bugs/fsck thinks file content is bad when it isn't]] (fixed by the time I encountered it), I have had no issues with it so far.
+"""]]
