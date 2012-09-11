@@ -42,7 +42,7 @@ import Control.Concurrent
 {- Starts sending out pair requests. -}
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
-getStartPairR = promptSecret Nothing $ startPairing PairReq noop
+getStartPairR = promptSecret Nothing $ startPairing PairReq noop pairingAlert Nothing
 #else
 getStartPairR = noPairing
 #endif
@@ -54,11 +54,13 @@ getFinishPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	liftIO $ setup
-	startPairing PairAck cleanup "" secret
+	startPairing PairAck cleanup alert uuid "" secret
 	where
+		alert = pairRequestAcknowledgedAlert $ pairRepo msg
 		setup  = setupAuthorizedKeys msg
 		cleanup = removeAuthorizedKeys False $
 			remoteSshPubKey $ pairMsgData msg
+		uuid = Just $ pairUUID $ pairMsgData msg
 #else
 getFinishPairR _ = noPairing
 #endif
@@ -83,8 +85,8 @@ getInprogressPairR _ = noPairing
  -
  - Redirects to the pairing in progress page.
  -}
-startPairing :: PairStage -> IO () -> Text -> Secret -> Widget
-startPairing stage oncancel displaysecret secret = do
+startPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
+startPairing stage oncancel alert muuid displaysecret secret = do
 	keypair <- liftIO $ genSshKeyPair
 	dstatus <- daemonStatus <$> lift getYesod
 	urlrender <- lift getUrlRender
@@ -93,7 +95,7 @@ startPairing stage oncancel displaysecret secret = do
 		<*> liftIO getUserName
 		<*> (fromJust . relDir <$> lift getYesod)
 		<*> pure (sshPubKey keypair)
-		<*> liftIO genUUID
+		<*> liftIO (maybe genUUID return muuid)
 	liftIO $ do
 		let sender = multicastPairMsg Nothing secret pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata stage
@@ -117,7 +119,7 @@ startPairing stage oncancel displaysecret secret = do
 					oncancel
 					killThread tid
 				}
-			alertDuring dstatus (pairingAlert selfdestruct) $ do
+			alertDuring dstatus (alert selfdestruct) $ do
 				_ <- E.try (sender stage) :: IO (Either E.SomeException ())
 				return ()
 

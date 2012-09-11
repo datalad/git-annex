@@ -68,6 +68,7 @@ data PairingInProgress = PairingInProgress
 	, inProgressPairData :: PairData
 	, inProgressPairStage :: PairStage
 	}
+	deriving (Show)
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6
 	deriving (Ord, Eq, Read, Show)

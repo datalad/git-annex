@@ -32,6 +32,9 @@ data SshKeyPair = SshKeyPair
 	, sshPrivKey :: String
 	}
 
+instance Show SshKeyPair where
+	show = sshPubKey
+
 type SshPubKey = String
 
 {- ssh -ofoo=bar command-line option -}

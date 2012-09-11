@@ -58,14 +58,14 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 			threadDelaySeconds (Seconds 2)
 			go cache' $ pred <$> n
 		sendinterface cache i = void $ catchMaybeIO $
-			withSocketsDo $ bracket
-				(multicastSender (multicastAddress i) pairingPort)
-				(sClose . fst)
-				(\(sock, addr) -> do
+			withSocketsDo $ bracket setup cleanup use
+			where
+				setup = multicastSender (multicastAddress i) pairingPort
+				cleanup (sock, _) = sClose sock -- FIXME does not work
+				use (sock, addr) = do
 					setInterface sock (showAddr i)
 					maybe noop (\s -> void $ sendTo sock s addr)
 						(M.lookup i cache)
-				)
 		updatecache cache [] = cache
 		updatecache cache (i:is)
 			| M.member i cache = updatecache cache is
@@ -106,3 +106,19 @@ activeNetworkAddresses :: IO [SomeAddr]
 activeNetworkAddresses = filter (not . all (`elem` "0.:") . showAddr)
 	. concat . map (\ni -> [toSomeAddr $ ipv4 ni, toSomeAddr $ ipv6 ni])
 	<$> getNetworkInterfaces
+
+{- A human-visible description of the repository being paired with.
+ - Note that the repository's description is not shown to the user, because
+ - it could be something like "my repo", which is confusing when pairing
+ - with someone else's repo. However, this has the same format as the
+ - default decription of a repo. -}
+pairRepo :: PairMsg -> String
+pairRepo msg = concat
+	[ remoteUserName d
+	, "@"
+	, fromMaybe (showAddr $ pairMsgAddr msg) (remoteHostName d)
+	, ":"
+	, remoteDirectory d
+	]
+	where
+		d = pairMsgData msg

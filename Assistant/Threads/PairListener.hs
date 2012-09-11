@@ -17,7 +17,6 @@ import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
-import Utility.Tense
 
 import Network.Multicast
 import Network.Socket
@@ -40,7 +39,7 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 				sane <- checkSane msg
 				(pip, verified) <- verificationCheck m
 					=<< (pairingInProgress <$> getDaemonStatus dstatus)
-				let wrongstage = maybe False (\p -> pairMsgStage m < inProgressPairStage p) pip
+				let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
 				case (wrongstage, sane, pairMsgStage m) of
 					-- ignore our own messages, and
 					-- out of order messages
@@ -107,32 +106,13 @@ pairReqReceived True _ _ _ = noop -- ignore our own PairReq
 pairReqReceived False dstatus urlrenderer msg = do
 	url <- renderUrl urlrenderer (FinishPairR msg) []
 	void $ addAlert dstatus $ pairRequestReceivedAlert repo
-		(repo ++ " is sending a pair request.") $
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
-			, buttonAction = Just onclick
+			, buttonAction = Nothing
 			}
 	where
-		pairdata = pairMsgData msg
-		repo = concat
-			[ remoteUserName pairdata
-			, "@"
-			, fromMaybe (showAddr $ pairMsgAddr msg)
-				(remoteHostName pairdata)
-			, ":"
-			, (remoteDirectory pairdata)
-			]
-		{- Remove the button when it's clicked, and change the
-		 - alert to be in progress. This alert cannot be entirely
-		 - removed since more pair request messages are coming in
-		 - and would re-add it. -}
-		onclick i = updateAlert dstatus i $ \alert -> Just $ alert
-			{ alertButton = Nothing
-			, alertClass = Activity
-			, alertIcon = Just ActivityIcon
-			, alertData = [UnTensed $ T.pack $ "pair request with " ++ repo ++ " in progress"]
-			}
+		repo = pairRepo msg
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,

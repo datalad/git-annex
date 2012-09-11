@@ -32,7 +32,7 @@ data AlertName
 	= FileAlert TenseChunk
 	| SanityCheckFixAlert
 	| WarningAlert String
-	| PairRequestReceivedAlert String
+	| PairAlert String
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -293,18 +293,27 @@ pairingAlert button = baseActivityAlert
 	, alertButton = Just button
 	}
 
-pairRequestReceivedAlert :: String -> String -> AlertButton -> Alert
-pairRequestReceivedAlert repo msg button = Alert
+pairRequestReceivedAlert :: String -> AlertButton -> Alert
+pairRequestReceivedAlert repo button = Alert
 	{ alertClass = Message
 	, alertHeader = Nothing
 	, alertMessageRender = tenseWords
-	, alertData = [UnTensed $ T.pack msg]
+	, alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
 	, alertBlockDisplay = False
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon
-	, alertName = Just $ PairRequestReceivedAlert repo
-	, alertCombiner = Just $ dataCombiner $ const id
+	, alertName = Just $ PairAlert repo
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertButton = Just button
+	}
+
+pairRequestAcknowledgedAlert :: String -> AlertButton -> Alert
+pairRequestAcknowledgedAlert repo button = baseActivityAlert
+	{ alertData = ["Pair request with", UnTensed (T.pack repo), Tensed "in progress" "complete"]
+	, alertPriority = High
+	, alertName = Just $ PairAlert repo
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = Just button
 	}
 
