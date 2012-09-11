@@ -1,25 +1,48 @@
 For git-annex to be able to clone its repo to another host, it'd be good to
 have some way of pairing devices.
 
-It could work like this:
+## security
 
-1. Prompt for the hostname, or do avahi local machine discovery, or use
-   ZeroMQ with IP multicast, or use haskell's `network-multicast`. That
-   last option seems to work best!
-2. Let user pick host to pair with. Somehow authenticate that this is
-   the host they expected to pair with, and not an imposter. Probably
-   have the users enter a shared secret and use it to HMAC the ssh public
-   keys.
-3. Exchange a hostname or IP address with the pair. Ideally,
-   use `.local`, as it'll work as long as both are on the same subnet.
-   If mDNS is not available, regular DNS or IP addresses might have
-   to be used, but will result in a more fragile pairing. Or perhaps
-   the assistant could broadcast itself queries for current IP addresses,
-   if connecting to a paired host fails.
-4. Enable the two hosts to ssh to one-another and run git-annex shell.
-   (Set up per-host ssh keys.)
-5. Pull over a clone of the repository.
-6. Start [[syncing]].
+It's important that pairing securely verifies that the right host is being
+paired with. This is accomplied by having a shared secret be entered on
+both the hosts that will be paired. They can then construct messages that
+the other host can verify using the shared secret, and so know that,
+for example, the ssh public key it received belongs to the right host
+and has not been altered by a man in the middle.
+
+The verification works like this: Take a HMAC SHA1 checksum of the message,
+using the shared secret as the HMAC key. Include this checksum after the
+message. The other host can then do the same calculation and verify the
+checksum.
+
+Additionally, a UUID is included in the message. Messages that are part of
+the same pairing session all share a UUID. And all such messages should
+be verifiable as described above. If a message has the same UUID but is
+not verifiable, then someone on the network is up to no good. Perhaps
+they are trying to brute-force the shared secret. When this is detected,
+the pairing session is shut down. (Which would still let an attacker
+DOS pairing, but that's not a very interesting attack.)
+
+The protocol used for pairing consists of 3 messages, a PairReq, and
+PairAck, and a PairDone. Let's consider what an attacker could accomplish
+by replaying these:
+
+* PairReq: This would make the webapp pop up an alert about an incoming
+  pair request. If the user thought it was real and for some reason
+  entered the right shared secret used in the real one earlier, the
+  ssh key inside the PairReq would be added to `authorized_keys`. Which
+  allows the host that originally sent the PairReq to access its git
+  repository, but doesn't seem to do the attacker any good.
+* PairAck:  If the host that originally sent
+  the PairReq is still pairing, it'll add the ssh key from the PairAck,
+  and start syncing, which again does the attacker no good.
+* PairDone: If the host that sent the PairAck is still syncing, it'll
+  add the ssh key from the PairDone, and start syncing, and stop
+  sending PairAcks. But probably, it's not syncing, because it would have
+  seen the original PairDone.. and anyway, this seems to do the attacker no
+  good.
+
+So replay attacks don't seem to be a problem.
 
 ## TODO
 
