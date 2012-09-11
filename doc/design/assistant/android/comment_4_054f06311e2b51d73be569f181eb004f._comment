@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.30"
+ subject="comment 4"
+ date="2012-09-11T02:12:45Z"
+ content="""
+Thanks Bernard, that's really massively useful. It makes sense -- statically building with libc should work, the Android kernel is still Linux after all. 
+
+To get past the iconv problem, I think all you need is part of the `locales` package from your linux system installed on the Android. Probably just a few of the data files from /usr/share/i18n/charmaps/
+"""]]
