@@ -24,6 +24,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
+import Annex.UUID
 #endif
 
 import Yesod
@@ -91,6 +92,7 @@ startPairing stage oncancel displaysecret secret = do
 		<*> liftIO getUserName
 		<*> (fromJust . relDir <$> lift getYesod)
 		<*> pure (sshPubKey keypair)
+		<*> liftIO genUUID
 	liftIO $ do
 		let sender = multicastPairMsg Nothing secret stage pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata

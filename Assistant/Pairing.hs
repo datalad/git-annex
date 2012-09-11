@@ -7,6 +7,7 @@
 
 module Assistant.Pairing where
 
+import Common.Annex
 import Utility.Verifiable
 import Assistant.Ssh
 
@@ -49,6 +50,7 @@ data PairData = PairData
 	, remoteUserName :: UserName
 	, remoteDirectory :: FilePath
 	, remoteSshPubKey :: SshPubKey
+	, pairUUID :: UUID
 	}
 	deriving (Eq, Read, Show)
 

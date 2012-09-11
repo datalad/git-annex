@@ -36,8 +36,8 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 		go sock cache = getmsg sock [] >>= \msg -> case readish msg of
 			Nothing -> go sock cache
 			Just m -> do
-				pip <- pairingInProgress <$> getDaemonStatus dstatus
-				let verified = maybe False (verifiedPairMsg m) pip
+				(pip, verified) <- verificationCheck m
+					=<< (pairingInProgress <$> getDaemonStatus dstatus)
 				case pairMsgStage m of
 					PairReq -> do
 						pairReqReceived verified dstatus urlrenderer m
@@ -48,6 +48,23 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 					PairDone -> do
 						pairDoneReceived verified pip st dstatus scanremotes m
 						go sock	cache
+
+		{- As well as verifying the message using the shared secret,
+		 - check its UUID against the UUID we have stored. If
+		 - they're the same, someone is sending bogus messages,
+		 - which could be an attempt to brute force the shared
+		 - secret. -}
+		verificationCheck m (Just pip) = do
+			let verified = verifiedPairMsg m pip
+			let sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData $ m)
+			if (not verified && sameuuid)
+				then do
+					runThreadState st $
+						warning "detected possible pairing brute force attempt; disabled pairing"
+					stopSending dstatus pip
+					return (Nothing, False)
+				else return (Just pip, verified && sameuuid)
+		verificationCheck _ Nothing = return (Nothing, False)
 
 		{- PairReqs invalidate the cache of recently finished pairings.
 		 - This is so that, if a new pairing is started with the
@@ -125,12 +142,10 @@ pairAckReceived _ _ _ dstatus _ msg cache = do
 {- If we get a verified PairDone, the host has accepted our PairAck, and
  - has paired with us. Stop sending PairAcks, and finish pairing with them.
  -
- - If we get an unverified PairDone that matches the PairReq 
  - TODO: Should third-party hosts remove their pair request alert when they
- - see a PairDone? How to tell if a PairDone matches with the PairReq 
- - that brought up the alert? Cannot verify it without the secret..
- - Also, the user could have already clicked on the alert and be entering
- - the secret. Would be better to start a fresh pair request in this
+ - see a PairDone? 
+ - Complication: The user could have already clicked on the alert and be
+ - entering the secret. Would be better to start a fresh pair request in this
  - situation.
  -}
 pairDoneReceived :: Bool -> Maybe PairingInProgress -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> IO ()
