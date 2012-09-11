@@ -29,12 +29,12 @@ thisThread = "PairListener"
 pairListenerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> UrlRenderer -> NamedThread
 pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $ do
 	sock <- multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
-	go sock []
+	go sock [] []
 	where
 		thread = NamedThread thisThread
 		
-		go sock cache = getmsg sock [] >>= \msg -> case readish msg of
-			Nothing -> go sock cache
+		go sock reqs cache = getmsg sock [] >>= \msg -> case readish msg of
+			Nothing -> go sock reqs cache
 			Just m -> do
 				sane <- checkSane msg
 				(pip, verified) <- verificationCheck m
@@ -43,17 +43,19 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 				case (wrongstage, sane, pairMsgStage m) of
 					-- ignore our own messages, and
 					-- out of order messages
-					(True, _, _) -> go sock cache
-					(_, False, _) -> go sock cache
-					(_, _, PairReq) -> do
-						pairReqReceived verified dstatus urlrenderer m
-						go sock $ invalidateCache m cache
+					(True, _, _) -> go sock reqs cache
+					(_, False, _) -> go sock reqs cache
+					(_, _, PairReq) -> if m `elem` reqs
+						then go sock reqs (invalidateCache m cache)
+						else do
+							pairReqReceived verified dstatus urlrenderer m
+							go sock (m:take 10 reqs) (invalidateCache m cache)
 					(_, _, PairAck) -> do
 						pairAckReceived verified pip st dstatus scanremotes m cache
-							>>= go sock
+							>>= go sock reqs
 					(_, _, PairDone) -> do
 						pairDoneReceived verified pip st dstatus scanremotes m
-						go sock	cache
+						go sock	reqs cache
 
 		{- As well as verifying the message using the shared secret,
 		 - check its UUID against the UUID we have stored. If
@@ -97,10 +99,7 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 			where
 				chunksz = 1024
 
-{- Show an alert when a PairReq is seen.
- -
- - Pair request alerts from the same host combine,
- - so repeated requests do not add additional alerts. -}
+{- Show an alert when a PairReq is seen. -}
 pairReqReceived :: Bool -> DaemonStatusHandle -> UrlRenderer -> PairMsg -> IO ()
 pairReqReceived True _ _ _ = noop -- ignore our own PairReq
 pairReqReceived False dstatus urlrenderer msg = do
@@ -109,12 +108,10 @@ pairReqReceived False dstatus urlrenderer msg = do
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
-			, buttonAction = Just onclick
+			, buttonAction = Just $ removeAlert dstatus
 			}
 	where
 		repo = pairRepo msg
-		onclick = \i -> updateAlert dstatus i $ const $ Just $
-			pairRequestAcknowledgedAlert repo Nothing
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,

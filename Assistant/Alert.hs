@@ -294,8 +294,12 @@ pairingAlert button = baseActivityAlert
 	}
 
 pairRequestReceivedAlert :: String -> AlertButton -> Alert
-pairRequestReceivedAlert repo button = baseActivityAlert
-	{ alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
+pairRequestReceivedAlert repo button = Alert
+	{ alertClass = Message
+	, alertHeader = Nothing
+	, alertMessageRender = tenseWords
+	, alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
+	, alertBlockDisplay = False
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon
@@ -308,7 +312,6 @@ pairRequestAcknowledgedAlert :: String -> (Maybe AlertButton) -> Alert
 pairRequestAcknowledgedAlert repo button = baseActivityAlert
 	{ alertData = ["Pair request with", UnTensed (T.pack repo), Tensed "in progress" "complete"]
 	, alertPriority = High
-	, alertName = Just $ PairAlert repo
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = button
 	}
