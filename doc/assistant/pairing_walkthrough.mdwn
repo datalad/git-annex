@@ -32,7 +32,7 @@ git-annex folders. Just like that you can share files.
 ----
 
 Something to keep in mind, especially if pairing doesn't seem to be
-working, is that the two computer need to be on the same network for this
+working, is that the two computers need to be on the same network for this
 pairing process to work. Sometimes a building will have more than one
 network inside it, and you'll need to connect them both to the same one.
 Make sure the wireless network name is the same, or that they're both
