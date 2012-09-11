@@ -12,7 +12,8 @@ We'll start on your computer, where you open up your git annex dashboard.
 
 [[!img pairing.png alt="Pair with local computer"]]
 
-Now the hard bit. You have to think up a secret phrase, and type it in..
+Now the hard bit. You have to think up a secret phrase, and type it in,
+(and perhaps get the spelling correct).
 
 [[!img secret.png alt="Enter secret phrase"]]
 
@@ -42,8 +43,8 @@ Also, the file sharing set up by this pairing only works when both
 computers are on the same network. If you go on a trip, any files you
 edit will not be visible to your friend until you get back. **But**,
 you can get around this by hooking both computers up to a server on the
-internet, which they can use to exchange files. The git annex assistant
-makes that easy too.
+internet, which they can use to exchange files while disconnected. The
+git annex assistant makes that easy too.
 
 And also, you can pair with as many other computers as you like, not just
 one!
