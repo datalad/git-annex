@@ -109,10 +109,12 @@ pairReqReceived False dstatus urlrenderer msg = do
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
-			, buttonAction = Nothing
+			, buttonAction = Just onclick
 			}
 	where
 		repo = pairRepo msg
+		onclick = \i -> updateAlert dstatus i $ const $ Just $
+			pairRequestAcknowledgedAlert repo Nothing
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,

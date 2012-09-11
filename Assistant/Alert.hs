@@ -294,12 +294,8 @@ pairingAlert button = baseActivityAlert
 	}
 
 pairRequestReceivedAlert :: String -> AlertButton -> Alert
-pairRequestReceivedAlert repo button = Alert
-	{ alertClass = Message
-	, alertHeader = Nothing
-	, alertMessageRender = tenseWords
-	, alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
-	, alertBlockDisplay = False
+pairRequestReceivedAlert repo button = baseActivityAlert
+	{ alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon
@@ -308,13 +304,13 @@ pairRequestReceivedAlert repo button = Alert
 	, alertButton = Just button
 	}
 
-pairRequestAcknowledgedAlert :: String -> AlertButton -> Alert
+pairRequestAcknowledgedAlert :: String -> (Maybe AlertButton) -> Alert
 pairRequestAcknowledgedAlert repo button = baseActivityAlert
 	{ alertData = ["Pair request with", UnTensed (T.pack repo), Tensed "in progress" "complete"]
 	, alertPriority = High
 	, alertName = Just $ PairAlert repo
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButton = Just button
+	, alertButton = button
 	}
 
 fileAlert :: TenseChunk -> FilePath -> Alert

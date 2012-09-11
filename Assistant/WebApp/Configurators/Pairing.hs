@@ -56,7 +56,7 @@ getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	liftIO $ setup
 	startPairing PairAck cleanup alert uuid "" secret
 	where
-		alert = pairRequestAcknowledgedAlert $ pairRepo msg
+		alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
 		setup  = setupAuthorizedKeys msg
 		cleanup = removeAuthorizedKeys False $
 			remoteSshPubKey $ pairMsgData msg
