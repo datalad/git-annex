@@ -19,6 +19,16 @@ import Assistant.MakeRemote
 import Network.Socket
 import qualified Data.Text as T
 
+{- Authorized keys are set up before pairing is complete, so that the other
+ - side can immediately begin syncing. -}
+setupAuthorizedKeys :: PairMsg -> IO ()
+setupAuthorizedKeys msg = do
+	validateSshPubKey pubkey
+	unlessM (liftIO $ addAuthorizedKeys False pubkey) $
+		error "failed setting up ssh authorized keys"
+	where
+		pubkey = remoteSshPubKey $ pairMsgData msg
+
 {- When pairing is complete, this is used to set up the remote for the host
  - we paired with. -}
 finishedPairing :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> SshKeyPair -> IO ()

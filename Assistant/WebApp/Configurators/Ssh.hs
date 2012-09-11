@@ -204,7 +204,7 @@ makeSsh' rsync sshdata keypair =
 			, if rsync then Nothing else Just $ "git init --bare --shared"
 			, if rsync then Nothing else Just $ "git annex init"
 			, if needsPubKey sshdata
-				then maybe Nothing (Just . makeAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey) keypair
+				then maybe Nothing (Just . addAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey) keypair
 				else Nothing
 			]
 

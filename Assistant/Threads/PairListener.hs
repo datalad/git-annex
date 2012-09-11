@@ -94,7 +94,7 @@ pairReqReceived False dstatus urlrenderer msg = do
 
 {- When a verified PairAck is seen, a host is ready to pair with us, and has
  - already configured our ssh key. Stop sending PairReqs, finish the pairing,
- - and send a few PairDones.
+ - and send a single PairDone.
  -
  - TODO: A stale PairAck might also be seen, after we've finished pairing.
  - Perhaps our PairDone was not received. To handle this, we keep
@@ -106,9 +106,10 @@ pairAckReceived False _ _ _ _ _ = noop -- not verified
 pairAckReceived True Nothing _ _ _ _ = noop -- not in progress
 pairAckReceived True (Just pip) st dstatus scanremotes msg = do
 	stopSending dstatus pip
+	setupAuthorizedKeys msg
 	finishedPairing st dstatus scanremotes msg (inProgressSshKeyPair pip)
 	startSending dstatus pip $ multicastPairMsg
-		(Just 10) (inProgressSecret pip) PairDone (inProgressPairData pip)
+		(Just 1) (inProgressSecret pip) PairDone (inProgressPairData pip)
 
 {- If we get a verified PairDone, the host has accepted our PairAck, and
  - has paired with us. Stop sending PairAcks, and finish pairing with them.

@@ -1,25 +1,5 @@
 {- git-annex assistant webapp configurator for pairing
  -
- - Pairing works like this:
- -
- - * The user opens StartPairR, which prompts them for a secret.
- - * The user submits it. The pairing secret is stored for later.
- -   A PairReq is broadcast out.
- - * On another device, it's received, and that causes its webapp to 
- -   display an Alert.
- - * The user there clicks the button, which opens FinishPairR,
- -   which prompts them for the same secret.
- - * The secret is used to verify the PairReq. If it checks out,
- -   a PairAck is sent, and the other device adds the ssh key from the
- -   PairReq to its authorized_keys, and sets up the remote.
- - * The PairAck is received back at the device that started the process.
- -   It's verified using the stored secret. The ssh key from the PairAck
- -   is added. An Alert is displayed noting that the pairing has been set
- -   up. The pairing secret is removed to prevent anyone cracking the
- -   crypto. Syncing starts. A PairDone is sent.
- - * The PairDone is received, and an alert shown indicating pairing is
- -   done.
- -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -38,6 +18,7 @@ import Utility.Yesod
 #ifdef WITH_PAIRING
 import Assistant.Common
 import Assistant.Pairing.Network
+import Assistant.Pairing.MakeRemote
 import Assistant.Ssh
 import Assistant.Alert
 import Assistant.DaemonStatus
@@ -57,6 +38,7 @@ import qualified Control.Exception as E
 import Control.Concurrent
 #endif
 
+{- Starts sending out pair requests. -}
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
 getStartPairR = promptSecret Nothing $ startPairing PairReq noop
@@ -64,18 +46,18 @@ getStartPairR = promptSecret Nothing $ startPairing PairReq noop
 getStartPairR = noPairing
 #endif
 
+{- Runs on the system that responds to a pair request; sets up the ssh
+ - authorized key first so that the originating host can immediately sync
+ - with us. -}
 getFinishPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	setup
+	liftIO $ setup
 	startPairing PairAck cleanup "" secret
 	where
-		pubkey = remoteSshPubKey $ pairMsgData msg
-		setup  = do
-			liftIO $ validateSshPubKey pubkey
-			unlessM (liftIO $ makeAuthorizedKeys False pubkey) $
-				error "failed setting up ssh authorized keys"
-		cleanup = error "TODO clean up authorized keys and generated ssh key and remove git remote"
+		setup  = setupAuthorizedKeys msg
+		cleanup = removeAuthorizedKeys False $
+			remoteSshPubKey $ pairMsgData msg
 #else
 getFinishPairR _ = noPairing
 #endif
@@ -104,7 +86,6 @@ startPairing stage oncancel displaysecret secret = do
 	keypair <- liftIO $ genSshKeyPair
 	dstatus <- daemonStatus <$> lift getYesod
 	urlrender <- lift getUrlRender
-	let homeurl = urlrender HomeR
 	pairdata <- PairData
 		<$> liftIO getHostname
 		<*> liftIO getUserName
@@ -113,7 +94,7 @@ startPairing stage oncancel displaysecret secret = do
 	liftIO $ do
 		let sender = multicastPairMsg Nothing secret stage pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata
-		startSending dstatus pip $ sendrequests sender dstatus homeurl
+		startSending dstatus pip $ sendrequests sender dstatus urlrender
 	lift $ redirect $ InprogressPairR displaysecret
 	where
 		{- Sends pairing messages until the thread is killed,
@@ -124,11 +105,11 @@ startPairing stage oncancel displaysecret secret = do
 		 - have been on a page specific to the in-process pairing
 		 - that just stopped, so can't go back there.
 		 -}
-		sendrequests sender dstatus homeurl = do
+		sendrequests sender dstatus urlrender = do
 			tid <- myThreadId
 			let selfdestruct = AlertButton
 				{ buttonLabel = "Cancel"
-				, buttonUrl = homeurl
+				, buttonUrl = urlrender HomeR
 				, buttonAction = Just $ const $ do
 					oncancel
 					killThread tid

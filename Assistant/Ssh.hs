@@ -101,14 +101,23 @@ validateSshPubKey pubkey = do
 		unless (all (\c -> isAlphaNum c || c == '@') (ws !! 2)) $
 			error $ "bad comment in ssh public key " ++ pubkey
 
-makeAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
-makeAuthorizedKeys rsynconly pubkey = boolSystem "sh"
-	[ Param "-c" , Param $ makeAuthorizedKeysCommand rsynconly pubkey ]
+addAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
+addAuthorizedKeys rsynconly pubkey = boolSystem "sh"
+	[ Param "-c" , Param $ addAuthorizedKeysCommand rsynconly pubkey ]
+
+removeAuthorizedKeys :: Bool -> SshPubKey -> IO ()
+removeAuthorizedKeys rsynconly pubkey = do
+	let keyline = authorizedKeysLine rsynconly pubkey
+	sshdir <- sshDir
+	let keyfile = sshdir </> ".authorized_keys"
+	ls <- lines <$> readFileStrict keyfile
+	writeFile keyfile $ unlines $
+		filter (\l -> not $ l == keyline) ls
 
 {- Implemented as a shell command, so it can be run on remote servers over
  - ssh. -}
-makeAuthorizedKeysCommand :: Bool -> SshPubKey -> String
-makeAuthorizedKeysCommand rsynconly pubkey = join "&&" $
+addAuthorizedKeysCommand :: Bool -> SshPubKey -> String
+addAuthorizedKeysCommand rsynconly pubkey = join "&&" $
 	[ "mkdir -p ~/.ssh"
 	, "touch ~/.ssh/authorized_keys"
 	, "chmod 600 ~/.ssh/authorized_keys"
