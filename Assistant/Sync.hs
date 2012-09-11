@@ -24,6 +24,7 @@ import qualified Annex.Branch
 
 import Data.Time.Clock
 import qualified Data.Map as M
+import Control.Concurrent
 
 {- Syncs with remotes that may have been disconnected for a while.
  - 
@@ -108,3 +109,9 @@ manualPull st currentbranch remotes = do
 	forM_ remotes $ \r ->
 		runThreadState st $ Command.Sync.mergeRemote r currentbranch
 	return haddiverged
+
+{- Start syncing a newly added remote, using a background thread. -}
+syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
+syncNewRemote st dstatus scanremotes remote = do
+	runThreadState st $ updateKnownRemotes dstatus
+	void $ forkIO $ do reconnectRemotes "SyncRemote" st dstatus scanremotes [remote]

@@ -11,21 +11,15 @@ module Assistant.WebApp.Configurators.Ssh where
 
 import Assistant.Common
 import Assistant.Ssh
+import Assistant.MakeRemote
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
-import Assistant.WebApp.Configurators.Local
-import qualified Types.Remote as R
-import qualified Remote.Rsync as Rsync
-import qualified Command.InitRemote
-import Logs.UUID
-import Logs.Remote
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Map as M
 import Network.BSD
 import System.Posix.User
 
@@ -127,7 +121,7 @@ getAddSshR = sshConfigurator $ do
 testServer :: SshServer -> IO (ServerStatus, Bool)
 testServer (SshServer { hostname = Nothing }) = return
 	(UnusableServer "Please enter a host name.", False)
-testServer sshserver = do
+testServer sshserver@(SshServer { hostname = Just hn }) = do
 	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
 	if usable status
 		then return (status, False)
@@ -141,7 +135,7 @@ testServer sshserver = do
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
 				]
-			knownhost <- knownHost sshserver
+			knownhost <- knownHost hn
 			let sshopts = filter (not . null) $ extraopts ++
 				{- If this is an already known host, let
 				 - ssh check it as usual.
@@ -165,10 +159,6 @@ testServer sshserver = do
 		token r = "git-annex-probe " ++ r
 		report r = "echo " ++ token r
 
-{- user@host or host -}
-genSshHost :: Text -> Maybe Text -> String
-genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
-
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
 sshSetup :: [String] -> String -> Handler RepHtml -> Handler RepHtml
@@ -181,16 +171,6 @@ sshSetup opts input a = do
 showSshErr :: String -> Handler RepHtml
 showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
-
-{- Does ssh have known_hosts data for a hostname? -}
-knownHost :: SshServer -> IO Bool
-knownHost (SshServer { hostname = Nothing }) = return False
-knownHost (SshServer { hostname = Just h }) = do
-	sshdir <- sshDir
-	ifM (doesFileExist $ sshdir </> "known_hosts")
-		( not . null <$> readProcess "ssh-keygen" ["-F", T.unpack h]
-		, return False
-		)
 
 getConfirmSshR :: SshData -> Handler RepHtml
 getConfirmSshR sshdata = sshConfigurator $ do
@@ -208,11 +188,11 @@ makeSsh rsync sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO $ genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSshWithKeyPair rsync sshdata' (Just keypair)
-	| otherwise = makeSshWithKeyPair rsync sshdata Nothing
+		makeSsh' rsync sshdata' (Just keypair)
+	| otherwise = makeSsh' rsync sshdata Nothing
 
-makeSshWithKeyPair :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
-makeSshWithKeyPair rsync sshdata keypair =
+makeSsh' :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
+makeSsh' rsync sshdata keypair =
 	sshSetup [sshhost, remoteCommand] "" $
 		makeSshRepo rsync sshdata
 	where
@@ -230,40 +210,13 @@ makeSshWithKeyPair rsync sshdata keypair =
 
 makeSshRepo :: Bool -> SshData -> Handler RepHtml
 makeSshRepo forcersync sshdata = do
-	r <- runAnnex undefined $
-		addRemote $ maker (sshRepoName sshdata) sshurl
-	syncRemote r
+	webapp <- getYesod
+	liftIO $ makeSshRemote
+		(fromJust $ threadState webapp)
+		(daemonStatus webapp)
+		(scanRemotes webapp)
+		forcersync sshdata
 	redirect RepositoriesR
-	where
-		rsync = forcersync || rsyncOnly sshdata
-		maker
-			| rsync = makeRsyncRemote
-			| otherwise = makeGitRemote
-		sshurl = T.unpack $ T.concat $
-			if rsync
-				then [u, h, ":", sshDirectory sshdata, "/"]
-				else ["ssh://", u, h, d, "/"]
-			where
-				u = maybe "" (\v -> T.concat [v, "@"]) $ sshUserName sshdata
-				h = sshHostName sshdata
-				d
-					| "/" `T.isPrefixOf` sshDirectory sshdata = d
-					| otherwise = T.concat ["/~/", sshDirectory sshdata]
-	
-
-{- Inits a rsync special remote, and returns the name of the remote. -}
-makeRsyncRemote :: String -> String -> Annex String
-makeRsyncRemote name location = makeRemote name location $ const $ do
-	(u, c) <- Command.InitRemote.findByName name
-	c' <- R.setup Rsync.remote u $ M.union config c
-	describeUUID u name
-	configSet u c'
-	where
-		config = M.fromList
-			[ ("encryption", "shared")
-			, ("rsyncurl", location)
-			, ("type", "rsync")
-			]
 
 getAddRsyncNetR :: Handler RepHtml
 getAddRsyncNetR = do
@@ -276,7 +229,7 @@ getAddRsyncNetR = do
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshserver -> do
-			knownhost <- liftIO $ knownHost sshserver
+			knownhost <- liftIO $ maybe (return False) knownHost (hostname sshserver)
 			keypair <- liftIO $ genSshKeyPair
 			sshdata <- liftIO $ setupSshKeyPair keypair
 				(mkSshData sshserver)

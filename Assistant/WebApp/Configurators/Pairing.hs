@@ -39,7 +39,6 @@ import Utility.Yesod
 import Assistant.Common
 import Assistant.Pairing.Network
 import Assistant.Ssh
-import qualified Assistant.WebApp.Configurators.Ssh as Ssh
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
@@ -60,9 +59,7 @@ import Control.Concurrent
 
 getStartPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
-getStartPairR = do
-	keypair <- liftIO genSshKeyPair
-	promptSecret Nothing $ startPairing PairReq keypair noop
+getStartPairR = promptSecret Nothing $ startPairing PairReq noop
 #else
 getStartPairR = noPairing
 #endif
@@ -70,43 +67,18 @@ getStartPairR = noPairing
 getFinishPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	keypair <- setup
-	startPairing PairAck keypair cleanup "" secret
+	setup
+	startPairing PairAck cleanup "" secret
 	where
 		pubkey = remoteSshPubKey $ pairMsgData msg
 		setup  = do
-			validateSshPubKey pubKey
+			liftIO $ validateSshPubKey pubkey
 			unlessM (liftIO $ makeAuthorizedKeys False pubkey) $
 				error "failed setting up ssh authorized keys"
-			keypair <- liftIO genSshKeyPair
-			sshdata <- liftIO $ pairMsgToSshData msg
-			sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-			void $ lift $ Ssh.makeSshWithKeyPair False sshdata' (Just keypair)
-			return keypair
 		cleanup = error "TODO clean up authorized keys and generated ssh key and remove git remote"
 #else
 getFinishPairR _ = noPairing
 #endif
-
-{- Mostly a straightforward conversion.  Except:
- -  * Determine the best hostname to use to contact the host.
- -  * Strip leading ~/ from the directory name.
- -}
-pairMsgToSshData :: PairMsg -> IO SshData
-pairMsgToSshData msg = do
-	let d = pairMsgData msg
-	hostname <- liftIO $ bestHostName d
-	let dir = case remoteDirectory d of
-		('~':'/':v) -> v
-		v -> v
-	return $ SshData
-		{ sshHostName = T.pack hostname
-		, sshUserName = Just (T.pack $ remoteUserName d)
-		, sshDirectory = T.pack dir
-		, sshRepoName = genSshRepoName besthostname dir
-		, needsPubKey = True
-		, rsyncOnly = False
-		}
 
 getInprogressPairR :: Text -> Handler RepHtml
 #ifdef WITH_PAIRING
@@ -127,27 +99,23 @@ getInprogressPairR _ = noPairing
  -
  - Redirects to the pairing in progress page.
  -}
-startPairing :: PairStage -> SshKeyPair -> IO () -> Text -> Secret -> Widget
-startPairing stage keypair oncancel displaysecret secret = do
+startPairing :: PairStage -> IO () -> Text -> Secret -> Widget
+startPairing stage oncancel displaysecret secret = do
+	keypair <- liftIO $ genSshKeyPair
 	dstatus <- daemonStatus <$> lift getYesod
 	urlrender <- lift getUrlRender
 	let homeurl = urlrender HomeR
-	sender <- mksender
+	pairdata <- PairData
+		<$> liftIO getHostname
+		<*> liftIO getUserName
+		<*> (fromJust . relDir <$> lift getYesod)
+		<*> pure (sshPubKey keypair)
 	liftIO $ do
-		pip <- PairingInProgress secret
-			<$> sendrequests sender dstatus homeurl
-			<*> pure keypair
-		oldpip <- modifyDaemonStatus dstatus $
-			\s -> (s { pairingInProgress = Just pip }, pairingInProgress s)
-		maybe noop stopold oldpip
+		let sender = multicastPairMsg Nothing secret stage pairdata
+		let pip = PairingInProgress secret Nothing keypair pairdata
+		startSending dstatus pip $ sendrequests sender dstatus homeurl
 	lift $ redirect $ InprogressPairR displaysecret
 	where
-		mksender = do
-			hostname <- liftIO getHostname
-			username <- liftIO getUserName
-			reldir <- fromJust . relDir <$> lift getYesod
-			return $ multicastPairMsg $ \addr -> PairMsg $ mkVerifiable
-				(stage, PairData hostname addr username reldir (sshPubKey keypair)) secret
 		{- Sends pairing messages until the thread is killed,
 		 - and shows an activity alert while doing it.
 		 -
@@ -156,7 +124,7 @@ startPairing stage keypair oncancel displaysecret secret = do
 		 - have been on a page specific to the in-process pairing
 		 - that just stopped, so can't go back there.
 		 -}
-		sendrequests sender dstatus homeurl = forkIO $ do
+		sendrequests sender dstatus homeurl = do
 			tid <- myThreadId
 			let selfdestruct = AlertButton
 				{ buttonLabel = "Cancel"
@@ -168,7 +136,6 @@ startPairing stage keypair oncancel displaysecret secret = do
 			alertDuring dstatus (pairingAlert selfdestruct) $ do
 				_ <- E.try sender :: IO (Either E.SomeException ())
 				return ()
-		stopold = killThread  . inProgressThreadId
 
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
@@ -200,7 +167,7 @@ promptSecret msg cont = pairPage $ do
 			let badphrase = isJust mproblem
 			let problem = fromMaybe "" mproblem
 			let (username, hostname) = maybe ("", "")
-				(\(_, v) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr $ remoteAddress v) (remoteHostName v)))
+				(\(_, v, a) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr a) (remoteHostName v)))
 				(verifiableVal . fromPairMsg <$> msg)
 			u <- T.pack <$> liftIO getUserName
 			let sameusername = username == u

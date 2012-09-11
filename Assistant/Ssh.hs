@@ -7,7 +7,7 @@
 
 module Assistant.Ssh where
 
-import Common
+import Common.Annex
 import Utility.TempFile
 
 import Data.Text (Text)
@@ -42,6 +42,10 @@ sshDir :: IO FilePath
 sshDir = do
 	home <- myHomeDir
 	return $ home </> ".ssh"
+
+{- user@host or host -}
+genSshHost :: Text -> Maybe Text -> String
+genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
 {- host_dir, with all / in dir replaced by _, and bad characters removed -}
 genSshRepoName :: String -> FilePath -> String
@@ -171,3 +175,12 @@ setupSshKeyPair sshkeypair sshdata = do
 		sshpubkeyfile = sshprivkeyfile ++ ".pub"
 		mangledhost = "git-annex-" ++ T.unpack (sshHostName sshdata) ++ user
 		user = maybe "" (\u -> "-" ++ T.unpack u) (sshUserName sshdata)
+
+{- Does ssh have known_hosts data for a hostname? -}
+knownHost :: Text -> IO Bool
+knownHost hostname = do
+	sshdir <- sshDir
+	ifM (doesFileExist $ sshdir </> "known_hosts")
+		( not . null <$> readProcess "ssh-keygen" ["-F", T.unpack hostname]
+		, return False
+		)

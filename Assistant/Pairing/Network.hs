@@ -1,5 +1,9 @@
 {- git-annex assistant pairing network code
  -
+ - All network traffic is sent over multicast UDP. For reliability,
+ - each message is repeated until acknowledged. This is done using a
+ - thread, that gets stopped before the next message is sent.
+ -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -7,15 +11,18 @@
 
 module Assistant.Pairing.Network where
 
-import Common
+import Assistant.Common
 import Assistant.Pairing
+import Assistant.DaemonStatus
 import Utility.ThreadScheduler
+import Utility.Verifiable
 
 import Network.Multicast
 import Network.Info
 import Network.Socket
 import Control.Exception (bracket)
 import qualified Data.Map as M
+import Control.Concurrent
 
 {- This is an arbitrary port in the dynamic port range, that could
  - conceivably be used for some other broadcast messages.
@@ -30,8 +37,9 @@ multicastAddress :: SomeAddr -> HostName
 multicastAddress (IPv4Addr _) = "224.0.0.1"
 multicastAddress (IPv6Addr _) = "ff02::1"
 
-{- Multicasts a message repeatedly on all interfaces forever, until killed
- - with a 2 second delay between each transmission.
+{- Multicasts a message repeatedly on all interfaces, with a 2 second
+ - delay between each transmission. The message is repeated forever
+ - unless a number of repeats is specified.
  -
  - The remoteHostAddress is set to the interface's IP address.
  -
@@ -39,15 +47,16 @@ multicastAddress (IPv6Addr _) = "ff02::1"
  - but it allows new network interfaces to be used as they come up.
  - On the other hand, the expensive DNS lookups are cached.
  -}
-multicastPairMsg :: (SomeAddr -> PairMsg) -> IO ()
-multicastPairMsg mkmsg = go M.empty
+multicastPairMsg :: Maybe Int -> Secret -> PairStage -> PairData -> IO ()
+multicastPairMsg repeats secret stage pairdata = go M.empty repeats
 	where
-		go cache = do
+		go _ (Just 0) = noop
+		go cache n = do
 			addrs <- activeNetworkAddresses
 			let cache' = updatecache cache addrs
 			mapM_ (sendinterface cache') addrs
 			threadDelaySeconds (Seconds 2)
-			go cache'
+			go cache' $ pred <$> n
 		sendinterface cache i = void $ catchMaybeIO $
 			withSocketsDo $ bracket
 				(multicastSender (multicastAddress i) pairingPort)
@@ -61,27 +70,23 @@ multicastPairMsg mkmsg = go M.empty
 		updatecache cache (i:is)
 			| M.member i cache = updatecache cache is
 			| otherwise = updatecache (M.insert i (show $ mkmsg i) cache) is
+		mkmsg addr = PairMsg $
+			mkVerifiable (stage, pairdata, addr) secret
 
-{- Finds the best hostname to use for the host that sent the PairData.
- -
- - If remoteHostName is set, tries to use a .local address based on it.
- - That's the most robust, if this system supports .local.
- - Otherwise, looks up the hostname in the DNS for the remoteAddress,
- - if any. May fall back to remoteAddress if there's no DNS. Ugh. -}
-bestHostName :: PairData -> IO HostName
-bestHostName d = case remoteHostName d of
-	Just h -> do
-		let localname = h ++ ".local"
-		addrs <- catchDefaultIO (getAddrInfo Nothing (Just localname) Nothing) []
-		maybe fallback (const $ return localname) (headMaybe addrs)
-	Nothing -> fallback
+startSending :: DaemonStatusHandle -> PairingInProgress -> IO () -> IO ()
+startSending dstatus pip sender = do
+	tid <- forkIO sender
+	let pip' = pip { inProgressThreadId = Just tid }
+	oldpip <- modifyDaemonStatus dstatus $
+		\s -> (s { pairingInProgress = Just pip' }, pairingInProgress s)
+	maybe noop stopold oldpip
 	where
-		fallback = do
-			let sockaddr = case remoteAddress d of
-				IPv4Addr a -> SockAddrInet (PortNum 0) a
-				IPv6Addr a -> SockAddrInet6 (PortNum 0) 0 a 0
-			fromMaybe (show $ remoteAddress d) 
-				<$> catchDefaultIO (fst <$> getNameInfo [] True False sockaddr) Nothing
+		stopold = maybe noop killThread . inProgressThreadId
+
+stopSending :: DaemonStatusHandle ->  PairingInProgress -> IO ()
+stopSending dstatus pip = do
+	maybe noop killThread $ inProgressThreadId pip
+	modifyDaemonStatus_ dstatus $ \s -> s { pairingInProgress = Nothing }
 
 class ToSomeAddr a where
 	toSomeAddr :: a -> SomeAddr

@@ -14,15 +14,12 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.Sync
-import Assistant.DaemonStatus
+import Assistant.MakeRemote
 import Utility.Yesod
-import Remote.List
-import qualified Remote
 import Init
 import qualified Git
 import qualified Git.Construct
 import qualified Git.Config
-import qualified Git.Command
 import qualified Annex
 import Locations.UserConfig
 import Utility.FreeDesktop
@@ -37,7 +34,6 @@ import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
 import qualified Control.Exception as E
-import Control.Concurrent
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -198,61 +194,15 @@ getAddDriveR = bootstrap (Just Config) $ do
 				void $ makeGitRemote hostname hostlocation
 			addRemote $ makeGitRemote name dir
 
-{- Runs an action that returns a name of the remote, and finishes adding it. -}
-addRemote :: Annex String -> Annex Remote
-addRemote a = do
-	name <- a
-	void $ remoteListRefresh
-	maybe (error "failed to add remote") return =<< Remote.byName (Just name)
-
-{- Returns the name of the git remote it created. If there's already a
- - remote at the location, returns its name. -}
-makeGitRemote :: String -> String -> Annex String
-makeGitRemote basename location = makeRemote basename location $ \name ->
-	void $ inRepo $
-		Git.Command.runBool "remote"
-			[Param "add", Param name, Param location]
-
-{- If there's not already a remote at the location, adds it using the
- - action, which is passed the name of the remote to make.
- -
- - Returns the name of the remote. -}
-makeRemote :: String -> String -> (String -> Annex ()) -> Annex String
-makeRemote basename location a = do
-	r <- fromRepo id
-	if (null $ filter samelocation $ Git.remotes r)
-		then do
-			let name = uniqueRemoteName r basename 0
-			a name
-			return name
-		else return basename
-	where
-		samelocation x = Git.repoLocation x == location
-
-{- Generate an unused name for a remote, adding a number if
- - necessary. -}
-uniqueRemoteName :: Git.Repo -> String -> Int -> String
-uniqueRemoteName r basename n
-	| null namecollision = name
-	| otherwise = uniqueRemoteName r basename (succ n)
-	where
-		namecollision = filter samename (Git.remotes r)
-		samename x = Git.remoteName x == Just name
-		name
-			| n == 0 = basename
-			| otherwise = basename ++ show n
-
 {- Start syncing a newly added remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
 syncRemote remote = do
 	webapp <- getYesod
-	runAnnex () $ updateKnownRemotes (daemonStatus webapp)
-	void $ liftIO $ forkIO $ do
-		reconnectRemotes "WebApp"
-			(fromJust $ threadState webapp)
-			(daemonStatus webapp)
-			(scanRemotes webapp)
-			[remote]
+	liftIO $ syncNewRemote
+		(fromJust $ threadState webapp)
+		(daemonStatus webapp)
+		(scanRemotes webapp)
+		remote
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]

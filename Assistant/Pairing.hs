@@ -25,23 +25,24 @@ data PairStage
 	| PairDone
 	deriving (Eq, Read, Show)
 
-newtype PairMsg = PairMsg (Verifiable (PairStage, PairData))
+newtype PairMsg = PairMsg (Verifiable (PairStage, PairData, SomeAddr))
 	deriving (Eq, Read, Show)
 
-fromPairMsg :: PairMsg -> (Verifiable (PairStage, PairData))
+fromPairMsg :: PairMsg -> (Verifiable (PairStage, PairData, SomeAddr))
 fromPairMsg (PairMsg m) = m
 
 pairMsgStage :: PairMsg -> PairStage
-pairMsgStage (PairMsg (Verifiable (s, _) _)) = s
+pairMsgStage (PairMsg (Verifiable (s, _, _) _)) = s
 
 pairMsgData :: PairMsg -> PairData
-pairMsgData (PairMsg (Verifiable (_, d) _)) = d
+pairMsgData (PairMsg (Verifiable (_, d, _) _)) = d
+
+pairMsgAddr :: PairMsg -> SomeAddr
+pairMsgAddr (PairMsg (Verifiable (_, _, a) _)) = a
 
 data PairData = PairData
 	-- uname -n output, not a full domain name
 	{ remoteHostName :: Maybe HostName
-	-- the address is included so that it can be verified, avoiding spoofing
-	, remoteAddress :: SomeAddr
 	, remoteUserName :: UserName
 	, remoteDirectory :: FilePath
 	, remoteSshPubKey :: SshPubKey
@@ -55,8 +56,9 @@ type UserName = String
  - set up on disk. -}
 data PairingInProgress = PairingInProgress
 	{ inProgressSecret :: Secret
-	, inProgressThreadId :: ThreadId
+	, inProgressThreadId :: Maybe ThreadId
 	, inProgressSshKeyPair :: SshKeyPair
+	, inProgressPairData :: PairData
 	}
 
 data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6

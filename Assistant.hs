@@ -181,7 +181,7 @@ startAssistant assistant daemonize webappwaiter = do
 #ifdef WITH_WEBAPP
 				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots urlrenderer Nothing webappwaiter
 #ifdef WITH_PAIRING
-				, assist $ pairListenerThread st dstatus urlrenderer
+				, assist $ pairListenerThread st dstatus scanremotes urlrenderer
 #endif
 #endif
 				, assist $ pushThread st dstatus commitchan pushmap
