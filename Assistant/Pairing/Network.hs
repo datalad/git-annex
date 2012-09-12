@@ -57,6 +57,8 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 			mapM_ (sendinterface cache') addrs
 			threadDelaySeconds (Seconds 2)
 			go cache' $ pred <$> n
+		{- The multicast library currently chokes on ipv6 addresses. -}
+		sendinterface cache (IPv6Addr _) = noop
 		sendinterface cache i = void $ catchMaybeIO $
 			withSocketsDo $ bracket setup cleanup use
 			where
