@@ -6,7 +6,7 @@ locally paired systems, and remote servers with rsync.
 Help me prioritize my work: What special remote would you most like
 to use with the git-annex assistant?
 
-[[!poll open=yes 1 "Amazon S3" 0 "Box.com" 4 "My phone (or MP3 player)" 0 "Tahoe-LAFS" 0 "OpenStack SWIFT" 0 "Google Drive" 1 "Amazon Glacier"]]
+[[!poll open=yes 1 "Amazon S3" 0 "Box.com" 4 "My phone (or MP3 player)" 0 "Tahoe-LAFS" 0 "OpenStack SWIFT" 1 "Google Drive" 1 "Amazon Glacier"]]
 
 This poll is ordered with the options I consider easiest to build
 listed first. Mostly because git-annex already supports them and they
