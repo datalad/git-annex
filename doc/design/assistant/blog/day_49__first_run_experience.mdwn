@@ -35,3 +35,5 @@ What should the default directory name used by the git-annex assistant be?
 
 (Note: This is a wiki. You can edit this page to add your own
 [[ikiwiki/directive/poll]] options!)
+
+[[!tag polls]]
