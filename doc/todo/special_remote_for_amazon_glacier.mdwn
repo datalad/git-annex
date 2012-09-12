@@ -17,3 +17,9 @@ vault becomes available, and the user could queue a list of commands to
 run, or files to transfer, at that point.
 
 --[[Joey]]
+
+-----
+
+> In the coming months, Amazon S3 will introduce an option that will allow customers to seamlessly move data between Amazon S3 and Amazon Glacier based on data lifecycle policies.
+
+-- <http://aws.amazon.com/glacier/faqs/#How_should_I_choose_between_Amazon_Glacier_and_Amazon_S3>
