@@ -1,4 +1,4 @@
-{- git-annex SHA backend
+{- git-annex SHA backends
  -
  - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
  -
@@ -19,13 +19,14 @@ import qualified Data.ByteString.Lazy as L
 
 type SHASize = Int
 
--- order is slightly significant; want SHA256 first, and more general
--- sizes earlier
+{- Order is slightly significant; want SHA256 first, and more general
+ - sizes earlier. -}
 sizes :: [Int]
 sizes = [256, 1, 512, 224, 384]
 
+{- The SHA256E backend is the default. -}
 backends :: [Backend]
-backends = catMaybes $ map genBackend sizes ++ map genBackendE sizes
+backends = catMaybes $ map genBackendE sizes ++ map genBackend sizes
 
 genBackend :: SHASize -> Maybe Backend
 genBackend size = Just $ Backend
