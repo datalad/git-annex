@@ -11,10 +11,10 @@ through setting up common use cases.
   repository too).
 * Clone this repo to a USB drive or other removable drive. **done**
 * Make a bare repo on a remote ssh server **done**
-* Clone this repo to another host. (Needs [[pairing]])
+* Clone this repo to another host. (Needs [[pairing]]) **done**
 * Set up Amazon S3.
 * Set up encrypted rsync remote. **done**
-* Rsync.net special case
+* Rsync.net special case **done**
 * Set up gpg encryption key; gpg key distribution.
 * I lost my USB drive!
 * etc -- many more possibilities
