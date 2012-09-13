@@ -18,6 +18,8 @@ Please provide any additional information below.
 
 
 stdout snippet from git-annex webapp:
+
+
     ControlPath "/home/alansmithee/Desktop/annex/.git/annex/ssh/alansmithee@git-annex-debbook.local-alansmithee.dxpXHVCkLhsxvWaH" too long for Unix domain socket
     SHA256-s51233--0b4c59b3ab03b1ca6d95d4084fa6ff7220cf26695b6e3dd575f78af3dec6b701
            51233 100%    5.43MB/s    0:00:00 (xfer#1, to-check=0/1)
