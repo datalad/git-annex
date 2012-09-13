@@ -75,7 +75,7 @@ data SomeAddr = IPv4Addr HostAddress | IPv6Addr HostAddress6
 
 {- This contains the whole secret, just lightly obfuscated to make it not
  - too obvious. It's only displayed in the user's web browser. -}
-data SecretReminder = SecretReminder [Int]
+newtype SecretReminder = SecretReminder [Int]
 	deriving (Show, Eq, Ord, Read)
 
 toSecretReminder :: T.Text -> SecretReminder
