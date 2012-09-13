@@ -79,7 +79,9 @@ sshTranscript opts input = do
 	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
 
 	-- now write and flush any input
-	when (not (null input)) $ do hPutStr inh input; hFlush inh
+	unless (null input) $ do
+		hPutStr inh input
+		hFlush inh
 	hClose inh -- done with stdin
 
 	-- wait on the output
@@ -114,13 +116,12 @@ removeAuthorizedKeys rsynconly pubkey = do
 	sshdir <- sshDir
 	let keyfile = sshdir </> ".authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
-	writeFile keyfile $ unlines $
-		filter (\l -> not $ l == keyline) ls
+	writeFile keyfile $ unlines $ filter (/= keyline) ls
 
 {- Implemented as a shell command, so it can be run on remote servers over
  - ssh. -}
 addAuthorizedKeysCommand :: Bool -> SshPubKey -> String
-addAuthorizedKeysCommand rsynconly pubkey = join "&&" $
+addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 	[ "mkdir -p ~/.ssh"
 	, "touch ~/.ssh/authorized_keys"
 	, "chmod 600 ~/.ssh/authorized_keys"
@@ -169,7 +170,7 @@ setupSshKeyPair sshkeypair sshdata = do
 				(unionFileModes ownerWriteMode ownerReadMode)
 		hPutStr h (sshPrivKey sshkeypair)
 		hClose h
-	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $ do
+	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 
 	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
@@ -186,7 +187,7 @@ setupSshKeyPair sshkeypair sshdata = do
 		sshprivkeyfile = "key." ++ mangledhost
 		sshpubkeyfile = sshprivkeyfile ++ ".pub"
 		mangledhost = "git-annex-" ++ T.unpack (sshHostName sshdata) ++ user
-		user = maybe "" (\u -> "-" ++ T.unpack u) (sshUserName sshdata)
+		user = maybe "" (\u -> '-' : T.unpack u) (sshUserName sshdata)
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool

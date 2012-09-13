@@ -37,7 +37,7 @@ finishedPairing st dstatus scanremotes msg keypair = do
 	{- Ensure that we know
 	 - the ssh host key for the host we paired with.
 	 - If we don't, ssh over to get it. -}
-	unlessM (knownHost $ sshHostName sshdata) $ do
+	unlessM (knownHost $ sshHostName sshdata) $
 		void $ sshTranscript
 			[ sshOpt "StrictHostKeyChecking" "no"
 			, sshOpt "NumberOfPasswordPrompts" "0"
@@ -59,14 +59,14 @@ pairMsgToSshData msg = do
 	let dir = case remoteDirectory d of
 		('~':'/':v) -> v
 		v -> v
-	return $ SshData
+	return SshData
 		{ sshHostName = T.pack hostname
 		, sshUserName = Just (T.pack $ remoteUserName d)
 		, sshDirectory = T.pack dir
 		, sshRepoName = genSshRepoName hostname dir
 		, needsPubKey = True
 		, rsyncOnly = False
-	}
+		}
 
 {- Finds the best hostname to use for the host that sent the PairMsg.
  -
@@ -75,7 +75,7 @@ pairMsgToSshData msg = do
  - Otherwise, looks up the hostname in the DNS for the remoteAddress,
  - if any. May fall back to remoteAddress if there's no DNS. Ugh. -}
 bestHostName :: PairMsg -> IO HostName
-bestHostName msg = case (remoteHostName $ pairMsgData msg) of
+bestHostName msg = case remoteHostName $ pairMsgData msg of
 	Just h -> do
 		let localname = h ++ ".local"
 		addrs <- catchDefaultIO (getAddrInfo Nothing (Just localname) Nothing) []

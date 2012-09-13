@@ -132,7 +132,7 @@ handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds
 
 	returnWhen (null toadd) $ do
 		added <- catMaybes <$> forM toadd add
-		if (DirWatcher.eventsCoalesce || null added)
+		if DirWatcher.eventsCoalesce || null added
 			then return $ added ++ otherchanges
 			else do
 				r <- handleAdds st changechan transferqueue dstatus

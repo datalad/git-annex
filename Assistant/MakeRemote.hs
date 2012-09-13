@@ -52,7 +52,7 @@ makeSshRemote st dstatus scanremotes forcersync sshdata = do
 addRemote :: Annex String -> Annex Remote
 addRemote a = do
 	name <- a
-	void $ remoteListRefresh
+	void remoteListRefresh
 	maybe (error "failed to add remote") return =<< Remote.byName (Just name)
 
 {- Inits a rsync special remote, and returns the name of the remote. -}
@@ -84,7 +84,7 @@ makeGitRemote basename location = makeRemote basename location $ \name ->
 makeRemote :: String -> String -> (String -> Annex ()) -> Annex String
 makeRemote basename location a = do
 	r <- fromRepo id
-	if (null $ filter samelocation $ Git.remotes r)
+	if not (any samelocation $ Git.remotes r)
 		then do
 			let name = uniqueRemoteName r basename 0
 			a name

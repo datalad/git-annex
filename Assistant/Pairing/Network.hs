@@ -58,7 +58,7 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 			threadDelaySeconds (Seconds 2)
 			go cache' $ pred <$> n
 		{- The multicast library currently chokes on ipv6 addresses. -}
-		sendinterface cache (IPv6Addr _) = noop
+		sendinterface _ (IPv6Addr _) = noop
 		sendinterface cache i = void $ catchMaybeIO $
 			withSocketsDo $ bracket setup cleanup use
 			where
@@ -106,7 +106,7 @@ showAddr (IPv6Addr (o1, o2, o3, o4)) = show $ IPv6 o1 o2 o3 o4
 
 activeNetworkAddresses :: IO [SomeAddr]
 activeNetworkAddresses = filter (not . all (`elem` "0.:") . showAddr)
-	. concat . map (\ni -> [toSomeAddr $ ipv4 ni, toSomeAddr $ ipv6 ni])
+	. concatMap (\ni -> [toSomeAddr $ ipv4 ni, toSomeAddr $ ipv6 ni])
 	<$> getNetworkInterfaces
 
 {- A human-visible description of the repository being paired with.

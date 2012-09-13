@@ -44,7 +44,7 @@ mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 type Url = String
 
 webAppThread 
-	:: (Maybe ThreadState) 
+	:: Maybe ThreadState
 	-> DaemonStatusHandle
 	-> ScanRemoteMap
 	-> TransferQueue
@@ -71,10 +71,9 @@ webAppThread mst dstatus scanremotes transferqueue transferslots urlrenderer pos
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> do
-		case mst of
-			Nothing -> withTempFile "webapp.html" $ \tmpfile _ -> go port webapp tmpfile
-			Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
+	runWebApp app' $ \port -> case mst of
+		Nothing -> withTempFile "webapp.html" $ \tmpfile _ -> go port webapp tmpfile
+		Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
 	where
 		thread = NamedThread thisThread
 		getreldir Nothing = return Nothing

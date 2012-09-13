@@ -44,7 +44,7 @@ type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
 runHandler :: Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler g handler file filestatus = void $ do
+runHandler g handler file filestatus = void $
         either print (const noop) =<< tryIO go
         where
                 go = handler g file filestatus

@@ -50,7 +50,7 @@ mkSshData sshserver = SshData
 	, rsyncOnly = False
 	}
 
-sshServerAForm :: (Maybe Text) -> AForm WebApp WebApp SshServer
+sshServerAForm :: Maybe Text -> AForm WebApp WebApp SshServer
 sshServerAForm localusername = SshServer
 	<$> aopt check_hostname "Host name" Nothing
 	<*> aopt check_username "User name" (Just localusername)
@@ -99,7 +99,7 @@ getAddSshR = sshConfigurator $ do
 				then lift $ redirect $ ConfirmSshR $
 					(mkSshData sshserver)
 						{ needsPubKey = needspubkey
-						, rsyncOnly = (status == UsableRsyncServer)
+						, rsyncOnly = status == UsableRsyncServer
 						}
 				else showform form enctype status
 		_ -> showform form enctype UntestedServer
@@ -130,7 +130,7 @@ testServer sshserver@(SshServer { hostname = Just hn }) = do
 			return (status', True)
 	where
 		probe extraopts = do
-			let remotecommand = join ";" $
+			let remotecommand = join ";"
 				[ report "loggedin"
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
@@ -186,7 +186,7 @@ getMakeSshRsyncR = makeSsh True
 makeSsh :: Bool -> SshData -> Handler RepHtml
 makeSsh rsync sshdata
 	| needsPubKey sshdata = do
-		keypair <- liftIO $ genSshKeyPair
+		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
 		makeSsh' rsync sshdata' (Just keypair)
 	| otherwise = makeSsh' rsync sshdata Nothing
@@ -201,10 +201,10 @@ makeSsh' rsync sshdata keypair =
 		remoteCommand = join "&&" $ catMaybes
 			[ Just $ "mkdir -p " ++ shellEscape remotedir
 			, Just $ "cd " ++ shellEscape remotedir
-			, if rsync then Nothing else Just $ "git init --bare --shared"
-			, if rsync then Nothing else Just $ "git annex init"
+			, if rsync then Nothing else Just "git init --bare --shared"
+			, if rsync then Nothing else Just "git annex init"
 			, if needsPubKey sshdata
-				then maybe Nothing (Just . addAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey) keypair
+				then addAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey <$> keypair
 				else Nothing
 			]
 
@@ -246,13 +246,13 @@ getAddRsyncNetR = do
 			 - to not need to use a different method to create
 			 - it.
 			 -}
-			let remotecommand = join ";" $
+			let remotecommand = join ";"
 				[ "mkdir -p .ssh"
 				, "touch .ssh/authorized_keys"
 				, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
 				, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
 				]
-			let sshopts = filter (not . null) $
+			let sshopts = filter (not . null)
 				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
 				, genSshHost (sshHostName sshdata) (sshUserName sshdata)
 				, remotecommand

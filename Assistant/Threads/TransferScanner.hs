@@ -43,7 +43,7 @@ transferScannerThread st dstatus scanremotes transferqueue = thread $ do
 			if any fullScan infos || any (`S.notMember` scanned) rs
 				then do
 					expensiveScan st dstatus transferqueue rs
-					go (S.union scanned (S.fromList rs))
+					go $ scanned `S.union` S.fromList rs
 				else do
 					mapM_ (failedTransferScan st dstatus transferqueue) rs
 					go scanned
@@ -129,7 +129,7 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 				)
 		check direction want key locs r
 			| direction == Upload && Remote.readonly r = Nothing
-			| (Remote.uuid r `elem` locs) == want = Just $
+			| (Remote.uuid r `elem` locs) == want = Just
 				(r, Transfer direction (Remote.uuid r) key)
 			| otherwise = Nothing
 

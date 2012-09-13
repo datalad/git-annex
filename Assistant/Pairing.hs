@@ -34,7 +34,7 @@ newtype PairMsg = PairMsg (Verifiable (PairStage, PairData, SomeAddr))
 verifiedPairMsg :: PairMsg -> PairingInProgress -> Bool
 verifiedPairMsg (PairMsg m) pip = verify m $ inProgressSecret pip
 
-fromPairMsg :: PairMsg -> (Verifiable (PairStage, PairData, SomeAddr))
+fromPairMsg :: PairMsg -> Verifiable (PairStage, PairData, SomeAddr)
 fromPairMsg (PairMsg m) = m
 
 pairMsgStage :: PairMsg -> PairStage

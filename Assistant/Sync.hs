@@ -60,7 +60,7 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads. -}
-pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> (Maybe FailedPushMap) -> [Remote] -> IO Bool
+pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe FailedPushMap -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushmap remotes = do
 	(g, branch) <- runThreadState st $
 		(,) <$> fromRepo id <*> inRepo Git.Branch.current
@@ -81,12 +81,12 @@ pushToRemotes threadname now st mpushmap remotes = do
 					changeFailedPushMap pushmap $ \m ->
 						M.union (makemap failed) $
 							M.difference m (makemap succeeded)
-			unless (ok) $
+			unless ok $
 				debug threadname
 					[ "failed to push to"
 					, show failed
 					]
-			if (ok || not shouldretry)
+			if ok || not shouldretry
 				then return ok
 				else retry branch g failed
 
@@ -100,12 +100,12 @@ pushToRemotes threadname now st mpushmap remotes = do
 			go False (Just branch) g rs
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: ThreadState -> (Maybe Git.Ref) -> [Remote] -> IO Bool
+manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO Bool
 manualPull st currentbranch remotes = do
 	g <- runThreadState st $ fromRepo id
 	forM_ remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
-	haddiverged <- runThreadState st $ Annex.Branch.forceUpdate
+	haddiverged <- runThreadState st Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		runThreadState st $ Command.Sync.mergeRemote r currentbranch
 	return haddiverged
@@ -114,4 +114,4 @@ manualPull st currentbranch remotes = do
 syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
 syncNewRemote st dstatus scanremotes remote = do
 	runThreadState st $ updateKnownRemotes dstatus
-	void $ forkIO $ do reconnectRemotes "SyncRemote" st dstatus scanremotes [remote]
+	void $ forkIO $ reconnectRemotes "SyncRemote" st dstatus scanremotes [remote]

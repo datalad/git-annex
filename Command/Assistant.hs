@@ -34,7 +34,7 @@ seek = [withFlag Command.Watch.stopOption $ \stopdaemon ->
 start :: Bool -> Bool -> Bool -> CommandStart
 start foreground stopdaemon autostart
 	| autostart = do
-		liftIO $ autoStart
+		liftIO autoStart
 		stop
 	| otherwise = do
 		ensureInitialized
@@ -43,7 +43,7 @@ start foreground stopdaemon autostart
 {- Run outside a git repository. Check to see if any parameter is
  - --autostart and enter autostart mode. -}
 checkAutoStart :: IO ()
-checkAutoStart = ifM (any (== "--autostart") <$> getArgs)
+checkAutoStart = ifM (elem "--autostart" <$> getArgs)
 	( autoStart
 	, error "Not in a git repository."
 	) 

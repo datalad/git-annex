@@ -162,11 +162,10 @@ startDaemon assistant foreground webappwaiter
 		go d = startAssistant assistant d webappwaiter
 
 startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()) -> Annex ()
-startAssistant assistant daemonize webappwaiter = do
-	withThreadState $ \st -> do
-		checkCanWatch
-		dstatus <- startDaemonStatus
-		liftIO $ daemonize $ run dstatus st
+startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
+	checkCanWatch
+	dstatus <- startDaemonStatus
+	liftIO $ daemonize $ run dstatus st
 	where
 		run dstatus st = do
 			changechan <- newChangeChan

@@ -39,13 +39,13 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = notBareRepo $ do
-	ifM (isInitialized) ( go , liftIO startNoRepo )
+	ifM isInitialized ( go , liftIO startNoRepo )
 	stop
 	where
 		go = do
 			browser <- fromRepo webBrowser
 			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
-			ifM (checkpid <&&> checkshim f) $
+			ifM (checkpid <&&> checkshim f)
 				( liftIO $ openBrowser browser f 
 				, startDaemon True True $ Just $
 					const $ openBrowser browser
@@ -116,7 +116,7 @@ firstRun = do
 				startAssistant True id $ Just $ sendurlback v
 		sendurlback v url _htmlshim = putMVar v url
 		{- Set up the pid file in the new repo. -}
-		dummydaemonize = do
+		dummydaemonize =
 			liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
 
 openBrowser :: Maybe FilePath -> FilePath -> IO ()

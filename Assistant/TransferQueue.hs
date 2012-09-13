@@ -107,9 +107,8 @@ queueTransferAt :: Int -> Schedule -> TransferQueue -> DaemonStatusHandle -> Ass
 queueTransferAt wantsz schedule q dstatus f t remote = do
 	atomically $ do
 		sz <- readTVar (queuesize q)
-		if sz <= wantsz
-			then return ()
-			else retry -- blocks until queuesize changes
+		unless (sz <= wantsz) $
+			retry -- blocks until queuesize changes
 	enqueue schedule q dstatus t (stubInfo f remote)
 
 queueTransferWhenSmall :: TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()

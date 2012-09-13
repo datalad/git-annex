@@ -69,11 +69,11 @@ inImmediateTransferSlot dstatus s gen = do
 runTransferThread :: DaemonStatusHandle -> TransferSlots -> Maybe (Transfer, TransferInfo, IO ()) -> IO ()
 runTransferThread _ s  Nothing = signalQSemN s 1
 runTransferThread dstatus s (Just (t, info, a)) = do
-	tid <- forkIO $ go
+	tid <- forkIO go
 	updateTransferInfo dstatus t $ info { transferTid = Just tid }
 	where
 		go = catchPauseResume a
-		pause = catchPauseResume $ runEvery (Seconds 86400) $ noop
+		pause = catchPauseResume $ runEvery (Seconds 86400) noop
 		{- Note: This must use E.try, rather than E.catch.
 		 - When E.catch is used, and has called go in its exception
 		 - handler, Control.Concurrent.throwTo will block sometimes

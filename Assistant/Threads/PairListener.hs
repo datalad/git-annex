@@ -50,7 +50,7 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 						else do
 							pairReqReceived verified dstatus urlrenderer m
 							go sock (m:take 10 reqs) (invalidateCache m cache)
-					(_, _, PairAck) -> do
+					(_, _, PairAck) ->
 						pairAckReceived verified pip st dstatus scanremotes m cache
 							>>= go sock reqs
 					(_, _, PairDone) -> do
@@ -65,8 +65,8 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 		 -}
 		verificationCheck m (Just pip) = do
 			let verified = verifiedPairMsg m pip
-			let sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData $ m)
-			if (not verified && sameuuid)
+			let sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData m)
+			if not verified && sameuuid
 				then do
 					runThreadState st $
 						warning "detected possible pairing brute force attempt; disabled pairing"
@@ -88,8 +88,7 @@ pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
 		{- PairReqs invalidate the cache of recently finished pairings.
 		 - This is so that, if a new pairing is started with the
 		 - same secret used before, a bogus PairDone is not sent. -}
-		invalidateCache msg = 
-			filter (\pip -> not $ verifiedPairMsg msg pip)
+		invalidateCache msg = filter (not . verifiedPairMsg msg)
 
 		getmsg sock c = do
 			(msg, n, _) <- recvFrom sock chunksz
@@ -124,7 +123,7 @@ pairAckReceived True (Just pip) st dstatus scanremotes msg cache = do
 	finishedPairing st dstatus scanremotes msg (inProgressSshKeyPair pip)
 	startSending dstatus pip PairDone $ multicastPairMsg
 		(Just 1) (inProgressSecret pip) (inProgressPairData pip)
-	return $ pip:(take 10 cache)
+	return $ pip : take 10 cache
 {- A stale PairAck might also be seen, after we've finished pairing.
  - Perhaps our PairDone was not received. To handle this, we keep
  - a cache of recently finished pairings, and re-send PairDone in

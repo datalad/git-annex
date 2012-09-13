@@ -34,7 +34,7 @@ thisThread :: ThreadName
 thisThread = "NetWatcher"
 
 netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
-netWatcherThread st dstatus scanremotes = thread $ do
+netWatcherThread st dstatus scanremotes = thread $
 #if WITH_DBUS
 	dbusThread st dstatus scanremotes
 #else
@@ -49,7 +49,7 @@ netWatcherThread st dstatus scanremotes = thread $ do
  - while (despite the local network staying up), are synced with
  - periodically. -}
 netWatcherFallbackThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
-netWatcherFallbackThread st dstatus scanremotes = thread $ do
+netWatcherFallbackThread st dstatus scanremotes = thread $
 	runEvery (Seconds 3600) $
 		handleConnection st dstatus scanremotes
 	where

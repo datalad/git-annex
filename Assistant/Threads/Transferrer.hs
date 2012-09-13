@@ -38,7 +38,7 @@ transfererThread st dstatus transferqueue slots = thread $ go =<< readProgramFil
 			maybe (return Nothing) (uncurry $ startTransfer st dstatus program)
 				=<< getNextTransfer transferqueue dstatus notrunning
 		{- Skip transfers that are already running. -}
-		notrunning i = startedTime i == Nothing
+		notrunning = isNothing . startedTime
 
 {- By the time this is called, the daemonstatus's transfer map should
  - already have been updated to include the transfer. -}

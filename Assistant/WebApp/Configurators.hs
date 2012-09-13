@@ -48,7 +48,7 @@ repoList = do
 		(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
 	l <- runAnnex [] $ do
 		u <- getUUID
-		Remote.prettyListUUIDs $ nub $ u:(map Remote.uuid rs)
+		Remote.prettyListUUIDs $ nub $ u : map Remote.uuid rs
 	return $ zip counter l
 	where
 		counter = map show ([1..] :: [Int])

@@ -43,7 +43,7 @@ type Handler = ThreadState -> DaemonStatusHandle -> FilePath -> Maybe FileStatus
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
 runHandler :: ThreadState -> DaemonStatusHandle -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st dstatus handler file filestatus = void $ do
+runHandler st dstatus handler file filestatus = void $
         either print (const noop) =<< tryIO go
         where
                 go = handler st dstatus file filestatus

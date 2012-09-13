@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, BangPatterns, OverloadedStrings #-}
+{-# LANGUAGE RankNTypes, OverloadedStrings #-}
 
 module Assistant.Alert where
 
@@ -227,24 +227,24 @@ activityAlert header dat = baseActivityAlert
 	}
 
 startupScanAlert :: Alert
-startupScanAlert = activityAlert Nothing $
+startupScanAlert = activityAlert Nothing
 	[Tensed "Performing" "Performed", "startup scan"]
 
 commitAlert :: Alert
-commitAlert = activityAlert Nothing $
+commitAlert = activityAlert Nothing
 	[Tensed "Committing" "Committed", "changes to git"]
 
 showRemotes :: [Remote] -> TenseChunk
 showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
 
 pushAlert :: [Remote] -> Alert
-pushAlert rs = activityAlert Nothing $
+pushAlert rs = activityAlert Nothing
 	[Tensed "Syncing" "Synced", "with", showRemotes rs]
 
 pushRetryAlert :: [Remote] -> Alert
 pushRetryAlert rs = activityAlert
 	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
-	(["with", showRemotes rs])
+	["with", showRemotes rs]
 
 syncAlert :: [Remote] -> Alert
 syncAlert rs = baseActivityAlert
@@ -308,7 +308,7 @@ pairRequestReceivedAlert repo button = Alert
 	, alertButton = Just button
 	}
 
-pairRequestAcknowledgedAlert :: String -> (Maybe AlertButton) -> Alert
+pairRequestAcknowledgedAlert :: String -> Maybe AlertButton -> Alert
 pairRequestAcknowledgedAlert repo button = baseActivityAlert
 	{ alertData = ["Pair request with", UnTensed (T.pack repo), Tensed "in progress" "complete"]
 	, alertPriority = High

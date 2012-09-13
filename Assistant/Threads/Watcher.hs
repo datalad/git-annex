@@ -44,7 +44,7 @@ thisThread = "Watcher"
 checkCanWatch :: Annex ()
 checkCanWatch
 	| canWatch = 
-		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force) $
+		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
 	| otherwise = error "watch mode is not available on this system"
 
@@ -75,7 +75,7 @@ watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
 startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
 startupScan st dstatus scanner = do
 	runThreadState st $ showAction "scanning"
-	r <- alertWhile' dstatus startupScanAlert $ do
+	alertWhile' dstatus startupScanAlert $ do
 		r <- scanner
 
 		-- Notice any files that were deleted before
@@ -87,8 +87,6 @@ startupScan st dstatus scanner = do
 		modifyDaemonStatus_ dstatus $ \s -> s { scanComplete = True }
 
 		return (True, r)
-
-	return r
 
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName
@@ -135,7 +133,7 @@ runHandler threadname st dstatus transferqueue changechan handler file filestatu
  -}
 onAdd :: Handler
 onAdd threadname file filestatus dstatus _
-	| maybe False isRegularFile filestatus = do
+	| maybe False isRegularFile filestatus =
 		ifM (scanComplete <$> liftIO (getDaemonStatus dstatus))
 			( go
 			, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
