@@ -248,12 +248,12 @@ hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
 	where
 		dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-		ABCD (a,b,c,d) = md5 $ encodeFilePath $ key2file k
+		ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file k
 
 hashDirLower :: Hasher
 hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
 	where
-		dir = take 6 $ md5s $ encodeFilePath $ key2file k
+		dir = take 6 $ md5s $ md5FilePath $ key2file k
 
 {- modified version of display_32bits_as_hex from Data.Hash.MD5
  -   Copyright (C) 2001 Ian Lynagh 

@@ -5,7 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.FileSystemEncoding where
+module Utility.FileSystemEncoding (
+	fileEncoding,
+	withFilePath,
+	md5FilePath,
+	decodeW8,
+	encodeW8	
+) where
 
 import qualified GHC.Foreign as GHC
 import qualified GHC.IO.Encoding as Encoding
@@ -31,18 +37,27 @@ withFilePath :: FilePath -> (CString -> IO a) -> IO a
 withFilePath fp f = Encoding.getFileSystemEncoding
 	>>= \enc -> GHC.withCString enc fp f
 
-{- Encodes a FilePath into a Md5.Str, applying the filesystem encoding.
+{- Encodes a FilePath into a String, applying the filesystem encoding.
+ -
+ - There are very few things it makes sense to do with such an encoded
+ - string. It's not a legal filename; it should not be displayed.
+ - So this function is not exported, but instead used by the few functions
+ - that can usefully consume it.
  -
  - This use of unsafePerformIO is belived to be safe; GHC's interface
  - only allows doing this conversion with CStrings, and the CString buffer
  - is allocated, used, and deallocated within the call, with no side
  - effects.
  -}
-{-# NOINLINE encodeFilePath #-}
-encodeFilePath :: FilePath -> MD5.Str
-encodeFilePath fp = MD5.Str $ unsafePerformIO $ do
+{-# NOINLINE _encodeFilePath #-}
+_encodeFilePath :: FilePath -> String
+_encodeFilePath fp = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
 	GHC.withCString enc fp $ GHC.peekCString Encoding.char8
+
+{- Encodes a FilePath into a Md5.Str, applying the filesystem encoding. -}
+md5FilePath :: FilePath -> MD5.Str
+md5FilePath = MD5.Str . _encodeFilePath
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
@@ -55,3 +70,8 @@ encodeW8 :: [Word8] -> FilePath
 encodeW8 w8 = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
 	GHC.withCString Encoding.char8 (w82s w8) $ GHC.peekCString enc
+
+{- Useful when you want the actual number of bytes that will be used to
+ - represent the FilePath on disk. -}
+decodeW8 :: FilePath -> [Word8]
+decodeW8 = s2w8 . _encodeFilePath

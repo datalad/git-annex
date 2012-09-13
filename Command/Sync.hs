@@ -267,7 +267,7 @@ mergeFile file key
 			++ takeExtension file
 		
 shortHash :: String -> String
-shortHash = take 4 . md5s . encodeFilePath
+shortHash = take 4 . md5s . md5FilePath
 
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
