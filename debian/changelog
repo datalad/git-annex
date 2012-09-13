@@ -13,6 +13,8 @@ git-annex (3.20120826) UNRELEASED; urgency=low
   * test: Set a lot of git environment variables so testing works in strange
     environments that normally need git config to set names, etc.
     Closes: #682351 Thanks, gregor herrmann
+  * Disable ssh connection caching if the path to the control socket would be
+    too long (and use relative path to minimise path to the control socket).
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 

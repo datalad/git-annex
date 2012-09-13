@@ -42,7 +42,13 @@ sshInfo (host, port) = ifM caching
 	( do
 		dir <- fromRepo gitAnnexSshDir
 		let socketfile = dir </> hostport2socket host port
-	 	return (Just socketfile, cacheParams socketfile)
+		if valid_unix_socket_path socketfile
+			then return (Just socketfile, cacheParams socketfile)
+			else do
+				socketfile' <- liftIO $ relPathCwdToFile socketfile
+				if valid_unix_socket_path socketfile'
+					then return (Just socketfile', cacheParams socketfile')
+					else return (Nothing, [])
 	, return (Nothing, [])
 	)
 	where
@@ -118,3 +124,16 @@ isLock f = lockExt `isSuffixOf` f
 
 lockExt :: String
 lockExt = ".lock"
+
+{- This is the size of the sun_path component of sockaddr_un, which
+ - is the limit to the total length of the filename of a unix socket.
+ -
+ - On Linux, this is 108. On OSX, 104. TODO: Probe
+ -}
+sizeof_sockaddr_un_sun_path :: Int
+sizeof_sockaddr_un_sun_path = 100
+
+{- Note that this looks at the true length of the path in bytes, as it will
+ - appear on disk. -}
+valid_unix_socket_path :: FilePath -> Bool
+valid_unix_socket_path f = length (decodeW8 f) < sizeof_sockaddr_un_sun_path

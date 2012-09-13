@@ -41,4 +41,10 @@ stdout snippet from git-annex webapp:
 
 This data appears on both the sending and receiving git-annex stdout. At least for the initial sync. For later syncs it only appears on the sender, though the client system is using a lot of resources.
 
-
+> I've made git-annex detect if the control path would be too long,
+> and disable ssh connection caching. It also tries a relative path
+> to the file, which tends to make it shorter, and I think would
+> keep ssh connection caching working in your example.
+> 
+> Please test and see if it works, and also if the "looping" problem
+> still happens. --[[Joey]]
