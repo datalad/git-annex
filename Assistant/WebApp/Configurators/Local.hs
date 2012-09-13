@@ -27,6 +27,7 @@ import Utility.Mounts
 import Utility.DiskFree
 import Utility.DataUnits
 import Utility.Network
+import Remote (prettyListUUIDs)
 
 import Yesod
 import Data.Text (Text)
@@ -193,6 +194,14 @@ getAddDriveR = bootstrap (Just Config) $ do
 			liftIO $ inDir dir $
 				void $ makeGitRemote hostname hostlocation
 			addRemote $ makeGitRemote name dir
+
+getEnableDirectoryR :: UUID -> Handler RepHtml
+getEnableDirectoryR uuid = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Enable a repository"
+	description <- lift $ runAnnex "" $
+		T.pack . concat <$> prettyListUUIDs [uuid]
+	$(widgetFile "configurators/enabledirectory")
 
 {- Start syncing a newly added remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()

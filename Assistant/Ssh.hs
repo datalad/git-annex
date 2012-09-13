@@ -186,8 +186,19 @@ setupSshKeyPair sshkeypair sshdata = do
 	where
 		sshprivkeyfile = "key." ++ mangledhost
 		sshpubkeyfile = sshprivkeyfile ++ ".pub"
-		mangledhost = "git-annex-" ++ T.unpack (sshHostName sshdata) ++ user
-		user = maybe "" (\u -> '-' : T.unpack u) (sshUserName sshdata)
+		mangledhost = mangleSshHostName
+			(T.unpack $ sshHostName sshdata)
+			(T.unpack <$> sshUserName sshdata)
+
+mangleSshHostName :: String -> Maybe String -> String
+mangleSshHostName host user = "git-annex-" ++ host ++ (maybe "-" ('-':) user)
+
+unMangleSshHostName :: String -> String
+unMangleSshHostName h
+	| "git-annex-" `isPrefixOf` h = join "-" (beginning $ drop 2 dashbits)
+	| otherwise = h
+	where
+		dashbits = split "-" h
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool

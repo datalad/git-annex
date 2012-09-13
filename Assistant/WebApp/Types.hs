@@ -91,3 +91,7 @@ instance PathPiece PairMsg where
 instance PathPiece SecretReminder where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
+
+instance PathPiece UUID where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack

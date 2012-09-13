@@ -19,9 +19,12 @@ import Utility.Yesod
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
+import Logs.Remote
+import Logs.Trust
 
 import Yesod
 import Data.Text (Text)
+import qualified Data.Map as M
 
 {- The main configuration screen. -}
 getConfigR :: Handler RepHtml
@@ -38,26 +41,45 @@ getRepositoriesR :: Handler RepHtml
 getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Repositories"
-	repolist <- lift repoList
+	repolist <- lift $ repoList False
 	$(widgetFile "configurators/repositories")
 
 {- A numbered list of known repositories, including the current one. -}
-repoList :: Handler [(String, String)]
-repoList = do
-	rs <- filter (not . Remote.readonly) . knownRemotes <$>
-		(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
-	l <- runAnnex [] $ do
-		u <- getUUID
-		Remote.prettyListUUIDs $ nub $ u : map Remote.uuid rs
-	return $ zip counter l
+repoList :: Bool -> Handler [(String, String, Maybe (Route WebApp))]
+repoList onlyconfigured
+	| onlyconfigured = list =<< configured
+	| otherwise = list =<< (++) <$> configured <*> unconfigured
 	where
+		configured = do
+			rs <- filter (not . Remote.readonly) . knownRemotes <$>
+				(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
+			runAnnex [] $ do
+				u <- getUUID
+				return $ zip (u : map Remote.uuid rs) (repeat Nothing)
+		unconfigured = runAnnex [] $ do
+			m <- readRemoteLog
+			catMaybes . map (findtype m) . snd
+				<$> (trustPartition DeadTrusted $ M.keys m)
+		findtype m u = case M.lookup u m of
+			Nothing -> Nothing
+			Just c -> case M.lookup "type" c of
+				Just "rsync" -> u `enableswith` EnableRsyncR
+				Just "directory" -> u `enableswith` EnableDirectoryR
+				_ -> Nothing
+		u `enableswith` r = Just (u, Just $ r u)
+		list l = runAnnex [] $ do
+			let l' = nubBy (\x y -> fst x == fst y) l
+			zip3
+				<$> pure counter
+				<*> Remote.prettyListUUIDs (map fst l')
+				<*> pure (map snd l')
 		counter = map show ([1..] :: [Int])
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	repolist <- lift repoList
+	repolist <- lift $ repoList True
 	let n = length repolist
 	let numrepos = show n
 	let notenough = n < enough

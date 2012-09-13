@@ -5,17 +5,21 @@
 
 /config ConfigR GET
 /config/repository RepositoriesR GET
+/config/repository/first FirstRepositoryR GET
+
 /config/repository/add/drive AddDriveR GET
 /config/repository/add/ssh AddSshR GET
 /config/repository/add/ssh/confirm/#SshData ConfirmSshR GET
 /config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/rsync.net AddRsyncNetR GET
+
 /config/repository/pair/start StartPairR GET
 /config/repository/pair/inprogress/#SecretReminder InprogressPairR GET
 /config/repository/pair/finish/#PairMsg FinishPairR GET
 
-/config/repository/first FirstRepositoryR GET
+/config/repository/enable/rsync/#UUID EnableRsyncR GET
+/config/repository/enable/directory/#UUID EnableDirectoryR GET
 
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET

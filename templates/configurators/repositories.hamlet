@@ -3,12 +3,17 @@
     Your repositories
   <table .table .table-condensed>
     <tbody>
-      $forall (num, name) <- repolist
+      $forall (num, name, needsenabled) <- repolist
         <tr>
           <td>
             #{num}
           <td>
             #{name}
+          <td>
+            $maybe enable <- needsenabled
+              not enabled here &rarr; #
+              <a href="@{enable}">
+                enable
   <div .row-fluid>
     <div .span6>
       <h2>

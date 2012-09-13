@@ -16,10 +16,14 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
+import Utility.RsyncFile (rsyncUrlIsShell)
+import Logs.Remote
+import Remote
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Map as M
 import Network.BSD
 import System.Posix.User
 
@@ -29,32 +33,32 @@ sshConfigurator a = bootstrap (Just Config) $ do
 	setTitle "Add a remote server"
 	a
 
-data SshServer = SshServer
+data SshInput = SshInput
 	{ hostname :: Maybe Text
 	, username :: Maybe Text
 	, directory :: Maybe Text
 	}
 	deriving (Show)
 
-{- SshServer is only used for applicative form prompting, this converts
+{- SshInput is only used for applicative form prompting, this converts
  - the result of such a form into a SshData. -}
-mkSshData :: SshServer -> SshData
-mkSshData sshserver = SshData 
-	{ sshHostName = fromMaybe "" $ hostname sshserver
-	, sshUserName = username sshserver
-	, sshDirectory = fromMaybe "" $ directory sshserver
+mkSshData :: SshInput -> SshData
+mkSshData s = SshData 
+	{ sshHostName = fromMaybe "" $ hostname s
+	, sshUserName = username s
+	, sshDirectory = fromMaybe "" $ directory s
 	, sshRepoName = genSshRepoName
-		(T.unpack $ fromJust $ hostname sshserver)
-		(maybe "" T.unpack $ directory sshserver)
+		(T.unpack $ fromJust $ hostname s)
+		(maybe "" T.unpack $ directory s)
 	, needsPubKey = False
 	, rsyncOnly = False
 	}
 
-sshServerAForm :: Maybe Text -> AForm WebApp WebApp SshServer
-sshServerAForm localusername = SshServer
-	<$> aopt check_hostname "Host name" Nothing
-	<*> aopt check_username "User name" (Just localusername)
-	<*> aopt textField "Directory" (Just $ Just $ T.pack gitAnnexAssistantDefaultDir)
+sshInputAForm :: SshInput -> AForm WebApp WebApp SshInput
+sshInputAForm def = SshInput
+	<$> aopt check_hostname "Host name" (Just $ hostname def)
+	<*> aopt check_username "User name" (Just $ username def)
+	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ directory def)
 	where
 		check_hostname = checkM (liftIO . checkdns) textField
 		checkdns t = do
@@ -77,36 +81,91 @@ data ServerStatus
 	= UntestedServer
 	| UnusableServer Text -- reason why it's not usable
 	| UsableRsyncServer
-	| UsableSshServer
+	| UsableSshInput
 	deriving (Eq)
 
 usable :: ServerStatus -> Bool
 usable UntestedServer = False
 usable (UnusableServer _) = False
 usable UsableRsyncServer = True
-usable UsableSshServer = True
+usable UsableSshInput = True
 
 getAddSshR :: Handler RepHtml
 getAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack . userName
 		<$> (getUserEntryForID =<< getEffectiveUserID)
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ sshServerAForm (Just u)
+		runFormGet $ renderBootstrap $ sshInputAForm $
+			SshInput Nothing (Just u) Nothing
 	case result of
-		FormSuccess sshserver -> do
-			(status, needspubkey) <- liftIO $ testServer sshserver
-			if usable status
-				then lift $ redirect $ ConfirmSshR $
-					(mkSshData sshserver)
-						{ needsPubKey = needspubkey
-						, rsyncOnly = status == UsableRsyncServer
-						}
-				else showform form enctype status
+		FormSuccess sshinput -> do
+			s <- liftIO $ testServer sshinput
+			case s of
+				Left status -> showform form enctype status
+				Right sshdata -> lift $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
 	where
 		showform form enctype status = do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/ssh/add")
+
+{- To enable an existing rsync special remote, parse the SshInput from
+ - its rsyncurl, and display a form whose only real purpose is to check
+ - if ssh public keys need to be set up. From there, we can proceed with
+ - the usual repo setup; all that code is idempotent.
+ -
+ - Note that there's no EnableSshR because ssh remotes are not special
+ - remotes, and so their configuration is not shared between repositories.
+ -}
+getEnableRsyncR :: UUID -> Handler RepHtml
+getEnableRsyncR u = do
+	m <- runAnnex M.empty readRemoteLog
+	case parseSshRsyncUrl =<< M.lookup "rsyncurl" =<< M.lookup u m of
+		Nothing -> redirect AddSshR
+		Just sshinput -> sshConfigurator $ do
+			((result, form), enctype) <- lift $
+				runFormGet $ renderBootstrap $ sshInputAForm sshinput
+			case result of
+				FormSuccess sshinput'
+					| isRsyncNet (hostname sshinput') ->
+						void $ lift $ makeRsyncNet sshinput'
+					| otherwise -> do
+						s <- liftIO $ testServer sshinput'
+						case s of
+							Left status -> showform form enctype status
+							Right sshdata -> enable sshdata
+				_ -> showform form enctype UntestedServer
+	where
+		showform form enctype status = do
+			description <- lift $ runAnnex "" $
+				T.pack . concat <$> prettyListUUIDs [u]
+			let authtoken = webAppFormAuthToken
+			$(widgetFile "configurators/ssh/enable")
+		enable sshdata = 
+			lift $ redirect $ ConfirmSshR $
+				sshdata { rsyncOnly = True }
+
+{- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync
+ - url; rsync:// urls or bare path names are not supported.
+ -
+ - The hostname is stored mangled in the remote log for rsync special
+ - remotes configured by this webapp. So that mangling has to reversed
+ - here to get back the original hostname.
+ -}
+parseSshRsyncUrl :: String -> Maybe SshInput
+parseSshRsyncUrl u
+	| not (rsyncUrlIsShell u) = Nothing
+	| otherwise = Just $ SshInput
+			{ hostname = val $ unMangleSshHostName host
+			, username = if null user then Nothing else val user
+			, directory = val dir
+			}
+		where
+			val = Just . T.pack
+			(userhost, dir) = separate (== ':') u
+			(user, host) = if '@' `elem` userhost
+				then separate (== '@') userhost
+				else (userhost, "")
 
 {- Test if we can ssh into the server.
  -
@@ -118,17 +177,24 @@ getAddSshR = sshConfigurator $ do
  - Once logged into the server, probe to see if git-annex-shell is
  - available, or rsync.
  -}
-testServer :: SshServer -> IO (ServerStatus, Bool)
-testServer (SshServer { hostname = Nothing }) = return
-	(UnusableServer "Please enter a host name.", False)
-testServer sshserver@(SshServer { hostname = Just hn }) = do
+testServer :: SshInput -> IO (Either ServerStatus SshData)
+testServer (SshInput { hostname = Nothing }) = return $
+	Left $ UnusableServer "Please enter a host name."
+testServer sshinput@(SshInput { hostname = Just hn }) = do
 	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
 	if usable status
-		then return (status, False)
+		then ret status False
 		else do
 			status' <- probe []
-			return (status', True)
+			if usable status'
+				then ret status' True
+				else return $ Left status'
 	where
+		ret status needspubkey = return $ Right $
+			(mkSshData sshinput)
+				{ needsPubKey = needspubkey
+				, rsyncOnly = status == UsableRsyncServer
+				}
 		probe extraopts = do
 			let remotecommand = join ";"
 				[ report "loggedin"
@@ -142,12 +208,12 @@ testServer sshserver@(SshServer { hostname = Just hn }) = do
 				 - Otherwise, trust the host key. -}
 				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
 				, "-n" -- don't read from stdin
-				, genSshHost (fromJust $ hostname sshserver) (username sshserver)
+				, genSshHost (fromJust $ hostname sshinput) (username sshinput)
 				, remotecommand
 				]
 			parsetranscript . fst <$> sshTranscript sshopts ""
 		parsetranscript s
-			| reported "git-annex-shell" = UsableSshServer
+			| reported "git-annex-shell" = UsableSshInput
 			| reported "rsync" = UsableRsyncServer
 			| reported "loggedin" = UnusableServer
 				"Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
@@ -221,50 +287,53 @@ makeSshRepo forcersync sshdata = do
 getAddRsyncNetR :: Handler RepHtml
 getAddRsyncNetR = do
 	((result, form), enctype) <- runFormGet $
-		renderBootstrap $ sshServerAForm Nothing
+		renderBootstrap $ sshInputAForm $
+			SshInput Nothing Nothing Nothing
 	let showform status = bootstrap (Just Config) $ do
 		sideBarDisplay
 		setTitle "Add a Rsync.net repository"	
 		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/addrsync.net")
 	case result of
-		FormSuccess sshserver -> do
-			knownhost <- liftIO $ maybe (return False) knownHost (hostname sshserver)
-			keypair <- liftIO $ genSshKeyPair
-			sshdata <- liftIO $ setupSshKeyPair keypair
-				(mkSshData sshserver)
-					{ needsPubKey = True
-					, rsyncOnly = True
-					, sshRepoName = "rsync.net"
-					}
-			{- I'd prefer to separate commands with && , but
-			 - rsync.net's shell does not support that.
-			 -
-			 - The dd method of appending to the
-			 - authorized_keys file is the one recommended by
-			 - rsync.net documentation. I touch the file first
-			 - to not need to use a different method to create
-			 - it.
-			 -}
-			let remotecommand = join ";"
-				[ "mkdir -p .ssh"
-				, "touch .ssh/authorized_keys"
-				, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
-				, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
-				]
-			let sshopts = filter (not . null)
-				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
-				, genSshHost (sshHostName sshdata) (sshUserName sshdata)
-				, remotecommand
-				]
-
-			let host = fromMaybe "" $ hostname sshserver
-			checkhost host showform $
-				sshSetup sshopts (sshPubKey keypair) $
-					makeSshRepo True sshdata
+		FormSuccess sshinput
+			| isRsyncNet (hostname sshinput) ->
+				makeRsyncNet sshinput
+			| otherwise ->
+				showform $ UnusableServer
+					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
-	where
-		checkhost host showform a
-			| ".rsync.net" `T.isSuffixOf` T.toLower host = a
-			| otherwise = showform $ UnusableServer
-				"That is not a rsync.net host name."
+
+makeRsyncNet :: SshInput -> Handler RepHtml
+makeRsyncNet sshinput = do
+	knownhost <- liftIO $ maybe (return False) knownHost (hostname sshinput)
+	keypair <- liftIO $ genSshKeyPair
+	sshdata <- liftIO $ setupSshKeyPair keypair $
+		(mkSshData sshinput)
+			{ sshRepoName = "rsync.net"
+			, needsPubKey = True
+			, rsyncOnly = True
+			}
+	{- I'd prefer to separate commands with && , but
+	 - rsync.net's shell does not support that.
+	 -
+	 - The dd method of appending to the authorized_keys file is the
+	 - one recommended by rsync.net documentation. I touch the file first
+	 - to not need to use a different method to create it.
+	 -}
+	let remotecommand = join ";"
+		[ "mkdir -p .ssh"
+		, "touch .ssh/authorized_keys"
+		, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
+		, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
+		]
+	let sshopts = filter (not . null)
+		[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
+		, genSshHost (sshHostName sshdata) (sshUserName sshdata)
+		, remotecommand
+		]
+	sshSetup sshopts (sshPubKey keypair) $
+		makeSshRepo True sshdata
+
+isRsyncNet :: Maybe Text -> Bool
+isRsyncNet Nothing = False
+isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
