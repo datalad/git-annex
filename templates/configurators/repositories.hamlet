@@ -8,10 +8,14 @@
           <td>
             #{num}
           <td>
-            #{name}
+            $if isJust needsenabled
+              <i>#{name}
+            $else
+              #{name}
           <td>
             $maybe enable <- needsenabled
-              not enabled here &rarr; #
+              <i>not enabled here #
+              &rarr; #
               <a href="@{enable}">
                 enable
   <div .row-fluid>
