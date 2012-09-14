@@ -14,6 +14,7 @@ import qualified Types.Key
 import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
+import qualified Command.Fsck
 
 def :: [Command]
 def = [command "migrate" paramPaths seek "switch data to different backend"]
@@ -28,7 +29,7 @@ start file (key, oldbackend) = do
 	if (newbackend /= oldbackend || upgradableKey key) && exists
 		then do
 			showStart "migrate" file
-			next $ perform file key newbackend
+			next $ perform file key oldbackend newbackend
 		else stop
 	where
 		choosebackend Nothing = Prelude.head <$> orderedList
@@ -42,8 +43,12 @@ upgradableKey key = isNothing $ Types.Key.keySize key
 {- Store the old backend's key in the new backend
  - The old backend's key is not dropped from it, because there may
  - be other files still pointing at that key. -}
-perform :: FilePath -> Key -> Backend -> CommandPerform
-perform file oldkey newbackend = maybe stop go =<< genkey
+perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
+perform file oldkey oldbackend newbackend = do
+	ifM (Command.Fsck.checkBackend oldbackend oldkey)
+		( maybe stop go =<< genkey
+		, stop
+		)
 	where
 		go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
 			next $ Command.ReKey.cleanup file oldkey newkey
