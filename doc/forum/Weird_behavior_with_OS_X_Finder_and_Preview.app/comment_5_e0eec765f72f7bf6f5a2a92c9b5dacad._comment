@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.30"
+ subject="comment 5"
+ date="2012-09-14T04:20:27Z"
+ content="""
+Good catch, I've made it verify the old checksum first.
+
++/- E migrations are not currently optimised.
+"""]]
