@@ -17,9 +17,9 @@ import Common
 
 type CoProcessHandle = (ProcessHandle, Handle, Handle, CreateProcess)
 
-start :: FilePath -> [String] -> IO CoProcessHandle
-start command params = do
-	(from, to, _err, pid) <- runInteractiveProcess command params Nothing Nothing
+start :: FilePath -> [String] -> Maybe [(String, String)] -> IO CoProcessHandle
+start command params env = do
+	(from, to, _err, pid) <- runInteractiveProcess command params Nothing env
 	return (pid, to, from, proc command params)
 
 stop :: CoProcessHandle -> IO ()

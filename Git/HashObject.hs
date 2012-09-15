@@ -17,7 +17,7 @@ import qualified Utility.CoProcess as CoProcess
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = CoProcess.start "git" . toCommand . gitCommandLine
+hashObjectStart = gitCoProcessStart
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"

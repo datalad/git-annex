@@ -22,7 +22,7 @@ type Attr = String
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
-	h <- CoProcess.start "git" $ toCommand $ gitCommandLine params repo
+	h <- gitCoProcessStart params repo
 	return (h, attrs, cwd)
 	where
 		params =

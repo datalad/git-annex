@@ -233,5 +233,6 @@ runInteractiveProcess f args c e = do
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			, std_err = CreatePipe
+			, env = e
 			}
 	System.Process.runInteractiveProcess f args c e

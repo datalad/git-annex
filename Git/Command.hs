@@ -13,6 +13,7 @@ import System.Process
 import Common
 import Git
 import Git.Types
+import qualified Utility.CoProcess as CoProcess
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
@@ -80,3 +81,7 @@ reap = do
 	-- throws an exception when there are no child processes
 	catchDefaultIO (getAnyProcessStatus False True) Nothing
 		>>= maybe noop (const reap)
+
+{- Runs a git command as a coprocess. -}
+gitCoProcessStart :: [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
+gitCoProcessStart params repo = CoProcess.start "git" (toCommand $ gitCommandLine params repo) (gitEnv repo)
