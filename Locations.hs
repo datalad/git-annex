@@ -23,7 +23,6 @@ module Locations (
 	gitAnnexJournalLock,
 	gitAnnexIndex,
 	gitAnnexIndexLock,
-	gitAnnexIndexDirty,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
@@ -151,10 +150,6 @@ gitAnnexIndex r = gitAnnexDir r </> "index"
 {- Lock file for .git/annex/index. -}
 gitAnnexIndexLock :: Git.Repo -> FilePath
 gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
-
-{- Flag file for .git/annex/index. -}
-gitAnnexIndexDirty :: Git.Repo -> FilePath
-gitAnnexIndexDirty r = gitAnnexDir r </> "index.dirty"
 
 {- Pid file for daemon mode. -}
 gitAnnexPidFile :: Git.Repo -> FilePath

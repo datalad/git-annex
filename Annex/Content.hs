@@ -301,8 +301,8 @@ saveState :: Bool -> Annex ()
 saveState oneshot = doSideAction $ do
 	Annex.Queue.flush
 	unless oneshot $
-		ifM alwayscommit
-			( Annex.Branch.commit "update" , Annex.Branch.stage)
+		whenM alwayscommit $
+			Annex.Branch.commit "update"
 	where
 		alwayscommit = fromMaybe True . Git.Config.isTrue
 			<$> getConfig (annexConfig "alwayscommit") ""

@@ -18,7 +18,6 @@ module Annex.Branch (
 	get,
 	change,
 	commit,
-	stage,
 	files,
 ) where
 
@@ -86,8 +85,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		branchsha = inRepo $ Git.Ref.sha fullname
 
 {- Ensures that the branch and index are up-to-date; should be
- - called before data is read from it. Runs only once per git-annex run.
- -}
+ - called before data is read from it. Runs only once per git-annex run. -}
 update :: Annex ()
 update = runUpdateOnce $ void $ updateTo =<< siblingBranches
 
@@ -108,24 +106,31 @@ forceUpdate = updateTo =<< siblingBranches
  - later get staged, and might overwrite changes made during the merge.
  - This is only done if some of the Refs do need to be merged.
  -
- - Even when no Refs need to be merged, the index may still be updated
- - if the branch has gotten ahead of the index.
- -
  - Returns True if any refs were merged in, False otherwise.
  -}
 updateTo :: [(Git.Ref, Git.Branch)] -> Annex Bool
 updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
-	-- check what needs updating before taking the lock
-	dirty <- unCommitted
+	dirty <- journalDirty
 	(refs, branches) <- unzip <$> filterM isnewer pairs
 	if null refs
-		then whenM (needUpdateIndex branchref) $ do
-			when dirty stageJournal
+ 		{- Even when no refs need to be merged, the index
+		 - may still be updated if the branch has gotten ahead 
+		 - of the index. -}
+		then whenM (needUpdateIndex branchref) $ lockJournal $ do
 			forceUpdateIndex branchref
-		else withIndex $ lockJournal $ do
-			when dirty stageJournal
+			{- When there are journalled changes
+			 - as well as the branch being updated,
+			 - a commit needs to be done. -}
+			when dirty $
+				go branchref True [] []
+		else lockJournal $ go branchref dirty refs branches
+	return $ not $ null refs
+	where
+		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+		go branchref dirty refs branches = withIndex $ do
+			cleanjournal <- if dirty then stageJournal else return noop
 			let merge_desc = if null branches
 				then "update"
 				else "merging " ++
@@ -142,9 +147,7 @@ updateTo pairs = do
 				else commitBranch branchref merge_desc
 					(nub $ fullname:refs)
 			invalidateCache
-	return $ not $ null refs
-	where
-		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+			liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or committed
  - to the branch. Due to limitatons of git cat-file, does *not* get content
@@ -195,16 +198,11 @@ set file content = do
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = whenM unCommitted $ lockJournal $ do
-	stageJournal
+commit message = whenM journalDirty $ lockJournal $ do
+	cleanjournal <- stageJournal
 	ref <- getBranch
 	withIndex $ commitBranch ref message [fullname]
-
-{- Stages the journal, not making a commit to the branch. -}
-stage :: Annex ()
-stage = whenM journalDirty $ lockJournal $ do
-	stageJournal
-	setUnCommitted
+	liftIO $ cleanjournal
 
 {- Commits the staged changes in the index to the branch.
  - 
@@ -236,7 +234,6 @@ commitBranch' branchref message parents = do
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
-	setCommitted
 	where
 		-- look for "parent ref" lines and return the refs
 		commitparents = map (Git.Ref . snd) . filter isparent .
@@ -336,39 +333,24 @@ setIndexSha ref = do
 	liftIO $ writeFile lock $ show ref ++ "\n"
 	setAnnexPerm lock
 
-{- Checks if there are uncommitted changes in the branch's index or journal. -}
-unCommitted :: Annex Bool
-unCommitted = do
-	d <- liftIO . doesFileExist =<< fromRepo gitAnnexIndexDirty
-	if d
-		then return d
-		else journalDirty
-
-setUnCommitted :: Annex ()
-setUnCommitted = do
-	file <- fromRepo gitAnnexIndexDirty
-	liftIO $ writeFile file "1"
-
-setCommitted :: Annex ()
-setCommitted = void $ do
-	file <- fromRepo gitAnnexIndexDirty
-	liftIO $ tryIO $ removeFile file
-
-{- Stages the journal into the index. -}
-stageJournal :: Annex ()
-stageJournal = do
+{- Stages the journal into the index and returns an action that will
+ - clean up the staged journal files, which should only be run once
+ - the index has been committed to the branch. Should be run within
+ - lockJournal, to prevent others from modifying the journal. -}
+stageJournal :: Annex (IO ())
+stageJournal = withIndex $ do
+	g <- gitRepo
+	let dir = gitAnnexJournalDir g
 	fs <- getJournalFiles
-	withIndex $ do
-		g <- gitRepo
-		liftIO $ do
-			h <- hashObjectStart g
-			Git.UpdateIndex.streamUpdateIndex g
-				[genstream (gitAnnexJournalDir g) h fs]
-			hashObjectStop h
+	liftIO $ do
+		h <- hashObjectStart g
+		Git.UpdateIndex.streamUpdateIndex g
+			[genstream dir h fs]
+		hashObjectStop h
+	return $ liftIO $ mapM_ removeFile $ map (dir </>) fs
 	where
 		genstream dir h fs streamer = forM_ fs $ \file -> do
 			let path = dir </> file
 			sha <- hashFile h path
-			_ <- streamer $ Git.UpdateIndex.updateIndexLine
+			streamer $ Git.UpdateIndex.updateIndexLine
 				sha FileBlob (asTopFilePath $ fileJournal file)
-			removeFile path
