@@ -85,7 +85,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			return sha
 		branchsha = inRepo $ Git.Ref.sha fullname
 
-{- Ensures that the branch and index are is up-to-date; should be
+{- Ensures that the branch and index are up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run.
  -}
 update :: Annex ()
@@ -145,7 +145,8 @@ updateTo pairs = do
 		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 
 {- Gets the content of a file on the branch, or content from the journal, or
- - staged in the index.
+ - staged in the index. Merges remote versions of the branch if necessary,
+ - to ensure the most up-to-date available content is available.
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
@@ -165,7 +166,9 @@ get' staleok file = fromcache =<< getCache file
 		fromjournal (Just content) = cache content
 		fromjournal Nothing
 			| staleok = withIndex frombranch
-			| otherwise = withIndexUpdate $ frombranch >>= cache
+			| otherwise = do
+				update
+				withIndex $ frombranch >>= cache
 		frombranch = L.unpack <$> catFile fullname file
 		cache content = do
 			setCache file content
@@ -249,12 +252,13 @@ commitBranch branchref message parents = do
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
-files = withIndexUpdate $ do
-	bfiles <- inRepo $ Git.Command.pipeNullSplit
-		[Params "ls-tree --name-only -r -z", Param $ show fullname]
-	jfiles <- getJournalledFiles
-	return $ jfiles ++ bfiles
-
+files = do
+	update
+	withIndex $ do
+		bfiles <- inRepo $ Git.Command.pipeNullSplit
+			[Params "ls-tree --name-only -r -z", Param $ show fullname]
+		jfiles <- getJournalledFiles
+		return $ jfiles ++ bfiles
 
 {- Populates the branch's index file with the current branch contents.
  - 
@@ -291,11 +295,6 @@ withIndex' bootstrapping a = do
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
 
 	return r
-
-{- Runs an action using the branch's index file, first making sure that
- - the branch and index are up-to-date. -}
-withIndexUpdate :: Annex a -> Annex a
-withIndexUpdate a = update >> withIndex a
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.
