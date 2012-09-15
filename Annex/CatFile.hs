@@ -7,6 +7,7 @@
 
 module Annex.CatFile (
 	catFile,
+	catFileIndex,
 	catObject,
 	catObjectDetails,
 	catFileHandle
@@ -24,6 +25,11 @@ catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catFile h branch file
+
+catFileIndex :: FilePath -> Annex L.ByteString
+catFileIndex file = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catFileIndex h file
 
 catObject :: Git.Ref -> Annex L.ByteString
 catObject ref = do

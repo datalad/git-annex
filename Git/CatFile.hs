@@ -10,6 +10,7 @@ module Git.CatFile (
 	catFileStart,
 	catFileStop,
 	catFile,
+	catFileIndex,
 	catObject,
 	catObjectDetails,
 ) where
@@ -39,6 +40,10 @@ catFileStop = CoProcess.stop
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
 catFile h branch file = catObject h $ Ref $ show branch ++ ":" ++ file
+
+{- Reads a file from the index. -}
+catFileIndex :: CatFileHandle -> FilePath -> IO L.ByteString
+catFileIndex h file = catObject h $ Ref $ ':' : file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
