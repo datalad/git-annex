@@ -1,9 +1,17 @@
 Once files are added (or removed or moved), need to send those changes to
 all the other git clones, at both the git level and the key/value level.
 
-## immediate action items
+## bugs
 
-## longer-term TODO
+* Running the assistant in a fresh clone of a repository, it sometimes
+  skips downloading a file, while successfully downloading all the rest.
+  There does not seem to be an error message. This will sometimes reproduce
+  (in a fresh clone each time) several times in a row, but then stops happening,
+  which has prevented me from debugging it.
+* The git repository syncing sometimes fails due to the remote having updated.
+  While syncing retries, this sometimes doesn't work.
+
+## TODO
 
 * Test MountWatcher on LXDE.
 * git-annex needs a simple speed control knob, which can be plumbed
@@ -35,7 +43,8 @@ all the other git clones, at both the git level and the key/value level.
   but further calls to the TransferScanner could eg, look at the delta
   between the last scan and the current one in the git-annex branch.
 * Ensure that when a remote receives content, and updates its location log,
-  it syncs that update back out. Prerequisite for:
+  it syncs that update back out. Currently, it does not, unless the master
+  branch also changed. Prerequisite for:
 * After git sync, identify new content that we don't have that is now available
   on remotes, and transfer. (Needed when we have a uni-directional connection
   to a remote, so it won't be uploading content to us.) Note: Does not
