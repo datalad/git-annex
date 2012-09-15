@@ -99,17 +99,17 @@ forceUpdate = updateTo =<< siblingBranches
  - already in it. The Branch names are only used in the commit message;
  - it's even possible that the provided Branches have not been updated to
  - point to the Refs yet.
- -
- - Before refs are merged into the index, it's important to first stage the
- - journal into the index. Otherwise, any changes in the journal would
- - later get staged, and might overwrite changes made during the merge.
- - If no Refs are provided, the journal is still staged and committed.
- -
- - (It would be cleaner to handle the merge by updating the journal, not the
- - index, with changes from the branches.)
- -
+ - 
  - The branch is fast-forwarded if possible, otherwise a merge commit is
  - made.
+ -
+ - Before Refs are merged into the index, it's important to first stage the
+ - journal into the index. Otherwise, any changes in the journal would
+ - later get staged, and might overwrite changes made during the merge.
+ - This is only done if some of the Refs do need to be merged.
+ -
+ - Even when no Refs need to be merged, the index may still be updated
+ - if the branch has gotten ahead of the index.
  -
  - Returns True if any refs were merged in, False otherwise.
  -}
@@ -120,8 +120,10 @@ updateTo pairs = do
 	-- check what needs updating before taking the lock
 	dirty <- unCommitted
 	(refs, branches) <- unzip <$> filterM isnewer pairs
-	if not dirty && null refs
-		then updateIndex branchref
+	if null refs
+		then whenM (needUpdateIndex branchref) $ do
+			when dirty stageJournal
+			forceUpdateIndex branchref
 		else withIndex $ lockJournal $ do
 			when dirty stageJournal
 			let merge_desc = if null branches
@@ -144,9 +146,12 @@ updateTo pairs = do
 	where
 		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 
-{- Gets the content of a file on the branch, or content from the journal, or
- - staged in the index. Merges remote versions of the branch if necessary,
- - to ensure the most up-to-date available content is available.
+{- Gets the content of a file, which may be in the journal, or committed
+ - to the branch. Due to limitatons of git cat-file, does *not* get content
+ - that has only been staged to the index.
+ - 
+ - Updates the branch if necessary, to ensure the most up-to-date available
+ - content is available.
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
@@ -221,6 +226,10 @@ stage = whenM journalDirty $ lockJournal $ do
  -}
 commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitBranch branchref message parents = do
+	showStoringStateAction
+	commitBranch' branchref message parents
+commitBranch' :: Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitBranch' branchref message parents = do
 	updateIndex branchref
 	committedref <- inRepo $ Git.Branch.commit message fullname parents
 	setIndexSha committedref
@@ -303,13 +312,21 @@ withIndex' bootstrapping a = do
  - ref of the branch to see if an update is needed.
  -}
 updateIndex :: Git.Ref -> Annex ()
-updateIndex branchref = do
+updateIndex branchref = whenM (needUpdateIndex branchref) $
+	forceUpdateIndex branchref
+
+forceUpdateIndex :: Git.Ref -> Annex ()
+forceUpdateIndex branchref = do
+	withIndex $ mergeIndex [fullname]
+	setIndexSha branchref
+
+{- Checks if the index needs to be updated. -}
+needUpdateIndex :: Git.Ref -> Annex Bool
+needUpdateIndex branchref = do
 	lock <- fromRepo gitAnnexIndexLock
 	lockref <- Git.Ref . firstLine <$>
 		liftIO (catchDefaultIO (readFileStrict lock) "")
-	when (lockref /= branchref) $ do
-		withIndex $ mergeIndex [fullname]
-		setIndexSha branchref
+	return (lockref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
  - given ref of the branch. -}
@@ -340,7 +357,6 @@ setCommitted = void $ do
 {- Stages the journal into the index. -}
 stageJournal :: Annex ()
 stageJournal = do
-	showStoringStateAction
 	fs <- getJournalFiles
 	withIndex $ do
 		g <- gitRepo
