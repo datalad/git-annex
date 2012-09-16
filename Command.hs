@@ -8,7 +8,7 @@
 module Command (
 	command,
 	noRepo,
-	oneShot,
+	noCommit,
 	withOptions,
 	next,
 	stop,
@@ -43,9 +43,10 @@ import Annex.CheckAttr
 command :: String -> String -> [CommandSeek] -> String -> Command
 command = Command [] Nothing commonChecks False
 
-{- Makes a command run in oneshot mode. -}
-oneShot :: Command -> Command
-oneShot c = c { cmdoneshot = True }
+{- Indicates that a command doesn't need to commit any changes to
+ - the git-annex branch. -}
+noCommit :: Command -> Command
+noCommit c = c { cmdnocommit = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}

@@ -38,7 +38,7 @@ data Command = Command
 	{ cmdoptions :: [Option]     -- command-specific options
 	, cmdnorepo :: Maybe (IO ()) -- an action to run when not in a repo
 	, cmdcheck :: [CommandCheck] -- check stage
-	, cmdoneshot :: Bool         -- don't save state after running
+	, cmdnocommit :: Bool        -- don't commit journalled state changes
 	, cmdname :: String
 	, cmdparamdesc :: String     -- description of params for usage
 	, cmdseek :: [CommandSeek]   -- seek stage

@@ -12,7 +12,7 @@ import Command
 import Annex.Content
 
 def :: [Command]
-def = [oneShot $ command "inannex" (paramRepeating paramKey) seek
+def = [noCommit $ command "inannex" (paramRepeating paramKey) seek
 	"checks if keys are present in the annex"]
 
 seek :: [CommandSeek]

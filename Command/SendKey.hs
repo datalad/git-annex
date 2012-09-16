@@ -15,7 +15,7 @@ import Logs.Transfer
 import qualified Fields
 
 def :: [Command]
-def = [oneShot $ command "sendkey" paramKey seek
+def = [noCommit $ command "sendkey" paramKey seek
 	"runs rsync in server mode to send content"]
 
 seek :: [CommandSeek]

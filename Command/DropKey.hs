@@ -15,7 +15,7 @@ import Annex.Content
 import Types.Key
 
 def :: [Command]
-def = [oneShot $ command "dropkey" (paramRepeating paramKey) seek
+def = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
 	"drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]

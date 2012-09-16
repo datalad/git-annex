@@ -16,7 +16,7 @@ import Logs.Transfer
 import Command.SendKey (fieldTransfer)
 
 def :: [Command]
-def = [oneShot $ command "recvkey" paramKey seek
+def = [noCommit $ command "recvkey" paramKey seek
 	"runs rsync in server mode to receive content"]
 
 seek :: [CommandSeek]

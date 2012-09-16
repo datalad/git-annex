@@ -31,7 +31,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 
 def :: [Command]
-def = [oneShot $ noRepo startNoRepo $ dontCheck repoExists $
+def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
         command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]

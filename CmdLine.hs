@@ -43,7 +43,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				forM_ fields $ \(f, v) -> Annex.setField f v
 				sequence_ flags
 				prepCommand cmd params
-		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdoneshot cmd]
+		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
 	where
 		err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
 		cmd = Prelude.head cmds
@@ -112,8 +112,8 @@ startup = return True
 
 {- Cleanup actions. -}
 shutdown :: Bool -> Annex Bool
-shutdown oneshot = do
-	saveState oneshot
+shutdown nocommit = do
+	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	liftIO Git.Command.reap -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching

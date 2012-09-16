@@ -12,7 +12,7 @@ import Command
 import Annex.UUID
 
 def :: [Command]
-def = [oneShot $ command "configlist" paramNothing seek
+def = [noCommit $ command "configlist" paramNothing seek
 	"outputs relevant git configuration"]
 
 seek :: [CommandSeek]
