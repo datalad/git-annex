@@ -1,1 +1,1 @@
-[[!inline pages="(page(design/assistant/blog/*) and tagged(polls)) or page(design/assistant/polls/*)" show=0]]
+[[!inline pages="(page(design/assistant/blog/*) and tagged(design/assistant/polls)) or page(design/assistant/polls/*)" show=0]]
