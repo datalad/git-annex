@@ -25,3 +25,7 @@ I'll try and bisect it and find out where the problem first appeared, does the t
 > Wow, I had not noticed the 30 pending moderated comments.. Let them all
 > thru, and I guess I'll turn off comment spam filtering for now, since
 > there has apparently been none. --[[Joey]] 
+
+---
+
+> Seems this segfault is fixed. [[done]] --[[Joey]] 
