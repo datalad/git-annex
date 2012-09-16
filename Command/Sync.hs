@@ -154,15 +154,15 @@ pushRemote remote branch = go =<< needpush
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
 pushBranch remote branch g =
 	Git.Command.runBool "push"
-		[ Param (Remote.name remote)
-		, Param (show Annex.Branch.name)
-		, Param refspec
+		[ Param $ Remote.name remote
+		, Param $ refspec Annex.Branch.name
+		, Param $ refspec branch
 		] g
 	where
-		refspec = concat 
-			[ show $ Git.Ref.base branch
+		refspec b = concat 
+			[ show $ Git.Ref.base b
 			,  ":"
-			, show $ Git.Ref.base $ syncBranch branch
+			, show $ Git.Ref.base $ syncBranch b
 			]
 
 mergeAnnex :: CommandStart

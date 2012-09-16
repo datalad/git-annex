@@ -5,4 +5,6 @@ that then has to be auto-resolved.
 This seems similar to the laddering problem described in this old bug:
 [[bugs/making_annex-merge_try_a_fast-forward]]
 
---[[Joey]] 
+--[[Joey]]
+
+Think I've fixed this. [[done]] --[[Joey]]

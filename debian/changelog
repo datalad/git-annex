@@ -22,6 +22,8 @@ git-annex (3.20120826) UNRELEASED; urgency=low
     rather than moving to .git/annex/bad/
   * Avoid crashing on encoding errors in filenames when writing transfer info
     files and reading from checksum commands.
+  * sync: Pushes the git-annex branch to remote/synced/git-annex, rather
+    than directly to remote/git-annex.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 
