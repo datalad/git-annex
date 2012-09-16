@@ -47,3 +47,5 @@ Already up-to-date.
 </pre>
 
 I ran " git annex watch -d --foreground" to watch what was going one, and just created a .gitignore file and the the commiter/lsof thread just loops over and over.... I only noticed as my laptop battery had drained at somepoint when git-annex was running in the background.
+
+[[!meta title="assistant: lsof/committer thread loops occassionally"]]

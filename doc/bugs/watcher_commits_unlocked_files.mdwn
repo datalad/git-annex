@@ -26,3 +26,5 @@ Possible approaches:
   events when files are moved out of the repository (well, I do, but it
   just says "file moved", with no forwarding address, so I don't know 
   how to find the file to unlock it.
+
+[[!meta title="assistant: watcher_commits_unlocked_files"]]

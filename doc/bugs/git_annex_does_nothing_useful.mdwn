@@ -58,3 +58,5 @@ Alright, what if I just try to get a non-existent file?
     $
 
 Alright, it didn't fail with an error, that's very strange. What is going on here?
+
+[[!meta title="v1 file is ignored"]]

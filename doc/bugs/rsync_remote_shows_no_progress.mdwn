@@ -10,3 +10,4 @@ git head of today, Ubuntu 12.04
 Please provide any additional information below.
 I looked in the source code and found some hints that the rsync progress should actually be evaluated and shown, I'm opening a bug report for this reason.
 
+[[!meta title="assistant: No progress bars for file uploads"]]

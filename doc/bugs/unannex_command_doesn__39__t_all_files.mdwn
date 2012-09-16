@@ -24,3 +24,7 @@
 > [[annex_unannex__47__uninit_should_handle_copies]] and `unannex --fast`
 > added to leave contents behind in the annex, which allows handling
 > copies. But needs manual cleanup later with dropunused. --[[Joey]] 
+
+> This is basically a dup of [[Large unannex operations result in stale symlinks and data loss]],
+> or at least the ideas in there will also deal with this. Closing as dupe.
+> [[done]] --[[Joey]] 
