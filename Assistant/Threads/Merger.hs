@@ -11,10 +11,10 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import qualified Annex.Branch
 import qualified Git
 import qualified Git.Merge
 import qualified Git.Branch
-import qualified Command.Sync
 
 thisThread :: ThreadName
 thisThread = "Merger"
@@ -67,16 +67,33 @@ onErr _ msg _ = error msg
 onAdd :: Handler
 onAdd g file _
 	| ".lock" `isSuffixOf` file = noop
-	| otherwise = do
-		let changedbranch = Git.Ref $
-			"refs" </> "heads" </> takeFileName file
-		current <- Git.Branch.current g
-		when (Just changedbranch == current) $ do
-			liftIO $ debug thisThread
-				[ "merging changes into"
-				, show current
-				]
-			void $ mergeBranch changedbranch g
+	| isAnnexBranch file = noop
+	| "/synced/" `isInfixOf` file = go =<< Git.Branch.current g
+	| otherwise = noop
+	where
+		changedbranch = fileToBranch file
+		go (Just current)
+			| equivBranches changedbranch current = do
+				liftIO $ debug thisThread
+					[ "merging"
+					, show changedbranch
+					, "into"
+					, show current
+					]
+				void $ Git.Merge.mergeNonInteractive changedbranch g
+		go _ = noop
 
-mergeBranch :: Git.Ref -> Git.Repo -> IO Bool
-mergeBranch = Git.Merge.mergeNonInteractive . Command.Sync.syncBranch
+equivBranches :: Git.Ref -> Git.Ref -> Bool
+equivBranches x y = base x == base y
+	where
+		base = takeFileName . show
+
+isAnnexBranch :: FilePath -> Bool
+isAnnexBranch f = n `isSuffixOf` f
+	where
+		n = "/" ++ show Annex.Branch.name
+
+fileToBranch :: FilePath -> Git.Ref
+fileToBranch f = Git.Ref $ "refs" </> "heads" </> base
+	where
+		base = Prelude.last $ split "/refs/heads/" f

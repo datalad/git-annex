@@ -26,7 +26,6 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
 			| prefix `isPrefixOf` s = drop (length prefix) s
 			| otherwise = s
 
-
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
