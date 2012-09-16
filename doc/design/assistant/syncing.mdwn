@@ -8,6 +8,7 @@ all the other git clones, at both the git level and the key/value level.
   There does not seem to be an error message. This will sometimes reproduce
   (in a fresh clone each time) several times in a row, but then stops happening,
   which has prevented me from debugging it.
+  This could possibly have been caused by the bug fixed in 750c4ac6c282d14d19f79e0711f858367da145e4.
 * The git repository syncing sometimes fails due to the remote having updated.
   While syncing retries, this sometimes doesn't work.
 
