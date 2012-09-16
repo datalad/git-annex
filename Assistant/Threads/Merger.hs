@@ -15,6 +15,7 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Merge
 import qualified Git.Branch
+import qualified Git.Command as Git
 
 thisThread :: ThreadName
 thisThread = "Merger"
@@ -81,6 +82,11 @@ onAdd g file _
 					, show current
 					]
 				void $ Git.Merge.mergeNonInteractive changedbranch g
+				when ("fallback/" `isInfixOf` (show changedbranch)) $
+					void $ Git.runBool "branch"
+						[ Param "-D"
+						, Param $ show changedbranch
+						] g
 		go _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool

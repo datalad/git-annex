@@ -17,10 +17,12 @@ import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
 import qualified Git.Branch
+import qualified Git.Ref
 import qualified Git.Command
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Annex.Branch
+import Annex.UUID
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -56,48 +58,89 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
- - parallel.
+ - parallel, along with the git-annex branch. This is the same
+ - as "git annex sync", except in parallel, and will co-exist with use of
+ - "git annex sync".
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
- - as not to block other threads. -}
+ - as not to block other threads.
+ -
+ - This can fail, when the remote's sync branch (or git-annex branch) has
+ - been updated by some other remote pushing into it, or by the remote
+ - itself. To handle failure, a manual pull and merge is done, and the push
+ - is retried.
+ -
+ - When there's a lot of activity, we may fail more than once.
+ - On the other hand, we may fail because the remote is not available.
+ - Rather than retrying indefinitely, after the first retry we enter a
+ - fallback mode, where our push is guarenteed to succeed if the remote is
+ - reachable. If the fallback fails, the push is queued to be retried
+ - later.
+ -
+ - The fallback mode pushes to branches on the remote that have our uuid in
+ - them. While ugly, those branches are reserved for pushing by us, and
+ - so our pushes will succeed.
+ -}
 pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe FailedPushMap -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushmap remotes = do
-	(g, branch) <- runThreadState st $
-		(,) <$> fromRepo id <*> inRepo Git.Branch.current
-	go True branch g remotes
+	(g, branch, u) <- runThreadState st $ (,,)
+		<$> fromRepo id
+		<*> inRepo Git.Branch.current
+		<*> getUUID
+	go True branch g u remotes
 	where
-		go _ Nothing _ _ = return True -- no branch, so nothing to do
-		go shouldretry (Just branch) g rs = do
+		go _ Nothing _ _ _ = return True -- no branch, so nothing to do
+		go shouldretry (Just branch) g u rs = do
 			debug threadname
 				[ "pushing to"
 				, show rs
 				]
 			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 			(succeeded, failed) <- inParallel (push g branch) rs
+			updatemap succeeded []
 			let ok = null failed
-			case mpushmap of
-				Nothing -> noop
-				Just pushmap -> 
-					changeFailedPushMap pushmap $ \m ->
-						M.union (makemap failed) $
-							M.difference m (makemap succeeded)
-			unless ok $
-				debug threadname
-					[ "failed to push to"
-					, show failed
-					]
-			if ok || not shouldretry
+			if ok
 				then return ok
-				else retry branch g failed
+				else if shouldretry
+					then retry branch g u failed
+					else fallback branch g u failed
 
+		updatemap succeeded failed = case mpushmap of
+			Nothing -> noop
+			Just pushmap -> changeFailedPushMap pushmap $ \m ->
+				M.union (makemap failed) $
+					M.difference m (makemap succeeded)
 		makemap l = M.fromList $ zip l (repeat now)
 
-		push g branch remote = Command.Sync.pushBranch remote branch g
-
-		retry branch g rs = do
+		retry branch g u rs = do
 			debug threadname [ "trying manual pull to resolve failed pushes" ]
 			void $ manualPull st (Just branch) rs
-			go False (Just branch) g rs
+			go False (Just branch) g u rs
+
+		fallback branch g u rs = do
+			debug threadname
+				[ "fallback pushing to"
+				, show rs
+				]
+			(succeeded, failed) <- inParallel (pushfallback g u branch) rs
+			updatemap succeeded failed
+			return $ null failed
+			
+		push g branch remote = Command.Sync.pushBranch remote branch g
+		pushfallback g u branch remote = Git.Command.runBool "push"
+			[ Param $ Remote.name remote
+			, Param $ refspec Annex.Branch.name
+			, Param $ refspec branch
+			] g
+			where
+				refspec b = concat
+					[ s
+					, ":"
+					, show $ Git.Ref.base $
+						Command.Sync.syncBranch $ Git.Ref $
+							"fallback" </> fromUUID u </> s
+					]
+					where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
 manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO Bool
