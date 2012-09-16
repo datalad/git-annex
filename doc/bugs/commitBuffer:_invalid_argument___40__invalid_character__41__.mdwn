@@ -223,3 +223,6 @@ http://git-annex.branchable.com/todo/support-non-utf8-locales/
     failed
     (Recording state in git...)
     git-annex: copy: 1 failed
+
+> [[Fixed|done]]. Sorry this took so long, I was at a very busy point when
+> you filed this and am only just getting caught up. --[[Joey]]

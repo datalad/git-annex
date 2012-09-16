@@ -16,6 +16,7 @@ import Types.KeySource
 import qualified Build.SysConfig as SysConfig
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
+import System.Process
 
 type SHASize = Int
 
@@ -55,7 +56,7 @@ shaN shasize file filesize = do
 	case shaCommand shasize filesize of
 		Left sha -> liftIO $ sha <$> L.readFile file
 		Right command -> liftIO $ parse command . lines <$>
-			readProcess command (toCommand [File file])
+			readsha command (toCommand [File file])
 	where
 		parse command [] = bad command
 		parse command (l:_)
@@ -64,6 +65,16 @@ shaN shasize file filesize = do
 			where
 				sha = fst $ separate (== ' ') l
 		bad command = error $ command ++ " parse error"
+		{- sha commands output the filename, so need to set fileEncoding -}
+		readsha command args =
+			withHandle StdoutHandle createProcessSuccess p $ \h -> do
+				fileEncoding h
+				output  <- hGetContentsStrict h
+				hClose h
+				return output
+			where
+				p = (proc command args)
+					{ std_out = CreatePipe }
 
 shaCommand :: SHASize -> Integer -> Either (L.ByteString -> String) String
 shaCommand shasize filesize

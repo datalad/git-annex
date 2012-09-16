@@ -97,28 +97,27 @@ runTransfer t file a = do
 		<*> pure Nothing
 		<*> pure file
 		<*> pure False
-	let content = writeTransferInfo info
-	ok <- bracketIO (prep tfile mode content) (cleanup tfile) a
-	unless ok $ failed content
+	ok <- bracketIO (prep tfile mode info) (cleanup tfile) a
+	unless ok $ failed info
 	return ok
 	where
-		prep tfile mode content = do
+		prep tfile mode info = do
 			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
 				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 			when (locked == Nothing) $
 				error $ "transfer already in progress"
-			writeFile tfile content
+			writeTransferInfoFile info tfile
 			return fd
 		cleanup tfile fd = do
 			void $ tryIO $ removeFile tfile
 			void $ tryIO $ removeFile $ transferLockFile tfile
 			closeFd fd
-		failed content = do
+		failed info = do
 			failedtfile <- fromRepo $ failedTransferFile t
 			createAnnexDirectory $ takeDirectory failedtfile
-			liftIO $ writeFile failedtfile content
+			liftIO $ writeTransferInfoFile info failedtfile
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -136,9 +135,8 @@ checkTransfer t = do
 			case locked of
 				Nothing -> return Nothing
 				Just (pid, _) -> liftIO $
-					flip catchDefaultIO Nothing $ do
-						readTransferInfo (Just pid)
-							<$> readFile tfile
+					flip catchDefaultIO Nothing $
+						readTransferInfoFile (Just pid) tfile
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
@@ -159,7 +157,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 	where
 		getpairs = mapM $ \f -> do
 			let mt = parseTransferFile f
-			mi <- readTransferInfo Nothing <$> readFile f
+			mi <- readTransferInfoFile Nothing f
 			return $ case (mt, mi) of
 				(Just t, Just i) -> Just (t, i)
 				_ -> Nothing
@@ -196,6 +194,13 @@ parseTransferFile file
 	where
 		bits = splitDirectories file
 
+writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
+writeTransferInfoFile info tfile = do
+	h <- openFile tfile WriteMode
+	fileEncoding h
+	hPutStr h $ writeTransferInfo info
+	hClose h
+
 writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	-- transferPid is not included; instead obtained by looking at
@@ -204,6 +209,12 @@ writeTransferInfo info = unlines
 	-- bytesComplete is not included; changes too fast 
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
+
+readTransferInfoFile :: (Maybe ProcessID) -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile mpid tfile = do
+	h <- openFile tfile ReadMode
+	fileEncoding h
+	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
 
 readTransferInfo :: (Maybe ProcessID) -> String -> Maybe TransferInfo
 readTransferInfo mpid s =
