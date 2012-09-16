@@ -109,5 +109,5 @@ going through <http://hackage.haskell.org/packages/archive/network/2.3.0.14/doc/
 > 
 > Currently though, dbus is not supposed to be built on non-Linux systems.
 > (Well, it might work on Freebsd or something, but I've not tried it.)
-> I've fixed the cabal file to only enable it on Linux.
+> I've fixed the cabal file to only enable it on Linux. [[done]] --[[Joey]] 
 
