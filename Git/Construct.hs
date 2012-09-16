@@ -28,13 +28,19 @@ import Git.Types
 import Git
 import qualified Git.Url as Url
 
-{- Finds the git repository used for the Cwd, which may be in a parent
+{- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
 fromCwd :: IO Repo
-fromCwd = getCurrentDirectory >>= seekUp isRepoTop >>= maybe norepo makerepo
+fromCwd = getCurrentDirectory >>= seekUp checkForRepo
 	where
-		makerepo = newFrom . LocalUnknown
 		norepo = error "Not in a git repository."
+		seekUp check dir = do
+			r <- check dir
+			case r of
+				Nothing -> case parentDir dir of
+					"" -> norepo
+					d -> seekUp check d
+				Just loc -> newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
 fromPath :: FilePath -> IO Repo
@@ -201,22 +207,33 @@ expandTilde = expandt True
 			| c == '/' = (n, cs)
 			| otherwise = findname (n++[c]) cs
 
-seekUp :: (FilePath -> IO Bool) -> FilePath -> IO (Maybe FilePath)
-seekUp want dir =
-	ifM (want dir)
-		( return $ Just dir
-		, case parentDir dir of
-			"" -> return Nothing
-			d -> seekUp want d
-		)
-
-isRepoTop :: FilePath -> IO Bool
-isRepoTop dir = ifM isRepo ( return True , isBareRepo )
+checkForRepo :: FilePath -> IO (Maybe RepoLocation)
+checkForRepo dir = 
+	check isRepo $
+		check gitDirFile $
+			check isBareRepo $
+				return Nothing
 	where
-		isRepo = gitSignature (".git" </> "config")
-		isBareRepo = ifM (doesDirectoryExist $ dir </> "objects")
-			( gitSignature "config" , return False )
-		gitSignature file = doesFileExist (dir </> file)
+		check test cont = maybe cont (return . Just) =<< test
+		checkdir c = ifM c
+			( return $ Just $ LocalUnknown dir
+			, return Nothing
+			)
+		isRepo = checkdir $ gitSignature $ ".git" </> "config"
+		isBareRepo = checkdir $ gitSignature "config"
+			<&&> doesDirectoryExist (dir </> "objects")
+		gitDirFile = do
+			c <- firstLine <$>
+				catchDefaultIO (readFile $ dir </> ".git") ""
+			return $ if gitdirprefix `isPrefixOf` c
+				then Just $ Local 
+					{ gitdir = drop (length gitdirprefix) c
+					, worktree = Just dir
+					}
+				else Nothing
+			where
+				gitdirprefix = "gitdir: "
+		gitSignature file = doesFileExist $ dir </> file
 
 newFrom :: RepoLocation -> IO Repo
 newFrom l = return Repo

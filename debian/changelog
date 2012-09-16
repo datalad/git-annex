@@ -17,6 +17,7 @@ git-annex (3.20120826) UNRELEASED; urgency=low
     too long (and use relative path to minimise path to the control socket).
   * migrate: Check content before generating the new key, to avoid generating
     a key for corrupt data.
+  * Support repositories created with --separate-git-dir. Closes: #684405
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 
