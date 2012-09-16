@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="thanx for fast help ;)"
+ date="2012-09-16T16:09:29Z"
+ content="""
+git-annex version: 3.20120629
+
+git annex unused did not show me anything... dont know why... I did only \"rm Directory\" not git rm... but \"git annex watch\" did check it in... I sadly have reverted and droped the file now... but if you want I can try to delete other files the same way to see if annex unused shows them... then I post the hole commands... k I try it now:
+
+oh I see the directory I wanted to drop did not get dropped because I set numcopies to 2 ;) so I try it again with that file:
+
+1. rm -r directory
+2. ls it is gone (should be ;) )
+
+user@host:~/annex/SOFTWARE$ git annex unused
+unused . (checking for unused data...) (checking master...) (checking synced/master...) (checking usbdrive/master...) ok
+user@host:~/annex/SOFTWARE$ 
+
+Is that like it should be? If so, should unused only show stuff that I delete with git rm?
+
+
+-----------------------------------
+
+Ok I did read the unused doku you pointed me. So I thought I got it, but I did not:
+
+If I
+
+1. rm File
+2. in the usb-repos, git pull
+both repositories dont have a link to the file.
+3. git unused shows nothing
+4. it seemed that the link AND the File it links to got deleted:
+
+-../.git/annex/objects/pM/vq/SHA256-s1066518528--00c5e1b1610c0c2dfab05c7a55aaad
+
+but the file size is 1gb, both directories dont get smaller... also if I use git gc after that it does not get smaller too.
+
+Is there a way to really delete files from both repositories.
+
+"""]]
