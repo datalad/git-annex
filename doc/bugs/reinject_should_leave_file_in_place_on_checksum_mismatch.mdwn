@@ -11,3 +11,5 @@ What version of git-annex are you using? On what operating system?
 git-annex version: 3.20120807
 Ubuntu 12.04 updated on Aug 20th
 annex was installed via cabal on Aug 20th, all other packages are from ubuntu.
+
+> [[done]] --[[Joey]] 

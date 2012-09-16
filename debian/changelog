@@ -18,6 +18,8 @@ git-annex (3.20120826) UNRELEASED; urgency=low
   * migrate: Check content before generating the new key, to avoid generating
     a key for corrupt data.
   * Support repositories created with --separate-git-dir. Closes: #684405
+  * reinject: When the provided file doesn't match, leave it where it is,
+    rather than moving to .git/annex/bad/
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 

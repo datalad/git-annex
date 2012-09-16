@@ -209,17 +209,17 @@ checkKeySize :: Key -> Annex Bool
 checkKeySize key = do
 	file <- inRepo $ gitAnnexLocation key
 	ifM (liftIO $ doesFileExist file)
-		( checkKeySize' key file badContent
+		( checkKeySizeOr badContent key file
 		, return True
 		)
 
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
-checkKeySizeRemote key remote (Just file) = checkKeySize' key file
-	(badContentRemote remote)
+checkKeySizeRemote key remote (Just file) =
+	checkKeySizeOr (badContentRemote remote) key file
 
-checkKeySize' :: Key -> FilePath -> (Key -> Annex String) -> Annex Bool
-checkKeySize' key file bad = case Types.Key.keySize key of
+checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> Annex Bool
+checkKeySizeOr bad key file = case Types.Key.keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- fromIntegral . fileSize
@@ -242,22 +242,23 @@ checkKeySize' key file bad = case Types.Key.keySize key of
 checkBackend :: Backend -> Key -> Annex Bool
 checkBackend backend key = do
 	file <- inRepo (gitAnnexLocation key)
-	checkBackend' backend key (Just file) badContent
+	checkBackendOr badContent backend key file
 
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
-checkBackendRemote backend key remote localcopy =
-	checkBackend' backend key localcopy (badContentRemote remote)
+checkBackendRemote backend key remote = maybe (return True) go
+	where
+		go = checkBackendOr (badContentRemote remote) backend key
 
-checkBackend' :: Backend -> Key -> Maybe FilePath -> (Key -> Annex String) -> Annex Bool
-checkBackend' _ _ Nothing _ = return True
-checkBackend' backend key (Just file) bad = case Types.Backend.fsckKey backend of
-	Nothing -> return True
-	Just a -> do
-		ok <- a key file
-		unless ok $ do
-			msg <- bad key
-			warning $ "Bad file content; " ++ msg
-		return ok
+checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
+checkBackendOr bad backend key file =
+	case Types.Backend.fsckKey backend of
+		Nothing -> return True
+		Just a -> do
+			ok <- a key file
+			unless ok $ do
+				msg <- bad key
+				warning $ "Bad file content; " ++ msg
+			return ok
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
