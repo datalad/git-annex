@@ -10,6 +10,7 @@ module Logs.Transfer where
 import Common.Annex
 import Annex.Perms
 import Annex.Exception
+import Annex.UUID
 import qualified Git
 import Types.Remote
 import Types.Key
@@ -47,6 +48,9 @@ data TransferInfo = TransferInfo
 	, transferPaused :: Bool
 	}
 	deriving (Show, Eq, Ord)
+
+stubTransferInfo :: TransferInfo
+stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing Nothing False
 
 data Direction = Upload | Download
 	deriving (Eq, Ord, Read, Show)
@@ -163,6 +167,11 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 		findfiles = liftIO . mapM dirContentsRecursive
 			=<< mapM (fromRepo . failedTransferDir u)
 				[Download, Upload]
+
+removeFailedTransfer :: Transfer -> Annex ()
+removeFailedTransfer t = do
+	f <- fromRepo $ failedTransferFile t
+	liftIO $ void $ tryIO $ removeFile f
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath

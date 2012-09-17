@@ -65,35 +65,25 @@ transferScannerThread st dstatus scanremotes transferqueue = thread $ do
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
 failedTransferScan st dstatus transferqueue r = do
-	ts <- runThreadState st $ 
-		getFailedTransfers $ Remote.uuid r
-	go ts
+	failed <- runThreadState st $ getFailedTransfers (Remote.uuid r)
+	runThreadState st $ mapM_ removeFailedTransfer $ map fst failed
+	mapM_ retry failed
 	where
-		go [] = noop
-		go ((t, info):ts)
+		retry (t, info)
 			| transferDirection t == Download = do
 				{- Check if the remote still has the key.
 				 - If not, relies on the expensiveScan to
 				 - get it queued from some other remote. -}
-				ifM (runThreadState st $ remoteHas r $ transferKey t)
-					( requeue t info
-					, dequeue t
-					)
-				go ts
+				whenM (runThreadState st $ remoteHas r $ transferKey t) $
+					requeue t info
 			| otherwise = do
 				{- The Transferrer checks when uploading
 				 - that the remote doesn't already have the
 				 - key, so it's not redundantly checked
 				 - here. -}
 				requeue t info
-				go ts
-
-		requeue t info = do
-			queueTransferWhenSmall
-				transferqueue dstatus (associatedFile info) t r
-			dequeue t
-		dequeue t = void $ runThreadState st $ inRepo $
-			liftIO . tryIO . removeFile . failedTransferFile t
+		requeue t info = queueTransferWhenSmall
+			transferqueue dstatus (associatedFile info) t r
 
 {- This is a expensive scan through the full git work tree, finding
  - files to download from or upload to any of the remotes.
