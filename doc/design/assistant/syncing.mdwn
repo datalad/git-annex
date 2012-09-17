@@ -41,6 +41,10 @@ all the other git clones, at both the git level and the key/value level.
   branch push, it could try to requeue downloads that it has such intents
   registered for.
 
+  Note that this solution won't cover use cases the other does. For example,
+  connect a USB drive A; B syncs files from it, and then should pass them to C.
+  If the files are not new, C won't immediatly request them from B.
+
 ## TODO
 
 * Test MountWatcher on LXDE.
