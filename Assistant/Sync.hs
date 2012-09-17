@@ -90,7 +90,7 @@ pushToRemotes threadname now st mpushmap remotes = do
 	go True branch g u remotes
 	where
 		go _ Nothing _ _ _ = return True -- no branch, so nothing to do
-		go shouldretry (Just branch) g u rs = do
+		go shouldretry (Just branch) g u rs =  do
 			debug threadname
 				[ "pushing to"
 				, show rs
@@ -133,12 +133,12 @@ pushToRemotes threadname now st mpushmap remotes = do
 			, Param $ refspec branch
 			] g
 			where
+				{- Push to refs/synced/uuid/branch; this
+				 - avoids cluttering up the branch display. -}
 				refspec b = concat
 					[ s
 					, ":"
-					, show $ Git.Ref.base $
-						Command.Sync.syncBranch $ Git.Ref $
-							"fallback" </> fromUUID u </> s
+					, "refs" </> "synced" </> fromUUID u </> s
 					]
 					where s = show $ Git.Ref.base b
 

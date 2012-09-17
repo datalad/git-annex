@@ -49,9 +49,8 @@ sha branch repo = process <$> showref repo
 
 {- List of (refs, branches) matching a given ref spec. -}
 matching :: Ref -> Repo -> IO [(Ref, Branch)]
-matching ref repo = do
-	r <- pipeRead [Param "show-ref", Param $ show ref] repo
-	return $ map gen (lines r)
+matching ref repo = map gen . lines <$> 
+	pipeRead [Param "show-ref", Param $ show ref] repo
 	where
 		gen l = let (r, b) = separate (== ' ') l in
 			(Ref r, Ref b)

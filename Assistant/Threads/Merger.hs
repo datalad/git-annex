@@ -15,18 +15,17 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Merge
 import qualified Git.Branch
-import qualified Git.Command as Git
 
 thisThread :: ThreadName
 thisThread = "Merger"
 
-{- This thread watches for changes to .git/refs/heads/synced/,
- - which indicate incoming pushes. It merges those pushes into the
- - currently checked out branch. -}
+{- This thread watches for changes to .git/refs/, looking for 
+ - incoming pushes. It merges those pushes into the currently
+ - checked out branch. -}
 mergeThread :: ThreadState -> NamedThread
 mergeThread st = thread $ do
 	g <- runThreadState st $ fromRepo id
-	let dir = Git.localGitDir g </> "refs" </> "heads" </> "synced"
+	let dir = Git.localGitDir g </> "refs"
 	createDirectoryIfMissing True dir
 	let hook a = Just $ runHandler g a
 	let hooks = mkWatchHooks
@@ -82,11 +81,6 @@ onAdd g file _
 					, show current
 					]
 				void $ Git.Merge.mergeNonInteractive changedbranch g
-				when ("fallback/" `isInfixOf` (show changedbranch)) $
-					void $ Git.runBool "branch"
-						[ Param "-D"
-						, Param $ show changedbranch
-						] g
 		go _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
@@ -100,6 +94,6 @@ isAnnexBranch f = n `isSuffixOf` f
 		n = "/" ++ show Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
-fileToBranch f = Git.Ref $ "refs" </> "heads" </> base
+fileToBranch f = Git.Ref $ "refs" </> base
 	where
-		base = Prelude.last $ split "/refs/heads/" f
+		base = Prelude.last $ split "/refs/" f
