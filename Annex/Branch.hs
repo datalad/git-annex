@@ -322,7 +322,7 @@ needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
 	lock <- fromRepo gitAnnexIndexLock
 	lockref <- Git.Ref . firstLine <$>
-		liftIO (catchDefaultIO (readFileStrict lock) "")
+		liftIO (catchDefaultIO "" $ readFileStrict lock)
 	return (lockref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a

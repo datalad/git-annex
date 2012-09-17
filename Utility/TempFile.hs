@@ -34,7 +34,7 @@ withTempFile :: Template -> (FilePath -> Handle -> IO a) -> IO a
 withTempFile template a = bracket create remove use
 	where
 		create = do
-			tmpdir <- catchDefaultIO getTemporaryDirectory "."
+			tmpdir <- catchDefaultIO "." getTemporaryDirectory
 			openTempFile tmpdir template
 		remove (name, handle) = do
 			hClose handle
@@ -48,7 +48,7 @@ withTempDir template = bracket create remove
 	where
 		remove = removeDirectoryRecursive
 		create = do
-			tmpdir <- catchDefaultIO getTemporaryDirectory "."
+			tmpdir <- catchDefaultIO "." getTemporaryDirectory
 			createDirectoryIfMissing True tmpdir
 			pid <- getProcessID
 			makedir tmpdir (template ++ show pid) (0 :: Int)

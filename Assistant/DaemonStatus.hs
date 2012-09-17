@@ -108,7 +108,7 @@ startDaemonStatus :: Annex DaemonStatusHandle
 startDaemonStatus = do
 	file <- fromRepo gitAnnexDaemonStatusFile
 	status <- liftIO $
-		catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
+		flip catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
 	remotes <- calcKnownRemotes
 	liftIO $ atomically $ newTMVar status

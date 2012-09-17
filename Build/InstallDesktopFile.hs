@@ -49,7 +49,7 @@ isRoot = do
 
 inDestDir :: FilePath -> IO FilePath
 inDestDir f = do
-	destdir <- catchDefaultIO (getEnv "DESTDIR") ""
+	destdir <- catchDefaultIO "" (getEnv "DESTDIR")
 	return $ destdir </> f
 
 writeFDODesktop :: FilePath -> IO ()

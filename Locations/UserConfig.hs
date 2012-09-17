@@ -28,4 +28,4 @@ programFile = userConfigFile "program"
 readProgramFile :: IO FilePath
 readProgramFile = do
 	programfile <- programFile
-	catchDefaultIO (readFile programfile) "git-annex"
+	catchDefaultIO "git-annex" $ readFile programfile

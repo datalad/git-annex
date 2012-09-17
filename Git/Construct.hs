@@ -224,7 +224,7 @@ checkForRepo dir =
 			<&&> doesDirectoryExist (dir </> "objects")
 		gitDirFile = do
 			c <- firstLine <$>
-				catchDefaultIO (readFile $ dir </> ".git") ""
+				catchDefaultIO "" (readFile $ dir </> ".git")
 			return $ if gitdirprefix `isPrefixOf` c
 				then Just $ Local 
 					{ gitdir = drop (length gitdirprefix) c

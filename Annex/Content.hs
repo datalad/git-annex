@@ -280,7 +280,7 @@ getKeysPresent :: Annex [Key]
 getKeysPresent = liftIO . traverse (2 :: Int) =<< fromRepo gitAnnexObjectDir
 	where
 		traverse depth dir = do
-			contents <- catchDefaultIO (dirContents dir) []
+			contents <- catchDefaultIO [] (dirContents dir)
 			if depth == 0
 				then continue (mapMaybe (fileKey . takeFileName) contents) []
 				else do

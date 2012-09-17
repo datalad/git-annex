@@ -43,7 +43,7 @@ dirContentsRecursive topdir = dirContentsRecursive' topdir [""]
 dirContentsRecursive' :: FilePath -> [FilePath] -> IO [FilePath]
 dirContentsRecursive' _ [] = return []
 dirContentsRecursive' topdir (dir:dirs) = unsafeInterleaveIO $ do
-	(files, dirs') <- collect [] [] =<< catchDefaultIO (dirContents (topdir </> dir)) []
+	(files, dirs') <- collect [] [] =<< catchDefaultIO [] (dirContents (topdir </> dir))
 	files' <- dirContentsRecursive' topdir (dirs' ++ dirs)
 	return (files ++ files')
 	where

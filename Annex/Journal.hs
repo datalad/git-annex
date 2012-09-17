@@ -47,8 +47,8 @@ getJournalledFiles = map fileJournal <$> getJournalFiles
 getJournalFiles :: Annex [FilePath]
 getJournalFiles = do
 	g <- gitRepo
-	fs <- liftIO $
-		catchDefaultIO (getDirectoryContents $ gitAnnexJournalDir g) []
+	fs <- liftIO $ catchDefaultIO [] $
+		getDirectoryContents $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) fs
 
 {- Checks if there are changes in the journal. -}

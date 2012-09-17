@@ -134,9 +134,8 @@ checkTransfer t = do
 			liftIO $ closeFd fd
 			case locked of
 				Nothing -> return Nothing
-				Just (pid, _) -> liftIO $
-					flip catchDefaultIO Nothing $
-						readTransferInfoFile (Just pid) tfile
+				Just (pid, _) -> liftIO $ catchDefaultIO Nothing $
+					readTransferInfoFile (Just pid) tfile
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]

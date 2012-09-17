@@ -132,5 +132,5 @@ checkNotReadOnly cmd
 
 checkEnv :: String -> IO ()
 checkEnv var =
-	whenM (not . null <$> catchDefaultIO (getEnv var) "") $
+	whenM (not . null <$> catchDefaultIO "" (getEnv var)) $
 		error $ "Action blocked by " ++ var

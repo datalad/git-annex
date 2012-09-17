@@ -71,7 +71,7 @@ sshCleanup :: Annex ()
 sshCleanup = do
 	dir <- fromRepo gitAnnexSshDir
 	sockets <- filter (not . isLock) <$>
-		liftIO (catchDefaultIO (dirContents dir) [])
+		liftIO (catchDefaultIO [] $ dirContents dir)
 	forM_ sockets cleanup
 	where
 		cleanup socketfile = do

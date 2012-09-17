@@ -123,4 +123,5 @@ userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
 xdgEnvHome :: String -> String -> IO String
 xdgEnvHome envbase homedef = do
 	home <- myHomeDir
-	catchDefaultIO (getEnv $ "XDG_" ++ envbase) (home </> homedef)
+	catchDefaultIO (home </> homedef) $
+		getEnv $ "XDG_" ++ envbase

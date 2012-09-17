@@ -13,15 +13,15 @@ import Control.Applicative
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
-catchBoolIO a = catchDefaultIO a False
+catchBoolIO a = catchDefaultIO False a
 
 {- Catches IO errors and returns a Maybe -}
 catchMaybeIO :: IO a -> IO (Maybe a)
-catchMaybeIO a = catchDefaultIO (Just <$> a) Nothing
+catchMaybeIO a = catchDefaultIO Nothing $ Just <$> a
 
 {- Catches IO errors and returns a default value. -}
-catchDefaultIO :: IO a -> a -> IO a
-catchDefaultIO a def = catchIO a (const $ return def)
+catchDefaultIO :: a -> IO a -> IO a
+catchDefaultIO def a = catchIO a (const $ return def)
 
 {- Catches IO errors and returns the error message. -}
 catchMsgIO :: IO a -> IO (Either String a)

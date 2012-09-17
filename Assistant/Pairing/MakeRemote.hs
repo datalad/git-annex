@@ -78,7 +78,8 @@ bestHostName :: PairMsg -> IO HostName
 bestHostName msg = case remoteHostName $ pairMsgData msg of
 	Just h -> do
 		let localname = h ++ ".local"
-		addrs <- catchDefaultIO (getAddrInfo Nothing (Just localname) Nothing) []
+		addrs <- catchDefaultIO [] $
+			getAddrInfo Nothing (Just localname) Nothing
 		maybe fallback (const $ return localname) (headMaybe addrs)
 	Nothing -> fallback
 	where
@@ -88,4 +89,5 @@ bestHostName msg = case remoteHostName $ pairMsgData msg of
 				IPv4Addr addr -> SockAddrInet (PortNum 0) addr
 				IPv6Addr addr -> SockAddrInet6 (PortNum 0) 0 addr 0
 			fromMaybe (showAddr a)
-				<$> catchDefaultIO (fst <$> getNameInfo [] True False sockaddr) Nothing
+				<$> catchDefaultIO Nothing
+					(fst <$> getNameInfo [] True False sockaddr)

@@ -180,7 +180,8 @@ writeLog1 :: FilePath -> [LogLine] -> IO ()
 writeLog1 file ls = viaTmp writeFile file (showLog ls)
 
 readLog1 :: FilePath -> IO [LogLine]
-readLog1 file = catchDefaultIO (parseLog <$> readFileStrict file) []
+readLog1 file = catchDefaultIO [] $
+	parseLog <$> readFileStrict file
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile1 file = do

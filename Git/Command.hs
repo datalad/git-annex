@@ -79,7 +79,7 @@ pipeNullSplit params repo =
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes
-	catchDefaultIO (getAnyProcessStatus False True) Nothing
+	catchDefaultIO Nothing (getAnyProcessStatus False True)
 		>>= maybe noop (const reap)
 
 {- Runs a git command as a coprocess. -}
