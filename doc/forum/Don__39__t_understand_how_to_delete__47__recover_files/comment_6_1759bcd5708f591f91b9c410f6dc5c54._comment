@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="comment 6"
+ date="2012-09-17T23:00:09Z"
+ content="""
+ok I now at least got it that it is nice to run watch on both repositories... 
+
+but what I dont get is, is the git annex watch commando not a automatic way so that this deamon makes sync command whenever needed? so I have to use git annex sync first on the repos where I delete the file and then again on the repos I want to receive that change... that seemed to work, but why did watch not do that for me???
+
+
+
+
+"""]]
