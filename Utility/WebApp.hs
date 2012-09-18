@@ -63,14 +63,18 @@ runWebApp app observer = do
 
 {- Binds to a local socket, selecting any free port.
  -
+ - Prefers to bind to the ipv4 address rather than the ipv6 address
+ - of localhost, if it's available.
+ -
  - As a (very weak) form of security, only connections from 
  - localhost are accepted. -}
 localSocket :: IO Socket
 localSocket = do
 	addrs <- getAddrInfo (Just hints) (Just localhost) Nothing
-	case addrs of
-		[] -> error "unable to bind to a local socket"
-		(addr:_) -> go addr
+	case (partition (\a -> addrFamily a == AF_INET) addrs) of
+		(v4addr:_, _) -> go v4addr
+		(_, v6addr:_) -> go v6addr
+		_ -> error "unable to bind to a local socket"
 	where
 		hints = defaultHints
 			{ addrFlags = [AI_ADDRCONFIG]
