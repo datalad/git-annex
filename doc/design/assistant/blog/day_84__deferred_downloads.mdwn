@@ -1,0 +1,33 @@
+Implemented deferred downloads. So my example from yesterday of three
+repositories in a line keep fully in sync now!
+
+I punted on one problem while doing it. It might be possible to get a really
+big list of deferred downloads in some situation. That all lives in memory.
+I aim for git-annex to always have a constant upper bound on memory use,
+so that's not really acceptable. I have TODOed a reminder to do something
+about limiting the size of this list.
+
+----
+
+I also ran into a nasty crash while implementing this, where two threads
+were trying to do things to git HEAD at the same time, and so one crashed,
+and in a way I don't entirely understand, that crash took down another
+thread with a BlockedIndefinitelyOnSTM exception. I think I've fixed
+this, but it's bothersome that this is the second time that modifications
+to the Merger thread have led to a concurrency related crash that I
+have not fully understood. 
+
+My guess is that STM can get confused when it's
+retrying, and the thread that was preventing it from completing a
+transaction crashes, because it suddenly does not see any other
+references to the TVar(s) involved in the transaction. Any GHC STM gurus
+out there?
+
+---
+
+Still work to be done on making data transfers to keep fully in sync in all
+circumstances. One case I've realized needs work occurs when a USB drive is
+plugged in. Files are downloaded from it to keep the repo in sync, but the
+repo neglects to queue uploads of those files it just got out to other
+repositories it's in contact with. Seems I still need to do something to
+detecting when a successful download is done, and queue uploads.
