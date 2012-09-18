@@ -55,8 +55,7 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ runEvery 
 						, "changes"
 						]
 					void $ alertWhile dstatus commitAlert $
-						tryIO (runThreadState st commitStaged)
-							>> return True
+						runThreadState st commitStaged
 					recordCommit commitchan (Commit time)
 				else refill readychanges
 		else refill changes
@@ -72,10 +71,10 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ runEvery 
 			refillChanges changechan cs
 			
 
-commitStaged :: Annex ()
+commitStaged :: Annex Bool
 commitStaged = do
 	Annex.Queue.flush
-	inRepo $ Git.Command.run "commit"
+	inRepo $ Git.Command.runBool "commit"
 		[ Param "--allow-empty-message"
 		, Param "-m", Param ""
 		-- Empty commits may be made if tree changes cancel

@@ -28,7 +28,7 @@ mergeThread st dstatus transferqueue = thread $ do
 	g <- runThreadState st $ fromRepo id
 	let dir = Git.localGitDir g </> "refs"
 	createDirectoryIfMissing True dir
-	let hook a = Just $ runHandler st dstatus transferqueue g a
+	let hook a = Just $ runHandler st dstatus transferqueue a
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, errHook = hook onErr
@@ -38,21 +38,21 @@ mergeThread st dstatus transferqueue = thread $ do
 	where
 		thread = NamedThread thisThread
 
-type Handler = ThreadState -> DaemonStatusHandle -> TransferQueue -> Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
+type Handler = ThreadState -> DaemonStatusHandle -> TransferQueue -> FilePath -> Maybe FileStatus -> IO ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st dstatus transferqueue g handler file filestatus = void $
+runHandler :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st dstatus transferqueue handler file filestatus = void $
         either print (const noop) =<< tryIO go
         where
-                go = handler st dstatus transferqueue g file filestatus
+                go = handler st dstatus transferqueue file filestatus
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr _ _ _ _ msg _ = error msg
+onErr _ _ _ msg _ = error msg
 
 {- Called when a new branch ref is written.
  -
@@ -66,12 +66,13 @@ onErr _ _ _ _ msg _ = error msg
  - ran are merged in.
  -}
 onAdd :: Handler
-onAdd st dstatus transferqueue g file _
+onAdd st dstatus transferqueue file _
 	| ".lock" `isSuffixOf` file = noop
 	| isAnnexBranch file = runThreadState st $
 		whenM Annex.Branch.forceUpdate $
 			queueDeferredDownloads Later transferqueue dstatus
-	| "/synced/" `isInfixOf` file = mergecurrent =<< Git.Branch.current g
+	| "/synced/" `isInfixOf` file = runThreadState st $ do
+		mergecurrent =<< inRepo Git.Branch.current
 	| otherwise = noop
 	where
 		changedbranch = fileToBranch file
@@ -83,7 +84,8 @@ onAdd st dstatus transferqueue g file _
 					, "into"
 					, show current
 					]
-				void $ Git.Merge.mergeNonInteractive changedbranch g
+				void $ inRepo $
+					Git.Merge.mergeNonInteractive changedbranch
 		mergecurrent _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
