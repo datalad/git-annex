@@ -86,7 +86,9 @@ onDel st dstatus transferqueue file _ = case parseTransferFile file of
 		 - spreading them out to other reachable remotes. -}
 		case (minfo, transferDirection t) of
 			(Just info, Download) -> runThreadState st $
-				queueTransfers Later transferqueue dstatus
+				queueTransfersMatching 
+					(/= transferUUID t)
+					Later transferqueue dstatus
 					(transferKey t)
 					(associatedFile info)
 					Upload

@@ -11,6 +11,7 @@ module Assistant.TransferQueue (
 	newTransferQueue,
 	getTransferQueue,
 	queueTransfers,
+	queueTransfersMatching,
 	queueDeferredDownloads,
 	queueTransfer,
 	queueTransferAt,
@@ -57,12 +58,18 @@ stubInfo f r = stubTransferInfo
 
 {- Adds transfers to queue for some of the known remotes. -}
 queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
-queueTransfers schedule q dstatus k f direction = do
+queueTransfers = queueTransfersMatching (const True)
+
+{- Adds transfers to queue for some of the known remotes, that match a
+ - predicate. -}
+queueTransfersMatching :: (UUID -> Bool) -> Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
+queueTransfersMatching pred schedule q dstatus k f direction = do
 	rs <- sufficientremotes
 		=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
-	if null rs
+	let matchingrs = filter (pred . Remote.uuid) rs
+	if null matchingrs
 		then defer
-		else forM_ rs $ \r -> liftIO $
+		else forM_ matchingrs $ \r -> liftIO $
 			enqueue schedule q dstatus (gentransfer r) (stubInfo f r)
 	where
 		sufficientremotes rs
