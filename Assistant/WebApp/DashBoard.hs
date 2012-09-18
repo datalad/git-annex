@@ -94,6 +94,10 @@ getHomeR = ifM (inFirstRun)
 	, bootstrap (Just DashBoard) $ dashboard True
 	)
 
+{- Used to test if the webapp is running. -}
+headHomeR :: Handler ()
+headHomeR = noop
+
 {- Same as HomeR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler RepHtml
 getNoScriptR = bootstrap (Just DashBoard) $ dashboard False

@@ -10,5 +10,5 @@
     Files in this repository will managed by git-annex, #
     and kept in sync with your repositories on other devices.
   <p>
-  <form .form-inline enctype=#{enctype}>
-    ^{form}
+    <form .form-inline enctype=#{enctype}>
+      ^{form}

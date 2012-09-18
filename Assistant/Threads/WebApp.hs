@@ -21,6 +21,7 @@ import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
 import Assistant.WebApp.Documentation
+import Assistant.WebApp.OtherRepos
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
@@ -72,24 +73,29 @@ webAppThread mst dstatus scanremotes transferqueue transferslots urlrenderer pos
 		, return app
 		)
 	runWebApp app' $ \port -> case mst of
-		Nothing -> withTempFile "webapp.html" $ \tmpfile _ -> go port webapp tmpfile
-		Just st -> go port webapp =<< runThreadState st (fromRepo gitAnnexHtmlShim)
+		Nothing -> withTempFile "webapp.html" $ \tmpfile _ ->
+			go port webapp tmpfile Nothing
+		Just st -> do
+			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
+			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
+			go port webapp htmlshim (Just urlfile)
 	where
 		thread = NamedThread thisThread
 		getreldir Nothing = return Nothing
 		getreldir (Just st) = Just <$>
 			(relHome =<< absPath
 				=<< runThreadState st (fromRepo repoPath))
-		go port webapp htmlshim = do
-			writeHtmlShim webapp port htmlshim
-			maybe noop (\a -> a (myUrl webapp port HomeR) htmlshim) onstartup
+		go port webapp htmlshim urlfile = do
+			debug thisThread ["running on port", show port]
+			let url = myUrl webapp port
+			maybe noop (`writeFile` url) urlfile
+			writeHtmlShim url htmlshim
+			maybe noop (\a -> a url htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
-writeHtmlShim :: WebApp -> PortNumber -> FilePath -> IO ()
-writeHtmlShim webapp port file = do
-	debug thisThread ["running on port", show port]
-	viaTmp go file $ genHtmlShim webapp port
+writeHtmlShim :: String -> FilePath -> IO ()
+writeHtmlShim url file = viaTmp go file $ genHtmlShim url
 	where
 		go tmpfile content = do
 			h <- openFile tmpfile WriteMode
@@ -98,8 +104,8 @@ writeHtmlShim webapp port file = do
 			hClose h
 
 {- TODO: generate this static file using Yesod. -}
-genHtmlShim :: WebApp -> PortNumber -> String
-genHtmlShim webapp port = unlines
+genHtmlShim :: String -> String
+genHtmlShim url = unlines
 	[ "<html>"
 	, "<head>"
 	, "<title>Starting webapp...</title>"
@@ -111,10 +117,8 @@ genHtmlShim webapp port = unlines
 	, "</body>"
 	, "</html>"
 	]
-	where
-		url = myUrl webapp port HomeR
 
-myUrl :: WebApp -> PortNumber -> Route WebApp -> Url
-myUrl webapp port route = unpack $ yesodRender webapp urlbase route []
+myUrl :: WebApp -> PortNumber -> Url
+myUrl webapp port = unpack $ yesodRender webapp urlbase HomeR []
 	where
 		urlbase = pack $ "http://localhost:" ++ show port

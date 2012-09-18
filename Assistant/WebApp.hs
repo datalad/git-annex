@@ -15,6 +15,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
+import Locations.UserConfig
 
 import Yesod
 import Text.Hamlet
@@ -65,8 +66,11 @@ bootstrap navbaritem content = do
 		navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 
 newWebAppState :: IO (TMVar WebAppState)
-newWebAppState = liftIO $ atomically $
-	newTMVar $ WebAppState { showIntro = True }
+newWebAppState = do
+	otherrepos <- listOtherRepos
+	atomically $ newTMVar $ WebAppState
+		{ showIntro = True
+		, otherRepos = otherrepos }
 
 getWebAppState :: forall sub. GHandler sub WebApp WebAppState
 getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
@@ -139,3 +143,16 @@ redirectBack = do
 	clearUltDest
 	setUltDestReferer
 	redirectUltDest HomeR
+
+{- List of other known repsitories, and link to add a new one. -}
+otherReposWidget :: Widget
+otherReposWidget = do
+	repolist <- lift $ otherRepos <$> getWebAppState
+	$(widgetFile "otherrepos")
+
+listOtherRepos :: IO [(String, String)]
+listOtherRepos = do
+	f <- autoStartFile
+	dirs <- ifM (doesFileExist f) ( lines <$> readFile f, return [])
+	names <- mapM relHome dirs
+	return $ sort $ zip names dirs

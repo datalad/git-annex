@@ -1,0 +1,10 @@
+<ul .dropdown-menu>
+  $forall (name, path) <- repolist
+    <li>
+      <a href="@{SwitchToRepositoryR path}">
+        #{name}
+  $if not (null repolist)
+    <li .divider></li>
+  <li>
+    <a href="@{NewRepositoryR}">
+      Add another repository

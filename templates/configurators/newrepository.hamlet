@@ -1,0 +1,15 @@
+<div .span9 .hero-unit>
+  <h2>
+    Add another repository
+  <p>
+    The form below will make a separate repository, that is not synced #
+    with your existing repository. You can use the new repository for #
+    different sorts of files, that are synced and shared with other #
+    devices and users.
+  <p>
+    <form .form-inline enctype=#{enctype}>
+      ^{form}
+  <p>
+    <i .icon-asterisk></i> #
+    Do you want to add another repository that is kept in sync with #
+    the current one? If so, <a href="@{RepositoriesR}">go here</a>.

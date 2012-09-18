@@ -10,7 +10,6 @@ module Logs.Transfer where
 import Common.Annex
 import Annex.Perms
 import Annex.Exception
-import Annex.UUID
 import qualified Git
 import Types.Remote
 import Types.Key

@@ -27,6 +27,7 @@ module Locations (
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
 	gitAnnexHtmlShim,
+	gitAnnexUrlFile,
 	gitAnnexSshDir,
 	gitAnnexRemotesDir,
 	gitAnnexAssistantDefaultDir,
@@ -166,6 +167,10 @@ gitAnnexLogFile r = gitAnnexDir r </> "daemon.log"
 {- Html shim file used to launch the webapp. -}
 gitAnnexHtmlShim :: Git.Repo -> FilePath
 gitAnnexHtmlShim r = gitAnnexDir r </> "webapp.html"
+
+{- File containing the url to the webapp. -}
+gitAnnexUrlFile :: Git.Repo -> FilePath
+gitAnnexUrlFile r = gitAnnexDir r </> "url"
 
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> FilePath

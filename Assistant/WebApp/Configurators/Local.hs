@@ -104,30 +104,47 @@ defaultRepositoryPath firstrun = do
 				)
 		else return cwd
 
-firstRepositoryForm :: Form RepositoryPath
-firstRepositoryForm msg = do
-	path <- T.pack . addTrailingPathSeparator
-		<$> (liftIO . defaultRepositoryPath =<< lift inFirstRun)
-	(pathRes, pathView) <- mreq (repositoryPathField True) "" (Just path)
+newRepositoryForm :: FilePath -> Form RepositoryPath
+newRepositoryForm defpath msg = do
+	(pathRes, pathView) <- mreq (repositoryPathField True) ""
+		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
 		FormFailure l -> (True, concat $ map T.unpack l)
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
-		$(widgetFile "configurators/firstrepository/form")
+		$(widgetFile "configurators/newrepository/form")
 	return (RepositoryPath <$> pathRes, form)
 
 {- Making the first repository, when starting the webapp for the first time. -}
 getFirstRepositoryR :: Handler RepHtml
 getFirstRepositoryR = bootstrap (Just Config) $ do
 	sideBarDisplay
-	setTitle "Getting started"
-	((res, form), enctype) <- lift $ runFormGet firstRepositoryForm
+	setTitle "Getting started"	
+	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
+	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $
 			startFullAssistant $ T.unpack p
-		_ -> $(widgetFile "configurators/firstrepository")
+		_ -> $(widgetFile "configurators/newrepository/first")
+
+{- Adding a new, separate repository. -}
+getNewRepositoryR :: Handler RepHtml
+getNewRepositoryR = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Add another repository"
+	home <- liftIO myHomeDir
+	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm home
+	case res of
+		FormSuccess (RepositoryPath p) -> lift $ do
+			let path = T.unpack p
+			liftIO $ do
+				makeRepo path False
+				initRepo path Nothing
+				addAutoStart path
+			redirect $ SwitchToRepositoryR path
+		_ -> $(widgetFile "configurators/newrepository")
 
 data RemovableDrive = RemovableDrive 
 	{ diskFree :: Maybe Integer

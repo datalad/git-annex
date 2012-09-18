@@ -61,12 +61,12 @@ queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> Asso
 queueTransfers = queueTransfersMatching (const True)
 
 {- Adds transfers to queue for some of the known remotes, that match a
- - predicate. -}
+ - condition. -}
 queueTransfersMatching :: (UUID -> Bool) -> Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
-queueTransfersMatching pred schedule q dstatus k f direction = do
+queueTransfersMatching matching schedule q dstatus k f direction = do
 	rs <- sufficientremotes
 		=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
-	let matchingrs = filter (pred . Remote.uuid) rs
+	let matchingrs = filter (matching . Remote.uuid) rs
 	if null matchingrs
 		then defer
 		else forM_ matchingrs $ \r -> liftIO $

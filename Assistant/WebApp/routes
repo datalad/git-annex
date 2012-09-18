@@ -1,11 +1,14 @@
-/ HomeR GET
+/ HomeR GET HEAD
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET
 /about AboutR GET
 
 /config ConfigR GET
 /config/repository RepositoriesR GET
-/config/repository/first FirstRepositoryR GET
+
+/config/repository/new/first FirstRepositoryR GET
+/config/repository/new NewRepositoryR GET
+/config/repository/switchto/#FilePath SwitchToRepositoryR GET
 
 /config/repository/add/drive AddDriveR GET
 /config/repository/add/ssh AddSshR GET

@@ -65,7 +65,8 @@ instance RenderMessage WebApp FormMessage where
 type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
 
 data WebAppState = WebAppState
-	{ showIntro :: Bool
+	{ showIntro :: Bool -- should the into message be displayed?
+	, otherRepos :: [(String, String)] -- name and path to other repos
 	}
 
 instance PathPiece SshData where

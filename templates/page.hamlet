@@ -6,7 +6,8 @@
       <ul .nav>
         $forall (name, route, isactive) <- navbar
           <li :isactive:.active>
-            <a href="@{route}">#{name}</a>
+            <a href="@{route}">
+              #{name}
       $maybe reldir <- relDir webapp
         <ul .nav .pull-right>
           <li>
@@ -15,8 +16,7 @@
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Current Repository: #{reldir}
               <b .caret></b>
-            <ul .dropdown-menu>
-               <li><a href="@{RepositoriesR}">Add another repository</a></li>
+            ^{otherReposWidget}
       $nothing
 <div .container-fluid>
   <div .row-fluid>
