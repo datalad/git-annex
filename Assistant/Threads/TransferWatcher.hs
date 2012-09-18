@@ -10,6 +10,7 @@ module Assistant.Threads.TransferWatcher where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.TransferQueue
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
@@ -20,12 +21,12 @@ thisThread = "TransferWatcher"
 
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
-transferWatcherThread :: ThreadState -> DaemonStatusHandle -> NamedThread
-transferWatcherThread st dstatus = thread $ do
+transferWatcherThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> NamedThread
+transferWatcherThread st dstatus transferqueue = thread $ do
 	g <- runThreadState st $ fromRepo id
 	let dir = gitAnnexTransferDir g
 	createDirectoryIfMissing True dir
-	let hook a = Just $ runHandler st dstatus a
+	let hook a = Just $ runHandler st dstatus transferqueue a
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, delHook = hook onDel
@@ -36,25 +37,25 @@ transferWatcherThread st dstatus = thread $ do
 	where
 		thread = NamedThread thisThread
 
-type Handler = ThreadState -> DaemonStatusHandle -> FilePath -> Maybe FileStatus -> IO ()
+type Handler = ThreadState -> DaemonStatusHandle -> TransferQueue -> FilePath -> Maybe FileStatus -> IO ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: ThreadState -> DaemonStatusHandle -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler st dstatus handler file filestatus = void $
+runHandler :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st dstatus transferqueue handler file filestatus = void $
         either print (const noop) =<< tryIO go
         where
-                go = handler st dstatus file filestatus
+                go = handler st dstatus transferqueue file filestatus
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr _ _ msg _ = error msg
+onErr _ _ _ msg _ = error msg
 
 {- Called when a new transfer information file is written. -}
 onAdd :: Handler
-onAdd st dstatus file _ = case parseTransferFile file of
+onAdd st dstatus _ file _ = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> go t =<< runThreadState st (checkTransfer t)
 	where
@@ -72,11 +73,22 @@ onAdd st dstatus file _ = case parseTransferFile file of
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler
-onDel _ dstatus file _ = case parseTransferFile file of
+onDel st dstatus transferqueue file _ = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
 		debug thisThread
 			[ "transfer finishing:"
 			, show t
 			]
-		void $ removeTransfer dstatus t
+		minfo <- removeTransfer dstatus t
+
+		{- Queue uploads of files we successfully downloaded,
+		 - spreading them out to other reachable remotes. -}
+		case (minfo, transferDirection t) of
+			(Just info, Download) -> runThreadState st $
+				queueTransfers Later transferqueue dstatus
+					(transferKey t)
+					(associatedFile info)
+					Upload
+			_ -> noop
+

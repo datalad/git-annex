@@ -10,40 +10,6 @@ all the other git clones, at both the git level and the key/value level.
   which has prevented me from debugging it.
   This could possibly have been caused by the bug fixed in 750c4ac6c282d14d19f79e0711f858367da145e4.
 
-* The transfer code doesn't always manage to transfer file contents.
-
-  Besides reconnection events, there are two places where transfers get queued:
-
-  1. When the committer commits a file, it queues uploads.
-  2. When the watcher sees a broken symlink be created, it queues downloads.
-
-  Consider a doubly-linked chain of three repositories, A B and C.
-  (C and A do not directly communicate.)
-  
-  * File is added to A.
-  * A uploads its content to B.
-  * At the same time, A git syncs to B.
-  * Once B gets the git sync, it git syncs to C.
-  * When C's watcher sees the file appear, it tries to download it. But if
-    B had not finished receiving the file from A, C doesn't know B has it,
-    and cannot download it from anywhere.
-
-  Possible solution: After B receives content, it could queue uploads of it 
-  to all remotes that it doesn't know have it yet, which would include C.
-  
-  In practice, this has the problem that when C receives the content,
-  it will queue uploads of it, which can send back to B (or to some other repo
-  that already has the content) and loop, until the git-annex branches catch
-  up and break the cycle.
-
-  Possible solution: C could record a deferred download. (Similar to a failed
-  download, but with an unknown source.) When C next receives a git-annex
-  branch push, it could try to queue deferred downloads. **done**
-
-  Note that this solution won't cover use cases the other does. For example,
-  connect a USB drive A; B syncs files from it, and then should pass them to C.
-  If the files are not new, C won't immediatly request them from B.
-
 ## TODO
 
 * Test MountWatcher on LXDE.
@@ -250,3 +216,41 @@ redone to check it.
   if we assume that's synced between existing git remotes, it should be
   possible for them to do file transfers to/from special remotes.
   **done**
+
+* The transfer code doesn't always manage to transfer file contents.
+
+  Besides reconnection events, there are two places where transfers get queued:
+
+  1. When the committer commits a file, it queues uploads.
+  2. When the watcher sees a broken symlink be created, it queues downloads.
+
+  Consider a doubly-linked chain of three repositories, A B and C.
+  (C and A do not directly communicate.)
+  
+  * File is added to A.
+  * A uploads its content to B.
+  * At the same time, A git syncs to B.
+  * Once B gets the git sync, it git syncs to C.
+  * When C's watcher sees the file appear, it tries to download it. But if
+    B had not finished receiving the file from A, C doesn't know B has it,
+    and cannot download it from anywhere.
+
+  Possible solution: After B receives content, it could queue uploads of it 
+  to all remotes that it doesn't know have it yet, which would include C. 
+  **done**
+  
+  In practice, this had the problem that when C receives the content,
+  it will queue uploads of it, which can send back to B (or to some other repo
+  that already has the content) and loop, until the git-annex branches catch
+  up and break the cycle.
+
+  To avoid that problem, incoming uploads should not result in a transfer
+  info file being written when the key is already present. **done**
+
+  Possible solution: C could record a deferred download. (Similar to a failed
+  download, but with an unknown source.) When C next receives a git-annex
+  branch push, it could try to queue deferred downloads. **done**
+
+  Note that this solution won't cover use cases the other does. For example,
+  connect a USB drive A; B syncs files from it, and then should pass them to C.
+  If the files are not new, C won't immediatly request them from B.

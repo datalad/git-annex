@@ -63,6 +63,10 @@ startTransfer st dstatus program t info = case (transferRemote info, associatedF
 			(_, _, _, pid)
 				<- createProcess (proc program $ toCommand params)
 					{ create_group = True }
+			{- Alerts are only shown for successful transfers.
+			 - Transfers can temporarily fail for many reasons,
+			 - so there's no point in bothering the user about
+			 - those. The assistant should recover. -}
 			whenM ((==) ExitSuccess <$> waitForProcess pid) $ void $
 				addAlert dstatus $
 					makeAlertFiller True $

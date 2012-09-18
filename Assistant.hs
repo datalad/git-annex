@@ -186,7 +186,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ pushThread st dstatus commitchan pushmap
 				, assist $ pushRetryThread st dstatus pushmap
 				, assist $ mergeThread st dstatus transferqueue
-				, assist $ transferWatcherThread st dstatus
+				, assist $ transferWatcherThread st dstatus transferqueue
 				, assist $ transferPollerThread st dstatus
 				, assist $ transfererThread st dstatus transferqueue transferslots
 				, assist $ daemonStatusThread st dstatus
