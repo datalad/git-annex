@@ -74,17 +74,18 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ runEvery 
 commitStaged :: Annex Bool
 commitStaged = do
 	Annex.Queue.flush
-	inRepo $ Git.Command.runBool "commit"
+	void $ inRepo $ Git.Command.runBool "commit"
 		[ Param "--allow-empty-message"
 		, Param "-m", Param ""
-		-- Empty commits may be made if tree changes cancel
-		-- each other out, etc
-		, Param "--allow-empty"
 		-- Avoid running the usual git-annex pre-commit hook;
 		-- watch does the same symlink fixing, and we don't want
 		-- to deal with unlocked files in these commits.
 		, Param "--quiet"
 		]
+	{- Empty commits may be made if tree changes cancel
+	 - each other out, etc. Git returns nonzero on those, so
+	 - don't propigate out commit failures. -}
+	return True
 
 {- Decide if now is a good time to make a commit.
  - Note that the list of change times has an undefined order.
