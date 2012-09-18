@@ -11,6 +11,7 @@ module Assistant.TransferQueue (
 	newTransferQueue,
 	getTransferQueue,
 	queueTransfers,
+	queueDeferredDownloads,
 	queueTransfer,
 	queueTransferAt,
 	queueTransferWhenSmall,
@@ -32,6 +33,7 @@ import qualified Data.Map as M
 data TransferQueue = TransferQueue
 	{ queuesize :: TVar Int
 	, queuelist :: TVar [(Transfer, TransferInfo)]
+	, deferreddownloads :: TVar [(Key, AssociatedFile)]
 	}
 
 data Schedule = Next | Later
@@ -41,48 +43,78 @@ newTransferQueue :: IO TransferQueue
 newTransferQueue = atomically $ TransferQueue
 	<$> newTVar 0
 	<*> newTVar []
+	<*> newTVar []
 
 {- Reads the queue's content without blocking or changing it. -}
 getTransferQueue :: TransferQueue -> IO [(Transfer, TransferInfo)]
 getTransferQueue q = atomically $ readTVar $ queuelist q
 
 stubInfo :: AssociatedFile -> Remote -> TransferInfo
-stubInfo f r = TransferInfo
-	{ startedTime = Nothing
-	, transferPid = Nothing
-	, transferTid = Nothing
-	, transferRemote = Just r
-	, bytesComplete = Nothing
+stubInfo f r = stubTransferInfo
+	{ transferRemote = Just r
 	, associatedFile = f
-	, transferPaused = False
 	}
 
 {- Adds transfers to queue for some of the known remotes. -}
 queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers schedule q dstatus k f direction = do
-	rs <- knownRemotes <$> liftIO (getDaemonStatus dstatus)
-	mapM_ go =<< sufficientremotes rs
+	rs <- sufficientremotes
+		=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
+	if null rs
+		then defer
+		else forM_ rs $ \r -> liftIO $
+			enqueue schedule q dstatus (gentransfer r) (stubInfo f r)
 	where
 		sufficientremotes rs
-			-- Queue downloads from all remotes that
-			-- have the key, with the cheapest ones first.
-			-- More expensive ones will only be tried if
-			-- downloading from a cheap one fails.
+			{- Queue downloads from all remotes that
+			 - have the key, with the cheapest ones first.
+			 - More expensive ones will only be tried if
+			 - downloading from a cheap one fails. -}
 			| direction == Download = do
 				uuids <- Remote.keyLocations k
 				return $ filter (\r -> uuid r `elem` uuids) rs
-			-- TODO: Determine a smaller set of remotes that
-			-- can be uploaded to, in order to ensure all
-			-- remotes can access the content. Currently,
-			-- send to every remote we can.
+			{- TODO: Determine a smaller set of remotes that
+			 - can be uploaded to, in order to ensure all
+			 - remotes can access the content. Currently,
+			 - send to every remote we can. -}
 			| otherwise = return $ filter (not . Remote.readonly) rs
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k
 			, transferUUID = Remote.uuid r
 			}
-		go r = liftIO $
-			enqueue schedule q dstatus (gentransfer r) (stubInfo f r)
+		defer
+			{- Defer this download, as no known remote has the key. -}
+			| direction == Download = void $ liftIO $ atomically $
+					modifyTVar' (deferreddownloads q) $
+						\l -> (k, f):l
+			| otherwise = noop
+
+{- Queues any deferred downloads that can now be accomplished, leaving
+ - any others in the list to try again later. -}
+queueDeferredDownloads :: Schedule -> TransferQueue -> DaemonStatusHandle -> Annex ()
+queueDeferredDownloads schedule q dstatus = do
+	rs <- knownRemotes <$> liftIO (getDaemonStatus dstatus)
+	l <- liftIO $ atomically $ swapTVar (deferreddownloads q) []
+	left <- filterM (queue rs) l
+	unless (null left) $
+		liftIO $ atomically $ modifyTVar' (deferreddownloads q) $
+			\new -> new ++ left
+	where
+		queue rs (k, f) = do
+			uuids <- Remote.keyLocations k
+			let sources = filter (\r -> uuid r `elem` uuids) rs
+			unless (null sources) $
+				forM_ sources $ \r -> liftIO $
+					enqueue schedule q dstatus
+						(gentransfer r) (stubInfo f r)
+			return $ null sources
+			where
+				gentransfer r = Transfer
+					{ transferDirection = Download
+					, transferKey = k
+					, transferUUID = Remote.uuid r
+					}
 
 enqueue :: Schedule -> TransferQueue -> DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
 enqueue schedule q dstatus t info

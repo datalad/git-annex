@@ -9,6 +9,8 @@ module Assistant.Threads.Merger where
 
 import Assistant.Common
 import Assistant.ThreadedMonad
+import Assistant.DaemonStatus
+import Assistant.TransferQueue
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Annex.Branch
@@ -19,15 +21,14 @@ import qualified Git.Branch
 thisThread :: ThreadName
 thisThread = "Merger"
 
-{- This thread watches for changes to .git/refs/, looking for 
- - incoming pushes. It merges those pushes into the currently
- - checked out branch. -}
-mergeThread :: ThreadState -> NamedThread
-mergeThread st = thread $ do
+{- This thread watches for changes to .git/refs/, and handles incoming
+ - pushes. -}
+mergeThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> NamedThread
+mergeThread st dstatus transferqueue = thread $ do
 	g <- runThreadState st $ fromRepo id
 	let dir = Git.localGitDir g </> "refs"
 	createDirectoryIfMissing True dir
-	let hook a = Just $ runHandler g a
+	let hook a = Just $ runHandler st dstatus transferqueue g a
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, errHook = hook onErr
@@ -37,21 +38,21 @@ mergeThread st = thread $ do
 	where
 		thread = NamedThread thisThread
 
-type Handler = Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
+type Handler = ThreadState -> DaemonStatusHandle -> TransferQueue -> Git.Repo -> FilePath -> Maybe FileStatus -> IO ()
 
 {- Runs an action handler.
  -
  - Exceptions are ignored, otherwise a whole thread could be crashed.
  -}
-runHandler :: Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler g handler file filestatus = void $
+runHandler :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Git.Repo -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler st dstatus transferqueue g handler file filestatus = void $
         either print (const noop) =<< tryIO go
         where
-                go = handler g file filestatus
+                go = handler st dstatus transferqueue g file filestatus
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr _ msg _ = error msg
+onErr _ _ _ _ msg _ = error msg
 
 {- Called when a new branch ref is written.
  -
@@ -65,14 +66,16 @@ onErr _ msg _ = error msg
  - ran are merged in.
  -}
 onAdd :: Handler
-onAdd g file _
+onAdd st dstatus transferqueue g file _
 	| ".lock" `isSuffixOf` file = noop
-	| isAnnexBranch file = noop
-	| "/synced/" `isInfixOf` file = go =<< Git.Branch.current g
+	| isAnnexBranch file = runThreadState st $
+		whenM Annex.Branch.forceUpdate $
+			queueDeferredDownloads Later transferqueue dstatus
+	| "/synced/" `isInfixOf` file = mergecurrent =<< Git.Branch.current g
 	| otherwise = noop
 	where
 		changedbranch = fileToBranch file
-		go (Just current)
+		mergecurrent (Just current)
 			| equivBranches changedbranch current = do
 				liftIO $ debug thisThread
 					[ "merging"
@@ -81,7 +84,7 @@ onAdd g file _
 					, show current
 					]
 				void $ Git.Merge.mergeNonInteractive changedbranch g
-		go _ = noop
+		mergecurrent _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y

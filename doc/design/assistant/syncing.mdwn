@@ -39,7 +39,7 @@ all the other git clones, at both the git level and the key/value level.
   Possible solution: C could record a download intent. (Similar to a failed
   download, but with an unknown source.) When C next receives a git-annex
   branch push, it could try to requeue downloads that it has such intents
-  registered for.
+  registered for. **done**
 
   Note that this solution won't cover use cases the other does. For example,
   connect a USB drive A; B syncs files from it, and then should pass them to C.
@@ -85,6 +85,10 @@ all the other git clones, at both the git level and the key/value level.
   need to use the TransferScanner, if we get and check a list of the changed
   files.
 * [[use multiple transfer slots|todo/Slow_transfer_for_a_lot_of_small_files.]]
+* The TransferQueue's list of deferred downloads could theoretically
+  grow without bounds in memory. Limit it to a given number of entries,
+  and fall back to some other method -- either storing deferred downloads
+  on disk, or perhaps scheduling a TransferScanner run to get back into sync.
 
 ## data syncing
 
