@@ -269,12 +269,15 @@ copyToRemote r key file
 		params <- rsyncParams r
 		u <- getUUID
 		-- run copy from perspective of remote
-		liftIO $ onLocal r $ do
-			ensureInitialized
-			download u key file $
-				Annex.Content.saveState True `after`
-					Annex.Content.getViaTmp key
-						(rsyncOrCopyFile params keysrc)
+		liftIO $ onLocal r $ ifM (Annex.Content.inAnnex key)
+			( return False
+			, do
+				ensureInitialized
+				download u key file $
+					Annex.Content.saveState True `after`
+						Annex.Content.getViaTmp key
+							(rsyncOrCopyFile params keysrc)
+			)
 	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		rsyncHelper =<< rsyncParamsRemote r False key keysrc file

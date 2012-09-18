@@ -36,10 +36,9 @@ all the other git clones, at both the git level and the key/value level.
   that already has the content) and loop, until the git-annex branches catch
   up and break the cycle.
 
-  Possible solution: C could record a download intent. (Similar to a failed
+  Possible solution: C could record a deferred download. (Similar to a failed
   download, but with an unknown source.) When C next receives a git-annex
-  branch push, it could try to requeue downloads that it has such intents
-  registered for. **done**
+  branch push, it could try to queue deferred downloads. **done**
 
   Note that this solution won't cover use cases the other does. For example,
   connect a USB drive A; B syncs files from it, and then should pass them to C.
