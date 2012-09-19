@@ -12,7 +12,12 @@ This is one of those potentially hidden but time consuming problems.
 * Watch temp file as it's coming in and use its size.
   This is the only option for some special remotes (ie, non-rsync).
   Can either poll every .5 seconds or so to check file size, or
-  could use inotify. Implemented.
+  could use inotify. **done**
+
+## uploads
+
+Options:
+
 * Feed rsync output into a parser and parse out a progress value. Ugly,
   failure prone, but potentially the least CPU-expensive option.
 * Use librsync. Note: It's not wire-compatiable with the actual rsync
@@ -21,8 +26,3 @@ This is one of those potentially hidden but time consuming problems.
   feeder/reader then can update the transfer info. Generic enough to
   work for most (all?) special remotes, but also the most expensive option,
   involving another copy through memory of the whole file contents.
-
-## uploads
-
-Cannot use temp file, as we're not receiving it. Rsync progress parser,
-librsync, and FIFO all work.
