@@ -7,11 +7,8 @@
 
 module Utility.Rsync where
 
-import Utility.SafeCommand
-import Utility.PartialPrelude
+import Common
 
-import Data.String.Utils
-import Data.List
 import Data.Char
 
 {- Generates parameters to make rsync use a specified command as its remote
@@ -48,6 +45,24 @@ rsyncServerParams =
 
 rsync :: [CommandParam] -> IO Bool
 rsync = boolSystem "rsync"
+
+{- Runs rsync, but intercepts its progress output and feeds bytes
+ - complete values into the callback. The progress output is also output
+ - to stdout. -}
+rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
+rsyncProgress callback params = catchBoolIO $
+	withHandle StdoutHandle createProcessSuccess p (feedprogress [])
+	where
+		p = proc "rsync" (toCommand params)
+		feedprogress buf h =
+			catchMaybeIO (hGetChar h) >>= \v -> case v of
+				Just c -> do
+					putChar c
+					hFlush stdout
+					let (mbytes, buf') = parseRsyncProgress (buf++[c])
+					maybe noop callback mbytes
+					feedprogress buf' h
+				Nothing -> return True
 
 {- Checks if an rsync url involves the remote shell (ssh or rsh).
  - Use of such urls with rsync requires additional shell

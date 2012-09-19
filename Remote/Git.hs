@@ -245,7 +245,7 @@ copyFromRemote r key file dest
 			loc <- inRepo $ gitAnnexLocation key
 			upload u key file $
 				rsyncOrCopyFile params loc dest
-	| Git.repoIsSsh r = rsyncHelper =<< rsyncParamsRemote r True key dest file
+	| Git.repoIsSsh r = rsyncHelper Nothing =<< rsyncParamsRemote r True key dest file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
 
@@ -280,13 +280,13 @@ copyToRemote r key file p
 			)
 	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
-		rsyncHelper =<< rsyncParamsRemote r False key keysrc file
+		rsyncHelper (Just p) =<< rsyncParamsRemote r False key keysrc file
 	| otherwise = error "copying to non-ssh repo not supported"
 
-rsyncHelper :: [CommandParam] -> Annex Bool
-rsyncHelper p = do
+rsyncHelper :: Maybe ProgressCallback -> [CommandParam] -> Annex Bool
+rsyncHelper callback params = do
 	showOutput -- make way for progress bar
-	ifM (liftIO $ rsync p)
+	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
 		( return True
 		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
@@ -299,7 +299,7 @@ rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> ProgressCallback ->
 rsyncOrCopyFile rsyncparams src dest p =
 	ifM (sameDeviceIds src dest)
 		( liftIO $ copyFileExternal src dest
-		, rsyncHelper $ rsyncparams ++ [Param src, Param dest]
+		, rsyncHelper (Just p) $ rsyncparams ++ [Param src, Param dest]
 		)
 	where
 		sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
