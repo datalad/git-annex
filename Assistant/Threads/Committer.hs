@@ -80,6 +80,7 @@ commitStaged = do
 		-- Avoid running the usual git-annex pre-commit hook;
 		-- watch does the same symlink fixing, and we don't want
 		-- to deal with unlocked files in these commits.
+		, Param "--no-verify"
 		, Param "--quiet"
 		]
 	{- Empty commits may be made if tree changes cancel
