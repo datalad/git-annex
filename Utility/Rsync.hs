@@ -101,10 +101,10 @@ rsyncUrlIsPath s
 parseRsyncProgress :: String -> (Maybe Integer, String)
 parseRsyncProgress = go [] . reverse . progresschunks
 	where
-		go prev [] = (Nothing, prev)
-		go prev (x:xs) = case parsebytes (findbytesstart x) of
-			Nothing -> go (delim:x++prev) xs
-			Just b -> (Just b, prev)
+		go remainder [] = (Nothing, remainder)
+		go remainder (x:xs) = case parsebytes (findbytesstart x) of
+			Nothing -> go (delim:x++remainder) xs
+			Just b -> (Just b, remainder)
 
 		delim = '\r'
 		{- Find chunks that each start with delim.
