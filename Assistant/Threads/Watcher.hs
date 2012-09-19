@@ -34,6 +34,8 @@ import qualified Command.Add
 import Annex.Content
 import Annex.CatFile
 import Git.Types
+import Config
+import Utility.ThreadScheduler
 
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
@@ -58,17 +60,19 @@ needLsof = error $ unlines
 
 watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
 watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
-	void $ watchDir "." ignored hooks startup
+	delayadd <- runThreadState st $
+		readish <$> getConfig (annexConfig "delayadd") "" 
+	void $ watchDir "." ignored (hooks delayadd) startup
 	debug thisThread [ "watching", "."]
 	where
 		startup = startupScan st dstatus
-		hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
-		hooks = WatchHooks
-			{ addHook = hook onAdd
-			, delHook = hook onDel
-			, addSymlinkHook = hook onAddSymlink
-			, delDirHook = hook onDelDir
-			, errHook = hook onErr
+		hook delay a = Just $ runHandler thisThread delay st dstatus transferqueue changechan a
+		hooks delayadd = WatchHooks
+			{ addHook = hook (Seconds <$> delayadd) onAdd
+			, delHook = hook Nothing onDel
+			, addSymlinkHook = hook Nothing onAddSymlink
+			, delDirHook = hook Nothing onDelDir
+			, errHook = hook Nothing onErr
 			}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
@@ -96,22 +100,22 @@ ignored = ig . takeFileName
 	ig ".gitattributes" = True
 	ig _ = False
 
-type Handler = ThreadName -> FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
+type Handler = ThreadName -> Maybe Seconds -> FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
 
 {- Runs an action handler, inside the Annex monad, and if there was a
  - change, adds it to the ChangeChan.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: ThreadName -> ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler threadname st dstatus transferqueue changechan handler file filestatus = void $ do
+runHandler :: ThreadName -> Maybe Seconds -> ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler threadname delay st dstatus transferqueue changechan handler file filestatus = void $ do
 	r <- tryIO go
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange changechan change
 	where
-		go = runThreadState st $ handler threadname file filestatus dstatus transferqueue
+		go = runThreadState st $ handler threadname delay file filestatus dstatus transferqueue
 
 {- During initial directory scan, this will be run for any regular files
  - that are already checked into git. We don't want to turn those into
@@ -132,7 +136,7 @@ runHandler threadname st dstatus transferqueue changechan handler file filestatu
  - the add.
  -}
 onAdd :: Handler
-onAdd threadname file filestatus dstatus _
+onAdd threadname delay file filestatus dstatus _
 	| maybe False isRegularFile filestatus =
 		ifM (scanComplete <$> liftIO (getDaemonStatus dstatus))
 			( go
@@ -144,7 +148,9 @@ onAdd threadname file filestatus dstatus _
 	| otherwise = noChange
 	where
 		go = do
-			liftIO $ debug threadname ["file added", file]
+			liftIO $ do
+				debug threadname ["file added", file]
+				maybe noop threadDelaySeconds delay
 			pendingAddChange =<< Command.Add.lockDown file
 
 {- A symlink might be an arbitrary symlink, which is just added.
@@ -152,7 +158,7 @@ onAdd threadname file filestatus dstatus _
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
+onAddSymlink threadname _ file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
 	where
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
@@ -213,7 +219,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 			| otherwise = noop
 
 onDel :: Handler
-onDel threadname file _ _dstatus _ = do
+onDel threadname _ file _ _dstatus _ = do
 	liftIO $ debug threadname ["file deleted", file]
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
@@ -227,7 +233,7 @@ onDel threadname file _ _dstatus _ = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir threadname dir _ _dstatus _ = do
+onDelDir threadname _ dir _ _dstatus _ = do
 	liftIO $ debug threadname ["directory deleted", dir]
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
@@ -235,7 +241,7 @@ onDelDir threadname dir _ _dstatus _ = do
 
 {- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler
-onErr _ msg _ dstatus _ = do
+onErr _ _ msg _ dstatus _ = do
 	warning msg
 	void $ liftIO $ addAlert dstatus $ warningAlert "watcher" msg
 	return Nothing

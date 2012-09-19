@@ -93,7 +93,7 @@ check st dstatus transferqueue changechan = do
 			runThreadState st $ warning msg
 			void $ addAlert dstatus $ sanityCheckFixAlert msg
 		addsymlink file s = do
-			Watcher.runHandler thisThread st dstatus
+			Watcher.runHandler thisThread Nothing st dstatus
 				transferqueue changechan
 				Watcher.onAddSymlink file s
 			insanity $ "found unstaged symlink: " ++ file

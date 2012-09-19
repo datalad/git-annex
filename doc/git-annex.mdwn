@@ -679,6 +679,13 @@ Here are all the supported configuration settings.
   set to `false`. Then data will only be committed when
   running `git annex merge` (or by automatic merges) or `git annex sync`.
 
+* `annex.delayadd`
+
+  Makes the watch and assistant commands delay for the specified number of
+  seconds before adding a newly created file to the annex. Normally this
+  is not needed, because they already wait for all writers of the file
+  to close it.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to
