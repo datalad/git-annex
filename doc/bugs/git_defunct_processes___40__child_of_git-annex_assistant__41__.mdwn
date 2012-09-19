@@ -8,10 +8,10 @@ a ps -ef shows a large number of defunct git processes.. for example:
 <pre>
 nelg      9622     1  0 02:01 ?        00:00:01 git-annex assistant
 nelg      9637  9622  0 02:01 ?        00:00:00 git --git-dir=/home/nelg/Downloads/test2/.git --work-tree=/home/nelg/Downloads/test2 cat-file --batch
-nelg     12080  9622  0 02:19 ?        00:00:00 [git] <defunct>
-nelg     12082  9622  0 02:19 ?        00:00:00 [git] <defunct>
-nelg     12083  9622  0 02:19 ?        00:00:00 [git] <defunct>
-nelg     12084  9622  0 02:19 ?        00:00:00 [git] <defunct>
+nelg     12080  9622  0 02:19 ?        00:00:00 [git] &lt;defunct&gt;
+nelg     12082  9622  0 02:19 ?        00:00:00 [git] &lt;defunct&gt;
+nelg     12083  9622  0 02:19 ?        00:00:00 [git] &lt;defunct&gt;
+nelg     12084  9622  0 02:19 ?        00:00:00 [git] &lt;defunct&gt;
 -----
 </pre>
 
