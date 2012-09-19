@@ -7,10 +7,12 @@
 
 module Utility.Rsync where
 
+import Utility.SafeCommand
+import Utility.PartialPrelude
+
 import Data.String.Utils
 import Data.List
-
-import Utility.SafeCommand
+import Data.Char
 
 {- Generates parameters to make rsync use a specified command as its remote
  - shell. -}
@@ -67,3 +69,35 @@ rsyncUrlIsPath :: String -> Bool
 rsyncUrlIsPath s
 	| rsyncUrlIsShell s = False
 	| otherwise = ':' `notElem` s
+
+{- Parses the String looking for rsync progress output, and returns
+ - Maybe the number of bytes rsynced so far, and any any remainder of the
+ - string that could be an incomplete progress output. That remainder
+ - should be prepended to future output, and fed back in. This interface
+ - allows the output to be read in any desired size chunk, or even one
+ - character at a time.
+ -
+ - Strategy: Look for chunks prefixed with \r (rsync writes a \r before
+ - the first progress output, and each thereafter). The first number
+ - after the \r is the number of bytes processed. After the number,
+ - there must appear some whitespace, or we didn't get the whole number,
+ - and return the \r and part we did get, for later processing.
+ -}
+parseRsyncProgress :: String -> (Maybe Integer, String)
+parseRsyncProgress = go [] . reverse . progresschunks
+	where
+		go prev [] = (Nothing, prev)
+		go prev (x:xs) = case parsebytes (findbytesstart x) of
+			Nothing -> go (delim:x++prev) xs
+			Just b -> (Just b, prev)
+
+		delim = '\r'
+		{- Find chunks that each start with delim.
+		 - The first chunk doesn't start with it
+		 - (it's empty when delim is at the start of the string). -}
+		progresschunks = drop 1 . split [delim]
+		findbytesstart s = dropWhile isSpace s
+		parsebytes s = case break isSpace s of
+			([], _) -> Nothing
+			(_, []) -> Nothing
+			(b, _) -> readish b
