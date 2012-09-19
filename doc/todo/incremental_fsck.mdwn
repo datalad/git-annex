@@ -1,0 +1,11 @@
+Justin Azoff realized git-annex should have an incremental fsck.
+
+This requires storing the last fsck time of each object.
+
+I would not be strongly opposed to sqlite, but I think there are other
+places the data could be stored. One possible place is the mode or mtime
+of the .git/annex/objects/xx/yy/$key directories (the parent directories
+of where the content is stored). Perhaps the sticky bit could be used to
+indicate the content has been fsked, and the mtime indicate the time
+of last fsck. Anything that dropped or put in content would need to
+clear the sticky bit. --[[Joey]] 
