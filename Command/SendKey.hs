@@ -10,7 +10,7 @@ module Command.SendKey where
 import Common.Annex
 import Command
 import Annex.Content
-import Utility.RsyncFile
+import Utility.Rsync
 import Logs.Transfer
 import qualified Fields
 

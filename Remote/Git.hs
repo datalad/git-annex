@@ -16,7 +16,7 @@ import Control.Exception.Extensible
 
 import Common.Annex
 import Utility.CopyFile
-import Utility.RsyncFile
+import Utility.Rsync
 import Remote.Helper.Ssh
 import Types.Remote
 import qualified Git

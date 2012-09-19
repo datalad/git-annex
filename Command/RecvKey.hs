@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import CmdLine
 import Annex.Content
-import Utility.RsyncFile
+import Utility.Rsync
 import Logs.Transfer
 import Command.SendKey (fieldTransfer)
 

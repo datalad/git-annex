@@ -1,11 +1,11 @@
-{- file copying with rsync
+{- various rsync stuff
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.RsyncFile where
+module Utility.Rsync where
 
 import Data.String.Utils
 import Data.List

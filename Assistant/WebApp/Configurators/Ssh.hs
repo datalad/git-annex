@@ -16,7 +16,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
-import Utility.RsyncFile (rsyncUrlIsShell)
+import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
 
