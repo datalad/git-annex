@@ -45,7 +45,7 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
  - to support storing and retrieving encrypted content. -}
 encryptableRemote
 	:: Maybe RemoteConfig
-	-> ((Cipher, Key) -> Key -> Annex Bool)
+	-> ((Cipher, Key) -> Key -> ProgressCallback -> Annex Bool)
 	-> ((Cipher, Key) -> Key -> FilePath -> Annex Bool)
 	-> Remote
 	-> Remote
@@ -59,9 +59,9 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		cost = cost r + encryptedRemoteCostAdj
 	}
 	where
-		store k f = cip k >>= maybe
-			(storeKey r k f)
-			(`storeKeyEncrypted` k)
+		store k f p = cip k >>= maybe
+			(storeKey r k f p)
+			(\enck -> storeKeyEncrypted enck k p)
 		retrieve k f d = cip k >>= maybe
 			(retrieveKeyFile r k f d)
 			(\enck -> retrieveKeyFileEncrypted enck k d)

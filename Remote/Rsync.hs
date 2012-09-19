@@ -104,11 +104,11 @@ rsyncUrls o k = map use annexHashes
 		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
                 f = keyFile k
 
-store :: RsyncOpts -> Key -> AssociatedFile -> Annex Bool
-store o k _f = rsyncSend o k <=< inRepo $ gitAnnexLocation k
+store :: RsyncOpts -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+store o k _f p = rsyncSend o k <=< inRepo $ gitAnnexLocation k
 
-storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> Annex Bool
-storeEncrypted o (cipher, enck) k = withTmp enck $ \tmp -> do
+storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> ProgressCallback -> Annex Bool
+storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation k
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
 	rsyncSend o enck tmp

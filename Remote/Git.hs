@@ -262,8 +262,8 @@ copyFromRemoteCheap r key file
 	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Git.Repo -> Key -> AssociatedFile -> Annex Bool
-copyToRemote r key file
+copyToRemote :: Git.Repo -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+copyToRemote r key file p
 	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
 		params <- rsyncParams r
@@ -276,7 +276,7 @@ copyToRemote r key file
 				download u key file $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp key
-							(rsyncOrCopyFile params keysrc)
+							(\d -> rsyncOrCopyFile params keysrc d p)
 			)
 	| Git.repoIsSsh r = commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
@@ -295,8 +295,8 @@ rsyncHelper p = do
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
-rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> Annex Bool
-rsyncOrCopyFile rsyncparams src dest =
+rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> ProgressCallback -> Annex Bool
+rsyncOrCopyFile rsyncparams src dest p =
 	ifM (sameDeviceIds src dest)
 		( liftIO $ copyFileExternal src dest
 		, rsyncHelper $ rsyncparams ++ [Param src, Param dest]

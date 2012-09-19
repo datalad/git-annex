@@ -12,6 +12,7 @@ import Command
 import Annex.Content
 import Utility.Rsync
 import Logs.Transfer
+import Types.Remote
 import qualified Fields
 
 def :: [Command]
@@ -23,7 +24,7 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
-	( fieldTransfer Upload key $ do
+	( fieldTransfer Upload key $ \p -> do
 		file <- inRepo $ gitAnnexLocation key
 		liftIO $ rsyncServerSend file
 	, do
@@ -31,10 +32,11 @@ start key = ifM (inAnnex key)
 		liftIO exitFailure
 	)
 
-fieldTransfer :: Direction -> Key -> Annex Bool -> CommandStart
+fieldTransfer :: Direction -> Key -> (ProgressCallback -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	afile <- Fields.getField Fields.associatedFile
-	ok <- maybe a (\u -> runTransfer (Transfer direction (toUUID u) key) afile a)
+	ok <- maybe (a $ const noop)
+		(\u -> runTransfer (Transfer direction (toUUID u) key) afile a)
 		=<< Fields.getField Fields.remoteUUID
 	if ok
 		then liftIO exitSuccess

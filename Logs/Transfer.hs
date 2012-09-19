@@ -74,11 +74,11 @@ percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
-upload :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
+upload :: UUID -> Key -> AssociatedFile -> (ProgressCallback -> Annex Bool) -> Annex Bool
 upload u key file a = runTransfer (Transfer Upload u key) file a
 
 download :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
-download u key file a = runTransfer (Transfer Download u key) file a
+download u key file a = runTransfer (Transfer Download u key) file (const a)
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
@@ -87,7 +87,7 @@ download u key file a = runTransfer (Transfer Download u key) file a
  - If the transfer action returns False, the transfer info is 
  - left in the failedTransferDir.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> Annex Bool -> Annex Bool
+runTransfer :: Transfer -> Maybe FilePath -> (ProgressCallback -> Annex Bool) -> Annex Bool
 runTransfer t file a = do
 	tfile <- fromRepo $ transferFile t
 	createAnnexDirectory $ takeDirectory tfile
@@ -100,7 +100,9 @@ runTransfer t file a = do
 		<*> pure Nothing
 		<*> pure file
 		<*> pure False
-	ok <- bracketIO (prep tfile mode info) (cleanup tfile) a
+	ok <- bracketIO (prep tfile mode info) (cleanup tfile) $ a $ \bytes ->
+		writeTransferInfoFile (info { bytesComplete = Just bytes }) tfile
+		
 	unless ok $ failed info
 	return ok
 	where
@@ -208,12 +210,16 @@ writeTransferInfoFile info tfile = do
 	hPutStr h $ writeTransferInfo info
 	hClose h
 
+{- File format is a header line containing the startedTime and any
+ - bytesComplete value. Followed by a newline and the associatedFile.
+ -
+ - The transferPid is not included; instead it is obtained by looking
+ - at the process that locks the file.
+ -}
 writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
-	-- transferPid is not included; instead obtained by looking at
-	-- the process that locks the file.
-	[ maybe "" show $ startedTime info
-	-- bytesComplete is not included; changes too fast 
+	[ (maybe "" show $ startedTime info) ++
+	  (maybe "" (\b -> " " ++ show b) $ bytesComplete info)
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
@@ -224,20 +230,24 @@ readTransferInfoFile mpid tfile = do
 	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
 
 readTransferInfo :: (Maybe ProcessID) -> String -> Maybe TransferInfo
-readTransferInfo mpid s =
-	case bits of
-		[time] -> TransferInfo
-			<$> (Just <$> parsePOSIXTime time)
-			<*> pure mpid
-			<*> pure Nothing
-			<*> pure Nothing
-			<*> pure Nothing
-			<*> pure (if null filename then Nothing else Just filename)
-			<*> pure False
-		_ -> Nothing
+readTransferInfo mpid s = TransferInfo
+	<$> time
+	<*> pure mpid
+	<*> pure Nothing
+	<*> pure Nothing
+	<*> bytes
+	<*> pure (if null filename then Nothing else Just filename)
+	<*> pure False
 	where
-		(bits, filebits) = splitAt 1 $ lines s 
+		(bits, filebits) = splitAt 1 $ lines s
 		filename = join "\n" filebits
+		numbits = length bits
+		time = if numbits > 0
+			then Just <$> parsePOSIXTime (bits !! 0)
+			else pure Nothing
+		bytes = if numbits > 1
+			then Just <$> readish (bits !! 1)
+			else pure Nothing
 
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds

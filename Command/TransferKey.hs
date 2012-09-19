@@ -43,8 +43,8 @@ start to from file key =
 
 toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 toPerform remote key file = next $
-	upload (uuid remote) key file $ do
-		ok <- Remote.storeKey remote key file
+	upload (uuid remote) key file $ \p -> do
+		ok <- Remote.storeKey remote key file p
 		when ok $
 			Remote.logStatus remote key InfoPresent
 		return ok

@@ -124,8 +124,8 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withStoredFiles = withCheckedFiles doesFileExist
 
-store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> Annex Bool
-store d chunksize k _f = do
+store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+store d chunksize k _f p = do
 	src <- inRepo $ gitAnnexLocation k
 	metered k $ \meterupdate -> 
 		storeHelper d chunksize k $ \dests ->
@@ -139,8 +139,8 @@ store d chunksize k _f = do
 					storeSplit meterupdate chunksize dests
 						=<< L.readFile src
 
-storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> Annex Bool
-storeEncrypted d chunksize (cipher, enck) k = do
+storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> ProgressCallback -> Annex Bool
+storeEncrypted d chunksize (cipher, enck) k p = do
 	src <- inRepo $ gitAnnexLocation k
 	metered k $ \meterupdate ->
 		storeHelper d chunksize enck $ \dests ->
