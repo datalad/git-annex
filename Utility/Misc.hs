@@ -9,6 +9,9 @@ module Utility.Misc where
 
 import System.IO
 import Control.Monad
+import Foreign
+import Data.Char
+import Control.Applicative
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -47,8 +50,31 @@ segment p l = map reverse $ go [] [] l
 			| otherwise = go (i:c) r is
 
 {- Given two orderings, returns the second if the first is EQ and returns
- - the first otherwise. -}
+ - the first otherwise.
+ -
+ - Example use:
+ -
+ - compare lname1 lname2 `thenOrd` compare fname1 fname2
+ -}
 thenOrd :: Ordering -> Ordering -> Ordering
 thenOrd EQ x = x
 thenOrd x _ = x
 {-# INLINE thenOrd #-}
+
+{- Wrapper around hGetBufSome that returns a String.
+ -
+ - The null string is returned on eof, otherwise returns whatever
+ - data is currently available to read from the handle, or waits for
+ - data to be written to it if none is currently available.
+ - 
+ - Note on encodings: The normal encoding of the Handle is ignored;
+ - each byte is converted to a Char. Not unicode clean!
+ -}
+hGetSomeString :: Handle -> Int -> IO String
+hGetSomeString h sz = do
+	fp <- mallocForeignPtrBytes sz
+	len <- withForeignPtr fp $ \buf -> hGetBufSome h buf sz
+	map (chr . fromIntegral) <$> withForeignPtr fp (peekbytes len)
+	where
+		peekbytes :: Int -> Ptr Word8 -> IO [Word8]
+		peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
