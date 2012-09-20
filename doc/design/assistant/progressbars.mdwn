@@ -22,7 +22,12 @@ the ProgressCallback as the upload progresses.
 * git: Done, with one exception: `git-annex-shell sendkey` runs `rsync
   --server --sender` and in that mode it does not report progress info.
   So downloads initiated by other repos do not show progress in the repo
-  doing the uploading.
+  doing the uploading. 
+  
+  Maybe I should
+  write a proxy for the rsync wire protocol that can tell what chunk of the
+  file is being sent, and shim it in front of the rsync server?
+
 * rsync: **done**
 * directory
 * web: Not applicable; does not upload 
