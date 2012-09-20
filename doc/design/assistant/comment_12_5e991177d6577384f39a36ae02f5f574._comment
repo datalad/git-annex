@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlu-fdXIt_RF9ggvg4zP0yBbtjWQwHAMS4"
+ nickname="Jörn"
+ subject="Multiple annexes?"
+ date="2012-09-20T16:10:29Z"
+ content="""
+Thank you for this great piece of software which is now becoming even better with the assistant.
+
+Just one question: will one instance of the assistant be able to track multiple git annex repositories each building up their own network of annexes OR would I need to run multiple instances of the assistant?
+
+Thanks,
+Jörn
+"""]]
