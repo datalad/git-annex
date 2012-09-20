@@ -239,8 +239,8 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure (if null filename then Nothing else Just filename)
 	<*> pure False
 	where
-		(bits, filebits) = splitAt 1 $ lines s
-		filename = join "\n" filebits
+		(firstline, filename) = separate (== '\n') s
+		bits = split " " firstline
 		numbits = length bits
 		time = if numbits > 0
 			then Just <$> parsePOSIXTime (bits !! 0)
