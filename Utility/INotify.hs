@@ -38,9 +38,8 @@ import Control.Exception (throw)
  - Note: Moving a file will cause events deleting it from its old location
  - and adding it to the new location. 
  - 
- - Note: Modification of files is not detected, and it's assumed that when
- - a file that was open for write is closed, it's finished being written
- - to, and can be added.
+ - Note: It's assumed that when a file that was open for write is closed, 
+ - it's finished being written to, and can be added.
  -
  - Note: inotify has a limit to the number of watches allowed,
  - /proc/sys/fs/inotify/max_user_watches (default 8192).
@@ -66,12 +65,15 @@ watchDir i dir ignored hooks
 		-- Select only inotify events required by the enabled
 		-- hooks, but always include Create so new directories can
 		-- be scanned.
-		watchevents = Create : addevents ++ delevents
+		watchevents = Create : addevents ++ delevents ++ modifyevents
 		addevents
 			| hashook addHook || hashook addSymlinkHook = [MoveIn, CloseWrite]
 			| otherwise = []
 		delevents
 			| hashook delHook || hashook delDirHook = [MoveOut, Delete]
+			| otherwise = []
+		modifyevents
+			| hashook modifyHook = [Modify]
 			| otherwise = []
 
 		scan f = unless (ignored f) $ do
@@ -114,6 +116,9 @@ watchDir i dir ignored hooks
 			| otherwise = guarded $ runhook delHook f Nothing
 			where
 				guarded = unlessM (filetype (const True) f)
+		go (Modified { isDirectory = isd, maybeFilePath = Just f })
+			| isd = noop
+			| otherwise = runhook modifyHook f Nothing
 		go _ = noop
 
 		hashook h = isJust $ h hooks

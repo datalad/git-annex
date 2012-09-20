@@ -12,6 +12,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Logs.Transfer
 import Utility.NotificationBroadcaster
+import qualified Assistant.Threads.TransferWatcher as TransferWatcher
 
 import Control.Concurrent
 import qualified Data.Map as M
@@ -42,9 +43,20 @@ transferPollerThread st dstatus = thread $ do
 				sz <- catchMaybeIO $
 					fromIntegral . fileSize
 						<$> getFileStatus f
-				when (bytesComplete info /= sz && isJust sz) $
-					alterTransferInfo dstatus t $
-						\i -> i { bytesComplete = sz }
-			{- Can't poll uploads, instead the upload code
-			 - updates the files. -}
+				newsize t info sz
+			{- Uploads don't need to be polled for when the
+			 - TransferWatcher thread can track file
+			 - modifications. -}
+			| TransferWatcher.watchesTransferSize = noop
+			{- Otherwise, this code polls the upload progress
+			 - by reading the transfer info file. -}
+			| otherwise = do
+				let f = transferFile t g
+				mi <- catchDefaultIO Nothing $
+					readTransferInfoFile Nothing f
+				maybe noop (newsize t info . bytesComplete) mi
+		newsize t info sz
+			| bytesComplete info /= sz && isJust sz = 
+				alterTransferInfo dstatus t $
+					\i -> i { bytesComplete = sz }
 			| otherwise = noop

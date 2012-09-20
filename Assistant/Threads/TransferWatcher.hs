@@ -30,6 +30,7 @@ transferWatcherThread st dstatus transferqueue = thread $ do
 	let hooks = mkWatchHooks
 		{ addHook = hook onAdd
 		, delHook = hook onDel
+		, modifyHook = hook onModify
 		, errHook = hook onErr
 		}
 	void $ watchDir dir (const False) hooks id
@@ -70,6 +71,25 @@ onAdd st dstatus _ file _ = case parseTransferFile file of
 			updateTransferInfo dstatus t info
 				{ transferRemote = r }
 		sameuuid t r = Remote.uuid r == transferUUID t
+
+{- Called when a transfer information file is updated.
+ -
+ - The only thing that should change in the transfer info is the
+ - bytesComplete, so that's the only thing updated in the DaemonStatus. -}
+onModify :: Handler
+onModify _ dstatus _ file _ = do
+	case parseTransferFile file of
+		Nothing -> noop
+		Just t -> go t =<< readTransferInfoFile Nothing file
+	where
+		go _ Nothing = noop
+		go t (Just newinfo) = alterTransferInfo dstatus t $ \info ->
+			info { bytesComplete = bytesComplete newinfo }
+
+{- This thread can only watch transfer sizes when the DirWatcher supports
+ - tracking modificatons to files. -}
+watchesTransferSize :: Bool
+watchesTransferSize = modifyTracked
 
 {- Called when a transfer information file is removed. -}
 onDel :: Handler

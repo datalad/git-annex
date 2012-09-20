@@ -67,7 +67,7 @@ watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
 	where
 		startup = startupScan st dstatus
 		hook delay a = Just $ runHandler thisThread delay st dstatus transferqueue changechan a
-		hooks delayadd = WatchHooks
+		hooks delayadd = mkWatchHooks
 			{ addHook = hook (Seconds <$> delayadd) onAdd
 			, delHook = hook Nothing onDel
 			, addSymlinkHook = hook Nothing onAddSymlink

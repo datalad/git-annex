@@ -72,6 +72,20 @@ closingTracked = undefined
 #endif
 #endif
 
+/* With inotify, modifications to existing files can be tracked.
+ * Kqueue does not support this.
+ */
+modifyTracked :: Bool
+#if WITH_INOTIFY
+modifyTracked = True
+#else
+#if WITH_KQUEUE
+modifyTracked = False
+#else
+modifyTracked = undefined
+#endif
+#endif
+
 /* Starts a watcher thread. The runStartup action is passed a scanner action
  * to run, that will return once the initial directory scan is complete.
  * Once runStartup returns, the watcher thread continues running,

@@ -19,7 +19,8 @@ data WatchHooks = WatchHooks
 	, delHook :: Hook FilePath
 	, delDirHook :: Hook FilePath
 	, errHook :: Hook String -- error message
+	, modifyHook :: Hook FilePath
 	}
 
 mkWatchHooks :: WatchHooks
-mkWatchHooks = WatchHooks Nothing Nothing Nothing Nothing Nothing
+mkWatchHooks = WatchHooks Nothing Nothing Nothing Nothing Nothing Nothing
