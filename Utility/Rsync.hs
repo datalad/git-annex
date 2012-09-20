@@ -48,7 +48,10 @@ rsync = boolSystem "rsync"
 
 {- Runs rsync, but intercepts its progress output and feeds bytes
  - complete values into the callback. The progress output is also output
- - to stdout. -}
+ - to stdout. 
+ -
+ - The params must enable rsync's --progress mode for this to work.
+ -}
 rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
 rsyncProgress callback params = catchBoolIO $
 	withHandle StdoutHandle createProcessSuccess p (feedprogress [])

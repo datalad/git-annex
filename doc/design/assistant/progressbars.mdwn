@@ -16,13 +16,17 @@ This is one of those potentially hidden but time consuming problems.
 
 ## uploads
 
-Options:
+Each individual remote type needs to implement its own support for calling
+the ProgressCallback as the upload progresses.
 
-* Feed rsync output into a parser and parse out a progress value. Ugly,
-  failure prone, but potentially the least CPU-expensive option.
-* Use librsync. Note: It's not wire-compatiable with the actual rsync
-  command.
-* Set up a FIFO, have rsync read from or write to that, and the FIFO
-  feeder/reader then can update the transfer info. Generic enough to
-  work for most (all?) special remotes, but also the most expensive option,
-  involving another copy through memory of the whole file contents.
+* git: Done, with one exception: `git-annex-shell sendkey` runs `rsync
+  --server --sender` and in that mode it does not report progress info.
+  So downloads initiated by other repos do not show progress in the repo
+  doing the uploading.
+* rsync
+* directory
+* web: Not applicable; does not upload 
+* S3
+* bup
+* hook: Would require the hook interface to somehow do this, which seems
+  too complicated. So skipping.
