@@ -45,5 +45,6 @@ transferPollerThread st dstatus = thread $ do
 				when (bytesComplete info /= sz && isJust sz) $
 					alterTransferInfo dstatus t $
 						\i -> i { bytesComplete = sz }
-			{- can't poll uploads -}
+			{- Can't poll uploads, instead the upload code
+			 - updates the files. -}
 			| otherwise = noop

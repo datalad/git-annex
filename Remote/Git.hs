@@ -37,6 +37,8 @@ import Init
 import Types.Key
 import qualified Fields
 
+import Control.Concurrent
+
 remote :: RemoteType
 remote = RemoteType {
 	typename = "git",
@@ -297,13 +299,27 @@ rsyncHelper callback params = do
  - filesystem. Then cp could be faster. -}
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> ProgressCallback -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
-	ifM (sameDeviceIds src dest)
-		( liftIO $ copyFileExternal src dest
-		, rsyncHelper (Just p) $ rsyncparams ++ [Param src, Param dest]
-		)
+	ifM (sameDeviceIds src dest) (dorsync, docopy)
 	where
 		sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
 		getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
+		dorsync = rsyncHelper (Just p) $
+			rsyncparams ++ [Param src, Param dest]
+		docopy = liftIO $ bracket
+			(forkIO $ watchfilesize 0)
+			(void . tryIO . killThread)
+			(const $ copyFileExternal src dest)
+		watchfilesize oldsz = do
+			threadDelay 500000 -- 0.5 seconds
+			v <- catchMaybeIO $
+				fromIntegral . fileSize
+					<$> getFileStatus dest
+			case v of
+				Just sz
+					| sz /= oldsz -> do
+						p sz
+						watchfilesize sz
+				_ -> watchfilesize oldsz
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
