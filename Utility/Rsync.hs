@@ -54,10 +54,10 @@ rsync = boolSystem "rsync"
  -}
 rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
 rsyncProgress callback params = catchBoolIO $
-	withHandle StdoutHandle createProcessSuccess p (feedprogress [])
+	withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
 	where
 		p = proc "rsync" (toCommand params)
-		feedprogress buf h = do
+		feedprogress prev buf h = do
 			s <- hGetSomeString h 80
 			if null s
 				then return True
@@ -65,8 +65,12 @@ rsyncProgress callback params = catchBoolIO $
 					putStr s
 					hFlush stdout
 					let (mbytes, buf') = parseRsyncProgress (buf++s)
-					maybe noop callback mbytes
-					feedprogress buf' h
+					case mbytes of
+						Nothing -> feedprogress prev buf' h
+						(Just bytes) -> do
+							when (bytes /= prev) $
+								callback bytes
+							feedprogress bytes buf' h
 
 {- Checks if an rsync url involves the remote shell (ssh or rsh).
  - Use of such urls with rsync requires additional shell
