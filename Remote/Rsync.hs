@@ -105,16 +105,16 @@ rsyncUrls o k = map use annexHashes
                 f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
-store o k _f p = rsyncSend o k <=< inRepo $ gitAnnexLocation k
+store o k _f p = rsyncSend o p k <=< inRepo $ gitAnnexLocation k
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> ProgressCallback -> Annex Bool
 storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation k
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
-	rsyncSend o enck tmp
+	rsyncSend o p enck tmp
 
 retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o
+retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o Nothing
 	-- use inplace when retrieving to support resuming
 	[ Param "--inplace"
 	, Param u
@@ -191,10 +191,10 @@ withRsyncScratchDir a = do
 		nuke d = liftIO $ whenM (doesDirectoryExist d) $
 			removeDirectoryRecursive d
 
-rsyncRemote :: RsyncOpts -> [CommandParam] -> Annex Bool
-rsyncRemote o params = do
+rsyncRemote :: RsyncOpts -> (Maybe ProgressCallback) -> [CommandParam] -> Annex Bool
+rsyncRemote o callback params = do
 	showOutput -- make way for progress bar
-	ifM (liftIO $ rsync $ rsyncOptions o ++ defaultParams ++ params)
+	ifM (liftIO $ (maybe rsync rsyncProgress callback) ps)
 		( return True
 		, do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
@@ -202,16 +202,17 @@ rsyncRemote o params = do
 		)
 	where
 		defaultParams = [Params "--progress"]
+		ps = rsyncOptions o ++ defaultParams ++ params
 
 {- To send a single key is slightly tricky; need to build up a temporary
    directory structure to pass to rsync so it can create the hash
    directories. -}
-rsyncSend :: RsyncOpts -> Key -> FilePath -> Annex Bool
-rsyncSend o k src = withRsyncScratchDir $ \tmp -> do
+rsyncSend :: RsyncOpts -> ProgressCallback -> Key -> FilePath -> Annex Bool
+rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	liftIO $ createLink src dest
-	rsyncRemote o
+	rsyncRemote o (Just callback)
 		[ Param "--recursive"
 		, partialParams
  		  -- tmp/ to send contents of tmp dir

@@ -23,7 +23,7 @@ the ProgressCallback as the upload progresses.
   --server --sender` and in that mode it does not report progress info.
   So downloads initiated by other repos do not show progress in the repo
   doing the uploading.
-* rsync
+* rsync: **done**
 * directory
 * web: Not applicable; does not upload 
 * S3
