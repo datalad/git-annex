@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2012-09-20T14:11:57Z"
+ content="""
+I have a [proof of concept written in python](https://github.com/JustinAzoff/git-annex-background-fsck/blob/master/git-annex-background-fsck).
+
+You can run it and point it the root of an annex or to a subdirectory.  In my brief testing it seems to work :-)
+
+the goal would be to have options like
+
+    git annex fsck /data/annex --check-older-than 1w --check-for 2h --max-load-avg 0.5
+"""]]
