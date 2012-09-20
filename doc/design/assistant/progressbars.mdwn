@@ -35,3 +35,9 @@ the ProgressCallback as the upload progresses.
 * bup
 * hook: Would require the hook interface to somehow do this, which seems
   too complicated. So skipping.
+
+## communication
+
+It may be worth using a better communication channel than files on disk for
+the transfer progress. Shared memory could be used, or http posts to the
+webapp.
