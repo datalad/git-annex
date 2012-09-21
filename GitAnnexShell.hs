@@ -23,6 +23,7 @@ import qualified Command.InAnnex
 import qualified Command.DropKey
 import qualified Command.RecvKey
 import qualified Command.SendKey
+import qualified Command.TransferInfo
 import qualified Command.Commit
 
 cmds_readonly :: [Command]
@@ -30,6 +31,7 @@ cmds_readonly = concat
 	[ Command.ConfigList.def
 	, Command.InAnnex.def
 	, Command.SendKey.def
+	, Command.TransferInfo.def
 	]
 
 cmds_notreadonly :: [Command]

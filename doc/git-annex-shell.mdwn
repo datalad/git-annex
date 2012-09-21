@@ -46,6 +46,15 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
   This runs rsync in server mode to transfer out the content of a key.
 
+* transferinfo directory key uuid [file]
+
+  This is typically run at the same time as sendkey is sending a key
+  to the remote with the specified uuid.
+
+  It reads lines from standard input, each giving the number of bytes
+  that have been received so far. This is optional, but is used to update
+  progress information for the transfer of the key.
+
 * commit directory
 
   This commits any staged changes to the git-annex branch.

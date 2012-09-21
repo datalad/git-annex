@@ -40,7 +40,7 @@ stubKey = Key {
 fieldSep :: Char
 fieldSep = '-'
 
-{- Converts a key to a strings that are suitable for use as a filename.
+{- Converts a key to a string that is suitable for use as a filename.
  - The name field is always shown last, separated by doubled fieldSeps,
  - and is the only field allowed to contain the fieldSep. -}
 key2file :: Key -> FilePath

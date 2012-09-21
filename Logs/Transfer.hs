@@ -89,18 +89,9 @@ download u key file a = runTransfer (Transfer Download u key) file (const a)
  -}
 runTransfer :: Transfer -> Maybe FilePath -> (MeterUpdate -> Annex Bool) -> Annex Bool
 runTransfer t file a = do
-	tfile <- fromRepo $ transferFile t
-	createAnnexDirectory $ takeDirectory tfile
+	info <- liftIO $ startTransferInfo file
+	(meter, tfile) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	info <- liftIO $ TransferInfo
-		<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
-		<*> pure Nothing -- pid not stored in file, so omitted for speed
-		<*> pure Nothing -- tid ditto
-		<*> pure Nothing -- not 0; transfer may be resuming
-		<*> pure Nothing
-		<*> pure file
-		<*> pure False
-	meter <- liftIO $ progressupdater tfile info
 	ok <- bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
 	unless ok $ failed info
 	return ok
@@ -122,22 +113,40 @@ runTransfer t file a = do
 			failedtfile <- fromRepo $ failedTransferFile t
 			createAnnexDirectory $ takeDirectory failedtfile
 			liftIO $ writeTransferInfoFile info failedtfile
-		{- Updates transfer info file as transfer progresses. -}
-		progressupdater tfile info = do
-			mvar <- newMVar 0
-			return $ \bytes -> modifyMVar_ mvar $ \oldbytes -> do
-				if (bytes - oldbytes >= mindelta)
-					then do
-						let info' = info { bytesComplete = Just bytes }
-						writeTransferInfoFile info' tfile
-						return bytes
-					else return oldbytes
+
+
+{- Generates a callback that can be called as transfer progresses to update
+ - the transfer info file. Also returns the file it'll be updating. -}
+mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath)
+mkProgressUpdater t info = do
+	tfile <- fromRepo $ transferFile t
+	createAnnexDirectory $ takeDirectory tfile
+	mvar <- liftIO $ newMVar 0
+	return (liftIO . updater tfile mvar, tfile)
+	where
+		updater tfile mvar bytes = modifyMVar_ mvar $ \oldbytes -> do
+			if (bytes - oldbytes >= mindelta)
+				then do
+					let info' = info { bytesComplete = Just bytes }
+					writeTransferInfoFile info' tfile
+					return bytes
+				else return oldbytes
 		{- The minimum change in bytesComplete that is worth
 		 - updating a transfer info file for is 1% of the total
 		 - keySize, rounded down. -}
 		mindelta = case keySize (transferKey t) of
 			Just sz -> sz `div` 100
 			Nothing -> 100 * 1024 -- arbitrarily, 100 kb
+
+startTransferInfo :: Maybe FilePath -> IO TransferInfo
+startTransferInfo file = TransferInfo
+	<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
+	<*> pure Nothing -- pid not stored in file, so omitted for speed
+	<*> pure Nothing -- tid ditto
+	<*> pure Nothing -- not 0; transfer may be resuming
+	<*> pure Nothing
+	<*> pure file
+	<*> pure False
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
@@ -192,7 +201,7 @@ removeFailedTransfer t = do
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
 transferFile (Transfer direction u key) r = transferDir direction r
-	</> fromUUID u
+	</> filter (/= '/') (fromUUID u)
 	</> keyFile key
 
 {- The transfer information file to use to record a failed Transfer -}
@@ -278,4 +287,4 @@ failedTransferDir :: UUID -> Direction -> Git.Repo -> FilePath
 failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
 	</> showLcDirection direction
-	</> fromUUID u
+	</> filter (/= '/') (fromUUID u)
