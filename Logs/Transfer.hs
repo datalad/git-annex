@@ -100,9 +100,8 @@ runTransfer t file a = do
 		<*> pure Nothing
 		<*> pure file
 		<*> pure False
-	ok <- bracketIO (prep tfile mode info) (cleanup tfile) $ a $ \bytes ->
-		writeTransferInfoFile (info { bytesComplete = Just bytes }) tfile
-		
+	meter <- liftIO $ progressupdater tfile info
+	ok <- bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
 	unless ok $ failed info
 	return ok
 	where
@@ -123,6 +122,22 @@ runTransfer t file a = do
 			failedtfile <- fromRepo $ failedTransferFile t
 			createAnnexDirectory $ takeDirectory failedtfile
 			liftIO $ writeTransferInfoFile info failedtfile
+		{- Updates transfer info file as transfer progresses. -}
+		progressupdater tfile info = do
+			mvar <- newMVar 0
+			return $ \bytes -> modifyMVar_ mvar $ \oldbytes -> do
+				if (bytes - oldbytes >= mindelta)
+					then do
+						let info' = info { bytesComplete = Just bytes }
+						writeTransferInfoFile info' tfile
+						return bytes
+					else return oldbytes
+		{- The minimum change in bytesComplete that is worth
+		 - updating a transfer info file for is 1% of the total
+		 - keySize, rounded down. -}
+		mindelta = case keySize (transferKey t) of
+			Just sz -> sz `div` 100
+			Nothing -> 100 * 1024 -- arbitrarily, 100 kb
 
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
