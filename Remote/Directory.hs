@@ -127,7 +127,7 @@ withStoredFiles = withCheckedFiles doesFileExist
 store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store d chunksize k _f p = do
 	src <- inRepo $ gitAnnexLocation k
-	metered k $ \meterupdate -> 
+	metered (Just p) k $ \meterupdate -> 
 		storeHelper d chunksize k $ \dests ->
 			case chunksize of
 				Nothing -> do
@@ -142,7 +142,7 @@ store d chunksize k _f p = do
 storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted d chunksize (cipher, enck) k p = do
 	src <- inRepo $ gitAnnexLocation k
-	metered k $ \meterupdate ->
+	metered (Just p) k $ \meterupdate ->
 		storeHelper d chunksize enck $ \dests ->
 			withEncryptedContent cipher (L.readFile src) $ \s ->
 				case chunksize of
@@ -245,7 +245,7 @@ storeHelper d chunksize key a = prep <&&> check <&&> go
 			return (not $ null stored)
 
 retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve d chunksize k _ f = metered k $ \meterupdate ->
+retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
 			meteredWriteFile' meterupdate f files feeder
@@ -257,7 +257,7 @@ retrieve d chunksize k _ f = metered k $ \meterupdate ->
 			return (xs, chunks)
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted d chunksize (cipher, enck) k f = metered k $ \meterupdate ->
+retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d enck $ \files ->
 		catchBoolIO $ do
 			withDecryptedContent cipher (L.concat <$> mapM L.readFile files) $

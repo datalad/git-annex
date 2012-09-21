@@ -43,7 +43,7 @@ the ProgressCallback as the upload progresses.
   the multiplexing.
 
 * rsync: **done**
-* directory
+* directory: **done**
 * web: Not applicable; does not upload 
 * S3
 * bup

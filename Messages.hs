@@ -63,8 +63,8 @@ showProgress = handle q $
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
-metered :: Key -> (MeterUpdate -> Annex a) -> Annex a
-metered key a = withOutputType $ go (keySize key)
+metered :: (Maybe MeterUpdate) -> Key -> (MeterUpdate -> Annex a) -> Annex a
+metered combinemeterupdate key a = withOutputType $ go (keySize key)
 	where
 		go (Just size) NormalOutput = do
 			progress <- liftIO $ newProgress "" size
@@ -74,6 +74,7 @@ metered key a = withOutputType $ go (keySize key)
 			r <- a $ \n -> liftIO $ do
 				incrP progress n
 				displayMeter stdout meter
+				maybe noop (\m -> m n) combinemeterupdate
 			liftIO $ clearMeter stdout meter
 			return r
                 go _ _ = a (const noop)
