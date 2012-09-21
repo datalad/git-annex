@@ -138,7 +138,7 @@ pushToRemotes threadname now st mpushmap remotes = do
 				refspec b = concat
 					[ s
 					, ":"
-					, "refs" </> "synced" </> fromUUID u </> s
+					, "refs/synced/" ++ fromUUID u ++ "/" ++ s
 					]
 					where s = show $ Git.Ref.base b
 

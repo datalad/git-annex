@@ -475,33 +475,33 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "get" [sha1annexedfile] @? "get of file failed"
-	checkunused []
+	checkunused [] "after get"
 	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
-	checkunused []
+	checkunused [] "after rm"
 	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
-	checkunused []
+	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
 	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
-	checkunused [annexedfilekey]
+	checkunused [annexedfilekey] "after origin branches are gone"
 	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
 	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
-	checkunused [annexedfilekey, sha1annexedfilekey]
+	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
 	git_annex "dropkey" ["--force", Types.Key.key2file annexedfilekey]
 		@? "dropkey failed"
-	checkunused [sha1annexedfilekey]
+	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Types.Key.key2file annexedfilekey)
 
 	git_annex "dropunused" ["1", "2"] @? "dropunused failed"
-	checkunused []
+	checkunused [] "after dropunused"
 	git_annex "dropunused" ["10", "501"] @? "dropunused failed on bogus numbers"
 
 	where
-		checkunused expectedkeys = do
+		checkunused expectedkeys desc = do
 			git_annex "unused" [] @? "unused failed"
 			unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
 			let unusedkeys = M.elems unusedmap
-			assertEqual "unused keys differ"
+			assertEqual ("unused keys differ " ++ desc)
 				(sort expectedkeys) (sort unusedkeys)
 		findkey f = do
 			r <- Backend.lookupFile f

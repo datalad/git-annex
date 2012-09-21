@@ -251,16 +251,15 @@ withKeysReferencedInGit a = do
 	rs <- relevantrefs <$> showref
 	forM_ rs (withKeysReferencedInGitRef a)
 	where
-		{- List heads and tags, but not other refs used in syncing. -}
-		showref = inRepo $ Git.Command.pipeRead
-			[Param "show-ref", Param "--heads", Param "--tags"]
+		showref = inRepo $ Git.Command.pipeRead [Param "show-ref"]
 		relevantrefs = map (Git.Ref .  snd) .
 			nubBy uniqref .
 			filter ourbranches .
 			map (separate (== ' ')) . lines
 		uniqref (x, _) (y, _) = x == y
 		ourbranchend = '/' : show Annex.Branch.name
-		ourbranches (_, b) = not $ ourbranchend `isSuffixOf` b
+		ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
+			&& not ("refs/synced/" `isPrefixOf` b)
 
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
