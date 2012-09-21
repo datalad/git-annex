@@ -264,7 +264,7 @@ copyFromRemoteCheap r key file
 	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Git.Repo -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+copyToRemote :: Git.Repo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file p
 	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ do
 		keysrc <- inRepo $ gitAnnexLocation key
@@ -285,7 +285,7 @@ copyToRemote r key file p
 		rsyncHelper (Just p) =<< rsyncParamsRemote r False key keysrc file
 	| otherwise = error "copying to non-ssh repo not supported"
 
-rsyncHelper :: Maybe ProgressCallback -> [CommandParam] -> Annex Bool
+rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncHelper callback params = do
 	showOutput -- make way for progress bar
 	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
@@ -297,7 +297,7 @@ rsyncHelper callback params = do
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
-rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> ProgressCallback -> Annex Bool
+rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
 	ifM (sameDeviceIds src dest) (dorsync, docopy)
 	where

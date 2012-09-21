@@ -32,7 +32,7 @@ start key = ifM (inAnnex key)
 		liftIO exitFailure
 	)
 
-fieldTransfer :: Direction -> Key -> (ProgressCallback -> Annex Bool) -> CommandStart
+fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	afile <- Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)

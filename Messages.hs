@@ -11,7 +11,6 @@ module Messages (
 	showAction,
 	showProgress,
 	metered,
-	MeterUpdate,
 	showSideAction,
 	doSideAction,
 	doQuietSideAction,
@@ -42,6 +41,7 @@ import Common
 import Types
 import Types.Messages
 import Types.Key
+import Types.Remote
 import qualified Annex
 import qualified Messages.JSON as JSON
 
@@ -63,7 +63,6 @@ showProgress = handle q $
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
-type MeterUpdate = Integer -> IO ()
 metered :: Key -> (MeterUpdate -> Annex a) -> Annex a
 metered key a = withOutputType $ go (keySize key)
 	where

@@ -104,10 +104,10 @@ rsyncUrls o k = map use annexHashes
 		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
                 f = keyFile k
 
-store :: RsyncOpts -> Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = rsyncSend o p k <=< inRepo $ gitAnnexLocation k
 
-storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> ProgressCallback -> Annex Bool
+storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation k
 	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
@@ -191,7 +191,7 @@ withRsyncScratchDir a = do
 		nuke d = liftIO $ whenM (doesDirectoryExist d) $
 			removeDirectoryRecursive d
 
-rsyncRemote :: RsyncOpts -> (Maybe ProgressCallback) -> [CommandParam] -> Annex Bool
+rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do
 	showOutput -- make way for progress bar
 	ifM (liftIO $ (maybe rsync rsyncProgress callback) ps)
@@ -207,7 +207,7 @@ rsyncRemote o callback params = do
 {- To send a single key is slightly tricky; need to build up a temporary
    directory structure to pass to rsync so it can create the hash
    directories. -}
-rsyncSend :: RsyncOpts -> ProgressCallback -> Key -> FilePath -> Annex Bool
+rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> FilePath -> Annex Bool
 rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest

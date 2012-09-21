@@ -66,7 +66,7 @@ downloadKey key _file dest = get =<< getUrls key
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
 
-uploadKey :: Key -> AssociatedFile -> ProgressCallback -> Annex Bool
+uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 uploadKey _ _ _ = do
 	warning "upload to web not supported"
 	return False

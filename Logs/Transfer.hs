@@ -74,7 +74,7 @@ percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
-upload :: UUID -> Key -> AssociatedFile -> (ProgressCallback -> Annex Bool) -> Annex Bool
+upload :: UUID -> Key -> AssociatedFile -> (MeterUpdate -> Annex Bool) -> Annex Bool
 upload u key file a = runTransfer (Transfer Upload u key) file a
 
 download :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
@@ -87,7 +87,7 @@ download u key file a = runTransfer (Transfer Download u key) file (const a)
  - If the transfer action returns False, the transfer info is 
  - left in the failedTransferDir.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> (ProgressCallback -> Annex Bool) -> Annex Bool
+runTransfer :: Transfer -> Maybe FilePath -> (MeterUpdate -> Annex Bool) -> Annex Bool
 runTransfer t file a = do
 	tfile <- fromRepo $ transferFile t
 	createAnnexDirectory $ takeDirectory tfile

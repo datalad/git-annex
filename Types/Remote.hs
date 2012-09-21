@@ -37,8 +37,8 @@ instance Eq (RemoteTypeA a) where
 type AssociatedFile = Maybe FilePath
 
 {- An action that can be run repeatedly, feeding it the number of
- - bytes sent or retreived so far. -}
-type ProgressCallback = (Integer -> IO ())
+ - bytes sent or retrieved so far. -}
+type MeterUpdate = (Integer -> IO ())
 
 {- An individual remote. -}
 data RemoteA a = Remote {
@@ -49,7 +49,7 @@ data RemoteA a = Remote {
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Int,
 	-- Transfers a key to the remote.
-	storeKey :: Key -> AssociatedFile -> ProgressCallback -> a Bool,
+	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
 	-- retrieves a key's contents to a file
 	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> a Bool,
 	-- retrieves a key's contents to a tmp file, if it can be done cheaply

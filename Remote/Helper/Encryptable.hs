@@ -45,7 +45,7 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
  - to support storing and retrieving encrypted content. -}
 encryptableRemote
 	:: Maybe RemoteConfig
-	-> ((Cipher, Key) -> Key -> ProgressCallback -> Annex Bool)
+	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
 	-> ((Cipher, Key) -> Key -> FilePath -> Annex Bool)
 	-> Remote
 	-> Remote
