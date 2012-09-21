@@ -26,7 +26,16 @@ the ProgressCallback as the upload progresses.
   
   Maybe I should
   write a proxy for the rsync wire protocol that can tell what chunk of the
-  file is being sent, and shim it in front of the rsync server?
+  file is being sent, and shim it in front of the rsync server? Sadly,
+  the protocol is insane.
+
+  Another idea: Invert things. Make `git-annex-shell sendkey` run 
+  `rsync -e 'cat'`, so it treats the incoming ssh connection as the server.
+  (cat probably won't really work; bidirectional pipe needed).
+  Run rsync in `--server` mode on the *client* side, piped to ssh.
+  Now the `git-annex` side doesn't have a progress bar (but it can poll the
+  file size and produce its own), `git-annex-shell` side does have a progress
+  bar.
 
 * rsync: **done**
 * directory
