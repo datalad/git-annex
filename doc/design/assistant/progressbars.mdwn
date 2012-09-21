@@ -37,6 +37,11 @@ the ProgressCallback as the upload progresses.
   file size and produce its own), `git-annex-shell` side does have a progress
   bar.
 
+  Less crazy, but probably harder idea: Multiplex progress info from client
+  back to server over the ssh connection, and demultiplex at server end.
+  Or, use a separate ssh connection, and let ssh connection caching handle
+  the multiplexing.
+
 * rsync: **done**
 * directory
 * web: Not applicable; does not upload 
