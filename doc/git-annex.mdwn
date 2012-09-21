@@ -684,7 +684,8 @@ Here are all the supported configuration settings.
   Makes the watch and assistant commands delay for the specified number of
   seconds before adding a newly created file to the annex. Normally this
   is not needed, because they already wait for all writers of the file
-  to close it.
+  to close it. On Mac OSX, this defaults to 1 second, to work around
+  a bad interaction with software there.
 
 * `remote.<name>.annex-cost`
 

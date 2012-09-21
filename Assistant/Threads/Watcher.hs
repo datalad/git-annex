@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.Threads.Watcher (
 	watchThread,
 	checkCanWatch,
@@ -58,17 +60,28 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
+{- OSX needs a short delay after a file is added before locking it down,
+ - as pasting a file seems to try to set file permissions or otherwise
+ - access the file after closing it. -}
+delayaddDefault :: Maybe Seconds
+#ifdef darwin_HOST_OS
+delayaddDefault = Just $ Seconds 1
+#else
+delayaddDefault = Nothing
+#endif
+
 watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
 watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
 	delayadd <- runThreadState st $
-		readish <$> getConfig (annexConfig "delayadd") "" 
+		maybe delayaddDefault (Just . Seconds) . readish
+			<$> getConfig (annexConfig "delayadd") "" 
 	void $ watchDir "." ignored (hooks delayadd) startup
 	debug thisThread [ "watching", "."]
 	where
 		startup = startupScan st dstatus
 		hook delay a = Just $ runHandler thisThread delay st dstatus transferqueue changechan a
 		hooks delayadd = mkWatchHooks
-			{ addHook = hook (Seconds <$> delayadd) onAdd
+			{ addHook = hook delayadd onAdd
 			, delHook = hook Nothing onDel
 			, addSymlinkHook = hook Nothing onAddSymlink
 			, delDirHook = hook Nothing onDelDir
