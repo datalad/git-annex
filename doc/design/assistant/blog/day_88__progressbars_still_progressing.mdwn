@@ -1,0 +1,18 @@
+Short day today, but I again worked only on progress bars.
+
+* Added upload progress tracking for the directory special remote.
+* Some optimisations.
+* Added a `git annex-shell transferkey` command. This isn't used yet,
+  but the plan is to use it to feed back information about how much
+  of a file has been sent when downloading it. So that the uploader
+  can display a progress bar. This method avoids needing to parse the rsync
+  protocol, which is approximately impossible without copying half of rsync.
+  Happily, git-annex's automatic ssh connection caching will make the small
+  amount of data this needs to send be efficiently pipelined over the same
+  ssh connection that rsync is using.
+
+I probably have less than 10 lines of code to write to finish up
+[[progressbars]] for now. Looking forward to getting that behind me, and on
+to something more interesting. Even doing mail merge to print labels to
+mail out Kickstarter rewards is more interesting than progress bars at this
+point. :)
