@@ -11,23 +11,15 @@ import Common.Annex
 import Command
 import Annex.Content
 import Logs.Transfer
-import Types.Remote
 import Types.Key
+import qualified Fields
 
 def :: [Command]
-def = [noCommit $ command "transferinfo" paramdesc seek
+def = [noCommit $ command "transferinfo" paramKey seek
 	"updates sender on number of bytes of content received"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
-
-paramdesc :: String
-paramdesc = paramKey `paramPair` paramUUID `paramPair` paramOptional paramFile
-
-start :: [String] -> CommandStart
-start (k:u:f:[]) = start' (file2key k) (toUUID u) (Just f) >> stop
-start (k:u:[]) = start' (file2key k) (toUUID u) Nothing >> stop
-start _ = error "wrong number of parameters"
 
 {- Security:
  - 
@@ -41,20 +33,27 @@ start _ = error "wrong number of parameters"
  - of the key is actually in progress, because this could be started
  - concurrently with sendkey, and win the race.
  -}
-start' :: Maybe Key -> UUID -> AssociatedFile -> Annex ()
-start' Nothing _ _ = error "bad key"
-start' (Just key) u file = whenM (inAnnex key) $ do
-	let t = Transfer
-		{ transferDirection = Upload
-		, transferUUID = u
-		, transferKey = key
-		}
-	info <- liftIO $ startTransferInfo file
-	(update, tfile) <- mkProgressUpdater t info
-	liftIO $ mapM_ void
-		[ tryIO $ forever $ do
-			bytes <- readish <$> getLine
-			maybe (error "transferinfo protocol error") update bytes
-		, tryIO $ removeFile tfile
-		, exitSuccess
-		]
+start :: [String] -> CommandStart
+start (k:[]) = do
+	case (file2key k) of
+		Nothing -> error "bad key"
+		(Just key) -> whenM (inAnnex key) $ do
+			file <- Fields.getField Fields.associatedFile
+			u <- maybe (error "missing remoteuuid") toUUID
+				<$> Fields.getField Fields.remoteUUID
+			let t = Transfer
+				{ transferDirection = Upload
+				, transferUUID = u
+				, transferKey = key
+				}
+			info <- liftIO $ startTransferInfo file
+			(update, tfile) <- mkProgressUpdater t info
+			liftIO $ mapM_ void
+				[ tryIO $ forever $ do
+					bytes <- readish <$> getLine
+					maybe (error "transferinfo protocol error") update bytes
+				, tryIO $ removeFile tfile
+				, exitSuccess
+				]
+	stop
+start _ = error "wrong number of parameters"

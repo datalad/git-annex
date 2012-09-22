@@ -17,6 +17,7 @@ module Utility.Process (
 	writeReadProcessEnv,
 	forceSuccessProcess,
 	checkSuccessProcess,
+	ignoreFailureProcess,
 	createProcessSuccess,
 	createProcessChecked,
 	createBackgroundProcess,
@@ -24,6 +25,9 @@ module Utility.Process (
 	withBothHandles,
 	createProcess,
 	runInteractiveProcess,
+	stdinHandle,
+	stdoutHandle,
+	stderrHandle,
 ) where
 
 import qualified System.Process
@@ -111,6 +115,9 @@ checkSuccessProcess :: ProcessHandle -> IO Bool
 checkSuccessProcess pid = do
 	code <- waitForProcess pid
 	return $ code == ExitSuccess
+
+ignoreFailureProcess :: ProcessHandle -> IO ()
+ignoreFailureProcess = void . waitForProcess
 
 {- Runs createProcess, then an action on its handles, and then
  - forceSuccessProcess. -}

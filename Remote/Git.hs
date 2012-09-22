@@ -27,6 +27,7 @@ import qualified Annex
 import Logs.Presence
 import Logs.Transfer
 import Annex.UUID
+import Annex.Exception
 import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
@@ -38,6 +39,7 @@ import Types.Key
 import qualified Fields
 
 import Control.Concurrent
+import System.Process (std_in, std_err)
 
 remote :: RemoteType
 remote = RemoteType {
@@ -247,9 +249,49 @@ copyFromRemote r key file dest
 			loc <- inRepo $ gitAnnexLocation key
 			upload u key file $
 				rsyncOrCopyFile params loc dest
-	| Git.repoIsSsh r = rsyncHelper Nothing =<< rsyncParamsRemote r True key dest file
+	| Git.repoIsSsh r = feedprogressback $ \feeder -> 
+		rsyncHelper (Just feeder) 
+			=<< rsyncParamsRemote r True key dest file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
+	where
+		{- Feed local rsync's progress info back to the remote,
+		 - by forking a feeder thread that runs
+		 - git-annex-shell transferinfo at the same time
+		 - git-annex-shell sendkey is running.
+		 -
+		 - Note that it actually waits for rsync to indicate
+		 - progress before starting transferinfo, in order
+		 - to ensure ssh connection caching works and reuses 
+		 - the connection set up for the sendkey.
+		 -
+		 - Also note that older git-annex-shell does not support
+		 - transferinfo, so stderr is dropped and failure ignored.
+		 -}
+		feedprogressback a = do
+			u <- getUUID
+			let fields = (Fields.remoteUUID, fromUUID u)
+				: maybe [] (\f -> [(Fields.associatedFile, f)]) file
+			Just (cmd, params) <- git_annex_shell r "transferinfo" 
+				[Param $ key2file key] fields
+			v <- liftIO $ newEmptySampleVar
+			tid <- liftIO $ forkIO $ void $ tryIO $ do
+				bytes <- readSampleVar v
+				p <- createProcess $
+					 (proc cmd (toCommand params))
+						{ std_in = CreatePipe
+						, std_err = CreatePipe
+						}
+				hClose $ stderrHandle p
+				let h = stdinHandle p
+				let send b = do
+					hPutStrLn h $ show b
+					hFlush h
+				send bytes
+				forever $
+					send =<< readSampleVar v
+			let feeder = writeSampleVar v
+			bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
 
 copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
