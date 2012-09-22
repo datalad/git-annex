@@ -16,3 +16,5 @@ What version of git-annex are you using? On what operating system?
 Please provide any additional information below.
 
 Installing git from backports as well cleared up the problem.
+
+> Uploading a fix for this now. [[done]] Thanks for reporting. --[[Joey]] 
