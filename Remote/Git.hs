@@ -299,7 +299,7 @@ rsyncHelper callback params = do
  - filesystem. Then cp could be faster. -}
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
-	ifM (sameDeviceIds src dest) (dorsync, docopy)
+	ifM (sameDeviceIds src dest) (docopy, dorsync)
 	where
 		sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
 		getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
