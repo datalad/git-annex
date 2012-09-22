@@ -2,8 +2,7 @@ git-annex (3.20120826) UNRELEASED; urgency=low
 
   * assistant: New command, a daemon which does everything watch does,
     as well as automatically syncing file contents between repositories.
-  * webapp: New command (and FreeDesktop menu item) that allows managing
-    and configuring the assistant in a web browser.
+  * webapp: An interface for managing and configuring the assistant.
   * The default backend used when adding files to the annex is changed
     from SHA256 to SHA256E, to simplify interoperability with OSX, media
     players, and various programs that needlessly look at symlink targets.
