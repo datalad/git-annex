@@ -21,6 +21,7 @@ import Control.Monad
 import System.Directory
 import System.Environment
 import System.Posix.User
+import System.Posix.Types
 import System.Posix.Files
 import System.FilePath
 
@@ -73,38 +74,56 @@ writeFDODesktop command = do
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
 	home <- myHomeDir
+
 	let base = "Library" </> "LaunchAgents" </> label ++ ".plist"
 	autostart <- ifM isRoot ( inDestDir $ "/" </> base , inDestDir $ home </> base)
 	createDirectoryIfMissing True (parentDir autostart)
-	writeFile autostart $ unlines
-		[ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-		, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
-		, "<plist version=\"1.0\">"
-		, "<dict>"
-		, "<key>Label</key>"
-		, "<string>" ++ label ++ "</string>"
-		, "<key>ProgramArguments</key>"
-		, "<array>"
-		, "<string>" ++ command ++ "</string>"
-		, "<string>assistant</string>"
-		, "<string>--autostart</string>"
-		, "</array>"
-		, "<key>RunAtLoad</key>"
-		, "</dict>"
-		, "</plist>"
-		]
+	writeFile autostart $ genOSXAutoStartFile label command
 
-	ifM isRoot
-		( return ()
-		, do
-			let commandfile = home </> "Desktop" </> "git-annex-webapp.command"
-			writeFile commandfile $ unwords [command, "webapp"]
-			mode <- fileMode <$> getFileStatus commandfile
-			setFileMode commandfile $ mode `unionFileModes` ownerExecuteMode
-		)
-	
+	let appdir = "git-annex.app"
+	installOSXAppFile appdir "Contents/Info.plist" Nothing
+	installOSXAppFile appdir "Contents/Resources/git-annex.icns" Nothing
+	installOSXAppFile appdir "Contents/MacOS/git-annex" (Just webappscript)
 	where
 		label = "com.branchable.git-annex.assistant"
+		webappscript = unlines
+			[ "#!/bin/sh"
+			, command ++ " webapp"
+			]
+
+installOSXAppFile :: FilePath -> FilePath -> Maybe String -> IO ()
+installOSXAppFile appdir appfile mcontent = do
+	let src = "ui-macos" </> appdir </> appfile
+	home <- myHomeDir
+	dest <- ifM isRoot
+ 		-- no idea where to install as root
+		( return $ "/Library/git-annex" </> appdir </> appfile
+		, return $ home </> "Desktop" </> appdir </> appfile
+		)
+	content <- maybe (readFile src) return mcontent
+	createDirectoryIfMissing True (parentDir dest)
+	writeFile dest content
+	mode <- fileMode <$> getFileStatus src
+	setFileMode dest mode
+
+genOSXAutoStartFile :: String -> String -> String
+genOSXAutoStartFile label command = unlines
+	[ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+	, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+	, "<plist version=\"1.0\">"
+	, "<dict>"
+	, "<key>Label</key>"
+	, "<string>" ++ label ++ "</string>"
+	, "<key>ProgramArguments</key>"
+	, "<array>"
+	, "<string>" ++ command ++ "</string>"
+	, "<string>assistant</string>"
+	, "<string>--autostart</string>"
+	, "</array>"
+	, "<key>RunAtLoad</key>"
+	, "</dict>"
+	, "</plist>"
+	]
 
 writeDesktop :: FilePath -> IO ()
 #ifdef darwin_HOST_OS
