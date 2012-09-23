@@ -10,6 +10,8 @@ module Logs.Trust (
 	trustGet,
 	trustSet,
 	trustPartition,
+	readTrust,
+	lookupTrust,
 ) where
 
 import qualified Data.Map as M
@@ -44,6 +46,10 @@ trustSet uuid@(UUID _) level = do
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
 
+{- Returns the TrustLevel of a given repo UUID. -}
+lookupTrust :: UUID -> Annex TrustLevel
+lookupTrust u = (fromMaybe SemiTrusted . M.lookup u) <$> trustMap
+
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])
 trustPartition level ls
@@ -76,12 +82,15 @@ trustMap = do
 	where
 		configuredtrust r =
 			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
-				maybe Nothing convert <$>
+				maybe Nothing readTrust <$>
 					getTrustLevel (Types.Remote.repo r)
-		convert "trusted" = Just Trusted
-		convert "untrusted" = Just UnTrusted
-		convert "semitrusted" = Just SemiTrusted
-		convert _ = Nothing
+
+readTrust :: String -> Maybe TrustLevel
+readTrust "trusted" = Just Trusted
+readTrust "untrusted" = Just UnTrusted
+readTrust "semitrusted" = Just SemiTrusted
+readTrust "dead" = Just DeadTrusted -- NEW CASE
+readTrust _ = Nothing
 
 {- The trust.log used to only list trusted repos, without a field for the
  - trust status, which is why this defaults to Trusted. -}
