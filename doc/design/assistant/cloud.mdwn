@@ -17,21 +17,16 @@ More should be added, such as:
 * [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
   REST API; free software
 
-## limited space
+## The cloud notification problem
 
-When syncing via the cloud, space there is probably limited, so
-users with more files than cloud space will want to be able to use the
-cloud as a temporary transfer point, which files are removed from after
-they've propigated out.
+Alice and Bob have repos, and there is a cloud remote they both share.
+Alice adds a file; the assistant transfers it to the cloud remote.
+How does Bob find out about it?
 
-Other users will want to use the cloud as the canonical or backup location
-of their data, and would want a copy of all their files to be kept there.
-That's also ok.
-
-git-annex will need a way to tell the difference between these, either
-heuristically, or via configuration.
-
-Also needed for USB keys and Android gadgets.
+There are two parts to this problem. Bob needs to find out that there's
+been a change to Alice's git repo. Then he needs to pull from Alice's git repo,
+or some other repo in the cloud she pushed to. Once both steps are done,
+the assistant will transfer the file from the cloud to Bob.
 
 ## storing git repos in the cloud
 
