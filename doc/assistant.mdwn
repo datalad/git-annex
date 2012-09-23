@@ -14,9 +14,11 @@ That will change soon!)
 
 ## quick start
 
-To get started with the git-annex assistant, just run it from the menu:
+To get started with the git-annex assistant, just pick it from
+your system's list of applications.
 
 [[!img assistant/menu.png]]
+[[!img assistant/osx-app.png]]
 
 It'll prompt you to set up the folder:
 
