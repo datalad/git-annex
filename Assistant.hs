@@ -174,7 +174,9 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
+#ifdef WITH_WEBAPP
 			urlrenderer <- newUrlRenderer
+#endif
 			mapM_ (startthread dstatus)
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
