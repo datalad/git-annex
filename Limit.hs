@@ -85,20 +85,20 @@ addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
  - of copies. -}
 addCopies :: String -> Annex ()
 addCopies trust_num = addLimit . check $ readnum num
-	where   (num, mayCheckTrust) =
-	          case split ":" trust_num of
-                    [trust, num'] -> (num', checkTrust (readtrust trust))
-                    [num']        -> (num', const (return True))
-                    _             -> bad
-	        readnum = maybe bad id . readish
-	        readtrust = maybe bad id . readTrust
+	where
+		(num, mayCheckTrust) = case split ":" trust_num of
+			[trust, num'] -> (num', checkTrust (readtrust trust))
+			[num'] -> (num', const (return True))
+			_ -> bad
+		readnum = maybe bad id . readish
+		readtrust = maybe bad id . readTrust
 		check n = Backend.lookupFile >=> handle n
 		handle _ Nothing = return False
 		handle n (Just (key, _)) = do
 			us <- filterM mayCheckTrust =<< Remote.keyLocations key
 			return $ length us >= n
-	        checkTrust t u = (== t) <$> lookupTrust u -- == or >=
-	        bad = error "bad number or trust:number for --copies"
+		checkTrust t u = (== t) <$> lookupTrust u
+		bad = error "bad number or trust:number for --copies"
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()

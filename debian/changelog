@@ -23,6 +23,9 @@ git-annex (3.20120826) UNRELEASED; urgency=low
     files and reading from checksum commands.
   * sync: Pushes the git-annex branch to remote/synced/git-annex, rather
     than directly to remote/git-annex.
+  * Now supports matchig files that are present on a number of remotes
+    with a speficied trust level. Example: --copies=trusted:2
+    Thanks, Nicolas Pouillard
 
  -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
 

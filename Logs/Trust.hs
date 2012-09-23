@@ -89,7 +89,7 @@ readTrust :: String -> Maybe TrustLevel
 readTrust "trusted" = Just Trusted
 readTrust "untrusted" = Just UnTrusted
 readTrust "semitrusted" = Just SemiTrusted
-readTrust "dead" = Just DeadTrusted -- NEW CASE
+readTrust "dead" = Just DeadTrusted
 readTrust _ = Nothing
 
 {- The trust.log used to only list trusted repos, without a field for the
