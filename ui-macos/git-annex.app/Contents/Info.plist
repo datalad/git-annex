@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>git-annex</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Public Domain</string>
+	<string>GPL 3</string>
 	<key>CFBundleGetInfoString</key>
 	<string>0.0.1</string>
 	<key>CFBundleIconFile</key>
