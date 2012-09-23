@@ -96,8 +96,7 @@ installOSXAppFile appdir appfile mcontent = do
 	let src = "ui-macos" </> appdir </> appfile
 	home <- myHomeDir
 	dest <- ifM isRoot
- 		-- no idea where to install as root
-		( return $ "/Library/git-annex" </> appdir </> appfile
+		( return $ "/Applications" </> appdir </> appfile
 		, return $ home </> "Desktop" </> appdir </> appfile
 		)
 	content <- maybe (readFile src) return mcontent
