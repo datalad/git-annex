@@ -105,7 +105,7 @@ firstRun = do
 			putMVar v ""
 			takeMVar v
 		mainthread v _url htmlshim = do
-			browser <- webBrowser <$> Git.Config.global
+			browser <- maybe Nothing webBrowser <$> Git.Config.global
 			openBrowser browser htmlshim
 
 			_wait <- takeMVar v

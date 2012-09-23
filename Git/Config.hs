@@ -58,11 +58,17 @@ read' repo = go repo
 					}
 
 {- Gets the global git config, returning a dummy Repo containing it. -}
-global :: IO Repo
+global :: IO (Maybe Repo)
 global = do
-	repo <- Git.Construct.fromUnknown
-	withHandle StdoutHandle createProcessSuccess p $
-		hRead repo
+	home <- myHomeDir
+	ifM (doesFileExist $ home </> ".gitconfig")
+		( do
+			repo <- Git.Construct.fromUnknown
+			repo' <- withHandle StdoutHandle createProcessSuccess p $
+				hRead repo
+			return $ Just repo'
+		, return Nothing
+		)
 	where
 		params = ["config", "--null", "--list", "--global"]
 		p = (proc "git" params)
