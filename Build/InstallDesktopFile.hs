@@ -99,9 +99,10 @@ installOSXAppFile appdir appfile mcontent = do
 		( return $ "/Applications" </> appdir </> appfile
 		, return $ home </> "Desktop" </> appdir </> appfile
 		)
-	content <- maybe (readFile src) return mcontent
 	createDirectoryIfMissing True (parentDir dest)
-	writeFile dest content
+	case mcontent of
+		Just content -> writeFile dest content
+		Nothing -> copyFile src dest
 	mode <- fileMode <$> getFileStatus src
 	setFileMode dest mode
 
