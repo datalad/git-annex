@@ -74,11 +74,21 @@ percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
 percentComplete (Transfer { transferKey = key }) info =
 	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
 
-upload :: UUID -> Key -> AssociatedFile -> (MeterUpdate -> Annex Bool) -> Annex Bool
-upload u key file a = runTransfer (Transfer Upload u key) file a
+type RetryDecider = TransferInfo -> TransferInfo -> Bool
 
-download :: UUID -> Key -> AssociatedFile -> Annex Bool -> Annex Bool
-download u key file a = runTransfer (Transfer Download u key) file (const a)
+noRetry :: RetryDecider
+noRetry _ _ = False
+
+{- Retries a transfer when it fails, as long as the failed transfer managed
+ - to send some data. -}
+forwardRetry :: RetryDecider
+forwardRetry old new = bytesComplete old < bytesComplete new
+
+upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+upload u key = runTransfer (Transfer Upload u key)
+
+download :: UUID -> Key -> AssociatedFile -> RetryDecider -> Annex Bool -> Annex Bool
+download u key file shouldretry a = runTransfer (Transfer Download u key) file shouldretry (const a)
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
@@ -87,12 +97,12 @@ download u key file a = runTransfer (Transfer Download u key) file (const a)
  - If the transfer action returns False, the transfer info is 
  - left in the failedTransferDir.
  -}
-runTransfer :: Transfer -> Maybe FilePath -> (MeterUpdate -> Annex Bool) -> Annex Bool
-runTransfer t file a = do
+runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+runTransfer t file shouldretry a = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	ok <- bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
+	ok <- retry tfile info $ bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
 	unless ok $ failed info
 	return ok
 	where
@@ -113,7 +123,17 @@ runTransfer t file a = do
 			failedtfile <- fromRepo $ failedTransferFile t
 			createAnnexDirectory $ takeDirectory failedtfile
 			liftIO $ writeTransferInfoFile info failedtfile
-
+		retry tfile oldinfo run = do
+			ok <- run
+			if ok
+				then return ok
+				else do
+					v <- liftIO $ readTransferInfoFile Nothing tfile
+					case v of
+						Nothing -> return ok
+						Just newinfo -> if shouldretry oldinfo newinfo
+							then retry tfile newinfo run
+							else return ok
 
 {- Generates a callback that can be called as transfer progresses to update
  - the transfer info file. Also returns the file it'll be updating. -}

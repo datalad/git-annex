@@ -89,7 +89,7 @@ toPerform dest move key file = moveLock move key $ do
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
-			ok <- upload (Remote.uuid dest) key (Just file) $
+			ok <- upload (Remote.uuid dest) key (Just file) noRetry $
 				Remote.storeKey dest key (Just file)
 			if ok
 				then finish
@@ -138,7 +138,7 @@ fromPerform src move key file = moveLock move key $
 		, handle move =<< go
 		)
 	where
-		go = download (Remote.uuid src) key (Just file) $ do
+		go = download (Remote.uuid src) key (Just file) noRetry $ do
 			showAction $ "from " ++ Remote.name src
 			getViaTmp key $ Remote.retrieveKeyFile src key (Just file)
 		handle _ False = stop -- failed

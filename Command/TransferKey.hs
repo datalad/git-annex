@@ -43,7 +43,7 @@ start to from file key =
 
 toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 toPerform remote key file = next $
-	upload (uuid remote) key file $ \p -> do
+	upload (uuid remote) key file forwardRetry $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
 			Remote.logStatus remote key InfoPresent
@@ -51,5 +51,5 @@ toPerform remote key file = next $
 
 fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 fromPerform remote key file = next $
-	download (uuid remote) key file $
+	download (uuid remote) key file forwardRetry $
 		getViaTmp key $ Remote.retrieveKeyFile remote key file

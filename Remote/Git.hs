@@ -247,7 +247,7 @@ copyFromRemote r key file dest
 		liftIO $ onLocal r $ do
 			ensureInitialized
 			loc <- inRepo $ gitAnnexLocation key
-			upload u key file $
+			upload u key file noRetry $
 				rsyncOrCopyFile params loc dest
 	| Git.repoIsSsh r = feedprogressback $ \feeder -> 
 		rsyncHelper (Just feeder) 
@@ -317,7 +317,7 @@ copyToRemote r key file p
 			( return False
 			, do
 				ensureInitialized
-				download u key file $
+				download u key file noRetry $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp key
 							(\d -> rsyncOrCopyFile params keysrc d p)

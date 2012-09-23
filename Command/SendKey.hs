@@ -24,7 +24,7 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
-	( fieldTransfer Upload key $ \p -> do
+	( fieldTransfer Upload key $ \_p -> do
 		file <- inRepo $ gitAnnexLocation key
 		liftIO $ rsyncServerSend file
 	, do
@@ -36,7 +36,7 @@ fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	afile <- Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
-		(\u -> runTransfer (Transfer direction (toUUID u) key) afile a)
+		(\u -> runTransfer (Transfer direction (toUUID u) key) afile noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	if ok
 		then liftIO exitSuccess
