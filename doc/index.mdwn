@@ -65,7 +65,7 @@ A [15 minute introduction to git-annex](http://video.fosdem.org/2012/lightningta
 
 ----
 
-git-annex is Free Software, licensed under the [[GPL]].
+git-annex is [[Free Software|license]]
 
 git-annex's wiki is powered by [Ikiwiki](http://ikiwiki.info/) and
 hosted by [Branchable](http://branchable.com/).
