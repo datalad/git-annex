@@ -1,4 +1,5 @@
 What steps will reproduce the problem?
+
 1. cd to an already existing git repository that uses Github as a remote, with the remote format similar to git@github.com:user/repo.git
 2. git annex init
 3. git annex status
