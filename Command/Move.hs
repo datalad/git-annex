@@ -92,15 +92,16 @@ toPerform dest move key file = moveLock move key $ do
 			ok <- upload (Remote.uuid dest) key (Just file) noRetry $
 				Remote.storeKey dest key (Just file)
 			if ok
-				then finish
+				then finish True
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> finish
+		Right True -> finish False
 	where
-		finish = do
-			Remote.logStatus dest key InfoPresent
+		finish remotechanged = do
+			when remotechanged $
+				Remote.logStatus dest key InfoPresent
 			if move
 				then do
 					whenM (inAnnex key) $ removeAnnex key
