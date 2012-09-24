@@ -1,3 +1,14 @@
+## using Brew
+
+<pre>
+sudo brew update
+sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre
+cabal update
+cabal install git-annex --bindir=$HOME/bin
+</pre>
+
+## using MacPorts
+
 Install the Haskell Platform from [[http://hackage.haskell.org/platform/mac.html]].
 The version provided by Macports is too old to work with current versions of git-annex.
 Then execute
@@ -10,6 +21,8 @@ sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that al
 sudo cabal update
 cabal install git-annex --bindir=$HOME/bin
 </pre>
+
+## PATH setup
 
 Do not forget to add to your PATH variable your ~/bin folder. In your .bashrc, for example:
 <pre>
