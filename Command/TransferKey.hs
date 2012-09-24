@@ -42,7 +42,7 @@ start to from file key =
 		_ -> error "specify either --from or --to"
 
 toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-toPerform remote key file = next $
+toPerform remote key file = go $
 	upload (uuid remote) key file forwardRetry $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
@@ -50,6 +50,9 @@ toPerform remote key file = next $
 		return ok
 
 fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-fromPerform remote key file = next $
+fromPerform remote key file = go $
 	download (uuid remote) key file forwardRetry $
 		getViaTmp key $ Remote.retrieveKeyFile remote key file
+
+go :: Annex Bool -> CommandPerform
+go a = ifM a ( liftIO exitSuccess,  liftIO exitFailure)

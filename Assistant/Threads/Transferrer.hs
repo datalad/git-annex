@@ -74,6 +74,7 @@ startTransfer st dstatus program t info = case (transferRemote info, associatedF
 			where
 				params =
 					[ Param "transferkey"
+					, Param "--quiet"
 					, Param $ key2file $ transferKey t
 					, Param $ if isdownload
 						then "--from"
