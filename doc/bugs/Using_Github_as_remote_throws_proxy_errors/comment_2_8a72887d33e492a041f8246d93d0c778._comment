@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmG8L2pP-i6QATf6pK9WCSGpl0O9twwh8Q"
+ nickname="Dan"
+ subject="comment 2"
+ date="2012-09-24T18:00:17Z"
+ content="""
+Ah, so with the full ssh URL, git annex thinks it's a \"real\" server and can run commands on it. Makes sense. Thanks!
+"""]]
