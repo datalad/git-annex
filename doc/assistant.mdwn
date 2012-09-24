@@ -4,7 +4,7 @@ it keeps synchronised, so its contents are the same everywhere.
 It's very easy to use, and has all the power of git and git-annex.
 
 Note that the git-annex assistant is still beta quality code. See
-[[the_errata]] for known infelicities.
+[[the_errata|errata]] for known infelicities.
 
 ## installation
 
