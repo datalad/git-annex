@@ -2,6 +2,8 @@ git-annex 3.20120924 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
    * assistant: New command, a daemon which does everything watch does,
      as well as automatically syncing file contents between repositories.
+     See [[assistant]] for details and [[assistant/errata]] for known
+     issues in this beta feature.
    * webapp: An interface for managing and configuring the assistant.
    * The default backend used when adding files to the annex is changed
      from SHA256 to SHA256E, to simplify interoperability with OSX, media
