@@ -47,7 +47,7 @@ start (k:[]) = do
 				, transferKey = key
 				}
 			info <- liftIO $ startTransferInfo file
-			(update, tfile) <- mkProgressUpdater t info
+			(update, tfile, _) <- mkProgressUpdater t info
 			liftIO $ mapM_ void
 				[ tryIO $ forever $ do
 					bytes <- readish <$> getLine

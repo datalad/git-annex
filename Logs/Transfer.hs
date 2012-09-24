@@ -100,9 +100,10 @@ download u key file shouldretry a = runTransfer (Transfer Download u key) file s
 runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
 runTransfer t file shouldretry a = do
 	info <- liftIO $ startTransferInfo file
-	(meter, tfile) <- mkProgressUpdater t info
+	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	ok <- retry tfile info $ bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
+	ok <- retry info metervar $
+		bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
 	unless ok $ failed info
 	return ok
 	where
@@ -123,26 +124,34 @@ runTransfer t file shouldretry a = do
 			failedtfile <- fromRepo $ failedTransferFile t
 			createAnnexDirectory $ takeDirectory failedtfile
 			liftIO $ writeTransferInfoFile info failedtfile
-		retry tfile oldinfo run = do
-			ok <- run
-			if ok
-				then return ok
-				else do
-					v <- liftIO $ readTransferInfoFile Nothing tfile
-					case v of
-						Nothing -> return ok
-						Just newinfo -> if shouldretry oldinfo newinfo
-							then retry tfile newinfo run
-							else return ok
+		retry oldinfo metervar run = do
+			v <- tryAnnex run
+			case v of
+				Right b -> return b
+				Left _ -> do
+					b <- getbytescomplete metervar
+					let newinfo = oldinfo { bytesComplete = Just b }
+					if shouldretry oldinfo newinfo
+						then retry newinfo metervar run
+						else return False
+		getbytescomplete metervar
+			| transferDirection t == Upload =
+				liftIO $ readMVar metervar
+			| otherwise = do
+				f <- fromRepo $ gitAnnexTmpLocation (transferKey t)
+				liftIO $ catchDefaultIO 0 $
+					fromIntegral . fileSize
+						<$> getFileStatus f
 
 {- Generates a callback that can be called as transfer progresses to update
- - the transfer info file. Also returns the file it'll be updating. -}
-mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath)
+ - the transfer info file. Also returns the file it'll be updating, and a
+ - MVar that can be used to read the number of bytesComplete. -}
+mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
 	createAnnexDirectory $ takeDirectory tfile
 	mvar <- liftIO $ newMVar 0
-	return (liftIO . updater tfile mvar, tfile)
+	return (liftIO . updater tfile mvar, tfile, mvar)
 	where
 		updater tfile mvar bytes = modifyMVar_ mvar $ \oldbytes -> do
 			if (bytes - oldbytes >= mindelta)
@@ -268,7 +277,7 @@ writeTransferInfo info = unlines
 	]
 
 readTransferInfoFile :: (Maybe ProcessID) -> FilePath -> IO (Maybe TransferInfo)
-readTransferInfoFile mpid tfile = do
+readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
 	h <- openFile tfile ReadMode
 	fileEncoding h
 	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
