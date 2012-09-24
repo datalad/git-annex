@@ -21,3 +21,6 @@ cabal-dev
 .dir-locals.el
 # OSX related
 .DS_Store
+ui-macos/git-annex.app/Contents/MacOS/bin
+ui-macos/git-annex.app/Contents/MacOS/lib
+ui-macos/git-annex.app/Contents/MacOS/git-core

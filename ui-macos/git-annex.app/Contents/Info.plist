@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>git-annex</string>
+	<string>git-annex-webapp</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>GPL 3</string>
 	<key>CFBundleGetInfoString</key>

@@ -133,4 +133,24 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
+OSXAPP_BASE=ui-macos/git-annex.app/Contents/MacOS
+THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget xargs \
+	sha1sum sha224sum sha256sum sha384sum sha512sum
+
+osxapp: $(bins)
+	install -d "$(OSXAPP_BASE)/bin"
+	for bin in git-annex $(THIRDPARTY_BINS); do \
+		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/" || echo "$$bin not available; skipping"; \
+	done
+
+	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
+	install -d "$(OSXAPP_BASE)/git-core"
+	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)"/git-core && tar x)
+
+	install -d "$(OSXAPP_BASE)/lib"
+	for lib in $$(otool -L "$(OSXAPP_BASE)"/bin/* "$(OSXAPP_BASE)"/git-core/* | egrep '^	' | cut -d ' ' -f 1 | sed  's/^	//' | sort | uniq); do \
+		base=$$(basename "$$lib"); \
+		cp "$$lib" "$(OSXAPP_BASE)/lib/$$base"; \
+	done
+
 .PHONY: $(bins) test install
