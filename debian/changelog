@@ -1,4 +1,4 @@
-git-annex (3.20120826) UNRELEASED; urgency=low
+git-annex (3.20120924) unstable; urgency=low
 
   * assistant: New command, a daemon which does everything watch does,
     as well as automatically syncing file contents between repositories.
@@ -24,10 +24,10 @@ git-annex (3.20120826) UNRELEASED; urgency=low
   * sync: Pushes the git-annex branch to remote/synced/git-annex, rather
     than directly to remote/git-annex.
   * Now supports matchig files that are present on a number of remotes
-    with a speficied trust level. Example: --copies=trusted:2
+    with a specified trust level. Example: --copies=trusted:2
     Thanks, Nicolas Pouillard
 
- -- Joey Hess <joeyh@debian.org>  Mon, 27 Aug 2012 13:27:39 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 13:47:48 -0400
 
 git-annex (3.20120825) unstable; urgency=low
 
