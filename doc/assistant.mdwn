@@ -3,14 +3,13 @@ removable drives, and cloud services, which
 it keeps synchronised, so its contents are the same everywhere.
 It's very easy to use, and has all the power of git and git-annex.
 
+Note that the git-annex assistant is still beta quality code. See
+[[the_errata]] for known infelicities.
+
 ## installation
 
-The git-annex assistant comes as part of git-annex.
-See [[install]] to get it installed.
-
-Note that the git-annex assistant is still beta quality code.
-(And it's not yet in the released version of git-annex.
-That will change soon!)
+The git-annex assistant comes as part of git-annex, starting with version
+3.20120924. See [[install]] to get it installed.
 
 ## quick start
 
@@ -20,7 +19,7 @@ your system's list of applications.
 [[!img assistant/menu.png]]
 [[!img assistant/osx-app.png]]
 
-It'll prompt you to set up the folder:
+It'll prompt you to set up a folder:
 
 [[!img assistant/makerepo.png]]
 
@@ -35,10 +34,10 @@ interface to add repositories and control the git-annex assistant.
 * Want to make two nearby computers share the same synchronised folder?
   Follow the [[pairing_walkthrough]].
 
-## command line start
+## command line startup
 
 The git-annex assistant will automatically be started when you log in to
-desktop environments like Gnome, XFCE, and KDE, and the menu item
+desktop environments like Mac OS X, Gnome, XFCE, and KDE, and the menu item
 shown above can be used to open the webapp. On other systems, you may need
 to start it by hand.
 
