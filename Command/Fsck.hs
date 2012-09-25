@@ -35,26 +35,41 @@ def = [withOptions options $ command "fsck" paramPaths seek
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "check remote"
 
+startIncrementalOption :: Option
+startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental fsck"
+
+incrementalOption :: Option
+incrementalOption = Option.flag ['n'] "new" "continue an incremental fsck"
+
 options :: [Option]
-options = [fromOption]
+options = [fromOption, startIncrementalOption, incrementalOption]
 
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byName $ \from ->
-		withFilesInGit $ whenAnnexed $ start from
+		withFlag startIncrementalOption $ \startincremental ->
+		withFlag incrementalOption $ \incremental ->
+		withFilesInGit $ whenAnnexed $
+			start from $ case (startincremental, incremental) of
+				(False, False) -> NonIncremental
+				(True, _) -> StartIncremental
+				(False, True) -> ContIncremental
 	, withBarePresentKeys startBare
 	]
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, backend) = do
+data Incremental = StartIncremental | ContIncremental | NonIncremental
+	deriving (Eq)
+
+start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
+start from inc file (key, backend) = do
 	numcopies <- numCopies file
 	showStart "fsck" file
 	case from of
-		Nothing -> next $ perform key file backend numcopies
-		Just r -> next $ performRemote key file backend numcopies r
+		Nothing -> next $ perform inc key file backend numcopies
+		Just r -> next $ performRemote inc key file backend numcopies r
 
-perform :: Key -> FilePath -> Backend -> Maybe Int -> CommandPerform
-perform key file backend numcopies = check
+perform :: Incremental -> Key -> FilePath -> Backend -> Maybe Int -> CommandPerform
+perform inc key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
 	, verifyLocationLog key file
@@ -65,8 +80,8 @@ perform key file backend numcopies = check
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> CommandPerform
-performRemote key file backend numcopies remote =
+performRemote :: Incremental -> Key -> FilePath -> Backend -> Maybe Int -> Remote -> CommandPerform
+performRemote inc key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
 	where
 		dispatch (Left err) = do
