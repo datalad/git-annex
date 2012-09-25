@@ -133,11 +133,16 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-OSXAPP_BASE=ui-macos/git-annex.app/Contents/MacOS
+OSXAPP_DEST=tmp/git-annex.app
+OSXAPP_BASE=$(OSXAPP_DEST/Contents/MacOS)
 THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget xargs \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 osxapp: $(bins)
+	rm -rf "$(OSXAPP_DEST)"
+	install -d "$(OSXAPP_DEST)"
+	cp -R ui-macos/git-annex.app "$(OSXAPP_DEST)"
+
 	install -d "$(OSXAPP_BASE)/bin"
 	for bin in git-annex $(THIRDPARTY_BINS); do \
 		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/" || echo "$$bin not available; skipping"; \
