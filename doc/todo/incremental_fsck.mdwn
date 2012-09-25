@@ -9,3 +9,11 @@ of where the content is stored). Perhaps the sticky bit could be used to
 indicate the content has been fsked, and the mtime indicate the time
 of last fsck. Anything that dropped or put in content would need to
 clear the sticky bit. --[[Joey]] 
+
+> Basic incremental fsck is done now.
+> 
+> Some enhancements would include:
+> 
+> * --max-age=30d  Once the incremental fsck was started 30 days ago,
+>   start a new one.
+> * --time-limit --size-limit --file-limit: Limit how long the fsck runs.
