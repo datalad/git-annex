@@ -1,6 +1,7 @@
 git-annex (3.20120925) UNRELEASED; urgency=low
 
   * copy: Avoid updating the location log when no copy is performed.
+  * Test that uuid -m works, falling back to plain uuid if not.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 

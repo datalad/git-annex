@@ -36,12 +36,7 @@ genUUID = gen . lines <$> readProcess command params
 	where
 		gen [] = error $ "no output from " ++ command
 		gen (l:_) = toUUID l
-		command = SysConfig.uuid
-		params
-			-- request a random uuid be generated
-			| command == "uuid" = ["-m"]
-			-- uuidgen generates random uuid by default
-			| otherwise = []
+		(command:params) = words SysConfig.uuid
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID
