@@ -2,6 +2,10 @@ git-annex (3.20120925) UNRELEASED; urgency=low
 
   * copy: Avoid updating the location log when no copy is performed.
   * Test that uuid -m works, falling back to plain uuid if not.
+  * fsck: Now has an incremental mode. Start a new incremental fsck pass
+    with git annex fsck --incremental. Now the fsck can be interrupted
+    as desired, and resumed with git annex fsck --more.
+    Thanks, Justin Azoff
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 
