@@ -18,6 +18,7 @@ module Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
+	gitAnnexFsckState,
 	gitAnnexTransferDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
@@ -129,6 +130,10 @@ gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 {- .git/annex/foounused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
+
+{- .git/annex/fsckstate is used to store information about incremental fscks. -}
+gitAnnexFsckState :: Git.Repo -> FilePath
+gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
 
 {- .git/annex/transfer/ is used is used to record keys currently
  - being transferred, and other transfer bookkeeping info. -}

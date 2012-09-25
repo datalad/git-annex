@@ -7,8 +7,6 @@
 
 module Command.Fsck where
 
-import System.Posix.Process (getProcessID)
-
 import Common.Annex
 import Command
 import qualified Annex
@@ -27,6 +25,12 @@ import Utility.FileMode
 import Config
 import qualified Option
 import Types.Key
+
+import System.Posix.Process (getProcessID)
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Posix.Types (EpochTime)
+import System.Locale
 
 def :: [Command]
 def = [withOptions options $ command "fsck" paramPaths seek
@@ -319,6 +323,18 @@ badContentRemote remote key = do
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
+{- To record the time that an annexed file was last fscked, without
+ - modifying its mtime, we set the timestamp of its parent directory.
+ - Each annexed file is the only thing in its directory, so this is fine.
+ -
+ - To record that the file was fscked, the directory's sticky bit is set.
+ - (None of the normal unix behaviors of the sticky bit should matter, so
+ - we can reuse this permission bit.)
+ -
+ - Note that this relies on the parent directory being deleted when a file
+ - is dropped. That way, if it's later added back, the fsck metadata
+ - won't still be present.
+ -}
 updateMetadata :: Key -> Annex Bool
 updateMetadata key = do
 	file <- inRepo $ gitAnnexLocation key
@@ -326,3 +342,36 @@ updateMetadata key = do
 	liftIO $ touchFile parent
 	liftIO $ setSticky parent
 	return True
+
+{- Records the start time of an interactive fsck.
+ -
+ - To guard against time stamp damange (for example, if an annex directory
+ - is copied without -a), the fsckstate file contains a time that should
+ - be identical to its modification time. -}
+recordStartTime :: Annex ()
+recordStartTime = do
+	f <- fromRepo gitAnnexFsckState
+	liftIO $ do
+		nukeFile f
+		h <- openFile f WriteMode
+		t <- modificationTime <$> getFileStatus f
+		hPutStr h $ showTime $ realToFrac t
+		hClose h
+	where
+		showTime :: POSIXTime -> String
+		showTime = show
+
+{- Gets the incremental fsck start time. -}
+getStartTime :: Annex (Maybe EpochTime)
+getStartTime = do
+	f <- fromRepo gitAnnexFsckState
+	liftIO $ catchDefaultIO Nothing $ do
+		timestamp <- modificationTime <$> getFileStatus f
+		t <- readishTime <$> readFile f
+		return $ if Just (realToFrac timestamp) == t
+			then Just timestamp
+			else Nothing
+	where
+		readishTime :: String -> Maybe POSIXTime
+		readishTime s = utcTimeToPOSIXSeconds <$>
+			parseTime defaultTimeLocale "%s%Qs" s
