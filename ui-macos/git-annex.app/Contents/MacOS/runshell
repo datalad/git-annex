@@ -36,7 +36,7 @@ export PATH
 # libraries found in the path. With DYLD_FALLBACK_LIBRARY_PATH, the
 # system's versions of libraries will be used when possible, and otherwise
 # it will fall back to using the libraries bundled with this app.
-for lib in "$(cat libdirs)"; do
+for lib in "$(cat $base/libdirs)"; do
 	DYLD_FALLBACK_LIBRARY_PATH="$base/$lib:$DYLD_FALLBACK_LIBRARY_PATH"
 done
 export DYLD_FALLBACK_LIBRARY_PATH
