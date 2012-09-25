@@ -4,6 +4,6 @@ I mean gnunet, freenet, BitTorrent (also trackerless).
 
 Before dropping a file locally, the BitTorrent client should check that all parts are still available from the peers.
 
-Of course, there is no guarantee assumed that the content won't disappear from the peer network in future: they act more like a cache rather than an archive you on whose lifespan you decide. (I'm only not sure about gnunet now: whether there is a rule of dropping unused content from it, like in freenet.)
+Of course, there is no guarantee assumed that the content won't disappear from the peer network in future: they act more like a cache rather than an archive on whose lifespan you decide. (I'm only not sure about gnunet now: whether there is a rule of dropping unused content from it, like in freenet.)
 
 Also networks like namecoin (derived from bitcoin) can be used as a key-value store. Despite being a peer network, a system like namecoin actually could offer the publisher more control over the lifespan of the content: he should be able to offer "financial" reward for others processing his key-value data. (But I'm not sure namecoin is designed reasonably for this reward system to work actually; but there might be appearing other similar systems.)
