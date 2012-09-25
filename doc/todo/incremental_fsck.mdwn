@@ -14,6 +14,6 @@ clear the sticky bit. --[[Joey]]
 > 
 > Some enhancements would include:
 > 
-> * --max-age=30d  Once the incremental fsck was started 30 days ago,
+> * --max-age=30d  Once the incremental fsck completes and was started 30 days ago,
 >   start a new one.
 > * --time-limit --size-limit --file-limit: Limit how long the fsck runs.

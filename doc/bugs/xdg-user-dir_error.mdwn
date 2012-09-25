@@ -1,0 +1,5 @@
+Run *git annex webapp* in Debian Sid with KDE.
+
+It opens the web browser with this error: **Internal Server Error** *xdg-user-dir ["DESKTOP"] exited 127*.
+
+I've tried to changing the xdg-user-dir config with no success.
