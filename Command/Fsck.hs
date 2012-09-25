@@ -46,16 +46,16 @@ startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental f
 moreIncrementalOption :: Option
 moreIncrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
 
-incrementalRestartOption :: Option
-incrementalRestartOption = Option.field [] "incremental-restart" paramTime
-	"schedule an incremental fsck"
+incrementalScheduleOption :: Option
+incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
+	"schedule incremental fscking"
 
 options :: [Option]
 options = 
 	[ fromOption
 	, startIncrementalOption
 	, moreIncrementalOption
-	, incrementalRestartOption
+	, incrementalScheduleOption
 	]
 
 seek :: [CommandSeek]
@@ -67,8 +67,8 @@ seek =
 
 withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
 withIncremental = withValue $ do
-	i <- maybe (return False) (checkrestart . parseDuration)
-		=<< Annex.getField (Option.name incrementalRestartOption)
+	i <- maybe (return False) (checkschedule . parseDuration)
+		=<< Annex.getField (Option.name incrementalScheduleOption)
 	starti <- Annex.getFlag (Option.name startIncrementalOption)
 	morei <- Annex.getFlag (Option.name moreIncrementalOption)
 	case (i, starti, morei) of
@@ -83,8 +83,8 @@ withIncremental = withValue $ do
 			recordStartTime
 			return StartIncremental
 
-		checkrestart Nothing = error "bad --incremental-restart value"
-		checkrestart (Just delta) = do
+		checkschedule Nothing = error "bad --incremental-schedule value"
+		checkschedule (Just delta) = do
 			Annex.addCleanup "" $ do
 				v <- getStartTime
 				case v of

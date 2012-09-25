@@ -8,7 +8,7 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     Thanks, Justin Azoff
   * New --time-limit option, makes long git-annex commands stop after
     a specified amount of time.
-  * fsck: New --incremental-restart option which is nice for scheduling
+  * fsck: New --incremental-schedule option which is nice for scheduling
     eg, monthly incremental fsck runs in cron jobs.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
