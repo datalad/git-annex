@@ -51,29 +51,29 @@ options = [fromOption, startIncrementalOption, incrementalOption]
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byName $ \from ->
-		withFlag startIncrementalOption $ \startincremental ->
-		withFlag incrementalOption $ \incremental ->
-		withFilesInGit $ whenAnnexed $
-			start from $ case (startincremental, incremental) of
-				(False, False) -> NonIncremental
-				(True, _) -> StartIncremental
-				(False, True) -> ContIncremental
-	, withBarePresentKeys startBare
+	  withIncremental $ \i -> withFilesInGit $ whenAnnexed $ start from i
+	, withIncremental $ \i -> withBarePresentKeys $ startBare i
 	]
 
-data Incremental = StartIncremental | ContIncremental | NonIncremental
-	deriving (Eq)
+withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
+withIncremental a = withFlag startIncrementalOption $ \startincremental ->
+	withFlag incrementalOption $ \incremental ->
+		a $ case (startincremental, incremental) of
+			(False, False) -> NonIncremental
+			(True, _) -> StartIncremental
+			(False, True) -> ContIncremental
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
 	numcopies <- numCopies file
-	showStart "fsck" file
 	case from of
-		Nothing -> next $ perform inc key file backend numcopies
-		Just r -> next $ performRemote inc key file backend numcopies r
+		Nothing -> go $ perform key file backend numcopies
+		Just r -> go $ performRemote key file backend numcopies r
+	where
+		go = runFsck inc file key
 
-perform :: Incremental -> Key -> FilePath -> Backend -> Maybe Int -> CommandPerform
-perform inc key file backend numcopies = check
+perform :: Key -> FilePath -> Backend -> Maybe Int -> Annex Bool
+perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
 	, verifyLocationLog key file
@@ -84,13 +84,13 @@ perform inc key file backend numcopies = check
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Incremental -> Key -> FilePath -> Backend -> Maybe Int -> Remote -> CommandPerform
-performRemote inc key file backend numcopies remote =
+performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> Annex Bool
+performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
 	where
 		dispatch (Left err) = do
 			showNote err
-			stop
+			return False
 		dispatch (Right True) = withtmp $ \tmpfile ->
 			ifM (getfile tmpfile)
 				( go True (Just tmpfile)
@@ -130,30 +130,23 @@ withBarePresentKeys a params = isBareRepo >>= go
 				error "fsck should be run without parameters in a bare repository"
 			map a <$> loggedKeys
 
-startBare :: Key -> CommandStart
-startBare key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+startBare :: Incremental -> Key -> CommandStart
+startBare inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 	Nothing -> stop
-	Just backend -> do
-		showStart "fsck" (key2file key)
-		next $ performBare key backend
+	Just backend -> runFsck inc (key2file key) key $ performBare key backend
 
 {- Note that numcopies cannot be checked in a bare repository, because
  - getting the numcopies value requires a working copy with .gitattributes
  - files. -}
-performBare :: Key -> Backend -> CommandPerform
+performBare :: Key -> Backend -> Annex Bool
 performBare key backend = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key
 	]
 
-check :: [Annex Bool] -> CommandPerform	
-check = sequence >=> dispatch
-	where
-		dispatch vs
-			| all (== True) vs = next $ return True
-			| otherwise = stop
-
+check :: [Annex Bool] -> Annex Bool
+check cs = all id <$> sequence cs
 
 {- Checks that the file's symlink points correctly to the content. -}
 fixLink :: Key -> FilePath -> Annex Bool
@@ -323,7 +316,37 @@ badContentRemote remote key = do
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
-{- To record the time that an annexed file was last fscked, without
+data Incremental = StartIncremental | ContIncremental | NonIncremental
+	deriving (Eq)
+
+runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
+runFsck inc file key a = do
+	starttime <- getstart
+	ifM (needFsck inc starttime key)
+		( do
+			showStart "fsck" file
+			next $ do
+				ok <- a
+				when ok $
+					recordFsckTime key
+				next $ return ok
+		, stop
+		)
+	where
+		getstart
+			| inc == StartIncremental = Just <$> recordStartTime
+			| inc == ContIncremental = getStartTime
+			| otherwise = return Nothing
+
+{- Check if a key needs to be fscked, with support for incremental fscks. -}
+needFsck :: Incremental -> Maybe EpochTime -> Key -> Annex Bool
+needFsck ContIncremental Nothing _ = return True
+needFsck ContIncremental starttime key = do
+	fscktime <- getFsckTime key
+	return $ fscktime < starttime
+needFsck _ _ _ = return True
+
+{- To record the time that a key was last fscked, without
  - modifying its mtime, we set the timestamp of its parent directory.
  - Each annexed file is the only thing in its directory, so this is fine.
  -
@@ -332,31 +355,41 @@ badContentRemote remote key = do
  - we can reuse this permission bit.)
  -
  - Note that this relies on the parent directory being deleted when a file
- - is dropped. That way, if it's later added back, the fsck metadata
+ - is dropped. That way, if it's later added back, the fsck record
  - won't still be present.
  -}
-updateMetadata :: Key -> Annex Bool
-updateMetadata key = do
-	file <- inRepo $ gitAnnexLocation key
-	let parent = parentDir file
-	liftIO $ touchFile parent
-	liftIO $ setSticky parent
-	return True
+recordFsckTime :: Key -> Annex ()
+recordFsckTime key = do
+	parent <- parentDir <$> inRepo (gitAnnexLocation key)
+	liftIO $ void $ tryIO $ do
+		touchFile parent
+		setSticky parent
 
-{- Records the start time of an interactive fsck.
+getFsckTime :: Key -> Annex (Maybe EpochTime)
+getFsckTime key = do
+	parent <- parentDir <$> inRepo (gitAnnexLocation key)
+	liftIO $ catchDefaultIO Nothing $ do
+		s <- getFileStatus parent
+		return $ if isSticky $ fileMode s
+			then Just $ modificationTime s
+			else Nothing
+
+{- Records the start time of an interactive fsck, also returning it.
  -
  - To guard against time stamp damange (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
  - be identical to its modification time. -}
-recordStartTime :: Annex ()
+recordStartTime :: Annex (EpochTime)
 recordStartTime = do
 	f <- fromRepo gitAnnexFsckState
+	createAnnexDirectory $ parentDir f
 	liftIO $ do
 		nukeFile f
 		h <- openFile f WriteMode
 		t <- modificationTime <$> getFileStatus f
 		hPutStr h $ showTime $ realToFrac t
 		hClose h
+		return t
 	where
 		showTime :: POSIXTime -> String
 		showTime = show
