@@ -42,11 +42,11 @@ fromOption = Option.field ['f'] "from" paramRemote "check remote"
 startIncrementalOption :: Option
 startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental fsck"
 
-incrementalOption :: Option
-incrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
+moreIncrementalOption :: Option
+moreIncrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
 
 options :: [Option]
-options = [fromOption, startIncrementalOption, incrementalOption]
+options = [fromOption, startIncrementalOption, moreIncrementalOption]
 
 seek :: [CommandSeek]
 seek =
@@ -56,12 +56,15 @@ seek =
 	]
 
 withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
-withIncremental a = withFlag startIncrementalOption $ \startincremental ->
-	withFlag incrementalOption $ \incremental ->
-		a $ case (startincremental, incremental) of
-			(False, False) -> NonIncremental
-			(True, _) -> StartIncremental
-			(False, True) -> ContIncremental
+withIncremental = withValue $ do
+	starti <- Annex.getFlag (Option.name startIncrementalOption)
+	morei <- Annex.getFlag (Option.name moreIncrementalOption)
+	case (starti, morei) of
+		(False, False) -> return NonIncremental
+		(True, _) -> do
+			recordStartTime
+			return StartIncremental
+		(False, True) -> ContIncremental <$> getStartTime
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
@@ -316,35 +319,28 @@ badContentRemote remote key = do
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
-data Incremental = StartIncremental | ContIncremental | NonIncremental
+data Incremental = StartIncremental | ContIncremental (Maybe EpochTime) | NonIncremental
 	deriving (Eq)
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
-runFsck inc file key a = do
-	starttime <- getstart
-	ifM (needFsck inc starttime key)
-		( do
-			showStart "fsck" file
-			next $ do
-				ok <- a
-				when ok $
-					recordFsckTime key
-				next $ return ok
-		, stop
-		)
-	where
-		getstart
-			| inc == StartIncremental = Just <$> recordStartTime
-			| inc == ContIncremental = getStartTime
-			| otherwise = return Nothing
+runFsck inc file key a = ifM (needFsck inc key)
+	( do
+		showStart "fsck" file
+		next $ do
+			ok <- a
+			when ok $
+				recordFsckTime key
+			next $ return ok
+	, stop
+	)
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
-needFsck :: Incremental -> Maybe EpochTime -> Key -> Annex Bool
-needFsck ContIncremental Nothing _ = return True
-needFsck ContIncremental starttime key = do
+needFsck :: Incremental -> Key -> Annex Bool
+needFsck (ContIncremental Nothing) _ = return True
+needFsck (ContIncremental starttime) key = do
 	fscktime <- getFsckTime key
 	return $ fscktime < starttime
-needFsck _ _ _ = return True
+needFsck _ _ = return True
 
 {- To record the time that a key was last fscked, without
  - modifying its mtime, we set the timestamp of its parent directory.
@@ -374,12 +370,12 @@ getFsckTime key = do
 			then Just $ modificationTime s
 			else Nothing
 
-{- Records the start time of an interactive fsck, also returning it.
+{- Records the start time of an interactive fsck.
  -
  - To guard against time stamp damange (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
  - be identical to its modification time. -}
-recordStartTime :: Annex (EpochTime)
+recordStartTime :: Annex ()
 recordStartTime = do
 	f <- fromRepo gitAnnexFsckState
 	createAnnexDirectory $ parentDir f
@@ -389,7 +385,6 @@ recordStartTime = do
 		t <- modificationTime <$> getFileStatus f
 		hPutStr h $ showTime $ realToFrac t
 		hClose h
-		return t
 	where
 		showTime :: POSIXTime -> String
 		showTime = show
