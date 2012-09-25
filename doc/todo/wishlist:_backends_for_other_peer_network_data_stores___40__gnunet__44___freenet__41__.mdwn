@@ -1,4 +1,4 @@
-Apart from Tahoe-LAFS (covered by [[todo/tahoe lfs for reals]] and [[forum/tips: special_remotes/hook with tahoe-lafs]]), storage backends for other other [peer network data stores](http://en.wikipedia.org/wiki/Distributed_data_store#Peer_network_node_data_stores_2) would be interesting.
+Apart from Tahoe-LAFS (covered by [[todo/tahoe lfs for reals]] and [[forum/tips: special_remotes/hook with tahoe-lafs]]), storage [[backends]] for other other [peer network data stores](http://en.wikipedia.org/wiki/Distributed_data_store#Peer_network_node_data_stores_2) would be interesting.
 
 I mean gnunet, freenet, BitTorrent (also trackerless).
 
