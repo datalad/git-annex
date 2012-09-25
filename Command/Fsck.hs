@@ -25,6 +25,7 @@ import Utility.FileMode
 import Config
 import qualified Option
 import Types.Key
+import Utility.HumanTime
 
 import System.Posix.Process (getProcessID)
 import Data.Time.Clock.POSIX
@@ -45,8 +46,17 @@ startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental f
 moreIncrementalOption :: Option
 moreIncrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
 
+incrementalRestartOption :: Option
+incrementalRestartOption = Option.field [] "incremental-restart" paramTime
+	"schedule an incremental fsck"
+
 options :: [Option]
-options = [fromOption, startIncrementalOption, moreIncrementalOption]
+options = 
+	[ fromOption
+	, startIncrementalOption
+	, moreIncrementalOption
+	, incrementalRestartOption
+	]
 
 seek :: [CommandSeek]
 seek =
@@ -57,14 +67,33 @@ seek =
 
 withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
 withIncremental = withValue $ do
+	i <- maybe (return False) (checkrestart . parseDuration)
+		=<< Annex.getField (Option.name incrementalRestartOption)
 	starti <- Annex.getFlag (Option.name startIncrementalOption)
 	morei <- Annex.getFlag (Option.name moreIncrementalOption)
-	case (starti, morei) of
-		(False, False) -> return NonIncremental
-		(True, _) -> do
+	case (i, starti, morei) of
+		(False, False, False) -> return NonIncremental
+		(False, True, _) -> startIncremental
+		(False ,False, True) -> ContIncremental <$> getStartTime
+		(True, _, _) ->
+			maybe startIncremental (return . ContIncremental . Just)
+				=<< getStartTime
+	where
+		startIncremental = do
 			recordStartTime
 			return StartIncremental
-		(False, True) -> ContIncremental <$> getStartTime
+
+		checkrestart Nothing = error "bad --incremental-restart value"
+		checkrestart (Just delta) = do
+			Annex.addCleanup "" $ do
+				v <- getStartTime
+				case v of
+					Nothing -> noop
+					Just started -> do
+						now <- liftIO getPOSIXTime
+						when (now - realToFrac started >= delta) $
+							resetStartTime
+			return True
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
@@ -388,6 +417,9 @@ recordStartTime = do
 	where
 		showTime :: POSIXTime -> String
 		showTime = show
+
+resetStartTime :: Annex ()
+resetStartTime = liftIO . nukeFile =<< fromRepo gitAnnexFsckState
 
 {- Gets the incremental fsck start time. -}
 getStartTime :: Annex (Maybe EpochTime)

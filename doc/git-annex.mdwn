@@ -266,6 +266,18 @@ subdirectories).
   the next time you fsck, you can specify --more to skip over
   files that have already been checked, and continue where it left off.
 
+  The --incremental-restart option makes a new incremental fsck be
+  started a configurable time after the last incremental fsck was started.
+  Note that the current incremental fsck has to completely finish
+  before the restart happens.
+ 
+  Maybe you'd like to run a fsck for 5 hours at night, picking up each
+  night where it left off. You'd like this to continue until all files
+  have been fscked. And once it's done, you'd like a new fsck pass to start,
+  but no more often than once a month. Then put this in a nightly cron job:
+
+	git annex fsck --incremental-restart 30d --time-limit 5h
+
 * unused
 
   Checks the annex for data that does not correspond to any files present
