@@ -135,12 +135,12 @@ hackage: sdist
 
 OSXAPP_DEST=tmp/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
-THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget xargs \
+THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 osxapp: $(bins)
 	rm -rf "$(OSXAPP_DEST)"
-	install -d "$(OSXAPP_DEST)"
+	install -d tmp
 	cp -R ui-macos/git-annex.app "$(OSXAPP_DEST)"
 
 	install -d "$(OSXAPP_BASE)/bin"
