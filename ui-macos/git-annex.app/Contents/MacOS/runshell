@@ -1,4 +1,7 @@
 #!/bin/sh
+# Runs a shell command (or interactive shell) using the binaries and
+# libraries bundled with this app.
+
 set -e
 
 base="$(dirname $0)"
@@ -23,16 +26,20 @@ cd "$base"
 base="$(pwd)"
 cd "$orig"
 
-# Put our binaries first, so our overloaded libs don't get used with
+# Put our binaries first, to avoid issues with out of date or incompatable
 # system binaries.
-# Also avoids issues with out of date system binaries.
 PATH=$base/bin:$PATH
 export PATH
 
+# Using DYLD_FALLBACK_LIBRARY_PATH rather than DYLD_LIBRARY_PATH, so as
+# not to force binaries to link against possibly the wrong versions of
+# libraries found in the path. With DYLD_FALLBACK_LIBRARY_PATH, the
+# system's versions of libraries will be used when possible, and otherwise
+# it will fall back to using the libraries bundled with this app.
 for lib in "$(cat libdirs)"; do
-	DYLD_LIBRARY_PATH="$base/$lib:$DYLD_LIBRARY_PATH"
+	DYLD_FALLBACK_LIBRARY_PATH="$base/$lib:$DYLD_FALLBACK_LIBRARY_PATH"
 done
-export DYLD_LIBRARY_PATH
+export DYLD_FALLBACK_LIBRARY_PATH
 
 GIT_EXEC_PATH=$base/git-core
 export GIT_EXEC_PATH
