@@ -260,7 +260,7 @@ subdirectories).
   To check a remote to fsck, specify --from.
 
   To start a new incremental fsck, specify --incremental. Then
-  the next time you fsck, you can specify --new to skip over
+  the next time you fsck, you can specify --more to skip over
   files that have already been checked, and continue where it left off.
 
   To avoid expensive checksum calculations (and expensive transfers when

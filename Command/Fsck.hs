@@ -43,7 +43,7 @@ startIncrementalOption :: Option
 startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental fsck"
 
 incrementalOption :: Option
-incrementalOption = Option.flag ['n'] "new" "continue an incremental fsck"
+incrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
 
 options :: [Option]
 options = [fromOption, startIncrementalOption, incrementalOption]
