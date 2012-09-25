@@ -152,10 +152,14 @@ osxapp: $(bins)
 	install -d "$(OSXAPP_BASE)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)"/git-core && tar x)
 
-	install -d "$(OSXAPP_BASE)/lib"
+	touch "$(OSXAPP_BASE)/libdirs.tmp"
 	for lib in $$(otool -L "$(OSXAPP_BASE)"/bin/* "$(OSXAPP_BASE)"/git-core/* | egrep '^	' | cut -d ' ' -f 1 | sed  's/^	//' | sort | uniq); do \
-		base=$$(basename "$$lib"); \
-		cp "$$lib" "$(OSXAPP_BASE)/lib/$$base"; \
+		dir=$$(dirname "$$lib"); \
+		install -d "$(OSXAPP_BASE)/$$dir"; \
+		echo "$$dir" >> "$(OSXAPP_BASE)/libdirs.tmp"; \
+		cp "$$lib" "$(OSXAPP_BASE)/$$dir"; \
 	done
+	sort "$(OSXAPP_BASE)/libdirs.tmp" | uniq > "$(OSXAPP_BASE)/libdirs"
+	rm -f "$(OSXAPP_BASE)/libdirs.tmp"
 
 .PHONY: $(bins) test install

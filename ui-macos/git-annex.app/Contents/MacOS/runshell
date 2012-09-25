@@ -29,7 +29,9 @@ cd "$orig"
 PATH=$base/bin:$PATH
 export PATH
 
-DYLD_LIBRARY_PATH=$base/lib:$DYLD_LIBRARY_PATH
+for lib in "$(cat libdirs)"; do
+	DYLD_LIBRARY_PATH="$base/$lib:$DYLD_LIBRARY_PATH"
+done
 export DYLD_LIBRARY_PATH
 
 GIT_EXEC_PATH=$base/git-core
