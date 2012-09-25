@@ -6,6 +6,8 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     with git annex fsck --incremental. Now the fsck can be interrupted
     as desired, and resumed with git annex fsck --more.
     Thanks, Justin Azoff
+  * New --time-limit option, makes long git-annex commands stop after
+    a specified amount of time.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 

@@ -141,9 +141,11 @@ options = Option.common ++
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"skip files not using a key-value backend"
+	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
+		"stop after the specified amount of time"
 	] ++ Option.matcher
 	where
-		setnumcopies v = Annex.changeState $ \s -> s {Annex.forcenumcopies = readish v }
+		setnumcopies v = Annex.changeState $ \s -> s { Annex.forcenumcopies = readish v }
 		setgitconfig :: String -> Annex ()
 		setgitconfig v = do
 			newg <- inRepo $ Git.Config.store v

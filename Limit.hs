@@ -9,6 +9,7 @@ module Limit where
 
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
+import Data.Time.Clock.POSIX
 
 import Common.Annex
 import qualified Annex
@@ -17,6 +18,7 @@ import qualified Remote
 import qualified Backend
 import Annex.Content
 import Logs.Trust
+import Utility.HumanTime
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
 
@@ -106,3 +108,17 @@ addInBackend name = addLimit $ Backend.lookupFile >=> check
 	where
 		wanted = Backend.lookupBackendName name
 		check = return . maybe False ((==) wanted . snd)
+
+addTimeLimit :: String -> Annex ()
+addTimeLimit s = do
+	let seconds = fromMaybe (error "bad time-limit") $ parseDuration s
+	start <- liftIO getPOSIXTime
+	let cutoff = start + seconds
+	addLimit $ const $ do
+		now <- liftIO getPOSIXTime
+		if now > cutoff
+			then do
+				warning $ "Time limit (" ++ s ++ ") reached!"
+				liftIO $ exitWith $ ExitFailure 101
+			else return True
+		

@@ -77,6 +77,8 @@ paramType :: String
 paramType = "TYPE"
 paramDate :: String
 paramDate = "DATE"
+paramTime :: String
+paramTime = "TIME"
 paramFormat :: String
 paramFormat = "FORMAT"
 paramFile :: String

@@ -259,12 +259,12 @@ subdirectories).
 
   To check a remote to fsck, specify --from.
 
+  To avoid expensive checksum calculations (and expensive transfers when
+  fscking a remote), specify --fast.
+
   To start a new incremental fsck, specify --incremental. Then
   the next time you fsck, you can specify --more to skip over
   files that have already been checked, and continue where it left off.
-
-  To avoid expensive checksum calculations (and expensive transfers when
-  fscking a remote), specify --fast.
 
 * unused
 
@@ -513,6 +513,17 @@ subdirectories).
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
   specified number of copies exist.
+
+* --time-limit=time
+
+  Limits how long a git-annex command runs. The time can be something
+  like "5h", or "30m" or even "45s" or "10d".
+
+  Note that git-annex may continue running a little past the specified
+  time limit, in order to finish processing a file.
+
+  Also, note that if the time limit prevents git-annex from doing all it 
+  was asked to, it will exit with a special code, 101.
 
 * --trust=repository
 * --semitrust=repository
