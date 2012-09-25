@@ -63,9 +63,12 @@ groupWriteRead f = modifyFileMode f $ addModes
 	, ownerReadMode, groupReadMode
 	]
 
+checkMode :: FileMode -> FileMode -> Bool
+checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
+
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
-isSymLink mode = symbolicLinkMode `intersectFileModes` mode == symbolicLinkMode
+isSymLink = checkMode symbolicLinkMode
 
 {- Checks if a file has any executable bits set. -}
 isExecutable :: FileMode -> Bool
@@ -88,3 +91,12 @@ combineModes :: [FileMode] -> FileMode
 combineModes [] = undefined
 combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
+
+stickyMode :: FileMode
+stickyMode = 512
+
+isSticky :: FileMode -> Bool
+isSticky = checkMode stickyMode
+
+setSticky :: FilePath -> IO ()
+setSticky f = modifyFileMode f $ addModes [stickyMode]

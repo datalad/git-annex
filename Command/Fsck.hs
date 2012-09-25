@@ -27,9 +27,6 @@ import Utility.FileMode
 import Config
 import qualified Option
 import Types.Key
-import System.Posix.Types
-import System.Posix.Files
-import Data.Bits
 
 def :: [Command]
 def = [withOptions options $ command "fsck" paramPaths seek
@@ -321,20 +318,6 @@ badContentRemote remote key = do
 	Remote.logStatus remote key InfoMissing
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
-
-isSticky :: String -> IO Bool
-isSticky f = do
-	fs <- getFileStatus f
-	let mode = fileMode fs
-	return $ 0/= mode .&. 512
-
-setSticky :: String -> IO FileMode
-setSticky f = do
-	fs <- getFileStatus f
-	let mode = fileMode fs
-	let newmode = mode .|. 512
-	setFileMode f newmode
-	return newmode
 
 updateMetadata :: Key -> Annex Bool
 updateMetadata key = do
