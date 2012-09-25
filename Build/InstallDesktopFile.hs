@@ -83,7 +83,7 @@ writeOSXDesktop command = do
 	let appdir = "git-annex.app"
 	installOSXAppFile appdir "Contents/Info.plist" Nothing
 	installOSXAppFile appdir "Contents/Resources/git-annex.icns" Nothing
-	installOSXAppFile appdir "Contents/MacOS/git-annex" (Just webappscript)
+	installOSXAppFile appdir "Contents/MacOS/git-annex-webapp" (Just webappscript)
 	where
 		label = "com.branchable.git-annex.assistant"
 		webappscript = unlines
