@@ -10,6 +10,8 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     a specified amount of time.
   * fsck: New --incremental-schedule option which is nice for scheduling
     eg, monthly incremental fsck runs in cron jobs.
+  * Fix fallback to ~/Desktop when xdg-user-dir is not available.
+    Closes: #688833
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 

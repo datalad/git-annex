@@ -101,14 +101,14 @@ writeReadProcessEnv cmd args environ input = do
 			, env = environ
 			}
 
-{- Waits for a ProcessHandle, and throws an exception if the process
+{- Waits for a ProcessHandle, and throws an IOError if the process
  - did not exit successfully. -}
 forceSuccessProcess :: CreateProcess -> ProcessHandle -> IO ()
 forceSuccessProcess p pid = do
 	code <- waitForProcess pid
 	case code of
 		ExitSuccess -> return ()
-		ExitFailure n -> error $ showCmd p ++ " exited " ++ show n
+		ExitFailure n -> fail $ showCmd p ++ " exited " ++ show n
 
 {- Waits for a ProcessHandle and returns True if it exited successfully. -}
 checkSuccessProcess :: ProcessHandle -> IO Bool
