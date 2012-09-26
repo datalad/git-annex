@@ -18,11 +18,27 @@ import Assistant.WebApp.SideBar
 import Assistant.ThreadedMonad
 import Utility.Yesod
 import qualified Remote.S3 as S3
+import Logs.Remote
+import Remote (prettyListUUIDs)
+import Types.Remote (RemoteConfig)
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
+
+s3Configurator :: Widget -> Handler RepHtml
+s3Configurator a = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Add an Amazon S3 repository"
+	a
+
+data StorageClass = StandardRedundancy | ReducedRedundancy
+	deriving (Eq, Enum, Bounded)
+
+instance Show StorageClass where
+	show StandardRedundancy = "STANDARD" 
+	show ReducedRedundancy = "REDUCED_REDUNDANCY"
 
 data S3Input = S3Input
 	{ accessKeyID :: Text
@@ -32,17 +48,14 @@ data S3Input = S3Input
 	, storageClass :: StorageClass
 	, repoName :: Text
 	}
-	deriving (Show)
 
-data StorageClass = StandardRedundancy | ReducedRedundancy
-	deriving (Eq, Enum, Bounded)
+data S3Creds = S3Creds Text Text
 
-instance Show StorageClass where
-	show StandardRedundancy = "STANDARD" 
-	show ReducedRedundancy = "REDUCED_REDUNDANCY"
+extractCreds :: S3Input -> S3Creds
+extractCreds i = S3Creds (accessKeyID i) (secretAccessKey i)
 
-s3AForm :: AForm WebApp WebApp S3Input
-s3AForm = S3Input
+s3InputAForm :: AForm WebApp WebApp S3Input
+s3InputAForm = S3Input
 	<$> areq textField "Access Key ID" Nothing
 	<*> areq passwordField "Secret Access Key" Nothing
 	<*> areq textField "Datacenter" (Just "US")
@@ -55,41 +68,57 @@ s3AForm = S3Input
 			, ("Reduced redundancy (costs less)", ReducedRedundancy)
 			]
 
+s3CredsAForm :: AForm WebApp WebApp S3Creds
+s3CredsAForm = S3Creds
+	<$> areq textField "Access Key ID" Nothing
+	<*> areq passwordField "Secret Access Key" Nothing
+
 getAddS3R :: Handler RepHtml
-getAddS3R = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add an Amazon S3 repository"
+getAddS3R = s3Configurator $ do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap s3AForm
+		runFormGet $ renderBootstrap s3InputAForm
 	case result of
 		FormSuccess s3input -> lift $ do
 			let name = T.unpack $ repoName s3input
-			name' <- runAnnex name $
-				fromRepo $ uniqueRemoteName name 0
-			makeS3Remote s3input name'
+			makeS3Remote (extractCreds s3input) name $ M.fromList
+				[ ("encryption", "shared")
+				, ("type", "S3")
+				, ("datacenter", T.unpack $ datacenter s3input)
+				, ("storageclass", show $ storageClass s3input)
+				]
 		_ -> showform form enctype
 	where
 		showform form enctype = do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adds3")
 
-makeS3Remote :: S3Input -> String -> Handler ()
-makeS3Remote s3input name = do
+getEnableS3R :: UUID -> Handler RepHtml
+getEnableS3R uuid = s3Configurator $ do
+	((result, form), enctype) <- lift $
+		runFormGet $ renderBootstrap s3CredsAForm
+	case result of
+		FormSuccess s3creds -> lift $ do
+			m <- runAnnex M.empty readRemoteLog
+			let name = fromJust $ M.lookup "name" $
+				fromJust $ M.lookup uuid m
+			makeS3Remote s3creds name M.empty
+		_ -> showform form enctype
+	where
+		showform form enctype = do
+			let authtoken = webAppFormAuthToken
+			description <- lift $ runAnnex "" $
+				T.pack . concat <$> prettyListUUIDs [uuid]
+			$(widgetFile "configurators/enables3")
+
+makeS3Remote :: S3Creds -> String -> RemoteConfig -> Handler ()
+makeS3Remote (S3Creds ak sk) name config = do
 	webapp <- getYesod
 	let st = fromJust $ threadState webapp
+	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ do
-		S3.s3SetCredsEnv
-			( T.unpack $ accessKeyID s3input
-			, T.unpack $ secretAccessKey s3input
-			)
-		r <- runThreadState st $ addRemote $
+		S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
+		r <- runThreadState st $ addRemote $ do
 			makeSpecialRemote name S3.remote config
+			return remotename
 		syncNewRemote st (daemonStatus webapp) (scanRemotes webapp) r
 	redirect RepositoriesR
-	where
-		config = M.fromList
-			[ ("encryption", "shared")
-			, ("type", "S3")
-			, ("datacenter", T.unpack $ datacenter s3input)
-			, ("storageclass", show $ storageClass s3input)
-			]

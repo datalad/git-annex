@@ -24,6 +24,7 @@
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
+/config/repository/enable/S3/#UUID EnableS3R GET
 
 /transfers/#NotificationId TransfersR GET
 /sidebar/#NotificationId SideBarR GET

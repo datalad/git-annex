@@ -65,6 +65,7 @@ repoList onlyconfigured
 			Just c -> case M.lookup "type" c of
 				Just "rsync" -> u `enableswith` EnableRsyncR
 				Just "directory" -> u `enableswith` EnableDirectoryR
+				Just "S3" -> u `enableswith` EnableS3R
 				_ -> Nothing
 		u `enableswith` r = Just (u, Just $ r u)
 		list l = runAnnex [] $ do

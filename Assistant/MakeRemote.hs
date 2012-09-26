@@ -58,7 +58,7 @@ addRemote a = do
 {- Inits a rsync special remote, and returns its name. -}
 makeRsyncRemote :: String -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $
-	const $ void $ makeSpecialRemote name Rsync.remote config
+	const $ makeSpecialRemote name Rsync.remote config
 	where
 		config = M.fromList
 			[ ("encryption", "shared")
@@ -66,14 +66,13 @@ makeRsyncRemote name location = makeRemote name location $
 			, ("type", "rsync")
 			]
 
-{- Inits a special remote, and returns its name. -}
-makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex String
+{- Inits a special remote. -}
+makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex ()
 makeSpecialRemote name remotetype config = do
 	(u, c) <- Command.InitRemote.findByName name
 	c' <- R.setup remotetype u $ M.union config c
 	describeUUID u name
 	configSet u c'
-	return name
 
 {- Returns the name of the git remote it created. If there's already a
  - remote at the location, returns its name. -}
