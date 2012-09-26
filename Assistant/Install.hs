@@ -47,7 +47,8 @@ ensureInstalled = do
 			let content = unlines
 				[ "#!/bin/sh"
 				, "set -e"
-				, "exec", base </> "runshell" ++ " git-annex-shell \"$@\""
+				, "exec", base </> "runshell" ++ 
+				  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
 				]
 			curr <- catchDefaultIO "" $ readFile shim
 			when (curr /= content) $ do

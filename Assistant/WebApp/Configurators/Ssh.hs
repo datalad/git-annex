@@ -175,7 +175,8 @@ parseSshRsyncUrl u
  - a special ssh key will need to be generated just for this server.
  -
  - Once logged into the server, probe to see if git-annex-shell is
- - available, or rsync.
+ - available, or rsync. Note that on OSX, ~/.ssh/git-annex-shell may be
+ - present, while git-annex-shell is not in PATH.
  -}
 testServer :: SshInput -> IO (Either ServerStatus SshData)
 testServer (SshInput { hostname = Nothing }) = return $
@@ -200,6 +201,7 @@ testServer sshinput@(SshInput { hostname = Just hn }) = do
 				[ report "loggedin"
 				, checkcommand "git-annex-shell"
 				, checkcommand "rsync"
+				, checkcommand osx_shim
 				]
 			knownhost <- knownHost hn
 			let sshopts = filter (not . null) $ extraopts ++
@@ -214,6 +216,7 @@ testServer sshinput@(SshInput { hostname = Just hn }) = do
 			parsetranscript . fst <$> sshTranscript sshopts ""
 		parsetranscript s
 			| reported "git-annex-shell" = UsableSshInput
+			| reported osx_shim = UsableSshInput
 			| reported "rsync" = UsableRsyncServer
 			| reported "loggedin" = UnusableServer
 				"Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
@@ -224,6 +227,7 @@ testServer sshinput@(SshInput { hostname = Just hn }) = do
 		checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
 		token r = "git-annex-probe " ++ r
 		report r = "echo " ++ token r
+		osx_shim = "~/.ssh/git-annex-shell"
 
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}

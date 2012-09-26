@@ -119,10 +119,20 @@ removeAuthorizedKeys rsynconly pubkey = do
 	writeFile keyfile $ unlines $ filter (/= keyline) ls
 
 {- Implemented as a shell command, so it can be run on remote servers over
- - ssh. -}
+ - ssh.
+ -
+ - The ~/.ssh/git-annex-shell wrapper script is created if not already
+ - present.
+ -}
 addAuthorizedKeysCommand :: Bool -> SshPubKey -> String
 addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 	[ "mkdir -p ~/.ssh"
+	, join "; "
+		[ "if [ ! -e " ++ wrapper ++ " ]"
+		, "then (" ++ join ";" (map echoval script) ++ ") > " ++ wrapper
+		, "fi"
+		]
+	, "chmod 700 " ++ wrapper
 	, "touch ~/.ssh/authorized_keys"
 	, "chmod 600 ~/.ssh/authorized_keys"
 	, unwords
@@ -131,15 +141,23 @@ addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 		, ">>~/.ssh/authorized_keys"
 		]
 	]
+	where
+		echoval v = "echo " ++ shellEscape v
+		wrapper = "~/.ssh/git-annex-shell"
+		script =
+			[ "#!/bin/sh"
+			, "set -e"
+			, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+			]
 
 authorizedKeysLine :: Bool -> SshPubKey -> String
 authorizedKeysLine rsynconly pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| rsynconly = pubkey
-	| otherwise = limitcommand "git-annex-shell -c" ++ pubkey
+	| otherwise = limitcommand ++ pubkey
 	where
-		limitcommand c = "command=\"perl -e 'exec qw(" ++ c ++ "), $ENV{SSH_ORIGINAL_COMMAND}'\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
+		limitcommand = "command=\"~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
