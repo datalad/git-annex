@@ -47,7 +47,7 @@ export GIT_EXEC_PATH
 if [ "$1" ]; then
 	cmd="$1"
 	shift 1
-	"$cmd" "$@"
+	exec "$cmd" "$@"
 else
 	$SHELL
 fi

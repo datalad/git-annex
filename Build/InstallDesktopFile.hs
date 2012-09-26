@@ -16,7 +16,7 @@ import Utility.Path
 import Utility.Monad
 import Locations.UserConfig
 import Utility.OSX
-import Assistant.OSX
+import Assistant.Install.AutoStart
 
 import Control.Applicative
 import System.Directory
@@ -97,16 +97,19 @@ installOSXAppFile appdir appfile mcontent = do
 	setFileMode dest mode
 
 install :: FilePath -> IO ()
-install = do
+install command = do
 #ifdef darwin_HOST_OS
-	writeOSXDesktop
+	writeOSXDesktop command
 #else
-	writeFDODesktop
+	writeFDODesktop command
 #endif
-	unlessM isRoot $ do
-		programfile <- inDestDir =<< programFile
-		createDirectoryIfMissing True (parentDir programfile)
-		writeFile programfile command
+	ifM isRoot
+		( return ()
+		, do
+			programfile <- inDestDir =<< programFile
+			createDirectoryIfMissing True (parentDir programfile)
+			writeFile programfile command
+		)
 
 main :: IO ()
 main = getArgs >>= go
