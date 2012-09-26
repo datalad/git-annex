@@ -8,4 +8,12 @@ if [ ! -e "$base/runshell" ]; then
 	echo "** cannot find $base/runshell" >&2
 	exit 1
 fi
+
+# If this is a standalone app, set a variable that git-annex can use to
+# install itself.
+if [ -e "$base/bin/git-annex" ]; then
+	GIT_ANNEX_OSX_WEBAPP_PROGRAM="$base/bin/git-annex"
+	export OSX_GIT_ANNEX_APP_PROGRAM
+fi
+
 "$base/runshell" git-annex webapp "$@"

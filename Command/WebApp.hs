@@ -17,6 +17,7 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Threads.WebApp
 import Assistant.WebApp
+import Assistant.Install
 import Utility.WebApp
 import Utility.Daemon (checkDaemon, lockPidFile)
 import Init
@@ -39,6 +40,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = notBareRepo $ do
+	liftIO $ ensureInstalled
 	ifM isInitialized ( go , liftIO startNoRepo )
 	stop
 	where

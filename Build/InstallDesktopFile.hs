@@ -15,13 +15,13 @@ import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
 import Locations.UserConfig
+import Utility.OSX
+import Assistant.OSX
 
 import Control.Applicative
-import Control.Monad
 import System.Directory
 import System.Environment
 import System.Posix.User
-import System.Posix.Types
 import System.Posix.Files
 import System.FilePath
 
@@ -46,7 +46,7 @@ autostart command = genDesktopEntry
 isRoot :: IO Bool
 isRoot = do
 	uid <- fromIntegral <$> getRealUserID
-	return $ uid == 0
+	return $ uid == (0 :: Int)
 
 inDestDir :: FilePath -> IO FilePath
 inDestDir f = do
@@ -63,29 +63,19 @@ writeFDODesktop command = do
 	writeDesktopMenuFile (autostart command) 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
 
-	ifM isRoot
-		( return ()
-		, do
-			programfile <- inDestDir =<< programFile
-			createDirectoryIfMissing True (parentDir programfile)
-			writeFile programfile command
-		)
-
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
-	home <- myHomeDir
+	installAutoStart command =<< inDestDir =<< ifM isRoot
+		( return $ systemAutoStart autoStartLabel
+		, userAutoStart autoStartLabel
+		)
 
-	let base = "Library" </> "LaunchAgents" </> label ++ ".plist"
-	autostart <- ifM isRoot ( inDestDir $ "/" </> base , inDestDir $ home </> base)
-	createDirectoryIfMissing True (parentDir autostart)
-	writeFile autostart $ genOSXAutoStartFile label command
-
+	{- Install the OSX app in non-self-contained mode. -}
 	let appdir = "git-annex.app"
 	installOSXAppFile appdir "Contents/Info.plist" Nothing
 	installOSXAppFile appdir "Contents/Resources/git-annex.icns" Nothing
 	installOSXAppFile appdir "Contents/MacOS/git-annex-webapp" (Just webappscript)
 	where
-		label = "com.branchable.git-annex.assistant"
 		webappscript = unlines
 			[ "#!/bin/sh"
 			, command ++ " webapp"
@@ -106,33 +96,20 @@ installOSXAppFile appdir appfile mcontent = do
 	mode <- fileMode <$> getFileStatus src
 	setFileMode dest mode
 
-genOSXAutoStartFile :: String -> String -> String
-genOSXAutoStartFile label command = unlines
-	[ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-	, "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
-	, "<plist version=\"1.0\">"
-	, "<dict>"
-	, "<key>Label</key>"
-	, "<string>" ++ label ++ "</string>"
-	, "<key>ProgramArguments</key>"
-	, "<array>"
-	, "<string>" ++ command ++ "</string>"
-	, "<string>assistant</string>"
-	, "<string>--autostart</string>"
-	, "</array>"
-	, "<key>RunAtLoad</key>"
-	, "</dict>"
-	, "</plist>"
-	]
-
-writeDesktop :: FilePath -> IO ()
+install :: FilePath -> IO ()
+install = do
 #ifdef darwin_HOST_OS
-writeDesktop = writeOSXDesktop
+	writeOSXDesktop
 #else
-writeDesktop = writeFDODesktop
+	writeFDODesktop
 #endif
+	unlessM isRoot $ do
+		programfile <- inDestDir =<< programFile
+		createDirectoryIfMissing True (parentDir programfile)
+		writeFile programfile command
 
+main :: IO ()
 main = getArgs >>= go
 	where
 		go [] = error "specify git-annex command"
-		go (command:_) = writeDesktop command
+		go (command:_) = install command
