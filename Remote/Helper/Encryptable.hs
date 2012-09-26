@@ -88,6 +88,11 @@ remoteCipher c = go $ extractCipher c
 			Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 			return $ Just cipher
 
+{- Checks if there is a trusted (non-shared) cipher. -}
+isTrustedCipher :: RemoteConfig -> Bool
+isTrustedCipher c = 
+	isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c)
+
 {- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey Nothing _ = return Nothing

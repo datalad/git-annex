@@ -12,6 +12,9 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     eg, monthly incremental fsck runs in cron jobs.
   * Fix fallback to ~/Desktop when xdg-user-dir is not available.
     Closes: #688833
+  * S3: When using a shared cipher, S3 credentials are not stored encrypted
+    in the git repository, as that would allow anyone with access to
+    the repository access to the S3 account.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 

@@ -20,6 +20,7 @@ module Locations (
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
 	gitAnnexTransferDir,
+	gitAnnexCredsDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexIndex,
@@ -135,7 +136,12 @@ gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 gitAnnexFsckState :: Git.Repo -> FilePath
 gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
 
-{- .git/annex/transfer/ is used is used to record keys currently
+{- .git/annex/creds/ is used to store credentials to access some special
+ - remotes. -}
+gitAnnexCredsDir :: Git.Repo -> FilePath
+gitAnnexCredsDir r = addTrailingPathSeparator $ gitAnnexDir r </> "creds"
+
+{- .git/annex/transfer/ is used to record keys currently
  - being transferred, and other transfer bookkeeping info. -}
 gitAnnexTransferDir :: Git.Repo -> FilePath
 gitAnnexTransferDir r = addTrailingPathSeparator $ gitAnnexDir r </> "transfer"

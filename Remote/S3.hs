@@ -27,6 +27,8 @@ import Remote.Helper.Encryptable
 import Crypto
 import Annex.Content
 import Utility.Base64
+import Annex.Perms
+import Utility.FileMode
 
 remote :: RemoteType
 remote = RemoteType {
@@ -85,12 +87,12 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 		use fullconfig = do
 			gitConfigSpecialRemote u fullconfig "s3" "true"
-			s3SetCreds fullconfig	
+			s3SetCreds fullconfig u
 
 		defaulthost = do
 			c' <- encryptionSetup c
 			let fullconfig = c' `M.union` defaults
-			genBucket fullconfig
+			genBucket fullconfig u
 			use fullconfig
 
 		archiveorg = do
@@ -206,7 +208,7 @@ s3Action r noconn action = do
 	when (isNothing $ config r) $
 		error $ "Missing configuration for special remote " ++ name r
 	let bucket = M.lookup "bucket" $ fromJust $ config r
-	conn <- s3Connection $ fromJust $ config r
+	conn <- s3Connection (fromJust $ config r) (uuid r)
 	case (bucket, conn) of
 		(Just b, Just c) -> action (c, b)
 		_ -> return noconn
@@ -235,9 +237,9 @@ iaMunge = (>>= munge)
 			| isSpace c = []
 			| otherwise = "&" ++ show (ord c) ++ ";"
 
-genBucket :: RemoteConfig -> Annex ()
-genBucket c = do
-	conn <- s3ConnectionRequired c
+genBucket :: RemoteConfig -> UUID -> Annex ()
+genBucket c u = do
+	conn <- s3ConnectionRequired c u
 	showAction "checking bucket"
 	loc <- liftIO $ getBucketLocation conn bucket 
 	case loc of
@@ -253,13 +255,13 @@ genBucket c = do
 		bucket = fromJust $ M.lookup "bucket" c
 		datacenter = fromJust $ M.lookup "datacenter" c
 
-s3ConnectionRequired :: RemoteConfig -> Annex AWSConnection
-s3ConnectionRequired c =
-	maybe (error "Cannot connect to S3") return =<< s3Connection c
+s3ConnectionRequired :: RemoteConfig -> UUID -> Annex AWSConnection
+s3ConnectionRequired c u =
+	maybe (error "Cannot connect to S3") return =<< s3Connection c u
 
-s3Connection :: RemoteConfig -> Annex (Maybe AWSConnection)
-s3Connection c = do
-	creds <- s3GetCreds c
+s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
+s3Connection c u = do
+	creds <- s3GetCreds c u
 	case creds of
 		Just (ak, sk) -> return $ Just $ AWSConnection host port ak sk
 		_ -> do
@@ -273,23 +275,32 @@ s3Connection c = do
 			_ -> error $ "bad S3 port value: " ++ s
 
 {- S3 creds come from the environment if set. 
- - Otherwise, might be stored encrypted in the remote's config. -}
-s3GetCreds :: RemoteConfig -> Annex (Maybe (String, String))
-s3GetCreds c = maybe fromconfig (return . Just) =<< liftIO getenv
+ - Otherwise, might be stored encrypted in the remote's config, or
+ - locally in gitAnnexCredsDir. -}
+s3GetCreds :: RemoteConfig -> UUID -> Annex (Maybe (String, String))
+s3GetCreds c u = maybe fromconfig (return . Just) =<< liftIO getenv
 	where
 		getenv = liftM2 (,)
 			<$> get s3AccessKey
 			<*> get s3SecretKey
 			where
 				get = catchMaybeIO . getEnv
-		setenv (ak, sk) = do
+		cache (ak, sk) = do
 			setEnv s3AccessKey ak True
 			setEnv s3SecretKey sk True
+			return $ Just (ak, sk)
 		fromconfig = do
 			mcipher <- remoteCipher c
 			case (M.lookup "s3creds" c, mcipher) of
 				(Just s3creds, Just cipher) ->
 					liftIO $ decrypt s3creds cipher
+				_ -> fromcredsfile
+		fromcredsfile = do
+			d <- fromRepo gitAnnexCredsDir
+			let f = d </> fromUUID u
+			v <- liftIO $ catchMaybeIO $ readFile f
+			case lines <$> v of
+				Just (ak:sk:[]) -> liftIO $ cache (ak, sk)
 				_ -> return Nothing
 		decrypt s3creds cipher = do
 			creds <- lines <$>
@@ -297,25 +308,33 @@ s3GetCreds c = maybe fromconfig (return . Just) =<< liftIO getenv
 					(return $ L.pack $ fromB64 s3creds)
 					(return . L.unpack)
 			case creds of
-				[ak, sk] -> do
-					setenv (ak, sk)
-					return $ Just (ak, sk)
+				[ak, sk] -> cache (ak, sk)
 				_ -> do error "bad s3creds"
 
-{- Stores S3 creds encrypted in the remote's config if possible. -}
-s3SetCreds :: RemoteConfig -> Annex RemoteConfig
-s3SetCreds c = do
-	creds <- s3GetCreds c
+{- Stores S3 creds encrypted in the remote's config if possible to do so
+ - securely, and otherwise locally in gitAnnexCredsDir. -}
+s3SetCreds :: RemoteConfig -> UUID -> Annex RemoteConfig
+s3SetCreds c u = do
+	creds <- s3GetCreds c u
 	case creds of
 		Just (ak, sk) -> do
 			mcipher <- remoteCipher c
 			case mcipher of
-				Just cipher -> do
+				Just cipher | isTrustedCipher c -> do
 					s <- liftIO $ withEncryptedContent cipher
 						(return $ L.pack $ unlines [ak, sk])
 						(return . L.unpack)
 					return $ M.insert "s3creds" (toB64 s) c
-				Nothing -> return c
+				_ -> do
+					d <- fromRepo gitAnnexCredsDir
+					createAnnexDirectory d
+					let f = d </> fromUUID u
+					h <- liftIO $ openFile f WriteMode
+					liftIO $ modifyFileMode f $ removeModes
+						[groupReadMode, otherReadMode]
+					liftIO $ hPutStr h $ unlines [ak, sk]
+					liftIO $ hClose h
+					return c
 		_ -> return c
 
 s3AccessKey :: String
