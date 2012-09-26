@@ -10,3 +10,5 @@ Build/InstallDesktopFile.hs:19:8:
 </pre>
 
 Looks like a missing module.
+
+> Was broken everywhere really, so I fixed it. [[done]] --[[Joey]] 
