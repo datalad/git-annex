@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote) where
+module Remote.S3 (remote, s3SetCredsEnv) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
@@ -274,42 +274,39 @@ s3Connection c u = do
 			[(p, _)] -> p
 			_ -> error $ "bad S3 port value: " ++ s
 
-{- S3 creds come from the environment if set. 
- - Otherwise, might be stored encrypted in the remote's config, or
- - locally in gitAnnexCredsDir. -}
+{- S3 creds come from the environment if set, otherwise from the cache
+ - in gitAnnexCredsDir, or failing that, might be stored encrypted in
+ - the remote's config. -}
 s3GetCreds :: RemoteConfig -> UUID -> Annex (Maybe (String, String))
-s3GetCreds c u = maybe fromconfig (return . Just) =<< liftIO getenv
+s3GetCreds c u = maybe fromcache (return . Just) =<< liftIO getenv
 	where
 		getenv = liftM2 (,)
 			<$> get s3AccessKey
 			<*> get s3SecretKey
 			where
 				get = catchMaybeIO . getEnv
-		cache (ak, sk) = do
-			setEnv s3AccessKey ak True
-			setEnv s3SecretKey sk True
-			return $ Just (ak, sk)
-		fromconfig = do
-			mcipher <- remoteCipher c
-			case (M.lookup "s3creds" c, mcipher) of
-				(Just s3creds, Just cipher) ->
-					liftIO $ decrypt s3creds cipher
-				_ -> fromcredsfile
-		fromcredsfile = do
+		fromcache = do
 			d <- fromRepo gitAnnexCredsDir
 			let f = d </> fromUUID u
 			v <- liftIO $ catchMaybeIO $ readFile f
 			case lines <$> v of
-				Just (ak:sk:[]) -> liftIO $ cache (ak, sk)
+				Just (ak:sk:[]) -> return $ Just (ak, sk)
+				_ -> fromconfig
+		fromconfig = do
+			mcipher <- remoteCipher c
+			case (M.lookup "s3creds" c, mcipher) of
+				(Just s3creds, Just cipher) -> do
+					creds <- liftIO $ decrypt s3creds cipher
+					case creds of
+						[ak, sk] -> do
+							s3CacheCreds (ak, sk) u
+							return $ Just (ak, sk)
+						_ -> do error "bad s3creds"		
 				_ -> return Nothing
-		decrypt s3creds cipher = do
-			creds <- lines <$>
-				withDecryptedContent cipher
-					(return $ L.pack $ fromB64 s3creds)
-					(return . L.unpack)
-			case creds of
-				[ak, sk] -> cache (ak, sk)
-				_ -> do error "bad s3creds"
+		decrypt s3creds cipher = lines <$>
+			withDecryptedContent cipher
+				(return $ L.pack $ fromB64 s3creds)
+				(return . L.unpack)
 
 {- Stores S3 creds encrypted in the remote's config if possible to do so
  - securely, and otherwise locally in gitAnnexCredsDir. -}
@@ -326,16 +323,28 @@ s3SetCreds c u = do
 						(return . L.unpack)
 					return $ M.insert "s3creds" (toB64 s) c
 				_ -> do
-					d <- fromRepo gitAnnexCredsDir
-					createAnnexDirectory d
-					let f = d </> fromUUID u
-					h <- liftIO $ openFile f WriteMode
-					liftIO $ modifyFileMode f $ removeModes
-						[groupReadMode, otherReadMode]
-					liftIO $ hPutStr h $ unlines [ak, sk]
-					liftIO $ hClose h
+					s3CacheCreds (ak, sk) u
 					return c
 		_ -> return c
+
+{- The S3 creds are cached in gitAnnexCredsDir. -}
+s3CacheCreds :: (String, String) -> UUID -> Annex ()
+s3CacheCreds (ak, sk) u = do
+	d <- fromRepo gitAnnexCredsDir
+	createAnnexDirectory d
+	liftIO $ do
+		let f = d </> fromUUID u
+		h <- openFile f WriteMode
+		modifyFileMode f $ removeModes
+			[groupReadMode, otherReadMode]
+		hPutStr h $ unlines [ak, sk]
+		hClose h
+
+{- Sets the S3 creds in the environment. -}
+s3SetCredsEnv :: (String, String) -> IO ()
+s3SetCredsEnv (ak, sk) = do
+	setEnv s3AccessKey ak True
+	setEnv s3SecretKey sk True
 
 s3AccessKey :: String
 s3AccessKey = "AWS_ACCESS_KEY_ID"
