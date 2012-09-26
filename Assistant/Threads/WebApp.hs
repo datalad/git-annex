@@ -20,6 +20,7 @@ import Assistant.WebApp.Configurators
 import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
+import Assistant.WebApp.Configurators.S3
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos
 import Assistant.ThreadedMonad

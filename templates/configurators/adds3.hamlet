@@ -1,0 +1,38 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding an Amazon S3 repository
+  <p>
+    <a href="http://aws.amazon.com/s3/">Amazon S3</a> is a cloud storage #
+    provider. If you need a professional level of storage for your data, #
+    this is a good choice. #
+    <a href="http://aws.amazon.com/s3/pricing/">
+      Pricing details, including one year Free Usage Tier promotion
+  <p>
+    <i .icon-warning-sign></i> Do keep in mind that all your data #
+    will be synced to Amazon S3. You will be charged by Amazon for data #
+    uploaded to S3, as well as data downloaded from S3, and a monthly fee #
+    for data storage. #
+  <p>
+    All data will be encrypted before being sent to Amazon S3.
+  <p>
+    When you sign up to Amazon S3, they provide you with an Access #
+    Key ID, and a Secret Access Key. You will need to enter both below. #
+    These access keys will be stored in a file that only you can #
+    access. #
+    <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
+      Look up your access keys
+  <p>
+    <form .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{authtoken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+            Add S3 repository
+<div .modal .fade #workingmodal>
+  <div .modal-header>
+    <h3>
+      Making repository ...
+  <div .modal-body>
+    <p>
+      Setting up your Amazon S3 repository. This could take a minute.

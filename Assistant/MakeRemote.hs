@@ -55,19 +55,25 @@ addRemote a = do
 	void remoteListRefresh
 	maybe (error "failed to add remote") return =<< Remote.byName (Just name)
 
-{- Inits a rsync special remote, and returns the name of the remote. -}
+{- Inits a rsync special remote, and returns its name. -}
 makeRsyncRemote :: String -> String -> Annex String
-makeRsyncRemote name location = makeRemote name location $ const $ do
-	(u, c) <- Command.InitRemote.findByName name
-	c' <- R.setup Rsync.remote u $ M.union config c
-	describeUUID u name
-	configSet u c'
+makeRsyncRemote name location = makeRemote name location $
+	const $ void $ makeSpecialRemote name Rsync.remote config
 	where
 		config = M.fromList
 			[ ("encryption", "shared")
 			, ("rsyncurl", location)
 			, ("type", "rsync")
 			]
+
+{- Inits a special remote, and returns its name. -}
+makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex String
+makeSpecialRemote name remotetype config = do
+	(u, c) <- Command.InitRemote.findByName name
+	c' <- R.setup remotetype u $ M.union config c
+	describeUUID u name
+	configSet u c'
+	return name
 
 {- Returns the name of the git remote it created. If there's already a
  - remote at the location, returns its name. -}
@@ -86,7 +92,7 @@ makeRemote basename location a = do
 	r <- fromRepo id
 	if not (any samelocation $ Git.remotes r)
 		then do
-			let name = uniqueRemoteName r basename 0
+			let name = uniqueRemoteName basename 0 r
 			a name
 			return name
 		else return basename
@@ -95,10 +101,10 @@ makeRemote basename location a = do
 
 {- Generate an unused name for a remote, adding a number if
  - necessary. -}
-uniqueRemoteName :: Git.Repo -> String -> Int -> String
-uniqueRemoteName r basename n
+uniqueRemoteName :: String -> Int -> Git.Repo -> String
+uniqueRemoteName basename n r
 	| null namecollision = name
-	| otherwise = uniqueRemoteName r basename (succ n)
+	| otherwise = uniqueRemoteName basename (succ n) r
 	where
 		namecollision = filter samename (Git.remotes r)
 		samename x = Git.remoteName x == Just name
