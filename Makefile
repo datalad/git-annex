@@ -147,6 +147,7 @@ osxapp: $(bins)
 	for bin in git-annex $(THIRDPARTY_BINS); do \
 		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/" || echo "$$bin not available; skipping"; \
 	done
+	strip $(OSXAPP_BASE)/bin/git-annex
 
 	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
 	install -d "$(OSXAPP_BASE)/git-core"
