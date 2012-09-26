@@ -1,4 +1,4 @@
-A replacement for a web-browser's downloads menu that uses git-annex internally would be quite helpful:
+A replacement for a web-browser's downloads menu that uses git-annex internally ([[`addurl`|tips/using the web as a special remote]] command for the download, and `drop` or `git rm` for the clean up) would be quite helpful:
 
 say, when working on a topic, writing a paper or similar things, I usually have a Git repo with my text, all relevant data and processing code, and possibly other backround information. It's nice to store the literature you needed at the same place where you work. (So that it is easy to catch up with what I was doing and thinking over when I left this work aside for a while, perhaps after cloning the repo from another location.)
 
