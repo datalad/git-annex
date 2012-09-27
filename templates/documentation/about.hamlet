@@ -23,4 +23,6 @@
     Development git-annex was made possible by #
     <a href="http://git-annex.branchable.com/assistant/thanks/">
       many excellent people
-    . <i .icon-heart></i>
+    . &hearts;
+    <p>
+    Version: #{packageversion}

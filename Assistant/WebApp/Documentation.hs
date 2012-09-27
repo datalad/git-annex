@@ -15,6 +15,7 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.Install (standaloneOSXAppBase)
 import Utility.Yesod
+import Build.SysConfig (packageversion)
 
 import Yesod
 
