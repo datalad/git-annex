@@ -80,7 +80,14 @@ localSocket = do
 			{ addrFlags = [AI_ADDRCONFIG]
 			, addrSocketType = Stream
 			}
-		go addr = bracketOnError (open addr) close (use addr)
+		{- Repeated attempts because bind sometimes fails for an
+		 - unknown reason on OSX. -} 
+		go addr = go' 100 addr
+		go' :: Int -> AddrInfo -> IO Socket
+		go' 0 _ = error "unable to bind to local socket"
+		go' n addr = do
+			r <- tryIO $ bracketOnError (open addr) close (use addr)
+			either (const $ go' (pred n) addr) return r
 		open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
 		close = sClose
 		use addr sock = do
