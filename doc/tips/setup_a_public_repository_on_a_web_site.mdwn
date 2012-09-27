@@ -3,7 +3,7 @@ You can of course, just drop them onto a website. But perhaps you'd like to
 use git-annex to manage those files. And as an added bonus, why not let
 anyone in the world clone your site and use `git-annex get`!
 
-My site like this is [http://downloads.kitenet.net](downloads.kitenet.net).
+My site like this is [downloads.kitenet.net](http://downloads.kitenet.net).
 Here's how I set it up. --[[Joey]]
 
 1. Set up a web site. I used Apache, and configured it to follow symlinks.
