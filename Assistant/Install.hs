@@ -16,6 +16,9 @@ import Utility.OSX
 
 import System.Posix.Env
 
+standaloneOSXAppBase :: IO (Maybe FilePath)
+standaloneOSXAppBase = getEnv "GIT_ANNEX_OSX_APP_BASE"
+
 {- The OSX git-annex.app does not have an installation process.
  - So when it's run, it needs to set up autostarting of the assistant
  - daemon, as well as writing the programFile, and putting a
@@ -25,11 +28,10 @@ import System.Posix.Env
  - it around, the paths this sets up won't break.
  -}
 ensureInstalled :: IO ()
-ensureInstalled = do
-	e <- getEnv "GIT_ANNEX_OSX_APP_BASE"
-	case e of
-		Nothing -> return ()
-		Just base -> do
+ensureInstalled = go =<< standaloneOSXAppBase
+	where
+		go Nothing = noop
+		go (Just base) = do
 			let program = base ++ "/bin/git-annex"
 			programfile <- programFile
 			createDirectoryIfMissing True (parentDir programfile)

@@ -10,8 +10,17 @@
   <hr>
     git-annex is © 2010-2012 Joey Hess. It is free software, licensed #
     under the terms of the GNU General Public License, version 3 or above. #
+    This webapp is licensed under the terms of the GNU Affero General #
+    Public License, version 3 or above. #
+    For full license information, see #
+    $if builtinlicense
+      <a href="@{LicenseR}">
+        this page.
+    $else
+      <a href="http://git-annex.branchable.com/license">
+        this page.
     <p>
-    Its development was made possible by #
+    Development git-annex was made possible by #
     <a href="http://git-annex.branchable.com/assistant/thanks/">
       many excellent people
     . <i .icon-heart></i>

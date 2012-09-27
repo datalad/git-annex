@@ -2,6 +2,7 @@
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET
 /about AboutR GET
+/about/license LicenseR GET
 
 /config ConfigR GET
 /config/repository RepositoriesR GET

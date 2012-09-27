@@ -10,5 +10,5 @@ not include this code, so remains GPLed.
 
 git-annex contains a variety of other code, artwork, etc copyright by
 others, under a variety of licences, including the [[LGPL]], BSD,
-MIT, and Apache 2.0 license. For a detailed overview, and pointers to the
-full licenses of these components, see the COPYRIGHT file in the source.
+MIT, and Apache 2.0 licenses. For details, see
+[this file](http://source.git-annex.branchable.com/?p=source.git;a=blob_plain;f=debian/copyright;hb=HEAD).
