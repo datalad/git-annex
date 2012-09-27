@@ -1,85 +1,31 @@
 ## OS-specific instructions
 
+Quick commands given where possible, but see the individual pages for
+details.
+
 * [[OSX]]
-* [[Debian]]
-* [[Ubuntu]]
+* [[Debian]] `apt-get install git-annex`
+* [[Ubuntu]] `apt-get install git-annex`
+* [[FreeBSD]] `pkg_add -r hs-git-annex`
+* [[ArchLinux]] `yaourt -Sy git-annex`
+* [[NixOS]] `nix-env -i git-annex`
+* [[Gentoo]] `emerge git-annex`
+* [[ScientificLinux5]] (and other RHEL5 clones like CentOS5)
 * [[Fedora]]
-* [[FreeBSD]]
 * [[openSUSE]]
-* [[ArchLinux]]
-* [[NixOS]]
-* [[Gentoo]]
-* [[ScientificLinux5]] - This should cover RHEL5 clones such as CentOS5 and so on
 * Windows: [[sorry, not possible yet|todo/windows_support]]
 
 ## Using cabal
 
-As a haskell package, git-annex can be installed using cabal. For example:
+As a haskell package, git-annex can be installed using cabal.
+Start by installing the [Haskell Platform](http://hackage.haskell.org/platform/),
+and then:
 
 	cabal install git-annex --bindir=$HOME/bin
 
-The above downloads the latest release. Alternatively, you can [[download]]
-it yourself and [[manually_build_with_cabal|install/cabal]].
+That installs the latest release. Alternatively, you can [[download]]
+git-annex yourself and [[manually_build_with_cabal|install/cabal]].
 
-## Installation by hand
+## Installation from scratch
 
-This is not recommended, it's easier to let cabal pull in the many haskell
-libraries. To build and use git-annex by hand, you will need:
-
-* Haskell stuff
-  * [The Haskell Platform](http://haskell.org/platform/) (GHC 7.4 or newer)
-  * [MissingH](http://github.com/jgoerzen/missingh/wiki)
-  * [pcre-light](http://hackage.haskell.org/package/pcre-light)
-  * [utf8-string](http://hackage.haskell.org/package/utf8-string)
-  * [SHA](http://hackage.haskell.org/package/SHA)
-  * [dataenc](http://hackage.haskell.org/package/dataenc)
-  * [monad-control](http://hackage.haskell.org/package/monad-control)
-  * [lifted-base](http://hackage.haskell.org/package/lifted-base)
-  * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
-  * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
-  * [HTTP](http://hackage.haskell.org/package/HTTP)
-  * [json](http://hackage.haskell.org/package/json)
-  * [IfElse](http://hackage.haskell.org/package/IfElse)
-  * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
-  * [edit-distance](http://hackage.haskell.org/package/edit-distance)
-  * [hS3](http://hackage.haskell.org/package/hS3) (optional)
-* Optional haskell stuff, used by the [[assistant]] and its webapp (edit Makefile to disable)
-  * [stm](http://hackage.haskell.org/package/stm)
-    (version 2.3 or newer)
-  * [hinotify](http://hackage.haskell.org/package/hinotify)
-    (Linux only)
-  * [dbus](http://hackage.haskell.org/package/dbus)
-  * [yesod](http://hackage.haskell.org/package/yesod)
-  * [yesod-static](http://hackage.haskell.org/package/yesod-static)
-  * [yesod-default](http://hackage.haskell.org/package/yesod-default)
-  * [data-default](http://hackage.haskell.org/package/data-default)
-  * [case-insensitive](http://hackage.haskell.org/package/case-insensitive)
-  * [http-types](http://hackage.haskell.org/package/http-types)
-  * [transformers](http://hackage.haskell.org/package/transformers)
-  * [wai](http://hackage.haskell.org/package/wai)
-  * [wai-logger](http://hackage.haskell.org/package/wai-logger)
-  * [warp](http://hackage.haskell.org/package/warp)
-  * [blaze-builder](http://hackage.haskell.org/package/blaze-builder)
-  * [blaze-html](http://hackage.haskell.org/package/blaze-html)
-  * [crypto-api](http://hackage.haskell.org/package/crypto-api)
-  * [hamlet](http://hackage.haskell.org/package/hamlet)
-  * [clientsession](http://hackage.haskell.org/package/clientsession)
-  * [network-multicast](http://hackage.haskell.org/package/network-multicast)
-  * [network-info](http://hackage.haskell.org/package/network-info)
-* Shell commands
-  * [git](http://git-scm.com/)
-  * [uuid](http://www.ossp.org/pkg/lib/uuid/)
-    (or `uuidgen` from util-linux)
-  * [xargs](http://savannah.gnu.org/projects/findutils/)
-  * [rsync](http://rsync.samba.org/)
-  * [wget](http://www.gnu.org/software/wget/) or [curl](http://http://curl.haxx.se/) (optional, but recommended)
-  * [sha1sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional, but recommended;
-    a sha1 command will also do)
-  * [gpg](http://gnupg.org/) (optional; needed for encryption)
-  * [lsof](ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/)
-    (optional; recommended for watch mode)
-  * multicast DNS support, provided on linux by [nss-mdns](http://www.0pointer.de/lennart/projects/nss-mdns/)
-    (optional; recommended for the assistant to support pairing well)
-  * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)
-
-Then just [[download]] git-annex and run: `make; make install`
+This is not recommended, but if you really want to, see [[fromscratch]].
