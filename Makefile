@@ -133,14 +133,14 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-OSXAPP_DEST=tmp/git-annex.app
+OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
 THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 osxapp: $(bins)
 	rm -rf "$(OSXAPP_DEST)"
-	install -d tmp
+	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg
 	cp -R ui-macos/git-annex.app "$(OSXAPP_DEST)"
 
 	install -d "$(OSXAPP_BASE)/bin"
@@ -164,5 +164,12 @@ osxapp: $(bins)
 	done
 	sort "$(OSXAPP_BASE)/libdirs.tmp" | uniq > "$(OSXAPP_BASE)/libdirs"
 	rm -f "$(OSXAPP_BASE)/libdirs.tmp"
+
+tmp/git-annex.dmg: osxapp
+	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
+		-volname git-annex -o tmp/git-annex.dmg
+
+tmp/git-annex.dmg.bz2: tmp/git-annex.dmg
+	bzip2 tmp/git-annex.dmg
 
 .PHONY: $(bins) test install
