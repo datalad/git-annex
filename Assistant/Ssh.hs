@@ -223,6 +223,10 @@ knownHost :: Text -> IO Bool
 knownHost hostname = do
 	sshdir <- sshDir
 	ifM (doesFileExist $ sshdir </> "known_hosts")
-		( not . null <$> readProcess "ssh-keygen" ["-F", T.unpack hostname]
+		( not . null <$> checkhost
 		, return False
 		)
+	where
+		{- ssh-keygen -F can crash on some old known_hosts file -}
+		checkhost = catchDefaultIO "" $
+			readProcess "ssh-keygen" ["-F", T.unpack hostname]

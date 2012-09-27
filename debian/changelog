@@ -16,6 +16,8 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     in the git repository, as that would allow anyone with access to
     the repository access to the S3 account. Instead, they're stored
     in a 600 mode file in the local git repo.
+  * webapp: Avoid crashing when ssh-keygen -F chokes on an invalid known_hosts
+    file.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 
