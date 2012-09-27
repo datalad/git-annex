@@ -144,12 +144,14 @@ osxapp: $(bins)
 	cp -R ui-macos/git-annex.app "$(OSXAPP_DEST)"
 
 	install -d "$(OSXAPP_BASE)/bin"
-	for bin in git-annex $(THIRDPARTY_BINS); do \
+	cp git-annex "$(OSXAPP_BASE)/bin/"
+	strip "$(OSXAPP_BASE)/bin/git-annex"
+	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
+
+	for bin in $(THIRDPARTY_BINS); do \
 		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/" || echo "$$bin not available; skipping"; \
 	done
-	strip $(OSXAPP_BASE)/bin/git-annex
 
-	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
 	install -d "$(OSXAPP_BASE)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)"/git-core && tar x)
 
