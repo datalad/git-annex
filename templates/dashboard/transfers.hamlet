@@ -31,7 +31,7 @@
                 <div .bar style="width: #{percent};">
           <div .btn-group .span2>
             $if isrunning info
-              ^{actionButton (PauseTransferR transfer) Nothing "btn" "icon-pause"}
+              ^{actionButton (PauseTransferR transfer) Nothing (Just "pause") "btn" "icon-pause"}
             $else
-              ^{actionButton (StartTransferR transfer) Nothing "btn" "icon-play"}
-            ^{actionButton (CancelTransferR transfer) Nothing "btn" "icon-remove"}
+              ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn" "icon-play"}
+            ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn" "icon-remove"}
