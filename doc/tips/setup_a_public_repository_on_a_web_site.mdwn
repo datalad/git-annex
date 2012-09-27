@@ -15,7 +15,8 @@ Here's how I set it up. --[[Joey]]
    work, `git update-server-info` needs to get run after commits. So
    put it in the git `post-update` hook.
 5. `git annex add; git commit -m added`
-6. Instruct users to clone a http url that ends with the "/.git/"
+6. Make sure users can still download files from the site directly.
+7. Instruct advanced users to clone a http url that ends with the "/.git/"
    directory. For example, for downloads.kitenet.net, the clone url
    is `http://downloads.kitenet.net/.git/`
 
