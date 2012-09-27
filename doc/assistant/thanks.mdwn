@@ -48,7 +48,8 @@ Stephen Youndt, Lee Roberson, Ben Strawbridge, Andrew Greenberg, Alfred Adams
 Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin
 
 And special thanks to Kevin McKenzie, who also gave me a login to a Mac OSX
-machine, which has proven invaluable.
+machine, which has proven invaluable, and Jimmy Tang who has helped
+with Mac OSX autobuilding and packaging.
 
 ## Other Backers
 
@@ -171,7 +172,7 @@ Maxime Côté, Kineteka Systems, Joe Cabezas, Mike Czepiel, Rami Nasra,
 Christian Simonsen, Wouter Beugelsdijk, Adam Gibson, Gal Buki, James
 Marble, Alan Chambers, Bernd Wiehle, Simon Korzun, Daniel Glassey, Eero af
 Heurlin, Mikael, Timo Engelhardt, Wesley Faulkner, Jay Wo, Mike Belle,
-David Fowlkes Jr., Jimmy Tang, Karl-Heinz Strass, Ed Mullins, Sam Flint,
+David Fowlkes Jr., Karl-Heinz Strass, Ed Mullins, Sam Flint,
 Hendrica, Mark Emer Anderson, Joshua Cole, Jan Gondol, Henrik Lindhe,
 Albert Delgado, Patrick, Alexa Avellar, Chris, sebsn1349, Maxim Kachur,
 Andrew Marshall, Navjot Narula, Alwin Mathew, Christian Mangelsdorf, Avi
