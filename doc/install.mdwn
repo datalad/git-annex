@@ -1,4 +1,4 @@
-## OS-specific instructions
+## Pick your OS
 
 Quick commands given where possible, but see the individual pages for
 details.
