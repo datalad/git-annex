@@ -49,6 +49,11 @@
         Save photos and recordings from your phone.
       <p>
         Send selected files to your phone.
+      
+      <h3>
+        <i .icon-plus-sign></i> Network Attached Storage
+      <p>
+        Connect to a local storage appliance (NAS).
 
     <div .span6>
       <h2>
