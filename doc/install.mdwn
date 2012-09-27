@@ -4,7 +4,7 @@ Quick commands given where possible, but see the individual pages for
 details.
 
 [[!table format=dsv header=no data="""
-[[OSX]]              | 
+[[OSX]]              | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/git-annex.dmg.bz2) **beta**
 [[Debian]]           | `apt-get install git-annex`
 [[Ubuntu]]           | `apt-get install git-annex`
 [[FreeBSD]]          | `pkg_add -r hs-git-annex`
