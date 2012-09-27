@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlatTbI0K-qydpeYHl37iseqPNvERcdIMk"
+ nickname="Tiago"
+ subject="comment 1"
+ date="2012-09-26T23:38:51Z"
+ content="""
+After looking more into the git annex working, I understand the use of symlinks, but they are not always correctly handled by OSX. 
+
+
+Apple's Timemachine uses hardlinks for example... 
+
+
+Not being able to easily edit files that are in the repo without problems or quirks makes it unusable as a dropbox replacement and version control, which is a shame.
+"""]]
