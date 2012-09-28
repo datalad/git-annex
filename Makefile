@@ -147,7 +147,7 @@ osxapp: $(bins)
 	cp git-annex "$(OSXAPP_BASE)/bin/"
 	strip "$(OSXAPP_BASE)/bin/git-annex"
 	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
-	gzcat doc/license/git-annex-osx.app-licences.gz > $(OSXAPP_DEST)/LICENSE
+	gzcat doc/license/git-annex-osx.app-licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_DEST)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
