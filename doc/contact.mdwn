@@ -8,3 +8,4 @@ is a good mailing list for users who want to use git-annex in the context
 of managing their large personal files.
 
 For realtime chat, use the `#vcs-home` channel on irc.oftc.net.
+You can also watch incoming commits there.
