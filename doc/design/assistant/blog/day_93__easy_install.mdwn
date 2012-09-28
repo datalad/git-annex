@@ -23,10 +23,12 @@ and in Arch Linux's AUR. Proper packages.
 For all the other Linux distributions, I have a workaround. It's
 a big hack, but it seems to work.. at least on Debian stable.
 
-I've just put up a [[install/linux_standalone_tarball]], which has **no
+I've just put up a [[install/linux_standalone]] tarball, which has **no
 library dependencies** apart from glibc, and doesn't even need git to be
 installed on your system.
 
 ## on FreeBSD
 
 The FreeBSD port has been updated to include the git-annex assistant too..
+
+[[!meta title="day 94 easy install"]]
