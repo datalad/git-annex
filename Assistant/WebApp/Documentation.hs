@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.Install (standaloneOSXAppBase)
+import Assistant.Install (standaloneAppBase)
 import Utility.Yesod
 import Build.SysConfig (packageversion)
 
@@ -23,7 +23,7 @@ import Yesod
  - be read in and displayed. -}
 licenseFile :: IO (Maybe FilePath)
 licenseFile = do
-	base <- standaloneOSXAppBase
+	base <- standaloneAppBase
 	return $ (</> "LICENSE") <$> base
 
 getAboutR :: Handler RepHtml
@@ -39,7 +39,7 @@ getLicenseR = do
 	case v of
 		Nothing -> redirect AboutR
 		Just f -> bootstrap (Just About) $ do
-			sideBarDisplay
+			-- no sidebar, just pages of legalese..
 			setTitle "License"
 			license <- liftIO $ readFile f
 			$(widgetFile "documentation/license")

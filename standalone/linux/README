@@ -1,0 +1,23 @@
+To start the git-annex webapp, run the git-annex-webapp script in this
+directory.
+
+To enter an environment with git-annex in PATH, use runshell
+
+This should work on any Linux system of the appropriate architecture.
+More or less. There are no external dependencies, except for glibc.
+Any recent-ish version of glibc should work (2.13 is ok; so is 2.11).
+
+
+How it works: This directory contains a lot of libraries and programs
+that git-annex needs. But it's not a chroot. Instead, runshell sets
+PATH and LD_LIBRARY_PATH to point to the stuff in this directory.
+
+The glibc libs are not included. Instead, it runs with the host system's
+glibc. We trust that glibc's excellent backwards and forward compatability
+is good enough to run binaries that were linked for a newer or older
+version. Of course, this could fail. Particularly if the binaries try to
+use some new glibc feature. But hopefully not.
+
+Why not bundle glibc too? I've not gotten it to work! The host system's 
+ld-linux.so will be used for sure, as that's hardcoded into the binaries.
+When I tried including libraries from glibc in here, everything segfaulted.

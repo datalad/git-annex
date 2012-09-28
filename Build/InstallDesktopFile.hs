@@ -64,7 +64,7 @@ writeFDODesktop command = do
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
 
 	configdir <- ifM systemwideInstall ( return systemConfigDir, userConfigDir )
-	writeDesktopMenuFile (autostart command) 
+	installAutoStart command 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
 
 writeOSXDesktop :: FilePath -> IO ()

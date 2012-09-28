@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.Install where
 
 import Assistant.Common
@@ -12,14 +14,15 @@ import Assistant.Install.AutoStart
 import Assistant.Ssh
 import Locations.UserConfig
 import Utility.FileMode
+import Utility.FreeDesktop
 import Utility.OSX
 
 import System.Posix.Env
 
-standaloneOSXAppBase :: IO (Maybe FilePath)
-standaloneOSXAppBase = getEnv "GIT_ANNEX_OSX_APP_BASE"
+standaloneAppBase :: IO (Maybe FilePath)
+standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
 
-{- The OSX git-annex.app does not have an installation process.
+{- The standalone app does not have an installation process.
  - So when it's run, it needs to set up autostarting of the assistant
  - daemon, as well as writing the programFile, and putting a
  - git-annex-shell wrapper into ~/.ssh
@@ -28,16 +31,21 @@ standaloneOSXAppBase = getEnv "GIT_ANNEX_OSX_APP_BASE"
  - it around, the paths this sets up won't break.
  -}
 ensureInstalled :: IO ()
-ensureInstalled = go =<< standaloneOSXAppBase
+ensureInstalled = go =<< standaloneAppBase
 	where
 		go Nothing = noop
 		go (Just base) = do
-			let program = base ++ "/bin/git-annex"
+			let program = base ++ "runshell git-annex"
 			programfile <- programFile
 			createDirectoryIfMissing True (parentDir programfile)
 			writeFile programfile program
 
-			autostartfile <- userAutoStart autoStartLabel
+#ifdef darwin_HOST_OS
+			autostartfile <- userAutoStart osxAutoStartLabel
+#else
+			autostartfile <- autoStartPath "git-annex"
+				<$> userConfigDir
+#endif
 			installAutoStart program autostartfile
 
 			{- This shim is only updated if it doesn't
@@ -52,7 +60,7 @@ ensureInstalled = go =<< standaloneOSXAppBase
 				, "exec", base </> "runshell" ++ 
 				  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
 				]
-			curr <- catchDefaultIO "" $ readFile shim
+			curr <- catchDefaultIO "" $ readFileStrict shim
 			when (curr /= content) $ do
 				createDirectoryIfMissing True (parentDir shim)
 				writeFile shim content
