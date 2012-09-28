@@ -102,8 +102,8 @@ watchDir dir prune hooks runstartup = do
 #if WITH_KQUEUE
 type DirWatcherHandle = ThreadId
 watchDir :: FilePath -> Pruner -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
-watchDir dir ignored hooks runstartup = do
-	kq <- runstartup $ Kqueue.initKqueue dir ignored
+watchDir dir prune hooks runstartup = do
+	kq <- runstartup $ Kqueue.initKqueue dir prune
 	forkIO $ Kqueue.runHooks kq hooks
 #else
 type DirWatcherHandle = ()

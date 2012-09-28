@@ -198,7 +198,8 @@ handleChange kq@(Kqueue _ _ dirmap pruner) fd olddirinfo =
 	go =<< catchMaybeIO (getDirInfo $ dirName olddirinfo)
 	where
 		go (Just newdirinfo) = do
-			let changes = olddirinfo // newdirinfo
+			let changes = filter (not . pruner . changedFile) $
+				 olddirinfo // newdirinfo
 			let (added, deleted) = partition isAdd changes
 
 			-- Scan newly added directories to add to the map.
