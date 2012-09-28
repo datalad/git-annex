@@ -150,7 +150,7 @@ osxapp: $(bins)
 	strip "$(OSXAPP_BASE)/bin/git-annex"
 	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
 	gzcat doc/license/git-annex-osx.app-licences.gz > $(OSXAPP_BASE)/LICENSE
-	cp $(OSXAPP_DEST)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
+	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
 		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/" || echo "$$bin not available; skipping"; \
