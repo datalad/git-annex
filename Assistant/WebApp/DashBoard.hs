@@ -44,7 +44,6 @@ transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
 	current <- lift $ M.toList <$> getCurrentTransfers
 	queued <- liftIO $ getTransferQueue $ transferQueue webapp
-	let ident = "transfers"
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers
@@ -54,6 +53,7 @@ transfersDisplay warnNoScript = do
 			)
 		else $(widgetFile "dashboard/transfers")
 	where
+		ident = "transfers"
 		isrunning info = not $
 			transferPaused info || isNothing (startedTime info)
 

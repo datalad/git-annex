@@ -1,4 +1,10 @@
 <div .span9 ##{ident}>
+  $maybe reldir <- relDir webapp
+    <div .alert .alert-info>
+      <p>
+        git-annex is watching over your files in #
+        <small><tt>#{reldir}</tt></small>, #
+        and keeping them in sync with other repositories.
   $if null transfers
   $else
     <h2>Transfers
