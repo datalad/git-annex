@@ -24,6 +24,7 @@ import System.Environment
 import System.Posix.User
 import System.Posix.Files
 import System.FilePath
+import Data.Maybe
 
 {- The command can be either just "git-annex", or the full path to use
  - to run it. -}
@@ -43,29 +44,32 @@ autostart command = genDesktopEntry
 	(command ++ " assistant --autostart")
 	[]
 
-isRoot :: IO Bool
-isRoot = do
-	uid <- fromIntegral <$> getRealUserID
-	return $ uid == (0 :: Int)
+systemwideInstall :: IO Bool
+systemwideInstall = isroot <||> destdirset
+	where
+		isroot = do
+			uid <- fromIntegral <$> getRealUserID
+			return $ uid == (0 :: Int)
+		destdirset = isJust <$> catchMaybeIO (getEnv "DESTDIR")
 
 inDestDir :: FilePath -> IO FilePath
 inDestDir f = do
 	destdir <- catchDefaultIO "" (getEnv "DESTDIR")
-	return $ destdir </> f
+	return $ destdir ++ "/" ++ f
 
 writeFDODesktop :: FilePath -> IO ()
 writeFDODesktop command = do
-	datadir <- ifM isRoot ( return systemDataDir, userDataDir )
+	datadir <- ifM systemwideInstall ( return systemDataDir, userDataDir )
 	writeDesktopMenuFile (desktop command) 
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
 
-	configdir <- ifM isRoot ( return systemConfigDir, userConfigDir )
+	configdir <- ifM systemwideInstall ( return systemConfigDir, userConfigDir )
 	writeDesktopMenuFile (autostart command) 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
 
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
-	installAutoStart command =<< inDestDir =<< ifM isRoot
+	installAutoStart command =<< inDestDir =<< ifM systemwideInstall
 		( return $ systemAutoStart autoStartLabel
 		, userAutoStart autoStartLabel
 		)
@@ -85,7 +89,7 @@ installOSXAppFile :: FilePath -> FilePath -> Maybe String -> IO ()
 installOSXAppFile appdir appfile mcontent = do
 	let src = "ui-macos" </> appdir </> appfile
 	home <- myHomeDir
-	dest <- ifM isRoot
+	dest <- ifM systemwideInstall
 		( return $ "/Applications" </> appdir </> appfile
 		, return $ home </> "Desktop" </> appdir </> appfile
 		)
@@ -103,7 +107,7 @@ install command = do
 #else
 	writeFDODesktop command
 #endif
-	ifM isRoot
+	ifM systemwideInstall
 		( return ()
 		, do
 			programfile <- inDestDir =<< programFile
