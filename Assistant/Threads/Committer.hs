@@ -205,15 +205,6 @@ safeToAdd st changes = runThreadState st $
 			openfiles <- S.fromList . map fst3 . filter openwrite <$>
 				liftIO (Lsof.queryDir tmpdir)
 
-			-- TODO this is here for debugging a problem on
-			-- OSX, and is pretty expensive, so remove later
-			liftIO $ debug thisThread
-				[ "checking changes:"
-				, show changes
-				, "vs open files:"
-				, show openfiles
-				]
-			
 			let checked = map (check openfiles) changes
 
 			{- If new events are received when files are closed,
