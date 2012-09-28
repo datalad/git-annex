@@ -14,8 +14,12 @@ import Assistant.Install.AutoStart
 import Assistant.Ssh
 import Locations.UserConfig
 import Utility.FileMode
-import Utility.FreeDesktop
+
+#ifdef darwin_HOST_OS
 import Utility.OSX
+#else
+import Utility.FreeDesktop
+#endif
 
 import System.Posix.Env
 
