@@ -28,7 +28,7 @@ import Yesod.Static
 import Data.Text (Text, pack, unpack)
 import Control.Concurrent.STM
 
-staticFiles "static"
+publicFiles "static"
 
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
