@@ -135,11 +135,44 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
-OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
 THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
+LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
+linuxstandalone: $(bins)
+	rm -rf "$(LINUXSTANDALONE_DEST)"
+
+	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
+
+	install -d "$(LINUXSTANDALONE_DEST)/bin"
+	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
+	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
+	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
+	gzcat doc/license/git-annex-osx.app-licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
+
+	for bin in $(THIRDPARTY_BINS); do \
+		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/" || echo "$$bin not available; skipping"; \
+	done
+	
+	install -d "$(LINUXSTANDALONE_DEST)/git-core"
+	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
+	
+	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v -f standalone/linux/glibc-libs | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
+		dir=$$(dirname "$$lib"); \
+		install -d "$(LINUXSTANDALONE_DEST)/$$dir"; \
+		echo "$$dir" >> "$(LINUXSTANDALONE_DEST)/libdirs.tmp"; \
+		cp "$$lib" "$(LINUXSTANDALONE_DEST)/$$dir"; \
+		if [ -L "$lib" ]; then \
+			link=$$(readlink -f "$$lib"); \
+			cp "$$link" "$(LINUXSTANDALONE_DEST)/$$(dirname "$$link")"; \
+		fi; \
+	done
+	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
+	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+
+OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
+OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
 osxapp: $(bins)
 	rm -rf "$(OSXAPP_DEST)"
 	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg

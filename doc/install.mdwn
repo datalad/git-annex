@@ -14,6 +14,7 @@ details.
 [[ScientificLinux5]] | (and other RHEL5 clones like CentOS5)
 [[Fedora]]           | 
 [[openSUSE]]         | 
+[[other Linux|linux_standalone]] | get your precompiled tarballs here
 Windows              | [[sorry, Windows not supported yet|todo/windows_support]]
 """]]
 
