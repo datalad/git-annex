@@ -4,7 +4,7 @@ For easy installation, [Jimmy Tang](http://www.sgenomics.org/~jtang/)
 builds a standalone git-annex.app of the git-annex assistant.
 
 * [beta release of git-annex.app](http://downloads.kitenet.net/git-annex/OSX/git-annex.dmg.bz2)
-* [daily build of git-annex.app](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/dist/git-annex-master-Darwin-x86_64-app.tar.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
+* [daily build of git-annex.app](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/dist/git-annex.dmb.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
 
 ## using Brew
 
