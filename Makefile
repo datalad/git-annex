@@ -171,7 +171,7 @@ linuxstandalone: $(bins)
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 
-	tar czf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex-standalone-$(shell dpkg --print-architecture).tar.gz $(LINUXSTANDALONE_DEST)
+	cd $(GIT_ANNEX_TMP_BUILD_DIR) && tar czf /git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
 OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
