@@ -1,7 +1,5 @@
 git-annex (3.20120925) UNRELEASED; urgency=low
 
-  * copy: Avoid updating the location log when no copy is performed.
-  * Test that uuid -m works, falling back to plain uuid if not.
   * fsck: Now has an incremental mode. Start a new incremental fsck pass
     with git annex fsck --incremental. Now the fsck can be interrupted
     as desired, and resumed with git annex fsck --more.
@@ -22,6 +20,8 @@ git-annex (3.20120925) UNRELEASED; urgency=low
   * The Makefile now builds with the new yesod by default.
     Systems like Debian that have the old yesod 1.0.1 should set
     GIT_ANNEX_LOCAL_FEATURES=-DWITH_OLD_YESOD
+  * copy: Avoid updating the location log when no copy is performed.
+  * configure: Test that uuid -m works, falling back to plain uuid if not.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 
