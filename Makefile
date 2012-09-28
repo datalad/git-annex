@@ -166,12 +166,10 @@ osxapp: $(bins)
 	done
 	sort "$(OSXAPP_BASE)/libdirs.tmp" | uniq > "$(OSXAPP_BASE)/libdirs"
 	rm -f "$(OSXAPP_BASE)/libdirs.tmp"
-
-tmp/git-annex.dmg: osxapp
+	rm -f tmp/git-annex.dmg
 	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
-
-tmp/git-annex.dmg.bz2: tmp/git-annex.dmg
+	rm -f tmp/git-annex.dmg.bz2
 	bzip2 tmp/git-annex.dmg
 
 .PHONY: $(bins) test install
