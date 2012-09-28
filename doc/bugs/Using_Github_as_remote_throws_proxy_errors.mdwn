@@ -23,3 +23,5 @@ What version of git-annex are you using? On what operating system?
 git-annex-3.20120825
 
 Max OS X 10.8.1
+
+> [[done]]; see comments --[[Joey]] 

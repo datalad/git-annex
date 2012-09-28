@@ -48,3 +48,6 @@ This data appears on both the sending and receiving git-annex stdout. At least f
 > 
 > Please test and see if it works, and also if the "looping" problem
 > still happens. --[[Joey]]
+
+>> Closing; I'm pretty sure the looping is just transfer retrying, to be
+>> expected if they fail. [[done]] --[[Joey]] 
