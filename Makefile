@@ -5,7 +5,9 @@ BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtil
 
 # If you get build failures due to missing haskell libraries,
 # you can turn off some of these features.
-FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_OLD_YESOD -DWITH_PAIRING
+#
+# If you're using an old version of yesod, enable -DWITH_OLD_YESOD
+FEATURES=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1

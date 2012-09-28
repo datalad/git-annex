@@ -1,4 +1,7 @@
 #!/usr/bin/make -f
+
+export GIT_ANNEX_LOCAL_FEATURES=-DWITH_OLD_YESOD
+
 %:
 	dh $@
 
