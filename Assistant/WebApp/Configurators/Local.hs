@@ -90,19 +90,22 @@ checkRepositoryPath p = do
 {- On first run, if run in the home directory, default to putting it in
  - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
  -
- - If run in another directory, the user probably wants to put it there. -}
+ - If run in another directory, that the user can write to,
+ - the user probably wants to put it there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 	cwd <- liftIO $ getCurrentDirectory
 	home <- myHomeDir
 	if home == cwd && firstrun
-		then do
+		then inhome
+		else ifM (canWrite cwd) ( return cwd, inhome )
+	where
+		inhome = do
 			desktop <- userDesktopDir
 			ifM (doesDirectoryExist desktop)
 				( relHome $ desktop </> gitAnnexAssistantDefaultDir
 				, return $ "~" </> gitAnnexAssistantDefaultDir
 				)
-		else return cwd
 
 newRepositoryForm :: FilePath -> Form RepositoryPath
 newRepositoryForm defpath msg = do
