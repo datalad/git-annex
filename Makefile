@@ -148,7 +148,7 @@ linuxstandalone: $(bins)
 	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
-	gzcat doc/license/git-annex-osx.app-licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
+	zcat doc/license/git-annex-osx.app-licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
 	for bin in $(THIRDPARTY_BINS); do \
 		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/" || echo "$$bin not available; skipping"; \
@@ -170,6 +170,8 @@ linuxstandalone: $(bins)
 	done
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+
+	tar czf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex-standalone-$(dpkg --print-architecture).tar.gz $(LINUXSTANDALONE_DEST)
 
 OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
