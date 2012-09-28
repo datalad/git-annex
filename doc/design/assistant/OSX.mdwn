@@ -4,6 +4,9 @@ Misc OSX porting things:
 * icon to start webapp **done**
 * Use OSX's "network reachability functionality" to detect when on a network
   <http://developer.apple.com/library/mac/#documentation/Networking/Conceptual/SystemConfigFrameworks/SC_Intro/SC_Intro.html#//apple_ref/doc/uid/TP40001065>
+* daily build seems to have a bad yesod-static, resulting in the url
+  for `/static/jquery-full.js` redirecting to `/jquery-full.js?etag=foo',
+  which is a 404. Works ok when I build it on oberon.
 
 Gripes:
 

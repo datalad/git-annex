@@ -25,6 +25,8 @@ The webapp is a web server that displays a shiny interface.
   over http by the web app
 * Display the `inotify max_user_watches` exceeded message. **done**
 * Display something sane when kqueue runs out of file descriptors.
+* allow renaming git remotes and/or setting git-annex repo descriptions
+* allow removing git remotes
 
 ## first start **done**
 
