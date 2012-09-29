@@ -64,14 +64,14 @@ sshInputAForm def = SshInput
 		checkdns t = do
 			let h = T.unpack t
 			r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
-			return $ case filter isJust . map addrCanonName <$> r of
+			return $ case catMaybes . map addrCanonName <$> r of
 				-- canonicalize input hostname if it had no dot
-				Just ((Just fullname):_)
+				Just (fullname:_)
 					| '.' `elem` h -> Right t
 					| otherwise -> Right $ T.pack fullname
-				Just _ -> Right t
+				Just [] -> Right t
 				Nothing -> Left bad_hostname
-		canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME]}
+		canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
 
 		check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 			bad_username textField
