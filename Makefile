@@ -23,7 +23,6 @@ else
 OPTFLAGS=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
-OPTFLAGS=-DWITH_KQUEUE
 # Ensure OSX compiler builds for 32 bit when using 32 bit ghc
 GHCARCH:=$(shell ghc -e 'print System.Info.arch')
 ifeq ($(GHCARCH),i386)
