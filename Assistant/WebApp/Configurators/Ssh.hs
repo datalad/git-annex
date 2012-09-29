@@ -24,7 +24,7 @@ import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
-import Network.BSD
+import Network.Socket
 import System.Posix.User
 
 sshConfigurator :: Widget -> Handler RepHtml
@@ -63,13 +63,15 @@ sshInputAForm def = SshInput
 		check_hostname = checkM (liftIO . checkdns) textField
 		checkdns t = do
 			let h = T.unpack t
-			r <- catchMaybeIO $ getHostByName h
-			return $ case r of
+			r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
+			return $ case filter isJust . map addrCanonName <$> r of
 				-- canonicalize input hostname if it had no dot
-				Just hostentry
+				Just ((Just fullname):_)
 					| '.' `elem` h -> Right t
-					| otherwise -> Right $ T.pack $ hostName hostentry
+					| otherwise -> Right $ T.pack fullname
+				Just _ -> Right t
 				Nothing -> Left bad_hostname
+		canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME]}
 
 		check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 			bad_username textField

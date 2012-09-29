@@ -12,3 +12,4 @@ git-annex 3.20120924 on Debian testing (amd64).
 
 Please provide any additional information below.
 
+> Thanks, [[fixed|done]] --[[Joey]] 
