@@ -70,8 +70,8 @@ writeFDODesktop command = do
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
 	installAutoStart command =<< inDestDir =<< ifM systemwideInstall
-		( return $ systemAutoStart autoStartLabel
-		, userAutoStart autoStartLabel
+		( return $ systemAutoStart osxAutoStartLabel
+		, userAutoStart osxAutoStartLabel
 		)
 
 	{- Install the OSX app in non-self-contained mode. -}
