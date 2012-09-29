@@ -7,7 +7,7 @@ BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtil
 # you can turn off some of these features.
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=-DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
