@@ -5,8 +5,7 @@ To get a feel for git-annex, see the [[walkthrough]] or read about [[how_it_work
 [[!sidebar content="""
 [[!img logo_small.png link=no]]
 
-* **[[download]]**
-* [[install]]
+* **[[install]]**
 * [[assistant]]
 * [[tips]]
 * [[bugs]]
