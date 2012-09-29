@@ -22,8 +22,6 @@ import Utility.Mounts
 import Remote.List
 import qualified Types.Remote as Remote
 
-import Control.Concurrent
-import qualified Control.Exception as E
 import qualified Data.Set as S
 
 #if WITH_DBUS
@@ -31,6 +29,8 @@ import Utility.DBus
 import DBus.Client
 import DBus
 import Data.Word (Word32)
+import Control.Concurrent
+import qualified Control.Exception as E
 #else
 #warning Building without dbus support; will use mtab polling
 #endif

@@ -19,13 +19,12 @@ import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
 
-import qualified Control.Exception as E
-
 #if WITH_DBUS
 import Utility.DBus
 import DBus.Client
 import DBus
 import Data.Word (Word32)
+import qualified Control.Exception as E
 #else
 #warning Building without dbus support; will poll for network connection changes
 #endif
@@ -34,11 +33,11 @@ thisThread :: ThreadName
 thisThread = "NetWatcher"
 
 netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
-netWatcherThread st dstatus scanremotes = thread $
 #if WITH_DBUS
+netWatcherThread st dstatus scanremotes = thread $
 	dbusThread st dstatus scanremotes
 #else
-	noop
+netWatcherThread _ _ _ = thread noop
 #endif
 	where
 		thread = NamedThread thisThread
