@@ -5,6 +5,7 @@ details.
 
 [[!table format=dsv header=no data="""
 [[OSX]]              | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/git-annex.dmg.bz2) **beta**
+[[Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
 [[Debian]]           | `apt-get install git-annex`
 [[Ubuntu]]           | `apt-get install git-annex`
 [[FreeBSD]]          | `pkg_add -r hs-git-annex`
@@ -14,7 +15,6 @@ details.
 [[ScientificLinux5]] | (and other RHEL5 clones like CentOS5)
 [[Fedora]]           | 
 [[openSUSE]]         | 
-[[other Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
 Windows              | [[sorry, Windows not supported yet|todo/windows_support]]
 """]]
 
