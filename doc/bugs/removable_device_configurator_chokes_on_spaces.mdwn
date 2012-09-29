@@ -15,4 +15,4 @@ The assistant produces an internal server error and subsequently crashes complet
 
 git-annex 3.20120924 from the Debian package in sid on Debian wheezy, amd64.
 
-
+> Thanks for reporting this, I've fixed it in git. [[done]] --[[Joey]] 

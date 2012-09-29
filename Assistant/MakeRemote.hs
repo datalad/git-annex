@@ -25,6 +25,7 @@ import Logs.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
+import Data.Char
 
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
 makeSshRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Bool -> SshData -> IO ()
@@ -99,14 +100,19 @@ makeRemote basename location a = do
 		samelocation x = Git.repoLocation x == location
 
 {- Generate an unused name for a remote, adding a number if
- - necessary. -}
+ - necessary.
+ -
+ - Ensures that the returned name is a legal git remote name. -}
 uniqueRemoteName :: String -> Int -> Git.Repo -> String
 uniqueRemoteName basename n r
 	| null namecollision = name
-	| otherwise = uniqueRemoteName basename (succ n) r
+	| otherwise = uniqueRemoteName legalbasename (succ n) r
 	where
 		namecollision = filter samename (Git.remotes r)
 		samename x = Git.remoteName x == Just name
 		name
-			| n == 0 = basename
-			| otherwise = basename ++ show n
+			| n == 0 = legalbasename
+			| otherwise = legalbasename ++ show n
+		legalbasename = filter legal basename
+		legal '_' = True
+		legal c = isAlphaNum c
