@@ -1,6 +1,8 @@
 If your Linux distribution does not have git-annex packaged up for you,
-you can either build it [[fromscratch]], or you can use these handy
-prebuilt, standalone tarballs.
+you can either build it [[fromscratch]], or you can use a handy
+prebuilt tarball.
 
-* Linux x86 32 bit [download](http://downloads.kitenet.net/git-annex/linux/git-annex-standalone-i386.tar.gz)
-* Linux x86 64 bit [download](http://downloads.kitenet.net/git-annex/linux/git-annex-standalone-amd64.tar.gz)
+This tarball should work on most Linux systems. It does not depend
+on anything except for glibc.
+
+[download tarball](http://downloads.kitenet.net/git-annex/linux/)

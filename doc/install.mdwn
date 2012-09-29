@@ -14,7 +14,7 @@ details.
 [[ScientificLinux5]] | (and other RHEL5 clones like CentOS5)
 [[Fedora]]           | 
 [[openSUSE]]         | 
-[[other Linux|linux_standalone]] | get your precompiled tarballs here
+[[other Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
 Windows              | [[sorry, Windows not supported yet|todo/windows_support]]
 """]]
 
