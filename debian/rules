@@ -1,6 +1,11 @@
 #!/usr/bin/make -f
 
-export GIT_ANNEX_LOCAL_FEATURES=-DWITH_OLD_YESOD
+ARCH = $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+ifeq (install ok installed,$(shell dpkg-query -W -f '$${Status}' libghc-yesod-dev 2>/dev/null))
+export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_OLD_YESOD -DWITH_WEBAPP -DWITH_PAIRING
+else
+export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_PAIRING
+endif
 
 %:
 	dh $@

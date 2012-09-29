@@ -22,6 +22,9 @@ git-annex (3.20120925) UNRELEASED; urgency=low
     GIT_ANNEX_LOCAL_FEATURES=-DWITH_OLD_YESOD
   * copy: Avoid updating the location log when no copy is performed.
   * configure: Test that uuid -m works, falling back to plain uuid if not.
+  * Avoid building the webapp on Debian architectures that do not yet
+    have template haskell and thus yesod. (Should be available for arm soonish
+    I hope).
 
  -- Joey Hess <joeyh@debian.org>  Mon, 24 Sep 2012 19:58:07 -0400
 
