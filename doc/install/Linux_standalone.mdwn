@@ -6,3 +6,6 @@ This tarball should work on most Linux systems. It does not depend
 on anything except for glibc.
 
 [download tarball](http://downloads.kitenet.net/git-annex/linux/)
+ 
+Warning: This is a last resort. Most Linux users should instead
+[[install]] git-annex from their distribution of choice.
