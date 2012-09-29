@@ -142,7 +142,7 @@ openFileBrowser = do
 			return False
 		)
 	where
-#if OSX
+#ifdef darwin_HOST_OS
 		cmd = "open"
 #else
 		cmd = "xdg-open"

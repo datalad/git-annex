@@ -89,9 +89,6 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if os(darwin)
-    CPP-Options: -DOSX
-
 Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs

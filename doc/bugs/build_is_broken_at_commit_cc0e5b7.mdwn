@@ -9,3 +9,5 @@ make: *** [git-annex] Error 1
 </pre>
 
 This was first introduced at commit e88e3ba
+
+> oops, -DOSX is not a good idea. [[done]] --[[Joey]] 

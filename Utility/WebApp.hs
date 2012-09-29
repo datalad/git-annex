@@ -44,7 +44,7 @@ localhost = "localhost"
 runBrowser :: String -> IO Bool
 runBrowser url = boolSystem cmd [Param url]
 	where
-#if OSX
+#ifdef darwin_HOST_OS
 		cmd = "open"
 #else
 		cmd = "xdg-open"
