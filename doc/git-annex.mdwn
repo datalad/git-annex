@@ -625,6 +625,12 @@ file contents are present at either of two repositories.
   copies, on remotes with the specified trust level. For example,
   "--copies=trusted:2"
 
+* --copies=groupname:number
+
+  Matches only files that git-annex believes have the specified number of
+  copies, on remotes in the specified group. For example,
+  "--copies=archival:2"
+
 * --inbackend=name
 
   Matches only files whose content is stored using the specified key-value

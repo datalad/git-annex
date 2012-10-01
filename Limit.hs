@@ -10,6 +10,7 @@ module Limit where
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
 import Data.Time.Clock.POSIX
+import qualified Data.Set as S
 
 import Common.Annex
 import qualified Annex
@@ -18,6 +19,7 @@ import qualified Remote
 import qualified Backend
 import Annex.Content
 import Logs.Trust
+import Logs.Group
 import Utility.HumanTime
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
@@ -86,21 +88,22 @@ addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
 addCopies :: String -> Annex ()
-addCopies trust_num = addLimit . check $ readnum num
+addCopies want = addLimit . check $ readnum num
 	where
-		(num, mayCheckTrust) = case split ":" trust_num of
-			[trust, num'] -> (num', checkTrust (readtrust trust))
-			[num'] -> (num', const (return True))
-			_ -> bad
-		readnum = maybe bad id . readish
-		readtrust = maybe bad id . readTrust
+		(num, good) = case split ":" want of
+			[v, n] -> case readTrust v of
+				Just trust -> (n, checktrust trust)
+				Nothing -> (n, checkgroup v)
+			[n] -> (n, const $ return True)
+			_ -> error "bad value for --copies"
+		readnum = maybe (error "bad number for --copies") id . readish
 		check n = Backend.lookupFile >=> handle n
 		handle _ Nothing = return False
 		handle n (Just (key, _)) = do
-			us <- filterM mayCheckTrust =<< Remote.keyLocations key
+			us <- filterM good =<< Remote.keyLocations key
 			return $ length us >= n
-		checkTrust t u = (== t) <$> lookupTrust u
-		bad = error "bad number or trust:number for --copies"
+		checktrust t u = (== t) <$> lookupTrust u
+		checkgroup g u = S.member g <$> lookupGroups u
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
