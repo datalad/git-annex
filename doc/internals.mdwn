@@ -67,6 +67,14 @@ Example:
 
 Repositories not listed are semi-trusted.
 
+## `group.log`
+
+Used to group repositories together.
+
+The file format is one line per repository, with the uuid followed by a space,
+and then a space-separated list of groups this repository is part of,
+and finally a timestamp.
+
 ## `aaa/bbb/*.log`
 
 These log files record [[location_tracking]] information

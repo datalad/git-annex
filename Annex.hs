@@ -45,6 +45,7 @@ import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
 import Types.TrustLevel
+import Types.Group
 import Types.Messages
 import Utility.State
 import qualified Utility.Matcher
@@ -92,6 +93,7 @@ data AnnexState = AnnexState
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
+	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockpool :: M.Map FilePath Fd
 	, flags :: M.Map String Bool
@@ -118,6 +120,7 @@ newState gitrepo = AnnexState
 	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
+	, groupmap = Nothing
 	, ciphers = M.empty
 	, lockpool = M.empty
 	, flags = M.empty

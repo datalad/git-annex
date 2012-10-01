@@ -1,3 +1,9 @@
+git-annex (3.20121002) UNRELEASED; urgency=low
+
+  * group, ungroup: New commands to indicate groups of repositories.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
+
 git-annex (3.20121001) unstable; urgency=low
 
   * fsck: Now has an incremental mode. Start a new incremental fsck pass

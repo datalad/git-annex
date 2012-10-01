@@ -248,6 +248,15 @@ subdirectories).
   Indicates that the repository has been irretrevably lost.
   (To undo, use semitrust.)
 
+* group repository groupname
+
+  Adds a repository to a group, such as "archival", "enduser", or "transfer".
+  The groupname must be a single word.
+
+* ungroup repository groupname
+
+  Removes a repository from a group.
+
 # REPOSITORY MAINTENANCE COMMANDS
 
 * fsck [path ...]

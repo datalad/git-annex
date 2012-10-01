@@ -83,6 +83,8 @@ paramFormat :: String
 paramFormat = "FORMAT"
 paramFile :: String
 paramFile = "FILE"
+paramGroup :: String
+paramGroup = "GROUP"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String
