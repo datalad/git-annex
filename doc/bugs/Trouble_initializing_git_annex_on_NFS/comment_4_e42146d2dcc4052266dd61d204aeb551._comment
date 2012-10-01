@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmnG4EuvZWse5hvgrl0XAK-U61e-0iGaao"
+ nickname="David"
+ subject="nolock option worked"
+ date="2012-10-01T20:31:18Z"
+ content="""
+I had the same problem on my NAS, updated the firmware but it didn't solve it.  The remedy was to mount the NAS with the 'nolock' option.
+"""]]
