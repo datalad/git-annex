@@ -53,7 +53,7 @@ git-annex (3.20120924) unstable; urgency=low
     files and reading from checksum commands.
   * sync: Pushes the git-annex branch to remote/synced/git-annex, rather
     than directly to remote/git-annex.
-  * Now supports matchig files that are present on a number of remotes
+  * Now supports matching files that are present on a number of remotes
     with a specified trust level. Example: --copies=trusted:2
     Thanks, Nicolas Pouillard
 
