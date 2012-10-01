@@ -1,0 +1,27 @@
+git-annex 3.20121001 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * fsck: Now has an incremental mode. Start a new incremental fsck pass
+     with git annex fsck --incremental. Now the fsck can be interrupted
+     as desired, and resumed with git annex fsck --more.
+     Thanks, Justin Azoff
+   * New --time-limit option, makes long git-annex commands stop after
+     a specified amount of time.
+   * fsck: New --incremental-schedule option which is nice for scheduling
+     eg, monthly incremental fsck runs in cron jobs.
+   * Fix fallback to ~/Desktop when xdg-user-dir is not available.
+     Closes: #[688833](http://bugs.debian.org/688833)
+   * S3: When using a shared cipher, S3 credentials are not stored encrypted
+     in the git repository, as that would allow anyone with access to
+     the repository access to the S3 account. Instead, they're stored
+     in a 600 mode file in the local git repo.
+   * webapp: Avoid crashing when ssh-keygen -F chokes on an invalid known\_hosts
+     file.
+   * Always do a system wide installation when DESTDIR is set. Closes: #[689052](http://bugs.debian.org/689052)
+   * The Makefile now builds with the new yesod by default.
+     Systems like Debian that have the old yesod 1.0.1 should set
+     GIT\_ANNEX\_LOCAL\_FEATURES=-DWITH\_OLD\_YESOD
+   * copy: Avoid updating the location log when no copy is performed.
+   * configure: Test that uuid -m works, falling back to plain uuid if not.
+   * Avoid building the webapp on Debian architectures that do not yet
+     have template haskell and thus yesod. (Should be available for arm soonish
+     I hope)."""]]
