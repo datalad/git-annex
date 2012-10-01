@@ -6,7 +6,7 @@
  -}
 
 module Logs.Group (
-	groupSet,
+	groupChange,
 	lookupGroups,
 	groupMap,
 ) where
@@ -29,15 +29,17 @@ groupLog = "group.log"
 lookupGroups :: UUID -> Annex (S.Set Group)
 lookupGroups u = (fromMaybe S.empty . M.lookup u) <$> groupMap
 
-{- Changes the groups for a uuid in the groupLog. -}
-groupSet :: UUID -> S.Set Group -> Annex ()
-groupSet uuid@(UUID _) groups = do
+{- Applies a set modifier to change the groups for a uuid in the groupLog. -}
+groupChange :: UUID -> (S.Set Group -> S.Set Group) -> Annex ()
+groupChange uuid@(UUID _) modifier = do
+	curr <- lookupGroups uuid
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change groupLog $
-		showLog (unwords . S.toList) . changeLog ts uuid groups . 
-			parseLog (Just . S.fromList . words)
+		showLog (unwords . S.toList) .
+			changeLog ts uuid (modifier curr) .
+				parseLog (Just . S.fromList . words)
 	Annex.changeState $ \s -> s { Annex.groupmap = Nothing }
-groupSet NoUUID _ = error "unknown UUID; cannot modify group"
+groupChange NoUUID _ = error "unknown UUID; cannot modify group"
 
 {- Read the groupLog into a map. The map is cached for speed. -}
 groupMap :: Annex GroupMap

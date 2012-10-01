@@ -30,6 +30,5 @@ start _ = error "Specify a repository and a group."
 
 perform :: UUID -> Group -> CommandPerform
 perform uuid g = do
-	s <- lookupGroups uuid
-	groupSet uuid (S.delete g s) 
+	groupChange uuid (S.delete g) 
 	next $ return True
