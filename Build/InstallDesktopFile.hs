@@ -87,7 +87,7 @@ writeOSXDesktop command = do
 
 installOSXAppFile :: FilePath -> FilePath -> Maybe String -> IO ()
 installOSXAppFile appdir appfile mcontent = do
-	let src = "ui-macos" </> appdir </> appfile
+	let src = "standalone" </> "macos" </> appdir </> appfile
 	home <- myHomeDir
 	dest <- ifM systemwideInstall
 		( return $ "/Applications" </> appdir </> appfile

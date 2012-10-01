@@ -9,7 +9,7 @@ Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
 Copyright: © 2012 Joey Hess <joey@kitenet.net>
 License: AGPL-3+
 
-Files: doc/logo* */favicon.ico ui-macos/git-annex.app/Contents/Resources/git-annex.icns
+Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>
 License: other

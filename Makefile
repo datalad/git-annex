@@ -177,7 +177,7 @@ OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
 osxapp: $(bins)
 	rm -rf "$(OSXAPP_DEST)"
 	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg
-	cp -R ui-macos/git-annex.app "$(OSXAPP_DEST)"
+	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
 
 	install -d "$(OSXAPP_BASE)/bin"
 	cp git-annex "$(OSXAPP_BASE)/bin/"
