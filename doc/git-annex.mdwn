@@ -610,6 +610,12 @@ file contents are present at either of two repositories.
   of copies, or more. Note that it does not check remotes to verify that
   the copies still exist.
 
+* --copies=trustlevel:number
+
+  Matches only files that git-annex believes have the specified number of
+  copies, on remotes with the specified trust level. For example,
+  "--copies=trusted:2"
+
 * --inbackend=name
 
   Matches only files whose content is stored using the specified key-value
