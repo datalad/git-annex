@@ -27,7 +27,7 @@ groupLog = "group.log"
 
 {- Returns the groups of a given repo UUID. -}
 lookupGroups :: UUID -> Annex (S.Set Group)
-lookupGroups u = (fromMaybe S.empty . M.lookup u) <$> groupMap
+lookupGroups u = (fromMaybe S.empty . M.lookup u) . groupsByUUID <$> groupMap
 
 {- Applies a set modifier to change the groups for a uuid in the groupLog. -}
 groupChange :: UUID -> (S.Set Group -> S.Set Group) -> Annex ()
@@ -48,7 +48,15 @@ groupMap = do
 	case cached of
 		Just m -> return m
 		Nothing -> do
-			m <- simpleMap . parseLog (Just . S.fromList . words) <$>
-				Annex.Branch.get groupLog
+			m <- makeGroupMap . simpleMap . 
+				parseLog (Just . S.fromList . words) <$>
+					Annex.Branch.get groupLog
 			Annex.changeState $ \s -> s { Annex.groupmap = Just m }
 			return m
+
+makeGroupMap :: M.Map UUID (S.Set Group) -> GroupMap
+makeGroupMap byuuid = GroupMap byuuid bygroup
+	where
+		bygroup = M.fromListWith S.union $
+			concat $ map explode $ M.toList byuuid
+		explode (u, s) = map (\g -> (g, S.singleton u)) (S.toList s)

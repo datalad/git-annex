@@ -11,6 +11,7 @@ module Command.Status where
 
 import Control.Monad.State.Strict
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Text.JSON
 
 import Common.Annex
@@ -32,6 +33,8 @@ import Remote
 import Config
 import Utility.Percentage
 import Logs.Transfer
+import Logs.Group
+import Types.Group
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -71,6 +74,7 @@ fast_stats =
 	, remote_list SemiTrusted "semitrusted"
 	, remote_list UnTrusted "untrusted"
 	, remote_list DeadTrusted "dead"
+	, group_list
 	, transfer_list
 	, disk_size
 	]
@@ -172,16 +176,23 @@ bloom_info = stat "bloom filter size" $ json id $ do
 
 	return $ size ++ note
 
+group_list :: Stat
+group_list = stat "repository groups" $ nojson $ lift $ do
+	m <- uuidsByGroup <$> groupMap
+	ls <- forM (M.toList m) $ \(g, s) -> do
+		l <- Remote.prettyListUUIDs (S.toList s)
+		return $ g ++ ": " ++ intercalate ", " l
+	return $ show (M.size m) ++ multiLine ls
+
 transfer_list :: Stat
 transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
 	if null ts
 		then return "none"
-		else return $ pp uuidmap "" $ sort ts
+		else return $ multiLine $
+			map (\(t, i) -> line uuidmap t i) $ sort ts
 	where
-		pp _ c [] = c
-		pp uuidmap c ((t, i):xs) = "\n\t" ++ line uuidmap t i ++ pp uuidmap c xs
 		line uuidmap t i = unwords
 			[ showLcDirection (transferDirection t) ++ "ing"
 			, fromMaybe (key2file $ transferKey t) (associatedFile i)
@@ -213,10 +224,11 @@ backend_usage = stat "backend usage" $ nojson $
 		<$> (backendsKeys <$> cachedReferencedData)
 		<*> (backendsKeys <$> cachedPresentData)
 	where
-		calc a b = pp "" $ reverse . sort $ map swap $ M.toList $ M.unionWith (+) a b
-		pp c [] = c
-		pp c ((n, b):xs) = "\n\t" ++ b ++ ": " ++ show n ++ pp c xs
-		swap (a, b) = (b, a)
+		calc x y = multiLine $
+			map (\(n, b) -> b ++ ": " ++ show n) $
+			reverse $ sort $ map swap $ M.toList $
+			M.unionWith (+) x y
+		swap (x, y) = (y, x)
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
@@ -284,3 +296,6 @@ staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"
+
+multiLine :: [String] -> String
+multiLine = concatMap (\l -> "\n\t" ++ l)

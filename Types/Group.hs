@@ -7,7 +7,7 @@
 
 module Types.Group (
 	Group,
-	GroupMap
+	GroupMap(..)
 ) where
 
 import Types.UUID
@@ -17,4 +17,7 @@ import qualified Data.Set as S
 
 type Group = String
 
-type GroupMap = M.Map UUID (S.Set Group)
+data GroupMap = GroupMap
+	{ groupsByUUID :: M.Map UUID (S.Set Group)
+	, uuidsByGroup :: M.Map Group (S.Set UUID)
+	}
