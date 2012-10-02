@@ -27,6 +27,10 @@ data Change
 		}
 	| PendingAddChange
 		{ changeTime ::UTCTime
+		, changeFile :: FilePath
+		}
+	| InProcessAddChange
+		{ changeTime ::UTCTime
 		, keySource :: KeySource
 		}
 	deriving (Show)
@@ -44,17 +48,21 @@ madeChange f t = do
 noChange :: Annex (Maybe Change)
 noChange = return Nothing
 
-{- Indicates an add is in progress. -}
-pendingAddChange :: KeySource -> Annex (Maybe Change)
-pendingAddChange ks =
-	liftIO $ Just <$> (PendingAddChange <$> getCurrentTime <*> pure ks)
+{- Indicates an add needs to be done, but has not started yet. -}
+pendingAddChange :: FilePath -> Annex (Maybe Change)
+pendingAddChange f =
+	liftIO $ Just <$> (PendingAddChange <$> getCurrentTime <*> pure f)
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True
 isPendingAddChange _ = False
 
+isInProcessAddChange :: Change -> Bool
+isInProcessAddChange (InProcessAddChange {}) = True
+isInProcessAddChange _ = False
+
 finishedChange :: Change -> Change
-finishedChange c@(PendingAddChange { keySource = ks }) = Change
+finishedChange c@(InProcessAddChange { keySource = ks }) = Change
 	{ changeTime = changeTime c
 	, changeFile = keyFilename ks
 	, changeType = AddChange

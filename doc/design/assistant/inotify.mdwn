@@ -6,10 +6,6 @@ available!
 
 ## known bugs
 
-* If a file is checked into git as a normal file and gets modified
-  (or merged, etc), it will be converted into an annexed file.
-  See [[blog/day_7__bugfixes]].
-
 * When you `git annex unlock` a file, it will immediately be re-locked.
   See [[bugs/watcher_commits_unlocked_files]].
 
@@ -203,3 +199,6 @@ Many races need to be dealt with by this code. Here are some of them.
     injected into the annex, where it could be opened for write again.
     Would need to detect that and undo the annex injection or something.
 
+- If a file is checked into git as a normal file and gets modified
+  (or merged, etc), it will be converted into an annexed file.
+  See [[blog/day_7__bugfixes]]. **done**; we always check ls-files now

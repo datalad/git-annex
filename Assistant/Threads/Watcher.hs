@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Assistant.Threads.Watcher (
 	watchThread,
 	checkCanWatch,
@@ -30,14 +28,10 @@ import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
-import qualified Git.LsFiles
 import qualified Backend
-import qualified Command.Add
 import Annex.Content
 import Annex.CatFile
 import Git.Types
-import Config
-import Utility.ThreadScheduler
 
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
@@ -60,32 +54,19 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
-{- OSX needs a short delay after a file is added before locking it down,
- - as pasting a file seems to try to set file permissions or otherwise
- - access the file after closing it. -}
-delayaddDefault :: Maybe Seconds
-#ifdef darwin_HOST_OS
-delayaddDefault = Just $ Seconds 1
-#else
-delayaddDefault = Nothing
-#endif
-
 watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
 watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
-	delayadd <- runThreadState st $
-		maybe delayaddDefault (Just . Seconds) . readish
-			<$> getConfig (annexConfig "delayadd") "" 
-	void $ watchDir "." ignored (hooks delayadd) startup
+	void $ watchDir "." ignored hooks startup
 	debug thisThread [ "watching", "."]
 	where
 		startup = startupScan st dstatus
-		hook delay a = Just $ runHandler thisThread delay st dstatus transferqueue changechan a
-		hooks delayadd = mkWatchHooks
-			{ addHook = hook delayadd onAdd
-			, delHook = hook Nothing onDel
-			, addSymlinkHook = hook Nothing onAddSymlink
-			, delDirHook = hook Nothing onDelDir
-			, errHook = hook Nothing onErr
+		hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
+		hooks = mkWatchHooks
+			{ addHook = hook onAdd
+			, delHook = hook onDel
+			, addSymlinkHook = hook onAddSymlink
+			, delDirHook = hook onDelDir
+			, errHook = hook onErr
 			}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
@@ -113,65 +94,35 @@ ignored = ig . takeFileName
 	ig ".gitattributes" = True
 	ig _ = False
 
-type Handler = ThreadName -> Maybe Seconds -> FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
+type Handler = ThreadName -> FilePath -> Maybe FileStatus -> DaemonStatusHandle -> TransferQueue -> Annex (Maybe Change)
 
 {- Runs an action handler, inside the Annex monad, and if there was a
  - change, adds it to the ChangeChan.
  -
  - Exceptions are ignored, otherwise a whole watcher thread could be crashed.
  -}
-runHandler :: ThreadName -> Maybe Seconds -> ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
-runHandler threadname delay st dstatus transferqueue changechan handler file filestatus = void $ do
+runHandler :: ThreadName -> ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> Handler -> FilePath -> Maybe FileStatus -> IO ()
+runHandler threadname st dstatus transferqueue changechan handler file filestatus = void $ do
 	r <- tryIO go
 	case r of
 		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange changechan change
 	where
-		go = runThreadState st $ handler threadname delay file filestatus dstatus transferqueue
+		go = runThreadState st $ handler threadname file filestatus dstatus transferqueue
 
-{- During initial directory scan, this will be run for any regular files
- - that are already checked into git. We don't want to turn those into
- - symlinks, so do a check. This is rather expensive, but only happens
- - during startup.
- -
- - It's possible for the file to still be open for write by some process.
- - This can happen in a few ways; one is if two processes had the file open
- - and only one has just closed it. We want to avoid adding a file to the
- - annex that is open for write, to avoid anything being able to change it.
- -
- - We could run lsof on the file here to check for other writers.
- - But, that's slow, and even if there is currently a writer, we will want
- - to add the file *eventually*. Instead, the file is locked down as a hard
- - link in a temp directory, with its write bits disabled, for later
- - checking with lsof, and a Change is returned containing a KeySource
- - using that hard link. The committer handles running lsof and finishing
- - the add.
- -}
 onAdd :: Handler
-onAdd threadname delay file filestatus dstatus _
-	| maybe False isRegularFile filestatus =
-		ifM (scanComplete <$> liftIO (getDaemonStatus dstatus))
-			( go
-			, ifM (null <$> inRepo (Git.LsFiles.notInRepo False [file]))
-				( noChange
-				, go
-				)
-			)
+onAdd _ file filestatus _ _
+	| maybe False isRegularFile filestatus = pendingAddChange file
 	| otherwise = noChange
 	where
-		go = do
-			liftIO $ do
-				debug threadname ["file added", file]
-				maybe noop threadDelaySeconds delay
-			pendingAddChange =<< Command.Add.lockDown file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
 onAddSymlink :: Handler
-onAddSymlink threadname _ file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
+onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
 	where
 		go (Just (key, _)) = do
 			link <- calcGitLink file key
@@ -232,7 +183,7 @@ onAddSymlink threadname _ file filestatus dstatus transferqueue = go =<< Backend
 			| otherwise = noop
 
 onDel :: Handler
-onDel threadname _ file _ _dstatus _ = do
+onDel threadname file _ _dstatus _ = do
 	liftIO $ debug threadname ["file deleted", file]
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
@@ -246,7 +197,7 @@ onDel threadname _ file _ _dstatus _ = do
  - command to get the recursive list of files in the directory, so rm is
  - just as good. -}
 onDelDir :: Handler
-onDelDir threadname _ dir _ _dstatus _ = do
+onDelDir threadname dir _ _dstatus _ = do
 	liftIO $ debug threadname ["directory deleted", dir]
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
@@ -254,7 +205,7 @@ onDelDir threadname _ dir _ _dstatus _ = do
 
 {- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler
-onErr _ _ msg _ dstatus _ = do
+onErr _ msg _ dstatus _ = do
 	warning msg
 	void $ liftIO $ addAlert dstatus $ warningAlert "watcher" msg
 	return Nothing

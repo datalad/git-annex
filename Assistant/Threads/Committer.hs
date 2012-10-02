@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.Threads.Committer where
 
 import Assistant.Common
@@ -16,10 +18,10 @@ import Assistant.Threads.Watcher
 import Assistant.TransferQueue
 import Assistant.DaemonStatus
 import Logs.Transfer
-import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.HashObject
+import qualified Git.LsFiles
 import qualified Git.Version
 import Git.Types
 import qualified Command.Add
@@ -27,6 +29,7 @@ import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
+import Config
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -38,28 +41,32 @@ thisThread = "Committer"
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> NamedThread
-commitThread st changechan commitchan transferqueue dstatus = thread $ runEvery (Seconds 1) $ do
-	-- We already waited one second as a simple rate limiter.
-	-- Next, wait until at least one change is available for
-	-- processing.
-	changes <- getChanges changechan
-	-- Now see if now's a good time to commit.
-	time <- getCurrentTime
-	if shouldCommit time changes
-		then do
-			readychanges <- handleAdds st changechan transferqueue dstatus changes
-			if shouldCommit time readychanges
-				then do
-					debug thisThread
-						[ "committing"
-						, show (length readychanges)
-						, "changes"
-						]
-					void $ alertWhile dstatus commitAlert $
-						runThreadState st commitStaged
-					recordCommit commitchan (Commit time)
-				else refill readychanges
-		else refill changes
+commitThread st changechan commitchan transferqueue dstatus = thread $ do
+	delayadd <- runThreadState st $
+		maybe delayaddDefault (Just . Seconds) . readish
+			<$> getConfig (annexConfig "delayadd") "" 
+	runEvery (Seconds 1) $ do
+		-- We already waited one second as a simple rate limiter.
+		-- Next, wait until at least one change is available for
+		-- processing.
+		changes <- getChanges changechan
+		-- Now see if now's a good time to commit.
+		time <- getCurrentTime
+		if shouldCommit time changes
+			then do
+				readychanges <- handleAdds delayadd st changechan transferqueue dstatus changes
+				if shouldCommit time readychanges
+					then do
+						debug thisThread
+							[ "committing"
+							, show (length readychanges)
+							, "changes"
+							]
+						void $ alertWhile dstatus commitAlert $
+							runThreadState st commitStaged
+						recordCommit commitchan (Commit time)
+					else refill readychanges
+			else refill changes
 	where
 		thread = NamedThread thisThread
 		refill [] = noop
@@ -109,13 +116,24 @@ shouldCommit now changes
 		len = length changes
 		thisSecond c = now `diffUTCTime` changeTime c <= 1
 
-{- If there are PendingAddChanges, the files have not yet actually been
- - added to the annex (probably), and that has to be done now, before
- - committing.
+{- OSX needs a short delay after a file is added before locking it down,
+ - as pasting a file seems to try to set file permissions or otherwise
+ - access the file after closing it. -}
+delayaddDefault :: Maybe Seconds
+#ifdef darwin_HOST_OS
+delayaddDefault = Just $ Seconds 1
+#else
+delayaddDefault = Nothing
+#endif
+
+{- If there are PendingAddChanges, or InProcessAddChanges, the files
+ - have not yet actually been added to the annex, and that has to be done
+ - now, before committing.
  -
  - Deferring the adds to this point causes batches to be bundled together,
  - which allows faster checking with lsof that the files are not still open
- - for write by some other process.
+ - for write by some other process, and faster checking with git-ls-files
+ - that the files are not already checked into git.
  -
  - When a file is added, Inotify will notice the new symlink. So this waits
  - for additional Changes to arrive, so that the symlink has hopefully been
@@ -128,10 +146,11 @@ shouldCommit now changes
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: ThreadState -> ChangeChan -> TransferQueue -> DaemonStatusHandle -> [Change] -> IO [Change]
-handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds) $ do
-	(postponed, toadd) <- partitionEithers <$>
-		safeToAdd st pendingadds
+handleAdds :: Maybe Seconds -> ThreadState -> ChangeChan -> TransferQueue -> DaemonStatusHandle -> [Change] -> IO [Change]
+handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null incomplete) $ do
+	let (pending, inprocess) = partition isPendingAddChange incomplete
+	pending' <- findnew pending
+	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd st pending' inprocess
 
 	unless (null postponed) $
 		refillChanges changechan postponed
@@ -141,18 +160,26 @@ handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds
 		if DirWatcher.eventsCoalesce || null added
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds st changechan transferqueue dstatus
+				r <- handleAdds delayadd st changechan transferqueue dstatus
 					=<< getChanges changechan
 				return $ r ++ added ++ otherchanges
 	where
-		(pendingadds, otherchanges) = partition isPendingAddChange cs
+		(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
+		
+		findnew [] = return []
+		findnew pending = do
+			newfiles <- runThreadState st $
+				inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+			-- note: timestamp info is lost here
+			let ts = changeTime (pending !! 0)
+			return $ map (PendingAddChange ts) newfiles
 
 		returnWhen c a
 			| c = return otherchanges
 			| otherwise = a
 
 		add :: Change -> IO (Maybe Change)
-		add change@(PendingAddChange { keySource = ks }) =
+		add change@(InProcessAddChange { keySource = ks }) =
 			alertWhile' dstatus (addFileAlert $ keyFilename ks) $
 				liftM ret $ catchMaybeIO $
 					sanitycheck ks $ runThreadState st $ do
@@ -190,38 +217,43 @@ handleAdds st changechan transferqueue dstatus cs = returnWhen (null pendingadds
 				then a
 				else return Nothing
 
-{- PendingAddChanges can Either be Right to be added now,
+{- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.
  -
  - Check by running lsof on the temp directory, which
  - the KeySources are locked down in.
  -}
-safeToAdd :: ThreadState -> [Change] -> IO [Either Change Change]
-safeToAdd st changes = runThreadState st $
-	ifM (Annex.getState Annex.force)
-		( allRight changes -- force bypasses lsof check
-		, do
-			tmpdir <- fromRepo gitAnnexTmpDir
-			openfiles <- S.fromList . map fst3 . filter openwrite <$>
-				liftIO (Lsof.queryDir tmpdir)
+safeToAdd :: Maybe Seconds -> ThreadState -> [Change] -> [Change] -> IO [Either Change Change]
+safeToAdd _ _ [] [] = return []
+safeToAdd delayadd st pending inprocess = do
+	maybe noop threadDelaySeconds delayadd
+	runThreadState st $ do
+		keysources <- mapM Command.Add.lockDown (map changeFile pending)
+		let inprocess' = map mkinprocess (zip pending keysources)
+		tmpdir <- fromRepo gitAnnexTmpDir
+		openfiles <- S.fromList . map fst3 . filter openwrite <$>
+			liftIO (Lsof.queryDir tmpdir)
+		let checked = map (check openfiles) $ inprocess ++ inprocess'
 
-			let checked = map (check openfiles) changes
-
-			{- If new events are received when files are closed,
-			 - there's no need to retry any changes that cannot
-			 - be done now. -}
-			if DirWatcher.closingTracked
-				then do
-					mapM_ canceladd $ lefts checked
-					allRight $ rights checked
-				else return checked
-		)
+		{- If new events are received when files are closed,
+		 - there's no need to retry any changes that cannot
+		 - be done now. -}
+		if DirWatcher.closingTracked
+			then do
+				mapM_ canceladd $ lefts checked
+				allRight $ rights checked
+			else return checked
 	where
-		check openfiles change@(PendingAddChange { keySource = ks })
+		check openfiles change@(InProcessAddChange { keySource = ks })
 			| S.member (contentLocation ks) openfiles = Left change
 		check _ change = Right change
 
-		canceladd (PendingAddChange { keySource = ks }) = do
+		mkinprocess (c, ks) = InProcessAddChange
+			{ changeTime = changeTime c
+			, keySource = ks
+			}
+
+		canceladd (InProcessAddChange { keySource = ks }) = do
 			warning $ keyFilename ks
 				++ " still has writers, not adding"
 			-- remove the hard link

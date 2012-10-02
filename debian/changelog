@@ -3,6 +3,9 @@ git-annex (3.20121002) UNRELEASED; urgency=low
   * group, ungroup: New commands to indicate groups of repositories.
   * --copies=group:number can now be used to match files that are present
     in a specified number of repositories in a group.
+  * watch, assistant: It's now safe to git annex unlock files while
+    the watcher is running, as well as modify files checked into git
+    as normal files.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
 
