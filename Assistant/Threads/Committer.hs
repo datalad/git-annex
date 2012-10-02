@@ -30,6 +30,7 @@ import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
+import Annex.Exception
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -81,18 +82,23 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ do
 
 commitStaged :: Annex Bool
 commitStaged = do
-	Annex.Queue.flush
-	void $ inRepo $ Git.Command.runBool "commit" $ nomessage
-		[ Param "--quiet"
-		{- Avoid running the usual git-annex pre-commit hook;
-		 - watch does the same symlink fixing, and we don't want
-		 - to deal with unlocked files in these commits. -}
-		, Param "--no-verify"
-		]
-	{- Empty commits may be made if tree changes cancel
-	 - each other out, etc. Git returns nonzero on those, so
-	 - don't propigate out commit failures. -}
-	return True
+	{- This could fail if there's another commit being made by
+	 - something else. -}
+	v <- tryAnnex Annex.Queue.flush
+	case v of
+		Left _ -> return False
+		Right _ -> do
+			void $ inRepo $ Git.Command.runBool "commit" $ nomessage
+				[ Param "--quiet"
+				{- Avoid running the usual git-annex pre-commit hook;
+				 - watch does the same symlink fixing, and we don't want
+				 - to deal with unlocked files in these commits. -}
+				, Param "--no-verify"
+				]
+			{- Empty commits may be made if tree changes cancel
+			 - each other out, etc. Git returns nonzero on those,
+			 - so don't propigate out commit failures. -}
+			return True
 	where
 		nomessage ps
 			| Git.Version.older "1.7.2" = Param "-m"
@@ -185,7 +191,7 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
 					sanitycheck ks $ runThreadState st $ do
 						showStart "add" $ keyFilename ks
 						key <- Command.Add.ingest ks
-						handle (finishedChange change) (keyFilename ks) key
+						done (finishedChange change) (keyFilename ks) key
 			where
 				{- Add errors tend to be transient and will
 				 - be automatically dealt with, so don't
@@ -194,10 +200,10 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
 				ret _ = (True, Nothing)
 		add _ = return Nothing
 
-		handle _ _ Nothing = do
+		done _ _ Nothing = do
 			showEndFail
 			return Nothing
-		handle change file (Just key) = do
+		done change file (Just key) = do
 			link <- Command.Add.link file key True
 			when DirWatcher.eventsCoalesce $ do
 				sha <- inRepo $
