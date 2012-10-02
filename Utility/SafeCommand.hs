@@ -49,8 +49,6 @@ boolSystemEnv command params environ = dispatch <$> safeSystemEnv command params
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
 safeSystem command params = safeSystemEnv command params Nothing
 
-{- Unlike many implementations of system, SIGINT(ctrl-c) is allowed
- - to propigate and will terminate the program. -}
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
 safeSystemEnv command params environ = do
 	(_, _, _, pid) <- createProcess (proc command $ toCommand params)

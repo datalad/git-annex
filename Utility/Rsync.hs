@@ -53,7 +53,7 @@ rsync = boolSystem "rsync"
  - The params must enable rsync's --progress mode for this to work.
  -}
 rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
-rsyncProgress callback params = catchBoolIO $
+rsyncProgress callback params = 
 	withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
 	where
 		p = proc "rsync" (toCommand params)

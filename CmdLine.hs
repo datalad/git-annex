@@ -15,6 +15,7 @@ import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
 import System.Console.GetOpt
+import System.Posix.Signals
 
 import Common.Annex
 import qualified Annex
@@ -108,7 +109,9 @@ tryRun' errnum state cmd (a:as) = do
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool
-startup = return True
+startup = liftIO $ do
+	void $ installHandler sigINT Default Nothing
+	return True
 
 {- Cleanup actions. -}
 shutdown :: Bool -> Annex Bool

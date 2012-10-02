@@ -14,7 +14,7 @@ For example:
 Here git-annex exits before rsync has fully exited. Not a large problem
 but sorta weird.
 
-The culprit is `safeSystemEnv` in Utility.SafeCommand, which installs
+The culprit is `CmdLine.startup` in Utility.SafeCommand, which installs
 a default signal handler for SIGINT, which causes it to immediatly
 terminate git-annex. rsync, in turn, has its own SIGINT handler, which 
 prints the message, typically later.
