@@ -11,6 +11,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import System.Environment (getEnv)
 import Data.Tuple (swap)
+import Data.Char (isSpace)
 
 import Common.Annex
 import Command
@@ -31,23 +32,24 @@ seek = [withNothing start]
 start :: CommandStart
 start = do
 	f <- fromRepo gitAnnexTmpCfgFile
-	createAnnexDirectory (parentDir f)
-	liftIO . writeFile f =<< genCfg <$> getCfg
-	vicfg f
+	createAnnexDirectory $ parentDir f
+	cfg <- getCfg
+	liftIO $ writeFile f $ genCfg cfg
+	vicfg cfg f
 	stop
 
-vicfg :: FilePath -> Annex ()
-vicfg f = do
+vicfg :: Cfg -> FilePath -> Annex ()
+vicfg curcfg f = do
 	vi <- liftIO $ catchDefaultIO "vi" $ getEnv "EDITOR"
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, f]]) $
 		error $ vi ++ " exited nonzero; aborting"
-	r <- parseCfg <$> liftIO (readFileStrict f)
+	r <- parseCfg curcfg <$> liftIO (readFileStrict f)
 	liftIO $ nukeFile f
 	case r of
 		Left s -> do
 			liftIO $ writeFile f s
-			vicfg f
+			vicfg curcfg f
 		Right c -> setCfg c
 
 data Cfg = Cfg
@@ -61,6 +63,9 @@ getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> uuidDescriptions
+
+emptyCfg :: Cfg
+emptyCfg = Cfg M.empty M.empty M.empty
 
 setCfg :: Cfg -> Annex ()
 setCfg = error "TODO setCfg"
@@ -97,13 +102,13 @@ genCfg cfg = unlines $ concat
 			sort $ map swap $ M.toList $ cfgGroupMap cfg
 		defaultgroups = map (\u -> pcom $ line "group" u "") $
 			missing cfgGroupMap
+
 		line setting u value = unwords
 			[ setting
 			, showu u
 			, "=" 
 			, value
 			]
-		com s = "# " ++ s
 		pcom s = "#" ++ s
 		showu u = fromMaybe (fromUUID u) $
 			M.lookup u (cfgDescriptions cfg)
@@ -111,5 +116,60 @@ genCfg cfg = unlines $ concat
 
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
-parseCfg :: String -> Either String Cfg
-parseCfg = undefined
+parseCfg :: Cfg -> String -> Either String Cfg
+parseCfg curcfg = go [] curcfg . lines
+	where
+		go c cfg []
+			| null (catMaybes $ map fst c) = Right cfg
+			| otherwise = Left $ unlines $
+				badheader ++ concatMap showerr (reverse c)
+		go c cfg (l:ls) = case parse (dropWhile isSpace l) cfg of
+			Left msg -> go ((Just msg, l):c) cfg ls
+			Right cfg' -> go ((Nothing, l):c) cfg' ls
+
+		parse l cfg
+			| null l = Right cfg
+			| "#" `isPrefixOf` l = Right cfg
+			| null setting || null repo' = Left "missing repository name"
+			| otherwise = case M.lookup repo' name2uuid of
+				Nothing -> badval "repository" repo'
+				Just u -> handle cfg u setting value'
+			where
+				(setting, rest) = separate isSpace l
+				(repo, value) = separate (== '=') rest
+				value' = dropWhile isSpace value
+				repo' = reverse $ dropWhile isSpace $
+					reverse $ dropWhile isSpace repo
+				
+
+		handle cfg u setting value
+			| setting == "trust" = case readTrustLevel value of
+				Nothing -> badval "trust value" value
+				Just t ->
+					let m = M.insert u t (cfgTrustMap cfg)
+					in Right $ cfg { cfgTrustMap = m }
+			| setting == "group" =
+				let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
+				in Right $ cfg { cfgGroupMap = m }
+			| otherwise = badval "setting" setting
+
+		name2uuid = M.fromList $ map swap $
+			M.toList $ cfgDescriptions curcfg
+
+		showerr (Just msg, l) = [parseerr ++ msg, l]
+		showerr (Nothing, l)
+			-- filter out the header and parse error lines
+			-- from any previous parse failure
+			| any (`isPrefixOf` l) (parseerr:badheader) = []
+			| otherwise = [l]
+
+		badval desc val = Left $ "unknown " ++ desc ++ " \"" ++ val ++ "\""
+		badheader = 
+			[ com "There was a problem parsing your input."
+			, com "Search for \"Parse error\" to find the bad lines."
+			, com "Either fix the bad lines, or delete them (to discard your changes)."
+			]
+		parseerr = com "Parse error in next line: "
+
+com :: String -> String
+com s = "# " ++ s
