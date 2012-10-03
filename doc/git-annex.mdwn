@@ -639,7 +639,7 @@ file contents are present at either of two repositories.
 * --not
 
   Inverts the next file matching option. For example, to only act on
-  mp3s, use: --not --exclude='*.mp3'
+  files with less than 3 copies, use --not --copies=3
 
 * --and
 
