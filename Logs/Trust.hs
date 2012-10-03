@@ -10,8 +10,8 @@ module Logs.Trust (
 	trustGet,
 	trustSet,
 	trustPartition,
-	readTrust,
 	lookupTrust,
+	trustMapRaw,
 ) where
 
 import qualified Data.Map as M
@@ -42,7 +42,9 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change trustLog $
-		showLog showTrust . changeLog ts uuid level . parseLog (Just . parseTrust)
+		showLog showTrustLog .
+			changeLog ts uuid level .
+				parseLog (Just . parseTrustLog)
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
 
@@ -72,38 +74,34 @@ trustMap = do
 		Just m -> return m
 		Nothing -> do
 			overrides <- Annex.getState Annex.forcetrust
-			logged <- simpleMap . parseLog (Just . parseTrust) <$>
-				Annex.Branch.get trustLog
-			configured <- M.fromList . catMaybes <$>
-				(mapM configuredtrust =<< remoteList)
+			logged <- trustMapRaw
+			configured <- M.fromList . catMaybes
+				<$> (mapM configuredtrust =<< remoteList)
 			let m = M.union overrides $ M.union configured logged
 			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 			return m
 	where
 		configuredtrust r =
 			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
-				maybe Nothing readTrust <$>
-					getTrustLevel (Types.Remote.repo r)
+				maybe Nothing readTrustLevel
+					<$> getTrustLevel (Types.Remote.repo r)
 
-readTrust :: String -> Maybe TrustLevel
-readTrust "trusted" = Just Trusted
-readTrust "untrusted" = Just UnTrusted
-readTrust "semitrusted" = Just SemiTrusted
-readTrust "dead" = Just DeadTrusted
-readTrust _ = Nothing
+trustMapRaw :: Annex TrustMap
+trustMapRaw = simpleMap . parseLog (Just . parseTrustLog)
+	<$> Annex.Branch.get trustLog
 
 {- The trust.log used to only list trusted repos, without a field for the
  - trust status, which is why this defaults to Trusted. -}
-parseTrust :: String -> TrustLevel
-parseTrust s = maybe Trusted parse $ headMaybe $ words s
+parseTrustLog :: String -> TrustLevel
+parseTrustLog s = maybe Trusted parse $ headMaybe $ words s
 	where
 		parse "1" = Trusted
 		parse "0" = UnTrusted
 		parse "X" = DeadTrusted
 		parse _ = SemiTrusted
 
-showTrust :: TrustLevel -> String
-showTrust Trusted = "1"
-showTrust UnTrusted = "0"
-showTrust DeadTrusted = "X"
-showTrust SemiTrusted = "?"
+showTrustLog :: TrustLevel -> String
+showTrustLog Trusted = "1"
+showTrustLog UnTrusted = "0"
+showTrustLog DeadTrusted = "X"
+showTrustLog SemiTrusted = "?"

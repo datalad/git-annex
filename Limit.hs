@@ -19,6 +19,7 @@ import qualified Remote
 import qualified Backend
 import Annex.Content
 import Logs.Trust
+import Types.TrustLevel
 import Logs.Group
 import Utility.HumanTime
 
@@ -91,7 +92,7 @@ addCopies :: String -> Annex ()
 addCopies want = addLimit . check $ readnum num
 	where
 		(num, good) = case split ":" want of
-			[v, n] -> case readTrust v of
+			[v, n] -> case readTrustLevel v of
 				Just trust -> (n, checktrust trust)
 				Nothing -> (n, checkgroup v)
 			[n] -> (n, const $ return True)

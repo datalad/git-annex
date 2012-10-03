@@ -57,6 +57,7 @@ import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
 import qualified Command.Ungroup
+import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.AddUrl
 import qualified Command.Import
@@ -96,6 +97,7 @@ cmds = concat
 	, Command.Dead.def
 	, Command.Group.def
 	, Command.Ungroup.def
+	, Command.Vicfg.def
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def

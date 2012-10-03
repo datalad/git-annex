@@ -6,6 +6,8 @@ git-annex (3.20121002) UNRELEASED; urgency=low
   * watch, assistant: It's now safe to git annex unlock files while
     the watcher is running, as well as modify files checked into git
     as normal files.
+  * vicfg: New command, allows editing (or simply viewing) most
+    of the repository configuration settings stored in the git-annex branch.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
 

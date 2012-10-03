@@ -11,8 +11,8 @@ module Command.Status where
 
 import Control.Monad.State.Strict
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Text.JSON
+import Data.Tuple
 
 import Common.Annex
 import qualified Types.Backend as B
@@ -33,8 +33,7 @@ import Remote
 import Config
 import Utility.Percentage
 import Logs.Transfer
-import Logs.Group
-import Types.Group
+import Types.TrustLevel
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -70,11 +69,10 @@ fast_stats :: [Stat]
 fast_stats = 
 	[ supported_backends
 	, supported_remote_types
-	, remote_list Trusted "trusted"
-	, remote_list SemiTrusted "semitrusted"
-	, remote_list UnTrusted "untrusted"
-	, remote_list DeadTrusted "dead"
-	, group_list
+	, remote_list Trusted
+	, remote_list SemiTrusted
+	, remote_list UnTrusted
+	, remote_list DeadTrusted
 	, transfer_list
 	, disk_size
 	]
@@ -129,14 +127,14 @@ supported_remote_types :: Stat
 supported_remote_types = stat "supported remote types" $ json unwords $
 	return $ map R.typename Remote.remoteTypes
 
-remote_list :: TrustLevel -> String -> Stat
-remote_list level desc = stat n $ nojson $ lift $ do
+remote_list :: TrustLevel -> Stat
+remote_list level = stat n $ nojson $ lift $ do
 	us <- M.keys <$> (M.union <$> uuidMap <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
 	where
-		n = desc ++ " repositories"
+		n = showTrustLevel level ++ " repositories"
 	
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $ json id $
@@ -175,14 +173,6 @@ bloom_info = stat "bloom filter size" $ json id $ do
 		lift Command.Unused.bloomBitsHashes
 
 	return $ size ++ note
-
-group_list :: Stat
-group_list = stat "repository groups" $ nojson $ lift $ do
-	m <- uuidsByGroup <$> groupMap
-	ls <- forM (M.toList m) $ \(g, s) -> do
-		l <- Remote.prettyListUUIDs (S.toList s)
-		return $ g ++ ": " ++ intercalate ", " l
-	return $ show (M.size m) ++ multiLine ls
 
 transfer_list :: Stat
 transfer_list = stat "transfers in progress" $ nojson $ lift $ do
@@ -228,7 +218,6 @@ backend_usage = stat "backend usage" $ nojson $
 			map (\(n, b) -> b ++ ": " ++ show n) $
 			reverse $ sort $ map swap $ M.toList $
 			M.unionWith (+) x y
-		swap (x, y) = (y, x)
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
@@ -299,3 +288,4 @@ aside s = " (" ++ s ++ ")"
 
 multiLine :: [String] -> String
 multiLine = concatMap (\l -> "\n\t" ++ l)
+

@@ -42,6 +42,7 @@ module Remote (
 import qualified Data.Map as M
 import Text.JSON
 import Text.JSON.Generic
+import Data.Tuple
 
 import Common.Annex
 import Types.Remote
@@ -100,7 +101,6 @@ nameToUUID n = byName' n >>= go
 				Nothing -> return $ byuuid m
 		byuuid m = M.lookup (toUUID n) $ transform double m
 		transform a = M.fromList . map a . M.toList
-		swap (a, b) = (b, a)
 		double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
