@@ -50,7 +50,7 @@ vicfg curcfg f = do
 		Left s -> do
 			liftIO $ writeFile f s
 			vicfg curcfg f
-		Right c -> setCfg c
+		Right newcfg -> setCfg curcfg newcfg
 
 data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
@@ -67,8 +67,17 @@ getCfg = Cfg
 emptyCfg :: Cfg
 emptyCfg = Cfg M.empty M.empty M.empty
 
-setCfg :: Cfg -> Annex ()
-setCfg = error "TODO setCfg"
+setCfg :: Cfg -> Cfg -> Annex ()
+setCfg curcfg newcfg = do
+	let (trustchanges, groupchanges) = diffCfg curcfg newcfg
+	mapM_ (\(u,t) -> trustSet u t) $ M.toList trustchanges
+	mapM_ (\(u, gs) -> groupChange u $ const gs) $ M.toList groupchanges
+
+diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group))
+diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap)
+	where
+		diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
+			(f newcfg) (f curcfg)
 
 genCfg :: Cfg -> String
 genCfg cfg = unlines $ concat
@@ -98,8 +107,8 @@ genCfg cfg = unlines $ concat
 			, com "Repository groups"
 			, com "(Separate group names with spaces)"
 			]
-		groups = map (\(s, u) -> line "group" u $ unwords $ S.toList s) $
-			sort $ map swap $ M.toList $ cfgGroupMap cfg
+		groups = sort $ map (\(s, u) -> line "group" u $ unwords $ S.toList s) $
+			map swap $ M.toList $ cfgGroupMap cfg
 		defaultgroups = map (\u -> pcom $ line "group" u "") $
 			missing cfgGroupMap
 
