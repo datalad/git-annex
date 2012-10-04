@@ -146,10 +146,10 @@ parseCfg curcfg = go [] curcfg . lines
 			where
 				(setting, rest) = separate isSpace l
 				(repo, value) = separate (== '=') rest
-				value' = dropWhile isSpace value
-				repo' = reverse $ dropWhile isSpace $
-					reverse $ dropWhile isSpace repo
-				
+				value' = trimspace value
+				repo' = reverse $ trimspace $
+					reverse $ trimspace repo
+				trimspace = dropWhile isSpace
 
 		handle cfg u setting value
 			| setting == "trust" = case readTrustLevel value of
