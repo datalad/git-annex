@@ -41,7 +41,7 @@ exists ref = runBool "show-ref"
 sha :: Branch -> Repo -> IO (Maybe Sha)
 sha branch repo = process <$> showref repo
 	where
-		showref = pipeRead [Param "show-ref",
+		showref = pipeReadStrict [Param "show-ref",
 			Param "--hash", -- get the hash
 			Param $ show branch]
 		process [] = Nothing
@@ -50,7 +50,7 @@ sha branch repo = process <$> showref repo
 {- List of (refs, branches) matching a given ref spec. -}
 matching :: Ref -> Repo -> IO [(Ref, Branch)]
 matching ref repo = map gen . lines <$> 
-	pipeRead [Param "show-ref", Param $ show ref] repo
+	pipeReadStrict [Param "show-ref", Param $ show ref] repo
 	where
 		gen l = let (r, b) = separate (== ' ') l in
 			(Ref r, Ref b)

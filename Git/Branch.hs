@@ -27,7 +27,7 @@ current r = do
 	case v of
 		Nothing -> return Nothing
 		Just branch -> 
-			ifM (null <$> pipeRead [Param "show-ref", Param $ show branch] r)
+			ifM (null <$> pipeReadStrict [Param "show-ref", Param $ show branch] r)
 				( return Nothing
 				, return v
 				)
@@ -35,7 +35,7 @@ current r = do
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Git.Ref)
 currentUnsafe r = parse . firstLine
-	<$> pipeRead [Param "symbolic-ref", Param "HEAD"] r
+	<$> pipeReadStrict [Param "symbolic-ref", Param "HEAD"] r
 	where
 		parse l
 			| null l = Nothing
@@ -48,7 +48,7 @@ changed origbranch newbranch repo
 	| origbranch == newbranch = return False
 	| otherwise = not . null <$> diffs
 	where
-		diffs = pipeRead
+		diffs = pipeReadStrict
 			[ Param "log"
 			, Param (show origbranch ++ ".." ++ show newbranch)
 			, Params "--oneline -n1"
@@ -93,7 +93,7 @@ fastForward branch (first:rest) repo =
 commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
 commit message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
-		pipeRead [Param "write-tree"] repo
+		pipeReadStrict [Param "write-tree"] repo
 	sha <- getSha "commit-tree" $ pipeWriteRead
 		(map Param $ ["commit-tree", show tree] ++ ps)
 		message repo

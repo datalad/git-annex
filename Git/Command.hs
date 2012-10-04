@@ -43,14 +43,27 @@ run subcommand params repo = assertLocal repo $
  - Note that this leaves the git process running, and so zombies will
  - result unless reap is called.
  -}
-pipeRead :: [CommandParam] -> Repo -> IO String
-pipeRead params repo = assertLocal repo $
+pipeReadLazy :: [CommandParam] -> Repo -> IO String
+pipeReadLazy params repo = assertLocal repo $
 	withHandle StdoutHandle createBackgroundProcess p $ \h -> do
 		fileEncoding h
 		hGetContents h
 	where
-		p  = (proc "git" $ toCommand $ gitCommandLine params repo)
-			{ env = gitEnv repo }
+		p  = gitCreateProcess params repo
+
+{- Runs a git subcommand, and returns its output, strictly.
+ -
+ - Nonzero exit status is ignored.
+ -}
+pipeReadStrict :: [CommandParam] -> Repo -> IO String
+pipeReadStrict params repo = assertLocal repo $
+	withHandle StdoutHandle (createProcessChecked ignoreFailureProcess) p $ \h -> do
+		fileEncoding h
+		output <- hGetContentsStrict h
+		hClose h
+		return output
+	where
+		p  = gitCreateProcess params repo
 
 {- Runs a git subcommand, feeding it input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
@@ -62,16 +75,19 @@ pipeWriteRead params s repo = assertLocal repo $
 
 {- Runs a git subcommand, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
-pipeWrite params repo = withHandle StdinHandle createProcessSuccess p
-	where
-		p = (proc "git" $ toCommand $ gitCommandLine params repo)
+pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
+	gitCreateProcess params repo
+
+gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
+gitCreateProcess params repo =
+	(proc "git" $ toCommand $ gitCommandLine params repo)
 			{ env = gitEnv repo }
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
 pipeNullSplit :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplit params repo =
-	filter (not . null) . split sep <$> pipeRead params repo
+	filter (not . null) . split sep <$> pipeReadLazy params repo
 	where
 		sep = "\0"
 

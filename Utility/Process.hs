@@ -116,8 +116,10 @@ checkSuccessProcess pid = do
 	code <- waitForProcess pid
 	return $ code == ExitSuccess
 
-ignoreFailureProcess :: ProcessHandle -> IO ()
-ignoreFailureProcess = void . waitForProcess
+ignoreFailureProcess :: ProcessHandle -> IO Bool
+ignoreFailureProcess pid = do
+	void $ waitForProcess pid
+	return True
 
 {- Runs createProcess, then an action on its handles, and then
  - forceSuccessProcess. -}

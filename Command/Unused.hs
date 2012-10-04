@@ -251,7 +251,7 @@ withKeysReferencedInGit a = do
 	rs <- relevantrefs <$> showref
 	forM_ rs (withKeysReferencedInGitRef a)
 	where
-		showref = inRepo $ Git.Command.pipeRead [Param "show-ref"]
+		showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
 		relevantrefs = map (Git.Ref .  snd) .
 			nubBy uniqref .
 			filter ourbranches .
