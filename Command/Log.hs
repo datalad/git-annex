@@ -136,7 +136,7 @@ getLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
 	let logfile = p </> Logs.Location.logFile key
-	inRepo $ pipeNullSplit $
+	inRepo $ pipeNullSplitZombie $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
 		, Param "--remove-empty"
 		] ++ os ++

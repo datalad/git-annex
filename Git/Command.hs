@@ -8,7 +8,7 @@
 module Git.Command where
 
 import System.Posix.Process (getAnyProcessStatus)
-import System.Process
+import System.Process (std_in, env)
 
 import Common
 import Git
@@ -38,16 +38,17 @@ run subcommand params repo = assertLocal repo $
 	unlessM (runBool subcommand params repo) $
 		error $ "git " ++ subcommand ++ " " ++ show params ++ " failed"
 
-{- Runs a git subcommand and returns its output, lazily. 
+{- Runs a git subcommand and returns its output, lazily.
  -
- - Note that this leaves the git process running, and so zombies will
- - result unless reap is called.
+ - Also returns an action that should be used when the output is all
+ - read (or no more is needed), that will wait on the command, and
+ - return True if it succeeded. Failure to wait will result in zombies.
  -}
-pipeReadLazy :: [CommandParam] -> Repo -> IO String
-pipeReadLazy params repo = assertLocal repo $
-	withHandle StdoutHandle createBackgroundProcess p $ \h -> do
-		fileEncoding h
-		hGetContents h
+pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
+pipeReadLazy params repo = assertLocal repo $ do
+	(Just h, _, _, pid) <- createProcess p { std_in = CreatePipe }
+	c <- hGetContents h
+	return (c, checkSuccessProcess pid)
 	where
 		p  = gitCreateProcess params repo
 
@@ -78,18 +79,19 @@ pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
 pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
 	gitCreateProcess params repo
 
-gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
-gitCreateProcess params repo =
-	(proc "git" $ toCommand $ gitCommandLine params repo)
-			{ env = gitEnv repo }
-
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
-pipeNullSplit :: [CommandParam] -> Repo -> IO [String]
-pipeNullSplit params repo =
-	filter (not . null) . split sep <$> pipeReadLazy params repo
+pipeNullSplit :: [CommandParam] -> Repo -> IO ([String], IO Bool)
+pipeNullSplit params repo = do
+	(s, cleanup) <- pipeReadLazy params repo
+	return (filter (not . null) $ split sep s, cleanup)
 	where
 		sep = "\0"
+
+{- Does not wait on the git command when it's done, so produces
+ - one zombie. -}
+pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
+pipeNullSplitZombie params repo = fst <$> pipeNullSplit params repo
 
 {- Reaps any zombie git processes. -}
 reap :: IO ()
@@ -101,3 +103,8 @@ reap = do
 {- Runs a git command as a coprocess. -}
 gitCoProcessStart :: [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
 gitCoProcessStart params repo = CoProcess.start "git" (toCommand $ gitCommandLine params repo) (gitEnv repo)
+
+gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
+gitCreateProcess params repo =
+	(proc "git" $ toCommand $ gitCommandLine params repo)
+			{ env = gitEnv repo }

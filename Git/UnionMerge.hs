@@ -58,9 +58,11 @@ diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 {- Streams update-index changes to perform a merge,
  - using git to get a raw diff. -}
 doMerge :: CatFileHandle -> [String] -> Repo -> Streamer
-doMerge ch differ repo streamer = gendiff >>= go
+doMerge ch differ repo streamer = do
+	(diff, cleanup) <- pipeNullSplit (map Param differ) repo
+	go diff
+	void $ cleanup
 	where
-		gendiff = pipeNullSplit (map Param differ) repo
 		go [] = noop
 		go (info:file:rest) = mergeFile info file ch repo >>=
 			maybe (go rest) (\l -> streamer l >> go rest)

@@ -26,11 +26,11 @@ import Git.Sha
 
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO [FilePath]
-inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
+inRepo l = pipeNullSplitZombie $ Params "ls-files --cached -z --" : map File l
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO [FilePath]
-notInRepo include_ignored l repo = pipeNullSplit params repo
+notInRepo include_ignored l repo = pipeNullSplitZombie params repo
 	where
 		params = [Params "ls-files --others"] ++ exclude ++
 			[Params "-z --"] ++ map File l
@@ -48,14 +48,14 @@ stagedNotDeleted :: [FilePath] -> Repo -> IO [FilePath]
 stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 
 staged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
-staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
+staged' ps l = pipeNullSplitZombie $ prefix ++ ps ++ suffix
 	where
 		prefix = [Params "diff --cached --name-only -z"]
 		suffix = Param "--" : map File l
 
 {- Returns a list of files that have unstaged changes. -}
 changedUnstaged :: [FilePath] -> Repo -> IO [FilePath]
-changedUnstaged l = pipeNullSplit params
+changedUnstaged l = pipeNullSplitZombie params
 	where
 		params = Params "diff --name-only -z --" : map File l
 
@@ -71,7 +71,7 @@ typeChanged = typeChanged' []
 
 typeChanged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
 typeChanged' ps l repo = do
-	fs <- pipeNullSplit (prefix ++ ps ++ suffix) repo
+	fs <- pipeNullSplitZombie (prefix ++ ps ++ suffix) repo
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
 	let top = repoPath repo
@@ -108,7 +108,8 @@ unmerged :: [FilePath] -> Repo -> IO [Unmerged]
 unmerged l repo = reduceUnmerged [] . catMaybes . map parseUnmerged <$> list repo
 	where
 		files = map File l
-		list = pipeNullSplit $ Params "ls-files --unmerged -z --" : files
+		list = pipeNullSplitZombie $
+			Params "ls-files --unmerged -z --" : files
 
 data InternalUnmerged = InternalUnmerged
 	{ isus :: Bool

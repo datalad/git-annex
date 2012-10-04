@@ -30,7 +30,7 @@ data TreeItem = TreeItem
 {- Lists the contents of a Ref -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
 lsTree t repo = map parseLsTree <$>
-	pipeNullSplit [Params "ls-tree --full-tree -z -r --", File $ show t] repo
+	pipeNullSplitZombie [Params "ls-tree --full-tree -z -r --", File $ show t] repo
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

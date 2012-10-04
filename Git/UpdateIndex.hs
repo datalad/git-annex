@@ -48,7 +48,10 @@ streamUpdateIndex repo as = pipeWrite params repo $ \h -> do
 {- A streamer that adds the current tree for a ref. Useful for eg, copying
  - and modifying branches. -}
 lsTree :: Ref -> Repo -> Streamer
-lsTree (Ref x) repo streamer = mapM_ streamer =<< pipeNullSplit params repo
+lsTree (Ref x) repo streamer = do
+	(s, cleanup) <- pipeNullSplit params repo
+	mapM_ streamer s
+	void $ cleanup
 	where
 		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
