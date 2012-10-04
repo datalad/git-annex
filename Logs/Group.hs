@@ -7,6 +7,7 @@
 
 module Logs.Group (
 	groupChange,
+	groupSet,
 	lookupGroups,
 	groupMap,
 ) where
@@ -39,7 +40,10 @@ groupChange uuid@(UUID _) modifier = do
 			changeLog ts uuid (modifier curr) .
 				parseLog (Just . S.fromList . words)
 	Annex.changeState $ \s -> s { Annex.groupmap = Nothing }
-groupChange NoUUID _ = error "unknown UUID; cannot modify group"
+groupChange NoUUID _ = error "unknown UUID; cannot modify"
+
+groupSet :: UUID -> S.Set Group -> Annex ()
+groupSet u g = groupChange u (const g)
 
 {- Read the groupLog into a map. The map is cached for speed. -}
 groupMap :: Annex GroupMap

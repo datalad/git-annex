@@ -20,6 +20,7 @@ import Types.TrustLevel
 import Types.Group
 import Logs.Trust
 import Logs.Group
+import Logs.PreferredContent
 import Remote
 
 def :: [Command]
@@ -55,6 +56,7 @@ vicfg curcfg f = do
 data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
+	, cfgPreferredContentMap :: M.Map UUID String
 	, cfgDescriptions :: M.Map UUID String
 	}
 
@@ -62,26 +64,29 @@ getCfg :: Annex Cfg
 getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
+	<*> preferredContentMapRaw
 	<*> uuidDescriptions
-
-emptyCfg :: Cfg
-emptyCfg = Cfg M.empty M.empty M.empty
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
-	let (trustchanges, groupchanges) = diffCfg curcfg newcfg
-	mapM_ (\(u,t) -> trustSet u t) $ M.toList trustchanges
-	mapM_ (\(u, gs) -> groupChange u $ const gs) $ M.toList groupchanges
+	let (trustchanges, groupchanges, preferredcontentchanges) = diffCfg curcfg newcfg
+	mapM_ (uncurry trustSet) $ M.toList trustchanges
+	mapM_ (uncurry groupSet) $ M.toList groupchanges
+	mapM_ (uncurry preferredContentSet) $ M.toList preferredcontentchanges
 
-diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group))
-diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap)
+diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group), M.Map UUID String)
+diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap, diff cfgPreferredContentMap)
 	where
 		diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
 			(f newcfg) (f curcfg)
 
 genCfg :: Cfg -> String
 genCfg cfg = unlines $ concat
-	[intro, trustintro, trust, defaulttrust, groupsintro, groups, defaultgroups]
+	[ intro
+	, trustintro, trust, defaulttrust
+	, groupsintro, groups, defaultgroups
+	, preferredcontentintro, preferredcontent, defaultpreferredcontent
+	]
 	where
 		intro =
 			[ com "git-annex configuration"
@@ -91,6 +96,7 @@ genCfg cfg = unlines $ concat
 			, com "Lines in this file have the format:"
 			, com "  setting repo = value"
 			]
+
 		trustintro =
 			[ ""
 			, com "Repository trust configuration"
@@ -100,6 +106,7 @@ genCfg cfg = unlines $ concat
 			]
 		trust = map (\(t, u) -> line "trust" u $ showTrustLevel t) $
 			sort $ map swap $ M.toList $ cfgTrustMap cfg
+
 		defaulttrust = map (\u -> pcom $ line "trust" u $ showTrustLevel SemiTrusted) $
 			missing cfgTrustMap
 		groupsintro = 
@@ -111,6 +118,15 @@ genCfg cfg = unlines $ concat
 			map swap $ M.toList $ cfgGroupMap cfg
 		defaultgroups = map (\u -> pcom $ line "group" u "") $
 			missing cfgGroupMap
+
+		preferredcontentintro = 
+			[ ""
+			, com "Repository preferred contents"
+			]
+		preferredcontent = sort $ map (\(s, u) -> line "preferred-content" u s) $
+			map swap $ M.toList $ cfgPreferredContentMap cfg
+		defaultpreferredcontent = map (\u -> pcom $ line "preferred-content" u "") $
+			missing cfgPreferredContentMap
 
 		line setting u value = unwords
 			[ setting
@@ -160,6 +176,12 @@ parseCfg curcfg = go [] curcfg . lines
 			| setting == "group" =
 				let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
 				in Right $ cfg { cfgGroupMap = m }
+			| setting == "preferred-content" = 
+				case checkPreferredContentExpression value of
+					Just e -> Left e
+					Nothing ->
+						let m = M.insert u value (cfgPreferredContentMap cfg)
+						in Right $ cfg { cfgPreferredContentMap = m }
 			| otherwise = badval "setting" setting
 
 		name2uuid = M.fromList $ map swap $

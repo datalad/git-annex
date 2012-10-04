@@ -75,6 +75,17 @@ The file format is one line per repository, with the uuid followed by a space,
 and then a space-separated list of groups this repository is part of,
 and finally a timestamp.
 
+## `preferred-content.log`
+
+Used to indicate which repositories prefer to contain which file contents.
+
+The file format is one line per repository, with the uuid followed by a space,
+then a boolean expression, and finally a timestamp.
+
+Files matching the expression are preferred to be retained in the
+repository, while files not matching it are preferred to be stored
+somewhere else.
+
 ## `aaa/bbb/*.log`
 
 These log files record [[location_tracking]] information

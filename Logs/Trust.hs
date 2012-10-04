@@ -46,7 +46,7 @@ trustSet uuid@(UUID _) level = do
 			changeLog ts uuid level .
 				parseLog (Just . parseTrustLog)
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
-trustSet NoUUID _ = error "unknown UUID; cannot modify trust level"
+trustSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Returns the TrustLevel of a given repo UUID. -}
 lookupTrust :: UUID -> Annex TrustLevel

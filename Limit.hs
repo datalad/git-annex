@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Logs.Group
 import Utility.HumanTime
 
 type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
+type MkLimit = String -> Either String (FilePath -> Annex Bool)
 
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
@@ -56,16 +57,22 @@ addToken :: String -> Annex ()
 addToken = add . Utility.Matcher.token
 
 {- Adds a new limit. -}
-addLimit :: (FilePath -> Annex Bool) -> Annex ()
-addLimit = add . Utility.Matcher.Operation
+addLimit :: Either String (FilePath -> Annex Bool) -> Annex ()
+addLimit = either error (add . Utility.Matcher.Operation)
 
 {- Add a limit to skip files that do not match the glob. -}
 addInclude :: String -> Annex ()
-addInclude glob = addLimit $ return . matchglob glob
+addInclude = addLimit . limitInclude
+
+limitInclude :: MkLimit
+limitInclude glob = Right $ return . matchglob glob
 
 {- Add a limit to skip files that match the glob. -}
 addExclude :: String -> Annex ()
-addExclude glob = addLimit $ return . not . matchglob glob
+addExclude = addLimit . limitExclude
+
+limitExclude :: MkLimit
+limitExclude glob = Right $ return . not . matchglob glob
 
 matchglob :: String -> FilePath -> Bool
 matchglob glob f = isJust $ match cregex f []
@@ -76,7 +83,10 @@ matchglob glob f = isJust $ match cregex f []
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. -}
 addIn :: String -> Annex ()
-addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
+addIn = addLimit . limitIn
+
+limitIn :: MkLimit
+limitIn name = Right $ check $ if name == "." then inAnnex else inremote
 	where
 		check a = Backend.lookupFile >=> handle a
 		handle _ Nothing = return False
@@ -89,18 +99,22 @@ addIn name = addLimit $ check $ if name == "." then inAnnex else inremote
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
 addCopies :: String -> Annex ()
-addCopies want = addLimit . check $ readnum num
+addCopies = addLimit . limitCopies
+
+limitCopies :: MkLimit
+limitCopies want = case split ":" want of
+	[v, n] -> case readTrustLevel v of
+		Just trust -> go n $ checktrust trust
+		Nothing -> go n $ checkgroup v
+	[n] -> go n $ const $ return True
+	_ -> Left "bad value for copies"
 	where
-		(num, good) = case split ":" want of
-			[v, n] -> case readTrustLevel v of
-				Just trust -> (n, checktrust trust)
-				Nothing -> (n, checkgroup v)
-			[n] -> (n, const $ return True)
-			_ -> error "bad value for --copies"
-		readnum = maybe (error "bad number for --copies") id . readish
-		check n = Backend.lookupFile >=> handle n
-		handle _ Nothing = return False
-		handle n (Just (key, _)) = do
+		go num good = case readish num of
+			Nothing -> Left "bad number for copies"
+			Just n -> Right $ check n good
+		check n good = Backend.lookupFile >=> handle n good
+		handle _ _ Nothing = return False
+		handle n good (Just (key, _)) = do
 			us <- filterM good =<< Remote.keyLocations key
 			return $ length us >= n
 		checktrust t u = (== t) <$> lookupTrust u
@@ -108,7 +122,10 @@ addCopies want = addLimit . check $ readnum num
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
-addInBackend name = addLimit $ Backend.lookupFile >=> check
+addInBackend = addLimit . limitInBackend
+
+limitInBackend :: MkLimit
+limitInBackend name = Right $ Backend.lookupFile >=> check
 	where
 		wanted = Backend.lookupBackendName name
 		check = return . maybe False ((==) wanted . snd)
@@ -118,11 +135,10 @@ addTimeLimit s = do
 	let seconds = fromMaybe (error "bad time-limit") $ parseDuration s
 	start <- liftIO getPOSIXTime
 	let cutoff = start + seconds
-	addLimit $ const $ do
+	addLimit $ Right $ const $ do
 		now <- liftIO getPOSIXTime
 		if now > cutoff
 			then do
 				warning $ "Time limit (" ++ s ++ ") reached!"
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
-		

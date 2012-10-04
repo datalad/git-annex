@@ -10,6 +10,7 @@
 module Annex (
 	Annex,
 	AnnexState(..),
+	PreferredContentMap,
 	new,
 	newState,
 	run,
@@ -47,6 +48,7 @@ import Types.BranchState
 import Types.TrustLevel
 import Types.Group
 import Types.Messages
+import Types.UUID
 import Utility.State
 import qualified Utility.Matcher
 import qualified Data.Map as M
@@ -74,6 +76,8 @@ instance MonadBaseControl IO Annex where
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
+type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
@@ -90,6 +94,7 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FilePath -> Annex Bool)
+	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
@@ -117,6 +122,7 @@ newState gitrepo = AnnexState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
+	, preferredcontentmap = Nothing
 	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing

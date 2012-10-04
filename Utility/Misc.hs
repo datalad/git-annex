@@ -42,11 +42,15 @@ firstLine = takeWhile (/= '\n')
 {- Splits a list into segments that are delimited by items matching
  - a predicate. (The delimiters are not included in the segments.) -}
 segment :: (a -> Bool) -> [a] -> [[a]]
-segment p l = map reverse $ go [] [] l
+segment p = filter (not . all p) . segmentDelim p
+
+{- Includes the delimiters as segments of their own. -}
+segmentDelim :: (a -> Bool) -> [a] -> [[a]]
+segmentDelim p l = map reverse $ go [] [] l
 	where
 		go c r [] = reverse $ c:r
 		go c r (i:is)
-			| p i = go [] (c:r) is
+			| p i = go [] ([i]:c:r) is
 			| otherwise = go (i:c) r is
 
 {- Given two orderings, returns the second if the first is EQ and returns

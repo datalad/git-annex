@@ -19,6 +19,7 @@ module Utility.Matcher (
 	Token(..),
 	Matcher,
 	token,
+	tokens,
 	generate,
 	match,
 	matchM,
@@ -47,6 +48,9 @@ token "not" = Not
 token "(" = Open
 token ")" = Close
 token t = error $ "unknown token " ++ t
+
+tokens :: [String]
+tokens = words "and or not ( )"
 
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op
