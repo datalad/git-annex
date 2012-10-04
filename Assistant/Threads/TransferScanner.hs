@@ -94,8 +94,9 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 	liftIO $ debug thisThread ["starting scan of", show visiblers]
 	void $ alertWhile dstatus (scanAlert visiblers) $ do
 		g <- runThreadState st $ fromRepo id
-		files <- LsFiles.inRepo [] g
+		(files, cleanup) <- LsFiles.inRepo [] g
 		go files
+		void cleanup
 		return True
 	liftIO $ debug thisThread ["finished scan of", show visiblers]
 	where

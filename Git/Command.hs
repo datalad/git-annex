@@ -89,10 +89,13 @@ pipeNullSplit params repo = do
 	where
 		sep = "\0"
 
-{- Does not wait on the git command when it's done, so produces
- - one zombie. -}
+
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
-pipeNullSplitZombie params repo = fst <$> pipeNullSplit params repo
+pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo
+
+{- Doesn't run the cleanup action. A zombie results. -}
+leaveZombie :: (a, IO Bool) -> a
+leaveZombie = fst
 
 {- Reaps any zombie git processes. 
  -

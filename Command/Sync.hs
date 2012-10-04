@@ -196,11 +196,13 @@ mergeFrom branch = do
 resolveMerge :: Annex Bool
 resolveMerge = do
 	top <- fromRepo Git.repoPath
-	merged <- all id <$> (mapM resolveMerge' =<< inRepo (LsFiles.unmerged [top]))
+	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
+	merged <- all id <$> mapM resolveMerge' fs
 	when merged $ do
 		Annex.Queue.flush
 		void $ inRepo $ Git.Command.runBool "commit"
 			[Param "-m", Param "git-annex automatic merge conflict fix"]
+	void $ liftIO cleanup
 	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool

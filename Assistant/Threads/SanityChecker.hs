@@ -76,7 +76,7 @@ check :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO 
 check st dstatus transferqueue changechan = do
 	g <- runThreadState st $ fromRepo id
 	-- Find old unstaged symlinks, and add them to git.
-	unstaged <- Git.LsFiles.notInRepo False ["."] g
+	(unstaged, cleanup) <- Git.LsFiles.notInRepo False ["."] g
 	now <- getPOSIXTime
 	forM_ unstaged $ \file -> do
 		ms <- catchMaybeIO $ getSymbolicLinkStatus file
@@ -85,6 +85,7 @@ check st dstatus transferqueue changechan = do
 				| isSymbolicLink s ->
 					addsymlink file ms
 			_ -> noop
+	void cleanup
 	return True
 	where
 		toonew timestamp now = now < (realToFrac (timestamp + slop) :: POSIXTime)

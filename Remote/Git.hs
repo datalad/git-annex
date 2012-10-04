@@ -20,7 +20,6 @@ import Utility.Rsync
 import Remote.Helper.Ssh
 import Types.Remote
 import qualified Git
-import qualified Git.Command
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Annex

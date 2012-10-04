@@ -25,12 +25,12 @@ import Git.Types
 import Git.Sha
 
 {- Scans for files that are checked into git at the specified locations. -}
-inRepo :: [FilePath] -> Repo -> IO [FilePath]
-inRepo l = pipeNullSplitZombie $ Params "ls-files --cached -z --" : map File l
+inRepo :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
 
 {- Scans for files at the specified locations that are not checked into git. -}
-notInRepo :: Bool -> [FilePath] -> Repo -> IO [FilePath]
-notInRepo include_ignored l repo = pipeNullSplitZombie params repo
+notInRepo :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+notInRepo include_ignored l repo = pipeNullSplit params repo
 	where
 		params = [Params "ls-files --others"] ++ exclude ++
 			[Params "-z --"] ++ map File l
@@ -39,44 +39,44 @@ notInRepo include_ignored l repo = pipeNullSplitZombie params repo
 			| otherwise = [Param "--exclude-standard"]
 
 {- Returns a list of all files that are staged for commit. -}
-staged :: [FilePath] -> Repo -> IO [FilePath]
+staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 staged = staged' []
 
 {- Returns a list of the files, staged for commit, that are being added,
  - moved, or changed (but not deleted), from the specified locations. -}
-stagedNotDeleted :: [FilePath] -> Repo -> IO [FilePath]
+stagedNotDeleted :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 
-staged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
-staged' ps l = pipeNullSplitZombie $ prefix ++ ps ++ suffix
+staged' :: [CommandParam] -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
 	where
 		prefix = [Params "diff --cached --name-only -z"]
 		suffix = Param "--" : map File l
 
 {- Returns a list of files that have unstaged changes. -}
-changedUnstaged :: [FilePath] -> Repo -> IO [FilePath]
-changedUnstaged l = pipeNullSplitZombie params
+changedUnstaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+changedUnstaged l = pipeNullSplit params
 	where
 		params = Params "diff --name-only -z --" : map File l
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
-typeChangedStaged :: [FilePath] -> Repo -> IO [FilePath]
+typeChangedStaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 typeChangedStaged = typeChanged' [Param "--cached"]
 
 {- Returns a list of the files in the specified locations whose type has
  - changed.  Files only staged for commit will not be included. -}
-typeChanged :: [FilePath] -> Repo -> IO [FilePath]
+typeChanged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 typeChanged = typeChanged' []
 
-typeChanged' :: [CommandParam] -> [FilePath] -> Repo -> IO [FilePath]
+typeChanged' :: [CommandParam] -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 typeChanged' ps l repo = do
-	fs <- pipeNullSplitZombie (prefix ++ ps ++ suffix) repo
+	(fs, cleanup) <- pipeNullSplit (prefix ++ ps ++ suffix) repo
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
 	let top = repoPath repo
 	cwd <- getCurrentDirectory
-	return $ map (\f -> relPathDirToFile cwd $ top </> f) fs
+	return (map (\f -> relPathDirToFile cwd $ top </> f) fs, cleanup)
 	where
 		prefix = [Params "diff --name-only --diff-filter=T -z"]
 		suffix = Param "--" : map File l
@@ -104,12 +104,12 @@ data Unmerged = Unmerged
  -   3 = them
  - If a line is omitted, that side deleted the file.
  -}
-unmerged :: [FilePath] -> Repo -> IO [Unmerged]
-unmerged l repo = reduceUnmerged [] . catMaybes . map parseUnmerged <$> list repo
+unmerged :: [FilePath] -> Repo -> IO ([Unmerged], IO Bool)
+unmerged l repo = do
+	(fs, cleanup) <- pipeNullSplit params repo
+	return (reduceUnmerged [] $ catMaybes $ map parseUnmerged fs, cleanup)
 	where
-		files = map File l
-		list = pipeNullSplitZombie $
-			Params "ls-files --unmerged -z --" : files
+		params = Params "ls-files --unmerged -z --" : map File l
 
 data InternalUnmerged = InternalUnmerged
 	{ isus :: Bool

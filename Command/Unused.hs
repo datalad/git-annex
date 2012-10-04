@@ -228,10 +228,14 @@ withKeysReferencedM a = withKeysReferenced' () calla
 		calla k _ = a k
 
 withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
-withKeysReferenced' initial a = go initial =<< files
+withKeysReferenced' initial a = do
+	(files, clean) <- getfiles
+	r <- go initial files
+	liftIO $ void clean
+	return r
 	where
-		files = ifM isBareRepo
-			( return []
+		getfiles = ifM isBareRepo
+			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
 				inRepo $ LsFiles.inRepo [top]

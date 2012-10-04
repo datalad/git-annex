@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Assistant.Threads.Committer where
 
@@ -174,8 +174,9 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
 		
 		findnew [] = return []
 		findnew pending = do
-			newfiles <- runThreadState st $
+			(!newfiles, cleanup) <- runThreadState st $
 				inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+			void cleanup
 			-- note: timestamp info is lost here
 			let ts = changeTime (pending !! 0)
 			return $ map (PendingAddChange ts) newfiles

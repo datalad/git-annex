@@ -30,3 +30,5 @@ are changed to  [ Param "-m", Param "git assistant".... or something like that.
 I have done this on my copy for testing it.
 
 For testing, I am also using two repositories on the same computer.  I set this up from the command line, as the web app does not seem to support syncing to two different git folders on the same computer.
+
+> [[done]]; all zombies are squelched now in the assistant. --[[Joey]]

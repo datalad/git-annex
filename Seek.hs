@@ -16,12 +16,14 @@ import Types.Command
 import Types.Key
 import qualified Annex
 import qualified Git
+import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import qualified Option
 
-seekHelper :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> [FilePath] -> Annex [FilePath]
-seekHelper a params = inRepo $ \g -> runPreserveOrder (`a` g) params
+seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
+seekHelper a params = inRepo $ \g ->
+	runPreserveOrder (\fs -> Git.Command.leaveZombie <$> a fs g) params
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
@@ -39,7 +41,7 @@ withFilesNotInGit a params = do
 		seekunless _ l = do
 			force <- Annex.getState Annex.force
 			g <- gitRepo
-			liftIO $ (\p -> LsFiles.notInRepo force p g) l
+			liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = map a . concat <$> liftIO (mapM get params)
@@ -72,7 +74,7 @@ withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 
-withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO [FilePath]) -> (FilePath -> CommandStart) -> CommandSeek
+withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = do
 	-- unlocked files have changed type from a symlink to a regular file
 	typechangedfiles <- seekHelper typechanged params

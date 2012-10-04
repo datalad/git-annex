@@ -83,8 +83,9 @@ updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
 	top <- fromRepo Git.repoPath
-	files <- inRepo $ LsFiles.inRepo [top]
+	(files, cleanup) <- inRepo $ LsFiles.inRepo [top]
 	forM_ files fixlink
+	void $ liftIO cleanup
 	where
 		fixlink f = do
 			r <- lookupFile1 f

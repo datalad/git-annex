@@ -262,7 +262,9 @@ files = do
 	update
 	withIndex $ do
 		bfiles <- inRepo $ Git.Command.pipeNullSplitZombie
-			[Params "ls-tree --name-only -r -z", Param $ show fullname]
+			[ Params "ls-tree --name-only -r -z"
+			, Param $ show fullname
+			]
 		jfiles <- getJournalledFiles
 		return $ jfiles ++ bfiles
 
