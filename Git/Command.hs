@@ -8,7 +8,7 @@
 module Git.Command where
 
 import System.Posix.Process (getAnyProcessStatus)
-import System.Process (std_in, env)
+import System.Process (std_out, env)
 
 import Common
 import Git
@@ -46,7 +46,8 @@ run subcommand params repo = assertLocal repo $
  -}
 pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
 pipeReadLazy params repo = assertLocal repo $ do
-	(Just h, _, _, pid) <- createProcess p { std_in = CreatePipe }
+	(_, Just h, _, pid) <- createProcess p { std_out = CreatePipe }
+	fileEncoding h
 	c <- hGetContents h
 	return (c, checkSuccessProcess pid)
 	where
