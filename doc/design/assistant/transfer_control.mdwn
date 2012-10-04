@@ -63,3 +63,21 @@ Some examples of using groups:
 
 The above is all well and good for those who enjoy boolean algebra, but
 how to configure these sorts of expressions in the webapp?
+
+## the state change problem
+
+Imagine that a trusted repo has setting like `not copies=trusted:2`
+This means that `git annex get --auto` should get files not in 2 trusted
+repos. But once it has, the file is in 3 trusted repos, and so `git annex
+drop --auto` should drop it again!
+
+How to fix? Can it even be fixed? Maybe care has to be taken when
+writing expressions, to avoid this problem. One that avoids it:
+`not (copies=trusted:2 or (in=here and trusted=here and copies=trusted:3))`
+
+Or, expressions could be automatically rewritten to avoid the problem.
+
+Or, perhaps simulation could be used to detect the problem. Before
+dropping, check the expression. Then simulate that the drop has happened.
+Does the expression now make it want to add it? Then don't drop it!
+How to implement this simulation?
