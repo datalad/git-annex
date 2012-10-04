@@ -93,7 +93,11 @@ pipeNullSplit params repo = do
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitZombie params repo = fst <$> pipeNullSplit params repo
 
-{- Reaps any zombie git processes. -}
+{- Reaps any zombie git processes. 
+ -
+ - Warning: Not thread safe. Anything that was expecting to wait
+ - on a process and get back an exit status is going to be confused
+ - if this reap gets there first. -}
 reap :: IO ()
 reap = do
 	-- throws an exception when there are no child processes

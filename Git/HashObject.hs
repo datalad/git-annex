@@ -39,7 +39,6 @@ hashFile h file = CoProcess.query h send receive
 hashObject :: ObjectType -> String -> Repo -> IO Sha
 hashObject objtype content repo = getSha subcmd $ do
 	s <- pipeWriteRead (map Param params) content repo
-	reap -- XXX unsure why this is needed, of if it is anymore
 	return s
 	where
 		subcmd = "hash-object"
