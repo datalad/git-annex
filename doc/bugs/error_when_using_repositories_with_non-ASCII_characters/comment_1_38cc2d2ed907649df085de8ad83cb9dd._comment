@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmcYryijvlF8bJvM_eZNSrUPEkMlxMDGTQ"
+ nickname="Thiago"
+ subject="The bug is actually something completely different!"
+ date="2012-10-04T03:53:57Z"
+ content="""
+Ok, this is a mix of luser error and a bug.
+
+I noticed that I wasn't providing a description in git annex init. So if I do \"git annex init foo\" in the first repository and \"git annex init bar\" in the clone, then git annex status works!
+
+So the bug is actually that you need to provide a description in git annex init, even though the man page says a description will be generated otherwise.
+
+(In my defense I hit the non-ACII characters bug with the git annex version in Ubuntu, and that one still has the same error even if a description is provided so this was fixed later).
+"""]]
