@@ -52,3 +52,8 @@ Using Ubuntu's original version (3.20120406) the error message is a bit differen
     trusted repositories: git-annex-shell: //tmp/acentuaÃ§Ã£o: changeWorkingDirectory: does not exist (No such file or directory)
     Command ssh ["-S","/var/tmp/acentua\231\227o/.git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost","git-annex-shell 'configlist' '//tmp/acentua\195\167\195\163o'"] failed; exit code 1
 
+> I think this is the last unvalid utf-8 bug in git-annex. At least,
+> the last one I hypothesized exists. It's in the union merge code. I will
+> try to look at it again soon; the last 2 times I looked at that code
+> I could not see an easy way to make it allow invalid utf-8 encoded data.
+> --[[Joey]] 
