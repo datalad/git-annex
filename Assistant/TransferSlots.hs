@@ -16,9 +16,10 @@ import Logs.Transfer
 
 import qualified Control.Exception as E
 import Control.Concurrent
+import qualified Control.Concurrent.MSemN as MSemN
 import Data.Typeable
 
-type TransferSlots = QSemN
+type TransferSlots = MSemN.MSemN Int
 
 {- A special exception that can be thrown to pause or resume a transfer, while
  - keeping its slot in use. -}
@@ -39,21 +40,21 @@ numSlots :: Int
 numSlots = 1
 
 newTransferSlots :: IO TransferSlots
-newTransferSlots = newQSemN numSlots
+newTransferSlots = MSemN.new numSlots
 
 {- Waits until a transfer slot becomes available, then runs a
  - TransferGenerator, and then runs the transfer action in its own thread. 
  -}
 inTransferSlot :: TransferSlotRunner
 inTransferSlot dstatus s gen = do
-	waitQSemN s 1
+	MSemN.wait s 1
 	runTransferThread dstatus s =<< gen
 
 {- Runs a TransferGenerator, and its transfer action,
  - without waiting for a slot to become available. -}
 inImmediateTransferSlot :: TransferSlotRunner
 inImmediateTransferSlot dstatus s gen = do
-	signalQSemN s (-1)
+	MSemN.signal s (-1)
 	runTransferThread dstatus s =<< gen
 
 {- Runs a transfer action, in an already allocated transfer slot.
@@ -67,7 +68,7 @@ inImmediateTransferSlot dstatus s gen = do
  - then rerunning the action.
  -}
 runTransferThread :: DaemonStatusHandle -> TransferSlots -> Maybe (Transfer, TransferInfo, IO ()) -> IO ()
-runTransferThread _ s  Nothing = signalQSemN s 1
+runTransferThread _ s  Nothing = MSemN.signal s 1
 runTransferThread dstatus s (Just (t, info, a)) = do
 	tid <- forkIO go
 	updateTransferInfo dstatus t $ info { transferTid = Just tid }
@@ -86,4 +87,4 @@ runTransferThread dstatus s (Just (t, info, a)) = do
 					Just ResumeTransfer -> go
 					_ -> done
 				_ -> done
-		done = signalQSemN s 1
+		done = MSemN.signal s 1

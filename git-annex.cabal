@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20121001
+Version: 3.20121002
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -49,7 +49,8 @@ Executable git-annex
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base >= 4.5 && < 4.7, monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
+   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
+   SafeSemaphore
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
