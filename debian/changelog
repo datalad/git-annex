@@ -10,6 +10,9 @@ git-annex (3.20121002) UNRELEASED; urgency=low
     of the repository configuration settings stored in the git-annex branch.
   * Only build-depend on libghc-clientsession-dev on arches that will have
     the webapp.
+  * Depend on and use the Haskell SafeSemaphore library, which provides
+    exception-safe versions of SampleVar and QSemN.
+    Thanks, Ben Gamari for an excellent patch set.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
 
