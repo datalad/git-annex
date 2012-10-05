@@ -1,5 +1,42 @@
 While dropbox allows modifying files in the folder, git-annex freezes
-them upon creation.
+them upon creation, using symlinks.
 
-To allow editing files in its folder, something like [[todo/smudge]] is
-needed, to get rid of the symlinks that stand in for the files.
+This is a core design simplification of git-annex.
+But it is problimatic too:
+
+* To allow directly editing files in its folder, something like [[todo/smudge]] is
+  needed, to get rid of the symlinks that stand in for the files.
+* OSX seems to have a [[lot_of_problems|bugs/OSX_alias_permissions_and_versions_problem]]
+  with stupid programs that follow symlinks and present the git-annex
+  hash filename to the user.
+* FAT sucks and doesn't support symlinks at all, so [[Android]] can't
+  have regular repos on it.
+
+One approach for this would be to hide the git repo away somewhere,
+and have the git-annex assistant watch a regular directory, with
+regular files.
+
+There would have to be a mapping from files to git-annex objects.
+And some intelligent way to determine when a file has been changed
+and no longer corresponds to its object. (Not expensive hashing every time,
+plz.)
+
+Since this leaves every file open to modification, any such repository
+probably needs to be considered untrusted by git-annex. So it doesn't
+leave its only copy of a file in such a repository, but instead
+syncs it to a proper git-annex repository.
+
+The assistant would make git commits still, of symlinks. It can already do
+that with without actual symlinks existing on disk. More difficult is
+handling merging; git merge wants a real repository with files it can
+really operate on. The assistant would need to calculate merges on its own,
+and update the regular directory to reflect changes made in the merge.
+
+Another massive problem with this idea is that it doesn't allow for
+[[partial_content]]. The symlinks that everyone loves to hate on are what
+make it possible for the contents of some files to not be present on
+disk, while the files are still in git and can be retreived as desired.
+With real files, some other standin for a missing file would be needed.
+Perhaps a 0 length, unreadable, unwritable file? On systems that
+support symlinks it could be a broken symlink like is used now, that
+is converted to a real file when it becomes present.
