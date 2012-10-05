@@ -15,3 +15,12 @@ So, I could be assisted by a replacement of the "downloads" menu of, say, Firefo
 Then I'll have the interesting literature there when I'm offline; the source URLs would be saved, so that they can be put into the references. Also, if I distribute this work with Git, at another location git-annex can be used to easily get all the literature again.
 
 (Hmmm... probably, the browser that this will be simplest for me to implement for is emacs-w3m; simply, some functions calling git-annex...)
+
+> This seems fairly doable to implement since the git-annex [[design/assistant]]
+> already has a webapp. So a javascript toolbar thing could be made that
+> submits the current url (or maybe links dragged into it?) to the webapp
+> for adding to the annex.
+> 
+> The only wrinkle is that the webapp runs under a new url each time
+> it starts, due to using a high port and embedding some auth token in the
+> url. --[[Joey]]
