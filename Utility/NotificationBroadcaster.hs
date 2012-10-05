@@ -26,10 +26,10 @@ module Utility.NotificationBroadcaster (
 import Common
 
 import Control.Concurrent.STM
-import Control.Concurrent.SampleVar
+import Control.Concurrent.MSampleVar
 
-{- One SampleVar per client. The TMVar is never empty, so never blocks. -}
-type NotificationBroadcaster = TMVar [SampleVar ()]
+{- One MSampleVar per client. The TMVar is never empty, so never blocks. -}
+type NotificationBroadcaster = TMVar [MSampleVar ()]
 
 newtype NotificationId = NotificationId Int
 	deriving (Read, Show, Eq, Ord)
@@ -47,7 +47,7 @@ newNotificationHandle b = NotificationHandle
 	<*> addclient
 	where
 		addclient = do
-			s <- newEmptySampleVar
+			s <- newEmptySV
 			atomically $ do
 				l <- takeTMVar b
 				putTMVar b $ l ++ [s]
@@ -67,11 +67,11 @@ sendNotification b = do
 	l <- atomically $ readTMVar b
 	mapM_ notify l
 	where
-		notify s = writeSampleVar s ()
+		notify s = writeSV s ()
 
 {- Used by a client to block until a new notification is available since
  - the last time it tried. -}
 waitNotification :: NotificationHandle -> IO ()
 waitNotification (NotificationHandle b (NotificationId i)) = do
 	l <- atomically $ readTMVar b
-	readSampleVar (l !! i)
+	readSV (l !! i)
