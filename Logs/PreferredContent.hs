@@ -20,7 +20,7 @@ import Common.Annex
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
-import Limit (limitInclude, limitExclude, limitIn, limitCopies, limitInBackend)
+import Limit (MatchFiles, limitInclude, limitExclude, limitIn, limitCopies, limitInBackend)
 import qualified Utility.Matcher
 
 {- Filename of preferred-content.log. -}
@@ -56,7 +56,7 @@ preferredContentMapRaw = simpleMap . parseLog Just
  - because the configuration is shared amoung repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: String -> Utility.Matcher.Matcher (FilePath -> Annex Bool)
+makeMatcher :: String -> Utility.Matcher.Matcher MatchFiles
 makeMatcher s
 	| null (lefts tokens) =  Utility.Matcher.generate $ rights tokens
  	| otherwise = Utility.Matcher.generate []
@@ -69,7 +69,7 @@ checkPreferredContentExpression s = case lefts $ map parseToken $ tokenizeMatche
 	[] -> Nothing
 	l -> Just $ unwords $ map ("Parse failure: " ++) l
 
-parseToken :: String -> Either String (Utility.Matcher.Token (FilePath -> Annex Bool))
+parseToken :: String -> Either String (Utility.Matcher.Token MatchFiles)
 parseToken t
 	| any (== t) Utility.Matcher.tokens = Right $ Utility.Matcher.token t
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k m

@@ -52,6 +52,7 @@ import Types.UUID
 import Utility.State
 import qualified Utility.Matcher
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 -- git-annex's monad
 newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
@@ -76,7 +77,7 @@ instance MonadBaseControl IO Annex where
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FilePath -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState

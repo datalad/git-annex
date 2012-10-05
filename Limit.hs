@@ -18,13 +18,15 @@ import qualified Utility.Matcher
 import qualified Remote
 import qualified Backend
 import Annex.Content
+import Annex.UUID
 import Logs.Trust
 import Types.TrustLevel
 import Logs.Group
 import Utility.HumanTime
 
-type Limit = Utility.Matcher.Token (FilePath -> Annex Bool)
-type MkLimit = String -> Either String (FilePath -> Annex Bool)
+type MatchFiles = AssumeNotPresent -> FilePath -> Annex Bool
+type MkLimit = String -> Either String MatchFiles
+type AssumeNotPresent = S.Set UUID
 
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
@@ -46,7 +48,7 @@ getMatcher' = do
 			return matcher
 
 {- Adds something to the limit list, which is built up reversed. -}
-add :: Limit -> Annex ()
+add :: Utility.Matcher.Token (FilePath -> Annex Bool) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
 	where
 		prepend (Left ls) = Left $ l:ls
@@ -57,22 +59,22 @@ addToken :: String -> Annex ()
 addToken = add . Utility.Matcher.token
 
 {- Adds a new limit. -}
-addLimit :: Either String (FilePath -> Annex Bool) -> Annex ()
-addLimit = either error (add . Utility.Matcher.Operation)
+addLimit :: Either String MatchFiles -> Annex ()
+addLimit = either error (\l -> add $ Utility.Matcher.Operation $ l S.empty)
 
 {- Add a limit to skip files that do not match the glob. -}
 addInclude :: String -> Annex ()
 addInclude = addLimit . limitInclude
 
 limitInclude :: MkLimit
-limitInclude glob = Right $ return . matchglob glob
+limitInclude glob = Right $ const $ return . matchglob glob
 
 {- Add a limit to skip files that match the glob. -}
 addExclude :: String -> Annex ()
 addExclude = addLimit . limitExclude
 
 limitExclude :: MkLimit
-limitExclude glob = Right $ return . not . matchglob glob
+limitExclude glob = Right $ const $ return . not . matchglob glob
 
 matchglob :: String -> FilePath -> Bool
 matchglob glob f = isJust $ match cregex f []
@@ -86,15 +88,25 @@ addIn :: String -> Annex ()
 addIn = addLimit . limitIn
 
 limitIn :: MkLimit
-limitIn name = Right $ check $ if name == "." then inAnnex else inremote
+limitIn name = Right $ \notpresent -> check $
+	if name == "."
+		then inhere notpresent
+		else inremote notpresent
 	where
 		check a = Backend.lookupFile >=> handle a
 		handle _ Nothing = return False
 		handle a (Just (key, _)) = a key
-		inremote key = do
+		inremote notpresent key = do
 			u <- Remote.nameToUUID name
 			us <- Remote.keyLocations key
-			return $ u `elem` us
+			return $ u `elem` us && u `S.notMember` notpresent
+		inhere notpresent key
+			| S.null notpresent = inAnnex key
+			| otherwise = do
+				u <- getUUID
+				if u `S.member` notpresent
+					then return False
+					else inAnnex key
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
@@ -111,11 +123,12 @@ limitCopies want = case split ":" want of
 	where
 		go num good = case readish num of
 			Nothing -> Left "bad number for copies"
-			Just n -> Right $ check n good
-		check n good = Backend.lookupFile >=> handle n good
-		handle _ _ Nothing = return False
-		handle n good (Just (key, _)) = do
-			us <- filterM good =<< Remote.keyLocations key
+			Just n -> Right $ \notpresent ->
+				Backend.lookupFile >=> handle n good notpresent
+		handle _ _ _ Nothing = return False
+		handle n good notpresent (Just (key, _)) = do
+			us <- filter (`S.notMember` notpresent)
+				<$> (filterM good =<< Remote.keyLocations key)
 			return $ length us >= n
 		checktrust t u = (== t) <$> lookupTrust u
 		checkgroup g u = S.member g <$> lookupGroups u
@@ -125,7 +138,7 @@ addInBackend :: String -> Annex ()
 addInBackend = addLimit . limitInBackend
 
 limitInBackend :: MkLimit
-limitInBackend name = Right $ Backend.lookupFile >=> check
+limitInBackend name = Right $ const $ Backend.lookupFile >=> check
 	where
 		wanted = Backend.lookupBackendName name
 		check = return . maybe False ((==) wanted . snd)
@@ -135,7 +148,7 @@ addTimeLimit s = do
 	let seconds = fromMaybe (error "bad time-limit") $ parseDuration s
 	start <- liftIO getPOSIXTime
 	let cutoff = start + seconds
-	addLimit $ Right $ const $ do
+	addLimit $ Right $ const $ const $ do
 		now <- liftIO getPOSIXTime
 		if now > cutoff
 			then do
