@@ -18,3 +18,5 @@ Please provide any additional information below.
 I've checked your code, seems to complain about the dash '-' in the email address
 bachir@Bachirs-iMac.local
 
+> This bug is already fixed, the fix is in the 
+> 3.20121001 release. [[done]] --[[Joey]] 
