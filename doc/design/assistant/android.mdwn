@@ -37,3 +37,8 @@ jobs when low on battery or run flat out when plugged in.
 
 The app should be aware of network status, and avoid expensive data
 transfers when not on wifi. This may need to be configurable.
+
+## FAT
+
+Due to use of the fat filesystem, which doesn't do symlinks, [[nosymlink]]
+is probably needed.
