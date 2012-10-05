@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.149"
+ subject="comment 2"
+ date="2012-10-05T15:08:26Z"
+ content="""
+Yes, I think checking the future only for drops is both stable and equivilant to the other choices. 
+
+Disregarding the target solves the problem for the current set of expressions. There may be future expressions or operations where that does not hold. For example, if move supported --auto (which it does not), you'd need to disregard both sides.
+
+That method would make it impossible to do some possibly useful things. \"in=here or (not copies=3)\"
+
+The real problem with it is that existing options like --copies and --in already take all repos into account, so this would potentally lead to two divergent DSLs being used by git-annex, which would probably be confusing.
+"""]]
