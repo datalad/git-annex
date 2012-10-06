@@ -164,10 +164,11 @@ tooManyWatches hook dir = do
 			]
 
 querySysctl :: Read a => [CommandParam] -> IO (Maybe a)
-querySysctl ps = do
-	v <- catchMaybeIO $ readProcess "sysctl" (toCommand ps)
-	case v of
-		Nothing -> return Nothing
-		Just s -> return $ parsesysctl s
+querySysctl ps = getM go ["sysctl", "/sbin/sysctl", "/usr/sbin/sysctl"]
 	where
+		go p = do
+			v <- catchMaybeIO $ readProcess p (toCommand ps)
+			case v of
+				Nothing -> return Nothing
+				Just s -> return $ parsesysctl s
 		parsesysctl s = readish =<< lastMaybe (words s)
