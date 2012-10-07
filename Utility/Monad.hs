@@ -16,6 +16,12 @@ firstM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 firstM _ [] = return Nothing
 firstM p (x:xs) = ifM (p x) (return $ Just x , firstM p xs)
 
+{- Runs the action on values from the list until it succeeds, returning
+ - its result. -}
+getM :: Monad m => (a -> m (Maybe b)) -> [a] -> m (Maybe b)
+getM _ [] = return Nothing
+getM p (x:xs) = maybe (getM p xs) (return . Just) =<< p x
+
 {- Returns true if any value in the list satisfies the predicate,
  - stopping once one is found. -}
 anyM :: Monad m => (a -> m Bool) -> [a] -> m Bool

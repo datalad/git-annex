@@ -48,6 +48,7 @@ uninitialize :: Annex ()
 uninitialize = do
 	gitPreCommitHookUnWrite
 	removeRepoUUID
+	removeVersion
 
 {- Will automatically initialize if there is already a git-annex
    branch from somewhere. Otherwise, require a manual init

@@ -13,6 +13,7 @@ git-annex (3.20121002) UNRELEASED; urgency=low
   * Depend on and use the Haskell SafeSemaphore library, which provides
     exception-safe versions of SampleVar and QSemN.
     Thanks, Ben Gamari for an excellent patch set.
+  * uninit: Unset annex.version. Closes: #689852
 
  -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
 

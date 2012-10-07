@@ -23,6 +23,9 @@ The webapp is a web server that displays a shiny interface.
 
 * there could be a UI to export a file, which would make it be served up
   over http by the web app
+* there could be a UI (some javascript thing) in the web browser to
+  submit urls to the web app to be added to the annex and downloaded.
+  See: [[todo/wishlist:_an_"assistant"_for_web-browsing_--_tracking_the_sources_of_the_downloads]]
 * Display the `inotify max_user_watches` exceeded message. **done**
 * Display something sane when kqueue runs out of file descriptors.
 * allow renaming git remotes and/or setting git-annex repo descriptions

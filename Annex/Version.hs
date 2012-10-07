@@ -33,6 +33,9 @@ getVersion = handle <$> getConfig versionField ""
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion
 
+removeVersion :: Annex ()
+removeVersion = unsetConfig versionField
+
 checkVersion :: Version -> Annex ()
 checkVersion v
 	| v `elem` supportedVersions = noop
