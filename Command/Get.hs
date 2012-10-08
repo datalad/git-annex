@@ -24,7 +24,7 @@ seek = [withField Command.Move.fromOption Remote.byName $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = stopUnless (checkAuto $ shouldGet file key) $
+start from file (key, _) = stopUnless ((not <$> inAnnex key) <&&> checkAuto (wantGet $ Just file)) $
 	autoCopies file key (<) $
 		case from of
 			Nothing -> go $ perform key file

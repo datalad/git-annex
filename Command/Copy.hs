@@ -31,5 +31,5 @@ start to from file (key, backend) = autoCopies file key (<) $
 		Command.Move.start to from False file (key, backend)
 	where
 		shouldCopy = case to of
-			Nothing -> checkAuto $ shouldGet file key
-			Just r -> checkAuto $ shouldSend r file
+			Nothing -> checkAuto $ wantGet (Just file)
+			Just r -> checkAuto $ wantSend (Remote.uuid r) (Just file)

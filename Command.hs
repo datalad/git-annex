@@ -22,6 +22,7 @@ module Command (
 	numCopies,
 	autoCopies,
 	autoCopiesWith,
+	checkAuto,
 	module ReExported
 ) where
 
@@ -137,3 +138,7 @@ autoCopiesWith file key vs a = do
 			if length have `vs` needed
 				then a numcopiesattr
 				else stop
+
+checkAuto :: Annex Bool -> Annex Bool
+checkAuto checker = ifM (Annex.getState Annex.auto)
+	( checker , return True )

@@ -8,43 +8,33 @@
 module Annex.Wanted where
 
 import Common.Annex
-import qualified Remote
-import Annex.Content
 import Logs.PreferredContent
 import Git.FilePath
 import qualified Annex
 import Annex.UUID
+import Types.Remote
 
 import qualified Data.Set as S
 
-checkAuto :: (Bool -> Annex Bool) -> Annex Bool
-checkAuto a = Annex.getState Annex.auto >>= a
-
-{- A file's content should be gotten if it's not already present.
- - In auto mode, only get files that are preferred content. -}
-shouldGet :: FilePath -> Key -> Bool -> Annex Bool
-shouldGet file key auto = (not <$> inAnnex key) <&&> want
-	where
-		want
-			| auto = do
-				fp <- inRepo $ toTopFilePath file
-				isPreferredContent Nothing S.empty fp
-			| otherwise = return True
-
-{- A file's content should be sent to a remote.
- - In auto mode, only send files that are preferred content of the remote. -}
-shouldSend :: Remote -> FilePath -> Bool -> Annex Bool
-shouldSend _ _ False = return True
-shouldSend to file True = do
+{- Check if a file is preferred content for the local repository. -}
+wantGet :: AssociatedFile -> Annex Bool
+wantGet Nothing = return True
+wantGet (Just file) = do
 	fp <- inRepo $ toTopFilePath file
-	isPreferredContent (Just $ Remote.uuid to) S.empty fp
+	isPreferredContent Nothing S.empty fp
 
-{- A file's content should be dropped normally.
- - (This does not check numcopies though.)
- - In auto mode, hold on to preferred content. -}
-shouldDrop :: Maybe Remote -> FilePath -> Bool -> Annex Bool
-shouldDrop _ _ False = return True
-shouldDrop from file True = do
+{- Check if a file is preferred content for a remote. -}
+wantSend :: UUID -> AssociatedFile -> Annex Bool
+wantSend _ Nothing = return True
+wantSend to (Just file) = do
 	fp <- inRepo $ toTopFilePath file
-	u <- maybe getUUID (return . Remote.uuid) from
+	isPreferredContent (Just to) S.empty fp
+
+{- Check if a file can be dropped, maybe from a remote.
+ - Don't drop files that are preferred content. -}
+wantDrop :: Maybe UUID -> AssociatedFile -> Annex Bool
+wantDrop _ Nothing = return True
+wantDrop from (Just file) = do
+	fp <- inRepo $ toTopFilePath file
+	u <- maybe getUUID (return . id) from
 	not <$> isPreferredContent (Just u) (S.singleton u) fp
