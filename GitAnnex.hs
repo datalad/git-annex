@@ -147,6 +147,10 @@ options = Option.common ++
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"skip files not using a key-value backend"
+	, Option [] ["largerthan"] (ReqArg Limit.addLargerThan paramName)
+		"skip files larger than a size"
+	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramName)
+		"skip files smaller than a size"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
 	] ++ Option.matcher

@@ -21,7 +21,7 @@ import Common.Annex
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
-import Limit (MatchFiles, AssumeNotPresent, limitInclude, limitExclude, limitIn, limitCopies, limitInBackend)
+import Limit
 import qualified Utility.Matcher
 import Annex.UUID
 import Git.FilePath
@@ -96,6 +96,8 @@ parseToken t
 			, ("in", limitIn)
 			, ("copies", limitCopies)
 			, ("backend", limitInBackend)
+			, ("largerthan", limitSize (>))
+			, ("smallerthan", limitSize (<))
 			]
 		use a = Utility.Matcher.Operation <$> a v
 

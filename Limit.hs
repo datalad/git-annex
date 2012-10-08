@@ -21,8 +21,10 @@ import Annex.Content
 import Annex.UUID
 import Logs.Trust
 import Types.TrustLevel
+import Types.Key
 import Logs.Group
 import Utility.HumanTime
+import Utility.DataUnits
 
 type MatchFiles = AssumeNotPresent -> FilePath -> Annex Bool
 type MkLimit = String -> Either String MatchFiles
@@ -142,6 +144,21 @@ limitInBackend name = Right $ const $ Backend.lookupFile >=> check
 	where
 		wanted = Backend.lookupBackendName name
 		check = return . maybe False ((==) wanted . snd)
+
+{- Adds a limit to skip files that are too large or too small -}
+addLargerThan :: String -> Annex ()
+addLargerThan = addLimit . limitSize (>)
+
+addSmallerThan :: String -> Annex ()
+addSmallerThan = addLimit . limitSize (<)
+
+limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit
+limitSize vs s = case readSize dataUnits s of
+	Nothing -> Left "bad size"
+	Just sz -> Right $ const $ Backend.lookupFile >=> check sz
+	where
+		check _ Nothing = return False
+		check sz (Just (key, _)) = return $ keySize key `vs` Just sz
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

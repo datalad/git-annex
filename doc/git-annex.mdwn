@@ -643,6 +643,15 @@ file contents are present at either of two repositories.
   Matches only files whose content is stored using the specified key-value
   backend.
 
+* --smallerthan=size
+* --largerthan=size
+
+  Matches only files whose content is smaller than, or larger than the
+  specified size.
+ 
+  The size can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
 * --not
 
   Inverts the next file matching option. For example, to only act on

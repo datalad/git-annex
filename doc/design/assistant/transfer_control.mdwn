@@ -8,9 +8,9 @@ But often the remote is just a removable drive or a cloud remote,
 that has a limited size. This page is about making the assistant do
 something smart with such remotes.
 
-## specifying what data belongs on a remote
+## specifying what data a remote prefers to contain **done**
 
-Imagine a per-remote `annex-accept` setting, that matches things that
+Imagine a per-remote preferred content setting, that matches things that
 should be stored on the remote.
 
 For example, a MP3 player might use:
@@ -23,13 +23,9 @@ A USB drive that is carried between three laptops and used to sync data
 between them might use: `not (in=laptop1 and in=laptop2 and in=laptop3)`
 
 In this case, transferring data from the usb repo should
-check if `annex-accept` then rejects the data, and if so, drop it
+check if preferred content settings rejects the data, and if so, drop it
 from the repo. So once all three laptops have the data, it is
 pruned from the transfer drive.
-
-It may make sense to have annex-accept info also be stored in the git-annex
-branch, for settings that should apply to a repo globally. Does it make
-sense to have local configuration too?
 
 ## repo groups
 
