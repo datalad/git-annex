@@ -21,7 +21,7 @@ module Command (
 	isBareRepo,
 	numCopies,
 	autoCopies,
-	autoCopiesWith,
+	autoCopiesDrop,
 	module ReExported
 ) where
 
@@ -38,6 +38,11 @@ import Usage as ReExported
 import Logs.Trust
 import Config
 import Annex.CheckAttr
+import Logs.PreferredContent
+import Git.FilePath
+import Annex.UUID
+
+import qualified Data.Set as S
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
@@ -113,7 +118,8 @@ numCopies file = readish <$> checkAttr "annex.numcopies" file
  -
  - In auto mode, first checks that the number of known
  - copies of the key is > or < than the numcopies setting, before running
- - the action. -}
+ - the action. Also checks any preferred content settings.
+ -}
 autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> CommandStart -> CommandStart
 autoCopies file key vs a = Annex.getState Annex.auto >>= go
 	where
@@ -122,10 +128,20 @@ autoCopies file key vs a = Annex.getState Annex.auto >>= go
 			numcopiesattr <- numCopies file
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed then a else stop
+			if length have `vs` needed
+				then do
+					fp <- inRepo $ toTopFilePath file
+					ifM (isPreferredContent Nothing S.empty fp)
+						( a, stop )
+				else stop
 
-autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
-autoCopiesWith file key vs a = do
+{- For dropping, supplies the number of known copies to the action.
+ - 
+ - In auto mode, checks the number of known copies.
+ - Also, checks if the repo would prefer to retain the content.
+ -}
+autoCopiesDrop :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
+autoCopiesDrop file key vs a = do
 	numcopiesattr <- numCopies file
 	Annex.getState Annex.auto >>= auto numcopiesattr
 	where
@@ -133,4 +149,10 @@ autoCopiesWith file key vs a = do
 		auto numcopiesattr True = do
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed then a numcopiesattr else stop
+			if length have `vs` needed
+				then do
+					fp <- inRepo $ toTopFilePath file
+					u <- getUUID
+					ifM (isPreferredContent (Just u) (S.singleton u) fp)
+						( stop, a numcopiesattr )
+				else stop

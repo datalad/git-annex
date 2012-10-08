@@ -23,6 +23,7 @@ module Utility.Matcher (
 	generate,
 	match,
 	matchM,
+	matchM2,
 	matchesAny
 ) where
 
@@ -95,6 +96,15 @@ matchM m v = go m
 		go (MOr m1 m2) =  go m1 <||> go m2
 		go (MNot m1) = liftM not (go m1)
 		go (MOp o) = o v
+
+matchM2 :: Monad m => Matcher (v1 -> v2 -> m Bool) -> v1 -> v2 -> m Bool
+matchM2 m v1 v2 = go m
+	where
+		go MAny = return True
+		go (MAnd m1 m2) = go m1 <&&> go m2
+		go (MOr m1 m2) =  go m1 <||> go m2
+		go (MNot m1) = liftM not (go m1)
+		go (MOp o) = o v1 v2
 
 {- Checks is a matcher contains no limits, and so (presumably) matches
  - anything. Note that this only checks the trivial case; it is possible

@@ -38,3 +38,8 @@ work toward having two copies of your files.
 
 The --auto option can also be used with the copy command,
 again this lets git-annex decide whether to actually copy content.
+
+The above shows how to use --auto to manage content based on the number
+of copies. It's also possible to configure, on a per-repository basis,
+which content is desired. Then --auto also takes that into account
+see [[preferred_content]] for details.

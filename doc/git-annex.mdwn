@@ -502,7 +502,8 @@ subdirectories).
 * --auto
 
   Enables automatic mode. Commands that get, drop, or move file contents
-  will only do so when needed to help satisfy the setting of annex.numcopies.
+  will only do so when needed to help satisfy the setting of annex.numcopies,
+  and preferred content configuration.
 
 * --quiet
 

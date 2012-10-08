@@ -7,6 +7,7 @@
 
 module Logs.PreferredContent (
 	preferredContentSet,
+	isPreferredContent,
 	preferredContentMap,
 	preferredContentMapRaw,
 	checkPreferredContentExpression,
@@ -20,8 +21,10 @@ import Common.Annex
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
-import Limit (MatchFiles, limitInclude, limitExclude, limitIn, limitCopies, limitInBackend)
+import Limit (MatchFiles, AssumeNotPresent, limitInclude, limitExclude, limitIn, limitCopies, limitInBackend)
 import qualified Utility.Matcher
+import Annex.UUID
+import Git.FilePath
 
 {- Filename of preferred-content.log. -}
 preferredContentLog :: FilePath
@@ -35,6 +38,18 @@ preferredContentSet uuid@(UUID _) val = do
 		showLog id . changeLog ts uuid val . parseLog Just
 	Annex.changeState $ \s -> s { Annex.groupmap = Nothing }
 preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
+
+{- Checks if a file is preferred content for the specified repository
+ - (or the current repository if none is specified). -}
+isPreferredContent :: Maybe UUID -> AssumeNotPresent -> TopFilePath -> Annex Bool
+isPreferredContent mu notpresent file = do
+	u <- maybe getUUID return mu
+	m <- preferredContentMap
+	case M.lookup u m of
+		Nothing -> return True
+		Just matcher ->
+			Utility.Matcher.matchM2 matcher notpresent $
+				getTopFilePath file
 
 {- Read the preferredContentLog into a map. The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap

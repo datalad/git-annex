@@ -1,0 +1,37 @@
+git-annex tries to ensure that the configured number of [[copies]] of your
+data always exist, and leaves it up to you to use commands like `git annex
+get` and `git annex drop` to move the content to the repositories you want
+to contain it. But sometimes, it can be good to have more fine-grained
+control over which repositories prefer to have which content. Configuring
+this allows `git annex get --auto`, `git annex drop --auto`, etc to do
+smarter things.
+
+Currently, preferred content settings can only be edited using `git
+annex vicfg`. Each repository can have its own settings, and other
+repositories may also try to honor those settings. So there's no local
+`.git/config` setting it.
+
+The idea is that you write an expression that files are matched against.
+If a file matches, it's preferred to have its content stored in the
+repository. If it doesn't, it's preferred to drop its content from
+the repository (if there are enough copies elsewhere).
+
+The expressions are very similar to the file matching options documented
+on the [[git-annex]] man page. At the command line, you can use those
+options in commands like this:
+
+	git annex get --include='*.mp3' --and -'(' --not --in=archive -')'
+
+The equivilant preferred content expression looks like this:
+
+	include=*.mp3 and (not in=archive)
+
+So, just remove the dashes, basically.
+
+Note that while --include and --exclude match files relative to the current
+directory, preferred content expressions always match files relative to the
+top of the git repository. Perhaps you put files into `out/` directories
+when you're done with them. Then you could configure your laptop to prefer
+to not retain those files, like this:
+
+	exclude=*/out/*

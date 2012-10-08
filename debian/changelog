@@ -8,6 +8,11 @@ git-annex (3.20121002) UNRELEASED; urgency=low
     as normal files.
   * vicfg: New command, allows editing (or simply viewing) most
     of the repository configuration settings stored in the git-annex branch.
+  * Added preferred content expressions, configurable using vicfg.
+  * get --auto, copy --auto: If the local repository has preferred content
+    configured, only get that content.
+  * drop --auto: If the local repository has preferred content configured,
+    drop content that is not preferred, if numcopies allows.
   * Only build-depend on libghc-clientsession-dev on arches that will have
     the webapp.
   * uninit: Unset annex.version. Closes: #689852
