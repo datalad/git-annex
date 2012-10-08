@@ -47,4 +47,4 @@ shouldDrop _ _ False = return True
 shouldDrop from file True = do
 	fp <- inRepo $ toTopFilePath file
 	u <- maybe getUUID (return . Remote.uuid) from
-	isPreferredContent (Just u) (S.singleton u) fp
+	not <$> isPreferredContent (Just u) (S.singleton u) fp
