@@ -11,6 +11,7 @@ import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 import Common.Annex
 import qualified Annex
@@ -22,6 +23,7 @@ import Annex.UUID
 import Logs.Trust
 import Types.TrustLevel
 import Types.Key
+import Types.Group
 import Logs.Group
 import Utility.HumanTime
 import Utility.DataUnits
@@ -134,6 +136,28 @@ limitCopies want = case split ":" want of
 			return $ length us >= n
 		checktrust t u = (== t) <$> lookupTrust u
 		checkgroup g u = S.member g <$> lookupGroups u
+
+{- Adds a limit to skip files not believed to be present in all
+ - repositories in the specified group. -}
+addInGroup :: String -> Annex ()
+addInGroup groupname = do
+	m <- groupMap
+	addLimit $ limitInGroup m groupname
+
+limitInGroup :: GroupMap -> MkLimit
+limitInGroup m groupname
+	| S.null want = Right $ const $ const $ return True
+	| otherwise = Right $ \notpresent ->
+		Backend.lookupFile >=> check notpresent
+	where
+		want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
+		check _ Nothing = return False
+		check notpresent (Just (key, _))
+			-- optimisation: Check if a wanted uuid is notpresent.
+			| not (S.null (S.intersection want notpresent))	= return False
+			| otherwise = do
+				present <- S.fromList <$> Remote.keyLocations key
+				return $ S.null $ want `S.difference` present
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()

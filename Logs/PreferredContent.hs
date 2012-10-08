@@ -25,6 +25,8 @@ import Limit
 import qualified Utility.Matcher
 import Annex.UUID
 import Git.FilePath
+import Types.Group
+import Logs.Group
 
 {- Filename of preferred-content.log. -}
 preferredContentLog :: FilePath
@@ -54,11 +56,12 @@ isPreferredContent mu notpresent file = do
 {- Read the preferredContentLog into a map. The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap
 preferredContentMap = do
+	groupmap <- groupMap
 	cached <- Annex.getState Annex.preferredcontentmap
 	case cached of
 		Just m -> return m
 		Nothing -> do
-			m <- simpleMap . parseLog (Just . makeMatcher)
+			m <- simpleMap . parseLog (Just . makeMatcher groupmap)
 				<$> Annex.Branch.get preferredContentLog
 			Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 			return m
@@ -71,21 +74,22 @@ preferredContentMapRaw = simpleMap . parseLog Just
  - because the configuration is shared amoung repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: String -> Utility.Matcher.Matcher MatchFiles
-makeMatcher s
+makeMatcher :: GroupMap -> String -> Utility.Matcher.Matcher MatchFiles
+makeMatcher groupmap s
 	| null (lefts tokens) =  Utility.Matcher.generate $ rights tokens
  	| otherwise = Utility.Matcher.generate []
 	where
-		tokens = map parseToken $ tokenizeMatcher s
+		tokens = map (parseToken groupmap) (tokenizeMatcher s)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: String -> Maybe String
-checkPreferredContentExpression s = case lefts $ map parseToken $ tokenizeMatcher s of
-	[] -> Nothing
-	l -> Just $ unwords $ map ("Parse failure: " ++) l
+checkPreferredContentExpression s = 
+	case lefts $ map (parseToken emptyGroupMap) (tokenizeMatcher s) of
+		[] -> Nothing
+		l -> Just $ unwords $ map ("Parse failure: " ++) l
 
-parseToken :: String -> Either String (Utility.Matcher.Token MatchFiles)
-parseToken t
+parseToken :: GroupMap -> String -> Either String (Utility.Matcher.Token MatchFiles)
+parseToken groupmap t
 	| any (== t) Utility.Matcher.tokens = Right $ Utility.Matcher.token t
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k m
 	where
@@ -95,9 +99,10 @@ parseToken t
 			, ("exclude", limitExclude)
 			, ("in", limitIn)
 			, ("copies", limitCopies)
-			, ("backend", limitInBackend)
+			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
+			, ("ingroup", limitInGroup groupmap)
 			]
 		use a = Utility.Matcher.Operation <$> a v
 

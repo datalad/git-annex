@@ -643,6 +643,11 @@ file contents are present at either of two repositories.
   Matches only files whose content is stored using the specified key-value
   backend.
 
+* --ingroup=groupname
+
+  Matches only files that git-annex believes are present in all repositories
+  in the specified group.
+
 * --smallerthan=size
 * --largerthan=size
 

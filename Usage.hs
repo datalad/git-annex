@@ -85,6 +85,8 @@ paramFile :: String
 paramFile = "FILE"
 paramGroup :: String
 paramGroup = "GROUP"
+paramSize :: String
+paramSize = "SIZE"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String

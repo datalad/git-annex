@@ -27,7 +27,7 @@ check if preferred content settings rejects the data, and if so, drop it
 from the repo. So once all three laptops have the data, it is
 pruned from the transfer drive.
 
-## repo groups
+## repo groups **done**
 
 Seems like git-annex needs a way to know the groups of repos. Some
 groups:
@@ -53,14 +53,14 @@ Some examples of using groups:
 
 * Make a cloud repo only hold data until all known clients have a copy:
 
-  `not inall(enduser)`
+  `not ingroup(enduser)`
 
 ## configuration
 
 The above is all well and good for those who enjoy boolean algebra, but
 how to configure these sorts of expressions in the webapp?
 
-## the state change problem
+## the state change problem **done**
 
 Imagine that a trusted repo has setting like `not copies=trusted:2`
 This means that `git annex get --auto` should get files not in 2 trusted
@@ -77,3 +77,5 @@ Or, perhaps simulation could be used to detect the problem. Before
 dropping, check the expression. Then simulate that the drop has happened.
 Does the expression now make it want to add it? Then don't drop it!
 How to implement this simulation?
+
+> Solved, fwiw..

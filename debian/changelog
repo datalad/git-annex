@@ -1,11 +1,10 @@
 git-annex (3.20121002) UNRELEASED; urgency=low
 
   * group, ungroup: New commands to indicate groups of repositories.
-  * --copies=group:number can now be used to match files that are present
-    in a specified number of repositories in a group.
   * watch, assistant: It's now safe to git annex unlock files while
     the watcher is running, as well as modify files checked into git
-    as normal files.
+    as normal files. Additionally, .gitignore settings are now honored.
+    Closes: #689979
   * vicfg: New command, allows editing (or simply viewing) most
     of the repository configuration settings stored in the git-annex branch.
   * Added preferred content expressions, configurable using vicfg.
@@ -13,7 +12,9 @@ git-annex (3.20121002) UNRELEASED; urgency=low
     configured, only get that content.
   * drop --auto: If the local repository has preferred content configured,
     drop content that is not preferred, when numcopies allows.
-  * Added --smallerthan and --largerthan limits.
+  * --copies=group:number can now be used to match files that are present
+    in a specified number of repositories in a group.
+  * Added --smallerthan, --largerthan, and --inall limits.
   * Only build-depend on libghc-clientsession-dev on arches that will have
     the webapp.
   * uninit: Unset annex.version. Closes: #689852

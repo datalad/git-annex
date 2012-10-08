@@ -7,7 +7,8 @@
 
 module Types.Group (
 	Group,
-	GroupMap(..)
+	GroupMap(..),
+	emptyGroupMap
 ) where
 
 import Types.UUID
@@ -21,3 +22,6 @@ data GroupMap = GroupMap
 	{ groupsByUUID :: M.Map UUID (S.Set Group)
 	, uuidsByGroup :: M.Map Group (S.Set UUID)
 	}
+
+emptyGroupMap :: GroupMap
+emptyGroupMap = GroupMap M.empty M.empty
