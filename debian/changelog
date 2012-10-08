@@ -8,10 +8,11 @@ git-annex (3.20121002) UNRELEASED; urgency=low
   * vicfg: New command, allows editing (or simply viewing) most
     of the repository configuration settings stored in the git-annex branch.
   * Added preferred content expressions, configurable using vicfg.
-  * get --auto, copy --auto: If the local repository has preferred content
+  * get --auto: If the local repository has preferred content
     configured, only get that content.
   * drop --auto: If the repository the content is dropped from has
     preferred content configured, drop only content that is not preferred.
+  * copy --auto: Only transfer content that the destination repository prefers.
   * --copies=group:number can now be used to match files that are present
     in a specified number of repositories in a group.
   * Added --smallerthan, --largerthan, and --inall limits.
