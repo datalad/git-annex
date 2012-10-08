@@ -21,7 +21,7 @@ module Command (
 	isBareRepo,
 	numCopies,
 	autoCopies,
-	autoCopiesDrop,
+	autoCopiesWith,
 	module ReExported
 ) where
 
@@ -40,7 +40,6 @@ import Config
 import Annex.CheckAttr
 import Logs.PreferredContent
 import Git.FilePath
-import Annex.UUID
 
 import qualified Data.Set as S
 
@@ -135,13 +134,8 @@ autoCopies file key vs a = Annex.getState Annex.auto >>= go
 						( a, stop )
 				else stop
 
-{- For dropping, supplies the number of known copies to the action.
- - 
- - In auto mode, checks the number of known copies.
- - Also, checks if the repo would prefer to retain the content.
- -}
-autoCopiesDrop :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
-autoCopiesDrop file key vs a = do
+autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
+autoCopiesWith file key vs a = do
 	numcopiesattr <- numCopies file
 	Annex.getState Annex.auto >>= auto numcopiesattr
 	where
@@ -150,9 +144,5 @@ autoCopiesDrop file key vs a = do
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
 			if length have `vs` needed
-				then do
-					fp <- inRepo $ toTopFilePath file
-					u <- getUUID
-					ifM (isPreferredContent (Just u) (S.singleton u) fp)
-						( stop, a numcopiesattr )
+				then a numcopiesattr
 				else stop

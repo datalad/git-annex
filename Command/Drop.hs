@@ -17,6 +17,10 @@ import Logs.Trust
 import Annex.Content
 import Config
 import qualified Option
+import Git.FilePath
+import Logs.PreferredContent
+
+import qualified Data.Set as S
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "drop" paramPaths seek
@@ -30,7 +34,7 @@ seek = [withField fromOption Remote.byName $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = autoCopiesDrop file key (>) $ \numcopies ->
+start from file (key, _) = shouldDrop $ \numcopies ->
 	case from of
 		Nothing -> startLocal file numcopies key
 		Just remote -> do
@@ -38,6 +42,19 @@ start from file (key, _) = autoCopiesDrop file key (>) $ \numcopies ->
 			if Remote.uuid remote == u
 				then startLocal file numcopies key
 				else startRemote file numcopies key remote
+	where
+		{- In --auto mode, drop if there are enough copies,
+		 - and the repository being dropped from doesn't prefer
+		 - to keep the content. -}
+		shouldDrop a = autoCopiesWith file key (>) $ \numcopies ->
+			ifM (Annex.getState Annex.auto)
+				( do
+					fp <- inRepo $ toTopFilePath file
+					u <- maybe getUUID (return . Remote.uuid) from
+					ifM (isPreferredContent (Just u) (S.singleton u) fp)
+						( a numcopies, stop )
+				, a numcopies
+				)
 
 startLocal :: FilePath -> Maybe Int -> Key -> CommandStart
 startLocal file numcopies key = stopUnless (inAnnex key) $ do
