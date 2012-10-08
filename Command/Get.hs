@@ -13,6 +13,7 @@ import qualified Remote
 import Annex.Content
 import qualified Command.Move
 import Logs.Transfer
+import Annex.Wanted
 
 def :: [Command]
 def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
@@ -23,7 +24,7 @@ seek = [withField Command.Move.fromOption Remote.byName $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = stopUnless (not <$> inAnnex key) $
+start from file (key, _) = stopUnless (checkAuto $ shouldGet file key) $
 	autoCopies file key (<) $
 		case from of
 			Nothing -> go $ perform key file

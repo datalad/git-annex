@@ -38,10 +38,6 @@ import Usage as ReExported
 import Logs.Trust
 import Config
 import Annex.CheckAttr
-import Logs.PreferredContent
-import Git.FilePath
-
-import qualified Data.Set as S
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
@@ -127,12 +123,7 @@ autoCopies file key vs a = Annex.getState Annex.auto >>= go
 			numcopiesattr <- numCopies file
 			needed <- getNumCopies numcopiesattr
 			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed
-				then do
-					fp <- inRepo $ toTopFilePath file
-					ifM (isPreferredContent Nothing S.empty fp)
-						( a, stop )
-				else stop
+			if length have `vs` needed then a else stop
 
 autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
 autoCopiesWith file key vs a = do
