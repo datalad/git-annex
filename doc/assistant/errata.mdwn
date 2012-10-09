@@ -1,3 +1,36 @@
+## version 3.20121009
+
+This is a maintenance release of the git-annex assistant, which is still in
+beta.
+
+In general, anything you can configure with the assistant's web app
+will work. Some examples of use cases supported by this release include:
+
+* [[Pairing|pairing_walkthrough]] two computers that are on the same local
+  network (or VPN) and automatically keeping the files in the annex in
+  sync as changes are made to them.
+* Cloning your repository to removable drives, USB keys, etc. The assistant
+  will notice when the drive is mounted and keep it in sync.
+  Such a drive can be stored as an offline backup, or transported between
+  computers to keep them in sync.
+* Cloning your repository to a remote server, running ssh, and uploading
+  changes made to your files to the server. There is special support
+  for using the rsync.net cloud provider this way, or any shell account
+  on a typical unix server, such as a Linode VPS can be used.
+
+The following are known limitations of this release of the git-annex
+assistant:
+
+* On Mac OSX and BSD operating systems, the assistant uses kqueue to watch
+  files. Kqueue has to open every directory it watches, so too many
+  directories will run it out of the max number of open files (typically
+  1024), and fail. See [[bugs/Issue_on_OSX_with_some_system_limits]]
+  for a workaround.
+* In order to ensure that all multiple repositories are kept in sync,
+  each computer with a repository must be running the git-annex assistant.
+* The assistant does not yet always manage to keep repositories in sync
+  when some are hidden from others behind firewalls.
+
 ## version 3.20120924
 
 This is the first beta release of the git-annex assistant.
