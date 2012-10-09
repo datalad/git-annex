@@ -1,0 +1,25 @@
+git-annex 3.20121009 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * watch, assistant: It's now safe to git annex unlock files while
+     the watcher is running, as well as modify files checked into git
+     as normal files. Additionally, .gitignore settings are now honored.
+     Closes: #[689979](http://bugs.debian.org/689979)
+   * group, ungroup: New commands to indicate groups of repositories.
+   * webapp: Adds newly created repositories to one of these groups:
+     clients, drives, servers
+   * vicfg: New command, allows editing (or simply viewing) most
+     of the repository configuration settings stored in the git-annex branch.
+   * Added preferred content expressions, configurable using vicfg.
+   * get --auto: If the local repository has preferred content
+     configured, only get that content.
+   * drop --auto: If the repository the content is dropped from has
+     preferred content configured, drop only content that is not preferred.
+   * copy --auto: Only transfer content that the destination repository prefers.
+   * assistant: Now honors preferred content settings when deciding what to
+     transfer.
+   * --copies=group:number can now be used to match files that are present
+     in a specified number of repositories in a group.
+   * Added --smallerthan, --largerthan, and --inall limits.
+   * Only build-depend on libghc-clientsession-dev on arches that will have
+     the webapp.
+   * uninit: Unset annex.version. Closes: #[689852](http://bugs.debian.org/689852)"""]]
