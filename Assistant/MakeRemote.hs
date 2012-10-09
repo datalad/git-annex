@@ -28,11 +28,12 @@ import qualified Data.Map as M
 import Data.Char
 
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
-makeSshRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Bool -> SshData -> IO ()
+makeSshRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Bool -> SshData -> IO Remote
 makeSshRemote st dstatus scanremotes forcersync sshdata = do
 	r <- runThreadState st $
 		addRemote $ maker (sshRepoName sshdata) sshurl
 	syncNewRemote st dstatus scanremotes r
+	return r
 	where
 		rsync = forcersync || rsyncOnly sshdata
 		maker

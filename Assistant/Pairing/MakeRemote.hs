@@ -46,7 +46,7 @@ finishedPairing st dstatus scanremotes msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			""
-	makeSshRemote st dstatus scanremotes False sshdata
+	void $ makeSshRemote st dstatus scanremotes False sshdata
 
 {- Mostly a straightforward conversion.  Except:
  -  * Determine the best hostname to use to contact the host.

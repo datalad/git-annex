@@ -19,12 +19,14 @@ import Assistant.ThreadedMonad
 import Utility.Yesod
 import qualified Remote.S3 as S3
 import Logs.Remote
-import Remote (prettyListUUIDs)
+import qualified Remote
 import Types.Remote (RemoteConfig)
+import Logs.Group
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Set as S
 import qualified Data.Map as M
 
 s3Configurator :: Widget -> Handler RepHtml
@@ -80,7 +82,7 @@ getAddS3R = s3Configurator $ do
 	case result of
 		FormSuccess s3input -> lift $ do
 			let name = T.unpack $ repoName s3input
-			makeS3Remote (extractCreds s3input) name $ M.fromList
+			makeS3Remote (extractCreds s3input) name setgroup $ M.fromList
 				[ ("encryption", "shared")
 				, ("type", "S3")
 				, ("datacenter", T.unpack $ datacenter s3input)
@@ -91,6 +93,8 @@ getAddS3R = s3Configurator $ do
 		showform form enctype = do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adds3")
+		setgroup r = runAnnex () $
+			groupSet (Remote.uuid r) (S.singleton "servers")
 
 getEnableS3R :: UUID -> Handler RepHtml
 getEnableS3R uuid = s3Configurator $ do
@@ -101,24 +105,24 @@ getEnableS3R uuid = s3Configurator $ do
 			m <- runAnnex M.empty readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			makeS3Remote s3creds name M.empty
+			makeS3Remote s3creds name (const noop) M.empty
 		_ -> showform form enctype
 	where
 		showform form enctype = do
 			let authtoken = webAppFormAuthToken
 			description <- lift $ runAnnex "" $
-				T.pack . concat <$> prettyListUUIDs [uuid]
+				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 			$(widgetFile "configurators/enables3")
 
-makeS3Remote :: S3Creds -> String -> RemoteConfig -> Handler ()
-makeS3Remote (S3Creds ak sk) name config = do
+makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
+makeS3Remote (S3Creds ak sk) name setup config = do
 	webapp <- getYesod
 	let st = fromJust $ threadState webapp
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
-	liftIO $ do
-		S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
-		r <- runThreadState st $ addRemote $ do
-			makeSpecialRemote name S3.remote config
-			return remotename
-		syncNewRemote st (daemonStatus webapp) (scanRemotes webapp) r
+	liftIO $ S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
+	r <- liftIO $ runThreadState st $ addRemote $ do
+		makeSpecialRemote name S3.remote config
+		return remotename
+	setup r
+	liftIO $ syncNewRemote st (daemonStatus webapp) (scanRemotes webapp) r
 	redirect RepositoriesR

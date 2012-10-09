@@ -28,10 +28,13 @@ import Utility.DiskFree
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyListUUIDs)
+import Logs.Group
+import Annex.UUID
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Set as S
 import Data.Char
 import System.Posix.Directory
 import qualified Control.Exception as E
@@ -142,10 +145,10 @@ getNewRepositoryR = bootstrap (Just Config) $ do
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $ do
 			let path = T.unpack p
-			liftIO $ do
-				makeRepo path False
-				initRepo path Nothing
-				addAutoStart path
+			liftIO $ makeRepo path False
+			u <- liftIO $ initRepo path Nothing
+			runAnnex () $ groupSet u (S.singleton "clients")
+			liftIO $ addAutoStart path
 			redirect $ SwitchToRepositoryR path
 		_ -> $(widgetFile "configurators/newrepository")
 
@@ -191,8 +194,9 @@ getAddDriveR = bootstrap (Just Config) $ do
 	where
 		go mountpoint = do
 			liftIO $ makerepo dir
-			liftIO $ initRepo dir $ Just remotename
+			u <- liftIO $ initRepo dir $ Just remotename
 			r <- addremote dir remotename
+			runAnnex () $ groupSet u (S.singleton "drives")
 			syncRemote r
 			where
 				dir = mountpoint </> gitAnnexAssistantDefaultDir
@@ -260,9 +264,10 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 startFullAssistant :: FilePath -> Handler ()
 startFullAssistant path = do
 	webapp <- getYesod
+	liftIO $ makeRepo path False
+	u <- liftIO $ initRepo path Nothing
+	runAnnex () $ groupSet u (S.singleton "clients")
 	url <- liftIO $ do
-		makeRepo path False
-		initRepo path Nothing
 		addAutoStart path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp
@@ -286,10 +291,11 @@ inDir dir a = do
 	Annex.eval state a
 
 {- Initializes a git-annex repository in a directory with a description. -}
-initRepo :: FilePath -> Maybe String -> IO ()
-initRepo dir desc = inDir dir $
+initRepo :: FilePath -> Maybe String -> IO UUID
+initRepo dir desc = inDir dir $ do
 	unlessM isInitialized $
 		initialize desc
+	getUUID
 
 {- Adds a directory to the autostart file. -}
 addAutoStart :: FilePath -> IO ()

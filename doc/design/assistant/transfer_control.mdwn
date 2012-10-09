@@ -6,8 +6,19 @@ it doesn't currently have, is covered by the [[partial_content]] page.
 
 But often the remote is just a removable drive or a cloud remote,
 that has a limited size. This page is about making the assistant do
-something smart with such remotes. (Which it now does.. **done** except for
-an easy way to configure this.)
+something smart with such remotes.
+
+## TODO
+
+* easy configuration of preferred content
+* Drop no longer preferred content.
+  - When a file is renamed, it might stop being preferred, so
+    could be checked and dropped. (If there's multiple links to
+    the same content, this gets tricky.)
+  - When a file is sent or received, the sender's preferred content
+    settings may change, causing it to be dropped from the sender.
+  - May also want to check for things to drop, from both local and remotes,
+    when doing the expensive trasfer scan.
 
 ## specifying what data a remote prefers to contain **done**
 

@@ -19,11 +19,13 @@ import Utility.Yesod
 import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
+import Logs.Group
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Network.Socket
 import System.Posix.User
 
@@ -130,7 +132,7 @@ getEnableRsyncR u = do
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (hostname sshinput') ->
-						void $ lift $ makeRsyncNet sshinput'
+						void $ lift $ makeRsyncNet sshinput' (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
@@ -250,23 +252,23 @@ getConfirmSshR sshdata = sshConfigurator $ do
 	$(widgetFile "configurators/ssh/confirm")
 
 getMakeSshGitR :: SshData -> Handler RepHtml
-getMakeSshGitR = makeSsh False
+getMakeSshGitR = makeSsh False setupGroup
 
 getMakeSshRsyncR :: SshData -> Handler RepHtml
-getMakeSshRsyncR = makeSsh True
+getMakeSshRsyncR = makeSsh True setupGroup
 
-makeSsh :: Bool -> SshData -> Handler RepHtml
-makeSsh rsync sshdata
+makeSsh :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
+makeSsh rsync setup sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSsh' rsync sshdata' (Just keypair)
-	| otherwise = makeSsh' rsync sshdata Nothing
+		makeSsh' rsync setup sshdata' (Just keypair)
+	| otherwise = makeSsh' rsync setup sshdata Nothing
 
-makeSsh' :: Bool -> SshData -> Maybe SshKeyPair -> Handler RepHtml
-makeSsh' rsync sshdata keypair =
+makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> Maybe SshKeyPair -> Handler RepHtml
+makeSsh' rsync setup sshdata keypair =
 	sshSetup [sshhost, remoteCommand] "" $
-		makeSshRepo rsync sshdata
+		makeSshRepo rsync setup sshdata
 	where
 		sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 		remotedir = T.unpack $ sshDirectory sshdata
@@ -280,14 +282,15 @@ makeSsh' rsync sshdata keypair =
 				else Nothing
 			]
 
-makeSshRepo :: Bool -> SshData -> Handler RepHtml
-makeSshRepo forcersync sshdata = do
+makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
+makeSshRepo forcersync setup sshdata = do
 	webapp <- getYesod
-	liftIO $ makeSshRemote
+	r <- liftIO $ makeSshRemote
 		(fromJust $ threadState webapp)
 		(daemonStatus webapp)
 		(scanRemotes webapp)
 		forcersync sshdata
+	setup r
 	redirect RepositoriesR
 
 getAddRsyncNetR :: Handler RepHtml
@@ -303,14 +306,14 @@ getAddRsyncNetR = do
 	case result of
 		FormSuccess sshinput
 			| isRsyncNet (hostname sshinput) ->
-				makeRsyncNet sshinput
+				makeRsyncNet sshinput setupGroup
 			| otherwise ->
 				showform $ UnusableServer
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
 
-makeRsyncNet :: SshInput -> Handler RepHtml
-makeRsyncNet sshinput = do
+makeRsyncNet :: SshInput -> (Remote -> Handler ()) -> Handler RepHtml
+makeRsyncNet sshinput setup = do
 	knownhost <- liftIO $ maybe (return False) knownHost (hostname sshinput)
 	keypair <- liftIO $ genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
@@ -338,8 +341,11 @@ makeRsyncNet sshinput = do
 		, remotecommand
 		]
 	sshSetup sshopts (sshPubKey keypair) $
-		makeSshRepo True sshdata
+		makeSshRepo True setup sshdata
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
+
+setupGroup :: Remote -> Handler ()
+setupGroup r = runAnnex () $ groupSet (Remote.uuid r) (S.singleton "server")
