@@ -1,4 +1,4 @@
-git-annex (3.20121002) UNRELEASED; urgency=low
+git-annex (3.20121009) unstable; urgency=low
 
   * watch, assistant: It's now safe to git annex unlock files while
     the watcher is running, as well as modify files checked into git
@@ -24,7 +24,7 @@ git-annex (3.20121002) UNRELEASED; urgency=low
     the webapp.
   * uninit: Unset annex.version. Closes: #689852
 
- -- Joey Hess <joeyh@debian.org>  Mon, 01 Oct 2012 15:09:49 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 09 Oct 2012 15:13:23 -0400
 
 git-annex (3.20121001) unstable; urgency=low
 
