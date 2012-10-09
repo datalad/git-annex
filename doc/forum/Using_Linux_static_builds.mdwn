@@ -1,0 +1,25 @@
+Hello,
+
+I want to use git-annex on a couple of machines that are not under my control (and one that is). For that I use the provided static build, but encountered several problems:
+
+I suppose the first step for command line use is to execute runshell:
+
+On one machine:
+
+flindner@yoko:~> software/git-annex.linux/runshell 
+/bin/bash: /lib64/libc.so.6: version `GLIBC_2.11' not found (required by /home/flindner/software/git-annex.linux//lib/x86_64-linux-gnu/libreadline.so.6)
+
+Is there anything I can do about it?
+
+On the other machine:
+
+flindner@bladefoam2:~$ software/git-annex.linux/runshell 
+bash-4.1$ 
+
+It starts a bare, non-configured shell instance. Can I modifiy and source the script to only set the environment and not start up a new shell?
+
+Another question: If using ssh:// remotes, how can I tell git-annex the first command to set up the environment need in order to execute command via SSH?
+
+Thanks,
+
+Florian
