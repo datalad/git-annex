@@ -1,0 +1,13 @@
+<div .span9 .hero-unit>
+  <h2>
+    Configuring #{description}
+  <p>
+    <form .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{authtoken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit>
+            Save Changes
+          <a .btn href="@{RepositoriesR}">
+            Cancel
