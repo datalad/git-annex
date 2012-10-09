@@ -44,8 +44,18 @@ getRepositoriesR = bootstrap (Just Config) $ do
 	repolist <- lift $ repoList False
 	$(widgetFile "configurators/repositories")
 
+data SetupRepo = EnableRepo (Route WebApp) | EditRepo (Route WebApp)
+
+needsEnabled :: SetupRepo -> Bool
+needsEnabled (EnableRepo _) = True
+needsEnabled _ = False
+
+setupRepoLink :: SetupRepo -> Route WebApp
+setupRepoLink (EnableRepo r) = r
+setupRepoLink (EditRepo r) = r
+
 {- A numbered list of known repositories, including the current one. -}
-repoList :: Bool -> Handler [(String, String, Maybe (Route WebApp))]
+repoList :: Bool -> Handler [(String, String, SetupRepo)]
 repoList onlyconfigured
 	| onlyconfigured = list =<< configured
 	| otherwise = list =<< (++) <$> configured <*> unconfigured
@@ -55,7 +65,9 @@ repoList onlyconfigured
 				(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
 			runAnnex [] $ do
 				u <- getUUID
-				return $ zip (u : map Remote.uuid rs) (repeat Nothing)
+				let l = u : map Remote.uuid rs
+				return $ zip l (map editlink l)
+		editlink = EditRepo . EditRepositoryR
 		unconfigured = runAnnex [] $ do
 			m <- readRemoteLog
 			catMaybes . map (findtype m) . snd
@@ -67,7 +79,7 @@ repoList onlyconfigured
 				Just "directory" -> u `enableswith` EnableDirectoryR
 				Just "S3" -> u `enableswith` EnableS3R
 				_ -> Nothing
-		u `enableswith` r = Just (u, Just $ r u)
+		u `enableswith` r = Just (u, EnableRepo $ r u)
 		list l = runAnnex [] $ do
 			let l' = nubBy (\x y -> fst x == fst y) l
 			zip3

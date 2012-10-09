@@ -3,21 +3,24 @@
     Your repositories
   <table .table .table-condensed>
     <tbody>
-      $forall (num, name, needsenabled) <- repolist
+      $forall (num, name, setuprepo) <- repolist
         <tr>
           <td>
             #{num}
           <td>
-            $if isJust needsenabled
+            $if needsEnabled setuprepo
               <i>#{name}
             $else
               #{name}
           <td>
-            $maybe enable <- needsenabled
+            $if needsEnabled setuprepo
               <i>not enabled here #
               &rarr; #
-              <a href="@{enable}">
+              <a href="@{setupRepoLink setuprepo}">
                 enable
+            $else
+              <a href="@{setupRepoLink setuprepo}">
+                configure
   <div .row-fluid>
     <div .span6>
       <h2>
