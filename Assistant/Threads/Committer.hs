@@ -210,7 +210,7 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
 				sha <- inRepo $
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
-			queueTransfers Next transferqueue dstatus key (Just file) Upload
+			queueTransfers Next transferqueue dstatus st key (Just file) Upload
 			showEndOk
 			return $ Just change
 

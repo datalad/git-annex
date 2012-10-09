@@ -32,4 +32,4 @@ start to from file (key, backend) = autoCopies file key (<) $
 	where
 		shouldCopy = case to of
 			Nothing -> checkAuto $ wantGet (Just file)
-			Just r -> checkAuto $ wantSend (Remote.uuid r) (Just file)
+			Just r -> checkAuto $ wantSend (Just file) (Remote.uuid r)

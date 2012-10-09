@@ -27,6 +27,7 @@ import Logs.Transfer
 import Types.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
+import Annex.Wanted
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
@@ -56,22 +57,26 @@ stubInfo f r = stubTransferInfo
 	, associatedFile = f
 	}
 
-{- Adds transfers to queue for some of the known remotes. -}
+{- Adds transfers to queue for some of the known remotes.
+ - Honors preferred content settings, only transferring wanted files. -}
 queueTransfers :: Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
 queueTransfers = queueTransfersMatching (const True)
 
 {- Adds transfers to queue for some of the known remotes, that match a
- - condition. -}
+ - condition. Honors preferred content settings. -}
 queueTransfersMatching :: (UUID -> Bool) -> Schedule -> TransferQueue -> DaemonStatusHandle -> Key -> AssociatedFile -> Direction -> Annex ()
-queueTransfersMatching matching schedule q dstatus k f direction = do
-	rs <- sufficientremotes
-		=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
-	let matchingrs = filter (matching . Remote.uuid) rs
-	if null matchingrs
-		then defer
-		else forM_ matchingrs $ \r -> liftIO $
-			enqueue schedule q dstatus (gentransfer r) (stubInfo f r)
+queueTransfersMatching matching schedule q dstatus k f direction
+	| direction == Download = whenM (wantGet f) go
+	| otherwise = go
 	where
+		go = do
+			rs <- sufficientremotes
+				=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
+			let matchingrs = filter (matching . Remote.uuid) rs
+			if null matchingrs
+				then defer
+				else forM_ matchingrs $ \r -> liftIO $
+					enqueue schedule q dstatus (gentransfer r) (stubInfo f r)
 		sufficientremotes rs
 			{- Queue downloads from all remotes that
 			 - have the key, with the cheapest ones first.
@@ -80,11 +85,9 @@ queueTransfersMatching matching schedule q dstatus k f direction = do
 			| direction == Download = do
 				uuids <- Remote.keyLocations k
 				return $ filter (\r -> uuid r `elem` uuids) rs
-			{- TODO: Determine a smaller set of remotes that
-			 - can be uploaded to, in order to ensure all
-			 - remotes can access the content. Currently,
-			 - send to every remote we can. -}
-			| otherwise = return $ filter (not . Remote.readonly) rs
+			{- Upload to all remotes that want the content. -}
+			| otherwise = filterM (wantSend f . Remote.uuid) $
+				filter (not . Remote.readonly) rs
 		gentransfer r = Transfer
 			{ transferDirection = direction
 			, transferKey = k

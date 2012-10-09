@@ -10,7 +10,6 @@ module Annex.Wanted where
 import Common.Annex
 import Logs.PreferredContent
 import Git.FilePath
-import qualified Annex
 import Annex.UUID
 import Types.Remote
 
@@ -24,9 +23,9 @@ wantGet (Just file) = do
 	isPreferredContent Nothing S.empty fp
 
 {- Check if a file is preferred content for a remote. -}
-wantSend :: UUID -> AssociatedFile -> Annex Bool
-wantSend _ Nothing = return True
-wantSend to (Just file) = do
+wantSend :: AssociatedFile -> UUID -> Annex Bool
+wantSend Nothing _ = return True
+wantSend (Just file) to = do
 	fp <- inRepo $ toTopFilePath file
 	isPreferredContent (Just to) S.empty fp
 

@@ -22,6 +22,7 @@ import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
 import Command
 import Annex.Content
+import Annex.Wanted
 
 import qualified Data.Set as S
 
@@ -105,18 +106,20 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			in if null rs' then rs else rs'
 		go [] = noop
 		go (f:fs) = do
-			mapM_ (enqueue f) =<< catMaybes <$> runThreadState st
-				(ifAnnexed f findtransfers $ return [])
+			mapM_ (enqueue f) =<< runThreadState st
+				(ifAnnexed f (findtransfers f) $ return [])
 			go fs
 		enqueue f (r, t) = do
 			debug thisThread ["queuing", show t]
 			queueTransferWhenSmall transferqueue dstatus (Just f) t r
-		findtransfers (key, _) = do
+		findtransfers f (key, _) = do
 			locs <- loggedLocations key
-			let use a = return $ map (a key locs) rs
+			let use a = return $ catMaybes $ map (a key locs) rs
 			ifM (inAnnex key)
-				( use $ check Upload False
-				, use $ check Download True
+				( filterM (wantSend (Just f) . Remote.uuid . fst)
+					=<< use (check Upload False)
+				, ifM (wantGet $ Just f)
+					( use (check Download True) , return [] )
 				)
 		check direction want key locs r
 			| direction == Upload && Remote.readonly r = Nothing

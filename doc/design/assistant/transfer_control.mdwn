@@ -6,7 +6,8 @@ it doesn't currently have, is covered by the [[partial_content]] page.
 
 But often the remote is just a removable drive or a cloud remote,
 that has a limited size. This page is about making the assistant do
-something smart with such remotes.
+something smart with such remotes. (Which it now does.. **done** except for
+an easy way to configure this.)
 
 ## specifying what data a remote prefers to contain **done**
 
