@@ -68,9 +68,7 @@ makeGroupMap byuuid = GroupMap byuuid bygroup
 		explode (u, s) = map (\g -> (g, S.singleton u)) (S.toList s)
 
 {- If a repository is in exactly one standard group, returns it. -}
-getStandardGroup :: UUID -> GroupMap -> Maybe StandardGroup
-getStandardGroup u m = maybe Nothing go $ u `M.lookup` groupsByUUID m
-	where
-		go s = case catMaybes $ map toStandardGroup $ S.toList s of
-			[g] -> Just g
-			_ -> Nothing
+getStandardGroup :: S.Set Group -> Maybe StandardGroup
+getStandardGroup s = case catMaybes $ map toStandardGroup $ S.toList s of
+	[g] -> Just g
+	_ -> Nothing

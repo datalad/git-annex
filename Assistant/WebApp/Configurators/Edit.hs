@@ -23,26 +23,40 @@ import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
+import qualified Data.Set as S
+
+data RepoGroup = RepoGroupCustom String | RepoGroupStandard StandardGroup
+	deriving (Show, Eq)
 
 data RepoConfig = RepoConfig
 	{ repoDescription :: Text
-	, repoGroup :: Maybe StandardGroup
+	, repoGroup :: RepoGroup
 	}
 	deriving (Show)
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Description" (Just $ repoDescription def)
-	<*> aopt (selectFieldList standardgroups) "Repository group" (Just $ repoGroup def)
+	<*> areq (selectFieldList $ customgroups++standardgroups) "Repository group" (Just $ repoGroup def)
 	where
-		standardgroups :: [(Text, StandardGroup)]
-		standardgroups = map (\g -> (T.pack $ descStandardGroup g , g))
+		standardgroups :: [(Text, RepoGroup)]
+		standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
 			[minBound :: StandardGroup .. maxBound :: StandardGroup]
+		customgroups :: [(Text, RepoGroup)]
+		customgroups = case repoGroup def of
+			RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
+			_ -> []
 
 getRepoConfig :: UUID -> Annex RepoConfig
 getRepoConfig uuid = RepoConfig
 	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
-	<*> (getStandardGroup uuid <$> groupMap)
+	<*> getrepogroup
+	where
+		getrepogroup = do
+			groups <- lookupGroups uuid
+			return $ 
+				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
+					(getStandardGroup groups)
 
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR uuid = bootstrap (Just Config) $ do

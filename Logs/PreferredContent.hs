@@ -89,9 +89,8 @@ makeMatcher groupmap u s
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
 standardMatcher :: GroupMap -> UUID -> Utility.Matcher.Matcher MatchFiles
-standardMatcher m u = maybe matchAll use (getStandardGroup u m)
-	where
-		use = makeMatcher m u . preferredContent
+standardMatcher m u = maybe matchAll (makeMatcher m u . preferredContent) $
+	getStandardGroup =<< u `M.lookup` groupsByUUID m
 
 matchAll :: Utility.Matcher.Matcher MatchFiles
 matchAll = Utility.Matcher.generate []

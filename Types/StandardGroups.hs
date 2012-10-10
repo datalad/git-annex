@@ -25,9 +25,9 @@ toStandardGroup _ = Nothing
 
 descStandardGroup :: StandardGroup -> String
 descStandardGroup ClientGroup = "client: a repository on your computer"
-descStandardGroup TransferGroup = "transfer: distributes data to clients"
-descStandardGroup ArchiveGroup = "archive: collect content that is not archived elsewhere"
-descStandardGroup BackupGroup = "backup: collects all content"
+descStandardGroup TransferGroup = "transfer: distributes files to clients"
+descStandardGroup ArchiveGroup = "archive: collects files that are not archived elsewhere"
+descStandardGroup BackupGroup = "backup: collects all files"
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String
