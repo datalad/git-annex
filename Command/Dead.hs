@@ -11,6 +11,9 @@ import Common.Annex
 import Command
 import qualified Remote
 import Logs.Trust
+import Logs.Group
+
+import qualified Data.Set as S
 
 def :: [Command]
 def = [command "dead" (paramRepeating paramRemote) seek
@@ -29,4 +32,5 @@ start ws = do
 perform :: UUID -> CommandPerform
 perform uuid = do
 	trustSet uuid DeadTrusted
+	groupSet uuid S.empty
 	next $ return True
