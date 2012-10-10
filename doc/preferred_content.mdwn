@@ -28,10 +28,52 @@ The equivilant preferred content expression looks like this:
 
 So, just remove the dashes, basically.
 
+## file matching
+
 Note that while --include and --exclude match files relative to the current
 directory, preferred content expressions always match files relative to the
-top of the git repository. Perhaps you put files into `out/` directories
+top of the git repository. Perhaps you put files into `archive` directories
 when you're done with them. Then you could configure your laptop to prefer
 to not retain those files, like this:
 
-	exclude=*/out/*
+	exclude=*/archive/*
+
+## standard expressions
+
+git-annex comes with some standard preferred content expressions, that can
+be used with repositories that are in some pre-defined groups. To make a
+repository use one of these, just set its preferred content expression
+to "standard", and put it in one of these groups:
+
+### client
+
+All content is preferred, unless it's in a "archive" directory.
+
+`exclude=*/archive/*`
+
+### transfer
+
+Use for repositories that are used to transfer data between other
+repositories, but do not need to retain data themselves. For
+example, a repository on a server, or in the cloud, or a small
+USB drive used in a sneakernet.
+
+The preferred content expression for these causes them to get and retain
+data until all clients have a copy.
+
+`not inallgroup=client and exclude=*/archive/*`
+
+### archive
+
+All content is preferred, unless it's already been archived somewhere else.
+
+`not copies=archive:1`
+
+Note that if you want to archive multiple copies (not a bad idea!),
+you should instead configure all your archive repositories with a
+version of the above preferred content expression with a larger
+number of copies.
+
+### backup
+
+All content is preferred.

@@ -14,8 +14,10 @@ module Logs.PreferredContent (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Either
 import Data.Time.Clock.POSIX
+import Data.Monoid
 
 import Common.Annex
 import qualified Annex.Branch
@@ -61,7 +63,8 @@ preferredContentMap = do
 	case cached of
 		Just m -> return m
 		Nothing -> do
-			m <- simpleMap . parseLog (Just . makeMatcher groupmap)
+			m <- simpleMap
+				. parseLogWithUUID ((Just .) . makeMatcher groupmap)
 				<$> Annex.Branch.get preferredContentLog
 			Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 			return m
@@ -74,17 +77,39 @@ preferredContentMapRaw = simpleMap . parseLog Just
  - because the configuration is shared amoung repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> String -> Utility.Matcher.Matcher MatchFiles
-makeMatcher groupmap s
-	| null (lefts tokens) =  Utility.Matcher.generate $ rights tokens
- 	| otherwise = Utility.Matcher.generate []
+makeMatcher :: GroupMap -> UUID -> String -> Utility.Matcher.Matcher MatchFiles
+makeMatcher groupmap u s
+	| s == "standard" = standardMatcher groupmap u
+	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
+ 	| otherwise = matchAll
 	where
 		tokens = map (parseToken groupmap) (tokenizeMatcher s)
 
+matchAll :: Utility.Matcher.Matcher MatchFiles
+matchAll = Utility.Matcher.generate []
+
+{- Standard matchers are pre-defined for some groups. If none is defined,
+ - or a repository is in multiple groups with standard matchers, match all. -}
+standardMatcher :: GroupMap -> UUID -> Utility.Matcher.Matcher MatchFiles
+standardMatcher groupmap u =
+	maybe matchAll findmatcher $ u `M.lookup` groupsByUUID groupmap
+	where
+		findmatcher s = case catMaybes $ map standard $ S.toList s of
+			[m] -> makeMatcher groupmap u m
+			_ -> matchAll
+ 		{- See doc/preferred_content.mdwn for explanations
+		 - of these expressions. -}
+		standard "client" = Just "exclude=*/archive/*"
+		standard "transfer" = Just "not inallgroup=client and " <> standard "client"
+		standard "archive" = Just "not copies=archive:1"
+		-- backup preferrs all content
+		standard _ = Nothing
+
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: String -> Maybe String
-checkPreferredContentExpression s = 
-	case lefts $ map (parseToken emptyGroupMap) (tokenizeMatcher s) of
+checkPreferredContentExpression s
+	| s == "standard" = Nothing
+	| otherwise = case lefts $ map (parseToken emptyGroupMap) (tokenizeMatcher s) of
 		[] -> Nothing
 		l -> Just $ unwords $ map ("Parse failure: " ++) l
 

@@ -17,6 +17,7 @@ module Logs.UUIDBased (
 	LogEntry(..),
 	TimeStamp(..),
 	parseLog,
+	parseLogWithUUID,
 	showLog,
 	changeLog,
 	addLog,
@@ -56,15 +57,18 @@ showLog shower = unlines . map showpair . M.toList
 			unwords [fromUUID k, shower v]
 
 parseLog :: (String -> Maybe a) -> String -> Log a
-parseLog parser = M.fromListWith best . mapMaybe parse . lines
+parseLog = parseLogWithUUID . const
+
+parseLogWithUUID :: (UUID -> String -> Maybe a) -> String -> Log a
+parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
 	where
 		parse line
 			| null ws = Nothing
-			| otherwise = parser (unwords info) >>= makepair
+			| otherwise = parser u (unwords info) >>= makepair
 			where
-				makepair v = Just (toUUID u, LogEntry ts v)
+				makepair v = Just (u, LogEntry ts v)
 				ws = words line
-				u = Prelude.head ws
+				u = toUUID $ Prelude.head ws
 				t = Prelude.last ws
 				ts
 					| tskey `isPrefixOf` t =
