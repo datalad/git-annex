@@ -17,6 +17,7 @@ import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
+import Utility.ThreadScheduler
 
 import Network.Multicast
 import Network.Socket
@@ -27,11 +28,16 @@ thisThread :: ThreadName
 thisThread = "PairListener"
 
 pairListenerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> UrlRenderer -> NamedThread
-pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $ do
-	sock <- multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
-	go sock [] []
+pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
+	runEvery (Seconds 1) $ void $ tryIO $ do
+		sock <- getsock
+		go sock [] []
 	where
 		thread = NamedThread thisThread
+		
+		{- Note this can crash if there's no network interface,
+		 - or only one like lo that doesn't support multicast. -}
+		getsock = multicastReceiver (multicastAddress $ IPv4Addr undefined) pairingPort
 		
 		go sock reqs cache = getmsg sock [] >>= \msg -> case readish msg of
 			Nothing -> go sock reqs cache
