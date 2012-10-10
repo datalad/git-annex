@@ -1,0 +1,9 @@
+I want to setup my remote git repo on S3
+Referred to
+http://git-annex.branchable.com/tips/using_Amazon_S3/
+http://git-annex.branchable.com/special_remotes/S3/
+
+I need support for AWS.config param proxy_uri
+http://docs.amazonwebservices.com/AWSRubySDK/latest/AWS.html
+
+Can some one help?
