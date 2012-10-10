@@ -10,7 +10,7 @@ module Logs.Group (
 	groupSet,
 	lookupGroups,
 	groupMap,
-	getStandardGroup
+	getStandardGroup,
 ) where
 
 import qualified Data.Map as M

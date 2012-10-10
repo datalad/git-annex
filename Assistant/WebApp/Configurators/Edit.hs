@@ -17,6 +17,7 @@ import Utility.Yesod
 import qualified Remote
 import Logs.UUID
 import Logs.Group
+import Logs.PreferredContent
 import Types.StandardGroups
 
 import Yesod
@@ -34,6 +35,24 @@ data RepoConfig = RepoConfig
 	}
 	deriving (Show)
 
+getRepoConfig :: UUID -> Annex RepoConfig
+getRepoConfig uuid = RepoConfig
+	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
+	<*> getrepogroup
+	where
+		getrepogroup = do
+			groups <- lookupGroups uuid
+			return $ 
+				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
+					(getStandardGroup groups)
+
+setRepoConfig :: UUID -> RepoConfig -> Annex ()
+setRepoConfig uuid c = do
+	describeUUID uuid $ T.unpack $ repoDescription c
+	case repoGroup c of
+		RepoGroupStandard g -> setStandardGroup uuid g
+		RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
+
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Description" (Just $ repoDescription def)
@@ -47,17 +66,6 @@ editRepositoryAForm def = RepoConfig
 			RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 			_ -> []
 
-getRepoConfig :: UUID -> Annex RepoConfig
-getRepoConfig uuid = RepoConfig
-	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
-	<*> getrepogroup
-	where
-		getrepogroup = do
-			groups <- lookupGroups uuid
-			return $ 
-				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
-					(getStandardGroup groups)
-
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR uuid = bootstrap (Just Config) $ do
 	sideBarDisplay
@@ -67,8 +75,9 @@ getEditRepositoryR uuid = bootstrap (Just Config) $ do
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
-		FormSuccess input -> do
-			error (show input)
+		FormSuccess input -> lift $ do
+			runAnnex undefined $ setRepoConfig uuid input
+			redirect RepositoriesR
 		_ -> showform form enctype
 	where
 		showform form enctype = do
