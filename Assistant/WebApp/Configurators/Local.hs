@@ -264,10 +264,11 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 startFullAssistant :: FilePath -> Handler ()
 startFullAssistant path = do
 	webapp <- getYesod
-	liftIO $ makeRepo path False
-	u <- liftIO $ initRepo path Nothing
-	runAnnex () $ setStandardGroup u ClientGroup
 	url <- liftIO $ do
+		makeRepo path False
+		u <- initRepo path Nothing
+		inDir path $ 
+			setStandardGroup u ClientGroup
 		addAutoStart path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp
