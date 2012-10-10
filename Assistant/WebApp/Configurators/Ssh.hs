@@ -19,6 +19,7 @@ import Utility.Yesod
 import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
+import Logs.PreferredContent
 import Annex.StandardGroups
 
 import Yesod

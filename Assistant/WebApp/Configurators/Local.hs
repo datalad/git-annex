@@ -30,6 +30,7 @@ import Utility.Network
 import Remote (prettyListUUIDs)
 import Annex.UUID
 import Annex.StandardGroups
+import Logs.PreferredContent
 
 import Yesod
 import Data.Text (Text)

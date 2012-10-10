@@ -7,11 +7,6 @@
 
 module Annex.StandardGroups where
 
-import Common.Annex
-import Logs.Group
-
-import qualified Data.Set as S
-
 data StandardGroup = ClientGroup | TransferGroup | ArchiveGroup | BackupGroup
 
 fromStandardGroup :: StandardGroup -> String
@@ -33,6 +28,3 @@ preferredContent ClientGroup = "exclude=*/archive/*"
 preferredContent TransferGroup = "not inallgroup=client and " ++ preferredContent ClientGroup
 preferredContent ArchiveGroup = "not copies=archive:1"
 preferredContent BackupGroup = "" -- all content is preferred
-
-setStandardGroup :: UUID -> StandardGroup -> Annex ()
-setStandardGroup u = groupSet u . S.singleton . fromStandardGroup

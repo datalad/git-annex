@@ -22,6 +22,7 @@ import Logs.Remote
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Annex.StandardGroups
+import Logs.PreferredContent
 
 import Yesod
 import Data.Text (Text)

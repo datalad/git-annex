@@ -11,6 +11,7 @@ module Logs.PreferredContent (
 	preferredContentMap,
 	preferredContentMapRaw,
 	checkPreferredContentExpression,
+	setStandardGroup,
 ) where
 
 import qualified Data.Map as M
@@ -131,3 +132,12 @@ tokenizeMatcher :: String -> [String]
 tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
 	where
 		splitparens = segmentDelim (`elem` "()")
+
+{- Puts a UUID in a standard group, and sets its preferred content to use
+ - the standard expression for that group, unless something is already set. -}
+setStandardGroup :: UUID -> StandardGroup -> Annex ()
+setStandardGroup u g = do
+	groupSet u $ S.singleton $ fromStandardGroup g
+	m <- preferredContentMap
+	unless (isJust $ M.lookup u m) $
+		preferredContentSet u "standard"
