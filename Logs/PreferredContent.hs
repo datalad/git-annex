@@ -17,7 +17,6 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
 import Data.Time.Clock.POSIX
-import Data.Monoid
 
 import Common.Annex
 import qualified Annex.Branch
@@ -26,6 +25,7 @@ import Logs.UUIDBased
 import Limit
 import qualified Utility.Matcher
 import Annex.UUID
+import Annex.Groups
 import Git.FilePath
 import Types.Group
 import Logs.Group
@@ -85,25 +85,18 @@ makeMatcher groupmap u s
 	where
 		tokens = map (parseToken groupmap) (tokenizeMatcher s)
 
-matchAll :: Utility.Matcher.Matcher MatchFiles
-matchAll = Utility.Matcher.generate []
-
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
 standardMatcher :: GroupMap -> UUID -> Utility.Matcher.Matcher MatchFiles
-standardMatcher groupmap u =
+standardMatcher groupmap u = 
 	maybe matchAll findmatcher $ u `M.lookup` groupsByUUID groupmap
 	where
-		findmatcher s = case catMaybes $ map standard $ S.toList s of
-			[m] -> makeMatcher groupmap u m
+		findmatcher s = case catMaybes $ map toStandardGroup $ S.toList s of
+			[g] -> makeMatcher groupmap u $ preferredContent g
 			_ -> matchAll
- 		{- See doc/preferred_content.mdwn for explanations
-		 - of these expressions. -}
-		standard "client" = Just "exclude=*/archive/*"
-		standard "transfer" = Just "not inallgroup=client and " <> standard "client"
-		standard "archive" = Just "not copies=archive:1"
-		-- backup preferrs all content
-		standard _ = Nothing
+
+matchAll :: Utility.Matcher.Matcher MatchFiles
+matchAll = Utility.Matcher.generate []
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: String -> Maybe String
