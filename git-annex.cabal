@@ -46,7 +46,8 @@ Flag Pairing
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
-   unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
+   unix, containers, utf8-string, network (>= 2.4.0.1), mtl,
+   bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base == 4.5.*, monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
@@ -58,6 +59,7 @@ Executable git-annex
     C-Sources: Utility/libkqueue.c
   Extensions: CPP
   GHC-Options: -threaded
+  CPP-Options: -DURI_24
 
   if flag(S3)
     Build-Depends: hS3

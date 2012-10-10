@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Url (
 	URLString,
 	check,
@@ -108,6 +110,10 @@ request url headers requesttype = go 5 url
 					Nothing -> return rsp
 					Just newURI -> go n newURI_abs
 						where
+#ifdef URI_24
+							newURI_abs = newURI `relativeTo` u
+#else
 							newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+#endif
 		addheaders req = setHeaders req (rqHeaders req ++ userheaders)
 		userheaders = rights $ map parseHeader headers
