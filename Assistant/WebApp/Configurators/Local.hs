@@ -29,7 +29,7 @@ import Utility.DataUnits
 import Utility.Network
 import Remote (prettyListUUIDs)
 import Annex.UUID
-import Annex.StandardGroups
+import Types.StandardGroups
 import Logs.PreferredContent
 
 import Yesod

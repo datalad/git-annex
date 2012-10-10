@@ -20,7 +20,7 @@ import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
 import Logs.PreferredContent
-import Annex.StandardGroups
+import Types.StandardGroups
 
 import Yesod
 import Data.Text (Text)

@@ -5,9 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.StandardGroups where
+module Types.StandardGroups where
 
 data StandardGroup = ClientGroup | TransferGroup | ArchiveGroup | BackupGroup
+	deriving (Eq, Ord, Enum, Bounded, Show)
 
 fromStandardGroup :: StandardGroup -> String
 fromStandardGroup ClientGroup = "client"
@@ -21,6 +22,12 @@ toStandardGroup "transfer" = Just TransferGroup
 toStandardGroup "archive" = Just ArchiveGroup
 toStandardGroup "backup" = Just BackupGroup
 toStandardGroup _ = Nothing
+
+descStandardGroup :: StandardGroup -> String
+descStandardGroup ClientGroup = "client: a repository on your computer"
+descStandardGroup TransferGroup = "transfer: distributes data to clients"
+descStandardGroup ArchiveGroup = "archive: collect content that is not archived elsewhere"
+descStandardGroup BackupGroup = "backup: collects all content"
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String

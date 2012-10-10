@@ -10,6 +10,7 @@ module Logs.Group (
 	groupSet,
 	lookupGroups,
 	groupMap,
+	getStandardGroup
 ) where
 
 import qualified Data.Map as M
@@ -21,6 +22,7 @@ import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
 import Types.Group
+import Types.StandardGroups
 
 {- Filename of group.log. -}
 groupLog :: FilePath
@@ -64,3 +66,11 @@ makeGroupMap byuuid = GroupMap byuuid bygroup
 		bygroup = M.fromListWith S.union $
 			concat $ map explode $ M.toList byuuid
 		explode (u, s) = map (\g -> (g, S.singleton u)) (S.toList s)
+
+{- If a repository is in exactly one standard group, returns it. -}
+getStandardGroup :: UUID -> GroupMap -> Maybe StandardGroup
+getStandardGroup u m = maybe Nothing go $ u `M.lookup` groupsByUUID m
+	where
+		go s = case catMaybes $ map toStandardGroup $ S.toList s of
+			[g] -> Just g
+			_ -> Nothing

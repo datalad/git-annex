@@ -29,7 +29,7 @@ import Annex.UUID
 import Git.FilePath
 import Types.Group
 import Logs.Group
-import Annex.StandardGroups
+import Types.StandardGroups
 
 {- Filename of preferred-content.log. -}
 preferredContentLog :: FilePath
@@ -89,12 +89,9 @@ makeMatcher groupmap u s
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
 standardMatcher :: GroupMap -> UUID -> Utility.Matcher.Matcher MatchFiles
-standardMatcher groupmap u = 
-	maybe matchAll findmatcher $ u `M.lookup` groupsByUUID groupmap
+standardMatcher m u = maybe matchAll use (getStandardGroup u m)
 	where
-		findmatcher s = case catMaybes $ map toStandardGroup $ S.toList s of
-			[g] -> makeMatcher groupmap u $ preferredContent g
-			_ -> matchAll
+		use = makeMatcher m u . preferredContent
 
 matchAll :: Utility.Matcher.Matcher MatchFiles
 matchAll = Utility.Matcher.generate []

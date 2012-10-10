@@ -21,7 +21,7 @@ import qualified Remote.S3 as S3
 import Logs.Remote
 import qualified Remote
 import Types.Remote (RemoteConfig)
-import Annex.StandardGroups
+import Types.StandardGroups
 import Logs.PreferredContent
 
 import Yesod

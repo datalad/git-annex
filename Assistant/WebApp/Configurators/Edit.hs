@@ -16,6 +16,8 @@ import Assistant.WebApp.SideBar
 import Utility.Yesod
 import qualified Remote
 import Logs.UUID
+import Logs.Group
+import Types.StandardGroups
 
 import Yesod
 import Data.Text (Text)
@@ -24,16 +26,23 @@ import qualified Data.Map as M
 
 data RepoConfig = RepoConfig
 	{ repoDescription :: Text
+	, repoGroup :: Maybe StandardGroup
 	}
 	deriving (Show)
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Description" (Just $ repoDescription def)
+	<*> aopt (selectFieldList standardgroups) "Repository group" (Just $ repoGroup def)
+	where
+		standardgroups :: [(Text, StandardGroup)]
+		standardgroups = map (\g -> (T.pack $ descStandardGroup g , g))
+			[minBound :: StandardGroup .. maxBound :: StandardGroup]
 
 getRepoConfig :: UUID -> Annex RepoConfig
 getRepoConfig uuid = RepoConfig
 	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
+	<*> (getStandardGroup uuid <$> groupMap)
 
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR uuid = bootstrap (Just Config) $ do
