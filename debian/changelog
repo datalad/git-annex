@@ -1,3 +1,9 @@
+git-annex (3.20121010) UNRELEASED; urgency=low
+
+  * Renamed --ingroup to --inallgroup.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 10 Oct 2012 12:59:25 -0400
+
 git-annex (3.20121009) unstable; urgency=low
 
   * watch, assistant: It's now safe to git annex unlock files while

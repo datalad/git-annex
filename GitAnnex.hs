@@ -147,7 +147,7 @@ options = Option.common ++
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"skip files not using a key-value backend"
-	, Option [] ["ingroup"] (ReqArg Limit.addInGroup paramGroup)
+	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
 		"skip files not present in all remotes in a group"
 	, Option [] ["largerthan"] (ReqArg Limit.addLargerThan paramSize)
 		"skip files larger than a size"

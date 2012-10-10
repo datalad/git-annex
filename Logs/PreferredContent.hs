@@ -102,7 +102,7 @@ parseToken groupmap t
 			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
-			, ("ingroup", limitInGroup groupmap)
+			, ("inallgroup", limitInAllGroup groupmap)
 			]
 		use a = Utility.Matcher.Operation <$> a v
 

@@ -636,14 +636,14 @@ file contents are present at either of two repositories.
 
   Matches only files that git-annex believes have the specified number of
   copies, on remotes in the specified group. For example,
-  "--copies=archival:2"
+  "--copies=archive:2"
 
 * --inbackend=name
 
   Matches only files whose content is stored using the specified key-value
   backend.
 
-* --ingroup=groupname
+* --inallgroup=groupname
 
   Matches only files that git-annex believes are present in all repositories
   in the specified group.

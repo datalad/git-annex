@@ -139,13 +139,13 @@ limitCopies want = case split ":" want of
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
-addInGroup :: String -> Annex ()
-addInGroup groupname = do
+addInAllGroup :: String -> Annex ()
+addInAllGroup groupname = do
 	m <- groupMap
-	addLimit $ limitInGroup m groupname
+	addLimit $ limitInAllGroup m groupname
 
-limitInGroup :: GroupMap -> MkLimit
-limitInGroup m groupname
+limitInAllGroup :: GroupMap -> MkLimit
+limitInAllGroup m groupname
 	| S.null want = Right $ const $ const $ return True
 	| otherwise = Right $ \notpresent ->
 		Backend.lookupFile >=> check notpresent
