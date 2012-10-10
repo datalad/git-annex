@@ -19,13 +19,12 @@ import Utility.Yesod
 import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
-import Logs.Group
+import Annex.StandardGroups
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Network.Socket
 import System.Posix.User
 
@@ -348,4 +347,4 @@ isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
 
 setupGroup :: Remote -> Handler ()
-setupGroup r = runAnnex () $ groupSet (Remote.uuid r) (S.singleton "server")
+setupGroup r = runAnnex () $ setStandardGroup (Remote.uuid r) TransferGroup

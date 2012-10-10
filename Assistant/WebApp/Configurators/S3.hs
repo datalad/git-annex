@@ -21,12 +21,11 @@ import qualified Remote.S3 as S3
 import Logs.Remote
 import qualified Remote
 import Types.Remote (RemoteConfig)
-import Logs.Group
+import Annex.StandardGroups
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Set as S
 import qualified Data.Map as M
 
 s3Configurator :: Widget -> Handler RepHtml
@@ -94,7 +93,7 @@ getAddS3R = s3Configurator $ do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adds3")
 		setgroup r = runAnnex () $
-			groupSet (Remote.uuid r) (S.singleton "servers")
+			setStandardGroup (Remote.uuid r) TransferGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
 getEnableS3R uuid = s3Configurator $ do

@@ -28,13 +28,12 @@ import Utility.DiskFree
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyListUUIDs)
-import Logs.Group
 import Annex.UUID
+import Annex.StandardGroups
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Set as S
 import Data.Char
 import System.Posix.Directory
 import qualified Control.Exception as E
@@ -147,7 +146,7 @@ getNewRepositoryR = bootstrap (Just Config) $ do
 			let path = T.unpack p
 			liftIO $ makeRepo path False
 			u <- liftIO $ initRepo path Nothing
-			runAnnex () $ groupSet u (S.singleton "clients")
+			runAnnex () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStart path
 			redirect $ SwitchToRepositoryR path
 		_ -> $(widgetFile "configurators/newrepository")
@@ -196,7 +195,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 			liftIO $ makerepo dir
 			u <- liftIO $ initRepo dir $ Just remotename
 			r <- addremote dir remotename
-			runAnnex () $ groupSet u (S.singleton "drives")
+			runAnnex () $ setStandardGroup u TransferGroup
 			syncRemote r
 			where
 				dir = mountpoint </> gitAnnexAssistantDefaultDir
@@ -266,7 +265,7 @@ startFullAssistant path = do
 	webapp <- getYesod
 	liftIO $ makeRepo path False
 	u <- liftIO $ initRepo path Nothing
-	runAnnex () $ groupSet u (S.singleton "clients")
+	runAnnex () $ setStandardGroup u ClientGroup
 	url <- liftIO $ do
 		addAutoStart path
 		changeWorkingDirectory path

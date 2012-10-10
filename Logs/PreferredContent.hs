@@ -25,10 +25,10 @@ import Logs.UUIDBased
 import Limit
 import qualified Utility.Matcher
 import Annex.UUID
-import Annex.Groups
 import Git.FilePath
 import Types.Group
 import Logs.Group
+import Annex.StandardGroups
 
 {- Filename of preferred-content.log. -}
 preferredContentLog :: FilePath
