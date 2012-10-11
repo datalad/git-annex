@@ -21,6 +21,7 @@ import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
+import Config
 
 import Yesod
 import Data.Text (Text)
@@ -44,21 +45,29 @@ getRepositoriesR = bootstrap (Just Config) $ do
 	repolist <- lift $ repoList False True
 	$(widgetFile "configurators/repositories")
 
-data SetupRepo = EnableRepo (Route WebApp) | EditRepo (Route WebApp)
+data SetupRepo =
+	EnableRepo (Route WebApp) |
+	EditRepo (Route WebApp) |
+	EnableSyncRepo (Route WebApp)
 
 needsEnabled :: SetupRepo -> Bool
 needsEnabled (EnableRepo _) = True
 needsEnabled _ = False
 
+notSyncing :: SetupRepo -> Bool
+notSyncing (EnableSyncRepo _) = True
+notSyncing _ = False
+
 setupRepoLink :: SetupRepo -> Route WebApp
 setupRepoLink (EnableRepo r) = r
 setupRepoLink (EditRepo r) = r
+setupRepoLink (EnableSyncRepo r) = r
 
 {- A numbered list of known repositories. -}
 repoList :: Bool -> Bool -> Handler [(String, String, SetupRepo)]
 repoList onlyconfigured includehere
 	| onlyconfigured = list =<< configured
-	| otherwise = list =<< (++) <$> configured <*> unconfigured
+	| otherwise = list =<< (++) <$> configured <*> rest
 	where
 		configured = do
 			rs <- filter (not . Remote.readonly) . knownRemotes <$>
@@ -67,12 +76,16 @@ repoList onlyconfigured includehere
 				u <- getUUID
 				let l = map Remote.uuid rs
 				let l' = if includehere then u : l else l
-				return $ zip l' (map editlink l')
-		editlink = EditRepo . EditRepositoryR
-		unconfigured = runAnnex [] $ do
+				return $ withlinks (EditRepo . EditRepositoryR) l'
+		withlinks mklink l = zip l (map mklink l)
+		rest = runAnnex [] $ do
 			m <- readRemoteLog
-			catMaybes . map (findtype m) . snd
+			unconfigured <- catMaybes . map (findtype m) . snd
 				<$> (trustPartition DeadTrusted $ M.keys m)
+			unsyncable <- withlinks (EnableSyncRepo . EditRepositoryR) . map Remote.uuid <$>
+				(filterM (\r -> not <$> repoSyncable (Remote.repo r))
+					=<< Remote.enabledRemoteList)
+			return $ unsyncable ++ unconfigured
 		findtype m u = case M.lookup u m of
 			Nothing -> Nothing
 			Just c -> case M.lookup "type" c of

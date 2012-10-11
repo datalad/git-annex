@@ -17,6 +17,8 @@ import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Logs.Trust
 import qualified Remote
+import qualified Types.Remote as Remote
+import Config
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -86,10 +88,11 @@ modifyDaemonStatus dstatus a = do
 	sendNotification $ changeNotifier s
 	return b
 
-{- Remotes ordered by cost, with dead ones thrown out. -}
+{- Syncable remotes ordered by cost. -}
 calcKnownRemotes :: Annex [Remote]
 calcKnownRemotes = do
-	rs <- concat . Remote.byCost <$> Remote.enabledRemoteList
+	rs <- filterM (repoSyncable . Remote.repo) =<<
+		concat . Remote.byCost <$> Remote.enabledRemoteList
 	alive <- snd <$> trustPartition DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	return $ filter good rs

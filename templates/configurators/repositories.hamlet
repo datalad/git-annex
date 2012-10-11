@@ -19,6 +19,9 @@
               <a href="@{setupRepoLink setuprepo}">
                 enable
             $else
+              $if notSyncing setuprepo
+                <i>syncing disabled #
+                &rarr; #
               <a href="@{setupRepoLink setuprepo}">
                 configure
   <div .row-fluid>
