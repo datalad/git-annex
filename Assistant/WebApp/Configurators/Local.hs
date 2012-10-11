@@ -185,19 +185,19 @@ getAddDriveR = bootstrap (Just Config) $ do
 	((res, form), enctype) <- lift $ runFormGet $
 		selectDriveForm (sort writabledrives) Nothing
 	case res of
-		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $ do
-			go $ T.unpack d
-			redirect RepositoriesR
+		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $
+			make (T.unpack d) >>= redirect . EditNewRepositoryR
 		_ -> do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adddrive")
 	where
-		go mountpoint = do
+		make mountpoint = do
 			liftIO $ makerepo dir
 			u <- liftIO $ initRepo dir $ Just remotename
 			r <- addremote dir remotename
 			runAnnex () $ setStandardGroup u TransferGroup
 			syncRemote r
+			return u
 			where
 				dir = mountpoint </> gitAnnexAssistantDefaultDir
 				remotename = takeFileName mountpoint

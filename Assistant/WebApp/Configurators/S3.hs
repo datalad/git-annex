@@ -125,4 +125,4 @@ makeS3Remote (S3Creds ak sk) name setup config = do
 		return remotename
 	setup r
 	liftIO $ syncNewRemote st (daemonStatus webapp) (scanRemotes webapp) r
-	redirect RepositoriesR
+	redirect $ EditNewRepositoryR $ Remote.uuid r

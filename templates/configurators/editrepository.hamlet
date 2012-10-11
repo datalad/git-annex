@@ -1,6 +1,17 @@
 <div .span9 .hero-unit>
   <h2>
-    Configuring repository: #{description}
+    Configuring repository
+  $if new
+    <p>
+      This repository is set up and ready to go!
+    <p>
+      Now you can do a little more configuring of it, if you like. #
+      Perhaps enter a better description than the automatically generated one.
+    $if istransfer
+      <div .alert .alert-info>
+        This repository is currently in the transfer group. That's the #
+        right choice if you'll use it to shuttle data back and forth #
+        between other repositories. Otherwise, pick one of the other groups.
   <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
@@ -11,3 +22,7 @@
             Save Changes
           <a .btn href="@{RepositoriesR}">
             Cancel
+  $if new
+    <p>
+      In a hurry? Feel free to skip this step! You can always come back #
+      and configure this repository later.

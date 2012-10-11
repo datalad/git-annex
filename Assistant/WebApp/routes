@@ -11,6 +11,7 @@
 /config/repository/new NewRepositoryR GET
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
 /config/repository/edit/#UUID EditRepositoryR GET
+/config/repository/edit/new/#UUID EditNewRepositoryR GET
 
 /config/repository/add/drive AddDriveR GET
 /config/repository/add/ssh AddSshR GET

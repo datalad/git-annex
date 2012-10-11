@@ -115,7 +115,13 @@ editRepositoryAForm def = RepoConfig
 			_ -> []
 
 getEditRepositoryR :: UUID -> Handler RepHtml
-getEditRepositoryR uuid = bootstrap (Just Config) $ do
+getEditRepositoryR = editForm False
+
+getEditNewRepositoryR :: UUID -> Handler RepHtml
+getEditNewRepositoryR = editForm True
+
+editForm :: Bool -> UUID -> Handler RepHtml
+editForm new uuid = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Configure repository"
 
@@ -129,11 +135,11 @@ getEditRepositoryR uuid = bootstrap (Just Config) $ do
 			maybe noop (changeEnabled r) =<<
 				runAnnex undefined (setRepoConfig r input)
 			redirect RepositoriesR
-		_ -> showform form enctype
+		_ -> showform form enctype curr
 	where
-		showform form enctype = do
+		showform form enctype curr = do
+			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
 			let authtoken = webAppFormAuthToken
-			description <- lift $
-				runAnnex T.empty $  T.pack . concat <$>
-					Remote.prettyListUUIDs [uuid]
 			$(widgetFile "configurators/editrepository")
+
+
