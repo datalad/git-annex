@@ -8,6 +8,7 @@ git-annex (3.20121010) UNRELEASED; urgency=low
   * test: Fix threaded runtime hang.
   * Makefile: Avoid building with -threaded if the ghc threaded runtime does
     not exist.
+  * webapp: Improve wording of intro display. Closes: #689848
 
  -- Joey Hess <joeyh@debian.org>  Wed, 10 Oct 2012 12:59:25 -0400
 

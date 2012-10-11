@@ -3,7 +3,7 @@
     git-annex watches over your files
   <p>
     It will automatically notice changes, and keep files in sync between #
-    repositories and devices.
+    here and repositories elsewhere.
   <p>
     For full details, see #
     <a href="http://git-annex.branchable.com/">the git-annex website</a>.

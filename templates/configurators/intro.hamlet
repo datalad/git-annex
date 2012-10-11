@@ -3,18 +3,14 @@
    <h2>
       git-annex is watching over your files in <small><tt>#{reldir}</tt></small>
     <p>
-      It will automatically notice changes, and keep files in sync between #
+      It will automatically notice changes, and keep files in sync #
       $if notenough
-        repositories on your devices ...
+        with repositories elsewhere ...
         <h2>
           But no other repositories are set up yet.
         <a .btn .btn-primary .btn-large href="@{RepositoriesR}">Add another repository</a>
       $else
-        $if barelyenough
-          <span .badge .badge-warning>#{numrepos}</span>
-        $else
-          <span .badge .badge-success>#{numrepos}</span>
-        \ repositories and devices:
+        \ with these repositories:
         <table .table .table-striped .table-condensed>
           <tbody>
             $forall (num, name, _) <- repolist

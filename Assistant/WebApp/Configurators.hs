@@ -41,7 +41,7 @@ getRepositoriesR :: Handler RepHtml
 getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Repositories"
-	repolist <- lift $ repoList False
+	repolist <- lift $ repoList False True
 	$(widgetFile "configurators/repositories")
 
 data SetupRepo = EnableRepo (Route WebApp) | EditRepo (Route WebApp)
@@ -54,9 +54,9 @@ setupRepoLink :: SetupRepo -> Route WebApp
 setupRepoLink (EnableRepo r) = r
 setupRepoLink (EditRepo r) = r
 
-{- A numbered list of known repositories, including the current one. -}
-repoList :: Bool -> Handler [(String, String, SetupRepo)]
-repoList onlyconfigured
+{- A numbered list of known repositories. -}
+repoList :: Bool -> Bool -> Handler [(String, String, SetupRepo)]
+repoList onlyconfigured includehere
 	| onlyconfigured = list =<< configured
 	| otherwise = list =<< (++) <$> configured <*> unconfigured
 	where
@@ -65,8 +65,9 @@ repoList onlyconfigured
 				(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
 			runAnnex [] $ do
 				u <- getUUID
-				let l = u : map Remote.uuid rs
-				return $ zip l (map editlink l)
+				let l = map Remote.uuid rs
+				let l' = if includehere then u : l else l
+				return $ zip l' (map editlink l')
 		editlink = EditRepo . EditRepositoryR
 		unconfigured = runAnnex [] $ do
 			m <- readRemoteLog
@@ -92,12 +93,10 @@ repoList onlyconfigured
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	repolist <- lift $ repoList True
+	repolist <- lift $ repoList True False
 	let n = length repolist
 	let numrepos = show n
 	let notenough = n < enough
-	let barelyenough = n == enough
-	let morethanenough = n > enough
 	$(widgetFile "configurators/intro")
 	lift $ modifyWebAppState $ \s -> s { showIntro = False }
 	where
