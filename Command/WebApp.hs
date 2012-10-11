@@ -59,7 +59,7 @@ start' allowauto = notBareRepo $ do
 			| allowauto = liftIO startNoRepo
 			| otherwise = do
 				d <- liftIO getCurrentDirectory
-				error $ "no repository for " ++ d
+				error $ "no git repository in " ++ d
 		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
 			liftIO $ isJust <$> checkDaemon pidfile
