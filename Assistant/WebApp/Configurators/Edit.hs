@@ -29,6 +29,7 @@ import Logs.Transfer
 import Types.StandardGroups
 import qualified Config
 import Annex.UUID
+import qualified Git
 
 import Yesod
 import Data.Text (Text)
@@ -46,22 +47,21 @@ data RepoConfig = RepoConfig
 	}
 	deriving (Show)
 
-getRepoConfig :: Remote -> Annex RepoConfig
-getRepoConfig r = RepoConfig
+getRepoConfig :: UUID -> Git.Repo -> Annex RepoConfig
+getRepoConfig uuid r = RepoConfig
 	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
-	<*> Config.repoSyncable (Remote.repo r)
+	<*> Config.repoSyncable r
 	where
 		getrepogroup = do
 			groups <- lookupGroups uuid
 			return $ 
 				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
 					(getStandardGroup groups)
-		uuid = Remote.uuid r
 
 {- Returns Just False if syncing has been disabled, or Just True when enabled. -}
-setRepoConfig :: Remote -> RepoConfig -> Annex (Maybe Bool)
-setRepoConfig r c = do
+setRepoConfig :: UUID -> Git.Repo -> RepoConfig -> Annex (Maybe Bool)
+setRepoConfig uuid r c = do
 	describeUUID uuid $ T.unpack $ repoDescription c
 	case repoGroup c of
 		RepoGroupStandard g -> setStandardGroup uuid g
@@ -69,22 +69,21 @@ setRepoConfig r c = do
 	ifM ((==) uuid <$> getUUID)
 		( return Nothing
 		, do
-			syncable <- Config.repoSyncable $ Remote.repo r
+			syncable <- Config.repoSyncable r
 			if (syncable /= repoSyncable c)
 				then do
-					let key = Config.remoteConfig (Remote.repo r) "sync"
+					let key = Config.remoteConfig r "sync"
 					Config.setConfig key $
 						if syncable then "false" else "true"
 					void $ Remote.remoteListRefresh
 					return $ Just $ repoSyncable c
 				else return Nothing
 		)
-	where
-		uuid = Remote.uuid r
 
-changeSyncable :: Remote -> Bool -> Handler ()
-changeSyncable r True = syncRemote r
-changeSyncable r False = do
+changeSyncable :: Maybe Remote -> Bool -> Handler ()
+changeSyncable Nothing _ = noop
+changeSyncable (Just r) True = syncRemote r
+changeSyncable (Just r) False = do
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
 	let st = fromJust $ threadState webapp
@@ -123,18 +122,24 @@ editForm new uuid = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Configure repository"
 
-	r <- lift $ fromMaybe (error "Unknown UUID") . M.lookup uuid
-		<$> runAnnex M.empty (Remote.remoteMap id)
-	curr <- lift $ runAnnex undefined $ getRepoConfig r
+	(repo, remote) <- lift $ runAnnex undefined getrepo
+	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
-			maybe noop (changeSyncable r) =<<
-				runAnnex undefined (setRepoConfig r input)
+			maybe noop (changeSyncable remote) =<<
+				runAnnex undefined (setRepoConfig uuid repo input)
 			redirect RepositoriesR
 		_ -> showform form enctype curr
 	where
+		getrepo = ifM ((==) uuid <$> getUUID)
+			( (,) <$> gitRepo <*> pure Nothing
+			, do
+				remote <- fromMaybe (error "Unknown UUID") . M.lookup uuid
+					<$> Remote.remoteMap id
+				return (Remote.repo remote, Just remote)
+			)
 		showform form enctype curr = do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
 			let authtoken = webAppFormAuthToken
