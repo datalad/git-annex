@@ -14,7 +14,6 @@ import Test.QuickCheck
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import System.Posix.Env
-import System.Posix.Process
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
@@ -48,6 +47,7 @@ import qualified Utility.Gpg
 import qualified Build.SysConfig
 import qualified Utility.Format
 import qualified Utility.Verifiable
+import qualified Utility.Process
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -696,20 +696,10 @@ git_annex command params = do
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
-	(frompipe, topipe) <- createPipe
-	pid <- forkProcess $ do
-		_ <- dupTo topipe stdOutput
-		closeFd frompipe
-		_ <- git_annex command params
-		exitSuccess
+	got <- Utility.Process.readProcess "git-annex" (command:params)
 	-- XXX since the above is a separate process, code coverage stats are
 	-- not gathered for things run in it.
-	closeFd topipe
-	fromh <- fdToHandle frompipe
-	got <- hGetContentsStrict fromh
-	hClose fromh
-	_ <- getProcessStatus True False pid
-	-- XXX hack Run same command again, to get code coverage.
+	-- Run same command again, to get code coverage.
 	_ <- git_annex command params
 	return got
 
@@ -877,8 +867,9 @@ unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
 prepare :: IO ()
 prepare = do
-	-- While PATH is mostly avoided, the commit hook does run it. Make
-	-- sure that the just-built git annex is used.
+	-- While PATH is mostly avoided, the commit hook does run it,
+	-- and so does git_annex_output. Make sure that the just-built
+	-- git annex is used.
 	cwd <- getCurrentDirectory
 	p <- getEnvDefault  "PATH" ""
 	setEnv "PATH" (cwd ++ ":" ++ p) True
