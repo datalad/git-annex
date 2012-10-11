@@ -133,8 +133,11 @@ openBrowser :: Maybe FilePath -> FilePath -> IO ()
 openBrowser cmd htmlshim = go $ maybe runBrowser runCustomBrowser cmd
 	where
 		url = fileUrl htmlshim
-		go a = unlessM (a url) $
-			error $ "failed to start web browser on url " ++ url
+		go a = do
+			putStrLn ""
+			putStrLn $ "Launching web browser on " ++ url
+			unlessM (a url) $
+				error $ "failed to start web browser"
 		runCustomBrowser c u = boolSystem c [Param u]
 
 {- web.browser is a generic git config setting for a web browser program -}
