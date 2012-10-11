@@ -1,0 +1,5 @@
+I'm trying to pair my ~/music repositories on my two laptops (Ubuntu 10.04 and 12.04) using the Linux standalone tarball on my home WiFi network. After entering the same passphrase on both machines, nothing happens, both remain in "Pairing in progress" state.
+
+The router I'm using is, I think, fairly standard, it's a ZyXEL P-2812HNU-F1 with factory settings.
+
+Are others having the problem too? Any advice where I should start looking for what goes wrong?
