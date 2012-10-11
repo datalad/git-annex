@@ -795,6 +795,11 @@ Here are all the supported configuration settings.
   Or, it could be used if the network connection between two
   repositories is too slow to be used normally.
 
+* `remote.<name>.annex-sync`
+
+  If set to `false`, prevents git-annex sync (and the git-annex assistant)
+  from syncing with this remote.
+
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`

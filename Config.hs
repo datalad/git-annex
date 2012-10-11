@@ -86,6 +86,11 @@ repoNotIgnored :: Git.Repo -> Annex Bool
 repoNotIgnored r = not . fromMaybe False . Git.Config.isTrue
 	<$> getRemoteConfig r "ignore" ""
 
+{- Checks if a repo should be synced. -}
+repoSyncable :: Git.Repo -> Annex Bool
+repoSyncable r = fromMaybe True . Git.Config.isTrue
+	<$> getRemoteConfig r "sync" ""
+
 {- If a value is specified, it is used; otherwise the default is looked up
  - in git config. forcenumcopies overrides everything. -}
 getNumCopies :: Maybe Int -> Annex Int

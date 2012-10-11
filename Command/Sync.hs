@@ -26,6 +26,7 @@ import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
 import Types.Key
+import Config
 
 import qualified Data.ByteString.Lazy as L
 import Data.Hash.MD5
@@ -71,7 +72,8 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 					unwords (map Types.Remote.name s)
 			return l
 		available = filter (not . Remote.specialRemote)
-			<$> Remote.enabledRemoteList
+			<$> (filterM (repoSyncable . Types.Remote.repo)
+				=<< Remote.enabledRemoteList)
 		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
 		fastest = fromMaybe [] . headMaybe . Remote.byCost
 
