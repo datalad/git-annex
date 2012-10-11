@@ -39,9 +39,12 @@ seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
-start = notBareRepo $ do
+start = start' True
+
+start' :: Bool -> CommandStart
+start' allowauto = notBareRepo $ do
 	liftIO $ ensureInstalled
-	ifM isInitialized ( go , liftIO startNoRepo )
+	ifM isInitialized ( go , auto )
 	stop
 	where
 		go = do
@@ -52,6 +55,11 @@ start = notBareRepo $ do
 				, startDaemon True True $ Just $
 					const $ openBrowser browser
 				)
+		auto
+			| allowauto = liftIO startNoRepo
+			| otherwise = do
+				d <- liftIO getCurrentDirectory
+				error $ "no repository for " ++ d
 		checkpid = do
 			pidfile <- fromRepo gitAnnexPidFile
 			liftIO $ isJust <$> checkDaemon pidfile
@@ -74,7 +82,7 @@ autoStart autostartfile = do
 		(d:_) -> do
 			changeWorkingDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ doCommand start
+			void $ Annex.eval state $ doCommand $ start' False
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
