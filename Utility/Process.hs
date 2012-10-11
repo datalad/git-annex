@@ -203,7 +203,6 @@ debugProcess p = do
 	debugM "Utility.Process" $ unwords
 		[ action ++ ":"
 		, showCmd p
-		, maybe "" show (env p)
 		]
 	where
 		action
