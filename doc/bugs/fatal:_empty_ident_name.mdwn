@@ -46,3 +46,6 @@ commit 56c037c69e75def74d6ea90de8aa8a1954c52178 Arch Linux
 **Please provide any additional information below.**
 
 > [[done]] by adding name to the user, in /etc/passwd. --Stone
+
+>> Actually, [[done]] by avoiding clobbering HOME when running some git
+>> commands. --[[Joey]]

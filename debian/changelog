@@ -4,6 +4,7 @@ git-annex (3.20121010) UNRELEASED; urgency=low
   * Standard groups changed to client, transfer, archive, and backup.
     Each of these has its own standard preferred content setting.
   * dead: Remove dead repository from all groups.
+  * Avoid unsetting HOME when running certian git commands. Closes: #690193
 
  -- Joey Hess <joeyh@debian.org>  Wed, 10 Oct 2012 12:59:25 -0400
 

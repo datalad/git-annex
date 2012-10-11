@@ -22,6 +22,7 @@ module Annex.Branch (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import System.Environment
 
 import Common.Annex
 import Annex.BranchState
@@ -292,7 +293,8 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
 	g <- gitRepo
-	let g' = g { gitEnv = Just [("GIT_INDEX_FILE", f)] }
+	e <- liftIO getEnvironment
+	let g' = g { gitEnv = Just $ ("GIT_INDEX_FILE", f):e }
 
 	Annex.changeState $ \s -> s { Annex.repo = g' }
 	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
