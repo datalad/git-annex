@@ -1,6 +1,6 @@
 <div .span9 .hero-unit>
   <h2>
-    Configuring #{description}
+    Configuring repository: #{description}
   <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>

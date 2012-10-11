@@ -9,6 +9,8 @@ git-annex (3.20121010) UNRELEASED; urgency=low
   * Makefile: Avoid building with -threaded if the ghc threaded runtime does
     not exist.
   * webapp: Improve wording of intro display. Closes: #689848
+  * webapp: Repositories can now be configured, to change their description,
+    their group, or even to disable syncing to them.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 10 Oct 2012 12:59:25 -0400
 

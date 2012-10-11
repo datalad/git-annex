@@ -166,7 +166,7 @@ postCancelTransferR t = cancelTransfer False t
 pauseTransfer :: Transfer -> Handler ()
 pauseTransfer = cancelTransfer True
 
-cancelTransfer :: Bool -> Transfer-> Handler ()
+cancelTransfer :: Bool -> Transfer -> Handler ()
 cancelTransfer pause t = do
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
