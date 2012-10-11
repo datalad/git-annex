@@ -1,7 +1,7 @@
 CFLAGS=-Wall
 GIT_ANNEX_TMP_BUILD_DIR?=tmp
 IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-threaded -Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
+BASEFLAGS=-Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 
 # If you get build failures due to missing haskell libraries,
 # you can turn off some of these features.
@@ -18,8 +18,10 @@ OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
 OPTFLAGS=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o Utility/libmounts.o
+THREADFLAGS=$(shell if test -e  `ghc --print-libdir`/libHSrts_thr.a; then printf -- -threaded; fi)
 else
 # BSD system
+THREADFLAGS=-threaded
 OPTFLAGS=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
@@ -31,11 +33,13 @@ endif
 endif
 endif
 
+ALLFLAGS = $(BASEFLAGS) $(FEATURES) $(OPTFLAGS) $(THREADFLAGS)
+
 PREFIX=/usr
-GHCFLAGS=-O2 $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
+GHCFLAGS=-O2 $(ALLFLAGS)
 
 ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
+GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(ALLFLAGS)
 endif
 
 GHCMAKE=ghc $(GHCFLAGS) --make
@@ -51,7 +55,7 @@ build: $(all)
 sources: $(sources)
 
 # Disables optimisation. Not for production use.
-fast: GHCFLAGS=$(BASEFLAGS) $(FEATURES) $(OPTFLAGS)
+fast: GHCFLAGS=$(ALLFLAGS)
 fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
