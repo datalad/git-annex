@@ -22,6 +22,7 @@ import Types.Remote
 import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Git.Command
 import qualified Annex
 import Logs.Presence
 import Logs.Transfer
@@ -126,7 +127,20 @@ guardUsable r onerr a
 tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| not $ M.null $ Git.config r = return r -- already read
-	| Git.repoIsSsh r = store $ onRemote r (pipedconfig, r) "configlist" [] []
+	| Git.repoIsSsh r = store $ do
+		v <- onRemote r (pipedsshconfig, Left undefined) "configlist" [] []
+		case (v, Git.remoteName r) of
+			(Right r', _) -> return r'
+			(Left _, Just n) -> do
+				{- Is this remote just not available, or does
+				 - it not have git-annex-shell?
+				 - Find out by trying to fetch from the remote. -}
+				whenM (inRepo $ Git.Command.runBool "fetch" [Param "--quiet", Param n]) $ do
+					let k = "remote." ++ n ++ ".annex-ignore"
+					warning $ "Remote " ++ n ++ " does not have git-annex installed; setting " ++ k
+					inRepo $ Git.Command.run "config" [Param k, Param "true"]
+				return r
+			_ -> return r
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ safely $ geturlconfig headers
@@ -140,18 +154,21 @@ tryGitConfigRead r
 		safely a = either (const $ return r) return
 				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-		pipedconfig cmd params = safely $
+		pipedconfig cmd params =
 			withHandle StdoutHandle createProcessSuccess p $
 				Git.Config.hRead r
 			where
 				p = proc cmd $ toCommand params
+
+		pipedsshconfig cmd params =
+			liftIO (try (pipedconfig cmd params) :: IO (Either SomeException Git.Repo))
 
 		geturlconfig headers = do
 			s <- Url.get (Git.repoLocation r ++ "/config") headers
 			withTempFile "git-annex.tmp" $ \tmpfile h -> do
 				hPutStr h s
 				hClose h
-				pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				safely $ pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 
 		store = observe $ \r' -> do
 			g <- gitRepo
