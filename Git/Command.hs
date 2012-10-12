@@ -73,7 +73,7 @@ pipeReadStrict params repo = assertLocal repo $
 pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
 pipeWriteRead params s repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
-		(gitEnv repo) s
+		(gitEnv repo) s (Just fileEncoding)
 
 {- Runs a git subcommand, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()

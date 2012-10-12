@@ -57,3 +57,6 @@ Using Ubuntu's original version (3.20120406) the error message is a bit differen
 > try to look at it again soon; the last 2 times I looked at that code
 > I could not see an easy way to make it allow invalid utf-8 encoded data.
 > --[[Joey]] 
+
+>> [[done]], although I am no longer so sure this was the last utf-8
+>> encoding bug.. --[[Joey]]

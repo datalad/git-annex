@@ -64,16 +64,23 @@ readProcessEnv cmd args environ =
 			, env = environ
 			}
 
-{- Writes stdout to a process, returns its output, and also allows specifying
- - the environment. -}
+{- Writes a string to a process on its stdout, 
+ - returns its output, and also allows specifying the environment.
+ -
+ -
+ -}
 writeReadProcessEnv
 	:: FilePath
 	-> [String]
 	-> Maybe [(String, String)]
-	-> String	
+	-> String
+	-> (Maybe (Handle -> IO ()))
 	-> IO String
-writeReadProcessEnv cmd args environ input = do
+writeReadProcessEnv cmd args environ input adjusthandle = do
 	(Just inh, Just outh, _, pid) <- createProcess p
+
+	maybe (return ()) (\a -> a inh) adjusthandle
+	maybe (return ()) (\a -> a outh) adjusthandle
 
 	-- fork off a thread to start consuming the output
 	output  <- hGetContents outh
