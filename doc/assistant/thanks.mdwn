@@ -32,6 +32,7 @@ the git-annex assistant.
 * AJ Ashton
 * Svenne Krap
 * Drew Hess
+* Peter van Westen
 
 ## Prioritizers
 
@@ -45,7 +46,8 @@ fenchel, Erik Penninga, Richard Hartmann, Graham, Stan Yamane, Ben Skelton,
 Ian McEwen, asc, Paul Tagliamonte, Sherif Abouseda, Igor Támara, Anne Wind,
 Mesar Hameed, Brandur K. Holm Petersen, Takahiro Inoue, Kai Hendry,
 Stephen Youndt, Lee Roberson, Ben Strawbridge, Andrew Greenberg, Alfred Adams
-Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin
+Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin,
+Sherif Abouseda, Ben Strawbridge
 
 And special thanks to Kevin McKenzie, who also gave me a login to a Mac OSX
 machine, which has proven invaluable, and Jimmy Tang who has helped
@@ -79,7 +81,7 @@ Peter Kropf, Mark Hepburn, greymont, D. Joe Anderson, Jeremy Zunker, ctebo,
 Manuel Roumain, Jason Walsh, np, Shawn, Johan Tibell, Branden Tyree, Dinyar
 Rabady, Andrew Mason, damond armstead, Ethan Aubin, TomTom Tommie, Jimmy
 Kaplowitz, Steven Zakulec, mike smith, Jacob Kirkwood, Mark Hymers, Nathan
-Collins, Asbjørn Sloth Tønnesen, Misty De Meo,
+Collins, Asbjørn Sloth Tønnesen, Misty De Meo, James Shubin,
 Jim Paris, Adam Sjøgren, miniBill, Taneli, Kumar Appaiah, Greg Grossmeier,
 Sten Turpin, Otavio Salvador, Teemu Hukkanen, Brian Stengaard, bob walker,
 bibeneus, andrelo, Yaroslav Halchenko, hesfalling, Tommy L, jlargentaye,
@@ -215,7 +217,8 @@ Isaac Wedin, Paul Anguiano, ldacruz, Jason Manheim, Sawyer, Jason
 Woofenden, Joe Danziger, Declan Morahan, KaptainUfolog, Vladron, bart, Jeff
 McNeill, Christian Schlotter, Ben McQuillan, Anthony, Julian, Martin O,
 altruism, Eric Solheim, MarkS, ndrwc, Matthew, David Lehn, Matthew
-Cisneros, Mike Skoglund, Kristy Carey
+Cisneros, Mike Skoglund, Kristy Carey, fmotta, Tom Lowenthal, Branden
+Tyree
 
 ## Also thanks to
 
