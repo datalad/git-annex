@@ -27,6 +27,7 @@ module Remote (
 	byCost,
 	prettyPrintUUIDs,
 	prettyListUUIDs,
+	repoFromUUID,
 	remotesWithUUID,
 	remotesWithoutUUID,
 	keyLocations,
@@ -52,6 +53,7 @@ import Logs.UUID
 import Logs.Trust
 import Logs.Location
 import Remote.List
+import qualified Git
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -144,6 +146,17 @@ prettyListUUIDs uuids = do
 			| otherwise = n
 			where
 				n = finddescription m u
+
+{- Gets the git repo associated with a UUID.
+ - There's no associated remote when this is the UUID of the local repo. -}
+repoFromUUID :: UUID -> Annex (Git.Repo, Maybe Remote)
+repoFromUUID u = ifM ((==) u <$> getUUID)
+	( (,) <$> gitRepo <*> pure Nothing
+	, do
+		remote <- fromMaybe (error "Unknown UUID") . M.lookup u
+			<$> remoteMap id
+		return (repo remote, Just remote)
+	)
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote] -> [UUID] -> [Remote]

@@ -8,6 +8,7 @@
 module Assistant.WebApp.Utility where
 
 import Assistant.Common
+import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
 import Assistant.ThreadedMonad
@@ -15,9 +16,12 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Sync
 import qualified Remote
+import qualified Types.Remote as Remote
+import qualified Remote.List as Remote
 import qualified Assistant.Threads.Transferrer as Transferrer
 import Logs.Transfer
 import Locations.UserConfig
+import qualified Config
 
 import Yesod
 import qualified Data.Map as M
@@ -25,9 +29,14 @@ import Control.Concurrent
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 import System.Posix.Process (getProcessGroupIDOf)
 
-changeSyncable :: Remote -> Bool -> Handler ()
-changeSyncable r True = syncRemote r
-changeSyncable r False = do
+{- Use Nothing to change global sync setting. -}
+changeSyncable :: (Maybe Remote) -> Bool -> Handler ()
+changeSyncable Nothing _ = noop -- TODO
+changeSyncable (Just r) True = do
+	changeSyncFlag r True
+	syncRemote r
+changeSyncable (Just r) False = do
+	changeSyncFlag r False
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
 	let st = fromJust $ threadState webapp
@@ -40,6 +49,16 @@ changeSyncable r False = do
 			liftIO (currentTransfers <$> getDaemonStatus dstatus)
 	where
 		tofrom t = transferUUID t == Remote.uuid r
+
+changeSyncFlag :: Remote -> Bool -> Handler ()
+changeSyncFlag r enabled = runAnnex undefined $ do
+	Config.setConfig key value
+	void $ Remote.remoteListRefresh
+	where
+		key = Config.remoteConfig (Remote.repo r) "sync"
+		value
+			| enabled = "true"
+			| otherwise = "false"
 
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()

@@ -13,6 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
+import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
 import Assistant.DaemonStatus
 import Utility.Yesod
@@ -129,13 +130,14 @@ repoList onlyconfigured includehere
 				<*> pure (map snd l')
 		counter = map show ([1..] :: [Int])
 
-
 getEnableSyncR :: UUID -> Handler ()
-getEnableSyncR uuid = do
-	error "TODO"
-	redirect RepositoriesR
+getEnableSyncR = flipSync True
 
 getDisableSyncR :: UUID -> Handler ()
-getDisableSyncR uuid = do
-	error "TODO"
+getDisableSyncR = flipSync False
+
+flipSync :: Bool -> UUID -> Handler ()
+flipSync enable uuid = do
+	mremote <- runAnnex undefined $ snd <$> Remote.repoFromUUID uuid
+	changeSyncable mremote enable
 	redirect RepositoriesR

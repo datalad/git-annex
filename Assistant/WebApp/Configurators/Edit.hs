@@ -16,8 +16,6 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Utility.Yesod
 import qualified Remote
-import qualified Remote.List as Remote
-import qualified Types.Remote as Remote
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
@@ -54,7 +52,8 @@ getRepoConfig uuid r = RepoConfig
 				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
 					(getStandardGroup groups)
 
-{- Returns Just False if syncing has been disabled, or Just True when enabled. -}
+{- Returns Just False if syncing should be disabled, Just True when enabled;
+ - Nothing when it is not changed. -}
 setRepoConfig :: UUID -> Git.Repo -> RepoConfig -> Annex (Maybe Bool)
 setRepoConfig uuid r c = do
 	describeUUID uuid $ T.unpack $ repoDescription c
@@ -65,14 +64,9 @@ setRepoConfig uuid r c = do
 		( return Nothing
 		, do
 			syncable <- Config.repoSyncable r
-			if (syncable /= repoSyncable c)
-				then do
-					let key = Config.remoteConfig r "sync"
-					Config.setConfig key $
-						if syncable then "false" else "true"
-					void $ Remote.remoteListRefresh
-					return $ Just $ repoSyncable c
-				else return Nothing
+			return $ if (syncable /= repoSyncable c)
+				then Just $ repoSyncable c
+				else Nothing
 		)
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
@@ -100,29 +94,19 @@ editForm new uuid = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Configure repository"
 
-	(repo, mremote) <- lift $ runAnnex undefined getrepo
+	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
 	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
-			r <- runAnnex undefined $
+			syncchanged <- runAnnex undefined $
 				setRepoConfig uuid repo input
-			maybe noop (uncurry changeSyncable) $
-				(,) <$> mremote <*> r
+			maybe noop (changeSyncable mremote) syncchanged
 			redirect RepositoriesR
 		_ -> showform form enctype curr
 	where
-		getrepo = ifM ((==) uuid <$> getUUID)
-			( (,) <$> gitRepo <*> pure Nothing
-			, do
-				remote <- fromMaybe (error "Unknown UUID") . M.lookup uuid
-					<$> Remote.remoteMap id
-				return (Remote.repo remote, Just remote)
-			)
 		showform form enctype curr = do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/editrepository")
-
-
