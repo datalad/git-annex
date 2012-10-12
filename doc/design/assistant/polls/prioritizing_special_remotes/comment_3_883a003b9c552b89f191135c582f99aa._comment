@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmsz4weoPXV2oEtv3zpo9dOxn_SEPz-7Iw"
+ nickname="Zooko"
+ subject="reasons to like Tahoe-LAFS as a special remote"
+ date="2012-10-12T18:17:42Z"
+ content="""
+Here are a couple of things which are (I think) unique about the Tahoe-LAFS special remote:
+
+1. encryption ; All of the data is encrypted before leaving your local system and heading for the server (or for the clouds). This is true even though you don't (I think) have to enter an encryption key into git-annex to access your data.
+
+(Note: the above implies that you're in danger of permanently losing access to your data, by losing the last copy of the encryption key, if your local git-annex state is lost. This deserves careful consideration.)
+
+2. erasure-coding ; You can configure Tahoe-LAFS to spread the data out in a RAID-like way across multiple remote storage servers, where each server holds only, say, 1/3 of the data, but there are, say, 10 different servers, where any 3 of them are sufficient to give you full access to your data. Does that make sense it uses less bandwidth and storage space than replication (i.e. putting a complete replica of your data on each of 4 or 5 or 10 different storage servers), but it is more robust than sharding (i.e. putting 1/3 of your data on each of three different servers so that if any one of them goes down you lose 1/3 of your data).
+"""]]
