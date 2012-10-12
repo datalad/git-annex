@@ -1,7 +1,0 @@
-git-annex 3.20120807 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * initremote: Avoid recording remote's description before checking
-     that its config is valid.
-   * unused, status: Avoid crashing when ran in bare repo.
-   * Avoid crashing when "git annex get" fails to download from one
-     location, and falls back to downloading from a second location."""]]
