@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.Sync
+import Assistant.WebApp.Utility
 import Assistant.MakeRemote
 import Utility.Yesod
 import Init
@@ -226,16 +226,6 @@ getEnableDirectoryR uuid = bootstrap (Just Config) $ do
 	description <- lift $ runAnnex "" $
 		T.pack . concat <$> prettyListUUIDs [uuid]
 	$(widgetFile "configurators/enabledirectory")
-
-{- Start syncing a newly added remote, using a background thread. -}
-syncRemote :: Remote -> Handler ()
-syncRemote remote = do
-	webapp <- getYesod
-	liftIO $ syncNewRemote
-		(fromJust $ threadState webapp)
-		(daemonStatus webapp)
-		(scanRemotes webapp)
-		remote
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]

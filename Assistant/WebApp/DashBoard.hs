@@ -12,13 +12,12 @@ module Assistant.WebApp.DashBoard where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
+import Assistant.WebApp.Utility
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
-import Assistant.TransferSlots
-import qualified Assistant.Threads.Transferrer as Transferrer
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Logs.Transfer
@@ -27,14 +26,11 @@ import Utility.DataUnits
 import Types.Key
 import qualified Remote
 import qualified Git
-import Locations.UserConfig
 
 import Yesod
 import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
-import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
-import System.Posix.Process (getProcessGroupIDOf)
 
 {- A display of currently running and queued transfers.
  -
@@ -162,76 +158,3 @@ getCancelTransferR :: Transfer -> Handler ()
 getCancelTransferR t = cancelTransfer False t >> redirectBack
 postCancelTransferR :: Transfer -> Handler ()
 postCancelTransferR t = cancelTransfer False t
-
-pauseTransfer :: Transfer -> Handler ()
-pauseTransfer = cancelTransfer True
-
-cancelTransfer :: Bool -> Transfer -> Handler ()
-cancelTransfer pause t = do
-	webapp <- getYesod
-	let dstatus = daemonStatus webapp
-	m <- getCurrentTransfers
-	liftIO $ do
-		unless pause $
-			{- remove queued transfer -}
-			void $ dequeueTransfers (transferQueue webapp) dstatus $
-				equivilantTransfer t
-		{- stop running transfer -}
-		maybe noop (stop dstatus) (M.lookup t m)
-	where
-		stop dstatus info = do
-			{- When there's a thread associated with the
-			 - transfer, it's signaled first, to avoid it
-			 - displaying any alert about the transfer having
-			 - failed when the transfer process is killed. -}
-			maybe noop signalthread $ transferTid info
-			maybe noop killproc $ transferPid info
-			if pause
-				then void $
-					alterTransferInfo dstatus t $ \i -> i
-						{ transferPaused = True }
-				else void $
-					removeTransfer dstatus t
-		signalthread tid
-			| pause = throwTo tid PauseTransfer
-			| otherwise = killThread tid
-		{- In order to stop helper processes like rsync,
-		 - kill the whole process group of the process running the 
-		 - transfer. -}
-		killproc pid = do
-			g <- getProcessGroupIDOf pid
-			void $ tryIO $ signalProcessGroup sigTERM g
-			threadDelay 50000 -- 0.05 second grace period
-			void $ tryIO $ signalProcessGroup sigKILL g
-
-startTransfer :: Transfer -> Handler ()
-startTransfer t = do
-	m <- getCurrentTransfers
-	maybe startqueued go (M.lookup t m)
-	where
-		go info = maybe (start info) resume $ transferTid info
-		startqueued = do
-			webapp <- getYesod
-			let dstatus = daemonStatus webapp
-			let q = transferQueue webapp
-			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
-			maybe noop start $ headMaybe is
-		resume tid = do
-			webapp <- getYesod
-			let dstatus = daemonStatus webapp
-			liftIO $ do
-				alterTransferInfo dstatus t $ \i -> i
-					{ transferPaused = False }
-				throwTo tid ResumeTransfer
-		start info = do
-			webapp <- getYesod
-			let st = fromJust $ threadState webapp
-			let dstatus = daemonStatus webapp
-			let slots = transferSlots webapp
-			liftIO $ inImmediateTransferSlot dstatus slots $ do
-				program <- readProgramFile
-				Transferrer.startTransfer st dstatus program t info
-
-getCurrentTransfers :: Handler TransferMap
-getCurrentTransfers = currentTransfers
-	<$> (liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)

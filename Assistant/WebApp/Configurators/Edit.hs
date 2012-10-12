@@ -13,11 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.WebApp.Configurators.Local (syncRemote)
-import Assistant.WebApp.DashBoard (cancelTransfer)
-import Assistant.DaemonStatus
-import Assistant.TransferQueue
-import Assistant.ThreadedMonad
+import Assistant.WebApp.Utility
 import Utility.Yesod
 import qualified Remote
 import qualified Remote.List as Remote
@@ -25,7 +21,6 @@ import qualified Types.Remote as Remote
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
-import Logs.Transfer
 import Types.StandardGroups
 import qualified Config
 import Annex.UUID
@@ -80,23 +75,6 @@ setRepoConfig uuid r c = do
 				else return Nothing
 		)
 
-changeSyncable :: Maybe Remote -> Bool -> Handler ()
-changeSyncable Nothing _ = noop
-changeSyncable (Just r) True = syncRemote r
-changeSyncable (Just r) False = do
-	webapp <- getYesod
-	let dstatus = daemonStatus webapp
-	let st = fromJust $ threadState webapp
-	liftIO $ runThreadState st $ updateKnownRemotes dstatus
-	{- Stop all transfers to or from this remote.
-	 - XXX Can't stop any ongoing scan, or git syncs. -}
-	void $ liftIO $ dequeueTransfers (transferQueue webapp) dstatus tofrom
-	mapM_ (cancelTransfer False) =<<
-		filter tofrom . M.keys <$>
-			liftIO (currentTransfers <$> getDaemonStatus dstatus)
-	where
-		tofrom t = transferUUID t == Remote.uuid r
-
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Description" (Just $ repoDescription def)
@@ -122,14 +100,16 @@ editForm new uuid = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Configure repository"
 
-	(repo, remote) <- lift $ runAnnex undefined getrepo
+	(repo, mremote) <- lift $ runAnnex undefined getrepo
 	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
-			maybe noop (changeSyncable remote) =<<
-				runAnnex undefined (setRepoConfig uuid repo input)
+			r <- runAnnex undefined $
+				setRepoConfig uuid repo input
+			maybe noop (uncurry changeSyncable) $
+				(,) <$> mremote <*> r
 			redirect RepositoriesR
 		_ -> showform form enctype curr
 	where
