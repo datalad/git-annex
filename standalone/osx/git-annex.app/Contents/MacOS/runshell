@@ -31,15 +31,17 @@ cd "$orig"
 PATH=$base/bin:$PATH
 export PATH
 
-# Using DYLD_FALLBACK_LIBRARY_PATH rather than DYLD_LIBRARY_PATH, so as
-# not to force binaries to link against possibly the wrong versions of
-# libraries found in the path. With DYLD_FALLBACK_LIBRARY_PATH, the
-# system's versions of libraries will be used when possible, and otherwise
-# it will fall back to using the libraries bundled with this app.
-for lib in $(cat $base/libdirs); do
-	DYLD_FALLBACK_LIBRARY_PATH="$base/$lib:$DYLD_FALLBACK_LIBRARY_PATH"
-done
-export DYLD_FALLBACK_LIBRARY_PATH
+# This makes the linker first look in the library directories bundled
+# in this app. Only if it fails to find a library there will a system
+# library be used.
+# 
+# This seems to work better than DYLD_LIBRARY_PATH, which can force
+# the wrong version of a library to be used, if the app bundles two
+# different versions of a single library. And it seems to work better
+# than DYLD_FALLBACK_LIBRARY_PATH, which fails to override old system
+# versions of libraries when a program in the app needs a newer version.
+DYLD_ROOT_PATH=$base
+export DYLD_ROOT_PATH
 
 GIT_EXEC_PATH=$base/git-core
 export GIT_EXEC_PATH
