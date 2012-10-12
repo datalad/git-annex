@@ -74,7 +74,7 @@ oneDay = 24 * 60 * 60
  - will block the watcher. -}
 check :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> IO Bool
 check st dstatus transferqueue changechan = do
-	g <- runThreadState st $ fromRepo id
+	g <- runThreadState st gitRepo
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- Git.LsFiles.notInRepo False ["."] g
 	now <- getPOSIXTime

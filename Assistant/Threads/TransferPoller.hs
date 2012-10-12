@@ -24,7 +24,7 @@ thisThread = "TransferPoller"
  - of each transfer is complete. -}
 transferPollerThread :: ThreadState -> DaemonStatusHandle -> NamedThread
 transferPollerThread st dstatus = thread $ do
-	g <- runThreadState st $ fromRepo id
+	g <- runThreadState st gitRepo
 	tn <- newNotificationHandle =<<
 		transferNotifier <$> getDaemonStatus dstatus
 	forever $ do

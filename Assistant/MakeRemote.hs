@@ -90,10 +90,10 @@ makeGitRemote basename location = makeRemote basename location $ \name ->
  - Returns the name of the remote. -}
 makeRemote :: String -> String -> (String -> Annex ()) -> Annex String
 makeRemote basename location a = do
-	r <- fromRepo id
-	if not (any samelocation $ Git.remotes r)
+	g <- gitRepo
+	if not (any samelocation $ Git.remotes g)
 		then do
-			let name = uniqueRemoteName basename 0 r
+			let name = uniqueRemoteName basename 0 g
 			a name
 			return name
 		else return basename

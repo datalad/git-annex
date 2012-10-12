@@ -94,7 +94,7 @@ expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] 
 expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 	liftIO $ debug thisThread ["starting scan of", show visiblers]
 	void $ alertWhile dstatus (scanAlert visiblers) $ do
-		g <- runThreadState st $ fromRepo id
+		g <- runThreadState st gitRepo
 		(files, cleanup) <- LsFiles.inRepo [] g
 		go files
 		void cleanup

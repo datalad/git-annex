@@ -24,7 +24,7 @@ thisThread = "TransferWatcher"
  - and updates the DaemonStatus's map of ongoing transfers. -}
 transferWatcherThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> NamedThread
 transferWatcherThread st dstatus transferqueue = thread $ do
-	g <- runThreadState st $ fromRepo id
+	g <- runThreadState st gitRepo
 	let dir = gitAnnexTransferDir g
 	createDirectoryIfMissing True dir
 	let hook a = Just $ runHandler st dstatus transferqueue a

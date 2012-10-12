@@ -84,7 +84,7 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe FailedPushMap -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushmap remotes = do
 	(g, branch, u) <- runThreadState st $ (,,)
-		<$> fromRepo id
+		<$> gitRepo
 		<*> inRepo Git.Branch.current
 		<*> getUUID
 	go True branch g u remotes
@@ -145,7 +145,7 @@ pushToRemotes threadname now st mpushmap remotes = do
 {- Manually pull from remotes and merge their branches. -}
 manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO Bool
 manualPull st currentbranch remotes = do
-	g <- runThreadState st $ fromRepo id
+	g <- runThreadState st gitRepo
 	forM_ remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
 	haddiverged <- runThreadState st Annex.Branch.forceUpdate

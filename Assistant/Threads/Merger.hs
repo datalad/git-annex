@@ -25,7 +25,7 @@ thisThread = "Merger"
  - pushes. -}
 mergeThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> NamedThread
 mergeThread st dstatus transferqueue = thread $ do
-	g <- runThreadState st $ fromRepo id
+	g <- runThreadState st gitRepo
 	let dir = Git.localGitDir g </> "refs"
 	createDirectoryIfMissing True dir
 	let hook a = Just $ runHandler st dstatus transferqueue a
