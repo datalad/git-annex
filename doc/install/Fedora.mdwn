@@ -1,10 +1,12 @@
-git-annex is recently finding its way into Fedora.
+git-annex is available in recent versions of Fedora. Although it is
+not currently a very recent version, it should work ok.
+[status](http://koji.fedoraproject.org/koji/packageinfo?packageID=14145)
 
-* [Status of getting a Fedora package](https://bugzilla.redhat.com/show_bug.cgi?id=662259)
-* [Koji build for F17](http://koji.fedoraproject.org/koji/buildinfo?buildID=328654)
-* [Koji build for F16](http://koji.fedoraproject.org/koji/buildinfo?buildID=328656)
+Should be as simple as: `yum install git-annex`
 
-Installation recipe for Fedora 14 thruough 15.
+----
+
+Older version? Here's an installation recipe for Fedora 14 through 15.
 
 <pre>
 sudo yum install ghc cabal-install pcre-devel
