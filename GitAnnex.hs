@@ -71,6 +71,7 @@ import qualified Command.Assistant
 import qualified Command.WebApp
 #endif
 #endif
+import qualified Command.Help
 
 cmds :: [Command]
 cmds = concat
@@ -123,6 +124,7 @@ cmds = concat
 	, Command.WebApp.def
 #endif
 #endif
+	, Command.Help.def
 	]
 
 options :: [Option]
