@@ -1,3 +1,10 @@
+git-annex (3.20121011) UNRELEASED; urgency=low
+
+  * vicfg: New file format, avoids ambiguity with repos that have the same
+    description, or no description.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 12 Oct 2012 22:46:08 -0400
+
 git-annex (3.20121010) unstable; urgency=low
 
   * Renamed --ingroup to --inallgroup.

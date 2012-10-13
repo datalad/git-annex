@@ -35,7 +35,8 @@ start = do
 	f <- fromRepo gitAnnexTmpCfgFile
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
-	liftIO $ writeFile f $ genCfg cfg
+	descs <- uuidDescriptions
+	liftIO $ writeFile f $ genCfg cfg descs
 	vicfg cfg f
 	stop
 
@@ -57,7 +58,6 @@ data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
 	, cfgPreferredContentMap :: M.Map UUID String
-	, cfgDescriptions :: M.Map UUID String
 	}
 
 getCfg :: Annex Cfg
@@ -65,7 +65,6 @@ getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> preferredContentMapRaw
-	<*> uuidDescriptions
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
@@ -80,13 +79,8 @@ diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap, diff cfgPreferredCo
 		diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
 			(f newcfg) (f curcfg)
 
-genCfg :: Cfg -> String
-genCfg cfg = unlines $ concat
-	[ intro
-	, trustintro, trust, defaulttrust
-	, groupsintro, groups, defaultgroups
-	, preferredcontentintro, preferredcontent, defaultpreferredcontent
-	]
+genCfg :: Cfg -> M.Map UUID String -> String
+genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 	where
 		intro =
 			[ com "git-annex configuration"
@@ -94,50 +88,48 @@ genCfg cfg = unlines $ concat
 			, com "Changes saved to this file will be recorded in the git-annex branch."
 			, com ""
 			, com "Lines in this file have the format:"
-			, com "  setting repo = value"
+			, com "  setting uuid = value"
 			]
 
-		trustintro =
+		trust = settings cfgTrustMap
 			[ ""
 			, com "Repository trust configuration"
 			, com "(Valid trust levels: " ++
 			  unwords (map showTrustLevel [Trusted .. DeadTrusted]) ++
 			  ")"
 			]
-		trust = map (\(t, u) -> line "trust" u $ showTrustLevel t) $
-			sort $ map swap $ M.toList $ cfgTrustMap cfg
+			(\(t, u) -> line "trust" u $ showTrustLevel t)
+			(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
 
-		defaulttrust = map (\u -> pcom $ line "trust" u $ showTrustLevel SemiTrusted) $
-			missing cfgTrustMap
-		groupsintro = 
+		groups = settings cfgGroupMap
 			[ ""
 			, com "Repository groups"
 			, com "(Separate group names with spaces)"
 			]
-		groups = sort $ map (\(s, u) -> line "group" u $ unwords $ S.toList s) $
-			map swap $ M.toList $ cfgGroupMap cfg
-		defaultgroups = map (\u -> pcom $ line "group" u "") $
-			missing cfgGroupMap
+			(\(s, u) -> line "group" u $ unwords $ S.toList s)
+			(\u -> lcom $ line "group" u "")
 
-		preferredcontentintro = 
+		preferredcontent = settings cfgPreferredContentMap
 			[ ""
 			, com "Repository preferred contents"
 			]
-		preferredcontent = sort $ map (\(s, u) -> line "preferred-content" u s) $
-			map swap $ M.toList $ cfgPreferredContentMap cfg
-		defaultpreferredcontent = map (\u -> pcom $ line "preferred-content" u "") $
-			missing cfgPreferredContentMap
+			(\(s, u) -> line "preferred-content" u s)
+			(\u -> line "preferred-content" u "")
 
-		line setting u value = unwords
-			[ setting
-			, showu u
-			, "=" 
-			, value
+		settings field desc showvals showdefaults = concat
+			[ desc
+			, concatMap showvals $
+				sort $ map swap $ M.toList $ field cfg
+			, concatMap (\u -> lcom $ showdefaults u) $
+				missing field
 			]
-		pcom s = "#" ++ s
-		showu u = fromMaybe (fromUUID u) $
-			M.lookup u (cfgDescriptions cfg)
-		missing field = S.toList $ M.keysSet (cfgDescriptions cfg) `S.difference` M.keysSet (field cfg)
+
+		line setting u value =
+			[ com $ "(" ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
+			, unwords [setting, fromUUID u, "=", value]
+			]
+		lcom = map (\l -> if "#" `isPrefixOf` l then l else "#" ++ l)
+		missing field = S.toList $ M.keysSet descs `S.difference` M.keysSet (field cfg)
 
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
@@ -155,16 +147,14 @@ parseCfg curcfg = go [] curcfg . lines
 		parse l cfg
 			| null l = Right cfg
 			| "#" `isPrefixOf` l = Right cfg
-			| null setting || null repo' = Left "missing repository name"
-			| otherwise = case M.lookup repo' name2uuid of
-				Nothing -> badval "repository" repo'
-				Just u -> handle cfg u setting value'
+			| null setting || null u = Left "missing repository uuid"
+			| otherwise = handle cfg (toUUID u) setting value'
 			where
 				(setting, rest) = separate isSpace l
-				(repo, value) = separate (== '=') rest
+				(r, value) = separate (== '=') rest
 				value' = trimspace value
-				repo' = reverse $ trimspace $
-					reverse $ trimspace repo
+				u = reverse $ trimspace $
+					reverse $ trimspace r
 				trimspace = dropWhile isSpace
 
 		handle cfg u setting value
@@ -183,9 +173,6 @@ parseCfg curcfg = go [] curcfg . lines
 						let m = M.insert u value (cfgPreferredContentMap cfg)
 						in Right $ cfg { cfgPreferredContentMap = m }
 			| otherwise = badval "setting" setting
-
-		name2uuid = M.fromList $ map swap $
-			M.toList $ cfgDescriptions curcfg
 
 		showerr (Just msg, l) = [parseerr ++ msg, l]
 		showerr (Nothing, l)
