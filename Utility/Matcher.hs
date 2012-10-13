@@ -15,6 +15,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE Rank2Types, KindSignatures #-}
+
 module Utility.Matcher (
 	Token(..),
 	Matcher,
@@ -23,7 +25,7 @@ module Utility.Matcher (
 	generate,
 	match,
 	matchM,
-	matchM2,
+	matchMrun,
 	matchesAny
 ) where
 
@@ -89,22 +91,19 @@ match a m v = go m
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
 matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
-matchM m v = go m
-	where
-		go MAny = return True
-		go (MAnd m1 m2) = go m1 <&&> go m2
-		go (MOr m1 m2) =  go m1 <||> go m2
-		go (MNot m1) = liftM not (go m1)
-		go (MOp o) = o v
+matchM m v = matchMrun m $ \o -> o v
 
-matchM2 :: Monad m => Matcher (v1 -> v2 -> m Bool) -> v1 -> v2 -> m Bool
-matchM2 m v1 v2 = go m
+{- More generic running of a monadic Matcher, with full control over running
+ - of Operations. Mostly useful in order to match on more than one
+ - parameter. -}
+matchMrun :: forall o (m :: * -> *). Monad m => Matcher o -> (o -> m Bool) -> m Bool
+matchMrun m run = go m
 	where
 		go MAny = return True
 		go (MAnd m1 m2) = go m1 <&&> go m2
 		go (MOr m1 m2) =  go m1 <||> go m2
 		go (MNot m1) = liftM not (go m1)
-		go (MOp o) = o v1 v2
+		go (MOp o) = run o
 
 {- Checks is a matcher contains no limits, and so (presumably) matches
  - anything. Note that this only checks the trivial case; it is possible

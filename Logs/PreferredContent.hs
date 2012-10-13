@@ -53,8 +53,8 @@ isPreferredContent mu notpresent file = do
 	case M.lookup u m of
 		Nothing -> return True
 		Just matcher ->
-			Utility.Matcher.matchM2 matcher notpresent $
-				getTopFilePath file
+			Utility.Matcher.matchMrun matcher $ \a ->
+				a notpresent (getTopFilePath file)
 
 {- Read the preferredContentLog into a map. The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap
