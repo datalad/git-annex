@@ -125,7 +125,7 @@ genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 			]
 
 		line setting u value =
-			[ com $ "(" ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
+			[ com $ "(for " ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
 			, unwords [setting, fromUUID u, "=", value]
 			]
 		lcom = map (\l -> if "#" `isPrefixOf` l then l else "#" ++ l)
