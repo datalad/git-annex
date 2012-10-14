@@ -32,6 +32,6 @@ descStandardGroup BackupGroup = "backup: collects all files"
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String
 preferredContent ClientGroup = "exclude=*/archive/*"
-preferredContent TransferGroup = "not (inallgroup=client or not copies=client:2) and " ++ preferredContent ClientGroup
+preferredContent TransferGroup = "not (inallgroup=client and copies=client:2) and " ++ preferredContent ClientGroup
 preferredContent ArchiveGroup = "not copies=archive:1"
 preferredContent BackupGroup = "" -- all content is preferred

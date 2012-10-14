@@ -61,9 +61,9 @@ USB drive used in a sneakernet.
 The preferred content expression for these causes them to get and retain
 data until all clients have a copy.
 
-`not (inallgroup=client or not copies=client:2) and exclude=*/archive/*`
+`not (inallgroup=client and copies=client:2) and exclude=*/archive/*`
 
-The "not copies=client:2" part of the above handles the case where
+The "copies=client:2" part of the above handles the case where
 there is only one client repository. It makes a transfer repository
 speculatively  prefer content in this case, even though it as of yet
 has nowhere to transfer it to. Presumably, another client repository
