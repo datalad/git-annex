@@ -87,7 +87,7 @@ failedTransferScan st dstatus transferqueue r = do
 			transferqueue dstatus (associatedFile info) t r
 
 {- This is a expensive scan through the full git work tree, finding
- - files to download from or upload to any of the remotes.
+ - files to download from or upload to any known remote.
  - 
  - The scan is blocked when the transfer queue gets too large. -}
 expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] -> IO ()
@@ -114,7 +114,11 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			queueTransferWhenSmall transferqueue dstatus (Just f) t r
 		findtransfers f (key, _) = do
 			locs <- loggedLocations key
-			let use a = return $ catMaybes $ map (a key locs) rs
+			{- Queue transfers from any known remote. The known
+			 - remotes may have changed since this scan began. -}
+			let use a = do
+				knownrs <- liftIO $ knownRemotes <$> getDaemonStatus dstatus
+				return $ catMaybes $ map (a key locs) knownrs
 			ifM (inAnnex key)
 				( filterM (wantSend (Just f) . Remote.uuid . fst)
 					=<< use (check Upload False)
