@@ -8,9 +8,6 @@ The webapp is a web server that displays a shiny interface.
   This is quite likely because of how the div containing transfers is refereshed.
   If instead javascript was used to update the progress bar etc for transfers
   with json data, the buttons would work better.
-* Transfers from a remote with syncing disabled show as from "unknown".
-  (Note that it's probably not practical to prevent a remote with syncing
-  disabled from initiating transfers, so this can happen.)
 
 ## interface
 
