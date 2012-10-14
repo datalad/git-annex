@@ -71,7 +71,7 @@ queueTransfersMatching matching schedule q dstatus k f direction
 	where
 		go = do
 			rs <- sufficientremotes
-				=<< knownRemotes <$> liftIO (getDaemonStatus dstatus)
+				=<< syncRemotes <$> liftIO (getDaemonStatus dstatus)
 			let matchingrs = filter (matching . Remote.uuid) rs
 			if null matchingrs
 				then defer
@@ -104,7 +104,7 @@ queueTransfersMatching matching schedule q dstatus k f direction
  - any others in the list to try again later. -}
 queueDeferredDownloads :: Schedule -> TransferQueue -> DaemonStatusHandle -> Annex ()
 queueDeferredDownloads schedule q dstatus = do
-	rs <- knownRemotes <$> liftIO (getDaemonStatus dstatus)
+	rs <- syncRemotes <$> liftIO (getDaemonStatus dstatus)
 	l <- liftIO $ atomically $ swapTVar (deferreddownloads q) []
 	left <- filterM (queue rs) l
 	unless (null left) $

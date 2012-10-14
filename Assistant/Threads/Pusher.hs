@@ -52,7 +52,7 @@ pushThread st dstatus commitchan pushmap = thread $ runEvery (Seconds 2) $ do
 	now <- getCurrentTime
 	if shouldPush now commits
 		then do
-			remotes <- filter pushable . knownRemotes
+			remotes <- filter pushable . syncRemotes
 				<$> getDaemonStatus dstatus
 			unless (null remotes) $ 
 				void $ alertWhile dstatus (pushAlert remotes) $

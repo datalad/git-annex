@@ -61,7 +61,7 @@ transferScannerThread st dstatus scanremotes transferqueue = thread $ do
 		 -   lost.
 		 -}
 		startupScan = addScanRemotes scanremotes True
-			=<< knownRemotes <$> getDaemonStatus dstatus
+			=<< syncRemotes <$> getDaemonStatus dstatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Remote -> IO ()
@@ -117,8 +117,8 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			{- Queue transfers from any known remote. The known
 			 - remotes may have changed since this scan began. -}
 			let use a = do
-				knownrs <- liftIO $ knownRemotes <$> getDaemonStatus dstatus
-				return $ catMaybes $ map (a key locs) knownrs
+				syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
+				return $ catMaybes $ map (a key locs) syncrs
 			ifM (inAnnex key)
 				( filterM (wantSend (Just f) . Remote.uuid . fst)
 					=<< use (check Upload False)

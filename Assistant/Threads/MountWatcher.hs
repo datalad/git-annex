@@ -174,7 +174,7 @@ remotesUnder st dstatus dir = runThreadState st $ do
 	let (waschanged, rs') = unzip pairs
 	when (any id waschanged) $ do
 		Annex.changeState $ \s -> s { Annex.remotes = rs' }
-		updateKnownRemotes dstatus
+		updateSyncRemotes dstatus
 	return $ map snd $ filter fst pairs
 	where
 		checkremote repotop r = case Remote.localpath r of

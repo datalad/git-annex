@@ -41,8 +41,8 @@ data DaemonStatus = DaemonStatus
 	-- Messages to display to the user.
 	, alertMap :: AlertMap
 	, lastAlertId :: AlertId
-	-- Ordered list of remotes to talk to.
-	, knownRemotes :: [Remote]
+	-- Ordered list of remotes to sync with.
+	, syncRemotes :: [Remote]
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus
@@ -89,21 +89,20 @@ modifyDaemonStatus dstatus a = do
 	return b
 
 {- Syncable remotes ordered by cost. -}
-calcKnownRemotes :: Annex [Remote]
-calcKnownRemotes = do
+calcSyncRemotes :: Annex [Remote]
+calcSyncRemotes = do
 	rs <- filterM (repoSyncable . Remote.repo) =<<
 		concat . Remote.byCost <$> Remote.enabledRemoteList
 	alive <- snd <$> trustPartition DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	return $ filter good rs
 
-{- Updates the cached ordered list of remotes from the list in Annex
- - state. -}
-updateKnownRemotes :: DaemonStatusHandle -> Annex ()
-updateKnownRemotes dstatus = do
-	remotes <- calcKnownRemotes
+{- Updates the sycRemotes list from the list of all remotes in Annex state. -}
+updateSyncRemotes :: DaemonStatusHandle -> Annex ()
+updateSyncRemotes dstatus = do
+	remotes <- calcSyncRemotes
 	liftIO $ modifyDaemonStatus_ dstatus $
-		\s -> s { knownRemotes = remotes }
+		\s -> s { syncRemotes = remotes }
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
@@ -113,12 +112,12 @@ startDaemonStatus = do
 	status <- liftIO $
 		flip catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
-	remotes <- calcKnownRemotes
+	remotes <- calcSyncRemotes
 	liftIO $ atomically $ newTMVar status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
-		, knownRemotes = remotes
+		, syncRemotes = remotes
 		}
 
 {- Don't just dump out the structure, because it will change over time,

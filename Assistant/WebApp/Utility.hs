@@ -40,7 +40,7 @@ changeSyncable (Just r) False = do
 	webapp <- getYesod
 	let dstatus = daemonStatus webapp
 	let st = fromJust $ threadState webapp
-	liftIO $ runThreadState st $ updateKnownRemotes dstatus
+	liftIO $ runThreadState st $ updateSyncRemotes dstatus
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
 	void $ liftIO $ dequeueTransfers (transferQueue webapp) dstatus tofrom

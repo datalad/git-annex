@@ -67,7 +67,7 @@ onAdd st dstatus _ file _ = case parseTransferFile file of
 				[ "transfer starting:"
 				, show t
 				]
-			r <- headMaybe . filter (sameuuid t) . knownRemotes
+			r <- headMaybe . filter (sameuuid t) . syncRemotes
 				<$> getDaemonStatus dstatus
 			updateTransferInfo dstatus t info
 				{ transferRemote = r }

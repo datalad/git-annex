@@ -156,5 +156,5 @@ manualPull st currentbranch remotes = do
 {- Start syncing a newly added remote, using a background thread. -}
 syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
 syncNewRemote st dstatus scanremotes remote = do
-	runThreadState st $ updateKnownRemotes dstatus
+	runThreadState st $ updateSyncRemotes dstatus
 	void $ forkIO $ reconnectRemotes "SyncRemote" st dstatus scanremotes [remote]
