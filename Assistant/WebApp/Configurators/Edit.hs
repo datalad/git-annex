@@ -14,15 +14,18 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
+import Assistant.DaemonStatus
+import Assistant.MakeRemote (uniqueRemoteName)
 import Utility.Yesod
 import qualified Remote
+import qualified Remote.List as Remote
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
 import Types.StandardGroups
 import qualified Config
-import Annex.UUID
 import qualified Git
+import qualified Git.Command
 
 import Yesod
 import Data.Text (Text)
@@ -34,15 +37,17 @@ data RepoGroup = RepoGroupCustom String | RepoGroupStandard StandardGroup
 	deriving (Show, Eq)
 
 data RepoConfig = RepoConfig
-	{ repoDescription :: Maybe Text
+	{ repoName :: Text
+	, repoDescription :: Maybe Text
 	, repoGroup :: RepoGroup
 	, repoSyncable :: Bool
 	}
 	deriving (Show)
 
-getRepoConfig :: UUID -> Git.Repo -> Annex RepoConfig
-getRepoConfig uuid r = RepoConfig
-	<$> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
+getRepoConfig :: UUID -> Git.Repo -> Maybe Remote -> Annex RepoConfig
+getRepoConfig uuid r mremote = RepoConfig
+	<$> pure (T.pack $ maybe "here" Remote.name mremote)
+	<*> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
 	<*> Config.repoSyncable r
 	where
@@ -52,26 +57,32 @@ getRepoConfig uuid r = RepoConfig
 				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
 					(getStandardGroup groups)
 
-{- Returns Just False if syncing should be disabled, Just True when enabled;
- - Nothing when it is not changed. -}
-setRepoConfig :: UUID -> Git.Repo -> RepoConfig -> Annex (Maybe Bool)
-setRepoConfig uuid r c = do
-	maybe noop (describeUUID uuid . T.unpack) (repoDescription c)
-	case repoGroup c of
-		RepoGroupStandard g -> setStandardGroup uuid g
-		RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
-	ifM ((==) uuid <$> getUUID)
-		( return Nothing
-		, do
-			syncable <- Config.repoSyncable r
-			return $ if (syncable /= repoSyncable c)
-				then Just $ repoSyncable c
-				else Nothing
-		)
+setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
+setRepoConfig uuid mremote oldc newc = do
+	when (repoDescription oldc /= repoDescription newc) $ runAnnex undefined $
+		maybe noop (describeUUID uuid . T.unpack) (repoDescription newc)
+	when (repoGroup oldc /= repoGroup newc) $ runAnnex undefined $ 
+		case repoGroup newc of
+			RepoGroupStandard g -> setStandardGroup uuid g
+			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
+	when (repoSyncable oldc /= repoSyncable newc) $
+		changeSyncable mremote (repoSyncable newc)
+	when (isJust mremote && repoName oldc /= repoName newc) $ do
+		dstatus <- daemonStatus <$> getYesod
+		runAnnex undefined $ do
+			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
+			inRepo $ Git.Command.run "remote"
+				[ Param "rename"
+				, Param $ T.unpack $ repoName oldc
+				, Param name
+				]
+			void $ Remote.remoteListRefresh
+			updateSyncRemotes dstatus
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
-	<$> aopt textField "Description" (Just $ repoDescription def)
+	<$> areq textField "Name" (Just $ repoName def)
+	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList $ customgroups++standardgroups) "Repository group" (Just $ repoGroup def)
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
 	where
@@ -95,14 +106,12 @@ editForm new uuid = bootstrap (Just Config) $ do
 	setTitle "Configure repository"
 
 	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
-	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo
+	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo mremote
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
-			syncchanged <- runAnnex undefined $
-				setRepoConfig uuid repo input
-			maybe noop (changeSyncable mremote) syncchanged
+			setRepoConfig uuid mremote curr input
 			redirect RepositoriesR
 		_ -> showform form enctype curr
 	where

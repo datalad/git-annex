@@ -6,7 +6,7 @@
       This repository is set up and ready to go!
     <p>
       Now you can do a little more configuring of it, if you like. #
-      Perhaps enter a better description than the automatically generated one.
+      Perhaps enter a better name than the automatically generated one.
     $if istransfer
       <div .alert .alert-info>
         This repository is currently in the transfer group. That's the #
