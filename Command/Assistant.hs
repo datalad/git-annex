@@ -54,7 +54,7 @@ autoStart = do
 	let nothing = error $ "Nothing listed in " ++ autostartfile
 	ifM (doesFileExist autostartfile)
 		( do
-			dirs <- lines <$> readFile autostartfile
+			dirs <- nub . lines <$> readFile autostartfile
 			program <- readProgramFile
 			when (null dirs) nothing
 			forM_ dirs $ \d -> do

@@ -75,7 +75,7 @@ startNoRepo = do
 
 autoStart :: FilePath -> IO ()
 autoStart autostartfile = do
-	dirs <- lines <$> readFile autostartfile
+	dirs <- nub . lines <$> readFile autostartfile
 	edirs <- filterM doesDirectoryExist dirs
 	case edirs of
 		[] -> firstRun -- what else can I do? Nothing works..

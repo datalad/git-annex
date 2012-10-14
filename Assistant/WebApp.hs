@@ -153,6 +153,6 @@ otherReposWidget = do
 listOtherRepos :: IO [(String, String)]
 listOtherRepos = do
 	f <- autoStartFile
-	dirs <- ifM (doesFileExist f) ( lines <$> readFile f, return [])
+	dirs <- nub <$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
 	names <- mapM relHome dirs
 	return $ sort $ zip names dirs
