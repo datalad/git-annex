@@ -37,7 +37,10 @@ read repo@(Repo { config = c })
 
 {- Reads config even if it was read before. -}
 reRead :: Repo -> IO Repo
-reRead = read'
+reRead r = read' $ r
+	{ config = M.empty
+	, fullconfig = M.empty
+	}
 
 {- Cannot use pipeRead because it relies on the config having been already
  - read. Instead, chdir to the repo and run git config.
