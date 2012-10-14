@@ -3,7 +3,7 @@
     Adding a removable drive
   <p>
     Clone this repository to a USB drive, memory stick, or other #
-    removable media. Whenever the removable drive is plugged in, its
+    removable media. Whenever the removable drive is plugged in, its #
     content will be synced with the content of this repository.
   <p>
   $if (null writabledrives)
