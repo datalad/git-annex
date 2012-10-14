@@ -34,7 +34,7 @@ data RepoGroup = RepoGroupCustom String | RepoGroupStandard StandardGroup
 	deriving (Show, Eq)
 
 data RepoConfig = RepoConfig
-	{ repoDescription :: Text
+	{ repoDescription :: Maybe Text
 	, repoGroup :: RepoGroup
 	, repoSyncable :: Bool
 	}
@@ -42,7 +42,7 @@ data RepoConfig = RepoConfig
 
 getRepoConfig :: UUID -> Git.Repo -> Annex RepoConfig
 getRepoConfig uuid r = RepoConfig
-	<$> (T.pack . fromMaybe "" . M.lookup uuid <$> uuidMap)
+	<$> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
 	<*> Config.repoSyncable r
 	where
@@ -56,7 +56,7 @@ getRepoConfig uuid r = RepoConfig
  - Nothing when it is not changed. -}
 setRepoConfig :: UUID -> Git.Repo -> RepoConfig -> Annex (Maybe Bool)
 setRepoConfig uuid r c = do
-	describeUUID uuid $ T.unpack $ repoDescription c
+	maybe noop (describeUUID uuid . T.unpack) (repoDescription c)
 	case repoGroup c of
 		RepoGroupStandard g -> setStandardGroup uuid g
 		RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
@@ -71,7 +71,7 @@ setRepoConfig uuid r c = do
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
-	<$> areq textField "Description" (Just $ repoDescription def)
+	<$> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList $ customgroups++standardgroups) "Repository group" (Just $ repoGroup def)
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
 	where

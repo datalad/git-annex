@@ -31,7 +31,6 @@ import Remote (prettyListUUIDs)
 import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
-import Logs.UUID
 
 import Yesod
 import Data.Text (Text)
@@ -195,7 +194,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 		make mountpoint = do
 			liftIO $ makerepo dir
 			u <- liftIO $ initRepo dir $ Just remotename
-			r <- addremote u dir remotename
+			r <- addremote dir remotename
 			runAnnex () $ setStandardGroup u TransferGroup
 			syncRemote r
 			return u
@@ -212,8 +211,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 					createDirectoryIfMissing True dir
 					makeRepo dir True
 		{- Each repository is made a remote of the other. -}
-		addremote u dir name = runAnnex undefined $ do
-			describeUUID u name
+		addremote dir name = runAnnex undefined $ do
 			hostname <- maybe "host" id <$> liftIO getHostname
 			hostlocation <- fromRepo Git.repoLocation
 			liftIO $ inDir dir $

@@ -93,6 +93,7 @@ makeRemote basename location a = do
 	g <- gitRepo
 	if not (any samelocation $ Git.remotes g)
 		then do
+			
 			let name = uniqueRemoteName basename 0 g
 			a name
 			return name
