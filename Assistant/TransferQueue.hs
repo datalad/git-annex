@@ -104,8 +104,8 @@ queueTransfersMatching matching schedule q dstatus k f direction
  - any others in the list to try again later. -}
 queueDeferredDownloads :: Schedule -> TransferQueue -> DaemonStatusHandle -> Annex ()
 queueDeferredDownloads schedule q dstatus = do
-	rs <- syncRemotes <$> liftIO (getDaemonStatus dstatus)
 	l <- liftIO $ atomically $ swapTVar (deferreddownloads q) []
+	rs <- syncRemotes <$> liftIO (getDaemonStatus dstatus)
 	left <- filterM (queue rs) l
 	unless (null left) $
 		liftIO $ atomically $ modifyTVar' (deferreddownloads q) $
