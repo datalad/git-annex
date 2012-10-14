@@ -31,6 +31,7 @@ import Remote (prettyListUUIDs)
 import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
+import Logs.UUID
 
 import Yesod
 import Data.Text (Text)
@@ -194,7 +195,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 		make mountpoint = do
 			liftIO $ makerepo dir
 			u <- liftIO $ initRepo dir $ Just remotename
-			r <- addremote dir remotename
+			r <- addremote u dir remotename
 			runAnnex () $ setStandardGroup u TransferGroup
 			syncRemote r
 			return u
@@ -209,10 +210,10 @@ getAddDriveR = bootstrap (Just Config) $ do
 				Right _ -> noop
 				Left _e -> do
 					createDirectoryIfMissing True dir
-					bare <- not <$> canMakeSymlink dir
-					makeRepo dir bare
+					makeRepo dir True
 		{- Each repository is made a remote of the other. -}
-		addremote dir name = runAnnex undefined $ do
+		addremote u dir name = runAnnex undefined $ do
+			describeUUID u name
 			hostname <- maybe "host" id <$> liftIO getHostname
 			hostlocation <- fromRepo Git.repoLocation
 			liftIO $ inDir dir $
@@ -264,7 +265,7 @@ startFullAssistant path = do
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 
-{- Makes a new git-annex repository. -}
+{- Makes a new git repository. -}
 makeRepo :: FilePath -> Bool -> IO ()
 makeRepo path bare = do
 	unlessM (boolSystem "git" params) $
