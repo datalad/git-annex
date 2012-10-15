@@ -16,13 +16,13 @@ all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-OPTFLAGS=-DWITH_INOTIFY -DWITH_DBUS
+OPTFLAGS?=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 THREADFLAGS=$(shell if test -e  `ghc --print-libdir`/libHSrts_thr.a; then printf -- -threaded; fi)
 else
 # BSD system
 THREADFLAGS=-threaded
-OPTFLAGS=-DWITH_KQUEUE
+OPTFLAGS?=-DWITH_KQUEUE
 clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
 # Ensure OSX compiler builds for 32 bit when using 32 bit ghc
