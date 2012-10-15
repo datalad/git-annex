@@ -22,3 +22,6 @@ What version of git-annex are you using? On what operating system?
     upgrade supported from repository versions: 0 1 2
 
 I seems that this option is passed to SSH, but SSH is too old: OpenSSH_5.2p1, OpenSSL 0.9.8r 8 Feb 
+
+> Future builds of the standalone binary will default annex.sshcaching to
+> false. [[done]] --[[Joey]]

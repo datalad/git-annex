@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Ssh (
 	sshParams,
 	sshCleanup,
@@ -52,9 +54,13 @@ sshInfo (host, port) = ifM caching
 	, return (Nothing, [])
 	)
 	where
+#ifdef WITH_OLD_SSH
+		caching = return False
+#else
 		caching = fromMaybe SysConfig.sshconnectioncaching 
 			. Git.Config.isTrue
 			<$> getConfig (annexConfig "sshcaching") ""
+#endif
 
 cacheParams :: FilePath -> [CommandParam]
 cacheParams socketfile =

@@ -142,7 +142,10 @@ THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
-linuxstandalone: $(bins)
+linuxstandalone:
+	$(make clean)
+	GIT_ANNEX_LOCAL_FEATURES="$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_OLD_SSH" $(MAKE)
+
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
@@ -178,7 +181,10 @@ linuxstandalone: $(bins)
 
 OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
-osxapp: $(bins)
+osxapp:
+	$(make clean)
+	GIT_ANNEX_LOCAL_FEATURES="$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_OLD_SSH" $(MAKE)
+
 	rm -rf "$(OSXAPP_DEST)"
 	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
