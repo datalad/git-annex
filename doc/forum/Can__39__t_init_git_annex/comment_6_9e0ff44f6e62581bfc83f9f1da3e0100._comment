@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZ0g2UAijV7RGrKtWPljCCAYHBJ3pwPvM"
+ nickname="Meng"
+ subject="comment 6"
+ date="2012-10-16T04:38:40Z"
+ content="""
+OK;  The reason i ask about `git annex sync` is because I had previously copied the large files onto `smb://` before setting up the `annex` and don't want to unnecessarily transfer large data over Internet again.  But now if i do `git annex copy --to smb`, and check what's added/changed in `smb` end, i found 
+ 
+    $ cd /Volumes/subproject
+    $ ls
+    091		383		bigdir1    bigfile1  ...
+
+The files with numbers in names such as`091`, `383` are being added, the `bigfile1` and `bigdir1` are the ones previously copied there.  What are those `091`, `383` etc.
+"""]]
