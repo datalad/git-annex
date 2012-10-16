@@ -16,7 +16,7 @@ all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
 ifeq ($(OS),Linux)
-OPTFLAGS?=-DWITH_INOTIFY -DWITH_DBUS
+OPTFLAGS?=-DWITH_INOTIFY
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 THREADFLAGS=$(shell if test -e  `ghc --print-libdir`/libHSrts_thr.a; then printf -- -threaded; fi)
 else

@@ -13,6 +13,8 @@ git-annex (3.20121011) UNRELEASED; urgency=low
     in order to work with old versions of ssh.
   * A relative core.worktree is relative to the gitdir. Now that this is
     handled correctly, git-annex can be used in git submodules.
+  * Temporarily disable use of dbus, as the haskell dbus library blows up
+    when losing connection, which will need to be fixed upstream. 
 
  -- Joey Hess <joeyh@debian.org>  Fri, 12 Oct 2012 22:46:08 -0400
 
