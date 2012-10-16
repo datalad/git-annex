@@ -3,6 +3,14 @@ git-annex (3.20121011) UNRELEASED; urgency=low
   * vicfg: New file format, avoids ambiguity with repos that have the same
     description, or no description.
   * Bug fix: A recent change caused git-annex-shell to crash.
+  * Better preferred content expression for transfer repos.
+  * webapp: Repository edit form can now edit the name of a repository.
+  * webapp: Make bare repositories on removable drives, as there is nothing
+    to ensure non-bare repos get updated when syncing.
+  * webapp: Better behavior when pausing syncing to a remote when a transfer
+    scan is running and queueing new transfers for that remote.
+  * The standalone binaries are now built to not use ssh connection caching,
+    in order to work with old versions of ssh.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 12 Oct 2012 22:46:08 -0400
 
