@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.8"
+ subject="comment 5"
+ date="2012-10-16T04:23:59Z"
+ content="""
+`git annex sync` only syncs the git repository, not file contents, and the special remote has no git repo, only file contents. `git annex copy` will avoid transferring things that are already there, so it's the way to go.
+
+If you want automatic syncing of file contents and lots of other magic including automatic commit of new files, you could try the [[assistant]].
+
+"""]]
