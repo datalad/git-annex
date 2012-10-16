@@ -51,8 +51,11 @@ get = do
 		configure (Just d) r = do
 			r' <- Git.Config.read r
 			-- Let GIT_DIR override the default gitdir.
-			return $ changelocation r' $
-				Local { gitdir = d, worktree = worktree (location r') }
+			absd <- absPath d
+			return $ changelocation r' $ Local
+				{ gitdir = absd
+				, worktree = worktree (location r')
+				}
 		addworktree w r = changelocation r $
 			Local { gitdir = gitdir (location r), worktree = w }
 		changelocation r l = r { location = l }

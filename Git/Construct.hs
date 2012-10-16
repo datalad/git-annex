@@ -227,7 +227,8 @@ checkForRepo dir =
 				catchDefaultIO "" (readFile $ dir </> ".git")
 			return $ if gitdirprefix `isPrefixOf` c
 				then Just $ Local 
-					{ gitdir = drop (length gitdirprefix) c
+					{ gitdir = absPathFrom dir $
+						drop (length gitdirprefix) c
 					, worktree = Just dir
 					}
 				else Nothing
