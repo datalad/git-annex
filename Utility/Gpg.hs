@@ -87,9 +87,9 @@ findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse <$> readStrict params
 	where
 		params = [Params "--with-colons --list-public-keys", Param for]
-		parse = map keyIdField . filter pubKey . lines
-		pubKey = isPrefixOf "pub:"
-		keyIdField s = split ":" s !! 4
+		parse = catMaybes . map (keyIdField . split ":") . lines
+		keyIdField ("pub":_:_:_:f:_) = Just f
+		keyIdField _ = Nothing
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
