@@ -93,7 +93,7 @@ hRead repo h = do
 store :: String -> Repo -> IO Repo
 store s repo = do
 	let c = parse s
-	let repo' = updateLocation $ repo
+	repo' <- updateLocation $ repo
 		{ config = (M.map Prelude.head c) `M.union` config repo
 		, fullconfig = M.unionWith (++) c (fullconfig repo)
 		}
@@ -106,16 +106,22 @@ store s repo = do
  - known. Once the config is read, this can be fixed up to a Local repo, 
  - based on the core.bare and core.worktree settings.
  -}
-updateLocation :: Repo -> Repo
+updateLocation :: Repo -> IO Repo
 updateLocation r@(Repo { location = LocalUnknown d })
-	| isBare r = newloc $ Local d Nothing
-	| otherwise = newloc $ Local (d </> ".git") (Just d)
-	where
-		newloc l = r { location = getworktree l }
-		getworktree l = case workTree r of
-			Nothing -> l
-			wt -> l { worktree = wt }
-updateLocation r = r
+	| isBare r = updateLocation' r $ Local d Nothing
+	| otherwise = updateLocation' r $ Local (d </> ".git") (Just d)
+updateLocation r@(Repo { location = l@(Local {}) }) = updateLocation' r l
+updateLocation r = return r
+
+updateLocation' :: Repo -> RepoLocation -> IO Repo
+updateLocation' r l = do
+	l' <- case getMaybe "core.worktree" r of
+		Nothing -> return l
+		Just d -> do
+			{- core.worktree is relative to the gitdir -}
+			top <- absPath $ gitdir l
+			return $ l { worktree = Just $ absPathFrom top d }
+	return $ r { location = l' }
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
@@ -142,6 +148,3 @@ isTrue s
 
 isBare :: Repo -> Bool
 isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r
-
-workTree :: Repo -> Maybe FilePath
-workTree = getMaybe "core.worktree"

@@ -51,5 +51,6 @@ Got:
 * The path in that config is relative to the config file: "worktree = ../../../../lib/submod"
 * Git-annex expect the path to be relative to the current directory, which is why it fails.
 
-
+> Impressive analysis, thanks. I've fixed handling of relative
+> core.worktree. [[done]] --[[Joey]]
 
