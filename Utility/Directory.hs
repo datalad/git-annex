@@ -15,14 +15,12 @@ import Control.Monad
 import Control.Monad.IfElse
 import System.FilePath
 import Control.Applicative
-import System.Posix.Directory
 import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Utility.SafeCommand
 import Utility.TempFile
 import Utility.Exception
 import Utility.Monad
-import Utility.Path
 
 dirCruft :: FilePath -> Bool
 dirCruft "." = True
