@@ -10,7 +10,7 @@ module Utility.Directory where
 import System.IO.Error
 import System.Posix.Files
 import System.Directory
-import Control.Exception (throw, bracket_)
+import Control.Exception (throw)
 import Control.Monad
 import Control.Monad.IfElse
 import System.FilePath

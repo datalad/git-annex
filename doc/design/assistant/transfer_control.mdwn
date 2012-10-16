@@ -8,7 +8,11 @@ But often the remote is just a removable drive or a cloud remote,
 that has a limited size. This page is about making the assistant do
 something smart with such remotes.
 
-## dropping no longer preferred content TODO
+## TODO
+
+* preferred content settings made in the webapp (or in vicfg, or synced over) are not noticed.
+
+### dropping no longer preferred content TODO
 
 When a file is renamed, it might stop being preferred, so
 could be checked and dropped. (If there's multiple links to
