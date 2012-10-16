@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.8"
+ subject="comment 1"
+ date="2012-10-16T02:52:26Z"
+ content="""
+The smb:// is a red flag to me. git-annex relies on POSIX file locking, and I'll bet smb does not provide that, or, perhaps, your samba server needs a configuration change to support it.
+
+You might consider putting your git annex repository on the local filesystem, and setting up a [[special_remote|special_remotes]] on smb. The [[special_remotes/directory]] special remote is a likely choice.
+"""]]
