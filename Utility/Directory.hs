@@ -94,14 +94,3 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
  - cannot be removed. -}
 nukeFile :: FilePath -> IO ()
 nukeFile file = whenM (doesFileExist file) $ removeFile file
-
-{- Runs an action in another directory. -}
-bracketCd :: FilePath -> IO a -> IO a
-bracketCd dir a = go =<< getCurrentDirectory
-	where
-		go cwd
-			| dirContains dir cwd = a
-			| otherwise = bracket_
-				(changeWorkingDirectory dir)
-				(changeWorkingDirectory cwd)
-				a
