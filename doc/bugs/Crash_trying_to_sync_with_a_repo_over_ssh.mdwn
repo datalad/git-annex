@@ -1,0 +1,24 @@
+What steps will reproduce the problem?
+
+I create a new annex, added in a bunch of files.
+
+I cloned this annex to another machine, where I already had those files, so I copied them into a directory named "foo", did "git annex add foo", and then did "git rm -r foo", and git commit'd my clone of the annex.
+
+Then I try to "git annex sync" with the remote.
+
+What is the expected output? What do you see instead?
+
+I don't know, I've never used git-annex before.  This is what I get each time:
+
+    Hermes ~/Products/tmp/Movies (master) $ ga sync
+    git-annex-shell: Prelude.(!!): index too large
+
+What version of git-annex are you using? On what operating system?
+
+It's the 'master' as of yesterday: c504f4025fec49e62601fbd4a3cd8f1270c7d221
+
+I'm on OS X 10.8.2, using GHC 7.6.1.  The annex in question has 38G in a few hundred files.
+
+Please provide any additional information below.
+
+I'm willing to help track this down!
