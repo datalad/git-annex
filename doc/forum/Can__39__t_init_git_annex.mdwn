@@ -1,0 +1,15 @@
+It seems I can't initialize git annex:
+
+    $ git annex init "files2"
+    init files2 
+      pre-commit hook (/Volumes/project/annex/.git/hooks/pre-commit) already exists, not configuring
+    
+    git-annex: waitToSetLock: failed (Operation not supported)
+    failed
+    git-annex: init: 1 failed
+    $
+
+
+  `project` is a remote file server connected via `smb://`.
+
+   Any ideas why and how to fix?
