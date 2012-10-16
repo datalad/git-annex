@@ -104,12 +104,10 @@ external params = do
  - rsync and not be useful.
  -}
 partitionParams :: [String] -> ([String], [String])
-partitionParams params
-	| null segments = ([], [])
-	| length segments < 2 = (segments !! 0, [])
-	| otherwise = (segments !! 0, segments !! 1)
-	where
-		segments = segment (== "--") params
+partitionParams ps = case segment (== "--") ps of
+	params:fieldparams:_ -> (params, fieldparams)
+	[params] -> (params, [])
+	_ -> ([], [])
 
 parseFields :: [String] -> [(String, String)]
 parseFields = map (separate (== '='))
