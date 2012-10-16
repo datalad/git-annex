@@ -2,6 +2,7 @@ git-annex (3.20121011) UNRELEASED; urgency=low
 
   * vicfg: New file format, avoids ambiguity with repos that have the same
     description, or no description.
+  * Bug fix: A recent change caused git-annex-shell to crash.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 12 Oct 2012 22:46:08 -0400
 

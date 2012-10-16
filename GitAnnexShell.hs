@@ -105,6 +105,7 @@ external params = do
  -}
 partitionParams :: [String] -> ([String], [String])
 partitionParams params
+	| null segments = ([], [])
 	| length segments < 2 = (segments !! 0, [])
 	| otherwise = (segments !! 0, segments !! 1)
 	where

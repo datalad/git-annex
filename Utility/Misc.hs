@@ -40,9 +40,23 @@ firstLine :: String -> String
 firstLine = takeWhile (/= '\n')
 
 {- Splits a list into segments that are delimited by items matching
- - a predicate. (The delimiters are not included in the segments.) -}
+ - a predicate. (The delimiters are not included in the segments.)
+ - Segments may be empty. -}
 segment :: (a -> Bool) -> [a] -> [[a]]
-segment p = filter (not . all p) . segmentDelim p
+segment p l = map reverse $ go [] [] l
+	where
+		go c r [] = reverse $ c:r
+		go c r (i:is)
+			| p i = go [] (c:r) is
+			| otherwise = go (i:c) r is
+
+prop_segment_regressionTest :: Bool
+prop_segment_regressionTest = all id
+	-- Even an empty list is a segment.
+	[ segment (== "--") [] == [[]]
+	-- There are two segements in this list, even though the first is empty.
+	, segment (== "--") ["--", "foo", "bar"] == [[],["foo","bar"]]
+	]
 
 {- Includes the delimiters as segments of their own. -}
 segmentDelim :: (a -> Bool) -> [a] -> [[a]]

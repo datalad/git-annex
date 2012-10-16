@@ -48,6 +48,7 @@ import qualified Build.SysConfig
 import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
+import qualified Utility.Misc
 
 -- for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -91,6 +92,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
 	, qctest "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
 	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
+	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	]
 
 blackbox :: Test
