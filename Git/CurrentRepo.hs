@@ -42,11 +42,11 @@ get = do
 	where
 		pathenv s = do
 			v <- getEnv s
-			when (isJust v) $
-				unsetEnv s
 			case v of
+				Just d -> do
+					unsetEnv s
+					Just <$> absPath d
 				Nothing -> return Nothing
-				Just d -> Just <$> absPath d
 		configure Nothing r = Git.Config.read r
 		configure (Just d) r = do
 			r' <- Git.Config.read r
