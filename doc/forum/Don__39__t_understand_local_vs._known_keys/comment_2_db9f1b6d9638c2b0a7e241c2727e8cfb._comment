@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2012-10-17T17:32:52Z"
+ content="""
+The local keys are files whose content is locally present.  
+The known keys are annexed files in the current branch, whose content may or may not be present. 
+
+Justin is correct -- if you have the same file in the tree twice, it will be counted twice as known keys. Since git-annex deuplicates, only one local key is needed to store it.
+
+The bloom filter is a technical implementation detail that allows the potentially expensive status scan to run in constant space. You can read about it on Wikipedia if interested. :)
+"""]]
