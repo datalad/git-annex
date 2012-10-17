@@ -19,3 +19,6 @@ master branch, d430fb1.
 Please provide any additional information below.
 
 OS X 10.8.2.  The machine has tons of RAM and tons of process handles free.  It's really not doing anything else but this git-annex at the time of my tests.
+
+> [[done]], this is a bug introduced in 3.20121009, and I've reverted the
+> buggy change. --[[Joey]]
