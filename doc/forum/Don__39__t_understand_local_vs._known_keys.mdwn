@@ -1,0 +1,19 @@
+I just created a new Annex by doing the following:
+
+ 1. git init
+ 2. git annex init
+ 3. git annex add .
+ 4. git commit -m "Added files"
+ 5. git annex status
+
+I see the following:
+
+    local annex keys: 224
+    local annex size: 41 gigabytes
+    known annex keys: 235
+    known annex size: 49 gigabytes
+    bloom filter size: 16 mebibytes (0% full)
+    backend usage: 
+            SHA256: 459
+
+Why is there an 8 gigabyte difference here?  What/where are those files?  What is a bloom filter?
