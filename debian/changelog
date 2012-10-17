@@ -1,3 +1,9 @@
+git-annex (3.20121018) UNRELEASED; urgency=low
+
+  * Fix handling of GIT_DIR when it refers to a git submodule.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
+
 git-annex (3.20121017) unstable; urgency=low
 
   * Fix zombie cleanup reversion introduced in 3.20121009.
