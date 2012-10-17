@@ -28,7 +28,7 @@ import Logs.Group
 import Utility.HumanTime
 import Utility.DataUnits
 
-type MatchFiles = AssumeNotPresent -> FilePath -> Annex Bool
+type MatchFiles = AssumeNotPresent -> Annex.FileInfo -> Annex Bool
 type MkLimit = String -> Either String MatchFiles
 type AssumeNotPresent = S.Set UUID
 
@@ -38,10 +38,10 @@ limited = (not . Utility.Matcher.matchesAny) <$> getMatcher'
 
 {- Gets a matcher for the user-specified limits. The matcher is cached for
  - speed; once it's obtained the user-specified limits can't change. -}
-getMatcher :: Annex (FilePath -> Annex Bool)
+getMatcher :: Annex (Annex.FileInfo -> Annex Bool)
 getMatcher = Utility.Matcher.matchM <$> getMatcher'
 
-getMatcher' :: Annex (Utility.Matcher.Matcher (FilePath -> Annex Bool))
+getMatcher' :: Annex (Utility.Matcher.Matcher (Annex.FileInfo -> Annex Bool))
 getMatcher' = do
 	m <- Annex.getState Annex.limit
 	case m of
@@ -52,7 +52,7 @@ getMatcher' = do
 			return matcher
 
 {- Adds something to the limit list, which is built up reversed. -}
-add :: Utility.Matcher.Token (FilePath -> Annex Bool) -> Annex ()
+add :: Utility.Matcher.Token (Annex.FileInfo -> Annex Bool) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
 	where
 		prepend (Left ls) = Left $ l:ls
@@ -80,8 +80,9 @@ addExclude = addLimit . limitExclude
 limitExclude :: MkLimit
 limitExclude glob = Right $ const $ return . not . matchglob glob
 
-matchglob :: String -> FilePath -> Bool
-matchglob glob f = isJust $ match cregex f []
+matchglob :: String -> Annex.FileInfo -> Bool
+matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
+	isJust $ match cregex f []
 	where
 		cregex = compile regex []
 		regex = '^':wildToRegex glob
@@ -97,7 +98,7 @@ limitIn name = Right $ \notpresent -> check $
 		then inhere notpresent
 		else inremote notpresent
 	where
-		check a = Backend.lookupFile >=> handle a
+		check a = lookupFile >=> handle a
 		handle _ Nothing = return False
 		handle a (Just (key, _)) = a key
 		inremote notpresent key = do
@@ -127,8 +128,8 @@ limitCopies want = case split ":" want of
 	where
 		go num good = case readish num of
 			Nothing -> Left "bad number for copies"
-			Just n -> Right $ \notpresent ->
-				Backend.lookupFile >=> handle n good notpresent
+			Just n -> Right $ \notpresent f ->
+				lookupFile f >>= handle n good notpresent
 		handle _ _ _ Nothing = return False
 		handle n good notpresent (Just (key, _)) = do
 			us <- filter (`S.notMember` notpresent)
@@ -147,8 +148,7 @@ addInAllGroup groupname = do
 limitInAllGroup :: GroupMap -> MkLimit
 limitInAllGroup m groupname
 	| S.null want = Right $ const $ const $ return True
-	| otherwise = Right $ \notpresent ->
-		Backend.lookupFile >=> check notpresent
+	| otherwise = Right $ \notpresent -> lookupFile >=> check notpresent
 	where
 		want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
 		check _ Nothing = return False
@@ -164,7 +164,7 @@ addInBackend :: String -> Annex ()
 addInBackend = addLimit . limitInBackend
 
 limitInBackend :: MkLimit
-limitInBackend name = Right $ const $ Backend.lookupFile >=> check
+limitInBackend name = Right $ const $ lookupFile >=> check
 	where
 		wanted = Backend.lookupBackendName name
 		check = return . maybe False ((==) wanted . snd)
@@ -179,7 +179,7 @@ addSmallerThan = addLimit . limitSize (<)
 limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit
 limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
-	Just sz -> Right $ const $ Backend.lookupFile >=> check sz
+	Just sz -> Right $ const $ lookupFile >=> check sz
 	where
 		check _ Nothing = return False
 		check sz (Just (key, _)) = return $ keySize key `vs` Just sz
@@ -196,3 +196,6 @@ addTimeLimit s = do
 				warning $ "Time limit (" ++ s ++ ") reached!"
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
+
+lookupFile :: Annex.FileInfo -> Annex (Maybe (Key, Backend))
+lookupFile = Backend.lookupFile . Annex.relFile

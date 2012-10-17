@@ -10,6 +10,7 @@
 module Annex (
 	Annex,
 	AnnexState(..),
+	FileInfo(..),
 	PreferredContentMap,
 	new,
 	newState,
@@ -77,7 +78,12 @@ instance MonadBaseControl IO Annex where
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FilePath -> Annex Bool))
+data FileInfo = FileInfo
+	{ relFile :: FilePath -- may be relative to cwd
+	, matchFile :: FilePath -- filepath to match on; may be relative to top
+	}
+
+type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FileInfo -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -94,7 +100,7 @@ data AnnexState = AnnexState
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
-	, limit :: Matcher (FilePath -> Annex Bool)
+	, limit :: Matcher (FileInfo -> Annex Bool)
 	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap

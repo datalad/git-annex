@@ -46,15 +46,19 @@ preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
-isPreferredContent :: Maybe UUID -> AssumeNotPresent -> TopFilePath -> Annex Bool
+isPreferredContent :: Maybe UUID -> AssumeNotPresent -> FilePath -> Annex Bool
 isPreferredContent mu notpresent file = do
+	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
+	let fi = Annex.FileInfo
+		{ Annex.matchFile = matchfile
+		, Annex.relFile = file
+		}
 	u <- maybe getUUID return mu
 	m <- preferredContentMap
 	case M.lookup u m of
 		Nothing -> return True
-		Just matcher ->
-			Utility.Matcher.matchMrun matcher $ \a ->
-				a notpresent (getTopFilePath file)
+		Just matcher -> Utility.Matcher.matchMrun matcher $ \a ->
+			a notpresent fi
 
 {- Read the preferredContentLog into a map. The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap

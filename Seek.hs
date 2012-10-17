@@ -113,7 +113,7 @@ prepFiltered a fs = do
 	map (process matcher) <$> fs
 	where
 		process matcher f = do
-			ok <- matcher f
+			ok <- matcher $ Annex.FileInfo f f
 			if ok then a f else return Nothing
 
 notSymlink :: FilePath -> IO Bool
