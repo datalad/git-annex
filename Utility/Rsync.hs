@@ -53,8 +53,13 @@ rsync = boolSystem "rsync"
  - The params must enable rsync's --progress mode for this to work.
  -}
 rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
-rsyncProgress callback params = 
-	withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
+rsyncProgress callback params = do
+	r <- withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
+	{- For an unknown reason, piping rsync's output like this does
+	 - causes it to run a second ssh process, which it neglects to wait
+	 - on. Reap the resulting zombie. -}
+	reapZombies
+	return r
 	where
 		p = proc "rsync" (toCommand params)
 		feedprogress prev buf h = do

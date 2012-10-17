@@ -70,7 +70,7 @@ start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
 start m zone os gource file (key, _) = do
 	showLog output =<< readLog <$> getLog key os
 	-- getLog produces a zombie; reap it
-	liftIO Git.Command.reap
+	liftIO reapZombies
 	stop
 	where
 		output

@@ -12,6 +12,9 @@ import Control.Monad
 import Foreign
 import Data.Char
 import Control.Applicative
+import System.Posix.Process (getAnyProcessStatus)
+
+import Utility.Exception
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -96,3 +99,14 @@ hGetSomeString h sz = do
 	where
 		peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 		peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
+
+{- Reaps any zombie git processes. 
+ -
+ - Warning: Not thread safe. Anything that was expecting to wait
+ - on a process and get back an exit status is going to be confused
+ - if this reap gets there first. -}
+reapZombies :: IO ()
+reapZombies = do
+	-- throws an exception when there are no child processes
+	catchDefaultIO Nothing (getAnyProcessStatus False True)
+		>>= maybe (return ()) (const reapZombies)

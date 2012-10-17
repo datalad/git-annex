@@ -117,5 +117,6 @@ shutdown :: Bool -> Annex Bool
 shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
+	liftIO reapZombies -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
 	return True

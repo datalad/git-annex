@@ -39,7 +39,6 @@ import Usage as ReExported
 import Logs.Trust
 import Config
 import Annex.CheckAttr
-import qualified Git.Command
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> String -> Command
@@ -84,14 +83,11 @@ doCommand = start
 	where
 		start   = stage $ maybe skip perform
 		perform = stage $ maybe failure cleanup
-		cleanup = stage $ end
+		cleanup = stage $ status
 		stage = (=<<)
 		skip = return True
 		failure = showEndFail >> return False
-		end r = do
-			-- zombies from long-running git processes
-			liftIO Git.Command.reap
-			showEndResult r >> return r
+		status r = showEndResult r >> return r
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key and backend on to it. -}

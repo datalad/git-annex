@@ -7,7 +7,6 @@
 
 module Git.Command where
 
-import System.Posix.Process (getAnyProcessStatus)
 import System.Process (std_out, env)
 
 import Common
@@ -96,17 +95,6 @@ pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo
 {- Doesn't run the cleanup action. A zombie results. -}
 leaveZombie :: (a, IO Bool) -> a
 leaveZombie = fst
-
-{- Reaps any zombie git processes. 
- -
- - Warning: Not thread safe. Anything that was expecting to wait
- - on a process and get back an exit status is going to be confused
- - if this reap gets there first. -}
-reap :: IO ()
-reap = do
-	-- throws an exception when there are no child processes
-	catchDefaultIO Nothing (getAnyProcessStatus False True)
-		>>= maybe noop (const reap)
 
 {- Runs a git command as a coprocess. -}
 gitCoProcessStart :: [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
