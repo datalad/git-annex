@@ -21,7 +21,6 @@ import Common.Annex
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
-import qualified Git.Command
 import qualified Git.AutoCorrect
 import Annex.Content
 import Annex.Ssh
@@ -118,6 +117,5 @@ shutdown :: Bool -> Annex Bool
 shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
-	liftIO Git.Command.reap -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
 	return True

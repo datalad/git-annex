@@ -1,3 +1,9 @@
+git-annex (3.20121017) UNRELEASED; urgency=low
+
+  * Fix zombie cleanup reversion introduced in 3.20121009.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 16 Oct 2012 21:05:42 -0400
+
 git-annex (3.20121016) unstable; urgency=low
 
   * vicfg: New file format, avoids ambiguity with repos that have the same
