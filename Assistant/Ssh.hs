@@ -95,16 +95,27 @@ sshTranscript opts input = do
 {- Ensure that the ssh public key doesn't include any ssh options, like
  - command=foo, or other weirdness -}
 validateSshPubKey :: SshPubKey -> IO ()
-validateSshPubKey pubkey = do
-	let ws = words pubkey
-	when (length ws > 3 || length ws < 2) $
-		error $ "wrong number of words in ssh public key " ++ pubkey
-	let (ssh, keytype) = separate (== '-') (ws !! 0)
-	unless (ssh == "ssh" && all isAlphaNum keytype) $
-		error $ "bad ssh public key prefix " ++ ws !! 0
-	when (length ws == 3) $
-		unless (all (\c -> isAlphaNum c || c == '@') (ws !! 2)) $
-			error $ "bad comment in ssh public key " ++ pubkey
+validateSshPubKey pubkey = either error return $ check $ words pubkey
+	where
+		check [prefix, _key, comment] = do
+			checkprefix prefix
+			checkcomment comment
+		check [prefix, _key] =
+			checkprefix prefix
+		check _ = err "wrong number of words in ssh public key"
+
+		ok = Right ()
+		err msg = Left $ unwords [msg, pubkey]
+
+		checkprefix prefix
+			| ssh == "ssh" && all isAlphaNum keytype = ok
+			| otherwise = err "bad ssh public key prefix"
+			where
+				(ssh, keytype) = separate (== '-') prefix
+
+		checkcomment comment
+			| all (\c -> isAlphaNum c || c == '@') comment = ok
+			| otherwise = err "bad comment in ssh public key"
 
 addAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
 addAuthorizedKeys rsynconly pubkey = boolSystem "sh"
