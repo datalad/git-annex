@@ -87,16 +87,26 @@ failedTransferScan st dstatus transferqueue r = do
 			transferqueue dstatus (associatedFile info) t r
 
 {- This is a expensive scan through the full git work tree, finding
- - files to download from or upload to any known remote.
- - 
- - The scan is blocked when the transfer queue gets too large. -}
+ - files to transfer. The scan is blocked when the transfer queue gets
+ - too large. 
+ -
+ - This also finds files that are present either here or on a remote
+ - but that are not preferred content, and drops them. Searching for files
+ - to drop is done concurrently with the scan for transfers.
+ -
+ - TODO: It would be better to first drop as much as we can, before
+ - transferring much, to minimise disk use.
+ -}
 expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] -> IO ()
 expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 	liftIO $ debug thisThread ["starting scan of", show visiblers]
 	void $ alertWhile dstatus (scanAlert visiblers) $ do
 		g <- runThreadState st gitRepo
 		(files, cleanup) <- LsFiles.inRepo [] g
-		go files
+		forM_ files $ \f -> do
+			ts <- runThreadState st $
+				ifAnnexed f (findtransfers f) (return [])
+			mapM_ (enqueue f) ts
 		void cleanup
 		return True
 	liftIO $ debug thisThread ["finished scan of", show visiblers]
@@ -104,32 +114,30 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 		onlyweb = all (== webUUID) $ map Remote.uuid rs
 		visiblers = let rs' = filter (not . Remote.readonly) rs
 			in if null rs' then rs else rs'
-		go [] = noop
-		go (f:fs) = do
-			mapM_ (enqueue f) =<< runThreadState st
-				(ifAnnexed f (findtransfers f) $ return [])
-			go fs
 		enqueue f (r, t) = do
 			debug thisThread ["queuing", show t]
 			queueTransferWhenSmall transferqueue dstatus (Just f) t r
 		findtransfers f (key, _) = do
-			locs <- loggedLocations key
-			{- Queue transfers from any known remote. The known
-			 - remotes may have changed since this scan began. -}
+			locs <- S.fromList <$> loggedLocations key
+			{- Queue transfers from any syncable remote. The
+			 - syncable remotes may have changed since this
+			 - scan began. -}
 			let use a = do
 				syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
 				return $ catMaybes $ map (a key locs) syncrs
 			ifM (inAnnex key)
 				( filterM (wantSend (Just f) . Remote.uuid . fst)
-					=<< use (check Upload False)
+					=<< use (genTransfer Upload False)
 				, ifM (wantGet $ Just f)
-					( use (check Download True) , return [] )
+					( use (genTransfer Download True) , return [] )
 				)
-		check direction want key locs r
-			| direction == Upload && Remote.readonly r = Nothing
-			| (Remote.uuid r `elem` locs) == want = Just
-				(r, Transfer direction (Remote.uuid r) key)
-			| otherwise = Nothing
+
+genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
+genTransfer direction want key locs r
+	| direction == Upload && Remote.readonly r = Nothing
+	| (S.member (Remote.uuid r) locs) == want = Just
+		(r, Transfer direction (Remote.uuid r) key)
+	| otherwise = Nothing
 
 remoteHas :: Remote -> Key -> Annex Bool
 remoteHas r key = elem

@@ -10,7 +10,9 @@ something smart with such remotes.
 
 ## TODO
 
-* preferred content settings made in the webapp (or in vicfg, or synced over) are not noticed.
+* preferred content settings made in the webapp (or in vicfg,
+  or synced over) are not noticed while the assistant is running; it has to
+  be restarted for them to take effect.
 
 ### dropping no longer preferred content TODO
 
@@ -37,7 +39,7 @@ the same content, this gets tricky. Let's assume there are not.)
    case.)
 5. `migrate` is used to change a backend (`inbackend`; unlikely)
 
-That's all! Of these, 2 and 3 are by far the most important.
+That's all! Of these, 1, 2 and 3 are by far the most important.
 
 Rename handling should certianly check 2. 
 
