@@ -221,4 +221,8 @@ osxapp:
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 tmp/git-annex.dmg
 
+# used by ./ghci
+getflags:
+	@echo $(ALLFLAGS)
+
 .PHONY: $(bins) test install

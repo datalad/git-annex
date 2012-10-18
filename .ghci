@@ -1,4 +1,1 @@
--- make ghci use precompiled modules, and C library
-:set -outputdir=tmp
-:set -IUtility
 :load Common
