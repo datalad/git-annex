@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20121017
+Version: 3.20121018
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -55,8 +55,6 @@ Executable git-annex
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
-  if (! os(linux))
-    C-Sources: Utility/libkqueue.c
   Extensions: CPP
   GHC-Options: -threaded
   CPP-Options: -DURI_24
@@ -65,7 +63,7 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
-  if flag(Assistant)
+  if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: stm >= 2.3
     CPP-Options: -DWITH_ASSISTANT
 
@@ -73,8 +71,9 @@ Executable git-annex
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
   else
-    if (! os(windows))
+    if (! os(windows) && ! os(solaris))
       CPP-Options: -DWITH_KQUEUE
+      C-Sources: Utility/libkqueue.c
 
   if os(linux) && flag(Dbus)
     Build-Depends: dbus

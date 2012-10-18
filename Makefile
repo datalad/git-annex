@@ -20,7 +20,7 @@ OPTFLAGS?=-DWITH_INOTIFY
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 THREADFLAGS=$(shell if test -e  `ghc --print-libdir`/libHSrts_thr.a; then printf -- -threaded; fi)
 else
-ifeq ($(OS),Solaris)
+ifeq ($(OS),SunOS)
 # Solaris is not supported by the assistant or watch command.
 FEATURES:=$(shell echo $(FEATURES) | sed -e 's/-DWITH_ASSISTANT//' -e 's/-DWITH_WEBAPP//')
 else
