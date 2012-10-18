@@ -35,7 +35,7 @@ the same content, this gets tricky. Let's assume there are not.)
    again, and should cause it to be transferred in that case, which doesn't
    happen either..)
 3. we get a file (`in`, `copies`) **done**
-4. we sent a file to a remote (`in`, `copies`)
+4. we sent a file (`in`, `copies`) **done**
 5. some other repository drops the file (`in`, `copies` .. However, it's
    unlikely that an expression would prefer content when *more* copies
    exisited, and want to drop it when less do. That's nearly a pathological

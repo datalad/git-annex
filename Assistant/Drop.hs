@@ -18,19 +18,18 @@ import Command
 import Annex.Wanted
 import Config
 
-{- Drop from syncable remotes when allowed by the preferred content and
- - numcopies settings. -}
-handleRemoteDrops :: DaemonStatusHandle -> Key -> AssociatedFile -> Annex ()
-handleRemoteDrops dstatus key (Just f) = do
-	syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
-	locs <- loggedLocations key
-	handleDrops locs syncrs False f key
-handleRemoteDrops _ _ _ = noop
-
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
-handleDrops :: [UUID] -> [Remote] -> Bool -> FilePath -> Key -> Annex ()
-handleDrops locs rs fromhere f key
+handleDrops :: DaemonStatusHandle -> Bool -> Key -> AssociatedFile -> Annex ()
+handleDrops _ _ _ Nothing = noop
+handleDrops dstatus fromhere key f = do
+	syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
+	locs <- loggedLocations key
+	handleDrops' locs syncrs fromhere key f
+
+handleDrops' :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Annex ()
+handleDrops' _ _ _ _ Nothing = noop
+handleDrops' locs rs fromhere key (Just f)
 	| fromhere = do
 		n <- getcopies
 		if checkcopies n

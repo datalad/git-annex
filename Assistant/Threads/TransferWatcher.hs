@@ -108,16 +108,21 @@ onDel st dstatus transferqueue file _ = case parseTransferFile file of
 {- Queue uploads of files we successfully downloaded, spreading them
  - out to other reachable remotes.
  -
- - Also, downloading a file may have caused a remote to not want it,
- - so drop it from the remote. -}
+ - Downloading a file may have caused a remote to not want it;
+ - so drop it from the remote.
+ -
+ - Uploading a file may cause the local repo, or some other remote to not
+ - want it; handle that too.
+ -}
 finishedTransfer :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Transfer -> Maybe TransferInfo -> IO ()
 finishedTransfer st dstatus transferqueue t (Just info)
 	| transferDirection t == Download = runThreadState st $
 		whenM (inAnnex $ transferKey t) $ do
-			handleRemoteDrops dstatus 
+			handleDrops dstatus False
 				(transferKey t) (associatedFile info)
 			queueTransfersMatching (/= transferUUID t)
 				Later transferqueue dstatus
 				(transferKey t) (associatedFile info) Upload
-	| otherwise = noop
+	| otherwise = runThreadState st $
+		handleDrops dstatus True (transferKey t) (associatedFile info)
 finishedTransfer _ _ _ _ _ = noop
