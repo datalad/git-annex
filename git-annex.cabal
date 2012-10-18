@@ -49,7 +49,7 @@ Executable git-annex
    unix, containers, utf8-string, network (>= 2.4.0.1), mtl,
    bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
-   base == 4.5.*, monad-control, transformers-base, lifted-base,
+   base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
@@ -96,7 +96,7 @@ Test-Suite test
   Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
-   base == 4.5.*, monad-control, transformers-base, lifted-base,
+   base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
