@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
 
 module Assistant.WebApp.Configurators where
 
@@ -119,7 +119,9 @@ repoList onlyconfigured includehere
 			Just c -> case M.lookup "type" c of
 				Just "rsync" -> u `enableswith` EnableRsyncR
 				Just "directory" -> u `enableswith` EnableDirectoryR
+#ifdef WITH_S3
 				Just "S3" -> u `enableswith` EnableS3R
+#endif
 				_ -> Nothing
 		u `enableswith` r = Just (u, DisabledRepoActions $ r u)
 		list l = runAnnex [] $ do
