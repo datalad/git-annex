@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Doesn't quite work"
+ date="2012-10-17T22:23:16Z"
+ content="""
+Your Makefile change, even with the uname corrected, had no impact at all.  I'm running \"cabal install\".  When I try just \"make\", I get this error:
+
+
+    Annex.hs:69:28:
+        No instance for (MonadBase IO (StateT AnnexState IO))
+          arising from a use of `liftBase'
+        Possible fix:
+          add an instance declaration for
+          (MonadBase IO (StateT AnnexState IO))
+        In the second argument of `(.)', namely `liftBase'
+        In the expression: Annex . liftBase
+        In an equation for `liftBase': liftBase = Annex . liftBase
+"""]]
