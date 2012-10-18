@@ -15,14 +15,17 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
+import Logs.Trust
 import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
+import qualified Command.Drop
 import Command
 import Annex.Content
 import Annex.Wanted
+import Config
 
 import qualified Data.Set as S
 
@@ -118,26 +121,66 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			debug thisThread ["queuing", show t]
 			queueTransferWhenSmall transferqueue dstatus (Just f) t r
 		findtransfers f (key, _) = do
-			locs <- S.fromList <$> loggedLocations key
-			{- Queue transfers from any syncable remote. The
-			 - syncable remotes may have changed since this
+			locs <- loggedLocations key
+			{- The syncable remotes may have changed since this
 			 - scan began. -}
-			let use a = do
-				syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
-				return $ catMaybes $ map (a key locs) syncrs
-			ifM (inAnnex key)
-				( filterM (wantSend (Just f) . Remote.uuid . fst)
+			syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
+			present <- inAnnex key
+
+			handleDrops locs syncrs present f key
+
+			let slocs = S.fromList locs
+			let use a = return $ catMaybes $ map (a key slocs) syncrs
+			if present
+				then filterM (wantSend (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
-				, ifM (wantGet $ Just f)
+				else ifM (wantGet $ Just f)
 					( use (genTransfer Download True) , return [] )
-				)
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
-genTransfer direction want key locs r
+genTransfer direction want key slocs r
 	| direction == Upload && Remote.readonly r = Nothing
-	| (S.member (Remote.uuid r) locs) == want = Just
+	| (S.member (Remote.uuid r) slocs) == want = Just
 		(r, Transfer direction (Remote.uuid r) key)
 	| otherwise = Nothing
+
+{- Drop from local or remote when allowed by the preferred content and
+ - numcopies settings. -}
+handleDrops :: [UUID] -> [Remote] -> Bool -> FilePath -> Key -> Annex ()
+handleDrops locs rs present f key
+	| present = do
+		n <- getcopies
+		if checkcopies n
+			then go rs =<< dropl n
+			else go rs n
+	| otherwise = go rs =<< getcopies
+	where
+		getcopies = do
+			have <- length . snd <$> trustPartition UnTrusted locs
+			numcopies <- getNumCopies =<< numCopies f
+			return (have, numcopies)
+		checkcopies (have, numcopies) = have > numcopies
+		decrcopies (have, numcopies) = (have - 1, numcopies)
+
+		go [] _ = noop
+		go (r:rest) n
+			| checkcopies n = dropr r n >>= go rest
+			| otherwise = noop
+
+		checkdrop n@(_, numcopies) u a = 
+			ifM (wantDrop u (Just f))
+				( ifM (doCommand $ a (Just numcopies))
+					( return $ decrcopies n
+					, return n
+					)
+				, return n
+				)
+
+		dropl n = checkdrop n Nothing $ \numcopies ->
+			Command.Drop.startLocal f numcopies key
+
+		dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
+			Command.Drop.startRemote f numcopies key r
 
 remoteHas :: Remote -> Key -> Annex Bool
 remoteHas r key = elem

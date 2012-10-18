@@ -30,7 +30,7 @@ the same content, this gets tricky. Let's assume there are not.)
 1. The preferred content expression can change, or a new repo is added, or
    groups change. Generally, some change to global annex state. Only way to deal
    with this is an expensive scan. (The rest of the items below come from
-   analizing the terminals used in preferred content expressions.)
+   analizing the terminals used in preferred content expressions.) **done**
 2. renaming of a file (ie, moved to `archive/`)
 3. some other repository gets the file (`in`, `copies`)
 4. some other repository drops the file (`in`, `copies` .. However, it's

@@ -48,7 +48,7 @@ startLocal file numcopies key = stopUnless (inAnnex key) $ do
 
 startRemote :: FilePath -> Maybe Int -> Key -> Remote -> CommandStart
 startRemote file numcopies key remote = do
-	showStart "drop" file
+	showStart ("drop " ++ Remote.name remote) file
 	next $ performRemote key numcopies remote
 
 performLocal :: Key -> Maybe Int -> CommandPerform
