@@ -13,19 +13,17 @@ import Assistant.TransferQueue
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Alert
+import Assistant.Drop
 import Logs.Transfer
 import Logs.Location
-import Logs.Trust
 import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
-import qualified Command.Drop
 import Command
 import Annex.Content
 import Annex.Wanted
-import Config
 
 import qualified Data.Set as S
 
@@ -127,7 +125,7 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
 			present <- inAnnex key
 
-			handleDrops locs syncrs present f key
+			handleDrops' locs syncrs present f key
 
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs
@@ -143,44 +141,6 @@ genTransfer direction want key slocs r
 	| (S.member (Remote.uuid r) slocs) == want = Just
 		(r, Transfer direction (Remote.uuid r) key)
 	| otherwise = Nothing
-
-{- Drop from local or remote when allowed by the preferred content and
- - numcopies settings. -}
-handleDrops :: [UUID] -> [Remote] -> Bool -> FilePath -> Key -> Annex ()
-handleDrops locs rs present f key
-	| present = do
-		n <- getcopies
-		if checkcopies n
-			then go rs =<< dropl n
-			else go rs n
-	| otherwise = go rs =<< getcopies
-	where
-		getcopies = do
-			have <- length . snd <$> trustPartition UnTrusted locs
-			numcopies <- getNumCopies =<< numCopies f
-			return (have, numcopies)
-		checkcopies (have, numcopies) = have > numcopies
-		decrcopies (have, numcopies) = (have - 1, numcopies)
-
-		go [] _ = noop
-		go (r:rest) n
-			| checkcopies n = dropr r n >>= go rest
-			| otherwise = noop
-
-		checkdrop n@(_, numcopies) u a = 
-			ifM (wantDrop u (Just f))
-				( ifM (doCommand $ a (Just numcopies))
-					( return $ decrcopies n
-					, return n
-					)
-				, return n
-				)
-
-		dropl n = checkdrop n Nothing $ \numcopies ->
-			Command.Drop.startLocal f numcopies key
-
-		dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
-			Command.Drop.startRemote f numcopies key r
 
 remoteHas :: Remote -> Key -> Annex Bool
 remoteHas r key = elem

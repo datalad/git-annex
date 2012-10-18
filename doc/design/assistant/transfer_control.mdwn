@@ -32,7 +32,7 @@ the same content, this gets tricky. Let's assume there are not.)
    with this is an expensive scan. (The rest of the items below come from
    analizing the terminals used in preferred content expressions.) **done**
 2. renaming of a file (ie, moved to `archive/`)
-3. some other repository gets the file (`in`, `copies`)
+3. we get a file (`in`, `copies`)
 4. some other repository drops the file (`in`, `copies` .. However, it's
    unlikely that an expression would prefer content when *more* copies
    exisited, and want to drop it when less do. That's nearly a pathological
