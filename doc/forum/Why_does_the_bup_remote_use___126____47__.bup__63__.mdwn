@@ -1,0 +1,5 @@
+I created a test remote using the command:
+
+    git annex initremote mybup type=bup encryption=none buprepo=/tmp/mybup
+
+I can copy files to and from the remote just fine.  However, every time I do so it makes changes inside `~/.bup`.  If I delete `~/.bup` it will recreate it.  Is this expected?  Are the files in `~/.bup` of any consequence?
