@@ -11,6 +11,7 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.Drop
 import Annex.Content
 import Logs.Transfer
 import Utility.DirWatcher
@@ -102,16 +103,21 @@ onDel st dstatus transferqueue file _ = case parseTransferFile file of
 			, show t
 			]
 		minfo <- removeTransfer dstatus t
+		finishedTransfer st dstatus transferqueue t minfo
 
-		{- Queue uploads of files we successfully downloaded,
-		 - spreading them out to other reachable remotes. -}
-		case (minfo, transferDirection t) of
-			(Just info, Download) -> runThreadState st $
-				whenM (inAnnex $ transferKey t) $
-					queueTransfersMatching 
-						(/= transferUUID t)
-						Later transferqueue dstatus
-						(transferKey t)
-						(associatedFile info)
-						Upload
-			_ -> noop
+{- Queue uploads of files we successfully downloaded, spreading them
+ - out to other reachable remotes.
+ -
+ - Also, downloading a file may have caused a remote to not want it,
+ - so drop it from the remote. -}
+finishedTransfer :: ThreadState -> DaemonStatusHandle -> TransferQueue -> Transfer -> Maybe TransferInfo -> IO ()
+finishedTransfer st dstatus transferqueue t (Just info)
+	| transferDirection t == Download = runThreadState st $
+		whenM (inAnnex $ transferKey t) $ do
+			handleRemoteDrops dstatus 
+				(transferKey t) (associatedFile info)
+			queueTransfersMatching (/= transferUUID t)
+				Later transferqueue dstatus
+				(transferKey t) (associatedFile info) Upload
+	| otherwise = noop
+finishedTransfer _ _ _ _ _ = noop

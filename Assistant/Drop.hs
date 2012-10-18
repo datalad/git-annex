@@ -8,24 +8,30 @@
 module Assistant.Drop where
 
 import Assistant.Common
+import Assistant.DaemonStatus
 import Logs.Location
 import Logs.Trust
+import Types.Remote (AssociatedFile)
 import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
 import Config
 
-{- Drop from local or remote when allowed by the preferred content and
+{- Drop from syncable remotes when allowed by the preferred content and
  - numcopies settings. -}
-handleDrops :: [Remote] -> Bool -> FilePath -> Key -> Annex ()
-handleDrops rs present f key = do
+handleRemoteDrops :: DaemonStatusHandle -> Key -> AssociatedFile -> Annex ()
+handleRemoteDrops dstatus key (Just f) = do
+	syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
 	locs <- loggedLocations key
-	handleDrops' locs rs present f key
+	handleDrops locs syncrs False f key
+handleRemoteDrops _ _ _ = noop
 
-handleDrops' :: [UUID] -> [Remote] -> Bool -> FilePath -> Key -> Annex ()
-handleDrops' locs rs present f key
-	| present = do
+{- Drop from local and/or remote when allowed by the preferred content and
+ - numcopies settings. -}
+handleDrops :: [UUID] -> [Remote] -> Bool -> FilePath -> Key -> Annex ()
+handleDrops locs rs fromhere f key
+	| fromhere = do
 		n <- getcopies
 		if checkcopies n
 			then go rs =<< dropl n

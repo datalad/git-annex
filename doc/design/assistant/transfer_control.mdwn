@@ -32,7 +32,7 @@ the same content, this gets tricky. Let's assume there are not.)
    with this is an expensive scan. (The rest of the items below come from
    analizing the terminals used in preferred content expressions.) **done**
 2. renaming of a file (ie, moved to `archive/`)
-3. we get a file (`in`, `copies`)
+3. we get a file (`in`, `copies`) **done**
 4. some other repository drops the file (`in`, `copies` .. However, it's
    unlikely that an expression would prefer content when *more* copies
    exisited, and want to drop it when less do. That's nearly a pathological
@@ -40,13 +40,6 @@ the same content, this gets tricky. Let's assume there are not.)
 5. `migrate` is used to change a backend (`inbackend`; unlikely)
 
 That's all! Of these, 1, 2 and 3 are by far the most important.
-
-Rename handling should certianly check 2. 
-
-One place to check for 3 is after transferring a file; but that does not
-cover all its cases, as some other repo could transfer the file. To fully
-handle 3, need to either use a full scan, or examine location log history
-when receiving a git-annex branch push.
 
 ## specifying what data a remote prefers to contain **done**
 

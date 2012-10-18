@@ -125,7 +125,7 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
 			present <- inAnnex key
 
-			handleDrops' locs syncrs present f key
+			handleDrops locs syncrs present f key
 
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs
