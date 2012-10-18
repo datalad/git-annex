@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
@@ -21,7 +21,9 @@ import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
+#ifdef WITH_S3
 import Assistant.WebApp.Configurators.S3
+#endif
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos
 import Assistant.ThreadedMonad
