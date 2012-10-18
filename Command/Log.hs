@@ -159,11 +159,10 @@ readLog = mapMaybe (parse . lines)
 
 -- Parses something like ":100644 100644 oldsha newsha M"
 parseRaw :: String -> (Git.Ref, Git.Ref)
-parseRaw l = (Git.Ref oldsha, Git.Ref newsha)
+parseRaw l = go $ words l
 	where
-		ws = words l
-		oldsha = ws !! 2
-		newsha = ws !! 3
+		go (_:_:oldsha:newsha:_) = (Git.Ref oldsha, Git.Ref newsha)
+		go _ = error $ "unable to parse git log output: " ++ l
 
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .

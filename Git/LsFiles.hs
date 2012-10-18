@@ -120,17 +120,19 @@ data InternalUnmerged = InternalUnmerged
 
 parseUnmerged :: String -> Maybe InternalUnmerged
 parseUnmerged s
-	| null file || length ws < 3 = Nothing
-	| otherwise = do
-		stage <- readish (ws !! 2) :: Maybe Int
-		unless (stage == 2 || stage == 3) $
-			fail undefined -- skip stage 1
-		blobtype <- readBlobType (ws !! 0)
-		sha <- extractSha (ws !! 1)
-		return $ InternalUnmerged (stage == 2) file (Just blobtype) (Just sha)
+	| null file = Nothing
+	| otherwise = case words metadata of
+		(rawblobtype:rawsha:rawstage:_) -> do
+			stage <- readish rawstage :: Maybe Int
+			unless (stage == 2 || stage == 3) $
+				fail undefined -- skip stage 1
+			blobtype <- readBlobType rawblobtype
+			sha <- extractSha rawsha
+			return $ InternalUnmerged (stage == 2) file
+				(Just blobtype) (Just sha)
+		_ -> Nothing
 	where
 		(metadata, file) = separate (== '\t') s
-		ws = words metadata
 
 reduceUnmerged :: [Unmerged] -> [InternalUnmerged] -> [Unmerged]
 reduceUnmerged c [] = c
