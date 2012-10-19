@@ -20,6 +20,7 @@ import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.TransferQueue
 import Assistant.Alert
+import Assistant.Drop
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
@@ -135,6 +136,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 					liftIO $ debug threadname ["fix symlink", file]
 					liftIO $ removeFile file
 					liftIO $ createSymbolicLink link file
+					checkcontent key =<< liftIO (getDaemonStatus dstatus)
 					addlink link
 				)
 		go Nothing = do -- other symlink
@@ -146,7 +148,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 		 - and being re-added, or added when the watcher was
 		 - not running. So they're normally restaged to make sure.
 		 -
-		 - As an optimisation, during the status scan, avoid
+		 - As an optimisation, during the startup scan, avoid
 		 - restaging everything. Only links that were created since
 		 - the last time the daemon was running are staged.
 		 - (If the daemon has never ran before, avoid staging
@@ -174,12 +176,16 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 					stageSymlink file sha
 			madeChange file LinkChange
 
-		{- When a new link appears, after the startup scan,
-		 - try to get the key's content. -}
+		{- When a new link appears, or a link is changed,
+		 - after the startup scan, handle getting or
+		 - dropping the key's content. -}
 		checkcontent key daemonstatus
-			| scanComplete daemonstatus = unlessM (inAnnex key) $
-				queueTransfers Next transferqueue dstatus
-					key (Just file) Download
+			| scanComplete daemonstatus = do
+				present <- inAnnex key
+				unless present $
+					queueTransfers Next transferqueue dstatus
+						key (Just file) Download
+				handleDrops dstatus present key (Just file)
 			| otherwise = noop
 
 onDel :: Handler

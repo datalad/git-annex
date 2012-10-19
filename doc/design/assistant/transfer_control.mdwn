@@ -33,10 +33,9 @@ the same content, this gets tricky. Let's assume there are not.)
    groups change. Generally, some change to global annex state. Only way to deal
    with this is an expensive scan. (The rest of the items below come from
    analizing the terminals used in preferred content expressions.) **done**
-2. renaming of a file (ie, moved to `archive/`)
-   (note that renaming a file can also make it become preferred content
-   again, and should cause it to be transferred in that case, which doesn't
-   happen either..)
+2. renaming of a file (ie, moved to `archive/`) **done**
+   (note also that renaming a file can also make it become preferred content
+   again, and should cause it to be transferred in that case) **done**
 3. we get a file (`in`, `copies`) **done**
 4. we sent a file (`in`, `copies`) **done**
 5. some other repository drops the file (`in`, `copies` .. However, it's
