@@ -20,6 +20,8 @@ something smart with such remotes.
 * The TransferWatcher's finishedTransfer function relies on the location
   log having been updated after a transfer. But there's a race; if the
   log is not updated in time, it will fail to drop unwanted content.
+  (There's a 10 second sleep there now to avoid the race, but that's hardly
+  a fix.)
 
 ### dropping no longer preferred content
 
