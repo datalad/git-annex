@@ -17,8 +17,11 @@ something smart with such remotes.
   time more uploads and downloads are queued. It would be better to drop as
   much content as possible upfront, to keep the total annex size as small
   as possible. How to do that without making two expensive scans?
+* The TransferWatcher's finishedTransfer function relies on the location
+  log having been updated after a transfer. But there's a race; if the
+  log is not updated in time, it will fail to drop unwanted content.
 
-### dropping no longer preferred content TODO
+### dropping no longer preferred content
 
 When a file is renamed, it might stop being preferred, so
 could be checked and dropped. (If there's multiple links to
