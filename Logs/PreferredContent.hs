@@ -88,7 +88,7 @@ makeMatcher groupmap u s
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
  	| otherwise = matchAll
 	where
-		tokens = map (parseToken groupmap) (tokenizeMatcher s)
+		tokens = map (parseToken (Just u) groupmap) (tokenizeMatcher s)
 
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
@@ -103,26 +103,26 @@ matchAll = Utility.Matcher.generate []
 checkPreferredContentExpression :: String -> Maybe String
 checkPreferredContentExpression s
 	| s == "standard" = Nothing
-	| otherwise = case lefts $ map (parseToken emptyGroupMap) (tokenizeMatcher s) of
+	| otherwise = case lefts $ map (parseToken Nothing emptyGroupMap) (tokenizeMatcher s) of
 		[] -> Nothing
 		l -> Just $ unwords $ map ("Parse failure: " ++) l
 
-parseToken :: GroupMap -> String -> Either String (Utility.Matcher.Token MatchFiles)
-parseToken groupmap t
+parseToken :: (Maybe UUID) -> GroupMap -> String -> Either String (Utility.Matcher.Token MatchFiles)
+parseToken mu groupmap t
 	| any (== t) Utility.Matcher.tokens = Right $ Utility.Matcher.token t
-	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k m
-	where
-		(k, v) = separate (== '=') t
-		m = M.fromList
+	| t == "present" = use $ limitPresent mu
+	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
+		M.fromList
 			[ ("include", limitInclude)
 			, ("exclude", limitExclude)
-			, ("in", limitIn)
 			, ("copies", limitCopies)
 			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
 			, ("inallgroup", limitInAllGroup groupmap)
 			]
+	where
+		(k, v) = separate (== '=') t
 		use a = Utility.Matcher.Operation <$> a v
 
 {- This is really dumb tokenization; there's no support for quoted values.

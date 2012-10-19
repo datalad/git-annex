@@ -113,6 +113,20 @@ limitIn name = Right $ \notpresent -> check $
 					then return False
 					else inAnnex key
 
+{- Limit to content that is currently present on a uuid. -}
+limitPresent :: Maybe UUID -> MkLimit
+limitPresent u name = Right $ const $ check $ \key -> do
+	hereu <- getUUID
+	if u == Just hereu || u == Nothing
+		then inAnnex key
+		else do
+			us <- Remote.keyLocations key
+			return $ maybe False (`elem` us) u
+	where
+		check a = lookupFile >=> handle a
+		handle _ Nothing = return False
+		handle a (Just (key, _)) = a key
+
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
 addCopies :: String -> Annex ()

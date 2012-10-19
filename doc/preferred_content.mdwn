@@ -20,23 +20,66 @@ The expressions are very similar to the file matching options documented
 on the [[git-annex]] man page. At the command line, you can use those
 options in commands like this:
 
-	git annex get --include='*.mp3' --and -'(' --not --in=archive -')'
+	git annex get --include='*.mp3' --and -'(' --not --largerthan=100mb -')'
 
 The equivilant preferred content expression looks like this:
 
-	include=*.mp3 and (not in=archive)
+	include=*.mp3 and (not largerthan=100mb)
 
-So, just remove the dashes, basically.
+So, just remove the dashes, basically. However, there are some differences
+from the command line options to keep in mind:
 
-## file matching
+### difference: file matching
 
-Note that while --include and --exclude match files relative to the current
+While --include and --exclude match files relative to the current
 directory, preferred content expressions always match files relative to the
 top of the git repository. Perhaps you put files into `archive` directories
 when you're done with them. Then you could configure your laptop to prefer
 to not retain those files, like this:
 
 	exclude=*/archive/*
+
+### difference: no "in="
+
+Preferred content expressions have no direct equivilant to `--in`.
+
+Often, it's best to add repositories to groups, and match against
+the groups in a preferred content expression. So rather than
+`--in=usbdrive`, put all the USB drives into a "transfer" group,
+and use "copies=transfer:1"
+
+### difference: dropping
+
+To decide if content should be dropped, git-annex evaluates the preferred
+content expression under the assumption that the content has *already* been
+dropped. If the content would not be preferred then, the drop can be done.
+So, for example, `copies=2` in a preferred content expression lets
+content be dropped only when there are currently 3 copies of it, including
+the repo it's being dropped from. This is different than running `git annex
+drop --copies=2`, which will drop files that current have 2 copies.
+
+A wrinkle of this approach is how `in=` is handled. When deciding if
+content should be dropped, git-annex looks at the current status, not
+the status if the content would be dropped. So `in=here` means that
+any currently present content is preferred, which can be useful if you
+want manual control over content. Meanwhile `not (in=here)` should be
+avoided -- it will cause content that's not here to be preferred,
+but once the content arrives, it'll stop being preferred and will be
+dropped again!
+
+## difference: "present"
+
+There's a special "present" keyword you can use in a preferred content
+expression. This means that content is preferred if it's present,
+and not otherwise. This leaves it up to you to use git-annex manually
+to move content around. You can use this to avoid preferred content
+settings from affecting a subdirectory. For example:
+
+	auto/* or (include=ad-hoc/* and present)
+
+Note that `not present` is a very bad thing to put in a preferred content 
+expression. It'll make it prefer to get content that's not present, and
+drop content that is present! Don't go there..
 
 ## standard expressions
 
