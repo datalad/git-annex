@@ -147,7 +147,6 @@ updateTo pairs = do
 				then updateIndex branchref
 				else commitBranch branchref merge_desc
 					(nub $ fullname:refs)
-			invalidateCache
 			liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or committed
@@ -168,20 +167,16 @@ getStale :: FilePath -> Annex String
 getStale = get' True
 
 get' :: Bool -> FilePath -> Annex String
-get' staleok file = fromcache =<< getCache file
+get' staleok file = fromjournal =<< getJournalFile file
 	where
-		fromcache (Just content) = return content
-		fromcache Nothing = fromjournal =<< getJournalFile file
-		fromjournal (Just content) = cache content
+		fromjournal (Just content) = return content
 		fromjournal Nothing
 			| staleok = withIndex frombranch
 			| otherwise = do
 				update
-				withIndex $ frombranch >>= cache
-		frombranch = L.unpack <$> catFile fullname file
-		cache content = do
-			setCache file content
-			return content
+				frombranch
+		frombranch = withIndex $
+			L.unpack <$> catFile fullname file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -191,11 +186,9 @@ get' staleok file = fromcache =<< getCache file
 change :: FilePath -> (String -> String) -> Annex ()
 change file a = lockJournal $ a <$> getStale file >>= set file
 
-{- Records new content of a file into the journal and cache. -}
+{- Records new content of a file into the journal -}
 set :: FilePath -> String -> Annex ()
-set file content = do
-	setJournalFile file content
-	setCache file content
+set file content = setJournalFile file content
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()

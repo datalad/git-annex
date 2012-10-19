@@ -1,4 +1,4 @@
-{- management of the git-annex journal and cache
+{- management of the git-annex journal
  -
  - The journal is used to queue up changes before they are committed to the
  - git-annex branch. Amoung other things, it ensures that if git-annex is
