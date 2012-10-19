@@ -18,6 +18,8 @@ import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Remote
 
+import Control.Concurrent
+
 thisThread :: ThreadName
 thisThread = "TransferWatcher"
 
@@ -103,7 +105,13 @@ onDel st dstatus transferqueue file _ = case parseTransferFile file of
 			, show t
 			]
 		minfo <- removeTransfer dstatus t
-		finishedTransfer st dstatus transferqueue t minfo
+
+		void $ forkIO $ do
+			{- XXX race workaround delay. The location
+ 			 - log needs to be updated before finishedTransfer
+ 			 - runs. -}
+			threadDelay 10000000 -- 10 seconds
+			finishedTransfer st dstatus transferqueue t minfo
 
 {- Queue uploads of files we successfully downloaded, spreading them
  - out to other reachable remotes.
