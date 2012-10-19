@@ -32,3 +32,5 @@ Version 3.20120825 built on my OpenIndiana system just fine, but the latest rele
     compilation terminated.
 
 Is it possible to remove the new requirement?  Thanks!
+
+> [[done]] --[[Joey]]
