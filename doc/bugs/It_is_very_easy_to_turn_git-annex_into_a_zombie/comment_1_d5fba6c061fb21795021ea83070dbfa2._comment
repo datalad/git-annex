@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Correction"
+ date="2012-10-20T05:34:47Z"
+ content="""
+If I \"sudo kill -9\" all the processes in the above group after deleting the annex directories, then they do go away without needing to reboot.
+"""]]
