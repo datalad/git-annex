@@ -115,7 +115,7 @@ limitIn name = Right $ \notpresent -> check $
 
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MkLimit
-limitPresent u name = Right $ const $ check $ \key -> do
+limitPresent u _ = Right $ const $ check $ \key -> do
 	hereu <- getUUID
 	if u == Just hereu || u == Nothing
 		then inAnnex key
