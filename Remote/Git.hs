@@ -39,6 +39,7 @@ import Types.Key
 import qualified Fields
 
 import Control.Concurrent
+import Control.Concurrent.MSampleVar
 import System.Process (std_in, std_err)
 
 remote :: RemoteType
@@ -290,9 +291,9 @@ copyFromRemote r key file dest
 				: maybe [] (\f -> [(Fields.associatedFile, f)]) file
 			Just (cmd, params) <- git_annex_shell r "transferinfo" 
 				[Param $ key2file key] fields
-			v <- liftIO $ newEmptySampleVar
+			v <- liftIO $ newEmptySV
 			tid <- liftIO $ forkIO $ void $ tryIO $ do
-				bytes <- readSampleVar v
+				bytes <- readSV v
 				p <- createProcess $
 					 (proc cmd (toCommand params))
 						{ std_in = CreatePipe
@@ -305,8 +306,8 @@ copyFromRemote r key file dest
 					hFlush h
 				send bytes
 				forever $
-					send =<< readSampleVar v
-			let feeder = writeSampleVar v
+					send =<< readSV v
+			let feeder = writeSV v
 			bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
 
 copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool

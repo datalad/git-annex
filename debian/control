@@ -39,6 +39,7 @@ Build-Depends:
 	libghc-crypto-api-dev,
 	libghc-network-multicast-dev,
 	libghc-network-info-dev,
+	libghc-safesemaphore-dev,
 	ikiwiki,
 	perlmagick,
 	git,
