@@ -66,7 +66,10 @@
  - 	Uses the ScanRemotes map.a
  - Thread 17: PairListener
  - 	Listens for incoming pairing traffic, and takes action.
- - Thread 18: WebApp
+ - Thread 18: ConfigMonitor
+ - 	Triggered by changes to the git-annex branch, checks for changed
+ - 	config files, and reloads configs.
+ - Thread 19: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
  -
@@ -114,6 +117,7 @@ import Assistant.Changes
 import Assistant.Commits
 import Assistant.Pushes
 import Assistant.ScanRemotes
+import Assistant.BranchChange
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Threads.DaemonStatus
@@ -128,6 +132,7 @@ import Assistant.Threads.MountWatcher
 import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
+import Assistant.Threads.ConfigMonitor
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
@@ -174,6 +179,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			transferqueue <- newTransferQueue
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
+			branchhandle <- newBranchChangeHandle
 #ifdef WITH_WEBAPP
 			urlrenderer <- newUrlRenderer
 #endif
@@ -187,7 +193,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 #endif
 				, assist $ pushThread st dstatus commitchan pushmap
 				, assist $ pushRetryThread st dstatus pushmap
-				, assist $ mergeThread st dstatus transferqueue
+				, assist $ mergeThread st dstatus transferqueue branchhandle
 				, assist $ transferWatcherThread st dstatus transferqueue
 				, assist $ transferPollerThread st dstatus
 				, assist $ transfererThread st dstatus transferqueue transferslots
@@ -197,6 +203,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ netWatcherThread st dstatus scanremotes
 				, assist $ netWatcherFallbackThread st dstatus scanremotes
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
+				, assist $ configMonitorThread st dstatus branchhandle
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination

@@ -1,6 +1,9 @@
 git-annex (3.20121018) UNRELEASED; urgency=low
 
   * assistant: Now drops non-preferred content.
+  * assistant: Now notices, and applies config changes 
+    as they are made to the git-annex branch, including config changes
+    pushed in from remotes.
   * Preferred content path matching bugfix.
   * Preferred content expressions cannot use "in=".
   * Preferred content expressions can use "present".

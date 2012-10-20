@@ -6,6 +6,7 @@
  -}
 
 module Logs.Remote (
+	remoteLog,
 	readRemoteLog,
 	configSet,
 	keyValToConfig,

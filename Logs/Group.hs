@@ -6,10 +6,12 @@
  -}
 
 module Logs.Group (
+	groupLog,
 	groupChange,
 	groupSet,
 	lookupGroups,
 	groupMap,
+	groupMapLoad,
 	getStandardGroup,
 ) where
 
@@ -47,18 +49,18 @@ groupChange NoUUID _ = error "unknown UUID; cannot modify"
 groupSet :: UUID -> S.Set Group -> Annex ()
 groupSet u g = groupChange u (const g)
 
-{- Read the groupLog into a map. The map is cached for speed. -}
+{- The map is cached for speed. -}
 groupMap :: Annex GroupMap
-groupMap = do
-	cached <- Annex.getState Annex.groupmap
-	case cached of
-		Just m -> return m
-		Nothing -> do
-			m <- makeGroupMap . simpleMap . 
-				parseLog (Just . S.fromList . words) <$>
-					Annex.Branch.get groupLog
-			Annex.changeState $ \s -> s { Annex.groupmap = Just m }
-			return m
+groupMap = maybe groupMapLoad return =<< Annex.getState Annex.groupmap
+
+{- Loads the map, updating the cache. -}
+groupMapLoad :: Annex GroupMap
+groupMapLoad = do
+	m <- makeGroupMap . simpleMap .
+		parseLog (Just . S.fromList . words) <$>
+			Annex.Branch.get groupLog
+	Annex.changeState $ \s -> s { Annex.groupmap = Just m }
+	return m
 
 makeGroupMap :: M.Map UUID (S.Set Group) -> GroupMap
 makeGroupMap byuuid = GroupMap byuuid bygroup

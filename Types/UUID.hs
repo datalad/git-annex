@@ -7,6 +7,8 @@
 
 module Types.UUID where
 
+import qualified Data.Map as M
+
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
 data UUID = NoUUID | UUID String
 	deriving (Eq, Ord, Show, Read)
@@ -18,3 +20,5 @@ fromUUID NoUUID = ""
 toUUID :: String -> UUID
 toUUID [] = NoUUID
 toUUID s = UUID s
+
+type UUIDMap = M.Map UUID String

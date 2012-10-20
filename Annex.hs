@@ -101,6 +101,7 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FileInfo -> Annex Bool)
+	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
@@ -129,6 +130,7 @@ newState gitrepo = AnnexState
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
+	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
 	, shared = Nothing
 	, forcetrust = M.empty

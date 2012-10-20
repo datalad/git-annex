@@ -6,9 +6,11 @@
  -}
 
 module Logs.PreferredContent (
+	preferredContentLog,
 	preferredContentSet,
 	isPreferredContent,
 	preferredContentMap,
+	preferredContentMapLoad,
 	preferredContentMapRaw,
 	checkPreferredContentExpression,
 	setStandardGroup,
@@ -60,19 +62,20 @@ isPreferredContent mu notpresent file = do
 		Just matcher -> Utility.Matcher.matchMrun matcher $ \a ->
 			a notpresent fi
 
-{- Read the preferredContentLog into a map. The map is cached for speed. -}
+{- The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap
-preferredContentMap = do
+preferredContentMap = maybe preferredContentMapLoad return
+	=<< Annex.getState Annex.preferredcontentmap
+
+{- Loads the map, updating the cache. -}
+preferredContentMapLoad :: Annex Annex.PreferredContentMap
+preferredContentMapLoad = do
 	groupmap <- groupMap
-	cached <- Annex.getState Annex.preferredcontentmap
-	case cached of
-		Just m -> return m
-		Nothing -> do
-			m <- simpleMap
-				. parseLogWithUUID ((Just .) . makeMatcher groupmap)
-				<$> Annex.Branch.get preferredContentLog
-			Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
-			return m
+	m <- simpleMap
+		. parseLogWithUUID ((Just .) . makeMatcher groupmap)
+		<$> Annex.Branch.get preferredContentLog
+	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
+	return m
 
 preferredContentMapRaw :: Annex (M.Map UUID String)
 preferredContentMapRaw = simpleMap . parseLog Just

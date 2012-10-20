@@ -10,9 +10,6 @@ something smart with such remotes.
 
 ## TODO
 
-* preferred content settings made in the webapp (or in vicfg,
-  or synced over) are not noticed while the assistant is running; it has to
-  be restarted for them to take effect.
 * The expensive scan currently makes one pass, dropping content at the same
   time more uploads and downloads are queued. It would be better to drop as
   much content as possible upfront, to keep the total annex size as small

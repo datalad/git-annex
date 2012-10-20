@@ -8,6 +8,7 @@
 module Git.LsTree (
 	TreeItem(..),
 	lsTree,
+	lsTreeFiles,
 	parseLsTree
 ) where
 
@@ -27,10 +28,15 @@ data TreeItem = TreeItem
 	, file :: FilePath
 	} deriving Show
 
-{- Lists the contents of a Ref -}
+{- Lists the complete contents of a tree. -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
 lsTree t repo = map parseLsTree <$>
 	pipeNullSplitZombie [Params "ls-tree --full-tree -z -r --", File $ show t] repo
+
+{- Lists specified files in a tree. -}
+lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]
+lsTreeFiles t fs repo = map parseLsTree <$>
+	pipeNullSplitZombie ([Params "ls-tree -z --", File $ show t] ++ map File fs) repo
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}

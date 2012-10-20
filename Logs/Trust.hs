@@ -6,11 +6,13 @@
  -}
 
 module Logs.Trust (
+	trustLog,
 	TrustLevel(..),
 	trustGet,
 	trustSet,
 	trustPartition,
 	lookupTrust,
+	trustMapLoad,
 	trustMapRaw,
 ) where
 
@@ -65,27 +67,29 @@ trustPartition level ls
 		candidates <- trustGet level
 		return $ partition (`elem` candidates) ls
 
-{- Read the trustLog into a map, overriding with any
- - values from forcetrust or the git config. The map is cached for speed. -}
+{- trustLog in a map, overridden with any values from forcetrust or
+ - the git config. The map is cached for speed. -}
 trustMap :: Annex TrustMap
-trustMap = do
-	cached <- Annex.getState Annex.trustmap
-	case cached of
-		Just m -> return m
-		Nothing -> do
-			overrides <- Annex.getState Annex.forcetrust
-			logged <- trustMapRaw
-			configured <- M.fromList . catMaybes
-				<$> (mapM configuredtrust =<< remoteList)
-			let m = M.union overrides $ M.union configured logged
-			Annex.changeState $ \s -> s { Annex.trustmap = Just m }
-			return m
+trustMap = maybe trustMapLoad return =<< Annex.getState Annex.trustmap
+
+{- Loads the map, updating the cache, -}
+trustMapLoad :: Annex TrustMap
+trustMapLoad = do
+	overrides <- Annex.getState Annex.forcetrust
+	logged <- trustMapRaw
+	configured <- M.fromList . catMaybes
+		<$> (mapM configuredtrust =<< remoteList)
+	let m = M.union overrides $ M.union configured logged
+	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
+	return m
 	where
 		configuredtrust r =
 			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
 				maybe Nothing readTrustLevel
 					<$> getTrustLevel (Types.Remote.repo r)
 
+{- Does not include forcetrust or git config values, just those from the
+ - log file. -}
 trustMapRaw :: Annex TrustMap
 trustMapRaw = simpleMap . parseLog (Just . parseTrustLog)
 	<$> Annex.Branch.get trustLog
