@@ -2,7 +2,7 @@ I have come up with a moderately complex solution to a particular use case that 
 
 #The problem:
 
-I have a large number of file that are accessed infrequently and stored off-line on DVD-Rs.  I need to keep track of which files are on which disc so that when I want a file I can find it.
+I have a large number of files that are accessed infrequently and stored off-line on DVD-Rs.  I need to keep track of which files are on which disc so that when I want a file I can find it.
 
 #The solution:
 
