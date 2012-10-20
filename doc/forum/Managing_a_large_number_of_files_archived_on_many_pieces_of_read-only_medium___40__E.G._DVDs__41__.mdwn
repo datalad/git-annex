@@ -6,7 +6,7 @@ I have a large number of files that are accessed infrequently and stored off-lin
 
 #The solution:
 
-I currently keep a text file to track which files are on which discs.  It would like to organize all the files in a proper filesystem using git annex, allowing me better organization and the ability to keep some smaller related files online near the annexed large files.
+I currently keep a text file to track which files are on which discs.  I would like to organize all the files in a proper filesystem using git annex, allowing me better organization and the ability to keep some smaller related files online near the annexed large files.
 
 #Requirements:
 
@@ -20,7 +20,7 @@ This is taken care of with one of the hash backends (E.G. SHA256)
 
 3) The DVD-Rs still need to be usable without git or git-annex (E.G. The stored files should retain their normal human readable names)
 
-This requirement rules out dir and rsync special remotes, they store the files name according to their hash.  I have settled on making each disc a separate repo which will satisfy this requirement.
+This requirement rules out dir and rsync special remotes, they store the files named according to their hash.  I have settled on making each disc a separate repo which will satisfy this requirement.
 
 
 #Future goals:
@@ -42,7 +42,7 @@ Suppose you have the following tree:
 
 You want to store thing1 on disc1 and thing2 on disc2, but you'd like to keep the descriptions online because they are small and useful for figuring out which thing you want later.
 
-1) Create the main repo and annex the files
+1) Create the main repo and annex the files:
 
 <pre>
 cd ~/mainrepo
@@ -78,7 +78,7 @@ cd /tmp
 find disc1repo/ disc2repo/ -type l -execdir sh -c "mv -iv {} {}.symlink && ln -L {}.symlink {} && rm {}.symlink" \;
 </pre>
 
-4) Burn these repos onto DVD-Rs
+4) Burn these repos onto DVD-Rs:
 
 <pre>
 cd /tmp
@@ -90,7 +90,7 @@ cdrecord -v -dao disc1.iso
 cdrecord -v -dao disc2.iso
 </pre>
 
-5) Mount the DVD-Rs and add as a remote and fetch, then drop from the mainrepo
+5) Mount the DVD-Rs and add as a remote and fetch, then drop from the mainrepo:
 
 <pre>
 cd ~/mainrepo
