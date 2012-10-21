@@ -173,12 +173,12 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
 		(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 		
 		findnew [] = return []
-		findnew pending = do
+		findnew pending@(exemplar:_) = do
 			(!newfiles, cleanup) <- runThreadState st $
 				inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
 			void cleanup
 			-- note: timestamp info is lost here
-			let ts = changeTime (pending !! 0)
+			let ts = changeTime exemplar
 			return $ map (PendingAddChange ts) newfiles
 
 		returnWhen c a

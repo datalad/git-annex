@@ -69,10 +69,10 @@ hookEnv k f = Just <$> mergeenv (fileenv f ++ keyenv)
 			M.union (M.fromList l) 
 				<$> M.fromList <$> getEnvironment
 		env s v = ("ANNEX_" ++ s, v)
-		keyenv =
-			[ env "KEY" (key2file k)
-			, env "HASH_1" (hashbits !! 0)
-			, env "HASH_2" (hashbits !! 1)
+		keyenv = catMaybes
+			[ Just $ env "KEY" (key2file k)
+			, env "HASH_1" <$> headMaybe hashbits
+			, env "HASH_2" <$> headMaybe (drop 1 hashbits)
 			]
 		fileenv Nothing = []
 		fileenv (Just file) =  [env "FILE" file]

@@ -296,11 +296,11 @@ readTransferInfo mpid s = TransferInfo
 		bits = split " " firstline
 		numbits = length bits
 		time = if numbits > 0
-			then Just <$> parsePOSIXTime (bits !! 0)
-			else pure Nothing
+			then Just <$> parsePOSIXTime =<< headMaybe bits
+			else pure Nothing -- not failure
 		bytes = if numbits > 1
-			then Just <$> readish (bits !! 1)
-			else pure Nothing
+			then Just <$> readish =<< headMaybe (drop 1 bits)
+			else pure Nothing -- not failure
 
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds
