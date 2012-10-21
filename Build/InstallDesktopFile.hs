@@ -74,32 +74,6 @@ writeOSXDesktop command = do
 		, userAutoStart osxAutoStartLabel
 		)
 
-	{- Install the OSX app in non-self-contained mode. -}
-	let appdir = "git-annex.app"
-	installOSXAppFile appdir "Contents/Info.plist" Nothing
-	installOSXAppFile appdir "Contents/Resources/git-annex.icns" Nothing
-	installOSXAppFile appdir "Contents/MacOS/git-annex-webapp" (Just webappscript)
-	where
-		webappscript = unlines
-			[ "#!/bin/sh"
-			, command ++ " webapp"
-			]
-
-installOSXAppFile :: FilePath -> FilePath -> Maybe String -> IO ()
-installOSXAppFile appdir appfile mcontent = do
-	let src = "standalone" </> "osx" </> appdir </> appfile
-	home <- myHomeDir
-	dest <- ifM systemwideInstall
-		( return $ "/Applications" </> appdir </> appfile
-		, return $ home </> "Desktop" </> appdir </> appfile
-		)
-	createDirectoryIfMissing True (parentDir dest)
-	case mcontent of
-		Just content -> writeFile dest content
-		Nothing -> copyFile src dest
-	mode <- fileMode <$> getFileStatus src
-	setFileMode dest mode
-
 install :: FilePath -> IO ()
 install command = do
 #ifdef darwin_HOST_OS
