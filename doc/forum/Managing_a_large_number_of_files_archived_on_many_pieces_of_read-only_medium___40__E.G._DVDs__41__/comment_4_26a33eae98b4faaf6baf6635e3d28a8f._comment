@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="Some free-form remote ideas"
+ date="2012-10-21T02:07:40Z"
+ content="""
+This is starting to get interesting.  A free-form remote would definitely simplify my use case, and also solve the \"future goal\" of easily incorporating my already existing DVD-Rs.
+
+I haven't really looked into the git-annex internals up to this point, but looking at the [[special_remotes/hook]] page there doesn't seem to be a hook for init which would be needed to populate git-annex's index of files in the remote.  (git-annex seems to assume that new special remotes are empty)
+
+Another problem is where to store the hash to path relation information.  On a RW remote it would be stored in the remote, but here we need to keep it in the repo somehow.  This could be in the git-annex branch, or possibly another branch created specifically for this purpose.
+
+1) initremote needs to:
+
+* hash the contents of all the remote's files
+* update git-annex's index of the remote's contents
+* store the paths to the hashes in the repo
+
+2) store and remove should just fail.
+
+3) retrieve and check present seem straight forward.
+
+The assistant blog mentions adding support for read only remotes but I don't know anything about it: [[design/assistant/blog/day_65__transfer_polish]] (I'm still on 3.20120605)
+
+Let me know if there is anything I haven't thought of yet.
+
+"""]]
