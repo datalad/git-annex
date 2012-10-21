@@ -11,6 +11,7 @@ import Assistant.Common
 import Assistant.BranchChange
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.Commits
 import Utility.ThreadScheduler
 import Logs.UUID
 import Logs.Trust
@@ -23,6 +24,7 @@ import qualified Git.LsTree as LsTree
 import qualified Annex.Branch
 import qualified Annex
 
+import Data.Time.Clock
 import qualified Data.Set as S
 
 thisThread :: ThreadName
@@ -36,8 +38,8 @@ thisThread = "ConfigMonitor"
  - if the branch has not changed in a while, configuration changes will
  - be detected immediately.
  -}
-configMonitorThread :: ThreadState -> DaemonStatusHandle -> BranchChangeHandle -> NamedThread
-configMonitorThread st dstatus branchhandle = thread $ do
+configMonitorThread :: ThreadState -> DaemonStatusHandle -> BranchChangeHandle -> CommitChan -> NamedThread
+configMonitorThread st dstatus branchhandle commitchan = thread $ do
 	r <- runThreadState st Annex.gitRepo
 	go r =<< getConfigs r
 	where
@@ -52,6 +54,10 @@ configMonitorThread st dstatus branchhandle = thread $ do
 				debug thisThread $ "reloading config" : 
 					map fst (S.toList changedconfigs)
 				reloadConfigs st dstatus changedconfigs
+				{- Record a commit to get this config
+				 - change pushed out to remotes. -}
+				time <- getCurrentTime
+				recordCommit commitchan (Commit time)
 			go r new
 
 {- Config files, and their checksums. -}

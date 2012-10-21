@@ -203,7 +203,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ netWatcherThread st dstatus scanremotes
 				, assist $ netWatcherFallbackThread st dstatus scanremotes
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
-				, assist $ configMonitorThread st dstatus branchhandle
+				, assist $ configMonitorThread st dstatus branchhandle commitchan
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
