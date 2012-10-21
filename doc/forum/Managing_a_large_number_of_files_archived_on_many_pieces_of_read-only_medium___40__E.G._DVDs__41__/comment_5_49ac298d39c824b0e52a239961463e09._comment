@@ -6,7 +6,7 @@
  content="""
 I encourage playing around with the hook special remote and see how far you can make it go.
 
-I may be doing something vaguely like this for [[assistant/desymlink]], although I'm pretty sure it would still have a git repository associated with the directory of regular files.
+I may be doing something vaguely like this for [[design/assistant/desymlink]], although I'm pretty sure it would still have a git repository associated with the directory of regular files.
 
 One option is to use the web special remote, with file:// urls. Assuming a given disc will always end up mounted somewhere stable, such as /media/dvd1, /media/dvd2, etc, you could then just `git annex addurl file:///media/dvd1/$file`. `git annex whereis` will show the url, which has enough info to work out the disk to mount.
 
