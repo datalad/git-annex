@@ -11,6 +11,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * Depend on and use the Haskell SafeSemaphore library, which provides
     exception-safe versions of SampleVar and QSemN.
     Thanks, Ben Gamari for an excellent patch set.
+  * file:/// URLs can now be used with the web special remote.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 

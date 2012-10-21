@@ -37,10 +37,15 @@ check url headers expected_size = handle <$> exists url headers
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size if available. -}
 exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
-exists url headers =
-	case parseURI url of
-		Nothing -> return (False, Nothing)
-		Just u -> do
+exists url headers = case parseURI url of
+	Nothing -> return (False, Nothing)
+	Just u
+		| uriScheme u == "file:" -> do
+			s <- catchMaybeIO $ getFileStatus (uriPath u)
+			return $ case s of
+				Nothing -> (False, Nothing)
+				Just stat -> (True, Just $ fromIntegral $ fileSize stat)
+		| otherwise -> do
 			r <- request u headers HEAD
 			case rspCode r of
 				(2,_,_) -> return (True, size r)
@@ -54,9 +59,13 @@ exists url headers =
  - so is preferred.) Which program to use is determined at run time; it
  - would not be appropriate to test at configure time and build support
  - for only one in.
+ -
+ - Curl is always used for file:// urls, as wget does not support them.
  -}
 download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
-download url headers options file = ifM (inPath "wget") (wget , curl)
+download url headers options file
+	| "file://" `isPrefixOf` url = curl
+	| otherwise = ifM (inPath "wget") (wget , curl)
 	where
 		headerparams = map (\h -> Param $ "--header=" ++ h) headers
 		wget = go "wget" $ headerparams ++ [Params "-c -O"]
