@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 5"
+ date="2012-10-22T16:18:56Z"
+ content="""
+So, the only difference I can think of is that avahi uses a different multicast address than the one I picked for git-annex. It may be that your router is only letting that one address through even though it's supposed to let a whole range through.
+
+I've prepared a test build of git-annex that uses the same 224.0.0.251 address avahi does. http://downloads.kitenet.net/tmp/git-annex-standalone-i386.tar.gz (i386 build)
+If you can try that and see how it behaves, I'll see if I need to change the address.
+"""]]
