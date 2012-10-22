@@ -19,3 +19,5 @@ bad comment in ssh public key ssh-rsa [very long GPG key jibber jabber] name@nam
 **end of output**
 
 git-annex version: 3.20121017, Ubuntu 12.04
+
+> [[Done]], allowed dash and underscore in there now.
