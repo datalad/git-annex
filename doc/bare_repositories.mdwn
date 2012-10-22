@@ -24,6 +24,7 @@ as non-bare repositories. Except for these caveats:
 Here is a quick example of how to set this up, using `origin` as the remote name, and assuming `~/annex` contains an annex:
 
 On the server:
+
     git init --bare bare-annex.git
     git annex init origin
 
