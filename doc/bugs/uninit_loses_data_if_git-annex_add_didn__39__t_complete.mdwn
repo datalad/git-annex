@@ -12,3 +12,4 @@ I know there are two conflicting issues here:
 
 Maybe uninit could check to see if all symlinks currently in the repo pointing to something under .git/annex/objects are committed. If not, commit them then uninit, or just de-annex them.
 
+> Added a check for this, [[done]] --[[Joey]] 

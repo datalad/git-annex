@@ -36,7 +36,20 @@ check = do
 			[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed startUnannex, withNothing start]
+seek = [
+	withFilesNotInGit $ whenAnnexed startCheckIncomplete,
+	withFilesInGit $ whenAnnexed startUnannex
+	, withNothing start
+	]
+
+{- git annex symlinks that are not checked into git could be left by an
+ - interrupted add. -}
+startCheckIncomplete :: FilePath -> (Key, Backend) -> CommandStart
+startCheckIncomplete file _ = error $ unlines
+	[ file ++ " points to annexed content, but is not checked into git."
+	, "Perhaps this was left behind by an interrupted git annex add?"
+	, "Not continuing with uninit; either delete or git annex add the file and retry."
+	]
 
 startUnannex :: FilePath -> (Key, Backend) -> CommandStart
 startUnannex file info = do
@@ -47,13 +60,7 @@ startUnannex file info = do
 	Command.Unannex.start file info
 
 start :: CommandStart
-start = next perform
-
-perform :: CommandPerform
-perform = next cleanup
-
-cleanup :: CommandCleanup
-cleanup = do
+start = next $ next $ do
 	annexdir <- fromRepo gitAnnexDir
 	uninitialize
 	mapM_ removeAnnex =<< getKeysPresent
