@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 2"
+ date="2012-10-22T14:01:42Z"
+ content="""
+It's not at all clear to me from this what process you killed. 
+
+(I can't comment on files that somehow crash a kernel on access.. That's not in any UNIX spec I'm aware of.)
+"""]]
