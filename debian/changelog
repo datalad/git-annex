@@ -16,6 +16,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * webapp: Allow dashes in ssh key comments when pairing.
   * uninit: Check and abort if there are symlinks to annexed content that
     are not checked into git.
+  * webapp: Switched to using the same multicast IP address that avahi uses.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 

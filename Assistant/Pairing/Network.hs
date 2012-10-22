@@ -31,11 +31,12 @@ import Control.Concurrent
 pairingPort :: PortNumber
 pairingPort = 55556
 
-{- This is the All Hosts multicast group, which should reach all hosts
- - on the same network segment. -}
+{- Goal: Reach all hosts on the same network segment.
+ - Method: Use same address that avahi uses. Other broadcast addresses seem
+ - to not be let through some routers. -}
 multicastAddress :: SomeAddr -> HostName
-multicastAddress (IPv4Addr _) = "224.0.0.1"
-multicastAddress (IPv6Addr _) = "ff02::1"
+multicastAddress (IPv4Addr _) = "224.0.0.251"
+multicastAddress (IPv6Addr _) = "ff02::fb"
 
 {- Multicasts a message repeatedly on all interfaces, with a 2 second
  - delay between each transmission. The message is repeated forever
