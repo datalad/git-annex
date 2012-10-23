@@ -17,6 +17,8 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * uninit: Check and abort if there are symlinks to annexed content that
     are not checked into git.
   * webapp: Switched to using the same multicast IP address that avahi uses.
+  * bup: Don't pass - to bup-split to make it read stdin; bup 0.25
+    does not accept that.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 

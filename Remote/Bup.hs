@@ -105,7 +105,7 @@ pipeBup params inh outh = do
 		ExitSuccess -> return True
 		_ -> return False
 
-bupSplitParams :: Git.Repo -> BupRepo -> Key -> CommandParam -> Annex [CommandParam]
+bupSplitParams :: Git.Repo -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
 bupSplitParams r buprepo k src = do
 	o <- getRemoteConfig r "bup-split-options" ""
 	let os = map Param $ words o
@@ -116,13 +116,13 @@ bupSplitParams r buprepo k src = do
 store :: Git.Repo -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r buprepo k _f _p = do
 	src <- inRepo $ gitAnnexLocation k
-	params <- bupSplitParams r buprepo k (File src)
+	params <- bupSplitParams r buprepo k [File src]
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k _p = do
 	src <- inRepo $ gitAnnexLocation k
-	params <- bupSplitParams r buprepo enck (Param "-")
+	params <- bupSplitParams r buprepo enck []
 	liftIO $ catchBoolIO $
 		withEncryptedHandle cipher (L.readFile src) $ \h ->
 			pipeBup params (Just h) Nothing
