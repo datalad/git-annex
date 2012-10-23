@@ -44,6 +44,33 @@ the assistant will transfer the file from the cloud to Bob.
 * pubsubhubbub does not seem like an option; its hubs want to pull down
   a feed over http.
 
+### jabber TODO
+
+* test with big servers, eg google chat
+* Prevent idle disconnection. Probably means sending or receiving pings,
+  but would prefer to avoid eg pinging every 60 seconds as some clients do.
+* Make the git-annex clients invisible, so a user can use their regular
+  account without always seeming to be present when git-annex is logged in.
+  See <http://xmpp.org/extensions/xep-0126.html>
+
+### jabber security
+
+Any data git-annex sends over this XMPP will be visible to the XMPP
+account's buddies, to the XMPP server, and quite likely to other interested
+parties. So it's important to consider the security exposure of using it.
+
+If git-annex sends only a single bit notification, this lets attackers know
+when the user is active and changing files. Although the assistant's other
+syncing activities can somewhat mask this.
+
+As soon as git-annex does anything unlike any other client, an attacker can
+see how many clients are connected for a user, and fingerprint the ones
+running git-annex, and determine how many clients are running git-annex.
+
+If git-annex sent the UUID of the remote it pushed to, this would let
+attackers determine how many different remotes are being used,
+and map some of the connections between clients and remotes.
+
 ## storing git repos in the cloud
 
 Of course, one option is to just use github etc to store the git repo.
