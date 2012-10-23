@@ -17,6 +17,8 @@ More should be added, such as:
 * [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
   REST API; free software
 
+See poll at [[polls/prioritizing_special_remotes]].
+
 ## The cloud notification problem
 
 Alice and Bob have repos, and there is a cloud remote they both share.
