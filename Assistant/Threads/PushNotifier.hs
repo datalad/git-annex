@@ -43,25 +43,26 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 
 		client c jid = runClient server jid (xmppUsername c) (xmppPassword c) $ do
 			void $ bindJID jid
-			void $ putStanza $ emptyPresence PresenceUnavailable
 			s <- getSession
-			_ <- liftIO $ forkIO $ void $ sendnotifications s
-			receivenotifications
+			_ <- liftIO $ forkIO $ void $ runXMPP s $
+				receivenotifications
+			sendnotifications
 			where
 				server = Server
 					(JID Nothing (jidDomain jid) Nothing)
 					(xmppHostname c)
 					(PortNumber $ fromIntegral $ xmppPort c)
 
-		sendnotifications session = runXMPP session $ forever $ do
+		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
 			{- Toggle presence to send the notification. -}
+			putStanza $ emptyPresence PresenceUnavailable
 			putStanza $ (emptyPresence PresenceAvailable)
 				{ presenceID = Just $ encodePushNotification us }
-			putStanza $ emptyPresence PresenceUnavailable
 
 		receivenotifications = forever $ do
 			s <- getStanza
+			liftIO $ print s
 			case s of
 				ReceivedPresence (Presence { presenceType = PresenceAvailable, presenceID = Just t }) ->
 					 maybe noop (liftIO . pull st dstatus)
