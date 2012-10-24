@@ -17,3 +17,8 @@ clear the sticky bit. --[[Joey]]
 > * --max-age=30d  Once the incremental fsck completes and was started 30 days ago,
 >   start a new one.
 > * --time-limit --size-limit --file-limit: Limit how long the fsck runs.
+
+>> Calling this [[done]]. The `--incremental-schedule` option
+>> allows scheduling time between incremental fscks. `--time-limit` is
+>> done. I implemented `--smallerthan` independently. Not clear what
+>> `--file-limit` would be. --[[Joey]]
