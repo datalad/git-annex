@@ -96,6 +96,9 @@ download u key file shouldretry a = runTransfer (Transfer Download u key) file s
  -
  - If the transfer action returns False, the transfer info is 
  - left in the failedTransferDir.
+ -
+ - An upload can be run from a read-only filesystem, and in this case
+ - no transfer information or lock file is used.
  -}
 runTransfer :: Transfer -> Maybe FilePath -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
 runTransfer t file shouldretry a = do
@@ -107,7 +110,7 @@ runTransfer t file shouldretry a = do
 	unless ok $ failed info
 	return ok
 	where
-		prep tfile mode info = do
+		prep tfile mode info = catchMaybeIO $ do
 			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 			locked <- catchMaybeIO $
@@ -116,7 +119,8 @@ runTransfer t file shouldretry a = do
 				error $ "transfer already in progress"
 			writeTransferInfoFile info tfile
 			return fd
-		cleanup tfile fd = do
+		cleanup _ Nothing = noop
+		cleanup tfile (Just fd) = do
 			void $ tryIO $ removeFile tfile
 			void $ tryIO $ removeFile $ transferLockFile tfile
 			closeFd fd
@@ -149,7 +153,7 @@ runTransfer t file shouldretry a = do
 mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, FilePath, MVar Integer)
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
-	createAnnexDirectory $ takeDirectory tfile
+	_ <- tryAnnex $ createAnnexDirectory $ takeDirectory tfile
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
 	where
@@ -157,7 +161,7 @@ mkProgressUpdater t info = do
 			if (bytes - oldbytes >= mindelta)
 				then do
 					let info' = info { bytesComplete = Just bytes }
-					writeTransferInfoFile info' tfile
+					_ <- tryIO $ writeTransferInfoFile info' tfile
 					return bytes
 				else return oldbytes
 		{- The minimum change in bytesComplete that is worth

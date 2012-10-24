@@ -111,7 +111,7 @@ bupSplitParams r buprepo k src = do
 	let os = map Param $ words o
 	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 
-		(os ++ [Param "-n", Param (bupRef k), src])
+		(os ++ [Param "-n", Param (bupRef k)] ++ src)
 
 store :: Git.Repo -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r buprepo k _f _p = do
