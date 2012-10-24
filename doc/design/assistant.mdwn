@@ -26,8 +26,7 @@ We are, approximately, here:
 * [[desymlink]]
 * [[deltas]]
 * [[leftovers]]
-
-There is also a [[general_todo_for_git_annex|todo]] (not just for the assistant).
+* [[other todo items|todo]]
 
 ## blog
 
