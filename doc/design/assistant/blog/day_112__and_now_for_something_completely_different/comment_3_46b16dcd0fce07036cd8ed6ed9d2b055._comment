@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 3"
+ date="2012-10-24T22:44:41Z"
+ content="""
+Google talk does not seem to support PEP. At least, I'm sending something that prosody accepts and that looks like the example at <http://xmpp.org/extensions/xep-0163.html#howitworks>, and it replies with an IQ Error.
+"""]]
