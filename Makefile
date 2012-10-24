@@ -1,7 +1,6 @@
 CFLAGS=-Wall
 GIT_ANNEX_TMP_BUILD_DIR?=tmp
-IGNORE=-ignore-package monads-fd
-BASEFLAGS=-Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
+BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 
 # If you get build failures due to missing haskell libraries,
 # you can turn off some of these features.
