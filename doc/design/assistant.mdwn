@@ -27,6 +27,8 @@ We are, approximately, here:
 * [[deltas]]
 * [[leftovers]]
 
+There is also a [[general_todo_for_git_annex|todo]] (not just for the assistant).
+
 ## blog
 
 I'm blogging about my progress in the [[blog]] on a semi-daily basis.
