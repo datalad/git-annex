@@ -101,7 +101,7 @@ pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 			let ok = null failed
 			if ok
 				then do
-					maybe noop notifyPush mpushnotifier
+					maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
 					return ok
 				else if shouldretry
 					then retry branch g u failed
@@ -127,7 +127,7 @@ pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 			(succeeded, failed) <- inParallel (pushfallback g u branch) rs
 			updatemap succeeded failed
 			unless (null succeeded) $
-				maybe noop notifyPush mpushnotifier
+				maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
 			return $ null failed
 			
 		push g branch remote = Command.Sync.pushBranch remote branch g

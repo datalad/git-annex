@@ -8,9 +8,9 @@
 module Assistant.Pushes where
 
 import Common.Annex
+import Utility.TSet
 
 import Control.Concurrent.STM
-import Control.Concurrent.MSampleVar
 import Data.Time.Clock
 import qualified Data.Map as M
 
@@ -19,7 +19,7 @@ type PushMap = M.Map Remote UTCTime
 type FailedPushMap = TMVar PushMap
 
 {- Used to notify about successful pushes. -}
-newtype PushNotifier = PushNotifier (MSampleVar ())
+newtype PushNotifier = PushNotifier (TSet UUID)
 
 {- The TMVar starts empty, and is left empty when there are no
  - failed pushes. This way we can block until there are some failed pushes.
@@ -50,10 +50,10 @@ changeFailedPushMap v a = atomically $
 			| otherwise = putTMVar v $! m
 
 newPushNotifier :: IO PushNotifier
-newPushNotifier = PushNotifier <$> newEmptySV
+newPushNotifier = PushNotifier <$> newTSet
 
-notifyPush :: PushNotifier -> IO ()
-notifyPush (PushNotifier sv) = writeSV sv ()
+notifyPush :: [UUID] -> PushNotifier -> IO ()
+notifyPush us (PushNotifier s) = putTSet s us
 
-waitPush :: PushNotifier -> IO ()
-waitPush (PushNotifier sv) = readSV sv
+waitPush :: PushNotifier -> IO [UUID]
+waitPush (PushNotifier s) = getTSet s

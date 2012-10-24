@@ -105,7 +105,7 @@
  - BranchChanged (STM SampleVar)
  - 	Changes to the git-annex branch are indicated by updating this
  - 	SampleVar.
- - PushNotifier (STM SampleVar)
+ - PushNotifier (STM TChan)
  - 	After successful pushes, this SampleVar is updated.
  - UrlRenderer (MVar)
  - 	A Yesod route rendering function is stored here. This allows
@@ -216,7 +216,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, assist $ configMonitorThread st dstatus branchhandle commitchan
 #ifdef WITH_XMPP
-				, assist $ pushNotifierThread dstatus pushnotifier
+				, assist $ pushNotifierThread st dstatus pushnotifier
 #endif
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
