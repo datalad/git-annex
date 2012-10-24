@@ -19,6 +19,8 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * webapp: Switched to using the same multicast IP address that avahi uses.
   * bup: Don't pass - to bup-split to make it read stdin; bup 0.25
     does not accept that.
+  * bugfix: Don't fail transferring content from read-only repos.
+    Closes: #691341
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 
