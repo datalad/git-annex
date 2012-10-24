@@ -140,7 +140,9 @@ import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
+#ifdef WITH_XMPP
 import Assistant.Threads.PushNotifier
+#endif
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
@@ -213,7 +215,9 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ netWatcherFallbackThread st dstatus scanremotes pushnotifier
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, assist $ configMonitorThread st dstatus branchhandle commitchan
-				, assist $ pushNotifierThread pushnotifier
+#ifdef WITH_XMPP
+				, assist $ pushNotifierThread dstatus pushnotifier
+#endif
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
