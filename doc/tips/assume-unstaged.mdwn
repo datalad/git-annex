@@ -5,7 +5,7 @@ up `git status` and stuff by not statting the whole tree looking for changed
 files.
 
 This feature works quite well with git-annex. Especially because git
-annex's files are immutable, so arn't going to change out from under it,
+annex's files are immutable, so aren't going to change out from under it,
 this is a nice fit. If you have a very large tree and `git status` is
 annoyingly slow, you can turn it on:
 
