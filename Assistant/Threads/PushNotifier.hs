@@ -33,7 +33,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 	v <- runThreadState st $ getXMPPCreds
 	case v of
 		Nothing -> nocreds
-		Just c -> case parseJID (xmppUsername c) of
+		Just c -> case parseJID (xmppJID c) of
 			Nothing -> nocreds
 			Just jid -> void $ client c jid
 	where
@@ -75,6 +75,9 @@ data XMPPCreds = XMPPCreds
 	, xmppPassword :: T.Text
 	, xmppHostname :: HostName
 	, xmppPort :: Int
+	{- Something like username@hostname, but not necessarily the same
+	 - username or hostname used to connect to the server. -}
+	, xmppJID :: T.Text
 	}
 	deriving (Read, Show)
 
