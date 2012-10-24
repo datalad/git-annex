@@ -69,7 +69,9 @@
  - Thread 18: ConfigMonitor
  - 	Triggered by changes to the git-annex branch, checks for changed
  - 	config files, and reloads configs.
- - Thread 19: WebApp
+ - Thread 19: PushNotifier
+ - 	Notifies other repositories of pushes, using out of band signaling.
+ - Thread 20: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
  -
@@ -100,6 +102,11 @@
  - ScanRemotes (STM TMVar)
  - 	Remotes that have been disconnected, and should be scanned
  - 	are indicated by writing to this TMVar.
+ - BranchChanged (STM SampleVar)
+ - 	Changes to the git-annex branch are indicated by updating this
+ - 	SampleVar.
+ - PushNotifier (STM SampleVar)
+ - 	After successful pushes, this SampleVar is updated.
  - UrlRenderer (MVar)
  - 	A Yesod route rendering function is stored here. This allows
  - 	things that need to render Yesod routes to block until the webapp
@@ -133,6 +140,7 @@ import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
+import Assistant.Threads.PushNotifier
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
@@ -180,6 +188,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			transferslots <- newTransferSlots
 			scanremotes <- newScanRemoteMap
 			branchhandle <- newBranchChangeHandle
+			pushnotifier <- newPushNotifier
 #ifdef WITH_WEBAPP
 			urlrenderer <- newUrlRenderer
 #endif
@@ -191,19 +200,20 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ pairListenerThread st dstatus scanremotes urlrenderer
 #endif
 #endif
-				, assist $ pushThread st dstatus commitchan pushmap
-				, assist $ pushRetryThread st dstatus pushmap
+				, assist $ pushThread st dstatus commitchan pushmap pushnotifier
+				, assist $ pushRetryThread st dstatus pushmap pushnotifier
 				, assist $ mergeThread st dstatus transferqueue branchhandle
 				, assist $ transferWatcherThread st dstatus transferqueue
 				, assist $ transferPollerThread st dstatus
 				, assist $ transfererThread st dstatus transferqueue transferslots
 				, assist $ daemonStatusThread st dstatus
 				, assist $ sanityCheckerThread st dstatus transferqueue changechan
-				, assist $ mountWatcherThread st dstatus scanremotes
-				, assist $ netWatcherThread st dstatus scanremotes
-				, assist $ netWatcherFallbackThread st dstatus scanremotes
+				, assist $ mountWatcherThread st dstatus scanremotes pushnotifier
+				, assist $ netWatcherThread st dstatus scanremotes pushnotifier
+				, assist $ netWatcherFallbackThread st dstatus scanremotes pushnotifier
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, assist $ configMonitorThread st dstatus branchhandle commitchan
+				, assist $ pushNotifierThread pushnotifier
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination

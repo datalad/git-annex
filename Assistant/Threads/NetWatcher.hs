@@ -15,6 +15,7 @@ import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.Sync
+import Assistant.Pushes
 import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
@@ -32,12 +33,12 @@ import qualified Control.Exception as E
 thisThread :: ThreadName
 thisThread = "NetWatcher"
 
-netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
+netWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> NamedThread
 #if WITH_DBUS
-netWatcherThread st dstatus scanremotes = thread $
-	dbusThread st dstatus scanremotes
+netWatcherThread st dstatus scanremotes pushnotifier = thread $
+	dbusThread st dstatus scanremotes pushnotifier
 #else
-netWatcherThread _ _ _ = thread noop
+netWatcherThread _ _ _ _ = thread noop
 #endif
 	where
 		thread = NamedThread thisThread
@@ -47,17 +48,17 @@ netWatcherThread _ _ _ = thread noop
  - any networked remotes that may have not been routable for a
  - while (despite the local network staying up), are synced with
  - periodically. -}
-netWatcherFallbackThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> NamedThread
-netWatcherFallbackThread st dstatus scanremotes = thread $
+netWatcherFallbackThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> NamedThread
+netWatcherFallbackThread st dstatus scanremotes pushnotifier = thread $
 	runEvery (Seconds 3600) $
-		handleConnection st dstatus scanremotes
+		handleConnection st dstatus scanremotes pushnotifier
 	where
 		thread = NamedThread thisThread
 
 #if WITH_DBUS
 
-dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-dbusThread st dstatus scanremotes = E.catch (go =<< connectSystem) onerr
+dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> IO ()
+dbusThread st dstatus scanremotes pushnotifier = E.catch (go =<< connectSystem) onerr
 	where
 		go client = ifM (checkNetMonitor client)
 			( do
@@ -72,7 +73,7 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSystem) onerr
 			warning $ "Failed to use dbus; falling back to polling (" ++ show e ++ ")"
 		handle = do
 			debug thisThread ["detected network connection"]
-			handleConnection st dstatus scanremotes
+			handleConnection st dstatus scanremotes pushnotifier
 
 {- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor network connections. -}
@@ -126,9 +127,9 @@ listenWicdConnections client callback =
 
 #endif
 
-handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-handleConnection st dstatus scanremotes =
-	reconnectRemotes thisThread st dstatus scanremotes
+handleConnection :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> IO ()
+handleConnection st dstatus scanremotes pushnotifier =
+	reconnectRemotes thisThread st dstatus scanremotes (Just pushnotifier)
 		=<< networkRemotes st
 
 {- Finds network remotes. -}
