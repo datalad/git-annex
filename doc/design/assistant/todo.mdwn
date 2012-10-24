@@ -2,5 +2,5 @@ This is a subset of [[/todo]] for items tagged for the assistant.
 Link items to [[todo/done]] when done.
 
 [[!inline pages="/todo/* and !/todo/done and !link(done) and
-tagged(assistant)
+tagged(design/assistant)
 and !*/Discussion" show=0 archive=yes]]
