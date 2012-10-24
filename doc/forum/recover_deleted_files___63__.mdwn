@@ -62,5 +62,5 @@ $ ls
 1.txt
 
 // still not here.. how to recover the link to 2.txt ???
-// i still see the content of the file in the object folter
+// i still see the content of the file in the object folder
 // if I want to use git-annex as the backend of a archival system, this is important.
