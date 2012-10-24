@@ -7,3 +7,5 @@ In some of my repositories, I would like to retain manual control over the granu
 Obviously this needs to be configurable at least per repository, and ideally perhaps even per remote, since usage habits can vary from machine to machine (e.g. I could choose to commit manually from my desktop machine which has a nice comfy keyboard and large screen, but this would be too much pain to do from my tiny netbook).
 
 According to Joey, it should be easy to arrange for the watcher thread not to run, but would need some more work for the assistant to notice manual commits in order to sync them; however the assistant already does some crazy inotify watching of git refs, in order to detect incoming pushes, so detecting manual commits wouldn't be a stretch.
+
+[[!tag design/assistant]]
