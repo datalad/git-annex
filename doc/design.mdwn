@@ -3,4 +3,4 @@ stores in git, and alongside git. See [[internals]] for details.
 
 See [[encryption]] for design of encryption elements.
 
-See [[!traillink assistant]] for the design site for the git-annex [[/assistant]].
+See [[assistant]] for the design site for the git-annex [[/assistant]].
