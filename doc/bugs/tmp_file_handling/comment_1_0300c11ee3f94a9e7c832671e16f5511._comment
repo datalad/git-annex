@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://www.openid.albertlash.com/openid/"
+ ip="74.96.185.87"
+ subject="What to do?"
+ date="2012-10-24T15:47:16Z"
+ content="""
+I've got a stale .git/annex/tmp/rsynctmp file that just won't go away, and I think its because I cancelled an in-progress rsync, then did something else, as you describe.
+
+Is it ok to manually remove the file?
+
+Thanks!
+Albert
+"""]]
