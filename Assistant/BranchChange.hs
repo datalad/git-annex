@@ -8,14 +8,15 @@
 module Assistant.BranchChange where
 
 import Control.Concurrent.MSampleVar
+import Assistant.Common
 
-type BranchChangeHandle = MSampleVar ()
+newtype BranchChangeHandle = BranchChangeHandle (MSampleVar ())
 
 newBranchChangeHandle :: IO BranchChangeHandle
-newBranchChangeHandle = newEmptySV
+newBranchChangeHandle = BranchChangeHandle <$> newEmptySV
 
 branchChanged :: BranchChangeHandle -> IO ()
-branchChanged = flip writeSV ()
+branchChanged (BranchChangeHandle h) = writeSV h ()
 
 waitBranchChange :: BranchChangeHandle -> IO ()
-waitBranchChange = readSV
+waitBranchChange (BranchChangeHandle h) = readSV h
