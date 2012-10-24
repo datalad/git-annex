@@ -14,6 +14,7 @@ import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Pushes
+import Assistant.Sync
 import qualified Remote
 
 import Network.Protocol.XMPP
@@ -22,6 +23,7 @@ import Control.Concurrent
 import qualified Data.Text as T
 import qualified Data.Set as S
 import Utility.FileMode
+import qualified Git.Branch
 
 thisThread :: ThreadName
 thisThread = "PushNotifier"
@@ -62,7 +64,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 			s <- getStanza
 			case s of
 				ReceivedPresence (Presence { presenceType = PresenceAvailable, presenceID = Just t }) ->
-					 maybe noop (liftIO . pull dstatus)
+					 maybe noop (liftIO . pull st dstatus)
 						(decodePushNotification t)
 				_ -> noop
 
@@ -118,11 +120,31 @@ decodePushNotification :: T.Text -> Maybe [UUID]
 decodePushNotification t = map (toUUID . T.unpack) . T.splitOn delim
 	<$> T.stripPrefix prefix t
 
-pull :: DaemonStatusHandle -> [UUID] -> IO ()
-pull _ [] = noop
-pull dstatus us = do
+{- We only pull from one remote out of the set listed in the push
+ - notification, as an optimisation.
+ -
+ - Note that it might be possible (though very unlikely) for the push
+ - notification to take a while to be sent, and multiple pushes happen
+ - before it is sent, so it includes multiple remotes that were pushed
+ - to at different times. 
+ -
+ - It could then be the case that the remote we choose had the earlier
+ - push sent to it, but then failed to get the later push, and so is not
+ - fully up-to-date. If that happens, the pushRetryThread will come along
+ - and retry the push, and we'll get another notification once it succeeds,
+ - and pull again. -}
+pull :: ThreadState -> DaemonStatusHandle -> [UUID] -> IO ()
+pull _ _ [] = noop
+pull st dstatus us = do
 	rs <- filter matching . syncRemotes <$> getDaemonStatus dstatus
-	print ("TODO pull from", rs)
+	debug thisThread $ "push notification for" :
+		map (fromUUID . Remote.uuid ) rs
+	pullone rs =<< runThreadState st (inRepo Git.Branch.current)
 	where
 		matching r = Remote.uuid r `S.member` s
 		s = S.fromList us
+
+		pullone [] _ = noop
+		pullone (r:rs) branch =
+			unlessM (all id . fst <$> manualPull st branch [r]) $
+				pullone rs branch

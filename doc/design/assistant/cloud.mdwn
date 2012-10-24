@@ -52,6 +52,13 @@ the assistant will transfer the file from the cloud to Bob.
 * Make the git-annex clients invisible, so a user can use their regular
   account without always seeming to be present when git-annex is logged in.
   See <http://xmpp.org/extensions/xep-0126.html>
+* webapp configuration
+* After pulling from a remote, may need to scan for transfers, which
+  could involve other remotes (ie, S3). Since the remote client is not able to
+  talk to us directly, it won't be able to upload any new files to us.
+  Need a fast way to find new files, and get them transferring. The expensive
+  transfer scan may be needed to get fully in sync, but is too expensive to
+  run every time this happens.
 
 ### jabber security
 

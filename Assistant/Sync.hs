@@ -48,13 +48,13 @@ reconnectRemotes threadname st dstatus scanremotes pushnotifier rs = void $
 		(gitremotes, _specialremotes) =
 			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
-			diverged <- manualPull st (Just branch) gitremotes
+			diverged <- snd <$> manualPull st (Just branch) gitremotes
 			now <- getCurrentTime
 			ok <- pushToRemotes threadname now st pushnotifier Nothing gitremotes
 			return (ok, diverged)
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			diverged <- manualPull st Nothing gitremotes
+			diverged <- snd <$> manualPull st Nothing gitremotes
 			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -147,15 +147,15 @@ pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 					where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO Bool
+manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO ([Bool], Bool)
 manualPull st currentbranch remotes = do
 	g <- runThreadState st gitRepo
-	forM_ remotes $ \r ->
+	results <- forM remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
 	haddiverged <- runThreadState st Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		runThreadState st $ Command.Sync.mergeRemote r currentbranch
-	return haddiverged
+	return (results, haddiverged)
 
 {- Start syncing a newly added remote, using a background thread. -}
 syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
