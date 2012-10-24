@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, MultiParamTypeClasses #-}
+{-# LANGUAGE PackageImports, GeneralizedNewtypeDeriving, TypeFamilies, MultiParamTypeClasses #-}
 
 module Annex (
 	Annex,
@@ -30,7 +30,7 @@ module Annex (
 	fromRepo,
 ) where
 
-import Control.Monad.State.Strict
+import "mtl" Control.Monad.State.Strict
 import Control.Monad.Trans.Control (StM, MonadBaseControl, liftBaseWith, restoreM)
 import Control.Monad.Base (liftBase, MonadBase)
 import System.Posix.Types (Fd)

@@ -5,9 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE PackageImports #-}
+
 module Utility.State where
 
-import Control.Monad.State.Strict
+import "mtl" Control.Monad.State.Strict
 
 {- Modifies Control.Monad.State's state, forcing a strict update.
  - This avoids building thunks in the state and leaking.

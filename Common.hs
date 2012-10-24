@@ -1,9 +1,11 @@
+{-# LANGUAGE PackageImports #-}
+
 module Common (module X) where
 
 import Control.Monad as X hiding (join)
 import Control.Monad.IfElse as X
 import Control.Applicative as X
-import Control.Monad.State.Strict as X (liftIO)
+import "mtl" Control.Monad.State.Strict as X (liftIO)
 import Control.Exception.Extensible as X (IOException)
 
 import Data.Maybe as X
