@@ -53,5 +53,4 @@ To make XMPP sufficiently easy to configure, I need to check SRV records to
 find the XMPP server, which is an unexpected PITA because `getaddrinfo`
 can't do that. There are several haskell DNS libraries that I could use for
 SRV, or I could use the `host` command: 
-`host -t SRV _xmpp-client._tcp.gmail.com` (but don't run that on Solaris,
-it changes the hostname..)
+`host -t SRV _xmpp-client._tcp.gmail.com`
