@@ -75,7 +75,7 @@ testCmd k cmdline = do
 
 {- Ensures that one of a set of commands is available by running each in
  - turn. The Config is set to the first one found. -}
-selectCmd :: ConfigKey -> [String] -> String -> Test
+selectCmd :: ConfigKey -> [(String, String)] -> Test
 selectCmd k = searchCmd
 		(return . Config k . StringConfig)
 		(\cmds -> do
@@ -83,17 +83,17 @@ selectCmd k = searchCmd
 			error $ "* need one of these commands, but none are available: " ++ show cmds
 		)
 
-maybeSelectCmd :: ConfigKey -> [String] -> String -> Test
+maybeSelectCmd :: ConfigKey -> [(String, String)] -> Test
 maybeSelectCmd k = searchCmd
 		(return . Config k . MaybeStringConfig . Just)
 		(\_ -> return $ Config k $ MaybeStringConfig Nothing)
 
-searchCmd :: (String -> Test) -> ([String] -> Test) -> [String] -> String -> Test
-searchCmd success failure cmds param = search cmds
+searchCmd :: (String -> Test) -> ([String] -> Test) -> [(String, String)] -> Test
+searchCmd success failure cmdsparams = search cmdsparams
 	where
-		search [] = failure cmds
-		search (c:cs) = do
-			ret <- system $ quiet c ++ " " ++ param
+		search [] = failure $ fst $ unzip cmdsparams
+		search ((c, params):cs) = do
+			ret <- system $ quiet $ c ++ " " ++ params
 			if ret == ExitSuccess
 				then success c
 				else search cs

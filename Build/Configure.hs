@@ -19,7 +19,7 @@ tests =
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_reflink_auto" "--reflink=auto"
-	, TestCase "uuid generator" $ selectCmd "uuid" ["uuid -m", "uuid", "uuidgen"] ""
+	, TestCase "uuid generator" $ selectCmd "uuid" [("uuid -m", ""), ("uuid", ""), ("uuidgen", "")]
 	, TestCase "xargs -0" $ requireCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
@@ -28,19 +28,33 @@ tests =
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "lsof" $ testCmd "lsof" "lsof -v >/dev/null 2>&1"
 	, TestCase "ssh connection caching" getSshConnectionCaching
-	] ++ shaTestCases [1, 256, 512, 224, 384]
+	] ++ shaTestCases
+	[ (1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")
+	, (256, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+	, (512, "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+	, (224, "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f")
+	, (384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")
+	]
 
-shaTestCases :: [Int] -> [TestCase]
+{- shaNsum are the program names used by coreutils.
+ - On some systems, shaN is used instead, but on other
+ - systems, it might be "hashalot", which does not produce
+ - usable checksums. Only accept programs that produce
+ - known-good hashes. -}
+shaTestCases :: [(Int, String)] -> [TestCase]
 shaTestCases l = map make l
 	where
-		make n = TestCase key $ maybeSelectCmd key (shacmds n) "</dev/null"
+		make (n, knowngood) = 
+			TestCase key $ maybeSelectCmd key $ 
+				zip (shacmds n) (repeat check)
 			where
 				key = "sha" ++ show n
+				check = "</dev/null | grep -q '" ++ knowngood ++ "'"
 		shacmds n = concatMap (\x -> [x, osxpath </> x]) $
-			map (\x -> "sha" ++ show n ++ x) ["", "sum"]
-		-- Max OSX puts GNU tools outside PATH, so look in
-		-- the location it uses, and remember where to run them
-		-- from.
+			map (\x -> "sha" ++ show n ++ x) ["sum", ""]
+		{- Max OSX puts GNU tools outside PATH, so look in
+		 - the location it uses, and remember where to run them
+		 - from. -}
 		osxpath = "/opt/local/libexec/gnubin"
 
 tmpDir :: String

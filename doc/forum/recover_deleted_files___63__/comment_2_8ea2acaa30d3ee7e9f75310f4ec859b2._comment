@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.138"
+ subject="it's a git repository..."
+ date="2012-10-25T03:29:20Z"
+ content="""
+So any git stuff can be used. If you deleted a file, committed it, and want to undo that, you can `git log --stat` to find the commit, and `git revert` it. If you deleted a file, haven't committed yet, and want one more look at it, you can `git stash` to get it back, and `git stash apply` to re-stash the change. Or yeah, just `git checkout` to get back a deleted file you have not committed yet.
+"""]]
