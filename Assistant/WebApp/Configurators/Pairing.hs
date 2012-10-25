@@ -26,6 +26,7 @@ import Utility.Verifiable
 import Utility.Network
 import Annex.UUID
 #endif
+import Utility.UserInfo
 
 import Yesod
 import Data.Text (Text)
@@ -34,7 +35,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as B
 import Data.Char
-import System.Posix.User
 import qualified Control.Exception as E
 import Control.Concurrent
 #endif
@@ -97,7 +97,7 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 		keypair <- genSshKeyPair
 		pairdata <- PairData
 			<$> getHostname
-			<*> getUserName
+			<*> myUserName
 			<*> pure reldir
 			<*> pure (sshPubKey keypair)
 			<*> (maybe genUUID return muuid)
@@ -160,7 +160,7 @@ promptSecret msg cont = pairPage $ do
 			let (username, hostname) = maybe ("", "")
 				(\(_, v, a) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr a) (remoteHostName v)))
 				(verifiableVal . fromPairMsg <$> msg)
-			u <- T.pack <$> liftIO getUserName
+			u <- T.pack <$> liftIO myUserName
 			let sameusername = username == u
                         let authtoken = webAppFormAuthToken
                         $(widgetFile "configurators/pairing/prompt")
@@ -176,9 +176,6 @@ secretProblem s
 
 toSecret :: Text -> Secret
 toSecret s = B.fromChunks [T.encodeUtf8 $ T.toLower $ T.filter isAlphaNum s]
-
-getUserName :: IO String
-getUserName = userName <$> (getUserEntryForID =<< getEffectiveUserID)
 
 pairPage :: Widget -> Handler RepHtml
 pairPage w = bootstrap (Just Config) $ do

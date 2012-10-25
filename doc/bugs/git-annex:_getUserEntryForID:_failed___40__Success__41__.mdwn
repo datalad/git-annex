@@ -10,3 +10,4 @@ What version of git-annex are you using? On what operating system?
 Please provide any additional information below.
 
 
+> [[fixed|done]] --[[Joey]] 

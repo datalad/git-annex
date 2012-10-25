@@ -27,6 +27,7 @@ import Common
 import Git.Types
 import Git
 import qualified Git.Url as Url
+import Utility.UserInfo
 
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}

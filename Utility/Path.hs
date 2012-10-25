@@ -14,9 +14,9 @@ import System.Directory
 import Data.List
 import Data.Maybe
 import Control.Applicative
-import System.Posix.User
 
 import Utility.Monad
+import Utility.UserInfo
 
 {- Returns the parent directory of a path. Parent of / is "" -}
 parentDir :: FilePath -> FilePath
@@ -127,10 +127,6 @@ preserveOrder (l:ls) new = found ++ preserveOrder ls rest
  -}
 runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
 runPreserveOrder a files = preserveOrder files <$> a files
-
-{- Current user's home directory. -}
-myHomeDir :: IO FilePath
-myHomeDir = homeDirectory <$> (getUserEntryForID =<< getEffectiveUserID)
 
 {- Converts paths in the home directory to use ~/ -}
 relHome :: FilePath -> IO String

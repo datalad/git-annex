@@ -31,6 +31,7 @@ import Remote (prettyListUUIDs)
 import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
+import Utility.UserInfo
 
 import Yesod
 import Data.Text (Text)

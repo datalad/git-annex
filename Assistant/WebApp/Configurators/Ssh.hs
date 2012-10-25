@@ -21,13 +21,13 @@ import Logs.Remote
 import Remote
 import Logs.PreferredContent
 import Types.StandardGroups
+import Utility.UserInfo
 
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket
-import System.Posix.User
 
 sshConfigurator :: Widget -> Handler RepHtml
 sshConfigurator a = bootstrap (Just Config) $ do
@@ -96,8 +96,7 @@ usable UsableSshInput = True
 
 getAddSshR :: Handler RepHtml
 getAddSshR = sshConfigurator $ do
-	u <- liftIO $ T.pack . userName
-		<$> (getUserEntryForID =<< getEffectiveUserID)
+	u <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ sshInputAForm $
 			SshInput Nothing (Just u) Nothing
