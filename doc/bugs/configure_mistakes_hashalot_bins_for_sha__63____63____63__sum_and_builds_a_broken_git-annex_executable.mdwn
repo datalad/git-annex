@@ -48,3 +48,10 @@ This is not a runtime bug, only compile time.  Uninstalling Hashalot or simply r
 I found this bug on Gentoo when I installed git-annex on a system which already had hashalot installed.  In the case of Gentoo, git-annex is compiled with hashalot's executables in the path, but normal users don't have /usr/sbin/ in their path so git-annex just fails to find the executable.  If you put hashalot in the path, then git annex still fails to work as hashalot is not a replacement for sha1sum and friends.
 
 It may be enough to just prefer sha???sum over sha??? if they both exist.
+
+> Grr. There is no consistency across unixes as to the names of these
+> programs and now something is installing shaN commands that don't
+> generate a checksum?!
+> 
+> Ok, fine, configure now checks that the program it finds outputs a known
+> good checksum. [[done]] --[[Joey]]
