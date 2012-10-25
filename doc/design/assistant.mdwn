@@ -11,7 +11,7 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
 We are, approximately, here:
 
-* Month 4 "cloud": [[!traillink cloud]] [[!traillink transfer_control]]
+* Month 4 "cloud": [[!traillink cloud]] [[!traillink xmpp]] [[!traillink transfer_control]]
 * Month 5 user-driven features (see [[polls]])
 * Months 6-7 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]] [[!traillink leftovers]]
 * Months 8-11: more user-driven features and polishing (see remaining TODO items in all pages above)

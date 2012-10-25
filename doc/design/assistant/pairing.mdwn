@@ -81,3 +81,4 @@ is escaped before going to the browser.
 
   It should be possible for third parties to tell when pairing is done,
   but it's actually rather hard since they don't necessarily share the secret.
+* Pairing over XMPP.
