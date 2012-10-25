@@ -1,0 +1,35 @@
+<div .span9 .hero-unit>
+  <h2>
+    Configuring jabber account
+  <p>
+    A jabber account is used by git-annex to communicate changes between #
+    repositories. It can also be used to pair up with a friend's repository, #
+    if you want to. It's fine to reuse an existing account; git-annex won't #
+    post any messages to it.
+  <p>
+    <i .icon-info-sign></I> If you have a Gmail account, you can use #
+    Google Talk. Just enter your full Gmail address (<tt>you@gmail.com</tt>) #
+    and password below.
+  $if needserver
+    <p>
+      <i .icon-warning-sign></i> Unable to find a Jabber server for #
+      <tt>#{jid}</tt>. Please enter the server name and port below.
+  $if connectfail
+    <p>
+      <i .icon-warning-sign></i> Unable to connect to the Jabber server. #
+      Maybe you entered the wrong password?
+  <p>
+    <form .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{authtoken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+            Use this account
+<div .modal .fade #workingmodal>
+  <div .modal-header>
+    <h3>
+      Testing account ...
+  <div .modal-body>
+    <p>
+      Testing jabber account. This could take a minute.
