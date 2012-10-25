@@ -46,6 +46,9 @@ Flag Pairing
 Flag XMPP
   Description: Enable notifications using XMPP
 
+Flag Adns
+  Description: Enable the ADNS library for DNS lookup
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -97,6 +100,10 @@ Executable git-annex
   if flag(XMPP) && flag(Assistant)
     Build-Depends: network-protocol-xmpp
     CPP-Options: -DWITH_XMPP
+
+  if flag(XMPP) && flag(Assistant) && flag(Adns)
+    Build-Depends: hsdns
+    CPP-Options: -DWITH_ADNS
 
 Test-Suite test
   Type: exitcode-stdio-1.0
