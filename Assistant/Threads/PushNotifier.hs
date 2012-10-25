@@ -45,7 +45,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 		client c jid = runClient server jid (xmppUsername c) (xmppPassword c) $ do
 			void $ bindJID jid
 			s <- getSession
-			_ <- liftIO $ forkIO $ void $ runXMPP s $
+			_ <- liftIO $ forkOS $ void $ runXMPP s $
 				receivenotifications
 			sendnotifications
 			where

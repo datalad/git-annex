@@ -223,7 +223,12 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			waitForTermination
 		watch a = (True, a)
 		assist a = (False, a)
+
+		{- Each named thread is started in a bound thread.
+		 - (forkOS rather than forkIO). There are not too many,
+		 - and this deals with libraries like gnuTLS that
+		 - require only one thread access them. -}
 		startthread dstatus (watcher, t)
-			| watcher || assistant = void $ forkIO $
+			| watcher || assistant = void $ forkOS $
 				runNamedThread dstatus t
 			| otherwise = noop
