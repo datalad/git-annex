@@ -24,6 +24,7 @@ import qualified Data.Text as T
 import qualified Data.Set as S
 import Utility.FileMode
 import qualified Git.Branch
+import Data.XML.Types
 
 thisThread :: ThreadName
 thisThread = "PushNotifier"
@@ -38,7 +39,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 			Just jid -> void $ client c jid
 	where
 		nocreds = do
-			-- TODO alert
+			error "no creds" -- TODO alert
 			return () -- exit thread
 
 		client c jid = runClient server jid (xmppUsername c) (xmppPassword c) $ do
@@ -55,18 +56,19 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 
 		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
-			{- Toggle presence to send the notification. -}
-			putStanza $ emptyPresence PresenceUnavailable
+			let payload = [extendedAway, encodePushNotification us]
 			putStanza $ (emptyPresence PresenceAvailable)
-				{ presenceID = Just $ encodePushNotification us }
+				{ presencePayloads = payload }
 
 		receivenotifications = forever $ do
 			s <- getStanza
-			liftIO $ print s
+			liftIO $ debug thisThread ["received XMPP:", show s]
 			case s of
-				ReceivedPresence (Presence { presenceType = PresenceAvailable, presenceID = Just t }) ->
-					 maybe noop (liftIO . pull st dstatus)
-						(decodePushNotification t)
+				ReceivedPresence p@(Presence { presenceType = PresenceAvailable }) ->
+					liftIO $ pull st dstatus $
+						concat $ catMaybes $
+							map decodePushNotification $
+								presencePayloads p
 				_ -> noop
 
 {- Everything we need to know to connect to an XMPP server. -}
@@ -102,27 +104,34 @@ xmppCredsFile = do
 	dir <- fromRepo gitAnnexCredsDir
 	return $ dir </> "notify-xmpp"
 
-{- A push notification is encoded in the id field of an XMPP presence
- - notification, in the form: "git-annex-push:uuid[:uuid:...]
- - 
- - Git repos can be pushed to that do not have a git-annex uuid; an empty
- - string is used for those.
- -}
-prefix :: T.Text
-prefix = T.pack "git-annex-push:"
+{- Marks the client as extended away. -}
+extendedAway :: Element
+extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
+	[NodeContent $ ContentText $ T.pack "xa"]
 
-delim :: T.Text
-delim = T.pack ":"
+{- Name of a git-annex tag, in our own XML namespace.
+ - (Not using a namespace URL to avoid unnecessary bloat.) -}
+gitAnnexTagName :: Name
+gitAnnexTagName  = Name (T.pack "git-annex") (Just $ T.pack "git-annex") Nothing
 
-encodePushNotification :: [UUID] -> T.Text
-encodePushNotification us = T.concat 
-	[ prefix
-	, T.intercalate delim $ map (T.pack . fromUUID) us
-	]
+pushAttr :: Name
+pushAttr = Name (T.pack "push") Nothing Nothing
 
-decodePushNotification :: T.Text -> Maybe [UUID]
-decodePushNotification t = map (toUUID . T.unpack) . T.splitOn delim
-	<$> T.stripPrefix prefix t
+{- git-annex tag with one push attribute per UUID pushed to. -}
+encodePushNotification :: [UUID] -> Element
+encodePushNotification us = Element gitAnnexTagName
+	[(pushAttr, map (ContentText . T.pack . fromUUID) us)] []
+
+decodePushNotification :: Element -> Maybe [UUID]
+decodePushNotification (Element name attrs _nodes)
+	| name == gitAnnexTagName && not (null us) = Just us
+	| otherwise = Nothing
+	where
+		us = concatMap (map (toUUID . T.unpack . fromContent) . snd) $
+			filter ispush attrs
+		ispush (k, _) = k == pushAttr
+		fromContent (ContentText t) = t
+		fromContent (ContentEntity t) = t
 
 {- We only pull from one remote out of the set listed in the push
  - notification, as an optimisation.
