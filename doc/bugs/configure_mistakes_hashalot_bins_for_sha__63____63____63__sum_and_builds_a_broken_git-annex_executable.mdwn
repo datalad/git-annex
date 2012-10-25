@@ -1,6 +1,6 @@
 git-annex's configure step finds hashalot's /usr/sbin/sha256, /usr/sbin/sha384, and /usr/sbin/sha512 executables and mistakes them for sha256sum, sha384sum, and sha512sum and prefers them over the correct executables.  Hashalot is not compatible, but the build does not fail producing a broken git-annex executable which tries to use hashalot's programs instead of the appropriate shaXXXsum program and is non-functional.
 
-Hashalot can be found at: http://www.paranoiacs.org/~sluskyb/hacks/hashalot/
+Hashalot can be found at: <http://www.paranoiacs.org/~sluskyb/hacks/hashalot/>
 
 
 What steps will reproduce the problem?
