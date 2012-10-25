@@ -57,8 +57,9 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
 			let payload = [extendedAway, encodePushNotification us]
-			putStanza $ (emptyPresence PresenceAvailable)
+			let notification = (emptyPresence PresenceAvailable)
 				{ presencePayloads = payload }
+			putStanza notification
 
 		receivenotifications = forever $ do
 			s <- getStanza
@@ -117,17 +118,24 @@ gitAnnexTagName  = Name (T.pack "git-annex") (Just $ T.pack "git-annex") Nothing
 pushAttr :: Name
 pushAttr = Name (T.pack "push") Nothing Nothing
 
+uuidSep :: T.Text
+uuidSep = T.pack ","
+
 {- git-annex tag with one push attribute per UUID pushed to. -}
 encodePushNotification :: [UUID] -> Element
 encodePushNotification us = Element gitAnnexTagName
-	[(pushAttr, map (ContentText . T.pack . fromUUID) us)] []
+	[(pushAttr, [ContentText pushvalue])] []
+	where
+		pushvalue = T.intercalate uuidSep $
+			map (T.pack . fromUUID) us
 
 decodePushNotification :: Element -> Maybe [UUID]
 decodePushNotification (Element name attrs _nodes)
 	| name == gitAnnexTagName && not (null us) = Just us
 	| otherwise = Nothing
 	where
-		us = concatMap (map (toUUID . T.unpack . fromContent) . snd) $
+		us = map (toUUID . T.unpack) $
+			concatMap (T.splitOn uuidSep . T.concat . map fromContent . snd) $
 			filter ispush attrs
 		ispush (k, _) = k == pushAttr
 		fromContent (ContentText t) = t
