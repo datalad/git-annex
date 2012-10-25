@@ -48,3 +48,10 @@ git annex assistant makes that easy too.
 
 And also, you can pair with as many other computers as you like, not just
 one!
+
+## What does pairing actually do behind the scenes?
+
+It ensures that both repositories have correctly configured 
+[[remotes|walkthrough/adding_a_remote]] pointing to each other.
+If you have already configured this manually, you do not need to
+perform pairing.
