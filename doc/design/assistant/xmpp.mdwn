@@ -4,6 +4,7 @@ who share a repository, that is stored in the [[cloud]].
 
 ### TODO
 
+* Track down segfault when the XMPP library is starting up a client connection.
 * test with big servers, eg google chat
 * Prevent idle disconnection. Probably means sending or receiving pings,
   but would prefer to avoid eg pinging every 60 seconds as some clients do.
