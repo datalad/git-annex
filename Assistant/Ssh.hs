@@ -9,6 +9,7 @@ module Assistant.Ssh where
 
 import Common.Annex
 import Utility.TempFile
+import Utility.UserInfo
 
 import Data.Text (Text)
 import qualified Data.Text as T

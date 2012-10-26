@@ -20,20 +20,16 @@ import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
 import Annex.UUID
-
-import System.Posix.User
+import Utility.UserInfo
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
 	hostname <- maybe "" id <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
-	username <- clicketyclickety
+	username <- liftIO myUserName
 	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
 	return $ concat [username, at, hostname, ":", reldir]
-	where
-		clicketyclickety = liftIO $ userName <$>
-			(getUserEntryForID =<< getEffectiveUserID)
 
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do

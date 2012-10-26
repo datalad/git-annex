@@ -15,6 +15,7 @@ import Common
 import Git
 import Git.Types
 import qualified Git.Construct
+import Utility.UserInfo
 
 {- Returns a single git config setting, or a default value if not set. -}
 get :: String -> String -> Repo -> String

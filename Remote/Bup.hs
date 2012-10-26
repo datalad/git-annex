@@ -26,6 +26,7 @@ import Remote.Helper.Encryptable
 import Crypto
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
+import Utility.UserInfo
 
 type BupRepo = String
 

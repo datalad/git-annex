@@ -25,6 +25,7 @@ module Utility.FreeDesktop (
 
 import Utility.Exception
 import Utility.Path
+import Utility.UserInfo
 import Utility.Process
 import Utility.PartialPrelude
 
