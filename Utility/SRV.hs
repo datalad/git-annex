@@ -33,12 +33,13 @@ import Data.Either
 #endif
 
 newtype SRV = SRV String
+	deriving (Show, Eq)
 
 type HostPort = (HostName, PortID)
 
 mkSRV :: String -> String -> HostName -> SRV
 mkSRV transport protocol host = SRV $ concat
-	["_", protocol, ".", transport, ".", host]
+	["_", protocol, "._", transport, ".", host]
 
 mkSRVTcp :: String -> HostName -> SRV
 mkSRVTcp = mkSRV "tcp"

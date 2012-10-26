@@ -35,8 +35,7 @@ pushNotifierThread :: ThreadState -> DaemonStatusHandle -> PushNotifier -> Named
 pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 	v <- runThreadState st $ getXMPPCreds
 	case v of
-		Nothing -> do
-			return () -- no creds? exit thread
+		Nothing -> return () -- no creds? exit thread
 		Just c -> void $ connectXMPP c $ \jid -> do
 			fulljid <- bindJID jid
 			liftIO $ debug thisThread ["XMPP connected", show fulljid]
@@ -83,7 +82,8 @@ connectXMPP c a = case parseJID (xmppJID c) of
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO (Either SomeException ())
 connectXMPP' jid c a = go =<< lookupSRV srvrecord
 	where
-		srvrecord = mkSRVTcp "xmpp-client" (T.unpack $ strDomain $ jidDomain jid)
+		srvrecord = mkSRVTcp "xmpp-client" $
+			T.unpack $ strDomain $ jidDomain jid
 		serverjid = JID Nothing (jidDomain jid) Nothing
 
 		go [] = run (xmppHostname c)

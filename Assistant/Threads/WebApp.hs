@@ -24,6 +24,7 @@ import Assistant.WebApp.Configurators.Pairing
 #ifdef WITH_S3
 import Assistant.WebApp.Configurators.S3
 #endif
+import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos
 import Assistant.ThreadedMonad

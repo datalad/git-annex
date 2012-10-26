@@ -6,6 +6,7 @@
 
 /config ConfigR GET
 /config/repository RepositoriesR GET
+/config/xmpp XMPPR GET
 
 /config/repository/new/first FirstRepositoryR GET
 /config/repository/new NewRepositoryR GET

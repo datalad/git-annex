@@ -7,3 +7,10 @@
      <p>
        Distribute the files in this repository to other devices, #
        make backups, and more, by adding repositories.
+    <div .span4>
+      <h3>
+        <a href="@{XMPPR}">
+          Configure jabber account
+     <p>
+       Allow devices that are not in direct contact to keep in touch, #
+       by configuring a jabber account.
