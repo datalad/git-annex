@@ -22,6 +22,7 @@ for various cloud things:
 * [[tips/Internet_Archive_via_S3]]
 * [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]]
 * [[tips/using_box.com_as_a_special_remote]]
+* [[forum/special_remote_for_IMAP]]
 
 ## Unused content on special remotes
 
