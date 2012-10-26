@@ -11,6 +11,8 @@
 {-# LANGUAGE CPP #-}
 
 module Utility.SRV (
+	mkSRVTcp,
+	mkSRV,
 	lookupSRV,
 ) where
 
@@ -30,12 +32,21 @@ import ADNS.Resolver
 import Data.Either
 #endif
 
+newtype SRV = SRV String
+
 type HostPort = (HostName, PortID)
+
+mkSRV :: String -> String -> HostName -> SRV
+mkSRV transport protocol host = SRV $ concat
+	["_", protocol, ".", transport, ".", host]
+
+mkSRVTcp :: String -> HostName -> SRV
+mkSRVTcp = mkSRV "tcp"
 
 {- Returns an ordered list, with highest priority hosts first.
  -
  - On error, returns an empty list. -}
-lookupSRV :: HostName -> IO [HostPort]
+lookupSRV :: SRV -> IO [HostPort]
 #ifdef WITH_ADNS
 lookupSRV srv = initResolver [] $ \resolver -> do
 	r <- catchDefaultIO (Right []) $
@@ -45,8 +56,8 @@ lookupSRV srv = initResolver [] $ \resolver -> do
 lookupSRV = lookupSRVHost
 #endif
 
-lookupSRVHost :: HostName -> IO [HostPort]
-lookupSRVHost srv
+lookupSRVHost :: SRV -> IO [HostPort]
+lookupSRVHost (SRV srv)
 	| Build.SysConfig.host = catchDefaultIO [] $ 
 		parseSrvHost <$> readProcessEnv "host" ["-t", "SRV", "--", srv]
 			-- clear environment, to avoid LANG affecting output

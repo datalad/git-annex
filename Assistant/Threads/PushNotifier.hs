@@ -83,7 +83,7 @@ connectXMPP c a = case parseJID (xmppJID c) of
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO (Either SomeException ())
 connectXMPP' jid c a = go =<< lookupSRV srvrecord
 	where
-		srvrecord = "_xmpp-client._tcp." ++ (T.unpack $ strDomain $ jidDomain jid)
+		srvrecord = mkSRVTcp "xmpp-client" (T.unpack $ strDomain $ jidDomain jid)
 		serverjid = JID Nothing (jidDomain jid) Nothing
 
 		go [] = run (xmppHostname c)
