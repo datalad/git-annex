@@ -31,8 +31,10 @@ import qualified Data.Text as T
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP
 getXMPPR = xmppPage $ do
-	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ xmppAForm Nothing
+	((result, form), enctype) <- lift $ do
+		oldcreds <- runAnnex Nothing getXMPPCreds
+		runFormGet $ renderBootstrap $ xmppAForm $
+			creds2Form <$> oldcreds
 	let showform problem = do
 		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/xmpp")
@@ -41,7 +43,9 @@ getXMPPR = xmppPage $ do
 			=<< liftIO (validateForm f)
 		_ -> showform False
 	where
-		storecreds = error "TODO store"
+		storecreds creds = do
+			void $ runAnnex undefined $ setXMPPCreds creds
+			redirect ConfigR
 #else
 getXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
@@ -52,6 +56,9 @@ getXMPPR = xmppPage $
 data XMPPForm = XMPPForm
 	{ formJID :: Text
 	, formPassword :: Text }
+
+creds2Form :: XMPPCreds -> XMPPForm
+creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
 xmppAForm :: (Maybe XMPPForm) -> AForm WebApp WebApp XMPPForm
 xmppAForm def = XMPPForm
