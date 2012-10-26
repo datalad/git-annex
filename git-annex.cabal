@@ -83,7 +83,7 @@ Executable git-annex
       C-Sources: Utility/libkqueue.c
 
   if os(linux) && flag(Dbus)
-    Build-Depends: dbus (>= 0.10.2)
+    Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
 
   if flag(Webapp) && flag(Assistant)

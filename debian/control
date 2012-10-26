@@ -22,7 +22,7 @@ Build-Depends:
 	libghc-edit-distance-dev,
 	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev (>= 2.3),
-	libghc-dbus-dev [linux-any] (>= 0.10.2),
+	libghc-dbus-dev [linux-any] (>= 0.10.3),
 	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
 	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
 	libghc-yesod-default-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
