@@ -177,12 +177,6 @@ secretProblem s
 toSecret :: Text -> Secret
 toSecret s = B.fromChunks [T.encodeUtf8 $ T.toLower $ T.filter isAlphaNum s]
 
-pairPage :: Widget -> Handler RepHtml
-pairPage w = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
-	w
-
 {- From Dickens -}
 sampleQuote :: Text
 sampleQuote = T.unwords
@@ -199,3 +193,9 @@ noPairing = pairPage $
 	$(widgetFile "configurators/pairing/disabled")
 
 #endif
+
+pairPage :: Widget -> Handler RepHtml
+pairPage w = bootstrap (Just Config) $ do
+	sideBarDisplay
+	setTitle "Pairing"
+	w
