@@ -35,7 +35,7 @@ type HostPort = (HostName, PortID)
 {- Returns an ordered list, with highest priority hosts first.
  -
  - On error, returns an empty list. -}
-lookupSRV :: String -> IO [HostPort]
+lookupSRV :: HostName -> IO [HostPort]
 #ifdef WITH_ADNS
 lookupSRV srv = initResolver [] $ \resolver -> do
 	r <- catchDefaultIO (Right []) $
@@ -45,7 +45,7 @@ lookupSRV srv = initResolver [] $ \resolver -> do
 lookupSRV = lookupSRVHost
 #endif
 
-lookupSRVHost :: String -> IO [HostPort]
+lookupSRVHost :: HostName -> IO [HostPort]
 lookupSRVHost srv
 	| Build.SysConfig.host = catchDefaultIO [] $ 
 		parseSrvHost <$> readProcessEnv "host" ["-t", "SRV", "--", srv]
@@ -54,16 +54,17 @@ lookupSRVHost srv
 	| otherwise = return []
 
 parseSrvHost :: String -> [HostPort]
-parseSrvHost = map snd . reverse . sortBy priority . catMaybes . map parse . lines
+parseSrvHost = map snd . reverse . sortBy cost . catMaybes . map parse . lines
 	where
-		priority = compare `on` fst
+		cost = compare `on` fst
 		parse l = case words l of
-			[_, _, _, _, priority, weight, sport, hostname] ->
-				case PortNumber . fromIntegral <$> readish sport of
+			[_, _, _, _, priority, weight, sport, hostname] -> do
+				let v = readish sport :: Maybe Int
+				case v of
 					Nothing -> Nothing
 					Just port -> Just
 						( (priority, weight)
-						, (hostname, port)
+						, (hostname, PortNumber $ fromIntegral port)
 						)
 			_ -> Nothing
 
