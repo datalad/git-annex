@@ -76,7 +76,7 @@ data XMPPCreds = XMPPCreds
 connectXMPP :: XMPPCreds -> (JID -> XMPP a) -> IO (Either SomeException ())
 connectXMPP c a = case parseJID (xmppJID c) of
 	Nothing -> error "bad JID"
-	Just jid -> connectXMPP' jid c a
+	Just jid -> runInBoundThread $ connectXMPP' jid c a
 
 {- Do a SRV lookup, but if it fails, fall back to the cached xmppHostname. -}
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO (Either SomeException ())

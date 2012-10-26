@@ -26,6 +26,7 @@ import Network
 import Network.Protocol.XMPP
 import Data.Text (Text)
 import qualified Data.Text as T
+import Control.Concurrent
 #endif
 
 getXMPPR :: Handler RepHtml
