@@ -40,3 +40,5 @@ The operation of the hooks is pretty straightforward. The store-hook attaches th
 I've performed very limited testing of this, and my knowledge of git and, especially, git-annex is    very primitive, so I'm sure this could be vastly improved. In my testing with gmail this seems to     work fine, except that messages do not get deleted from the server - I don't know why.
 
 I've developed this as an experiment and proof of concept, and have no knowledge of whether actually  using this is in accord with the terms of service of gmail or any other mail service you might be     using, nor whether it is safe or a good idea.
+
+-- Lee
