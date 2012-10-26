@@ -51,7 +51,7 @@ mountWatcherThread st handle scanremotes = thread $
 #if WITH_DBUS
 
 dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-dbusThread st dstatus scanremotes = E.catch (go =<< connectSession) onerr
+dbusThread st dstatus scanremotes = E.catch (runClient getSessionAddress go) onerr
 	where
 		go client = ifM (checkMountMonitor client)
 			( do
@@ -73,7 +73,7 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSession) onerr
 		onerr :: E.SomeException -> IO ()
 		onerr e = do
 			runThreadState st $
-				warning $ "Failed to use dbus; falling back to mtab polling (" ++ show e ++ ")"
+				warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
 			pollinstead
 		pollinstead = pollingThread st dstatus scanremotes
 

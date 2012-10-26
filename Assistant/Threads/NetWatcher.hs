@@ -57,7 +57,7 @@ netWatcherFallbackThread st dstatus scanremotes = thread $
 #if WITH_DBUS
 
 dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-dbusThread st dstatus scanremotes = E.catch (go =<< connectSystem) onerr
+dbusThread st dstatus scanremotes = E.catch (runClient getSystemAddress go) onerr
 	where
 		go client = ifM (checkNetMonitor client)
 			( do
@@ -69,7 +69,7 @@ dbusThread st dstatus scanremotes = E.catch (go =<< connectSystem) onerr
 			)
 		onerr :: E.SomeException -> IO ()
 		onerr e = runThreadState st $
-			warning $ "Failed to use dbus; falling back to polling (" ++ show e ++ ")"
+			warning $ "dbus failed; falling back to polling (" ++ show e ++ ")"
 		handle = do
 			debug thisThread ["detected network connection"]
 			handleConnection st dstatus scanremotes
