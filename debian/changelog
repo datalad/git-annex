@@ -24,6 +24,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * configure: Check that checksum programs produce correct checksums.
   * Re-enable dbus, using a new version of the library that fixes the memory
     leak.
+  * NetWatcher: When dbus connection is lost, try to reconnect.
   * Use USER and HOME environment when set, and only fall back to getpwent,
     which doesn't work with LDAP or NIS.
 

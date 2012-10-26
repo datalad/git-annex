@@ -72,6 +72,11 @@ dbusThread st dstatus scanremotes = E.catch (runClient getSessionAddress go) one
 			)
 		onerr :: E.SomeException -> IO ()
 		onerr e = do
+			{- If the session dbus fails, the user probably
+			 - logged out of their desktop. Even if they log
+			 - back in, we won't have access to the dbus
+			 - session key, so polling is the best that can be
+			 - done in this situation. -}
 			runThreadState st $
 				warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
 			pollinstead

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Utility.DBus where
 
@@ -65,15 +65,15 @@ runClient getaddr clientaction = do
  - If the connection is lost, runs onretry, which can do something like
  - a delay, or printing a warning, and has a state value (useful for
  - exponential backoff). Once onretry returns, the connection is retried.
- - 
- - Warning: Currently connectWith can throw a SocketError and leave behind
- - an open FD. So each retry leaks one FD. -}
+ -}
 persistentClient :: IO (Maybe Address) -> v -> (SomeException -> v -> IO v) -> (Client -> IO ()) -> IO ()
-persistentClient getaddr v onretry clientaction = do
+persistentClient getaddr v onretry clientaction =
 	{- runClient can fail with not just ClientError, but also other
-	 - things, if dbus is not running. -}
-	r <- E.try (runClient getaddr clientaction) :: IO (Either SomeException ())
-	either retry return r
+	 - things, if dbus is not running. Let async exceptions through. -}
+	runClient getaddr clientaction `E.catches`
+		[ Handler (\ (e :: AsyncException) -> E.throw e)
+		, Handler (\ (e :: SomeException) -> retry e)
+		]
 	where
 		retry e = do
 			v' <- onretry e v

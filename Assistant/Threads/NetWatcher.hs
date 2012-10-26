@@ -24,7 +24,6 @@ import Utility.DBus
 import DBus.Client
 import DBus
 import Data.Word (Word32)
-import qualified Control.Exception as E
 #else
 #warning Building without dbus support; will poll for network connection changes
 #endif
@@ -57,22 +56,24 @@ netWatcherFallbackThread st dstatus scanremotes = thread $
 #if WITH_DBUS
 
 dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> IO ()
-dbusThread st dstatus scanremotes = E.catch (runClient getSystemAddress go) onerr
+dbusThread st dstatus scanremotes = persistentClient getSystemAddress () onerr go
 	where
 		go client = ifM (checkNetMonitor client)
 			( do
-				listenNMConnections client handle
-				listenWicdConnections client handle
+				listenNMConnections client handleconn
+				listenWicdConnections client handleconn
 			, do
 				runThreadState st $
 					warning "No known network monitor available through dbus; falling back to polling"
 			)
-		onerr :: E.SomeException -> IO ()
-		onerr e = runThreadState st $
-			warning $ "dbus failed; falling back to polling (" ++ show e ++ ")"
-		handle = do
+		handleconn = do
 			debug thisThread ["detected network connection"]
 			handleConnection st dstatus scanremotes
+		onerr e _ = do
+			runThreadState st $
+				warning $ "lost dbus connection; falling back to polling (" ++ show e ++ ")"
+			{- Wait, in hope that dbus will come back -}
+			threadDelaySeconds (Seconds 60)
 
 {- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor network connections. -}
