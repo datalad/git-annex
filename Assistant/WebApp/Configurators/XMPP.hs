@@ -16,7 +16,7 @@ import Assistant.WebApp.SideBar
 import Utility.Yesod
 #ifdef WITH_XMPP
 import Assistant.Common
-import Assistant.Threads.PushNotifier
+import Assistant.XMPP
 import Utility.SRV
 #endif
 
@@ -26,7 +26,6 @@ import Network
 import Network.Protocol.XMPP
 import Data.Text (Text)
 import qualified Data.Text as T
-import Control.Concurrent
 #endif
 
 getXMPPR :: Handler RepHtml
