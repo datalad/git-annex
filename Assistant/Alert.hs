@@ -18,6 +18,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Map as M
 import Data.String
+import Text.Blaze
 
 {- Different classes of alerts are displayed differently. -}
 data AlertClass = Success | Message | Activity | Warning | Error
@@ -53,13 +54,18 @@ data Alert = Alert
 	, alertButton :: Maybe AlertButton
 	}
 
-data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon
+data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
 
-bootstrapIcon :: AlertIcon -> String
-bootstrapIcon ActivityIcon = "refresh"
-bootstrapIcon InfoIcon = "info-sign"
-bootstrapIcon SuccessIcon = "ok"
-bootstrapIcon ErrorIcon = "exclamation-sign"
+htmlIcon :: AlertIcon -> Html
+htmlIcon ActivityIcon = bootStrapIcon "refresh"
+htmlIcon InfoIcon = bootStrapIcon "info-sign"
+htmlIcon SuccessIcon = bootStrapIcon "ok"
+htmlIcon ErrorIcon = bootStrapIcon "exclamation-sign"
+-- utf-8 umbrella (utf-8 cloud looks too stormy)
+htmlIcon TheCloud = preEscapedText "&#9730;"
+
+bootStrapIcon :: Text -> Html
+bootStrapIcon s = preEscapedText $ T.concat ["<i class=\"icon-", s, "\"></i>"]
 
 {- When clicked, a button always redirects to a URL
  - It may also run an IO action in the background, which is useful
