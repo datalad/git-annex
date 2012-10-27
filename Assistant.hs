@@ -216,17 +216,15 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 				, assist $ transferScannerThread st dstatus scanremotes transferqueue
 				, assist $ configMonitorThread st dstatus branchhandle commitchan
 #ifdef WITH_XMPP
-				{- Bound thread, because TLS needs it. -}
-				, bound $ assist $ pushNotifierThread st dstatus pushnotifier
+				, assist $ pushNotifierThread st dstatus pushnotifier
 #endif
 				, watch $ watchThread st dstatus transferqueue changechan
 				]
 			waitForTermination
 
-		watch a = (forkIO, True, a)
-		assist a = (forkIO, False, a)
-		bound (_, watcher, t) = (forkOS, watcher, t)
+		watch a = (True, a)
+		assist a = (False, a)
 		startthread dstatus (runner, watcher, t)
-			| watcher || assistant = void $ runner $
+			| watcher || assistant = void $ forkIO $
 				runNamedThread dstatus t
 			| otherwise = noop

@@ -35,7 +35,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 			fulljid <- bindJID jid
 			liftIO $ debug thisThread ["XMPP connected", show fulljid]
 			s <- getSession
-			_ <- liftIO $ forkOS $ void $ runXMPP s $
+			_ <- liftIO $ forkIO $ void $ runXMPP s $
 				receivenotifications
 			sendnotifications
 	where
