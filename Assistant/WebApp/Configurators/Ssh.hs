@@ -290,7 +290,7 @@ makeSshRepo forcersync setup sshdata = do
 		(scanRemotes webapp)
 		forcersync sshdata
 	setup r
-	redirect $ EditNewRepositoryR $ Remote.uuid r
+	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 
 getAddRsyncNetR :: Handler RepHtml
 getAddRsyncNetR = do

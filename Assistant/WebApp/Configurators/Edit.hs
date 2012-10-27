@@ -16,6 +16,7 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
+import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Utility.Yesod
 import qualified Remote
 import qualified Remote.List as Remote
@@ -99,6 +100,9 @@ getEditRepositoryR = editForm False
 
 getEditNewRepositoryR :: UUID -> Handler RepHtml
 getEditNewRepositoryR = editForm True
+
+getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = bootstrap (Just Config) $ do

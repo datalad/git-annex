@@ -13,6 +13,7 @@
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
 /config/repository/edit/#UUID EditRepositoryR GET
 /config/repository/edit/new/#UUID EditNewRepositoryR GET
+/config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET
 /config/repository/sync/disable/#UUID DisableSyncR GET
 /config/repository/sync/enable/#UUID EnableSyncR GET
 

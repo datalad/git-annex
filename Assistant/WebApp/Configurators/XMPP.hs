@@ -13,6 +13,8 @@ module Assistant.WebApp.Configurators.XMPP where
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
+import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.Yesod
 #ifdef WITH_XMPP
 import Assistant.Common
@@ -28,6 +30,17 @@ import Network.Protocol.XMPP
 import Data.Text (Text)
 import qualified Data.Text as T
 #endif
+
+{- Displays an alert suggesting to configure XMPP, with a button. -}
+xmppNeeded :: Handler ()
+xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
+	dstatus <- daemonStatus <$> getYesod
+	urlrender <- getUrlRender
+	void $ liftIO $ addAlert dstatus $ xmppNeededAlert $ AlertButton
+		{ buttonLabel = "Configure a Jabber account"
+		, buttonUrl = urlrender XMPPR
+		, buttonAction = Just $ removeAlert dstatus
+		}
 
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP

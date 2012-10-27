@@ -34,6 +34,7 @@ data AlertName
 	| SanityCheckFixAlert
 	| WarningAlert String
 	| PairAlert String
+	| XMPPNeededAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -320,6 +321,21 @@ pairRequestAcknowledgedAlert repo button = baseActivityAlert
 	, alertPriority = High
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = button
+	}
+
+xmppNeededAlert :: AlertButton -> Alert
+xmppNeededAlert button = Alert
+	{ alertHeader = Just "Keep your repositories in sync across the cloud, or share with friends."
+	, alertIcon = Just TheCloud
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = tenseWords
+	, alertBlockDisplay = True
+	, alertName = Just $ XMPPNeededAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
 	}
 
 fileAlert :: TenseChunk -> FilePath -> Alert
