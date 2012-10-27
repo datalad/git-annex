@@ -15,6 +15,7 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import Assistant.Pushes
 import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install
@@ -104,11 +105,12 @@ firstRun = do
 	transferqueue <- newTransferQueue
 	transferslots <- newTransferSlots
 	urlrenderer <- newUrlRenderer
+	pushnotifier <- newPushNotifier
 	v <- newEmptyMVar
 	let callback a = Just $ a v
 	void $ runNamedThread dstatus $
 		webAppThread Nothing dstatus scanremotes
-			transferqueue transferslots urlrenderer
+			transferqueue transferslots pushnotifier urlrenderer
 			(callback signaler) (callback mainthread)
 	where
 		signaler v = do

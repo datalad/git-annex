@@ -197,7 +197,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			mapM_ (startthread dstatus)
 				[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
-				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots urlrenderer Nothing webappwaiter
+				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots pushnotifier urlrenderer Nothing webappwaiter
 #ifdef WITH_PAIRING
 				, assist $ pairListenerThread st dstatus scanremotes urlrenderer
 #endif

@@ -32,6 +32,7 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import Assistant.Pushes
 import Utility.WebApp
 import Utility.FileMode
 import Utility.TempFile
@@ -55,17 +56,19 @@ webAppThread
 	-> ScanRemoteMap
 	-> TransferQueue
 	-> TransferSlots
+	-> PushNotifier
 	-> UrlRenderer
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread mst dstatus scanremotes transferqueue transferslots urlrenderer postfirstrun onstartup = thread $ do
+webAppThread mst dstatus scanremotes transferqueue transferslots pushnotifier urlrenderer postfirstrun onstartup = thread $ do
 	webapp <- WebApp
 		<$> pure mst
 		<*> pure dstatus
 		<*> pure scanremotes
 		<*> pure transferqueue
 		<*> pure transferslots
+		<*> pure pushnotifier
 		<*> (pack <$> genRandomToken)
 		<*> getreldir mst
 		<*> pure $(embed "static")

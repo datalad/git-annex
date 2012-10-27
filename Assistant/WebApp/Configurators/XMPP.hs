@@ -17,6 +17,7 @@ import Utility.Yesod
 #ifdef WITH_XMPP
 import Assistant.Common
 import Assistant.XMPP
+import Assistant.Pushes
 import Utility.SRV
 #endif
 
@@ -45,6 +46,7 @@ getXMPPR = xmppPage $ do
 	where
 		storecreds creds = do
 			void $ runAnnex undefined $ setXMPPCreds creds
+			liftIO . notifyRestart =<< pushNotifier <$> getYesod
 			redirect ConfigR
 #else
 getXMPPR = xmppPage $
