@@ -28,12 +28,19 @@ import Data.Time.Clock
 thisThread :: ThreadName
 thisThread = "PushNotifier"
 
+controllerThread :: PushNotifier -> IO () -> IO ()
+controllerThread pushnotifier a = forever $ do
+	tid <- forkIO a
+	waitRestart pushnotifier
+	killThread tid
+
 pushNotifierThread :: ThreadState -> DaemonStatusHandle -> PushNotifier -> NamedThread
-pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
-	v <- runThreadState st $ getXMPPCreds
-	case v of
-		Nothing -> return () -- no creds? exit thread
-		Just c -> loop c =<< getCurrentTime
+pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
+	controllerThread pushnotifier $ do
+		v <- runThreadState st $ getXMPPCreds
+		case v of
+			Nothing -> noop
+			Just c -> loop c =<< getCurrentTime
 	where
 		loop c starttime = do
 			void $ connectXMPP c $ \jid -> do
@@ -53,7 +60,6 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 					threadDelaySeconds (Seconds 300)
 					loop c =<< getCurrentTime
 
-		
 		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
 			let payload = [extendedAway, encodePushNotification us]

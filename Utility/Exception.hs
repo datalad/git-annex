@@ -1,9 +1,11 @@
-{- Simple IO exception handling
+{- Simple IO exception handling (and some more)
  -
  - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Utility.Exception where
 
@@ -34,3 +36,16 @@ catchIO = catch
 {- try specialized for IO errors only -}
 tryIO :: IO a -> IO (Either IOException a)
 tryIO = try
+
+{- Catches all exceptions except for async exceptions.
+ - This is often better to use than catching them all, so that
+ - ThreadKilled and UserInterrupt get through.
+ -}
+catchNonAsync :: IO a -> (SomeException -> IO a) -> IO a
+catchNonAsync a onerr = a `catches`
+	[ Handler (\ (e :: AsyncException) -> throw e)
+	, Handler (\ (e :: SomeException) -> onerr e)
+	]
+
+tryNonAsync :: IO a -> IO (Either SomeException a)
+tryNonAsync a = (Right <$> a) `catchNonAsync` (return . Left)

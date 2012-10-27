@@ -16,7 +16,7 @@ import Network
 import Control.Concurrent
 import qualified Data.Text as T
 import Data.XML.Types
-import Control.Exception as E
+import Control.Exception (SomeException)
 
 {- Everything we need to know to connect to an XMPP server. -}
 data XMPPCreds = XMPPCreds
@@ -53,7 +53,11 @@ connectXMPP' jid c a = go =<< lookupSRV srvrecord
 				a jid
 			ifM (isEmptyMVar mv) (go rest, return r)
 
-		run h p a' = E.try (runClientError (Server serverjid h p) jid (xmppUsername c) (xmppPassword c) (void a')) :: IO (Either SomeException ())
+		{- Async exceptions are let through so the XMPP thread can
+		 - be killed. -}
+		run h p a' = tryNonAsync $
+			runClientError (Server serverjid h p) jid
+				(xmppUsername c) (xmppPassword c) (void a')
 
 {- XMPP runClient, that throws errors rather than returning an Either -}
 runClientError :: Server -> JID -> T.Text -> T.Text -> XMPP a -> IO a

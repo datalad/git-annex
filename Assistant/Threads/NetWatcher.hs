@@ -70,6 +70,7 @@ dbusThread st dstatus scanremotes pushnotifier =
 			)
 		handleconn = do
 			debug thisThread ["detected network connection"]
+			notifyRestart pushnotifier
 			handleConnection st dstatus scanremotes pushnotifier
 		onerr e _ = do
 			runThreadState st $
