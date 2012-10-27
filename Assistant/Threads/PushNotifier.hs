@@ -17,11 +17,13 @@ import Assistant.DaemonStatus
 import Assistant.Pushes
 import Assistant.Sync
 import qualified Remote
+import Utility.ThreadScheduler
 
 import Network.Protocol.XMPP
 import Control.Concurrent
 import qualified Data.Set as S
 import qualified Git.Branch
+import Data.Time.Clock
 
 thisThread :: ThreadName
 thisThread = "PushNotifier"
@@ -31,14 +33,27 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ do
 	v <- runThreadState st $ getXMPPCreds
 	case v of
 		Nothing -> return () -- no creds? exit thread
-		Just c -> void $ connectXMPP c $ \jid -> do
-			fulljid <- bindJID jid
-			liftIO $ debug thisThread ["XMPP connected", show fulljid]
-			s <- getSession
-			_ <- liftIO $ forkIO $ void $ runXMPP s $
-				receivenotifications
-			sendnotifications
+		Just c -> loop c =<< getCurrentTime
 	where
+		loop c starttime = do
+			void $ connectXMPP c $ \jid -> do
+				fulljid <- bindJID jid
+				liftIO $ debug thisThread ["XMPP connected", show fulljid]
+				s <- getSession
+				_ <- liftIO $ forkIO $ void $ runXMPP s $
+					receivenotifications
+				sendnotifications
+			now <- getCurrentTime
+			if diffUTCTime now starttime > 300
+				then do
+					debug thisThread ["XMPP connection lost; reconnecting"]
+					loop c now
+				else do
+					debug thisThread ["XMPP connection failed; will retry"]
+					threadDelaySeconds (Seconds 300)
+					loop c =<< getCurrentTime
+
+		
 		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
 			let payload = [extendedAway, encodePushNotification us]

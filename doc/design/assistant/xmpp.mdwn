@@ -4,20 +4,20 @@ who share a repository, that is stored in the [[cloud]].
 
 ### TODO
 
-* Track down segfault when the XMPP library is starting up a client connection.
-* test with big servers, eg google chat
 * Prevent idle disconnection. Probably means sending or receiving pings,
   but would prefer to avoid eg pinging every 60 seconds as some clients do.
+* Make the NetWatcher restart the XMPP connection when there's a new default
+  route. Currently, if moving networks, it needs to go through a TCP timeout.
 * Make the git-annex clients invisible, so a user can use their regular
   account without always seeming to be present when git-annex is logged in.
   See <http://xmpp.org/extensions/xep-0126.html>
-* webapp configuration
+* (re)start PushNotifier when webapp is used to change XMPP config.
 * After pulling from a remote, may need to scan for transfers, which
   could involve other remotes (ie, S3). Since the remote client is not able to
   talk to us directly, it won't be able to upload any new files to us.
   Need a fast way to find new files, and get them transferring. The expensive
   transfer scan may be needed to get fully in sync, but is too expensive to
-  run every time this happens.
+  run every time this happens. Send transfer notifications using XMPP?
 
 ## design goals
 
