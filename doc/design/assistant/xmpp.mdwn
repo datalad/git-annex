@@ -6,12 +6,9 @@ who share a repository, that is stored in the [[cloud]].
 
 * Prevent idle disconnection. Probably means sending or receiving pings,
   but would prefer to avoid eg pinging every 60 seconds as some clients do.
-* Make the NetWatcher restart the XMPP connection when there's a new default
-  route. Currently, if moving networks, it needs to go through a TCP timeout.
 * Make the git-annex clients invisible, so a user can use their regular
   account without always seeming to be present when git-annex is logged in.
   See <http://xmpp.org/extensions/xep-0126.html>
-* (re)start PushNotifier when webapp is used to change XMPP config.
 * After pulling from a remote, may need to scan for transfers, which
   could involve other remotes (ie, S3). Since the remote client is not able to
   talk to us directly, it won't be able to upload any new files to us.
