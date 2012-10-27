@@ -7,3 +7,18 @@
      <p>
        Distribute the files in this repository to other devices, #
        make backups, and more, by adding repositories.
+    <div .span4>
+      $if xmppconfigured
+        <h3>
+          <a href="@{XMPPR}">
+            Re-configure jabber account
+        <p>
+         Your jabber account is set up, and will be used to keep #
+         in touch with remote devices, and with your friends.
+      $else
+        <h3>
+          <a href="@{XMPPR}">
+            Configure jabber account
+       <p>
+         Keep in touch with remote devices, and with your friends, #
+         by configuring a jabber account.

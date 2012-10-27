@@ -1,13 +1,12 @@
 CFLAGS=-Wall
 GIT_ANNEX_TMP_BUILD_DIR?=tmp
-IGNORE=-ignore-package monads-fd -ignore-package monads-tf
-BASEFLAGS=-Wall $(IGNORE) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
+BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 
 # If you get build failures due to missing haskell libraries,
 # you can turn off some of these features.
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1

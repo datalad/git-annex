@@ -17,6 +17,7 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
+import Assistant.Pushes
 import Assistant.Alert
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
@@ -38,6 +39,7 @@ data WebApp = WebApp
 	, scanRemotes :: ScanRemoteMap
 	, transferQueue :: TransferQueue
 	, transferSlots :: TransferSlots
+	, pushNotifier :: PushNotifier
 	, secretToken :: Text
 	, relDir :: Maybe FilePath
 	, getStatic :: Static

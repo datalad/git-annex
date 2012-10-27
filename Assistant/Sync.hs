@@ -36,9 +36,9 @@ import Control.Concurrent
  - the remotes have diverged from the local git-annex branch. Otherwise,
  - it's sufficient to requeue failed transfers.
  -}
-reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> [Remote] -> IO ()
-reconnectRemotes _ _ _ _ [] = noop
-reconnectRemotes threadname st dstatus scanremotes rs = void $
+reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Maybe PushNotifier -> [Remote] -> IO ()
+reconnectRemotes _ _ _ _ _ [] = noop
+reconnectRemotes threadname st dstatus scanremotes pushnotifier rs = void $
 	alertWhile dstatus (syncAlert rs) $ do
 		(ok, diverged) <- sync
 			=<< runThreadState st (inRepo Git.Branch.current)
@@ -48,13 +48,13 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
 		(gitremotes, _specialremotes) =
 			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
-			diverged <- manualPull st (Just branch) gitremotes
+			diverged <- snd <$> manualPull st (Just branch) gitremotes
 			now <- getCurrentTime
-			ok <- pushToRemotes threadname now st Nothing gitremotes
+			ok <- pushToRemotes threadname now st pushnotifier Nothing gitremotes
 			return (ok, diverged)
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			diverged <- manualPull st Nothing gitremotes
+			diverged <- snd <$> manualPull st Nothing gitremotes
 			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -81,8 +81,8 @@ reconnectRemotes threadname st dstatus scanremotes rs = void $
  - them. While ugly, those branches are reserved for pushing by us, and
  - so our pushes will succeed.
  -}
-pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe FailedPushMap -> [Remote] -> IO Bool
-pushToRemotes threadname now st mpushmap remotes = do
+pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe PushNotifier -> Maybe FailedPushMap -> [Remote] -> IO Bool
+pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 	(g, branch, u) <- runThreadState st $ (,,)
 		<$> gitRepo
 		<*> inRepo Git.Branch.current
@@ -100,7 +100,9 @@ pushToRemotes threadname now st mpushmap remotes = do
 			updatemap succeeded []
 			let ok = null failed
 			if ok
-				then return ok
+				then do
+					maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
+					return ok
 				else if shouldretry
 					then retry branch g u failed
 					else fallback branch g u failed
@@ -124,6 +126,8 @@ pushToRemotes threadname now st mpushmap remotes = do
 				]
 			(succeeded, failed) <- inParallel (pushfallback g u branch) rs
 			updatemap succeeded failed
+			unless (null succeeded) $
+				maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
 			return $ null failed
 			
 		push g branch remote = Command.Sync.pushBranch remote branch g
@@ -143,18 +147,18 @@ pushToRemotes threadname now st mpushmap remotes = do
 					where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO Bool
+manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO ([Bool], Bool)
 manualPull st currentbranch remotes = do
 	g <- runThreadState st gitRepo
-	forM_ remotes $ \r ->
+	results <- forM remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
 	haddiverged <- runThreadState st Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		runThreadState st $ Command.Sync.mergeRemote r currentbranch
-	return haddiverged
+	return (results, haddiverged)
 
 {- Start syncing a newly added remote, using a background thread. -}
 syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
 syncNewRemote st dstatus scanremotes remote = do
 	runThreadState st $ updateSyncRemotes dstatus
-	void $ forkIO $ reconnectRemotes "SyncRemote" st dstatus scanremotes [remote]
+	void $ forkIO $ reconnectRemotes "SyncRemote" st dstatus scanremotes Nothing [remote]

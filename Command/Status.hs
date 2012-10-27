@@ -5,11 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE PackageImports, BangPatterns #-}
 
 module Command.Status where
 
-import Control.Monad.State.Strict
+import "mtl" Control.Monad.State.Strict
 import qualified Data.Map as M
 import Text.JSON
 import Data.Tuple

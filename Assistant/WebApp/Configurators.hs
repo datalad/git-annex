@@ -16,6 +16,7 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
 import Assistant.DaemonStatus
+import Assistant.XMPP
 import Utility.Yesod
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -33,6 +34,7 @@ getConfigR :: Handler RepHtml
 getConfigR = ifM (inFirstRun)
 	( getFirstRepositoryR
 	, bootstrap (Just Config) $ do
+		xmppconfigured <- lift $ runAnnex False $ isJust <$> getXMPPCreds
 		sideBarDisplay
 		setTitle "Configuration"
 		$(widgetFile "configurators/main")

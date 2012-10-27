@@ -9,6 +9,8 @@
 
 module Utility.DBus where
 
+import Utility.Exception
+
 import DBus.Client
 import DBus
 import Data.Maybe
@@ -70,10 +72,7 @@ persistentClient :: IO (Maybe Address) -> v -> (SomeException -> v -> IO v) -> (
 persistentClient getaddr v onretry clientaction =
 	{- runClient can fail with not just ClientError, but also other
 	 - things, if dbus is not running. Let async exceptions through. -}
-	runClient getaddr clientaction `E.catches`
-		[ Handler (\ (e :: AsyncException) -> E.throw e)
-		, Handler (\ (e :: SomeException) -> retry e)
-		]
+	runClient getaddr clientaction `catchNonAsync` retry
 	where
 		retry e = do
 			v' <- onretry e v
@@ -81,5 +80,5 @@ persistentClient getaddr v onretry clientaction =
 
 {- Catches only ClientError -}
 catchClientError :: IO () -> (ClientError -> IO ()) -> IO ()
-catchClientError io handler = do
+catchClientError io handler =
 	either handler return =<< (E.try io :: IO (Either ClientError ()))
