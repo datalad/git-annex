@@ -224,7 +224,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 
 		watch a = (True, a)
 		assist a = (False, a)
-		startthread dstatus (runner, watcher, t)
+		startthread dstatus (watcher, t)
 			| watcher || assistant = void $ forkIO $
 				runNamedThread dstatus t
 			| otherwise = noop
