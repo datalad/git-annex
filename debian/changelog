@@ -27,6 +27,8 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * NetWatcher: When dbus connection is lost, try to reconnect.
   * Use USER and HOME environment when set, and only fall back to getpwent,
     which doesn't work with LDAP or NIS.
+  * assistant: Can use XMPP to notify other nodes that cannot be directly
+    pushed to about pushes.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 
