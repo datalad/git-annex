@@ -429,10 +429,12 @@ commitOnCleanup r a = go `after` a
 			| otherwise = void $ do
 				Just (shellcmd, shellparams) <-
 					git_annex_shell r "commit" [] []
+				
 				-- Throw away stderr, since the remote may not
 				-- have a new enough git-annex shell to
 				-- support committing.
-				let cmd = shellcmd ++ " "
-					++ unwords (map shellEscape $ toCommand shellparams)
-					++ ">/dev/null 2>/dev/null"
-				liftIO $ boolSystem "sh" [Param "-c", Param cmd]
+				liftIO $ catchMaybeIO $ do
+					print "!!!!!!!!!!!!!"
+					withQuietOutput createProcessSuccess $
+						proc shellcmd $
+							toCommand shellparams

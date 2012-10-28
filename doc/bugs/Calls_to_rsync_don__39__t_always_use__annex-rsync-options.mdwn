@@ -30,3 +30,6 @@ OS: Ubuntu 12.04
 Please provide any additional information below.
 
 I think this fix is as easy as including the annex-rsync-options wherever rsync is called.
+
+> I belive there was only the one place this was neglected. [[done]]
+> --[[Joey]]

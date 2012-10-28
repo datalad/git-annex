@@ -23,6 +23,7 @@ module Utility.Process (
 	createBackgroundProcess,
 	withHandle,
 	withBothHandles,
+	withQuietOutput,
 	createProcess,
 	runInteractiveProcess,
 	stdinHandle,
@@ -184,6 +185,19 @@ withBothHandles creator p a = creator p' $ a . bothHandles
 			, std_out = CreatePipe
 			, std_err = Inherit
 			}
+
+{- Forces the CreateProcessRunner to run quietly;
+ - both stdout and stderr are discarded. -}
+withQuietOutput
+	:: CreateProcessRunner
+	-> CreateProcess
+	-> IO ()
+withQuietOutput creator p = withFile "/dev/null" WriteMode $ \devnull -> do
+	let p' = p
+		{ std_out = UseHandle devnull
+		, std_err = UseHandle devnull
+		}
+	creator p' $ const $ return ()
 
 {- Extract a desired handle from createProcess's tuple.
  - These partial functions are safe as long as createProcess is run

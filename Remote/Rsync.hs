@@ -166,9 +166,12 @@ checkPresent r o k = do
 	-- to connect, and the file not being present.
 	Right <$> check
 	where
- 		check = untilTrue (rsyncUrls o k) $ \u ->
-			liftIO $ boolSystem "sh" [Param "-c", Param (cmd u)]
-		cmd u = "rsync --quiet " ++ shellEscape u ++ " 2>/dev/null"
+ 		check = untilTrue (rsyncUrls o k) $ \u -> 
+			liftIO $ catchBoolIO $ do
+				withQuietOutput createProcessSuccess $
+					proc "rsync" $ toCommand $
+						rsyncOptions o ++ [Param u]
+				return True
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
