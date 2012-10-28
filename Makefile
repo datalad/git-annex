@@ -142,7 +142,7 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
+THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg host \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
