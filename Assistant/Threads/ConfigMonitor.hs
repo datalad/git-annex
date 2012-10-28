@@ -24,7 +24,6 @@ import qualified Git.LsTree as LsTree
 import qualified Annex.Branch
 import qualified Annex
 
-import Data.Time.Clock
 import qualified Data.Set as S
 
 thisThread :: ThreadName
@@ -56,8 +55,7 @@ configMonitorThread st dstatus branchhandle commitchan = thread $ do
 				reloadConfigs st dstatus changedconfigs
 				{- Record a commit to get this config
 				 - change pushed out to remotes. -}
-				time <- getCurrentTime
-				recordCommit commitchan (Commit time)
+				recordCommit commitchan
 			go r new
 
 {- Config files, and their checksums. -}

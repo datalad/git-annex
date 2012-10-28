@@ -9,12 +9,9 @@ module Assistant.Commits where
 
 import Utility.TSet
 
-import Data.Time.Clock
-
 type CommitChan = TSet Commit
 
-data Commit = Commit UTCTime
-	deriving (Show)
+data Commit = Commit
 
 newCommitChan :: IO CommitChan
 newCommitChan = newTSet
@@ -30,5 +27,5 @@ refillCommits :: CommitChan -> [Commit] -> IO ()
 refillCommits = putTSet
 
 {- Records a commit in the channel. -}
-recordCommit :: CommitChan -> Commit -> IO ()
-recordCommit = putTSet1
+recordCommit :: CommitChan -> IO ()
+recordCommit = flip putTSet1 Commit

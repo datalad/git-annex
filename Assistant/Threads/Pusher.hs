@@ -49,12 +49,12 @@ pushThread st dstatus commitchan pushmap pushnotifier = thread $ runEvery (Secon
 	-- Next, wait until at least one commit has been made
 	commits <- getCommits commitchan
 	-- Now see if now's a good time to push.
-	now <- getCurrentTime
-	if shouldPush now commits
+	if shouldPush commits
 		then do
 			remotes <- filter pushable . syncRemotes
 				<$> getDaemonStatus dstatus
-			unless (null remotes) $ 
+			unless (null remotes) $ do
+				now <- getCurrentTime
 				void $ alertWhile dstatus (pushAlert remotes) $
 					pushToRemotes thisThread now st (Just pushnotifier) (Just pushmap) remotes
 		else do
@@ -77,7 +77,7 @@ pushThread st dstatus commitchan pushmap pushnotifier = thread $ runEvery (Secon
  - already determines batches of changes, so we can't easily determine
  - batches better.
  -}
-shouldPush :: UTCTime -> [Commit] -> Bool
-shouldPush _now commits
+shouldPush :: [Commit] -> Bool
+shouldPush commits
 	| not (null commits) = True
 	| otherwise = False

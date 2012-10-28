@@ -135,9 +135,10 @@ startTransfer t = do
 			let st = fromJust $ threadState webapp
 			let dstatus = daemonStatus webapp
 			let slots = transferSlots webapp
+			let commitchan = commitChan webapp
 			liftIO $ inImmediateTransferSlot dstatus slots $ do
 				program <- readProgramFile
-				Transferrer.startTransfer st dstatus program t info
+				Transferrer.startTransfer st dstatus commitchan program t info
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers

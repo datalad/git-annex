@@ -18,6 +18,7 @@ import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Pushes
+import Assistant.Commits
 import Assistant.Alert
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
@@ -40,6 +41,7 @@ data WebApp = WebApp
 	, transferQueue :: TransferQueue
 	, transferSlots :: TransferSlots
 	, pushNotifier :: PushNotifier
+	, commitChan :: CommitChan
 	, secretToken :: Text
 	, relDir :: Maybe FilePath
 	, getStatic :: Static

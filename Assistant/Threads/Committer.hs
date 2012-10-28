@@ -65,7 +65,7 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ do
 							]
 						void $ alertWhile dstatus commitAlert $
 							runThreadState st commitStaged
-						recordCommit commitchan (Commit time)
+						recordCommit commitchan
 					else refill readychanges
 			else refill changes
 	where

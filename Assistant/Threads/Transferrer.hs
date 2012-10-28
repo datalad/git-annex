@@ -13,6 +13,7 @@ import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Alert
+import Assistant.Commits
 import Logs.Transfer
 import Logs.Location
 import Annex.Content
@@ -30,20 +31,20 @@ maxTransfers :: Int
 maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
-transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> NamedThread
-transfererThread st dstatus transferqueue slots = thread $ go =<< readProgramFile
+transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> CommitChan -> NamedThread
+transfererThread st dstatus transferqueue slots commitchan = thread $ go =<< readProgramFile
 	where
 		thread = NamedThread thisThread
 		go program = forever $ inTransferSlot dstatus slots $
-			maybe (return Nothing) (uncurry $ startTransfer st dstatus program)
+			maybe (return Nothing) (uncurry $ startTransfer st dstatus commitchan program)
 				=<< getNextTransfer transferqueue dstatus notrunning
 		{- Skip transfers that are already running. -}
 		notrunning = isNothing . startedTime
 
 {- By the time this is called, the daemonstatus's transfer map should
  - already have been updated to include the transfer. -}
-startTransfer :: ThreadState -> DaemonStatusHandle -> FilePath -> Transfer -> TransferInfo -> TransferGenerator
-startTransfer st dstatus program t info = case (transferRemote info, associatedFile info) of
+startTransfer :: ThreadState -> DaemonStatusHandle -> CommitChan -> FilePath -> Transfer -> TransferInfo -> TransferGenerator
+startTransfer st dstatus commitchan program t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) -> ifM (runThreadState st $ shouldTransfer t info)
 		( do
 			debug thisThread [ "Transferring:" , show t ]
@@ -66,11 +67,19 @@ startTransfer st dstatus program t info = case (transferRemote info, associatedF
 			{- Alerts are only shown for successful transfers.
 			 - Transfers can temporarily fail for many reasons,
 			 - so there's no point in bothering the user about
-			 - those. The assistant should recover. -}
-			whenM ((==) ExitSuccess <$> waitForProcess pid) $ void $
-				addAlert dstatus $
+			 - those. The assistant should recover.
+			 -
+			 - Also, after a successful transfer, the location
+			 - log has changed. Indicate that a commit has been
+			 - made, in order to queue a push of the git-annex
+			 - branch out to remotes that did not participate
+			 - in the transfer.
+			 -}
+			whenM ((==) ExitSuccess <$> waitForProcess pid) $ do
+				void $ addAlert dstatus $
 					makeAlertFiller True $
 						transferFileAlert direction True file
+				recordCommit commitchan
 			where
 				params =
 					[ Param "transferkey"
