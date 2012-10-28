@@ -19,7 +19,7 @@
 
 # What version of git-annex are you using? On what operating system?
 
-git-annex version: 3.20120629
+git-annex version: 3.20121017
 
 # Please provide any additional information below.
 
