@@ -540,7 +540,9 @@ subdirectories).
 * --numcopies=n
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
-  specified number of copies exist.
+  specified number of copies exist. 
+
+  Note that setting numcopies to 0 is very unsafe.
 
 * --time-limit=time
 
@@ -691,6 +693,8 @@ Here are all the supported configuration settings.
 * `annex.numcopies`
 
   Number of copies of files to keep across all repositories. (default: 1)
+  
+  Note that setting numcopies to 0 is very unsafe.
 
 * `annex.backends`
 
@@ -893,6 +897,8 @@ the `annex.numcopies` attribute in `.gitattributes` files.
 For example, this makes two copies be needed for wav files:
 
 	*.wav annex.numcopies=2
+  
+Note that setting numcopies to 0 is very unsafe.
 
 # FILES
 
