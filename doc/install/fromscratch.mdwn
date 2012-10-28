@@ -43,6 +43,7 @@ quite a lot.
   * [network-multicast](http://hackage.haskell.org/package/network-multicast)
   * [network-info](http://hackage.haskell.org/package/network-info)
   * [network-protocol-xmpp](http://hackage.haskell.org/package/network-protocol-xmpp)
+  * [dns](http://hackage.haskell.org/package/dns)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)

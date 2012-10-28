@@ -1,7 +1,7 @@
 {- SRV record lookup
  -
- - Uses either the ADNS Haskell library, or if it's not installed,
- - the host command.
+ - Uses either the ADNS Haskell library, or the standalone Haskell DNS
+ - package, or the host command.
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -30,12 +30,20 @@ import Data.Maybe
 #ifdef WITH_ADNS
 import ADNS.Resolver
 import Data.Either
+#else
+#ifdef WITH_DNS
+import qualified Network.DNS.Lookup as DNS
+import Network.DNS.Resolver
+import qualified Data.ByteString.UTF8 as B8
+#endif
 #endif
 
 newtype SRV = SRV String
 	deriving (Show, Eq)
 
 type HostPort = (HostName, PortID)
+
+type PriorityWeight = (Int, Int) -- sort by priority first, then weight
 
 mkSRV :: String -> String -> HostName -> SRV
 mkSRV transport protocol host = SRV $ concat
@@ -49,12 +57,26 @@ mkSRVTcp = mkSRV "tcp"
  - On error, returns an empty list. -}
 lookupSRV :: SRV -> IO [HostPort]
 #ifdef WITH_ADNS
-lookupSRV srv = initResolver [] $ \resolver -> do
+lookupSRV (SRV srv) = initResolver [] $ \resolver -> do
 	r <- catchDefaultIO (Right []) $
 		resolveSRV resolver srv
 	return $ either (\_ -> []) id r
 #else
+#ifdef WITH_DNS
+lookupSRV (SRV srv) = do
+	seed <- makeResolvSeed defaultResolvConf
+	print srv
+	r <- withResolver seed $ flip DNS.lookupSRV $ B8.fromString srv
+	print r
+	return $ maybe [] (orderHosts . map tohosts) r
+	where
+		tohosts (priority, weight, port, hostname) =
+			( (priority, weight)
+			, (B8.toString hostname, PortNumber $ fromIntegral port)
+			)
+#else
 lookupSRV = lookupSRVHost
+#endif
 #endif
 
 lookupSRVHost :: SRV -> IO [HostPort]
@@ -66,17 +88,22 @@ lookupSRVHost (SRV srv)
 	| otherwise = return []
 
 parseSrvHost :: String -> [HostPort]
-parseSrvHost = map snd . reverse . sortBy cost . catMaybes . map parse . lines
+parseSrvHost = orderHosts . catMaybes . map parse . lines
 	where
-		cost = compare `on` fst
 		parse l = case words l of
-			[_, _, _, _, priority, weight, sport, hostname] -> do
-				let v = readish sport :: Maybe Int
+			[_, _, _, _, spriority, sweight, sport, hostname] -> do
+				let v = 
+					( readish sport :: Maybe Int
+					, readish spriority :: Maybe Int
+					, readish sweight :: Maybe Int
+					)
 				case v of
-					Nothing -> Nothing
-					Just port -> Just
+					(Just port, Just priority, Just weight) -> Just
 						( (priority, weight)
 						, (hostname, PortNumber $ fromIntegral port)
 						)
+					_ -> Nothing
 			_ -> Nothing
 
+orderHosts :: [(PriorityWeight, HostPort)] -> [HostPort]
+orderHosts = map snd . sortBy (compare `on` fst)

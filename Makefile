@@ -6,7 +6,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 # you can turn off some of these features.
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
@@ -142,7 +142,7 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg host \
+THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
 	sha1sum sha224sum sha256sum sha384sum sha512sum
 
 LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
