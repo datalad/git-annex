@@ -46,6 +46,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
 			void $ connectXMPP c $ \jid -> do
 				fulljid <- bindJID jid
 				liftIO $ debug thisThread ["XMPP connected", show fulljid]
+				putStanza $ gitAnnexPresence gitAnnexSignature
 				s <- getSession
 				_ <- liftIO $ forkIO $ void $ runXMPP s $
 					receivenotifications
@@ -62,10 +63,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
 
 		sendnotifications = forever $ do
 			us <- liftIO $ waitPush pushnotifier
-			let payload = [extendedAway, encodePushNotification us]
-			let notification = (emptyPresence PresenceAvailable)
-				{ presencePayloads = payload }
-			putStanza notification
+			putStanza $ gitAnnexPresence $ encodePushNotification us
 
 		receivenotifications = forever $ do
 			s <- getStanza

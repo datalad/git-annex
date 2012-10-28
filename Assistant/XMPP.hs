@@ -84,15 +84,22 @@ xmppCredsFile = do
 	dir <- fromRepo gitAnnexCredsDir
 	return $ dir </> "notify-xmpp"
 
-{- Marks the client as extended away. -}
-extendedAway :: Element
-extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
-	[NodeContent $ ContentText $ T.pack "xa"]
+{- A presence with a git-annex tag in it. -}
+gitAnnexPresence :: Element -> Presence
+gitAnnexPresence tag = (emptyPresence PresenceAvailable)
+	{ presencePayloads = [extendedAway, tag] }
+	where
+		extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
+			[NodeContent $ ContentText $ T.pack "xa"]
 
 {- Name of a git-annex tag, in our own XML namespace.
  - (Not using a namespace URL to avoid unnecessary bloat.) -}
 gitAnnexTagName :: Name
 gitAnnexTagName  = Name (T.pack "git-annex") (Just $ T.pack "git-annex") Nothing
+
+{- A git-annex tag, to let other clients know we're a git-annex client too. -}
+gitAnnexSignature :: Element
+gitAnnexSignature = Element gitAnnexTagName [] []
 
 pushAttr :: Name
 pushAttr = Name (T.pack "push") Nothing Nothing
