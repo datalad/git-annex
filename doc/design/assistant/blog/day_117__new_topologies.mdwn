@@ -5,7 +5,7 @@ Back in [[day_85__more_foundation_work]], I wrote:
 > sync, as long as it's connected (of course) and each connection is
 > bi-directional. [And each node is running the assistant.]
 
-After today's work, many more grap topologies can be kepy in sync -- the
+After today's work, many more graph topologies can be kept in sync -- the
 assistant now can keep repos in sync that are not directly connected, but
 must go through a central transfer point, which does not run the assistant
 at all. Major milestone!
