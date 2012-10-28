@@ -83,10 +83,12 @@ reconnectRemotes threadname st dstatus scanremotes pushnotifier rs = void $
  -}
 pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe PushNotifier -> Maybe FailedPushMap -> [Remote] -> IO Bool
 pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
-	(g, branch, u) <- runThreadState st $ (,,)
-		<$> gitRepo
-		<*> inRepo Git.Branch.current
-		<*> getUUID
+	(g, branch, u) <- runThreadState st $ do
+		Annex.Branch.commit "update"
+		(,,)
+			<$> gitRepo
+			<*> inRepo Git.Branch.current
+			<*> getUUID
 	go True branch g u remotes
 	where
 		go _ Nothing _ _ _ = return True -- no branch, so nothing to do
