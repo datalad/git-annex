@@ -4,16 +4,8 @@ who share a repository, that is stored in the [[cloud]].
 
 ### TODO
 
-* Nudge user to enable XMPP account at appropriate times, ie, after configuring
-  cloud remotes.
 * Prevent idle disconnection. Probably means sending or receiving pings,
   but would prefer to avoid eg pinging every 60 seconds as some clients do.
-* After pulling from a remote, may need to scan for transfers, which
-  could involve other remotes (ie, S3). Since the remote client is not able to
-  talk to us directly, it won't be able to upload any new files to us.
-  Need a fast way to find new files, and get them transferring. The expensive
-  transfer scan may be needed to get fully in sync, but is too expensive to
-  run every time this happens. Send transfer notifications using XMPP?
 * XMPP pairing
 
 ## design goals
