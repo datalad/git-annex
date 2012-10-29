@@ -7,73 +7,33 @@
 
 module Assistant.Changes where
 
-import Common.Annex
-import Types.KeySource
+import Assistant.Common
+import Assistant.Types.Changes
 import Utility.TSet
 
 import Data.Time.Clock
 
-data ChangeType = AddChange | LinkChange | RmChange | RmDirChange
-	deriving (Show, Eq)
-
-type ChangeChan = TSet Change
-
-data Change
-	= Change 
-		{ changeTime :: UTCTime
-		, changeFile :: FilePath
-		, changeType :: ChangeType
-		}
-	| PendingAddChange
-		{ changeTime ::UTCTime
-		, changeFile :: FilePath
-		}
-	| InProcessAddChange
-		{ changeTime ::UTCTime
-		, keySource :: KeySource
-		}
-	deriving (Show)
-
-newChangeChan :: IO ChangeChan
-newChangeChan = newTSet
-
 {- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> ChangeType -> IO (Maybe Change)
-madeChange f t = Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
+madeChange :: FilePath -> ChangeType -> Assistant (Maybe Change)
+madeChange f t = Just <$> (Change <$> liftIO getCurrentTime <*> pure f <*> pure t)
 
-noChange :: IO (Maybe Change)
+noChange :: Assistant (Maybe Change)
 noChange = return Nothing
 
 {- Indicates an add needs to be done, but has not started yet. -}
-pendingAddChange :: FilePath -> IO (Maybe Change)
-pendingAddChange f = Just <$> (PendingAddChange <$> getCurrentTime <*> pure f)
-
-isPendingAddChange :: Change -> Bool
-isPendingAddChange (PendingAddChange {}) = True
-isPendingAddChange _ = False
-
-isInProcessAddChange :: Change -> Bool
-isInProcessAddChange (InProcessAddChange {}) = True
-isInProcessAddChange _ = False
-
-finishedChange :: Change -> Change
-finishedChange c@(InProcessAddChange { keySource = ks }) = Change
-	{ changeTime = changeTime c
-	, changeFile = keyFilename ks
-	, changeType = AddChange
-	}
-finishedChange c = c
+pendingAddChange :: FilePath -> Assistant (Maybe Change)
+pendingAddChange f = Just <$> (PendingAddChange <$> liftIO getCurrentTime <*> pure f)
 
 {- Gets all unhandled changes.
  - Blocks until at least one change is made. -}
-getChanges :: ChangeChan -> IO [Change]
-getChanges = getTSet
+getChanges :: Assistant [Change]
+getChanges = getTSet <<~ changeChan
 
 {- Puts unhandled changes back into the channel.
  - Note: Original order is not preserved. -}
-refillChanges :: ChangeChan -> [Change] -> IO ()
-refillChanges = putTSet
+refillChanges :: [Change] -> Assistant ()
+refillChanges cs = flip putTSet cs <<~ changeChan
 
 {- Records a change in the channel. -}
-recordChange :: ChangeChan -> Change -> IO ()
-recordChange = putTSet1
+recordChange :: Change -> Assistant ()
+recordChange c = flip putTSet1 c <<~ changeChan

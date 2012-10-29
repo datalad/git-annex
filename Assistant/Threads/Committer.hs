@@ -11,6 +11,7 @@ module Assistant.Threads.Committer where
 
 import Assistant.Common
 import Assistant.Changes
+import Assistant.Types.Changes
 import Assistant.Commits
 import Assistant.Alert
 import Assistant.Threads.Watcher
@@ -45,7 +46,7 @@ commitThread = NamedThread "Committer" $ do
 		-- We already waited one second as a simple rate limiter.
 		-- Next, wait until at least one change is available for
 		-- processing.
-		changes <- getChanges <<~ changeChan
+		changes <- getChanges
 		-- Now see if now's a good time to commit.
 		time <- liftIO getCurrentTime
 		if shouldCommit time changes
@@ -67,7 +68,7 @@ commitThread = NamedThread "Committer" $ do
 	refill [] = noop
 	refill cs = do
 		debug ["delaying commit of", show (length cs), "changes"]
-		flip refillChanges cs <<~ changeChan
+		refillChanges cs
 
 commitStaged :: Annex Bool
 commitStaged = do
@@ -148,15 +149,14 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
 
 	unless (null postponed) $
-		flip refillChanges postponed <<~ changeChan
+		refillChanges postponed
 
 	returnWhen (null toadd) $ do
 		added <- catMaybes <$> forM toadd add
 		if DirWatcher.eventsCoalesce || null added
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds delayadd
-					=<< getChanges <<~ changeChan
+				r <- handleAdds delayadd =<< getChanges
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs

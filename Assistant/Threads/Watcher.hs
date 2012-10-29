@@ -17,6 +17,7 @@ module Assistant.Threads.Watcher (
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Changes
+import Assistant.Types.Changes
 import Assistant.TransferQueue
 import Assistant.Alert
 import Assistant.Drop
@@ -114,12 +115,12 @@ runHandler handler file filestatus = void $ do
 			-- Just in case the commit thread is not
 			-- flushing the queue fast enough.
 			liftAnnex $ Annex.Queue.flushWhenFull
-			flip recordChange change <<~ changeChan
+			recordChange change
 
 onAdd :: Handler
 onAdd file filestatus
-	| maybe False isRegularFile filestatus = liftIO $ pendingAddChange file
-	| otherwise = liftIO $ noChange
+	| maybe False isRegularFile filestatus = pendingAddChange file
+	| otherwise = noChange
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -160,7 +161,7 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 		| scanComplete daemonstatus = addlink link
 		| otherwise = case filestatus of
 			Just s
-				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> liftIO noChange
+				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
 			_ -> addlink link
 
 	{- For speed, tries to reuse the existing blob for symlink target. -}
@@ -176,7 +177,7 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 					sha <- inRepo $
 						Git.HashObject.hashObject BlobObject link
 					stageSymlink file sha
-		liftIO $ madeChange file LinkChange
+		madeChange file LinkChange
 
 	{- When a new link appears, or a link is changed, after the startup
 	 - scan, handle getting or dropping the key's content. -}
@@ -197,7 +198,7 @@ onDel file _ = do
 	liftAnnex $ 
 		Annex.Queue.addUpdateIndex =<<
 			inRepo (Git.UpdateIndex.unstageFile file)
-	liftIO $ madeChange file RmChange
+	madeChange file RmChange
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -211,7 +212,7 @@ onDelDir dir _ = do
 	debug ["directory deleted", dir]
 	liftAnnex $ Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
-	liftIO $ madeChange dir RmDirChange
+	madeChange dir RmDirChange
 
 {- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler
@@ -219,7 +220,7 @@ onErr msg _ = do
 	liftAnnex $ warning msg
 	dstatus <- getAssistant daemonStatusHandle
 	void $ liftIO $ addAlert dstatus $ warningAlert "watcher" msg
-	liftIO noChange
+	noChange
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. This avoids a race if git add is used, where the symlink is
