@@ -10,7 +10,7 @@ Code should make sense with any tab stop setting, but 8 space tabs are
 the default. With 8 space tabs, code should not exceed 80 characters
 per line. (With larger tabs, it may of course.)
 
-Use spaces for layout. For example, here spaces (indicated with `.`
+Use spaces for layout. For example, here spaces (indicated with `.`)
 are used after the initial tab to make the third test line up with
 the others.
 
