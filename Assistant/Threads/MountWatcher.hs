@@ -11,11 +11,8 @@
 module Assistant.Threads.MountWatcher where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
-import Assistant.ScanRemotes
 import Assistant.Sync
-import Assistant.Pushes
 import qualified Annex
 import qualified Git
 import Utility.ThreadScheduler
@@ -39,70 +36,70 @@ import qualified Control.Exception as E
 thisThread :: ThreadName
 thisThread = "MountWatcher"
 
-mountWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> NamedThread
-mountWatcherThread st handle scanremotes pushnotifier = thread $ liftIO $
+mountWatcherThread :: NamedThread
+mountWatcherThread = NamedThread "MountWatcher" $
 #if WITH_DBUS
-	dbusThread st handle scanremotes pushnotifier
+	dbusThread
 #else
-	pollingThread st handle scanremotes pushnotifier
+	pollingThread
 #endif
-	where
-		thread = NamedThread thisThread
 
 #if WITH_DBUS
 
-dbusThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> IO ()
-dbusThread st dstatus scanremotes pushnotifier =
-	E.catch (runClient getSessionAddress go) onerr
-	where
-		go client = ifM (checkMountMonitor client)
-			( do
-				{- Store the current mount points in an mvar,
-				 - to be compared later. We could in theory
-				 - work out the mount point from the dbus
-				 - message, but this is easier. -}
-				mvar <- newMVar =<< currentMountPoints
-				forM_ mountChanged $ \matcher ->
-					listen client matcher $ \_event -> do
-						nowmounted <- currentMountPoints
-						wasmounted <- swapMVar mvar nowmounted
-						handleMounts st dstatus scanremotes pushnotifier wasmounted nowmounted
-			, do
-				runThreadState st $
-					warning "No known volume monitor available through dbus; falling back to mtab polling"
-				pollinstead
-			)
-		onerr :: E.SomeException -> IO ()
-		onerr e = do
-			{- If the session dbus fails, the user probably
-			 - logged out of their desktop. Even if they log
-			 - back in, we won't have access to the dbus
-			 - session key, so polling is the best that can be
-			 - done in this situation. -}
-			runThreadState st $
-				warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
-			pollinstead
-		pollinstead = pollingThread st dstatus scanremotes pushnotifier
+dbusThread :: Assistant ()
+dbusThread = do
+	runclient <- asIO go
+	r <- liftIO $ E.try $ runClient getSessionAddress runclient
+	either onerr (const noop) r
+  where
+	go client = ifM (checkMountMonitor client)
+		( do
+			{- Store the current mount points in an MVar, to be
+			 - compared later. We could in theory work out the
+			 - mount point from the dbus message, but this is
+			 - easier. -}
+			mvar <- liftIO $ newMVar =<< currentMountPoints
+			handleevent <- asIO $ \_event -> do
+				nowmounted <- liftIO $ currentMountPoints
+				wasmounted <- liftIO $ swapMVar mvar nowmounted
+				handleMounts wasmounted nowmounted
+			liftIO $ forM_ mountChanged $ \matcher ->
+				listen client matcher handleevent
+		, do
+			liftAnnex $
+				warning "No known volume monitor available through dbus; falling back to mtab polling"
+			pollingThread
+		)
+	onerr :: E.SomeException -> Assistant ()
+	onerr e = do
+		{- If the session dbus fails, the user probably
+		 - logged out of their desktop. Even if they log
+		 - back in, we won't have access to the dbus
+		 - session key, so polling is the best that can be
+		 - done in this situation. -}
+		liftAnnex $
+			warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
+		pollingThread
 
 {- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor mounts. If not, will attempt to start one. -}
-checkMountMonitor :: Client -> IO Bool
+checkMountMonitor :: Client -> Assistant Bool
 checkMountMonitor client = do
 	running <- filter (`elem` usableservices)
-		<$> listServiceNames client
+		<$> liftIO (listServiceNames client)
 	case running of
-		[] -> startOneService client startableservices
+		[] -> liftIO $ startOneService client startableservices
 		(service:_) -> do
-			brokendebug thisThread [ "Using running DBUS service"
+			debug [ "Using running DBUS service"
 				, service
 				, "to monitor mount events."
 				]
 			return True
-	where
-		startableservices = [gvfs]
-		usableservices = startableservices ++ [kde]
-		gvfs = "org.gtk.Private.GduVolumeMonitor"
-		kde = "org.kde.DeviceNotifications"
+  where
+	startableservices = [gvfs]
+	usableservices = startableservices ++ [kde]
+	gvfs = "org.gtk.Private.GduVolumeMonitor"
+	kde = "org.kde.DeviceNotifications"
 
 startOneService :: Client -> [ServiceName] -> IO Bool
 startOneService _ [] = return False
@@ -144,26 +141,29 @@ mountChanged = [gvfs True, gvfs False, kde, kdefallback]
 
 #endif
 
-pollingThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> IO ()
-pollingThread st dstatus scanremotes pushnotifier = go =<< currentMountPoints
+pollingThread :: Assistant ()
+pollingThread = go =<< liftIO currentMountPoints
 	where
 		go wasmounted = do
-			threadDelaySeconds (Seconds 10)
-			nowmounted <- currentMountPoints
-			handleMounts st dstatus scanremotes pushnotifier wasmounted nowmounted
+			liftIO $ threadDelaySeconds (Seconds 10)
+			nowmounted <- liftIO currentMountPoints
+			handleMounts wasmounted nowmounted
 			go nowmounted
 
-handleMounts :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> MountPoints -> MountPoints -> IO ()
-handleMounts st dstatus scanremotes pushnotifier wasmounted nowmounted =
-	mapM_ (handleMount st dstatus scanremotes pushnotifier . mnt_dir) $
+handleMounts :: MountPoints -> MountPoints -> Assistant ()
+handleMounts wasmounted nowmounted =
+	mapM_ (handleMount . mnt_dir) $
 		S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> FilePath -> IO ()
-handleMount st dstatus scanremotes pushnotifier dir = do
-	brokendebug thisThread ["detected mount of", dir]
-	reconnectRemotes thisThread st dstatus scanremotes (Just pushnotifier)
-		=<< filter (Git.repoIsLocal . Remote.repo)
-			<$> remotesUnder st dstatus dir
+handleMount :: FilePath -> Assistant ()
+handleMount dir = do
+	debug ["detected mount of", dir]
+	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
+	d <- getAssistant id
+	liftIO $ 
+		reconnectRemotes (threadName d) (threadState d)
+			(daemonStatusHandle d) (scanRemoteMap d)
+			(Just $ pushNotifier d) rs
 
 {- Finds remotes located underneath the mount point.
  -
@@ -173,15 +173,15 @@ handleMount st dstatus scanremotes pushnotifier dir = do
  - at startup time, or may have changed (it could even be a different
  - repository at the same remote location..)
  -}
-remotesUnder :: ThreadState -> DaemonStatusHandle -> FilePath -> IO [Remote]
-remotesUnder st dstatus dir = runThreadState st $ do
-	repotop <- fromRepo Git.repoPath
-	rs <- remoteList
-	pairs <- mapM (checkremote repotop) rs
+remotesUnder :: FilePath -> Assistant [Remote]
+remotesUnder dir = do
+	repotop <- liftAnnex $ fromRepo Git.repoPath
+	rs <- liftAnnex remoteList
+	pairs <- liftAnnex $ mapM (checkremote repotop) rs
 	let (waschanged, rs') = unzip pairs
 	when (any id waschanged) $ do
-		Annex.changeState $ \s -> s { Annex.remotes = rs' }
-		updateSyncRemotes dstatus
+		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = rs' }
+		liftAnnex . updateSyncRemotes =<< getAssistant daemonStatusHandle
 	return $ map snd $ filter fst pairs
 	where
 		checkremote repotop r = case Remote.localpath r of
