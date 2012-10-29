@@ -83,3 +83,10 @@ name in a let clause, this is sometimes used:
 
 	foo = let x = 42
 		in x + (x-1) + x
+
+-----
+
+If you feel that this coding style leads to excessive amounts of horizontal
+or vertical whitespace around your code, making it hard to fit enough of it
+on the screen, consider finding a better abstraction, so the code that
+does fit on the screen is easily understandable. ;)
