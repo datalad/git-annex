@@ -11,7 +11,7 @@ builds a standalone git-annex.app of the git-annex assistant.
 
 <pre>
 sudo brew update
-sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre
+sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre adns libgsasl
 cabal update
 cabal install git-annex --bindir=$HOME/bin
 </pre>
