@@ -42,10 +42,7 @@ finishedPairing msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			""
-	st <- getAssistant threadState
-	dstatus <- getAssistant daemonStatusHandle
-	scanremotes <- getAssistant scanRemoteMap
-	void $ liftIO $ makeSshRemote st dstatus scanremotes False sshdata
+	void $ makeSshRemote False sshdata
 
 {- Mostly a straightforward conversion.  Except:
  -  * Determine the best hostname to use to contact the host.

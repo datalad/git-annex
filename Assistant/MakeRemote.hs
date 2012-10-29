@@ -8,9 +8,6 @@
 module Assistant.MakeRemote where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
 import Assistant.Ssh
 import Assistant.Sync
 import qualified Types.Remote as R
@@ -28,11 +25,11 @@ import qualified Data.Map as M
 import Data.Char
 
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
-makeSshRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Bool -> SshData -> IO Remote
-makeSshRemote st dstatus scanremotes forcersync sshdata = do
-	r <- runThreadState st $
+makeSshRemote :: Bool -> SshData -> Assistant Remote
+makeSshRemote forcersync sshdata = do
+	r <- liftAnnex $
 		addRemote $ maker (sshRepoName sshdata) sshurl
-	syncNewRemote st dstatus scanremotes r
+	syncNewRemote r
 	return r
 	where
 		rsync = forcersync || rsyncOnly sshdata

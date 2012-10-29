@@ -123,11 +123,7 @@ listenWicdConnections client callback =
 #endif
 
 handleConnection :: Assistant ()
-handleConnection = do
-	d <- getAssistant id
-	liftIO . reconnectRemotes (threadName d) (threadState d)
-		(daemonStatusHandle d) (scanRemoteMap d) (Just $ pushNotifier d)
-		=<< networkRemotes
+handleConnection = reconnectRemotes True =<< networkRemotes
 
 {- Finds network remotes. -}
 networkRemotes :: Assistant [Remote]

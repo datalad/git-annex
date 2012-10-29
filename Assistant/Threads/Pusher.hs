@@ -32,11 +32,9 @@ pushRetryThread = NamedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
 		now <- liftIO $ getCurrentTime
-		st <- getAssistant threadState
-		pushnotifier <- getAssistant pushNotifier
 		dstatus <- getAssistant daemonStatusHandle
-		void $ liftIO $ alertWhile dstatus (pushRetryAlert topush) $
-			pushToRemotes thisThread now st (Just pushnotifier) (Just pushmap) topush
+		void $ alertWhile dstatus (pushRetryAlert topush) <~>
+			pushToRemotes now True topush
 	where
 		halfhour = 1800
 
@@ -52,12 +50,9 @@ pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 			remotes <- filter pushable . syncRemotes <$> daemonStatus
 			unless (null remotes) $ do
 				now <- liftIO $ getCurrentTime
-				st <- getAssistant threadState
-				pushmap <- getAssistant failedPushMap
-				pushnotifier <- getAssistant pushNotifier		
 				dstatus <- getAssistant daemonStatusHandle
-				void $ liftIO $ alertWhile dstatus (pushAlert remotes) $
-					pushToRemotes thisThread now st (Just pushnotifier) (Just pushmap) remotes
+				void $ alertWhile dstatus (pushAlert remotes) <~>
+					pushToRemotes now True remotes
 		else do
 			debug ["delaying push of", show (length commits), "commits"]
 			flip refillCommits commits <<~ commitChan

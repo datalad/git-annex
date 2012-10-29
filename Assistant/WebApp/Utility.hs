@@ -61,13 +61,7 @@ changeSyncFlag r enabled = runAnnex undefined $ do
 
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
-syncRemote remote = do
-	d <- getAssistantY id
-	liftIO $ syncNewRemote
-		(threadState d)
-		(daemonStatusHandle d)
-		(scanRemoteMap d)
-		remote
+syncRemote = runAssistantY . syncNewRemote
 
 pauseTransfer :: Transfer -> Handler ()
 pauseTransfer = cancelTransfer True

@@ -36,25 +36,29 @@ import Control.Concurrent
  - the remotes have diverged from the local git-annex branch. Otherwise,
  - it's sufficient to requeue failed transfers.
  -}
-reconnectRemotes :: ThreadName -> ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Maybe PushNotifier -> [Remote] -> IO ()
-reconnectRemotes _ _ _ _ _ [] = noop
-reconnectRemotes threadname st dstatus scanremotes pushnotifier rs = void $
-	alertWhile dstatus (syncAlert rs) $ do
+reconnectRemotes :: Bool -> [Remote] -> Assistant ()
+reconnectRemotes _ [] = noop
+reconnectRemotes notifypushes rs = void $ do
+	dstatus <- getAssistant daemonStatusHandle
+	alertWhile dstatus (syncAlert rs) <~> do
 		(ok, diverged) <- sync
-			=<< runThreadState st (inRepo Git.Branch.current)
-		addScanRemotes scanremotes diverged rs
+			=<< liftAnnex (inRepo Git.Branch.current)
+		scanremotes <- getAssistant scanRemoteMap
+		liftIO $ addScanRemotes scanremotes diverged rs
 		return ok
 	where
 		(gitremotes, _specialremotes) =
 			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
-			diverged <- snd <$> manualPull st (Just branch) gitremotes
-			now <- getCurrentTime
-			ok <- pushToRemotes threadname now st pushnotifier Nothing gitremotes
+			st <- getAssistant threadState
+			diverged <- liftIO $ snd <$> manualPull st (Just branch) gitremotes
+			now <- liftIO getCurrentTime
+			ok <- pushToRemotes now notifypushes gitremotes
 			return (ok, diverged)
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			diverged <- snd <$> manualPull st Nothing gitremotes
+			st <- getAssistant threadState
+			diverged <- liftIO $ snd <$> manualPull st Nothing gitremotes
 			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -81,72 +85,68 @@ reconnectRemotes threadname st dstatus scanremotes pushnotifier rs = void $
  - them. While ugly, those branches are reserved for pushing by us, and
  - so our pushes will succeed.
  -}
-pushToRemotes :: ThreadName -> UTCTime -> ThreadState -> Maybe PushNotifier -> Maybe FailedPushMap -> [Remote] -> IO Bool
-pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
-	(g, branch, u) <- runThreadState st $ do
+pushToRemotes :: UTCTime -> Bool -> [Remote] -> Assistant Bool
+pushToRemotes now notifypushes remotes = do
+	(g, branch, u) <- liftAnnex $ do
 		Annex.Branch.commit "update"
 		(,,)
 			<$> gitRepo
 			<*> inRepo Git.Branch.current
 			<*> getUUID
 	go True branch g u remotes
-	where
-		go _ Nothing _ _ _ = return True -- no branch, so nothing to do
-		go shouldretry (Just branch) g u rs =  do
-			brokendebug threadname
-				[ "pushing to"
-				, show rs
+  where
+	go _ Nothing _ _ _ = return True -- no branch, so nothing to do
+	go shouldretry (Just branch) g u rs =  do
+		debug ["pushing to", show rs]
+		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+		(succeeded, failed) <- liftIO $ inParallel (push g branch) rs
+		updatemap succeeded []
+		if null failed
+			then do
+				when notifypushes $
+					notifyPush (map Remote.uuid succeeded) <<~ pushNotifier
+				return True
+			else if shouldretry
+				then retry branch g u failed
+				else fallback branch g u failed
+
+	updatemap succeeded failed = do
+		pushmap <- getAssistant failedPushMap
+		liftIO $ changeFailedPushMap pushmap $ \m ->
+			M.union (makemap failed) $
+				M.difference m (makemap succeeded)
+	makemap l = M.fromList $ zip l (repeat now)
+
+	retry branch g u rs = do
+		debug ["trying manual pull to resolve failed pushes"]
+		st <- getAssistant threadState
+		void $ liftIO $ manualPull st (Just branch) rs
+		go False (Just branch) g u rs
+
+	fallback branch g u rs = do
+		debug ["fallback pushing to", show rs]
+		(succeeded, failed) <- liftIO $
+			inParallel (pushfallback g u branch) rs
+		updatemap succeeded failed
+		when (notifypushes && (not $ null succeeded)) $
+			notifyPush (map Remote.uuid succeeded) <<~ pushNotifier
+		return $ null failed
+		
+	push g branch remote = Command.Sync.pushBranch remote branch g
+	pushfallback g u branch remote = Git.Command.runBool "push"
+		[ Param $ Remote.name remote
+		, Param $ refspec Annex.Branch.name
+		, Param $ refspec branch
+		] g
+		where
+			{- Push to refs/synced/uuid/branch; this
+			 - avoids cluttering up the branch display. -}
+			refspec b = concat
+				[ s
+				, ":"
+				, "refs/synced/" ++ fromUUID u ++ "/" ++ s
 				]
-			Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-			(succeeded, failed) <- inParallel (push g branch) rs
-			updatemap succeeded []
-			let ok = null failed
-			if ok
-				then do
-					maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
-					return ok
-				else if shouldretry
-					then retry branch g u failed
-					else fallback branch g u failed
-
-		updatemap succeeded failed = case mpushmap of
-			Nothing -> noop
-			Just pushmap -> changeFailedPushMap pushmap $ \m ->
-				M.union (makemap failed) $
-					M.difference m (makemap succeeded)
-		makemap l = M.fromList $ zip l (repeat now)
-
-		retry branch g u rs = do
-			brokendebug threadname [ "trying manual pull to resolve failed pushes" ]
-			void $ manualPull st (Just branch) rs
-			go False (Just branch) g u rs
-
-		fallback branch g u rs = do
-			brokendebug threadname
-				[ "fallback pushing to"
-				, show rs
-				]
-			(succeeded, failed) <- inParallel (pushfallback g u branch) rs
-			updatemap succeeded failed
-			unless (null succeeded) $
-				maybe noop (notifyPush $ map Remote.uuid succeeded) mpushnotifier
-			return $ null failed
-			
-		push g branch remote = Command.Sync.pushBranch remote branch g
-		pushfallback g u branch remote = Git.Command.runBool "push"
-			[ Param $ Remote.name remote
-			, Param $ refspec Annex.Branch.name
-			, Param $ refspec branch
-			] g
-			where
-				{- Push to refs/synced/uuid/branch; this
-				 - avoids cluttering up the branch display. -}
-				refspec b = concat
-					[ s
-					, ":"
-					, "refs/synced/" ++ fromUUID u ++ "/" ++ s
-					]
-					where s = show $ Git.Ref.base b
+				where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
 manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO ([Bool], Bool)
@@ -160,7 +160,8 @@ manualPull st currentbranch remotes = do
 	return (results, haddiverged)
 
 {- Start syncing a newly added remote, using a background thread. -}
-syncNewRemote :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> Remote -> IO ()
-syncNewRemote st dstatus scanremotes remote = do
-	runThreadState st $ updateSyncRemotes dstatus
-	void $ forkIO $ reconnectRemotes "SyncRemote" st dstatus scanremotes Nothing [remote]
+syncNewRemote :: Remote -> Assistant ()
+syncNewRemote remote = do
+	liftAnnex . updateSyncRemotes =<< getAssistant daemonStatusHandle
+	thread <- asIO2 reconnectRemotes
+	void $ liftIO $ forkIO $ thread False [remote]

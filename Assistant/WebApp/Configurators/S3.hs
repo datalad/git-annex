@@ -124,5 +124,5 @@ makeS3Remote (S3Creds ak sk) name setup config = do
 		makeSpecialRemote name S3.remote config
 		return remotename
 	setup r
-	liftIO $ syncNewRemote st (daemonStatusHandle d) (scanRemoteMap d) r
+	runAssistantY $ syncNewRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
