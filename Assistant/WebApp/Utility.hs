@@ -129,14 +129,12 @@ startTransfer t = do
 					(\i -> i { transferPaused = False })
 					dstatus
 				throwTo tid ResumeTransfer
-		start info = do
-			st <- getAssistantY threadState
-			dstatus <- getAssistantY daemonStatusHandle
-			slots <- getAssistantY transferSlots
-			commitchan <- getAssistantY commitChan
-			liftIO $ inImmediateTransferSlot dstatus slots $ do
-				program <- readProgramFile
-				Transferrer.startTransfer st dstatus commitchan program t info
+		start info = runAssistantY $ do
+			program <- liftIO readProgramFile
+			dstatus <- getAssistant daemonStatusHandle
+			slots <- getAssistant transferSlots
+			inImmediateTransferSlot dstatus slots <~>
+				Transferrer.startTransfer program t info
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> getDaemonStatusY

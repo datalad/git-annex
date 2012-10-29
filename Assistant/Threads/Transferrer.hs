@@ -8,7 +8,6 @@
 module Assistant.Threads.Transferrer where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.TransferSlots
@@ -23,75 +22,78 @@ import Locations.UserConfig
 
 import System.Process (create_group)
 
-thisThread :: ThreadName
-thisThread = "Transferrer"
-
 {- For now only one transfer is run at a time. -}
 maxTransfers :: Int
 maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
-transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> CommitChan -> NamedThread
-transfererThread st dstatus transferqueue slots commitchan = thread $ liftIO $ go =<< readProgramFile
-	where
-		thread = NamedThread thisThread
-		go program = forever $ inTransferSlot dstatus slots $
-			maybe (return Nothing) (uncurry $ startTransfer st dstatus commitchan program)
-				=<< getNextTransfer transferqueue dstatus notrunning
-		{- Skip transfers that are already running. -}
-		notrunning = isNothing . startedTime
+transfererThread :: NamedThread
+transfererThread = NamedThread "Transferr" $ do
+	program <- liftIO readProgramFile
+	transferqueue <- getAssistant transferQueue
+	dstatus <- getAssistant daemonStatusHandle
+	slots <- getAssistant transferSlots
+	starter <- asIO2 $ startTransfer program
+	liftIO $ forever $ inTransferSlot dstatus slots $
+		maybe (return Nothing) (uncurry starter)
+			=<< getNextTransfer transferqueue dstatus notrunning
+  where
+	{- Skip transfers that are already running. -}
+	notrunning = isNothing . startedTime
 
 {- By the time this is called, the daemonstatus's transfer map should
  - already have been updated to include the transfer. -}
-startTransfer :: ThreadState -> DaemonStatusHandle -> CommitChan -> FilePath -> Transfer -> TransferInfo -> TransferGenerator
-startTransfer st dstatus commitchan program t info = case (transferRemote info, associatedFile info) of
-	(Just remote, Just file) -> ifM (runThreadState st $ shouldTransfer t info)
+startTransfer :: FilePath -> Transfer -> TransferInfo -> Assistant (Maybe (Transfer, TransferInfo, IO ()))
+startTransfer program t info = case (transferRemote info, associatedFile info) of
+	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
 		( do
-			brokendebug thisThread [ "Transferring:" , show t ]
-			notifyTransfer dstatus
-			return $ Just (t, info, transferprocess remote file)
+			debug [ "Transferring:" , show t ]
+			notifyTransfer <<~ daemonStatusHandle
+			tp <- asIO2 transferprocess
+			return $ Just (t, info, tp remote file)
 		, do
-			brokendebug thisThread [ "Skipping unnecessary transfer:" , show t ]
-			void $ removeTransfer dstatus t
+			debug [ "Skipping unnecessary transfer:" , show t ]
+			void $ flip removeTransfer t <<~ daemonStatusHandle
 			return Nothing
 		)
 	_ -> return Nothing
-	where
-		direction = transferDirection t
-		isdownload = direction == Download
+  where
+	direction = transferDirection t
+	isdownload = direction == Download
 
-		transferprocess remote file = void $ do
-			(_, _, _, pid)
-				<- createProcess (proc program $ toCommand params)
-					{ create_group = True }
-			{- Alerts are only shown for successful transfers.
-			 - Transfers can temporarily fail for many reasons,
-			 - so there's no point in bothering the user about
-			 - those. The assistant should recover.
-			 -
-			 - Also, after a successful transfer, the location
-			 - log has changed. Indicate that a commit has been
-			 - made, in order to queue a push of the git-annex
-			 - branch out to remotes that did not participate
-			 - in the transfer.
-			 -}
-			whenM ((==) ExitSuccess <$> waitForProcess pid) $ do
-				void $ addAlert dstatus $
-					makeAlertFiller True $
-						transferFileAlert direction True file
-				recordCommit commitchan
-			where
-				params =
-					[ Param "transferkey"
-					, Param "--quiet"
-					, Param $ key2file $ transferKey t
-					, Param $ if isdownload
-						then "--from"
-						else "--to"
-					, Param $ Remote.name remote
-					, Param "--file"
-					, File file
-					]
+	transferprocess remote file = void $ do
+		(_, _, _, pid)
+			<- liftIO $ createProcess (proc program $ toCommand params)
+				{ create_group = True }
+		{- Alerts are only shown for successful transfers.
+		 - Transfers can temporarily fail for many reasons,
+		 - so there's no point in bothering the user about
+		 - those. The assistant should recover.
+		 -
+		 - Also, after a successful transfer, the location
+		 - log has changed. Indicate that a commit has been
+		 - made, in order to queue a push of the git-annex
+		 - branch out to remotes that did not participate
+		 - in the transfer.
+		 -}
+		whenM (liftIO $ (==) ExitSuccess <$> waitForProcess pid) $ do
+			dstatus <- getAssistant daemonStatusHandle
+			liftIO $ void $ addAlert dstatus $
+				makeAlertFiller True $
+					transferFileAlert direction True file
+			recordCommit <<~ commitChan
+	  where
+		params =
+			[ Param "transferkey"
+			, Param "--quiet"
+			, Param $ key2file $ transferKey t
+			, Param $ if isdownload
+				then "--from"
+				else "--to"
+			, Param $ Remote.name remote
+			, Param "--file"
+			, File file
+			]
 
 {- Checks if the file to download is already present, or the remote
  - being uploaded to isn't known to have the file. -}

@@ -178,13 +178,6 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
   where
 	go = do
 		d <- getAssistant id
-		st <- getAssistant threadState
-		dstatus <- getAssistant daemonStatusHandle
-		commitchan <- getAssistant commitChan
-		transferqueue <- getAssistant transferQueue
-		transferslots <- getAssistant transferSlots
-		scanremotes <- getAssistant scanRemoteMap
-		pushnotifier <- getAssistant pushNotifier
 #ifdef WITH_WEBAPP
 		urlrenderer <- liftIO newUrlRenderer
 #endif
@@ -193,7 +186,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 #ifdef WITH_WEBAPP
 			, assist $ webAppThread d urlrenderer False Nothing webappwaiter
 #ifdef WITH_PAIRING
-			, assist $ pairListenerThread st dstatus scanremotes urlrenderer
+			, assist $ pairListenerThread urlrenderer
 #endif
 #endif
 			, assist $ pushThread
@@ -201,7 +194,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ mergeThread
 			, assist $ transferWatcherThread
 			, assist $ transferPollerThread
-			, assist $ transfererThread st dstatus transferqueue transferslots commitchan
+			, assist $ transfererThread
 			, assist $ daemonStatusThread
 			, assist $ sanityCheckerThread
 			, assist $ mountWatcherThread

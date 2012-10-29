@@ -87,8 +87,8 @@ startSending dstatus pip stage sender = void $ forkIO $ do
 	where
 		stopold = maybe noop killThread . inProgressThreadId
 
-stopSending :: DaemonStatusHandle ->  PairingInProgress -> IO ()
-stopSending dstatus pip = do
+stopSending :: PairingInProgress -> DaemonStatusHandle -> IO ()
+stopSending pip dstatus = do
 	maybe noop killThread $ inProgressThreadId pip
 	modifyDaemonStatus_ dstatus $ \s -> s { pairingInProgress = Nothing }
 

@@ -8,9 +8,6 @@
 module Assistant.Pairing.MakeRemote where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
 import Assistant.Ssh
 import Assistant.Pairing
 import Assistant.Pairing.Network
@@ -31,13 +28,12 @@ setupAuthorizedKeys msg = do
 
 {- When pairing is complete, this is used to set up the remote for the host
  - we paired with. -}
-finishedPairing :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PairMsg -> SshKeyPair -> IO ()
-finishedPairing st dstatus scanremotes msg keypair = do
-	sshdata <- setupSshKeyPair keypair =<< pairMsgToSshData msg
-	{- Ensure that we know
-	 - the ssh host key for the host we paired with.
+finishedPairing :: PairMsg -> SshKeyPair -> Assistant ()
+finishedPairing msg keypair = do
+	sshdata <- liftIO $ setupSshKeyPair keypair =<< pairMsgToSshData msg
+	{- Ensure that we know the ssh host key for the host we paired with.
 	 - If we don't, ssh over to get it. -}
-	unlessM (knownHost $ sshHostName sshdata) $
+	liftIO $ unlessM (knownHost $ sshHostName sshdata) $
 		void $ sshTranscript
 			[ sshOpt "StrictHostKeyChecking" "no"
 			, sshOpt "NumberOfPasswordPrompts" "0"
@@ -46,7 +42,10 @@ finishedPairing st dstatus scanremotes msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			""
-	void $ makeSshRemote st dstatus scanremotes False sshdata
+	st <- getAssistant threadState
+	dstatus <- getAssistant daemonStatusHandle
+	scanremotes <- getAssistant scanRemoteMap
+	void $ liftIO $ makeSshRemote st dstatus scanremotes False sshdata
 
 {- Mostly a straightforward conversion.  Except:
  -  * Determine the best hostname to use to contact the host.
