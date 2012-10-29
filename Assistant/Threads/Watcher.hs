@@ -159,10 +159,10 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 	ensurestaged link daemonstatus
 		| scanComplete daemonstatus = addlink link
 		| otherwise = case filestatus of
-			Just s | changedrecently s -> liftIO noChange
+			Just s | not (changedrecently s) -> liftIO noChange
 			_ -> addlink link
 	  where
-		changedrecently s = not $
+		changedrecently s = 
 			afterLastDaemonRun (statusChangeTime s) daemonstatus
 
 	{- For speed, tries to reuse the existing blob for symlink target. -}

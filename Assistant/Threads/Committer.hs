@@ -13,7 +13,6 @@ import Assistant.Common
 import Assistant.Changes
 import Assistant.Commits
 import Assistant.Alert
-import Assistant.ThreadedMonad
 import Assistant.Threads.Watcher
 import Assistant.TransferQueue
 import Assistant.DaemonStatus
@@ -37,48 +36,40 @@ import Data.Tuple.Utils
 import qualified Data.Set as S
 import Data.Either
 
-thisThread :: ThreadName
-thisThread = "Committer"
-
 {- This thread makes git commits at appropriate times. -}
-commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> NamedThread
-commitThread st changechan commitchan transferqueue dstatus = thread $ liftIO $ do
-	delayadd <- runThreadState st $
+commitThread :: NamedThread
+commitThread = NamedThread "Committer" $ do
+	delayadd <- liftAnnex $
 		maybe delayaddDefault (Just . Seconds) . readish
 			<$> getConfig (annexConfig "delayadd") "" 
-	runEvery (Seconds 1) $ do
+	runEvery (Seconds 1) <~> do
 		-- We already waited one second as a simple rate limiter.
 		-- Next, wait until at least one change is available for
 		-- processing.
-		changes <- getChanges changechan
+		changes <- getChanges <<~ changeChan
 		-- Now see if now's a good time to commit.
-		time <- getCurrentTime
+		time <- liftIO getCurrentTime
 		if shouldCommit time changes
 			then do
-				readychanges <- handleAdds delayadd st changechan transferqueue dstatus changes
+				readychanges <- handleAdds delayadd changes
 				if shouldCommit time readychanges
 					then do
-						brokendebug thisThread
+						debug
 							[ "committing"
 							, show (length readychanges)
 							, "changes"
 							]
-						void $ alertWhile dstatus commitAlert $
-							runThreadState st commitStaged
-						recordCommit commitchan
+						dstatus <- getAssistant daemonStatusHandle
+						void $ alertWhile dstatus commitAlert <~>
+							liftAnnex commitStaged
+						recordCommit <<~ commitChan
 					else refill readychanges
 			else refill changes
-	where
-		thread = NamedThread thisThread
-		refill [] = noop
-		refill cs = do
-			brokendebug thisThread
-				[ "delaying commit of"
-				, show (length cs)
-				, "changes"
-				]
-			refillChanges changechan cs
-			
+  where
+	refill [] = noop
+	refill cs = do
+		debug ["delaying commit of", show (length cs), "changes"]
+		flip refillChanges cs <<~ changeChan
 
 commitStaged :: Annex Bool
 commitStaged = do
@@ -99,12 +90,12 @@ commitStaged = do
 			 - each other out, etc. Git returns nonzero on those,
 			 - so don't propigate out commit failures. -}
 			return True
-	where
-		nomessage ps
-			| Git.Version.older "1.7.2" = Param "-m"
-				: Param "autocommit" : ps
-			| otherwise = Param "--allow-empty-message" 
-				: Param "-m" : Param "" : ps
+  where
+	nomessage ps
+		| Git.Version.older "1.7.2" = Param "-m"
+			: Param "autocommit" : ps
+		| otherwise = Param "--allow-empty-message" 
+			: Param "-m" : Param "" : ps
 
 {- Decide if now is a good time to make a commit.
  - Note that the list of change times has an undefined order.
@@ -118,9 +109,9 @@ shouldCommit now changes
 	| len > 10000 = True -- avoid bloating queue too much
 	| length (filter thisSecond changes) < 10 = True
 	| otherwise = False -- batch activity
-	where
-		len = length changes
-		thisSecond c = now `diffUTCTime` changeTime c <= 1
+  where
+	len = length changes
+	thisSecond c = now `diffUTCTime` changeTime c <= 1
 
 {- OSX needs a short delay after a file is added before locking it down,
  - as pasting a file seems to try to set file permissions or otherwise
@@ -152,77 +143,82 @@ delayaddDefault = Nothing
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: Maybe Seconds -> ThreadState -> ChangeChan -> TransferQueue -> DaemonStatusHandle -> [Change] -> IO [Change]
-handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null incomplete) $ do
+handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	pending' <- findnew pending
-	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd st pending' inprocess
+	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
 
 	unless (null postponed) $
-		refillChanges changechan postponed
+		flip refillChanges postponed <<~ changeChan
 
 	returnWhen (null toadd) $ do
 		added <- catMaybes <$> forM toadd add
 		if DirWatcher.eventsCoalesce || null added
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds delayadd st changechan transferqueue dstatus
-					=<< getChanges changechan
+				r <- handleAdds delayadd
+					=<< getChanges <<~ changeChan
 				return $ r ++ added ++ otherchanges
-	where
-		(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
+  where
+	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 		
-		findnew [] = return []
-		findnew pending@(exemplar:_) = do
-			(!newfiles, cleanup) <- runThreadState st $
-				inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
-			void cleanup
-			-- note: timestamp info is lost here
-			let ts = changeTime exemplar
-			return $ map (PendingAddChange ts) newfiles
+	findnew [] = return []
+	findnew pending@(exemplar:_) = do
+		(!newfiles, cleanup) <- liftAnnex $
+			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
+		void $ liftIO cleanup
+		-- note: timestamp info is lost here
+		let ts = changeTime exemplar
+		return $ map (PendingAddChange ts) newfiles
 
-		returnWhen c a
-			| c = return otherchanges
-			| otherwise = a
+	returnWhen c a
+		| c = return otherchanges
+		| otherwise = a
 
-		add :: Change -> IO (Maybe Change)
-		add change@(InProcessAddChange { keySource = ks }) =
-			alertWhile' dstatus (addFileAlert $ keyFilename ks) $
-				liftM ret $ catchMaybeIO $
-					sanitycheck ks $ runThreadState st $ do
-						showStart "add" $ keyFilename ks
-						key <- Command.Add.ingest ks
-						done (finishedChange change) (keyFilename ks) key
-			where
-				{- Add errors tend to be transient and will
-				 - be automatically dealt with, so don't
-				 - pass to the alert code. -}
-				ret (Just j@(Just _)) = (True, j)
-				ret _ = (True, Nothing)
-		add _ = return Nothing
+	add :: Change -> Assistant (Maybe Change)
+	add change@(InProcessAddChange { keySource = ks }) = do
+		dstatus <- getAssistant daemonStatusHandle
+		alertWhile' dstatus (addFileAlert $ keyFilename ks) <~> add' change ks
+	add _ = return Nothing
 
-		done _ _ Nothing = do
-			showEndFail
-			return Nothing
-		done change file (Just key) = do
-			link <- Command.Add.link file key True
-			when DirWatcher.eventsCoalesce $ do
+	add' change ks = liftM ret $ catchMaybeIO <~> do
+		sanitycheck ks $ do
+			key <- liftAnnex $ do
+				showStart "add" $ keyFilename ks
+				Command.Add.ingest ks
+			done (finishedChange change) (keyFilename ks) key
+	  where
+		{- Add errors tend to be transient and will be automatically
+		 - dealt with, so don't pass to the alert code. -}
+		ret (Just j@(Just _)) = (True, j)
+		ret _ = (True, Nothing)
+
+	done _ _ Nothing = do
+		liftAnnex showEndFail
+		return Nothing
+	done change file (Just key) = do
+		link <- liftAnnex $ Command.Add.link file key True
+		when DirWatcher.eventsCoalesce $
+			liftAnnex $ do
 				sha <- inRepo $
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
-			queueTransfers Next transferqueue dstatus key (Just file) Upload
-			showEndOk
-			return $ Just change
+				showEndOk
+		transferqueue <- getAssistant transferQueue
+		dstatus <- getAssistant daemonStatusHandle
+		liftAnnex $ queueTransfers Next transferqueue dstatus key (Just file) Upload
+		return $ Just change
 
-		{- Check that the keysource's keyFilename still exists,
-		 - and is still a hard link to its contentLocation,
-		 - before ingesting it. -}
-		sanitycheck keysource a = do
-			fs <- getSymbolicLinkStatus $ keyFilename keysource
-			ks <- getSymbolicLinkStatus $ contentLocation keysource
-			if deviceID ks == deviceID fs && fileID ks == fileID fs
-				then a
-				else return Nothing
+	{- Check that the keysource's keyFilename still exists,
+	 - and is still a hard link to its contentLocation,
+	 - before ingesting it. -}
+	sanitycheck keysource a = do
+		fs <- liftIO $ getSymbolicLinkStatus $ keyFilename keysource
+		ks <- liftIO $ getSymbolicLinkStatus $ contentLocation keysource
+		if deviceID ks == deviceID fs && fileID ks == fileID fs
+			then a
+			else return Nothing
 
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.
@@ -230,11 +226,11 @@ handleAdds delayadd st changechan transferqueue dstatus cs = returnWhen (null in
  - Check by running lsof on the temp directory, which
  - the KeySources are locked down in.
  -}
-safeToAdd :: Maybe Seconds -> ThreadState -> [Change] -> [Change] -> IO [Either Change Change]
-safeToAdd _ _ [] [] = return []
-safeToAdd delayadd st pending inprocess = do
-	maybe noop threadDelaySeconds delayadd
-	runThreadState st $ do
+safeToAdd :: Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ [] [] = return []
+safeToAdd delayadd pending inprocess = do
+	maybe noop (liftIO . threadDelaySeconds) delayadd
+	liftAnnex $ do
 		keysources <- mapM Command.Add.lockDown (map changeFile pending)
 		let inprocess' = map mkinprocess (zip pending keysources)
 		tmpdir <- fromRepo gitAnnexTmpDir
@@ -250,25 +246,24 @@ safeToAdd delayadd st pending inprocess = do
 				mapM_ canceladd $ lefts checked
 				allRight $ rights checked
 			else return checked
-	where
-		check openfiles change@(InProcessAddChange { keySource = ks })
-			| S.member (contentLocation ks) openfiles = Left change
-		check _ change = Right change
+  where
+	check openfiles change@(InProcessAddChange { keySource = ks })
+		| S.member (contentLocation ks) openfiles = Left change
+	check _ change = Right change
 
-		mkinprocess (c, ks) = InProcessAddChange
-			{ changeTime = changeTime c
-			, keySource = ks
-			}
+	mkinprocess (c, ks) = InProcessAddChange
+		{ changeTime = changeTime c
+		, keySource = ks
+		}
 
-		canceladd (InProcessAddChange { keySource = ks }) = do
-			warning $ keyFilename ks
-				++ " still has writers, not adding"
-			-- remove the hard link
-			void $ liftIO $ tryIO $
-				removeFile $ contentLocation ks
-		canceladd _ = noop
+	canceladd (InProcessAddChange { keySource = ks }) = do
+		warning $ keyFilename ks
+			++ " still has writers, not adding"
+		-- remove the hard link
+		void $ liftIO $ tryIO $ removeFile $ contentLocation ks
+	canceladd _ = noop
 
-		openwrite (_file, mode, _pid) =
-			mode == Lsof.OpenWriteOnly || mode == Lsof.OpenReadWrite
+	openwrite (_file, mode, _pid) =
+		mode == Lsof.OpenWriteOnly || mode == Lsof.OpenReadWrite
 
-		allRight = return . map Right
+	allRight = return . map Right

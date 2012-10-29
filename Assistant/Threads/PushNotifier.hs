@@ -12,7 +12,6 @@ module Assistant.Threads.PushNotifier where
 
 import Assistant.Common
 import Assistant.XMPP
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Pushes
 import Assistant.Sync
@@ -25,56 +24,56 @@ import qualified Data.Set as S
 import qualified Git.Branch
 import Data.Time.Clock
 
-thisThread :: ThreadName
-thisThread = "PushNotifier"
+pushNotifierThread :: NamedThread
+pushNotifierThread = NamedThread "PushNotifier" $ do
+	iodebug <- asIO debug
+	iopull <- asIO pull
+	pn <- getAssistant pushNotifier
+	controllerThread pn <~> xmppClient pn iodebug iopull
 
 controllerThread :: PushNotifier -> IO () -> IO ()
-controllerThread pushnotifier a = forever $ do
-	tid <- forkIO a
+controllerThread pushnotifier xmppclient = forever $ do
+	tid <- forkIO xmppclient
 	waitRestart pushnotifier
 	killThread tid
 
-pushNotifierThread :: ThreadState -> DaemonStatusHandle -> PushNotifier -> NamedThread
-pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ liftIO $
-	controllerThread pushnotifier $ do
-		v <- runThreadState st $ getXMPPCreds
-		case v of
-			Nothing -> noop
-			Just c -> loop c =<< getCurrentTime
-	where
-		loop c starttime = do
-			void $ connectXMPP c $ \jid -> do
-				fulljid <- bindJID jid
-				liftIO $ brokendebug thisThread ["XMPP connected", show fulljid]
-				putStanza $ gitAnnexPresence gitAnnexSignature
-				s <- getSession
-				_ <- liftIO $ forkIO $ void $ runXMPP s $
-					receivenotifications
-				sendnotifications
-			now <- getCurrentTime
-			if diffUTCTime now starttime > 300
-				then do
-					brokendebug thisThread ["XMPP connection lost; reconnecting"]
-					loop c now
-				else do
-					brokendebug thisThread ["XMPP connection failed; will retry"]
-					threadDelaySeconds (Seconds 300)
-					loop c =<< getCurrentTime
-
-		sendnotifications = forever $ do
-			us <- liftIO $ waitPush pushnotifier
-			putStanza $ gitAnnexPresence $ encodePushNotification us
-
-		receivenotifications = forever $ do
-			s <- getStanza
-			liftIO $ brokendebug thisThread ["received XMPP:", show s]
-			case s of
-				ReceivedPresence p@(Presence { presenceType = PresenceAvailable }) ->
-					liftIO $ pull st dstatus $
-						concat $ catMaybes $
-							map decodePushNotification $
-								presencePayloads p
-				_ -> noop
+xmppClient :: PushNotifier -> ([String] -> IO ()) -> ([UUID] -> IO ()) -> Assistant ()
+xmppClient pushnotifier iodebug iopull = do
+	v <- liftAnnex getXMPPCreds
+	case v of
+		Nothing -> noop
+		Just c -> liftIO $ loop c =<< getCurrentTime
+  where
+	loop c starttime = do
+		void $ connectXMPP c $ \jid -> do
+			fulljid <- bindJID jid
+			liftIO $ iodebug ["XMPP connected", show fulljid]
+			putStanza $ gitAnnexPresence gitAnnexSignature
+			s <- getSession
+			_ <- liftIO $ forkIO $ void $ runXMPP s $
+				receivenotifications
+			sendnotifications
+		now <- getCurrentTime
+		if diffUTCTime now starttime > 300
+			then do
+				iodebug ["XMPP connection lost; reconnecting"]
+				loop c now
+			else do
+				iodebug ["XMPP connection failed; will retry"]
+				threadDelaySeconds (Seconds 300)
+				loop c =<< getCurrentTime
+	sendnotifications = forever $ do
+		us <- liftIO $ waitPush pushnotifier
+		putStanza $ gitAnnexPresence $ encodePushNotification us
+	receivenotifications = forever $ do
+		s <- getStanza
+		liftIO $ iodebug ["received XMPP:", show s]
+		case s of
+			ReceivedPresence p@(Presence { presenceType = PresenceAvailable }) ->
+				liftIO $ iopull $ concat $ catMaybes $
+					map decodePushNotification $
+						presencePayloads p
+			_ -> noop
 
 {- We only pull from one remote out of the set listed in the push
  - notification, as an optimisation.
@@ -89,18 +88,18 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ liftIO $
  - fully up-to-date. If that happens, the pushRetryThread will come along
  - and retry the push, and we'll get another notification once it succeeds,
  - and pull again. -}
-pull :: ThreadState -> DaemonStatusHandle -> [UUID] -> IO ()
-pull _ _ [] = noop
-pull st dstatus us = do
-	rs <- filter matching . syncRemotes <$> getDaemonStatus dstatus
-	brokendebug thisThread $ "push notification for" :
-		map (fromUUID . Remote.uuid ) rs
-	pullone rs =<< runThreadState st (inRepo Git.Branch.current)
-	where
-		matching r = Remote.uuid r `S.member` s
-		s = S.fromList us
+pull :: [UUID] -> Assistant ()
+pull [] = noop
+pull us = do
+	rs <- filter matching . syncRemotes <$> daemonStatus
+	debug $ "push notification for" : map (fromUUID . Remote.uuid ) rs
+	st <- getAssistant threadState
+	liftIO . pullone st rs =<< liftAnnex (inRepo Git.Branch.current)
+  where
+	matching r = Remote.uuid r `S.member` s
+	s = S.fromList us
 
-		pullone [] _ = noop
-		pullone (r:rs) branch =
-			unlessM (all id . fst <$> manualPull st branch [r]) $
-				pullone rs branch
+	pullone _ [] _ = noop
+	pullone st (r:rs) branch =
+		unlessM (all id . fst <$> manualPull st branch [r]) $
+			pullone st rs branch

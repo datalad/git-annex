@@ -9,7 +9,6 @@ module Assistant.Threads.ConfigMonitor where
 
 import Assistant.Common
 import Assistant.BranchChange
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.Commits
 import Utility.ThreadScheduler
@@ -19,10 +18,8 @@ import Logs.Remote
 import Logs.PreferredContent
 import Logs.Group
 import Remote.List (remoteListRefresh)
-import qualified Git
 import qualified Git.LsTree as LsTree
 import qualified Annex.Branch
-import qualified Annex
 
 import qualified Data.Set as S
 
@@ -37,26 +34,22 @@ thisThread = "ConfigMonitor"
  - if the branch has not changed in a while, configuration changes will
  - be detected immediately.
  -}
-configMonitorThread :: ThreadState -> DaemonStatusHandle -> BranchChangeHandle -> CommitChan -> NamedThread
-configMonitorThread st dstatus branchhandle commitchan = thread $ liftIO $ do
-	r <- runThreadState st Annex.gitRepo
-	go r =<< getConfigs r
-	where
-		thread = NamedThread thisThread
-		
-		go r old = do
-			threadDelaySeconds (Seconds 60)
-			waitBranchChange branchhandle
-			new <- getConfigs r
-			when (old /= new) $ do
-				let changedconfigs = new `S.difference` old
-				brokendebug thisThread $ "reloading config" : 
-					map fst (S.toList changedconfigs)
-				reloadConfigs st dstatus changedconfigs
-				{- Record a commit to get this config
-				 - change pushed out to remotes. -}
-				recordCommit commitchan
-			go r new
+configMonitorThread :: NamedThread
+configMonitorThread = NamedThread "ConfigMonitor" $ loop =<< getConfigs
+  where
+	loop old = do
+		liftIO $ threadDelaySeconds (Seconds 60)
+		waitBranchChange <<~ branchChangeHandle
+		new <- getConfigs
+		when (old /= new) $ do
+			let changedconfigs = new `S.difference` old
+			debug $ "reloading config" : 
+				map fst (S.toList changedconfigs)
+			reloadConfigs new
+			{- Record a commit to get this config
+			 - change pushed out to remotes. -}
+			recordCommit <<~ commitChan
+		loop new
 
 {- Config files, and their checksums. -}
 type Configs = S.Set (FilePath, String)
@@ -73,22 +66,23 @@ configFilesActions =
 	, (preferredContentLog, noop)
 	]
 
-reloadConfigs :: ThreadState -> DaemonStatusHandle -> Configs -> IO ()
-reloadConfigs st dstatus changedconfigs = runThreadState st $ do
-	sequence_ as
-	void preferredContentMapLoad
+reloadConfigs :: Configs -> Assistant ()
+reloadConfigs changedconfigs = do
+	liftAnnex $ do
+		sequence_ as
+		void preferredContentMapLoad
 	{- Changes to the remote log, or the trust log, can affect the
 	 - syncRemotes list -}
-	when (Logs.Remote.remoteLog `elem` fs || Logs.Trust.trustLog `elem` fs)  $
-		updateSyncRemotes dstatus
-	where
-		(fs, as) = unzip $ filter (flip S.member changedfiles . fst)
-			configFilesActions
-		changedfiles = S.map fst changedconfigs
+	when (Logs.Remote.remoteLog `elem` fs || Logs.Trust.trustLog `elem` fs) $
+		liftAnnex . updateSyncRemotes =<< getAssistant daemonStatusHandle
+  where
+	(fs, as) = unzip $ filter (flip S.member changedfiles . fst)
+		configFilesActions
+	changedfiles = S.map fst changedconfigs
 
-getConfigs :: Git.Repo -> IO Configs
-getConfigs r = S.fromList . map extract
-	<$> LsTree.lsTreeFiles Annex.Branch.fullname files r
-	where
-		files = map fst configFilesActions
-		extract treeitem = (LsTree.file treeitem, LsTree.sha treeitem)
+getConfigs :: Assistant Configs
+getConfigs = S.fromList . map extract
+	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles Annex.Branch.fullname files)
+  where
+	files = map fst configFilesActions
+	extract treeitem = (LsTree.file treeitem, LsTree.sha treeitem)
