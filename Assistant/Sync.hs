@@ -41,8 +41,7 @@ reconnectRemotes notifypushes rs = void $ do
 	alertWhile (syncAlert rs) $ do
 		(ok, diverged) <- sync
 			=<< liftAnnex (inRepo Git.Branch.current)
-		scanremotes <- getAssistant scanRemoteMap
-		liftIO $ addScanRemotes scanremotes diverged rs
+		addScanRemotes diverged rs
 		return ok
 	where
 		(gitremotes, _specialremotes) =

@@ -8,6 +8,7 @@
 module Assistant.Threads.TransferScanner where
 
 import Assistant.Common
+import Assistant.Types.ScanRemotes
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.DaemonStatus
@@ -36,7 +37,7 @@ transferScannerThread = NamedThread "TransferScanner" $ do
   where
 	go scanned = do
 		liftIO $ threadDelaySeconds (Seconds 2)
-		(rs, infos) <- unzip <$> getScanRemote <<~ scanRemoteMap
+		(rs, infos) <- unzip <$> getScanRemote
 		if any fullScan infos || any (`S.notMember` scanned) rs
 			then do
 				expensiveScan rs
@@ -56,10 +57,7 @@ transferScannerThread = NamedThread "TransferScanner" $ do
 	 -   and then the system (or us) crashed, and that info was
 	 -   lost.
 	 -}
-	startupScan = do
-		scanremotes <- getAssistant scanRemoteMap
-		liftIO . addScanRemotes scanremotes True
-			=<< syncRemotes <$> daemonStatus
+	startupScan = addScanRemotes True =<< syncRemotes <$> daemonStatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
