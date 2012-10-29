@@ -14,3 +14,5 @@ Assistant/Threads/MountWatcher.hs:36:0:
 Utility/OSX.hs:22:17: Not in scope: `myHomeDir'
 make: *** [git-annex] Error 1
 </pre>
+
+> Someone else reported that too; I fixed it. [[done]] --[[Joey]] 
