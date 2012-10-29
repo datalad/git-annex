@@ -35,6 +35,7 @@ each indented with a tab.
 Where clauses for instance definitions and modules tend to appear at the end
 of a line, rather than on a separate line.
 
+	module Foo (Foo, mkFoo, unFoo) where
 	instance MonadBaseControl IO Annex where
 
 When a function's type signature needs to be wrapped to another line,
@@ -82,5 +83,3 @@ name in a let clause, this is sometimes used:
 
 	foo = let x = 42
 		in x + (x-1) + x
-
-(Of course, monadic let binding are no problem.)
