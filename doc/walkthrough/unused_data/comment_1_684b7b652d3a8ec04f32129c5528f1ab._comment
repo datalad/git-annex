@@ -6,8 +6,8 @@
  content="""
 Sometimes links to annexed data still exists on some branch, when it was supposed to be dropped. Here is how I found these; perhaps there is a simpler way.
 
-    % git annex find --format '${key}\n' > /tmp/known-keys
-    % find .git/annex/objects -type f -exec basename {} \; > /tmp/local-keys
+    % git annex find --format '${key}\n' | sort > /tmp/known-keys
+    % find .git/annex/objects -type f -exec basename {} \; | sort  > /tmp/local-keys
     % comm -23 /tmp/local-keys /tmp/known-keys
 
 to look for what branch these are on, try 
@@ -17,8 +17,6 @@ to look for what branch these are on, try
 for one of the keys output above. In my case it was the same remote branch keeping them all alive.
 
 
-
-
-
+*EDIT* sort key lists to make comm work properly
 
 """]]

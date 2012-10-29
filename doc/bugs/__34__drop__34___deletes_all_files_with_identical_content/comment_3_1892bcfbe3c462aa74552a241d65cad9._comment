@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 3"
+ date="2012-10-28T23:29:46Z"
+ content="""
+numcopies=0 is inherently unsafe, and unreasonable if you value your data at all. I've added some warnings about it to the man page.
+"""]]
