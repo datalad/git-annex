@@ -9,6 +9,7 @@ module Assistant.Threads.Pusher where
 
 import Assistant.Common
 import Assistant.Commits
+import Assistant.Types.Commits
 import Assistant.Pushes
 import Assistant.Alert
 import Assistant.DaemonStatus
@@ -41,7 +42,7 @@ pushThread :: NamedThread
 pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- We already waited two seconds as a simple rate limiter.
 	-- Next, wait until at least one commit has been made
-	commits <- getCommits <<~ commitChan
+	commits <- getCommits
 	-- Now see if now's a good time to push.
 	if shouldPush commits
 		then do
@@ -52,7 +53,7 @@ pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 					pushToRemotes now True remotes
 		else do
 			debug ["delaying push of", show (length commits), "commits"]
-			flip refillCommits commits <<~ commitChan
+			refillCommits commits
   where
 	pushable r
 		| Remote.specialRemote r = False

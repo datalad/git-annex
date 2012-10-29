@@ -48,7 +48,7 @@ configMonitorThread = NamedThread "ConfigMonitor" $ loop =<< getConfigs
 			reloadConfigs new
 			{- Record a commit to get this config
 			 - change pushed out to remotes. -}
-			recordCommit <<~ commitChan
+			recordCommit
 		loop new
 
 {- Config files, and their checksums. -}

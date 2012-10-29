@@ -81,7 +81,7 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 			liftIO $ void $ addAlert dstatus $
 				makeAlertFiller True $
 					transferFileAlert direction True file
-			recordCommit <<~ commitChan
+			recordCommit
 	  where
 		params =
 			[ Param "transferkey"

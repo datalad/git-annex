@@ -61,7 +61,7 @@ commitThread = NamedThread "Committer" $ do
 							]
 						void $ alertWhile commitAlert $
 							liftAnnex commitStaged
-						recordCommit <<~ commitChan
+						recordCommit
 					else refill readychanges
 			else refill changes
   where
