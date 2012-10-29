@@ -180,7 +180,6 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 		d <- getAssistant id
 		st <- getAssistant threadState
 		dstatus <- getAssistant daemonStatusHandle
-		changechan <- getAssistant changeChan
 		commitchan <- getAssistant commitChan
 		transferqueue <- getAssistant transferQueue
 		transferslots <- getAssistant transferSlots
