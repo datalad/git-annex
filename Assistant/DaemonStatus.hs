@@ -181,8 +181,8 @@ adjustTransfersSTM dstatus a = do
 	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
 
 {- Alters a transfer's info, if the transfer is in the map. -}
-alterTransferInfo :: Transfer -> (TransferInfo -> TransferInfo) -> DaemonStatusHandle -> IO ()
-alterTransferInfo t a dstatus = updateTransferInfo' dstatus $ M.adjust a t
+alterTransferInfo :: DaemonStatusHandle -> Transfer -> (TransferInfo -> TransferInfo) -> IO ()
+alterTransferInfo dstatus t a = updateTransferInfo' dstatus $ M.adjust a t
 
 {- Updates a transfer's info. Adds the transfer to the map if necessary,
  - or if already present, updates it while preserving the old transferTid,

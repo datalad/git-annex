@@ -88,9 +88,8 @@ cancelTransfer pause t = do
 			maybe noop killproc $ transferPid info
 			if pause
 				then void $
-					alterTransferInfo t
-						(\i -> i { transferPaused = True })
-						dstatus
+					alterTransferInfo dstatus t $
+						\i -> i { transferPaused = True }
 				else void $
 					removeTransfer dstatus t
 		signalthread tid
@@ -119,9 +118,8 @@ startTransfer t = do
 		resume tid = do
 			dstatus <- getAssistantY daemonStatusHandle
 			liftIO $ do
-				alterTransferInfo t
-					(\i -> i { transferPaused = False })
-					dstatus
+				alterTransferInfo dstatus t $
+					\i -> i { transferPaused = False }
 				throwTo tid ResumeTransfer
 		start info = runAssistantY $ do
 			program <- liftIO readProgramFile

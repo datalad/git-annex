@@ -79,9 +79,9 @@ onModify file = do
 		Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
 	where
 		go _ Nothing = noop
-		go t (Just newinfo) = alterTransferInfo t
-			(\i -> i { bytesComplete = bytesComplete newinfo })
-			<<~ daemonStatusHandle
+		go t (Just newinfo) = withAssistant daemonStatusHandle $ \h ->
+			alterTransferInfo h t $
+				\i -> i { bytesComplete = bytesComplete newinfo }
 
 {- This thread can only watch transfer sizes when the DirWatcher supports
  - tracking modificatons to files. -}

@@ -52,6 +52,7 @@ transferPollerThread = NamedThread "TransferPoller" $ do
 
 	newsize t info sz
 		| bytesComplete info /= sz && isJust sz =
-			alterTransferInfo t (\i -> i { bytesComplete = sz })
-				<<~ daemonStatusHandle
+			withAssistant daemonStatusHandle $ \h ->
+				alterTransferInfo h t $
+					\i -> i { bytesComplete = sz }
 		| otherwise = noop
