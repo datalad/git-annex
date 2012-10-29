@@ -38,8 +38,9 @@ import Control.Concurrent
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
+	d <- lift $ getAssistantY id
 	current <- lift $ M.toList <$> getCurrentTransfers
-	queued <- liftIO $ getTransferQueue $ transferQueue webapp
+	queued <- liftIO $ getTransferQueue $ transferQueue d
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers

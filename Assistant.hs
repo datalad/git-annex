@@ -120,13 +120,6 @@ module Assistant where
 import Assistant.Common
 import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
-import Assistant.Changes
-import Assistant.Commits
-import Assistant.Pushes
-import Assistant.ScanRemotes
-import Assistant.BranchChange
-import Assistant.TransferQueue
-import Assistant.TransferSlots
 import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
@@ -180,24 +173,28 @@ startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()
 startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	checkCanWatch
 	dstatus <- startDaemonStatus
-	liftIO $ daemonize $ run dstatus st
+	liftIO $ daemonize $
+		runAssistant go =<< newAssistantData st dstatus
   where
-	run dstatus st = do
-		changechan <- newChangeChan
-		commitchan <- newCommitChan
-		pushmap <- newFailedPushMap
-		transferqueue <- newTransferQueue
-		transferslots <- newTransferSlots
-		scanremotes <- newScanRemoteMap
-		branchhandle <- newBranchChangeHandle
-		pushnotifier <- newPushNotifier
+	go = do
+		d <- getAssistant id
+		st <- getAssistant threadState
+		dstatus <- getAssistant daemonStatus
+		changechan <- getAssistant changeChan
+		commitchan <- getAssistant commitChan
+		pushmap <- getAssistant failedPushMap
+		transferqueue <- getAssistant transferQueue
+		transferslots <- getAssistant transferSlots
+		scanremotes <- getAssistant scanRemoteMap
+		branchhandle <- getAssistant branchChangeHandle
+		pushnotifier <- getAssistant pushNotifier
 #ifdef WITH_WEBAPP
-		urlrenderer <- newUrlRenderer
+		urlrenderer <- liftIO $ newUrlRenderer
 #endif
-		mapM_ (startthread dstatus)
+		mapM_ (startthread d)
 			[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
-			, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots pushnotifier commitchan urlrenderer Nothing webappwaiter
+			, assist $ webAppThread d urlrenderer False Nothing webappwaiter
 #ifdef WITH_PAIRING
 			, assist $ pairListenerThread st dstatus scanremotes urlrenderer
 #endif
@@ -220,11 +217,12 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 #endif
 			, watch $ watchThread st dstatus transferqueue changechan
 			]
-		waitForTermination
+		liftIO waitForTermination
 
 	watch a = (True, a)
 	assist a = (False, a)
-	startthread dstatus (watcher, t)
-		| watcher || assistant = void $ forkIO $
-			runNamedThread dstatus t
+	startthread d (watcher, t)
+		| watcher || assistant = void $ liftIO $ forkIO $
+			flip runAssistant d $
+				runNamedThread t
 		| otherwise = noop

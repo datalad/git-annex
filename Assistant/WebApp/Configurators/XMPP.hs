@@ -34,7 +34,7 @@ import qualified Data.Text as T
 {- Displays an alert suggesting to configure XMPP, with a button. -}
 xmppNeeded :: Handler ()
 xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
-	dstatus <- daemonStatus <$> getYesod
+	dstatus <- getAssistantY daemonStatus
 	urlrender <- getUrlRender
 	void $ liftIO $ addAlert dstatus $ xmppNeededAlert $ AlertButton
 		{ buttonLabel = "Configure a Jabber account"
@@ -59,7 +59,7 @@ getXMPPR = xmppPage $ do
 	where
 		storecreds creds = do
 			void $ runAnnex undefined $ setXMPPCreds creds
-			liftIO . notifyRestart =<< pushNotifier <$> getYesod
+			liftIO . notifyRestart =<< getAssistantY pushNotifier
 			redirect ConfigR
 #else
 getXMPPR = xmppPage $

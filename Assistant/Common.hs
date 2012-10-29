@@ -14,8 +14,9 @@ module Assistant.Common (
 ) where
 
 import Common.Annex as X
-import Assistant.DaemonStatus
+import Assistant.Monad as X
 import Assistant.Alert
+import Assistant.DaemonStatus
 
 import System.Log.Logger
 import qualified Control.Exception as E
@@ -26,10 +27,10 @@ data NamedThread = NamedThread ThreadName (IO ())
 debug :: ThreadName -> [String] -> IO ()
 debug threadname ws = debugM threadname $ unwords $ (threadname ++ ":") : ws
 
-runNamedThread :: DaemonStatusHandle -> NamedThread -> IO ()
-runNamedThread dstatus (NamedThread name a) = go
+runNamedThread :: NamedThread -> Assistant ()
+runNamedThread (NamedThread name a) = liftIO . go =<< getAssistant daemonStatus
 	where
-		go = do
+		go dstatus = do
 			r <- E.try a :: IO (Either E.SomeException ())
 			case r of
 				Right _ -> noop

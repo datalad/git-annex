@@ -12,11 +12,6 @@ import Command
 import Assistant
 import Assistant.Common
 import Assistant.DaemonStatus
-import Assistant.ScanRemotes
-import Assistant.TransferQueue
-import Assistant.TransferSlots
-import Assistant.Pushes
-import Assistant.Commits
 import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install
@@ -101,20 +96,21 @@ autoStart autostartfile = do
  -}
 firstRun :: IO ()
 firstRun = do
+	{- Without a repository, we cannot have an Annex monad, so cannot
+	 - get a ThreadState. Using undefined is only safe because the
+	 - webapp checks its noAnnex field before accessing the
+	 - threadstate. -}
+	let st = undefined
+	{- Get a DaemonStatus without running in the Annex monad. -}
 	dstatus <- atomically . newTMVar =<< newDaemonStatus
-	scanremotes <- newScanRemoteMap
-	transferqueue <- newTransferQueue
-	transferslots <- newTransferSlots
+	d <- newAssistantData st dstatus
 	urlrenderer <- newUrlRenderer
-	pushnotifier <- newPushNotifier
-	commitchan <- newCommitChan
 	v <- newEmptyMVar
 	let callback a = Just $ a v
-	void $ runNamedThread dstatus $
-		webAppThread Nothing dstatus scanremotes
-			transferqueue transferslots pushnotifier commitchan
-			urlrenderer
-			(callback signaler) (callback mainthread)
+	void $ flip runAssistant d $ runNamedThread $
+		webAppThread d urlrenderer True 
+			(callback signaler)
+			(callback mainthread)
 	where
 		signaler v = do
 			putMVar v ""

@@ -69,7 +69,7 @@ setRepoConfig uuid mremote oldc newc = do
 	when (repoSyncable oldc /= repoSyncable newc) $
 		changeSyncable mremote (repoSyncable newc)
 	when (isJust mremote && repoName oldc /= repoName newc) $ do
-		dstatus <- daemonStatus <$> getYesod
+		dstatus <- getAssistantY daemonStatus
 		runAnnex undefined $ do
 			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
 			inRepo $ Git.Command.run "remote"

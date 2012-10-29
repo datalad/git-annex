@@ -12,13 +12,6 @@ module Assistant.WebApp.Types where
 
 import Assistant.Common
 import Assistant.Ssh
-import Assistant.ThreadedMonad
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
-import Assistant.TransferQueue
-import Assistant.TransferSlots
-import Assistant.Pushes
-import Assistant.Commits
 import Assistant.Alert
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
@@ -35,18 +28,13 @@ publicFiles "static"
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 data WebApp = WebApp
-	{ threadState :: Maybe ThreadState
-	, daemonStatus :: DaemonStatusHandle
-	, scanRemotes :: ScanRemoteMap
-	, transferQueue :: TransferQueue
-	, transferSlots :: TransferSlots
-	, pushNotifier :: PushNotifier
-	, commitChan :: CommitChan
+	{ assistantData :: AssistantData
 	, secretToken :: Text
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, webAppState :: TMVar WebAppState
 	, postFirstRun :: Maybe (IO String)
+	, noAnnex :: Bool
 	}
 
 instance Yesod WebApp where

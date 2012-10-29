@@ -87,7 +87,7 @@ getInprogressPairR _ = noPairing
  -}
 startPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
 startPairing stage oncancel alert muuid displaysecret secret = do
-	dstatus <- daemonStatus <$> lift getYesod
+	dstatus <- lift $ getAssistantY daemonStatus
 	urlrender <- lift getUrlRender
 	reldir <- fromJust . relDir <$> lift getYesod
 

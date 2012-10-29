@@ -28,12 +28,6 @@ import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos
 import Assistant.ThreadedMonad
-import Assistant.DaemonStatus
-import Assistant.ScanRemotes
-import Assistant.TransferQueue
-import Assistant.TransferSlots
-import Assistant.Pushes
-import Assistant.Commits
 import Utility.WebApp
 import Utility.FileMode
 import Utility.TempFile
@@ -51,51 +45,43 @@ mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 type Url = String
 
-webAppThread 
-	:: Maybe ThreadState
-	-> DaemonStatusHandle
-	-> ScanRemoteMap
-	-> TransferQueue
-	-> TransferSlots
-	-> PushNotifier
-	-> CommitChan
+webAppThread
+	:: AssistantData
 	-> UrlRenderer
+	-> Bool
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread mst dstatus scanremotes transferqueue transferslots pushnotifier commitchan urlrenderer postfirstrun onstartup = thread $ do
+webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $ do
 	webapp <- WebApp
-		<$> pure mst
-		<*> pure dstatus
-		<*> pure scanremotes
-		<*> pure transferqueue
-		<*> pure transferslots
-		<*> pure pushnotifier
-		<*> pure commitchan
+		<$> pure assistantdata
 		<*> (pack <$> genRandomToken)
-		<*> getreldir mst
+		<*> getreldir
 		<*> pure $(embed "static")
 		<*> newWebAppState
 		<*> pure postfirstrun
+		<*> pure noannex
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> case mst of
-		Nothing -> withTempFile "webapp.html" $ \tmpfile _ ->
+	runWebApp app' $ \port -> if noannex
+		then withTempFile "webapp.html" $ \tmpfile _ ->
 			go port webapp tmpfile Nothing
-		Just st -> do
+		else do
+			let st = threadState assistantdata
 			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
 			go port webapp htmlshim (Just urlfile)
 	where
 		thread = NamedThread thisThread
-		getreldir Nothing = return Nothing
-		getreldir (Just st) = Just <$>
-			(relHome =<< absPath
-				=<< runThreadState st (fromRepo repoPath))
+		getreldir
+			| noannex = return Nothing
+			| otherwise = Just <$>
+				(relHome =<< absPath
+					=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
 		go port webapp htmlshim urlfile = do
 			debug thisThread ["running on port", show port]
 			let url = myUrl webapp port

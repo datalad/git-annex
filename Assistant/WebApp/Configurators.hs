@@ -101,8 +101,8 @@ repoList onlyconfigured includehere
 	| otherwise = list =<< (++) <$> configured <*> rest
 	where
 		configured = do
-			rs <- filter (not . Remote.readonly) . syncRemotes <$>
-				(liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
+			rs <- filter (not . Remote.readonly) . syncRemotes
+				<$> getDaemonStatusY
 			runAnnex [] $ do
 				u <- getUUID
 				let l = map Remote.uuid rs

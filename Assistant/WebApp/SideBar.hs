@@ -27,9 +27,7 @@ sideBarDisplay :: Widget
 sideBarDisplay = do
 	let content = do
 		{- Add newest alerts to the sidebar. -}
-		webapp <- lift getYesod
-		alertpairs <- M.toList . alertMap
-			<$> liftIO (getDaemonStatus $ daemonStatus webapp)
+		alertpairs <- lift $ M.toList . alertMap <$> getDaemonStatusY
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs
 	let ident = "sidebar"
@@ -75,14 +73,13 @@ getSideBarR nid = do
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()
 getCloseAlert i = do
-	webapp <- getYesod
-	liftIO $ removeAlert (daemonStatus webapp) i
+	dstatus <- getAssistantY daemonStatus
+	liftIO $ removeAlert dstatus i
 
 {- When an alert with a button is clicked on, the button takes us here. -}
 getClickAlert :: AlertId -> Handler ()
 getClickAlert i = do
-	webapp <- getYesod
-	m <- alertMap <$> liftIO (getDaemonStatus $ daemonStatus webapp)
+	m <- alertMap <$> getDaemonStatusY
 	case M.lookup i m of
 		Just (Alert { alertButton = Just b }) -> do
 			{- Spawn a thread to run the action while redirecting. -}

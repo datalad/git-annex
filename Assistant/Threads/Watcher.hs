@@ -59,16 +59,16 @@ watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan 
 watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
 	void $ watchDir "." ignored hooks startup
 	debug thisThread [ "watching", "."]
-	where
-		startup = startupScan st dstatus
-		hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
-		hooks = mkWatchHooks
-			{ addHook = hook onAdd
-			, delHook = hook onDel
-			, addSymlinkHook = hook onAddSymlink
-			, delDirHook = hook onDelDir
-			, errHook = hook onErr
-			}
+  where
+	startup = startupScan st dstatus
+	hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
+	hooks = mkWatchHooks
+		{ addHook = hook onAdd
+		, delHook = hook onDel
+		, addSymlinkHook = hook onAddSymlink
+		, delDirHook = hook onDelDir
+		, errHook = hook onErr
+		}
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
 startupScan :: ThreadState -> DaemonStatusHandle -> IO a -> IO a
@@ -89,7 +89,7 @@ startupScan st dstatus scanner = do
 
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName
-	where
+  where
 	ig ".git" = True
 	ig ".gitignore" = True
 	ig ".gitattributes" = True
@@ -109,14 +109,13 @@ runHandler threadname st dstatus transferqueue changechan handler file filestatu
 		Left e -> print e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange changechan change
-	where
-		go = runThreadState st $ handler threadname file filestatus dstatus transferqueue
+  where
+	go = runThreadState st $ handler threadname file filestatus dstatus transferqueue
 
 onAdd :: Handler
 onAdd _ file filestatus _ _
 	| maybe False isRegularFile filestatus = pendingAddChange file
 	| otherwise = noChange
-	where
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -124,69 +123,67 @@ onAdd _ file filestatus _ _
  -}
 onAddSymlink :: Handler
 onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.lookupFile file
-	where
-		go (Just (key, _)) = do
-			link <- calcGitLink file key
-			ifM ((==) link <$> liftIO (readSymbolicLink file))
-				( do
-					s <- liftIO $ getDaemonStatus dstatus
-					checkcontent key s
-					ensurestaged link s
-				, do
-					liftIO $ debug threadname ["fix symlink", file]
-					liftIO $ removeFile file
-					liftIO $ createSymbolicLink link file
-					checkcontent key =<< liftIO (getDaemonStatus dstatus)
-					addlink link
-				)
-		go Nothing = do -- other symlink
-			link <- liftIO (readSymbolicLink file)
-			ensurestaged link =<< liftIO (getDaemonStatus dstatus)
+  where
+	go (Just (key, _)) = do
+		link <- calcGitLink file key
+		ifM ((==) link <$> liftIO (readSymbolicLink file))
+			( do
+				s <- liftIO $ getDaemonStatus dstatus
+				checkcontent key s
+				ensurestaged link s
+			, do
+				liftIO $ debug threadname ["fix symlink", file]
+				liftIO $ removeFile file
+				liftIO $ createSymbolicLink link file
+				checkcontent key =<< liftIO (getDaemonStatus dstatus)
+				addlink link
+			)
+	go Nothing = do -- other symlink
+		link <- liftIO (readSymbolicLink file)
+		ensurestaged link =<< liftIO (getDaemonStatus dstatus)
 
-		{- This is often called on symlinks that are already
-		 - staged correctly. A symlink may have been deleted
-		 - and being re-added, or added when the watcher was
-		 - not running. So they're normally restaged to make sure.
-		 -
-		 - As an optimisation, during the startup scan, avoid
-		 - restaging everything. Only links that were created since
-		 - the last time the daemon was running are staged.
-		 - (If the daemon has never ran before, avoid staging
-		 - links too.)
-		 -}
-		ensurestaged link daemonstatus
-			| scanComplete daemonstatus = addlink link
-			| otherwise = case filestatus of
-				Just s
-					| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
-				_ -> addlink link
+	{- This is often called on symlinks that are already
+	 - staged correctly. A symlink may have been deleted
+	 - and being re-added, or added when the watcher was
+	 - not running. So they're normally restaged to make sure.
+	 -
+	 - As an optimisation, during the startup scan, avoid
+	 - restaging everything. Only links that were created since
+	 - the last time the daemon was running are staged.
+	 - (If the daemon has never ran before, avoid staging
+	 - links too.)
+	 -}
+	ensurestaged link daemonstatus
+		| scanComplete daemonstatus = addlink link
+		| otherwise = case filestatus of
+			Just s
+				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
+			_ -> addlink link
 
-		{- For speed, tries to reuse the existing blob for
-		 - the symlink target. -}
-		addlink link = do
-			liftIO $ debug threadname ["add symlink", file]
-			v <- catObjectDetails $ Ref $ ':':file
-			case v of
-				Just (currlink, sha)
-					| s2w8 link == L.unpack currlink ->
-						stageSymlink file sha
-				_ -> do
-					sha <- inRepo $
-						Git.HashObject.hashObject BlobObject link
+	{- For speed, tries to reuse the existing blob for symlink target. -}
+	addlink link = do
+		liftIO $ debug threadname ["add symlink", file]
+		v <- catObjectDetails $ Ref $ ':':file
+		case v of
+			Just (currlink, sha)
+				| s2w8 link == L.unpack currlink ->
 					stageSymlink file sha
-			madeChange file LinkChange
+			_ -> do
+				sha <- inRepo $
+					Git.HashObject.hashObject BlobObject link
+				stageSymlink file sha
+		madeChange file LinkChange
 
-		{- When a new link appears, or a link is changed,
-		 - after the startup scan, handle getting or
-		 - dropping the key's content. -}
-		checkcontent key daemonstatus
-			| scanComplete daemonstatus = do
-				present <- inAnnex key
-				unless present $
-					queueTransfers Next transferqueue dstatus
-						key (Just file) Download
-				handleDrops dstatus present key (Just file)
-			| otherwise = noop
+	{- When a new link appears, or a link is changed, after the startup
+	 - scan, handle getting or dropping the key's content. -}
+	checkcontent key daemonstatus
+		| scanComplete daemonstatus = do
+			present <- inAnnex key
+			unless present $
+				queueTransfers Next transferqueue dstatus
+					key (Just file) Download
+			handleDrops dstatus present key (Just file)
+		| otherwise = noop
 
 onDel :: Handler
 onDel threadname file _ _dstatus _ = do

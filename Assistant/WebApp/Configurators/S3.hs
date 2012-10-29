@@ -116,13 +116,13 @@ getEnableS3R uuid = s3Configurator $ do
 
 makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeS3Remote (S3Creds ak sk) name setup config = do
-	webapp <- getYesod
-	let st = fromJust $ threadState webapp
+	d <- getAssistantY id
+	let st = threadState d
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
 	r <- liftIO $ runThreadState st $ addRemote $ do
 		makeSpecialRemote name S3.remote config
 		return remotename
 	setup r
-	liftIO $ syncNewRemote st (daemonStatus webapp) (scanRemotes webapp) r
+	liftIO $ syncNewRemote st (daemonStatus d) (scanRemoteMap d) r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

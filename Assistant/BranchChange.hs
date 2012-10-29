@@ -8,7 +8,7 @@
 module Assistant.BranchChange where
 
 import Control.Concurrent.MSampleVar
-import Assistant.Common
+import Common.Annex
 
 newtype BranchChangeHandle = BranchChangeHandle (MSampleVar ())
 

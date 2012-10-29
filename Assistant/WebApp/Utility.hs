@@ -23,7 +23,6 @@ import Logs.Transfer
 import Locations.UserConfig
 import qualified Config
 
-import Yesod
 import qualified Data.Map as M
 import Control.Concurrent
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
@@ -37,13 +36,13 @@ changeSyncable (Just r) True = do
 	syncRemote r
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
-	webapp <- getYesod
-	let dstatus = daemonStatus webapp
-	let st = fromJust $ threadState webapp
+	d <- getAssistantY id
+	let dstatus = daemonStatus d
+	let st = threadState d
 	liftIO $ runThreadState st $ updateSyncRemotes dstatus
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
-	void $ liftIO $ dequeueTransfers (transferQueue webapp) dstatus tofrom
+	void $ liftIO $ dequeueTransfers (transferQueue d) dstatus tofrom
 	mapM_ (cancelTransfer False) =<<
 		filter tofrom . M.keys <$>
 			liftIO (currentTransfers <$> getDaemonStatus dstatus)
@@ -63,11 +62,11 @@ changeSyncFlag r enabled = runAnnex undefined $ do
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
 syncRemote remote = do
-	webapp <- getYesod
+	d <- getAssistantY id
 	liftIO $ syncNewRemote
-		(fromJust $ threadState webapp)
-		(daemonStatus webapp)
-		(scanRemotes webapp)
+		(threadState d)
+		(daemonStatus d)
+		(scanRemoteMap d)
 		remote
 
 pauseTransfer :: Transfer -> Handler ()
@@ -75,13 +74,13 @@ pauseTransfer = cancelTransfer True
 
 cancelTransfer :: Bool -> Transfer -> Handler ()
 cancelTransfer pause t = do
-	webapp <- getYesod
-	let dstatus = daemonStatus webapp
+	dstatus <- getAssistantY daemonStatus
+	tq <- getAssistantY transferQueue
 	m <- getCurrentTransfers
 	liftIO $ do
 		unless pause $
 			{- remove queued transfer -}
-			void $ dequeueTransfers (transferQueue webapp) dstatus $
+			void $ dequeueTransfers tq dstatus $
 				equivilantTransfer t
 		{- stop running transfer -}
 		maybe noop (stop dstatus) (M.lookup t m)
@@ -118,28 +117,24 @@ startTransfer t = do
 	where
 		go info = maybe (start info) resume $ transferTid info
 		startqueued = do
-			webapp <- getYesod
-			let dstatus = daemonStatus webapp
-			let q = transferQueue webapp
+			dstatus <- getAssistantY daemonStatus
+			q <- getAssistantY transferQueue
 			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
 			maybe noop start $ headMaybe is
 		resume tid = do
-			webapp <- getYesod
-			let dstatus = daemonStatus webapp
+			dstatus <- getAssistantY daemonStatus
 			liftIO $ do
 				alterTransferInfo dstatus t $ \i -> i
 					{ transferPaused = False }
 				throwTo tid ResumeTransfer
 		start info = do
-			webapp <- getYesod
-			let st = fromJust $ threadState webapp
-			let dstatus = daemonStatus webapp
-			let slots = transferSlots webapp
-			let commitchan = commitChan webapp
+			st <- getAssistantY threadState
+			dstatus <- getAssistantY daemonStatus
+			slots <- getAssistantY transferSlots
+			commitchan <- getAssistantY commitChan
 			liftIO $ inImmediateTransferSlot dstatus slots $ do
 				program <- readProgramFile
 				Transferrer.startTransfer st dstatus commitchan program t info
 
 getCurrentTransfers :: Handler TransferMap
-getCurrentTransfers = currentTransfers
-	<$> (liftIO . getDaemonStatus =<< daemonStatus <$> getYesod)
+getCurrentTransfers = currentTransfers <$> getDaemonStatusY
