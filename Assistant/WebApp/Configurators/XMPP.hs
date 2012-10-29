@@ -58,7 +58,7 @@ getXMPPR = xmppPage $ do
 	where
 		storecreds creds = do
 			void $ runAnnex undefined $ setXMPPCreds creds
-			liftIO . notifyRestart =<< getAssistantY pushNotifier
+			runAssistantY notifyRestart
 			redirect ConfigR
 #else
 getXMPPR = xmppPage $

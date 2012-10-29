@@ -28,17 +28,15 @@ pushNotifierThread :: NamedThread
 pushNotifierThread = NamedThread "PushNotifier" $ do
 	iodebug <- asIO debug
 	iopull <- asIO pull
-	pn <- getAssistant pushNotifier
-	controllerThread pn <~> xmppClient pn iodebug iopull
+	iowaitpush <- asIO $ const waitPush
+	ioclient <- asIO2 $ xmppClient $ iowaitpush ()
+	forever $ do
+		tid <- liftIO $ forkIO $ ioclient iodebug iopull
+		waitRestart
+		liftIO $ killThread tid
 
-controllerThread :: PushNotifier -> IO () -> IO ()
-controllerThread pushnotifier xmppclient = forever $ do
-	tid <- forkIO xmppclient
-	waitRestart pushnotifier
-	killThread tid
-
-xmppClient :: PushNotifier -> ([String] -> IO ()) -> ([UUID] -> IO ()) -> Assistant ()
-xmppClient pushnotifier iodebug iopull = do
+xmppClient :: (IO [UUID]) -> ([String] -> IO ()) -> ([UUID] -> IO ()) -> Assistant ()
+xmppClient iowaitpush iodebug iopull = do
 	v <- liftAnnex getXMPPCreds
 	case v of
 		Nothing -> noop
@@ -63,7 +61,7 @@ xmppClient pushnotifier iodebug iopull = do
 				threadDelaySeconds (Seconds 300)
 				loop c =<< getCurrentTime
 	sendnotifications = forever $ do
-		us <- liftIO $ waitPush pushnotifier
+		us <- liftIO iowaitpush
 		putStanza $ gitAnnexPresence $ encodePushNotification us
 	receivenotifications = forever $ do
 		s <- getStanza

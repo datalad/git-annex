@@ -62,7 +62,7 @@ dbusThread = do
 		)
 	handleconn = do
 		debug ["detected network connection"]
-		notifyRestart <<~ pushNotifier
+		notifyRestart
 		handleConnection
 	onerr e _ = do
 		liftAnnex $

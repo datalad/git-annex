@@ -100,17 +100,15 @@ pushToRemotes now notifypushes remotes = do
 		if null failed
 			then do
 				when notifypushes $
-					notifyPush (map Remote.uuid succeeded) <<~ pushNotifier
+					notifyPush (map Remote.uuid succeeded)
 				return True
 			else if shouldretry
 				then retry branch g u failed
 				else fallback branch g u failed
 
-	updatemap succeeded failed = do
-		pushmap <- getAssistant failedPushMap
-		liftIO $ changeFailedPushMap pushmap $ \m ->
-			M.union (makemap failed) $
-				M.difference m (makemap succeeded)
+	updatemap succeeded failed = changeFailedPushMap $ \m ->
+		M.union (makemap failed) $
+			M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
 	retry branch g u rs = do
@@ -124,7 +122,7 @@ pushToRemotes now notifypushes remotes = do
 			inParallel (pushfallback g u branch) rs
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
-			notifyPush (map Remote.uuid succeeded) <<~ pushNotifier
+			notifyPush (map Remote.uuid succeeded)
 		return $ null failed
 		
 	push g branch remote = Command.Sync.pushBranch remote branch g

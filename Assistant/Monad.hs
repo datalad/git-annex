@@ -31,7 +31,7 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
-import Assistant.Pushes
+import Assistant.Types.Pushes
 import Assistant.Commits
 import Assistant.Changes
 import Assistant.BranchChange
