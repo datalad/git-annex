@@ -173,58 +173,58 @@ startDaemon assistant foreground webappwaiter
 		logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
 		pidfile <- fromRepo gitAnnexPidFile
 		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
-	where
-		go d = startAssistant assistant d webappwaiter
+  where
+	go d = startAssistant assistant d webappwaiter
 
 startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()) -> Annex ()
 startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	checkCanWatch
 	dstatus <- startDaemonStatus
 	liftIO $ daemonize $ run dstatus st
-	where
-		run dstatus st = do
-			changechan <- newChangeChan
-			commitchan <- newCommitChan
-			pushmap <- newFailedPushMap
-			transferqueue <- newTransferQueue
-			transferslots <- newTransferSlots
-			scanremotes <- newScanRemoteMap
-			branchhandle <- newBranchChangeHandle
-			pushnotifier <- newPushNotifier
+  where
+	run dstatus st = do
+		changechan <- newChangeChan
+		commitchan <- newCommitChan
+		pushmap <- newFailedPushMap
+		transferqueue <- newTransferQueue
+		transferslots <- newTransferSlots
+		scanremotes <- newScanRemoteMap
+		branchhandle <- newBranchChangeHandle
+		pushnotifier <- newPushNotifier
 #ifdef WITH_WEBAPP
-			urlrenderer <- newUrlRenderer
+		urlrenderer <- newUrlRenderer
 #endif
-			mapM_ (startthread dstatus)
-				[ watch $ commitThread st changechan commitchan transferqueue dstatus
+		mapM_ (startthread dstatus)
+			[ watch $ commitThread st changechan commitchan transferqueue dstatus
 #ifdef WITH_WEBAPP
-				, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots pushnotifier commitchan urlrenderer Nothing webappwaiter
+			, assist $ webAppThread (Just st) dstatus scanremotes transferqueue transferslots pushnotifier commitchan urlrenderer Nothing webappwaiter
 #ifdef WITH_PAIRING
-				, assist $ pairListenerThread st dstatus scanremotes urlrenderer
+			, assist $ pairListenerThread st dstatus scanremotes urlrenderer
 #endif
 #endif
-				, assist $ pushThread st dstatus commitchan pushmap pushnotifier
-				, assist $ pushRetryThread st dstatus pushmap pushnotifier
-				, assist $ mergeThread st dstatus transferqueue branchhandle
-				, assist $ transferWatcherThread st dstatus transferqueue
-				, assist $ transferPollerThread st dstatus
-				, assist $ transfererThread st dstatus transferqueue transferslots commitchan
-				, assist $ daemonStatusThread st dstatus
-				, assist $ sanityCheckerThread st dstatus transferqueue changechan
-				, assist $ mountWatcherThread st dstatus scanremotes pushnotifier
-				, assist $ netWatcherThread st dstatus scanremotes pushnotifier
-				, assist $ netWatcherFallbackThread st dstatus scanremotes pushnotifier
-				, assist $ transferScannerThread st dstatus scanremotes transferqueue
-				, assist $ configMonitorThread st dstatus branchhandle commitchan
+			, assist $ pushThread st dstatus commitchan pushmap pushnotifier
+			, assist $ pushRetryThread st dstatus pushmap pushnotifier
+			, assist $ mergeThread st dstatus transferqueue branchhandle
+			, assist $ transferWatcherThread st dstatus transferqueue
+			, assist $ transferPollerThread st dstatus
+			, assist $ transfererThread st dstatus transferqueue transferslots commitchan
+			, assist $ daemonStatusThread st dstatus
+			, assist $ sanityCheckerThread st dstatus transferqueue changechan
+			, assist $ mountWatcherThread st dstatus scanremotes pushnotifier
+			, assist $ netWatcherThread st dstatus scanremotes pushnotifier
+			, assist $ netWatcherFallbackThread st dstatus scanremotes pushnotifier
+			, assist $ transferScannerThread st dstatus scanremotes transferqueue
+			, assist $ configMonitorThread st dstatus branchhandle commitchan
 #ifdef WITH_XMPP
-				, assist $ pushNotifierThread st dstatus pushnotifier
+			, assist $ pushNotifierThread st dstatus pushnotifier
 #endif
-				, watch $ watchThread st dstatus transferqueue changechan
-				]
-			waitForTermination
+			, watch $ watchThread st dstatus transferqueue changechan
+			]
+		waitForTermination
 
-		watch a = (True, a)
-		assist a = (False, a)
-		startthread dstatus (watcher, t)
-			| watcher || assistant = void $ forkIO $
-				runNamedThread dstatus t
-			| otherwise = noop
+	watch a = (True, a)
+	assist a = (False, a)
+	startthread dstatus (watcher, t)
+		| watcher || assistant = void $ forkIO $
+			runNamedThread dstatus t
+		| otherwise = noop

@@ -65,29 +65,29 @@ showProgress = handle q $
  - The action is passed a callback to use to update the meter. -}
 metered :: (Maybe MeterUpdate) -> Key -> (MeterUpdate -> Annex a) -> Annex a
 metered combinemeterupdate key a = withOutputType $ go (keySize key)
-	where
-		go (Just size) NormalOutput = do
-			progress <- liftIO $ newProgress "" size
-			meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
-			showOutput
-			liftIO $ displayMeter stdout meter
-			r <- a $ \n -> liftIO $ do
-				incrP progress n
-				displayMeter stdout meter
-				maybe noop (\m -> m n) combinemeterupdate
-			liftIO $ clearMeter stdout meter
-			return r
-                go _ _ = a (const noop)
+  where
+	go (Just size) NormalOutput = do
+		progress <- liftIO $ newProgress "" size
+		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
+		showOutput
+		liftIO $ displayMeter stdout meter
+		r <- a $ \n -> liftIO $ do
+			incrP progress n
+			displayMeter stdout meter
+			maybe noop (\m -> m n) combinemeterupdate
+		liftIO $ clearMeter stdout meter
+		return r
+	go _ _ = a (const noop)
 
 showSideAction :: String -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
-	where
-		go (MessageState v StartBlock) = do
-			p
-			Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
-		go (MessageState _ InBlock) = return ()
-		go _ = p
-		p = handle q $ putStrLn $ "(" ++ m ++ "...)"
+  where
+	go (MessageState v StartBlock) = do
+		p
+		Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
+	go (MessageState _ InBlock) = return ()
+	go _ = p
+	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "Recording state in git"
@@ -106,8 +106,8 @@ doSideAction' b a = do
 	o <- Annex.getState Annex.output
 	set $ o { sideActionBlock = b }
 	set o `after` a
-	where
-		set o = Annex.changeState $ \s -> s {  Annex.output = o }
+  where
+	set o = Annex.changeState $ \s -> s {  Annex.output = o }
 
 showOutput :: Annex ()
 showOutput = handle q $
@@ -125,10 +125,10 @@ showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
 showEndResult ok = handle (JSON.end ok) $ putStrLn msg
-	where
-		msg
-			| ok = "ok"
-			| otherwise = "failed"
+  where
+	msg
+		| ok = "ok"
+		| otherwise = "failed"
 
 showErr :: (Show a) => a -> Annex ()
 showErr e = warning' $ "git-annex: " ++ show e
@@ -153,9 +153,9 @@ maybeShowJSON v = handle (JSON.add v) q
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON a => [(String, a)] -> Annex Bool
 showFullJSON v = withOutputType $ liftIO . go
-	where
-		go JSONOutput = JSON.complete v >> return True
-		go _ = return False
+  where
+	go JSONOutput = JSON.complete v >> return True
+	go _ = return False
 
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
@@ -184,10 +184,10 @@ setupConsole = do
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = withOutputType go
-	where
-		go NormalOutput = liftIO normal
-		go QuietOutput = q
-		go JSONOutput = liftIO $ flushed json
+  where
+	go NormalOutput = liftIO normal
+	go QuietOutput = q
+	go JSONOutput = liftIO $ flushed json
 
 q :: Monad m => m ()
 q = noop

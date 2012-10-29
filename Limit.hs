@@ -54,9 +54,9 @@ getMatcher' = do
 {- Adds something to the limit list, which is built up reversed. -}
 add :: Utility.Matcher.Token (Annex.FileInfo -> Annex Bool) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
-	where
-		prepend (Left ls) = Left $ l:ls
-		prepend _ = error "internal"
+  where
+	prepend (Left ls) = Left $ l:ls
+	prepend _ = error "internal"
 
 {- Adds a new token. -}
 addToken :: String -> Annex ()
@@ -83,9 +83,9 @@ limitExclude glob = Right $ const $ return . not . matchglob glob
 matchglob :: String -> Annex.FileInfo -> Bool
 matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
 	isJust $ match cregex f []
-	where
-		cregex = compile regex []
-		regex = '^':wildToRegex glob
+  where
+	cregex = compile regex []
+	regex = '^':wildToRegex glob
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. -}
@@ -97,21 +97,21 @@ limitIn name = Right $ \notpresent -> check $
 	if name == "."
 		then inhere notpresent
 		else inremote notpresent
-	where
-		check a = lookupFile >=> handle a
-		handle _ Nothing = return False
-		handle a (Just (key, _)) = a key
-		inremote notpresent key = do
-			u <- Remote.nameToUUID name
-			us <- Remote.keyLocations key
-			return $ u `elem` us && u `S.notMember` notpresent
-		inhere notpresent key
-			| S.null notpresent = inAnnex key
-			| otherwise = do
-				u <- getUUID
-				if u `S.member` notpresent
-					then return False
-					else inAnnex key
+  where
+	check a = lookupFile >=> handle a
+	handle _ Nothing = return False
+	handle a (Just (key, _)) = a key
+	inremote notpresent key = do
+		u <- Remote.nameToUUID name
+		us <- Remote.keyLocations key
+		return $ u `elem` us && u `S.notMember` notpresent
+	inhere notpresent key
+		| S.null notpresent = inAnnex key
+		| otherwise = do
+			u <- getUUID
+			if u `S.member` notpresent
+				then return False
+				else inAnnex key
 
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MkLimit
@@ -122,10 +122,10 @@ limitPresent u _ = Right $ const $ check $ \key -> do
 		else do
 			us <- Remote.keyLocations key
 			return $ maybe False (`elem` us) u
-	where
-		check a = lookupFile >=> handle a
-		handle _ Nothing = return False
-		handle a (Just (key, _)) = a key
+  where
+	check a = lookupFile >=> handle a
+	handle _ Nothing = return False
+	handle a (Just (key, _)) = a key
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
@@ -139,18 +139,18 @@ limitCopies want = case split ":" want of
 		Nothing -> go n $ checkgroup v
 	[n] -> go n $ const $ return True
 	_ -> Left "bad value for copies"
-	where
-		go num good = case readish num of
-			Nothing -> Left "bad number for copies"
-			Just n -> Right $ \notpresent f ->
-				lookupFile f >>= handle n good notpresent
-		handle _ _ _ Nothing = return False
-		handle n good notpresent (Just (key, _)) = do
-			us <- filter (`S.notMember` notpresent)
-				<$> (filterM good =<< Remote.keyLocations key)
-			return $ length us >= n
-		checktrust t u = (== t) <$> lookupTrust u
-		checkgroup g u = S.member g <$> lookupGroups u
+  where
+	go num good = case readish num of
+		Nothing -> Left "bad number for copies"
+		Just n -> Right $ \notpresent f ->
+			lookupFile f >>= handle n good notpresent
+	handle _ _ _ Nothing = return False
+	handle n good notpresent (Just (key, _)) = do
+		us <- filter (`S.notMember` notpresent)
+			<$> (filterM good =<< Remote.keyLocations key)
+		return $ length us >= n
+	checktrust t u = (== t) <$> lookupTrust u
+	checkgroup g u = S.member g <$> lookupGroups u
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
@@ -163,15 +163,15 @@ limitInAllGroup :: GroupMap -> MkLimit
 limitInAllGroup m groupname
 	| S.null want = Right $ const $ const $ return True
 	| otherwise = Right $ \notpresent -> lookupFile >=> check notpresent
-	where
-		want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
-		check _ Nothing = return False
-		check notpresent (Just (key, _))
-			-- optimisation: Check if a wanted uuid is notpresent.
-			| not (S.null (S.intersection want notpresent))	= return False
-			| otherwise = do
-				present <- S.fromList <$> Remote.keyLocations key
-				return $ S.null $ want `S.difference` present
+  where
+	want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
+	check _ Nothing = return False
+	check notpresent (Just (key, _))
+		-- optimisation: Check if a wanted uuid is notpresent.
+		| not (S.null (S.intersection want notpresent))	= return False
+		| otherwise = do
+			present <- S.fromList <$> Remote.keyLocations key
+			return $ S.null $ want `S.difference` present
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
@@ -179,9 +179,9 @@ addInBackend = addLimit . limitInBackend
 
 limitInBackend :: MkLimit
 limitInBackend name = Right $ const $ lookupFile >=> check
-	where
-		wanted = Backend.lookupBackendName name
-		check = return . maybe False ((==) wanted . snd)
+  where
+	wanted = Backend.lookupBackendName name
+	check = return . maybe False ((==) wanted . snd)
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()
@@ -194,9 +194,9 @@ limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit
 limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ const $ lookupFile >=> check sz
-	where
-		check _ Nothing = return False
-		check sz (Just (key, _)) = return $ keySize key `vs` Just sz
+  where
+	check _ Nothing = return False
+	check sz (Just (key, _)) = return $ keySize key `vs` Just sz
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

@@ -23,30 +23,30 @@ usage header cmds commonoptions = unlines $
 	, "Commands:"
 	, ""
 	] ++ cmdlines
-	where
-		-- To get consistent indentation of options, generate the
-		-- usage for all options at once. A command's options will
-		-- be displayed after the command.
-		alloptlines = filter (not . null) $
-			lines $ usageInfo "" $
-				concatMap cmdoptions scmds ++ commonoptions
-		(cmdlines, optlines) = go scmds alloptlines []
-		go [] os ls = (ls, os)
-		go (c:cs) os ls = go cs os' (ls++(l:o))
-			where
-				(o, os') = splitAt (length $ cmdoptions c) os
-				l = concat 
-					[ cmdname c
-					, namepad (cmdname c)
-					, cmdparamdesc c
-					, descpad (cmdparamdesc c)
-					, cmddesc c
-					]
-		pad n s = replicate (n - length s) ' '
-		namepad = pad $ longest cmdname + 1
-		descpad = pad $ longest cmdparamdesc + 2
-		longest f = foldl max 0 $ map (length . f) cmds
-		scmds = sort cmds
+  where
+	-- To get consistent indentation of options, generate the
+	-- usage for all options at once. A command's options will
+	-- be displayed after the command.
+	alloptlines = filter (not . null) $
+		lines $ usageInfo "" $
+			concatMap cmdoptions scmds ++ commonoptions
+	(cmdlines, optlines) = go scmds alloptlines []
+	go [] os ls = (ls, os)
+	go (c:cs) os ls = go cs os' (ls++(l:o))
+	  where
+		(o, os') = splitAt (length $ cmdoptions c) os
+		l = concat 
+			[ cmdname c
+			, namepad (cmdname c)
+			, cmdparamdesc c
+			, descpad (cmdparamdesc c)
+			, cmddesc c
+			]
+	pad n s = replicate (n - length s) ' '
+	namepad = pad $ longest cmdname + 1
+	descpad = pad $ longest cmdparamdesc + 2
+	longest f = foldl max 0 $ map (length . f) cmds
+	scmds = sort cmds
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String

@@ -40,16 +40,16 @@ orderedList = do
 	if not $ null l
 		then return l
 		else handle =<< Annex.getState Annex.forcebackend
-	where
-		handle Nothing = standard
-		handle (Just "") = standard
-		handle (Just name) = do
-			l' <- (lookupBackendName name :) <$> standard
-			Annex.changeState $ \s -> s { Annex.backends = l' }
-			return l'
-		standard = parseBackendList <$> getConfig (annexConfig "backends") ""
-		parseBackendList [] = list
-		parseBackendList s = map lookupBackendName $ words s
+  where
+	handle Nothing = standard
+	handle (Just "") = standard
+	handle (Just name) = do
+		l' <- (lookupBackendName name :) <$> standard
+		Annex.changeState $ \s -> s { Annex.backends = l' }
+		return l'
+	standard = parseBackendList <$> getConfig (annexConfig "backends") ""
+	parseBackendList [] = list
+	parseBackendList s = map lookupBackendName $ words s
 
 {- Generates a key for a file, trying each backend in turn until one
  - accepts it.
@@ -66,12 +66,12 @@ genKey' (b:bs) source = do
 	case r of
 		Nothing -> genKey' bs source
 		Just k -> return $ Just (makesane k, b)
-	where
-		-- keyNames should not contain newline characters.
-		makesane k = k { keyName = map fixbadchar (keyName k) }
-		fixbadchar c
-			| c == '\n' = '_'
-			| otherwise = c
+  where
+	-- keyNames should not contain newline characters.
+	makesane k = k { keyName = map fixbadchar (keyName k) }
+	fixbadchar c
+		| c == '\n' = '_'
+		| otherwise = c
 
 {- Looks up the key and backend corresponding to an annexed file,
  - by examining what the file symlinks to. -}
@@ -81,35 +81,33 @@ lookupFile file = do
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
-	where
-		makekey l = maybe (return Nothing) (makeret l) (fileKey $ takeFileName l)
-		makeret l k = let bname = keyBackendName k in
-			case maybeLookupBackendName bname of
-				Just backend -> do
-					return $ Just (k, backend)
-				Nothing -> do
-					when (isLinkToAnnex l) $ warning $
-						"skipping " ++ file ++
-						" (unknown backend " ++
-						bname ++ ")"
-					return Nothing
+  where
+	makekey l = maybe (return Nothing) (makeret l) (fileKey $ takeFileName l)
+	makeret l k = let bname = keyBackendName k in
+		case maybeLookupBackendName bname of
+			Just backend -> do
+				return $ Just (k, backend)
+			Nothing -> do
+				when (isLinkToAnnex l) $ warning $
+					"skipping " ++ file ++
+					" (unknown backend " ++ bname ++ ")"
+				return Nothing
 
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file.
  -}
 chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
-	where
-		go Nothing =  maybeLookupBackendName <$>
-			checkAttr "annex.backend" f
-		go (Just _) = Just . Prelude.head <$> orderedList
+  where
+	go Nothing =  maybeLookupBackendName <$> checkAttr "annex.backend" f
+	go (Just _) = Just . Prelude.head <$> orderedList
 
 {- Looks up a backend by name. May fail if unknown. -}
 lookupBackendName :: String -> Backend
 lookupBackendName s = fromMaybe unknown $ maybeLookupBackendName s
-	where
-		unknown = error $ "unknown backend " ++ s
+  where
+	unknown = error $ "unknown backend " ++ s
 maybeLookupBackendName :: String -> Maybe Backend
 maybeLookupBackendName s = headMaybe matches
-	where
-		matches = filter (\b -> s == B.name b) list
+  where
+	matches = filter (\b -> s == B.name b) list
