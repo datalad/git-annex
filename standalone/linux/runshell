@@ -26,6 +26,19 @@ cd "$base"
 base="$(pwd)"
 cd "$orig"
 
+# Install shim that's used to run git-annex-shell from ssh authorized_keys.
+# The assistant also does this when run, but the user may not be using the
+# assistant.
+if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
+	mkdir "$HOME/.ssh" >/dev/null 2>&1 || true
+	(
+		echo "#!/bin/sh"
+		echo "set -e"
+		echo "exec $base/runshell git-annex-shell -c \"\$SSH_ORIGINAL_COMMAND\""
+	) > "$HOME/.ssh/git-annex-shell"
+	chmod +x "$HOME/.ssh/git-annex-shell"
+fi
+
 # Put our binaries first, to avoid issues with out of date or incompatable
 # system binaries.
 PATH=$base/bin:$PATH
