@@ -8,7 +8,6 @@
 module Assistant.Changes where
 
 import Common.Annex
-import qualified Annex.Queue
 import Types.KeySource
 import Utility.TSet
 
@@ -39,19 +38,15 @@ newChangeChan :: IO ChangeChan
 newChangeChan = newTSet
 
 {- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> ChangeType -> Annex (Maybe Change)
-madeChange f t = do
-	-- Just in case the commit thread is not flushing the queue fast enough.
-	Annex.Queue.flushWhenFull
-	liftIO $ Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
+madeChange :: FilePath -> ChangeType -> IO (Maybe Change)
+madeChange f t = Just <$> (Change <$> getCurrentTime <*> pure f <*> pure t)
 
-noChange :: Annex (Maybe Change)
+noChange :: IO (Maybe Change)
 noChange = return Nothing
 
 {- Indicates an add needs to be done, but has not started yet. -}
-pendingAddChange :: FilePath -> Annex (Maybe Change)
-pendingAddChange f =
-	liftIO $ Just <$> (PendingAddChange <$> getCurrentTime <*> pure f)
+pendingAddChange :: FilePath -> IO (Maybe Change)
+pendingAddChange f = Just <$> (PendingAddChange <$> getCurrentTime <*> pure f)
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True

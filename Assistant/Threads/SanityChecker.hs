@@ -90,9 +90,5 @@ check = do
 		dstatus <- getAssistant daemonStatusHandle
 		liftIO $ void $ addAlert dstatus $ sanityCheckFixAlert msg
 	addsymlink file s = do
-		d <- getAssistant id
-		liftIO $ Watcher.runHandler (threadName d)
-			(threadState d) (daemonStatusHandle d)
-			(transferQueue d) (changeChan d)
-			Watcher.onAddSymlink file s
+		Watcher.runHandler Watcher.onAddSymlink file s
 		insanity $ "found unstaged symlink: " ++ file

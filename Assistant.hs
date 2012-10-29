@@ -215,7 +215,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 #ifdef WITH_XMPP
 			, assist $ pushNotifierThread st dstatus pushnotifier
 #endif
-			, watch $ watchThread st dstatus transferqueue changechan
+			, watch $ watchThread
 			]
 		liftIO waitForTermination
 
