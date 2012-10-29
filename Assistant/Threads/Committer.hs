@@ -15,7 +15,6 @@ import Assistant.Commits
 import Assistant.Alert
 import Assistant.Threads.Watcher
 import Assistant.TransferQueue
-import Assistant.DaemonStatus
 import Logs.Transfer
 import qualified Annex.Queue
 import qualified Git.Command

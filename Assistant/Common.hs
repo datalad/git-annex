@@ -10,7 +10,12 @@ module Assistant.Common (
 	ThreadName,
 	NamedThread(..),
 	runNamedThread,
-	debug
+	debug,
+	addAlert,
+	removeAlert,
+	alertWhile,
+	alertWhile',
+	alertDuring,
 ) where
 
 import Common.Annex as X
@@ -20,6 +25,7 @@ import Assistant.DaemonStatus
 
 import System.Log.Logger
 import qualified Control.Exception as E
+import qualified Data.Map as M
 
 type ThreadName = String
 data NamedThread = NamedThread ThreadName (Assistant ())
@@ -44,3 +50,49 @@ runNamedThread (NamedThread name a) = do
 				-- TODO click to restart
 				void $ addAlert (daemonStatusHandle d) $
 					warningAlert name msg
+
+{- Returns the alert's identifier, which can be used to remove it. -}
+addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
+addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
+	where
+		go s = (s { lastAlertId = i, alertMap = m }, i)
+			where
+				i = nextAlertId $ lastAlertId s
+				m = mergeAlert i alert (alertMap s)
+
+removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
+removeAlert dstatus i = updateAlert dstatus i (const Nothing)
+
+updateAlert :: DaemonStatusHandle -> AlertId -> (Alert -> Maybe Alert) -> IO ()
+updateAlert dstatus i a = updateAlertMap dstatus $ \m -> M.update a i m
+
+updateAlertMap :: DaemonStatusHandle -> (AlertMap -> AlertMap) -> IO ()
+updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { alertMap = a (alertMap s) }
+
+{- Displays an alert while performing an activity that returns True on
+ - success.
+ -
+ - The alert is left visible afterwards, as filler.
+ - Old filler is pruned, to prevent the map growing too large. -}
+alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
+alertWhile dstatus alert a = alertWhile' dstatus alert $ do
+	r <- a
+	return (r, r)
+
+{- Like alertWhile, but allows the activity to return a value too. -}
+alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
+alertWhile' dstatus alert a = do
+	let alert' = alert { alertClass = Activity }
+	i <- addAlert dstatus alert'
+	(ok, r) <- a
+	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
+	return r
+
+{- Displays an alert while performing an activity, then removes it. -}
+alertDuring :: DaemonStatusHandle -> Alert -> IO a -> IO a
+alertDuring dstatus alert a = do
+	let alert' = alert { alertClass = Activity }
+	i <- addAlert dstatus alert'
+	removeAlert dstatus i `after` a
