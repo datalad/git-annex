@@ -26,7 +26,7 @@ import "mtl" Control.Monad.Reader
 import Control.Monad.Base (liftBase, MonadBase)
 
 import Common.Annex
-import Assistant.ThreadedMonad
+import Assistant.Types.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
@@ -112,6 +112,7 @@ asIO2 a = do
 (<<~) :: (a -> IO b) -> (AssistantData -> a) -> Assistant b
 io <<~ v = reader v >>= liftIO . io
 
+withAssistant :: (AssistantData -> a) -> (a -> IO b) -> Assistant b
 withAssistant v io = io <<~ v
 
 daemonStatus :: Assistant DaemonStatus

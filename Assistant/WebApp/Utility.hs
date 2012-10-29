@@ -11,7 +11,6 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
-import Assistant.ThreadedMonad
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Sync
@@ -38,8 +37,7 @@ changeSyncable (Just r) False = do
 	changeSyncFlag r False
 	d <- getAssistantY id
 	let dstatus = daemonStatusHandle d
-	let st = threadState d
-	liftIO $ runThreadState st $ updateSyncRemotes dstatus
+	runAssistantY $ liftAnnex $ updateSyncRemotes dstatus
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
 	void $ liftIO $ dequeueTransfers (transferQueue d) dstatus tofrom

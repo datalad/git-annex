@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.ThreadedMonad where
+module Assistant.Types.ThreadedMonad where
 
 import Common.Annex
 import qualified Annex

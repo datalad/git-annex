@@ -11,7 +11,6 @@ module Assistant.WebApp where
 
 import Assistant.WebApp.Types
 import Assistant.Common
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
@@ -99,10 +98,8 @@ modifyWebAppState a = go =<< webAppState <$> getYesod
 runAnnex :: forall sub a. a -> Annex a -> GHandler sub WebApp a
 runAnnex fallback a = ifM (noAnnex <$> getYesod)
 	( return fallback
-	, go =<< getAssistantY threadState
+	, runAssistantY $ liftAnnex a
 	)
-	where
-		go st = liftIO $ runThreadState st a
 
 waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier selector nid = do

@@ -27,7 +27,7 @@ import Assistant.WebApp.Configurators.S3
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos
-import Assistant.ThreadedMonad
+import Assistant.Types.ThreadedMonad
 import Utility.WebApp
 import Utility.FileMode
 import Utility.TempFile

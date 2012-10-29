@@ -15,7 +15,6 @@ import Assistant.Sync
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.ThreadedMonad
 import Utility.Yesod
 import qualified Remote.S3 as S3
 import Logs.Remote
@@ -116,11 +115,9 @@ getEnableS3R uuid = s3Configurator $ do
 
 makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeS3Remote (S3Creds ak sk) name setup config = do
-	d <- getAssistantY id
-	let st = threadState d
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
-	r <- liftIO $ runThreadState st $ addRemote $ do
+	r <- runAssistantY $ liftAnnex $ addRemote $ do
 		makeSpecialRemote name S3.remote config
 		return remotename
 	setup r

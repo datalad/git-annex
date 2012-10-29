@@ -118,8 +118,8 @@
 module Assistant where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
+import Assistant.Types.ThreadedMonad
 import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.Threads.Committer
