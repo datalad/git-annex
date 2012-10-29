@@ -90,6 +90,8 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 	urlrender <- lift getUrlRender
 	reldir <- fromJust . relDir <$> lift getYesod
 
+	sendrequests <- lift $ runAssistantY $ asIO2 $ mksendrequests urlrender
+
 	{- Generating a ssh key pair can take a while, so do it in the
 	 - background. -}
 	void $ liftIO $ forkIO $ do
@@ -102,7 +104,7 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 			<*> (maybe genUUID return muuid)
 		let sender = multicastPairMsg Nothing secret pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata stage
-		startSending dstatus pip stage $ sendrequests sender dstatus urlrender
+		startSending dstatus pip stage $ sendrequests sender
 
 	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
 	where
@@ -114,8 +116,8 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 		 - have been on a page specific to the in-process pairing
 		 - that just stopped, so can't go back there.
 		 -}
-		sendrequests sender dstatus urlrender _stage = do
-			tid <- myThreadId
+		mksendrequests urlrender sender _stage = do
+			tid <- liftIO myThreadId
 			let selfdestruct = AlertButton
 				{ buttonLabel = "Cancel"
 				, buttonUrl = urlrender HomeR
@@ -123,7 +125,7 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 					oncancel
 					killThread tid
 				}
-			alertDuring dstatus (alert selfdestruct) $ do
+			alertDuring (alert selfdestruct) $ liftIO $ do
 				_ <- E.try (sender stage) :: IO (Either E.SomeException ())
 				return ()
 

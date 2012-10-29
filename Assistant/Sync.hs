@@ -38,8 +38,7 @@ import Control.Concurrent
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
-	dstatus <- getAssistant daemonStatusHandle
-	alertWhile dstatus (syncAlert rs) <~> do
+	alertWhile (syncAlert rs) $ do
 		(ok, diverged) <- sync
 			=<< liftAnnex (inRepo Git.Branch.current)
 		scanremotes <- getAssistant scanRemoteMap

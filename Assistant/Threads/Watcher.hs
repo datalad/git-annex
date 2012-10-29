@@ -75,8 +75,7 @@ watchThread = NamedThread "Watcher" $ do
 startupScan :: IO a -> Assistant a
 startupScan scanner = do
 	liftAnnex $ showAction "scanning"
-	dstatus <- getAssistant daemonStatusHandle
-	alertWhile' dstatus startupScanAlert <~> do
+	alertWhile' startupScanAlert $ do
 		r <- liftIO $ scanner
 
 		-- Notice any files that were deleted before
@@ -85,6 +84,7 @@ startupScan scanner = do
 			inRepo $ Git.Command.run "add" [Param "--update"]
 			showAction "started"
 		
+		dstatus <- getAssistant daemonStatusHandle
 		liftIO $ modifyDaemonStatus_ dstatus $
 			\s -> s { scanComplete = True }
 

@@ -58,8 +58,7 @@ commitThread = NamedThread "Committer" $ do
 							, show (length readychanges)
 							, "changes"
 							]
-						dstatus <- getAssistant daemonStatusHandle
-						void $ alertWhile dstatus commitAlert <~>
+						void $ alertWhile commitAlert $
 							liftAnnex commitStaged
 						recordCommit <<~ commitChan
 					else refill readychanges
@@ -177,21 +176,19 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 
 	add :: Change -> Assistant (Maybe Change)
 	add change@(InProcessAddChange { keySource = ks }) = do
-		dstatus <- getAssistant daemonStatusHandle
-		alertWhile' dstatus (addFileAlert $ keyFilename ks) <~> add' change ks
-	add _ = return Nothing
-
-	add' change ks = liftM ret $ catchMaybeIO <~> do
-		sanitycheck ks $ do
-			key <- liftAnnex $ do
-				showStart "add" $ keyFilename ks
-				Command.Add.ingest ks
-			done (finishedChange change) (keyFilename ks) key
+		alertWhile' (addFileAlert $ keyFilename ks) $
+			liftM ret $ catchMaybeIO <~> do
+				sanitycheck ks $ do
+					key <- liftAnnex $ do
+						showStart "add" $ keyFilename ks
+						Command.Add.ingest ks
+					done (finishedChange change) (keyFilename ks) key
 	  where
 		{- Add errors tend to be transient and will be automatically
 		 - dealt with, so don't pass to the alert code. -}
 		ret (Just j@(Just _)) = (True, j)
 		ret _ = (True, Nothing)
+	add _ = return Nothing
 
 	done _ _ Nothing = do
 		liftAnnex showEndFail

@@ -76,23 +76,26 @@ updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstat
  -
  - The alert is left visible afterwards, as filler.
  - Old filler is pruned, to prevent the map growing too large. -}
-alertWhile :: DaemonStatusHandle -> Alert -> IO Bool -> IO Bool
-alertWhile dstatus alert a = alertWhile' dstatus alert $ do
+alertWhile :: Alert -> Assistant Bool -> Assistant Bool
+alertWhile alert a = alertWhile' alert $ do
 	r <- a
 	return (r, r)
 
 {- Like alertWhile, but allows the activity to return a value too. -}
-alertWhile' :: DaemonStatusHandle -> Alert -> IO (Bool, a) -> IO a
-alertWhile' dstatus alert a = do
+alertWhile' :: Alert -> Assistant (Bool, a) -> Assistant a
+alertWhile' alert a = do
 	let alert' = alert { alertClass = Activity }
-	i <- addAlert dstatus alert'
+	dstatus <- getAssistant daemonStatusHandle
+	i <- liftIO $ addAlert dstatus alert'
 	(ok, r) <- a
-	updateAlertMap dstatus $ mergeAlert i $ makeAlertFiller ok alert'
+	liftIO $ updateAlertMap dstatus $
+		mergeAlert i $ makeAlertFiller ok alert'
 	return r
 
 {- Displays an alert while performing an activity, then removes it. -}
-alertDuring :: DaemonStatusHandle -> Alert -> IO a -> IO a
-alertDuring dstatus alert a = do
+alertDuring :: Alert -> Assistant a -> Assistant a
+alertDuring alert a = do
 	let alert' = alert { alertClass = Activity }
-	i <- addAlert dstatus alert'
-	removeAlert dstatus i `after` a
+	dstatus <- getAssistant daemonStatusHandle
+	i <- liftIO $ addAlert dstatus alert'
+	liftIO (removeAlert dstatus i) `after` a

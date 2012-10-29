@@ -24,10 +24,7 @@ sanityCheckerThread = NamedThread "SanityChecker" $ forever $ do
 	waitForNextCheck
 
 	debug ["starting sanity check"]
-
-	dstatus <- getAssistant daemonStatusHandle
-	void $ alertWhile dstatus sanityCheckAlert <~> go
-	
+	void $ alertWhile sanityCheckAlert go
 	debug ["sanity check complete"]
   where
 	go = do

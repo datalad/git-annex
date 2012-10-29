@@ -100,10 +100,10 @@ failedTransferScan r = do
 expensiveScan :: [Remote] -> Assistant ()
 expensiveScan rs = unless onlyweb $ do
 	debug ["starting scan of", show visiblers]
-	dstatus <- getAssistant daemonStatusHandle
-	void $ alertWhile dstatus (scanAlert visiblers) <~> do
+	void $ alertWhile (scanAlert visiblers) $ do
 		g <- liftAnnex gitRepo
 		(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
+		dstatus <- getAssistant daemonStatusHandle
 		forM_ files $ \f -> do
 			ts <- liftAnnex $
 				ifAnnexed f (findtransfers dstatus f) (return [])
