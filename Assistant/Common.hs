@@ -10,8 +10,7 @@ module Assistant.Common (
 	ThreadName,
 	NamedThread(..),
 	runNamedThread,
-	debug,
-	brokendebug
+	debug
 ) where
 
 import Common.Annex as X
@@ -24,9 +23,6 @@ import qualified Control.Exception as E
 
 type ThreadName = String
 data NamedThread = NamedThread ThreadName (Assistant ())
-
-brokendebug :: ThreadName -> [String] -> IO ()
-brokendebug _ _ = noop -- TODO remove this
 
 debug :: [String] -> Assistant ()
 debug ws = do
