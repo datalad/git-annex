@@ -88,7 +88,7 @@ checkMountMonitor client = do
 	running <- filter (`elem` usableservices)
 		<$> liftIO (listServiceNames client)
 	case running of
-		[] -> liftIO $ startOneService client startableservices
+		[] -> startOneService client startableservices
 		(service:_) -> do
 			debug [ "Using running DBUS service"
 				, service
@@ -101,15 +101,15 @@ checkMountMonitor client = do
 	gvfs = "org.gtk.Private.GduVolumeMonitor"
 	kde = "org.kde.DeviceNotifications"
 
-startOneService :: Client -> [ServiceName] -> IO Bool
+startOneService :: Client -> [ServiceName] -> Assistant Bool
 startOneService _ [] = return False
 startOneService client (x:xs) = do
-	_ <- callDBus client "StartServiceByName"
+	_ <- liftIO $ callDBus client "StartServiceByName"
 		[toVariant x, toVariant (0 :: Word32)]
-	ifM (elem x <$> listServiceNames client)
+	ifM (liftIO $ elem x <$> listServiceNames client)
 		( do
-			brokendebug thisThread [ "Started DBUS service"
-				, x
+			debug
+				[ "Started DBUS service", x
 				, "to monitor mount events."
 				]
 			return True

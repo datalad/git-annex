@@ -75,30 +75,29 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
 			go port webapp htmlshim (Just urlfile)
-	where
-		thread = NamedThread thisThread
-		getreldir
-			| noannex = return Nothing
-			| otherwise = Just <$>
-				(relHome =<< absPath
-					=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
-		go port webapp htmlshim urlfile = do
-			brokendebug thisThread ["running on port", show port]
-			let url = myUrl webapp port
-			maybe noop (`writeFile` url) urlfile
-			writeHtmlShim url htmlshim
-			maybe noop (\a -> a url htmlshim) onstartup
+  where
+	thread = NamedThread thisThread
+	getreldir
+		| noannex = return Nothing
+		| otherwise = Just <$>
+			(relHome =<< absPath
+				=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
+	go port webapp htmlshim urlfile = do
+		let url = myUrl webapp port
+		maybe noop (`writeFile` url) urlfile
+		writeHtmlShim url htmlshim
+		maybe noop (\a -> a url htmlshim) onstartup
 
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secretToken when launching the web browser. -}
 writeHtmlShim :: String -> FilePath -> IO ()
 writeHtmlShim url file = viaTmp go file $ genHtmlShim url
-	where
-		go tmpfile content = do
-			h <- openFile tmpfile WriteMode
-			modifyFileMode tmpfile $ removeModes [groupReadMode, otherReadMode]
-			hPutStr h content
-			hClose h
+  where
+	go tmpfile content = do
+		h <- openFile tmpfile WriteMode
+		modifyFileMode tmpfile $ removeModes [groupReadMode, otherReadMode]
+		hPutStr h content
+		hClose h
 
 {- TODO: generate this static file using Yesod. -}
 genHtmlShim :: String -> String
@@ -117,5 +116,5 @@ genHtmlShim url = unlines
 
 myUrl :: WebApp -> PortNumber -> Url
 myUrl webapp port = unpack $ yesodRender webapp urlbase HomeR []
-	where
-		urlbase = pack $ "http://localhost:" ++ show port
+  where
+	urlbase = pack $ "http://localhost:" ++ show port
