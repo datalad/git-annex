@@ -66,7 +66,7 @@ onAdd :: Handler
 onAdd file
 	| ".lock" `isSuffixOf` file = noop
 	| isAnnexBranch file = do
-		branchChanged <<~ branchChangeHandle
+		branchChanged
 		transferqueue <- getAssistant transferQueue
 		dstatus <-  getAssistant daemonStatusHandle
 		liftAnnex $

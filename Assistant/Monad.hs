@@ -32,9 +32,9 @@ import Assistant.Types.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Types.Pushes
+import Assistant.Types.BranchChange
 import Assistant.Commits
 import Assistant.Changes
-import Assistant.BranchChange
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (

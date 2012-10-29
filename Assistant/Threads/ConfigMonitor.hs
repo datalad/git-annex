@@ -39,7 +39,7 @@ configMonitorThread = NamedThread "ConfigMonitor" $ loop =<< getConfigs
   where
 	loop old = do
 		liftIO $ threadDelaySeconds (Seconds 60)
-		waitBranchChange <<~ branchChangeHandle
+		waitBranchChange
 		new <- getConfigs
 		when (old /= new) $ do
 			let changedconfigs = new `S.difference` old
