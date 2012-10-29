@@ -10,7 +10,6 @@ module Assistant.Sync where
 import Assistant.Common
 import Assistant.Pushes
 import Assistant.Alert
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import qualified Command.Sync
@@ -50,15 +49,13 @@ reconnectRemotes notifypushes rs = void $ do
 		(gitremotes, _specialremotes) =
 			partition (Git.repoIsUrl . Remote.repo) rs
 		sync (Just branch) = do
-			st <- getAssistant threadState
-			diverged <- liftIO $ snd <$> manualPull st (Just branch) gitremotes
+			diverged <- snd <$> manualPull (Just branch) gitremotes
 			now <- liftIO getCurrentTime
 			ok <- pushToRemotes now notifypushes gitremotes
 			return (ok, diverged)
 		{- No local branch exists yet, but we can try pulling. -}
 		sync Nothing = do
-			st <- getAssistant threadState
-			diverged <- liftIO $ snd <$> manualPull st Nothing gitremotes
+			diverged <- snd <$> manualPull Nothing gitremotes
 			return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
@@ -119,8 +116,7 @@ pushToRemotes now notifypushes remotes = do
 
 	retry branch g u rs = do
 		debug ["trying manual pull to resolve failed pushes"]
-		st <- getAssistant threadState
-		void $ liftIO $ manualPull st (Just branch) rs
+		void $ manualPull (Just branch) rs
 		go False (Just branch) g u rs
 
 	fallback branch g u rs = do
@@ -149,14 +145,14 @@ pushToRemotes now notifypushes remotes = do
 				where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
-manualPull :: ThreadState -> Maybe Git.Ref -> [Remote] -> IO ([Bool], Bool)
-manualPull st currentbranch remotes = do
-	g <- runThreadState st gitRepo
-	results <- forM remotes $ \r ->
+manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Bool], Bool)
+manualPull currentbranch remotes = do
+	g <- liftAnnex gitRepo
+	results <- liftIO $ forM remotes $ \r ->
 		Git.Command.runBool "fetch" [Param $ Remote.name r] g
-	haddiverged <- runThreadState st Annex.Branch.forceUpdate
+	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
-		runThreadState st $ Command.Sync.mergeRemote r currentbranch
+		liftAnnex $ Command.Sync.mergeRemote r currentbranch
 	return (results, haddiverged)
 
 {- Start syncing a newly added remote, using a background thread. -}

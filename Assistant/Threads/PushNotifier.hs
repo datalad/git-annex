@@ -93,13 +93,12 @@ pull [] = noop
 pull us = do
 	rs <- filter matching . syncRemotes <$> daemonStatus
 	debug $ "push notification for" : map (fromUUID . Remote.uuid ) rs
-	st <- getAssistant threadState
-	liftIO . pullone st rs =<< liftAnnex (inRepo Git.Branch.current)
+	pullone rs =<< liftAnnex (inRepo Git.Branch.current)
   where
 	matching r = Remote.uuid r `S.member` s
 	s = S.fromList us
 
-	pullone _ [] _ = noop
-	pullone st (r:rs) branch =
-		unlessM (all id . fst <$> manualPull st branch [r]) $
-			pullone st rs branch
+	pullone [] _ = noop
+	pullone (r:rs) branch =
+		unlessM (all id . fst <$> manualPull branch [r]) $
+			pullone rs branch
