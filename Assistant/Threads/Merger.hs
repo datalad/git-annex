@@ -25,7 +25,7 @@ thisThread = "Merger"
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
 mergeThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> BranchChangeHandle -> NamedThread
-mergeThread st dstatus transferqueue branchchange = thread $ do
+mergeThread st dstatus transferqueue branchchange = thread $ liftIO $ do
 	g <- runThreadState st gitRepo
 	let dir = Git.localGitDir g </> "refs"
 	createDirectoryIfMissing True dir
@@ -35,7 +35,7 @@ mergeThread st dstatus transferqueue branchchange = thread $ do
 		, errHook = hook onErr
 		}
 	void $ watchDir dir (const False) hooks id
-	debug thisThread ["watching", dir]
+	brokendebug thisThread ["watching", dir]
 	where
 		thread = NamedThread thisThread
 
@@ -81,7 +81,7 @@ onAdd st dstatus transferqueue branchchange file _
 		changedbranch = fileToBranch file
 		mergecurrent (Just current)
 			| equivBranches changedbranch current = do
-				liftIO $ debug thisThread
+				liftIO $ brokendebug thisThread
 					[ "merging"
 					, show changedbranch
 					, "into"

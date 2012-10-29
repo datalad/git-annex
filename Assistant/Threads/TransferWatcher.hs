@@ -26,7 +26,7 @@ thisThread = "TransferWatcher"
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
 transferWatcherThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> NamedThread
-transferWatcherThread st dstatus transferqueue = thread $ do
+transferWatcherThread st dstatus transferqueue = thread $ liftIO $ do
 	g <- runThreadState st gitRepo
 	let dir = gitAnnexTransferDir g
 	createDirectoryIfMissing True dir
@@ -38,7 +38,7 @@ transferWatcherThread st dstatus transferqueue = thread $ do
 		, errHook = hook onErr
 		}
 	void $ watchDir dir (const False) hooks id
-	debug thisThread ["watching for transfers"]
+	brokendebug thisThread ["watching for transfers"]
 	where
 		thread = NamedThread thisThread
 
@@ -66,7 +66,7 @@ onAdd st dstatus _ file _ = case parseTransferFile file of
 	where
 		go _ Nothing = noop -- transfer already finished
 		go t (Just info) = do
-			debug thisThread
+			brokendebug thisThread
 				[ "transfer starting:"
 				, show t
 				]
@@ -87,8 +87,9 @@ onModify _ dstatus _ file _ = do
 		Just t -> go t =<< readTransferInfoFile Nothing file
 	where
 		go _ Nothing = noop
-		go t (Just newinfo) = alterTransferInfo dstatus t $ \info ->
-			info { bytesComplete = bytesComplete newinfo }
+		go t (Just newinfo) = alterTransferInfo t
+			(\i -> i { bytesComplete = bytesComplete newinfo })
+			dstatus
 
 {- This thread can only watch transfer sizes when the DirWatcher supports
  - tracking modificatons to files. -}
@@ -100,7 +101,7 @@ onDel :: Handler
 onDel st dstatus transferqueue file _ = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
-		debug thisThread
+		brokendebug thisThread
 			[ "transfer finishing:"
 			, show t
 			]

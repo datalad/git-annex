@@ -8,7 +8,6 @@
 module Assistant.Threads.TransferPoller where
 
 import Assistant.Common
-import Assistant.ThreadedMonad
 import Assistant.DaemonStatus
 import Logs.Transfer
 import Utility.NotificationBroadcaster
@@ -17,46 +16,42 @@ import qualified Assistant.Threads.TransferWatcher as TransferWatcher
 import Control.Concurrent
 import qualified Data.Map as M
 
-thisThread :: ThreadName
-thisThread = "TransferPoller"
-
 {- This thread polls the status of ongoing transfers, determining how much
  - of each transfer is complete. -}
-transferPollerThread :: ThreadState -> DaemonStatusHandle -> NamedThread
-transferPollerThread st dstatus = thread $ do
-	g <- runThreadState st gitRepo
-	tn <- newNotificationHandle =<<
-		transferNotifier <$> getDaemonStatus dstatus
+transferPollerThread :: NamedThread
+transferPollerThread = NamedThread "TransferPoller" $ do
+	g <- liftAnnex gitRepo
+	tn <- liftIO . newNotificationHandle =<<
+		transferNotifier <$> daemonStatus
 	forever $ do
-		threadDelay 500000 -- 0.5 seconds
-		ts <- currentTransfers <$> getDaemonStatus dstatus
+		liftIO $ threadDelay 500000 -- 0.5 seconds
+		ts <- currentTransfers <$> daemonStatus
 		if M.null ts
-			then waitNotification tn -- block until transfers running
+			-- block until transfers running
+			then liftIO $ waitNotification tn
 			else mapM_ (poll g) $ M.toList ts
-	where
-		thread = NamedThread thisThread
-		poll g (t, info)
-			{- Downloads are polled by checking the size of the
-			 - temp file being used for the transfer. -}
-			| transferDirection t == Download = do
-				let f = gitAnnexTmpLocation (transferKey t) g
-				sz <- catchMaybeIO $
-					fromIntegral . fileSize
-						<$> getFileStatus f
-				newsize t info sz
-			{- Uploads don't need to be polled for when the
-			 - TransferWatcher thread can track file
-			 - modifications. -}
-			| TransferWatcher.watchesTransferSize = noop
-			{- Otherwise, this code polls the upload progress
-			 - by reading the transfer info file. -}
-			| otherwise = do
-				let f = transferFile t g
-				mi <- catchDefaultIO Nothing $
-					readTransferInfoFile Nothing f
-				maybe noop (newsize t info . bytesComplete) mi
-		newsize t info sz
-			| bytesComplete info /= sz && isJust sz = 
-				alterTransferInfo dstatus t $
-					\i -> i { bytesComplete = sz }
-			| otherwise = noop
+  where
+	poll g (t, info)
+		{- Downloads are polled by checking the size of the
+		 - temp file being used for the transfer. -}
+		| transferDirection t == Download = do
+			let f = gitAnnexTmpLocation (transferKey t) g
+			sz <- liftIO $ catchMaybeIO $
+				fromIntegral . fileSize <$> getFileStatus f
+			newsize t info sz
+		{- Uploads don't need to be polled for when the TransferWatcher
+		 - thread can track file modifications. -}
+		| TransferWatcher.watchesTransferSize = noop
+		{- Otherwise, this code polls the upload progress
+		 - by reading the transfer info file. -}
+		| otherwise = do
+			let f = transferFile t g
+			mi <- liftIO $ catchDefaultIO Nothing $
+				readTransferInfoFile Nothing f
+			maybe noop (newsize t info . bytesComplete) mi
+
+	newsize t info sz
+		| bytesComplete info /= sz && isJust sz =
+			alterTransferInfo t (\i -> i { bytesComplete = sz })
+				<<~ daemonStatusHandle
+		| otherwise = noop

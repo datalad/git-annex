@@ -37,7 +37,7 @@ changeSyncable (Just r) True = do
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
 	d <- getAssistantY id
-	let dstatus = daemonStatus d
+	let dstatus = daemonStatusHandle d
 	let st = threadState d
 	liftIO $ runThreadState st $ updateSyncRemotes dstatus
 	{- Stop all transfers to or from this remote.
@@ -65,7 +65,7 @@ syncRemote remote = do
 	d <- getAssistantY id
 	liftIO $ syncNewRemote
 		(threadState d)
-		(daemonStatus d)
+		(daemonStatusHandle d)
 		(scanRemoteMap d)
 		remote
 
@@ -74,7 +74,7 @@ pauseTransfer = cancelTransfer True
 
 cancelTransfer :: Bool -> Transfer -> Handler ()
 cancelTransfer pause t = do
-	dstatus <- getAssistantY daemonStatus
+	dstatus <- getAssistantY daemonStatusHandle
 	tq <- getAssistantY transferQueue
 	m <- getCurrentTransfers
 	liftIO $ do
@@ -94,8 +94,9 @@ cancelTransfer pause t = do
 			maybe noop killproc $ transferPid info
 			if pause
 				then void $
-					alterTransferInfo dstatus t $ \i -> i
-						{ transferPaused = True }
+					alterTransferInfo t
+						(\i -> i { transferPaused = True })
+						dstatus
 				else void $
 					removeTransfer dstatus t
 		signalthread tid
@@ -117,19 +118,20 @@ startTransfer t = do
 	where
 		go info = maybe (start info) resume $ transferTid info
 		startqueued = do
-			dstatus <- getAssistantY daemonStatus
+			dstatus <- getAssistantY daemonStatusHandle
 			q <- getAssistantY transferQueue
 			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
 			maybe noop start $ headMaybe is
 		resume tid = do
-			dstatus <- getAssistantY daemonStatus
+			dstatus <- getAssistantY daemonStatusHandle
 			liftIO $ do
-				alterTransferInfo dstatus t $ \i -> i
-					{ transferPaused = False }
+				alterTransferInfo t
+					(\i -> i { transferPaused = False })
+					dstatus
 				throwTo tid ResumeTransfer
 		start info = do
 			st <- getAssistantY threadState
-			dstatus <- getAssistantY daemonStatus
+			dstatus <- getAssistantY daemonStatusHandle
 			slots <- getAssistantY transferSlots
 			commitchan <- getAssistantY commitChan
 			liftIO $ inImmediateTransferSlot dstatus slots $ do

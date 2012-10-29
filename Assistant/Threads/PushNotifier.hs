@@ -35,7 +35,7 @@ controllerThread pushnotifier a = forever $ do
 	killThread tid
 
 pushNotifierThread :: ThreadState -> DaemonStatusHandle -> PushNotifier -> NamedThread
-pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
+pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $ liftIO $
 	controllerThread pushnotifier $ do
 		v <- runThreadState st $ getXMPPCreds
 		case v of
@@ -45,7 +45,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
 		loop c starttime = do
 			void $ connectXMPP c $ \jid -> do
 				fulljid <- bindJID jid
-				liftIO $ debug thisThread ["XMPP connected", show fulljid]
+				liftIO $ brokendebug thisThread ["XMPP connected", show fulljid]
 				putStanza $ gitAnnexPresence gitAnnexSignature
 				s <- getSession
 				_ <- liftIO $ forkIO $ void $ runXMPP s $
@@ -54,10 +54,10 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
 			now <- getCurrentTime
 			if diffUTCTime now starttime > 300
 				then do
-					debug thisThread ["XMPP connection lost; reconnecting"]
+					brokendebug thisThread ["XMPP connection lost; reconnecting"]
 					loop c now
 				else do
-					debug thisThread ["XMPP connection failed; will retry"]
+					brokendebug thisThread ["XMPP connection failed; will retry"]
 					threadDelaySeconds (Seconds 300)
 					loop c =<< getCurrentTime
 
@@ -67,7 +67,7 @@ pushNotifierThread st dstatus pushnotifier = NamedThread thisThread $
 
 		receivenotifications = forever $ do
 			s <- getStanza
-			liftIO $ debug thisThread ["received XMPP:", show s]
+			liftIO $ brokendebug thisThread ["received XMPP:", show s]
 			case s of
 				ReceivedPresence p@(Presence { presenceType = PresenceAvailable }) ->
 					liftIO $ pull st dstatus $
@@ -93,7 +93,7 @@ pull :: ThreadState -> DaemonStatusHandle -> [UUID] -> IO ()
 pull _ _ [] = noop
 pull st dstatus us = do
 	rs <- filter matching . syncRemotes <$> getDaemonStatus dstatus
-	debug thisThread $ "push notification for" :
+	brokendebug thisThread $ "push notification for" :
 		map (fromUUID . Remote.uuid ) rs
 	pullone rs =<< runThreadState st (inRepo Git.Branch.current)
 	where

@@ -10,7 +10,8 @@ module Assistant.Common (
 	ThreadName,
 	NamedThread(..),
 	runNamedThread,
-	debug
+	debug,
+	brokendebug
 ) where
 
 import Common.Annex as X
@@ -22,25 +23,28 @@ import System.Log.Logger
 import qualified Control.Exception as E
 
 type ThreadName = String
-data NamedThread = NamedThread ThreadName (IO ())
+data NamedThread = NamedThread ThreadName (Assistant ())
 
-debug :: ThreadName -> [String] -> IO ()
-debug threadname ws = debugM threadname $ unwords $ (threadname ++ ":") : ws
+brokendebug :: ThreadName -> [String] -> IO ()
+brokendebug _ _ = noop -- TODO remove this
+
+debug :: [String] -> Assistant ()
+debug ws = do
+	name <- getAssistant threadName
+	liftIO $ debugM name $ unwords $ (name ++ ":") : ws
 
 runNamedThread :: NamedThread -> Assistant ()
-runNamedThread (NamedThread name a) = liftIO . go =<< getAssistant daemonStatus
-	where
-		go dstatus = do
-			r <- E.try a :: IO (Either E.SomeException ())
-			case r of
-				Right _ -> noop
-				Left e -> do
-					let msg = unwords
-						[ name
-						, "crashed:"
-						, show e
-						]
-					hPutStrLn stderr msg
-					-- TODO click to restart
-					void $ addAlert dstatus $
-						warningAlert name msg
+runNamedThread (NamedThread name a) = do
+	d <- getAssistant id
+	liftIO . go $ d { threadName = name }
+  where
+	go d = do
+		r <- E.try (runAssistant a d) :: IO (Either E.SomeException ())
+		case r of
+			Right _ -> noop
+			Left e -> do
+				let msg = unwords [name, "crashed:", show e]
+				hPutStrLn stderr msg
+				-- TODO click to restart
+				void $ addAlert (daemonStatusHandle d) $
+					warningAlert name msg

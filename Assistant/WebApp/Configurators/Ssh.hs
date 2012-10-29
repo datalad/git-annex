@@ -286,7 +286,7 @@ makeSshRepo forcersync setup sshdata = do
 	d <- getAssistantY id
 	r <- liftIO $ makeSshRemote
 		(threadState d)
-		(daemonStatus d)
+		(daemonStatusHandle d)
 		(scanRemoteMap d)
 		forcersync sshdata
 	setup r

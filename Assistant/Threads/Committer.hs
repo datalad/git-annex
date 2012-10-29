@@ -42,7 +42,7 @@ thisThread = "Committer"
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: ThreadState -> ChangeChan -> CommitChan -> TransferQueue -> DaemonStatusHandle -> NamedThread
-commitThread st changechan commitchan transferqueue dstatus = thread $ do
+commitThread st changechan commitchan transferqueue dstatus = thread $ liftIO $ do
 	delayadd <- runThreadState st $
 		maybe delayaddDefault (Just . Seconds) . readish
 			<$> getConfig (annexConfig "delayadd") "" 
@@ -58,7 +58,7 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ do
 				readychanges <- handleAdds delayadd st changechan transferqueue dstatus changes
 				if shouldCommit time readychanges
 					then do
-						debug thisThread
+						brokendebug thisThread
 							[ "committing"
 							, show (length readychanges)
 							, "changes"
@@ -72,7 +72,7 @@ commitThread st changechan commitchan transferqueue dstatus = thread $ do
 		thread = NamedThread thisThread
 		refill [] = noop
 		refill cs = do
-			debug thisThread
+			brokendebug thisThread
 				[ "delaying commit of"
 				, show (length cs)
 				, "changes"

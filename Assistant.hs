@@ -179,7 +179,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	go = do
 		d <- getAssistant id
 		st <- getAssistant threadState
-		dstatus <- getAssistant daemonStatus
+		dstatus <- getAssistant daemonStatusHandle
 		changechan <- getAssistant changeChan
 		commitchan <- getAssistant commitChan
 		pushmap <- getAssistant failedPushMap
@@ -189,7 +189,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 		branchhandle <- getAssistant branchChangeHandle
 		pushnotifier <- getAssistant pushNotifier
 #ifdef WITH_WEBAPP
-		urlrenderer <- liftIO $ newUrlRenderer
+		urlrenderer <- liftIO newUrlRenderer
 #endif
 		mapM_ (startthread d)
 			[ watch $ commitThread st changechan commitchan transferqueue dstatus
@@ -203,13 +203,13 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ pushRetryThread st dstatus pushmap pushnotifier
 			, assist $ mergeThread st dstatus transferqueue branchhandle
 			, assist $ transferWatcherThread st dstatus transferqueue
-			, assist $ transferPollerThread st dstatus
+			, assist $ transferPollerThread
 			, assist $ transfererThread st dstatus transferqueue transferslots commitchan
-			, assist $ daemonStatusThread st dstatus
-			, assist $ sanityCheckerThread st dstatus transferqueue changechan
+			, assist $ daemonStatusThread
+			, assist $ sanityCheckerThread
 			, assist $ mountWatcherThread st dstatus scanremotes pushnotifier
-			, assist $ netWatcherThread st dstatus scanremotes pushnotifier
-			, assist $ netWatcherFallbackThread st dstatus scanremotes pushnotifier
+			, assist $ netWatcherThread
+			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread st dstatus scanremotes transferqueue
 			, assist $ configMonitorThread st dstatus branchhandle commitchan
 #ifdef WITH_XMPP

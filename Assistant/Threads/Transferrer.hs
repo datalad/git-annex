@@ -32,7 +32,7 @@ maxTransfers = 1
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> TransferSlots -> CommitChan -> NamedThread
-transfererThread st dstatus transferqueue slots commitchan = thread $ go =<< readProgramFile
+transfererThread st dstatus transferqueue slots commitchan = thread $ liftIO $ go =<< readProgramFile
 	where
 		thread = NamedThread thisThread
 		go program = forever $ inTransferSlot dstatus slots $
@@ -47,11 +47,11 @@ startTransfer :: ThreadState -> DaemonStatusHandle -> CommitChan -> FilePath -> 
 startTransfer st dstatus commitchan program t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) -> ifM (runThreadState st $ shouldTransfer t info)
 		( do
-			debug thisThread [ "Transferring:" , show t ]
+			brokendebug thisThread [ "Transferring:" , show t ]
 			notifyTransfer dstatus
 			return $ Just (t, info, transferprocess remote file)
 		, do
-			debug thisThread [ "Skipping unnecessary transfer:" , show t ]
+			brokendebug thisThread [ "Skipping unnecessary transfer:" , show t ]
 			void $ removeTransfer dstatus t
 			return Nothing
 		)

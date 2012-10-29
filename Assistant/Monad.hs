@@ -13,7 +13,12 @@ module Assistant.Monad (
 	newAssistantData,
 	runAssistant,
 	getAssistant,
-	liftAnnex
+	liftAnnex,
+	(<~>),
+	(<<~),
+	daemonStatus,
+	asIO,
+	asIO2,
 ) where
 
 import "mtl" Control.Monad.Reader
@@ -43,8 +48,9 @@ instance MonadBase IO Assistant where
 	liftBase = Assistant . liftBase
 
 data AssistantData = AssistantData
-	{ threadState :: ThreadState
-	, daemonStatus :: DaemonStatusHandle
+	{ threadName :: String
+	, threadState :: ThreadState
+	, daemonStatusHandle :: DaemonStatusHandle
 	, scanRemoteMap :: ScanRemoteMap
 	, transferQueue :: TransferQueue
 	, transferSlots :: TransferSlots
@@ -57,7 +63,8 @@ data AssistantData = AssistantData
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
 newAssistantData st dstatus = AssistantData
-	<$> pure st
+	<$> pure "main"
+	<*> pure st
 	<*> pure dstatus
 	<*> newScanRemoteMap
 	<*> newTransferQueue
@@ -81,3 +88,28 @@ liftAnnex :: Annex a -> Assistant a
 liftAnnex a = do
 	st <- reader threadState
 	liftIO $ runThreadState st a
+
+{- Runs an IO action, passing it an IO action that runs an Assistant action. -}
+(<~>) :: (IO a -> IO b) -> Assistant a -> Assistant b
+io <~> a = do
+	d <- reader id
+	liftIO $ io $ runAssistant a d
+
+{- Creates an IO action that will run an Assistant action when run. -}
+asIO :: (a -> Assistant b) -> Assistant (a -> IO b)
+asIO a = do
+	d <- reader id
+	return $ \v -> runAssistant (a v) d
+
+{- Creates an IO action that will run an Assistant action when run. -}
+asIO2 :: (a -> b -> Assistant c) -> Assistant (a -> b -> IO c)
+asIO2 a = do
+	d <- reader id
+	return $ \v1 v2 -> runAssistant (a v1 v2) d
+
+{- Runs an IO action on a selected field of the AssistantData. -}
+(<<~) :: (a -> IO b) -> (AssistantData -> a) -> Assistant b
+io <<~ v = reader v >>= liftIO . io
+
+daemonStatus :: Assistant DaemonStatus
+daemonStatus = getDaemonStatus <<~ daemonStatusHandle

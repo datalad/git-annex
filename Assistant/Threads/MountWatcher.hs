@@ -40,7 +40,7 @@ thisThread :: ThreadName
 thisThread = "MountWatcher"
 
 mountWatcherThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> NamedThread
-mountWatcherThread st handle scanremotes pushnotifier = thread $
+mountWatcherThread st handle scanremotes pushnotifier = thread $ liftIO $
 #if WITH_DBUS
 	dbusThread st handle scanremotes pushnotifier
 #else
@@ -93,7 +93,7 @@ checkMountMonitor client = do
 	case running of
 		[] -> startOneService client startableservices
 		(service:_) -> do
-			debug thisThread [ "Using running DBUS service"
+			brokendebug thisThread [ "Using running DBUS service"
 				, service
 				, "to monitor mount events."
 				]
@@ -111,7 +111,7 @@ startOneService client (x:xs) = do
 		[toVariant x, toVariant (0 :: Word32)]
 	ifM (elem x <$> listServiceNames client)
 		( do
-			debug thisThread [ "Started DBUS service"
+			brokendebug thisThread [ "Started DBUS service"
 				, x
 				, "to monitor mount events."
 				]
@@ -160,7 +160,7 @@ handleMounts st dstatus scanremotes pushnotifier wasmounted nowmounted =
 
 handleMount :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> PushNotifier -> FilePath -> IO ()
 handleMount st dstatus scanremotes pushnotifier dir = do
-	debug thisThread ["detected mount of", dir]
+	brokendebug thisThread ["detected mount of", dir]
 	reconnectRemotes thisThread st dstatus scanremotes (Just pushnotifier)
 		=<< filter (Git.repoIsLocal . Remote.repo)
 			<$> remotesUnder st dstatus dir

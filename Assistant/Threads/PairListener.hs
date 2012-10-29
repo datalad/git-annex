@@ -28,7 +28,7 @@ thisThread :: ThreadName
 thisThread = "PairListener"
 
 pairListenerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> UrlRenderer -> NamedThread
-pairListenerThread st dstatus scanremotes urlrenderer = thread $ withSocketsDo $
+pairListenerThread st dstatus scanremotes urlrenderer = thread $ liftIO $ withSocketsDo $
 	runEvery (Seconds 1) $ void $ tryIO $ do
 		sock <- getsock
 		go sock [] []

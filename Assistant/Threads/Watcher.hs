@@ -56,9 +56,9 @@ needLsof = error $ unlines
 	]
 
 watchThread :: ThreadState -> DaemonStatusHandle -> TransferQueue -> ChangeChan -> NamedThread
-watchThread st dstatus transferqueue changechan = NamedThread thisThread $ do
+watchThread st dstatus transferqueue changechan = NamedThread thisThread $ liftIO $ do
 	void $ watchDir "." ignored hooks startup
-	debug thisThread [ "watching", "."]
+	brokendebug thisThread [ "watching", "."]
   where
 	startup = startupScan st dstatus
 	hook a = Just $ runHandler thisThread st dstatus transferqueue changechan a
@@ -132,7 +132,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 				checkcontent key s
 				ensurestaged link s
 			, do
-				liftIO $ debug threadname ["fix symlink", file]
+				liftIO $ brokendebug threadname ["fix symlink", file]
 				liftIO $ removeFile file
 				liftIO $ createSymbolicLink link file
 				checkcontent key =<< liftIO (getDaemonStatus dstatus)
@@ -162,7 +162,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 
 	{- For speed, tries to reuse the existing blob for symlink target. -}
 	addlink link = do
-		liftIO $ debug threadname ["add symlink", file]
+		liftIO $ brokendebug threadname ["add symlink", file]
 		v <- catObjectDetails $ Ref $ ':':file
 		case v of
 			Just (currlink, sha)
@@ -187,7 +187,7 @@ onAddSymlink threadname file filestatus dstatus transferqueue = go =<< Backend.l
 
 onDel :: Handler
 onDel threadname file _ _dstatus _ = do
-	liftIO $ debug threadname ["file deleted", file]
+	liftIO $ brokendebug threadname ["file deleted", file]
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 	madeChange file RmChange
@@ -201,7 +201,7 @@ onDel threadname file _ _dstatus _ = do
  - just as good. -}
 onDelDir :: Handler
 onDelDir threadname dir _ _dstatus _ = do
-	liftIO $ debug threadname ["directory deleted", dir]
+	liftIO $ brokendebug threadname ["directory deleted", dir]
 	Annex.Queue.addCommand "rm"
 		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
 	madeChange dir RmDirChange

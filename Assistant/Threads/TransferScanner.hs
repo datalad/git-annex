@@ -34,7 +34,7 @@ thisThread = "TransferScanner"
  - that need to be made, to keep data in sync.
  -}
 transferScannerThread :: ThreadState -> DaemonStatusHandle -> ScanRemoteMap -> TransferQueue -> NamedThread
-transferScannerThread st dstatus scanremotes transferqueue = thread $ do
+transferScannerThread st dstatus scanremotes transferqueue = thread $ liftIO $ do
 	startupScan
 	go S.empty
 	where
@@ -100,7 +100,7 @@ failedTransferScan st dstatus transferqueue r = do
  -}
 expensiveScan :: ThreadState -> DaemonStatusHandle -> TransferQueue -> [Remote] -> IO ()
 expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
-	liftIO $ debug thisThread ["starting scan of", show visiblers]
+	brokendebug thisThread ["starting scan of", show visiblers]
 	void $ alertWhile dstatus (scanAlert visiblers) $ do
 		g <- runThreadState st gitRepo
 		(files, cleanup) <- LsFiles.inRepo [] g
@@ -110,13 +110,13 @@ expensiveScan st dstatus transferqueue rs = unless onlyweb $ do
 			mapM_ (enqueue f) ts
 		void cleanup
 		return True
-	liftIO $ debug thisThread ["finished scan of", show visiblers]
+	brokendebug thisThread ["finished scan of", show visiblers]
 	where
 		onlyweb = all (== webUUID) $ map Remote.uuid rs
 		visiblers = let rs' = filter (not . Remote.readonly) rs
 			in if null rs' then rs else rs'
 		enqueue f (r, t) = do
-			debug thisThread ["queuing", show t]
+			brokendebug thisThread ["queuing", show t]
 			queueTransferWhenSmall transferqueue dstatus (Just f) t r
 		findtransfers f (key, _) = do
 			locs <- loggedLocations key

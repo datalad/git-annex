@@ -52,7 +52,7 @@ webAppThread
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $ do
+webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $ liftIO $ do
 	webapp <- WebApp
 		<$> pure assistantdata
 		<*> (pack <$> genRandomToken)
@@ -83,7 +83,7 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 				(relHome =<< absPath
 					=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
 		go port webapp htmlshim urlfile = do
-			debug thisThread ["running on port", show port]
+			brokendebug thisThread ["running on port", show port]
 			let url = myUrl webapp port
 			maybe noop (`writeFile` url) urlfile
 			writeHtmlShim url htmlshim

@@ -38,7 +38,7 @@ thisThread = "ConfigMonitor"
  - be detected immediately.
  -}
 configMonitorThread :: ThreadState -> DaemonStatusHandle -> BranchChangeHandle -> CommitChan -> NamedThread
-configMonitorThread st dstatus branchhandle commitchan = thread $ do
+configMonitorThread st dstatus branchhandle commitchan = thread $ liftIO $ do
 	r <- runThreadState st Annex.gitRepo
 	go r =<< getConfigs r
 	where
@@ -50,7 +50,7 @@ configMonitorThread st dstatus branchhandle commitchan = thread $ do
 			new <- getConfigs r
 			when (old /= new) $ do
 				let changedconfigs = new `S.difference` old
-				debug thisThread $ "reloading config" : 
+				brokendebug thisThread $ "reloading config" : 
 					map fst (S.toList changedconfigs)
 				reloadConfigs st dstatus changedconfigs
 				{- Record a commit to get this config

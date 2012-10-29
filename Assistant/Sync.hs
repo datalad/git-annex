@@ -93,7 +93,7 @@ pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 	where
 		go _ Nothing _ _ _ = return True -- no branch, so nothing to do
 		go shouldretry (Just branch) g u rs =  do
-			debug threadname
+			brokendebug threadname
 				[ "pushing to"
 				, show rs
 				]
@@ -117,12 +117,12 @@ pushToRemotes threadname now st mpushnotifier mpushmap remotes = do
 		makemap l = M.fromList $ zip l (repeat now)
 
 		retry branch g u rs = do
-			debug threadname [ "trying manual pull to resolve failed pushes" ]
+			brokendebug threadname [ "trying manual pull to resolve failed pushes" ]
 			void $ manualPull st (Just branch) rs
 			go False (Just branch) g u rs
 
 		fallback branch g u rs = do
-			debug threadname
+			brokendebug threadname
 				[ "fallback pushing to"
 				, show rs
 				]

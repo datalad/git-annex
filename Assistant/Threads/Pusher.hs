@@ -25,12 +25,12 @@ thisThread = "Pusher"
 
 {- This thread retries pushes that failed before. -}
 pushRetryThread :: ThreadState -> DaemonStatusHandle -> FailedPushMap -> PushNotifier -> NamedThread
-pushRetryThread st dstatus pushmap pushnotifier = thread $ runEvery (Seconds halfhour) $ do
+pushRetryThread st dstatus pushmap pushnotifier = thread $ liftIO $ runEvery (Seconds halfhour) $ do
 	-- We already waited half an hour, now wait until there are failed
 	-- pushes to retry.
 	topush <- getFailedPushesBefore pushmap (fromIntegral halfhour)
 	unless (null topush) $ do
-		debug thisThread
+		brokendebug thisThread
 			[ "retrying"
 			, show (length topush)
 			, "failed pushes"
@@ -44,7 +44,7 @@ pushRetryThread st dstatus pushmap pushnotifier = thread $ runEvery (Seconds hal
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
 pushThread :: ThreadState -> DaemonStatusHandle -> CommitChan -> FailedPushMap -> PushNotifier -> NamedThread
-pushThread st dstatus commitchan pushmap pushnotifier = thread $ runEvery (Seconds 2) $ do
+pushThread st dstatus commitchan pushmap pushnotifier = thread $ liftIO $ runEvery (Seconds 2) $ do
 	-- We already waited two seconds as a simple rate limiter.
 	-- Next, wait until at least one commit has been made
 	commits <- getCommits commitchan
@@ -58,7 +58,7 @@ pushThread st dstatus commitchan pushmap pushnotifier = thread $ runEvery (Secon
 				void $ alertWhile dstatus (pushAlert remotes) $
 					pushToRemotes thisThread now st (Just pushnotifier) (Just pushmap) remotes
 		else do
-			debug thisThread
+			brokendebug thisThread
 				[ "delaying push of"
 				, show (length commits)
 				, "commits"

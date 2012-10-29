@@ -76,7 +76,7 @@ getAssistantY :: forall sub a. (AssistantData -> a) -> GHandler sub WebApp a
 getAssistantY f = f <$> (assistantData <$> getYesod)
 
 getDaemonStatusY :: forall sub. GHandler sub WebApp DaemonStatus
-getDaemonStatusY = liftIO . getDaemonStatus =<< getAssistantY daemonStatus
+getDaemonStatusY = liftIO . getDaemonStatus =<< getAssistantY daemonStatusHandle
 
 getWebAppState :: forall sub. GHandler sub WebApp WebAppState
 getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
