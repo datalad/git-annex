@@ -40,4 +40,16 @@ github HEAD on Ubuntu 12.10
 
 Please provide any additional information below.
 
+<pre>
+$ cabal --version
+cabal-install version 0.14.0
+using version 1.14.0 of the Cabal library 
+
+$ ghc --version
+The Glorious Glasgow Haskell Compilation System, version 7.4.2
+
+$ uname -a
+Linux Atlantis 3.5.0-17-generic #28-Ubuntu SMP Tue Oct 9 19:31:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+
+</pre>
 
