@@ -80,10 +80,10 @@ byName (Just n) = either error Just <$> byName' n
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
-	where
-		handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
-		handle match = Right $ Prelude.head match
-		matching r = n == name r || toUUID n == uuid r
+  where
+	handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
+	handle match = Right $ Prelude.head match
+	matching r = n == name r || toUUID n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even remotes that are not configured in
@@ -93,17 +93,17 @@ nameToUUID "." = getUUID -- special case for current repo
 nameToUUID "here" = getUUID
 nameToUUID "" = error "no remote specified"
 nameToUUID n = byName' n >>= go
-	where
-		go (Right r) = return $ uuid r
-		go (Left e) = fromMaybe (error e) <$> bydescription
-		bydescription = do
-			m <- uuidMap
-			case M.lookup n $ transform swap m of
-				Just u -> return $ Just u
-				Nothing -> return $ byuuid m
-		byuuid m = M.lookup (toUUID n) $ transform double m
-		transform a = M.fromList . map a . M.toList
-		double (a, _) = (a, a)
+  where
+	go (Right r) = return $ uuid r
+	go (Left e) = fromMaybe (error e) <$> bydescription
+	bydescription = do
+		m <- uuidMap
+		case M.lookup n $ transform swap m of
+			Just u -> return $ Just u
+			Nothing -> return $ byuuid m
+	byuuid m = M.lookup (toUUID n) $ transform double m
+	transform a = M.fromList . map a . M.toList
+	double (a, _) = (a, a)
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -
@@ -115,23 +115,23 @@ prettyPrintUUIDs desc uuids = do
 	m <- uuidDescriptions
 	maybeShowJSON [(desc, map (jsonify m hereu) uuids)]
 	return $ unwords $ map (\u -> "\t" ++ prettify m hereu u ++ "\n") uuids
-	where
-		finddescription m u = M.findWithDefault "" u m
-		prettify m hereu u
-			| not (null d) = fromUUID u ++ " -- " ++ d
-			| otherwise = fromUUID u
-			where
-				ishere = hereu == u
-				n = finddescription m u
-				d
-					| null n && ishere = "here"
-					| ishere = addName n "here"
-					| otherwise = n
-		jsonify m hereu u = toJSObject
-			[ ("uuid", toJSON $ fromUUID u)
-			, ("description", toJSON $ finddescription m u)
-			, ("here", toJSON $ hereu == u)
-			]
+  where
+	finddescription m u = M.findWithDefault "" u m
+	prettify m hereu u
+		| not (null d) = fromUUID u ++ " -- " ++ d
+		| otherwise = fromUUID u
+	  where
+		ishere = hereu == u
+		n = finddescription m u
+		d
+			| null n && ishere = "here"
+			| ishere = addName n "here"
+			| otherwise = n
+	jsonify m hereu u = toJSObject
+		[ ("uuid", toJSON $ fromUUID u)
+		, ("description", toJSON $ finddescription m u)
+		, ("here", toJSON $ hereu == u)
+		]
 
 {- List of remote names and/or descriptions, for human display.  -}
 prettyListUUIDs :: [UUID] -> Annex [String]
@@ -139,13 +139,13 @@ prettyListUUIDs uuids = do
 	hereu <- getUUID
 	m <- uuidDescriptions
 	return $ map (\u -> prettify m hereu u) uuids
-	where
-		finddescription m u = M.findWithDefault "" u m
-		prettify m hereu u
-			| u == hereu = addName n "here"
-			| otherwise = n
-			where
-				n = finddescription m u
+  where
+	finddescription m u = M.findWithDefault "" u m
+	prettify m hereu u
+		| u == hereu = addName n "here"
+		| otherwise = n
+	  where
+		n = finddescription m u
 
 {- Gets the git repo associated with a UUID.
  - There's no associated remote when this is the UUID of the local repo. -}
@@ -213,12 +213,12 @@ showLocations key exclude = do
 	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
 	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
-	where
-		filteruuids l x = filter (`notElem` x) l
-		message [] [] = "No other repository is known to contain the file."
-		message rs [] = "Try making some of these repositories available:\n" ++ rs
-		message [] us = "Also these untrusted repositories may contain the file:\n" ++ us
-		message rs us = message rs [] ++ message [] us
+  where
+	filteruuids l x = filter (`notElem` x) l
+	message [] [] = "No other repository is known to contain the file."
+	message rs [] = "Try making some of these repositories available:\n" ++ rs
+	message [] us = "Also these untrusted repositories may contain the file:\n" ++ us
+	message rs us = message rs [] ++ message [] us
 
 showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = noop
@@ -242,6 +242,6 @@ logStatus remote key = logChange key (uuid remote)
 {- Orders remotes by cost, with ones with the lowest cost grouped together. -}
 byCost :: [Remote] -> [[Remote]]
 byCost = map snd . sort . M.toList . costmap
-	where
-		costmap = M.fromListWith (++) . map costpair
-		costpair r = (cost r, [r])
+  where
+	costmap = M.fromListWith (++) . map costpair
+	costpair r = (cost r, [r])

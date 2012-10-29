@@ -73,8 +73,8 @@ instance MonadBaseControl IO Annex where
 	liftBaseWith f = Annex $ liftBaseWith $ \runInIO ->
 		f $ liftM StAnnex . runInIO . runAnnex
 	restoreM = Annex . restoreM . unStAnnex
-		where
-			unStAnnex (StAnnex st) = st
+	  where
+		unStAnnex (StAnnex st) = st
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 

@@ -100,10 +100,10 @@ gitAnnexLocation key r
 		 - don't need to do any work to check if the file is
 		 - present. -}
 		return $ inrepo $ annexLocation key hashDirMixed
-	where
-		inrepo d = Git.localGitDir r </> d
-		check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
-		check [] = error "internal"
+  where
+	inrepo d = Git.localGitDir r </> d
+	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
+	check [] = error "internal"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
@@ -204,8 +204,8 @@ gitAnnexAssistantDefaultDir = "annex"
 {- Checks a symlink target to see if it appears to point to annexed content. -}
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = ('/':d) `isInfixOf` s || d `isPrefixOf` s
-	where
-		d = ".git" </> objectDir
+  where
+	d = ".git" </> objectDir
 
 {- Converts a key into a filename fragment without any directory.
  -
@@ -232,8 +232,8 @@ keyFile key = replace "/" "%" $ replace ":" "&c" $
  -}
 keyPath :: Key -> Hasher -> FilePath
 keyPath key hasher = hasher key </> f </> f
-	where
-		f = keyFile key
+  where
+	f = keyFile key
 
 {- All possibile locations to store a key using different directory hashes. -}
 keyPaths :: Key -> [FilePath]
@@ -249,7 +249,8 @@ fileKey file = file2key $
 {- for quickcheck -}
 prop_idempotent_fileKey :: String -> Bool
 prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
-	where k = stubKey { keyName = s, keyBackendName = "test" }
+  where
+	k = stubKey { keyName = s, keyBackendName = "test" }
 
 {- Two different directory hashes may be used. The mixed case hash
  - came first, and is fine, except for the problem of case-strict
@@ -262,14 +263,14 @@ annexHashes = [hashDirLower, hashDirMixed]
 
 hashDirMixed :: Hasher
 hashDirMixed k = addTrailingPathSeparator $ take 2 dir </> drop 2 dir
-	where
-		dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
-		ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file k
+  where
+	dir = take 4 $ display_32bits_as_dir =<< [a,b,c,d]
+	ABCD (a,b,c,d) = md5 $ md5FilePath $ key2file k
 
 hashDirLower :: Hasher
 hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
-	where
-		dir = take 6 $ md5s $ md5FilePath $ key2file k
+  where
+	dir = take 6 $ md5s $ md5FilePath $ key2file k
 
 {- modified version of display_32bits_as_hex from Data.Hash.MD5
  -   Copyright (C) 2001 Ian Lynagh 
@@ -277,13 +278,13 @@ hashDirLower k = addTrailingPathSeparator $ take 3 dir </> drop 3 dir
  -}
 display_32bits_as_dir :: Word32 -> String
 display_32bits_as_dir w = trim $ swap_pairs cs
-	where 
-		-- Need 32 characters to use. To avoid inaverdently making
-		-- a real word, use letters that appear less frequently.
-		chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
-		cs = map (\x -> getc $ (shiftR w (6*x)) .&. 31) [0..7]
-		getc n = chars !! fromIntegral n
-		swap_pairs (x1:x2:xs) = x2:x1:swap_pairs xs
-		swap_pairs _ = []
-		-- Last 2 will always be 00, so omit.
-		trim = take 6
+  where 
+	-- Need 32 characters to use. To avoid inaverdently making
+	-- a real word, use letters that appear less frequently.
+	chars = ['0'..'9'] ++ "zqjxkmvwgpfZQJXKMVWGPF"
+	cs = map (\x -> getc $ (shiftR w (6*x)) .&. 31) [0..7]
+	getc n = chars !! fromIntegral n
+	swap_pairs (x1:x2:xs) = x2:x1:swap_pairs xs
+	swap_pairs _ = []
+	-- Last 2 will always be 00, so omit.
+	trim = take 6

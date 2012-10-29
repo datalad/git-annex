@@ -84,7 +84,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 	where
 		go (MessageState v StartBlock) = do
 			p
-	 		Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
+			Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
 		go (MessageState _ InBlock) = return ()
 		go _ = p
 		p = handle q $ putStrLn $ "(" ++ m ++ "...)"

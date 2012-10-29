@@ -33,3 +33,8 @@ The git repository has some branches:
 * `setup` contains configuration for this website
 * `pristine-tar` contains [pristine-tar](http://kitenet.net/~joey/code/pristine-tar)
   data to create tarballs of any past git-annex release.
+
+----
+
+Developing git-annex? Patches are very welcome.
+You should read [[coding_style]].

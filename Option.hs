@@ -46,18 +46,18 @@ common =
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
 		"specify key-value backend to use"
 	]
-	where
-		setforce v = Annex.changeState $ \s -> s { Annex.force = v }
-		setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
-		setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
-		setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
-		setdebug = liftIO $ do
-			s <- simpledebug
-			updateGlobalLogger rootLoggerName
-				(setLevel DEBUG . setHandlers [s])
-		simpledebug = setFormatter
-			<$> streamHandler stderr DEBUG
-			<*> pure (simpleLogFormatter "[$time] $msg")
+  where
+	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
+	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
+	setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
+	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
+	setdebug = liftIO $ do
+		s <- simpledebug
+		updateGlobalLogger rootLoggerName
+			(setLevel DEBUG . setHandlers [s])
+	simpledebug = setFormatter
+		<$> streamHandler stderr DEBUG
+		<*> pure (simpleLogFormatter "[$time] $msg")
 
 matcher :: [Option]
 matcher =
@@ -67,9 +67,9 @@ matcher =
 	, shortopt "(" "open group of options"
 	, shortopt ")" "close group of options"
 	]
-	where
-		longopt o = Option [] [o] $ NoArg $ addToken o
-		shortopt o = Option o [] $ NoArg $ addToken o
+  where
+	longopt o = Option [] [o] $ NoArg $ addToken o
+	shortopt o = Option o [] $ NoArg $ addToken o
 
 {- An option that sets a flag. -}
 flag :: String -> String -> String -> Option

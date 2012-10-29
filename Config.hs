@@ -95,24 +95,24 @@ repoSyncable r = fromMaybe True . Git.Config.isTrue
  - in git config. forcenumcopies overrides everything. -}
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
-	where
-		use (Just n) = return n
-		use Nothing = perhaps (return 1) =<< 
-			readish <$> getConfig (annexConfig "numcopies") "1"
-		perhaps fallback = maybe fallback (return . id)
+  where
+	use (Just n) = return n
+	use Nothing = perhaps (return 1) =<< 
+		readish <$> getConfig (annexConfig "numcopies") "1"
+	perhaps fallback = maybe fallback (return . id)
 
 {- Gets the trust level set for a remote in git config. -}
 getTrustLevel :: Git.Repo -> Annex (Maybe String)
 getTrustLevel r = fromRepo $ Git.Config.getMaybe key
-	where
-		(ConfigKey key) = remoteConfig r "trustlevel"
+  where
+	(ConfigKey key) = remoteConfig r "trustlevel"
 
 {- Gets annex.diskreserve setting. -}
 getDiskReserve :: Annex Integer
 getDiskReserve = fromMaybe megabyte . readSize dataUnits
 	<$> getConfig (annexConfig "diskreserve") ""
-	where
-		megabyte = 1000000
+  where
+	megabyte = 1000000
 
 {- Gets annex.httpheaders or annex.httpheaders-command setting,
  - splitting it into lines. -}

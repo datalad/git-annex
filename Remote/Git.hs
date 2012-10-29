@@ -55,15 +55,15 @@ list = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< fromRepo Git.remotes
 	mapM configRead rs
-	where
-		annexurl n = "remote." ++ n ++ ".annexurl"
-		tweakurl c r = do
-			let n = fromJust $ Git.remoteName r
-			case M.lookup (annexurl n) c of
-				Nothing -> return r
-				Just url -> inRepo $ \g ->
-					Git.Construct.remoteNamed n $
-						Git.Construct.fromRemoteLocation url g
+  where
+	annexurl n = "remote." ++ n ++ ".annexurl"
+	tweakurl c r = do
+		let n = fromJust $ Git.remoteName r
+		case M.lookup (annexurl n) c of
+			Nothing -> return r
+			Just url -> inRepo $ \g ->
+				Git.Construct.remoteNamed n $
+					Git.Construct.fromRemoteLocation url g
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.
@@ -85,28 +85,27 @@ repoCheap = not . Git.repoIsUrl
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u _ = new <$> remoteCost r defcst
-	where
-		defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-		new cst = Remote 
-			{ uuid = u
-			, cost = cst
-			, name = Git.repoDescribe r
-			, storeKey = copyToRemote r
-			, retrieveKeyFile = copyFromRemote r
-			, retrieveKeyFileCheap = copyFromRemoteCheap r
-			, removeKey = dropKey r
-			, hasKey = inAnnex r
-			, hasKeyCheap = repoCheap r
-			, whereisKey = Nothing
-			, config = Nothing
-			, localpath = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
-				then Just $ Git.repoPath r
-				else Nothing
-			, repo = r
-			, readonly = Git.repoIsHttp r
-			, remotetype = remote
-			}
-		
+  where
+	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
+	new cst = Remote 
+		{ uuid = u
+		, cost = cst
+		, name = Git.repoDescribe r
+		, storeKey = copyToRemote r
+		, retrieveKeyFile = copyFromRemote r
+		, retrieveKeyFileCheap = copyFromRemoteCheap r
+		, removeKey = dropKey r
+		, hasKey = inAnnex r
+		, hasKeyCheap = repoCheap r
+		, whereisKey = Nothing
+		, config = Nothing
+		, localpath = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
+			then Just $ Git.repoPath r
+			else Nothing
+		, repo = r
+		, readonly = Git.repoIsHttp r
+		, remotetype = remote
+		}
 
 {- Checks relatively inexpensively if a repository is available for use. -}
 repoAvail :: Git.Repo -> Annex Bool
@@ -149,40 +148,40 @@ tryGitConfigRead r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
 		Annex.getState Annex.repo
-	where
-		-- Reading config can fail due to IO error or
-		-- for other reasons; catch all possible exceptions.
-		safely a = either (const $ return r) return
-				=<< liftIO (try a :: IO (Either SomeException Git.Repo))
+  where
+	-- Reading config can fail due to IO error or
+	-- for other reasons; catch all possible exceptions.
+	safely a = either (const $ return r) return
+			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-		pipedconfig cmd params =
-			withHandle StdoutHandle createProcessSuccess p $
-				Git.Config.hRead r
-			where
-				p = proc cmd $ toCommand params
+	pipedconfig cmd params =
+		withHandle StdoutHandle createProcessSuccess p $
+			Git.Config.hRead r
+	  where
+		p = proc cmd $ toCommand params
 
-		pipedsshconfig cmd params =
-			liftIO (try (pipedconfig cmd params) :: IO (Either SomeException Git.Repo))
+	pipedsshconfig cmd params =
+		liftIO (try (pipedconfig cmd params) :: IO (Either SomeException Git.Repo))
 
-		geturlconfig headers = do
-			s <- Url.get (Git.repoLocation r ++ "/config") headers
-			withTempFile "git-annex.tmp" $ \tmpfile h -> do
-				hPutStr h s
-				hClose h
-				safely $ pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+	geturlconfig headers = do
+		s <- Url.get (Git.repoLocation r ++ "/config") headers
+		withTempFile "git-annex.tmp" $ \tmpfile h -> do
+			hPutStr h s
+			hClose h
+			safely $ pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 
-		store = observe $ \r' -> do
-			g <- gitRepo
-			let l = Git.remotes g
-			let g' = g { Git.remotes = exchange l r' }
-			Annex.changeState $ \s -> s { Annex.repo = g' }
+	store = observe $ \r' -> do
+		g <- gitRepo
+		let l = Git.remotes g
+		let g' = g { Git.remotes = exchange l r' }
+		Annex.changeState $ \s -> s { Annex.repo = g' }
 
-		exchange [] _ = []
-		exchange (old:ls) new
-			| Git.remoteName old == Git.remoteName new =
-				new : exchange ls new
-			| otherwise =
-				old : exchange ls new
+	exchange [] _ = []
+	exchange (old:ls) new
+		| Git.remoteName old == Git.remoteName new =
+			new : exchange ls new
+		| otherwise =
+			old : exchange ls new
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine
@@ -193,32 +192,32 @@ inAnnex r key
 	| Git.repoIsHttp r = checkhttp =<< getHttpHeaders
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
-	where
-		checkhttp headers = liftIO $ go undefined $ keyUrls r key
-			where
-				go e [] = return $ Left e
-				go _ (u:us) = do
-					res <- catchMsgIO $
-						Url.check u headers (keySize key)
-					case res of
-						Left e -> go e us
-						v -> return v
-		checkremote = do
-			showAction $ "checking " ++ Git.repoDescribe r
-			onRemote r (check, unknown) "inannex" [Param (key2file key)] []
-			where
-				check c p = dispatch <$> safeSystem c p
-				dispatch ExitSuccess = Right True
-				dispatch (ExitFailure 1) = Right False
-				dispatch _ = unknown
-		checklocal = guardUsable r unknown $ dispatch <$> check
-			where
-				check = liftIO $ catchMsgIO $ onLocal r $
-					Annex.Content.inAnnexSafe key
-				dispatch (Left e) = Left e
-				dispatch (Right (Just b)) = Right b
-				dispatch (Right Nothing) = unknown
-		unknown = Left $ "unable to check " ++ Git.repoDescribe r
+  where
+	checkhttp headers = liftIO $ go undefined $ keyUrls r key
+	  where
+		go e [] = return $ Left e
+		go _ (u:us) = do
+			res <- catchMsgIO $
+				Url.check u headers (keySize key)
+			case res of
+				Left e -> go e us
+				v -> return v
+	checkremote = do
+		showAction $ "checking " ++ Git.repoDescribe r
+		onRemote r (check, unknown) "inannex" [Param (key2file key)] []
+	  where
+		check c p = dispatch <$> safeSystem c p
+		dispatch ExitSuccess = Right True
+		dispatch (ExitFailure 1) = Right False
+		dispatch _ = unknown
+	checklocal = guardUsable r unknown $ dispatch <$> check
+	  where
+		check = liftIO $ catchMsgIO $ onLocal r $
+			Annex.Content.inAnnexSafe key
+		dispatch (Left e) = Left e
+		dispatch (Right (Just b)) = Right b
+		dispatch (Right Nothing) = unknown
+	unknown = Left $ "unable to check " ++ Git.repoDescribe r
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}
@@ -233,8 +232,8 @@ onLocal r a = do
 
 keyUrls :: Git.Repo -> Key -> [String]
 keyUrls r key = map tourl (annexLocations key)
-	where
-		tourl l = Git.repoLocation r ++ "/" ++ l
+  where
+	tourl l = Git.repoLocation r ++ "/" ++ l
 
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key
@@ -271,44 +270,44 @@ copyFromRemote r key file dest
 			=<< rsyncParamsRemote r True key dest file
 	| Git.repoIsHttp r = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
-	where
-		{- Feed local rsync's progress info back to the remote,
-		 - by forking a feeder thread that runs
-		 - git-annex-shell transferinfo at the same time
-		 - git-annex-shell sendkey is running.
-		 -
-		 - Note that it actually waits for rsync to indicate
-		 - progress before starting transferinfo, in order
-		 - to ensure ssh connection caching works and reuses 
-		 - the connection set up for the sendkey.
-		 -
-		 - Also note that older git-annex-shell does not support
-		 - transferinfo, so stderr is dropped and failure ignored.
-		 -}
-		feedprogressback a = do
-			u <- getUUID
-			let fields = (Fields.remoteUUID, fromUUID u)
-				: maybe [] (\f -> [(Fields.associatedFile, f)]) file
-			Just (cmd, params) <- git_annex_shell r "transferinfo" 
-				[Param $ key2file key] fields
-			v <- liftIO $ newEmptySV
-			tid <- liftIO $ forkIO $ void $ tryIO $ do
-				bytes <- readSV v
-				p <- createProcess $
-					 (proc cmd (toCommand params))
-						{ std_in = CreatePipe
-						, std_err = CreatePipe
-						}
-				hClose $ stderrHandle p
-				let h = stdinHandle p
-				let send b = do
-					hPutStrLn h $ show b
-					hFlush h
-				send bytes
-				forever $
-					send =<< readSV v
-			let feeder = writeSV v
-			bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
+  where
+	{- Feed local rsync's progress info back to the remote,
+	 - by forking a feeder thread that runs
+	 - git-annex-shell transferinfo at the same time
+	 - git-annex-shell sendkey is running.
+	 -
+	 - Note that it actually waits for rsync to indicate
+	 - progress before starting transferinfo, in order
+	 - to ensure ssh connection caching works and reuses 
+	 - the connection set up for the sendkey.
+	 -
+	 - Also note that older git-annex-shell does not support
+	 - transferinfo, so stderr is dropped and failure ignored.
+	 -}
+	feedprogressback a = do
+		u <- getUUID
+		let fields = (Fields.remoteUUID, fromUUID u)
+			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
+		Just (cmd, params) <- git_annex_shell r "transferinfo" 
+			[Param $ key2file key] fields
+		v <- liftIO $ newEmptySV
+		tid <- liftIO $ forkIO $ void $ tryIO $ do
+			bytes <- readSV v
+			p <- createProcess $
+				 (proc cmd (toCommand params))
+					{ std_in = CreatePipe
+					, std_err = CreatePipe
+					}
+			hClose $ stderrHandle p
+			let h = stdinHandle p
+			let send b = do
+				hPutStrLn h $ show b
+				hFlush h
+			send bytes
+			forever $
+				send =<< readSV v
+		let feeder = writeSV v
+		bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
 
 copyFromRemoteCheap :: Git.Repo -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
@@ -359,26 +358,26 @@ rsyncHelper callback params = do
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
 	ifM (sameDeviceIds src dest) (docopy, dorsync)
-	where
-		sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
-		getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
-		dorsync = rsyncHelper (Just p) $
-			rsyncparams ++ [Param src, Param dest]
-		docopy = liftIO $ bracket
-			(forkIO $ watchfilesize 0)
-			(void . tryIO . killThread)
-			(const $ copyFileExternal src dest)
-		watchfilesize oldsz = do
-			threadDelay 500000 -- 0.5 seconds
-			v <- catchMaybeIO $
-				fromIntegral . fileSize
-					<$> getFileStatus dest
-			case v of
-				Just sz
-					| sz /= oldsz -> do
-						p sz
-						watchfilesize sz
-				_ -> watchfilesize oldsz
+  where
+	sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
+	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
+	dorsync = rsyncHelper (Just p) $
+		rsyncparams ++ [Param src, Param dest]
+	docopy = liftIO $ bracket
+		(forkIO $ watchfilesize 0)
+		(void . tryIO . killThread)
+		(const $ copyFileExternal src dest)
+	watchfilesize oldsz = do
+		threadDelay 500000 -- 0.5 seconds
+		v <- catchMaybeIO $
+			fromIntegral . fileSize
+				<$> getFileStatus dest
+		case v of
+			Just sz
+				| sz /= oldsz -> do
+					p sz
+					watchfilesize sz
+			_ -> watchfilesize oldsz
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
@@ -397,44 +396,43 @@ rsyncParamsRemote r sending key file afile = do
 	if sending
 		then return $ o ++ rsyncopts eparam dummy (File file)
 		else return $ o ++ rsyncopts eparam (File file) dummy
-	where
-		rsyncopts ps source dest
-			| end ps == [dashdash] = ps ++ [source, dest]
-			| otherwise = ps ++ [dashdash, source, dest]
-		dashdash = Param "--"
-		-- The rsync shell parameter controls where rsync
-		-- goes, so the source/dest parameter can be a dummy value,
-		-- that just enables remote rsync mode.
-		-- For maximum compatability with some patched rsyncs,
-		-- the dummy value needs to still contain a hostname,
-		-- even though this hostname will never be used.
-		dummy = Param "dummy:"
+  where
+	rsyncopts ps source dest
+		| end ps == [dashdash] = ps ++ [source, dest]
+		| otherwise = ps ++ [dashdash, source, dest]
+	dashdash = Param "--"
+	{- The rsync shell parameter controls where rsync
+	 - goes, so the source/dest parameter can be a dummy value,
+	 - that just enables remote rsync mode.
+	 - For maximum compatability with some patched rsyncs,
+	 - the dummy value needs to still contain a hostname,
+	 - even though this hostname will never be used. -}
+	dummy = Param "dummy:"
 
 rsyncParams :: Git.Repo -> Annex [CommandParam]
 rsyncParams r = do
 	o <- getRemoteConfig r "rsync-options" ""
 	return $ options ++ map Param (words o)
-	where
- 		-- --inplace to resume partial files
-		options = [Params "-p --progress --inplace"]
+  where
+ 	-- --inplace to resume partial files
+	options = [Params "-p --progress --inplace"]
 
 commitOnCleanup :: Git.Repo -> Annex a -> Annex a
 commitOnCleanup r a = go `after` a
-	where
-		go = Annex.addCleanup (Git.repoLocation r) cleanup
-		cleanup
-			| not $ Git.repoIsUrl r = liftIO $ onLocal r $
-				doQuietSideAction $
-					Annex.Branch.commit "update"
-			| otherwise = void $ do
-				Just (shellcmd, shellparams) <-
-					git_annex_shell r "commit" [] []
-				
-				-- Throw away stderr, since the remote may not
-				-- have a new enough git-annex shell to
-				-- support committing.
-				liftIO $ catchMaybeIO $ do
-					print "!!!!!!!!!!!!!"
-					withQuietOutput createProcessSuccess $
-						proc shellcmd $
-							toCommand shellparams
+  where
+	go = Annex.addCleanup (Git.repoLocation r) cleanup
+	cleanup
+		| not $ Git.repoIsUrl r = liftIO $ onLocal r $
+			doQuietSideAction $
+				Annex.Branch.commit "update"
+		| otherwise = void $ do
+			Just (shellcmd, shellparams) <-
+				git_annex_shell r "commit" [] []
+			
+			-- Throw away stderr, since the remote may not
+			-- have a new enough git-annex shell to
+			-- support committing.
+			liftIO $ catchMaybeIO $ do
+				withQuietOutput createProcessSuccess $
+					proc shellcmd $
+						toCommand shellparams

@@ -52,11 +52,11 @@ uninitialize = do
    repos that did not intend to use it. -}
 ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkVersion
-	where
-		needsinit = ifM Annex.Branch.hasSibling
-				( initialize Nothing
-				, error "First run: git-annex init"
-				)
+  where
+	needsinit = ifM Annex.Branch.hasSibling
+			( initialize Nothing
+			, error "First run: git-annex init"
+			)
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool

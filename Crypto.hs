@@ -75,16 +75,16 @@ updateEncryptedCipher keyid encipher@(EncryptedCipher _ ks) = do
 	ks' <- Gpg.findPubKeys keyid
 	cipher <- decryptCipher encipher
 	encryptCipher cipher (merge ks ks')
-	where
-		merge (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
+  where
+	merge (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
 
 describeCipher :: StorableCipher -> String
 describeCipher (SharedCipher _) = "shared cipher"
 describeCipher (EncryptedCipher _ (KeyIds ks)) =
 	"with gpg " ++ keys ks ++ " " ++ unwords ks
-	where
-		keys [_] = "key"
-		keys _ = "keys"
+  where
+	keys [_] = "key"
+	keys _ = "keys"
 
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
@@ -92,20 +92,20 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 	let ks' = nub $ sort ks -- gpg complains about duplicate recipient keyids
 	encipher <- Gpg.pipeStrict (encrypt++recipients ks') c
 	return $ EncryptedCipher encipher (KeyIds ks')
-	where
-		encrypt = [ Params "--encrypt" ]
-		recipients l = force_recipients :
-			concatMap (\k -> [Param "--recipient", Param k]) l
-		-- Force gpg to only encrypt to the specified
-		-- recipients, not configured defaults.
-		force_recipients = Params "--no-encrypt-to --no-default-recipient"
+ where
+	encrypt = [ Params "--encrypt" ]
+	recipients l = force_recipients :
+		concatMap (\k -> [Param "--recipient", Param k]) l
+	-- Force gpg to only encrypt to the specified
+	-- recipients, not configured defaults.
+	force_recipients = Params "--no-encrypt-to --no-default-recipient"
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher
 decryptCipher (SharedCipher t) = return $ Cipher t
 decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict decrypt t
-	where
-		decrypt = [ Param "--decrypt" ]
+  where
+	decrypt = [ Param "--decrypt" ]
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
@@ -136,8 +136,12 @@ withEncryptedContent = pass withEncryptedHandle
 withDecryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
 withDecryptedContent = pass withDecryptedHandle
 
-pass :: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
-      -> Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
+pass
+	:: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
+	-> Cipher
+	-> IO L.ByteString
+	-> (L.ByteString -> IO a)
+	-> IO a
 pass to n s a = to n s $ a <=< L.hGetContents
 
 hmacWithCipher :: Cipher -> String -> String
@@ -148,5 +152,5 @@ hmacWithCipher' c s = showDigest $ hmacSha1 (fromString c) (fromString s)
 {- Ensure that hmacWithCipher' returns the same thing forevermore. -}
 prop_hmacWithCipher_sane :: Bool
 prop_hmacWithCipher_sane = known_good == hmacWithCipher' "foo" "bar"
-	where
-		known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
+  where
+	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
