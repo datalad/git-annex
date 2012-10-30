@@ -43,18 +43,21 @@ reconnectRemotes notifypushes rs = void $ do
 			=<< liftAnnex (inRepo Git.Branch.current)
 		addScanRemotes diverged rs
 		return ok
-	where
-		(gitremotes, _specialremotes) =
-			partition (Git.repoIsUrl . Remote.repo) rs
-		sync (Just branch) = do
-			diverged <- snd <$> manualPull (Just branch) gitremotes
-			now <- liftIO getCurrentTime
-			ok <- pushToRemotes now notifypushes gitremotes
-			return (ok, diverged)
-		{- No local branch exists yet, but we can try pulling. -}
-		sync Nothing = do
-			diverged <- snd <$> manualPull Nothing gitremotes
-			return (True, diverged)
+  where
+	gitremotes = filter (notspecialremote . Remote.repo) rs
+	notspecialremote r
+		| Git.repoIsUrl r = True
+		| Git.repoIsLocal r = True
+		| otherwise = False
+	sync (Just branch) = do
+		diverged <- snd <$> manualPull (Just branch) gitremotes
+		now <- liftIO getCurrentTime
+		ok <- pushToRemotes now notifypushes gitremotes
+		return (ok, diverged)
+	{- No local branch exists yet, but we can try pulling. -}
+	sync Nothing = do
+		diverged <- snd <$> manualPull Nothing gitremotes
+		return (True, diverged)
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same
