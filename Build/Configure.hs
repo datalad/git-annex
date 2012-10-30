@@ -27,7 +27,6 @@ tests =
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "gpg" $ testCmd "gpg" "gpg --version >/dev/null"
 	, TestCase "lsof" $ testCmd "lsof" "lsof -v >/dev/null 2>&1"
-	, TestCase "host" $ testCmd "host" "host localhost >/dev/null 2>&1"
 	, TestCase "ssh connection caching" getSshConnectionCaching
 	] ++ shaTestCases
 	[ (1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")

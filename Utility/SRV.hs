@@ -16,7 +16,6 @@ module Utility.SRV (
 	lookupSRV,
 ) where
 
-import qualified Build.SysConfig
 import Utility.Process
 import Utility.Exception
 import Utility.PartialPrelude
@@ -86,12 +85,10 @@ lookupSRV = lookupSRVHost
 #endif
 
 lookupSRVHost :: SRV -> IO [HostPort]
-lookupSRVHost (SRV srv)
-	| Build.SysConfig.host = catchDefaultIO [] $ 
-		parseSrvHost <$> readProcessEnv "host" ["-t", "SRV", "--", srv]
-			-- clear environment, to avoid LANG affecting output
-			(Just [])
-	| otherwise = return []
+lookupSRVHost (SRV srv) = catchDefaultIO [] $ 
+	parseSrvHost <$> readProcessEnv "host" ["-t", "SRV", "--", srv]
+		-- clear environment, to avoid LANG affecting output
+		(Just [])
 
 parseSrvHost :: String -> [HostPort]
 parseSrvHost = orderHosts . catMaybes . map parse . lines
