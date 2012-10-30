@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Assistant
 import Assistant.Common
+import Assistant.NamedThread
 import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install

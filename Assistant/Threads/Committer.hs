@@ -14,6 +14,7 @@ import Assistant.Changes
 import Assistant.Types.Changes
 import Assistant.Commits
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.TransferQueue
 import Logs.Transfer

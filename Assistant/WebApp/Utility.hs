@@ -12,6 +12,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.Types.TransferSlots
 import Assistant.TransferSlots
 import Assistant.Sync
 import qualified Remote

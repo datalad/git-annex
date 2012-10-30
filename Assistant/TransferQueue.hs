@@ -24,6 +24,7 @@ module Assistant.TransferQueue (
 import Common.Annex
 import Assistant.DaemonStatus
 import Assistant.Types.DaemonStatus
+import Assistant.Types.TransferQueue
 import Logs.Transfer
 import Types.Remote
 import qualified Remote
@@ -32,21 +33,6 @@ import Annex.Wanted
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
-
-data TransferQueue = TransferQueue
-	{ queuesize :: TVar Int
-	, queuelist :: TVar [(Transfer, TransferInfo)]
-	, deferreddownloads :: TVar [(Key, AssociatedFile)]
-	}
-
-data Schedule = Next | Later
-	deriving (Eq)
-
-newTransferQueue :: IO TransferQueue
-newTransferQueue = atomically $ TransferQueue
-	<$> newTVar 0
-	<*> newTVar []
-	<*> newTVar []
 
 {- Reads the queue's content without blocking or changing it. -}
 getTransferQueue :: TransferQueue -> IO [(Transfer, TransferInfo)]

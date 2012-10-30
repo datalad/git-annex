@@ -21,6 +21,7 @@ import Assistant.Pairing.Network
 import Assistant.Pairing.MakeRemote
 import Assistant.Ssh
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
 import Annex.UUID

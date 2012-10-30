@@ -14,6 +14,7 @@ import Assistant.Common
 import Assistant.XMPP
 import Assistant.Pushes
 import Assistant.Sync
+import Assistant.DaemonStatus
 import qualified Remote
 import Utility.ThreadScheduler
 

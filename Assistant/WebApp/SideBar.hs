@@ -14,6 +14,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.Notifications
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 

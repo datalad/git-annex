@@ -12,6 +12,7 @@ import Assistant.Commits
 import Assistant.Types.Commits
 import Assistant.Pushes
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Remote

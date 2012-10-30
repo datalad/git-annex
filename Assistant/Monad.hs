@@ -17,7 +17,6 @@ module Assistant.Monad (
 	liftAnnex,
 	(<~>),
 	(<<~),
-	daemonStatus,
 	asIO,
 	asIO2,
 ) where
@@ -28,10 +27,9 @@ import Control.Monad.Base (liftBase, MonadBase)
 import Common.Annex
 import Assistant.Types.ThreadedMonad
 import Assistant.Types.DaemonStatus
-import Assistant.DaemonStatus
 import Assistant.Types.ScanRemotes
-import Assistant.TransferQueue
-import Assistant.TransferSlots
+import Assistant.Types.TransferQueue
+import Assistant.Types.TransferSlots
 import Assistant.Types.Pushes
 import Assistant.Types.BranchChange
 import Assistant.Types.Commits
@@ -115,6 +113,3 @@ io <<~ v = reader v >>= liftIO . io
 
 withAssistant :: (AssistantData -> a) -> (a -> IO b) -> Assistant b
 withAssistant v io = io <<~ v
-
-daemonStatus :: Assistant DaemonStatus
-daemonStatus = getDaemonStatus <<~ daemonStatusHandle

@@ -119,6 +119,7 @@ module Assistant where
 
 import Assistant.Common
 import Assistant.DaemonStatus
+import Assistant.NamedThread
 import Assistant.Types.ThreadedMonad
 import Assistant.Threads.DaemonStatus
 import Assistant.Threads.Watcher

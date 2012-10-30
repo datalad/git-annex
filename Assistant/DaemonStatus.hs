@@ -5,12 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, RankNTypes, ImpredicativeTypes #-}
-
 module Assistant.DaemonStatus where
 
-import Common.Annex
-import Assistant.Types.DaemonStatus
+import Assistant.Common
+import Assistant.Alert
 import Utility.TempFile
 import Utility.NotificationBroadcaster
 import Logs.Transfer
@@ -25,6 +23,9 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+
+daemonStatus :: Assistant DaemonStatus
+daemonStatus = getDaemonStatus <<~ daemonStatusHandle
 
 getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
 getDaemonStatus = atomically . readTMVar
@@ -176,3 +177,52 @@ notifyTransfer dstatus = sendNotification
 notifyAlert :: DaemonStatusHandle -> IO ()
 notifyAlert dstatus = sendNotification
 	=<< alertNotifier <$> atomically (readTMVar dstatus)
+
+{- Returns the alert's identifier, which can be used to remove it. -}
+addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
+addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
+	where
+		go s = (s { lastAlertId = i, alertMap = m }, i)
+			where
+				i = nextAlertId $ lastAlertId s
+				m = mergeAlert i alert (alertMap s)
+
+removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
+removeAlert dstatus i = updateAlert dstatus i (const Nothing)
+
+updateAlert :: DaemonStatusHandle -> AlertId -> (Alert -> Maybe Alert) -> IO ()
+updateAlert dstatus i a = updateAlertMap dstatus $ \m -> M.update a i m
+
+updateAlertMap :: DaemonStatusHandle -> (AlertMap -> AlertMap) -> IO ()
+updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+	where
+		go s = s { alertMap = a (alertMap s) }
+
+{- Displays an alert while performing an activity that returns True on
+ - success.
+ -
+ - The alert is left visible afterwards, as filler.
+ - Old filler is pruned, to prevent the map growing too large. -}
+alertWhile :: Alert -> Assistant Bool -> Assistant Bool
+alertWhile alert a = alertWhile' alert $ do
+	r <- a
+	return (r, r)
+
+{- Like alertWhile, but allows the activity to return a value too. -}
+alertWhile' :: Alert -> Assistant (Bool, a) -> Assistant a
+alertWhile' alert a = do
+	let alert' = alert { alertClass = Activity }
+	dstatus <- getAssistant daemonStatusHandle
+	i <- liftIO $ addAlert dstatus alert'
+	(ok, r) <- a
+	liftIO $ updateAlertMap dstatus $
+		mergeAlert i $ makeAlertFiller ok alert'
+	return r
+
+{- Displays an alert while performing an activity, then removes it. -}
+alertDuring :: Alert -> Assistant a -> Assistant a
+alertDuring alert a = do
+	let alert' = alert { alertClass = Activity }
+	dstatus <- getAssistant daemonStatusHandle
+	i <- liftIO $ addAlert dstatus alert'
+	liftIO (removeAlert dstatus i) `after` a

@@ -14,6 +14,7 @@ import Assistant.Pairing.MakeRemote
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.ThreadScheduler
 
 import Network.Multicast

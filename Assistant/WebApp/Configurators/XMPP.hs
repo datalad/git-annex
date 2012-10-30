@@ -14,6 +14,7 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.Yesod
 #ifdef WITH_XMPP
 import Assistant.Common

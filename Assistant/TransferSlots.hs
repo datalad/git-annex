@@ -5,43 +5,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module Assistant.TransferSlots where
 
-import Common.Annex
+import Assistant.Common
 import Utility.ThreadScheduler
+import Assistant.Types.TransferSlots
 import Assistant.DaemonStatus
-import Assistant.Types.DaemonStatus
 import Logs.Transfer
 
 import qualified Control.Exception as E
 import Control.Concurrent
 import qualified Control.Concurrent.MSemN as MSemN
-import Data.Typeable
-
-type TransferSlots = MSemN.MSemN Int
-
-{- A special exception that can be thrown to pause or resume a transfer, while
- - keeping its slot in use. -}
-data TransferException = PauseTransfer | ResumeTransfer
-	deriving (Show, Eq, Typeable)
-
-instance E.Exception TransferException
-
-type TransferSlotRunner = DaemonStatusHandle -> TransferSlots -> TransferGenerator -> IO ()
-type TransferGenerator = IO (Maybe (Transfer, TransferInfo, IO ()))
-
-{- Number of concurrent transfers allowed to be run from the assistant.
- -
- - Transfers launched by other means, including by remote assistants,
- - do not currently take up slots.
- -}
-numSlots :: Int
-numSlots = 1
-
-newTransferSlots :: IO TransferSlots
-newTransferSlots = MSemN.new numSlots
 
 {- Waits until a transfer slot becomes available, then runs a
  - TransferGenerator, and then runs the transfer action in its own thread. 
