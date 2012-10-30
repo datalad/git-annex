@@ -50,47 +50,50 @@ multicastAddress (IPv6Addr _) = "ff02::fb"
  -}
 multicastPairMsg :: Maybe Int -> Secret -> PairData -> PairStage -> IO ()
 multicastPairMsg repeats secret pairdata stage = go M.empty repeats
-	where
-		go _ (Just 0) = noop
-		go cache n = do
-			addrs <- activeNetworkAddresses
-			let cache' = updatecache cache addrs
-			mapM_ (sendinterface cache') addrs
-			threadDelaySeconds (Seconds 2)
-			go cache' $ pred <$> n
-		{- The multicast library currently chokes on ipv6 addresses. -}
-		sendinterface _ (IPv6Addr _) = noop
-		sendinterface cache i = void $ catchMaybeIO $
-			withSocketsDo $ bracket setup cleanup use
-			where
-				setup = multicastSender (multicastAddress i) pairingPort
-				cleanup (sock, _) = sClose sock -- FIXME does not work
-				use (sock, addr) = do
-					setInterface sock (showAddr i)
-					maybe noop (\s -> void $ sendTo sock s addr)
-						(M.lookup i cache)
-		updatecache cache [] = cache
-		updatecache cache (i:is)
-			| M.member i cache = updatecache cache is
-			| otherwise = updatecache (M.insert i (show $ mkmsg i) cache) is
-		mkmsg addr = PairMsg $
-			mkVerifiable (stage, pairdata, addr) secret
+  where
+	go _ (Just 0) = noop
+	go cache n = do
+		addrs <- activeNetworkAddresses
+		let cache' = updatecache cache addrs
+		mapM_ (sendinterface cache') addrs
+		threadDelaySeconds (Seconds 2)
+		go cache' $ pred <$> n
+	{- The multicast library currently chokes on ipv6 addresses. -}
+	sendinterface _ (IPv6Addr _) = noop
+	sendinterface cache i = void $ catchMaybeIO $
+		withSocketsDo $ bracket setup cleanup use
+		where
+			setup = multicastSender (multicastAddress i) pairingPort
+			cleanup (sock, _) = sClose sock -- FIXME does not work
+			use (sock, addr) = do
+				setInterface sock (showAddr i)
+				maybe noop (\s -> void $ sendTo sock s addr)
+					(M.lookup i cache)
+	updatecache cache [] = cache
+	updatecache cache (i:is)
+		| M.member i cache = updatecache cache is
+		| otherwise = updatecache (M.insert i (show $ mkmsg i) cache) is
+	mkmsg addr = PairMsg $
+		mkVerifiable (stage, pairdata, addr) secret
 
-startSending :: DaemonStatusHandle -> PairingInProgress -> PairStage -> (PairStage -> IO ()) -> IO ()
-startSending dstatus pip stage sender = void $ forkIO $ do
-	tid <- myThreadId
-	let pip' = pip { inProgressPairStage = stage, inProgressThreadId = Just tid }
-	oldpip <- modifyDaemonStatusOld dstatus $
-		\s -> (s { pairingInProgress = Just pip' }, pairingInProgress s)
-	maybe noop stopold oldpip
-	sender stage
-	where
-		stopold = maybe noop killThread . inProgressThreadId
+startSending :: PairingInProgress -> PairStage -> (PairStage -> IO ()) -> Assistant ()
+startSending pip stage sender = do
+	a <- asIO start
+	void $ liftIO $ forkIO a
+  where
+	start = do
+		tid <- liftIO myThreadId
+		let pip' = pip { inProgressPairStage = stage, inProgressThreadId = Just tid }
+		oldpip <- modifyDaemonStatus $
+			\s -> (s { pairingInProgress = Just pip' }, pairingInProgress s)
+		maybe noop stopold oldpip
+		liftIO $ sender stage
+	stopold = maybe noop (liftIO . killThread) . inProgressThreadId
 
-stopSending :: PairingInProgress -> DaemonStatusHandle -> IO ()
-stopSending pip dstatus = do
-	maybe noop killThread $ inProgressThreadId pip
-	modifyDaemonStatusOld_ dstatus $ \s -> s { pairingInProgress = Nothing }
+stopSending :: PairingInProgress -> Assistant ()
+stopSending pip = do
+	maybe noop (liftIO . killThread) $ inProgressThreadId pip
+	modifyDaemonStatus_ $ \s -> s { pairingInProgress = Nothing }
 
 class ToSomeAddr a where
 	toSomeAddr :: a -> SomeAddr
@@ -123,5 +126,5 @@ pairRepo msg = concat
 	, ":"
 	, remoteDirectory d
 	]
-	where
-		d = pairMsgData msg
+  where
+	d = pairMsgData msg

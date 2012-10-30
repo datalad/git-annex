@@ -35,8 +35,8 @@ import qualified Data.Text as T
 xmppNeeded :: Handler ()
 xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
 	urlrender <- getUrlRender
-	void $ runAssistantY $ do
-		close <- asIO removeAlert
+	void $ liftAssistant $ do
+		close <- asIO1 removeAlert
 		addAlert $ xmppNeededAlert $ AlertButton
 			{ buttonLabel = "Configure a Jabber account"
 			, buttonUrl = urlrender XMPPR
@@ -60,7 +60,7 @@ getXMPPR = xmppPage $ do
 	where
 		storecreds creds = do
 			void $ runAnnex undefined $ setXMPPCreds creds
-			runAssistantY notifyRestart
+			liftAssistant notifyRestart
 			redirect ConfigR
 #else
 getXMPPR = xmppPage $

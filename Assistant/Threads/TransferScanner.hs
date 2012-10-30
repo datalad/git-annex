@@ -21,7 +21,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import qualified Git.LsFiles as LsFiles
-import Command
+import qualified Backend
 import Annex.Content
 import Annex.Wanted
 
@@ -78,11 +78,7 @@ failedTransferScan r = do
 			 - that the remote doesn't already have the
 			 - key, so it's not redundantly checked here. -}
 			requeue t info
-	requeue t info = do
-		transferqueue <- getAssistant transferQueue
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ queueTransferWhenSmall
-			transferqueue dstatus (associatedFile info) t r
+	requeue t info = queueTransferWhenSmall (associatedFile info) t r
 
 {- This is a expensive scan through the full git work tree, finding
  - files to transfer. The scan is blocked when the transfer queue gets
@@ -101,10 +97,9 @@ expensiveScan rs = unless onlyweb $ do
 	void $ alertWhile (scanAlert visiblers) $ do
 		g <- liftAnnex gitRepo
 		(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
-		dstatus <- getAssistant daemonStatusHandle
 		forM_ files $ \f -> do
-			ts <- liftAnnex $
-				ifAnnexed f (findtransfers dstatus f) (return [])
+			ts <- maybe (return []) (findtransfers f)
+				=<< liftAnnex (Backend.lookupFile f)
 			mapM_ (enqueue f) ts
 		void $ liftIO cleanup
 		return True
@@ -115,25 +110,24 @@ expensiveScan rs = unless onlyweb $ do
 		in if null rs' then rs else rs'
 	enqueue f (r, t) = do
 		debug ["queuing", show t]
-		transferqueue <- getAssistant transferQueue
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ queueTransferWhenSmall transferqueue dstatus (Just f) t r
-	findtransfers dstatus f (key, _) = do
-		locs <- loggedLocations key
+		queueTransferWhenSmall (Just f) t r
+	findtransfers f (key, _) = do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
-		syncrs <- liftIO $ syncRemotes <$> getDaemonStatusOld dstatus
-		present <- inAnnex key
+		syncrs <- syncRemotes <$> getDaemonStatus
+		liftAnnex $ do
+			locs <- loggedLocations key
+			present <- inAnnex key
 
-		handleDrops' locs syncrs present key (Just f)
+			handleDrops' locs syncrs present key (Just f)
 
-		let slocs = S.fromList locs
-		let use a = return $ catMaybes $ map (a key slocs) syncrs
-		if present
-			then filterM (wantSend (Just f) . Remote.uuid . fst)
-				=<< use (genTransfer Upload False)
-			else ifM (wantGet $ Just f)
-				( use (genTransfer Download True) , return [] )
+			let slocs = S.fromList locs
+			let use a = return $ catMaybes $ map (a key slocs) syncrs
+			if present
+				then filterM (wantSend (Just f) . Remote.uuid . fst)
+					=<< use (genTransfer Upload False)
+				else ifM (wantGet $ Just f)
+					( use (genTransfer Download True) , return [] )
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
 genTransfer direction want key slocs r

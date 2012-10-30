@@ -115,15 +115,9 @@ finishedTransfer :: Transfer -> Maybe TransferInfo -> Assistant ()
 finishedTransfer t (Just info)
 	| transferDirection t == Download =
 		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
-			dstatus <- getAssistant daemonStatusHandle
-			transferqueue <- getAssistant transferQueue
-			liftAnnex $ handleDrops dstatus False
-				(transferKey t) (associatedFile info)
-			liftAnnex $ queueTransfersMatching (/= transferUUID t)
-				Later transferqueue dstatus
+			handleDrops False (transferKey t) (associatedFile info)
+			queueTransfersMatching (/= transferUUID t) Later
 				(transferKey t) (associatedFile info) Upload
-	| otherwise = do
-		dstatus <- getAssistant daemonStatusHandle
-		liftAnnex $ handleDrops dstatus True (transferKey t) (associatedFile info)
+	| otherwise = handleDrops True (transferKey t) (associatedFile info)
 finishedTransfer _ _ = noop
 

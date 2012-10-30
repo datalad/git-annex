@@ -67,11 +67,8 @@ onAdd file
 	| ".lock" `isSuffixOf` file = noop
 	| isAnnexBranch file = do
 		branchChanged
-		transferqueue <- getAssistant transferQueue
-		dstatus <-  getAssistant daemonStatusHandle
-		liftAnnex $
-			whenM Annex.Branch.forceUpdate $
-				queueDeferredDownloads Later transferqueue dstatus
+		whenM (liftAnnex Annex.Branch.forceUpdate) $
+			queueDeferredDownloads Later
 	| "/synced/" `isInfixOf` file = do
 		mergecurrent =<< liftAnnex (inRepo Git.Branch.current)
 	| otherwise = noop

@@ -48,7 +48,7 @@ mountWatcherThread = NamedThread "MountWatcher" $
 
 dbusThread :: Assistant ()
 dbusThread = do
-	runclient <- asIO go
+	runclient <- asIO1 go
 	r <- liftIO $ E.try $ runClient getSessionAddress runclient
 	either onerr (const noop) r
   where
@@ -59,7 +59,7 @@ dbusThread = do
 			 - mount point from the dbus message, but this is
 			 - easier. -}
 			mvar <- liftIO $ newMVar =<< currentMountPoints
-			handleevent <- asIO $ \_event -> do
+			handleevent <- asIO1 $ \_event -> do
 				nowmounted <- liftIO $ currentMountPoints
 				wasmounted <- liftIO $ swapMVar mvar nowmounted
 				handleMounts wasmounted nowmounted

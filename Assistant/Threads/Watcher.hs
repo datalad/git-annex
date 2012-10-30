@@ -54,7 +54,7 @@ needLsof = error $ unlines
 
 watchThread :: NamedThread
 watchThread = NamedThread "Watcher" $ do
-	startup <- asIO startupScan
+	startup <- asIO1 startupScan
 	addhook <- hook onAdd
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
@@ -182,12 +182,9 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 	checkcontent key daemonstatus
 		| scanComplete daemonstatus = do
 			present <- liftAnnex $ inAnnex key
-			dstatus <- getAssistant daemonStatusHandle
-			unless present $ do
-				transferqueue <- getAssistant transferQueue
-				liftAnnex $ queueTransfers Next transferqueue
-					dstatus key (Just file) Download
-			liftAnnex $ handleDrops dstatus present key (Just file)
+			unless present $
+				queueTransfers Next key (Just file) Download
+			handleDrops present key (Just file)
 		| otherwise = noop
 
 onDel :: Handler

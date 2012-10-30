@@ -102,7 +102,7 @@ repoList onlyconfigured includehere
 	where
 		configured = do
 			rs <- filter (not . Remote.readonly) . syncRemotes
-				<$> runAssistantY getDaemonStatus
+				<$> liftAssistant getDaemonStatus
 			runAnnex [] $ do
 				u <- getUUID
 				let l = map Remote.uuid rs

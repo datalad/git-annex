@@ -49,7 +49,7 @@ netWatcherFallbackThread = NamedThread "NetWatcherFallback" $
 dbusThread :: Assistant ()
 dbusThread = do
 	handleerr <- asIO2 onerr
-	runclient <- asIO go
+	runclient <- asIO1 go
 	liftIO $ persistentClient getSystemAddress () handleerr runclient
   where
 	go client = ifM (checkNetMonitor client)

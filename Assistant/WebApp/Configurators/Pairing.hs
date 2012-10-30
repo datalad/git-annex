@@ -87,17 +87,15 @@ getInprogressPairR _ = noPairing
  -}
 startPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
 startPairing stage oncancel alert muuid displaysecret secret = do
-	dstatus <- lift $ getAssistantY daemonStatusHandle
 	urlrender <- lift getUrlRender
 	reldir <- fromJust . relDir <$> lift getYesod
 
-	sendrequests <- lift $ runAssistantY $ asIO2 $ mksendrequests urlrender
-
+	sendrequests <- lift $ liftAssistant $ asIO2 $ mksendrequests urlrender
 	{- Generating a ssh key pair can take a while, so do it in the
 	 - background. -}
-	void $ liftIO $ forkIO $ do
-		keypair <- genSshKeyPair
-		pairdata <- PairData
+	thread <- lift $ liftAssistant $ asIO $ do
+		keypair <- liftIO $ genSshKeyPair
+		pairdata <- liftIO $ PairData
 			<$> getHostname
 			<*> myUserName
 			<*> pure reldir
@@ -105,7 +103,8 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 			<*> (maybe genUUID return muuid)
 		let sender = multicastPairMsg Nothing secret pairdata
 		let pip = PairingInProgress secret Nothing keypair pairdata stage
-		startSending dstatus pip stage $ sendrequests sender
+		startSending pip stage $ sendrequests sender
+	void $ liftIO $ forkIO thread
 
 	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
 	where

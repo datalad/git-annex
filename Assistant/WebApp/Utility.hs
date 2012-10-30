@@ -36,15 +36,13 @@ changeSyncable (Just r) True = do
 	syncRemote r
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
-	d <- getAssistantY id
-	let dstatus = daemonStatusHandle d
-	runAssistantY $ updateSyncRemotes
+	liftAssistant $ updateSyncRemotes
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
-	void $ liftIO $ dequeueTransfers (transferQueue d) dstatus tofrom
+	void $ liftAssistant $ dequeueTransfers tofrom
 	mapM_ (cancelTransfer False) =<<
 		filter tofrom . M.keys <$>
-			runAssistantY (currentTransfers <$> getDaemonStatus)
+			liftAssistant (currentTransfers <$> getDaemonStatus)
 	where
 		tofrom t = transferUUID t == Remote.uuid r
 
@@ -60,24 +58,21 @@ changeSyncFlag r enabled = runAnnex undefined $ do
 
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
-syncRemote = runAssistantY . syncNewRemote
+syncRemote = liftAssistant . syncNewRemote
 
 pauseTransfer :: Transfer -> Handler ()
 pauseTransfer = cancelTransfer True
 
 cancelTransfer :: Bool -> Transfer -> Handler ()
 cancelTransfer pause t = do
-	tq <- getAssistantY transferQueue
 	m <- getCurrentTransfers
-	dstatus <- getAssistantY daemonStatusHandle
-	unless pause $ liftIO $
+	unless pause $
 		{- remove queued transfer -}
-		void $ dequeueTransfers tq dstatus $
-			equivilantTransfer t
+		void $ liftAssistant $ dequeueTransfers $ equivilantTransfer t
 	{- stop running transfer -}
 	maybe noop stop (M.lookup t m)
 	where
-		stop info = runAssistantY $ do
+		stop info = liftAssistant $ do
 			{- When there's a thread associated with the
 			 - transfer, it's signaled first, to avoid it
 			 - displaying any alert about the transfer having
@@ -107,18 +102,16 @@ startTransfer t = do
 	where
 		go info = maybe (start info) resume $ transferTid info
 		startqueued = do
-			dstatus <- getAssistantY daemonStatusHandle
-			q <- getAssistantY transferQueue
-			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
+			is <- liftAssistant $ map snd <$> getMatchingTransfers (== t)
 			maybe noop start $ headMaybe is
 		resume tid = do
-			runAssistantY $ alterTransferInfo t $
+			liftAssistant $ alterTransferInfo t $
 				\i -> i { transferPaused = False }
 			liftIO $ throwTo tid ResumeTransfer
-		start info = runAssistantY $ do
+		start info = liftAssistant $ do
 			program <- liftIO readProgramFile
 			inImmediateTransferSlot $
 				Transferrer.startTransfer program t info
 
 getCurrentTransfers :: Handler TransferMap
-getCurrentTransfers = currentTransfers <$> runAssistantY getDaemonStatus
+getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus

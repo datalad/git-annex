@@ -71,11 +71,8 @@ newWebAppState = do
 		{ showIntro = True
 		, otherRepos = otherrepos }
 
-getAssistantY :: forall sub a. (AssistantData -> a) -> GHandler sub WebApp a
-getAssistantY f = f <$> (assistantData <$> getYesod)
-
-runAssistantY :: forall sub a. (Assistant a) -> GHandler sub WebApp a
-runAssistantY a = liftIO . runAssistant a =<< assistantData <$> getYesod
+liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
+liftAssistant a = liftIO . runAssistant a =<< assistantData <$> getYesod
 
 getWebAppState :: forall sub. GHandler sub WebApp WebAppState
 getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
@@ -95,7 +92,7 @@ modifyWebAppState a = go =<< webAppState <$> getYesod
 runAnnex :: forall sub a. a -> Annex a -> GHandler sub WebApp a
 runAnnex fallback a = ifM (noAnnex <$> getYesod)
 	( return fallback
-	, runAssistantY $ liftAnnex a
+	, liftAssistant $ liftAnnex a
 	)
 
 waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
@@ -109,7 +106,7 @@ newNotifier selector = do
 	liftIO $ notificationHandleToId <$> newNotificationHandle notifier
 
 getNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationBroadcaster
-getNotifier selector = selector <$> runAssistantY getDaemonStatus
+getNotifier selector = selector <$> liftAssistant getDaemonStatus
 
 {- Adds the auth parameter as a hidden field on a form. Must be put into
  - every form. -}

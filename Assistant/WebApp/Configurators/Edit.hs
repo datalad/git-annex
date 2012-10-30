@@ -77,7 +77,7 @@ setRepoConfig uuid mremote oldc newc = do
 				, Param name
 				]
 			void $ Remote.remoteListRefresh
-		runAssistantY updateSyncRemotes
+		liftAssistant updateSyncRemotes
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig

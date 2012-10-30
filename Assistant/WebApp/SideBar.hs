@@ -28,7 +28,7 @@ sideBarDisplay = do
 	let content = do
 		{- Add newest alerts to the sidebar. -}
 		alertpairs <- lift $ M.toList . alertMap
-			<$> runAssistantY getDaemonStatus
+			<$> liftAssistant getDaemonStatus
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs
 	let ident = "sidebar"
@@ -73,12 +73,12 @@ getSideBarR nid = do
 
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()
-getCloseAlert = runAssistantY . removeAlert
+getCloseAlert = liftAssistant . removeAlert
 
 {- When an alert with a button is clicked on, the button takes us here. -}
 getClickAlert :: AlertId -> Handler ()
 getClickAlert i = do
-	m <- alertMap <$> runAssistantY getDaemonStatus
+	m <- alertMap <$> liftAssistant getDaemonStatus
 	case M.lookup i m of
 		Just (Alert { alertButton = Just b }) -> do
 			{- Spawn a thread to run the action while redirecting. -}

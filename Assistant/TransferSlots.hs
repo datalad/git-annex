@@ -17,7 +17,7 @@ import qualified Control.Exception as E
 import Control.Concurrent
 import qualified Control.Concurrent.MSemN as MSemN
 
-type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, IO ()))
+type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
 
 {- Waits until a transfer slot becomes available, then runs a
  - TransferGenerator, and then runs the transfer action in its own thread. 
@@ -44,26 +44,30 @@ inImmediateTransferSlot gen = do
  - then pausing the thread until a ResumeTransfer exception is raised,
  - then rerunning the action.
  -}
-runTransferThread :: Maybe (Transfer, TransferInfo, IO ()) -> Assistant ()
+runTransferThread :: Maybe (Transfer, TransferInfo, Assistant ()) -> Assistant ()
 runTransferThread Nothing = flip MSemN.signal 1 <<~ transferSlots
 runTransferThread (Just (t, info, a)) = do
 	d <- getAssistant id
-	tid <- liftIO $ forkIO $ go d
+	aio <- asIO a
+	tid <- liftIO $ forkIO $ runTransferThread' d aio
 	updateTransferInfo t $ info { transferTid = Just tid }
+
+runTransferThread' :: AssistantData -> IO () -> IO ()
+runTransferThread' d a = go
 	where
-		go d = catchPauseResume d a
-		pause d = catchPauseResume d $ runEvery (Seconds 86400) noop
+		go = catchPauseResume a
+		pause = catchPauseResume $ runEvery (Seconds 86400) noop
 		{- Note: This must use E.try, rather than E.catch.
 		 - When E.catch is used, and has called go in its exception
 		 - handler, Control.Concurrent.throwTo will block sometimes
 		 - when signaling. Using E.try avoids the problem. -}
-		catchPauseResume d a' = do
+		catchPauseResume a' = do
 			r <- E.try a' :: IO (Either E.SomeException ())
 			case r of
 				Left e -> case E.fromException e of
-					Just PauseTransfer -> pause d
-					Just ResumeTransfer -> go d
-					_ -> done d
-				_ -> done d
-		done d = flip runAssistant d $ 
+					Just PauseTransfer -> pause
+					Just ResumeTransfer -> go
+					_ -> done
+				_ -> done
+		done = flip runAssistant d $ 
 			flip MSemN.signal 1 <<~ transferSlots

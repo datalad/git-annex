@@ -30,26 +30,22 @@ maxTransfers = 1
 transfererThread :: NamedThread
 transfererThread = NamedThread "Transferr" $ do
 	program <- liftIO readProgramFile
-	transferqueue <- getAssistant transferQueue
-	dstatus <- getAssistant daemonStatusHandle
-	starter <- asIO2 $ startTransfer program
-	forever $ inTransferSlot $ liftIO $
-		maybe (return Nothing) (uncurry starter)
-			=<< getNextTransfer transferqueue dstatus notrunning
+	forever $ inTransferSlot $
+		maybe (return Nothing) (uncurry $ startTransfer program)
+			=<< getNextTransfer notrunning
   where
 	{- Skip transfers that are already running. -}
 	notrunning = isNothing . startedTime
 
 {- By the time this is called, the daemonstatus's transfer map should
  - already have been updated to include the transfer. -}
-startTransfer :: FilePath -> Transfer -> TransferInfo -> Assistant (Maybe (Transfer, TransferInfo, IO ()))
+startTransfer :: FilePath -> Transfer -> TransferInfo -> Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
 startTransfer program t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
 		( do
 			debug [ "Transferring:" , show t ]
 			notifyTransfer
-			tp <- asIO2 transferprocess
-			return $ Just (t, info, tp remote file)
+			return $ Just (t, info, transferprocess remote file)
 		, do
 			debug [ "Skipping unnecessary transfer:" , show t ]
 			void $ removeTransfer t

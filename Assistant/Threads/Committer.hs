@@ -202,9 +202,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 					Git.HashObject.hashObject BlobObject link
 				stageSymlink file sha
 				showEndOk
-		transferqueue <- getAssistant transferQueue
-		dstatus <- getAssistant daemonStatusHandle
-		liftAnnex $ queueTransfers Next transferqueue dstatus key (Just file) Upload
+		queueTransfers Next key (Just file) Upload
 		return $ Just change
 
 	{- Check that the keysource's keyFilename still exists,

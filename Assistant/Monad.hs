@@ -17,6 +17,7 @@ module Assistant.Monad (
 	(<~>),
 	(<<~),
 	asIO,
+	asIO1,
 	asIO2,
 ) where
 
@@ -95,12 +96,16 @@ io <~> a = do
 	liftIO $ io $ runAssistant a d
 
 {- Creates an IO action that will run an Assistant action when run. -}
-asIO :: (a -> Assistant b) -> Assistant (a -> IO b)
+asIO :: Assistant a -> Assistant (IO a)
 asIO a = do
+	d <- reader id
+	return $ runAssistant a d
+
+asIO1 :: (a -> Assistant b) -> Assistant (a -> IO b)
+asIO1 a = do
 	d <- reader id
 	return $ \v -> runAssistant (a v) d
 
-{- Creates an IO action that will run an Assistant action when run. -}
 asIO2 :: (a -> b -> Assistant c) -> Assistant (a -> b -> IO c)
 asIO2 a = do
 	d <- reader id

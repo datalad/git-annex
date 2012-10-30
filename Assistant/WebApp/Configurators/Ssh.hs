@@ -283,7 +283,7 @@ makeSsh' rsync setup sshdata keypair =
 
 makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
 makeSshRepo forcersync setup sshdata = do
-	r <- runAssistantY $ makeSshRemote forcersync sshdata
+	r <- liftAssistant $ makeSshRemote forcersync sshdata
 	setup r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 

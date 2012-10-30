@@ -20,12 +20,13 @@ import Config
 
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
-handleDrops :: DaemonStatusHandle -> Bool -> Key -> AssociatedFile -> Annex ()
-handleDrops _ _ _ Nothing = noop
-handleDrops dstatus fromhere key f = do
-	syncrs <- liftIO $ syncRemotes <$> getDaemonStatusOld dstatus
-	locs <- loggedLocations key
-	handleDrops' locs syncrs fromhere key f
+handleDrops :: Bool -> Key -> AssociatedFile -> Assistant ()
+handleDrops _ _ Nothing = noop
+handleDrops fromhere key f = do
+	syncrs <- syncRemotes <$> getDaemonStatus
+	liftAnnex $ do
+		locs <- loggedLocations key
+		handleDrops' locs syncrs fromhere key f
 
 handleDrops' :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Annex ()
 handleDrops' _ _ _ _ Nothing = noop

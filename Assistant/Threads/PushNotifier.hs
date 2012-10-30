@@ -26,10 +26,10 @@ import Data.Time.Clock
 
 pushNotifierThread :: NamedThread
 pushNotifierThread = NamedThread "PushNotifier" $ do
-	iodebug <- asIO debug
-	iopull <- asIO pull
-	iowaitpush <- asIO $ const waitPush
-	ioclient <- asIO2 $ xmppClient $ iowaitpush ()
+	iodebug <- asIO1 debug
+	iopull <- asIO1 pull
+	iowaitpush <- asIO $ waitPush
+	ioclient <- asIO2 $ xmppClient $ iowaitpush
 	forever $ do
 		tid <- liftIO $ forkIO $ ioclient iodebug iopull
 		waitRestart

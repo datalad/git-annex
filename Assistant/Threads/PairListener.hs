@@ -27,7 +27,7 @@ thisThread = "PairListener"
 
 pairListenerThread :: UrlRenderer -> NamedThread
 pairListenerThread urlrenderer = NamedThread "PairListener" $ do
-	listener <- asIO $ go [] []
+	listener <- asIO1 $ go [] []
 	liftIO $ withSocketsDo $
 		runEvery (Seconds 1) $ void $ tryIO $ 
 			listener =<< getsock
@@ -69,7 +69,7 @@ pairListenerThread urlrenderer = NamedThread "PairListener" $ do
 		| not verified && sameuuid = do
 			liftAnnex $ warning
 				"detected possible pairing brute force attempt; disabled pairing"
-			stopSending pip <<~ daemonStatusHandle
+			stopSending pip
 			return (Nothing, False)
 		|otherwise = return (Just pip, verified && sameuuid)
 	  where
@@ -104,7 +104,7 @@ pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
 	url <- liftIO $ renderUrl urlrenderer (FinishPairR msg) []
-	close <- asIO removeAlert
+	close <- asIO1 removeAlert
 	void $ addAlert $ pairRequestReceivedAlert repo
 		AlertButton
 			{ buttonUrl = url
@@ -119,11 +119,10 @@ pairReqReceived False urlrenderer msg = do
  - and send a single PairDone. -}
 pairAckReceived :: Bool -> Maybe PairingInProgress -> PairMsg -> [PairingInProgress] -> Assistant [PairingInProgress]
 pairAckReceived True (Just pip) msg cache = do
-	stopSending pip <<~ daemonStatusHandle
+	stopSending pip
 	liftIO $ setupAuthorizedKeys msg
 	finishedPairing msg (inProgressSshKeyPair pip)
-	dstatus <- getAssistant daemonStatusHandle
-	liftIO $ startSending dstatus pip PairDone $ multicastPairMsg
+	startSending pip PairDone $ multicastPairMsg
 		(Just 1) (inProgressSecret pip) (inProgressPairData pip)
 	return $ pip : take 10 cache
 {- A stale PairAck might also be seen, after we've finished pairing.
@@ -132,10 +131,9 @@ pairAckReceived True (Just pip) msg cache = do
  - response to stale PairAcks for them. -}
 pairAckReceived _ _ msg cache = do
 	let pips = filter (verifiedPairMsg msg) cache
-	dstatus <- getAssistant daemonStatusHandle
 	unless (null pips) $
-		liftIO $ forM_ pips $ \pip ->
-			startSending dstatus pip PairDone $ multicastPairMsg
+		forM_ pips $ \pip ->
+			startSending pip PairDone $ multicastPairMsg
 				(Just 1) (inProgressSecret pip) (inProgressPairData pip)
 	return cache
 
@@ -152,5 +150,5 @@ pairDoneReceived :: Bool -> Maybe PairingInProgress -> PairMsg -> Assistant ()
 pairDoneReceived False _ _ = noop -- not verified
 pairDoneReceived True Nothing _ = noop -- not in progress
 pairDoneReceived True (Just pip) msg = do
-	stopSending pip <<~ daemonStatusHandle
+	stopSending pip
 	finishedPairing msg (inProgressSshKeyPair pip)

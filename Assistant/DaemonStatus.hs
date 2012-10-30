@@ -24,29 +24,11 @@ import Data.Time
 import System.Locale
 import qualified Data.Map as M
 
--- TODO remove this
-getDaemonStatusOld :: DaemonStatusHandle -> IO DaemonStatus
-getDaemonStatusOld = atomically . readTMVar
-
 getDaemonStatus :: Assistant DaemonStatus
 getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
 
--- TODO remove this
-modifyDaemonStatusOld_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
-modifyDaemonStatusOld_ dstatus a = modifyDaemonStatusOld dstatus $ \s -> (a s, ())
-
 modifyDaemonStatus_ :: (DaemonStatus -> DaemonStatus) -> Assistant ()
 modifyDaemonStatus_ a = modifyDaemonStatus $ \s -> (a s, ())
-
--- TODO remove this
-modifyDaemonStatusOld :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
-modifyDaemonStatusOld dstatus a = do
-	(s, b) <- atomically $ do
-		r@(s, _) <- a <$> takeTMVar dstatus
-		putTMVar dstatus s
-		return r
-	sendNotification $ changeNotifier s
-	return b
 
 modifyDaemonStatus :: (DaemonStatus -> (DaemonStatus, b)) -> Assistant b
 modifyDaemonStatus a = do
@@ -187,11 +169,6 @@ notifyTransfer = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ sendNotification
 		=<< transferNotifier <$> atomically (readTMVar dstatus)
-
--- TODO remove
-notifyTransferOld :: DaemonStatusHandle -> IO ()
-notifyTransferOld dstatus = sendNotification
-	=<< transferNotifier <$> atomically (readTMVar dstatus)
 
 {- Send a notification when alerts are changed. -}
 notifyAlert :: Assistant ()
