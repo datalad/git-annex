@@ -44,7 +44,7 @@ changeSyncable (Just r) False = do
 	void $ liftIO $ dequeueTransfers (transferQueue d) dstatus tofrom
 	mapM_ (cancelTransfer False) =<<
 		filter tofrom . M.keys <$>
-			liftIO (currentTransfers <$> getDaemonStatus dstatus)
+			runAssistantY (currentTransfers <$> getDaemonStatus)
 	where
 		tofrom t = transferUUID t == Remote.uuid r
 
@@ -128,4 +128,4 @@ startTransfer t = do
 				Transferrer.startTransfer program t info
 
 getCurrentTransfers :: Handler TransferMap
-getCurrentTransfers = currentTransfers <$> getDaemonStatusY
+getCurrentTransfers = currentTransfers <$> runAssistantY getDaemonStatus

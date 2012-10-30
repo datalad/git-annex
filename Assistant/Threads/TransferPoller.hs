@@ -22,10 +22,10 @@ transferPollerThread :: NamedThread
 transferPollerThread = NamedThread "TransferPoller" $ do
 	g <- liftAnnex gitRepo
 	tn <- liftIO . newNotificationHandle =<<
-		transferNotifier <$> daemonStatus
+		transferNotifier <$> getDaemonStatus
 	forever $ do
 		liftIO $ threadDelay 500000 -- 0.5 seconds
-		ts <- currentTransfers <$> daemonStatus
+		ts <- currentTransfers <$> getDaemonStatus
 		if M.null ts
 			-- block until transfers running
 			then liftIO $ waitNotification tn

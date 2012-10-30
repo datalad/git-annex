@@ -46,7 +46,7 @@ pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- Now see if now's a good time to push.
 	if shouldPush commits
 		then do
-			remotes <- filter pushable . syncRemotes <$> daemonStatus
+			remotes <- filter pushable . syncRemotes <$> getDaemonStatus
 			unless (null remotes) $
 				void $ alertWhile (pushAlert remotes) $ do
 					now <- liftIO $ getCurrentTime

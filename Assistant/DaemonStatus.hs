@@ -24,11 +24,12 @@ import Data.Time
 import System.Locale
 import qualified Data.Map as M
 
-daemonStatus :: Assistant DaemonStatus
-daemonStatus = getDaemonStatus <<~ daemonStatusHandle
+-- TODO remove this
+getDaemonStatusOld :: DaemonStatusHandle -> IO DaemonStatus
+getDaemonStatusOld = atomically . readTMVar
 
-getDaemonStatus :: DaemonStatusHandle -> IO DaemonStatus
-getDaemonStatus = atomically . readTMVar
+getDaemonStatus :: Assistant DaemonStatus
+getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
 
 modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
 modifyDaemonStatus_ dstatus a = modifyDaemonStatus dstatus $ \s -> (a s, ())

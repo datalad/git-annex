@@ -10,6 +10,7 @@
 module Assistant.WebApp.Configurators where
 
 import Assistant.Common
+import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
@@ -101,7 +102,7 @@ repoList onlyconfigured includehere
 	where
 		configured = do
 			rs <- filter (not . Remote.readonly) . syncRemotes
-				<$> getDaemonStatusY
+				<$> runAssistantY getDaemonStatus
 			runAnnex [] $ do
 				u <- getUUID
 				let l = map Remote.uuid rs

@@ -49,7 +49,7 @@ sanityCheckerThread = NamedThread "SanityChecker" $ forever $ do
 {- Only run one check per day, from the time of the last check. -}
 waitForNextCheck :: Assistant ()
 waitForNextCheck = do
-	v <- lastSanityCheck <$> daemonStatus
+	v <- lastSanityCheck <$> getDaemonStatus
 	now <- liftIO getPOSIXTime
 	liftIO $ threadDelaySeconds $ Seconds $ calcdelay now v
   where

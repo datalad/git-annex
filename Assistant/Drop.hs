@@ -23,7 +23,7 @@ import Config
 handleDrops :: DaemonStatusHandle -> Bool -> Key -> AssociatedFile -> Annex ()
 handleDrops _ _ _ Nothing = noop
 handleDrops dstatus fromhere key f = do
-	syncrs <- liftIO $ syncRemotes <$> getDaemonStatus dstatus
+	syncrs <- liftIO $ syncRemotes <$> getDaemonStatusOld dstatus
 	locs <- loggedLocations key
 	handleDrops' locs syncrs fromhere key f
 

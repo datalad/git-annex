@@ -74,9 +74,6 @@ newWebAppState = do
 getAssistantY :: forall sub a. (AssistantData -> a) -> GHandler sub WebApp a
 getAssistantY f = f <$> (assistantData <$> getYesod)
 
-getDaemonStatusY :: forall sub. GHandler sub WebApp DaemonStatus
-getDaemonStatusY = liftIO . getDaemonStatus =<< getAssistantY daemonStatusHandle
-
 runAssistantY :: forall sub a. (Assistant a) -> GHandler sub WebApp a
 runAssistantY a = liftIO . runAssistant a =<< assistantData <$> getYesod
 
@@ -112,7 +109,7 @@ newNotifier selector = do
 	liftIO $ notificationHandleToId <$> newNotificationHandle notifier
 
 getNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationBroadcaster
-getNotifier selector = selector <$> getDaemonStatusY
+getNotifier selector = selector <$> runAssistantY getDaemonStatus
 
 {- Adds the auth parameter as a hidden field on a form. Must be put into
  - every form. -}

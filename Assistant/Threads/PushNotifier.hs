@@ -89,7 +89,7 @@ xmppClient iowaitpush iodebug iopull = do
 pull :: [UUID] -> Assistant ()
 pull [] = noop
 pull us = do
-	rs <- filter matching . syncRemotes <$> daemonStatus
+	rs <- filter matching . syncRemotes <$> getDaemonStatus
 	debug $ "push notification for" : map (fromUUID . Remote.uuid ) rs
 	pullone rs =<< liftAnnex (inRepo Git.Branch.current)
   where

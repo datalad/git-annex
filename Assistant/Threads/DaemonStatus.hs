@@ -18,7 +18,7 @@ import Utility.NotificationBroadcaster
 daemonStatusThread :: NamedThread
 daemonStatusThread = NamedThread "DaemonStatus" $ do
 	notifier <- liftIO . newNotificationHandle
-		=<< changeNotifier <$> daemonStatus
+		=<< changeNotifier <$> getDaemonStatus
 	checkpoint
 	runEvery (Seconds tenMinutes) <~> do
 		liftIO $ waitNotification notifier
@@ -26,4 +26,4 @@ daemonStatusThread = NamedThread "DaemonStatus" $ do
   where
 	checkpoint = do
 		file <- liftAnnex $ fromRepo gitAnnexDaemonStatusFile
-		liftIO . writeDaemonStatusFile file =<< daemonStatus
+		liftIO . writeDaemonStatusFile file =<< getDaemonStatus

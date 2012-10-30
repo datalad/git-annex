@@ -133,18 +133,18 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 		link <- liftAnnex $ calcGitLink file key
 		ifM ((==) link <$> liftIO (readSymbolicLink file))
 			( do
-				s <- daemonStatus
+				s <- getDaemonStatus
 				checkcontent key s
 				ensurestaged link s
 			, do
 				liftIO $ removeFile file
 				liftIO $ createSymbolicLink link file
-				checkcontent key =<< daemonStatus
+				checkcontent key =<< getDaemonStatus
 				addlink link
 			)
 	go Nothing = do -- other symlink
 		link <- liftIO (readSymbolicLink file)
-		ensurestaged link =<< daemonStatus
+		ensurestaged link =<< getDaemonStatus
 
 	{- This is often called on symlinks that are already
 	 - staged correctly. A symlink may have been deleted

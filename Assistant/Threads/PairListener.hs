@@ -41,7 +41,7 @@ pairListenerThread urlrenderer = NamedThread "PairListener" $ do
 		Just m -> do
 			sane <- checkSane msg
 			(pip, verified) <- verificationCheck m
-				=<< (pairingInProgress <$> daemonStatus)
+				=<< (pairingInProgress <$> getDaemonStatus)
 			let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
 			case (wrongstage, sane, pairMsgStage m) of
 				-- ignore our own messages, and
