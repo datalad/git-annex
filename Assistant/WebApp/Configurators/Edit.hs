@@ -60,8 +60,9 @@ getRepoConfig uuid r mremote = RepoConfig
 
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
-	when (repoDescription oldc /= repoDescription newc) $ runAnnex undefined $
+	when (repoDescription oldc /= repoDescription newc) $ runAnnex undefined $ do
 		maybe noop (describeUUID uuid . T.unpack) (repoDescription newc)
+		void uuidMapLoad
 	when (repoGroup oldc /= repoGroup newc) $ runAnnex undefined $ 
 		case repoGroup newc of
 			RepoGroupStandard g -> setStandardGroup uuid g
