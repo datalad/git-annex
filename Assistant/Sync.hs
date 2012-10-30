@@ -155,5 +155,6 @@ manualPull currentbranch remotes = do
 syncNewRemote :: Remote -> Assistant ()
 syncNewRemote remote = do
 	updateSyncRemotes
-	thread <- asIO2 reconnectRemotes
-	void $ liftIO $ forkIO $ thread False [remote]
+	thread <- asIO $ do
+		reconnectRemotes False [remote]
+	void $ liftIO $ forkIO $ thread

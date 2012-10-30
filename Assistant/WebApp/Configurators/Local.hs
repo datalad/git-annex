@@ -20,6 +20,7 @@ import Init
 import qualified Git
 import qualified Git.Construct
 import qualified Git.Config
+import qualified Git.Command
 import qualified Annex
 import Locations.UserConfig
 import Utility.FreeDesktop
@@ -281,11 +282,19 @@ inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
 	Annex.eval state a
 
-{- Initializes a git-annex repository in a directory with a description. -}
 initRepo :: FilePath -> Maybe String -> IO UUID
 initRepo dir desc = inDir dir $ do
+	{- Initialize a git-annex repository in a directory with a description. -}
 	unlessM isInitialized $
 		initialize desc
+	unlessM (Git.Config.isBare <$> gitRepo) $
+		{- Initialize the master branch, so things that expect
+		 - to have it will work, before any files are added. -}
+		void $ inRepo $ Git.Command.runBool "commit"
+			[ Param "--allow-empty"
+			, Param "-m"
+			, Param "created repository"
+			]
 	getUUID
 
 {- Adds a directory to the autostart file. -}

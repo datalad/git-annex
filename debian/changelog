@@ -33,6 +33,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
     to test a key's presence.
   * The standalone tarball's runshell now takes care of installing a
     ~/.ssh/git-annex-shell wrapper the first time it's run.
+  * webapp: Make an initial, empty commit so there is a master branch 
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 
