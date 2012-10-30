@@ -123,7 +123,7 @@ enqueue schedule q dstatus t info
 			atomically $ do
 				void $ modifyTVar' (queuesize q) succ
 				void $ modifyTVar' (queuelist q) modlist
-			void $ notifyTransfer dstatus
+			void $ notifyTransferOld dstatus
 
 {- Adds a transfer to the queue. -}
 queueTransfer :: Schedule -> TransferQueue -> DaemonStatusHandle -> AssociatedFile -> Transfer -> Remote -> IO ()
@@ -182,7 +182,7 @@ dequeueTransfers :: TransferQueue -> DaemonStatusHandle -> (Transfer -> Bool) ->
 dequeueTransfers q dstatus c = do
 	removed <- atomically $ dequeueTransfersSTM q c
 	unless (null removed) $
-		notifyTransfer dstatus
+		notifyTransferOld dstatus
 	return removed
 
 dequeueTransfersSTM :: TransferQueue -> (Transfer -> Bool) -> STM [(Transfer, TransferInfo)]

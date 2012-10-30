@@ -73,9 +73,7 @@ getSideBarR nid = do
 
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()
-getCloseAlert i = do
-	dstatus <- getAssistantY daemonStatusHandle
-	liftIO $ removeAlert dstatus i
+getCloseAlert = runAssistantY . removeAlert
 
 {- When an alert with a button is clicked on, the button takes us here. -}
 getClickAlert :: AlertId -> Handler ()

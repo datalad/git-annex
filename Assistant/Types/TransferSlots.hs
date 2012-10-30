@@ -9,9 +9,6 @@
 
 module Assistant.Types.TransferSlots where
 
-import Assistant.Types.DaemonStatus
-import Logs.Transfer
-
 import qualified Control.Exception as E
 import qualified Control.Concurrent.MSemN as MSemN
 import Data.Typeable
@@ -24,9 +21,6 @@ data TransferException = PauseTransfer | ResumeTransfer
 	deriving (Show, Eq, Typeable)
 
 instance E.Exception TransferException
-
-type TransferSlotRunner = DaemonStatusHandle -> TransferSlots -> TransferGenerator -> IO ()
-type TransferGenerator = IO (Maybe (Transfer, TransferInfo, IO ()))
 
 {- Number of concurrent transfers allowed to be run from the assistant.
  -

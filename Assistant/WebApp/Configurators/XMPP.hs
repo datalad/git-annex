@@ -34,13 +34,14 @@ import qualified Data.Text as T
 {- Displays an alert suggesting to configure XMPP, with a button. -}
 xmppNeeded :: Handler ()
 xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
-	dstatus <- getAssistantY daemonStatusHandle
 	urlrender <- getUrlRender
-	void $ liftIO $ addAlert dstatus $ xmppNeededAlert $ AlertButton
-		{ buttonLabel = "Configure a Jabber account"
-		, buttonUrl = urlrender XMPPR
-		, buttonAction = Just $ removeAlert dstatus
-		}
+	void $ runAssistantY $ do
+		close <- asIO removeAlert
+		addAlert $ xmppNeededAlert $ AlertButton
+			{ buttonLabel = "Configure a Jabber account"
+			, buttonUrl = urlrender XMPPR
+			, buttonAction = Just close
+			}
 
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP

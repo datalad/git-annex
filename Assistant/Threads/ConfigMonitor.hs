@@ -74,7 +74,7 @@ reloadConfigs changedconfigs = do
 	{- Changes to the remote log, or the trust log, can affect the
 	 - syncRemotes list -}
 	when (Logs.Remote.remoteLog `elem` fs || Logs.Trust.trustLog `elem` fs) $
-		liftAnnex . updateSyncRemotes =<< getAssistant daemonStatusHandle
+		updateSyncRemotes
   where
 	(fs, as) = unzip $ filter (flip S.member changedfiles . fst)
 		configFilesActions

@@ -38,7 +38,7 @@ changeSyncable (Just r) False = do
 	changeSyncFlag r False
 	d <- getAssistantY id
 	let dstatus = daemonStatusHandle d
-	runAssistantY $ liftAnnex $ updateSyncRemotes dstatus
+	runAssistantY $ updateSyncRemotes
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
 	void $ liftIO $ dequeueTransfers (transferQueue d) dstatus tofrom
@@ -67,30 +67,27 @@ pauseTransfer = cancelTransfer True
 
 cancelTransfer :: Bool -> Transfer -> Handler ()
 cancelTransfer pause t = do
-	dstatus <- getAssistantY daemonStatusHandle
 	tq <- getAssistantY transferQueue
 	m <- getCurrentTransfers
-	liftIO $ do
-		unless pause $
-			{- remove queued transfer -}
-			void $ dequeueTransfers tq dstatus $
-				equivilantTransfer t
-		{- stop running transfer -}
-		maybe noop (stop dstatus) (M.lookup t m)
+	dstatus <- getAssistantY daemonStatusHandle
+	unless pause $ liftIO $
+		{- remove queued transfer -}
+		void $ dequeueTransfers tq dstatus $
+			equivilantTransfer t
+	{- stop running transfer -}
+	maybe noop stop (M.lookup t m)
 	where
-		stop dstatus info = do
+		stop info = runAssistantY $ do
 			{- When there's a thread associated with the
 			 - transfer, it's signaled first, to avoid it
 			 - displaying any alert about the transfer having
 			 - failed when the transfer process is killed. -}
-			maybe noop signalthread $ transferTid info
-			maybe noop killproc $ transferPid info
+			liftIO $ maybe noop signalthread $ transferTid info
+			liftIO $ maybe noop killproc $ transferPid info
 			if pause
-				then void $
-					alterTransferInfo dstatus t $
-						\i -> i { transferPaused = True }
-				else void $
-					removeTransfer dstatus t
+				then void $ alterTransferInfo t $
+					\i -> i { transferPaused = True }
+				else void $ removeTransfer t
 		signalthread tid
 			| pause = throwTo tid PauseTransfer
 			| otherwise = killThread tid
@@ -115,16 +112,12 @@ startTransfer t = do
 			is <- liftIO $ map snd <$> getMatchingTransfers q dstatus (== t)
 			maybe noop start $ headMaybe is
 		resume tid = do
-			dstatus <- getAssistantY daemonStatusHandle
-			liftIO $ do
-				alterTransferInfo dstatus t $
-					\i -> i { transferPaused = False }
-				throwTo tid ResumeTransfer
+			runAssistantY $ alterTransferInfo t $
+				\i -> i { transferPaused = False }
+			liftIO $ throwTo tid ResumeTransfer
 		start info = runAssistantY $ do
 			program <- liftIO readProgramFile
-			dstatus <- getAssistant daemonStatusHandle
-			slots <- getAssistant transferSlots
-			inImmediateTransferSlot dstatus slots <~>
+			inImmediateTransferSlot $
 				Transferrer.startTransfer program t info
 
 getCurrentTransfers :: Handler TransferMap

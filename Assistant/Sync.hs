@@ -154,6 +154,6 @@ manualPull currentbranch remotes = do
 {- Start syncing a newly added remote, using a background thread. -}
 syncNewRemote :: Remote -> Assistant ()
 syncNewRemote remote = do
-	liftAnnex . updateSyncRemotes =<< getAssistant daemonStatusHandle
+	updateSyncRemotes
 	thread <- asIO2 reconnectRemotes
 	void $ liftIO $ forkIO $ thread False [remote]

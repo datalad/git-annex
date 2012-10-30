@@ -31,17 +31,33 @@ getDaemonStatusOld = atomically . readTMVar
 getDaemonStatus :: Assistant DaemonStatus
 getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
 
-modifyDaemonStatus_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
-modifyDaemonStatus_ dstatus a = modifyDaemonStatus dstatus $ \s -> (a s, ())
+-- TODO remove this
+modifyDaemonStatusOld_ :: DaemonStatusHandle -> (DaemonStatus -> DaemonStatus) -> IO ()
+modifyDaemonStatusOld_ dstatus a = modifyDaemonStatusOld dstatus $ \s -> (a s, ())
 
-modifyDaemonStatus :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
-modifyDaemonStatus dstatus a = do
+modifyDaemonStatus_ :: (DaemonStatus -> DaemonStatus) -> Assistant ()
+modifyDaemonStatus_ a = modifyDaemonStatus $ \s -> (a s, ())
+
+-- TODO remove this
+modifyDaemonStatusOld :: DaemonStatusHandle -> (DaemonStatus -> (DaemonStatus, b)) -> IO b
+modifyDaemonStatusOld dstatus a = do
 	(s, b) <- atomically $ do
 		r@(s, _) <- a <$> takeTMVar dstatus
 		putTMVar dstatus s
 		return r
 	sendNotification $ changeNotifier s
 	return b
+
+modifyDaemonStatus :: (DaemonStatus -> (DaemonStatus, b)) -> Assistant b
+modifyDaemonStatus a = do
+	dstatus <- getAssistant daemonStatusHandle
+	liftIO $ do
+		(s, b) <- atomically $ do
+			r@(s, _) <- a <$> takeTMVar dstatus
+			putTMVar dstatus s
+			return r
+		sendNotification $ changeNotifier s
+		return b
 
 {- Syncable remotes ordered by cost. -}
 calcSyncRemotes :: Annex [Remote]
@@ -53,11 +69,10 @@ calcSyncRemotes = do
 	return $ filter good rs
 
 {- Updates the sycRemotes list from the list of all remotes in Annex state. -}
-updateSyncRemotes :: DaemonStatusHandle -> Annex ()
-updateSyncRemotes dstatus = do
-	remotes <- calcSyncRemotes
-	liftIO $ modifyDaemonStatus_ dstatus $
-		\s -> s { syncRemotes = remotes }
+updateSyncRemotes :: Assistant ()
+updateSyncRemotes = do
+	remotes <- liftAnnex calcSyncRemotes
+	modifyDaemonStatus_ $ \s -> s { syncRemotes = remotes }
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
@@ -136,15 +151,14 @@ adjustTransfersSTM dstatus a = do
 	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
 
 {- Alters a transfer's info, if the transfer is in the map. -}
-alterTransferInfo :: DaemonStatusHandle -> Transfer -> (TransferInfo -> TransferInfo) -> IO ()
-alterTransferInfo dstatus t a = updateTransferInfo' dstatus $ M.adjust a t
+alterTransferInfo :: Transfer -> (TransferInfo -> TransferInfo) -> Assistant ()
+alterTransferInfo t a = updateTransferInfo' $ M.adjust a t
 
 {- Updates a transfer's info. Adds the transfer to the map if necessary,
  - or if already present, updates it while preserving the old transferTid,
  - transferPaused, and bytesComplete values, which are not written to disk. -}
-updateTransferInfo :: DaemonStatusHandle -> Transfer -> TransferInfo -> IO ()
-updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
-	M.insertWith' merge t info
+updateTransferInfo :: Transfer -> TransferInfo -> Assistant ()
+updateTransferInfo t info = updateTransferInfo' $ M.insertWith' merge t info
 	where
 		merge new old = new
 			{ transferTid = maybe (transferTid new) Just (transferTid old)
@@ -152,52 +166,59 @@ updateTransferInfo dstatus t info = updateTransferInfo' dstatus $
 			, bytesComplete = maybe (bytesComplete new) Just (bytesComplete old)
 			}
 
-updateTransferInfo' :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> IO ()
-updateTransferInfo' dstatus a =
-	notifyTransfer dstatus `after` modifyDaemonStatus_ dstatus go
+updateTransferInfo' :: (TransferMap -> TransferMap) -> Assistant ()
+updateTransferInfo' a = notifyTransfer `after` modifyDaemonStatus_ update
 	where
-		go s = s { currentTransfers = a (currentTransfers s) }
+		update s = s { currentTransfers = a (currentTransfers s) }
 
 {- Removes a transfer from the map, and returns its info. -}
-removeTransfer :: DaemonStatusHandle -> Transfer -> IO (Maybe TransferInfo)
-removeTransfer dstatus t = 
-	notifyTransfer dstatus `after` modifyDaemonStatus dstatus go
+removeTransfer :: Transfer -> Assistant (Maybe TransferInfo)
+removeTransfer t = notifyTransfer `after` modifyDaemonStatus remove
 	where
-		go s =
+		remove s =
 			let (info, ts) = M.updateLookupWithKey
 				(\_k _v -> Nothing)
 				t (currentTransfers s)
 			in (s { currentTransfers = ts }, info)
 
 {- Send a notification when a transfer is changed. -}
-notifyTransfer :: DaemonStatusHandle -> IO ()
-notifyTransfer dstatus = sendNotification
+notifyTransfer :: Assistant ()
+notifyTransfer = do
+	dstatus <- getAssistant daemonStatusHandle
+	liftIO $ sendNotification
+		=<< transferNotifier <$> atomically (readTMVar dstatus)
+
+-- TODO remove
+notifyTransferOld :: DaemonStatusHandle -> IO ()
+notifyTransferOld dstatus = sendNotification
 	=<< transferNotifier <$> atomically (readTMVar dstatus)
 
 {- Send a notification when alerts are changed. -}
-notifyAlert :: DaemonStatusHandle -> IO ()
-notifyAlert dstatus = sendNotification
-	=<< alertNotifier <$> atomically (readTMVar dstatus)
+notifyAlert :: Assistant ()
+notifyAlert = do
+	dstatus <- getAssistant daemonStatusHandle
+	liftIO $ sendNotification
+		=<< alertNotifier <$> atomically (readTMVar dstatus)
 
 {- Returns the alert's identifier, which can be used to remove it. -}
-addAlert :: DaemonStatusHandle -> Alert -> IO AlertId
-addAlert dstatus alert = notifyAlert dstatus `after` modifyDaemonStatus dstatus go
+addAlert :: Alert -> Assistant AlertId
+addAlert alert = notifyAlert `after` modifyDaemonStatus add
 	where
-		go s = (s { lastAlertId = i, alertMap = m }, i)
+		add s = (s { lastAlertId = i, alertMap = m }, i)
 			where
 				i = nextAlertId $ lastAlertId s
 				m = mergeAlert i alert (alertMap s)
 
-removeAlert :: DaemonStatusHandle -> AlertId -> IO ()
-removeAlert dstatus i = updateAlert dstatus i (const Nothing)
+removeAlert :: AlertId -> Assistant ()
+removeAlert i = updateAlert i (const Nothing)
 
-updateAlert :: DaemonStatusHandle -> AlertId -> (Alert -> Maybe Alert) -> IO ()
-updateAlert dstatus i a = updateAlertMap dstatus $ \m -> M.update a i m
+updateAlert :: AlertId -> (Alert -> Maybe Alert) -> Assistant ()
+updateAlert i a = updateAlertMap $ \m -> M.update a i m
 
-updateAlertMap :: DaemonStatusHandle -> (AlertMap -> AlertMap) -> IO ()
-updateAlertMap dstatus a = notifyAlert dstatus `after` modifyDaemonStatus_ dstatus go
+updateAlertMap :: (AlertMap -> AlertMap) -> Assistant ()
+updateAlertMap a = notifyAlert `after` modifyDaemonStatus_ update
 	where
-		go s = s { alertMap = a (alertMap s) }
+		update s = s { alertMap = a (alertMap s) }
 
 {- Displays an alert while performing an activity that returns True on
  - success.
@@ -213,17 +234,13 @@ alertWhile alert a = alertWhile' alert $ do
 alertWhile' :: Alert -> Assistant (Bool, a) -> Assistant a
 alertWhile' alert a = do
 	let alert' = alert { alertClass = Activity }
-	dstatus <- getAssistant daemonStatusHandle
-	i <- liftIO $ addAlert dstatus alert'
+	i <- addAlert alert'
 	(ok, r) <- a
-	liftIO $ updateAlertMap dstatus $
-		mergeAlert i $ makeAlertFiller ok alert'
+	updateAlertMap $ mergeAlert i $ makeAlertFiller ok alert'
 	return r
 
 {- Displays an alert while performing an activity, then removes it. -}
 alertDuring :: Alert -> Assistant a -> Assistant a
 alertDuring alert a = do
-	let alert' = alert { alertClass = Activity }
-	dstatus <- getAssistant daemonStatusHandle
-	i <- liftIO $ addAlert dstatus alert'
-	liftIO (removeAlert dstatus i) `after` a
+	i <- addAlert $ alert { alertClass = Activity }
+	removeAlert  i `after` a

@@ -32,9 +32,8 @@ transfererThread = NamedThread "Transferr" $ do
 	program <- liftIO readProgramFile
 	transferqueue <- getAssistant transferQueue
 	dstatus <- getAssistant daemonStatusHandle
-	slots <- getAssistant transferSlots
 	starter <- asIO2 $ startTransfer program
-	liftIO $ forever $ inTransferSlot dstatus slots $
+	forever $ inTransferSlot $ liftIO $
 		maybe (return Nothing) (uncurry starter)
 			=<< getNextTransfer transferqueue dstatus notrunning
   where
@@ -48,12 +47,12 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
 		( do
 			debug [ "Transferring:" , show t ]
-			notifyTransfer <<~ daemonStatusHandle
+			notifyTransfer
 			tp <- asIO2 transferprocess
 			return $ Just (t, info, tp remote file)
 		, do
 			debug [ "Skipping unnecessary transfer:" , show t ]
-			void $ flip removeTransfer t <<~ daemonStatusHandle
+			void $ removeTransfer t
 			return Nothing
 		)
 	_ -> return Nothing
@@ -77,10 +76,8 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 		 - in the transfer.
 		 -}
 		whenM (liftIO $ (==) ExitSuccess <$> waitForProcess pid) $ do
-			dstatus <- getAssistant daemonStatusHandle
-			liftIO $ void $ addAlert dstatus $
-				makeAlertFiller True $
-					transferFileAlert direction True file
+			void $ addAlert $ makeAlertFiller True $
+				transferFileAlert direction True file
 			recordCommit
 	  where
 		params =

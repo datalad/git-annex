@@ -64,8 +64,7 @@ onAdd file = case parseTransferFile file of
 		debug [ "transfer starting:", show t]
 		r <- headMaybe . filter (sameuuid t)
 			<$> liftAnnex Remote.remoteList
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ updateTransferInfo dstatus t info { transferRemote = r }
+		updateTransferInfo t info { transferRemote = r }
 	sameuuid t r = Remote.uuid r == transferUUID t
 
 {- Called when a transfer information file is updated.
@@ -79,9 +78,8 @@ onModify file = do
 		Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
 	where
 		go _ Nothing = noop
-		go t (Just newinfo) = withAssistant daemonStatusHandle $ \h ->
-			alterTransferInfo h t $
-				\i -> i { bytesComplete = bytesComplete newinfo }
+		go t (Just newinfo) = alterTransferInfo t $
+			\i -> i { bytesComplete = bytesComplete newinfo }
 
 {- This thread can only watch transfer sizes when the DirWatcher supports
  - tracking modificatons to files. -}
@@ -94,7 +92,7 @@ onDel file = case parseTransferFile file of
 	Nothing -> noop
 	Just t -> do
 		debug [ "transfer finishing:", show t]
-		minfo <- flip removeTransfer t <<~ daemonStatusHandle
+		minfo <- removeTransfer t
 
 		finished <- asIO2 finishedTransfer
 		void $ liftIO $ forkIO $ do

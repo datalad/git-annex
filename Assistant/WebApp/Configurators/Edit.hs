@@ -69,7 +69,6 @@ setRepoConfig uuid mremote oldc newc = do
 	when (repoSyncable oldc /= repoSyncable newc) $
 		changeSyncable mremote (repoSyncable newc)
 	when (isJust mremote && repoName oldc /= repoName newc) $ do
-		dstatus <- getAssistantY daemonStatusHandle
 		runAnnex undefined $ do
 			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
 			inRepo $ Git.Command.run "remote"
@@ -78,7 +77,7 @@ setRepoConfig uuid mremote oldc newc = do
 				, Param name
 				]
 			void $ Remote.remoteListRefresh
-			updateSyncRemotes dstatus
+		runAssistantY updateSyncRemotes
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig

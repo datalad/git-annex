@@ -13,7 +13,6 @@ module Assistant.Monad (
 	newAssistantData,
 	runAssistant,
 	getAssistant,
-	withAssistant,
 	liftAnnex,
 	(<~>),
 	(<<~),
@@ -110,6 +109,3 @@ asIO2 a = do
 {- Runs an IO action on a selected field of the AssistantData. -}
 (<<~) :: (a -> IO b) -> (AssistantData -> a) -> Assistant b
 io <<~ v = reader v >>= liftIO . io
-
-withAssistant :: (AssistantData -> a) -> (a -> IO b) -> Assistant b
-withAssistant v io = io <<~ v

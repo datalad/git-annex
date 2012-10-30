@@ -28,14 +28,12 @@ sanityCheckerThread = NamedThread "SanityChecker" $ forever $ do
 	debug ["sanity check complete"]
   where
 	go = do
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ modifyDaemonStatus_ dstatus $ \s -> s
-			{ sanityCheckRunning = True }
+		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
 
 		now <- liftIO $ getPOSIXTime -- before check started
 		r <- either showerr return =<< tryIO <~> check
 
-		liftIO $ modifyDaemonStatus_ dstatus $ \s -> s
+		modifyDaemonStatus_ $ \s -> s
 			{ sanityCheckRunning = False
 			, lastSanityCheck = Just now
 			}
@@ -84,8 +82,7 @@ check = do
 	slop = fromIntegral tenMinutes
 	insanity msg = do
 		liftAnnex $ warning msg
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ void $ addAlert dstatus $ sanityCheckFixAlert msg
+		void $ addAlert $ sanityCheckFixAlert msg
 	addsymlink file s = do
 		Watcher.runHandler Watcher.onAddSymlink file s
 		insanity $ "found unstaged symlink: " ++ file

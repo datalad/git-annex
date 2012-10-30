@@ -26,5 +26,5 @@ runNamedThread (NamedThread name a) = do
 				let msg = unwords [name, "crashed:", show e]
 				hPutStrLn stderr msg
 				-- TODO click to restart
-				void $ addAlert (daemonStatusHandle d) $
-					warningAlert name msg
+				flip runAssistant d $ void $
+					addAlert $ warningAlert name msg

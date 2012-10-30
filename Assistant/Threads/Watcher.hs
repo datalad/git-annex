@@ -85,9 +85,7 @@ startupScan scanner = do
 			inRepo $ Git.Command.run "add" [Param "--update"]
 			showAction "started"
 		
-		dstatus <- getAssistant daemonStatusHandle
-		liftIO $ modifyDaemonStatus_ dstatus $
-			\s -> s { scanComplete = True }
+		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
 		return (True, r)
 
@@ -218,8 +216,7 @@ onDelDir dir _ = do
 onErr :: Handler
 onErr msg _ = do
 	liftAnnex $ warning msg
-	dstatus <- getAssistant daemonStatusHandle
-	void $ liftIO $ addAlert dstatus $ warningAlert "watcher" msg
+	void $ addAlert $ warningAlert "watcher" msg
 	noChange
 
 {- Adds a symlink to the index, without ever accessing the actual symlink

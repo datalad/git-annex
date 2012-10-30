@@ -80,7 +80,7 @@ startSending :: DaemonStatusHandle -> PairingInProgress -> PairStage -> (PairSta
 startSending dstatus pip stage sender = void $ forkIO $ do
 	tid <- myThreadId
 	let pip' = pip { inProgressPairStage = stage, inProgressThreadId = Just tid }
-	oldpip <- modifyDaemonStatus dstatus $
+	oldpip <- modifyDaemonStatusOld dstatus $
 		\s -> (s { pairingInProgress = Just pip' }, pairingInProgress s)
 	maybe noop stopold oldpip
 	sender stage
@@ -90,7 +90,7 @@ startSending dstatus pip stage sender = void $ forkIO $ do
 stopSending :: PairingInProgress -> DaemonStatusHandle -> IO ()
 stopSending pip dstatus = do
 	maybe noop killThread $ inProgressThreadId pip
-	modifyDaemonStatus_ dstatus $ \s -> s { pairingInProgress = Nothing }
+	modifyDaemonStatusOld_ dstatus $ \s -> s { pairingInProgress = Nothing }
 
 class ToSomeAddr a where
 	toSomeAddr :: a -> SomeAddr
