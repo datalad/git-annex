@@ -23,6 +23,7 @@ module Assistant.TransferQueue (
 
 import Common.Annex
 import Assistant.DaemonStatus
+import Assistant.Types.DaemonStatus
 import Logs.Transfer
 import Types.Remote
 import qualified Remote

@@ -15,7 +15,6 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
-import Assistant.DaemonStatus
 import Assistant.XMPP
 import Utility.Yesod
 import qualified Remote

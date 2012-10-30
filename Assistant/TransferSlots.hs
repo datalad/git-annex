@@ -12,6 +12,7 @@ module Assistant.TransferSlots where
 import Common.Annex
 import Utility.ThreadScheduler
 import Assistant.DaemonStatus
+import Assistant.Types.DaemonStatus
 import Logs.Transfer
 
 import qualified Control.Exception as E

@@ -11,7 +11,6 @@ import Common.Annex
 import Command
 import Assistant
 import Assistant.Common
-import Assistant.DaemonStatus
 import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install

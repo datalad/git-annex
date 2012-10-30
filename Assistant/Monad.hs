@@ -27,6 +27,7 @@ import Control.Monad.Base (liftBase, MonadBase)
 
 import Common.Annex
 import Assistant.Types.ThreadedMonad
+import Assistant.Types.DaemonStatus
 import Assistant.DaemonStatus
 import Assistant.Types.ScanRemotes
 import Assistant.TransferQueue

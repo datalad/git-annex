@@ -12,7 +12,6 @@ module Assistant.WebApp.Notifications where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
-import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 

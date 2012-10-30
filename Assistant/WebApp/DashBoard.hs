@@ -16,7 +16,6 @@ import Assistant.WebApp.Utility
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
-import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Utility.NotificationBroadcaster
 import Utility.Yesod

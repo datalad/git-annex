@@ -12,7 +12,6 @@ module Assistant.Threads.PushNotifier where
 
 import Assistant.Common
 import Assistant.XMPP
-import Assistant.DaemonStatus
 import Assistant.Pushes
 import Assistant.Sync
 import qualified Remote

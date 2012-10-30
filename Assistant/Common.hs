@@ -20,6 +20,7 @@ module Assistant.Common (
 
 import Common.Annex as X
 import Assistant.Monad as X
+import Assistant.Types.DaemonStatus as X
 import Assistant.Alert
 import Assistant.DaemonStatus
 

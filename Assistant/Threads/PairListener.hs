@@ -11,7 +11,6 @@ import Assistant.Common
 import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.Pairing.MakeRemote
-import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
