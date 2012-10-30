@@ -47,11 +47,8 @@ introDisplay ident = do
 	repolist <- lift $ repoList True False
 	let n = length repolist
 	let numrepos = show n
-	let notenough = n < enough
 	$(widgetFile "configurators/intro")
 	lift $ modifyWebAppState $ \s -> s { showIntro = False }
-	where
-		enough = 2
 
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml

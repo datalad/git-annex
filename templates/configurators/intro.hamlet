@@ -4,7 +4,7 @@
       git-annex is watching over your files in <small><tt>#{reldir}</tt></small>
     <p>
       It will automatically notice changes, and keep files in sync #
-      $if notenough
+      $if (null repolist)
         with repositories elsewhere ...
         <h2>
           But no other repositories are set up yet.
