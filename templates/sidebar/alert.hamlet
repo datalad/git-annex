@@ -5,15 +5,15 @@
     $if block
       <h4 .alert-heading>
         $maybe i <- alertIcon alert
-          #{htmlIcon i} #
+          ^{htmlIcon i} #
         #{h}
     $else
       $maybe i <- alertIcon alert
-        #{htmlIcon i} #
+        ^{htmlIcon i} #
       <strong>#{h}</strong> #
   $nothing
     $maybe i <- alertIcon alert
-      #{htmlIcon i} #
+      ^{htmlIcon i} #
   #{renderAlertMessage alert}
   $maybe button <- alertButton alert
     <br>

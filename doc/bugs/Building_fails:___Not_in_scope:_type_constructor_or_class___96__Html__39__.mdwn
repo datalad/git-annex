@@ -184,4 +184,6 @@ git-annex HEAD from git, Ubuntu 12.10.
 
 Please provide any additional information below.
 
-
+> Hmm, seems that Blaze's API is not stable, and I should avoid using it
+> directly. Converted this code to using Hamlet instead for its html
+> generation. [[done]] --[[Joey]]

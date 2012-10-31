@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, OverloadedStrings #-}
 
 module Assistant.Alert where
 
@@ -18,7 +18,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Map as M
 import Data.String
-import Text.Blaze
+import Yesod
 
 {- Different classes of alerts are displayed differently. -}
 data AlertClass = Success | Message | Activity | Warning | Error
@@ -57,16 +57,16 @@ data Alert = Alert
 
 data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
 
-htmlIcon :: AlertIcon -> Html
+htmlIcon :: AlertIcon -> GWidget sub master ()
 htmlIcon ActivityIcon = bootStrapIcon "refresh"
 htmlIcon InfoIcon = bootStrapIcon "info-sign"
 htmlIcon SuccessIcon = bootStrapIcon "ok"
 htmlIcon ErrorIcon = bootStrapIcon "exclamation-sign"
 -- utf-8 umbrella (utf-8 cloud looks too stormy)
-htmlIcon TheCloud = preEscapedText "&#9730;"
+htmlIcon TheCloud = [whamlet|&#9730;|]
 
-bootStrapIcon :: Text -> Html
-bootStrapIcon s = preEscapedText $ T.concat ["<i class=\"icon-", s, "\"></i>"]
+bootStrapIcon :: Text -> GWidget sub master ()
+bootStrapIcon name = [whamlet|<i .icon-#{name}></i>|]
 
 {- When clicked, a button always redirects to a URL
  - It may also run an IO action in the background, which is useful
