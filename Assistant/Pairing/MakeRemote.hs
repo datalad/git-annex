@@ -23,8 +23,8 @@ setupAuthorizedKeys msg = do
 	validateSshPubKey pubkey
 	unlessM (liftIO $ addAuthorizedKeys False pubkey) $
 		error "failed setting up ssh authorized keys"
-	where
-		pubkey = remoteSshPubKey $ pairMsgData msg
+  where
+	pubkey = remoteSshPubKey $ pairMsgData msg
 
 {- When pairing is complete, this is used to set up the remote for the host
  - we paired with. -}
@@ -78,12 +78,12 @@ bestHostName msg = case remoteHostName $ pairMsgData msg of
 			getAddrInfo Nothing (Just localname) Nothing
 		maybe fallback (const $ return localname) (headMaybe addrs)
 	Nothing -> fallback
-	where
-		fallback = do
-			let a = pairMsgAddr msg
-			let sockaddr = case a of
-				IPv4Addr addr -> SockAddrInet (PortNum 0) addr
-				IPv6Addr addr -> SockAddrInet6 (PortNum 0) 0 addr 0
-			fromMaybe (showAddr a)
-				<$> catchDefaultIO Nothing
-					(fst <$> getNameInfo [] True False sockaddr)
+  where
+	fallback = do
+		let a = pairMsgAddr msg
+		let sockaddr = case a of
+			IPv4Addr addr -> SockAddrInet (PortNum 0) addr
+			IPv6Addr addr -> SockAddrInet6 (PortNum 0) 0 addr 0
+		fromMaybe (showAddr a)
+			<$> catchDefaultIO Nothing
+				(fst <$> getNameInfo [] True False sockaddr)

@@ -96,40 +96,40 @@ repoList :: Bool -> Bool -> Handler [(String, String, Actions)]
 repoList onlyconfigured includehere
 	| onlyconfigured = list =<< configured
 	| otherwise = list =<< (++) <$> configured <*> rest
-	where
-		configured = do
-			rs <- filter (not . Remote.readonly) . syncRemotes
-				<$> liftAssistant getDaemonStatus
-			runAnnex [] $ do
-				u <- getUUID
-				let l = map Remote.uuid rs
-				let l' = if includehere then u : l else l
-				return $ zip l' $ map mkSyncingRepoActions l'
-		rest = runAnnex [] $ do
-			m <- readRemoteLog
-			unconfigured <- catMaybes . map (findtype m) . snd
-				<$> (trustPartition DeadTrusted $ M.keys m)
-			unsyncable <- map Remote.uuid <$>
-				(filterM (\r -> not <$> repoSyncable (Remote.repo r))
-					=<< Remote.enabledRemoteList)
-			return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
-		findtype m u = case M.lookup u m of
-			Nothing -> Nothing
-			Just c -> case M.lookup "type" c of
-				Just "rsync" -> u `enableswith` EnableRsyncR
-				Just "directory" -> u `enableswith` EnableDirectoryR
+  where
+	configured = do
+		rs <- filter (not . Remote.readonly) . syncRemotes
+			<$> liftAssistant getDaemonStatus
+		runAnnex [] $ do
+			u <- getUUID
+			let l = map Remote.uuid rs
+			let l' = if includehere then u : l else l
+			return $ zip l' $ map mkSyncingRepoActions l'
+	rest = runAnnex [] $ do
+		m <- readRemoteLog
+		unconfigured <- catMaybes . map (findtype m) . snd
+			<$> (trustPartition DeadTrusted $ M.keys m)
+		unsyncable <- map Remote.uuid <$>
+			(filterM (\r -> not <$> repoSyncable (Remote.repo r))
+				=<< Remote.enabledRemoteList)
+		return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
+	findtype m u = case M.lookup u m of
+		Nothing -> Nothing
+		Just c -> case M.lookup "type" c of
+			Just "rsync" -> u `enableswith` EnableRsyncR
+			Just "directory" -> u `enableswith` EnableDirectoryR
 #ifdef WITH_S3
-				Just "S3" -> u `enableswith` EnableS3R
+			Just "S3" -> u `enableswith` EnableS3R
 #endif
-				_ -> Nothing
-		u `enableswith` r = Just (u, DisabledRepoActions $ r u)
-		list l = runAnnex [] $ do
-			let l' = nubBy (\x y -> fst x == fst y) l
-			zip3
-				<$> pure counter
-				<*> Remote.prettyListUUIDs (map fst l')
-				<*> pure (map snd l')
-		counter = map show ([1..] :: [Int])
+			_ -> Nothing
+	u `enableswith` r = Just (u, DisabledRepoActions $ r u)
+	list l = runAnnex [] $ do
+		let l' = nubBy (\x y -> fst x == fst y) l
+		zip3
+			<$> pure counter
+			<*> Remote.prettyListUUIDs (map fst l')
+			<*> pure (map snd l')
+	counter = map show ([1..] :: [Int])
 
 getEnableSyncR :: UUID -> Handler ()
 getEnableSyncR = flipSync True

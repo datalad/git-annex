@@ -44,9 +44,9 @@ instance Yesod WebApp where
 	{- Add the auth token to every url generated, except static subsite
          - urls (which can show up in Permission Denied pages). -}
 	joinPath = insertAuthToken secretToken excludeStatic
-		where
-			excludeStatic [] = True
-			excludeStatic (p:_) = p /= "static"
+	  where
+		excludeStatic [] = True
+		excludeStatic (p:_) = p /= "static"
 
 	makeSessionBackend = webAppSessionBackend
 	jsLoader _ = BottomOfHeadBlocking

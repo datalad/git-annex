@@ -29,25 +29,23 @@ getSwitchToRepositoryR repo = do
 	liftIO startassistant
 	url <- liftIO geturl
 	redirect url
-	where
-		startassistant = do
-			program <- readProgramFile
-			void $ forkIO $ void $ createProcess $
-				(proc program ["assistant"])
-					{ cwd = Just repo }
-		geturl = do
-			r <- Git.Config.read =<< Git.Construct.fromPath repo
-			waiturl $ gitAnnexUrlFile r
-		waiturl urlfile = do
-			v <- tryIO $ readFile urlfile
-			case v of
-				Left _ -> delayed $ waiturl urlfile
-				Right url -> ifM (listening url)
-					( return url
-					, delayed $ waiturl urlfile
-					)
-		listening url = catchBoolIO $ 
-			fst <$> Url.exists url []
-		delayed a = do
-			threadDelay 100000 -- 1/10th of a second
-			a
+  where
+	startassistant = do
+		program <- readProgramFile
+		void $ forkIO $ void $ createProcess $
+			(proc program ["assistant"]) { cwd = Just repo }
+	geturl = do
+		r <- Git.Config.read =<< Git.Construct.fromPath repo
+		waiturl $ gitAnnexUrlFile r
+	waiturl urlfile = do
+		v <- tryIO $ readFile urlfile
+		case v of
+			Left _ -> delayed $ waiturl urlfile
+			Right url -> ifM (listening url)
+				( return url
+				, delayed $ waiturl urlfile
+				)
+	listening url = catchBoolIO $ fst <$> Url.exists url []
+	delayed a = do
+		threadDelay 100000 -- 1/10th of a second
+		a

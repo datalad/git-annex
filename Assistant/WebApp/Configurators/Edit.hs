@@ -51,12 +51,12 @@ getRepoConfig uuid r mremote = RepoConfig
 	<*> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
 	<*> Config.repoSyncable r
-	where
-		getrepogroup = do
-			groups <- lookupGroups uuid
-			return $ 
-				maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
-					(getStandardGroup groups)
+  where
+	getrepogroup = do
+		groups <- lookupGroups uuid
+		return $ 
+			maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
+				(getStandardGroup groups)
 
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
@@ -86,14 +86,14 @@ editRepositoryAForm def = RepoConfig
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList $ customgroups++standardgroups) "Repository group" (Just $ repoGroup def)
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
-	where
-		standardgroups :: [(Text, RepoGroup)]
-		standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
-			[minBound :: StandardGroup .. maxBound :: StandardGroup]
-		customgroups :: [(Text, RepoGroup)]
-		customgroups = case repoGroup def of
-			RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
-			_ -> []
+  where
+	standardgroups :: [(Text, RepoGroup)]
+	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
+		[minBound :: StandardGroup .. maxBound :: StandardGroup]
+	customgroups :: [(Text, RepoGroup)]
+	customgroups = case repoGroup def of
+		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
+		_ -> []
 
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR = editForm False
@@ -118,8 +118,8 @@ editForm new uuid = bootstrap (Just Config) $ do
 			setRepoConfig uuid mremote curr input
 			redirect RepositoriesR
 		_ -> showform form enctype curr
-	where
-		showform form enctype curr = do
-			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/editrepository")
+  where
+	showform form enctype curr = do
+		let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/editrepository")

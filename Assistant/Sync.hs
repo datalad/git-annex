@@ -133,15 +133,15 @@ pushToRemotes now notifypushes remotes = do
 		, Param $ refspec Annex.Branch.name
 		, Param $ refspec branch
 		] g
-		where
-			{- Push to refs/synced/uuid/branch; this
-			 - avoids cluttering up the branch display. -}
-			refspec b = concat
-				[ s
-				, ":"
-				, "refs/synced/" ++ fromUUID u ++ "/" ++ s
-				]
-				where s = show $ Git.Ref.base b
+	  where
+		{- Push to refs/synced/uuid/branch; this
+		 - avoids cluttering up the branch display. -}
+		refspec b = concat
+			[ s
+			, ":"
+			, "refs/synced/" ++ fromUUID u ++ "/" ++ s
+			]
+		  where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
 manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Bool], Bool)

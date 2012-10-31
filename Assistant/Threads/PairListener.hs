@@ -96,8 +96,8 @@ pairListenerThread urlrenderer = NamedThread "PairListener" $ do
 		if n < chunksz
 			then return $ c ++ msg
 			else getmsg sock $ c ++ msg
-		where
-			chunksz = 1024
+	  where
+		chunksz = 1024
 
 {- Show an alert when a PairReq is seen. -}
 pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()

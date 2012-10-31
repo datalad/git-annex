@@ -55,12 +55,12 @@ getFinishPairR :: PairMsg -> Handler RepHtml
 getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	liftIO $ setup
 	startPairing PairAck cleanup alert uuid "" secret
-	where
-		alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
-		setup  = setupAuthorizedKeys msg
-		cleanup = removeAuthorizedKeys False $
-			remoteSshPubKey $ pairMsgData msg
-		uuid = Just $ pairUUID $ pairMsgData msg
+  where
+	alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
+	setup  = setupAuthorizedKeys msg
+	cleanup = removeAuthorizedKeys False $
+		remoteSshPubKey $ pairMsgData msg
+	uuid = Just $ pairUUID $ pairMsgData msg
 #else
 getFinishPairR _ = noPairing
 #endif
@@ -107,27 +107,27 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 	void $ liftIO $ forkIO thread
 
 	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
-	where
-		{- Sends pairing messages until the thread is killed,
-		 - and shows an activity alert while doing it.
-		 -
-		 - The cancel button returns the user to the HomeR. This is
-		 - not ideal, but they have to be sent somewhere, and could
-		 - have been on a page specific to the in-process pairing
-		 - that just stopped, so can't go back there.
-		 -}
-		mksendrequests urlrender sender _stage = do
-			tid <- liftIO myThreadId
-			let selfdestruct = AlertButton
-				{ buttonLabel = "Cancel"
-				, buttonUrl = urlrender HomeR
-				, buttonAction = Just $ const $ do
-					oncancel
-					killThread tid
-				}
-			alertDuring (alert selfdestruct) $ liftIO $ do
-				_ <- E.try (sender stage) :: IO (Either E.SomeException ())
-				return ()
+  where
+	{- Sends pairing messages until the thread is killed,
+	 - and shows an activity alert while doing it.
+	 -
+	 - The cancel button returns the user to the HomeR. This is
+	 - not ideal, but they have to be sent somewhere, and could
+	 - have been on a page specific to the in-process pairing
+	 - that just stopped, so can't go back there.
+	 -}
+	mksendrequests urlrender sender _stage = do
+		tid <- liftIO myThreadId
+		let selfdestruct = AlertButton
+			{ buttonLabel = "Cancel"
+			, buttonUrl = urlrender HomeR
+			, buttonAction = Just $ const $ do
+				oncancel
+				killThread tid
+			}
+		alertDuring (alert selfdestruct) $ liftIO $ do
+			_ <- E.try (sender stage) :: IO (Either E.SomeException ())
+			return ()
 
 data InputSecret = InputSecret { secretText :: Maybe Text }
 
@@ -153,18 +153,18 @@ promptSecret msg cont = pairPage $ do
 						else showform form enctype $ Just
 							"That's not the right secret phrase."
                 _ -> showform form enctype Nothing
-        where
-                showform form enctype mproblem = do
-			let start = isNothing msg
-			let badphrase = isJust mproblem
-			let problem = fromMaybe "" mproblem
-			let (username, hostname) = maybe ("", "")
-				(\(_, v, a) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr a) (remoteHostName v)))
-				(verifiableVal . fromPairMsg <$> msg)
-			u <- T.pack <$> liftIO myUserName
-			let sameusername = username == u
-                        let authtoken = webAppFormAuthToken
-                        $(widgetFile "configurators/pairing/prompt")
+  where
+	showform form enctype mproblem = do
+		let start = isNothing msg
+		let badphrase = isJust mproblem
+		let problem = fromMaybe "" mproblem
+		let (username, hostname) = maybe ("", "")
+			(\(_, v, a) -> (T.pack $ remoteUserName v, T.pack $ fromMaybe (showAddr a) (remoteHostName v)))
+			(verifiableVal . fromPairMsg <$> msg)
+		u <- T.pack <$> liftIO myUserName
+		let sameusername = username == u
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/pairing/prompt")
 
 {- This counts unicode characters as more than one character,
  - but that's ok; they *do* provide additional entropy. -}

@@ -26,20 +26,20 @@ getFailedPushesBefore duration = do
 		m <- atomically $ readTMVar v
 		now <- getCurrentTime
 		return $ M.keys $ M.filter (not . toorecent now) m
-	where
-		toorecent now time = now `diffUTCTime` time < duration
+  where
+	toorecent now time = now `diffUTCTime` time < duration
 
 {- Modifies the map. -}
 changeFailedPushMap :: (PushMap -> PushMap) -> Assistant ()
 changeFailedPushMap a = do
 	v <- getAssistant failedPushMap
 	liftIO $ atomically $ store v . a . fromMaybe M.empty =<< tryTakeTMVar v
-	where
- 		{- tryTakeTMVar empties the TMVar; refill it only if
-		 - the modified map is not itself empty -}
-		store v m
-			| m == M.empty = noop
-			| otherwise = putTMVar v $! m
+  where
+ 	{- tryTakeTMVar empties the TMVar; refill it only if
+	 - the modified map is not itself empty -}
+	store v m
+		| m == M.empty = noop
+		| otherwise = putTMVar v $! m
 
 notifyPush :: [UUID] -> Assistant ()
 notifyPush us = flip putTSet us <<~ (pushNotifierSuccesses . pushNotifier)

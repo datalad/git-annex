@@ -37,30 +37,29 @@ handleDrops' locs rs fromhere key (Just f)
 			then go rs =<< dropl n
 			else go rs n
 	| otherwise = go rs =<< getcopies
-	where
-		getcopies = do
-			have <- length . snd <$> trustPartition UnTrusted locs
-			numcopies <- getNumCopies =<< numCopies f
-			return (have, numcopies)
-		checkcopies (have, numcopies) = have > numcopies
-		decrcopies (have, numcopies) = (have - 1, numcopies)
+  where
+	getcopies = do
+		have <- length . snd <$> trustPartition UnTrusted locs
+		numcopies <- getNumCopies =<< numCopies f
+		return (have, numcopies)
+	checkcopies (have, numcopies) = have > numcopies
+	decrcopies (have, numcopies) = (have - 1, numcopies)
 
-		go [] _ = noop
-		go (r:rest) n
-			| checkcopies n = dropr r n >>= go rest
-			| otherwise = noop
+	go [] _ = noop
+	go (r:rest) n
+		| checkcopies n = dropr r n >>= go rest
+		| otherwise = noop
 
-		checkdrop n@(_, numcopies) u a = 
-			ifM (wantDrop u (Just f))
-				( ifM (doCommand $ a (Just numcopies))
-					( return $ decrcopies n
-					, return n
-					)
-				, return n
-				)
+	checkdrop n@(_, numcopies) u a = ifM (wantDrop u (Just f))
+		( ifM (doCommand $ a (Just numcopies))
+			( return $ decrcopies n
+			, return n
+			)
+		, return n
+		)
 
-		dropl n = checkdrop n Nothing $ \numcopies ->
-			Command.Drop.startLocal f numcopies key
+	dropl n = checkdrop n Nothing $ \numcopies ->
+		Command.Drop.startLocal f numcopies key
 
-		dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
-			Command.Drop.startRemote f numcopies key r
+	dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
+		Command.Drop.startRemote f numcopies key r

@@ -119,36 +119,36 @@ startOneService client (x:xs) = do
 {- Filter matching events recieved when drives are mounted and unmounted. -}	
 mountChanged :: [MatchRule]
 mountChanged = [gvfs True, gvfs False, kde, kdefallback]
-	where
-		{- gvfs reliably generates this event whenever a drive is mounted/unmounted,
-		 - whether automatically, or manually -}
-		gvfs mount = matchAny
-			{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
-			, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
-			}
-		{- This event fires when KDE prompts the user what to do with a drive,
-		 - but maybe not at other times. And it's not received -}
-		kde = matchAny
-			{ matchInterface = Just "org.kde.Solid.Device"
-			, matchMember = Just "setupDone"
-			}
-		{- This event may not be closely related to mounting a drive, but it's
-		 - observed reliably when a drive gets mounted or unmounted. -}
-		kdefallback = matchAny
-			{ matchInterface = Just "org.kde.KDirNotify"
-			, matchMember = Just "enteredDirectory"
-			}
+  where
+	{- gvfs reliably generates this event whenever a
+	 - drive is mounted/unmounted, whether automatically, or manually -}
+	gvfs mount = matchAny
+		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
+		}
+	{- This event fires when KDE prompts the user what to do with a drive,
+	 - but maybe not at other times. And it's not received -}
+	kde = matchAny
+		{ matchInterface = Just "org.kde.Solid.Device"
+		, matchMember = Just "setupDone"
+		}
+	{- This event may not be closely related to mounting a drive, but it's
+	 - observed reliably when a drive gets mounted or unmounted. -}
+	kdefallback = matchAny
+		{ matchInterface = Just "org.kde.KDirNotify"
+		, matchMember = Just "enteredDirectory"
+		}
 
 #endif
 
 pollingThread :: Assistant ()
 pollingThread = go =<< liftIO currentMountPoints
-	where
-		go wasmounted = do
-			liftIO $ threadDelaySeconds (Seconds 10)
-			nowmounted <- liftIO currentMountPoints
-			handleMounts wasmounted nowmounted
-			go nowmounted
+  where
+	go wasmounted = do
+		liftIO $ threadDelaySeconds (Seconds 10)
+		nowmounted <- liftIO currentMountPoints
+		handleMounts wasmounted nowmounted
+		go nowmounted
 
 handleMounts :: MountPoints -> MountPoints -> Assistant ()
 handleMounts wasmounted nowmounted =
@@ -179,11 +179,11 @@ remotesUnder dir = do
 		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = rs' }
 		updateSyncRemotes
 	return $ map snd $ filter fst pairs
-	where
-		checkremote repotop r = case Remote.localpath r of
-			Just p | dirContains dir (absPathFrom repotop p) ->
-				(,) <$> pure True <*> updateRemote r
-			_ -> return (False, r)
+  where
+	checkremote repotop r = case Remote.localpath r of
+		Just p | dirContains dir (absPathFrom repotop p) ->
+			(,) <$> pure True <*> updateRemote r
+		_ -> return (False, r)
 
 type MountPoints = S.Set Mntent
 

@@ -61,25 +61,25 @@ sshInputAForm def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ hostname def)
 	<*> aopt check_username "User name" (Just $ username def)
 	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ directory def)
-	where
-		check_hostname = checkM (liftIO . checkdns) textField
-		checkdns t = do
-			let h = T.unpack t
-			r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
-			return $ case catMaybes . map addrCanonName <$> r of
-				-- canonicalize input hostname if it had no dot
-				Just (fullname:_)
-					| '.' `elem` h -> Right t
-					| otherwise -> Right $ T.pack fullname
-				Just [] -> Right t
-				Nothing -> Left bad_hostname
-		canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
+  where
+	check_hostname = checkM (liftIO . checkdns) textField
+	checkdns t = do
+		let h = T.unpack t
+		r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
+		return $ case catMaybes . map addrCanonName <$> r of
+			-- canonicalize input hostname if it had no dot
+			Just (fullname:_)
+				| '.' `elem` h -> Right t
+				| otherwise -> Right $ T.pack fullname
+			Just [] -> Right t
+			Nothing -> Left bad_hostname
+	canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
 
-		check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
-			bad_username textField
+	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
+		bad_username textField
 		
-		bad_hostname = "cannot resolve host name" :: Text
-		bad_username = "bad user name" :: Text
+	bad_hostname = "cannot resolve host name" :: Text
+	bad_username = "bad user name" :: Text
 
 data ServerStatus
 	= UntestedServer
@@ -107,10 +107,10 @@ getAddSshR = sshConfigurator $ do
 				Left status -> showform form enctype status
 				Right sshdata -> lift $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
-	where
-		showform form enctype status = do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/ssh/add")
+  where
+	showform form enctype status = do
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/ssh/add")
 
 {- To enable an existing rsync special remote, parse the SshInput from
  - its rsyncurl, and display a form whose only real purpose is to check
@@ -138,15 +138,14 @@ getEnableRsyncR u = do
 							Left status -> showform form enctype status
 							Right sshdata -> enable sshdata
 				_ -> showform form enctype UntestedServer
-	where
-		showform form enctype status = do
-			description <- lift $ runAnnex "" $
-				T.pack . concat <$> prettyListUUIDs [u]
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/ssh/enable")
-		enable sshdata = 
-			lift $ redirect $ ConfirmSshR $
-				sshdata { rsyncOnly = True }
+  where
+	showform form enctype status = do
+		description <- lift $ runAnnex "" $
+			T.pack . concat <$> prettyListUUIDs [u]
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/ssh/enable")
+	enable sshdata = lift $ redirect $ ConfirmSshR $
+		sshdata { rsyncOnly = True }
 
 {- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync
  - url; rsync:// urls or bare path names are not supported.
@@ -163,12 +162,12 @@ parseSshRsyncUrl u
 			, username = if null user then Nothing else val user
 			, directory = val dir
 			}
-		where
-			val = Just . T.pack
-			(userhost, dir) = separate (== ':') u
-			(user, host) = if '@' `elem` userhost
-				then separate (== '@') userhost
-				else (userhost, "")
+  where
+	val = Just . T.pack
+	(userhost, dir) = separate (== ':') u
+	(user, host) = if '@' `elem` userhost
+		then separate (== '@') userhost
+		else (userhost, "")
 
 {- Test if we can ssh into the server.
  -
@@ -178,7 +177,7 @@ parseSshRsyncUrl u
  - a special ssh key will need to be generated just for this server.
  -
  - Once logged into the server, probe to see if git-annex-shell is
- - available, or rsync. Note that on OSX, ~/.ssh/git-annex-shell may be
+ - available, or rsync. Note that, ~/.ssh/git-annex-shell may be
  - present, while git-annex-shell is not in PATH.
  -}
 testServer :: SshInput -> IO (Either ServerStatus SshData)
@@ -193,44 +192,43 @@ testServer sshinput@(SshInput { hostname = Just hn }) = do
 			if usable status'
 				then ret status' True
 				else return $ Left status'
-	where
-		ret status needspubkey = return $ Right $
-			(mkSshData sshinput)
-				{ needsPubKey = needspubkey
-				, rsyncOnly = status == UsableRsyncServer
-				}
-		probe extraopts = do
-			let remotecommand = join ";"
-				[ report "loggedin"
-				, checkcommand "git-annex-shell"
-				, checkcommand "rsync"
-				, checkcommand osx_shim
-				]
-			knownhost <- knownHost hn
-			let sshopts = filter (not . null) $ extraopts ++
-				{- If this is an already known host, let
-				 - ssh check it as usual.
-				 - Otherwise, trust the host key. -}
-				[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
-				, "-n" -- don't read from stdin
-				, genSshHost (fromJust $ hostname sshinput) (username sshinput)
-				, remotecommand
-				]
-			parsetranscript . fst <$> sshTranscript sshopts ""
-		parsetranscript s
-			| reported "git-annex-shell" = UsableSshInput
-			| reported osx_shim = UsableSshInput
-			| reported "rsync" = UsableRsyncServer
-			| reported "loggedin" = UnusableServer
-				"Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
-			| otherwise = UnusableServer $ T.pack $
-				"Failed to ssh to the server. Transcript: " ++ s
-			where
-				reported r = token r `isInfixOf` s
-		checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
-		token r = "git-annex-probe " ++ r
-		report r = "echo " ++ token r
-		osx_shim = "~/.ssh/git-annex-shell"
+  where
+	ret status needspubkey = return $ Right $ (mkSshData sshinput)
+		{ needsPubKey = needspubkey
+		, rsyncOnly = status == UsableRsyncServer
+		}
+	probe extraopts = do
+		let remotecommand = join ";"
+			[ report "loggedin"
+			, checkcommand "git-annex-shell"
+			, checkcommand "rsync"
+			, checkcommand shim
+			]
+		knownhost <- knownHost hn
+		let sshopts = filter (not . null) $ extraopts ++
+			{- If this is an already known host, let
+			 - ssh check it as usual.
+			 - Otherwise, trust the host key. -}
+			[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
+			, "-n" -- don't read from stdin
+			, genSshHost (fromJust $ hostname sshinput) (username sshinput)
+			, remotecommand
+			]
+		parsetranscript . fst <$> sshTranscript sshopts ""
+	parsetranscript s
+		| reported "git-annex-shell" = UsableSshInput
+		| reported shim = UsableSshInput
+		| reported "rsync" = UsableRsyncServer
+		| reported "loggedin" = UnusableServer
+			"Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
+		| otherwise = UnusableServer $ T.pack $
+			"Failed to ssh to the server. Transcript: " ++ s
+	  where
+		reported r = token r `isInfixOf` s
+	checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
+	token r = "git-annex-probe " ++ r
+	report r = "echo " ++ token r
+	shim = "~/.ssh/git-annex-shell"
 
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
@@ -268,18 +266,18 @@ makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> Maybe SshKeyPair -> Han
 makeSsh' rsync setup sshdata keypair =
 	sshSetup [sshhost, remoteCommand] "" $
 		makeSshRepo rsync setup sshdata
-	where
-		sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
-		remotedir = T.unpack $ sshDirectory sshdata
-		remoteCommand = join "&&" $ catMaybes
-			[ Just $ "mkdir -p " ++ shellEscape remotedir
-			, Just $ "cd " ++ shellEscape remotedir
-			, if rsync then Nothing else Just "git init --bare --shared"
-			, if rsync then Nothing else Just "git annex init"
-			, if needsPubKey sshdata
-				then addAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey <$> keypair
-				else Nothing
-			]
+  where
+	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+	remotedir = T.unpack $ sshDirectory sshdata
+	remoteCommand = join "&&" $ catMaybes
+		[ Just $ "mkdir -p " ++ shellEscape remotedir
+		, Just $ "cd " ++ shellEscape remotedir
+		, if rsync then Nothing else Just "git init --bare --shared"
+		, if rsync then Nothing else Just "git annex init"
+		, if needsPubKey sshdata
+			then addAuthorizedKeysCommand (rsyncOnly sshdata) . sshPubKey <$> keypair
+			else Nothing
+		]
 
 makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
 makeSshRepo forcersync setup sshdata = do

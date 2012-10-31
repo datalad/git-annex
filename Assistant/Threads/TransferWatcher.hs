@@ -76,10 +76,10 @@ onModify file = do
 	case parseTransferFile file of
 		Nothing -> noop
 		Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
-	where
-		go _ Nothing = noop
-		go t (Just newinfo) = alterTransferInfo t $
-			\i -> i { bytesComplete = bytesComplete newinfo }
+  where
+	go _ Nothing = noop
+	go t (Just newinfo) = alterTransferInfo t $
+		\i -> i { bytesComplete = bytesComplete newinfo }
 
 {- This thread can only watch transfer sizes when the DirWatcher supports
  - tracking modificatons to files. -}

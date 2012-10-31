@@ -61,8 +61,8 @@ bootstrap navbaritem content = do
 		addScript $ StaticR js_bootstrap_modal_js
 		$(widgetFile "page")
 	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
-	where
-		navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
+  where
+	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = do
@@ -79,10 +79,10 @@ getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
 
 modifyWebAppState :: forall sub. (WebAppState -> WebAppState) -> GHandler sub WebApp ()
 modifyWebAppState a = go =<< webAppState <$> getYesod
-	where
-		go s = liftIO $ atomically $ do
-			v <- takeTMVar s
-			putTMVar s $ a v
+  where
+	go s = liftIO $ atomically $ do
+		v <- takeTMVar s
+		putTMVar s $ a v
 
 {- Runs an Annex action from the webapp.
  -

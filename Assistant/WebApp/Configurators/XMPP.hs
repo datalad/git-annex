@@ -57,11 +57,11 @@ getXMPPR = xmppPage $ do
 		FormSuccess f -> maybe (showform True) (lift . storecreds)
 			=<< liftIO (validateForm f)
 		_ -> showform False
-	where
-		storecreds creds = do
-			void $ runAnnex undefined $ setXMPPCreds creds
-			liftAssistant notifyRestart
-			redirect ConfigR
+  where
+	storecreds creds = do
+		void $ runAnnex undefined $ setXMPPCreds creds
+		liftAssistant notifyRestart
+		redirect ConfigR
 #else
 getXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
@@ -83,9 +83,9 @@ xmppAForm def = XMPPForm
 
 jidField :: Field WebApp WebApp Text
 jidField = checkBool (isJust . parseJID) bad textField
-	where
-		bad :: Text
-		bad = "This should look like an email address.."
+  where
+	bad :: Text
+	bad = "This should look like an email address.."
 
 validateForm :: XMPPForm -> IO (Maybe XMPPCreds)
 validateForm f = do

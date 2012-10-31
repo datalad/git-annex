@@ -54,20 +54,20 @@ runTransferThread (Just (t, info, a)) = do
 
 runTransferThread' :: AssistantData -> IO () -> IO ()
 runTransferThread' d a = go
-	where
-		go = catchPauseResume a
-		pause = catchPauseResume $ runEvery (Seconds 86400) noop
-		{- Note: This must use E.try, rather than E.catch.
-		 - When E.catch is used, and has called go in its exception
-		 - handler, Control.Concurrent.throwTo will block sometimes
-		 - when signaling. Using E.try avoids the problem. -}
-		catchPauseResume a' = do
-			r <- E.try a' :: IO (Either E.SomeException ())
-			case r of
-				Left e -> case E.fromException e of
-					Just PauseTransfer -> pause
-					Just ResumeTransfer -> go
-					_ -> done
+  where
+	go = catchPauseResume a
+	pause = catchPauseResume $ runEvery (Seconds 86400) noop
+	{- Note: This must use E.try, rather than E.catch.
+	 - When E.catch is used, and has called go in its exception
+	 - handler, Control.Concurrent.throwTo will block sometimes
+	 - when signaling. Using E.try avoids the problem. -}
+	catchPauseResume a' = do
+		r <- E.try a' :: IO (Either E.SomeException ())
+		case r of
+			Left e -> case E.fromException e of
+				Just PauseTransfer -> pause
+				Just ResumeTransfer -> go
 				_ -> done
-		done = flip runAssistant d $ 
-			flip MSemN.signal 1 <<~ transferSlots
+			_ -> done
+	done = flip runAssistant d $ 
+		flip MSemN.signal 1 <<~ transferSlots

@@ -36,28 +36,28 @@ connectXMPP c a = case parseJID (xmppJID c) of
 {- Do a SRV lookup, but if it fails, fall back to the cached xmppHostname. -}
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO (Either SomeException ())
 connectXMPP' jid c a = go =<< lookupSRV srvrecord
-	where
-		srvrecord = mkSRVTcp "xmpp-client" $
-			T.unpack $ strDomain $ jidDomain jid
-		serverjid = JID Nothing (jidDomain jid) Nothing
+  where
+	srvrecord = mkSRVTcp "xmpp-client" $
+		T.unpack $ strDomain $ jidDomain jid
+	serverjid = JID Nothing (jidDomain jid) Nothing
 
-		go [] = run (xmppHostname c)
-				(PortNumber $ fromIntegral $ xmppPort c)
-				(a jid)
-		go ((h,p):rest) = do
-			{- Try each SRV record in turn, until one connects,
-			 - at which point the MVar will be full. -}
-			mv <- newEmptyMVar
-			r <- run h p $ do
-				liftIO $ putMVar mv ()
-				a jid
-			ifM (isEmptyMVar mv) (go rest, return r)
+	go [] = run (xmppHostname c)
+			(PortNumber $ fromIntegral $ xmppPort c)
+			(a jid)
+	go ((h,p):rest) = do
+		{- Try each SRV record in turn, until one connects,
+		 - at which point the MVar will be full. -}
+		mv <- newEmptyMVar
+		r <- run h p $ do
+			liftIO $ putMVar mv ()
+			a jid
+		ifM (isEmptyMVar mv) (go rest, return r)
 
-		{- Async exceptions are let through so the XMPP thread can
-		 - be killed. -}
-		run h p a' = tryNonAsync $
-			runClientError (Server serverjid h p) jid
-				(xmppUsername c) (xmppPassword c) (void a')
+	{- Async exceptions are let through so the XMPP thread can
+	 - be killed. -}
+	run h p a' = tryNonAsync $
+		runClientError (Server serverjid h p) jid
+			(xmppUsername c) (xmppPassword c) (void a')
 
 {- XMPP runClient, that throws errors rather than returning an Either -}
 runClientError :: Server -> JID -> T.Text -> T.Text -> XMPP a -> IO a
@@ -88,9 +88,9 @@ xmppCredsFile = do
 gitAnnexPresence :: Element -> Presence
 gitAnnexPresence tag = (emptyPresence PresenceAvailable)
 	{ presencePayloads = [extendedAway, tag] }
-	where
-		extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
-			[NodeContent $ ContentText $ T.pack "xa"]
+  where
+	extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
+		[NodeContent $ ContentText $ T.pack "xa"]
 
 {- Name of a git-annex tag, in our own XML namespace.
  - (Not using a namespace URL to avoid unnecessary bloat.) -}
@@ -111,18 +111,18 @@ uuidSep = T.pack ","
 encodePushNotification :: [UUID] -> Element
 encodePushNotification us = Element gitAnnexTagName
 	[(pushAttr, [ContentText pushvalue])] []
-	where
-		pushvalue = T.intercalate uuidSep $
-			map (T.pack . fromUUID) us
+  where
+	pushvalue = T.intercalate uuidSep $
+		map (T.pack . fromUUID) us
 
 decodePushNotification :: Element -> Maybe [UUID]
 decodePushNotification (Element name attrs _nodes)
 	| name == gitAnnexTagName && not (null us) = Just us
 	| otherwise = Nothing
-	where
-		us = map (toUUID . T.unpack) $
-			concatMap (T.splitOn uuidSep . T.concat . map fromContent . snd) $
-			filter ispush attrs
-		ispush (k, _) = k == pushAttr
-		fromContent (ContentText t) = t
-		fromContent (ContentEntity t) = t
+  where
+	us = map (toUUID . T.unpack) $
+		concatMap (T.splitOn uuidSep . T.concat . map fromContent . snd) $
+		filter ispush attrs
+	ispush (k, _) = k == pushAttr
+	fromContent (ContentText t) = t
+	fromContent (ContentEntity t) = t

@@ -104,5 +104,5 @@ shouldTransfer t info
 				notElem (Remote.uuid remote)
 					<$> loggedLocations key
 	| otherwise = return False
-	where
-		key = transferKey t
+  where
+	key = transferKey t

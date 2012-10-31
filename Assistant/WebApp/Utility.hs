@@ -43,18 +43,18 @@ changeSyncable (Just r) False = do
 	mapM_ (cancelTransfer False) =<<
 		filter tofrom . M.keys <$>
 			liftAssistant (currentTransfers <$> getDaemonStatus)
-	where
-		tofrom t = transferUUID t == Remote.uuid r
+  where
+	tofrom t = transferUUID t == Remote.uuid r
 
 changeSyncFlag :: Remote -> Bool -> Handler ()
 changeSyncFlag r enabled = runAnnex undefined $ do
 	Config.setConfig key value
 	void $ Remote.remoteListRefresh
-	where
-		key = Config.remoteConfig (Remote.repo r) "sync"
-		value
-			| enabled = "true"
-			| otherwise = "false"
+  where
+	key = Config.remoteConfig (Remote.repo r) "sync"
+	value
+		| enabled = "true"
+		| otherwise = "false"
 
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()
@@ -71,47 +71,46 @@ cancelTransfer pause t = do
 		void $ liftAssistant $ dequeueTransfers $ equivilantTransfer t
 	{- stop running transfer -}
 	maybe noop stop (M.lookup t m)
-	where
-		stop info = liftAssistant $ do
-			{- When there's a thread associated with the
-			 - transfer, it's signaled first, to avoid it
-			 - displaying any alert about the transfer having
-			 - failed when the transfer process is killed. -}
-			liftIO $ maybe noop signalthread $ transferTid info
-			liftIO $ maybe noop killproc $ transferPid info
-			if pause
-				then void $ alterTransferInfo t $
-					\i -> i { transferPaused = True }
-				else void $ removeTransfer t
-		signalthread tid
-			| pause = throwTo tid PauseTransfer
-			| otherwise = killThread tid
-		{- In order to stop helper processes like rsync,
-		 - kill the whole process group of the process running the 
-		 - transfer. -}
-		killproc pid = do
-			g <- getProcessGroupIDOf pid
-			void $ tryIO $ signalProcessGroup sigTERM g
-			threadDelay 50000 -- 0.05 second grace period
-			void $ tryIO $ signalProcessGroup sigKILL g
+  where
+	stop info = liftAssistant $ do
+		{- When there's a thread associated with the
+		 - transfer, it's signaled first, to avoid it
+		 - displaying any alert about the transfer having
+		 - failed when the transfer process is killed. -}
+		liftIO $ maybe noop signalthread $ transferTid info
+		liftIO $ maybe noop killproc $ transferPid info
+		if pause
+			then void $ alterTransferInfo t $
+				\i -> i { transferPaused = True }
+			else void $ removeTransfer t
+	signalthread tid
+		| pause = throwTo tid PauseTransfer
+		| otherwise = killThread tid
+	{- In order to stop helper processes like rsync,
+	 - kill the whole process group of the process running the transfer. -}
+	killproc pid = do
+		g <- getProcessGroupIDOf pid
+		void $ tryIO $ signalProcessGroup sigTERM g
+		threadDelay 50000 -- 0.05 second grace period
+		void $ tryIO $ signalProcessGroup sigKILL g
 
 startTransfer :: Transfer -> Handler ()
 startTransfer t = do
 	m <- getCurrentTransfers
 	maybe startqueued go (M.lookup t m)
-	where
-		go info = maybe (start info) resume $ transferTid info
-		startqueued = do
-			is <- liftAssistant $ map snd <$> getMatchingTransfers (== t)
-			maybe noop start $ headMaybe is
-		resume tid = do
-			liftAssistant $ alterTransferInfo t $
-				\i -> i { transferPaused = False }
-			liftIO $ throwTo tid ResumeTransfer
-		start info = liftAssistant $ do
-			program <- liftIO readProgramFile
-			inImmediateTransferSlot $
-				Transferrer.startTransfer program t info
+  where
+	go info = maybe (start info) resume $ transferTid info
+	startqueued = do
+		is <- liftAssistant $ map snd <$> getMatchingTransfers (== t)
+		maybe noop start $ headMaybe is
+	resume tid = do
+		liftAssistant $ alterTransferInfo t $
+			\i -> i { transferPaused = False }
+		liftIO $ throwTo tid ResumeTransfer
+	start info = liftAssistant $ do
+		program <- liftIO readProgramFile
+		inImmediateTransferSlot $
+			Transferrer.startTransfer program t info
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus

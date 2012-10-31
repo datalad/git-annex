@@ -62,13 +62,13 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 	sendinterface _ (IPv6Addr _) = noop
 	sendinterface cache i = void $ catchMaybeIO $
 		withSocketsDo $ bracket setup cleanup use
-		where
-			setup = multicastSender (multicastAddress i) pairingPort
-			cleanup (sock, _) = sClose sock -- FIXME does not work
-			use (sock, addr) = do
-				setInterface sock (showAddr i)
-				maybe noop (\s -> void $ sendTo sock s addr)
-					(M.lookup i cache)
+	  where
+		setup = multicastSender (multicastAddress i) pairingPort
+		cleanup (sock, _) = sClose sock -- FIXME does not work
+		use (sock, addr) = do
+			setInterface sock (showAddr i)
+			maybe noop (\s -> void $ sendTo sock s addr)
+				(M.lookup i cache)
 	updatecache cache [] = cache
 	updatecache cache (i:is)
 		| M.member i cache = updatecache cache is

@@ -50,17 +50,17 @@ data RepositoryPath = RepositoryPath Text
  - to use as a repository. -}
 repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
 repositoryPathField autofocus = Field { fieldParse = parse, fieldView = view }
-	where
-		view idAttr nameAttr attrs val isReq =
-			[whamlet|<input type="text" *{attrs} id="#{idAttr}" name="#{nameAttr}" :isReq:required :autofocus:autofocus value="#{either id id val}">|]
+  where
+	view idAttr nameAttr attrs val isReq =
+		[whamlet|<input type="text" *{attrs} id="#{idAttr}" name="#{nameAttr}" :isReq:required :autofocus:autofocus value="#{either id id val}">|]
 
-		parse [path]
-			| T.null path = nopath
-			| otherwise = liftIO $ checkRepositoryPath path
-		parse [] = return $ Right Nothing
-		parse _ = nopath
+	parse [path]
+		| T.null path = nopath
+		| otherwise = liftIO $ checkRepositoryPath path
+	parse [] = return $ Right Nothing
+	parse _ = nopath
 
-		nopath = return $ Left "Enter a location for the repository"
+	nopath = return $ Left "Enter a location for the repository"
 
 {- As well as checking the path for a lot of silly things, tilde is
  - expanded in the returned path. -}
@@ -83,14 +83,10 @@ checkRepositoryPath p = do
 		case headMaybe problems of
 			Nothing -> Right $ Just $ T.pack basepath
 			Just prob -> Left prob
-	where
-		runcheck (chk, msg) = ifM (chk)
-			( return $ Just msg
-			, return Nothing
-			)
-		expandTilde home ('~':'/':path) = home </> path
-		expandTilde _ path = path
-		
+  where
+	runcheck (chk, msg) = ifM (chk) ( return $ Just msg, return Nothing )
+	expandTilde home ('~':'/':path) = home </> path
+	expandTilde _ path = path
 
 {- On first run, if run in the home directory, default to putting it in
  - ~/Desktop/annex, when a Desktop directory exists, and ~/annex otherwise.
@@ -104,13 +100,13 @@ defaultRepositoryPath firstrun = do
 	if home == cwd && firstrun
 		then inhome
 		else ifM (canWrite cwd) ( return cwd, inhome )
-	where
-		inhome = do
-			desktop <- userDesktopDir
-			ifM (doesDirectoryExist desktop)
-				( relHome $ desktop </> gitAnnexAssistantDefaultDir
-				, return $ "~" </> gitAnnexAssistantDefaultDir
-				)
+  where
+	inhome = do
+		desktop <- userDesktopDir
+		ifM (doesDirectoryExist desktop)
+			( relHome $ desktop </> gitAnnexAssistantDefaultDir
+			, return $ "~" </> gitAnnexAssistantDefaultDir
+			)
 
 newRepositoryForm :: FilePath -> Form RepositoryPath
 newRepositoryForm defpath msg = do
@@ -164,17 +160,17 @@ selectDriveForm :: [RemovableDrive] -> Maybe RemovableDrive -> Form RemovableDri
 selectDriveForm drives def = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs) "Select drive:" (mountPoint <$> def)
-	where
-		pairs = zip (map describe drives) (map mountPoint drives)
-		describe drive = case diskFree drive of
-			Nothing -> mountPoint drive
-			Just free -> 
-				let sz = roughSize storageUnits True free
-				in T.unwords
-					[ mountPoint drive
-					, T.concat ["(", T.pack sz]
-					, "free)"
-					]
+  where
+	pairs = zip (map describe drives) (map mountPoint drives)
+	describe drive = case diskFree drive of
+		Nothing -> mountPoint drive
+		Just free -> 
+			let sz = roughSize storageUnits True free
+			in T.unwords
+				[ mountPoint drive
+				, T.concat ["(", T.pack sz]
+				, "free)"
+				]
 
 {- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
@@ -192,33 +188,32 @@ getAddDriveR = bootstrap (Just Config) $ do
 		_ -> do
 			let authtoken = webAppFormAuthToken
 			$(widgetFile "configurators/adddrive")
-	where
-		make mountpoint = do
-			liftIO $ makerepo dir
-			u <- liftIO $ initRepo dir $ Just remotename
-			r <- addremote dir remotename
-			runAnnex () $ setStandardGroup u TransferGroup
-			syncRemote r
-			return u
-			where
-				dir = mountpoint </> gitAnnexAssistantDefaultDir
-				remotename = takeFileName mountpoint
-		{- The repo may already exist, when adding removable media
-		 - that has already been used elsewhere. -}
-		makerepo dir = liftIO $ do
-			r <- E.try (inDir dir $ return True) :: IO (Either E.SomeException Bool)
-			case r of
-				Right _ -> noop
-				Left _e -> do
-					createDirectoryIfMissing True dir
-					makeRepo dir True
-		{- Each repository is made a remote of the other. -}
-		addremote dir name = runAnnex undefined $ do
-			hostname <- maybe "host" id <$> liftIO getHostname
-			hostlocation <- fromRepo Git.repoLocation
-			liftIO $ inDir dir $
-				void $ makeGitRemote hostname hostlocation
-			addRemote $ makeGitRemote name dir
+  where
+	make mountpoint = do
+		liftIO $ makerepo dir
+		u <- liftIO $ initRepo dir $ Just remotename
+		r <- addremote dir remotename
+		runAnnex () $ setStandardGroup u TransferGroup
+		syncRemote r
+		return u
+	  where
+		dir = mountpoint </> gitAnnexAssistantDefaultDir
+		remotename = takeFileName mountpoint
+	{- The repo may already exist, when adding removable media
+	 - that has already been used elsewhere. -}
+	makerepo dir = liftIO $ do
+		r <- E.try (inDir dir $ return True) :: IO (Either E.SomeException Bool)
+		case r of
+			Right _ -> noop
+			Left _e -> do
+				createDirectoryIfMissing True dir
+				makeRepo dir True
+	{- Each repository is made a remote of the other. -}
+	addremote dir name = runAnnex undefined $ do
+		hostname <- maybe "host" id <$> liftIO getHostname
+		hostlocation <- fromRepo Git.repoLocation
+		liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
+		addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
 getEnableDirectoryR uuid = bootstrap (Just Config) $ do
@@ -231,23 +226,23 @@ getEnableDirectoryR uuid = bootstrap (Just Config) $ do
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
 driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
-	where
-		gen dir = RemovableDrive
-			<$> getDiskFree dir
-			<*> pure (T.pack dir)
-		-- filter out some things that are surely not removable drives
-		sane Mntent { mnt_dir = dir, mnt_fsname = dev }
-			{- We want real disks like /dev/foo, not
-			 - dummy mount points like proc or tmpfs or
-			 - gvfs-fuse-daemon. -}
-			| not ('/' `elem` dev) = False
-			{- Just in case: These mount points are surely not
-			 - removable disks. -}
-			| dir == "/" = False
-			| dir == "/tmp" = False
-			| dir == "/run/shm" = False
-			| dir == "/run/lock" = False
-			| otherwise = True
+  where
+	gen dir = RemovableDrive
+		<$> getDiskFree dir
+		<*> pure (T.pack dir)
+	-- filter out some things that are surely not removable drives
+	sane Mntent { mnt_dir = dir, mnt_fsname = dev }
+		{- We want real disks like /dev/foo, not
+		 - dummy mount points like proc or tmpfs or
+		 - gvfs-fuse-daemon. -}
+		| not ('/' `elem` dev) = False
+		{- Just in case: These mount points are surely not
+		 - removable disks. -}
+		| dir == "/" = False
+		| dir == "/tmp" = False
+		| dir == "/run/shm" = False
+		| dir == "/run/lock" = False
+		| otherwise = True
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
@@ -270,11 +265,11 @@ makeRepo :: FilePath -> Bool -> IO ()
 makeRepo path bare = do
 	unlessM (boolSystem "git" params) $
 		error "git init failed!"
-	where
-		baseparams = [Param "init", Param "--quiet"]
-		params
-			| bare = baseparams ++ [Param "--bare", File path]
-			| otherwise = baseparams ++ [File path]
+  where
+	baseparams = [Param "init", Param "--quiet"]
+	params
+		| bare = baseparams ++ [Param "--bare", File path]
+		| otherwise = baseparams ++ [File path]
 
 {- Runs an action in the git-annex repository in the specified directory. -}
 inDir :: FilePath -> Annex a -> IO a
@@ -320,9 +315,9 @@ canMakeSymlink dir = ifM (doesDirectoryExist dir)
 	( catchBoolIO $ test dir
 	, canMakeSymlink (parentDir dir)
 	)
-	where
-		test d = do
-			let link = d </> "delete.me"
-			createSymbolicLink link link
-			removeLink link
-			return True
+  where
+	test d = do
+		let link = d </> "delete.me"
+		createSymbolicLink link link
+		removeLink link
+		return True

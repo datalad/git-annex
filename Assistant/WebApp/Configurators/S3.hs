@@ -62,12 +62,12 @@ s3InputAForm = S3Input
 	<*> areq textField "Datacenter" (Just "US")
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
 	<*> areq textField "Repository name" (Just "S3")
-	where
-		storageclasses :: [(Text, StorageClass)]
-		storageclasses =
-			[ ("Standard redundancy", StandardRedundancy)
-			, ("Reduced redundancy (costs less)", ReducedRedundancy)
-			]
+  where
+	storageclasses :: [(Text, StorageClass)]
+	storageclasses =
+		[ ("Standard redundancy", StandardRedundancy)
+		, ("Reduced redundancy (costs less)", ReducedRedundancy)
+		]
 
 s3CredsAForm :: AForm WebApp WebApp S3Creds
 s3CredsAForm = S3Creds
@@ -88,12 +88,12 @@ getAddS3R = s3Configurator $ do
 				, ("storageclass", show $ storageClass s3input)
 				]
 		_ -> showform form enctype
-	where
-		showform form enctype = do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/adds3")
-		setgroup r = runAnnex () $
-			setStandardGroup (Remote.uuid r) TransferGroup
+  where
+	showform form enctype = do
+		let authtoken = webAppFormAuthToken
+		$(widgetFile "configurators/adds3")
+	setgroup r = runAnnex () $
+		setStandardGroup (Remote.uuid r) TransferGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
 getEnableS3R uuid = s3Configurator $ do
@@ -106,12 +106,12 @@ getEnableS3R uuid = s3Configurator $ do
 				fromJust $ M.lookup uuid m
 			makeS3Remote s3creds name (const noop) M.empty
 		_ -> showform form enctype
-	where
-		showform form enctype = do
-			let authtoken = webAppFormAuthToken
-			description <- lift $ runAnnex "" $
-				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
-			$(widgetFile "configurators/enables3")
+  where
+	showform form enctype = do
+		let authtoken = webAppFormAuthToken
+		description <- lift $ runAnnex "" $
+			T.pack . concat <$> Remote.prettyListUUIDs [uuid]
+		$(widgetFile "configurators/enables3")
 
 makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeS3Remote (S3Creds ak sk) name setup config = do

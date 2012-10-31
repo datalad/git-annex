@@ -34,20 +34,20 @@ sideBarDisplay = do
 	let ident = "sidebar"
 	$(widgetFile "sidebar/main")
 	autoUpdate ident NotifierSideBarR (10 :: Int) (10 :: Int)
-	where
-		bootstrapclass :: AlertClass -> Text
-		bootstrapclass Activity = "alert-info"
-		bootstrapclass Warning = "alert"
-		bootstrapclass Error = "alert-error"
-		bootstrapclass Success = "alert-success"
-		bootstrapclass Message = "alert-info"
+  where
+	bootstrapclass :: AlertClass -> Text
+	bootstrapclass Activity = "alert-info"
+	bootstrapclass Warning = "alert"
+	bootstrapclass Error = "alert-error"
+	bootstrapclass Success = "alert-success"
+	bootstrapclass Message = "alert-info"
 
-		renderalert (aid, alert) = do
-			let alertid = show aid
-			let closable = alertClosable alert
-			let block = alertBlockDisplay alert
-			let divclass = bootstrapclass $ alertClass alert
-			$(widgetFile "sidebar/alert")
+	renderalert (aid, alert) = do
+		let alertid = show aid
+		let closable = alertClosable alert
+		let block = alertBlockDisplay alert
+		let divclass = bootstrapclass $ alertClass alert
+		$(widgetFile "sidebar/alert")
 
 {- Called by client to get a sidebar display.
  -

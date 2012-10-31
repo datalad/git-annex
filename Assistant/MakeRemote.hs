@@ -31,21 +31,21 @@ makeSshRemote forcersync sshdata = do
 		addRemote $ maker (sshRepoName sshdata) sshurl
 	syncNewRemote r
 	return r
-	where
-		rsync = forcersync || rsyncOnly sshdata
-		maker
-			| rsync = makeRsyncRemote
-			| otherwise = makeGitRemote
-		sshurl = T.unpack $ T.concat $
-			if rsync
-				then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
-				else [T.pack "ssh://", u, h, d, T.pack "/"]
-			where
-				u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
-				h = sshHostName sshdata
-				d
-					| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = d
-					| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
+  where
+	rsync = forcersync || rsyncOnly sshdata
+	maker
+		| rsync = makeRsyncRemote
+		| otherwise = makeGitRemote
+	sshurl = T.unpack $ T.concat $
+		if rsync
+			then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
+			else [T.pack "ssh://", u, h, d, T.pack "/"]
+	  where
+		u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
+		h = sshHostName sshdata
+		d
+			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = d
+			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
 	
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
 addRemote :: Annex String -> Annex Remote
@@ -58,12 +58,12 @@ addRemote a = do
 makeRsyncRemote :: String -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $
 	const $ makeSpecialRemote name Rsync.remote config
-	where
-		config = M.fromList
-			[ ("encryption", "shared")
-			, ("rsyncurl", location)
-			, ("type", "rsync")
-			]
+  where
+	config = M.fromList
+		[ ("encryption", "shared")
+		, ("rsyncurl", location)
+		, ("type", "rsync")
+		]
 
 {- Inits a special remote. -}
 makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex ()
@@ -95,8 +95,8 @@ makeRemote basename location a = do
 			a name
 			return name
 		else return basename
-	where
-		samelocation x = Git.repoLocation x == location
+  where
+	samelocation x = Git.repoLocation x == location
 
 {- Generate an unused name for a remote, adding a number if
  - necessary.
@@ -106,12 +106,12 @@ uniqueRemoteName :: String -> Int -> Git.Repo -> String
 uniqueRemoteName basename n r
 	| null namecollision = name
 	| otherwise = uniqueRemoteName legalbasename (succ n) r
-	where
-		namecollision = filter samename (Git.remotes r)
-		samename x = Git.remoteName x == Just name
-		name
-			| n == 0 = legalbasename
-			| otherwise = legalbasename ++ show n
-		legalbasename = filter legal basename
-		legal '_' = True
-		legal c = isAlphaNum c
+  where
+	namecollision = filter samename (Git.remotes r)
+	samename x = Git.remoteName x == Just name
+	name
+		| n == 0 = legalbasename
+		| otherwise = legalbasename ++ show n
+	legalbasename = filter legal basename
+	legal '_' = True
+	legal c = isAlphaNum c

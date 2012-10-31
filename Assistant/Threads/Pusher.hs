@@ -34,8 +34,8 @@ pushRetryThread = NamedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 		void $ alertWhile (pushRetryAlert topush) $ do
 			now <- liftIO $ getCurrentTime
 			pushToRemotes now True topush
-	where
-		halfhour = 1800
+  where
+	halfhour = 1800
 
 {- This thread pushes git commits out to remotes soon after they are made. -}
 pushThread :: NamedThread

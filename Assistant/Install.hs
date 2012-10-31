@@ -36,36 +36,35 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
  -}
 ensureInstalled :: IO ()
 ensureInstalled = go =<< standaloneAppBase
-	where
-		go Nothing = noop
-		go (Just base) = do
-			let program = base ++ "runshell git-annex"
-			programfile <- programFile
-			createDirectoryIfMissing True (parentDir programfile)
-			writeFile programfile program
+  where
+	go Nothing = noop
+	go (Just base) = do
+		let program = base ++ "runshell git-annex"
+		programfile <- programFile
+		createDirectoryIfMissing True (parentDir programfile)
+		writeFile programfile program
 
 #ifdef darwin_HOST_OS
-			autostartfile <- userAutoStart osxAutoStartLabel
+		autostartfile <- userAutoStart osxAutoStartLabel
 #else
-			autostartfile <- autoStartPath "git-annex"
-				<$> userConfigDir
+		autostartfile <- autoStartPath "git-annex" <$> userConfigDir
 #endif
-			installAutoStart program autostartfile
+		installAutoStart program autostartfile
 
-			{- This shim is only updated if it doesn't
-			 - already exist with the right content. This
-			 - ensures that there's no race where it would have
-			 - worked, but is unavailable due to being updated. -}
-			sshdir <- sshDir
-			let shim = sshdir </> "git-annex-shell"
-			let content = unlines
-				[ "#!/bin/sh"
-				, "set -e"
-				, "exec", base </> "runshell" ++ 
-				  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
-				]
-			curr <- catchDefaultIO "" $ readFileStrict shim
-			when (curr /= content) $ do
-				createDirectoryIfMissing True (parentDir shim)
-				writeFile shim content
-				modifyFileMode shim $ addModes [ownerExecuteMode]
+		{- This shim is only updated if it doesn't
+		 - already exist with the right content. This
+		 - ensures that there's no race where it would have
+		 - worked, but is unavailable due to being updated. -}
+		sshdir <- sshDir
+		let shim = sshdir </> "git-annex-shell"
+		let content = unlines
+			[ "#!/bin/sh"
+			, "set -e"
+			, "exec", base </> "runshell" ++ 
+			  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+			]
+		curr <- catchDefaultIO "" $ readFileStrict shim
+		when (curr /= content) $ do
+			createDirectoryIfMissing True (parentDir shim)
+			writeFile shim content
+			modifyFileMode shim $ addModes [ownerExecuteMode]

@@ -47,10 +47,10 @@ transfersDisplay warnNoScript = do
 			, $(widgetFile "dashboard/transfers")
 			)
 		else $(widgetFile "dashboard/transfers")
-	where
-		ident = "transfers"
-		isrunning info = not $
-			transferPaused info || isNothing (startedTime info)
+  where
+	ident = "transfers"
+	isrunning info = not $
+		transferPaused info || isNothing (startedTime info)
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}
@@ -136,11 +136,11 @@ openFileBrowser = do
 			void $ redirectUltDest HomeR
 			return False
 		)
-	where
+  where
 #ifdef darwin_HOST_OS
-		cmd = "open"
+	cmd = "open"
 #else
-		cmd = "xdg-open"
+	cmd = "xdg-open"
 #endif
 
 {- Transfer controls. The GET is done in noscript mode and redirects back

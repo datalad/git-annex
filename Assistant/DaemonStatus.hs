@@ -77,34 +77,34 @@ startDaemonStatus = do
 writeDaemonStatusFile :: FilePath -> DaemonStatus -> IO ()
 writeDaemonStatusFile file status = 
 	viaTmp writeFile file =<< serialized <$> getPOSIXTime
-	where
-		serialized now = unlines
-			[ "lastRunning:" ++ show now
-			, "scanComplete:" ++ show (scanComplete status)
-			, "sanityCheckRunning:" ++ show (sanityCheckRunning status)
-			, "lastSanityCheck:" ++ maybe "" show (lastSanityCheck status)
-			]
+  where
+	serialized now = unlines
+		[ "lastRunning:" ++ show now
+		, "scanComplete:" ++ show (scanComplete status)
+		, "sanityCheckRunning:" ++ show (sanityCheckRunning status)
+		, "lastSanityCheck:" ++ maybe "" show (lastSanityCheck status)
+		]
 
 readDaemonStatusFile :: FilePath -> IO DaemonStatus
 readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
-	where
-		parse status = foldr parseline status . lines
-		parseline line status
-			| key == "lastRunning" = parseval readtime $ \v ->
-				status { lastRunning = Just v }
-			| key == "scanComplete" = parseval readish $ \v ->
-				status { scanComplete = v }
-			| key == "sanityCheckRunning" = parseval readish $ \v ->
-				status { sanityCheckRunning = v }
-			| key == "lastSanityCheck" = parseval readtime $ \v ->
-				status { lastSanityCheck = Just v }
-			| otherwise = status -- unparsable line
-			where
-				(key, value) = separate (== ':') line
-				parseval parser a = maybe status a (parser value)
-				readtime s = do
-					d <- parseTime defaultTimeLocale "%s%Qs" s
-					Just $ utcTimeToPOSIXSeconds d
+  where
+	parse status = foldr parseline status . lines
+	parseline line status
+		| key == "lastRunning" = parseval readtime $ \v ->
+			status { lastRunning = Just v }
+		| key == "scanComplete" = parseval readish $ \v ->
+			status { scanComplete = v }
+		| key == "sanityCheckRunning" = parseval readish $ \v ->
+			status { sanityCheckRunning = v }
+		| key == "lastSanityCheck" = parseval readtime $ \v ->
+			status { lastSanityCheck = Just v }
+		| otherwise = status -- unparsable line
+	  where
+		(key, value) = separate (== ':') line
+		parseval parser a = maybe status a (parser value)
+		readtime s = do
+			d <- parseTime defaultTimeLocale "%s%Qs" s
+			Just $ utcTimeToPOSIXSeconds d
 
 {- Checks if a time stamp was made after the daemon was lastRunning.
  -
@@ -116,9 +116,9 @@ readDaemonStatusFile file = parse <$> newDaemonStatus <*> readFile file
  -}
 afterLastDaemonRun :: EpochTime -> DaemonStatus -> Bool
 afterLastDaemonRun timestamp status = maybe False (< t) (lastRunning status)
-	where
-		t = realToFrac (timestamp + slop) :: POSIXTime
-		slop = fromIntegral tenMinutes
+  where
+	t = realToFrac (timestamp + slop) :: POSIXTime
+	slop = fromIntegral tenMinutes
 
 tenMinutes :: Int
 tenMinutes = 10 * 60
@@ -141,27 +141,27 @@ alterTransferInfo t a = updateTransferInfo' $ M.adjust a t
  - transferPaused, and bytesComplete values, which are not written to disk. -}
 updateTransferInfo :: Transfer -> TransferInfo -> Assistant ()
 updateTransferInfo t info = updateTransferInfo' $ M.insertWith' merge t info
-	where
-		merge new old = new
-			{ transferTid = maybe (transferTid new) Just (transferTid old)
-			, transferPaused = transferPaused new || transferPaused old
-			, bytesComplete = maybe (bytesComplete new) Just (bytesComplete old)
-			}
+  where
+	merge new old = new
+		{ transferTid = maybe (transferTid new) Just (transferTid old)
+		, transferPaused = transferPaused new || transferPaused old
+		, bytesComplete = maybe (bytesComplete new) Just (bytesComplete old)
+		}
 
 updateTransferInfo' :: (TransferMap -> TransferMap) -> Assistant ()
 updateTransferInfo' a = notifyTransfer `after` modifyDaemonStatus_ update
-	where
-		update s = s { currentTransfers = a (currentTransfers s) }
+  where
+	update s = s { currentTransfers = a (currentTransfers s) }
 
 {- Removes a transfer from the map, and returns its info. -}
 removeTransfer :: Transfer -> Assistant (Maybe TransferInfo)
 removeTransfer t = notifyTransfer `after` modifyDaemonStatus remove
-	where
-		remove s =
-			let (info, ts) = M.updateLookupWithKey
-				(\_k _v -> Nothing)
-				t (currentTransfers s)
-			in (s { currentTransfers = ts }, info)
+  where
+	remove s =
+		let (info, ts) = M.updateLookupWithKey
+			(\_k _v -> Nothing)
+			t (currentTransfers s)
+		in (s { currentTransfers = ts }, info)
 
 {- Send a notification when a transfer is changed. -}
 notifyTransfer :: Assistant ()
@@ -180,11 +180,11 @@ notifyAlert = do
 {- Returns the alert's identifier, which can be used to remove it. -}
 addAlert :: Alert -> Assistant AlertId
 addAlert alert = notifyAlert `after` modifyDaemonStatus add
-	where
-		add s = (s { lastAlertId = i, alertMap = m }, i)
-			where
-				i = nextAlertId $ lastAlertId s
-				m = mergeAlert i alert (alertMap s)
+  where
+	add s = (s { lastAlertId = i, alertMap = m }, i)
+	  where
+		i = nextAlertId $ lastAlertId s
+		m = mergeAlert i alert (alertMap s)
 
 removeAlert :: AlertId -> Assistant ()
 removeAlert i = updateAlert i (const Nothing)
@@ -194,8 +194,8 @@ updateAlert i a = updateAlertMap $ \m -> M.update a i m
 
 updateAlertMap :: (AlertMap -> AlertMap) -> Assistant ()
 updateAlertMap a = notifyAlert `after` modifyDaemonStatus_ update
-	where
-		update s = s { alertMap = a (alertMap s) }
+  where
+	update s = s { alertMap = a (alertMap s) }
 
 {- Displays an alert while performing an activity that returns True on
  - success.

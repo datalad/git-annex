@@ -56,9 +56,9 @@ genSshRepoName :: String -> FilePath -> String
 genSshRepoName host dir
 	| null dir = filter legal host
 	| otherwise = filter legal $ host ++ "_" ++ replace "/" "_" dir
-	where
-		legal '_' = True
-		legal c = isAlphaNum c
+  where
+	legal '_' = True
+	legal c = isAlphaNum c
 
 {- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> String -> IO (String, Bool)
@@ -97,26 +97,26 @@ sshTranscript opts input = do
  - command=foo, or other weirdness -}
 validateSshPubKey :: SshPubKey -> IO ()
 validateSshPubKey pubkey = either error return $ check $ words pubkey
-	where
-		check [prefix, _key, comment] = do
-			checkprefix prefix
-			checkcomment comment
-		check [prefix, _key] =
-			checkprefix prefix
-		check _ = err "wrong number of words in ssh public key"
-
-		ok = Right ()
-		err msg = Left $ unwords [msg, pubkey]
-
+  where
+	check [prefix, _key, comment] = do
 		checkprefix prefix
-			| ssh == "ssh" && all isAlphaNum keytype = ok
-			| otherwise = err "bad ssh public key prefix"
-			where
-				(ssh, keytype) = separate (== '-') prefix
-
 		checkcomment comment
-			| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_') comment = ok
-			| otherwise = err "bad comment in ssh public key"
+	check [prefix, _key] =
+		checkprefix prefix
+	check _ = err "wrong number of words in ssh public key"
+
+	ok = Right ()
+	err msg = Left $ unwords [msg, pubkey]
+
+	checkprefix prefix
+		| ssh == "ssh" && all isAlphaNum keytype = ok
+		| otherwise = err "bad ssh public key prefix"
+	  where
+		(ssh, keytype) = separate (== '-') prefix
+
+	checkcomment comment
+		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_') comment = ok
+		| otherwise = err "bad comment in ssh public key"
 
 addAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
 addAuthorizedKeys rsynconly pubkey = boolSystem "sh"
@@ -153,14 +153,14 @@ addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 		, ">>~/.ssh/authorized_keys"
 		]
 	]
-	where
-		echoval v = "echo " ++ shellEscape v
-		wrapper = "~/.ssh/git-annex-shell"
-		script =
-			[ "#!/bin/sh"
-			, "set -e"
-			, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
-			]
+  where
+	echoval v = "echo " ++ shellEscape v
+	wrapper = "~/.ssh/git-annex-shell"
+	script =
+		[ "#!/bin/sh"
+		, "set -e"
+		, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+		]
 
 authorizedKeysLine :: Bool -> SshPubKey -> String
 authorizedKeysLine rsynconly pubkey
@@ -168,8 +168,8 @@ authorizedKeysLine rsynconly pubkey
 	 - long perl script. -}
 	| rsynconly = pubkey
 	| otherwise = limitcommand ++ pubkey
-	where
-		limitcommand = "command=\"~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
+  where
+	limitcommand = "command=\"~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
@@ -213,12 +213,12 @@ setupSshKeyPair sshkeypair sshdata = do
 			]
 
 	return $ sshdata { sshHostName = T.pack mangledhost }
-	where
-		sshprivkeyfile = "key." ++ mangledhost
-		sshpubkeyfile = sshprivkeyfile ++ ".pub"
-		mangledhost = mangleSshHostName
-			(T.unpack $ sshHostName sshdata)
-			(T.unpack <$> sshUserName sshdata)
+  where
+	sshprivkeyfile = "key." ++ mangledhost
+	sshpubkeyfile = sshprivkeyfile ++ ".pub"
+	mangledhost = mangleSshHostName
+		(T.unpack $ sshHostName sshdata)
+		(T.unpack <$> sshUserName sshdata)
 
 mangleSshHostName :: String -> Maybe String -> String
 mangleSshHostName host user = "git-annex-" ++ host ++ (maybe "-" ('-':) user)
@@ -227,8 +227,8 @@ unMangleSshHostName :: String -> String
 unMangleSshHostName h
 	| "git-annex-" `isPrefixOf` h = join "-" (beginning $ drop 2 dashbits)
 	| otherwise = h
-	where
-		dashbits = split "-" h
+  where
+	dashbits = split "-" h
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool
@@ -238,7 +238,7 @@ knownHost hostname = do
 		( not . null <$> checkhost
 		, return False
 		)
-	where
-		{- ssh-keygen -F can crash on some old known_hosts file -}
-		checkhost = catchDefaultIO "" $
-			readProcess "ssh-keygen" ["-F", T.unpack hostname]
+  where
+	{- ssh-keygen -F can crash on some old known_hosts file -}
+	checkhost = catchDefaultIO "" $
+		readProcess "ssh-keygen" ["-F", T.unpack hostname]

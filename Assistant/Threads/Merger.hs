@@ -86,15 +86,15 @@ onAdd file
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y
-	where
-		base = takeFileName . show
+  where
+	base = takeFileName . show
 
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f
-	where
-		n = "/" ++ show Annex.Branch.name
+  where
+	n = "/" ++ show Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
 fileToBranch f = Git.Ref $ "refs" </> base
-	where
-		base = Prelude.last $ split "/refs/" f
+  where
+	base = Prelude.last $ split "/refs/" f

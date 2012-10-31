@@ -158,11 +158,11 @@ makeAlertFiller success alert
 		, alertButton = Nothing
 		, alertIcon = Just $ if success then SuccessIcon else ErrorIcon
 		}
-	where
-		c = alertClass alert
-		c'
-			| success = Success
-			| otherwise = Error
+  where
+	c = alertClass alert
+	c'
+		| success = Success
+		| otherwise = Error
 
 isFiller :: Alert -> Bool
 isFiller alert = alertPriority alert == Filler
@@ -179,23 +179,23 @@ isFiller alert = alertPriority alert == Filler
  -}
 mergeAlert :: AlertId -> Alert -> AlertMap -> AlertMap
 mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
-	where
-		pruneSame k al' = k == i || not (effectivelySameAlert al al')
-		pruneBloat m'
-			| bloat > 0 = M.fromList $ pruneold $ M.toList m'
-			| otherwise = m'
-			where
-				bloat = M.size m' - maxAlerts
-				pruneold l =
-			 		let (f, rest) = partition (\(_, a) -> isFiller a) l
-					in drop bloat f ++ rest
-		updatePrune = pruneBloat $ M.filterWithKey pruneSame $
-			M.insertWith' const i al m
-		updateCombine combiner = 
-			let combined = M.mapMaybe (combiner al) m
-			in if M.null combined
-				then updatePrune
-				else M.delete i $ M.union combined m
+  where
+	pruneSame k al' = k == i || not (effectivelySameAlert al al')
+	pruneBloat m'
+		| bloat > 0 = M.fromList $ pruneold $ M.toList m'
+		| otherwise = m'
+	  where
+		bloat = M.size m' - maxAlerts
+		pruneold l =
+	 		let (f, rest) = partition (\(_, a) -> isFiller a) l
+			in drop bloat f ++ rest
+	updatePrune = pruneBloat $ M.filterWithKey pruneSame $
+		M.insertWith' const i al m
+	updateCombine combiner = 
+		let combined = M.mapMaybe (combiner al) m
+		in if M.null combined
+			then updatePrune
+			else M.delete i $ M.union combined m
 
 baseActivityAlert :: Alert
 baseActivityAlert = Alert
@@ -288,10 +288,10 @@ sanityCheckFixAlert msg = Alert
 	, alertCombiner = Just $ dataCombiner (++)
 	, alertButton = Nothing
 	}
-	where
-		render dta = tenseWords $ alerthead : dta ++ [alertfoot]
-		alerthead = "The daily sanity check found and fixed a problem:"
-		alertfoot = "If these problems persist, consider filing a bug report."
+  where
+	render dta = tenseWords $ alerthead : dta ++ [alertfoot]
+	alerthead = "The daily sanity check found and fixed a problem:"
+	alertfoot = "If these problems persist, consider filing a bug report."
 
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert
@@ -344,10 +344,10 @@ fileAlert msg file = (activityAlert Nothing [f])
 	, alertMessageRender = render
 	, alertCombiner = Just $ dataCombiner combiner
 	}
-	where
-		f = fromString $ shortFile $ takeFileName file
-		render fs = tenseWords $ msg : fs
-		combiner new old = take 10 $ new ++ old
+  where
+	f = fromString $ shortFile $ takeFileName file
+	render fs = tenseWords $ msg : fs
+	combiner new old = take 10 $ new ++ old
 
 addFileAlert :: FilePath -> Alert
 addFileAlert = fileAlert (Tensed "Adding" "Added")
@@ -372,8 +372,8 @@ shortFile :: FilePath -> String
 shortFile f
 	| len < maxlen = f
 	| otherwise = take half f ++ ".." ++ drop (len - half) f
-	where
-		len = length f
-		maxlen = 20
-		half = (maxlen - 2) `div` 2 
+  where
+	len = length f
+	maxlen = 20
+	half = (maxlen - 2) `div` 2 
 
