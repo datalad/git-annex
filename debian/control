@@ -42,6 +42,7 @@ Build-Depends:
 	libghc-network-info-dev,
 	libghc-safesemaphore-dev,
 	libghc-network-protocol-xmpp-dev (>= 0.4.3-2),
+	libghc-xml-types-dev,
 	ikiwiki,
 	perlmagick,
 	git,

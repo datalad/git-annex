@@ -78,4 +78,5 @@ git-annex HEAD from git, Ubuntu 12.10
 
 Please provide any additional information below.
 
-
+> [[done]] --[[Joey]] (and tested the whole cabal build, which I usually
+> only do on releases)
