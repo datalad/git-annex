@@ -122,22 +122,23 @@ getAddSshR = sshConfigurator $ do
  -}
 getEnableRsyncR :: UUID -> Handler RepHtml
 getEnableRsyncR u = do
-	m <- runAnnex M.empty readRemoteLog
-	case parseSshRsyncUrl =<< M.lookup "rsyncurl" =<< M.lookup u m of
-		Nothing -> redirect AddSshR
-		Just sshinput -> sshConfigurator $ do
+	m <- fromMaybe M.empty . M.lookup u <$> runAnnex M.empty readRemoteLog
+	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
+		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- lift $
 				runFormGet $ renderBootstrap $ sshInputAForm sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (hostname sshinput') ->
-						void $ lift $ makeRsyncNet sshinput' (const noop)
+						void $ lift $ makeRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
 							Left status -> showform form enctype status
 							Right sshdata -> enable sshdata
+								{ sshRepoName = reponame }
 				_ -> showform form enctype UntestedServer
+		_ -> redirect AddSshR
   where
 	showform form enctype status = do
 		description <- lift $ runAnnex "" $
@@ -297,21 +298,22 @@ getAddRsyncNetR = do
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshinput
-			| isRsyncNet (hostname sshinput) ->
-				makeRsyncNet sshinput setupGroup
+			| isRsyncNet (hostname sshinput) -> do
+				let reponame = genSshRepoName "rsync.net" 
+					(maybe "" T.unpack $ directory sshinput)
+				makeRsyncNet sshinput reponame setupGroup
 			| otherwise ->
 				showform $ UnusableServer
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
 
-makeRsyncNet :: SshInput -> (Remote -> Handler ()) -> Handler RepHtml
-makeRsyncNet sshinput setup = do
+makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler RepHtml
+makeRsyncNet sshinput reponame setup = do
 	knownhost <- liftIO $ maybe (return False) knownHost (hostname sshinput)
 	keypair <- liftIO $ genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
 		(mkSshData sshinput)
-			{ sshRepoName = genSshRepoName "rsync.net" 
-				(maybe "" T.unpack $ directory sshinput)
+			{ sshRepoName = reponame 
 			, needsPubKey = True
 			, rsyncOnly = True
 			}
