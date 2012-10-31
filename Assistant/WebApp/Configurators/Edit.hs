@@ -27,6 +27,7 @@ import Types.StandardGroups
 import qualified Config
 import qualified Git
 import qualified Git.Command
+import qualified Git.Config
 
 import Yesod
 import Data.Text (Text)
@@ -72,6 +73,16 @@ setRepoConfig uuid mremote oldc newc = do
 	when (isJust mremote && repoName oldc /= repoName newc) $ do
 		runAnnex undefined $ do
 			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
+			{- git remote rename expects there to be a
+			 - remote.<name>.fetch, and exits nonzero if
+			 - there's not. Special remotes don't normally
+			 - have that, and don't use it. Temporarily add
+			 - it if it's missing. -}
+			let remotefetch = "remote." ++ T.unpack (repoName oldc) ++ ".fetch"
+			needfetch <- isNothing <$> fromRepo (Git.Config.getMaybe remotefetch)
+			when needfetch $
+				inRepo $ Git.Command.run "config"
+					[Param remotefetch, Param ""]
 			inRepo $ Git.Command.run "remote"
 				[ Param "rename"
 				, Param $ T.unpack $ repoName oldc
