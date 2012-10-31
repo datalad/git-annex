@@ -12,9 +12,10 @@
           <a .btn .btn-primary href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
             Use a git repository on the server
           <br>
-          All your data will be uploaded to the server. If you set up other #
-          devices to use the same server, they will all be kept in sync, #
-          using the server as a central hub. #
+          All your data will be uploaded to the server, including the full #
+          git repository. This is a great choice if you want to set up #
+          other devices to use the same server, or share the repository with #
+          others.
         <p style="text-align: center">
           -or-
       <p>
@@ -23,7 +24,8 @@
         <br>
         The contents of your files will be stored, fully encrypted, on the #
         server. The server will not store other information about your #
-        git repository.
+        git repository. This is the best choice if you don't run the server #
+        yourself, or have sensative data.
     <div .span4>
       $if needsPubKey sshdata
         <div .alert .alert-info>
