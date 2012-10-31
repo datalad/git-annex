@@ -35,6 +35,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
     ~/.ssh/git-annex-shell wrapper the first time it's run.
   * webapp: Make an initial, empty commit so there is a master branch 
   * assistant: Fix syncing local drives.
+  * webapp: Fix creation of rsync.net repositories.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 

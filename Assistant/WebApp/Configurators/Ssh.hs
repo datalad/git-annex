@@ -310,7 +310,8 @@ makeRsyncNet sshinput setup = do
 	keypair <- liftIO $ genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
 		(mkSshData sshinput)
-			{ sshRepoName = "rsync.net"
+			{ sshRepoName = genSshRepoName "rsync.net" 
+				(maybe "" T.unpack $ directory sshinput)
 			, needsPubKey = True
 			, rsyncOnly = True
 			}
