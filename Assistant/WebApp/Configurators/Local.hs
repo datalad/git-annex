@@ -286,7 +286,8 @@ initRepo dir desc = inDir dir $ do
 		{- Initialize the master branch, so things that expect
 		 - to have it will work, before any files are added. -}
 		void $ inRepo $ Git.Command.runBool "commit"
-			[ Param "--allow-empty"
+			[ Param "--quiet"
+			, Param "--allow-empty"
 			, Param "-m"
 			, Param "created repository"
 			]
