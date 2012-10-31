@@ -7,7 +7,7 @@
         The server #{sshHostName sshdata} has been verified to be usable.
       $if not (rsyncOnly sshdata)
         <p>
-          You have two options for how to use the server.
+          You have two options for how to use the server:
         <p>
           <a .btn .btn-primary href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
             Use a git repository on the server
@@ -15,6 +15,8 @@
           All your data will be uploaded to the server. If you set up other #
           devices to use the same server, they will all be kept in sync, #
           using the server as a central hub. #
+        <p style="text-align: center">
+          -or-
       <p>
         <a .btn .btn-primary href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
           Use an encrypted rsync repository on the server
