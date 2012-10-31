@@ -44,3 +44,6 @@ Consider the following variation of the above example and assume, that "drop" do
 -->  cat: fileB: No such file or directory
 
 Here again, the problem is, that the user would probably (correct me if I am wrong) expect that the fileB still exists, because removing a file and checking it out again is expected to not mess with the annex contents (?). He does not know, that the "annex frop fileA" actually drop fileB's contents, because there was no additional file linking to it. It effectively performed a "git annex dropunused".
+
+> We seem to have agreed this is reasonable behavior, and a doc change was done.
+> Do feel free to suggest other doc changes.. [[done]] --[[Joey]]
