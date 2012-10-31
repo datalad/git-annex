@@ -19,10 +19,10 @@ import qualified Git.Command
 import qualified Command.InitRemote
 import Logs.UUID
 import Logs.Remote
+import Git.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
-import Data.Char
 
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
 makeSshRemote :: Bool -> SshData -> Assistant Remote
@@ -112,6 +112,4 @@ uniqueRemoteName basename n r
 	name
 		| n == 0 = legalbasename
 		| otherwise = legalbasename ++ show n
-	legalbasename = filter legal basename
-	legal '_' = True
-	legal c = isAlphaNum c
+	legalbasename = makeLegalName basename

@@ -10,6 +10,7 @@ module Assistant.Ssh where
 import Common.Annex
 import Utility.TempFile
 import Utility.UserInfo
+import Git.Remote
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -51,14 +52,11 @@ sshDir = do
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
-{- host_dir, with all / in dir replaced by _, and bad characters removed -}
+{- Generates a git remote name, like host_dir or host -}
 genSshRepoName :: String -> FilePath -> String
 genSshRepoName host dir
-	| null dir = filter legal host
-	| otherwise = filter legal $ host ++ "_" ++ replace "/" "_" dir
-  where
-	legal '_' = True
-	legal c = isAlphaNum c
+	| null dir = makeLegalName host
+	| otherwise = makeLegalName $ host ++ "_" ++ dir
 
 {- The output of ssh, including both stdout and stderr. -}
 sshTranscript :: [String] -> String -> IO (String, Bool)

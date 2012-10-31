@@ -37,6 +37,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * assistant: Fix syncing local drives.
   * webapp: Fix creation of rsync.net repositories.
   * webapp: Fix renaming of special remotes.
+  * webapp: Generate better git remote names.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 
