@@ -35,7 +35,7 @@ cabal install git-annex --bindir=$HOME/bin
 
 Do not forget to add to your PATH variable your ~/bin folder. In your .bashrc, for example:
 <pre>
-PATH=~/bin:/usr/bin/local:$PATH
+PATH=$HOME/bin:/usr/bin/local:$PATH
 </pre>
 
 See also:
