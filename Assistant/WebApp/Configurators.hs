@@ -16,7 +16,6 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
-import Assistant.XMPP
 import Utility.Yesod
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -24,6 +23,9 @@ import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
 import Config
+#ifdef WITH_XMPP
+import Assistant.XMPP.Client
+#endif
 
 import Yesod
 import Data.Text (Text)
@@ -34,7 +36,11 @@ getConfigR :: Handler RepHtml
 getConfigR = ifM (inFirstRun)
 	( getFirstRepositoryR
 	, bootstrap (Just Config) $ do
+#ifdef WITH_XMPP
 		xmppconfigured <- lift $ runAnnex False $ isJust <$> getXMPPCreds
+#else
+		let xmppconfigured = False
+#endif
 		sideBarDisplay
 		setTitle "Configuration"
 		$(widgetFile "configurators/main")

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE PackageImports, GeneralizedNewtypeDeriving, TypeFamilies, MultiParamTypeClasses #-}
+{-# LANGUAGE PackageImports, GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
 
 module Assistant.Monad (
 	Assistant,
@@ -34,6 +34,7 @@ import Assistant.Types.Pushes
 import Assistant.Types.BranchChange
 import Assistant.Types.Commits
 import Assistant.Types.Changes
+import Assistant.Types.Buddies
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -59,6 +60,7 @@ data AssistantData = AssistantData
 	, commitChan :: CommitChan
 	, changeChan :: ChangeChan
 	, branchChangeHandle :: BranchChangeHandle
+	, buddyList :: BuddyList
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -74,6 +76,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newCommitChan
 	<*> newChangeChan
 	<*> newBranchChangeHandle
+	<*> newBuddyList
 
 runAssistant :: Assistant a -> AssistantData -> IO a
 runAssistant a = runReaderT (mkAssistant a)

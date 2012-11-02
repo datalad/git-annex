@@ -18,7 +18,7 @@ import Assistant.DaemonStatus
 import Utility.Yesod
 #ifdef WITH_XMPP
 import Assistant.Common
-import Assistant.XMPP
+import Assistant.XMPP.Client
 import Assistant.Pushes
 import Utility.SRV
 #endif

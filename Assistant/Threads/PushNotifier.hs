@@ -12,7 +12,10 @@ module Assistant.Threads.PushNotifier where
 
 import Assistant.Common
 import Assistant.XMPP
+import Assistant.XMPP.Client
 import Assistant.Pushes
+import Assistant.Types.Buddies
+import Assistant.XMPP.Buddies
 import Assistant.Sync
 import Assistant.DaemonStatus
 import qualified Remote
@@ -28,15 +31,27 @@ pushNotifierThread :: NamedThread
 pushNotifierThread = NamedThread "PushNotifier" $ do
 	iodebug <- asIO1 debug
 	iopull <- asIO1 pull
-	iowaitpush <- asIO $ waitPush
-	ioclient <- asIO2 $ xmppClient $ iowaitpush
+	iowaitpush <- asIO waitPush
+	ioupdatebuddies <- asIO1 $ \p -> do
+		updateBuddyList (updateBuddies p) <<~ buddyList
+		debug =<< map show <$> getBuddyList <<~ buddyList
+	ioclient <- asIO $
+		xmppClient iowaitpush iodebug iopull ioupdatebuddies
 	forever $ do
-		tid <- liftIO $ forkIO $ ioclient iodebug iopull
+		{- The buddy list starts empty each time the client connects,
+		 - so that stale info is not retained. -}
+		updateBuddyList (const noBuddies) <<~ buddyList
+		tid <- liftIO $ forkIO ioclient
 		waitRestart
 		liftIO $ killThread tid
 
-xmppClient :: (IO [UUID]) -> ([String] -> IO ()) -> ([UUID] -> IO ()) -> Assistant ()
-xmppClient iowaitpush iodebug iopull = do
+xmppClient
+	:: (IO [UUID])
+	-> ([String] -> IO ()) 
+	-> ([UUID] -> IO ()) 
+	-> (Presence -> IO ())
+	-> Assistant ()
+xmppClient iowaitpush iodebug iopull ioupdatebuddies = do
 	v <- liftAnnex getXMPPCreds
 	case v of
 		Nothing -> noop
@@ -67,10 +82,12 @@ xmppClient iowaitpush iodebug iopull = do
 		s <- getStanza
 		liftIO $ iodebug ["received XMPP:", show s]
 		case s of
-			ReceivedPresence p@(Presence { presenceType = PresenceAvailable }) ->
-				liftIO $ iopull $ concat $ catMaybes $
-					map decodePushNotification $
-						presencePayloads p
+			ReceivedPresence p -> do
+				liftIO $ ioupdatebuddies p
+				when (isGitAnnexPresence p) $
+					liftIO $ iopull $ concat $ catMaybes $
+						map decodePushNotification $
+							presencePayloads p
 			_ -> noop
 
 {- We only pull from one remote out of the set listed in the push
