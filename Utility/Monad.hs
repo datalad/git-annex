@@ -46,8 +46,8 @@ ma <||> mb = ifM ma ( return True , mb )
 ma <&&> mb = ifM ma ( mb , return False )
 
 {- Same fixity as && and || -}
-infixr 3 (<&&>)
-infixr 2 (<||>)
+infixr 3 <&&>
+infixr 2 <||>
 
 {- Runs an action, passing its value to an observer before returning it. -}
 observe :: Monad m => (a -> m b) -> m a -> m a
