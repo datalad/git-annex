@@ -84,6 +84,9 @@ decodePushNotification (Element name attrs _nodes)
 	fromContent (ContentText t) = t
 	fromContent (ContentEntity t) = t
 
+pushNotification :: [UUID] -> Presence
+pushNotification = gitAnnexPresence . encodePushNotification
+
 {- A request for other git-annex clients to send presence. -}
 presenceQuery :: Presence
 presenceQuery = gitAnnexPresence $ Element gitAnnexTagName

@@ -31,6 +31,8 @@ import Annex.UUID
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
 import Network.Protocol.XMPP
+import Assistant.Types.NetMessager
+import Assistant.NetMessager
 #endif
 import Utility.UserInfo
 
@@ -55,6 +57,9 @@ getStartPairR = pairPage $ do
 #else
 	let localsupported = False
 #endif
+	{- Ask buddies to send presence info, to get the buddy list
+	 - populated. -}
+	lift $ liftAssistant $ sendNetMessage QueryPresence
 	$(widgetFile "configurators/pairing/start")
 #else
 #ifdef WITH_PAIRING

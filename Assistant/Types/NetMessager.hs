@@ -13,7 +13,11 @@ import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 
 {- Messages that can be sent out of band by a network messager. -}
-data NetMessage = NotifyPush [UUID]
+data NetMessage 
+	-- indicate that pushes have been made to the repos with these uuids
+	= NotifyPush [UUID]
+	-- requests other clients to inform us of their presence
+	| QueryPresence
 
 {- Controls for the XMPP client. 
  -

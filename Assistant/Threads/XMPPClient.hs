@@ -88,8 +88,8 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 relayNetMessage :: Assistant (XMPP ())
 relayNetMessage = convert <$> waitNetMessage
   where
-	convert (NotifyPush us) =
-		putStanza $ gitAnnexPresence $ encodePushNotification us
+	convert (NotifyPush us) = putStanza $ pushNotification us
+	convert QueryPresence = putStanza presenceQuery
 
 data DecodedStanza 
 	= PresenceMessage Presence
