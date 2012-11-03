@@ -33,7 +33,7 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 		updateBuddyList (updateBuddies p) <<~ buddyList
 	ioemptybuddies <- asIO $
 		updateBuddyList (const noBuddies) <<~ buddyList
-	iorelay <- asIO relayNetMessage
+	iorelay <- asIO1 relayNetMessage
 	ioclientthread <- asIO $
 		go iorelay iodebug iopull ioupdatebuddies ioemptybuddies
 	restartableClient ioclientthread
@@ -45,6 +45,7 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 			Just c -> liftIO $ loop c =<< getCurrentTime
 	  where
 		debug' = void . liftIO . iodebug
+
 		{- When the client exits, it's restarted;
  		 - if it keeps failing, back off to wait 5 minutes before
  		 - trying it again. -}
@@ -59,6 +60,7 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 					void $ iodebug ["connection failed; will retry"]
 					threadDelaySeconds (Seconds 300)
 					loop c =<< getCurrentTime
+
 		runclient c = void $ connectXMPP c $ \jid -> do
 			fulljid <- bindJID jid
 			debug' ["connected", show fulljid]
@@ -69,47 +71,62 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 			putStanza $ gitAnnexPresence gitAnnexSignature
 			xmppThread $ receivenotifications fulljid
 			forever $ do
-				a <- liftIO iorelay
+				a <- liftIO $ iorelay fulljid
 				a
+
 		receivenotifications fulljid = forever $ do
 			s <- getStanza
-			let v = decodeStanza fulljid s
-			debug' ["received:", show v]
-			case v of
-				PresenceMessage p -> void $ liftIO $ ioupdatebuddies p
-				PresenceQuery p -> do
-					void $ liftIO $ ioupdatebuddies p
-					putStanza $ gitAnnexPresence gitAnnexSignature
-				PushNotification us -> void $ liftIO $ iopull us
-				Ignorable _ -> noop
-				Unknown _ -> noop
+			let vs = decodeStanza fulljid s
+			debug' ["received:", show vs]
+			mapM_ handle vs
 
-{- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
-relayNetMessage :: Assistant (XMPP ())
-relayNetMessage = convert <$> waitNetMessage
-  where
-	convert (NotifyPush us) = putStanza $ pushNotification us
-	convert QueryPresence = putStanza presenceQuery
+		handle (PresenceMessage p) =
+			void $ liftIO $ ioupdatebuddies p
+		handle (GotNetMessage QueryPresence) =
+			putStanza $ gitAnnexPresence gitAnnexSignature
+		handle (GotNetMessage (NotifyPush us)) =
+			void $ liftIO $ iopull us
+		handle (GotNetMessage (PairingNotification stage t u)) = case parseJID t of
+			Nothing -> noop
+			Just jid -> error "TODO"
+		handle (Ignorable _) = noop
+		handle (Unknown _) = noop
 
-data DecodedStanza 
-	= PresenceMessage Presence
-	| PresenceQuery Presence
-	| PushNotification [UUID]
+data XMPPEvent
+	= GotNetMessage NetMessage
+	| PresenceMessage Presence
 	| Ignorable Presence
 	| Unknown ReceivedStanza
 	deriving Show
 
-decodeStanza :: JID -> ReceivedStanza -> DecodedStanza
+{- Decodes an XMPP stanza into one or more events. -}
+decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
 decodeStanza fulljid (ReceivedPresence p)
-	| presenceFrom p == Nothing = Ignorable p
-	| presenceFrom p == Just fulljid = Ignorable p
-	| isPresenceQuery p = PresenceQuery p
-	| null pushed = PresenceMessage p
-	| otherwise = PushNotification pushed
+	| presenceFrom p == Nothing = [Ignorable p]
+	| presenceFrom p == Just fulljid = [Ignorable p]
+	| not (null pushed) = impliedp $ GotNetMessage $ NotifyPush pushed
+	| isPresenceQuery p = impliedp $ GotNetMessage QueryPresence
+	| otherwise = [PresenceMessage p]
   where
+	-- Some things are sent via presence, so imply a presence message,
+	-- along with their real value.
+	impliedp v = [PresenceMessage p, v]
 	pushed = concat $ catMaybes $ map decodePushNotification $
 		presencePayloads p
-decodeStanza _ s = Unknown s
+decodeStanza _ s@(ReceivedIQ iq) = case decodePairingNotification iq of
+	Nothing -> [Unknown s]
+	Just pn -> [GotNetMessage pn]
+decodeStanza _ s = [Unknown s]
+
+{- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
+relayNetMessage :: JID -> Assistant (XMPP ())
+relayNetMessage fulljid = convert <$> waitNetMessage
+  where
+	convert (NotifyPush us) = putStanza $ pushNotification us
+	convert QueryPresence = putStanza $ presenceQuery
+	convert (PairingNotification stage t u) = case parseJID t of
+		Nothing -> noop
+		Just tojid -> putStanza $ pairingNotification stage u tojid fulljid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()

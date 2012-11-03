@@ -23,15 +23,17 @@ genBuddyID j = BuddyID $ formatJID j
 genKey :: JID -> BuddyKey
 genKey j = BuddyKey $ formatJID $ JID (jidNode j) (jidDomain j) Nothing
 
+buddyName :: JID -> Text
+buddyName j = maybe (T.pack "") strNode (jidNode j)
+
 {- Summary of info about a buddy.
  -
  - If the buddy has no clients at all anymore, returns Nothing. -}
 buddySummary :: Buddy -> Maybe (Text, Bool, Bool, BuddyID)
 buddySummary b = case clients of
-	((Client j):_) -> Just (buddyname j, away, canpair, genBuddyID j)
+	((Client j):_) -> Just (buddyName j, away, canpair, genBuddyID j)
 	[] -> Nothing
   where
-	buddyname j = maybe (T.pack "") strNode (jidNode j)
 	away = S.null (buddyPresent b) && S.null (buddyAssistants b)
 	canpair = not $ S.null (buddyAssistants b)
 	clients = S.toList $ buddyPresent b `S.union` buddyAway b `S.union` buddyAssistants b

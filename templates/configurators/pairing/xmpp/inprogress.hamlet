@@ -1,0 +1,16 @@
+<div .span9 .hero-unit>
+  <h2>
+    Pairing in progress ..
+    $if samejid
+      <p>
+        A pair request has been sent to all other clients using your jabber #
+        account, #{account}.
+      <p>
+        You do not need to leave this page open; pairing will finish #
+        automatically once the other clients see the pair request.
+    $else
+      <p>
+        A pair request has been sent to #{name}.
+      <p>
+        You do not need to leave this page open; pairing will finish #
+        automatically once #{name} accepts the pair request.

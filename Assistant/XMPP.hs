@@ -8,7 +8,7 @@
 module Assistant.XMPP where
 
 import Assistant.Common
-import Annex.UUID
+import Assistant.Types.NetMessager
 import Assistant.Pairing
 
 import Network.Protocol.XMPP
@@ -45,21 +45,8 @@ queryAttr = Name (T.pack "query") Nothing Nothing
 pushAttr :: Name
 pushAttr = Name (T.pack "push") Nothing Nothing
 
-pairingAttr :: Name
-pairingAttr = Name (T.pack "pairing") Nothing Nothing
-
 isAttr :: Name -> (Name, [Content]) -> Bool
 isAttr attr (k, _) = k == attr
-
-getAttr :: Name -> [(Name, [Content])] -> Maybe String
-getAttr wantattr attrs = content <$> headMaybe (filter (isAttr wantattr) attrs)
-  where
-	content (_name, cs) = T.unpack $ T.concat $ map unpack cs
-	unpack (ContentText t) = t
-	unpack (ContentEntity t) = t
-
-uuidAttr :: Name
-uuidAttr = Name (T.pack "uuid") Nothing Nothing
 
 uuidSep :: T.Text
 uuidSep = T.pack ","
@@ -98,20 +85,25 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
 	[] -> False
 	((Element _name attrs _nodes):_) -> any (isAttr queryAttr) attrs
 
-{- A notification about a stage of pairing. -}
-pairingNotification :: PairStage -> Annex Presence
-pairingNotification pairstage = do
-	u <- getUUID
-	return $ gitAnnexPresence $ Element gitAnnexTagName
-		[ (pairingAttr, [ContentText $ T.pack $ show pairstage])
-		, (uuidAttr, [ContentText $ T.pack $ fromUUID u]) 
+{- A notification about a stage of pairing. Sent as an XMPP ping. 
+ - The pairing info is sent using its id attribute. -}
+pairingNotification :: PairStage -> UUID -> JID -> JID -> IQ
+pairingNotification pairstage u tojid fromjid = (emptyIQ IQGet)
+	{ iqTo = Just tojid
+	, iqFrom = Just fromjid
+	, iqID = Just $ T.unwords $ map T.pack
+		[ "git-annex"
+		, show pairstage
+		, fromUUID u
 		]
-		[]
+	}
 
-isPairingNotification :: Presence -> Maybe (PairStage, UUID)
-isPairingNotification p = case filter isGitAnnexTag (presencePayloads p) of
-	[] -> Nothing
-	((Element _name attrs _nodes):_) ->
-		(,)
-			<$> (readish =<< getAttr pairingAttr attrs)
-			<*> (toUUID <$> getAttr uuidAttr attrs)
+decodePairingNotification :: IQ -> Maybe NetMessage
+decodePairingNotification iq = parseid =<< words . T.unpack <$> iqID iq
+  where
+	parseid ["git-annex", stage, u] = 
+		PairingNotification
+			<$> readish stage
+			<*> (formatJID <$> iqFrom iq)
+			<*> pure (toUUID u)
+	parseid _ = Nothing

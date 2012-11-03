@@ -8,7 +8,9 @@
 module Assistant.Types.NetMessager where
 
 import Common.Annex
+import Assistant.Pairing
 
+import Data.Text (Text)
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 
@@ -18,12 +20,11 @@ data NetMessage
 	= NotifyPush [UUID]
 	-- requests other clients to inform us of their presence
 	| QueryPresence
+	-- notification about a stage in the pairing process,
+	-- involving another client identified by the Text, and a UUID.
+	| PairingNotification PairStage Text UUID
+	deriving (Show)
 
-{- Controls for the XMPP client. 
- -
- - It can be fed XMPP messages to send.
- -
- - It can also be sent a signal when it should restart for some reason. -}
 data NetMessagerControl = NetMessagerControl
 	{ netMessages :: TChan (NetMessage)
 	, netMessagerRestart :: MSampleVar ()

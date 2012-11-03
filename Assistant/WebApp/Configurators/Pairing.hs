@@ -30,6 +30,7 @@ import Annex.UUID
 #endif
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
+import Assistant.XMPP.Buddies
 import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
@@ -50,8 +51,8 @@ import Control.Concurrent
 {- Starts either kind of pairing. -}
 getStartPairR :: Handler RepHtml
 #ifdef WITH_XMPP
-getStartPairR = pairPage $ do
-	xmppconfigured <- lift $ isJust <$> runAnnex Nothing getXMPPCreds
+getStartPairR = do
+	xmppconfigured <- isJust <$> runAnnex Nothing getXMPPCreds
 #ifdef WITH_PAIRING
 	let localsupported = True
 #else
@@ -59,8 +60,9 @@ getStartPairR = pairPage $ do
 #endif
 	{- Ask buddies to send presence info, to get the buddy list
 	 - populated. -}
-	lift $ liftAssistant $ sendNetMessage QueryPresence
-	$(widgetFile "configurators/pairing/start")
+	liftAssistant $ sendNetMessage QueryPresence
+	pairPage $
+		$(widgetFile "configurators/pairing/start")
 #else
 #ifdef WITH_PAIRING
 getStartPairR = redirect StartLocalPairR
@@ -69,12 +71,26 @@ getStartPairR = noPairing "local or jabber"
 #endif
 #endif
 
-{- Starts pairing with an XMPP buddy. -}
+{- Starts pairing with an XMPP buddy, or with other clients sharing an
+ - XMPP account. -}
 getStartXMPPPairR :: BuddyID -> Handler RepHtml
 #ifdef WITH_XMPP
 getStartXMPPPairR (BuddyID bid) = case parseJID bid of
 	Nothing -> error "bad JID"
-	Just jid -> error "TODO"
+	Just jid -> do
+		creds <- runAnnex Nothing getXMPPCreds
+		let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
+		liftAssistant $ do
+			u <- liftAnnex getUUID
+			sendNetMessage $ PairingNotification
+				PairReq (formatJID jid) u
+		pairPage $ do
+			let samejid = equivjids jid ourjid
+			let account = formatJID jid
+			let name = buddyName jid
+			$(widgetFile "configurators/pairing/xmpp/inprogress")
+  where
+	equivjids a b = jidNode a == jidNode b && jidDomain a == jidDomain b
 #else
 getStartXMPPPairR _ = noPairing "XMPP"
 #endif
