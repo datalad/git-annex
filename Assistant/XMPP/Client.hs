@@ -81,4 +81,4 @@ setXMPPCreds creds = do
 xmppCredsFile :: Annex FilePath
 xmppCredsFile = do
 	dir <- fromRepo gitAnnexCredsDir
-	return $ dir </> "notify-xmpp"
+	return $ dir </> "xmpp"
