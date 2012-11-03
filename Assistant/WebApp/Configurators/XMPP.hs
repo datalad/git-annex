@@ -23,7 +23,7 @@ import Assistant.Common
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
-import Assistant.Pushes
+import Assistant.NetMessager
 import Utility.SRV
 #endif
 
@@ -80,7 +80,7 @@ getXMPPR' redirto = xmppPage $ do
   where
 	storecreds creds = do
 		void $ runAnnex undefined $ setXMPPCreds creds
-		liftAssistant notifyRestart
+		liftAssistant notifyNetMessagerRestart
 		redirect redirto
 #endif
 

@@ -9,10 +9,8 @@ module Assistant.Pushes where
 
 import Assistant.Common
 import Assistant.Types.Pushes
-import Utility.TSet
 
 import Control.Concurrent.STM
-import Control.Concurrent.MSampleVar
 import Data.Time.Clock
 import qualified Data.Map as M
 
@@ -40,15 +38,3 @@ changeFailedPushMap a = do
 	store v m
 		| m == M.empty = noop
 		| otherwise = putTMVar v $! m
-
-notifyPush :: [UUID] -> Assistant ()
-notifyPush us = flip putTSet us <<~ (pushNotifierSuccesses . pushNotifier)
-
-waitPush :: Assistant [UUID]
-waitPush = getTSet <<~ (pushNotifierSuccesses . pushNotifier)
-
-notifyRestart :: Assistant ()
-notifyRestart = flip writeSV () <<~ (pushNotifierWaiter . pushNotifier)
-
-waitRestart :: Assistant ()
-waitRestart = readSV <<~ (pushNotifierWaiter . pushNotifier)

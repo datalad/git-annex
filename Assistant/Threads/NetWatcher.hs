@@ -12,7 +12,7 @@ module Assistant.Threads.NetWatcher where
 
 import Assistant.Common
 import Assistant.Sync
-import Assistant.Pushes
+import Assistant.NetMessager
 import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
@@ -62,7 +62,7 @@ dbusThread = do
 		)
 	handleconn = do
 		debug ["detected network connection"]
-		notifyRestart
+		notifyNetMessagerRestart
 		handleConnection
 	onerr e _ = do
 		liftAnnex $

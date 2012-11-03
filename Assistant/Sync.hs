@@ -9,6 +9,8 @@ module Assistant.Sync where
 
 import Assistant.Common
 import Assistant.Pushes
+import Assistant.NetMessager
+import Assistant.Types.NetMessager
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
@@ -102,7 +104,8 @@ pushToRemotes now notifypushes remotes = do
 		if null failed
 			then do
 				when notifypushes $
-					notifyPush (map Remote.uuid succeeded)
+					sendNetMessage $ NotifyPush $
+						map Remote.uuid succeeded
 				return True
 			else if shouldretry
 				then retry branch g u failed
@@ -124,7 +127,8 @@ pushToRemotes now notifypushes remotes = do
 			inParallel (pushfallback g u branch) rs
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
-			notifyPush (map Remote.uuid succeeded)
+			sendNetMessage $ NotifyPush $
+				map Remote.uuid succeeded
 		return $ null failed
 		
 	push g branch remote = Command.Sync.pushBranch remote branch g

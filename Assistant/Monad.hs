@@ -35,6 +35,7 @@ import Assistant.Types.BranchChange
 import Assistant.Types.Commits
 import Assistant.Types.Changes
 import Assistant.Types.Buddies
+import Assistant.Types.NetMessager
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -55,12 +56,12 @@ data AssistantData = AssistantData
 	, scanRemoteMap :: ScanRemoteMap
 	, transferQueue :: TransferQueue
 	, transferSlots :: TransferSlots
-	, pushNotifier :: PushNotifier
 	, failedPushMap :: FailedPushMap
 	, commitChan :: CommitChan
 	, changeChan :: ChangeChan
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
+	, netMessagerControl :: NetMessagerControl
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -71,12 +72,12 @@ newAssistantData st dstatus = AssistantData
 	<*> newScanRemoteMap
 	<*> newTransferQueue
 	<*> newTransferSlots
-	<*> newPushNotifier
 	<*> newFailedPushMap
 	<*> newCommitChan
 	<*> newChangeChan
 	<*> newBranchChangeHandle
 	<*> newBuddyList
+	<*> newNetMessagerControl
 
 runAssistant :: Assistant a -> AssistantData -> IO a
 runAssistant a = runReaderT (mkAssistant a)

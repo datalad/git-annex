@@ -69,8 +69,8 @@
  - Thread 18: ConfigMonitor
  - 	Triggered by changes to the git-annex branch, checks for changed
  - 	config files, and reloads configs.
- - Thread 19: PushNotifier
- - 	Notifies other repositories of pushes, using out of band signaling.
+ - Thread 19: XMPPClient
+ - 	Built-in XMPP client.
  - Thread 20: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
@@ -105,8 +105,10 @@
  - BranchChanged (STM SampleVar)
  - 	Changes to the git-annex branch are indicated by updating this
  - 	SampleVar.
- - PushNotifier (STM TChan)
- - 	After successful pushes, this SampleVar is updated.
+ - NetMessagerControl (STM TChan, SampleVar)
+ - 	Used to feed messages to the built-in XMPP client, and
+ - 	signal it when it needs to restart due to configuration or
+ - 	networking changes.
  - UrlRenderer (MVar)
  - 	A Yesod route rendering function is stored here. This allows
  - 	things that need to render Yesod routes to block until the webapp
@@ -135,7 +137,7 @@ import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
 #ifdef WITH_XMPP
-import Assistant.Threads.PushNotifier
+import Assistant.Threads.XMPPClient
 #endif
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
@@ -204,7 +206,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ transferScannerThread
 			, assist $ configMonitorThread
 #ifdef WITH_XMPP
-			, assist $ pushNotifierThread
+			, assist $ xmppClientThread
 #endif
 			, watch $ watchThread
 			]
