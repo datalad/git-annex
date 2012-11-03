@@ -11,7 +11,6 @@ detailed instructions | quick install
 [[ArchLinux]]         | `yaourt -Sy git-annex`
 [[NixOS]]             | `nix-env -i git-annex`
 [[Gentoo]]            | `emerge git-annex`
-[[NixOS]]             | `nix install git-annex`
 [[ScientificLinux5]]  | (and other RHEL5 clones like CentOS5)
 [[openSUSE]]          | 
 Windows               | [[sorry, Windows not supported yet|todo/windows_support]]
