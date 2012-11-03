@@ -9,9 +9,8 @@
       Is the computer you want to pair with located nearby, on the same #
       local network? (Or sharing a VPN?)
       <br>
-      If so, the best choice is local pairing.
-      <br>
-      <a .btn .btn-primary href="@{StartLocalPairR}">
+      If so, the best choice is local pairing. #
+      <a .btn .btn-primary .btn-small href="@{StartLocalPairR}">
         Start local pairing
   <p>
     Or, you can pair with any of your friends using jabber, or with another #
