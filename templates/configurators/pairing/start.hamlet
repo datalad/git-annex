@@ -2,7 +2,7 @@
   <h2>
     Pairing with another computer
   <p>
-    Pairing with a another computer combines both git-annex repositories # 
+    Pairing with a another computer combines both git-annex repositories #
     into a single shared repository, with changes kept in sync.
   $if localsupported
     <p>
