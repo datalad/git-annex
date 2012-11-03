@@ -35,12 +35,11 @@ pushNotifierThread = NamedThread "PushNotifier" $ do
 	ioupdatebuddies <- asIO1 $ \p -> do
 		updateBuddyList (updateBuddies p) <<~ buddyList
 		debug =<< map show <$> getBuddyList <<~ buddyList
-	ioclient <- asIO $
-		xmppClient iowaitpush iodebug iopull ioupdatebuddies
-	forever $ do
-		{- The buddy list starts empty each time the client connects,
-		 - so that stale info is not retained. -}
+	ioemptybuddies <- asIO $
 		updateBuddyList (const noBuddies) <<~ buddyList
+	ioclient <- asIO $
+		xmppClient iowaitpush iodebug iopull ioupdatebuddies ioemptybuddies
+	forever $ do
 		tid <- liftIO $ forkIO ioclient
 		waitRestart
 		liftIO $ killThread tid
@@ -50,8 +49,9 @@ xmppClient
 	-> ([String] -> IO ()) 
 	-> ([UUID] -> IO ()) 
 	-> (Presence -> IO ())
+	-> IO ()
 	-> Assistant ()
-xmppClient iowaitpush iodebug iopull ioupdatebuddies = do
+xmppClient iowaitpush iodebug iopull ioupdatebuddies ioemptybuddies = do
 	v <- liftAnnex getXMPPCreds
 	case v of
 		Nothing -> noop
@@ -61,10 +61,13 @@ xmppClient iowaitpush iodebug iopull ioupdatebuddies = do
 		void $ connectXMPP c $ \jid -> do
 			fulljid <- bindJID jid
 			liftIO $ iodebug ["XMPP connected", show fulljid]
+			{- The buddy list starts empty each time the client
+			 - connects, so that stale info is not retained. -}
+			liftIO ioemptybuddies
 			putStanza $ gitAnnexPresence gitAnnexSignature
 			s <- getSession
 			_ <- liftIO $ forkIO $ void $ runXMPP s $
-				receivenotifications
+				receivenotifications fulljid
 			sendnotifications
 		now <- getCurrentTime
 		if diffUTCTime now starttime > 300
@@ -78,16 +81,18 @@ xmppClient iowaitpush iodebug iopull ioupdatebuddies = do
 	sendnotifications = forever $ do
 		us <- liftIO iowaitpush
 		putStanza $ gitAnnexPresence $ encodePushNotification us
-	receivenotifications = forever $ do
+	receivenotifications fulljid = forever $ do
 		s <- getStanza
 		liftIO $ iodebug ["received XMPP:", show s]
 		case s of
-			ReceivedPresence p -> do
-				liftIO $ ioupdatebuddies p
-				when (isGitAnnexPresence p) $
-					liftIO $ iopull $ concat $ catMaybes $
-						map decodePushNotification $
-							presencePayloads p
+			ReceivedPresence p@(Presence { presenceFrom = from })
+				| from == Just fulljid -> noop
+				| otherwise -> do
+					liftIO $ ioupdatebuddies p
+					when (isGitAnnexPresence p) $
+						liftIO $ iopull $ concat $ catMaybes $
+							map decodePushNotification $
+								presencePayloads p
 			_ -> noop
 
 {- We only pull from one remote out of the set listed in the push
