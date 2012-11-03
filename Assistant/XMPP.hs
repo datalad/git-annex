@@ -85,7 +85,7 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
 	[] -> False
 	((Element _name attrs _nodes):_) -> any (isAttr queryAttr) attrs
 
-{- A notification about a stage of pairing. Sent as an XMPP ping. 
+{- A notification about a stage of pairing. Sent as an XMPP IQ.
  - The pairing info is sent using its id attribute; it also has a git-annex
  - tag to identify it as from us. -}
 pairingNotification :: PairStage -> UUID -> JID -> JID -> IQ
