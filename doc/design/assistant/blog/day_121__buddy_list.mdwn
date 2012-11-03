@@ -1,0 +1,10 @@
+Got the XMPP client maintaining a list of buddies, including tracking which
+clients are present and away, and which clients are recognised as other
+git-annex assistant clients. This was fun, it is almost all pure
+functional code, which always makes me happy.
+
+Started building UI for XMPP pairing. So far, I have it showing a list of
+buddies who are also running git-annex (or not). The list even refreshes
+in real time as new buddies come online.
+
+[[!img /assistant/buddylist.png]]
