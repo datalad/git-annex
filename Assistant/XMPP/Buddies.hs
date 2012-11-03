@@ -63,15 +63,17 @@ applyPresence :: Presence -> Buddy -> Buddy
 applyPresence p b = fromMaybe b $! go <$> presenceFrom p
   where
 	go jid
-		| isGitAnnexPresence p = b
-			{ buddyAssistants = addto $ buddyAssistants b }
-		| presenceType p == PresenceAvailable = b
-			{ buddyPresent = addto $ buddyPresent b
-			, buddyAway = removefrom $ buddyAway b
-			}
 		| presenceType p == PresenceUnavailable = b
 			{ buddyAway = addto $ buddyAway b
 			, buddyPresent = removefrom $ buddyPresent b
+			, buddyAssistants = removefrom $ buddyAssistants b
+			}
+		| isGitAnnexPresence p = b
+			{ buddyAssistants = addto $ buddyAssistants b
+			, buddyAway = removefrom $ buddyAway b }
+		| presenceType p == PresenceAvailable = b
+			{ buddyPresent = addto $ buddyPresent b
+			, buddyAway = removefrom $ buddyAway b
 			}
 		| otherwise = b
 	  where

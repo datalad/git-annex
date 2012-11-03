@@ -16,8 +16,12 @@
             $else
               #{name}
           <td>
-            $if canpair
-              <a .btn .btn-primary .btn-small href="@{StartXMPPPairR buddyid}">
-                Start pairing
+            $if away
+              <span .muted>
+                away
             $else
-              not using git-annex
+              $if canpair
+                <a .btn .btn-primary .btn-small href="@{StartXMPPPairR buddyid}">
+                  Start pairing
+              $else
+                not using git-annex
