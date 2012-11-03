@@ -104,7 +104,7 @@ decodeStanza fulljid (ReceivedPresence p)
 	| presenceFrom p == Nothing = Ignorable p
 	| presenceFrom p == Just fulljid = Ignorable p
 	| isPresenceQuery p = PresenceQuery p
-	| null pushed = Ignorable p
+	| null pushed = PresenceMessage p
 	| otherwise = PushNotification pushed
   where
 	pushed = concat $ catMaybes $ map decodePushNotification $
