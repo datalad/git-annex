@@ -47,6 +47,9 @@ import Data.Char
 import qualified Control.Exception as E
 import Control.Concurrent
 #endif
+#ifdef WITH_XMPP
+import qualified Data.Set as S
+#endif
 
 {- Starts either kind of pairing. -}
 getStartPairR :: Handler RepHtml
@@ -73,26 +76,35 @@ getStartPairR = noPairing "local or jabber"
 
 {- Starts pairing with an XMPP buddy, or with other clients sharing an
  - XMPP account. -}
-getStartXMPPPairR :: BuddyID -> Handler RepHtml
+getStartXMPPPairR :: BuddyKey -> Handler RepHtml
 #ifdef WITH_XMPP
-getStartXMPPPairR (BuddyID bid) = case parseJID bid of
-	Nothing -> error "bad JID"
-	Just jid -> do
-		creds <- runAnnex Nothing getXMPPCreds
-		let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
-		liftAssistant $ do
-			u <- liftAnnex getUUID
-			sendNetMessage $ PairingNotification
-				PairReq (formatJID jid) u
-		pairPage $ do
-			let samejid = equivjids jid ourjid
-			let account = formatJID jid
-			let name = buddyName jid
-			$(widgetFile "configurators/pairing/xmpp/inprogress")
+getStartXMPPPairR bid = do
+	creds <- runAnnex Nothing getXMPPCreds
+	let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
+	buddy <- liftAssistant $ getBuddy bid <<~ buddyList
+	case S.toList . buddyAssistants <$> buddy of
+		-- A buddy could have logged out, or the XMPP client restarted;
+		-- so handle unforseen by going back.
+		Nothing -> redirect StartPairR
+		(Just []) -> redirect StartPairR
+		(Just clients@((Client exemplar):_)) -> do
+			let samejid = basejid ourjid == basejid exemplar
+			liftAssistant $ forM_ clients $ \(Client jid) ->
+				unless (jid == ourjid) $ do
+					u <- liftAnnex getUUID
+					sendNetMessage $ PairingNotification
+						PairReq (formatJID jid) u
+			pairPage $ do
+				let account = formatJID $ basejid exemplar
+				let name = buddyName exemplar
+				$(widgetFile "configurators/pairing/xmpp/inprogress")
   where
-	equivjids a b = jidNode a == jidNode b && jidDomain a == jidDomain b
+	basejid j = JID (jidNode j) (jidDomain j) Nothing
 #else
-getStartXMPPPairR _ = noPairing "XMPP"
+getStartXMPPPairR _ = noXMPPPairing
+
+noXMPPPairing :: Handler RepHtml
+noXMPPPairing = noPairing "XMPP"
 #endif
 
 {- Starts local pairing. -}
@@ -123,6 +135,15 @@ getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else
 getFinishLocalPairR _ = noLocalPairing
+#endif
+
+getFinishXMPPPairR :: PairKey -> Handler RepHtml
+#ifdef WITH_XMPP
+getFinishXMPPPairR (PairKey u t) = case parseJID t of
+	Nothing -> error "bad JID"
+	Just jid -> error "TODO"
+#else
+getFinishXMPPPairR _ _ = noXMPPPairing
 #endif
 
 getRunningLocalPairR :: SecretReminder -> Handler RepHtml

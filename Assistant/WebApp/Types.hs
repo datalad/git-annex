@@ -90,6 +90,10 @@ instance PathPiece UUID where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
 
-instance PathPiece BuddyID where
+instance PathPiece BuddyKey where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece PairKey where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack

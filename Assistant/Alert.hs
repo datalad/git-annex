@@ -301,23 +301,23 @@ pairingAlert button = baseActivityAlert
 	}
 
 pairRequestReceivedAlert :: String -> AlertButton -> Alert
-pairRequestReceivedAlert repo button = Alert
+pairRequestReceivedAlert who button = Alert
 	{ alertClass = Message
 	, alertHeader = Nothing
 	, alertMessageRender = tenseWords
-	, alertData = [UnTensed $ T.pack $ repo ++ " is sending a pair request."]
+	, alertData = [UnTensed $ T.pack $ who ++ " is sending a pair request."]
 	, alertBlockDisplay = False
 	, alertPriority = High
 	, alertClosable = True
 	, alertIcon = Just InfoIcon
-	, alertName = Just $ PairAlert repo
+	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = Just button
 	}
 
 pairRequestAcknowledgedAlert :: String -> Maybe AlertButton -> Alert
-pairRequestAcknowledgedAlert repo button = baseActivityAlert
-	{ alertData = ["Pair request with", UnTensed (T.pack repo), Tensed "in progress" "complete"]
+pairRequestAcknowledgedAlert who button = baseActivityAlert
+	{ alertData = ["Pair request with", UnTensed (T.pack who), Tensed "in progress" "complete"]
 	, alertPriority = High
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = button

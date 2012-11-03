@@ -86,24 +86,28 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
 	((Element _name attrs _nodes):_) -> any (isAttr queryAttr) attrs
 
 {- A notification about a stage of pairing. Sent as an XMPP ping. 
- - The pairing info is sent using its id attribute. -}
+ - The pairing info is sent using its id attribute; it also has a git-annex
+ - tag to identify it as from us. -}
 pairingNotification :: PairStage -> UUID -> JID -> JID -> IQ
 pairingNotification pairstage u tojid fromjid = (emptyIQ IQGet)
 	{ iqTo = Just tojid
 	, iqFrom = Just fromjid
 	, iqID = Just $ T.unwords $ map T.pack
-		[ "git-annex"
-		, show pairstage
+		[ show pairstage
 		, fromUUID u
 		]
+	, iqPayload = Just gitAnnexSignature
 	}
 
 decodePairingNotification :: IQ -> Maybe NetMessage
-decodePairingNotification iq = parseid =<< words . T.unpack <$> iqID iq
+decodePairingNotification iq@(IQ { iqPayload = Just elt })
+	| isGitAnnexTag elt = parseid =<< words . T.unpack <$> iqID iq
+	| otherwise = Nothing
   where
-	parseid ["git-annex", stage, u] = 
+	parseid [stage, u] = 
 		PairingNotification
 			<$> readish stage
 			<*> (formatJID <$> iqFrom iq)
 			<*> pure (toUUID u)
 	parseid _ = Nothing
+decodePairingNotification _ = Nothing

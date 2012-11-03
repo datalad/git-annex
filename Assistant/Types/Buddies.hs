@@ -38,11 +38,11 @@ data Buddy
 #endif
 	deriving (Eq, Show)
 
-data BuddyID = BuddyID T.Text
+data BuddyKey = BuddyKey T.Text
 	deriving (Eq, Ord, Show, Read)
 
-data BuddyKey = BuddyKey T.Text
-	deriving (Eq, Ord, Show)
+data PairKey = PairKey UUID T.Text
+	deriving (Eq, Ord, Show, Read)
 
 type Buddies = M.Map BuddyKey Buddy
 
@@ -59,6 +59,9 @@ newBuddyList = (,)
 
 getBuddyList :: BuddyList -> IO [Buddy]
 getBuddyList (v, _) = M.elems <$> atomically (readTMVar v)
+
+getBuddy :: BuddyKey -> BuddyList -> IO (Maybe Buddy)
+getBuddy k (v, _) = M.lookup k <$> atomically (readTMVar v)
 
 getBuddyBroadcaster :: BuddyList -> NotificationBroadcaster
 getBuddyBroadcaster (_, h) = h

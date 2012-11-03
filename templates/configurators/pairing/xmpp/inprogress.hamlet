@@ -14,3 +14,6 @@
       <p>
         You do not need to leave this page open; pairing will finish #
         automatically once #{name} accepts the pair request.
+    <p>
+      <a .btn .btn-primary .btn-small href="">
+        Re-Send pair request

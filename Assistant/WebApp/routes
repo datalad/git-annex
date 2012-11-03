@@ -30,7 +30,8 @@
 /config/repository/pair/local/start StartLocalPairR GET
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET
-/config/repository/pair/xmpp/start/#BuddyID StartXMPPPairR GET
+/config/repository/pair/xmpp/start/#BuddyKey StartXMPPPairR GET
+/config/repository/pair/xmpp/finish/#PairKey FinishXMPPPairR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET
 /config/repository/enable/directory/#UUID EnableDirectoryR GET

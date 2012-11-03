@@ -136,14 +136,14 @@ import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
-#ifdef WITH_XMPP
-import Assistant.Threads.XMPPClient
-#endif
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
 #ifdef WITH_PAIRING
 import Assistant.Threads.PairListener
+#endif
+#ifdef WITH_XMPP
+import Assistant.Threads.XMPPClient
 #endif
 #else
 #warning Building without the webapp. You probably need to install Yesod..
@@ -191,6 +191,9 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 #ifdef WITH_PAIRING
 			, assist $ pairListenerThread urlrenderer
 #endif
+#ifdef WITH_XMPP
+			, assist $ xmppClientThread urlrenderer
+#endif
 #endif
 			, assist $ pushThread
 			, assist $ pushRetryThread
@@ -205,9 +208,6 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread
 			, assist $ configMonitorThread
-#ifdef WITH_XMPP
-			, assist $ xmppClientThread
-#endif
 			, watch $ watchThread
 			]
 		liftIO waitForTermination

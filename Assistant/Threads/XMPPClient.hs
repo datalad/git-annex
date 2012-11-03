@@ -18,27 +18,35 @@ import Assistant.Sync
 import Assistant.DaemonStatus
 import qualified Remote
 import Utility.ThreadScheduler
+import Assistant.WebApp
+import Assistant.WebApp.Types
+import Assistant.Alert
+import Assistant.Pairing
 
 import Network.Protocol.XMPP
 import Control.Concurrent
+import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Git.Branch
 import Data.Time.Clock
 
-xmppClientThread :: NamedThread
-xmppClientThread = NamedThread "XMPPClient" $ do
+xmppClientThread :: UrlRenderer -> NamedThread
+xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
+	{- All Assistant actions have to be converted into IO actions that
+	 - can be run from within the XMPP monad using liftIO. Ugly. -}
 	iodebug <- asIO1 debug
 	iopull <- asIO1 pull
+	iopairReqReceived <- asIO2 $ pairReqReceived urlrenderer
 	ioupdatebuddies <- asIO1 $ \p ->
 		updateBuddyList (updateBuddies p) <<~ buddyList
 	ioemptybuddies <- asIO $
 		updateBuddyList (const noBuddies) <<~ buddyList
 	iorelay <- asIO1 relayNetMessage
 	ioclientthread <- asIO $
-		go iorelay iodebug iopull ioupdatebuddies ioemptybuddies
+		go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairReqReceived
 	restartableClient ioclientthread
   where
-	go iorelay iodebug iopull ioupdatebuddies ioemptybuddies = do
+	go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairReqReceived = do
 		v <- liftAnnex getXMPPCreds
 		case v of
 			Nothing -> noop
@@ -75,10 +83,9 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 				a
 
 		receivenotifications fulljid = forever $ do
-			s <- getStanza
-			let vs = decodeStanza fulljid s
-			debug' ["received:", show vs]
-			mapM_ handle vs
+			l <- decodeStanza fulljid <$> getStanza
+			debug' ["received:", show l]
+			mapM_ handle l
 
 		handle (PresenceMessage p) =
 			void $ liftIO $ ioupdatebuddies p
@@ -86,22 +93,28 @@ xmppClientThread = NamedThread "XMPPClient" $ do
 			putStanza $ gitAnnexPresence gitAnnexSignature
 		handle (GotNetMessage (NotifyPush us)) =
 			void $ liftIO $ iopull us
-		handle (GotNetMessage (PairingNotification stage t u)) = case parseJID t of
-			Nothing -> noop
-			Just jid -> error "TODO"
+		handle (GotNetMessage (PairingNotification stage t u)) =
+			maybe noop (handlePairing stage u) (parseJID t)
 		handle (Ignorable _) = noop
 		handle (Unknown _) = noop
+		handle (ProtocolError _) = noop
+
+		handlePairing PairReq u jid = liftIO $ iopairReqReceived u jid
+		handlePairing PairAck _ _ = error "TODO"
+		handlePairing PairDone _ _ = error "TODO"
 
 data XMPPEvent
 	= GotNetMessage NetMessage
 	| PresenceMessage Presence
 	| Ignorable Presence
 	| Unknown ReceivedStanza
+	| ProtocolError ReceivedStanza
 	deriving Show
 
 {- Decodes an XMPP stanza into one or more events. -}
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
-decodeStanza fulljid (ReceivedPresence p)
+decodeStanza fulljid s@(ReceivedPresence p)
+	| presenceType p == PresenceError = [ProtocolError s]
 	| presenceFrom p == Nothing = [Ignorable p]
 	| presenceFrom p == Just fulljid = [Ignorable p]
 	| not (null pushed) = impliedp $ GotNetMessage $ NotifyPush pushed
@@ -113,9 +126,11 @@ decodeStanza fulljid (ReceivedPresence p)
 	impliedp v = [PresenceMessage p, v]
 	pushed = concat $ catMaybes $ map decodePushNotification $
 		presencePayloads p
-decodeStanza _ s@(ReceivedIQ iq) = case decodePairingNotification iq of
-	Nothing -> [Unknown s]
-	Just pn -> [GotNetMessage pn]
+decodeStanza _ s@(ReceivedIQ iq)
+	| iqType iq == IQError = [ProtocolError s]
+	| otherwise = case decodePairingNotification iq of
+		Nothing -> [Unknown s]
+		Just pn -> [GotNetMessage pn]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
@@ -126,7 +141,9 @@ relayNetMessage fulljid = convert <$> waitNetMessage
 	convert QueryPresence = putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
 		Nothing -> noop
-		Just tojid -> putStanza $ pairingNotification stage u tojid fulljid
+		Just tojid -> do
+			liftIO $ print $ pairingNotification stage u tojid fulljid
+			putStanza $ pairingNotification stage u tojid fulljid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()
@@ -170,3 +187,18 @@ pull us = do
 	pullone (r:rs) branch =
 		unlessM (all id . fst <$> manualPull branch [r]) $
 			pullone rs branch
+
+{- Show an alert when a PairReq is seen, unless the PairReq came from
+ - another client using our JID. In that case, just start pairing. -}
+pairReqReceived :: UrlRenderer -> UUID -> JID -> Assistant ()
+pairReqReceived urlrenderer u jid = do
+	-- TODO: check same JID
+	let route = FinishXMPPPairR (PairKey u $ formatJID jid)
+	url <- liftIO $ renderUrl urlrenderer route []
+	close <- asIO1 removeAlert
+	void $ addAlert $ pairRequestReceivedAlert (T.unpack $ buddyName jid)
+		AlertButton
+			{ buttonUrl = url
+			, buttonLabel = T.pack "Respond"
+			, buttonAction = Just close
+			}
