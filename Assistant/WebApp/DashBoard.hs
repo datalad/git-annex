@@ -71,7 +71,7 @@ simplifyTransfers (v@(t1, _):r@((t2, _):l))
  -}
 getTransfersR :: NotificationId -> Handler RepHtml
 getTransfersR nid = do
-	waitNotifier transferNotifier nid
+	waitNotifier getTransferBroadcaster nid
 
 	page <- widgetToPageContent $ transfersDisplay False
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]

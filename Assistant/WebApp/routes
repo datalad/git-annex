@@ -7,6 +7,7 @@
 /config ConfigR GET
 /config/repository RepositoriesR GET
 /config/xmpp XMPPR GET
+/config/xmpp/for/pairing XMPPForPairingR GET
 
 /config/repository/new/first FirstRepositoryR GET
 /config/repository/new NewRepositoryR GET
@@ -26,17 +27,24 @@
 /config/repository/add/cloud/S3 AddS3R GET
 
 /config/repository/pair/start StartPairR GET
-/config/repository/pair/inprogress/#SecretReminder InprogressPairR GET
-/config/repository/pair/finish/#PairMsg FinishPairR GET
+/config/repository/pair/local/start StartLocalPairR GET
+/config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
+/config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET
+/config/repository/pair/xmpp/start/#BuddyID StartXMPPPairR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
 /config/repository/enable/S3/#UUID EnableS3R GET
 
 /transfers/#NotificationId TransfersR GET
-/sidebar/#NotificationId SideBarR GET
 /notifier/transfers NotifierTransfersR GET
+
+/sidebar/#NotificationId SideBarR GET
 /notifier/sidebar NotifierSideBarR GET
+
+/buddylist/#NotificationId BuddyListR GET
+/notifier/buddylist NotifierBuddyListR GET
+
 /alert/close/#AlertId CloseAlert GET
 /alert/click/#AlertId ClickAlert GET
 /filebrowser FileBrowserR GET POST

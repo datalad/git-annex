@@ -14,6 +14,7 @@ import Assistant.Common
 import Assistant.Ssh
 import Assistant.Alert
 import Assistant.Pairing
+import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Logs.Transfer
@@ -86,5 +87,9 @@ instance PathPiece SecretReminder where
     fromPathPiece = readish . unpack
 
 instance PathPiece UUID where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece BuddyID where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack

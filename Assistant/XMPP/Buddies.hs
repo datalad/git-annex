@@ -9,32 +9,32 @@ module Assistant.XMPP.Buddies where
 
 import Assistant.XMPP
 import Common.Annex
+import Assistant.Types.Buddies
 
 import Network.Protocol.XMPP
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Ord
+import Data.Text (Text)
+import qualified Data.Text as T
 
-newtype Client = Client JID
-	deriving (Eq, Show)
+genBuddyID :: JID -> BuddyID
+genBuddyID j = BuddyID $ formatJID j
 
-instance Ord Client where
-	compare = comparing show
+genKey :: JID -> BuddyKey
+genKey j = BuddyKey $ formatJID $ JID (jidNode j) (jidDomain j) Nothing
 
-data Buddy = Buddy
-	{ buddyPresent :: S.Set Client
-	, buddyAway :: S.Set Client
-	, buddyAssistants :: S.Set Client
-	}
-	deriving (Eq, Show)
-
-{- Note that the buddy map includes one buddy for the user's own JID,
- - so that we can track other git-annex assistant's sharing the same
- - account. -}
-type Buddies = M.Map String Buddy
-
-genKey :: JID -> String
-genKey j = show $ JID (jidNode j) (jidDomain j) Nothing
+{- Summary of info about a buddy.
+ -
+ - If the buddy has no clients at all anymore, returns Nothing. -}
+buddySummary :: Buddy -> Maybe (Text, Bool, Bool, BuddyID)
+buddySummary b = case clients of
+	((Client j):_) -> Just (buddyname j, away, canpair, genBuddyID j)
+	[] -> Nothing
+  where
+	buddyname j = maybe (T.pack "") strNode (jidNode j)
+	away = S.null (buddyPresent b) && S.null (buddyAssistants b)
+	canpair = not $ S.null (buddyAssistants b)
+	clients = S.toList $ buddyPresent b `S.union` buddyAway b `S.union` buddyAssistants b
 
 {- Updates the buddies with XMPP presence info. -}
 updateBuddies :: Presence -> Buddies -> Buddies

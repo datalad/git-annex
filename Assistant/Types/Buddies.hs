@@ -14,16 +14,37 @@ import Common.Annex
 import qualified Data.Map as M
 import Control.Concurrent.STM
 import Utility.NotificationBroadcaster
+import Data.Text as T
 
-{- When XMPP is enabled, this is an XMPP buddy map.
- - Otherwise, it's an empty map, for simplicity. -}
+{- For simplicity, dummy types are defined even when XMPP is disabled. -}
 #ifdef WITH_XMPP
-import Assistant.XMPP.Buddies
+import Network.Protocol.XMPP
+import Data.Set as S
+import Data.Ord
+
+newtype Client = Client JID
+	deriving (Eq, Show)
+
+instance Ord Client where
+	compare = comparing show
+
+data Buddy = Buddy
+	{ buddyPresent :: S.Set Client
+	, buddyAway :: S.Set Client
+	, buddyAssistants :: S.Set Client
+	}
 #else
-type Buddies = M.Map String Buddy
 data Buddy
-	deriving (Eq)
 #endif
+	deriving (Eq, Show)
+
+data BuddyID = BuddyID T.Text
+	deriving (Eq, Ord, Show, Read)
+
+data BuddyKey = BuddyKey T.Text
+	deriving (Eq, Ord, Show)
+
+type Buddies = M.Map BuddyKey Buddy
 
 {- A list of buddies, and a way to notify when it changes. -}
 type BuddyList = (TMVar Buddies, NotificationBroadcaster)
@@ -39,6 +60,9 @@ newBuddyList = (,)
 getBuddyList :: BuddyList -> IO [Buddy]
 getBuddyList (v, _) = M.elems <$> atomically (readTMVar v)
 
+getBuddyBroadcaster :: BuddyList -> NotificationBroadcaster
+getBuddyBroadcaster (_, h) = h
+
 {- Applies a function to modify the buddy list, and if it's changed,
  - sends notifications to any listeners. -}
 updateBuddyList :: (Buddies -> Buddies) -> BuddyList -> IO ()
@@ -50,8 +74,3 @@ updateBuddyList a (v, caster) = do
 		return $ buds /= buds'
 	when changed $
 		sendNotification caster
-
-{- Allocates a notification handle for a client to use to listen for
- - changes to the buddy list. -}
-newBuddyListNotificationHandle :: BuddyList -> IO NotificationHandle
-newBuddyListNotificationHandle (_, caster) = newNotificationHandle caster

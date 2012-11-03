@@ -12,13 +12,17 @@ module Assistant.WebApp.Configurators.XMPP where
 
 import Assistant.WebApp
 import Assistant.WebApp.Types
+import Assistant.WebApp.Notifications
 import Assistant.WebApp.SideBar
+import Assistant.Types.Buddies
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Yesod
-#ifdef WITH_XMPP
+import Utility.NotificationBroadcaster
 import Assistant.Common
+#ifdef WITH_XMPP
 import Assistant.XMPP.Client
+import Assistant.XMPP.Buddies
 import Assistant.Pushes
 import Utility.SRV
 #endif
@@ -45,7 +49,23 @@ xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
 
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP
-getXMPPR = xmppPage $ do
+getXMPPR = getXMPPR' ConfigR
+#else
+getXMPPR = xmppPage $
+	$(widgetFile "configurators/xmpp/disabled")
+#endif
+
+getXMPPForPairingR :: Handler RepHtml
+#ifdef WITH_XMPP
+getXMPPForPairingR = getXMPPR' StartPairR
+#else
+getXMPPForPairingR = xmppPage $
+	$(widgetFile "configurators/xmpp/disabled")
+#endif
+
+#ifdef WITH_XMPP
+getXMPPR' :: Route WebApp -> Handler RepHtml
+getXMPPR' redirto = xmppPage $ do
 	((result, form), enctype) <- lift $ do
 		oldcreds <- runAnnex Nothing getXMPPCreds
 		runFormGet $ renderBootstrap $ xmppAForm $
@@ -61,11 +81,32 @@ getXMPPR = xmppPage $ do
 	storecreds creds = do
 		void $ runAnnex undefined $ setXMPPCreds creds
 		liftAssistant notifyRestart
-		redirect ConfigR
-#else
-getXMPPR = xmppPage $
-	$(widgetFile "configurators/xmpp/disabled")
+		redirect redirto
 #endif
+
+{- Called by client to get a list of buddies.
+ -
+ - Returns a div, which will be inserted into the calling page.
+ -}
+getBuddyListR :: NotificationId -> Handler RepHtml
+getBuddyListR nid = do
+	waitNotifier getBuddyListBroadcaster nid
+
+	page <- widgetToPageContent $ buddyListDisplay
+	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+
+buddyListDisplay :: Widget
+buddyListDisplay = do
+	autoUpdate ident NotifierBuddyListR (10 :: Int) (10 :: Int)
+#ifdef WITH_XMPP
+	buddies <- lift $ liftAssistant $ catMaybes . map buddySummary
+		<$> (getBuddyList <<~ buddyList)
+#else
+	let buddies = []
+#endif
+	$(widgetFile "configurators/xmpp/buddylist")
+  where
+	ident = "buddylist"
 
 #ifdef WITH_XMPP
 

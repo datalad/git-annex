@@ -44,12 +44,10 @@
 
       <h3>
         <a href="@{StartPairR}">
-          <i .icon-plus-sign></i> Local computer
+          <i .icon-plus-sign></i> Pair with another computer
       <p>
-        Pair with a local computer to automatically keep files in sync #
-        between computers on your local network.
-      <p>
-        For easy sharing with family and friends, or between your devices.
+        Connect with another computer used by you, or by a friend,
+        that is also running git-annex.
 
       <h3>
         <i .icon-plus-sign></i> Phone

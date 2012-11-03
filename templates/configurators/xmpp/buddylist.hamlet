@@ -1,0 +1,23 @@
+<div .span9 ##{ident}>
+  <table .table>
+    <tbody>
+    $if null buddies
+      <tr>
+        <td> 
+          Nobody is currently available.
+    $else
+      $forall (name, away, canpair, buddyid) <- buddies
+        <tr>
+          <td>
+            <i .icon-user></i> #
+            $if away
+              <span .muted>
+                #{name}
+            $else
+              #{name}
+          <td>
+            $if canpair
+              <a .btn .btn-primary .btn-small href="@{StartXMPPPairR buddyid}">
+                Start pairing
+            $else
+              not using git-annex

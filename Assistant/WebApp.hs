@@ -11,7 +11,6 @@ module Assistant.WebApp where
 
 import Assistant.WebApp.Types
 import Assistant.Common
-import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Locations.UserConfig
@@ -95,18 +94,15 @@ runAnnex fallback a = ifM (noAnnex <$> getYesod)
 	, liftAssistant $ liftAnnex a
 	)
 
-waitNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
-waitNotifier selector nid = do
-	notifier <- getNotifier selector
-	liftIO $ waitNotification $ notificationHandleFromId notifier nid
+waitNotifier :: forall sub. (Assistant NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
+waitNotifier getbroadcaster nid = liftAssistant $ do
+	b <- getbroadcaster
+	liftIO $ waitNotification $ notificationHandleFromId b nid
 
-newNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationId
-newNotifier selector = do
-	notifier <- getNotifier selector
-	liftIO $ notificationHandleToId <$> newNotificationHandle notifier
-
-getNotifier :: forall sub. (DaemonStatus -> NotificationBroadcaster) -> GHandler sub WebApp NotificationBroadcaster
-getNotifier selector = selector <$> liftAssistant getDaemonStatus
+newNotifier :: forall sub. (Assistant NotificationBroadcaster) -> GHandler sub WebApp NotificationId
+newNotifier getbroadcaster = liftAssistant $ do
+	b <- getbroadcaster
+	liftIO $ notificationHandleToId <$> newNotificationHandle b
 
 {- Adds the auth parameter as a hidden field on a form. Must be put into
  - every form. -}

@@ -1,5 +1,5 @@
 <div .span9 .hero-unit>
   <h2>
-    Pairing not supported
+    not supported
   <p>
-    This build of git-annex does not support pairing. Sorry!
+    This build of git-annex does not support #{pairingtype} pairing. Sorry!

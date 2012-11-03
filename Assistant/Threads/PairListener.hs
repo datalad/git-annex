@@ -103,7 +103,7 @@ pairListenerThread urlrenderer = NamedThread "PairListener" $ do
 pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
-	url <- liftIO $ renderUrl urlrenderer (FinishPairR msg) []
+	url <- liftIO $ renderUrl urlrenderer (FinishLocalPairR msg) []
 	close <- asIO1 removeAlert
 	void $ addAlert $ pairRequestReceivedAlert repo
 		AlertButton

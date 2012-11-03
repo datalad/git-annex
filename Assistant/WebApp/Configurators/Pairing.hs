@@ -14,6 +14,8 @@ import Assistant.Pairing
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
+import Assistant.WebApp.Configurators.XMPP
+import Assistant.Types.Buddies
 import Utility.Yesod
 #ifdef WITH_PAIRING
 import Assistant.Common
@@ -25,6 +27,10 @@ import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
 import Annex.UUID
+#endif
+#ifdef WITH_XMPP
+import Assistant.XMPP.Client
+import Network.Protocol.XMPP
 #endif
 import Utility.UserInfo
 
@@ -39,22 +45,55 @@ import qualified Control.Exception as E
 import Control.Concurrent
 #endif
 
-{- Starts sending out pair requests. -}
+{- Starts either kind of pairing. -}
 getStartPairR :: Handler RepHtml
+#ifdef WITH_XMPP
+getStartPairR = pairPage $ do
+	xmppconfigured <- lift $ isJust <$> runAnnex Nothing getXMPPCreds
 #ifdef WITH_PAIRING
-getStartPairR = promptSecret Nothing $ startPairing PairReq noop pairingAlert Nothing
+	let localsupported = True
 #else
-getStartPairR = noPairing
+	let localsupported = False
+#endif
+	$(widgetFile "configurators/pairing/start")
+#else
+#ifdef WITH_PAIRING
+getStartPairR = redirect StartLocalPairR
+#else
+getStartPairR = noPairing "local or jabber"
+#endif
 #endif
 
-{- Runs on the system that responds to a pair request; sets up the ssh
+{- Starts pairing with an XMPP buddy. -}
+getStartXMPPPairR :: BuddyID -> Handler RepHtml
+#ifdef WITH_XMPP
+getStartXMPPPairR (BuddyID bid) = case parseJID bid of
+	Nothing -> error "bad JID"
+	Just jid -> error "TODO"
+#else
+getStartXMPPPairR _ = noPairing "XMPP"
+#endif
+
+{- Starts local pairing. -}
+getStartLocalPairR :: Handler RepHtml
+#ifdef WITH_PAIRING
+getStartLocalPairR = promptSecret Nothing $
+	startLocalPairing PairReq noop pairingAlert Nothing
+#else
+getStartLocalPairR = noLocalPairing
+
+noLocalPairing :: Handler RepHtml
+noLocalPairing = noPairing "local"
+#endif
+
+{- Runs on the system that responds to a local pair request; sets up the ssh
  - authorized key first so that the originating host can immediately sync
  - with us. -}
-getFinishPairR :: PairMsg -> Handler RepHtml
+getFinishLocalPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
-getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
+getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	liftIO $ setup
-	startPairing PairAck cleanup alert uuid "" secret
+	startLocalPairing PairAck cleanup alert uuid "" secret
   where
 	alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
 	setup  = setupAuthorizedKeys msg
@@ -62,21 +101,21 @@ getFinishPairR msg = promptSecret (Just msg) $ \_ secret -> do
 		remoteSshPubKey $ pairMsgData msg
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else
-getFinishPairR _ = noPairing
+getFinishLocalPairR _ = noLocalPairing
 #endif
 
-getInprogressPairR :: SecretReminder -> Handler RepHtml
+getRunningLocalPairR :: SecretReminder -> Handler RepHtml
 #ifdef WITH_PAIRING
-getInprogressPairR s = pairPage $ do
+getRunningLocalPairR s = pairPage $ do
 	let secret = fromSecretReminder s
-	$(widgetFile "configurators/pairing/inprogress")
+	$(widgetFile "configurators/pairing/local/inprogress")
 #else
-getInprogressPairR _ = noPairing
+getRunningLocalPairR _ = noLocalPairing
 #endif
 
 #ifdef WITH_PAIRING
 
-{- Starts pairing, at either the PairReq (initiating host) or 
+{- Starts local pairing, at either the PairReq (initiating host) or 
  - PairAck (responding host) stage.
  -
  - Displays an alert, and starts a thread sending the pairing message,
@@ -85,8 +124,8 @@ getInprogressPairR _ = noPairing
  -
  - Redirects to the pairing in progress page.
  -}
-startPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
-startPairing stage oncancel alert muuid displaysecret secret = do
+startLocalPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
+startLocalPairing stage oncancel alert muuid displaysecret secret = do
 	urlrender <- lift getUrlRender
 	reldir <- fromJust . relDir <$> lift getYesod
 
@@ -106,7 +145,7 @@ startPairing stage oncancel alert muuid displaysecret secret = do
 		startSending pip stage $ sendrequests sender
 	void $ liftIO $ forkIO thread
 
-	lift $ redirect $ InprogressPairR $ toSecretReminder displaysecret
+	lift $ redirect $ RunningLocalPairR $ toSecretReminder displaysecret
   where
 	{- Sends pairing messages until the thread is killed,
 	 - and shows an activity alert while doing it.
@@ -164,7 +203,7 @@ promptSecret msg cont = pairPage $ do
 		u <- T.pack <$> liftIO myUserName
 		let sameusername = username == u
 		let authtoken = webAppFormAuthToken
-		$(widgetFile "configurators/pairing/prompt")
+		$(widgetFile "configurators/pairing/local/prompt")
 
 {- This counts unicode characters as more than one character,
  - but that's ok; they *do* provide additional entropy. -}
@@ -189,8 +228,8 @@ sampleQuote = T.unwords
 
 #else
 
-noPairing :: Handler RepHtml
-noPairing = pairPage $
+noPairing :: Text -> Handler RepHtml
+noPairing pairingtype = pairPage $
 	$(widgetFile "configurators/pairing/disabled")
 
 #endif

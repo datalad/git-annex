@@ -59,7 +59,7 @@ sideBarDisplay = do
  -}
 getSideBarR :: NotificationId -> Handler RepHtml
 getSideBarR nid = do
-	waitNotifier alertNotifier nid
+	waitNotifier getAlertBroadcaster nid
 
 	{- This 0.1 second delay avoids very transient notifications from
 	 - being displayed and churning the sidebar unnecesarily. 

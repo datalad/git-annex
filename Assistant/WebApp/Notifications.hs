@@ -12,6 +12,8 @@ module Assistant.WebApp.Notifications where
 import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
+import Assistant.DaemonStatus
+import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
@@ -40,9 +42,9 @@ autoUpdate ident geturl ms_delay ms_startdelay = do
  - of NotificationIds when noscript pages are loaded. This constructs a
  - notifier url for a given Route and NotificationBroadcaster.
  -}
-notifierUrl :: (NotificationId -> Route WebApp) -> (DaemonStatus -> NotificationBroadcaster) -> Handler RepPlain
-notifierUrl route selector = do
-	(urlbits, _params) <- renderRoute . route <$> newNotifier selector
+notifierUrl :: (NotificationId -> Route WebApp) -> Assistant NotificationBroadcaster -> Handler RepPlain
+notifierUrl route broadcaster = do
+	(urlbits, _params) <- renderRoute . route <$> newNotifier broadcaster
 	webapp <- getYesod
 	return $ RepPlain $ toContent $ T.concat
 		[ "/"
@@ -52,7 +54,19 @@ notifierUrl route selector = do
 		]
 
 getNotifierTransfersR :: Handler RepPlain
-getNotifierTransfersR = notifierUrl TransfersR transferNotifier
+getNotifierTransfersR = notifierUrl TransfersR getTransferBroadcaster
 
 getNotifierSideBarR :: Handler RepPlain
-getNotifierSideBarR = notifierUrl SideBarR alertNotifier
+getNotifierSideBarR = notifierUrl SideBarR getAlertBroadcaster
+
+getNotifierBuddyListR :: Handler RepPlain
+getNotifierBuddyListR = notifierUrl BuddyListR getBuddyListBroadcaster
+
+getTransferBroadcaster :: Assistant NotificationBroadcaster
+getTransferBroadcaster = transferNotifier <$> getDaemonStatus
+
+getAlertBroadcaster :: Assistant NotificationBroadcaster
+getAlertBroadcaster = alertNotifier <$> getDaemonStatus
+
+getBuddyListBroadcaster :: Assistant NotificationBroadcaster
+getBuddyListBroadcaster =  getBuddyBroadcaster <$> getAssistant buddyList
