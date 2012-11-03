@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkurjhi0CRJvgm7QNaZDWS9hitBtavqIpc"
+ nickname="Bret"
+ subject="git-annex.app Not working on 32 bit machines"
+ date="2012-11-03T19:18:47Z"
+ content="""
+I tried running the git-annex.app on my Core Duo Macbook pro, and it does not run at all.  I get an error on my system.log
+
+`Nov  3 12:13:26 Bret-Mac [0x0-0x15015].com.branchable.git-annex[155]: /Applications/git-annex.app/Contents/MacOS/runshell: line 52: /Applications/git-annex.app/Contents/MacOS/bin/git-annex: Bad CPU type in executable
+Nov  3 12:13:26 Bret-Mac com.apple.launchd.peruser.501[92] ([0x0-0x15015].com.branchable.git-annex[155]): Exited with exit code: 1`
+
+It works on my 64 bit machine, and this has become quite the problem for a while now, where people with newer macs dont compile back for a 32bit machine.  
+
+Is there any hope for a pre-compiled binary that works on a 32 bit machine?
+"""]]
