@@ -64,7 +64,6 @@ Executable git-annex
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   Extensions: CPP
   GHC-Options: -threaded
-  CPP-Options: -DURI_24
 
   if flag(S3)
     Build-Depends: hS3

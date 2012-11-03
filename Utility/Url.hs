@@ -119,10 +119,10 @@ request url headers requesttype = go 5 url
 					Nothing -> return rsp
 					Just newURI -> go n newURI_abs
 						where
-#ifdef URI_24
-							newURI_abs = newURI `relativeTo` u
-#else
+#ifdef WITH_OLD_URI
 							newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+#else
+							newURI_abs = newURI `relativeTo` u
 #endif
 		addheaders req = setHeaders req (rqHeaders req ++ userheaders)
 		userheaders = rights $ map parseHeader headers
