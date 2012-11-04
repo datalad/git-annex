@@ -96,15 +96,29 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
 	((Element _name attrs _nodes):_) -> any (isAttr queryAttr) attrs
 
 {- A notification about a stage of pairing, sent as directed presence
- - to all clients of a jid. -}
-pairingNotification :: PairStage -> UUID -> JID -> JID -> Presence
-pairingNotification pairstage u tojid fromjid = (gitAnnexPresence elt)
-	{ presenceTo = Just $ JID (jidNode tojid) (jidDomain tojid) Nothing
-	, presenceFrom = Just fromjid
-	}
+ - to all clients of a jid. 
+ -
+ - For PairReq, the directed presence is followed by a second presence
+ - without the pair notification. This is done because XMPP servers
+ - resend the last directed presence periodically, which can make
+ - the pair request alert be re-displayed annoyingly. For PairAck and
+ - PairDone, that resending is a desirable feature, as it helps ensure
+ - clients see them.
+ -}
+pairingNotification :: PairStage -> UUID -> JID -> JID -> [Presence]
+pairingNotification pairstage u tojid fromjid
+	| pairstage == PairReq = [send, clear]
+	| otherwise = [send]
 	where
-		elt = Element gitAnnexTagName
+		send = directed $ gitAnnexPresence $ Element gitAnnexTagName
 			[(pairAttr, [ContentText content])] []
+		clear = directed $ gitAnnexPresence gitAnnexSignature
+
+		directed p = p
+			{ presenceTo = Just $ JID (jidNode tojid) (jidDomain tojid) Nothing
+			, presenceFrom = Just fromjid
+			}	
+
 		content = T.unwords
 			[ T.pack $ show pairstage
 			, T.pack $ fromUUID u

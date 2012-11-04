@@ -138,7 +138,7 @@ relayNetMessage fulljid = convert <$> waitNetMessage
 	convert QueryPresence = putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
 		Nothing -> noop
-		Just tojid -> putStanza $
+		Just tojid -> mapM_ putStanza $
 			pairingNotification stage u tojid fulljid
 
 {- Runs the client, handing restart events. -}
