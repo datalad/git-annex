@@ -1,18 +1,18 @@
 What steps will reproduce the problem?
 
- try to unlock a file in a git annex checkout
+    try to unlock a file in a git annex checkout
 
 What is the expected output? What do you see instead?
 
-% git annex unlock FILENAME
-unlock FILENAME (copying...) cp: illegal option -- -
-usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file
-       cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file ... target_directory
-git-annex: copy failed!
+    % git annex unlock FILENAME
+    unlock FILENAME (copying...) cp: illegal option -- -
+    usage: cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file target_file
+           cp [-R [-H | -L | -P]] [-fi | -n] [-apvX] source_file ... target_directory
+    git-annex: copy failed!
 
-(should unlock the file)
+    (should unlock the file)
 
 What version of git-annex are you using? On what operating system?
 
- latest git annex osx build as of yesterday (12-11-03)
+    latest git annex osx build as of yesterday (12-11-03)
 
