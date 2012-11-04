@@ -119,18 +119,15 @@ decodeStanza fulljid s@(ReceivedPresence p)
 	| presenceFrom p == Just fulljid = [Ignorable p]
 	| not (null pushed) = impliedp $ GotNetMessage $ NotifyPush pushed
 	| isPresenceQuery p = impliedp $ GotNetMessage QueryPresence
-	| otherwise = [PresenceMessage p]
+	| otherwise = case decodePairingNotification p of
+		Nothing -> [PresenceMessage p]
+		Just pn -> impliedp $ GotNetMessage pn
   where
-	-- Some things are sent via presence, so imply a presence message,
-	-- along with their real value.
+	-- Things sent via presence imply a presence message,
+	-- along with their real meaning.
 	impliedp v = [PresenceMessage p, v]
 	pushed = concat $ catMaybes $ map decodePushNotification $
 		presencePayloads p
-decodeStanza _ s@(ReceivedIQ iq)
-	| iqType iq == IQError = [ProtocolError s]
-	| otherwise = case decodePairingNotification iq of
-		Nothing -> [Unknown s]
-		Just pn -> [GotNetMessage pn]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
@@ -141,9 +138,8 @@ relayNetMessage fulljid = convert <$> waitNetMessage
 	convert QueryPresence = putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
 		Nothing -> noop
-		Just tojid -> do
-			liftIO $ print $ pairingNotification stage u tojid fulljid
-			putStanza $ pairingNotification stage u tojid fulljid
+		Just tojid -> putStanza $
+			pairingNotification stage u tojid fulljid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()

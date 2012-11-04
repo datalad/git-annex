@@ -40,9 +40,9 @@ To indicate it's pushed changes to a git repo with a given UUID, a client uses:
 Multiple UUIDs can be listed when multiple clients were pushed. If the
 git repo does not have a git-annex UUID, an empty string is used.
 
-For pairing over XMPP, git-annex uses IQ messages, also containing a 
-git-annex tag. The id attribute of the iq tag contains the pairing
-information.
+For pairing, a directed presence message is sent, also using the git-annex tag:
+
+	<git-annex xmlns='git-annex' pairing="PairReq uuid" />
 
 ### security
 

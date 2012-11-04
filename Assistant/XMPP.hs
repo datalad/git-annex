@@ -45,8 +45,18 @@ queryAttr = Name (T.pack "query") Nothing Nothing
 pushAttr :: Name
 pushAttr = Name (T.pack "push") Nothing Nothing
 
+pairAttr :: Name
+pairAttr = Name (T.pack "pair") Nothing Nothing
+
 isAttr :: Name -> (Name, [Content]) -> Bool
 isAttr attr (k, _) = k == attr
+
+getAttr :: Element -> Name -> Maybe T.Text
+getAttr (Element _name attrs _nodes) name =
+	T.concat . map unpack . snd <$> headMaybe (filter (isAttr name) attrs)
+  where
+	unpack (ContentText t) = t
+	unpack (ContentEntity t) = t
 
 uuidSep :: T.Text
 uuidSep = T.pack ","
@@ -85,29 +95,29 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
 	[] -> False
 	((Element _name attrs _nodes):_) -> any (isAttr queryAttr) attrs
 
-{- A notification about a stage of pairing. Sent as an XMPP IQ.
- - The pairing info is sent using its id attribute; it also has a git-annex
- - tag to identify it as from us. -}
-pairingNotification :: PairStage -> UUID -> JID -> JID -> IQ
-pairingNotification pairstage u tojid fromjid = (emptyIQ IQGet)
-	{ iqTo = Just tojid
-	, iqFrom = Just fromjid
-	, iqID = Just $ T.unwords $ map T.pack
-		[ show pairstage
-		, fromUUID u
-		]
-	, iqPayload = Just gitAnnexSignature
+{- A notification about a stage of pairing, sent as directed presence
+ - to all clients of a jid. -}
+pairingNotification :: PairStage -> UUID -> JID -> JID -> Presence
+pairingNotification pairstage u tojid fromjid = (gitAnnexPresence elt)
+	{ presenceTo = Just $ JID (jidNode tojid) (jidDomain tojid) Nothing
+	, presenceFrom = Just fromjid
 	}
+	where
+		elt = Element gitAnnexTagName
+			[(pairAttr, [ContentText content])] []
+		content = T.unwords
+			[ T.pack $ show pairstage
+			, T.pack $ fromUUID u
+			]
 
-decodePairingNotification :: IQ -> Maybe NetMessage
-decodePairingNotification iq@(IQ { iqPayload = Just elt })
-	| isGitAnnexTag elt = parseid =<< words . T.unpack <$> iqID iq
-	| otherwise = Nothing
+decodePairingNotification :: Presence -> Maybe NetMessage
+decodePairingNotification p = case filter isGitAnnexTag (presencePayloads p) of
+	[] -> Nothing
+	(elt:_) -> parse =<< words . T.unpack <$> getAttr elt pairAttr
   where
-	parseid [stage, u] = 
+	parse [stage, u] = 
 		PairingNotification
 			<$> readish stage
-			<*> (formatJID <$> iqFrom iq)
+			<*> (formatJID <$> presenceFrom p)
 			<*> pure (toUUID u)
-	parseid _ = Nothing
-decodePairingNotification _ = Nothing
+	parse _ = Nothing

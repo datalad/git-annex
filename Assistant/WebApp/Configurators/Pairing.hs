@@ -89,13 +89,11 @@ getStartXMPPPairR bid = do
 		(Just []) -> redirect StartPairR
 		(Just clients@((Client exemplar):_)) -> do
 			let samejid = basejid ourjid == basejid exemplar
-			liftAssistant $ forM_ clients $ \(Client jid) ->
-				unless (jid == ourjid) $ do
-					u <- liftAnnex getUUID
-					sendNetMessage $ PairingNotification
-						PairReq (formatJID jid) u
+			let account = formatJID $ basejid exemplar
+			liftAssistant $ do
+				u <- liftAnnex getUUID
+				sendNetMessage $ PairingNotification PairReq account u
 			pairPage $ do
-				let account = formatJID $ basejid exemplar
 				let name = buddyName exemplar
 				$(widgetFile "configurators/pairing/xmpp/inprogress")
   where
