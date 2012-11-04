@@ -58,32 +58,32 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
  		 - if it keeps failing, back off to wait 5 minutes before
  		 - trying it again. -}
 		loop c starttime = do
-			runclient c
+			e <- runclient c
 			now <- getCurrentTime
 			if diffUTCTime now starttime > 300
 				then do
-					void $ iodebug ["connection lost; reconnecting"]
+					void $ iodebug ["connection lost; reconnecting", show e]
 					loop c now
 				else do
-					void $ iodebug ["connection failed; will retry"]
+					void $ iodebug ["connection failed; will retry", show e]
 					threadDelaySeconds (Seconds 300)
 					loop c =<< getCurrentTime
 
 		runclient c = void $ connectXMPP c $ \jid -> do
-			fulljid <- bindJID jid
-			debug' ["connected", show fulljid]
+			selfjid <- bindJID jid
+			debug' ["connected", show selfjid]
 			{- The buddy list starts empty each time
 			 - the client connects, so that stale info
 			 - is not retained. -}
 			void $ liftIO ioemptybuddies
 			putStanza $ gitAnnexPresence gitAnnexSignature
-			xmppThread $ receivenotifications fulljid
+			xmppThread $ receivenotifications selfjid
 			forever $ do
-				a <- liftIO $ iorelay fulljid
+				a <- liftIO $ iorelay selfjid
 				a
 
-		receivenotifications fulljid = forever $ do
-			l <- decodeStanza fulljid <$> getStanza
+		receivenotifications selfjid = forever $ do
+			l <- decodeStanza selfjid <$> getStanza
 			debug' ["received:", show l]
 			mapM_ handle l
 
@@ -95,6 +95,8 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 			void $ liftIO $ iopull us
 		handle (GotNetMessage (PairingNotification stage t u)) =
 			maybe noop (handlePairing stage u) (parseJID t)
+		handle (GotNetMessage (SelfPairingNotification stage t u)) =
+			error "TODO"
 		handle (Ignorable _) = noop
 		handle (Unknown _) = noop
 		handle (ProtocolError _) = noop
@@ -113,10 +115,10 @@ data XMPPEvent
 
 {- Decodes an XMPP stanza into one or more events. -}
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
-decodeStanza fulljid s@(ReceivedPresence p)
+decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceType p == PresenceError = [ProtocolError s]
 	| presenceFrom p == Nothing = [Ignorable p]
-	| presenceFrom p == Just fulljid = [Ignorable p]
+	| presenceFrom p == Just selfjid = [Ignorable p]
 	| not (null pushed) = impliedp $ GotNetMessage $ NotifyPush pushed
 	| isPresenceQuery p = impliedp $ GotNetMessage QueryPresence
 	| otherwise = case decodePairingNotification p of
@@ -128,18 +130,27 @@ decodeStanza fulljid s@(ReceivedPresence p)
 	impliedp v = [PresenceMessage p, v]
 	pushed = concat $ catMaybes $ map decodePushNotification $
 		presencePayloads p
+decodeStanza _ s@(ReceivedIQ iq)
+	| iqType iq == IQError = [ProtocolError s]
+	| otherwise = case decodeSelfPairingNotification iq of
+		Nothing -> [Unknown s]
+		Just pn -> [GotNetMessage pn]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
 relayNetMessage :: JID -> Assistant (XMPP ())
-relayNetMessage fulljid = convert <$> waitNetMessage
+relayNetMessage selfjid = convert <$> waitNetMessage
   where
 	convert (NotifyPush us) = putStanza $ pushNotification us
 	convert QueryPresence = putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
 		Nothing -> noop
 		Just tojid -> mapM_ putStanza $
-			pairingNotification stage u tojid fulljid
+			encodePairingNotification stage u tojid selfjid
+	convert (SelfPairingNotification stage t u) = case parseJID t of
+		Nothing -> noop
+		Just tojid -> putStanza $
+			encodeSelfPairingNotification stage u tojid selfjid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()

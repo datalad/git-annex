@@ -105,8 +105,8 @@ isPresenceQuery p = case filter isGitAnnexTag (presencePayloads p) of
  - PairDone, that resending is a desirable feature, as it helps ensure
  - clients see them.
  -}
-pairingNotification :: PairStage -> UUID -> JID -> JID -> [Presence]
-pairingNotification pairstage u tojid fromjid
+encodePairingNotification :: PairStage -> UUID -> JID -> JID -> [Presence]
+encodePairingNotification pairstage u tojid fromjid
 	| pairstage == PairReq = [send, clear]
 	| otherwise = [send]
 	where
@@ -115,23 +115,54 @@ pairingNotification pairstage u tojid fromjid
 		clear = directed $ gitAnnexPresence gitAnnexSignature
 
 		directed p = p
-			{ presenceTo = Just $ JID (jidNode tojid) (jidDomain tojid) Nothing
+			{ presenceTo = Just $ baseJID tojid
 			, presenceFrom = Just fromjid
 			}	
 
-		content = T.unwords
-			[ T.pack $ show pairstage
-			, T.pack $ fromUUID u
-			]
+		content = mkPairingContent pairstage u
+
+{- A notification about a stage of pairing. Sent to self as an XMPP IQ.
+ - Directed presence is not used for self-messaging presence because
+ - some XMPP clients seem very confused by it. Google Talk has been
+ - observed leaking self-directed presence to other friends, seeming
+ - to think it sets the visible presence.
+ - 
+ - The pairing info is sent using its id attribute; it also has a git-annex
+ - tag to identify it as from us. -}
+encodeSelfPairingNotification :: PairStage -> UUID -> JID -> JID -> IQ
+encodeSelfPairingNotification pairstage u tojid fromjid = (emptyIQ IQGet)
+	{ iqTo = Just tojid
+	, iqFrom = Just fromjid
+	, iqID = Just $ mkPairingContent pairstage u
+	, iqPayload = Just gitAnnexSignature
+	}
 
 decodePairingNotification :: Presence -> Maybe NetMessage
 decodePairingNotification p = case filter isGitAnnexTag (presencePayloads p) of
 	[] -> Nothing
-	(elt:_) -> parse =<< words . T.unpack <$> getAttr elt pairAttr
+	(elt:_) -> parsePairingContent (presenceFrom p) =<< getAttr elt pairAttr
+
+decodeSelfPairingNotification :: IQ -> Maybe NetMessage
+decodeSelfPairingNotification iq@(IQ { iqPayload = Just elt })
+	| isGitAnnexTag elt = parsePairingContent (iqFrom iq) =<< iqID iq
+	| otherwise = Nothing
+decodeSelfPairingNotification _ = Nothing
+
+mkPairingContent :: PairStage -> UUID -> T.Text
+mkPairingContent pairstage u = T.unwords $ map T.pack
+	[ show pairstage
+	, fromUUID u
+	]
+
+parsePairingContent :: Maybe JID -> T.Text -> Maybe NetMessage
+parsePairingContent jid t = parse $ words $ T.unpack t
   where
-	parse [stage, u] = 
-		PairingNotification
-			<$> readish stage
-			<*> (formatJID <$> presenceFrom p)
-			<*> pure (toUUID u)
+	parse [stage, u] = PairingNotification
+		<$> readish stage
+		<*> (formatJID <$> jid)
+		<*> pure (toUUID u)
 	parse _ = Nothing
+
+{- The JID without the client part. -}
+baseJID :: JID -> JID
+baseJID j = JID (jidNode j) (jidDomain j) Nothing

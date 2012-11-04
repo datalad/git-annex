@@ -29,6 +29,7 @@ import Utility.Network
 import Annex.UUID
 #endif
 #ifdef WITH_XMPP
+import Assistant.XMPP
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
 import Network.Protocol.XMPP
@@ -88,16 +89,17 @@ getStartXMPPPairR bid = do
 		Nothing -> redirect StartPairR
 		(Just []) -> redirect StartPairR
 		(Just clients@((Client exemplar):_)) -> do
-			let samejid = basejid ourjid == basejid exemplar
-			let account = formatJID $ basejid exemplar
+			let samejid = baseJID ourjid == baseJID exemplar
+			let account = formatJID $ baseJID exemplar
 			liftAssistant $ do
 				u <- liftAnnex getUUID
-				sendNetMessage $ PairingNotification PairReq account u
+				if samejid
+					then forM_ clients $ \(Client c) ->
+						sendNetMessage $ SelfPairingNotification PairReq (formatJID c) u
+					else sendNetMessage $ PairingNotification PairReq account u
 			pairPage $ do
 				let name = buddyName exemplar
 				$(widgetFile "configurators/pairing/xmpp/inprogress")
-  where
-	basejid j = JID (jidNode j) (jidDomain j) Nothing
 #else
 getStartXMPPPairR _ = noXMPPPairing
 

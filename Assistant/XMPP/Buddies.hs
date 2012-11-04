@@ -18,7 +18,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 genKey :: JID -> BuddyKey
-genKey j = BuddyKey $ formatJID $ JID (jidNode j) (jidDomain j) Nothing
+genKey j = BuddyKey $ formatJID $ baseJID j
 
 buddyName :: JID -> Text
 buddyName j = maybe (T.pack "") strNode (jidNode j)

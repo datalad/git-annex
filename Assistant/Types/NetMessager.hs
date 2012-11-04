@@ -21,8 +21,11 @@ data NetMessage
 	-- requests other clients to inform us of their presence
 	| QueryPresence
 	-- notification about a stage in the pairing process,
-	-- involving another client identified by the Text, and a UUID.
+	-- involving a client identified by the Text, and a UUID.
 	| PairingNotification PairStage Text UUID
+	-- notification about a stage in the pairing process with
+	-- other clients using the same account.
+	| SelfPairingNotification PairStage Text UUID
 	deriving (Show)
 
 data NetMessagerControl = NetMessagerControl

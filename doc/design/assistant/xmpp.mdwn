@@ -44,6 +44,11 @@ For pairing, a directed presence message is sent, also using the git-annex tag:
 
 	<git-annex xmlns='git-annex' pairing="PairReq uuid" />
 
+For pairing with other clients using the same XMPP account, git-annex uses
+IQ messages, also containing a git-annex tag. The id attribute of the iq
+tag contains the pairing information. This is done because self-directed
+presence is not handled correctly by Google Talk. (Or is ill-specified.)
+
 ### security
 
 Data git-annex sends over XMPP will be visible to the XMPP
