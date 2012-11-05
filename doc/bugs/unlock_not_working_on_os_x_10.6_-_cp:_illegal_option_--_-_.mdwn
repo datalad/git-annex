@@ -16,3 +16,7 @@ What version of git-annex are you using? On what operating system?
 
     latest git annex osx build as of yesterday (12-11-03)
 
+
+> I've made the `cp` command be included in the OSX standalone build, 
+> so it will use the same one it's built with. So the next time we get
+> an OSX build this will be fixed. [[done]] --[[Joey]]
