@@ -105,7 +105,7 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 data XMPPEvent
 	= GotNetMessage NetMessage
 	| PresenceMessage Presence
-	| Ignorable Presence
+	| Ignorable ReceivedStanza
 	| Unknown ReceivedStanza
 	| ProtocolError ReceivedStanza
 	deriving Show
@@ -114,8 +114,8 @@ data XMPPEvent
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
 decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceType p == PresenceError = [ProtocolError s]
-	| presenceFrom p == Nothing = [Ignorable p]
-	| presenceFrom p == Just selfjid = [Ignorable p]
+	| presenceFrom p == Nothing = [Ignorable s]
+	| presenceFrom p == Just selfjid = [Ignorable s]
 	| otherwise = maybe [PresenceMessage p] decode (getGitAnnexAttrValue p)
   where
 	decode (attr, v)
@@ -126,7 +126,9 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	{- Things sent via presence imply a presence message,
 	 - along with their real meaning. -}
 	impliedp v = [PresenceMessage p, v]
-decodeStanza _ s@(ReceivedMessage m)
+decodeStanza selfjid s@(ReceivedMessage m)
+	| messageFrom m == Nothing = [Ignorable s]
+	| messageFrom m == Just selfjid = [Ignorable s]
 	| messageType m == MessageError = [ProtocolError s]
 	| otherwise = maybe [Unknown s] decode (getGitAnnexAttrValue m)
   where
