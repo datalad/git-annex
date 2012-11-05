@@ -1,13 +1,13 @@
 {- git-annex-shell main program
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module GitAnnexShell where
 
-import System.Environment
+import System.Posix.Env
 import System.Console.GetOpt
 
 import Common.Annex
@@ -86,6 +86,7 @@ builtins = map cmdname cmds
 builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
+	checkDirectory $ Just dir
 	let (params', fieldparams) = partitionParams params
 	let fields = filter checkField $ parseFields fieldparams
 	dispatch False (cmd : params') cmds options fields header $
@@ -93,6 +94,9 @@ builtin cmd dir params = do
 
 external :: [String] -> IO ()
 external params = do
+	{- Normal git-shell commands all have the directory as their last
+	 - parameter. -}
+	checkDirectory $ lastMaybe params
 	checkNotLimited
 	unlessM (boolSystem "git-shell" $ map Param $ "-c":fst (partitionParams params)) $
 		error "git-shell failed"
@@ -131,7 +135,22 @@ checkNotReadOnly cmd
 	| cmd `elem` map cmdname cmds_readonly = noop
 	| otherwise = checkEnv "GIT_ANNEX_SHELL_READONLY"
 
+checkDirectory :: Maybe FilePath -> IO ()
+checkDirectory mdir = do
+	v <- getEnv "GIT_ANNEX_SHELL_DIRECTORY"
+	case (v, mdir) of
+		(Nothing, _) -> noop
+		(Just d, Nothing) -> req d
+		(Just d, Just dir)
+			|  d `equalFilePath` dir -> noop
+			| otherwise -> req d
+	where
+		req d = error $ "Only allowed to access " ++ d
+
 checkEnv :: String -> IO ()
-checkEnv var =
-	whenM (not . null <$> catchDefaultIO "" (getEnv var)) $
-		error $ "Action blocked by " ++ var
+checkEnv var = do
+	v <- getEnv var
+	case v of
+		Nothing -> noop
+		Just "" -> noop
+		Just _ -> error $ "Action blocked by " ++ var

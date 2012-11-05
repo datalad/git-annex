@@ -40,6 +40,8 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * webapp: Generate better git remote names.
   * webapp: Ensure that rsync special remotes are enabled using the same
     name they were originally created using.
+  * git-annex-shell: GIT_ANNEX_SHELL_DIRECTORY can be set to limit it
+    to operating on a specified directory.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
 

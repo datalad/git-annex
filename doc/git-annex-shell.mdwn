@@ -95,6 +95,11 @@ changed.
 
   If set, disallows running git-shell to handle unknown commands.
 
+* GIT_ANNEX_SHELL_DIRECTORY
+
+  If set, git-annex-shell will refuse to run commands that do not operate
+  on the specified directory.
+
 # SEE ALSO
 
 [[git-annex]](1)
