@@ -81,26 +81,24 @@ getStartPairR = noPairing "local or jabber"
 getStartXMPPPairR :: BuddyKey -> Handler RepHtml
 #ifdef WITH_XMPP
 getStartXMPPPairR bid = do
-	creds <- runAnnex Nothing getXMPPCreds
-	let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
 	buddy <- liftAssistant $ getBuddy bid <<~ buddyList
-	case S.toList . buddyAssistants <$> buddy of
-		-- A buddy could have logged out, or the XMPP client restarted;
-		-- so handle unforseen by going back.
-		Nothing -> redirect StartPairR
-		(Just []) -> redirect StartPairR
-		(Just clients@((Client exemplar):_)) -> do
-			let samejid = baseJID ourjid == baseJID exemplar
-			let account = formatJID $ baseJID exemplar
-			liftAssistant $ do
-				u <- liftAnnex getUUID
-				if samejid
-					then forM_ clients $ \(Client c) ->
-						sendNetMessage $ SelfPairingNotification PairReq (formatJID c) u
-					else sendNetMessage $ PairingNotification PairReq account u
-			pairPage $ do
-				let name = buddyName exemplar
-				$(widgetFile "configurators/pairing/xmpp/inprogress")
+	go $ S.toList . buddyAssistants <$> buddy
+  where
+	go (Just (clients@((Client exemplar):_))) = do
+		creds <- runAnnex Nothing getXMPPCreds
+		let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
+		let samejid = baseJID ourjid == baseJID exemplar
+		let account = formatJID $ baseJID exemplar
+		liftAssistant $ do
+			u <- liftAnnex getUUID
+			forM_ clients $ \(Client c) -> sendNetMessage $
+				PairingNotification PairReq (formatJID c) u
+		pairPage $ do
+			let name = buddyName exemplar
+			$(widgetFile "configurators/pairing/xmpp/inprogress")
+	-- A buddy could have logged out, or the XMPP client restarted,
+	-- and there be no clients to message; handle unforseen by going back.
+	go _ = redirect StartPairR
 #else
 getStartXMPPPairR _ = noXMPPPairing
 

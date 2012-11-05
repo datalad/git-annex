@@ -29,25 +29,25 @@ who share a repository, that is stored in the [[cloud]].
 ## protocol
 
 To avoid relying on XMPP extensions, git-annex communicates
-using presence messages. These always mark it as extended away.
-To this, it adds its own tag as [extended content](http://xmpp.org/rfcs/rfc6121.html#presence-extended).
+using presence messages (which always mark it as extended away),
+and chat messages (with empty body tags, so clients don't display them).
+
+To these messages, it adds its own tag as
+[extended content](http://xmpp.org/rfcs/rfc6121.html#presence-extended).
 The xml namespace is "git-annex" (not an URL because I hate wasting bandwidth).
 
-To indicate it's pushed changes to a git repo with a given UUID, a client uses:
+To indicate it's pushed changes to a git repo with a given UUID,
+a message that should be sent to all buddies and other clients using the account
+(no explicit pairing needed), a client uses a broadcast presence message with:
 
 	<git-annex xmlns='git-annex' push="uuid[,uuid...]" />
 
 Multiple UUIDs can be listed when multiple clients were pushed. If the
 git repo does not have a git-annex UUID, an empty string is used.
 
-For pairing, a directed presence message is sent, also using the git-annex tag:
+For pairing, a chat message is sent, also using the git-annex tag:
 
 	<git-annex xmlns='git-annex' pairing="PairReq uuid" />
-
-For pairing with other clients using the same XMPP account, git-annex uses
-IQ messages, also containing a git-annex tag. The id attribute of the iq
-tag contains the pairing information. This is done because self-directed
-presence is not handled correctly by Google Talk. (Or is ill-specified.)
 
 ### security
 

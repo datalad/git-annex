@@ -23,9 +23,6 @@ data NetMessage
 	-- notification about a stage in the pairing process,
 	-- involving a client identified by the Text, and a UUID.
 	| PairingNotification PairStage Text UUID
-	-- notification about a stage in the pairing process with
-	-- other clients using the same account.
-	| SelfPairingNotification PairStage Text UUID
 	deriving (Show)
 
 data NetMessagerControl = NetMessagerControl

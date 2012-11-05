@@ -76,7 +76,7 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 			 - the client connects, so that stale info
 			 - is not retained. -}
 			void $ liftIO ioemptybuddies
-			putStanza $ gitAnnexPresence gitAnnexSignature
+			putStanza gitAnnexSignature
 			xmppThread $ receivenotifications selfjid
 			forever $ do
 				a <- liftIO $ iorelay selfjid
@@ -90,13 +90,11 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 		handle (PresenceMessage p) =
 			void $ liftIO $ ioupdatebuddies p
 		handle (GotNetMessage QueryPresence) =
-			putStanza $ gitAnnexPresence gitAnnexSignature
+			putStanza gitAnnexSignature
 		handle (GotNetMessage (NotifyPush us)) =
 			void $ liftIO $ iopull us
 		handle (GotNetMessage (PairingNotification stage t u)) =
 			maybe noop (handlePairing stage u) (parseJID t)
-		handle (GotNetMessage (SelfPairingNotification stage t u)) =
-			error "TODO"
 		handle (Ignorable _) = noop
 		handle (Unknown _) = noop
 		handle (ProtocolError _) = noop
@@ -119,22 +117,24 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceType p == PresenceError = [ProtocolError s]
 	| presenceFrom p == Nothing = [Ignorable p]
 	| presenceFrom p == Just selfjid = [Ignorable p]
-	| not (null pushed) = impliedp $ GotNetMessage $ NotifyPush pushed
-	| isPresenceQuery p = impliedp $ GotNetMessage QueryPresence
-	| otherwise = case decodePairingNotification p of
-		Nothing -> [PresenceMessage p]
-		Just pn -> impliedp $ GotNetMessage pn
+	| otherwise = maybe [PresenceMessage p] decode (getGitAnnexAttrValue p)
   where
-	-- Things sent via presence imply a presence message,
-	-- along with their real meaning.
+	decode (attr, v)
+		| attr == pushAttr = impliedp $ GotNetMessage $ NotifyPush $
+			decodePushNotification v
+		| attr == queryAttr = impliedp $ GotNetMessage QueryPresence
+		| otherwise = [Unknown s]
+	{- Things sent via presence imply a presence message,
+	 - along with their real meaning. -}
 	impliedp v = [PresenceMessage p, v]
-	pushed = concat $ catMaybes $ map decodePushNotification $
-		presencePayloads p
-decodeStanza _ s@(ReceivedIQ iq)
-	| iqType iq == IQError = [ProtocolError s]
-	| otherwise = case decodeSelfPairingNotification iq of
-		Nothing -> [Unknown s]
-		Just pn -> [GotNetMessage pn]
+decodeStanza _ s@(ReceivedMessage m)
+	| messageType m == MessageError = [ProtocolError s]
+	| otherwise = maybe [Unknown s] decode (getGitAnnexAttrValue m)
+  where
+	decode (attr, v)
+		| attr == pairAttr = 
+			[maybe (Unknown s) GotNetMessage (decodePairingNotification v m)]
+		| otherwise = [Unknown s]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
@@ -145,12 +145,10 @@ relayNetMessage selfjid = convert <$> waitNetMessage
 	convert QueryPresence = putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
 		Nothing -> noop
-		Just tojid -> mapM_ putStanza $
-			encodePairingNotification stage u tojid selfjid
-	convert (SelfPairingNotification stage t u) = case parseJID t of
-		Nothing -> noop
-		Just tojid -> putStanza $
-			encodeSelfPairingNotification stage u tojid selfjid
+		Just tojid
+			| tojid == selfjid -> noop
+			| otherwise -> putStanza $
+				pairingNotification stage u tojid selfjid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()

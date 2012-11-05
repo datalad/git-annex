@@ -67,7 +67,7 @@ applyPresence p b = fromMaybe b $! go <$> presenceFrom p
 			, buddyPresent = removefrom $ buddyPresent b
 			, buddyAssistants = removefrom $ buddyAssistants b
 			}
-		| isGitAnnexPresence p = b
+		| hasGitAnnexTag p = b
 			{ buddyAssistants = addto $ buddyAssistants b
 			, buddyAway = removefrom $ buddyAway b }
 		| presenceType p == PresenceAvailable = b
