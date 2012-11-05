@@ -50,24 +50,24 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 		v <- liftAnnex getXMPPCreds
 		case v of
 			Nothing -> noop
-			Just c -> liftIO $ loop c =<< getCurrentTime
+			Just c -> liftIO $ retry (runclient c) =<< getCurrentTime
 	  where
 		debug' = void . liftIO . iodebug
 
 		{- When the client exits, it's restarted;
  		 - if it keeps failing, back off to wait 5 minutes before
  		 - trying it again. -}
-		loop c starttime = do
-			e <- runclient c
+		retry a starttime = do
+			e <- a
 			now <- getCurrentTime
 			if diffUTCTime now starttime > 300
 				then do
 					void $ iodebug ["connection lost; reconnecting", show e]
-					loop c now
+					retry a now
 				else do
 					void $ iodebug ["connection failed; will retry", show e]
 					threadDelaySeconds (Seconds 300)
-					loop c =<< getCurrentTime
+					retry a =<< getCurrentTime
 
 		runclient c = void $ connectXMPP c $ \jid -> do
 			selfjid <- bindJID jid
