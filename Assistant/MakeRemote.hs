@@ -44,7 +44,7 @@ makeSshRemote forcersync sshdata = do
 		u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
 		h = sshHostName sshdata
 		d
-			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = d
+			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
 			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
 	
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
