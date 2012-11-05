@@ -37,6 +37,7 @@ import Assistant.Types.NetMessager
 import Assistant.NetMessager
 #endif
 import Utility.UserInfo
+import Git
 
 import Yesod
 import Data.Text (Text)
@@ -125,12 +126,13 @@ noLocalPairing = noPairing "local"
 getFinishLocalPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	liftIO $ setup
-	startLocalPairing PairAck cleanup alert uuid "" secret
+	repodir <- lift $ repoPath <$> runAnnex undefined gitRepo
+	liftIO $ setup repodir
+	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
   where
 	alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
-	setup  = setupAuthorizedKeys msg
-	cleanup = removeAuthorizedKeys False $
+	setup repodir = setupAuthorizedKeys msg repodir
+	cleanup repodir = removeAuthorizedKeys False repodir $
 		remoteSshPubKey $ pairMsgData msg
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else

@@ -18,10 +18,10 @@ import qualified Data.Text as T
 
 {- Authorized keys are set up before pairing is complete, so that the other
  - side can immediately begin syncing. -}
-setupAuthorizedKeys :: PairMsg -> IO ()
-setupAuthorizedKeys msg = do
+setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
+setupAuthorizedKeys msg repodir = do
 	validateSshPubKey pubkey
-	unlessM (liftIO $ addAuthorizedKeys False pubkey) $
+	unlessM (liftIO $ addAuthorizedKeys False repodir pubkey) $
 		error "failed setting up ssh authorized keys"
   where
 	pubkey = remoteSshPubKey $ pairMsgData msg

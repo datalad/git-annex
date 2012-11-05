@@ -16,6 +16,7 @@ import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
+import Git
 
 import Network.Multicast
 import Network.Socket
@@ -120,7 +121,8 @@ pairReqReceived False urlrenderer msg = do
 pairAckReceived :: Bool -> Maybe PairingInProgress -> PairMsg -> [PairingInProgress] -> Assistant [PairingInProgress]
 pairAckReceived True (Just pip) msg cache = do
 	stopSending pip
-	liftIO $ setupAuthorizedKeys msg
+	repodir <- repoPath <$> liftAnnex gitRepo
+	liftIO $ setupAuthorizedKeys msg repodir
 	finishedPairing msg (inProgressSshKeyPair pip)
 	startSending pip PairDone $ multicastPairMsg
 		(Just 1) (inProgressSecret pip) (inProgressPairData pip)

@@ -116,13 +116,13 @@ validateSshPubKey pubkey = either error return $ check $ words pubkey
 		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_') comment = ok
 		| otherwise = err "bad comment in ssh public key"
 
-addAuthorizedKeys :: Bool -> SshPubKey -> IO Bool
-addAuthorizedKeys rsynconly pubkey = boolSystem "sh"
-	[ Param "-c" , Param $ addAuthorizedKeysCommand rsynconly pubkey ]
+addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
+addAuthorizedKeys rsynconly dir pubkey = boolSystem "sh"
+	[ Param "-c" , Param $ addAuthorizedKeysCommand rsynconly dir pubkey ]
 
-removeAuthorizedKeys :: Bool -> SshPubKey -> IO ()
-removeAuthorizedKeys rsynconly pubkey = do
-	let keyline = authorizedKeysLine rsynconly pubkey
+removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
+removeAuthorizedKeys rsynconly dir pubkey = do
+	let keyline = authorizedKeysLine rsynconly dir pubkey
 	sshdir <- sshDir
 	let keyfile = sshdir </> ".authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
@@ -134,8 +134,8 @@ removeAuthorizedKeys rsynconly pubkey = do
  - The ~/.ssh/git-annex-shell wrapper script is created if not already
  - present.
  -}
-addAuthorizedKeysCommand :: Bool -> SshPubKey -> String
-addAuthorizedKeysCommand rsynconly pubkey = join "&&"
+addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
+addAuthorizedKeysCommand rsynconly dir pubkey = join "&&"
 	[ "mkdir -p ~/.ssh"
 	, join "; "
 		[ "if [ ! -e " ++ wrapper ++ " ]"
@@ -147,7 +147,7 @@ addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 	, "chmod 600 ~/.ssh/authorized_keys"
 	, unwords
 		[ "echo"
-		, shellEscape $ authorizedKeysLine rsynconly pubkey
+		, shellEscape $ authorizedKeysLine rsynconly dir pubkey
 		, ">>~/.ssh/authorized_keys"
 		]
 	]
@@ -160,14 +160,14 @@ addAuthorizedKeysCommand rsynconly pubkey = join "&&"
 		, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
 		]
 
-authorizedKeysLine :: Bool -> SshPubKey -> String
-authorizedKeysLine rsynconly pubkey
+authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
+authorizedKeysLine rsynconly dir pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
 	| rsynconly = pubkey
 	| otherwise = limitcommand ++ pubkey
   where
-	limitcommand = "command=\"~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
+	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
