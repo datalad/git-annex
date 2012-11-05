@@ -34,7 +34,7 @@ data Buddy = Buddy
 	, buddyAssistants :: S.Set Client
 	}
 #else
-data Buddy
+data Buddy = Buddy
 #endif
 	deriving (Eq, Show)
 
