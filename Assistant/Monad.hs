@@ -79,8 +79,8 @@ newAssistantData st dstatus = AssistantData
 	<*> newBuddyList
 	<*> newNetMessagerControl
 
-runAssistant :: Assistant a -> AssistantData -> IO a
-runAssistant a = runReaderT (mkAssistant a)
+runAssistant :: AssistantData -> Assistant a -> IO a
+runAssistant d a = runReaderT (mkAssistant a) d
 
 getAssistant :: (AssistantData -> a) -> Assistant a
 getAssistant = reader
@@ -97,23 +97,23 @@ liftAnnex a = do
 (<~>) :: (IO a -> IO b) -> Assistant a -> Assistant b
 io <~> a = do
 	d <- reader id
-	liftIO $ io $ runAssistant a d
+	liftIO $ io $ runAssistant d a
 
 {- Creates an IO action that will run an Assistant action when run. -}
 asIO :: Assistant a -> Assistant (IO a)
 asIO a = do
 	d <- reader id
-	return $ runAssistant a d
+	return $ runAssistant d a
 
 asIO1 :: (a -> Assistant b) -> Assistant (a -> IO b)
 asIO1 a = do
 	d <- reader id
-	return $ \v -> runAssistant (a v) d
+	return $ \v -> runAssistant d $ a v
 
 asIO2 :: (a -> b -> Assistant c) -> Assistant (a -> b -> IO c)
 asIO2 a = do
 	d <- reader id
-	return $ \v1 v2 -> runAssistant (a v1 v2) d
+	return $ \v1 v2 -> runAssistant d (a v1 v2)
 
 {- Runs an IO action on a selected field of the AssistantData. -}
 (<<~) :: (a -> IO b) -> (AssistantData -> a) -> Assistant b

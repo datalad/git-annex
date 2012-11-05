@@ -71,7 +71,7 @@ newWebAppState = do
 		, otherRepos = otherrepos }
 
 liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
-liftAssistant a = liftIO . runAssistant a =<< assistantData <$> getYesod
+liftAssistant a = liftIO . flip runAssistant a =<< assistantData <$> getYesod
 
 getWebAppState :: forall sub. GHandler sub WebApp WebAppState
 getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod

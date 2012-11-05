@@ -177,7 +177,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	checkCanWatch
 	dstatus <- startDaemonStatus
 	liftIO $ daemonize $
-		runAssistant go =<< newAssistantData st dstatus
+		flip runAssistant go =<< newAssistantData st dstatus
   where
 	go = do
 		d <- getAssistant id
@@ -216,6 +216,5 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	assist a = (False, a)
 	startthread d (watcher, t)
 		| watcher || assistant = void $ liftIO $ forkIO $
-			flip runAssistant d $
-				runNamedThread t
+			runAssistant d $ runNamedThread t
 		| otherwise = noop

@@ -69,5 +69,5 @@ runTransferThread' d a = go
 				Just ResumeTransfer -> go
 				_ -> done
 			_ -> done
-	done = flip runAssistant d $ 
+	done = runAssistant d $ 
 		flip MSemN.signal 1 <<~ transferSlots

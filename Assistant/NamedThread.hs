@@ -19,12 +19,12 @@ runNamedThread (NamedThread name a) = do
 	liftIO . go $ d { threadName = name }
   where
 	go d = do
-		r <- E.try (runAssistant a d) :: IO (Either E.SomeException ())
+		r <- E.try (runAssistant d a) :: IO (Either E.SomeException ())
 		case r of
 			Right _ -> noop
 			Left e -> do
 				let msg = unwords [name, "crashed:", show e]
 				hPutStrLn stderr msg
 				-- TODO click to restart
-				flip runAssistant d $ void $
+				runAssistant d $ void $
 					addAlert $ warningAlert name msg
