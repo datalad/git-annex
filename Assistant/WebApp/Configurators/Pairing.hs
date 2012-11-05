@@ -32,6 +32,7 @@ import Annex.UUID
 import Assistant.XMPP
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
+import Assistant.XMPP.Git
 import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
@@ -139,9 +140,15 @@ getFinishLocalPairR _ = noLocalPairing
 
 getFinishXMPPPairR :: PairKey -> Handler RepHtml
 #ifdef WITH_XMPP
-getFinishXMPPPairR (PairKey u t) = case parseJID t of
+getFinishXMPPPairR (PairKey theiruuid t) = case parseJID t of
 	Nothing -> error "bad JID"
-	Just jid -> error "TODO"
+	Just theirjid -> do
+		liftAssistant $ do
+			selfuuid <- liftAnnex getUUID
+			sendNetMessage $
+				PairingNotification PairAck (formatJID theirjid) selfuuid
+			finishXMPPPairing theirjid theiruuid
+		redirect RepositoriesR
 #else
 getFinishXMPPPairR _ _ = noXMPPPairing
 #endif

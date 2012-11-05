@@ -26,10 +26,10 @@ setupAuthorizedKeys msg repodir = do
   where
 	pubkey = remoteSshPubKey $ pairMsgData msg
 
-{- When pairing is complete, this is used to set up the remote for the host
- - we paired with. -}
-finishedPairing :: PairMsg -> SshKeyPair -> Assistant ()
-finishedPairing msg keypair = do
+{- When local pairing is complete, this is used to set up the remote for
+ - the host we paired with. -}
+finishedLocalPairing :: PairMsg -> SshKeyPair -> Assistant ()
+finishedLocalPairing msg keypair = do
 	sshdata <- liftIO $ setupSshKeyPair keypair =<< pairMsgToSshData msg
 	{- Ensure that we know the ssh host key for the host we paired with.
 	 - If we don't, ssh over to get it. -}

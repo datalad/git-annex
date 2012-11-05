@@ -32,6 +32,7 @@ data Buddy = Buddy
 	{ buddyPresent :: S.Set Client
 	, buddyAway :: S.Set Client
 	, buddyAssistants :: S.Set Client
+	, buddyPairing :: Bool
 	}
 #else
 data Buddy = Buddy

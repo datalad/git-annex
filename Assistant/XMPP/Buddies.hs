@@ -17,8 +17,8 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 
-genKey :: JID -> BuddyKey
-genKey j = BuddyKey $ formatJID $ baseJID j
+genBuddyKey :: JID -> BuddyKey
+genBuddyKey j = BuddyKey $ formatJID $ baseJID j
 
 buddyName :: JID -> Text
 buddyName j = maybe (T.pack "") strNode (jidNode j)
@@ -28,7 +28,7 @@ buddyName j = maybe (T.pack "") strNode (jidNode j)
  - If the buddy has no clients at all anymore, returns Nothing. -}
 buddySummary :: Buddy -> Maybe (Text, Bool, Bool, BuddyKey)
 buddySummary b = case clients of
-	((Client j):_) -> Just (buddyName j, away, canpair, genKey j)
+	((Client j):_) -> Just (buddyName j, away, canpair, genBuddyKey j)
 	[] -> Nothing
   where
 	away = S.null (buddyPresent b) && S.null (buddyAssistants b)
@@ -39,7 +39,7 @@ buddySummary b = case clients of
 updateBuddies :: Presence -> Buddies -> Buddies
 updateBuddies p@(Presence { presenceFrom = Just jid }) = M.alter update key
   where
-	key = genKey jid
+	key = genBuddyKey jid
 	update (Just b) = Just $ applyPresence p b
 	update Nothing = newBuddy p
 updateBuddies _ = id
@@ -56,6 +56,7 @@ newBuddy p
 		{ buddyPresent = S.empty
 		, buddyAway = S.empty
 		, buddyAssistants = S.empty
+		, buddyPairing = False
 		}
 
 applyPresence :: Presence -> Buddy -> Buddy

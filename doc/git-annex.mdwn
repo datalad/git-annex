@@ -881,6 +881,11 @@ Here are all the supported configuration settings.
   Used to identify Amazon S3 special remotes.
   Normally this is automaticaly set up by `git annex initremote`.
 
+* `remote.<name>.annex-xmppaddress`
+
+  Used to identify the XMPP address of a Jabber buddy.
+  Normally this is set up by the git-annex assistant when pairing over XMPP.
+
 # CONFIGURATION VIA .gitattributes
 
 The key-value backend used when adding a new file to the annex can be

@@ -22,11 +22,14 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.Pairing
+import Assistant.XMPP.Git
+import Annex.UUID
 
 import Network.Protocol.XMPP
 import Control.Concurrent
 import qualified Data.Text as T
 import qualified Data.Set as S
+import qualified Data.Map as M
 import qualified Git.Branch
 import Data.Time.Clock
 
@@ -36,17 +39,17 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 	 - can be run from within the XMPP monad using liftIO. Ugly. -}
 	iodebug <- asIO1 debug
 	iopull <- asIO1 pull
-	iopairReqReceived <- asIO2 $ pairReqReceived urlrenderer
+	iopairMsgReceived <- asIO2 $ pairMsgReceived urlrenderer
 	ioupdatebuddies <- asIO1 $ \p ->
 		updateBuddyList (updateBuddies p) <<~ buddyList
 	ioemptybuddies <- asIO $
 		updateBuddyList (const noBuddies) <<~ buddyList
 	iorelay <- asIO1 relayNetMessage
 	ioclientthread <- asIO $
-		go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairReqReceived
+		go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairMsgReceived
 	restartableClient ioclientthread
   where
-	go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairReqReceived = do
+	go iorelay iodebug iopull ioupdatebuddies ioemptybuddies iopairMsgReceived = do
 		v <- liftAnnex getXMPPCreds
 		case v of
 			Nothing -> noop
@@ -85,23 +88,19 @@ xmppClientThread urlrenderer = NamedThread "XMPPClient" $ do
 		receivenotifications selfjid = forever $ do
 			l <- decodeStanza selfjid <$> getStanza
 			debug' ["received:", show l]
-			mapM_ handle l
+			mapM_ (handle selfjid) l
 
-		handle (PresenceMessage p) =
+		handle _ (PresenceMessage p) =
 			void $ liftIO $ ioupdatebuddies p
-		handle (GotNetMessage QueryPresence) =
+		handle _ (GotNetMessage QueryPresence) =
 			putStanza gitAnnexSignature
-		handle (GotNetMessage (NotifyPush us)) =
+		handle _ (GotNetMessage (NotifyPush us)) =
 			void $ liftIO $ iopull us
-		handle (GotNetMessage (PairingNotification stage t u)) =
-			maybe noop (handlePairing stage u) (parseJID t)
-		handle (Ignorable _) = noop
-		handle (Unknown _) = noop
-		handle (ProtocolError _) = noop
-
-		handlePairing PairReq u jid = liftIO $ iopairReqReceived u jid
-		handlePairing PairAck _ _ = error "TODO"
-		handlePairing PairDone _ _ = error "TODO"
+		handle selfjid (GotNetMessage (PairingNotification stage t u)) =
+			maybe noop (\jid -> liftIO $ iopairMsgReceived (stage, u) (selfjid, jid)) (parseJID t)
+		handle _ (Ignorable _) = noop
+		handle _ (Unknown _) = noop
+		handle _ (ProtocolError _) = noop
 
 data XMPPEvent
 	= GotNetMessage NetMessage
@@ -139,16 +138,18 @@ decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
 relayNetMessage :: JID -> Assistant (XMPP ())
-relayNetMessage selfjid = convert <$> waitNetMessage
+relayNetMessage selfjid = convert =<< waitNetMessage
   where
-	convert (NotifyPush us) = putStanza $ pushNotification us
-	convert QueryPresence = putStanza $ presenceQuery
+	convert (NotifyPush us) = return $ putStanza $ pushNotification us
+	convert QueryPresence = return $ putStanza $ presenceQuery
 	convert (PairingNotification stage t u) = case parseJID t of
-		Nothing -> noop
+		Nothing -> return $ noop
 		Just tojid
-			| tojid == selfjid -> noop
-			| otherwise -> putStanza $
-				pairingNotification stage u tojid selfjid
+			| tojid == selfjid -> return $ noop
+			| otherwise -> do
+				changeBuddyPairing tojid True
+				return $ putStanza $
+					pairingNotification stage u tojid selfjid
 
 {- Runs the client, handing restart events. -}
 restartableClient :: IO () -> Assistant ()
@@ -193,17 +194,44 @@ pull us = do
 		unlessM (all id . fst <$> manualPull branch [r]) $
 			pullone rs branch
 
-{- Show an alert when a PairReq is seen, unless the PairReq came from
- - another client using our JID. In that case, just start pairing. -}
-pairReqReceived :: UrlRenderer -> UUID -> JID -> Assistant ()
-pairReqReceived urlrenderer u jid = do
-	-- TODO: check same JID
-	let route = FinishXMPPPairR (PairKey u $ formatJID jid)
-	url <- liftIO $ renderUrl urlrenderer route []
-	close <- asIO1 removeAlert
-	void $ addAlert $ pairRequestReceivedAlert (T.unpack $ buddyName jid)
-		AlertButton
-			{ buttonUrl = url
-			, buttonLabel = T.pack "Respond"
-			, buttonAction = Just close
-			}
+pairMsgReceived :: UrlRenderer -> (PairStage, UUID) -> (JID, JID) -> Assistant ()
+pairMsgReceived urlrenderer (PairReq, theiruuid) (selfjid, theirjid)
+	-- PairReq from another client using our JID is automatically accepted.
+	| baseJID selfjid == baseJID theirjid = do
+		selfuuid <- liftAnnex getUUID
+		sendNetMessage $
+			PairingNotification PairAck (formatJID theirjid) selfuuid
+		finishXMPPPairing theirjid theiruuid
+	-- Show an alert to let the user decide if they want to pair.
+	| otherwise = do
+		let route = FinishXMPPPairR (PairKey theiruuid $ formatJID theirjid)
+		url <- liftIO $ renderUrl urlrenderer route []
+		close <- asIO1 removeAlert
+		void $ addAlert $ pairRequestReceivedAlert (T.unpack $ buddyName theirjid)
+			AlertButton
+				{ buttonUrl = url
+				, buttonLabel = T.pack "Respond"
+				, buttonAction = Just close
+				}
+pairMsgReceived _ (PairAck, theiruuid) (_selfjid, theirjid) =
+	{- PairAck must come from one of the buddies we are pairing with;
+	 - don't pair with just anyone. -}
+	whenM (isBuddyPairing theirjid) $ do
+		changeBuddyPairing theirjid False
+		selfuuid <- liftAnnex getUUID
+		sendNetMessage $
+			PairingNotification PairDone (formatJID theirjid) selfuuid
+		finishXMPPPairing theirjid theiruuid
+pairMsgReceived _ (PairDone, _theiruuid) (_selfjid, theirjid) =
+	changeBuddyPairing theirjid False
+
+isBuddyPairing :: JID -> Assistant Bool
+isBuddyPairing jid = maybe False buddyPairing <$> 
+	getBuddy (genBuddyKey jid) <<~ buddyList
+
+changeBuddyPairing :: JID -> Bool -> Assistant ()
+changeBuddyPairing jid ispairing =
+	updateBuddyList (M.adjust set key) <<~ buddyList
+  where
+	key = genBuddyKey jid
+	set b = b { buddyPairing = ispairing }

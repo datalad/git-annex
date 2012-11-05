@@ -123,7 +123,7 @@ pairAckReceived True (Just pip) msg cache = do
 	stopSending pip
 	repodir <- repoPath <$> liftAnnex gitRepo
 	liftIO $ setupAuthorizedKeys msg repodir
-	finishedPairing msg (inProgressSshKeyPair pip)
+	finishedLocalPairing msg (inProgressSshKeyPair pip)
 	startSending pip PairDone $ multicastPairMsg
 		(Just 1) (inProgressSecret pip) (inProgressPairData pip)
 	return $ pip : take 10 cache
@@ -153,4 +153,4 @@ pairDoneReceived False _ _ = noop -- not verified
 pairDoneReceived True Nothing _ = noop -- not in progress
 pairDoneReceived True (Just pip) msg = do
 	stopSending pip
-	finishedPairing msg (inProgressSshKeyPair pip)
+	finishedLocalPairing msg (inProgressSshKeyPair pip)

@@ -18,6 +18,7 @@ module Annex.UUID (
 	prepUUID,
 	genUUID,
 	removeRepoUUID,
+	storeUUID,
 ) where
 
 import Common.Annex

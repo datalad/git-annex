@@ -317,7 +317,7 @@ pairRequestReceivedAlert who button = Alert
 
 pairRequestAcknowledgedAlert :: String -> Maybe AlertButton -> Alert
 pairRequestAcknowledgedAlert who button = baseActivityAlert
-	{ alertData = ["Pair request with", UnTensed (T.pack who), Tensed "in progress" "complete"]
+	{ alertData = ["Pairing with", UnTensed (T.pack who), Tensed "in progress" "complete"]
 	, alertPriority = High
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertButton = button
