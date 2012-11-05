@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJEI45rGczFAnuM7gRSj4C6s9AS9yPZDc"
+ nickname="Kevin"
+ subject="unlock not behaving as you describe"
+ date="2012-11-05T22:35:35Z"
+ content="""
+@joeyh,
+
+I'm not seeing the behavior you describe re \"git annex unlock\" when using the assistant.  After unlocking and writing the file, git annex assistant commits the changes and recreates the symlink from under me which is annoying.
+
+I'm running OS X 10.7.5 using the bundled git-annex.app version 3.20121017.
+"""]]
