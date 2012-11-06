@@ -151,7 +151,7 @@ xmppGitRelay = do
 	hSetBuffering outh NoBuffering
 
 	{- Is it possible to set up pipes and not need to copy the data
-	 - ourselves? -}
+	 - ourselves? See splice(2) -}
 	void $ forkIO $ forever $ do
 		b <- B.hGetSome inh 1024
 		when (B.null b) $
