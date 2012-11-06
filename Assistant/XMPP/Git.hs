@@ -16,10 +16,17 @@ import Assistant.MakeRemote
 import Assistant.Sync
 import Annex.UUID
 import Config
+import Git.Types
+import Locations.UserConfig
 import qualified Types.Remote as Remote
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
+import System.Posix.Env
+import System.Posix.Types
+
+configKey :: Remote -> ConfigKey
+configKey r = remoteConfig (Remote.repo r) "xmppaddress"
 
 finishXMPPPairing :: JID -> UUID -> Assistant ()
 finishXMPPPairing jid u = void $ alertWhile alert $
@@ -40,10 +47,72 @@ makeXMPPGitRemote buddyname jid u = do
 	liftAnnex $ do
 		let r = Remote.repo remote
 		storeUUID (remoteConfig r "uuid") u
-		setConfig (remoteConfig r "xmppaddress") xmppaddress
+		setConfig (configKey remote) xmppaddress
 	syncNewRemote remote
 	return True
   where
 	xmppaddress = T.unpack $ formatJID $ baseJID jid
 
+{- Pushes the named refs to the remote, over XMPP.
+ -
+ - Strategy: Set GIT_SSH to run git-annex. By setting the remote url
+ - to "xmppgit:dummy", "git-annex xmppgit" will be run locally by
+ - "git push". The dataflow them becomes:
+ - 
+ - git push <--> git-annex xmppgit <--> xmppPush <-------> xmpp
+ -                                                          |
+ - git receive-pack <--> xmppReceivePack <---------------> xmpp
+ - 
+ - The pipe between git-annex xmppgit and us is set up and communicated
+ - using two file descriptors, GIT_ANNEX_XMPPGIT_IN and
+ - GIT_ANNEX_XMPPGIT_OUT. It simply connects those up to its stdin
+ - and stdout, respectively, which are in turn connected to "git-push".
+ - There is also a GIT_ANNEX_XMPPGIT_CONTROL descriptor, to which an
+ - exit status is sent for xmppgit to propigate.
+ -
+ - We listen at the other end of the pipe and relay to and from XMPP.
+ -}
+xmppPush :: Remote -> [Ref] -> Assistant Bool
+xmppPush remote refs = do
+	program <- liftIO readProgramFile
+	
+	-- GIT_SSH=program git -c remote.xmppremote.url=xmppgit:dummy push xmppremote refs
+	error "TODO"
 
+relayIn :: String
+relayIn = "GIT_ANNEX_XMPPGIT_IN"
+
+relayOut :: String
+relayOut = "GIT_ANNEX_XMPPGIT_OUT"
+
+relayControl :: String
+relayControl = "GIT_ANNEX_XMPPGIT_CONTROL"
+
+relayFd :: String -> IO Fd
+relayFd var = do
+	v <- getEnv var
+	case readish =<< v of
+		Nothing -> error $ var ++ " not set"
+		Just n -> return $ Fd n
+
+{- Called by git-annex xmppgit. -}
+xmppGitRelay :: IO ()
+xmppGitRelay = do
+	inf <- relayFd relayIn
+	outf <-relayFd relayOut
+
+	void $ dupTo stdInput outf
+	void $ dupTo inf stdOutput
+
+	controlh <- fdToHandle =<< relayFd relayControl
+	s <- hGetLine controlh
+	exitWith $ case readish s of
+		Just n
+			| n == 0 -> ExitSuccess
+			| otherwise -> ExitFailure n
+		Nothing -> ExitFailure 1
+
+{- Relays git receive-pack to and from XMPP. The command needs no
+ - parameters except the directory to run in. -}
+xmppReceivePack :: Assistant Bool
+xmppReceivePack = error "TODO"

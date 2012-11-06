@@ -486,6 +486,10 @@ subdirectories).
   With --force, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
+* xmppgit
+
+  This command is used internally to perform git pulls over XMPP.
+
 # OPTIONS
 
 * --force

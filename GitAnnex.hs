@@ -64,14 +64,17 @@ import qualified Command.Import
 import qualified Command.Map
 import qualified Command.Upgrade
 import qualified Command.Version
+import qualified Command.Help
 #ifdef WITH_ASSISTANT
 import qualified Command.Watch
 import qualified Command.Assistant
 #ifdef WITH_WEBAPP
 import qualified Command.WebApp
 #endif
+#ifdef WITH_XMPP
+import qualified Command.XMPPGit
 #endif
-import qualified Command.Help
+#endif
 
 cmds :: [Command]
 cmds = concat
@@ -117,14 +120,18 @@ cmds = concat
 	, Command.Map.def
 	, Command.Upgrade.def
 	, Command.Version.def
+	, Command.Help.def
 #ifdef WITH_ASSISTANT
 	, Command.Watch.def
 	, Command.Assistant.def
+	, Command.XMPPGit.def
 #ifdef WITH_WEBAPP
 	, Command.WebApp.def
 #endif
+#ifdef WITH_XMPP
+	, Command.XMPPGit.def
 #endif
-	, Command.Help.def
+#endif
 	]
 
 options :: [Option]
