@@ -223,6 +223,6 @@ osxapp:
 
 # used by ./ghci
 getflags:
-	@echo $(ALLFLAGS)
+	@echo $(ALLFLAGS) $(clibs)
 
 .PHONY: $(bins) test install
