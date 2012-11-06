@@ -17,6 +17,7 @@ import Command
 import Annex.UUID
 import qualified Option
 import Fields
+import Utility.UserInfo
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -96,7 +97,8 @@ external :: [String] -> IO ()
 external params = do
 	{- Normal git-shell commands all have the directory as their last
 	 - parameter. -}
-	checkDirectory $ lastMaybe params
+	let lastparam = lastMaybe =<< shellUnEscape <$> lastMaybe params
+	checkDirectory lastparam
 	checkNotLimited
 	unlessM (boolSystem "git-shell" $ map Param $ "-c":fst (partitionParams params)) $
 		error "git-shell failed"
@@ -140,12 +142,30 @@ checkDirectory mdir = do
 	v <- getEnv "GIT_ANNEX_SHELL_DIRECTORY"
 	case (v, mdir) of
 		(Nothing, _) -> noop
-		(Just d, Nothing) -> req d
+		(Just d, Nothing) -> req d Nothing
 		(Just d, Just dir)
 			|  d `equalFilePath` dir -> noop
-			| otherwise -> req d
+			| otherwise -> do
+				home <- myHomeDir
+				d' <- canondir home d
+				dir' <- canondir home dir
+				if d' `equalFilePath` dir'
+					then noop
+					else req d' (Just dir')
 	where
-		req d = error $ "Only allowed to access " ++ d
+		req d mdir' = error $ unwords 
+			[ "Only allowed to access"
+			, d
+			, maybe "and could not determine directory from command line" ("not " ++) mdir'
+			]
+
+		{- A directory may start with ~/ or in some cases, even /~/,
+		 - or could just be relative to home, or of course could
+		 - be absolute. -}
+		canondir home d
+			| "~/" `isPrefixOf` d = return d
+			| "/~/" `isPrefixOf` d = return $ drop 1 d
+			| otherwise = relHome $ absPathFrom home d
 
 checkEnv :: String -> IO ()
 checkEnv var = do
