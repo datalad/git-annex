@@ -67,8 +67,6 @@ readProcessEnv cmd args environ =
 
 {- Writes a string to a process on its stdout, 
  - returns its output, and also allows specifying the environment.
- -
- -
  -}
 writeReadProcessEnv
 	:: FilePath
