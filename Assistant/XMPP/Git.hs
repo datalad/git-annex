@@ -16,7 +16,7 @@ import Assistant.MakeRemote
 import Assistant.Sync
 import Annex.UUID
 import Config
-import Git.Types
+import Git
 import Git.Command
 import Locations.UserConfig
 import qualified Types.Remote as Remote
@@ -25,6 +25,7 @@ import Network.Protocol.XMPP
 import qualified Data.Text as T
 import System.Posix.Env
 import System.Posix.Types
+import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
 import qualified Data.ByteString as B
 
@@ -172,15 +173,28 @@ xmppReceivePack :: Assistant Bool
 xmppReceivePack = do
 	feeder <- asIO1 toxmpp
 	reader <- asIO1 fromxmpp
-	ok <- liftIO $ do
-		(Just inh, Just outh, _, pid) <- createProcess $ p
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = Inherit
-			}
-		
-	liftIO $ mapM_ killThread [t1, t2]
+	controller <- asIO1 controlxmpp
+	repodir <- liftAnnex $ fromRepo repoPath
+	let p = (proc "git" ["receive-pack", repodir])
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		}
+	liftIO $ do
+		(Just inh, Just outh, _, pid) <- createProcess p
+		feedertid <- forkIO $ feeder outh
+		void $ reader inh
+		code <- waitForProcess pid
+		void $ controller code
+		killThread feedertid
+		return $ code == ExitSuccess
   where
-	p = proc "git" params
-	toxmpp = 
-	fromxmpp = 	
+	toxmpp outh = do
+		b <- liftIO $ B.hGetSome outh 1024
+		if B.null b
+			then return () -- EOF
+			else do
+				error "TODO feed b to xmpp"
+				toxmpp outh
+	fromxmpp _inh = error "TODO feed xmpp to inh"
+	controlxmpp _code = error "TODO propigate exit code"
