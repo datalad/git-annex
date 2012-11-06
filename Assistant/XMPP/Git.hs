@@ -169,4 +169,18 @@ xmppGitRelay = do
 
 {- Relays git receive-pack to and from XMPP, and propigates its exit status. -}
 xmppReceivePack :: Assistant Bool
-xmppReceivePack = error "TODO"
+xmppReceivePack = do
+	feeder <- asIO1 toxmpp
+	reader <- asIO1 fromxmpp
+	ok <- liftIO $ do
+		(Just inh, Just outh, _, pid) <- createProcess $ p
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			, std_err = Inherit
+			}
+		
+	liftIO $ mapM_ killThread [t1, t2]
+  where
+	p = proc "git" params
+	toxmpp = 
+	fromxmpp = 	

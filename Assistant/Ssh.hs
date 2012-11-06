@@ -88,7 +88,6 @@ sshTranscript opts input = do
 	hClose readh
 
 	ok <- checkSuccessProcess pid
-	return ()
 	return (transcript, ok)
 
 {- Ensure that the ssh public key doesn't include any ssh options, like
