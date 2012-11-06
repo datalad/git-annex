@@ -1,0 +1,28 @@
+Laying the groundwork for git push over XMPP. BTW, the motivation for doing
+this now is that if the assistant can push git data peer-to-peer, users
+who are entirely using the cloud don't need to set up a git repo in the
+cloud somewhere. Instead, a single special remote in the cloud will be all
+they need. So this is a keystone in the assistant's cloud support.
+
+I'm building the following pipeline:
+
+	git push <--> git-annex xmppgit <--> xmppPush <-------> xmpp
+	                                                         |
+	git receive-pack <--> xmppReceivePack <---------------> xmpp
+
+A tricky part of this is `git-annex xmppgit`, which is run by `git push`
+rather than the usual `ssh`. Rather than speak XMPP itself, that feeds the
+data through the assistant daemon, using some special FDs that are set
+up by the assistant when it runs `git push`, and communicated via
+environment variables. I hoped to set up a pipe and not need it to do any
+work on its own, but short of using the linux-specific `splice(2)`, that
+doesn't seem possible. It also will receive the exit status of
+`git receive-pack` and propigate it to `git push`.
+
+Also built the IO sides of `xmppPush` and `xmppReceivePack` although these
+are not tested. The XMPP sides of them come next.
+
+----
+
+Stuffing lots of git-annex branded USB keys into envelopes tonight, while
+watching the election coverage.
