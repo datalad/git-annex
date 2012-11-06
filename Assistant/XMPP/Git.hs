@@ -17,6 +17,7 @@ import Assistant.Sync
 import Annex.UUID
 import Config
 import Git.Types
+import Git.Command
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 
@@ -75,11 +76,55 @@ makeXMPPGitRemote buddyname jid u = do
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
 xmppPush :: Remote -> [Ref] -> Assistant Bool
-xmppPush _remote _refs = do
-	_program <- liftIO readProgramFile
+xmppPush remote refs = do
+	program <- liftIO readProgramFile
+
+	(Fd inf, writepush) <- liftIO createPipe
+	(readpush, Fd outf) <- liftIO createPipe
+	(Fd controlf, writecontrol) <- liftIO createPipe
+
+	env <- liftIO getEnvironment
+	let myenv =
+		[ ("GIT_SSH", program)
+		, (relayIn, show inf)
+		, (relayOut, show outf)
+		, (relayControl, show controlf)
+		]
+	g <- liftAnnex gitRepo
+	let name = Remote.name remote
+	let mainparams = [Param "-c", Param $ "remote."++name++".url=xmpp:client"]
+	let params = Param "push" : Param name : map (Param . show) refs
+
+	inh <- liftIO $ fdToHandle readpush
+	outh <- liftIO $ fdToHandle writepush
+	controlh <- liftIO $ fdToHandle writecontrol
+	liftIO $ hSetBuffering outh NoBuffering
 	
-	-- GIT_SSH=program git -c remote.xmppremote.url=xmppgit:dummy push xmppremote refs
-	error "TODO"
+	t1 <- forkIO <~> toxmpp inh
+	t2 <- forkIO <~> fromxmpp outh
+	t3 <- forkIO <~> controlxmpp controlh
+
+	ok <- liftIO $ boolSystemEnv "git"
+		(mainparams ++ gitCommandLine params g)
+		(Just $ env ++ myenv)
+	liftIO $ mapM_ killThread [t1, t2, t3]
+	return ok
+  where
+	toxmpp inh = forever $ do
+		b <- liftIO $ B.hGetSome inh 1024
+		when (B.null b) $
+			liftIO $ killThread =<< myThreadId
+		-- TODO relay b to xmpp
+		error "TODO"
+	fromxmpp outh = forever $ do
+		-- TODO get b from xmpp
+		let b = undefined
+		liftIO $ B.hPut outh b
+	controlxmpp controlh = do
+		-- TODO wait for control message from xmpp
+		let exitcode = undefined :: Int
+		liftIO $ hPutStrLn controlh (show exitcode)
+		
 
 relayIn :: String
 relayIn = "GIT_ANNEX_XMPPGIT_IN"
@@ -103,7 +148,6 @@ xmppGitRelay = do
 	inh <- relayHandle relayIn
 	outh <- relayHandle relayOut
 	
-	hSetBuffering stdout NoBuffering
 	hSetBuffering outh NoBuffering
 
 	{- Is it possible to set up pipes and not need to copy the data
