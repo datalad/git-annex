@@ -24,6 +24,8 @@ import Network.Protocol.XMPP
 import qualified Data.Text as T
 import System.Posix.Env
 import System.Posix.Types
+import Control.Concurrent
+import qualified Data.ByteString as B
 
 configKey :: Remote -> ConfigKey
 configKey r = remoteConfig (Remote.repo r) "xmppaddress"
@@ -73,8 +75,8 @@ makeXMPPGitRemote buddyname jid u = do
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
 xmppPush :: Remote -> [Ref] -> Assistant Bool
-xmppPush remote refs = do
-	program <- liftIO readProgramFile
+xmppPush _remote _refs = do
+	_program <- liftIO readProgramFile
 	
 	-- GIT_SSH=program git -c remote.xmppremote.url=xmppgit:dummy push xmppremote refs
 	error "TODO"
@@ -88,23 +90,32 @@ relayOut = "GIT_ANNEX_XMPPGIT_OUT"
 relayControl :: String
 relayControl = "GIT_ANNEX_XMPPGIT_CONTROL"
 
-relayFd :: String -> IO Fd
-relayFd var = do
+relayHandle :: String -> IO Handle
+relayHandle var = do
 	v <- getEnv var
 	case readish =<< v of
 		Nothing -> error $ var ++ " not set"
-		Just n -> return $ Fd n
+		Just n -> fdToHandle $ Fd n
 
 {- Called by git-annex xmppgit. -}
 xmppGitRelay :: IO ()
 xmppGitRelay = do
-	inf <- relayFd relayIn
-	outf <-relayFd relayOut
+	inh <- relayHandle relayIn
+	outh <- relayHandle relayOut
+	
+	hSetBuffering stdout NoBuffering
+	hSetBuffering outh NoBuffering
 
-	void $ dupTo stdInput outf
-	void $ dupTo inf stdOutput
+	{- Is it possible to set up pipes and not need to copy the data
+	 - ourselves? -}
+	void $ forkIO $ forever $ do
+		b <- B.hGetSome inh 1024
+		when (B.null b) $
+			killThread =<< myThreadId
+		B.hPut stdout b
+	void $ forkIO $ forever $ B.hGetSome stdin 1024 >>= B.hPut outh
 
-	controlh <- fdToHandle =<< relayFd relayControl
+	controlh <- relayHandle relayControl
 	s <- hGetLine controlh
 	exitWith $ case readish s of
 		Just n
@@ -112,7 +123,6 @@ xmppGitRelay = do
 			| otherwise -> ExitFailure n
 		Nothing -> ExitFailure 1
 
-{- Relays git receive-pack to and from XMPP. The command needs no
- - parameters except the directory to run in. -}
+{- Relays git receive-pack to and from XMPP, and propigates its exit status. -}
 xmppReceivePack :: Assistant Bool
 xmppReceivePack = error "TODO"
