@@ -12,7 +12,6 @@ module Assistant.Threads.NetWatcher where
 
 import Assistant.Common
 import Assistant.Sync
-import Assistant.NetMessager
 import Utility.ThreadScheduler
 import Remote.List
 import qualified Types.Remote as Remote
@@ -22,6 +21,7 @@ import Utility.DBus
 import DBus.Client
 import DBus
 import Data.Word (Word32)
+import Assistant.NetMessager
 #else
 #warning Building without dbus support; will poll for network connection changes
 #endif
