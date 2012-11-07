@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 1"
+ date="2012-11-07T18:57:17Z"
+ content="""
+It's possible to build git-annex without S3 support. I think a few Linux distros ship it this way due to not having all the necessary haskell libraries.
+"""]]
