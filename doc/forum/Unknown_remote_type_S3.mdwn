@@ -1,0 +1,5 @@
+I have an annex set up with an s3 special remote. It works fine on one computer. I cloned the annex to a USB stick, plugged the stick into a second computer and cloned the annex to that machine. When I try to `git annex initremote cloud` on the second machine, I get the following error:
+
+    git-annex: Unknown remote type S3
+
+The second machine is running git-annex 3.20121017.
