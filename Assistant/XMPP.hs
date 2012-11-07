@@ -5,25 +5,34 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Assistant.XMPP where
 
 import Assistant.Common
 import Assistant.Types.NetMessager
 import Assistant.Pairing
 
-import Network.Protocol.XMPP
+import Network.Protocol.XMPP hiding (Node)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as B
 import Data.XML.Types
+import qualified Codec.Binary.Base64 as B64
 
 {- Name of the git-annex tag, in our own XML namespace.
  - (Not using a namespace URL to avoid unnecessary bloat.) -}
 gitAnnexTagName :: Name
-gitAnnexTagName  = Name (T.pack "git-annex") (Just $ T.pack "git-annex") Nothing
+gitAnnexTagName  = "{git-annex}git-annex"
 
 {- Creates a git-annex tag containing a particular attribute and value. -}
 gitAnnexTag :: Name -> Text -> Element
-gitAnnexTag attr val = Element gitAnnexTagName [(attr, [ContentText val])] []
+gitAnnexTag attr val = gitAnnexTagContent attr val []
+
+{- Also with some content. -}
+gitAnnexTagContent :: Name -> Text -> [Node] -> Element
+gitAnnexTagContent attr val = Element gitAnnexTagName [(attr, [ContentText val])]
 
 isGitAnnexTag :: Element -> Bool
 isGitAnnexTag t = elementName t == gitAnnexTagName
@@ -66,8 +75,11 @@ gitAnnexSignature :: Presence
 gitAnnexSignature = gitAnnexPresence $ Element gitAnnexTagName [] []
 
 {- A message with a git-annex tag in it. -}
-gitAnnexMessage :: Element -> Message
-gitAnnexMessage = insertGitAnnexTag silentMessage
+gitAnnexMessage :: Element -> JID -> JID -> Message
+gitAnnexMessage elt tojid fromjid = (insertGitAnnexTag silentMessage elt)
+	{ messageTo = Just tojid
+	, messageFrom = Just fromjid
+	}
 
 {- A notification that we've pushed to some repositories, listing their
  - UUIDs. -}
@@ -75,10 +87,10 @@ pushNotification :: [UUID] -> Presence
 pushNotification = gitAnnexPresence . gitAnnexTag pushAttr . encodePushNotification
 
 pushAttr :: Name
-pushAttr = Name (T.pack "push") Nothing Nothing
+pushAttr = "push"
 
-uuidSep :: T.Text
-uuidSep = T.pack ","
+uuidSep :: Text
+uuidSep = ","
 
 encodePushNotification :: [UUID] -> Text
 encodePushNotification = T.intercalate uuidSep . map (T.pack . fromUUID)
@@ -91,21 +103,15 @@ presenceQuery :: Presence
 presenceQuery = gitAnnexPresence $ gitAnnexTag queryAttr T.empty
 
 queryAttr :: Name
-queryAttr = Name (T.pack "query") Nothing Nothing
+queryAttr = "query"
 
 {- A notification about a stage of pairing. -}
 pairingNotification :: PairStage -> UUID -> JID -> JID -> Message
-pairingNotification pairstage u tojid fromjid =
-	(gitAnnexMessage tag)
-		{ messageTo = Just tojid
-		, messageFrom = Just fromjid
-		}
-  where
-	tag = gitAnnexTag pairAttr $
-		encodePairingNotification pairstage u
+pairingNotification pairstage u = gitAnnexMessage $ 
+	gitAnnexTag pairAttr $ encodePairingNotification pairstage u
 
 pairAttr :: Name
-pairAttr = Name (T.pack "pair") Nothing Nothing
+pairAttr = "pair"
 
 encodePairingNotification :: PairStage -> UUID -> Text
 encodePairingNotification pairstage u = T.unwords $ map T.pack
@@ -122,6 +128,57 @@ decodePairingNotification t msg = parse $ words $ T.unpack t
 		<*> pure (toUUID u)
 	parse _ = Nothing
 
+pushRequest :: JID -> JID -> Message
+pushRequest = gitAnnexMessage $ gitAnnexTag pushRequestAttr T.empty
+
+pushRequestAttr :: Name
+pushRequestAttr = "pushrequest"
+
+startingPush :: JID -> JID -> Message
+startingPush = gitAnnexMessage $ gitAnnexTag startingPushAttr T.empty
+
+startingPushAttr :: Name
+startingPushAttr = "startingpush"
+
+receivePackOutput :: ByteString -> JID -> JID -> Message
+receivePackOutput = gitAnnexMessage .
+	gitAnnexTagContent receivePackAttr T.empty . encodeTagContent
+
+receivePackAttr :: Name
+receivePackAttr = "rp"
+
+sendPackOutput :: ByteString -> JID -> JID -> Message
+sendPackOutput = gitAnnexMessage .
+	gitAnnexTagContent sendPackAttr T.empty . encodeTagContent
+
+sendPackAttr :: Name
+sendPackAttr = "sp"
+
+receivePackDone :: ExitCode -> JID -> JID -> Message
+receivePackDone = gitAnnexMessage . gitAnnexTag receivePackAttr . T.pack . show . toi
+  where
+	toi (ExitSuccess) = 0
+	toi (ExitFailure i) = i
+
+decodeReceivePackDone :: Text -> ExitCode
+decodeReceivePackDone t = fromMaybe (ExitFailure 1) $
+	fromi <$> readish (T.unpack t)
+  where
+	fromi 0 = ExitSuccess
+	fromi i = ExitFailure i
+
+receivePackDoneAttr :: Name
+receivePackDoneAttr = "rpdone"
+
+{- Base 64 encoding a ByteString to use as the content of a tag. -}
+encodeTagContent :: ByteString -> [Node]
+encodeTagContent b = [NodeContent $ ContentText $ T.pack $ B64.encode $ B.unpack b]
+
+decodeTagContent :: Element -> Maybe ByteString
+decodeTagContent elt = B.pack <$> B64.decode s
+  where
+	s = T.unpack $ T.concat $ elementText elt
+
 {- The JID without the client part. -}
 baseJID :: JID -> JID
 baseJID j = JID (jidNode j) (jidDomain j) Nothing
@@ -133,12 +190,11 @@ silentMessage = (emptyMessage MessageChat)
 	{ messagePayloads = [ emptybody ] }
   where
 	emptybody = Element
-		{ elementName = Name (T.pack "body") Nothing Nothing
+		{ elementName = "body"
 		, elementAttributes = []
 		, elementNodes = []
 		}
 
 {- Add to a presence to mark its client as extended away. -}
 extendedAway :: Element
-extendedAway = Element (Name (T.pack "show") Nothing Nothing) []
-	[NodeContent $ ContentText $ T.pack "xa"]
+extendedAway = Element "show" [] [NodeContent $ ContentText "xa"]
