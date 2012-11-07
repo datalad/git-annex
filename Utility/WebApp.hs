@@ -86,10 +86,9 @@ localSocket = do
 		go' :: Int -> AddrInfo -> IO Socket
 		go' 0 _ = error "unable to bind to local socket"
 		go' n addr = do
-			r <- tryIO $ bracketOnError (open addr) close (use addr)
+			r <- tryIO $ bracketOnError (open addr) sClose (use addr)
 			either (const $ go' (pred n) addr) return r
 		open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
-		close = sClose
 		use addr sock = do
 			setSocketOption sock ReuseAddr 1
 			bindSocket sock (addrAddress addr)
