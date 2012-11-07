@@ -105,12 +105,12 @@ pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
 	url <- liftIO $ renderUrl urlrenderer (FinishLocalPairR msg) []
-	close <- asIO1 removeAlert
+	closealert <- asIO1 removeAlert
 	void $ addAlert $ pairRequestReceivedAlert repo
 		AlertButton
 			{ buttonUrl = url
 			, buttonLabel = T.pack "Respond"
-			, buttonAction = Just close
+			, buttonAction = Just closealert
 			}
   where
 	repo = pairRepo msg
