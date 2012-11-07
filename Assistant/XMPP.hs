@@ -38,23 +38,23 @@ class GitAnnexTaggable a where
 	hasGitAnnexTag = isJust . extractGitAnnexTag
 
 instance GitAnnexTaggable Message where
-	insertGitAnnexTag m e = m { messagePayloads = e : messagePayloads m }
+	insertGitAnnexTag m elt = m { messagePayloads = elt : messagePayloads m }
 	extractGitAnnexTag = headMaybe . filter isGitAnnexTag . messagePayloads
 
 instance GitAnnexTaggable Presence where
 	-- always mark extended away
-	insertGitAnnexTag p e = p { presencePayloads = extendedAway : e : presencePayloads p }
+	insertGitAnnexTag p elt = p { presencePayloads = extendedAway : elt : presencePayloads p }
 	extractGitAnnexTag = headMaybe . filter isGitAnnexTag . presencePayloads
 
-{- Gets the attr and value from a git-annex tag. -}
+{- Gets the attr and its value value from a git-annex tag.
+ -
+ - Each git-annex tag has a single attribute. -}
 getGitAnnexAttrValue :: GitAnnexTaggable a => a -> Maybe (Name, Text)
 getGitAnnexAttrValue a = case extractGitAnnexTag a of
-	Just (Element _ [(attr, content)] []) -> Just $
-		(attr, T.concat $ map unpack content)
+	Just (tag@(Element _ [(attr, _)] _)) -> (,)
+		<$> pure attr
+		<*> attributeText attr tag
 	_ -> Nothing
-  where
-	unpack (ContentText t) = t
-	unpack (ContentEntity t) = t
 
 {- A presence with a git-annex tag in it. -}
 gitAnnexPresence :: Element -> Presence
