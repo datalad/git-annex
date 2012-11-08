@@ -55,14 +55,16 @@ instance GitAnnexTaggable Presence where
 	insertGitAnnexTag p elt = p { presencePayloads = extendedAway : elt : presencePayloads p }
 	extractGitAnnexTag = headMaybe . filter isGitAnnexTag . presencePayloads
 
-{- Gets the attr and its value value from a git-annex tag.
+{- Gets the attr and its value value from a git-annex tag, as well as the
+ - tag.
  -
  - Each git-annex tag has a single attribute. -}
-getGitAnnexAttrValue :: GitAnnexTaggable a => a -> Maybe (Name, Text)
+getGitAnnexAttrValue :: GitAnnexTaggable a => a -> Maybe (Name, Text, Element)
 getGitAnnexAttrValue a = case extractGitAnnexTag a of
-	Just (tag@(Element _ [(attr, _)] _)) -> (,)
+	Just (tag@(Element _ [(attr, _)] _)) -> (,,)
 		<$> pure attr
 		<*> attributeText attr tag
+		<*> pure tag
 	_ -> Nothing
 
 {- A presence with a git-annex tag in it. -}
@@ -120,16 +122,19 @@ encodePairingNotification pairstage u = T.unwords $ map T.pack
 	]
 
 decodePairingNotification :: Text -> Message -> Maybe NetMessage
-decodePairingNotification t msg = parse $ words $ T.unpack t
+decodePairingNotification t m = parse $ words $ T.unpack t
   where
 	parse [stage, u] = PairingNotification
 		<$> readish stage
-		<*> (formatJID <$> messageFrom msg)
+		<*> (formatJID <$> messageFrom m)
 		<*> pure (toUUID u)
 	parse _ = Nothing
 
 pushRequest :: JID -> JID -> Message
 pushRequest = gitAnnexMessage $ gitAnnexTag pushRequestAttr T.empty
+
+decodePushRequest :: Message -> Maybe NetMessage
+decodePushRequest m = PushRequest <$> (formatJID <$> messageFrom m)
 
 pushRequestAttr :: Name
 pushRequestAttr = "pushrequest"
@@ -140,12 +145,20 @@ startingPush = gitAnnexMessage $ gitAnnexTag startingPushAttr T.empty
 startingPushAttr :: Name
 startingPushAttr = "startingpush"
 
+decodeStartingPush :: Message -> Maybe NetMessage
+decodeStartingPush m = StartingPush <$> (formatJID <$> messageFrom m)
+
 receivePackOutput :: ByteString -> JID -> JID -> Message
 receivePackOutput = gitAnnexMessage .
 	gitAnnexTagContent receivePackAttr T.empty . encodeTagContent
 
 receivePackAttr :: Name
 receivePackAttr = "rp"
+
+decodeReceivePackOutput :: Element -> Message -> Maybe NetMessage
+decodeReceivePackOutput t m = ReceivePackOutput
+	<$> (formatJID <$> messageFrom m)
+	<*> decodeTagContent t
 
 sendPackOutput :: ByteString -> JID -> JID -> Message
 sendPackOutput = gitAnnexMessage .
@@ -154,15 +167,21 @@ sendPackOutput = gitAnnexMessage .
 sendPackAttr :: Name
 sendPackAttr = "sp"
 
+decodeSendPackOutput :: Element -> Message -> Maybe NetMessage
+decodeSendPackOutput t m = SendPackOutput
+	<$> (formatJID <$> messageFrom m)
+	<*> decodeTagContent t
+
 receivePackDone :: ExitCode -> JID -> JID -> Message
 receivePackDone = gitAnnexMessage . gitAnnexTag receivePackAttr . T.pack . show . toi
   where
 	toi (ExitSuccess) = 0
 	toi (ExitFailure i) = i
 
-decodeReceivePackDone :: Text -> ExitCode
-decodeReceivePackDone t = fromMaybe (ExitFailure 1) $
-	fromi <$> readish (T.unpack t)
+decodeReceivePackDone :: Text -> Message -> Maybe NetMessage
+decodeReceivePackDone t m = ReceivePackDone
+	<$> (formatJID <$> messageFrom m)
+	<*> (fromi <$> readish (T.unpack t))
   where
 	fromi 0 = ExitSuccess
 	fromi i = ExitFailure i

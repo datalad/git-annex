@@ -58,11 +58,11 @@ For pairing, a chat message is sent, containing:
 
 To request that a peer push to us, a chat message can be sent:
 
-	<git-annex xmlns='git-annex' pushrequest="" />
+	<git-annex xmlns='git-annex' pushrequest="uuid" />
 
 When a peer is ready to send a git push, it sends:
 
-	<git-annex xmlns='git-annex' startingpush="" />
+	<git-annex xmlns='git-annex' startingpush="uuid" />
 
 The receiver runs `git receive-pack`, and sends back its output in
 one or more chat messages:
@@ -71,7 +71,8 @@ one or more chat messages:
 	007b27ca394d26a05d9b6beefa1b07da456caa2157d7 refs/heads/git-annex report-status delete-refs side-band-64k quiet ofs-delta
 	</git-annex>
 
-The sender replies with the data from `git push`:
+The sender replies with the data from `git push` (which does not need
+to actually be started until this point):
 
 	<git-annex xmlns='git-annex' sp="">
 	data

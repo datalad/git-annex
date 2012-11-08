@@ -52,7 +52,7 @@ xmppClient urlrenderer d = do
 		Just c -> retry (runclient c) =<< getCurrentTime
   where
 	liftAssistant = runAssistant d
-	xAssistant = liftIO . liftAssistant
+	inAssistant = liftIO . liftAssistant
 
 	{- When the client exits, it's restarted;
  	 - if it keeps failing, back off to wait 5 minutes before
@@ -73,30 +73,35 @@ xmppClient urlrenderer d = do
 		selfjid <- bindJID jid
 		putStanza gitAnnexSignature
 
-		xAssistant $ debug ["connected", show selfjid]
+		inAssistant $ debug ["connected", show selfjid]
 		{- The buddy list starts empty each time
 		 - the client connects, so that stale info
 		 - is not retained. -}
-		void $ xAssistant $
+		void $ inAssistant $
 			updateBuddyList (const noBuddies) <<~ buddyList
 
 		xmppThread $ receivenotifications selfjid
 		forever $ do
-			a <- xAssistant $ relayNetMessage selfjid
+			a <- inAssistant $ relayNetMessage selfjid
 			a
 
 	receivenotifications selfjid = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
-		xAssistant $ debug ["received:", show l]
+		inAssistant $ debug ["received:", show l]
 		mapM_ (handle selfjid) l
 
-	handle _ (PresenceMessage p) = void $ xAssistant $ 
+	handle _ (PresenceMessage p) = void $ inAssistant $ 
 		updateBuddyList (updateBuddies p) <<~ buddyList
 	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
-	handle _ (GotNetMessage (NotifyPush us)) = void $ xAssistant $
+	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $
 		pull us
-	handle selfjid (GotNetMessage (PairingNotification stage t u)) =
-		maybe noop (xAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID t)
+	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
+		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
+	handle selfjid (GotNetMessage (PushRequest c)) = error "TODO"
+	handle selfjid (GotNetMessage (StartingPush c)) = error "TODO"
+	handle selfjid (GotNetMessage (ReceivePackOutput c b)) = error "TODO"
+	handle selfjid (GotNetMessage (SendPackOutput c b)) = error "TODO"
+	handle selfjid (GotNetMessage (ReceivePackDone c code)) = error "TODO"
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop
@@ -117,7 +122,7 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceFrom p == Just selfjid = [Ignorable s]
 	| otherwise = maybe [PresenceMessage p] decode (getGitAnnexAttrValue p)
   where
-	decode (attr, v)
+	decode (attr, v, _tag)
 		| attr == pushAttr = impliedp $ GotNetMessage $ NotifyPush $
 			decodePushNotification v
 		| attr == queryAttr = impliedp $ GotNetMessage QueryPresence
@@ -131,10 +136,15 @@ decodeStanza selfjid s@(ReceivedMessage m)
 	| messageType m == MessageError = [ProtocolError s]
 	| otherwise = maybe [Unknown s] decode (getGitAnnexAttrValue m)
   where
-	decode (attr, v)
-		| attr == pairAttr = 
-			[maybe (Unknown s) GotNetMessage (decodePairingNotification v m)]
+	decode (attr, v, tag)
+		| attr == pairAttr = use $ decodePairingNotification v
+		| attr == pushRequestAttr = use decodePushRequest
+		| attr == startingPushAttr = use decodeStartingPush
+		| attr == receivePackAttr = use $ decodeReceivePackOutput tag
+		| attr == sendPackAttr = use $ decodeSendPackOutput tag
+		| attr == receivePackDoneAttr = use $ decodeReceivePackDone v
 		| otherwise = [Unknown s]
+	use v = [maybe (Unknown s) GotNetMessage (v m)]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
@@ -142,15 +152,23 @@ relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = convert =<< waitNetMessage
   where
 	convert (NotifyPush us) = return $ putStanza $ pushNotification us
-	convert QueryPresence = return $ putStanza $ presenceQuery
-	convert (PairingNotification stage t u) = case parseJID t of
-		Nothing -> return $ noop
+	convert QueryPresence = return $ putStanza presenceQuery
+	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
+		changeBuddyPairing tojid True
+		return $ putStanza $ pairingNotification stage u tojid selfjid
+	convert (PushRequest c) = sendclient c pushRequest
+	convert (StartingPush c) = sendclient c startingPush
+	convert (ReceivePackOutput c b) = sendclient c $ receivePackOutput b
+	convert (SendPackOutput c b) = sendclient c $ sendPackOutput b
+	convert (ReceivePackDone c code) = sendclient c $ receivePackDone code
+
+	sendclient c construct = withclient c $ \tojid ->
+		return $ putStanza $ construct tojid selfjid
+	withclient c a = case parseJID c of
+		Nothing -> return noop
 		Just tojid
-			| tojid == selfjid -> return $ noop
-			| otherwise -> do
-				changeBuddyPairing tojid True
-				return $ putStanza $
-					pairingNotification stage u tojid selfjid
+			| tojid == selfjid -> return noop
+			| otherwise -> a tojid
 
 {- Runs a XMPP action in a separate thread, using a session to allow it
  - to access the same XMPP client. -}

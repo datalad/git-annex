@@ -8,6 +8,8 @@
 module Assistant.XMPP.Git where
 
 import Assistant.Common
+import Assistant.NetMessager
+import Assistant.Types.NetMessager
 import Assistant.XMPP
 import Assistant.XMPP.Buddies
 import Assistant.DaemonStatus
@@ -77,7 +79,10 @@ makeXMPPGitRemote buddyname jid u = do
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
 xmppPush :: Remote -> [Ref] -> Assistant Bool
-xmppPush remote refs = do
+xmppPush remote refs = error "TODO"
+
+xmppPush' :: ClientID -> Remote -> [Ref] -> Assistant Bool
+xmppPush' cid remote refs = do
 	program <- liftIO readProgramFile
 
 	(Fd inf, writepush) <- liftIO createPipe
@@ -115,7 +120,7 @@ xmppPush remote refs = do
 		b <- liftIO $ B.hGetSome inh 1024
 		when (B.null b) $
 			liftIO $ killThread =<< myThreadId
-		-- TODO relay b to xmpp
+		sendNetMessage $ SendPackOutput cid b
 		error "TODO"
 	fromxmpp outh = forever $ do
 		-- TODO get b from xmpp
@@ -168,12 +173,13 @@ xmppGitRelay = do
 			| otherwise -> ExitFailure n
 		Nothing -> ExitFailure 1
 
-{- Relays git receive-pack to and from XMPP, and propigates its exit status. -}
-xmppReceivePack :: Assistant Bool
-xmppReceivePack = do
+{- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
+ - its exit status to XMPP. -}
+xmppReceivePack :: ClientID -> Assistant Bool
+xmppReceivePack cid = do
 	feeder <- asIO1 toxmpp
 	reader <- asIO1 fromxmpp
-	controller <- asIO1 controlxmpp
+	sendexitcode <- asIO1 $ sendNetMessage . ReceivePackDone cid
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -185,7 +191,7 @@ xmppReceivePack = do
 		feedertid <- forkIO $ feeder outh
 		void $ reader inh
 		code <- waitForProcess pid
-		void $ controller code
+		void $ sendexitcode code
 		killThread feedertid
 		return $ code == ExitSuccess
   where
@@ -194,7 +200,6 @@ xmppReceivePack = do
 		if B.null b
 			then return () -- EOF
 			else do
-				error "TODO feed b to xmpp"
+				sendNetMessage $ ReceivePackOutput cid b
 				toxmpp outh
 	fromxmpp _inh = error "TODO feed xmpp to inh"
-	controlxmpp _code = error "TODO propigate exit code"

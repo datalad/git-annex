@@ -22,19 +22,22 @@ data NetMessage
 	-- requests other clients to inform us of their presence
 	| QueryPresence
 	-- notification about a stage in the pairing process,
-	-- involving a client identified by the Text, and a UUID.
-	| PairingNotification PairStage Text UUID
+	-- involving a client, and a UUID.
+	| PairingNotification PairStage ClientID UUID
 	-- request that a git push be sent over the out of band network
-	| PushRequest
-	-- indicates that a PushRequest has been seen and a push is starting
-	| StartingPush
+	| PushRequest ClientID
+	-- indicates that a push is starting
+	| StartingPush ClientID
 	-- a chunk of output of git receive-pack
-	| ReceivePackOutput ByteString
+	| ReceivePackOutput ClientID ByteString
 	-- a chuck of output of git send-pack
-	| SendPackOutput ByteString
+	| SendPackOutput ClientID ByteString
 	-- sent when git receive-pack exits, with its exit code
-	| ReceivePackDone ExitCode
+	| ReceivePackDone ClientID ExitCode
 	deriving (Show)
+
+{- Something used to identify a specific client to send the message to. -}
+type ClientID = Text
 
 data NetMessagerControl = NetMessagerControl
 	{ netMessages :: TChan (NetMessage)
