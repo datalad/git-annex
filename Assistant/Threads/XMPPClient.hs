@@ -93,15 +93,14 @@ xmppClient urlrenderer d = do
 	handle _ (PresenceMessage p) = void $ inAssistant $ 
 		updateBuddyList (updateBuddies p) <<~ buddyList
 	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
-	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $
-		pull us
+	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
-	handle selfjid (GotNetMessage (PushRequest c)) = error "TODO"
-	handle selfjid (GotNetMessage (StartingPush c)) = error "TODO"
-	handle selfjid (GotNetMessage (ReceivePackOutput c b)) = error "TODO"
-	handle selfjid (GotNetMessage (SendPackOutput c b)) = error "TODO"
-	handle selfjid (GotNetMessage (ReceivePackDone c code)) = error "TODO"
+	handle _ (GotNetMessage m@(PushRequest _)) = inAssistant $ 
+		unlessM (queueNetPushMessage m) $ void $ handlePush m
+	handle _ (GotNetMessage m@(StartingPush _)) = inAssistant $
+		unlessM (queueNetPushMessage m) $ void $ handlePush m
+	handle _ (GotNetMessage m) = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop

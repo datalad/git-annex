@@ -20,6 +20,8 @@ import Annex.UUID
 import Config
 import Git
 import Git.Command
+import qualified Git.Branch
+import qualified Annex.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 
@@ -31,8 +33,8 @@ import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
 import qualified Data.ByteString as B
 
-configKey :: Remote -> ConfigKey
-configKey r = remoteConfig (Remote.repo r) "xmppaddress"
+configKey :: UnqualifiedConfigKey
+configKey = "xmppaddress"
 
 finishXMPPPairing :: JID -> UUID -> Assistant ()
 finishXMPPPairing jid u = void $ alertWhile alert $
@@ -53,13 +55,15 @@ makeXMPPGitRemote buddyname jid u = do
 	liftAnnex $ do
 		let r = Remote.repo remote
 		storeUUID (remoteConfig r "uuid") u
-		setConfig (configKey remote) xmppaddress
+		setConfig (remoteConfig r configKey) xmppaddress
 	syncNewRemote remote
 	return True
   where
 	xmppaddress = T.unpack $ formatJID $ baseJID jid
 
-{- Pushes the named refs to the remote, over XMPP.
+{- Pushes the named refs to the remote, over XMPP, communicating with a
+ - specific client that either requested the push, or responded to our
+ - StartingPush message.
  -
  - Strategy: Set GIT_SSH to run git-annex. By setting the remote url
  - to "xmppgit:dummy", "git-annex xmppgit" will be run locally by
@@ -78,11 +82,9 @@ makeXMPPGitRemote buddyname jid u = do
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
-xmppPush :: Remote -> [Ref] -> Assistant Bool
-xmppPush remote refs = error "TODO"
-
-xmppPush' :: ClientID -> Remote -> [Ref] -> Assistant Bool
-xmppPush' cid remote refs = do
+xmppPush :: ClientID -> Remote -> [Ref] -> Assistant Bool
+xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
+	sendNetMessage $ StartingPush cid
 	program <- liftIO readProgramFile
 
 	(Fd inf, writepush) <- liftIO createPipe
@@ -107,30 +109,26 @@ xmppPush' cid remote refs = do
 	liftIO $ hSetBuffering outh NoBuffering
 	
 	t1 <- forkIO <~> toxmpp inh
-	t2 <- forkIO <~> fromxmpp outh
-	t3 <- forkIO <~> controlxmpp controlh
+	t2 <- forkIO <~> fromxmpp outh controlh
 
 	ok <- liftIO $ boolSystemEnv "git"
 		(mainparams ++ gitCommandLine params g)
 		(Just $ env ++ myenv)
-	liftIO $ mapM_ killThread [t1, t2, t3]
+	liftIO $ mapM_ killThread [t1, t2]
 	return ok
   where
 	toxmpp inh = forever $ do
 		b <- liftIO $ B.hGetSome inh 1024
-		when (B.null b) $
-			liftIO $ killThread =<< myThreadId
-		sendNetMessage $ SendPackOutput cid b
-		error "TODO"
-	fromxmpp outh = forever $ do
-		-- TODO get b from xmpp
-		let b = undefined
-		liftIO $ B.hPut outh b
-	controlxmpp controlh = do
-		-- TODO wait for control message from xmpp
-		let exitcode = undefined :: Int
-		liftIO $ hPutStrLn controlh (show exitcode)
-		
+		if B.null b
+			then liftIO $ killThread =<< myThreadId
+			else sendNetMessage $ SendPackOutput cid b
+	fromxmpp outh controlh = forever $ do
+		m <- waitNetPushMessage
+		case m of
+			(ReceivePackOutput _ b) -> liftIO $ B.hPut outh b
+			(ReceivePackDone _ exitcode) -> do
+				liftIO $ hPutStrLn controlh (show exitcode)
+			_ -> noop
 
 relayIn :: String
 relayIn = "GIT_ANNEX_XMPPGIT_IN"
@@ -176,7 +174,7 @@ xmppGitRelay = do
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
 xmppReceivePack :: ClientID -> Assistant Bool
-xmppReceivePack cid = do
+xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 	feeder <- asIO1 toxmpp
 	reader <- asIO1 fromxmpp
 	sendexitcode <- asIO1 $ sendNetMessage . ReceivePackDone cid
@@ -202,4 +200,36 @@ xmppReceivePack cid = do
 			else do
 				sendNetMessage $ ReceivePackOutput cid b
 				toxmpp outh
-	fromxmpp _inh = error "TODO feed xmpp to inh"
+	fromxmpp inh = forever $ do
+		m <- waitNetPushMessage
+		case m of
+			(SendPackOutput _ b) -> liftIO $ B.hPut inh b
+			_ -> noop
+
+xmppRemotes :: ClientID -> Assistant [Remote]
+xmppRemotes cid = case baseJID <$> parseJID cid of
+	Nothing -> return []
+	Just jid -> do
+		rs <- syncRemotes <$> getDaemonStatus
+		let want = T.unpack $ formatJID jid
+		liftAnnex $ filterM (matching want) rs
+  where
+	matching want r = do
+		v <- getRemoteConfig (Remote.repo r) configKey ""
+		return $ v == want
+
+handleDeferred :: NetMessage -> Assistant ()
+handleDeferred = void . handlePush
+
+handlePush :: NetMessage -> Assistant Bool
+handlePush (PushRequest cid) = do
+	rs <- xmppRemotes cid
+	current <- liftAnnex $ inRepo Git.Branch.current
+	let refs = catMaybes [current, Just Annex.Branch.fullname]
+	any id <$> (forM rs $ \r -> xmppPush cid r refs)
+handlePush (StartingPush cid) = do
+	rs <- xmppRemotes cid
+	if null rs
+		then return False
+		else xmppReceivePack cid
+handlePush _ = return False

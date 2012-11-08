@@ -105,10 +105,10 @@
  - BranchChanged (STM SampleVar)
  - 	Changes to the git-annex branch are indicated by updating this
  - 	SampleVar.
- - NetMessager (STM TChan, SampleVar)
- - 	Used to feed messages to the built-in XMPP client, and
- - 	signal it when it needs to restart due to configuration or
- - 	networking changes.
+ - NetMessager (STM TChan, TMVar, SampleVar)
+ - 	Used to feed messages to the built-in XMPP client, handle
+ - 	pushes, and signal it when it needs to restart due to configuration
+ - 	or networking changes.
  - UrlRenderer (MVar)
  - 	A Yesod route rendering function is stored here. This allows
  - 	things that need to render Yesod routes to block until the webapp
