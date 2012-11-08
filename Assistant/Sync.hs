@@ -66,6 +66,8 @@ reconnectRemotes notifypushes rs = void $ do
  - as "git annex sync", except in parallel, and will co-exist with use of
  - "git annex sync".
  -
+ - After the pushes to normal git remotes, also handles pushes over XMPP.
+ -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads.
  -
