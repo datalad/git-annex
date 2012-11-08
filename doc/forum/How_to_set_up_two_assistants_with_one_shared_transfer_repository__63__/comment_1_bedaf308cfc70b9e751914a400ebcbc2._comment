@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 1"
+ date="2012-11-08T21:29:26Z"
+ content="""
+Just adding the same server with the same path is the right thing to do, it will use the existing repo.
+
+Probably the problem you're having is that one client doesn't know when the other client has sent data to the server. I've recently been adding XMPP (Jabber) support to deal with that. That is not yet in a released version of git-annex, but it is available in git master.
+"""]]
