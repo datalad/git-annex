@@ -61,7 +61,7 @@ data AssistantData = AssistantData
 	, changeChan :: ChangeChan
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
-	, netMessagerControl :: NetMessagerControl
+	, netMessager :: NetMessager
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -77,7 +77,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newChangeChan
 	<*> newBranchChangeHandle
 	<*> newBuddyList
-	<*> newNetMessagerControl
+	<*> newNetMessager
 
 runAssistant :: AssistantData -> Assistant a -> IO a
 runAssistant d a = runReaderT (mkAssistant a) d

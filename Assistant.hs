@@ -105,7 +105,7 @@
  - BranchChanged (STM SampleVar)
  - 	Changes to the git-annex branch are indicated by updating this
  - 	SampleVar.
- - NetMessagerControl (STM TChan, SampleVar)
+ - NetMessager (STM TChan, SampleVar)
  - 	Used to feed messages to the built-in XMPP client, and
  - 	signal it when it needs to restart due to configuration or
  - 	networking changes.

@@ -39,12 +39,12 @@ data NetMessage
 {- Something used to identify a specific client to send the message to. -}
 type ClientID = Text
 
-data NetMessagerControl = NetMessagerControl
+data NetMessager = NetMessager
 	{ netMessages :: TChan (NetMessage)
 	, netMessagerRestart :: MSampleVar ()
 	}
 
-newNetMessagerControl :: IO NetMessagerControl
-newNetMessagerControl = NetMessagerControl
+newNetMessager :: IO NetMessager
+newNetMessager = NetMessager
 	<$> atomically newTChan
 	<*> newEmptySV

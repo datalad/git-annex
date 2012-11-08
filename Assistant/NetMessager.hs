@@ -15,14 +15,14 @@ import Control.Concurrent.MSampleVar
 
 sendNetMessage :: NetMessage -> Assistant ()
 sendNetMessage m = 
-	(atomically . flip writeTChan m) <<~ (netMessages . netMessagerControl)
+	(atomically . flip writeTChan m) <<~ (netMessages . netMessager)
 
 waitNetMessage :: Assistant (NetMessage)
-waitNetMessage = (atomically . readTChan) <<~ (netMessages . netMessagerControl)
+waitNetMessage = (atomically . readTChan) <<~ (netMessages . netMessager)
 
 notifyNetMessagerRestart :: Assistant ()
 notifyNetMessagerRestart =
-	flip writeSV () <<~ (netMessagerRestart . netMessagerControl)
+	flip writeSV () <<~ (netMessagerRestart . netMessager)
 
 waitNetMessagerRestart :: Assistant ()
-waitNetMessagerRestart = readSV <<~ (netMessagerRestart . netMessagerControl)
+waitNetMessagerRestart = readSV <<~ (netMessagerRestart . netMessager)
