@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlsfh8P7pN2OBr24ztT_7AyYQLCcVqqa-4"
+ nickname="Daniel"
+ subject="comment 2"
+ date="2012-11-09T17:49:32Z"
+ content="""
+The master is segfaulting on one of my machines (the mac), but XMMP sounds good in general.
+
+In the meantime - does git annex sync do what the assistant does? Or is there a command to tell the assistant to check for remote changes? (or a way to get it to auto-poll)
+"""]]
