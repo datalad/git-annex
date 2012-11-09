@@ -159,7 +159,10 @@ fromRemoteLocation s repo = gen $ calcloc s
 				(prefix, suffix) = ("url." , ".insteadof")
 		urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
 		-- git remotes can be written scp style -- [user@]host:dir
-		scpstyle v = ":" `isInfixOf` v && not ("//" `isInfixOf` v)
+		-- but foo::bar is a git-remote-helper location instead
+		scpstyle v = ":" `isInfixOf` v 
+			&& not ("//" `isInfixOf` v)
+			&& not ("::" `isInfixOf` v)
 		scptourl v = "ssh://" ++ host ++ slash dir
 			where
 				(host, dir) = separate (== ':') v
