@@ -21,3 +21,4 @@ cabal-dev
 .dir-locals.el
 # OSX related
 .DS_Store
+.virthualenv
