@@ -96,10 +96,12 @@ xmppClient urlrenderer d = do
 	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
+	handle _ (GotNetMessage m@(CanPush _)) = inAssistant $ 
+		unlessM (queueNetPushMessage m) $ void $ handlePushMessage m
 	handle _ (GotNetMessage m@(PushRequest _)) = inAssistant $ 
-		unlessM (queueNetPushMessage m) $ void $ handlePush m
+		unlessM (queueNetPushMessage m) $ void $ handlePushMessage m
 	handle _ (GotNetMessage m@(StartingPush _)) = inAssistant $
-		unlessM (queueNetPushMessage m) $ void $ handlePush m
+		unlessM (queueNetPushMessage m) $ void $ handlePushMessage m
 	handle _ (GotNetMessage m) = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
@@ -137,6 +139,7 @@ decodeStanza selfjid s@(ReceivedMessage m)
   where
 	decode (attr, v, tag)
 		| attr == pairAttr = use $ decodePairingNotification v
+		| attr == canPushAttr = use decodeCanPush
 		| attr == pushRequestAttr = use decodePushRequest
 		| attr == startingPushAttr = use decodeStartingPush
 		| attr == receivePackAttr = use $ decodeReceivePackOutput tag
@@ -155,6 +158,7 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
 		changeBuddyPairing tojid True
 		return $ putStanza $ pairingNotification stage u tojid selfjid
+	convert (CanPush c) = sendclient c canPush
 	convert (PushRequest c) = sendclient c pushRequest
 	convert (StartingPush c) = sendclient c startingPush
 	convert (ReceivePackOutput c b) = sendclient c $ receivePackOutput b

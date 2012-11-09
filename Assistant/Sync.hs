@@ -27,6 +27,7 @@ import Annex.UUID
 
 import Data.Time.Clock
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Control.Concurrent
 
 {- Syncs with remotes that may have been disconnected for a while.
@@ -66,7 +67,8 @@ reconnectRemotes notifypushes rs = void $ do
  - as "git annex sync", except in parallel, and will co-exist with use of
  - "git annex sync".
  -
- - After the pushes to normal git remotes, also handles pushes over XMPP.
+ - After the pushes to normal git remotes, also signals XMPP clients that
+ - they can request an XMPP push.
  -
  - Avoids running possibly long-duration commands in the Annex monad, so
  - as not to block other threads.
@@ -95,7 +97,10 @@ pushToRemotes now notifypushes remotes = do
 			<$> gitRepo
 			<*> inRepo Git.Branch.current
 			<*> getUUID
-	go True branch g u remotes
+	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
+	r <- go True branch g u normalremotes
+	mapM_ (sendNetMessage . CanPush . getXMPPClientID) xmppremotes
+	return r
   where
 	go _ Nothing _ _ _ = return True -- no branch, so nothing to do
 	go shouldretry (Just branch) g u rs =  do
@@ -167,3 +172,12 @@ syncNewRemote remote = do
 	thread <- asIO $ do
 		reconnectRemotes False [remote]
 	void $ liftIO $ forkIO $ thread
+
+{- Remotes using the XMPP transport have urls like xmpp::user@host -}
+isXMPPRemote :: Remote -> Bool
+isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
+  where
+	r = Remote.repo remote
+
+getXMPPClientID :: Remote -> ClientID
+getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

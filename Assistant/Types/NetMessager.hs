@@ -25,6 +25,8 @@ data NetMessage
 	-- notification about a stage in the pairing process,
 	-- involving a client, and a UUID.
 	| PairingNotification PairStage ClientID UUID
+	-- indicates that we have data to push over the out of band network
+	| CanPush ClientID
 	-- request that a git push be sent over the out of band network
 	| PushRequest ClientID
 	-- indicates that a push is starting
@@ -44,6 +46,7 @@ getClientID :: NetMessage -> Maybe ClientID
 getClientID (NotifyPush _) = Nothing
 getClientID QueryPresence = Nothing
 getClientID (PairingNotification _ cid _) = Just cid
+getClientID (CanPush cid) = Just cid
 getClientID (PushRequest cid) = Just cid
 getClientID (StartingPush cid) = Just cid
 getClientID (ReceivePackOutput cid _) = Just cid

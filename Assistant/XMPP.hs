@@ -130,6 +130,15 @@ decodePairingNotification t m = parse $ words $ T.unpack t
 		<*> pure (toUUID u)
 	parse _ = Nothing
 
+canPush :: JID -> JID -> Message
+canPush = gitAnnexMessage $ gitAnnexTag canPushAttr T.empty
+
+decodeCanPush :: Message -> Maybe NetMessage
+decodeCanPush m = CanPush <$> (formatJID <$> messageFrom m)
+
+canPushAttr :: Name
+canPushAttr = "canpush"
+
 pushRequest :: JID -> JID -> Message
 pushRequest = gitAnnexMessage $ gitAnnexTag pushRequestAttr T.empty
 

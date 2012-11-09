@@ -56,13 +56,18 @@ For pairing, a chat message is sent, containing:
 
 ### git push over XMPP
 
+To indicate that we could push over XMPP, a chat message is sent,
+to the accounts associated with known XMPP remotes.
+
+	<git-annex xmlns='git-annex' canpush="" />
+
 To request that a remote push to us, a chat message can be sent.
 
 	<git-annex xmlns='git-annex' pushrequest="uuid" />
 
-The push request is typically sent directed at the account associated
-with the remote, not to a specific client. So it can result in multiple
-responses.
+When replying to an xmpppush message, this is directed at the specific
+client that indicated it could push. But it can also be sent to 
+the account associated with an XMPP remote to solicit pushes from all clients.
 
 When a peer is ready to send a git push, it sends:
 

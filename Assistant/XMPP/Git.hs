@@ -34,9 +34,6 @@ import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
 import qualified Data.ByteString as B
 
-configKey :: UnqualifiedConfigKey
-configKey = "xmppaddress"
-
 finishXMPPPairing :: JID -> UUID -> Assistant ()
 finishXMPPPairing jid u = void $ alertWhile alert $
 	makeXMPPGitRemote buddy (baseJID jid) u
@@ -47,10 +44,7 @@ finishXMPPPairing jid u = void $ alertWhile alert $
 makeXMPPGitRemote :: String -> JID -> UUID -> Assistant Bool
 makeXMPPGitRemote buddyname jid u = do
 	remote <- liftAnnex $ addRemote $ makeGitRemote buddyname xmppaddress
-	liftAnnex $ do
-		let r = Remote.repo remote
-		storeUUID (remoteConfig r "uuid") u
-		setConfig (remoteConfig r configKey) xmppaddress
+	liftAnnex $ storeUUID (remoteConfig (Remote.repo remote) "uuid") u
 	syncNewRemote remote
 	return True
   where
@@ -221,22 +215,29 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
 		let want = T.unpack $ formatJID jid
 		liftAnnex $ filterM (matching want) rs
   where
-	matching want r = do
-		v <- getRemoteConfig (Remote.repo r) configKey ""
-		return $ v == want
+	matching want remote = do
+		let r = Remote.repo remote
+		return $ repoIsUrl r && repoLocation r == "xmpp::" ++ want
 
 handleDeferred :: NetMessage -> Assistant ()
-handleDeferred = void . handlePush
+handleDeferred = void . handlePushMessage
 
-handlePush :: NetMessage -> Assistant Bool
-handlePush (PushRequest cid) = do
+handlePushMessage :: NetMessage -> Assistant Bool
+handlePushMessage (CanPush cid) = do
+	rs <- xmppRemotes cid
+	if null rs
+		then return False
+		else do
+			sendNetMessage $ PushRequest cid
+			return True
+handlePushMessage (PushRequest cid) = do
 	rs <- xmppRemotes cid
 	current <- liftAnnex $ inRepo Git.Branch.current
 	let refs = catMaybes [current, Just Annex.Branch.fullname]
 	any id <$> (forM rs $ \r -> xmppPush cid r refs)
-handlePush (StartingPush cid) = do
+handlePushMessage (StartingPush cid) = do
 	rs <- xmppRemotes cid
 	if null rs
 		then return False
 		else xmppReceivePack cid
-handlePush _ = return False
+handlePushMessage _ = return False
