@@ -224,24 +224,20 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
 		return $ repoIsUrl r && repoLocation r == "xmpp::" ++ want
 
 handleDeferred :: NetMessage -> Assistant ()
-handleDeferred = void . handlePushMessage
+handleDeferred = handlePushMessage
 
-handlePushMessage :: NetMessage -> Assistant Bool
+handlePushMessage :: NetMessage -> Assistant ()
 handlePushMessage (CanPush cid) = do
 	rs <- xmppRemotes cid
-	if null rs
-		then return False
-		else do
-			sendNetMessage $ PushRequest cid
-			return True
+	unless (null rs) $
+		sendNetMessage $ PushRequest cid
 handlePushMessage (PushRequest cid) = do
 	rs <- xmppRemotes cid
 	current <- liftAnnex $ inRepo Git.Branch.current
 	let refs = catMaybes [current, Just Annex.Branch.fullname]
-	any id <$> (forM rs $ \r -> xmppPush cid r refs)
+	forM_ rs $ \r -> xmppPush cid r refs
 handlePushMessage (StartingPush cid) = do
 	rs <- xmppRemotes cid
-	if null rs
-		then return False
-		else xmppReceivePack cid
-handlePushMessage _ = return False
+	unless (null rs) $
+		void $ xmppReceivePack cid
+handlePushMessage _ = noop
