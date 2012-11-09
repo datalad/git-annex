@@ -87,7 +87,7 @@ xmppClient urlrenderer d = do
 
 	receivenotifications selfjid = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
-		inAssistant $ debug ["received:", show l]
+		-- inAssistant $ debug ["received:", show l]
 		mapM_ (handle selfjid) l
 
 	handle _ (PresenceMessage p) = void $ inAssistant $ 
