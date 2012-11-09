@@ -20,5 +20,22 @@ seek = [withWords start]
 
 start :: [String] -> CommandStart
 start _ = do
+	liftIO gitRemoteHelper
 	liftIO xmppGitRelay
 	stop
+
+{- A basic implementation of the git-remote-helpers protocol. -}
+gitRemoteHelper :: IO ()
+gitRemoteHelper = do
+	expect "capabilities"
+	respond ["connect"]
+	expect "connect git-receive-pack"
+	respond []
+  where
+	expect s = do
+		cmd <- getLine
+		unless (cmd == s) $
+			error $ "git-remote-helpers protocol error: expected: " ++ s ++ ", but got: " ++ cmd
+	respond l = do
+		mapM_ putStrLn l
+		putStrLn ""

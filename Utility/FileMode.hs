@@ -48,6 +48,9 @@ writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
 readModes :: [FileMode]
 readModes = [ownerReadMode, groupReadMode, otherReadMode]
 
+executeModes :: [FileMode]
+executeModes = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
+
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
 preventWrite f = modifyFileMode f $ removeModes writeModes
@@ -72,9 +75,7 @@ isSymLink = checkMode symbolicLinkMode
 
 {- Checks if a file has any executable bits set. -}
 isExecutable :: FileMode -> Bool
-isExecutable mode = combineModes ebits `intersectFileModes` mode /= 0
-	where
-		ebits = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
+isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}

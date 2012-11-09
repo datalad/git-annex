@@ -24,6 +24,7 @@ import qualified Git.Branch
 import qualified Annex.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
+import Utility.FileMode
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -43,15 +44,9 @@ finishXMPPPairing jid u = void $ alertWhile alert $
 	buddy = T.unpack $ buddyName jid
 	alert = pairRequestAcknowledgedAlert buddy Nothing
 
-{- A git remote for an XMPP user? This is represented as a git remote
- - that has no location set. The user's XMPP address is stored in the
- - xmppaddress setting.
- -
- - The UUID of their remote is also stored as usual.
- -}
 makeXMPPGitRemote :: String -> JID -> UUID -> Assistant Bool
 makeXMPPGitRemote buddyname jid u = do
-	remote <- liftAnnex $ addRemote $ makeGitRemote buddyname "" -- no location
+	remote <- liftAnnex $ addRemote $ makeGitRemote buddyname xmppaddress
 	liftAnnex $ do
 		let r = Remote.repo remote
 		storeUUID (remoteConfig r "uuid") u
@@ -59,15 +54,15 @@ makeXMPPGitRemote buddyname jid u = do
 	syncNewRemote remote
 	return True
   where
-	xmppaddress = T.unpack $ formatJID $ baseJID jid
+	xmppaddress = "xmpp::" ++ T.unpack (formatJID $ baseJID jid)
 
 {- Pushes the named refs to the remote, over XMPP, communicating with a
  - specific client that either requested the push, or responded to our
- - StartingPush message.
+ - message.
  -
- - Strategy: Set GIT_SSH to run git-annex. By setting the remote url
- - to "xmppgit:dummy", "git-annex xmppgit" will be run locally by
- - "git push". The dataflow them becomes:
+ - To handle xmpp:: urls, git push will run git-remote-xmpp, which is
+ - injected into its PATH, and in turn runs git-annex xmppgit. The
+ - dataflow them becomes:
  - 
  - git push <--> git-annex xmppgit <--> xmppPush <-------> xmpp
  -                                                          |
@@ -85,22 +80,25 @@ makeXMPPGitRemote buddyname jid u = do
 xmppPush :: ClientID -> Remote -> [Ref] -> Assistant Bool
 xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	sendNetMessage $ StartingPush cid
-	program <- liftIO readProgramFile
 
 	(Fd inf, writepush) <- liftIO createPipe
 	(readpush, Fd outf) <- liftIO createPipe
 	(Fd controlf, writecontrol) <- liftIO createPipe
 
+	tmp <- liftAnnex $ fromRepo gitAnnexTmpDir
+	let tmpdir = tmp </> "xmppgit"
+	installwrapper tmpdir
+
 	env <- liftIO getEnvironment
+	path <- liftIO getSearchPath
 	let myenv =
-		[ ("GIT_SSH", program)
+		[ ("PATH", join [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)
 		]
 	g <- liftAnnex gitRepo
 	let name = Remote.name remote
-	let mainparams = [Param "-c", Param $ "remote."++name++".url=xmpp:client"]
 	let params = Param "push" : Param name : map (Param . show) refs
 
 	inh <- liftIO $ fdToHandle readpush
@@ -112,7 +110,7 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	t2 <- forkIO <~> fromxmpp outh controlh
 
 	ok <- liftIO $ boolSystemEnv "git"
-		(mainparams ++ gitCommandLine params g)
+		(gitCommandLine params g)
 		(Just $ env ++ myenv)
 	liftIO $ mapM_ killThread [t1, t2]
 	return ok
@@ -129,6 +127,15 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 			(ReceivePackDone _ exitcode) -> do
 				liftIO $ hPutStrLn controlh (show exitcode)
 			_ -> noop
+	installwrapper tmpdir = liftIO $ do
+		createDirectoryIfMissing True tmpdir
+		let wrapper = tmpdir </> "git-remote-xmpp"
+		program <- readProgramFile
+		writeFile wrapper $ unlines
+			[ "#!/bin/sh"
+			, "exec " ++ program ++ " xmppgit"
+			]
+		modifyFileMode wrapper $ addModes executeModes
 
 relayIn :: String
 relayIn = "GIT_ANNEX_XMPPGIT_IN"
