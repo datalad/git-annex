@@ -182,7 +182,7 @@ decodeSendPackOutput t m = SendPackOutput
 	<*> decodeTagContent t
 
 receivePackDone :: ExitCode -> JID -> JID -> Message
-receivePackDone = gitAnnexMessage . gitAnnexTag receivePackAttr . T.pack . show . toi
+receivePackDone = gitAnnexMessage . gitAnnexTag receivePackDoneAttr . T.pack . show . toi
   where
 	toi (ExitSuccess) = 0
 	toi (ExitFailure i) = i
