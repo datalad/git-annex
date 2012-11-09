@@ -39,3 +39,4 @@ gitRemoteHelper = do
 	respond l = do
 		mapM_ putStrLn l
 		putStrLn ""
+		hFlush stdout
