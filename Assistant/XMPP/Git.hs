@@ -19,7 +19,7 @@ import Assistant.Sync
 import Annex.UUID
 import Config
 import Git
-import Git.Command
+import qualified Git.Command
 import qualified Git.Branch
 import qualified Annex.Branch
 import Locations.UserConfig
@@ -33,6 +33,7 @@ import System.Posix.Types
 import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
 import qualified Data.ByteString as B
+import qualified Data.Map as M
 
 finishXMPPPairing :: JID -> UUID -> Assistant ()
 finishXMPPPairing jid u = void $ alertWhile alert $
@@ -85,15 +86,13 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 
 	env <- liftIO getEnvironment
 	path <- liftIO getSearchPath
-	let myenv =
+	let myenv = M.fromList
 		[ ("PATH", join [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)
 		]
-	g <- liftAnnex gitRepo
-	let name = Remote.name remote
-	let params = Param "push" : Param name : map (Param . show) refs
+		`M.union` M.fromList env
 
 	inh <- liftIO $ fdToHandle readpush
 	outh <- liftIO $ fdToHandle writepush
@@ -103,9 +102,14 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	t1 <- forkIO <~> toxmpp inh
 	t2 <- forkIO <~> fromxmpp outh controlh
 
-	ok <- liftIO $ boolSystemEnv "git"
-		(gitCommandLine params g)
-		(Just $ env ++ myenv)
+	{- This can take a long time to run, so avoid running it in the
+	 - Annex monad. Also, override environment. -}
+	g <- liftAnnex gitRepo
+	let g' = g { gitEnv = Just $ M.toList myenv }
+	let name = Remote.name remote
+	let params = Param name : map (Param . show) refs
+	ok <- liftIO $ Git.Command.runBool "push" params g'
+
 	liftIO $ mapM_ killThread [t1, t2]
 	return ok
   where
