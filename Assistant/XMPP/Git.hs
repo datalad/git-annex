@@ -114,16 +114,19 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	return ok
   where
 	toxmpp inh = forever $ do
-		b <- liftIO $ B.hGetSome inh 1024
+		b <- liftIO $ B.hGetSome inh chunkSize
 		if B.null b
 			then liftIO $ killThread =<< myThreadId
 			else sendNetMessage $ SendPackOutput cid b
 	fromxmpp outh controlh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(ReceivePackOutput _ b) -> liftIO $ B.hPut outh b
-			(ReceivePackDone _ exitcode) -> do
-				liftIO $ hPutStrLn controlh (show exitcode)
+			(ReceivePackOutput _ b) -> liftIO $ do
+				B.hPut outh b
+				hFlush outh
+			(ReceivePackDone _ exitcode) -> liftIO $ do
+				hPutStrLn controlh (show exitcode)
+				hFlush controlh
 			_ -> noop
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
@@ -151,7 +154,13 @@ relayHandle var = do
 		Nothing -> error $ var ++ " not set"
 		Just n -> fdToHandle $ Fd n
 
-{- Called by git-annex xmppgit. -}
+{- Called by git-annex xmppgit.
+ -
+ - git-push is talking to us on stdin
+ - we're talking to git-push on stdout
+ - git-receive-pack is talking to us on relayIn (via XMPP)
+ - we're talking to git-receive-pack on relayOut (via XMPP)
+ -}
 xmppGitRelay :: IO ()
 xmppGitRelay = do
 	inh <- relayHandle relayIn
@@ -162,11 +171,21 @@ xmppGitRelay = do
 	{- Is it possible to set up pipes and not need to copy the data
 	 - ourselves? See splice(2) -}
 	void $ forkIO $ forever $ do
-		b <- B.hGetSome inh 1024
-		when (B.null b) $
+		b <- B.hGetSome inh chunkSize
+		when (B.null b) $ do
+			hClose inh
+			hClose stdout
 			killThread =<< myThreadId
 		B.hPut stdout b
-	void $ forkIO $ forever $ B.hGetSome stdin 1024 >>= B.hPut outh
+		hFlush stdout
+	void $ forkIO $ forever $ do
+		b <- B.hGetSome stdin chunkSize
+		when (B.null b) $ do
+			hClose outh
+			hClose stdin
+			killThread =<< myThreadId
+		B.hPut outh b
+		hFlush outh
 
 	controlh <- relayHandle relayControl
 	s <- hGetLine controlh
@@ -191,15 +210,15 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 		}
 	liftIO $ do
 		(Just inh, Just outh, _, pid) <- createProcess p
-		feedertid <- forkIO $ feeder outh
-		void $ reader inh
+		readertid <- forkIO $ reader inh
+		void $ feeder outh
 		code <- waitForProcess pid
 		void $ sendexitcode code
-		killThread feedertid
+		killThread readertid
 		return $ code == ExitSuccess
   where
 	toxmpp outh = do
-		b <- liftIO $ B.hGetSome outh 1024
+		b <- liftIO $ B.hGetSome outh chunkSize
 		if B.null b
 			then return () -- EOF
 			else do
@@ -208,7 +227,9 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 	fromxmpp inh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(SendPackOutput _ b) -> liftIO $ B.hPut inh b
+			(SendPackOutput _ b) -> liftIO $ do
+				B.hPut inh b
+				hFlush inh
 			_ -> noop
 
 xmppRemotes :: ClientID -> Assistant [Remote]
@@ -234,10 +255,14 @@ handlePushMessage (CanPush cid) = do
 handlePushMessage (PushRequest cid) = do
 	rs <- xmppRemotes cid
 	current <- liftAnnex $ inRepo Git.Branch.current
-	let refs = catMaybes [current, Just Annex.Branch.fullname]
+	--let refs = catMaybes [current, Just Annex.Branch.fullname] -- TODO
+	let refs = [Ref "master:refs/xmpp/newmaster"]
 	forM_ rs $ \r -> xmppPush cid r refs
 handlePushMessage (StartingPush cid) = do
 	rs <- xmppRemotes cid
 	unless (null rs) $
 		void $ xmppReceivePack cid
 handlePushMessage _ = noop
+
+chunkSize :: Int
+chunkSize = 1024
