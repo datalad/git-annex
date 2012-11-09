@@ -36,7 +36,9 @@ tests =
 	, (384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")
 	]
 
-{- shaNsum are the program names used by coreutils.
+{- shaNsum are the program names used by coreutils. Some systems like OSX
+ - sometimes install these with 'g' prefixes.
+ -
  - On some systems, shaN is used instead, but on other
  - systems, it might be "hashalot", which does not produce
  - usable checksums. Only accept programs that produce
@@ -50,9 +52,9 @@ shaTestCases l = map make l
 			where
 				key = "sha" ++ show n
 				check = "</dev/null | grep -q '" ++ knowngood ++ "'"
-		shacmds n = concatMap (\x -> [x, osxpath </> x]) $
+		shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
 			map (\x -> "sha" ++ show n ++ x) ["sum", ""]
-		{- Max OSX puts GNU tools outside PATH, so look in
+		{- Max OSX sometimes puts GNU tools outside PATH, so look in
 		 - the location it uses, and remember where to run them
 		 - from. -}
 		osxpath = "/opt/local/libexec/gnubin"
