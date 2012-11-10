@@ -19,7 +19,7 @@ More should be added, such as:
 
 See poll at [[polls/prioritizing_special_remotes]].
 
-## The cloud notification problem
+## The cloud notification problem **done**
 
 Alice and Bob have repos, and there is a cloud remote they both share.
 Alice adds a file; the assistant transfers it to the cloud remote.
@@ -44,9 +44,9 @@ the assistant will transfer the file from the cloud to Bob.
 * pubsubhubbub does not seem like an option; its hubs want to pull down
   a feed over http.
 
-See [[xmpp]] for design of git-annex's use of xmpp for notifications.
+See [[xmpp]] for design of git-annex's use of xmpp for push notifications.
 
-## storing git repos in the cloud
+## storing git repos in the cloud **done for XMPP**
 
 Of course, one option is to just use github etc to store the git repo.
 
@@ -56,4 +56,4 @@ Two things can store git repos in Amazon S3:
 
 Another option is to not store the git repo in the cloud, but push/pull
 peer-to-peer. When peers cannot directly talk to one-another, this could be
-bounced through something like XMPP.
+bounced through something like XMPP. This is **done** for [[xmpp]]!

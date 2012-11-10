@@ -6,8 +6,14 @@ who share a repository, that is stored in the [[cloud]].
 
 * Prevent idle disconnection. Probably means sending or receiving pings,
   but would prefer to avoid eg pinging every 60 seconds as some clients do.
-* XMPP pairing
-* git pushes over XMPP (needed for pairing, but also awesome on their own)
+* Do git-annex clients sharing an account with regular clients cause confusing
+  things to happen? 
+  See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
+* Assistant.Sync.manualPull doesn't handle XMPP remotes yet.
+  This is needed to handle getting back in sync after reconnection.
+* If a git push over XMPP is underway, and the remote client stops
+  responding, it currently blocks other git pushes from starting, forever.
+  Need a timeout..
 
 ## design goals
 
