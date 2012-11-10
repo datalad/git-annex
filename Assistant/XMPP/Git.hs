@@ -253,4 +253,4 @@ handleDeferred :: NetMessage -> Assistant ()
 handleDeferred = handlePushMessage
 
 chunkSize :: Int
-chunkSize = 1024
+chunkSize = 4096
