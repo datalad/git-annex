@@ -122,9 +122,7 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	fromxmpp outh controlh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(ReceivePackOutput _ b) -> liftIO $ do
-				B.hPut outh b
-				hFlush outh
+			(ReceivePackOutput _ b) -> liftIO $ writeChunk outh b
 			(ReceivePackDone _ exitcode) -> liftIO $ do
 				hPrint controlh exitcode
 				hFlush controlh
@@ -183,8 +181,7 @@ xmppGitRelay = do
 			hClose fromh
 			hClose toh
 			killThread =<< myThreadId
-		B.hPut toh b
-		hFlush toh
+		writeChunk toh b
 
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
@@ -216,9 +213,7 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 	relayfromxmpp inh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(SendPackOutput _ b) -> liftIO $ do
-				B.hPut inh b
-				hFlush inh
+			(SendPackOutput _ b) -> liftIO $ writeChunk inh b
 			_ -> noop
 
 xmppRemotes :: ClientID -> Assistant [Remote]
@@ -252,3 +247,8 @@ handleDeferred = handlePushMessage
 
 chunkSize :: Int
 chunkSize = 4096
+
+writeChunk :: Handle -> B.ByteString -> IO ()
+writeChunk h b = do
+	B.hPut h b
+	hFlush h
