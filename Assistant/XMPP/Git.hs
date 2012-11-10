@@ -190,33 +190,30 @@ xmppGitRelay = do
  - its exit status to XMPP. -}
 xmppReceivePack :: ClientID -> Assistant Bool
 xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
-	feeder <- asIO1 toxmpp
-	reader <- asIO1 fromxmpp
-	sendexitcode <- asIO1 $ sendNetMessage . ReceivePackDone cid
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
 		, std_err = Inherit
 		}
+	(Just inh, Just outh, _, pid) <- liftIO $ createProcess p
+	readertid <- forkIO <~> relayfromxmpp inh
+	relaytoxmpp outh
+	code <- liftIO $ waitForProcess pid
+	void $ sendNetMessage $ ReceivePackDone cid code
 	liftIO $ do
-		(Just inh, Just outh, _, pid) <- createProcess p
-		readertid <- forkIO $ reader inh
-		void $ feeder outh
-		code <- waitForProcess pid
-		void $ sendexitcode code
 		killThread readertid
 		hClose inh
 		hClose outh
 		return $ code == ExitSuccess
   where
-	toxmpp outh = do
+	relaytoxmpp outh = do
 		b <- liftIO $ B.hGetSome outh chunkSize
 		-- empty is EOF, so exit
 		unless (B.null b) $ do
 			sendNetMessage $ ReceivePackOutput cid b
-			toxmpp outh
-	fromxmpp inh = forever $ do
+			relaytoxmpp outh
+	relayfromxmpp inh = forever $ do
 		m <- waitNetPushMessage
 		case m of
 			(SendPackOutput _ b) -> liftIO $ do
