@@ -167,8 +167,8 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 			fmap (ReceivePackDone . decodeExitCode) . readish .
 				T.unpack . tagValue
 		]
-	pushdecoder a m i = Pushing
-		<$> (formatJID <$> messageFrom m)
+	pushdecoder a m' i = Pushing
+		<$> (formatJID <$> messageFrom m')
 		<*> a i
 
 decodeExitCode :: Int -> ExitCode

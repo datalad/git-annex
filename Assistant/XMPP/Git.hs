@@ -16,12 +16,12 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.MakeRemote
 import Assistant.Sync
+import qualified Command.Sync
+import qualified Annex.Branch
 import Annex.UUID
 import Config
 import Git
-import qualified Git.Command
 import qualified Git.Branch
-import qualified Annex.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 import Utility.FileMode
@@ -53,9 +53,9 @@ makeXMPPGitRemote buddyname jid u = do
 	syncNewRemote remote
 	return True
 
-{- Pushes the named refs to the remote, over XMPP, communicating with a
- - specific client that either requested the push, or responded to our
- - message.
+{- Pushes over XMPP, communicating with a specific client.
+ - Runs an arbitrary IO action to push, which should run git-push with
+ - an xmpp:: url.
  -
  - To handle xmpp:: urls, git push will run git-remote-xmpp, which is
  - injected into its PATH, and in turn runs git-annex xmppgit. The
@@ -72,8 +72,8 @@ makeXMPPGitRemote buddyname jid u = do
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
-xmppPush :: ClientID -> Remote -> [Ref] -> Assistant Bool
-xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
+xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
+xmppPush cid gitpush = runPush (SendPushRunning cid) handleDeferred $ do
 	sendNetMessage $ Pushing cid StartingPush
 
 	(Fd inf, writepush) <- liftIO createPipe
@@ -104,9 +104,7 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	{- This can take a long time to run, so avoid running it in the
 	 - Annex monad. Also, override environment. -}
 	g <- liftAnnex gitRepo
-	let params = Param (Remote.name remote) : map (Param . show) refs
-	r <- liftIO $ Git.Command.runBool "push" params $
-		g { gitEnv = Just $ M.toList myenv }
+	r <- liftIO $ gitpush $ g { gitEnv = Just $ M.toList myenv }
 
 	liftIO $ do
 		mapM_ killThread [t1, t2]
@@ -233,16 +231,27 @@ whenXMPPRemote :: ClientID -> Assistant () -> Assistant ()
 whenXMPPRemote cid = unlessM (null <$> xmppRemotes cid)
 
 handlePushMessage :: NetMessage -> Assistant ()
-handlePushMessage (Pushing cid CanPush) = whenXMPPRemote cid $ 
-	sendNetMessage $ Pushing cid PushRequest
-handlePushMessage (Pushing cid PushRequest) = do
-	rs <- xmppRemotes cid
-	current <- liftAnnex $ inRepo Git.Branch.current
-	--let refs = catMaybes [current, Just Annex.Branch.fullname] -- TODO
-	let refs = [Ref "master:refs/remotes/xmpp/newmaster"]
-	forM_ rs $ \r -> xmppPush cid r refs
-handlePushMessage (Pushing cid StartingPush) = whenXMPPRemote cid $
-	void $ xmppReceivePack cid
+handlePushMessage (Pushing cid CanPush) =
+	whenXMPPRemote cid $ 
+		sendNetMessage $ Pushing cid PushRequest
+
+handlePushMessage (Pushing cid PushRequest) =
+	go =<< liftAnnex (inRepo Git.Branch.current)
+  where
+	go Nothing = noop
+	go (Just branch) = do
+		rs <- xmppRemotes cid
+		liftAnnex $ Annex.Branch.commit "update"
+		(g, u) <- liftAnnex $ (,)
+			<$> gitRepo
+			<*> getUUID
+		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
+		debug ["pushing to", show rs]
+		forM_ rs $ \r -> xmppPush cid $ pushFallback u branch r
+
+handlePushMessage (Pushing cid StartingPush) =
+	whenXMPPRemote cid $
+		void $ xmppReceivePack cid
 handlePushMessage _ = noop
 
 handleDeferred :: NetMessage -> Assistant ()

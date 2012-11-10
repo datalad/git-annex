@@ -84,10 +84,6 @@ reconnectRemotes notifypushes rs = void $ do
  - fallback mode, where our push is guarenteed to succeed if the remote is
  - reachable. If the fallback fails, the push is queued to be retried
  - later.
- -
- - The fallback mode pushes to branches on the remote that have our uuid in
- - them. While ugly, those branches are reserved for pushing by us, and
- - so our pushes will succeed.
  -}
 pushToRemotes :: UTCTime -> Bool -> [Remote] -> Assistant Bool
 pushToRemotes now notifypushes remotes = do
@@ -132,7 +128,7 @@ pushToRemotes now notifypushes remotes = do
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
 		(succeeded, failed) <- liftIO $
-			inParallel (pushfallback g u branch) rs
+			inParallel (\r -> pushFallback u branch r g) rs
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
 			sendNetMessage $ NotifyPush $
@@ -140,20 +136,26 @@ pushToRemotes now notifypushes remotes = do
 		return $ null failed
 		
 	push g branch remote = Command.Sync.pushBranch remote branch g
-	pushfallback g u branch remote = Git.Command.runBool "push"
+
+{- This fallback push mode pushes to branches on the remote that have our
+ - uuid in them. While ugly, those branches are reserved for pushing by us,
+ - and so our pushes will never conflict with other pushes. -}
+pushFallback :: UUID -> Git.Ref -> Remote -> Git.Repo -> IO Bool
+pushFallback u branch remote = Git.Command.runBool "push" params
+  where
+	params = 
 		[ Param $ Remote.name remote
 		, Param $ refspec Annex.Branch.name
 		, Param $ refspec branch
-		] g
-	  where
-		{- Push to refs/synced/uuid/branch; this
-		 - avoids cluttering up the branch display. -}
-		refspec b = concat
-			[ s
-			, ":"
-			, "refs/synced/" ++ fromUUID u ++ "/" ++ s
-			]
-		  where s = show $ Git.Ref.base b
+		]
+	{- Push to refs/synced/uuid/branch; this
+	 - avoids cluttering up the branch display. -}
+	refspec b = concat
+		[ s
+		, ":"
+		, "refs/synced/" ++ fromUUID u ++ "/" ++ s
+		]
+	  where s = show $ Git.Ref.base b
 
 {- Manually pull from remotes and merge their branches. -}
 manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Bool], Bool)
