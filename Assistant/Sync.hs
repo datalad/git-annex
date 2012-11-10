@@ -100,6 +100,7 @@ pushToRemotes now notifypushes remotes = do
 	return ret
   where
 	go _ Nothing _ _ _ = return True -- no branch, so nothing to do
+	go _ _ _ _ [] = return True -- no remotes, so nothing to do
 	go shouldretry (Just branch) g u rs =  do
 		debug ["pushing to", show rs]
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
