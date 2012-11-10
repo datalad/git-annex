@@ -16,6 +16,7 @@ import Assistant.Pairing
 import Network.Protocol.XMPP hiding (Node)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Map as M
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.XML.Types
@@ -91,32 +92,23 @@ gitAnnexMessage elt tojid fromjid = (insertGitAnnexTag silentMessage elt)
 pushNotification :: [UUID] -> Presence
 pushNotification = gitAnnexPresence . gitAnnexTag pushAttr . encodePushNotification
 
-pushAttr :: Name
-pushAttr = "push"
-
-uuidSep :: Text
-uuidSep = ","
-
 encodePushNotification :: [UUID] -> Text
 encodePushNotification = T.intercalate uuidSep . map (T.pack . fromUUID)
 
 decodePushNotification :: Text -> [UUID]
 decodePushNotification = map (toUUID . T.unpack) . T.splitOn uuidSep
 
+uuidSep :: Text
+uuidSep = ","
+
 {- A request for other git-annex clients to send presence. -}
 presenceQuery :: Presence
 presenceQuery = gitAnnexPresence $ gitAnnexTag queryAttr T.empty
-
-queryAttr :: Name
-queryAttr = "query"
 
 {- A notification about a stage of pairing. -}
 pairingNotification :: PairStage -> UUID -> JID -> JID -> Message
 pairingNotification pairstage u = gitAnnexMessage $ 
 	gitAnnexTag pairAttr $ encodePairingNotification pairstage u
-
-pairAttr :: Name
-pairAttr = "pair"
 
 encodePairingNotification :: PairStage -> UUID -> Text
 encodePairingNotification pairstage u = T.unwords $ map T.pack
@@ -124,7 +116,7 @@ encodePairingNotification pairstage u = T.unwords $ map T.pack
 	, fromUUID u
 	]
 
-decodePairingNotification :: Message -> GitAnnexTagInfo -> Maybe NetMessage
+decodePairingNotification :: Decoder
 decodePairingNotification m = parse . words . T.unpack . tagValue
   where
 	parse [stage, u] = PairingNotification
@@ -133,70 +125,50 @@ decodePairingNotification m = parse . words . T.unpack . tagValue
 		<*> pure (toUUID u)
 	parse _ = Nothing
 
-canPush :: JID -> JID -> Message
-canPush = gitAnnexMessage $ gitAnnexTag canPushAttr T.empty
-
-decodeCanPush :: PushDecoder
-decodeCanPush = mkPushDecoder $ const $ Just CanPush
-
-canPushAttr :: Name
-canPushAttr = "canpush"
-
-pushRequest :: JID -> JID -> Message
-pushRequest = gitAnnexMessage $ gitAnnexTag pushRequestAttr T.empty
-
-decodePushRequest :: PushDecoder
-decodePushRequest = mkPushDecoder $ const $ Just PushRequest
-
-pushRequestAttr :: Name
-pushRequestAttr = "pushrequest"
-
-startingPush :: JID -> JID -> Message
-startingPush = gitAnnexMessage $ gitAnnexTag startingPushAttr T.empty
-
-startingPushAttr :: Name
-startingPushAttr = "startingpush"
-
-decodeStartingPush :: PushDecoder
-decodeStartingPush = mkPushDecoder $ const $ Just StartingPush
-
-receivePackOutput :: ByteString -> JID -> JID -> Message
-receivePackOutput = gitAnnexMessage .
-	gitAnnexTagContent receivePackAttr T.empty . encodeTagContent
-
-receivePackAttr :: Name
-receivePackAttr = "rp"
-
-decodeReceivePackOutput :: PushDecoder
-decodeReceivePackOutput = mkPushDecoder $
-	fmap ReceivePackOutput . decodeTagContent . tagElement
-
-sendPackOutput :: ByteString -> JID -> JID -> Message
-sendPackOutput = gitAnnexMessage .
-	gitAnnexTagContent sendPackAttr T.empty . encodeTagContent
-
-sendPackAttr :: Name
-sendPackAttr = "sp"
-
-decodeSendPackOutput :: PushDecoder
-decodeSendPackOutput = mkPushDecoder $
-	fmap SendPackOutput . decodeTagContent . tagElement
-
-receivePackDone :: ExitCode -> JID -> JID -> Message
-receivePackDone = gitAnnexMessage . gitAnnexTag receivePackDoneAttr . T.pack . show . toi
+encodePushStage :: PushStage -> Element
+encodePushStage CanPush = gitAnnexTag canPushAttr T.empty
+encodePushStage PushRequest = gitAnnexTag pushRequestAttr T.empty
+encodePushStage StartingPush = gitAnnexTag startingPushAttr T.empty
+encodePushStage (ReceivePackOutput b) = 
+	gitAnnexTagContent receivePackAttr T.empty $ encodeTagContent b
+encodePushStage (SendPackOutput b) =
+	gitAnnexTagContent sendPackAttr T.empty $ encodeTagContent b
+encodePushStage (ReceivePackDone code) =
+	gitAnnexTag receivePackDoneAttr $ T.pack $ show $ toi code
   where
 	toi (ExitSuccess) = 0
 	toi (ExitFailure i) = i
 
-decodeReceivePackDone :: PushDecoder
-decodeReceivePackDone = mkPushDecoder $
-	fmap (ReceivePackDone . convert) . readish . T.unpack . tagValue
+decodeMessage :: Message -> Maybe NetMessage
+decodeMessage m = decode =<< gitAnnexTagInfo m
   where
-	convert 0 = ExitSuccess
-	convert n = ExitFailure n
+	decode i = M.lookup (tagAttr i) decoders >>= rundecoder i
+	rundecoder i d = d m i
+	decoders = M.fromList $ zip
+		[ pairAttr
+		, canPushAttr
+		, pushRequestAttr
+		, startingPushAttr
+		, receivePackAttr
+		, sendPackAttr
+		, receivePackDoneAttr
+		]
+		[ decodePairingNotification
+		, mkPushDecoder $ const $ Just CanPush
+		, mkPushDecoder $ const $ Just PushRequest
+		, mkPushDecoder $ const $ Just StartingPush
+		, mkPushDecoder $ 
+			fmap ReceivePackOutput . decodeTagContent . tagElement
+		, mkPushDecoder $
+			fmap SendPackOutput . decodeTagContent . tagElement
+		, mkPushDecoder $
+			fmap (ReceivePackDone . convertCode) . readish .
+				T.unpack . tagValue
+		]
 
-receivePackDoneAttr :: Name
-receivePackDoneAttr = "rpdone"
+convertCode :: Int -> ExitCode
+convertCode 0 = ExitSuccess
+convertCode n = ExitFailure n
 
 {- Base 64 encoding a ByteString to use as the content of a tag. -}
 encodeTagContent :: ByteString -> [Node]
@@ -227,9 +199,36 @@ silentMessage = (emptyMessage MessageChat)
 extendedAway :: Element
 extendedAway = Element "show" [] [NodeContent $ ContentText "xa"]
 
-type PushDecoder = Message -> GitAnnexTagInfo -> Maybe NetMessage
+type Decoder = Message -> GitAnnexTagInfo -> Maybe NetMessage
 
-mkPushDecoder :: (GitAnnexTagInfo -> Maybe PushStage) -> PushDecoder
+mkPushDecoder :: (GitAnnexTagInfo -> Maybe PushStage) -> Decoder
 mkPushDecoder a m i = Pushing
 	<$> (formatJID <$> messageFrom m)
 	<*> a i
+
+pushAttr :: Name
+pushAttr = "push"
+
+queryAttr :: Name
+queryAttr = "query"
+
+pairAttr :: Name
+pairAttr = "pair"
+
+canPushAttr :: Name
+canPushAttr = "canpush"
+
+pushRequestAttr :: Name
+pushRequestAttr = "pushrequest"
+
+startingPushAttr :: Name
+startingPushAttr = "startingpush"
+
+receivePackAttr :: Name
+receivePackAttr = "rp"
+
+sendPackAttr :: Name
+sendPackAttr = "sp"
+
+receivePackDoneAttr :: Name
+receivePackDoneAttr = "rpdone"

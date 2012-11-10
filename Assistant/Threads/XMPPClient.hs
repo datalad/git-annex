@@ -134,19 +134,7 @@ decodeStanza selfjid s@(ReceivedMessage m)
 	| messageFrom m == Nothing = [Ignorable s]
 	| messageFrom m == Just selfjid = [Ignorable s]
 	| messageType m == MessageError = [ProtocolError s]
-	| otherwise = [fromMaybe (Unknown s) $ decode =<< gitAnnexTagInfo m]
-  where
-	decode i = GotNetMessage <$>
-		((\d -> d m i) =<< M.lookup (tagAttr i) decoders)
-	decoders = M.fromList
-		[ (pairAttr, decodePairingNotification)
-		, (canPushAttr, decodeCanPush)
-		, (pushRequestAttr, decodePushRequest)
-		, (startingPushAttr, decodeStartingPush)
-		, (receivePackAttr, decodeReceivePackOutput)
-		, (sendPackAttr, decodeSendPackOutput)
-		, (receivePackDoneAttr, decodeReceivePackDone)
-		]
+	| otherwise = [fromMaybe (Unknown s) (GotNetMessage <$> decodeMessage m)]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
@@ -158,12 +146,8 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
 		changeBuddyPairing tojid True
 		return $ putStanza $ pairingNotification stage u tojid selfjid
-	convert (Pushing c CanPush) = sendclient c canPush
-	convert (Pushing c PushRequest) = sendclient c pushRequest
-	convert (Pushing c StartingPush) = sendclient c startingPush
-	convert (Pushing c (ReceivePackOutput b)) = sendclient c $ receivePackOutput b
-	convert (Pushing c (SendPackOutput b)) = sendclient c $ sendPackOutput b
-	convert (Pushing c (ReceivePackDone code)) = sendclient c $ receivePackDone code
+	convert (Pushing c pushstage) = sendclient c $
+		gitAnnexMessage $ encodePushStage pushstage
 
 	sendclient c construct = withclient c $ \tojid ->
 		return $ putStanza $ construct tojid selfjid
