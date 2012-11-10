@@ -42,14 +42,16 @@ finishXMPPPairing jid u = void $ alertWhile alert $
 	buddy = T.unpack $ buddyName jid
 	alert = pairRequestAcknowledgedAlert buddy Nothing
 
+gitXMPPLocation :: JID -> String
+gitXMPPLocation jid = "xmpp::" ++ T.unpack (formatJID $ baseJID jid)
+
 makeXMPPGitRemote :: String -> JID -> UUID -> Assistant Bool
 makeXMPPGitRemote buddyname jid u = do
-	remote <- liftAnnex $ addRemote $ makeGitRemote buddyname xmppaddress
+	remote <- liftAnnex $ addRemote $
+		makeGitRemote buddyname $ gitXMPPLocation jid
 	liftAnnex $ storeUUID (remoteConfig (Remote.repo remote) "uuid") u
 	syncNewRemote remote
 	return True
-  where
-	xmppaddress = "xmpp::" ++ T.unpack (formatJID $ baseJID jid)
 
 {- Pushes the named refs to the remote, over XMPP, communicating with a
  - specific client that either requested the push, or responded to our
@@ -104,16 +106,15 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	{- This can take a long time to run, so avoid running it in the
 	 - Annex monad. Also, override environment. -}
 	g <- liftAnnex gitRepo
-	let g' = g { gitEnv = Just $ M.toList myenv }
-	let name = Remote.name remote
-	let params = Param name : map (Param . show) refs
-	ok <- liftIO $ Git.Command.runBool "push" params g'
+	let params = Param (Remote.name remote) : map (Param . show) refs
+	r <- liftIO $ Git.Command.runBool "push" params $
+		g { gitEnv = Just $ M.toList myenv }
 
 	liftIO $ do
 		mapM_ killThread [t1, t2]
 		mapM_ hClose [inh, outh, controlh]
 
-	return ok
+	return r
   where
 	toxmpp inh = forever $ do
 		b <- liftIO $ B.hGetSome inh chunkSize
@@ -229,13 +230,11 @@ xmppRemotes :: ClientID -> Assistant [Remote]
 xmppRemotes cid = case baseJID <$> parseJID cid of
 	Nothing -> return []
 	Just jid -> do
-		rs <- syncRemotes <$> getDaemonStatus
-		let want = T.unpack $ formatJID jid
-		liftAnnex $ filterM (matching want) rs
+		let loc = gitXMPPLocation jid
+		filter (matching loc . Remote.repo) . syncRemotes 
+			<$> getDaemonStatus
   where
-	matching want remote = do
-		let r = Remote.repo remote
-		return $ repoIsUrl r && repoLocation r == "xmpp::" ++ want
+	matching loc r = repoIsUrl r && repoLocation r == loc
 
 whenXMPPRemote :: ClientID -> Assistant () -> Assistant ()
 whenXMPPRemote cid = unlessM (null <$> xmppRemotes cid)
@@ -247,7 +246,7 @@ handlePushMessage (PushRequest cid) = do
 	rs <- xmppRemotes cid
 	current <- liftAnnex $ inRepo Git.Branch.current
 	--let refs = catMaybes [current, Just Annex.Branch.fullname] -- TODO
-	let refs = [Ref "master:refs/xmpp/newmaster"]
+	let refs = [Ref "master:refs/remotes/xmpp/newmaster"]
 	forM_ rs $ \r -> xmppPush cid r refs
 handlePushMessage (StartingPush cid) = whenXMPPRemote cid $
 	void $ xmppReceivePack cid
