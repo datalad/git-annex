@@ -109,7 +109,10 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	let params = Param name : map (Param . show) refs
 	ok <- liftIO $ Git.Command.runBool "push" params g'
 
-	liftIO $ mapM_ killThread [t1, t2]
+	liftIO $ do
+		mapM_ killThread [t1, t2]
+		mapM_ hClose [inh, outh, controlh]
+
 	return ok
   where
 	toxmpp inh = forever $ do
@@ -124,7 +127,7 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 				B.hPut outh b
 				hFlush outh
 			(ReceivePackDone _ exitcode) -> liftIO $ do
-				hPutStrLn controlh (show exitcode)
+				hPrint controlh exitcode
 				hFlush controlh
 			_ -> noop
 	installwrapper tmpdir = liftIO $ do
@@ -204,15 +207,16 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 		code <- waitForProcess pid
 		void $ sendexitcode code
 		killThread readertid
+		hClose inh
+		hClose outh
 		return $ code == ExitSuccess
   where
 	toxmpp outh = do
 		b <- liftIO $ B.hGetSome outh chunkSize
-		if B.null b
-			then return () -- EOF
-			else do
-				sendNetMessage $ ReceivePackOutput cid b
-				toxmpp outh
+		-- empty is EOF, so exit
+		unless (B.null b) $ do
+			sendNetMessage $ ReceivePackOutput cid b
+			toxmpp outh
 	fromxmpp inh = forever $ do
 		m <- waitNetPushMessage
 		case m of
