@@ -137,7 +137,13 @@ decodeStanza selfjid s@(ReceivedMessage m)
 	| otherwise = [fromMaybe (Unknown s) (GotNetMessage <$> decodeMessage m)]
 decodeStanza _ s = [Unknown s]
 
-{- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
+{- Waits for a NetMessager message to be sent, and relays it to XMPP.
+ -
+ - Chat messages must be directed to specific clients, not a base
+ - account JID, due to git-annex clients using a negative presence priority.
+ - PairingNotification messages are always directed at specific
+ - clients, but Pushing messages are sometimes not, and need to be exploded.
+ -}
 relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = convert =<< waitNetMessage
   where
@@ -146,8 +152,13 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
 		changeBuddyPairing tojid True
 		return $ putStanza $ pairingNotification stage u tojid selfjid
-	convert (Pushing c pushstage) = withclient c $ \tojid -> 
-		return $ putStanza $ pushMessage pushstage tojid selfjid
+	convert (Pushing c pushstage) = withclient c $ \tojid -> do
+		if tojid == baseJID tojid
+			then do
+				bud <- getBuddy (genBuddyKey tojid) <<~ buddyList
+				return $ forM_ (maybe [] (S.toList . buddyAssistants) bud) $ \(Client jid) ->
+					putStanza $ pushMessage pushstage jid selfjid
+			else return $ putStanza $ pushMessage pushstage tojid selfjid
 
 	withclient c a = case parseJID c of
 		Nothing -> return noop
