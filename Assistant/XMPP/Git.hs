@@ -66,11 +66,9 @@ makeXMPPGitRemote buddyname jid u = do
  - git receive-pack <--> xmppReceivePack <---------------> xmpp
  - 
  - The pipe between git-annex xmppgit and us is set up and communicated
- - using two file descriptors, GIT_ANNEX_XMPPGIT_IN and
- - GIT_ANNEX_XMPPGIT_OUT. It simply connects those up to its stdin
- - and stdout, respectively, which are in turn connected to "git-push".
- - There is also a GIT_ANNEX_XMPPGIT_CONTROL descriptor, to which an
- - exit status is sent for xmppgit to propigate.
+ - using two environment variables, relayIn and relayOut, that are set
+ - to the file descriptors to use. Another, relayControl, is used to
+ - propigate the exit status of git receive-pack.
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
@@ -141,16 +139,21 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 			]
 		modifyFileMode wrapper $ addModes executeModes
 
-relayIn :: String
-relayIn = "GIT_ANNEX_XMPPGIT_IN"
+type EnvVar = String
 
-relayOut :: String
-relayOut = "GIT_ANNEX_XMPPGIT_OUT"
+envVar :: String -> EnvVar
+envVar s = "GIT_ANNEX_XMPPGIT_" ++ s
 
-relayControl :: String
-relayControl = "GIT_ANNEX_XMPPGIT_CONTROL"
+relayIn :: EnvVar
+relayIn = envVar "IN"
 
-relayHandle :: String -> IO Handle
+relayOut :: EnvVar
+relayOut = envVar "OUT"
+
+relayControl :: EnvVar
+relayControl = envVar "CONTROL"
+
+relayHandle :: EnvVar -> IO Handle
 relayHandle var = do
 	v <- getEnv var
 	case readish =<< v of
