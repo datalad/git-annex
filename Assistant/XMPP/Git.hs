@@ -163,19 +163,14 @@ relayHandle var = do
  - we're talking to git-push on stdout
  - git-receive-pack is talking to us on relayIn (via XMPP)
  - we're talking to git-receive-pack on relayOut (via XMPP)
+ - git-receive-pack's exit code will be passed to us on relayControl
  -}
 xmppGitRelay :: IO ()
 xmppGitRelay = do
 	flip relay stdout =<< relayHandle relayIn
 	relay stdin =<< relayHandle relayOut
-
-	controlh <- relayHandle relayControl
-	s <- hGetLine controlh
-	exitWith $ case readish s of
-		Just n
-			| n == 0 -> ExitSuccess
-			| otherwise -> ExitFailure n
-		Nothing -> ExitFailure 1
+	code <- hGetLine =<< relayHandle relayControl
+	exitWith $ fromMaybe (ExitFailure 1) $ readish code
   where
 	{- Is it possible to set up pipes and not need to copy the data
 	 - ourselves? See splice(2) -}
