@@ -96,17 +96,15 @@ xmppClient urlrenderer d = do
 	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
-	handle _ (GotNetMessage m@(CanPush _)) = handlepushmsg m
-	handle _ (GotNetMessage m@(PushRequest _)) = handlepushmsg m
-	handle _ (GotNetMessage m@(StartingPush _)) = handlepushmsg m
-	handle _ (GotNetMessage m) = void $ inAssistant $ queueNetPushMessage m
+	handle _ (GotNetMessage pushmsg)
+		| isPushInitiationMessage pushmsg = inAssistant $
+			unlessM (queueNetPushMessage pushmsg) $ 
+				void $ forkIO <~> handlePushMessage pushmsg
+		| otherwise = void $ inAssistant $ queueNetPushMessage pushmsg
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop
 
-	handlepushmsg m = inAssistant $
-		unlessM (queueNetPushMessage m) $ 
-			void $ forkIO <~> handlePushMessage m
 
 data XMPPEvent
 	= GotNetMessage NetMessage
