@@ -136,8 +136,8 @@ decodePairingNotification m = parse . words . T.unpack . tagValue
 canPush :: JID -> JID -> Message
 canPush = gitAnnexMessage $ gitAnnexTag canPushAttr T.empty
 
-decodeCanPush :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodeCanPush m _ = Pushing <$> (formatJID <$> messageFrom m) <*> pure CanPush
+decodeCanPush :: PushDecoder
+decodeCanPush = mkPushDecoder $ const $ Just CanPush
 
 canPushAttr :: Name
 canPushAttr = "canpush"
@@ -145,8 +145,8 @@ canPushAttr = "canpush"
 pushRequest :: JID -> JID -> Message
 pushRequest = gitAnnexMessage $ gitAnnexTag pushRequestAttr T.empty
 
-decodePushRequest :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodePushRequest m _ = Pushing <$> (formatJID <$> messageFrom m) <*> pure PushRequest
+decodePushRequest :: PushDecoder
+decodePushRequest = mkPushDecoder $ const $ Just PushRequest
 
 pushRequestAttr :: Name
 pushRequestAttr = "pushrequest"
@@ -157,8 +157,8 @@ startingPush = gitAnnexMessage $ gitAnnexTag startingPushAttr T.empty
 startingPushAttr :: Name
 startingPushAttr = "startingpush"
 
-decodeStartingPush :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodeStartingPush m _ = Pushing <$> (formatJID <$> messageFrom m) <*> pure StartingPush
+decodeStartingPush :: PushDecoder
+decodeStartingPush = mkPushDecoder $ const $ Just StartingPush
 
 receivePackOutput :: ByteString -> JID -> JID -> Message
 receivePackOutput = gitAnnexMessage .
@@ -167,10 +167,9 @@ receivePackOutput = gitAnnexMessage .
 receivePackAttr :: Name
 receivePackAttr = "rp"
 
-decodeReceivePackOutput :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodeReceivePackOutput m i = Pushing 
-	<$> (formatJID <$> messageFrom m)
-	<*> (ReceivePackOutput <$> decodeTagContent (tagElement i))
+decodeReceivePackOutput :: PushDecoder
+decodeReceivePackOutput = mkPushDecoder $
+	fmap ReceivePackOutput . decodeTagContent . tagElement
 
 sendPackOutput :: ByteString -> JID -> JID -> Message
 sendPackOutput = gitAnnexMessage .
@@ -179,10 +178,9 @@ sendPackOutput = gitAnnexMessage .
 sendPackAttr :: Name
 sendPackAttr = "sp"
 
-decodeSendPackOutput :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodeSendPackOutput m i = Pushing
-	<$> (formatJID <$> messageFrom m)
-	<*> (SendPackOutput <$> decodeTagContent (tagElement i))
+decodeSendPackOutput :: PushDecoder
+decodeSendPackOutput = mkPushDecoder $
+	fmap SendPackOutput . decodeTagContent . tagElement
 
 receivePackDone :: ExitCode -> JID -> JID -> Message
 receivePackDone = gitAnnexMessage . gitAnnexTag receivePackDoneAttr . T.pack . show . toi
@@ -190,10 +188,9 @@ receivePackDone = gitAnnexMessage . gitAnnexTag receivePackDoneAttr . T.pack . s
 	toi (ExitSuccess) = 0
 	toi (ExitFailure i) = i
 
-decodeReceivePackDone :: Message -> GitAnnexTagInfo -> Maybe NetMessage
-decodeReceivePackDone m i = Pushing
-	<$> (formatJID <$> messageFrom m)
-	<*> (ReceivePackDone . convert <$> readish (T.unpack $ tagValue i))
+decodeReceivePackDone :: PushDecoder
+decodeReceivePackDone = mkPushDecoder $
+	fmap (ReceivePackDone . convert) . readish . T.unpack . tagValue
   where
 	convert 0 = ExitSuccess
 	convert n = ExitFailure n
@@ -229,3 +226,10 @@ silentMessage = (emptyMessage MessageChat)
 {- Add to a presence to mark its client as extended away. -}
 extendedAway :: Element
 extendedAway = Element "show" [] [NodeContent $ ContentText "xa"]
+
+type PushDecoder = Message -> GitAnnexTagInfo -> Maybe NetMessage
+
+mkPushDecoder :: (GitAnnexTagInfo -> Maybe PushStage) -> PushDecoder
+mkPushDecoder a m i = Pushing
+	<$> (formatJID <$> messageFrom m)
+	<*> a i
