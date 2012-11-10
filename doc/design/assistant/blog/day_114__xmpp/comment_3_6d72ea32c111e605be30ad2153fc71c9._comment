@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="comment 3"
+ date="2012-11-10T18:50:46Z"
+ content="""
+Sure, I could, as I'm operating my own server anyway. Others might not be willing to go to some random server and create another account, though.
+
+Reviewing RFC 6121: Did you try negative priorities for your resources already? It's possible that Gtalk does something weird but in theory they should be ignored for messages directed to non-qualified JIDs (i.e. without an explicit resource setting). Setting \"xa\" alone won't help you anything, it will only cause the others to see you as \"xa\" but that's a perfectly valid common chat status where you expect messages to be queued in the client until the user returns.
+"""]]
