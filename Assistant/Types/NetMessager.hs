@@ -56,6 +56,7 @@ getClientID (ReceivePackDone cid _) = Just cid
 isPushInitiationMessage :: NetMessage -> Bool
 isPushInitiationMessage (CanPush _) = True
 isPushInitiationMessage (PushRequest _) = True
+isPushInitiationMessage (StartingPush _) = True
 isPushInitiationMessage _ = False
 
 data NetMessager = NetMessager
