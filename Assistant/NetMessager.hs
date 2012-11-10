@@ -61,8 +61,8 @@ runPush v handledeferred a = do
 		<~> handledeferred m
 
 {- While a push is running, matching push messages are put into
- - netMessagesPush, while others go to netMessagesDeferredPush. To avoid
- - bloating memory, only PushRequest and StartingPush messages are
+ - netMessagesPush, while others go to netMessagesDeferredPush.
+ - To avoid bloating memory, only messages that initiate pushes are
  - deferred.
  -
  - When no push is running, returns False.
@@ -82,10 +82,8 @@ queueNetPushMessage m = do
 			writeTChan (netMessagesPush nm) m
 			return True
 		| otherwise = do
-			case m of
-				PushRequest _ -> defer nm
-				StartingPush _ -> defer nm
-				_ -> noop
+			when (isPushInitiationMessage m) $
+				defer nm
 			return True
 	defer nm = do
 		s <- takeTMVar (netMessagesDeferredPush nm)

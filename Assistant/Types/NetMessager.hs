@@ -53,6 +53,11 @@ getClientID (ReceivePackOutput cid _) = Just cid
 getClientID (SendPackOutput cid _) = Just cid
 getClientID (ReceivePackDone cid _) = Just cid
 
+isPushInitiationMessage :: NetMessage -> Bool
+isPushInitiationMessage (CanPush _) = True
+isPushInitiationMessage (PushRequest _) = True
+isPushInitiationMessage _ = False
+
 data NetMessager = NetMessager
 	-- outgoing messages
 	{ netMessages :: TChan (NetMessage)
