@@ -146,11 +146,9 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
 		changeBuddyPairing tojid True
 		return $ putStanza $ pairingNotification stage u tojid selfjid
-	convert (Pushing c pushstage) = sendclient c $
-		gitAnnexMessage $ encodePushStage pushstage
+	convert (Pushing c pushstage) = withclient c $ \tojid -> 
+		return $ putStanza $ pushMessage pushstage tojid selfjid
 
-	sendclient c construct = withclient c $ \tojid ->
-		return $ putStanza $ construct tojid selfjid
 	withclient c a = case parseJID c of
 		Nothing -> return noop
 		Just tojid

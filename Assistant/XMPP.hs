@@ -62,6 +62,8 @@ data GitAnnexTagInfo = GitAnnexTagInfo
 	, tagElement :: Element
 	}
 
+type Decoder = Message -> GitAnnexTagInfo -> Maybe NetMessage
+
 gitAnnexTagInfo :: GitAnnexTaggable a => a -> Maybe GitAnnexTagInfo
 gitAnnexTagInfo v = case extractGitAnnexTag v of
 	{- Each git-annex tag has a single attribute. -}
@@ -125,19 +127,19 @@ decodePairingNotification m = parse . words . T.unpack . tagValue
 		<*> pure (toUUID u)
 	parse _ = Nothing
 
-encodePushStage :: PushStage -> Element
-encodePushStage CanPush = gitAnnexTag canPushAttr T.empty
-encodePushStage PushRequest = gitAnnexTag pushRequestAttr T.empty
-encodePushStage StartingPush = gitAnnexTag startingPushAttr T.empty
-encodePushStage (ReceivePackOutput b) = 
-	gitAnnexTagContent receivePackAttr T.empty $ encodeTagContent b
-encodePushStage (SendPackOutput b) =
-	gitAnnexTagContent sendPackAttr T.empty $ encodeTagContent b
-encodePushStage (ReceivePackDone code) =
-	gitAnnexTag receivePackDoneAttr $ T.pack $ show $ toi code
+pushMessage :: PushStage -> JID -> JID -> Message
+pushMessage = gitAnnexMessage . encode
   where
-	toi (ExitSuccess) = 0
-	toi (ExitFailure i) = i
+	encode CanPush = gitAnnexTag canPushAttr T.empty
+	encode PushRequest = gitAnnexTag pushRequestAttr T.empty
+	encode StartingPush = gitAnnexTag startingPushAttr T.empty
+	encode (ReceivePackOutput b) = 
+		gitAnnexTagContent receivePackAttr T.empty $ encodeTagContent b
+	encode (SendPackOutput b) =
+		gitAnnexTagContent sendPackAttr T.empty $ encodeTagContent b
+	encode (ReceivePackDone code) =
+		gitAnnexTag receivePackDoneAttr $ 
+			T.pack $ show $ encodeExitCode code
 
 decodeMessage :: Message -> Maybe NetMessage
 decodeMessage m = decode =<< gitAnnexTagInfo m
@@ -154,21 +156,28 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		, receivePackDoneAttr
 		]
 		[ decodePairingNotification
-		, mkPushDecoder $ const $ Just CanPush
-		, mkPushDecoder $ const $ Just PushRequest
-		, mkPushDecoder $ const $ Just StartingPush
-		, mkPushDecoder $ 
+		, pushdecoder $ const $ Just CanPush
+		, pushdecoder $ const $ Just PushRequest
+		, pushdecoder $ const $ Just StartingPush
+		, pushdecoder $ 
 			fmap ReceivePackOutput . decodeTagContent . tagElement
-		, mkPushDecoder $
+		, pushdecoder $
 			fmap SendPackOutput . decodeTagContent . tagElement
-		, mkPushDecoder $
-			fmap (ReceivePackDone . convertCode) . readish .
+		, pushdecoder $
+			fmap (ReceivePackDone . decodeExitCode) . readish .
 				T.unpack . tagValue
 		]
+	pushdecoder a m i = Pushing
+		<$> (formatJID <$> messageFrom m)
+		<*> a i
 
-convertCode :: Int -> ExitCode
-convertCode 0 = ExitSuccess
-convertCode n = ExitFailure n
+decodeExitCode :: Int -> ExitCode
+decodeExitCode 0 = ExitSuccess
+decodeExitCode n = ExitFailure n
+	
+encodeExitCode :: ExitCode -> Int
+encodeExitCode ExitSuccess = 0
+encodeExitCode (ExitFailure n) = n
 
 {- Base 64 encoding a ByteString to use as the content of a tag. -}
 encodeTagContent :: ByteString -> [Node]
@@ -198,13 +207,6 @@ silentMessage = (emptyMessage MessageChat)
 {- Add to a presence to mark its client as extended away. -}
 extendedAway :: Element
 extendedAway = Element "show" [] [NodeContent $ ContentText "xa"]
-
-type Decoder = Message -> GitAnnexTagInfo -> Maybe NetMessage
-
-mkPushDecoder :: (GitAnnexTagInfo -> Maybe PushStage) -> Decoder
-mkPushDecoder a m i = Pushing
-	<$> (formatJID <$> messageFrom m)
-	<*> a i
 
 pushAttr :: Name
 pushAttr = "push"
