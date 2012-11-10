@@ -98,9 +98,10 @@ pushToRemotes now notifypushes remotes = do
 			<*> inRepo Git.Branch.current
 			<*> getUUID
 	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
-	r <- go True branch g u normalremotes
-	mapM_ (sendNetMessage . CanPush . getXMPPClientID) xmppremotes
-	return r
+	ret <- go True branch g u normalremotes
+	forM_ xmppremotes $ \r ->
+		sendNetMessage $ Pushing (getXMPPClientID r) CanPush
+	return ret
   where
 	go _ Nothing _ _ _ = return True -- no branch, so nothing to do
 	go shouldretry (Just branch) g u rs =  do

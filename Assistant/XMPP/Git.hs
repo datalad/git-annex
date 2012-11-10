@@ -74,7 +74,7 @@ makeXMPPGitRemote buddyname jid u = do
  -}
 xmppPush :: ClientID -> Remote -> [Ref] -> Assistant Bool
 xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
-	sendNetMessage $ StartingPush cid
+	sendNetMessage $ Pushing cid StartingPush
 
 	(Fd inf, writepush) <- liftIO createPipe
 	(readpush, Fd outf) <- liftIO createPipe
@@ -118,14 +118,16 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 		b <- liftIO $ B.hGetSome inh chunkSize
 		if B.null b
 			then liftIO $ killThread =<< myThreadId
-			else sendNetMessage $ SendPackOutput cid b
+			else sendNetMessage $ Pushing cid $ SendPackOutput b
 	fromxmpp outh controlh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(ReceivePackOutput _ b) -> liftIO $ writeChunk outh b
-			(ReceivePackDone _ exitcode) -> liftIO $ do
-				hPrint controlh exitcode
-				hFlush controlh
+			(Pushing _ (ReceivePackOutput b)) -> 
+				liftIO $ writeChunk outh b
+			(Pushing _ (ReceivePackDone exitcode)) ->
+				liftIO $ do
+					hPrint controlh exitcode
+					hFlush controlh
 			_ -> noop
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
@@ -197,7 +199,7 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 	readertid <- forkIO <~> relayfromxmpp inh
 	relaytoxmpp outh
 	code <- liftIO $ waitForProcess pid
-	void $ sendNetMessage $ ReceivePackDone cid code
+	void $ sendNetMessage $ Pushing cid $ ReceivePackDone code
 	liftIO $ do
 		killThread readertid
 		hClose inh
@@ -208,12 +210,13 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 		b <- liftIO $ B.hGetSome outh chunkSize
 		-- empty is EOF, so exit
 		unless (B.null b) $ do
-			sendNetMessage $ ReceivePackOutput cid b
+			sendNetMessage $ Pushing cid $ ReceivePackOutput b
 			relaytoxmpp outh
 	relayfromxmpp inh = forever $ do
 		m <- waitNetPushMessage
 		case m of
-			(SendPackOutput _ b) -> liftIO $ writeChunk inh b
+			(Pushing _ (SendPackOutput b)) ->
+				liftIO $ writeChunk inh b
 			_ -> noop
 
 xmppRemotes :: ClientID -> Assistant [Remote]
@@ -230,15 +233,15 @@ whenXMPPRemote :: ClientID -> Assistant () -> Assistant ()
 whenXMPPRemote cid = unlessM (null <$> xmppRemotes cid)
 
 handlePushMessage :: NetMessage -> Assistant ()
-handlePushMessage (CanPush cid) = whenXMPPRemote cid $ 
-	sendNetMessage $ PushRequest cid
-handlePushMessage (PushRequest cid) = do
+handlePushMessage (Pushing cid CanPush) = whenXMPPRemote cid $ 
+	sendNetMessage $ Pushing cid PushRequest
+handlePushMessage (Pushing cid PushRequest) = do
 	rs <- xmppRemotes cid
 	current <- liftAnnex $ inRepo Git.Branch.current
 	--let refs = catMaybes [current, Just Annex.Branch.fullname] -- TODO
 	let refs = [Ref "master:refs/remotes/xmpp/newmaster"]
 	forM_ rs $ \r -> xmppPush cid r refs
-handlePushMessage (StartingPush cid) = whenXMPPRemote cid $
+handlePushMessage (Pushing cid StartingPush) = whenXMPPRemote cid $
 	void $ xmppReceivePack cid
 handlePushMessage _ = noop
 

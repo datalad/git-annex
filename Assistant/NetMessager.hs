@@ -74,17 +74,19 @@ queueNetPushMessage m = do
 		running <- readTMVar (netMessagerPushRunning nm)
 		case running of
 			NoPushRunning -> return False
-			SendPushRunning cid -> go nm cid
-			ReceivePushRunning cid -> go nm cid
+			SendPushRunning runningcid -> do
+				go nm m runningcid
+				return True
+			ReceivePushRunning runningcid -> do
+				go nm m runningcid
+				return True
   where
-	go nm cid
-		| getClientID m == Just cid = do
-			writeTChan (netMessagesPush nm) m
-			return True
-		| otherwise = do
-			when (isPushInitiationMessage m) $
-				defer nm
-			return True
+	go nm (Pushing cid stage) runningcid
+		| cid == runningcid = writeTChan (netMessagesPush nm) m
+		| isPushInitiation stage = defer nm
+		| otherwise = noop
+	go _ _ _ = noop
+
 	defer nm = do
 		s <- takeTMVar (netMessagesDeferredPush nm)
 		putTMVar (netMessagesDeferredPush nm) $ S.insert m s

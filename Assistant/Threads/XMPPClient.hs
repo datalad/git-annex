@@ -96,11 +96,11 @@ xmppClient urlrenderer d = do
 	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
-	handle _ (GotNetMessage pushmsg)
-		| isPushInitiationMessage pushmsg = inAssistant $
-			unlessM (queueNetPushMessage pushmsg) $ 
-				void $ forkIO <~> handlePushMessage pushmsg
-		| otherwise = void $ inAssistant $ queueNetPushMessage pushmsg
+	handle _ (GotNetMessage m@(Pushing _ pushstage))
+		| isPushInitiation pushstage = inAssistant $
+			unlessM (queueNetPushMessage m) $ 
+				void $ forkIO <~> handlePushMessage m
+		| otherwise = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop
@@ -158,12 +158,12 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
 		changeBuddyPairing tojid True
 		return $ putStanza $ pairingNotification stage u tojid selfjid
-	convert (CanPush c) = sendclient c canPush
-	convert (PushRequest c) = sendclient c pushRequest
-	convert (StartingPush c) = sendclient c startingPush
-	convert (ReceivePackOutput c b) = sendclient c $ receivePackOutput b
-	convert (SendPackOutput c b) = sendclient c $ sendPackOutput b
-	convert (ReceivePackDone c code) = sendclient c $ receivePackDone code
+	convert (Pushing c CanPush) = sendclient c canPush
+	convert (Pushing c PushRequest) = sendclient c pushRequest
+	convert (Pushing c StartingPush) = sendclient c startingPush
+	convert (Pushing c (ReceivePackOutput b)) = sendclient c $ receivePackOutput b
+	convert (Pushing c (SendPackOutput b)) = sendclient c $ sendPackOutput b
+	convert (Pushing c (ReceivePackDone code)) = sendclient c $ receivePackDone code
 
 	sendclient c construct = withclient c $ \tojid ->
 		return $ putStanza $ construct tojid selfjid

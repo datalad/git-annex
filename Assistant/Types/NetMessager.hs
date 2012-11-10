@@ -25,39 +25,36 @@ data NetMessage
 	-- notification about a stage in the pairing process,
 	-- involving a client, and a UUID.
 	| PairingNotification PairStage ClientID UUID
-	-- indicates that we have data to push over the out of band network
-	| CanPush ClientID
-	-- request that a git push be sent over the out of band network
-	| PushRequest ClientID
-	-- indicates that a push is starting
-	| StartingPush ClientID
-	-- a chunk of output of git receive-pack
-	| ReceivePackOutput ClientID ByteString
-	-- a chuck of output of git send-pack
-	| SendPackOutput ClientID ByteString
-	-- sent when git receive-pack exits, with its exit code
-	| ReceivePackDone ClientID ExitCode
+	-- used for git push over the network messager
+	| Pushing ClientID PushStage
 	deriving (Show, Eq, Ord)
 
 {- Something used to identify the client, or clients to send the message to. -}
 type ClientID = Text
 
-getClientID :: NetMessage -> Maybe ClientID
-getClientID (NotifyPush _) = Nothing
-getClientID QueryPresence = Nothing
-getClientID (PairingNotification _ cid _) = Just cid
-getClientID (CanPush cid) = Just cid
-getClientID (PushRequest cid) = Just cid
-getClientID (StartingPush cid) = Just cid
-getClientID (ReceivePackOutput cid _) = Just cid
-getClientID (SendPackOutput cid _) = Just cid
-getClientID (ReceivePackDone cid _) = Just cid
+data PushStage
+	-- indicates that we have data to push over the out of band network
+	= CanPush
+	-- request that a git push be sent over the out of band network
+	| PushRequest
+	-- indicates that a push is starting
+	| StartingPush
+	-- a chunk of output of git receive-pack
+	| ReceivePackOutput ByteString
+	-- a chuck of output of git send-pack
+	| SendPackOutput ByteString
+	-- sent when git receive-pack exits, with its exit code
+	| ReceivePackDone ExitCode
+	deriving (Show, Eq, Ord)
 
-isPushInitiationMessage :: NetMessage -> Bool
-isPushInitiationMessage (CanPush _) = True
-isPushInitiationMessage (PushRequest _) = True
-isPushInitiationMessage (StartingPush _) = True
-isPushInitiationMessage _ = False
+data PushRunning = NoPushRunning | SendPushRunning ClientID | ReceivePushRunning ClientID
+	deriving (Eq)
+
+isPushInitiation :: PushStage -> Bool
+isPushInitiation CanPush = True
+isPushInitiation PushRequest = True
+isPushInitiation StartingPush = True
+isPushInitiation _ = False
 
 data NetMessager = NetMessager
 	-- outgoing messages
@@ -71,9 +68,6 @@ data NetMessager = NetMessager
 	-- write to this to restart the net messager
 	, netMessagerRestart :: MSampleVar ()
 	}
-
-data PushRunning = NoPushRunning | SendPushRunning ClientID | ReceivePushRunning ClientID
-	deriving (Eq)
 
 newNetMessager :: IO NetMessager
 newNetMessager = NetMessager
