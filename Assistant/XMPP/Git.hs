@@ -97,7 +97,6 @@ xmppPush cid remote refs = runPush (SendPushRunning cid) handleDeferred $ do
 	inh <- liftIO $ fdToHandle readpush
 	outh <- liftIO $ fdToHandle writepush
 	controlh <- liftIO $ fdToHandle writecontrol
-	liftIO $ hSetBuffering outh NoBuffering
 	
 	t1 <- forkIO <~> toxmpp inh
 	t2 <- forkIO <~> fromxmpp outh controlh
@@ -163,29 +162,8 @@ relayHandle var = do
  -}
 xmppGitRelay :: IO ()
 xmppGitRelay = do
-	inh <- relayHandle relayIn
-	outh <- relayHandle relayOut
-	
-	hSetBuffering outh NoBuffering
-
-	{- Is it possible to set up pipes and not need to copy the data
-	 - ourselves? See splice(2) -}
-	void $ forkIO $ forever $ do
-		b <- B.hGetSome inh chunkSize
-		when (B.null b) $ do
-			hClose inh
-			hClose stdout
-			killThread =<< myThreadId
-		B.hPut stdout b
-		hFlush stdout
-	void $ forkIO $ forever $ do
-		b <- B.hGetSome stdin chunkSize
-		when (B.null b) $ do
-			hClose outh
-			hClose stdin
-			killThread =<< myThreadId
-		B.hPut outh b
-		hFlush outh
+	flip relay stdout =<< relayHandle relayIn
+	relay stdin =<< relayHandle relayOut
 
 	controlh <- relayHandle relayControl
 	s <- hGetLine controlh
@@ -194,6 +172,17 @@ xmppGitRelay = do
 			| n == 0 -> ExitSuccess
 			| otherwise -> ExitFailure n
 		Nothing -> ExitFailure 1
+  where
+	{- Is it possible to set up pipes and not need to copy the data
+	 - ourselves? See splice(2) -}
+	relay fromh toh = void $ forkIO $ forever $ do
+		b <- B.hGetSome fromh chunkSize
+		when (B.null b) $ do
+			hClose fromh
+			hClose toh
+			killThread =<< myThreadId
+		B.hPut toh b
+		hFlush toh
 
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
