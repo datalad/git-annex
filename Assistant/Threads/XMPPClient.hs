@@ -120,12 +120,12 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceType p == PresenceError = [ProtocolError s]
 	| presenceFrom p == Nothing = [Ignorable s]
 	| presenceFrom p == Just selfjid = [Ignorable s]
-	| otherwise = maybe [PresenceMessage p] decode (getGitAnnexAttrValue p)
+	| otherwise = maybe [PresenceMessage p] decode (gitAnnexTagInfo p)
   where
-	decode (attr, (val, _tag))
-		| attr == pushAttr = impliedp $ GotNetMessage $ NotifyPush $
-			decodePushNotification val
-		| attr == queryAttr = impliedp $ GotNetMessage QueryPresence
+	decode i
+		| tagAttr i == pushAttr = impliedp $ GotNetMessage $ NotifyPush $
+			decodePushNotification (tagValue i)
+		| tagAttr i == queryAttr = impliedp $ GotNetMessage QueryPresence
 		| otherwise = [Unknown s]
 	{- Things sent via presence imply a presence message,
 	 - along with their real meaning. -}
@@ -134,10 +134,10 @@ decodeStanza selfjid s@(ReceivedMessage m)
 	| messageFrom m == Nothing = [Ignorable s]
 	| messageFrom m == Just selfjid = [Ignorable s]
 	| messageType m == MessageError = [ProtocolError s]
-	| otherwise = [fromMaybe (Unknown s) $ decode =<< getGitAnnexAttrValue m]
+	| otherwise = [fromMaybe (Unknown s) $ decode =<< gitAnnexTagInfo m]
   where
-	decode (attr, (val, tag)) = GotNetMessage <$>
-		((\d -> d m val tag) =<< M.lookup attr decoders)
+	decode i = GotNetMessage <$>
+		((\d -> d m i) =<< M.lookup (tagAttr i) decoders)
 	decoders = M.fromList
 		[ (pairAttr, decodePairingNotification)
 		, (canPushAttr, decodeCanPush)
