@@ -122,9 +122,9 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceFrom p == Just selfjid = [Ignorable s]
 	| otherwise = maybe [PresenceMessage p] decode (getGitAnnexAttrValue p)
   where
-	decode (attr, v, _tag)
+	decode (attr, (val, _tag))
 		| attr == pushAttr = impliedp $ GotNetMessage $ NotifyPush $
-			decodePushNotification v
+			decodePushNotification val
 		| attr == queryAttr = impliedp $ GotNetMessage QueryPresence
 		| otherwise = [Unknown s]
 	{- Things sent via presence imply a presence message,
@@ -134,18 +134,19 @@ decodeStanza selfjid s@(ReceivedMessage m)
 	| messageFrom m == Nothing = [Ignorable s]
 	| messageFrom m == Just selfjid = [Ignorable s]
 	| messageType m == MessageError = [ProtocolError s]
-	| otherwise = maybe [Unknown s] decode (getGitAnnexAttrValue m)
+	| otherwise = [fromMaybe (Unknown s) $ decode =<< getGitAnnexAttrValue m]
   where
-	decode (attr, v, tag)
-		| attr == pairAttr = use $ decodePairingNotification v
-		| attr == canPushAttr = use decodeCanPush
-		| attr == pushRequestAttr = use decodePushRequest
-		| attr == startingPushAttr = use decodeStartingPush
-		| attr == receivePackAttr = use $ decodeReceivePackOutput tag
-		| attr == sendPackAttr = use $ decodeSendPackOutput tag
-		| attr == receivePackDoneAttr = use $ decodeReceivePackDone v
-		| otherwise = [Unknown s]
-	use v = [maybe (Unknown s) GotNetMessage (v m)]
+	decode (attr, (val, tag)) = GotNetMessage <$>
+		((\d -> d m val tag) =<< M.lookup attr decoders)
+	decoders = M.fromList
+		[ (pairAttr, decodePairingNotification)
+		, (canPushAttr, decodeCanPush)
+		, (pushRequestAttr, decodePushRequest)
+		, (startingPushAttr, decodeStartingPush)
+		, (receivePackAttr, decodeReceivePackOutput)
+		, (sendPackAttr, decodeSendPackOutput)
+		, (receivePackDoneAttr, decodeReceivePackDone)
+		]
 decodeStanza _ s = [Unknown s]
 
 {- Waits for a NetMessager message to be sent, and relays it to XMPP. -}
