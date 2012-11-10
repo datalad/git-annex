@@ -56,12 +56,22 @@ introDisplay ident = do
 	$(widgetFile "configurators/intro")
 	lift $ modifyWebAppState $ \s -> s { showIntro = False }
 
+makeMiscRepositories :: Widget
+makeMiscRepositories = $(widgetFile "configurators/repositories/misc")
+
+makeCloudRepositories :: Widget
+makeCloudRepositories = $(widgetFile "configurators/repositories/cloud")
+
+repoTable :: Widget
+repoTable = do
+	repolist <- lift $ repoList False True
+	$(widgetFile "configurators/repositories/table")
+
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml
 getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Repositories"
-	repolist <- lift $ repoList False True
 	$(widgetFile "configurators/repositories")
 
 data Actions

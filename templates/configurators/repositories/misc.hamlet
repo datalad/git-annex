@@ -1,0 +1,29 @@
+<h3>
+  <a href="@{AddDriveR}">
+    <i .icon-plus-sign></i> Removable drive
+<p>
+  Clone this repository to a USB drive, memory stick, or other #
+  removable media.
+<p>
+  For offline archiving, backups, or to #
+  <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
+  between computers. 
+
+<h3>
+  <a href="@{StartPairR}">
+    <i .icon-plus-sign></i> Pair with another computer
+<p>
+  Connect with another computer used by you, or by a friend,
+  that is also running git-annex.
+
+<h3>
+  <i .icon-plus-sign></i> Phone
+<p>
+  Save photos and recordings from your phone.
+<p>
+  Send selected files to your phone.
+
+<h3>
+  <i .icon-plus-sign></i> Network Attached Storage
+<p>
+  Connect to a local storage appliance (NAS).
