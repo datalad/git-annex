@@ -1,9 +1,15 @@
 git-annex (3.20121018) UNRELEASED; urgency=low
 
+  * assistant: Can use XMPP to notify other nodes about pushes, as well
+    as pushing to them over XMPP.
+  * webapp: Now supports pairing over XMPP.
   * assistant: Now drops non-preferred content.
   * assistant: Now notices, and applies config changes 
     as they are made to the git-annex branch, including config changes
     pushed in from remotes.
+  * git-annex-shell: GIT_ANNEX_SHELL_DIRECTORY can be set to limit it
+    to operating on a specified directory.
+  * webapp: When setting up authorized_keys, use GIT_ANNEX_SHELL_DIRECTORY.
   * Preferred content path matching bugfix.
   * Preferred content expressions cannot use "in=".
   * Preferred content expressions can use "present".
@@ -12,7 +18,6 @@ git-annex (3.20121018) UNRELEASED; urgency=low
     exception-safe versions of SampleVar and QSemN.
     Thanks, Ben Gamari for an excellent patch set.
   * file:/// URLs can now be used with the web special remote.
-  * OSX: Stop installing non-self-contained webapp into Desktop directory.
   * webapp: Allow dashes in ssh key comments when pairing.
   * uninit: Check and abort if there are symlinks to annexed content that
     are not checked into git.
@@ -27,8 +32,6 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * NetWatcher: When dbus connection is lost, try to reconnect.
   * Use USER and HOME environment when set, and only fall back to getpwent,
     which doesn't work with LDAP or NIS.
-  * assistant: Can use XMPP to notify other nodes about pushes, as well
-    as pushing to them over XMPP.
   * rsync special remote: Include annex-rsync-options when running rsync
     to test a key's presence.
   * The standalone tarball's runshell now takes care of installing a
@@ -40,9 +43,6 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * webapp: Generate better git remote names.
   * webapp: Ensure that rsync special remotes are enabled using the same
     name they were originally created using.
-  * git-annex-shell: GIT_ANNEX_SHELL_DIRECTORY can be set to limit it
-    to operating on a specified directory.
-  * webapp: When setting up authorized_keys, use GIT_ANNEX_SHELL_DIRECTORY.
   * Bugfix: Fix hang in webapp when setting up a ssh remote with an absolute
     path.
 
