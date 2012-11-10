@@ -26,14 +26,15 @@ buddyName j = maybe (T.pack "") strNode (jidNode j)
 {- Summary of info about a buddy.
  -
  - If the buddy has no clients at all anymore, returns Nothing. -}
-buddySummary :: Buddy -> Maybe (Text, Bool, Bool, BuddyKey)
-buddySummary b = case clients of
-	((Client j):_) -> Just (buddyName j, away, canpair, genBuddyKey j)
+buddySummary :: [JID] -> Buddy -> Maybe (Text, Bool, Bool, Bool, BuddyKey)
+buddySummary pairedwith b = case clients of
+	((Client j):_) -> Just (buddyName j, away, canpair, alreadypaired j, genBuddyKey j)
 	[] -> Nothing
   where
 	away = S.null (buddyPresent b) && S.null (buddyAssistants b)
 	canpair = not $ S.null (buddyAssistants b)
 	clients = S.toList $ buddyPresent b `S.union` buddyAway b `S.union` buddyAssistants b
+	alreadypaired j = baseJID j `elem` pairedwith
 
 {- Updates the buddies with XMPP presence info. -}
 updateBuddies :: Presence -> Buddies -> Buddies

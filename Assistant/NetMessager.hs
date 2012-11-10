@@ -9,12 +9,15 @@ module Assistant.NetMessager where
 
 import Assistant.Common
 import Assistant.Types.NetMessager
+import qualified Types.Remote as Remote
+import qualified Git
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Control.Exception as E
 import qualified Data.Set as S
+import qualified Data.Text as T
 
 sendNetMessage :: NetMessage -> Assistant ()
 sendNetMessage m = 
@@ -93,3 +96,12 @@ queueNetPushMessage m = do
 
 waitNetPushMessage :: Assistant (NetMessage)
 waitNetPushMessage = (atomically . readTChan) <<~ (netMessagesPush . netMessager)
+
+{- Remotes using the XMPP transport have urls like xmpp::user@host -}
+isXMPPRemote :: Remote -> Bool
+isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
+  where
+	r = Remote.repo remote
+
+getXMPPClientID :: Remote -> ClientID
+getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

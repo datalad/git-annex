@@ -27,7 +27,6 @@ import Annex.UUID
 
 import Data.Time.Clock
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Control.Concurrent
 
 {- Syncs with remotes that may have been disconnected for a while.
@@ -176,12 +175,3 @@ syncNewRemote remote = do
 	thread <- asIO $ do
 		reconnectRemotes False [remote]
 	void $ liftIO $ forkIO $ thread
-
-{- Remotes using the XMPP transport have urls like xmpp::user@host -}
-isXMPPRemote :: Remote -> Bool
-isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
-  where
-	r = Remote.repo remote
-
-getXMPPClientID :: Remote -> ClientID
-getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))
