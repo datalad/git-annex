@@ -1,0 +1,44 @@
+<div .span9 .hero-unit>
+  $if inprogress
+    <h2>
+      Pairing in progress ...
+    <p>
+      $maybe name <- friend
+        A pair request has been sent to #{name}. It's up to them #
+        to accept it and finish pairing.
+      $nothing
+        A pair request has been sent to all other devices using your jabber #
+        account.
+ <h2>
+   Configure a shared cloud repository
+  $maybe name <- friend
+    <p>
+      &#9730; To share files with #{name}, you'll need a repository in #
+      the cloud, that you both can access.
+    $if null cloudrepolist
+      <hr>
+      ^{makeCloudRepositories}
+    $else
+      <p>
+        Make sure that #{name} has access to one of these cloud repositories, #
+        and that the repository is enabled.
+      ^{repoTable cloudrepolist}
+      <hr>
+        Or, add a new cloud repository:
+        ^{makeCloudRepositories}
+  $nothing
+    <p>
+      &#9730; To share files with your other devices, when they're not #
+      nearby, you'll need a repository in the cloud.
+    $if null cloudrepolist
+      <hr>
+      ^{makeCloudRepositories}
+    $else
+      <p>
+        Make sure that your other devices are configured to access one of #
+        these cloud repositories, and that the repository is enabled here #
+        too.
+      ^{repoTable cloudrepolist}
+      <hr>
+        Or, add a new cloud repository:
+        ^{makeCloudRepositories}

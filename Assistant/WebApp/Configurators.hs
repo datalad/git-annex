@@ -17,12 +17,14 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
 import Utility.Yesod
+import Assistant.NetMessager
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
 import Config
+import qualified Git
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
 #endif
@@ -50,7 +52,7 @@ getConfigR = ifM (inFirstRun)
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	repolist <- lift $ repoList True False
+	repolist <- lift $ repoList False True False
 	let n = length repolist
 	let numrepos = show n
 	$(widgetFile "configurators/intro")
@@ -62,16 +64,12 @@ makeMiscRepositories = $(widgetFile "configurators/repositories/misc")
 makeCloudRepositories :: Widget
 makeCloudRepositories = $(widgetFile "configurators/repositories/cloud")
 
-repoTable :: Widget
-repoTable = do
-	repolist <- lift $ repoList False True
-	$(widgetFile "configurators/repositories/table")
-
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml
 getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Repositories"
+	repolist <- lift $ repoList False False True
 	$(widgetFile "configurators/repositories")
 
 data Actions
@@ -106,15 +104,20 @@ notSyncing :: Actions -> Bool
 notSyncing (SyncingRepoActions _ _) = False
 notSyncing _ = True
 
+repoTable :: RepoList -> Widget
+repoTable repolist = $(widgetFile "configurators/repositories/table")
+
+type RepoList = [(String, String, Actions)]
+
 {- A numbered list of known repositories,
  - with actions that can be taken on them. -}
-repoList :: Bool -> Bool -> Handler [(String, String, Actions)]
-repoList onlyconfigured includehere
+repoList :: Bool -> Bool -> Bool -> Handler RepoList
+repoList onlycloud onlyconfigured includehere
 	| onlyconfigured = list =<< configured
 	| otherwise = list =<< (++) <$> configured <*> rest
   where
 	configured = do
-		rs <- filter (not . Remote.readonly) . syncRemotes
+		rs <- filter wantedrepo . syncRemotes
 			<$> liftAssistant getDaemonStatus
 		runAnnex [] $ do
 			u <- getUUID
@@ -123,22 +126,32 @@ repoList onlyconfigured includehere
 			return $ zip l' $ map mkSyncingRepoActions l'
 	rest = runAnnex [] $ do
 		m <- readRemoteLog
-		unconfigured <- catMaybes . map (findtype m) . snd
+		unconfigured <- map snd . catMaybes . filter wantedremote 
+			. map (findinfo m) . snd
 			<$> (trustPartition DeadTrusted $ M.keys m)
-		unsyncable <- map Remote.uuid <$>
+		unsyncable <- map Remote.uuid . filter wantedrepo <$>
 			(filterM (\r -> not <$> repoSyncable (Remote.repo r))
 				=<< Remote.enabledRemoteList)
 		return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
-	findtype m u = case M.lookup u m of
+	wantedrepo r
+		| Remote.readonly r = False
+		| onlycloud = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
+		| otherwise = True
+	wantedremote Nothing = False
+	wantedremote (Just (iscloud, _))
+		| onlycloud = iscloud
+		| otherwise = True
+	findinfo m u = case M.lookup u m of
 		Nothing -> Nothing
 		Just c -> case M.lookup "type" c of
-			Just "rsync" -> u `enableswith` EnableRsyncR
-			Just "directory" -> u `enableswith` EnableDirectoryR
+			Just "rsync" -> val True EnableRsyncR
+			Just "directory" -> val False EnableDirectoryR
 #ifdef WITH_S3
-			Just "S3" -> u `enableswith` EnableS3R
+			Just "S3" -> val True EnableS3R
 #endif
 			_ -> Nothing
-	u `enableswith` r = Just (u, DisabledRepoActions $ r u)
+	  where
+		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = runAnnex [] $ do
 		let l' = nubBy (\x y -> fst x == fst y) l
 		zip3

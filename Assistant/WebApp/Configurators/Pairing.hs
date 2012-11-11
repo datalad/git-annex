@@ -12,6 +12,7 @@ module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
 import Assistant.WebApp
+import Assistant.WebApp.Configurators
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Configurators.XMPP
@@ -89,14 +90,11 @@ getStartXMPPPairR bid = do
 		creds <- runAnnex Nothing getXMPPCreds
 		let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
 		let samejid = baseJID ourjid == baseJID exemplar
-		let account = formatJID $ baseJID exemplar
 		liftAssistant $ do
 			u <- liftAnnex getUUID
 			forM_ clients $ \(Client c) -> sendNetMessage $
 				PairingNotification PairReq (formatJID c) u
-		pairPage $ do
-			let name = buddyName exemplar
-			$(widgetFile "configurators/pairing/xmpp/inprogress")
+		xmppPairEnd True $ if samejid then Nothing else Just exemplar
 	-- A buddy could have logged out, or the XMPP client restarted,
 	-- and there be no clients to message; handle unforseen by going back.
 	go _ = redirect StartPairR
@@ -148,9 +146,17 @@ getFinishXMPPPairR (PairKey theiruuid t) = case parseJID t of
 			sendNetMessage $
 				PairingNotification PairAck (formatJID theirjid) selfuuid
 			finishXMPPPairing theirjid theiruuid
-		redirect RepositoriesR
+		xmppPairEnd False $ Just theirjid
 #else
 getFinishXMPPPairR _ _ = noXMPPPairing
+#endif
+
+#ifdef WITH_XMPP
+xmppPairEnd :: Bool -> Maybe JID -> Handler RepHtml
+xmppPairEnd inprogress theirjid = pairPage $ do
+	let friend = buddyName <$> theirjid
+	cloudrepolist <- lift $ repoList True False False
+	$(widgetFile "configurators/pairing/xmpp/end")
 #endif
 
 getRunningLocalPairR :: SecretReminder -> Handler RepHtml
