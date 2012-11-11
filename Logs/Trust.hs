@@ -11,6 +11,7 @@ module Logs.Trust (
 	trustGet,
 	trustSet,
 	trustPartition,
+	trustExclude,
 	lookupTrust,
 	trustMapLoad,
 	trustMapRaw,
@@ -66,6 +67,10 @@ trustPartition level ls
 	| otherwise = do
 		candidates <- trustGet level
 		return $ partition (`elem` candidates) ls
+
+{- Filters UUIDs to those not matching a TrustLevel. -}
+trustExclude :: TrustLevel -> [UUID] -> Annex ([UUID])
+trustExclude level ls = snd <$> trustPartition level ls
 
 {- trustLog in a map, overridden with any values from forcetrust or
  - the git config. The map is cached for speed. -}
