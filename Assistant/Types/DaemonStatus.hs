@@ -33,8 +33,12 @@ data DaemonStatus = DaemonStatus
 	-- Messages to display to the user.
 	, alertMap :: AlertMap
 	, lastAlertId :: AlertId
-	-- Ordered list of remotes to sync with.
+	-- Ordered list of all remotes that can be synced with
 	, syncRemotes :: [Remote]
+	-- Ordered list of remotes to sync git with
+	, syncGitRemotes :: [Remote]
+	-- Ordered list of remotes to sync data with
+	, syncDataRemotes :: [Remote]
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus
@@ -59,6 +63,8 @@ newDaemonStatus = DaemonStatus
 	<*> pure M.empty
 	<*> pure M.empty
 	<*> pure firstAlertId
+	<*> pure []
+	<*> pure []
 	<*> pure []
 	<*> pure Nothing
 	<*> newNotificationBroadcaster

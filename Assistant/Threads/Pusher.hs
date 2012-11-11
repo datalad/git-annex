@@ -15,7 +15,6 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.Sync
 import Utility.ThreadScheduler
-import qualified Remote
 import qualified Types.Remote as Remote
 
 import Data.Time.Clock
@@ -46,7 +45,8 @@ pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- Now see if now's a good time to push.
 	if shouldPush commits
 		then do
-			remotes <- filter pushable . syncRemotes <$> getDaemonStatus
+			remotes <- filter (not . Remote.readonly) 
+				. syncGitRemotes <$> getDaemonStatus
 			unless (null remotes) $
 				void $ alertWhile (pushAlert remotes) $ do
 					now <- liftIO $ getCurrentTime
@@ -54,11 +54,6 @@ pushThread = NamedThread "Pusher" $ runEvery (Seconds 2) <~> do
 		else do
 			debug ["delaying push of", show (length commits), "commits"]
 			refillCommits commits
-  where
-	pushable r
-		| Remote.specialRemote r = False
-		| Remote.readonly r = False
-		| otherwise = True
 
 {- Decide if now is a good time to push to remotes.
  -

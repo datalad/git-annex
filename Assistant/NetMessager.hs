@@ -95,12 +95,3 @@ queueNetPushMessage _ = return False
 waitNetPushMessage :: PushSide -> Assistant (NetMessage)
 waitNetPushMessage side = (atomically . readTChan)
 	<<~ (getSide side . netMessagesPush . netMessager)
-
-{- Remotes using the XMPP transport have urls like xmpp::user@host -}
-isXMPPRemote :: Remote -> Bool
-isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
-  where
-	r = Remote.repo remote
-
-getXMPPClientID :: Remote -> ClientID
-getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

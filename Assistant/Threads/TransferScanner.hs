@@ -57,7 +57,7 @@ transferScannerThread = NamedThread "TransferScanner" $ do
 	 -   and then the system (or us) crashed, and that info was
 	 -   lost.
 	 -}
-	startupScan = addScanRemotes True =<< syncRemotes <$> getDaemonStatus
+	startupScan = addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
@@ -114,7 +114,7 @@ expensiveScan rs = unless onlyweb $ do
 	findtransfers f (key, _) = do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
-		syncrs <- syncRemotes <$> getDaemonStatus
+		syncrs <- syncDataRemotes <$> getDaemonStatus
 		liftAnnex $ do
 			locs <- loggedLocations key
 			present <- inAnnex key

@@ -238,7 +238,7 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
 	Nothing -> return []
 	Just jid -> do
 		let loc = gitXMPPLocation jid
-		filter (matching loc . Remote.repo) . syncRemotes 
+		filter (matching loc . Remote.repo) . syncGitRemotes 
 			<$> getDaemonStatus
   where
 	matching loc r = repoIsUrl r && repoLocation r == loc

@@ -17,7 +17,6 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
 import Utility.Yesod
-import Assistant.NetMessager
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)

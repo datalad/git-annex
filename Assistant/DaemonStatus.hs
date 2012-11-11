@@ -10,11 +10,13 @@ module Assistant.DaemonStatus where
 import Assistant.Common
 import Assistant.Alert
 import Utility.TempFile
+import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Logs.Trust
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Git
 import Config
 
 import Control.Concurrent.STM
@@ -23,6 +25,7 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
 getDaemonStatus = (atomically . readTMVar) <<~ daemonStatusHandle
@@ -41,20 +44,23 @@ modifyDaemonStatus a = do
 		sendNotification $ changeNotifier s
 		return b
 
-{- Syncable remotes ordered by cost. -}
-calcSyncRemotes :: Annex [Remote]
+{- Returns a function that updates the lists of syncable remotes. -}
+calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
 	rs <- filterM (repoSyncable . Remote.repo) =<<
 		concat . Remote.byCost <$> Remote.enabledRemoteList
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
-	return $ filter good rs
+	let syncable = filter good rs
+	return $ \dstatus -> dstatus
+		{ syncRemotes = syncable
+		, syncGitRemotes = filter (not . Remote.specialRemote) syncable
+		, syncDataRemotes = filter (not . isXMPPRemote) syncable
+		}
 
 {- Updates the sycRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()
-updateSyncRemotes = do
-	remotes <- liftAnnex calcSyncRemotes
-	modifyDaemonStatus_ $ \s -> s { syncRemotes = remotes }
+updateSyncRemotes = modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
@@ -64,12 +70,11 @@ startDaemonStatus = do
 	status <- liftIO $
 		flip catchDefaultIO (readDaemonStatusFile file) =<< newDaemonStatus
 	transfers <- M.fromList <$> getTransfers
-	remotes <- calcSyncRemotes
-	liftIO $ atomically $ newTMVar status
+	addsync <- calcSyncRemotes
+	liftIO $ atomically $ newTMVar $ addsync $ status
 		{ scanComplete = False
 		, sanityCheckRunning = False
 		, currentTransfers = transfers
-		, syncRemotes = remotes
 		}
 
 {- Don't just dump out the structure, because it will change over time,
@@ -221,3 +226,12 @@ alertDuring :: Alert -> Assistant a -> Assistant a
 alertDuring alert a = do
 	i <- addAlert $ alert { alertClass = Activity }
 	removeAlert  i `after` a
+
+{- Remotes using the XMPP transport have urls like xmpp::user@host -}
+isXMPPRemote :: Remote -> Bool
+isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
+  where
+	r = Remote.repo remote
+
+getXMPPClientID :: Remote -> ClientID
+getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

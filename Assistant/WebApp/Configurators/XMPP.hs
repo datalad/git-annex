@@ -100,7 +100,7 @@ buddyListDisplay = do
 	autoUpdate ident NotifierBuddyListR (10 :: Int) (10 :: Int)
 #ifdef WITH_XMPP
 	buddies <- lift $ liftAssistant $ do
-		rs <- filter isXMPPRemote . syncRemotes <$> getDaemonStatus
+		rs <- filter isXMPPRemote . syncGitRemotes <$> getDaemonStatus
 		let pairedwith = catMaybes $ map (parseJID . getXMPPClientID) rs
 		catMaybes . map (buddySummary pairedwith)
 			<$> (getBuddyList <<~ buddyList)

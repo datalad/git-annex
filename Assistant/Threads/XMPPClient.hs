@@ -190,7 +190,7 @@ xmppThread a = do
 pull :: [UUID] -> Assistant ()
 pull [] = noop
 pull us = do
-	rs <- filter matching . syncRemotes <$> getDaemonStatus
+	rs <- filter matching . syncGitRemotes <$> getDaemonStatus
 	debug $ "push notification for" : map (fromUUID . Remote.uuid ) rs
 	pullone rs =<< liftAnnex (inRepo Git.Branch.current)
   where

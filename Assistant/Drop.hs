@@ -23,7 +23,7 @@ import Config
 handleDrops :: Bool -> Key -> AssociatedFile -> Assistant ()
 handleDrops _ _ Nothing = noop
 handleDrops fromhere key f = do
-	syncrs <- syncRemotes <$> getDaemonStatus
+	syncrs <- syncDataRemotes <$> getDaemonStatus
 	liftAnnex $ do
 		locs <- loggedLocations key
 		handleDrops' locs syncrs fromhere key f
