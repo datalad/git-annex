@@ -72,6 +72,7 @@ setXMPPCreds :: XMPPCreds -> Annex ()
 setXMPPCreds creds = do
 	f <- xmppCredsFile
 	liftIO $ do
+		createDirectoryIfMissing True (parentDir f)
 		h <- openFile f WriteMode
 		modifyFileMode f $ removeModes
 			[groupReadMode, otherReadMode]
