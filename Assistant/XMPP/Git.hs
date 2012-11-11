@@ -25,6 +25,7 @@ import qualified Git.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 import Utility.FileMode
+import Utility.ThreadScheduler
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -118,15 +119,23 @@ xmppPush cid gitpush = runPush (SendPushRunning cid) handleDeferred $ do
 			then liftIO $ killThread =<< myThreadId
 			else sendNetMessage $ Pushing cid $ SendPackOutput b
 	fromxmpp outh controlh = forever $ do
-		m <- waitNetPushMessage
+		m <- runTimeout xmppTimeout <~> waitNetPushMessage
 		case m of
-			(Pushing _ (ReceivePackOutput b)) -> 
+			(Right (Pushing _ (ReceivePackOutput b))) -> 
 				liftIO $ writeChunk outh b
-			(Pushing _ (ReceivePackDone exitcode)) ->
+			(Right (Pushing _ (ReceivePackDone exitcode))) ->
 				liftIO $ do
 					hPrint controlh exitcode
 					hFlush controlh
-			_ -> noop
+			(Right _) -> noop
+			(Left _) -> do
+				debug ["timeout waiting for git receive-pack output via XMPP"]
+				-- Send a synthetic exit code to git-annex
+				-- xmppgit, which will exit and cause git push
+				-- to die.
+				liftIO $ do
+					hPrint controlh (ExitFailure 1)
+					hFlush controlh
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
 		let wrapper = tmpdir </> "git-remote-xmpp"
@@ -211,11 +220,18 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 			sendNetMessage $ Pushing cid $ ReceivePackOutput b
 			relaytoxmpp outh
 	relayfromxmpp inh = forever $ do
-		m <- waitNetPushMessage
+		m <- runTimeout xmppTimeout <~> waitNetPushMessage
 		case m of
-			(Pushing _ (SendPackOutput b)) ->
+			(Right (Pushing _ (SendPackOutput b))) ->
 				liftIO $ writeChunk inh b
-			_ -> noop
+			(Right _) -> noop
+			(Left _) -> do
+				debug ["timeout waiting for git send-pack output via XMPP"]
+				-- closing the handle will make
+				-- git receive-pack exit
+				liftIO $ do
+					hClose inh
+					killThread =<< myThreadId
 
 xmppRemotes :: ClientID -> Assistant [Remote]
 xmppRemotes cid = case baseJID <$> parseJID cid of
@@ -257,10 +273,23 @@ handlePushMessage _ = noop
 handleDeferred :: NetMessage -> Assistant ()
 handleDeferred = handlePushMessage
 
-chunkSize :: Int
-chunkSize = 4096
-
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do
 	B.hPut h b
 	hFlush h
+
+{- Largest chunk of data to send in a single XMPP message. -}
+chunkSize :: Int
+chunkSize = 4096
+
+{- How long to wait for an expected message before assuming the other side
+ - has gone away and canceling a push. 
+ -
+ - This needs to be long enough to allow a message of up to 2+ times
+ - chunkSize to propigate up to a XMPP server, perhaps across to another
+ - server, and back down to us. On the other hand, other XMPP pushes can be
+ - delayed for running until the timeout is reached, so it should not be
+ - excessive.
+ -}
+xmppTimeout :: Seconds
+xmppTimeout = Seconds 120
