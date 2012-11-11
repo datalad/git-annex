@@ -99,7 +99,7 @@ xmppClient urlrenderer d = do
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushInitiation pushstage = inAssistant $
 			unlessM (queueNetPushMessage m) $ 
-				void $ forkIO <~> handlePushMessage m
+				void $ forkIO <~> handlePushInitiation m
 		| otherwise = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop

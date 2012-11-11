@@ -11,9 +11,10 @@ who share a repository, that is stored in the [[cloud]].
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
 * Assistant.Sync.manualPull doesn't handle XMPP remotes yet.
   This is needed to handle getting back in sync after reconnection.
-* If a git push over XMPP is underway, and the remote client stops
-  responding, it currently blocks other git pushes from starting, forever.
-  Need a timeout..
+* When pairing, sometimes both sides start to push, and the other side
+  sends a PushRequest, and the two deadlock, neither doing anything.
+  (Timeout eventually breaks this.)
+  Maybe should allow one push and one receive-pack at a time?
 
 ## design goals
 

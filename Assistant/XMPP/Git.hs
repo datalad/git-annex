@@ -74,7 +74,7 @@ makeXMPPGitRemote buddyname jid u = do
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
 xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
-xmppPush cid gitpush = runPush (SendPushRunning cid) handleDeferred $ do
+xmppPush cid gitpush = runPush SendPack cid handleDeferred $ do
 	sendNetMessage $ Pushing cid StartingPush
 
 	(Fd inf, writepush) <- liftIO createPipe
@@ -119,7 +119,7 @@ xmppPush cid gitpush = runPush (SendPushRunning cid) handleDeferred $ do
 			then liftIO $ killThread =<< myThreadId
 			else sendNetMessage $ Pushing cid $ SendPackOutput b
 	fromxmpp outh controlh = forever $ do
-		m <- runTimeout xmppTimeout <~> waitNetPushMessage
+		m <- runTimeout xmppTimeout <~> waitNetPushMessage SendPack
 		case m of
 			(Right (Pushing _ (ReceivePackOutput b))) -> 
 				liftIO $ writeChunk outh b
@@ -195,7 +195,7 @@ xmppGitRelay = do
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
 xmppReceivePack :: ClientID -> Assistant Bool
-xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
+xmppReceivePack cid = runPush ReceivePack cid handleDeferred $ do
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -220,7 +220,7 @@ xmppReceivePack cid = runPush (ReceivePushRunning cid) handleDeferred $ do
 			sendNetMessage $ Pushing cid $ ReceivePackOutput b
 			relaytoxmpp outh
 	relayfromxmpp inh = forever $ do
-		m <- runTimeout xmppTimeout <~> waitNetPushMessage
+		m <- runTimeout xmppTimeout <~> waitNetPushMessage ReceivePack
 		case m of
 			(Right (Pushing _ (SendPackOutput b))) ->
 				liftIO $ writeChunk inh b
@@ -246,12 +246,12 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
 whenXMPPRemote :: ClientID -> Assistant () -> Assistant ()
 whenXMPPRemote cid = unlessM (null <$> xmppRemotes cid)
 
-handlePushMessage :: NetMessage -> Assistant ()
-handlePushMessage (Pushing cid CanPush) =
+handlePushInitiation :: NetMessage -> Assistant ()
+handlePushInitiation (Pushing cid CanPush) =
 	whenXMPPRemote cid $ 
 		sendNetMessage $ Pushing cid PushRequest
 
-handlePushMessage (Pushing cid PushRequest) =
+handlePushInitiation (Pushing cid PushRequest) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
 	go Nothing = noop
@@ -265,13 +265,13 @@ handlePushMessage (Pushing cid PushRequest) =
 		debug ["pushing to", show rs]
 		forM_ rs $ \r -> xmppPush cid $ pushFallback u branch r
 
-handlePushMessage (Pushing cid StartingPush) =
+handlePushInitiation (Pushing cid StartingPush) =
 	whenXMPPRemote cid $
 		void $ xmppReceivePack cid
-handlePushMessage _ = noop
+handlePushInitiation _ = noop
 
 handleDeferred :: NetMessage -> Assistant ()
-handleDeferred = handlePushMessage
+handleDeferred = handlePushInitiation
 
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do
