@@ -7,7 +7,7 @@ works with any Jabber account you use, not just Google Talk.)
 
 Start by opening up your git annex dashboard.
 
-[[!img addrepository.png alt="Add another repository button"]]
+[[!img pairing_walkthrough/addrepository.png alt="Add another repository button"]]
 
 `*click*`
 
