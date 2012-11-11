@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="further tracking"
+ date="2012-11-11T01:15:41Z"
+ content="""
+the behavior is rooted in rsync, which behaves similar to `mkdir -p`. it can probably be worked around by configuring the rsync option `--chmod=775`, but that would add executability to files.
+
+i've opened a bug in rsync's bug tracker at <https://bugzilla.samba.org/show_bug.cgi?id=9377>, let's see what the developer says.
+"""]]

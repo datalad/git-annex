@@ -22,7 +22,7 @@ fetches from each remote, and merges in any changes that have been made
 to the remotes too. Finally, it updates `synced/master` to reflect the new
 state of `master`, and pushes it out to each of the remotes.
 
-This way, changes propigate around between repositories as `git annex sync`
+This way, changes propagate around between repositories as `git annex sync`
 is run on each of them. Every repository does not need to be able to talk
 to every other repository; as long as the graph of repositories is
 connected, and `git annex sync` is run from time to time on each, a given
