@@ -39,7 +39,7 @@ handleDrops' locs rs fromhere key (Just f)
 	| otherwise = go rs =<< getcopies
   where
 	getcopies = do
-		have <- length . snd <$> trustPartition UnTrusted locs
+		have <- length <$> trustExclude UnTrusted locs
 		numcopies <- getNumCopies =<< numCopies f
 		return (have, numcopies)
 	checkcopies (have, numcopies) = have > numcopies

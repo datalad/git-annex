@@ -127,8 +127,8 @@ repoList onlycloud onlyconfigured includehere
 	rest = runAnnex [] $ do
 		m <- readRemoteLog
 		unconfigured <- map snd . catMaybes . filter wantedremote 
-			. map (findinfo m) . snd
-			<$> (trustPartition DeadTrusted $ M.keys m)
+			. map (findinfo m)
+			<$> (trustExclude DeadTrusted $ M.keys m)
 		unsyncable <- map Remote.uuid . filter wantedrepo <$>
 			(filterM (\r -> not <$> repoSyncable (Remote.repo r))
 				=<< Remote.enabledRemoteList)

@@ -169,7 +169,7 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 {- List of repository UUIDs that the location log indicates may have a key.
  - Dead repositories are excluded. -}
 keyLocations :: Key -> Annex [UUID]
-keyLocations key = snd <$> (trustPartition DeadTrusted =<< loggedLocations key)
+keyLocations key = trustExclude DeadTrusted =<< loggedLocations key
 
 {- Cost ordered lists of remotes that the location log indicates
  - may have a key.

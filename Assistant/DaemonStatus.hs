@@ -46,7 +46,7 @@ calcSyncRemotes :: Annex [Remote]
 calcSyncRemotes = do
 	rs <- filterM (repoSyncable . Remote.repo) =<<
 		concat . Remote.byCost <$> Remote.enabledRemoteList
-	alive <- snd <$> trustPartition DeadTrusted (map Remote.uuid rs)
+	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	return $ filter good rs
 
