@@ -204,14 +204,24 @@ pull us = do
 
 pairMsgReceived :: UrlRenderer -> PairStage -> UUID -> JID -> JID -> Assistant ()
 pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
-	-- PairReq from another client using our JID is automatically accepted.
-	| baseJID selfjid == baseJID theirjid = do
+	| baseJID selfjid == baseJID theirjid = autoaccept
+	| otherwise = do
+		knownjids <- catMaybes . map (parseJID . getXMPPClientID)
+			. filter isXMPPRemote . syncRemotes <$> getDaemonStatus
+		if any (== baseJID theirjid) knownjids
+			then autoaccept
+			else showalert
+
+  where
+	-- PairReq from another client using our JID, or the JID of
+	-- any repo we're already paired with is automatically accepted.
+	autoaccept = do
 		selfuuid <- liftAnnex getUUID
 		sendNetMessage $
 			PairingNotification PairAck (formatJID theirjid) selfuuid
 		finishXMPPPairing theirjid theiruuid
 	-- Show an alert to let the user decide if they want to pair.
-	| otherwise = do
+	showalert = do
 		let route = FinishXMPPPairR (PairKey theiruuid $ formatJID theirjid)
 		url <- liftIO $ renderUrl urlrenderer route []
 		close <- asIO1 removeAlert
