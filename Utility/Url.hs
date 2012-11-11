@@ -119,6 +119,11 @@ request url headers requesttype = go 5 url
 					Nothing -> return rsp
 					Just newURI -> go n newURI_abs
 						where
+#if defined VERSION_network
+#if ! MIN_VERSION_network(2,4,0)
+#define WITH_OLD_URI
+#endif
+#endif
 #ifdef WITH_OLD_URI
 							newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
 #else

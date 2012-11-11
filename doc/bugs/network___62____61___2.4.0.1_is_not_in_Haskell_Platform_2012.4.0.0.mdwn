@@ -7,3 +7,6 @@ Do you think it's possible to support *both* versions of the network library, ma
 That would increase the portability of git-annex quite a bit.
 
 Thank you for your consideration.
+
+> Ok, I think I've figured out how to use the CPP macros defined by cabal
+> to deal with this. [[done]], will be in next release. --[[Joey]] 
