@@ -57,7 +57,7 @@ getXMPPR = xmppPage $
 
 getXMPPForPairingR :: Handler RepHtml
 #ifdef WITH_XMPP
-getXMPPForPairingR = getXMPPR' StartPairR
+getXMPPForPairingR = getXMPPR' StartXMPPPairR
 #else
 getXMPPForPairingR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")

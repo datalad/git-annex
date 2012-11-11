@@ -55,34 +55,29 @@ import Control.Concurrent
 import qualified Data.Set as S
 #endif
 
-{- Starts either kind of pairing. -}
-getStartPairR :: Handler RepHtml
+getStartXMPPPairR :: Handler RepHtml
 #ifdef WITH_XMPP
-getStartPairR = do
-	xmppconfigured <- isJust <$> runAnnex Nothing getXMPPCreds
-#ifdef WITH_PAIRING
-	let localsupported = True
+getStartXMPPPairR = ifM (isJust <$> runAnnex Nothing getXMPPCreds)
+	( do
+		{- Ask buddies to send presence info, to get
+		 - the buddy list populated. -}
+		liftAssistant $ sendNetMessage QueryPresence
+		pairPage $
+			$(widgetFile "configurators/pairing/xmpp/prompt")
+	, redirect XMPPForPairingR -- go get XMPP configured, then come back
+	)
 #else
-	let localsupported = False
-#endif
-	{- Ask buddies to send presence info, to get the buddy list
-	 - populated. -}
-	liftAssistant $ sendNetMessage QueryPresence
-	pairPage $
-		$(widgetFile "configurators/pairing/start")
-#else
-#ifdef WITH_PAIRING
-getStartPairR = redirect StartLocalPairR
-#else
-getStartPairR = noPairing "local or jabber"
-#endif
+getStartXMPPPairR = noXMPPPairing
+
+noXMPPPairing :: Handler RepHtml
+noXMPPPairing = noPairing "XMPP"
 #endif
 
-{- Starts pairing with an XMPP buddy, or with other clients sharing an
+{- Does pairing with an XMPP buddy, or with other clients sharing an
  - XMPP account. -}
-getStartXMPPPairR :: BuddyKey -> Handler RepHtml
+getRunningXMPPPairR :: BuddyKey -> Handler RepHtml
 #ifdef WITH_XMPP
-getStartXMPPPairR bid = do
+getRunningXMPPPairR bid = do
 	buddy <- liftAssistant $ getBuddy bid <<~ buddyList
 	go $ S.toList . buddyAssistants <$> buddy
   where
@@ -97,12 +92,9 @@ getStartXMPPPairR bid = do
 		xmppPairEnd True $ if samejid then Nothing else Just exemplar
 	-- A buddy could have logged out, or the XMPP client restarted,
 	-- and there be no clients to message; handle unforseen by going back.
-	go _ = redirect StartPairR
+	go _ = redirect StartXMPPPairR
 #else
-getStartXMPPPairR _ = noXMPPPairing
-
-noXMPPPairing :: Handler RepHtml
-noXMPPPairing = noPairing "XMPP"
+getRunningXMPPPairR _ = noXMPPPairing
 #endif
 
 {- Starts local pairing. -}

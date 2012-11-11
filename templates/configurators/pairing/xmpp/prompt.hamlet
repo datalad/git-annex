@@ -1,0 +1,11 @@
+<div .span9 .hero-unit>
+  <h2>
+    Pairing with another computer
+  <p>
+    Pairing with a another computer combines both git-annex repositories #
+    into a single shared repository, with changes kept in sync.
+  <p>
+    You can pair with any of your friends using jabber, or with another #
+    computer that shares your own jabber account.
+    <p>
+      ^{buddyListDisplay}

@@ -26,11 +26,11 @@
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET
 /config/repository/add/cloud/S3 AddS3R GET
 
-/config/repository/pair/start StartPairR GET
 /config/repository/pair/local/start StartLocalPairR GET
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET
-/config/repository/pair/xmpp/start/#BuddyKey StartXMPPPairR GET
+/config/repository/pair/xmpp/start StartXMPPPairR GET
+/config/repository/pair/xmpp/running/#BuddyKey RunningXMPPPairR GET
 /config/repository/pair/xmpp/finish/#PairKey FinishXMPPPairR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET

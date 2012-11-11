@@ -25,7 +25,7 @@
                   paired
               $else
                 $if canpair
-                  <a .btn .btn-primary .btn-small href="@{StartXMPPPairR buddyid}">
+                  <a .btn .btn-primary .btn-small href="@{RunningXMPPPairR buddyid}">
                     Start pairing
                 $else
                   not using git-annex
