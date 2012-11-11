@@ -9,7 +9,8 @@ Note that the git-annex assistant is still beta quality code. See
 ## installation
 
 The git-annex assistant comes as part of git-annex, starting with version
-3.20120924. See [[install]] to get it installed.
+3.20120924. It is still under heavy development, but the basics work well.
+See [[install]] to get it installed.
 
 ## quick start
 
@@ -32,7 +33,9 @@ interface to add repositories and control the git-annex assistant.
 ## documentation
 
 * Want to make two nearby computers share the same synchronised folder?
-  Follow the [[pairing_walkthrough]].
+  Follow the [[local_pairing_walkthrough]].
+* Want to share a synchronised folder with a friend?
+  Follow the [[share_with_a_friend_walkthrough]].
 
 ## command line startup
 
