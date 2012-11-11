@@ -325,7 +325,7 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 
 xmppNeededAlert :: AlertButton -> Alert
 xmppNeededAlert button = Alert
-	{ alertHeader = Just "Keep your repositories in sync across the cloud, or share with friends."
+	{ alertHeader = Just "Share with friends, and keep your devices in sync across the cloud."
 	, alertIcon = Just TheCloud
 	, alertPriority = High
 	, alertButton = Just button
