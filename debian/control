@@ -42,6 +42,7 @@ Build-Depends:
 	libghc-network-protocol-xmpp-dev (>= 0.4.3-2),
 	libghc-gnutls-dev (>= 0.1.4),
 	libghc-xml-types-dev,
+	libghc-async-dev,
 	ikiwiki,
 	perlmagick,
 	git,

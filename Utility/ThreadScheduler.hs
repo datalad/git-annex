@@ -11,6 +11,8 @@ module Utility.ThreadScheduler where
 import Common
 
 import Control.Concurrent
+import Control.Exception
+import Control.Concurrent.Async
 import System.Posix.Terminal
 import System.Posix.Signals
 
@@ -43,6 +45,19 @@ unboundDelay time = do
 	let maxWait = min time $ toInteger (maxBound :: Int)
 	threadDelay $ fromInteger maxWait
 	when (maxWait /= time) $ unboundDelay (time - maxWait)
+
+{- Runs an action until a timeout is reached. If it fails to complete in
+ - time, or throws an exception, returns a Left value.
+ -
+ - Note that if the action runs an unsafe foreign call, the signal to
+ - cancel it may not arrive until the call returns. -}
+runTimeout :: Seconds -> IO a -> IO (Either SomeException a)
+runTimeout secs a = do
+	runner <- async a
+	controller <- async $ do
+		threadDelaySeconds secs
+		cancel runner
+	cancel controller `after` waitCatch runner
 
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
