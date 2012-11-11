@@ -37,13 +37,13 @@ oldurlLogs key =
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
 getUrls key = go $ urlLog key : oldurlLogs key
-	where
-		go [] = return []
-		go (l:ls) = do
-			us <- currentLog l
-			if null us
-				then go ls
-				else return us
+  where
+	go [] = return []
+	go (l:ls) = do
+		us <- currentLog l
+		if null us
+			then go ls
+			else return us
 
 {- Records a change in an url for a key. -}
 setUrl :: Key -> URLString -> LogStatus -> Annex ()

@@ -70,14 +70,14 @@ moveContent = do
 	showAction "moving content"
 	files <- getKeyFilesPresent1
 	forM_ files move
-	where
-		move f = do
-			let k = fileKey1 (takeFileName f)
-			let d = parentDir f
-			liftIO $ allowWrite d
-			liftIO $ allowWrite f
-			moveAnnex k f
-			liftIO $ removeDirectory d
+  where
+	move f = do
+		let k = fileKey1 (takeFileName f)
+		let d = parentDir f
+		liftIO $ allowWrite d
+		liftIO $ allowWrite f
+		moveAnnex k f
+		liftIO $ removeDirectory d
 
 updateSymlinks :: Annex ()
 updateSymlinks = do
@@ -86,54 +86,54 @@ updateSymlinks = do
 	(files, cleanup) <- inRepo $ LsFiles.inRepo [top]
 	forM_ files fixlink
 	void $ liftIO cleanup
-	where
-		fixlink f = do
-			r <- lookupFile1 f
-			case r of
-				Nothing -> noop
-				Just (k, _) -> do
-					link <- calcGitLink f k
-					liftIO $ removeFile f
-					liftIO $ createSymbolicLink link f
-					Annex.Queue.addCommand "add" [Param "--"] [f]
+  where
+	fixlink f = do
+		r <- lookupFile1 f
+		case r of
+			Nothing -> noop
+			Just (k, _) -> do
+				link <- calcGitLink f k
+				liftIO $ removeFile f
+				liftIO $ createSymbolicLink link f
+				Annex.Queue.addCommand "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
 moveLocationLogs = do
 	showAction "moving location logs"
 	logkeys <- oldlocationlogs
 	forM_ logkeys move
-		where
-			oldlocationlogs = do
-				dir <- fromRepo Upgrade.V2.gitStateDir
-				ifM (liftIO $ doesDirectoryExist dir)
-					( mapMaybe oldlog2key
-						<$> (liftIO $ getDirectoryContents dir)
-					, return []
-					)
-			move (l, k) = do
-				dest <- fromRepo $ logFile2 k
-				dir <- fromRepo Upgrade.V2.gitStateDir
-				let f = dir </> l
-				liftIO $ createDirectoryIfMissing True (parentDir dest)
-				-- could just git mv, but this way deals with
-				-- log files that are not checked into git,
-				-- as well as merging with already upgraded
-				-- logs that have been pulled from elsewhere
-				old <- liftIO $ readLog1 f
-				new <- liftIO $ readLog1 dest
-				liftIO $ writeLog1 dest (old++new)
-				Annex.Queue.addCommand "add" [Param "--"] [dest]
-				Annex.Queue.addCommand "add" [Param "--"] [f]
-				Annex.Queue.addCommand "rm" [Param "--quiet", Param "-f", Param "--"] [f]
-		
+  where
+	oldlocationlogs = do
+		dir <- fromRepo Upgrade.V2.gitStateDir
+		ifM (liftIO $ doesDirectoryExist dir)
+			( mapMaybe oldlog2key
+				<$> (liftIO $ getDirectoryContents dir)
+			, return []
+			)
+	move (l, k) = do
+		dest <- fromRepo $ logFile2 k
+		dir <- fromRepo Upgrade.V2.gitStateDir
+		let f = dir </> l
+		liftIO $ createDirectoryIfMissing True (parentDir dest)
+		-- could just git mv, but this way deals with
+		-- log files that are not checked into git,
+		-- as well as merging with already upgraded
+		-- logs that have been pulled from elsewhere
+		old <- liftIO $ readLog1 f
+		new <- liftIO $ readLog1 dest
+		liftIO $ writeLog1 dest (old++new)
+		Annex.Queue.addCommand "add" [Param "--"] [dest]
+		Annex.Queue.addCommand "add" [Param "--"] [f]
+		Annex.Queue.addCommand "rm" [Param "--quiet", Param "-f", Param "--"] [f]
+
 oldlog2key :: FilePath -> Maybe (FilePath, Key)
 oldlog2key l
 	| drop len l == ".log" && sane = Just (l, k)
 	| otherwise = Nothing
-	where
-		len = length l - 4
-		k = readKey1 (take len l)
-		sane = (not . null $ keyName k) && (not . null $ keyBackendName k)
+  where
+	len = length l - 4
+	k = readKey1 (take len l)
+	sane = (not . null $ keyName k) && (not . null $ keyBackendName k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -150,25 +150,25 @@ readKey1 v
 		, keySize = s
 		, keyMtime = t
 		}
-	where
-		bits = split ":" v
-		b = Prelude.head bits
-		n = join ":" $ drop (if wormy then 3 else 1) bits
-		t = if wormy
-			then Just (Prelude.read (bits !! 1) :: EpochTime)
-			else Nothing
-		s = if wormy
-			then Just (Prelude.read (bits !! 2) :: Integer)
-			else Nothing
-		wormy = Prelude.head bits == "WORM"
-		mixup = wormy && isUpper (Prelude.head $ bits !! 1)
+  where
+	bits = split ":" v
+	b = Prelude.head bits
+	n = join ":" $ drop (if wormy then 3 else 1) bits
+	t = if wormy
+		then Just (Prelude.read (bits !! 1) :: EpochTime)
+		else Nothing
+	s = if wormy
+		then Just (Prelude.read (bits !! 2) :: Integer)
+		else Nothing
+	wormy = Prelude.head bits == "WORM"
+	mixup = wormy && isUpper (Prelude.head $ bits !! 1)
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
 	join ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
-		where
-			showifhere Nothing = ""
-			showifhere (Just v) = show v
+  where
+	showifhere Nothing = ""
+	showifhere (Just v) = show v
 
 keyFile1 :: Key -> FilePath
 keyFile1 key = replace "/" "%" $ replace "%" "&s" $ replace "&" "&a"  $ showKey1 key
@@ -190,21 +190,21 @@ lookupFile1 file = do
 	case tl of
 		Left _ -> return Nothing
 		Right l -> makekey l
-	where
-		getsymlink = takeFileName <$> readSymbolicLink file
-		makekey l = case maybeLookupBackendName bname of
-			Nothing -> do
-				unless (null kname || null bname ||
-				        not (isLinkToAnnex l)) $
-					warning skip
-				return Nothing
-			Just backend -> return $ Just (k, backend)
-			where
-				k = fileKey1 l
-				bname = keyBackendName k
-				kname = keyName k
-				skip = "skipping " ++ file ++ 
-					" (unknown backend " ++ bname ++ ")"
+  where
+	getsymlink = takeFileName <$> readSymbolicLink file
+	makekey l = case maybeLookupBackendName bname of
+		Nothing -> do
+			unless (null kname || null bname ||
+			        not (isLinkToAnnex l)) $
+				warning skip
+			return Nothing
+		Just backend -> return $ Just (k, backend)
+	  where
+		k = fileKey1 l
+		bname = keyBackendName k
+		kname = keyName k
+		skip = "skipping " ++ file ++ 
+			" (unknown backend " ++ bname ++ ")"
 
 getKeyFilesPresent1 :: Annex [FilePath]
 getKeyFilesPresent1  = getKeyFilesPresent1' =<< fromRepo gitAnnexObjectDir
@@ -217,12 +217,12 @@ getKeyFilesPresent1' dir =
 			liftIO $ filterM present files
 		, return []
 		)
-	where
-		present f = do
-			result <- tryIO $ getFileStatus f
-			case result of
-				Right s -> return $ isRegularFile s
-				Left _ -> return False
+  where
+	present f = do
+		result <- tryIO $ getFileStatus f
+		case result of
+			Right s -> return $ isRegularFile s
+			Left _ -> return False
 
 logFile1 :: Git.Repo -> Key -> String
 logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"

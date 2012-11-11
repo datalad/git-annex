@@ -46,33 +46,33 @@ fieldSep = '-'
 key2file :: Key -> FilePath
 key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
 	b +++ ('s' ?: s) +++ ('m' ?: m) +++ (fieldSep : n)
-	where
-		"" +++ y = y
-		x +++ "" = x
-		x +++ y = x ++ fieldSep:y
-		c ?: (Just v) = c : show v
-		_ ?: _ = ""
+  where
+	"" +++ y = y
+	x +++ "" = x
+	x +++ y = x ++ fieldSep:y
+	c ?: (Just v) = c : show v
+	_ ?: _ = ""
 
 file2key :: FilePath -> Maybe Key
 file2key s = if key == Just stubKey then Nothing else key
-	where
-		key = startbackend stubKey s
+  where
+	key = startbackend stubKey s
 
-		startbackend k v = sepfield k v addbackend
+	startbackend k v = sepfield k v addbackend
 		
-		sepfield k v a = case span (/= fieldSep) v of
-			(v', _:r) -> findfields r $ a k v'
-			_ -> Nothing
+	sepfield k v a = case span (/= fieldSep) v of
+		(v', _:r) -> findfields r $ a k v'
+		_ -> Nothing
 
-		findfields (c:v) (Just k)
-			| c == fieldSep = Just $ k { keyName = v }
-			| otherwise = sepfield k v $ addfield c
-		findfields _ v = v
+	findfields (c:v) (Just k)
+		| c == fieldSep = Just $ k { keyName = v }
+		| otherwise = sepfield k v $ addfield c
+	findfields _ v = v
 
-		addbackend k v = Just k { keyBackendName = v }
-		addfield 's' k v = Just k { keySize = readish v }
-		addfield 'm' k v = Just k { keyMtime = readish v }
-		addfield _ _ _ = Nothing
+	addbackend k v = Just k { keyBackendName = v }
+	addfield 's' k v = Just k { keySize = readish v }
+	addfield 'm' k v = Just k { keyMtime = readish v }
+	addfield _ _ _ = Nothing
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k

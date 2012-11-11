@@ -80,14 +80,14 @@ prepCommand Command { cmdseek = seek, cmdcheck = c } params = do
 {- Runs a command through the start, perform and cleanup stages -}
 doCommand :: CommandStart -> CommandCleanup
 doCommand = start
-	where
-		start   = stage $ maybe skip perform
-		perform = stage $ maybe failure cleanup
-		cleanup = stage $ status
-		stage = (=<<)
-		skip = return True
-		failure = showEndFail >> return False
-		status r = showEndResult r >> return r
+  where
+	start   = stage $ maybe skip perform
+	perform = stage $ maybe failure cleanup
+	cleanup = stage $ status
+	stage = (=<<)
+	skip = return True
+	failure = showEndFail >> return False
+	status r = showEndResult r >> return r
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key and backend on to it. -}
@@ -118,26 +118,26 @@ numCopies file = readish <$> checkAttr "annex.numcopies" file
  -}
 autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> CommandStart -> CommandStart
 autoCopies file key vs a = Annex.getState Annex.auto >>= go
-	where
-		go False = a
-		go True = do
-			numcopiesattr <- numCopies file
-			needed <- getNumCopies numcopiesattr
-			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed then a else stop
+  where
+	go False = a
+	go True = do
+		numcopiesattr <- numCopies file
+		needed <- getNumCopies numcopiesattr
+		have <- trustExclude UnTrusted =<< Remote.keyLocations key
+		if length have `vs` needed then a else stop
 
 autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
 autoCopiesWith file key vs a = do
 	numcopiesattr <- numCopies file
 	Annex.getState Annex.auto >>= auto numcopiesattr
-	where
-		auto numcopiesattr False = a numcopiesattr
-		auto numcopiesattr True = do
-			needed <- getNumCopies numcopiesattr
-			(_, have) <- trustPartition UnTrusted =<< Remote.keyLocations key
-			if length have `vs` needed
-				then a numcopiesattr
-				else stop
+  where
+	auto numcopiesattr False = a numcopiesattr
+	auto numcopiesattr True = do
+		needed <- getNumCopies numcopiesattr
+		have <- trustExclude UnTrusted =<< Remote.keyLocations key
+		if length have `vs` needed
+			then a numcopiesattr
+			else stop
 
 checkAuto :: Annex Bool -> Annex Bool
 checkAuto checker = ifM (Annex.getState Annex.auto)

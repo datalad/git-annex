@@ -48,74 +48,71 @@ gen' r u c cst =
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
-	where
-		this = Remote {
-			uuid = u,
-			cost = cst,
-			name = Git.repoDescribe r,
-	 		storeKey = store this,
-			retrieveKeyFile = retrieve this,
-			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
-			hasKey = checkPresent this,
-			hasKeyCheap = False,
-			whereisKey = Nothing,
-			config = c,
-			repo = r,
-			localpath = Nothing,
-			readonly = False,
-			remotetype = remote
-		}
+  where
+	this = Remote {
+		uuid = u,
+		cost = cst,
+		name = Git.repoDescribe r,
+ 		storeKey = store this,
+		retrieveKeyFile = retrieve this,
+		retrieveKeyFileCheap = retrieveCheap this,
+		removeKey = remove this,
+		hasKey = checkPresent this,
+		hasKeyCheap = False,
+		whereisKey = Nothing,
+		config = c,
+		repo = r,
+		localpath = Nothing,
+		readonly = False,
+		remotetype = remote
+	}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
 s3Setup u c = handlehost $ M.lookup "host" c
-	where
-		remotename = fromJust (M.lookup "name" c)
-		defbucket = remotename ++ "-" ++ fromUUID u
-		defaults = M.fromList
-			[ ("datacenter", "US")
-			, ("storageclass", "STANDARD")
-			, ("host", defaultAmazonS3Host)
-			, ("port", show defaultAmazonS3Port)
-			, ("bucket", defbucket)
-			]
+  where
+	remotename = fromJust (M.lookup "name" c)
+	defbucket = remotename ++ "-" ++ fromUUID u
+	defaults = M.fromList
+		[ ("datacenter", "US")
+		, ("storageclass", "STANDARD")
+		, ("host", defaultAmazonS3Host)
+		, ("port", show defaultAmazonS3Port)
+		, ("bucket", defbucket)
+		]
 		
-		handlehost Nothing = defaulthost
-		handlehost (Just h)
-			| ".archive.org" `isSuffixOf` map toLower h = archiveorg
-			| otherwise = defaulthost
+	handlehost Nothing = defaulthost
+	handlehost (Just h)
+		| ".archive.org" `isSuffixOf` map toLower h = archiveorg
+		| otherwise = defaulthost
 
-		use fullconfig = do
-			gitConfigSpecialRemote u fullconfig "s3" "true"
-			s3SetCreds fullconfig u
+	use fullconfig = do
+		gitConfigSpecialRemote u fullconfig "s3" "true"
+		s3SetCreds fullconfig u
 
-		defaulthost = do
-			c' <- encryptionSetup c
-			let fullconfig = c' `M.union` defaults
-			genBucket fullconfig u
-			use fullconfig
+	defaulthost = do
+		c' <- encryptionSetup c
+		let fullconfig = c' `M.union` defaults
+		genBucket fullconfig u
+		use fullconfig
 
-		archiveorg = do
-			showNote "Internet Archive mode"
-			maybe (error "specify bucket=") (const noop) $
-				M.lookup "bucket" archiveconfig
-			use archiveconfig
-			where
-				archiveconfig =
-					-- hS3 does not pass through
-					-- x-archive-* headers
-					M.mapKeys (replace "x-archive-" "x-amz-") $
-					-- encryption does not make sense here
-					M.insert "encryption" "none" $
-					M.union c $
-					-- special constraints on key names
-					M.insert "mungekeys" "ia" $
-					-- bucket created only when files
-					-- are uploaded
-					M.insert "x-amz-auto-make-bucket" "1" $
-					-- no default bucket name; should
-					-- be human-readable
-					M.delete "bucket" defaults
+	archiveorg = do
+		showNote "Internet Archive mode"
+		maybe (error "specify bucket=") (const noop) $
+			M.lookup "bucket" archiveconfig
+		use archiveconfig
+	  where
+		archiveconfig =
+			-- hS3 does not pass through x-archive-* headers
+			M.mapKeys (replace "x-archive-" "x-amz-") $
+			-- encryption does not make sense here
+			M.insert "encryption" "none" $
+			M.union c $
+			-- special constraints on key names
+			M.insert "mungekeys" "ia" $
+			-- bucket created only when files are uploaded
+			M.insert "x-amz-auto-make-bucket" "1" $
+			-- no default bucket name; should be human-readable
+			M.delete "bucket" defaults
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f _p = s3Action r False $ \(conn, bucket) -> do
@@ -143,15 +140,15 @@ storeHelper (conn, bucket) r k file = do
 		S3Object bucket (bucketFile r k) ""
 			(("Content-Length", show size) : xheaders) content
 	sendObject conn object
-	where
-		storageclass =
-			case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
-				"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
-				_ -> STANDARD
-		getsize = fileSize <$> (liftIO $ getFileStatus file)
-		
-		xheaders = filter isxheader $ M.assocs $ fromJust $ config r
-		isxheader (h, _) = "x-amz-" `isPrefixOf` h
+  where
+	storageclass =
+		case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
+			"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
+			_ -> STANDARD
+	getsize = fileSize <$> (liftIO $ getFileStatus file)
+	
+	xheaders = filter isxheader $ M.assocs $ fromJust $ config r
+	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve r k _f d = s3Action r False $ \(conn, bucket) -> do
@@ -188,8 +185,8 @@ checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
 		Right _ -> return $ Right True
 		Left (AWSError _ _) -> return $ Right False
 		Left e -> return $ Left (s3Error e)
-	where
-		noconn = Left $ error "S3 not configured"
+  where
+	noconn = Left $ error "S3 not configured"
 			
 s3Warning :: ReqError -> Annex Bool
 s3Warning e = do
@@ -215,12 +212,12 @@ s3Action r noconn action = do
 
 bucketFile :: Remote -> Key -> FilePath
 bucketFile r = munge . key2file
-	where
-		munge s = case M.lookup "mungekeys" c of
-			Just "ia" -> iaMunge $ fileprefix ++ s
-			_ -> fileprefix ++ s
-		fileprefix = M.findWithDefault "" "fileprefix" c
-		c = fromJust $ config r
+  where
+	munge s = case M.lookup "mungekeys" c of
+		Just "ia" -> iaMunge $ fileprefix ++ s
+		_ -> fileprefix ++ s
+	fileprefix = M.findWithDefault "" "fileprefix" c
+	c = fromJust $ config r
 
 bucketKey :: Remote -> String -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
@@ -230,12 +227,12 @@ bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
  - encoded. -}
 iaMunge :: String -> String
 iaMunge = (>>= munge)
-	where
-		munge c
-			| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
-			| c `elem` "_-.\"" = [c]
-			| isSpace c = []
-			| otherwise = "&" ++ show (ord c) ++ ";"
+  where
+	munge c
+		| isAsciiUpper c || isAsciiLower c || isNumber c = [c]
+		| c `elem` "_-.\"" = [c]
+		| isSpace c = []
+		| otherwise = "&" ++ show (ord c) ++ ";"
 
 genBucket :: RemoteConfig -> UUID -> Annex ()
 genBucket c u = do
@@ -251,9 +248,9 @@ genBucket c u = do
 			case res of
 				Right _ -> noop
 				Left err -> s3Error err
-	where
-		bucket = fromJust $ M.lookup "bucket" c
-		datacenter = fromJust $ M.lookup "datacenter" c
+  where
+	bucket = fromJust $ M.lookup "bucket" c
+	datacenter = fromJust $ M.lookup "datacenter" c
 
 s3ConnectionRequired :: RemoteConfig -> UUID -> Annex AWSConnection
 s3ConnectionRequired c u =
@@ -267,46 +264,46 @@ s3Connection c u = do
 		_ -> do
 			warning $ "Set both " ++ s3AccessKey ++ " and " ++ s3SecretKey  ++ " to use S3"
 			return Nothing
-	where
-		host = fromJust $ M.lookup "host" c
-		port = let s = fromJust $ M.lookup "port" c in
-			case reads s of
-			[(p, _)] -> p
-			_ -> error $ "bad S3 port value: " ++ s
+  where
+	host = fromJust $ M.lookup "host" c
+	port = let s = fromJust $ M.lookup "port" c in
+		case reads s of
+		[(p, _)] -> p
+		_ -> error $ "bad S3 port value: " ++ s
 
 {- S3 creds come from the environment if set, otherwise from the cache
  - in gitAnnexCredsDir, or failing that, might be stored encrypted in
  - the remote's config. -}
 s3GetCreds :: RemoteConfig -> UUID -> Annex (Maybe (String, String))
 s3GetCreds c u = maybe fromcache (return . Just) =<< liftIO getenv
-	where
-		getenv = liftM2 (,)
-			<$> get s3AccessKey
-			<*> get s3SecretKey
-			where
-				get = catchMaybeIO . getEnv
-		fromcache = do
-			d <- fromRepo gitAnnexCredsDir
-			let f = d </> fromUUID u
-			v <- liftIO $ catchMaybeIO $ readFile f
-			case lines <$> v of
-				Just (ak:sk:[]) -> return $ Just (ak, sk)
-				_ -> fromconfig
-		fromconfig = do
-			mcipher <- remoteCipher c
-			case (M.lookup "s3creds" c, mcipher) of
-				(Just s3creds, Just cipher) -> do
-					creds <- liftIO $ decrypt s3creds cipher
-					case creds of
-						[ak, sk] -> do
-							s3CacheCreds (ak, sk) u
-							return $ Just (ak, sk)
-						_ -> do error "bad s3creds"		
-				_ -> return Nothing
-		decrypt s3creds cipher = lines <$>
-			withDecryptedContent cipher
-				(return $ L.pack $ fromB64 s3creds)
-				(return . L.unpack)
+  where
+	getenv = liftM2 (,)
+		<$> get s3AccessKey
+		<*> get s3SecretKey
+	  where
+		get = catchMaybeIO . getEnv
+	fromcache = do
+		d <- fromRepo gitAnnexCredsDir
+		let f = d </> fromUUID u
+		v <- liftIO $ catchMaybeIO $ readFile f
+		case lines <$> v of
+			Just (ak:sk:[]) -> return $ Just (ak, sk)
+			_ -> fromconfig
+	fromconfig = do
+		mcipher <- remoteCipher c
+		case (M.lookup "s3creds" c, mcipher) of
+			(Just s3creds, Just cipher) -> do
+				creds <- liftIO $ decrypt s3creds cipher
+				case creds of
+					[ak, sk] -> do
+						s3CacheCreds (ak, sk) u
+						return $ Just (ak, sk)
+					_ -> do error "bad s3creds"		
+			_ -> return Nothing
+	decrypt s3creds cipher = lines 
+		<$> withDecryptedContent cipher
+			(return $ L.pack $ fromB64 s3creds)
+			(return . L.unpack)
 
 {- Stores S3 creds encrypted in the remote's config if possible to do so
  - securely, and otherwise locally in gitAnnexCredsDir. -}

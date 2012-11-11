@@ -40,10 +40,10 @@ getKeysPresent0 dir = ifM (liftIO $ doesDirectoryExist dir)
 		<$> (filterM present =<< getDirectoryContents dir)
 	, return []
 	)
-	where
-		present d = do
-			result <- tryIO $
-				getFileStatus $ dir ++ "/" ++ takeFileName d
-			case result of
-				Right s -> return $ isRegularFile s
-				Left _ -> return False
+  where
+	present d = do
+		result <- tryIO $
+			getFileStatus $ dir ++ "/" ++ takeFileName d
+		case result of
+			Right s -> return $ isRegularFile s
+			Left _ -> return False

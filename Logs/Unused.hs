@@ -35,13 +35,12 @@ readUnusedLog prefix = do
 			<$> liftIO (readFile f)
 		, return M.empty
 		)
-	where
-		parse line =
-			case (readish tag, file2key rest) of
-				(Just num, Just key) -> Just (num, key)
-				_ -> Nothing
-			where
-				(tag, rest) = separate (== ' ') line
+  where
+	parse line = case (readish tag, file2key rest) of
+		(Just num, Just key) -> Just (num, key)
+		_ -> Nothing
+	  where
+		(tag, rest) = separate (== ' ') line
 
 type UnusedMap = M.Map Int Key
 
@@ -64,10 +63,10 @@ unusedSpec :: String -> [Int]
 unusedSpec spec
 	| "-" `isInfixOf` spec = range $ separate (== '-') spec
 	| otherwise = catMaybes [readish spec]
-	where
-		range (a, b) = case (readish a, readish b) of
-			(Just x, Just y) -> [x..y]
-			_ -> []
+  where
+	range (a, b) = case (readish a, readish b) of
+		(Just x, Just y) -> [x..y]
+		_ -> []
 
 {- Start action for unused content. Finds the number in the maps, and
  - calls either of 3 actions, depending on the type of unused file. -}
@@ -81,11 +80,11 @@ startUnused message unused badunused tmpunused maps n = search
 	, (unusedBadMap maps, badunused)
 	, (unusedTmpMap maps, tmpunused)
 	]
-	where
-		search [] = stop
-		search ((m, a):rest) =
-			case M.lookup n m of
-				Nothing -> search rest
-				Just key -> do
-					showStart message (show n)
-					next $ a key
+  where
+	search [] = stop
+	search ((m, a):rest) =
+		case M.lookup n m of
+			Nothing -> search rest
+			Just key -> do
+				showStart message (show n)
+				next $ a key

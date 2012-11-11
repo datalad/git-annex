@@ -13,9 +13,9 @@ import qualified GitAnnexShell
 
 main :: IO ()
 main = run =<< getProgName
-	where
-		run n
-			| isshell n = go GitAnnexShell.run
-			| otherwise = go GitAnnex.run
-		isshell n = takeFileName n == "git-annex-shell"
-		go a = a =<< getArgs
+  where
+	run n
+		| isshell n = go GitAnnexShell.run
+		| otherwise = go GitAnnex.run
+	isshell n = takeFileName n == "git-annex-shell"
+	go a = a =<< getArgs

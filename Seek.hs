@@ -35,21 +35,21 @@ withFilesNotInGit a params = do
 		seekunless (null ps && not (null params)) ps
 	dotfiles <- seekunless (null dotps) dotps
 	prepFiltered a $ return $ preserveOrder params (files++dotfiles)
-	where
-		(dotps, ps) = partition dotfile params
-		seekunless True _ = return []
-		seekunless _ l = do
-			force <- Annex.getState Annex.force
-			g <- gitRepo
-			liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
+  where
+	(dotps, ps) = partition dotfile params
+	seekunless True _ = return []
+	seekunless _ l = do
+		force <- Annex.getState Annex.force
+		g <- gitRepo
+		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = map a . concat <$> liftIO (mapM get params)
-	where
-		get p = ifM (isDirectory <$> getFileStatus p)
-			( map (\f -> (f, makeRelative p f)) <$> dirContentsRecursive p
-			, return [(p, takeFileName p)]
-			)
+  where
+	get p = ifM (isDirectory <$> getFileStatus p)
+		( map (\f -> (f, makeRelative p f)) <$> dirContentsRecursive p
+		, return [(p, takeFileName p)]
+		)
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
 withWords a params = return [a params]
@@ -59,10 +59,10 @@ withStrings a params = return $ map a params
 
 withPairs :: ((String, String) -> CommandStart) -> CommandSeek
 withPairs a params = return $ map a $ pairs [] params
-	where
-		pairs c [] = reverse c
-		pairs c (x:y:xs) = pairs ((x,y):c) xs
-		pairs _ _ = error "expected pairs"
+  where
+	pairs c [] = reverse c
+	pairs c (x:y:xs) = pairs ((x,y):c) xs
+	pairs _ _ = error "expected pairs"
 
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
 withFilesToBeCommitted a params = prepFiltered a $
@@ -83,8 +83,8 @@ withFilesUnlocked' typechanged a params = do
 
 withKeys :: (Key -> CommandStart) -> CommandSeek
 withKeys a params = return $ map (a . parse) params
-	where
-		parse p = fromMaybe (error "bad key") $ file2key p
+  where
+	parse p = fromMaybe (error "bad key") $ file2key p
 
 withValue :: Annex v -> (v -> CommandSeek) -> CommandSeek
 withValue v a params = do
@@ -111,10 +111,9 @@ prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [Command
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
-	where
-		process matcher f = do
-			ok <- matcher $ Annex.FileInfo f f
-			if ok then a f else return Nothing
+  where
+	process matcher f = ifM (matcher $ Annex.FileInfo f f)
+		( a f , return Nothing )
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

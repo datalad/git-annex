@@ -47,13 +47,13 @@ loggedKeys = mapMaybe (logFileKey . takeFileName) <$> Annex.Branch.files
  - they are present for the specified repository. -}
 loggedKeysFor :: UUID -> Annex [Key]
 loggedKeysFor u = filterM isthere =<< loggedKeys
-	where
-		{- This should run strictly to avoid the filterM
-		 - building many thunks containing keyLocations data. -}
-		isthere k = do
-			us <- loggedLocations k
-			let !there = u `elem` us
-			return there
+  where
+	{- This should run strictly to avoid the filterM
+	 - building many thunks containing keyLocations data. -}
+	isthere k = do
+		us <- loggedLocations k
+		let !there = u `elem` us
+		return there
 
 {- The filename of the log file for a given key. -}
 logFile :: Key -> String
@@ -64,5 +64,5 @@ logFileKey :: FilePath -> Maybe Key
 logFileKey file
 	| ext == ".log" = fileKey base
 	| otherwise = Nothing
-	where
-		(base, ext) = splitAt (length file - 4) file
+  where
+	(base, ext) = splitAt (length file - 4) file

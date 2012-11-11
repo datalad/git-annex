@@ -44,13 +44,13 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				sequence_ flags
 				prepCommand cmd params
 		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
-	where
-		err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
-		cmd = Prelude.head cmds
-		(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
-		(flags, params) = getOptCmd args cmd commonoptions err
-		checkfuzzy = when fuzzy $
-			inRepo $ Git.AutoCorrect.prepare name cmdname cmds
+  where
+	err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
+	cmd = Prelude.head cmds
+	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
+	(flags, params) = getOptCmd args cmd commonoptions err
+	checkfuzzy = when fuzzy $
+		inRepo $ Git.AutoCorrect.prepare name cmdname cmds
 
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
@@ -61,25 +61,25 @@ findCmd fuzzyok argv cmds err
 	| not (null exactcmds) = (False, exactcmds, fromJust name, args)
 	| fuzzyok && not (null inexactcmds) = (True, inexactcmds, fromJust name, args)
 	| otherwise = error $ err $ "unknown command " ++ fromJust name
-	where
-		(name, args) = findname argv []
-		findname [] c = (Nothing, reverse c)
-		findname (a:as) c
-			| "-" `isPrefixOf` a = findname as (a:c)
-			| otherwise = (Just a, reverse c ++ as)
-		exactcmds = filter (\c -> name == Just (cmdname c)) cmds
-		inexactcmds = case name of
-			Nothing -> []
-			Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
+  where
+	(name, args) = findname argv []
+	findname [] c = (Nothing, reverse c)
+	findname (a:as) c
+		| "-" `isPrefixOf` a = findname as (a:c)
+		| otherwise = (Just a, reverse c ++ as)
+	exactcmds = filter (\c -> name == Just (cmdname c)) cmds
+	inexactcmds = case name of
+		Nothing -> []
+		Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
 
 {- Parses command line options, and returns actions to run to configure flags
  - and the remaining parameters for the command. -}
 getOptCmd :: Params -> Command -> [Option] -> (String -> String) -> (Flags, Params)
 getOptCmd argv cmd commonoptions err = check $
 	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
-	where
-		check (flags, rest, []) = (flags, rest)
-		check (_, _, errs) = error $ err $ concat errs
+  where
+	check (flags, rest, []) = (flags, rest)
+	check (_, _, errs) = error $ err $ concat errs
 
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).
@@ -93,18 +93,18 @@ tryRun' errnum _ cmd []
 tryRun' errnum state cmd (a:as) = do
 	r <- run
 	handle $! r
-	where
-		run = tryIO $ Annex.run state $ do
-			Annex.Queue.flushWhenFull
-			a
-		handle (Left err) = showerr err >> cont False state
-		handle (Right (success, state')) = cont success state'
-		cont success s = do
-			let errnum' = if success then errnum else errnum + 1
-			(tryRun' $! errnum') s cmd as
-		showerr err = Annex.eval state $ do
-			showErr err
-			showEndFail
+  where
+	run = tryIO $ Annex.run state $ do
+		Annex.Queue.flushWhenFull
+		a
+	handle (Left err) = showerr err >> cont False state
+	handle (Right (success, state')) = cont success state'
+	cont success s = do
+		let errnum' = if success then errnum else errnum + 1
+		(tryRun' $! errnum') s cmd as
+	showerr err = Annex.eval state $ do
+		showErr err
+		showEndFail
 
 {- Actions to perform each time ran. -}
 startup :: Annex Bool

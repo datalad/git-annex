@@ -53,32 +53,32 @@ describeUUID uuid desc = do
  -}
 fixBadUUID :: Log String -> Log String
 fixBadUUID = M.fromList . map fixup . M.toList
-	where
-		fixup (k, v)
-			| isbad = (fixeduuid, LogEntry (Date $ newertime v) fixedvalue)
-			| otherwise = (k, v)
-			where
-				kuuid = fromUUID k
-				isbad = not (isuuid kuuid) && isuuid lastword
-				ws = words $ value v
-				lastword = Prelude.last ws
-				fixeduuid = toUUID lastword
-				fixedvalue = unwords $ kuuid: Prelude.init ws
-		-- For the fixed line to take precidence, it should be
-		-- slightly newer, but only slightly.
-		newertime (LogEntry (Date d) _) = d + minimumPOSIXTimeSlice
-		newertime (LogEntry Unknown _) = minimumPOSIXTimeSlice
-		minimumPOSIXTimeSlice = 0.000001
-		isuuid s = length s == 36 && length (split "-" s) == 5
+  where
+	fixup (k, v)
+		| isbad = (fixeduuid, LogEntry (Date $ newertime v) fixedvalue)
+		| otherwise = (k, v)
+	  where
+		kuuid = fromUUID k
+		isbad = not (isuuid kuuid) && isuuid lastword
+		ws = words $ value v
+		lastword = Prelude.last ws
+		fixeduuid = toUUID lastword
+		fixedvalue = unwords $ kuuid: Prelude.init ws
+	-- For the fixed line to take precidence, it should be
+	-- slightly newer, but only slightly.
+	newertime (LogEntry (Date d) _) = d + minimumPOSIXTimeSlice
+	newertime (LogEntry Unknown _) = minimumPOSIXTimeSlice
+	minimumPOSIXTimeSlice = 0.000001
+	isuuid s = length s == 36 && length (split "-" s) == 5
 
 {- Records the uuid in the log, if it's not already there. -}
 recordUUID :: UUID -> Annex ()
 recordUUID u = go . M.lookup u =<< uuidMap 
-	where
-		go (Just "") = set
-		go Nothing = set
-		go _ = noop
-		set = describeUUID u ""
+  where
+	go (Just "") = set
+	go Nothing = set
+	go _ = noop
+	set = describeUUID u ""
 
 {- The map is cached for speed. -}
 uuidMap :: Annex UUIDMap
@@ -95,5 +95,5 @@ uuidMapLoad = do
 	let m' = M.insertWith' preferold u "" m
 	Annex.changeState $ \s -> s { Annex.uuidmap = Just m' }
 	return m'
-	where
-		preferold = flip const
+  where
+	preferold = flip const

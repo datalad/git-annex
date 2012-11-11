@@ -15,8 +15,8 @@ import qualified Upgrade.V2
 
 upgrade :: Annex Bool
 upgrade = go =<< getVersion
-	where
-		go (Just "0") = Upgrade.V0.upgrade
-		go (Just "1") = Upgrade.V1.upgrade
-		go (Just "2") = Upgrade.V2.upgrade
-		go _ = return True
+  where
+	go (Just "0") = Upgrade.V0.upgrade
+	go (Just "1") = Upgrade.V1.upgrade
+	go (Just "2") = Upgrade.V2.upgrade
+	go _ = return True

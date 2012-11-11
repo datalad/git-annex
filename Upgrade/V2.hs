@@ -70,10 +70,10 @@ locationLogs = do
 		levelb <- mapM tryDirContents levela
 		files <- mapM tryDirContents (concat levelb)
 		return $ mapMaybe islogfile (concat files)
-	where
-		tryDirContents d = catchDefaultIO [] $ dirContents d
-		islogfile f = maybe Nothing (\k -> Just (k, f)) $
-				logFileKey $ takeFileName f
+  where
+	tryDirContents d = catchDefaultIO [] $ dirContents d
+	islogfile f = maybe Nothing (\k -> Just (k, f)) $
+			logFileKey $ takeFileName f
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do

@@ -45,19 +45,18 @@ tests =
  - known-good hashes. -}
 shaTestCases :: [(Int, String)] -> [TestCase]
 shaTestCases l = map make l
-	where
-		make (n, knowngood) = 
-			TestCase key $ maybeSelectCmd key $ 
-				zip (shacmds n) (repeat check)
-			where
-				key = "sha" ++ show n
-				check = "</dev/null | grep -q '" ++ knowngood ++ "'"
-		shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
-			map (\x -> "sha" ++ show n ++ x) ["sum", ""]
-		{- Max OSX sometimes puts GNU tools outside PATH, so look in
-		 - the location it uses, and remember where to run them
-		 - from. -}
-		osxpath = "/opt/local/libexec/gnubin"
+  where
+	make (n, knowngood) = TestCase key $ maybeSelectCmd key $ 
+		zip (shacmds n) (repeat check)
+	  where
+		key = "sha" ++ show n
+		check = "</dev/null | grep -q '" ++ knowngood ++ "'"
+	shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
+		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
+	{- Max OSX sometimes puts GNU tools outside PATH, so look in
+	 - the location it uses, and remember where to run them
+	 - from. -}
+	osxpath = "/opt/local/libexec/gnubin"
 
 tmpDir :: String
 tmpDir = "tmp"
@@ -67,9 +66,9 @@ testFile = tmpDir ++ "/testfile"
 
 testCp :: ConfigKey -> String -> TestCase
 testCp k option = TestCase cmd $ testCmd k cmdline
-	where
-		cmd = "cp " ++ option
-		cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
+  where
+	cmd = "cp " ++ option
+	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
 {- Pulls package version out of the changelog. -}
 getVersion :: Test
@@ -82,8 +81,8 @@ getVersionString = do
 	changelog <- readFile "CHANGELOG"
 	let verline = head $ lines changelog
 	return $ middle (words verline !! 1)
-	where
-		middle = drop 1 . init
+  where
+	middle = drop 1 . init
 
 getGitVersion :: Test
 getGitVersion = do
@@ -104,14 +103,14 @@ cabalSetup = do
 		map (setfield "Version" version) $
 		lines cabal
 	renameFile tmpcabalfile cabalfile
-	where
-		cabalfile = "git-annex.cabal"
-		tmpcabalfile = cabalfile++".tmp"
-		setfield field value s
-			| fullfield `isPrefixOf` s = fullfield ++ value
-			| otherwise = s
-			where
-				fullfield = field ++ ": "
+  where
+	cabalfile = "git-annex.cabal"
+	tmpcabalfile = cabalfile++".tmp"
+	setfield field value s
+		| fullfield `isPrefixOf` s = fullfield ++ value
+		| otherwise = s
+	  where
+		fullfield = field ++ ": "
 
 setup :: IO ()
 setup = do

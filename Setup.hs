@@ -30,16 +30,16 @@ myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
 	installGitAnnexShell dest verbosity pkg lbi
 	installManpages      dest verbosity pkg lbi
 	installDesktopFile   dest verbosity pkg lbi
-	where
-		dest      = NoCopyDest
-		verbosity = fromFlag installVerbosity
+  where
+	dest      = NoCopyDest
+	verbosity = fromFlag installVerbosity
 
 installGitAnnexShell :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installGitAnnexShell copyDest verbosity pkg lbi =
 	rawSystemExit verbosity "ln"
 		["-sf", "git-annex", dstBinDir </> "git-annex-shell"]
-	where
-		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
+  where
+	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
 
 {- See http://www.haskell.org/haskellwiki/Cabal/Developer-FAQ#Installing_manpages
  -
@@ -49,15 +49,15 @@ installGitAnnexShell copyDest verbosity pkg lbi =
 installManpages :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installManpages copyDest verbosity pkg lbi =
 	installOrdinaryFiles verbosity dstManDir =<< srcManpages
-	where
-		dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
-		srcManpages = zip (repeat srcManDir)
-			<$> filterM doesFileExist manpages
-		srcManDir   = ""
-		manpages    = ["git-annex.1", "git-annex-shell.1"]
+  where
+	dstManDir   = mandir (absoluteInstallDirs pkg lbi copyDest) </> "man1"
+	srcManpages = zip (repeat srcManDir)
+		<$> filterM doesFileExist manpages
+	srcManDir   = ""
+	manpages    = ["git-annex.1", "git-annex-shell.1"]
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest verbosity pkg lbi =
 	InstallDesktopFile.install $ dstBinDir </> "git-annex"
-	where
-		dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
+  where
+	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest

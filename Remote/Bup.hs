@@ -143,9 +143,9 @@ retrieveEncrypted buprepo (cipher, enck) _ f = liftIO $ catchBoolIO $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
 		withDecryptedContent cipher (L.hGetContents h) $ L.writeFile f
 		return True
-	where
-		params = bupParams "join" buprepo [Param $ bupRef enck]
-		p = proc "bup" $ toCommand params
+  where
+	params = bupParams "join" buprepo [Param $ bupRef enck]
+	p = proc "bup" $ toCommand params
 
 remove :: Key -> Annex Bool
 remove _ = do
@@ -164,10 +164,11 @@ checkPresent r bupr k
 		return $ Right ok
 	| otherwise = liftIO $ catchMsgIO $
 		boolSystem "git" $ Git.Command.gitCommandLine params bupr
-	where
-		params = 
-			[ Params "show-ref --quiet --verify"
-			, Param $ "refs/heads/" ++ bupRef k]
+  where
+	params = 
+		[ Params "show-ref --quiet --verify"
+		, Param $ "refs/heads/" ++ bupRef k
+		]
 
 {- Store UUID in the annex.uuid setting of the bup repository. -}
 storeBupUUID :: UUID -> BupRepo -> Annex ()
@@ -185,8 +186,8 @@ storeBupUUID u buprepo = do
 			when (olduuid == "") $
 				Git.Command.run "config"
 					[Param "annex.uuid", Param v] r'
-	where
-		v = fromUUID u
+  where
+	v = fromUUID u
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
@@ -227,17 +228,17 @@ bup2GitRemote r
 			then Git.Construct.fromAbsPath r
 			else error "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
-		where
-			bits = split ":" r
-			host = Prelude.head bits
-			dir = join ":" $ drop 1 bits
-			-- "host:~user/dir" is not supported specially by bup;
-			-- "host:dir" is relative to the home directory;
-			-- "host:" goes in ~/.bup
-			slash d
-				| null d = "/~/.bup"
-				| "/" `isPrefixOf` d = d
-				| otherwise = "/~/" ++ d
+  where
+	bits = split ":" r
+	host = Prelude.head bits
+	dir = join ":" $ drop 1 bits
+	-- "host:~user/dir" is not supported specially by bup;
+	-- "host:dir" is relative to the home directory;
+	-- "host:" goes in ~/.bup
+	slash d
+		| null d = "/~/.bup"
+		| "/" `isPrefixOf` d = d
+		| otherwise = "/~/" ++ d
 
 {- Converts a key into a git ref name, which bup-split -n will use to point
  - to it. -}
@@ -245,8 +246,8 @@ bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
 	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
-	where
-		shown = key2file k
+  where
+	shown = key2file k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'

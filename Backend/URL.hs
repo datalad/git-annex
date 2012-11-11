@@ -32,10 +32,10 @@ fromUrl url size = stubKey
 	, keyBackendName = "URL"
 	, keySize = size
 	}
-	where
-		-- when it's not too long, use the url as the key name
-		-- 256 is the absolute filename max, but use a shorter
-		-- length because this is not the entire key filename.
-		key
-			| length url < 128 = url
-			| otherwise = take 128 url ++ "-" ++ md5s (Str url)
+  where
+	{- when it's not too long, use the url as the key name
+	 - 256 is the absolute filename max, but use a shorter
+	 - length because this is not the entire key filename. -}
+	key
+		| length url < 128 = url
+		| otherwise = take 128 url ++ "-" ++ md5s (Str url)

@@ -72,14 +72,14 @@ genRsyncOpts r c = do
 		<$> getRemoteConfig r "rsync-options" ""
 	let escape = maybe True (\m -> M.lookup "shellescape" m /= Just "no") c
 	return $ RsyncOpts url opts escape
-	where
-		safe o
-			-- Don't allow user to pass --delete to rsync;
-			-- that could cause it to delete other keys
-			-- in the same hash bucket as a key it sends.
-			| o == "--delete" = False
-			| o == "--delete-excluded" = False
-			| otherwise = True
+  where
+	safe o
+		-- Don't allow user to pass --delete to rsync;
+		-- that could cause it to delete other keys
+		-- in the same hash bucket as a key it sends.
+		| o == "--delete" = False
+		| o == "--delete-excluded" = False
+		| otherwise = True
 
 rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 rsyncSetup u c = do
@@ -100,9 +100,9 @@ rsyncEscape o s
 
 rsyncUrls :: RsyncOpts -> Key -> [String]
 rsyncUrls o k = map use annexHashes
-	where
-		use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
-                f = keyFile k
+  where
+	use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
+	f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = rsyncSend o p k <=< inRepo $ gitAnnexLocation k
@@ -146,18 +146,18 @@ remove o k = withRsyncScratchDir $ \tmp -> liftIO $ do
 		, Param $ addTrailingPathSeparator dummy
 		, Param $ rsyncUrl o
 		]
-	where
-		{- Specify include rules to match the directories where the
-		 - content could be. Note that the parent directories have
-		 - to also be explicitly included, due to how rsync
-		 - traverses directories. -}
-		includes = concatMap use annexHashes
-		use h = let dir = h k in
-			[ parentDir dir
-			, dir
-			-- match content directory and anything in it
-			, dir </> keyFile k </> "***"
-			]
+  where
+	{- Specify include rules to match the directories where the
+	 - content could be. Note that the parent directories have
+	 - to also be explicitly included, due to how rsync
+	 - traverses directories. -}
+	includes = concatMap use annexHashes
+	use h = let dir = h k in
+		[ parentDir dir
+		, dir
+		-- match content directory and anything in it
+		, dir </> keyFile k </> "***"
+		]
 
 checkPresent :: Git.Repo -> RsyncOpts -> Key -> Annex (Either String Bool)
 checkPresent r o k = do
@@ -165,13 +165,13 @@ checkPresent r o k = do
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
 	Right <$> check
-	where
- 		check = untilTrue (rsyncUrls o k) $ \u -> 
-			liftIO $ catchBoolIO $ do
-				withQuietOutput createProcessSuccess $
-					proc "rsync" $ toCommand $
-						rsyncOptions o ++ [Param u]
-				return True
+  where
+ 	check = untilTrue (rsyncUrls o k) $ \u -> 
+		liftIO $ catchBoolIO $ do
+			withQuietOutput createProcessSuccess $
+				proc "rsync" $ toCommand $
+					rsyncOptions o ++ [Param u]
+			return True
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete
@@ -190,9 +190,9 @@ withRsyncScratchDir a = do
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
 	nuke tmp `after` a tmp
-	where
-		nuke d = liftIO $ whenM (doesDirectoryExist d) $
-			removeDirectoryRecursive d
+  where
+	nuke d = liftIO $ whenM (doesDirectoryExist d) $
+		removeDirectoryRecursive d
 
 rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do
@@ -203,9 +203,9 @@ rsyncRemote o callback params = do
 			showLongNote "rsync failed -- run git annex again to resume file transfer"
 			return False
 		)
-	where
-		defaultParams = [Params "--progress"]
-		ps = rsyncOptions o ++ defaultParams ++ params
+  where
+	defaultParams = [Params "--progress"]
+	ps = rsyncOptions o ++ defaultParams ++ params
 
 {- To send a single key is slightly tricky; need to build up a temporary
    directory structure to pass to rsync so it can create the hash

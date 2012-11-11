@@ -165,12 +165,13 @@ options = Option.common ++
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
 	] ++ Option.matcher
-	where
-		setnumcopies v = Annex.changeState $ \s -> s { Annex.forcenumcopies = readish v }
-		setgitconfig :: String -> Annex ()
-		setgitconfig v = do
-			newg <- inRepo $ Git.Config.store v
-			Annex.changeState $ \s -> s { Annex.repo = newg }
+  where
+	setnumcopies v = Annex.changeState $
+		\s -> s { Annex.forcenumcopies = readish v }
+	setgitconfig :: String -> Annex ()
+	setgitconfig v = do
+		newg <- inRepo $ Git.Config.store v
+		Annex.changeState $ \s -> s { Annex.repo = newg }
 
 header :: String
 header = "Usage: git-annex command [option ..]"

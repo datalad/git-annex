@@ -53,23 +53,23 @@ readLog = parseLog <$$> Annex.Branch.get
 {- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: String -> [LogLine]
 parseLog = mapMaybe (parseline . words) . lines
-	where
-		parseline (a:b:c:_) = do
-			d <- parseTime defaultTimeLocale "%s%Qs" a
-			s <- parsestatus b
-			Just $ LogLine (utcTimeToPOSIXSeconds d) s c
-		parseline _ = Nothing
-		parsestatus "1" = Just InfoPresent
-		parsestatus "0" = Just InfoMissing
-		parsestatus _ = Nothing
+  where
+	parseline (a:b:c:_) = do
+		d <- parseTime defaultTimeLocale "%s%Qs" a
+		s <- parsestatus b
+		Just $ LogLine (utcTimeToPOSIXSeconds d) s c
+	parseline _ = Nothing
+	parsestatus "1" = Just InfoPresent
+	parsestatus "0" = Just InfoMissing
+	parsestatus _ = Nothing
 
 {- Generates a log file. -}
 showLog :: [LogLine] -> String
 showLog = unlines . map genline
-	where
-		genline (LogLine d s i) = unwords [show d, genstatus s, i]
-		genstatus InfoPresent = "1"
-		genstatus InfoMissing = "0"
+  where
+	genline (LogLine d s i) = unwords [show d, genstatus s, i]
+	genstatus InfoPresent = "1"
+	genstatus InfoMissing = "0"
 
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine
@@ -102,7 +102,7 @@ mapLog :: LogLine -> LogMap -> LogMap
 mapLog l m
 	| better = M.insert i l m
 	| otherwise = m
-	where
-		better = maybe True newer $ M.lookup i m
-		newer l' = date l' <= date l
-		i = info l
+  where
+	better = maybe True newer $ M.lookup i m
+	newer l' = date l' <= date l
+	i = info l

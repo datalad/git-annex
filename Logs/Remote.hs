@@ -48,40 +48,40 @@ showConfig = unwords . configToKeyVal
 {- Given Strings like "key=value", generates a RemoteConfig. -}
 keyValToConfig :: [String] -> RemoteConfig
 keyValToConfig ws = M.fromList $ map (/=/) ws
-	where
-		(/=/) s = (k, v)
-			where
-				k = takeWhile (/= '=') s
-				v = configUnEscape $ drop (1 + length k) s
+  where
+	(/=/) s = (k, v)
+	  where
+		k = takeWhile (/= '=') s
+		v = configUnEscape $ drop (1 + length k) s
 
 configToKeyVal :: M.Map String String -> [String]
 configToKeyVal m = map toword $ sort $ M.toList m
-	where
-		toword (k, v) = k ++ "=" ++ configEscape v
+  where
+	toword (k, v) = k ++ "=" ++ configEscape v
 
 configEscape :: String -> String
 configEscape = concatMap escape
-	where
-		escape c
-			| isSpace c || c `elem` "&" = "&" ++ show (ord c) ++ ";"
-			| otherwise = [c]
+  where
+	escape c
+		| isSpace c || c `elem` "&" = "&" ++ show (ord c) ++ ";"
+		| otherwise = [c]
 
 configUnEscape :: String -> String
 configUnEscape = unescape
-	where
-		unescape [] = []
-		unescape (c:rest)
-			| c == '&' = entity rest
-			| otherwise = c : unescape rest
-		entity s
-			| not (null num) && ";" `isPrefixOf` r =
-				chr (Prelude.read num) : unescape rest
-			| otherwise =
-				'&' : unescape s
-			where
-				num = takeWhile isNumber s
-				r = drop (length num) s
-				rest = drop 1 r
+  where
+	unescape [] = []
+	unescape (c:rest)
+		| c == '&' = entity rest
+		| otherwise = c : unescape rest
+	entity s
+		| not (null num) && ";" `isPrefixOf` r =
+			chr (Prelude.read num) : unescape rest
+		| otherwise =
+			'&' : unescape s
+	  where
+		num = takeWhile isNumber s
+		r = drop (length num) s
+		rest = drop 1 r
 
 {- for quickcheck -}
 prop_idempotent_configEscape :: String -> Bool

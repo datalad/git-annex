@@ -50,36 +50,36 @@ tskey = "timestamp="
 
 showLog :: (a -> String) -> Log a -> String
 showLog shower = unlines . map showpair . M.toList
-	where
-		showpair (k, LogEntry (Date p) v) =
-			unwords [fromUUID k, shower v, tskey ++ show p]
-		showpair (k, LogEntry Unknown v) =
-			unwords [fromUUID k, shower v]
+  where
+	showpair (k, LogEntry (Date p) v) =
+		unwords [fromUUID k, shower v, tskey ++ show p]
+	showpair (k, LogEntry Unknown v) =
+		unwords [fromUUID k, shower v]
 
 parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog = parseLogWithUUID . const
 
 parseLogWithUUID :: (UUID -> String -> Maybe a) -> String -> Log a
 parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
-	where
-		parse line
-			| null ws = Nothing
-			| otherwise = parser u (unwords info) >>= makepair
-			where
-				makepair v = Just (u, LogEntry ts v)
-				ws = words line
-				u = toUUID $ Prelude.head ws
-				t = Prelude.last ws
-				ts
-					| tskey `isPrefixOf` t =
-						pdate $ drop 1 $ dropWhile (/= '=') t
-					| otherwise = Unknown
-				info
-					| ts == Unknown = drop 1 ws
-					| otherwise = drop 1 $ beginning ws
-				pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
-					Nothing -> Unknown
-					Just d -> Date $ utcTimeToPOSIXSeconds d
+  where
+	parse line
+		| null ws = Nothing
+		| otherwise = parser u (unwords info) >>= makepair
+	  where
+		makepair v = Just (u, LogEntry ts v)
+		ws = words line
+		u = toUUID $ Prelude.head ws
+		t = Prelude.last ws
+		ts
+			| tskey `isPrefixOf` t =
+				pdate $ drop 1 $ dropWhile (/= '=') t
+			| otherwise = Unknown
+		info
+			| ts == Unknown = drop 1 ws
+			| otherwise = drop 1 $ beginning ws
+		pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
+			Nothing -> Unknown
+			Just d -> Date $ utcTimeToPOSIXSeconds d
 
 changeLog :: POSIXTime -> UUID -> a -> Log a -> Log a
 changeLog t u v = M.insert u $ LogEntry (Date t) v
@@ -106,9 +106,9 @@ prop_TimeStamp_sane = Unknown < Date 1
 
 prop_addLog_sane :: Bool
 prop_addLog_sane = newWins && newestWins
-	where
-		newWins = addLog (UUID "foo") (LogEntry (Date 1) "new") l == l2
-		newestWins = addLog (UUID "foo") (LogEntry (Date 1) "newest") l2 /= l2
+  where
+	newWins = addLog (UUID "foo") (LogEntry (Date 1) "new") l == l2
+	newestWins = addLog (UUID "foo") (LogEntry (Date 1) "newest") l2 /= l2
 
-		l = M.fromList [(UUID "foo", LogEntry (Date 0) "old")]
-		l2 = M.fromList [(UUID "foo", LogEntry (Date 1) "new")]
+	l = M.fromList [(UUID "foo", LogEntry (Date 0) "old")]
+	l2 = M.fromList [(UUID "foo", LogEntry (Date 1) "new")]

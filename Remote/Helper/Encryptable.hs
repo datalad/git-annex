@@ -32,12 +32,12 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
 	(Just "shared", Nothing) -> use "encryption setup" $ genSharedCipher
 	(Just keyid, Nothing) -> use "encryption setup" $ genEncryptedCipher keyid
 	(Just keyid, Just v) -> use "encryption updated" $ updateEncryptedCipher keyid v
-	where
-		cannotchange = error "Cannot change encryption type of existing remote."
-		use m a = do
-			cipher <- liftIO a
-			showNote $ m ++ " " ++ describeCipher cipher
-			return $ M.delete "encryption" $ storeCipher c cipher
+  where
+	cannotchange = error "Cannot change encryption type of existing remote."
+	use m a = do
+		cipher <- liftIO a
+		showNote $ m ++ " " ++ describeCipher cipher
+		return $ M.delete "encryption" $ storeCipher c cipher
 
 {- Modifies a Remote to support encryption.
  -
@@ -58,35 +58,35 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 		hasKey = withkey $ hasKey r,
 		cost = cost r + encryptedRemoteCostAdj
 	}
-	where
-		store k f p = cip k >>= maybe
-			(storeKey r k f p)
-			(\enck -> storeKeyEncrypted enck k p)
-		retrieve k f d = cip k >>= maybe
-			(retrieveKeyFile r k f d)
-			(\enck -> retrieveKeyFileEncrypted enck k d)
-		retrieveCheap k d = cip k >>= maybe
-			(retrieveKeyFileCheap r k d)
-			(\_ -> return False)
-		withkey a k = cip k >>= maybe (a k) (a . snd)
-		cip = cipherKey c
+  where
+	store k f p = cip k >>= maybe
+		(storeKey r k f p)
+		(\enck -> storeKeyEncrypted enck k p)
+	retrieve k f d = cip k >>= maybe
+		(retrieveKeyFile r k f d)
+		(\enck -> retrieveKeyFileEncrypted enck k d)
+	retrieveCheap k d = cip k >>= maybe
+		(retrieveKeyFileCheap r k d)
+		(\_ -> return False)
+	withkey a k = cip k >>= maybe (a k) (a . snd)
+	cip = cipherKey c
 
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
 remoteCipher :: RemoteConfig -> Annex (Maybe Cipher)
 remoteCipher c = go $ extractCipher c
-	where
-		go Nothing = return Nothing
-		go (Just encipher) = do
-			cache <- Annex.getState Annex.ciphers
-			case M.lookup encipher cache of
-				Just cipher -> return $ Just cipher
-				Nothing -> decrypt encipher cache
-		decrypt encipher cache = do
-			showNote "gpg"
-			cipher <- liftIO $ decryptCipher encipher
-			Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-			return $ Just cipher
+  where
+	go Nothing = return Nothing
+	go (Just encipher) = do
+		cache <- Annex.getState Annex.ciphers
+		case M.lookup encipher cache of
+			Just cipher -> return $ Just cipher
+			Nothing -> decrypt encipher cache
+	decrypt encipher cache = do
+		showNote "gpg"
+		cipher <- liftIO $ decryptCipher encipher
+		Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
+		return $ Just cipher
 
 {- Checks if there is a trusted (non-shared) cipher. -}
 isTrustedCipher :: RemoteConfig -> Bool
@@ -97,16 +97,16 @@ isTrustedCipher c =
 cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey Nothing _ = return Nothing
 cipherKey (Just c) k = maybe Nothing encrypt <$> remoteCipher c
-	where
-		encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)
+  where
+	encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
 storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
 storeCipher c (EncryptedCipher t ks) = 
 	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
-	where
-		showkeys (KeyIds l) = join "," l
+  where
+	showkeys (KeyIds l) = join "," l
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher
@@ -115,5 +115,5 @@ extractCipher c =
 		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
 		(Just t, Nothing) -> Just $ SharedCipher (fromB64 t)
 		_ -> Nothing
-	where
-		readkeys = KeyIds . split ","
+  where
+	readkeys = KeyIds . split ","

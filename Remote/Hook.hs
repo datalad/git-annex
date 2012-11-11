@@ -64,19 +64,18 @@ hookSetup u c = do
 
 hookEnv :: Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv k f = Just <$> mergeenv (fileenv f ++ keyenv)
-	where
-		mergeenv l = M.toList .
-			M.union (M.fromList l) 
-				<$> M.fromList <$> getEnvironment
-		env s v = ("ANNEX_" ++ s, v)
-		keyenv = catMaybes
-			[ Just $ env "KEY" (key2file k)
-			, env "HASH_1" <$> headMaybe hashbits
-			, env "HASH_2" <$> headMaybe (drop 1 hashbits)
-			]
-		fileenv Nothing = []
-		fileenv (Just file) =  [env "FILE" file]
-		hashbits = map takeDirectory $ splitPath $ hashDirMixed k
+  where
+	mergeenv l = M.toList . M.union (M.fromList l) 
+		<$> M.fromList <$> getEnvironment
+	env s v = ("ANNEX_" ++ s, v)
+	keyenv = catMaybes
+		[ Just $ env "KEY" (key2file k)
+		, env "HASH_1" <$> headMaybe hashbits
+		, env "HASH_2" <$> headMaybe (drop 1 hashbits)
+		]
+	fileenv Nothing = []
+	fileenv (Just file) =  [env "FILE" file]
+	hashbits = map takeDirectory $ splitPath $ hashDirMixed k
 
 lookupHook :: String -> String -> Annex (Maybe String)
 lookupHook hooktype hook =do
@@ -86,22 +85,20 @@ lookupHook hooktype hook =do
 			warning $ "missing configuration for " ++ hookname
 			return Nothing
 		else return $ Just command
-	where
-		hookname = hooktype ++ "-" ++ hook ++ "-hook"
+  where
+	hookname = hooktype ++ "-" ++ hook ++ "-hook"
 
 runHook :: String -> String -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
 runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype hook
-	where
-		run command = do
-			showOutput -- make way for hook output
-			ifM (liftIO $
-				boolSystemEnv "sh" [Param "-c", Param command]
-					=<< hookEnv k f)
-				( a
-				, do
-					warning $ hook ++ " hook exited nonzero!"
-					return False
-				)
+  where
+	run command = do
+		showOutput -- make way for hook output
+		ifM (liftIO $ boolSystemEnv "sh" [Param "-c", Param command] =<< hookEnv k f)
+			( a
+			, do
+				warning $ hook ++ " hook exited nonzero!"
+				return False
+			)
 
 store :: String -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store h k _f _p = do
@@ -134,9 +131,9 @@ checkPresent r h k = do
 	showAction $ "checking " ++ Git.repoDescribe r
 	v <- lookupHook h "checkpresent"
 	liftIO $ catchMsgIO $ check v
-	where
-		findkey s = key2file k `elem` lines s
-		check Nothing = error "checkpresent hook misconfigured"
-		check (Just hook) = do
-			env <- hookEnv k Nothing
-			findkey <$> readProcessEnv "sh" ["-c", hook] env
+  where
+	findkey s = key2file k `elem` lines s
+	check Nothing = error "checkpresent hook misconfigured"
+	check (Just hook) = do
+		env <- hookEnv k Nothing
+		findkey <$> readProcessEnv "sh" ["-c", hook] env

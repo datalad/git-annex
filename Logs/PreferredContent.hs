@@ -90,8 +90,8 @@ makeMatcher groupmap u s
 	| s == "standard" = standardMatcher groupmap u
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
  	| otherwise = matchAll
-	where
-		tokens = map (parseToken (Just u) groupmap) (tokenizeMatcher s)
+  where
+	tokens = map (parseToken (Just u) groupmap) (tokenizeMatcher s)
 
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
@@ -124,17 +124,17 @@ parseToken mu groupmap t
 			, ("smallerthan", limitSize (<))
 			, ("inallgroup", limitInAllGroup groupmap)
 			]
-	where
-		(k, v) = separate (== '=') t
-		use a = Utility.Matcher.Operation <$> a v
+  where
+	(k, v) = separate (== '=') t
+	use a = Utility.Matcher.Operation <$> a v
 
 {- This is really dumb tokenization; there's no support for quoted values.
  - Open and close parens are always treated as standalone tokens;
  - otherwise tokens must be separated by whitespace. -}
 tokenizeMatcher :: String -> [String]
 tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
-	where
-		splitparens = segmentDelim (`elem` "()")
+  where
+	splitparens = segmentDelim (`elem` "()")
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group, unless something is already set. -}

@@ -109,43 +109,42 @@ runTransfer t file shouldretry a = do
 		bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
 	unless ok $ failed info
 	return ok
-	where
-		prep tfile mode info = catchMaybeIO $ do
-			fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
-				defaultFileFlags { trunc = True }
-			locked <- catchMaybeIO $
-				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-			when (locked == Nothing) $
-				error $ "transfer already in progress"
-			writeTransferInfoFile info tfile
-			return fd
-		cleanup _ Nothing = noop
-		cleanup tfile (Just fd) = do
-			void $ tryIO $ removeFile tfile
-			void $ tryIO $ removeFile $ transferLockFile tfile
-			closeFd fd
-		failed info = do
-			failedtfile <- fromRepo $ failedTransferFile t
-			createAnnexDirectory $ takeDirectory failedtfile
-			liftIO $ writeTransferInfoFile info failedtfile
-		retry oldinfo metervar run = do
-			v <- tryAnnex run
-			case v of
-				Right b -> return b
-				Left _ -> do
-					b <- getbytescomplete metervar
-					let newinfo = oldinfo { bytesComplete = Just b }
-					if shouldretry oldinfo newinfo
-						then retry newinfo metervar run
-						else return False
-		getbytescomplete metervar
-			| transferDirection t == Upload =
-				liftIO $ readMVar metervar
-			| otherwise = do
-				f <- fromRepo $ gitAnnexTmpLocation (transferKey t)
-				liftIO $ catchDefaultIO 0 $
-					fromIntegral . fileSize
-						<$> getFileStatus f
+  where
+	prep tfile mode info = catchMaybeIO $ do
+		fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
+			defaultFileFlags { trunc = True }
+		locked <- catchMaybeIO $
+			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+		when (locked == Nothing) $
+			error $ "transfer already in progress"
+		writeTransferInfoFile info tfile
+		return fd
+	cleanup _ Nothing = noop
+	cleanup tfile (Just fd) = do
+		void $ tryIO $ removeFile tfile
+		void $ tryIO $ removeFile $ transferLockFile tfile
+		closeFd fd
+	failed info = do
+		failedtfile <- fromRepo $ failedTransferFile t
+		createAnnexDirectory $ takeDirectory failedtfile
+		liftIO $ writeTransferInfoFile info failedtfile
+	retry oldinfo metervar run = do
+		v <- tryAnnex run
+		case v of
+			Right b -> return b
+			Left _ -> do
+				b <- getbytescomplete metervar
+				let newinfo = oldinfo { bytesComplete = Just b }
+				if shouldretry oldinfo newinfo
+					then retry newinfo metervar run
+					else return False
+	getbytescomplete metervar
+		| transferDirection t == Upload =
+			liftIO $ readMVar metervar
+		| otherwise = do
+			f <- fromRepo $ gitAnnexTmpLocation (transferKey t)
+			liftIO $ catchDefaultIO 0 $
+				fromIntegral . fileSize <$> getFileStatus f
 
 {- Generates a callback that can be called as transfer progresses to update
  - the transfer info file. Also returns the file it'll be updating, and a
@@ -156,20 +155,20 @@ mkProgressUpdater t info = do
 	_ <- tryAnnex $ createAnnexDirectory $ takeDirectory tfile
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
-	where
-		updater tfile mvar bytes = modifyMVar_ mvar $ \oldbytes -> do
-			if (bytes - oldbytes >= mindelta)
-				then do
-					let info' = info { bytesComplete = Just bytes }
-					_ <- tryIO $ writeTransferInfoFile info' tfile
-					return bytes
-				else return oldbytes
-		{- The minimum change in bytesComplete that is worth
-		 - updating a transfer info file for is 1% of the total
-		 - keySize, rounded down. -}
-		mindelta = case keySize (transferKey t) of
-			Just sz -> sz `div` 100
-			Nothing -> 100 * 1024 -- arbitrarily, 100 kb
+  where
+	updater tfile mvar bytes = modifyMVar_ mvar $ \oldbytes -> do
+		if (bytes - oldbytes >= mindelta)
+			then do
+				let info' = info { bytesComplete = Just bytes }
+				_ <- tryIO $ writeTransferInfoFile info' tfile
+				return bytes
+			else return oldbytes
+	{- The minimum change in bytesComplete that is worth
+	 - updating a transfer info file for is 1% of the total
+	 - keySize, rounded down. -}
+	mindelta = case keySize (transferKey t) of
+		Just sz -> sz `div` 100
+		Nothing -> 100 * 1024 -- arbitrarily, 100 kb
 
 startTransferInfo :: Maybe FilePath -> IO TransferInfo
 startTransferInfo file = TransferInfo
@@ -206,25 +205,23 @@ getTransfers = do
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
-	where
-		findfiles = liftIO . mapM dirContentsRecursive
-			=<< mapM (fromRepo . transferDir)
-				[Download, Upload]
-		running (_, i) = isJust i
+  where
+	findfiles = liftIO . mapM dirContentsRecursive
+		=<< mapM (fromRepo . transferDir) [Download, Upload]
+	running (_, i) = isJust i
 
 {- Gets failed transfers for a given remote UUID. -}
 getFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
 getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles)
-	where
-		getpairs = mapM $ \f -> do
-			let mt = parseTransferFile f
-			mi <- readTransferInfoFile Nothing f
-			return $ case (mt, mi) of
-				(Just t, Just i) -> Just (t, i)
-				_ -> Nothing
-		findfiles = liftIO . mapM dirContentsRecursive
-			=<< mapM (fromRepo . failedTransferDir u)
-				[Download, Upload]
+  where
+	getpairs = mapM $ \f -> do
+		let mt = parseTransferFile f
+		mi <- readTransferInfoFile Nothing f
+		return $ case (mt, mi) of
+			(Just t, Just i) -> Just (t, i)
+			_ -> Nothing
+	findfiles = liftIO . mapM dirContentsRecursive
+		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
 removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
@@ -257,8 +254,8 @@ parseTransferFile file
 			<*> pure (toUUID u)
 			<*> fileKey key
 		_ -> Nothing
-	where
-		bits = splitDirectories file
+  where
+	bits = splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
 writeTransferInfoFile info tfile = do
@@ -295,16 +292,16 @@ readTransferInfo mpid s = TransferInfo
 	<*> bytes
 	<*> pure (if null filename then Nothing else Just filename)
 	<*> pure False
-	where
-		(firstline, filename) = separate (== '\n') s
-		bits = split " " firstline
-		numbits = length bits
-		time = if numbits > 0
-			then Just <$> parsePOSIXTime =<< headMaybe bits
-			else pure Nothing -- not failure
-		bytes = if numbits > 1
-			then Just <$> readish =<< headMaybe (drop 1 bits)
-			else pure Nothing -- not failure
+  where
+	(firstline, filename) = separate (== '\n') s
+	bits = split " " firstline
+	numbits = length bits
+	time = if numbits > 0
+		then Just <$> parsePOSIXTime =<< headMaybe bits
+		else pure Nothing -- not failure
+	bytes = if numbits > 1
+		then Just <$> readish =<< headMaybe (drop 1 bits)
+		else pure Nothing -- not failure
 
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds

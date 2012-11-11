@@ -44,24 +44,22 @@ cmds_notreadonly = concat
 
 cmds :: [Command]
 cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
-	where
-		adddirparam c = c
-			{ cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c
-			}
+  where
+	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
 options :: [OptDescr (Annex ())]
 options = Option.common ++
 	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
 	]
-	where
-		checkuuid expected = getUUID >>= check
-			where
-				check u | u == toUUID expected = noop
-				check NoUUID = unexpected "uninitialized repository"
-				check u = unexpected $ "UUID " ++ fromUUID u
-				unexpected s = error $
-					"expected repository UUID " ++
-					expected ++ " but found " ++ s
+  where
+	checkuuid expected = getUUID >>= check
+	  where
+		check u | u == toUUID expected = noop
+		check NoUUID = unexpected "uninitialized repository"
+		check u = unexpected $ "UUID " ++ fromUUID u
+		unexpected s = error $
+			"expected repository UUID " ++
+			expected ++ " but found " ++ s
 
 header :: String
 header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
@@ -152,20 +150,20 @@ checkDirectory mdir = do
 				if d' `equalFilePath` dir'
 					then noop
 					else req d' (Just dir')
-	where
-		req d mdir' = error $ unwords 
-			[ "Only allowed to access"
-			, d
-			, maybe "and could not determine directory from command line" ("not " ++) mdir'
-			]
+  where
+	req d mdir' = error $ unwords 
+		[ "Only allowed to access"
+		, d
+		, maybe "and could not determine directory from command line" ("not " ++) mdir'
+		]
 
-		{- A directory may start with ~/ or in some cases, even /~/,
-		 - or could just be relative to home, or of course could
-		 - be absolute. -}
-		canondir home d
-			| "~/" `isPrefixOf` d = return d
-			| "/~/" `isPrefixOf` d = return $ drop 1 d
-			| otherwise = relHome $ absPathFrom home d
+	{- A directory may start with ~/ or in some cases, even /~/,
+	 - or could just be relative to home, or of course could
+	 - be absolute. -}
+	canondir home d
+		| "~/" `isPrefixOf` d = return d
+		| "/~/" `isPrefixOf` d = return $ drop 1 d
+		| otherwise = relHome $ absPathFrom home d
 
 checkEnv :: String -> IO ()
 checkEnv var = do

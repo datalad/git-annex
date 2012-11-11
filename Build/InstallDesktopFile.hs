@@ -46,11 +46,11 @@ autostart command = genDesktopEntry
 
 systemwideInstall :: IO Bool
 systemwideInstall = isroot <||> destdirset
-	where
-		isroot = do
-			uid <- fromIntegral <$> getRealUserID
-			return $ uid == (0 :: Int)
-		destdirset = isJust <$> catchMaybeIO (getEnv "DESTDIR")
+  where
+	isroot = do
+		uid <- fromIntegral <$> getRealUserID
+		return $ uid == (0 :: Int)
+	destdirset = isJust <$> catchMaybeIO (getEnv "DESTDIR")
 
 inDestDir :: FilePath -> IO FilePath
 inDestDir f = do
@@ -91,6 +91,6 @@ install command = do
 
 main :: IO ()
 main = getArgs >>= go
-	where
-		go [] = error "specify git-annex command"
-		go (command:_) = install command
+  where
+	go [] = error "specify git-annex command"
+	go (command:_) = install command

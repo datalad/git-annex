@@ -29,22 +29,22 @@ instance Show Config where
 		[ key ++ " :: " ++ valuetype value
 		, key ++ " = " ++ show value
 		]
-		where
-			valuetype (BoolConfig _) = "Bool"
-			valuetype (StringConfig _) = "String"
-			valuetype (MaybeStringConfig _) = "Maybe String"
-			valuetype (MaybeBoolConfig _) = "Maybe Bool"
+	  where
+		valuetype (BoolConfig _) = "Bool"
+		valuetype (StringConfig _) = "String"
+		valuetype (MaybeStringConfig _) = "Maybe String"
+		valuetype (MaybeBoolConfig _) = "Maybe Bool"
 
 writeSysConfig :: [Config] -> IO ()
 writeSysConfig config = writeFile "Build/SysConfig.hs" body
-	where
-		body = unlines $ header ++ map show config ++ footer
-		header = [
-			  "{- Automatically generated. -}"
-			, "module Build.SysConfig where"
-			, ""
-			]
-		footer = []
+  where
+	body = unlines $ header ++ map show config ++ footer
+	header = [
+		  "{- Automatically generated. -}"
+		, "module Build.SysConfig where"
+		, ""
+		]
+	footer = []
 
 runTests :: [TestCase] -> IO [Config]
 runTests [] = return []
@@ -60,12 +60,12 @@ requireCmd :: ConfigKey -> String -> Test
 requireCmd k cmdline = do
 	ret <- testCmd k cmdline
 	handle ret
-	where
-		handle r@(Config _ (BoolConfig True)) = return r
-		handle r = do
-			testEnd r
-			error $ "** the " ++ c ++ " command is required"
-		c = head $ words cmdline
+  where
+	handle r@(Config _ (BoolConfig True)) = return r
+	handle r = do
+		testEnd r
+		error $ "** the " ++ c ++ " command is required"
+	c = head $ words cmdline
 
 {- Checks if a command is available by running a command line. -}
 testCmd :: ConfigKey -> String -> Test
@@ -90,13 +90,13 @@ maybeSelectCmd k = searchCmd
 
 searchCmd :: (String -> Test) -> ([String] -> Test) -> [(String, String)] -> Test
 searchCmd success failure cmdsparams = search cmdsparams
-	where
-		search [] = failure $ fst $ unzip cmdsparams
-		search ((c, params):cs) = do
-			ret <- system $ quiet $ c ++ " " ++ params
-			if ret == ExitSuccess
-				then success c
-				else search cs
+  where
+	search [] = failure $ fst $ unzip cmdsparams
+	search ((c, params):cs) = do
+		ret <- system $ quiet $ c ++ " " ++ params
+		if ret == ExitSuccess
+			then success c
+			else search cs
 
 quiet :: String -> String
 quiet s = s ++ " >/dev/null 2>&1"

@@ -56,8 +56,8 @@ remoteList = do
 			Annex.changeState $ \s -> s { Annex.remotes = rs' }
 			return rs'
 		else return rs
-	where
-		process m t = enumerate t >>= mapM (remoteGen m t)
+  where
+	process m t = enumerate t >>= mapM (remoteGen m t)
 
 {- Forces the remoteList to be re-generated, re-reading the git config. -}
 remoteListRefresh :: Annex [Remote]
@@ -81,11 +81,11 @@ updateRemote remote = do
 	m <- readRemoteLog
 	remote' <- updaterepo $ repo remote
 	remoteGen m (remotetype remote) remote'
-	where
-		updaterepo r
-			| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
-				Remote.Git.configRead r
-			| otherwise = return r
+  where
+	updaterepo r
+		| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
+			Remote.Git.configRead r
+		| otherwise = return r
 
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]

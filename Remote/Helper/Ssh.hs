@@ -1,6 +1,6 @@
 {- git-annex remote access with ssh
  -
- - Copyright 2011.2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -34,22 +34,22 @@ git_annex_shell r command params fields
 		sshparams <- sshToRepo r [Param $ sshcmd uuid ]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
-	where
-		dir = Git.repoPath r
-		shellcmd = "git-annex-shell"
-		shellopts = Param command : File dir : params
-		sshcmd uuid = unwords $
-			shellcmd : map shellEscape (toCommand shellopts) ++
-			uuidcheck uuid ++
-			map shellEscape (toCommand fieldopts)
-		uuidcheck NoUUID = []
-		uuidcheck (UUID u) = ["--uuid", u]
-		fieldopts
-			| null fields = []
-			| otherwise = fieldsep : map fieldopt fields ++ [fieldsep]
-		fieldsep = Param "--"
-		fieldopt (field, value) = Param $
-			fieldName field ++ "=" ++ value
+  where
+	dir = Git.repoPath r
+	shellcmd = "git-annex-shell"
+	shellopts = Param command : File dir : params
+	sshcmd uuid = unwords $
+		shellcmd : map shellEscape (toCommand shellopts) ++
+		uuidcheck uuid ++
+		map shellEscape (toCommand fieldopts)
+	uuidcheck NoUUID = []
+	uuidcheck (UUID u) = ["--uuid", u]
+	fieldopts
+		| null fields = []
+		| otherwise = fieldsep : map fieldopt fields ++ [fieldsep]
+	fieldsep = Param "--"
+	fieldopt (field, value) = Param $
+		fieldName field ++ "=" ++ value
 
 {- Uses a supplied function (such as boolSystem) to run a git-annex-shell
  - command on a remote.

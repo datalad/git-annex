@@ -87,11 +87,10 @@ trustMapLoad = do
 	let m = M.union overrides $ M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 	return m
-	where
-		configuredtrust r =
-			maybe Nothing (\l -> Just (Types.Remote.uuid r, l)) <$>
-				maybe Nothing readTrustLevel
-					<$> getTrustLevel (Types.Remote.repo r)
+  where
+	configuredtrust r = maybe Nothing (\l -> Just (Types.Remote.uuid r, l))
+		<$> maybe Nothing readTrustLevel
+			<$> getTrustLevel (Types.Remote.repo r)
 
 {- Does not include forcetrust or git config values, just those from the
  - log file. -}
@@ -103,11 +102,11 @@ trustMapRaw = simpleMap . parseLog (Just . parseTrustLog)
  - trust status, which is why this defaults to Trusted. -}
 parseTrustLog :: String -> TrustLevel
 parseTrustLog s = maybe Trusted parse $ headMaybe $ words s
-	where
-		parse "1" = Trusted
-		parse "0" = UnTrusted
-		parse "X" = DeadTrusted
-		parse _ = SemiTrusted
+  where
+	parse "1" = Trusted
+	parse "0" = UnTrusted
+	parse "X" = DeadTrusted
+	parse _ = SemiTrusted
 
 showTrustLog :: TrustLevel -> String
 showTrustLog Trusted = "1"

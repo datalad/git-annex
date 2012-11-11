@@ -57,7 +57,6 @@ gen r u c = do
 			readonly = False,
 			remotetype = remote
 		}
-	where
 
 type ChunkSize = Maybe Int64
 
@@ -101,25 +100,25 @@ chunkCount f = f ++ ".chunkcount"
 withCheckedFiles :: (FilePath -> IO Bool) -> ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ _ [] _ _ = return False
 withCheckedFiles check Nothing d k a = go $ locations d k
-	where
-		go [] = return False
-		go (f:fs) = ifM (check f) ( a [f] , go fs )
+  where
+	go [] = return False
+	go (f:fs) = ifM (check f) ( a [f] , go fs )
 withCheckedFiles check (Just _) d k a = go $ locations d k
-	where
-		go [] = return False
-		go (f:fs) = do
-			let chunkcount = chunkCount f
-			use <- check chunkcount
-			if use
-				then do
-					count <- readcount chunkcount
-					let chunks = take count $ chunkStream f
-					ifM (all id <$> mapM check chunks)
-						( a chunks , return False )
-				else go fs
-		readcount f = fromMaybe (error $ "cannot parse " ++ f)
-			. (readish :: String -> Maybe Int)
-			<$> readFile f
+  where
+	go [] = return False
+	go (f:fs) = do
+		let chunkcount = chunkCount f
+		ifM (check chunkcount)
+			( do
+				count <- readcount chunkcount
+				let chunks = take count $ chunkStream f
+				ifM (all id <$> mapM check chunks)
+					( a chunks , return False )
+			, go fs
+			)
+	readcount f = fromMaybe (error $ "cannot parse " ++ f)
+		. (readish :: String -> Maybe Int)
+		<$> readFile f
 
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withStoredFiles = withCheckedFiles doesFileExist
@@ -170,39 +169,39 @@ storeSplit' _ _  _ [] c = return $ reverse c
 storeSplit' meterupdate chunksize (d:dests) bs c = do
 	bs' <- E.bracket (openFile d WriteMode) hClose (feed chunksize bs)
 	storeSplit' meterupdate chunksize dests bs' (d:c)
-	where
-		feed _ [] _ = return []
-		feed sz (l:ls) h = do
-			let s = fromIntegral $ S.length l
-			if s <= sz
-				then do
-					S.hPut h l
-					meterupdate $ toInteger s
-					feed (sz - s) ls h
-				else return (l:ls)
+  where
+	feed _ [] _ = return []
+	feed sz (l:ls) h = do
+		let s = fromIntegral $ S.length l
+		if s <= sz
+			then do
+				S.hPut h l
+				meterupdate $ toInteger s
+				feed (sz - s) ls h
+			else return (l:ls)
 
 {- Write a L.ByteString to a file, updating a progress meter
  - after each chunk of the L.ByteString, typically every 64 kb or so. -}
 meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate dest b =
 	meteredWriteFile' meterupdate dest (L.toChunks b) feeder
-	where
-		feeder chunks = return ([], chunks)
+  where
+	feeder chunks = return ([], chunks)
 
 {- Writes a series of S.ByteString chunks to a file, updating a progress
  - meter after each chunk. The feeder is called to get more chunks. -}
 meteredWriteFile' :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
 meteredWriteFile' meterupdate dest startstate feeder =
 	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
-	where
-		feed state [] h = do
-			(state', cs) <- feeder state
-			unless (null cs) $
-				feed state' cs h
-		feed state (c:cs) h = do
-			S.hPut h c
-			meterupdate $ toInteger $ S.length c
-			feed state cs h
+  where
+	feed state [] h = do
+		(state', cs) <- feeder state
+		unless (null cs) $
+			feed state' cs h
+	feed state (c:cs) h = do
+		S.hPut h c
+		meterupdate $ toInteger $ S.length c
+		feed state cs h
 
 {- Generates a list of destinations to write to in order to store a key.
  - When chunksize is specified, this list will be a list of chunks.
@@ -213,36 +212,36 @@ meteredWriteFile' meterupdate dest startstate feeder =
  -}
 storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
 storeHelper d chunksize key a = prep <&&> check <&&> go
-	where
-		desttemplate = Prelude.head $ locations d key
-		dir = parentDir desttemplate
-		tmpdests = case chunksize of
-			Nothing -> [desttemplate ++ tmpprefix]
-			Just _ -> map (++ tmpprefix) (chunkStream desttemplate)
-		tmpprefix = ".tmp"
-		detmpprefix f = take (length f - tmpprefixlen) f
-		tmpprefixlen = length tmpprefix
-		prep = liftIO $ catchBoolIO $ do
-			createDirectoryIfMissing True dir
-			allowWrite dir
-			return True
-		{- The size is not exactly known when encrypting the key;
-		 - this assumes that at least the size of the key is
-		 - needed as free space. -}
-		check = checkDiskSpace (Just dir) key 0
-		go = liftIO $ catchBoolIO $ do
-			stored <- a tmpdests
-			forM_ stored $ \f -> do
-				let dest = detmpprefix f
-				renameFile f dest
-				preventWrite dest
-			when (chunksize /= Nothing) $ do
-				let chunkcount = chunkCount desttemplate
-				_ <- tryIO $ allowWrite chunkcount
-				writeFile chunkcount (show $ length stored)
-				preventWrite chunkcount
-			preventWrite dir
-			return (not $ null stored)
+  where
+	desttemplate = Prelude.head $ locations d key
+	dir = parentDir desttemplate
+	tmpdests = case chunksize of
+		Nothing -> [desttemplate ++ tmpprefix]
+		Just _ -> map (++ tmpprefix) (chunkStream desttemplate)
+	tmpprefix = ".tmp"
+	detmpprefix f = take (length f - tmpprefixlen) f
+	tmpprefixlen = length tmpprefix
+	prep = liftIO $ catchBoolIO $ do
+		createDirectoryIfMissing True dir
+		allowWrite dir
+		return True
+	{- The size is not exactly known when encrypting the key;
+	 - this assumes that at least the size of the key is
+	 - needed as free space. -}
+	check = checkDiskSpace (Just dir) key 0
+	go = liftIO $ catchBoolIO $ do
+		stored <- a tmpdests
+		forM_ stored $ \f -> do
+			let dest = detmpprefix f
+			renameFile f dest
+			preventWrite dest
+		when (chunksize /= Nothing) $ do
+			let chunkcount = chunkCount desttemplate
+			_ <- tryIO $ allowWrite chunkcount
+			writeFile chunkcount (show $ length stored)
+			preventWrite chunkcount
+		preventWrite dir
+		return (not $ null stored)
 
 retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
@@ -250,11 +249,11 @@ retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
 		catchBoolIO $ do
 			meteredWriteFile' meterupdate f files feeder
 			return True
-	where
-		feeder [] = return ([], [])
-		feeder (x:xs) = do
-			chunks <- L.toChunks <$> L.readFile x
-			return (xs, chunks)
+  where
+	feeder [] = return ([], [])
+	feeder (x:xs) = do
+		chunks <- L.toChunks <$> L.readFile x
+		return (xs, chunks)
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupdate ->
@@ -267,20 +266,20 @@ retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupd
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks
 retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
-	where
-		go [file] = catchBoolIO $ createSymbolicLink file f >> return True
-		go _files = return False
+  where
+	go [file] = catchBoolIO $ createSymbolicLink file f >> return True
+	go _files = return False
 
 remove :: FilePath -> ChunkSize -> Key -> Annex Bool
 remove d chunksize k = liftIO $ withStoredFiles chunksize d k go
-	where
-		go = all id <$$> mapM removefile
-		removefile file = catchBoolIO $ do
-			let dir = parentDir file
-			allowWrite dir
-			removeFile file
-			_ <- tryIO $ removeDirectory dir
-			return True
+  where
+	go = all id <$$> mapM removefile
+	removefile file = catchBoolIO $ do
+		let dir = parentDir file
+		allowWrite dir
+		removeFile file
+		_ <- tryIO $ removeDirectory dir
+		return True
 
 checkPresent :: FilePath -> ChunkSize -> Key -> Annex (Either String Bool)
 checkPresent d chunksize k = liftIO $ catchMsgIO $ withStoredFiles chunksize d k $

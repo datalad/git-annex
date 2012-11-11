@@ -55,13 +55,13 @@ gen r _ _ =
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKey key _file dest = get =<< getUrls key
-	where
-		get [] = do
-			warning "no known url"
-			return False
-		get urls = do
-			showOutput -- make way for download progress bar
-			downloadUrl urls dest
+  where
+	get [] = do
+		warning "no known url"
+		return False
+	get urls = do
+		showOutput -- make way for download progress bar
+		downloadUrl urls dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
