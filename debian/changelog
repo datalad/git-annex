@@ -1,4 +1,4 @@
-git-annex (3.20121018) UNRELEASED; urgency=low
+git-annex (3.20121112) unstable; urgency=low
 
   * assistant: Can use XMPP to notify other nodes about pushes made to other
     repositories, as well as pushing to them directly over XMPP.
@@ -47,7 +47,7 @@ git-annex (3.20121018) UNRELEASED; urgency=low
   * Bugfix: Fix hang in webapp when setting up a ssh remote with an absolute
     path.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 17 Oct 2012 14:24:10 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 12 Nov 2012 10:39:47 -0400
 
 git-annex (3.20121017) unstable; urgency=low
 
