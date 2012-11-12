@@ -32,20 +32,20 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - to its content. -}
 start :: FilePath -> CommandStart
 start file = notBareRepo $ ifAnnexed file fixup add
-	where
-		add = do
-			s <- liftIO $ getSymbolicLinkStatus file
-			if isSymbolicLink s || not (isRegularFile s)
-				then stop
-				else do
-					showStart "add" file
-					next $ perform file
-		fixup (key, _) = do
-			-- fixup from an interrupted add; the symlink
-			-- is present but not yet added to git
-			showStart "add" file
-			liftIO $ removeFile file
-			next $ next $ cleanup file key =<< inAnnex key
+  where
+	add = do
+		s <- liftIO $ getSymbolicLinkStatus file
+		if isSymbolicLink s || not (isRegularFile s)
+			then stop
+			else do
+				showStart "add" file
+				next $ perform file
+	fixup (key, _) = do
+		-- fixup from an interrupted add; the symlink
+		-- is present but not yet added to git
+		showStart "add" file
+		liftIO $ removeFile file
+		next $ next $ cleanup file key =<< inAnnex key
 
 {- The file that's being added is locked down before a key is generated,
  - to prevent it from being modified in between. It's hard linked into a
@@ -67,15 +67,15 @@ ingest :: KeySource -> Annex (Maybe Key)
 ingest source = do
 	backend <- chooseBackend $ keyFilename source
 	genKey source backend >>= go
-	where
-		go Nothing = do
-			liftIO $ nukeFile $ contentLocation source
-			return Nothing
-		go (Just (key, _)) = do
-			handle (undo (keyFilename source) key) $
-				moveAnnex key $ contentLocation source
-			liftIO $ nukeFile $ keyFilename source
-			return $ Just key
+  where
+	go Nothing = do
+		liftIO $ nukeFile $ contentLocation source
+		return Nothing
+	go (Just (key, _)) = do
+		handle (undo (keyFilename source) key) $
+			moveAnnex key $ contentLocation source
+		liftIO $ nukeFile $ keyFilename source
+		return $ Just key
 
 perform :: FilePath -> CommandPerform
 perform file = 
@@ -91,12 +91,12 @@ undo file key e = do
 		handle tryharder $ fromAnnex key file
 		logStatus key InfoMissing
 	throw e
-	where
-		-- fromAnnex could fail if the file ownership is weird
-		tryharder :: IOException -> Annex ()
-		tryharder _ = do
-			src <- inRepo $ gitAnnexLocation key
-			liftIO $ moveFile src file
+  where
+	-- fromAnnex could fail if the file ownership is weird
+	tryharder :: IOException -> Annex ()
+	tryharder _ = do
+		src <- inRepo $ gitAnnexLocation key
+		liftIO $ moveFile src file
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Bool -> Annex String

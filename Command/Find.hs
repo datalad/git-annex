@@ -29,14 +29,14 @@ formatOption = Option.field [] "format" paramFormat "control format of output"
 print0Option :: Option
 print0Option = Option.Option [] ["print0"] (Option.NoArg set)
 	"terminate output with null"
-	where
-		set = Annex.setField (Option.name formatOption) "${file}\0"
+  where
+	set = Annex.setField (Option.name formatOption) "${file}\0"
 
 seek :: [CommandSeek]
 seek = [withField formatOption formatconverter $ \f ->
 		withFilesInGit $ whenAnnexed $ start f]
-	where
-		formatconverter = return . fmap Utility.Format.gen
+  where
+	formatconverter = return . fmap Utility.Format.gen
 
 start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
 start format file (key, _) = do
@@ -50,12 +50,12 @@ start format file (key, _) = do
 					Utility.Format.format formatter $
 						M.fromList vars
 	stop
-	where
-		vars =
-			[ ("file", file)
-			, ("key", key2file key)
-			, ("backend", keyBackendName key)
-			, ("bytesize", size show)
-			, ("humansize", size $ roughSize storageUnits True)
-			]
-		size c = maybe "unknown" c $ keySize key
+  where
+	vars =
+		[ ("file", file)
+		, ("key", key2file key)
+		, ("backend", keyBackendName key)
+		, ("bytesize", size show)
+		, ("humansize", size $ roughSize storageUnits True)
+		]
+	size c = maybe "unknown" c $ keySize key

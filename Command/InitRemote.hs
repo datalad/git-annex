@@ -40,8 +40,8 @@ start (name:ws) = do
 	showStart "initremote" name
 	next $ perform t u name $ M.union config c
 
-	where
-		config = Logs.Remote.keyValToConfig ws
+  where
+	config = Logs.Remote.keyValToConfig ws
 
 perform :: RemoteType -> UUID -> String -> R.RemoteConfig -> CommandPerform
 perform t u name c = do
@@ -59,19 +59,19 @@ findByName :: String -> Annex (UUID, R.RemoteConfig)
 findByName name = do
 	m <- Logs.Remote.readRemoteLog
 	maybe generate return $ findByName' name m
-	where
-		generate = do
-			uuid <- liftIO genUUID
-			return (uuid, M.insert nameKey name M.empty)
+  where
+	generate = do
+		uuid <- liftIO genUUID
+		return (uuid, M.insert nameKey name M.empty)
 
 findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)
 findByName' n = headMaybe . filter (matching . snd) . M.toList
-	where
-		matching c = case M.lookup nameKey c of
-			Nothing -> False
-			Just n'
-				| n' == n -> True
-				| otherwise -> False
+  where
+	matching c = case M.lookup nameKey c of
+		Nothing -> False
+		Just n'
+			| n' == n -> True
+			| otherwise -> False
 
 remoteNames :: Annex [String]
 remoteNames = do
@@ -81,12 +81,12 @@ remoteNames = do
 {- find the specified remote type -}
 findType :: R.RemoteConfig -> Annex RemoteType
 findType config = maybe unspecified specified $ M.lookup typeKey config
-	where
-		unspecified = error "Specify the type of remote with type="
-		specified s = case filter (findtype s) Remote.remoteTypes of
-			[] -> error $ "Unknown remote type " ++ s
-			(t:_) -> return t
-		findtype s i = R.typename i == s
+  where
+	unspecified = error "Specify the type of remote with type="
+	specified s = case filter (findtype s) Remote.remoteTypes of
+		[] -> error $ "Unknown remote type " ++ s
+		(t:_) -> return t
+	findtype s i = R.typename i == s
 
 {- The name of a configured remote is stored in its config using this key. -}
 nameKey :: String

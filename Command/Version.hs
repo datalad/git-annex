@@ -29,8 +29,8 @@ start = do
 		putStrLn $ "supported repository versions: " ++ vs supportedVersions
 		putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
 	stop
-	where
-		vs = join " "
+  where
+	vs = join " "
 
 showPackageVersion :: IO ()
 showPackageVersion = putStrLn $ "git-annex version: " ++ SysConfig.packageversion

@@ -25,8 +25,8 @@ start = startUnused "addunused" perform (performOther "bad") (performOther "tmp"
 
 perform :: Key -> CommandPerform
 perform key = next $ Command.Add.cleanup file key True
-	where
-		file = "unused." ++ key2file key
+  where
+	file = "unused." ++ key2file key
 
 {- The content is not in the annex, but in another directory, and
  - it seems better to error out, rather than moving bad/tmp content into

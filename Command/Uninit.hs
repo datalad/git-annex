@@ -30,10 +30,10 @@ check = do
 	cwd <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $
 		error "can only run uninit from the top of the git repository"
-	where
-		current_branch = Git.Ref . Prelude.head . lines <$> revhead
-		revhead = inRepo $ Git.Command.pipeReadStrict
-			[Params "rev-parse --abbrev-ref HEAD"]
+  where
+	current_branch = Git.Ref . Prelude.head . lines <$> revhead
+	revhead = inRepo $ Git.Command.pipeReadStrict
+		[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
 seek = [

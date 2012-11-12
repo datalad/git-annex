@@ -24,6 +24,6 @@ start = next $ next $ do
 	Annex.Branch.commit "update"
 	_ <- runhook <=< inRepo $ Git.hookPath "annex-content"
 	return True
-	where
-		runhook (Just hook) = liftIO $ boolSystem hook []
-		runhook Nothing = return True
+  where
+	runhook (Just hook) = liftIO $ boolSystem hook []
+	runhook Nothing = return True

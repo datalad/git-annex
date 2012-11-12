@@ -65,7 +65,7 @@ autoStart = do
 					)
 		, nothing
 		)
-	where
-		go program dir = do
-			changeWorkingDirectory dir
-			boolSystem program [Param "assistant"]
+  where
+	go program dir = do
+		changeWorkingDirectory dir
+		boolSystem program [Param "assistant"]

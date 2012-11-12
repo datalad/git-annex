@@ -47,5 +47,5 @@ showHelp = liftIO $ putStrLn $ unlines
 		]
 	, "Run git-annex without any options for a complete command and option list."
 	]
-	where
-		cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c
+  where
+	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c

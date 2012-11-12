@@ -31,9 +31,9 @@ start file (key, oldbackend) = do
 			showStart "migrate" file
 			next $ perform file key oldbackend newbackend
 		else stop
-	where
-		choosebackend Nothing = Prelude.head <$> orderedList
-		choosebackend (Just backend) = return backend
+  where
+	choosebackend Nothing = Prelude.head <$> orderedList
+	choosebackend (Just backend) = return backend
 
 {- Checks if a key is upgradable to a newer representation. -}
 {- Ideally, all keys have file size metadata. Old keys may not. -}
@@ -49,10 +49,10 @@ perform file oldkey oldbackend newbackend = do
 		( maybe stop go =<< genkey
 		, stop
 		)
-	where
-		go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
-			next $ Command.ReKey.cleanup file oldkey newkey
-		genkey = do
-			content <- inRepo $ gitAnnexLocation oldkey
-			let source = KeySource { keyFilename = file, contentLocation = content }
-			liftM fst <$> genKey source (Just newbackend)
+  where
+	go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
+		next $ Command.ReKey.cleanup file oldkey newkey
+	genkey = do
+		content <- inRepo $ gitAnnexLocation oldkey
+		let source = KeySource { keyFilename = file, contentLocation = content }
+		liftM fst <$> genKey source (Just newbackend)

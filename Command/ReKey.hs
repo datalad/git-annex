@@ -25,13 +25,13 @@ seek = [withPairs start]
 
 start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop
-	where
-		newkey = fromMaybe (error "bad key") $ file2key keyname
-		go (oldkey, _)
-			| oldkey == newkey = stop
-			| otherwise = do
-				showStart "rekey" file
-				next $ perform file oldkey newkey
+  where
+	newkey = fromMaybe (error "bad key") $ file2key keyname
+	go (oldkey, _)
+		| oldkey == newkey = stop
+		| otherwise = do
+			showStart "rekey" file
+			next $ perform file oldkey newkey
 
 perform :: FilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do

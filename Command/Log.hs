@@ -47,9 +47,8 @@ passthruOptions = map odate ["since", "after", "until", "before"] ++
 	[ Option.field ['n'] "max-count" paramNumber
 		"limit number of logs displayed"
 	]
-	where
-		odate n = Option.field [] n paramDate $
-			"show log " ++ n ++ " date"
+  where
+	odate n = Option.field [] n paramDate $ "show log " ++ n ++ " date"
 
 gourceOption :: Option
 gourceOption = Option.flag [] "gource" "format output for gource"
@@ -60,10 +59,10 @@ seek = [withValue Remote.uuidDescriptions $ \m ->
 	withValue (concat <$> mapM getoption passthruOptions) $ \os ->
 	withFlag gourceOption $ \gource ->
 	withFilesInGit $ whenAnnexed $ start m zone os gource]
-	where
-		getoption o = maybe [] (use o) <$>
-			Annex.getField (Option.name o)
-		use o v = [Param ("--" ++ Option.name o), Param v]
+  where
+	getoption o = maybe [] (use o) <$>
+		Annex.getField (Option.name o)
+	use o v = [Param ("--" ++ Option.name o), Param v]
 
 start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
 	FilePath -> (Key, Backend) -> CommandStart
@@ -72,41 +71,41 @@ start m zone os gource file (key, _) = do
 	-- getLog produces a zombie; reap it
 	liftIO reapZombies
 	stop
-	where
-		output
-			| gource = gourceOutput lookupdescription file
-			| otherwise = normalOutput lookupdescription file zone
-		lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
+  where
+	output
+		| gource = gourceOutput lookupdescription file
+		| otherwise = normalOutput lookupdescription file zone
+	lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
 
 showLog :: Outputter -> [RefChange] -> Annex ()
 showLog outputter ps = do
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
 	sequence_ $ compareChanges outputter $ sets ++ [previous]
-	where
-		genesis = (0, S.empty)
-		getset select change = do
-			s <- S.fromList <$> get (select change)
-			return (changetime change, s)
-		get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
-			catObject ref
+  where
+	genesis = (0, S.empty)
+	getset select change = do
+		s <- S.fromList <$> get (select change)
+		return (changetime change, s)
+	get ref = map toUUID . Logs.Presence.getLog . L.unpack <$>
+		catObject ref
 
 normalOutput :: (UUID -> String) -> FilePath -> TimeZone -> Outputter
 normalOutput lookupdescription file zone present ts us =
 	liftIO $ mapM_ (putStrLn . format) us
-	where
-		time = showTimeStamp zone ts
-		addel = if present then "+" else "-"
-		format u = unwords [ addel, time, file, "|", 
-			fromUUID u ++ " -- " ++ lookupdescription u ]
+  where
+	time = showTimeStamp zone ts
+	addel = if present then "+" else "-"
+	format u = unwords [ addel, time, file, "|", 
+		fromUUID u ++ " -- " ++ lookupdescription u ]
 
 gourceOutput :: (UUID -> String) -> FilePath -> Outputter
 gourceOutput lookupdescription file present ts us =
 	liftIO $ mapM_ (putStrLn . intercalate "|" . format) us
-	where
-		time = takeWhile isDigit $ show ts
-		addel = if present then "A" else "M"
-		format u = [ time, lookupdescription u, addel, file ]
+  where
+	time = takeWhile isDigit $ show ts
+	addel = if present then "A" else "M"
+	format u = [ time, lookupdescription u, addel, file ]
 
 {- Generates a display of the changes (which are ordered with newest first),
  - by comparing each change with the previous change.
@@ -114,12 +113,12 @@ gourceOutput lookupdescription file present ts us =
  - removed. -}
 compareChanges :: Ord a => (Bool -> POSIXTime -> [a] -> b) -> [(POSIXTime, S.Set a)] -> [b]
 compareChanges format changes = concatMap diff $ zip changes (drop 1 changes)
-	where
-		diff ((ts, new), (_, old)) =
-			[format True ts added, format False ts removed]
-			where
-				added = S.toList $ S.difference new old
-				removed = S.toList $ S.difference old new
+  where
+	diff ((ts, new), (_, old)) =
+		[format True ts added, format False ts removed]
+	  where
+		added = S.toList $ S.difference new old
+		removed = S.toList $ S.difference old new
 
 {- Gets the git log for a given location log file.
  -
@@ -148,21 +147,21 @@ getLog key os = do
 
 readLog :: [String] -> [RefChange]
 readLog = mapMaybe (parse . lines)
-	where
-		parse (ts:raw:[]) = let (old, new) = parseRaw raw in
-			Just RefChange
-				{ changetime = parseTimeStamp ts
-				, oldref = old
-				, newref = new
-				}
-		parse _ = Nothing
+  where
+	parse (ts:raw:[]) = let (old, new) = parseRaw raw in
+		Just RefChange
+			{ changetime = parseTimeStamp ts
+			, oldref = old
+			, newref = new
+			}
+	parse _ = Nothing
 
 -- Parses something like ":100644 100644 oldsha newsha M"
 parseRaw :: String -> (Git.Ref, Git.Ref)
 parseRaw l = go $ words l
-	where
-		go (_:_:oldsha:newsha:_) = (Git.Ref oldsha, Git.Ref newsha)
-		go _ = error $ "unable to parse git log output: " ++ l
+  where
+	go (_:_:oldsha:newsha:_) = (Git.Ref oldsha, Git.Ref newsha)
+	go _ = error $ "unable to parse git log output: " ++ l
 
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .

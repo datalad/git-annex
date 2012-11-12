@@ -76,8 +76,8 @@ performRemote key numcopies remote = lockContent key $ do
 	stopUnless (canDropKey key numcopies have tocheck [uuid]) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
-	where
-		uuid = Remote.uuid remote
+ where
+	uuid = Remote.uuid remote
 
 cleanupLocal :: Key -> CommandCleanup
 cleanupLocal key = do
@@ -106,20 +106,20 @@ canDropKey key numcopiesM have check skip = do
 
 findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 findCopies key need skip = helper []
-	where
-		helper bad have []
-			| length have >= need = return True
-			| otherwise = notEnoughCopies key need have skip bad
-		helper bad have (r:rs)
-			| length have >= need = return True
-			| otherwise = do
-				let u = Remote.uuid r
-				let duplicate = u `elem` have
-				haskey <- Remote.hasKey r key
-				case (duplicate, haskey) of
-					(False, Right True) -> helper bad (u:have) rs
-					(False, Left _)     -> helper (r:bad) have rs
-					_                   -> helper bad have rs
+  where
+	helper bad have []
+		| length have >= need = return True
+		| otherwise = notEnoughCopies key need have skip bad
+	helper bad have (r:rs)
+		| length have >= need = return True
+		| otherwise = do
+			let u = Remote.uuid r
+			let duplicate = u `elem` have
+			haskey <- Remote.hasKey r key
+			case (duplicate, haskey) of
+				(False, Right True) -> helper bad (u:have) rs
+				(False, Left _)     -> helper (r:bad) have rs
+				_                   -> helper bad have rs
 
 notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 notEnoughCopies key need have skip bad = do
@@ -132,6 +132,6 @@ notEnoughCopies key need have skip bad = do
 	Remote.showLocations key (have++skip)
 	hint
 	return False
-	where
-		unsafe = showNote "unsafe"
-		hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"
+  where
+	unsafe = showNote "unsafe"
+	hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"

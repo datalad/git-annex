@@ -20,8 +20,8 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = inAnnexSafe key >>= dispatch
-	where
-		dispatch (Just True) = stop
-		dispatch (Just False) = exit 1
-		dispatch Nothing = exit 100
-		exit n = liftIO $ exitWith $ ExitFailure n
+  where
+	dispatch (Just True) = stop
+	dispatch (Just False) = exit 1
+	dispatch Nothing = exit 100
+	exit n = liftIO $ exitWith $ ExitFailure n

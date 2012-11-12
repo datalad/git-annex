@@ -40,15 +40,15 @@ perform remotemap key = do
 	forM_ (mapMaybe (`M.lookup` remotemap) locations) $
 		performRemote key
 	if null safelocations then stop else next $ return True
-	where
-		copiesplural 1 = "copy"
-		copiesplural _ = "copies"
-		untrustedheader = "The following untrusted locations may also have copies:\n"
+  where
+	copiesplural 1 = "copy"
+	copiesplural _ = "copies"
+	untrustedheader = "The following untrusted locations may also have copies:\n"
 
 performRemote :: Key -> Remote -> Annex () 
 performRemote key remote = maybe noop go $ whereisKey remote
-	where
-		go a = do
-			ls <- a key
-			unless (null ls) $ showLongNote $ unlines $
-				map (\l -> name remote ++ ": " ++ l) ls
+  where
+	go a = do
+		ls <- a key
+		unless (null ls) $ showLongNote $ unlines $
+			map (\l -> name remote ++ ": " ++ l) ls

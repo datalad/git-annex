@@ -40,31 +40,31 @@ seek = [withField fileOption return $ \f ->
 
 start :: Maybe FilePath -> Maybe Int -> String -> CommandStart
 start optfile pathdepth s = notBareRepo $ go $ fromMaybe bad $ parseURI s
-	where
-		bad = fromMaybe (error $ "bad url " ++ s) $
-			parseURI $ escapeURIString isUnescapedInURI s
-		go url = do
-			let file = fromMaybe (url2file url pathdepth) optfile
-			showStart "addurl" file
-			next $ perform s file
+  where
+	bad = fromMaybe (error $ "bad url " ++ s) $
+		parseURI $ escapeURIString isUnescapedInURI s
+	go url = do
+		let file = fromMaybe (url2file url pathdepth) optfile
+		showStart "addurl" file
+		next $ perform s file
 
 perform :: String -> FilePath -> CommandPerform
 perform url file = ifAnnexed file addurl geturl
-	where
-		geturl = do
-			liftIO $ createDirectoryIfMissing True (parentDir file)
-			ifM (Annex.getState Annex.fast)
-				( nodownload url file , download url file )
-		addurl (key, _backend) = do
-			headers <- getHttpHeaders
-			ifM (liftIO $ Url.check url headers $ keySize key)
-				( do
-					setUrlPresent key url
-					next $ return True
-				, do
-					warning $ "failed to verify url: " ++ url
-					stop
-				)
+  where
+	geturl = do
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		ifM (Annex.getState Annex.fast)
+			( nodownload url file , download url file )
+	addurl (key, _backend) = do
+		headers <- getHttpHeaders
+		ifM (liftIO $ Url.check url headers $ keySize key)
+			( do
+				setUrlPresent key url
+				next $ return True
+			, do
+				warning $ "failed to verify url: " ++ url
+				stop
+			)
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
@@ -103,10 +103,10 @@ url2file url pathdepth = case pathdepth of
 		| depth > 0 -> frombits $ drop depth
 		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
 		| otherwise -> error "bad --pathdepth"
-	where
-		fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
-		frombits a = join "/" $ a urlbits
-		urlbits = map (filesize . escape) $ filter (not . null) $ split "/" fullurl
-		auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
-		filesize = take 255
-		escape = replace "/" "_" . replace "?" "_"
+  where
+	fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
+	frombits a = join "/" $ a urlbits
+	urlbits = map (filesize . escape) $ filter (not . null) $ split "/" fullurl
+	auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
+	filesize = take 255
+	escape = replace "/" "_" . replace "?" "_"

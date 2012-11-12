@@ -78,22 +78,22 @@ withIncremental = withValue $ do
 		(True, _, _) ->
 			maybe startIncremental (return . ContIncremental . Just)
 				=<< getStartTime
-	where
-		startIncremental = do
-			recordStartTime
-			return StartIncremental
+  where
+	startIncremental = do
+		recordStartTime
+		return StartIncremental
 
-		checkschedule Nothing = error "bad --incremental-schedule value"
-		checkschedule (Just delta) = do
-			Annex.addCleanup "" $ do
-				v <- getStartTime
-				case v of
-					Nothing -> noop
-					Just started -> do
-						now <- liftIO getPOSIXTime
-						when (now - realToFrac started >= delta) $
-							resetStartTime
-			return True
+	checkschedule Nothing = error "bad --incremental-schedule value"
+	checkschedule (Just delta) = do
+		Annex.addCleanup "" $ do
+			v <- getStartTime
+			case v of
+				Nothing -> noop
+				Just started -> do
+					now <- liftIO getPOSIXTime
+					when (now - realToFrac started >= delta) $
+						resetStartTime
+		return True
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
@@ -101,8 +101,8 @@ start from inc file (key, backend) = do
 	case from of
 		Nothing -> go $ perform key file backend numcopies
 		Just r -> go $ performRemote key file backend numcopies r
-	where
-		go = runFsck inc file key
+  where
+	go = runFsck inc file key
 
 perform :: Key -> FilePath -> Backend -> Maybe Int -> Annex Bool
 perform key file backend numcopies = check
@@ -119,48 +119,48 @@ perform key file backend numcopies = check
 performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> Annex Bool
 performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
-	where
-		dispatch (Left err) = do
-			showNote err
-			return False
-		dispatch (Right True) = withtmp $ \tmpfile ->
-			ifM (getfile tmpfile)
-				( go True (Just tmpfile)
-				, go True Nothing
+  where
+	dispatch (Left err) = do
+		showNote err
+		return False
+	dispatch (Right True) = withtmp $ \tmpfile ->
+		ifM (getfile tmpfile)
+			( go True (Just tmpfile)
+			, go True Nothing
+			)
+	dispatch (Right False) = go False Nothing
+	go present localcopy = check
+		[ verifyLocationLogRemote key file remote present
+		, checkKeySizeRemote key remote localcopy
+		, checkBackendRemote backend key remote localcopy
+		, checkKeyNumCopies key file numcopies
+		]
+	withtmp a = do
+		pid <- liftIO getProcessID
+		t <- fromRepo gitAnnexTmpDir
+		createAnnexDirectory t
+		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
+		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
+		cleanup
+		cleanup `after` a tmp
+	getfile tmp =
+		ifM (Remote.retrieveKeyFileCheap remote key tmp)
+			( return True
+			, ifM (Annex.getState Annex.fast)
+				( return False
+				, Remote.retrieveKeyFile remote key Nothing tmp
 				)
-		dispatch (Right False) = go False Nothing
-		go present localcopy = check
-			[ verifyLocationLogRemote key file remote present
-			, checkKeySizeRemote key remote localcopy
-			, checkBackendRemote backend key remote localcopy
-			, checkKeyNumCopies key file numcopies
-			]
-		withtmp a = do
-			pid <- liftIO getProcessID
-			t <- fromRepo gitAnnexTmpDir
-			createAnnexDirectory t
-			let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
-			let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
-			cleanup
-			cleanup `after` a tmp
-		getfile tmp =
-			ifM (Remote.retrieveKeyFileCheap remote key tmp)
-				( return True
-				, ifM (Annex.getState Annex.fast)
-					( return False
-					, Remote.retrieveKeyFile remote key Nothing tmp
-					)
-				)
+			)
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
 withBarePresentKeys a params = isBareRepo >>= go
-	where
-		go False = return []
-		go True = do
-			unless (null params) $
-				error "fsck should be run without parameters in a bare repository"
-			map a <$> loggedKeys
+  where
+	go False = return []
+	go True = do
+		unless (null params) $
+			error "fsck should be run without parameters in a bare repository"
+		map a <$> loggedKeys
 
 startBare :: Incremental -> Key -> CommandStart
 startBare inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
@@ -242,10 +242,10 @@ verifyLocationLog' key desc present u bad = do
 					"but its content is missing."
 				return False
 		_ -> return True
-	where
-		fix s = do
-			showNote "fixing location log"
-			bad s
+  where
+	fix s = do
+		showNote "fixing location log"
+		bad s
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available. -}
@@ -269,19 +269,19 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 		size' <- fromIntegral . fileSize
 			<$> liftIO (getFileStatus file)
 		comparesizes size size'
-	where
-		comparesizes a b = do
-			let same = a == b
-			unless same $ badsize a b
-			return same
-		badsize a b = do
-			msg <- bad key
-			warning $ concat
-				[ "Bad file size ("
-				, compareSizes storageUnits True a b
-				, "); "
-				, msg
-				]
+  where
+	comparesizes a b = do
+		let same = a == b
+		unless same $ badsize a b
+		return same
+	badsize a b = do
+		msg <- bad key
+		warning $ concat
+			[ "Bad file size ("
+			, compareSizes storageUnits True a b
+			, "); "
+			, msg
+			]
 
 checkBackend :: Backend -> Key -> Annex Bool
 checkBackend backend key = do
@@ -290,8 +290,8 @@ checkBackend backend key = do
 
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
-	where
-		go = checkBackendOr (badContentRemote remote) backend key
+  where
+	go = checkBackendOr (badContentRemote remote) backend key
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
 checkBackendOr bad backend key file =
@@ -414,9 +414,9 @@ recordStartTime = do
 		t <- modificationTime <$> getFileStatus f
 		hPutStr h $ showTime $ realToFrac t
 		hClose h
-	where
-		showTime :: POSIXTime -> String
-		showTime = show
+  where
+	showTime :: POSIXTime -> String
+	showTime = show
 
 resetStartTime :: Annex ()
 resetStartTime = liftIO . nukeFile =<< fromRepo gitAnnexFsckState
@@ -431,7 +431,7 @@ getStartTime = do
 		return $ if Just (realToFrac timestamp) == t
 			then Just timestamp
 			else Nothing
-	where
-		readishTime :: String -> Maybe POSIXTime
-		readishTime s = utcTimeToPOSIXSeconds <$>
-			parseTime defaultTimeLocale "%s%Qs" s
+  where
+	readishTime :: String -> Maybe POSIXTime
+	readishTime s = utcTimeToPOSIXSeconds <$>
+		parseTime defaultTimeLocale "%s%Qs" s

@@ -44,9 +44,9 @@ start to from move file (key, _) = do
 		(Nothing, Just dest) -> toStart dest move file key
 		(Just src, Nothing) -> fromStart src move file key
 		(_ ,  _) -> error "only one of --from or --to can be specified"
-	where
-		noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
-			"--auto is not supported for move"
+  where
+	noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
+		"--auto is not supported for move"
 
 showMoveAction :: Bool -> FilePath -> Annex ()
 showMoveAction True file = showStart "move" file
@@ -98,15 +98,15 @@ toPerform dest move key file = moveLock move key $ do
 						warning "This could have failed because --fast is enabled."
 					stop
 		Right True -> finish False
-	where
-		finish remotechanged = do
-			when remotechanged $
-				Remote.logStatus dest key InfoPresent
-			if move
-				then do
-					whenM (inAnnex key) $ removeAnnex key
-					next $ Command.Drop.cleanupLocal key
-				else next $ return True
+  where
+	finish remotechanged = do
+		when remotechanged $
+			Remote.logStatus dest key InfoPresent
+		if move
+			then do
+				whenM (inAnnex key) $ removeAnnex key
+				next $ Command.Drop.cleanupLocal key
+			else next $ return True
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.
@@ -118,35 +118,37 @@ fromStart :: Remote -> Bool -> FilePath -> Key -> CommandStart
 fromStart src move file key
 	| move = go
 	| otherwise = stopUnless (not <$> inAnnex key) go
-	where
-		go = stopUnless (fromOk src key) $ do
-			showMoveAction move file
-			next $ fromPerform src move key file
+  where
+	go = stopUnless (fromOk src key) $ do
+		showMoveAction move file
+		next $ fromPerform src move key file
+
 fromOk :: Remote -> Key -> Annex Bool
 fromOk src key
 	| Remote.hasKeyCheap src =
 		either (const expensive) return =<< Remote.hasKey src key
 	| otherwise = expensive
-	where
-		expensive = do
-			u <- getUUID
-			remotes <- Remote.keyPossibilities key
-			return $ u /= Remote.uuid src && elem src remotes
+  where
+	expensive = do
+		u <- getUUID
+		remotes <- Remote.keyPossibilities key
+		return $ u /= Remote.uuid src && elem src remotes
+
 fromPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
 fromPerform src move key file = moveLock move key $
 	ifM (inAnnex key)
 		( handle move True
 		, handle move =<< go
 		)
-	where
-		go = download (Remote.uuid src) key (Just file) noRetry $ do
-			showAction $ "from " ++ Remote.name src
-			getViaTmp key $ Remote.retrieveKeyFile src key (Just file)
-		handle _ False = stop -- failed
-		handle False True = next $ return True -- copy complete
-		handle True True = do -- finish moving
-			ok <- Remote.removeKey src key
-			next $ Command.Drop.cleanupRemote key src ok
+  where
+	go = download (Remote.uuid src) key (Just file) noRetry $ do
+		showAction $ "from " ++ Remote.name src
+		getViaTmp key $ Remote.retrieveKeyFile src key (Just file)
+	handle _ False = stop -- failed
+	handle False True = next $ return True -- copy complete
+	handle True True = do -- finish moving
+		ok <- Remote.removeKey src key
+		next $ Command.Drop.cleanupRemote key src ok
 
 {- Locks a key in order for it to be moved.
  - No lock is needed when a key is being copied. -}

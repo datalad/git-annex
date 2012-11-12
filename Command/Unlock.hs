@@ -17,8 +17,8 @@ def =
 	[ c "unlock" "unlock files for modification"
 	, c "edit" "same as unlock"
 	]
-	where
-		c n = command n paramPaths seek
+  where
+	c n = command n paramPaths seek
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

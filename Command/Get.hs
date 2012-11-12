@@ -32,10 +32,10 @@ start from file (key, _) = stopUnless ((not <$> inAnnex key) <&&> checkAuto (wan
 				-- get --from = copy --from
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src False key file
-	where
-		go a = do
-			showStart "get" file
-			next a
+  where
+	go a = do
+		showStart "get" file
+		next a
 
 perform :: Key -> FilePath -> CommandPerform
 perform key file = stopUnless (getViaTmp key $ getKeyFile key file) $
@@ -45,29 +45,29 @@ perform key file = stopUnless (getViaTmp key $ getKeyFile key file) $
  - and copy it to here. -}
 getKeyFile :: Key -> FilePath -> FilePath -> Annex Bool
 getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
-	where
-		dispatch [] = do
-			showNote "not available"
-			Remote.showLocations key []
-			return False
-		dispatch remotes = trycopy remotes remotes
-		trycopy full [] = do
-			Remote.showTriedRemotes full
-			Remote.showLocations key []
-			return False
-		trycopy full (r:rs) =
-			ifM (probablyPresent r)
-				( docopy r (trycopy full rs)
-				, trycopy full rs
-				)
-		-- This check is to avoid an ugly message if a remote is a
-		-- drive that is not mounted.
-		probablyPresent r
-			| Remote.hasKeyCheap r =
-				either (const False) id <$> Remote.hasKey r key
-			| otherwise = return True
-		docopy r continue = do
-			ok <- download (Remote.uuid r) key (Just file) noRetry $ do
-				showAction $ "from " ++ Remote.name r
-				Remote.retrieveKeyFile r key (Just file) dest
-			if ok then return ok else continue
+  where
+	dispatch [] = do
+		showNote "not available"
+		Remote.showLocations key []
+		return False
+	dispatch remotes = trycopy remotes remotes
+	trycopy full [] = do
+		Remote.showTriedRemotes full
+		Remote.showLocations key []
+		return False
+	trycopy full (r:rs) =
+		ifM (probablyPresent r)
+			( docopy r (trycopy full rs)
+			, trycopy full rs
+			)
+	-- This check is to avoid an ugly message if a remote is a
+	-- drive that is not mounted.
+	probablyPresent r
+		| Remote.hasKeyCheap r =
+			either (const False) id <$> Remote.hasKey r key
+		| otherwise = return True
+	docopy r continue = do
+		ok <- download (Remote.uuid r) key (Just file) noRetry $ do
+			showAction $ "from " ++ Remote.name r
+			Remote.retrieveKeyFile r key (Just file) dest
+		if ok then return ok else continue

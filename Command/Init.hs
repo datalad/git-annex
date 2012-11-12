@@ -22,8 +22,8 @@ start :: [String] -> CommandStart
 start ws = do
 	showStart "init" description
 	next $ perform description
-	where
-		description = unwords ws
+  where
+	description = unwords ws
 
 perform :: String -> CommandPerform
 perform description = do

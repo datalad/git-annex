@@ -64,27 +64,26 @@ checkUnused = chain 0
 	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir
 	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir
 	]
-	where
-		findunused True = do
-			showNote "fast mode enabled; only finding stale files"
-			return []
-		findunused False = do
-			showAction "checking for unused data"
-			excludeReferenced =<< getKeysPresent
-		chain _ [] = next $ return True
-		chain v (a:as) = do
-			v' <- a v
-			chain v' as
+  where
+	findunused True = do
+		showNote "fast mode enabled; only finding stale files"
+		return []
+	findunused False = do
+		showAction "checking for unused data"
+		excludeReferenced =<< getKeysPresent
+	chain _ [] = next $ return True
+	chain v (a:as) = do
+		v' <- a v
+		chain v' as
 
 checkRemoteUnused :: String -> CommandPerform
 checkRemoteUnused name = go =<< fromJust <$> Remote.byName (Just name)
-	where
-		go r = do
-			showAction "checking for unused data"
-			_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
-			next $ return True
-		remoteunused r =
-			excludeReferenced <=< loggedKeysFor $ Remote.uuid r
+  where
+	go r = do
+		showAction "checking for unused data"
+		_ <- check "" (remoteUnusedMsg r) (remoteunused r) 0
+		next $ return True
+	remoteunused r = excludeReferenced <=< loggedKeysFor $ Remote.uuid r
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
@@ -100,9 +99,9 @@ number n (x:xs) = (n+1, x) : number (n+1) xs
 
 table :: [(Int, Key)] -> [String]
 table l = "  NUMBER  KEY" : map cols l
-	where
-		cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ key2file k
-		pad n s = s ++ replicate (n - length s) ' '
+  where
+	cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ key2file k
+	pad n s = s ++ replicate (n - length s) ' '
 
 staleTmpMsg :: [(Int, Key)] -> String
 staleTmpMsg t = unlines $ 
@@ -129,8 +128,8 @@ remoteUnusedMsg :: Remote -> [(Int, Key)] -> String
 remoteUnusedMsg r u = unusedMsg' u
 	["Some annexed data on " ++ name ++ " is not used by any files:"]
 	[dropMsg $ Just r]
-	where
-		name = Remote.name r 
+  where
+	name = Remote.name r 
 
 dropMsg :: Maybe Remote -> String
 dropMsg Nothing = dropMsg' ""
@@ -159,11 +158,11 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  -}
 excludeReferenced :: [Key] -> Annex [Key]
 excludeReferenced ks = runfilter firstlevel ks >>= runfilter secondlevel
-	where
-		runfilter _ [] = return [] -- optimisation
-		runfilter a l = bloomFilter show l <$> genBloomFilter show a
-		firstlevel = withKeysReferencedM
-		secondlevel = withKeysReferencedInGit
+  where
+	runfilter _ [] = return [] -- optimisation
+	runfilter a l = bloomFilter show l <$> genBloomFilter show a
+	firstlevel = withKeysReferencedM
+	secondlevel = withKeysReferencedInGit
 
 {- Finds items in the first, smaller list, that are not
  - present in the second, larger list.
@@ -174,8 +173,8 @@ excludeReferenced ks = runfilter firstlevel ks >>= runfilter secondlevel
 exclude :: Ord a => [a] -> [a] -> [a]
 exclude [] _ = [] -- optimisation
 exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
-	where
-		remove a b = foldl (flip S.delete) b a
+  where
+	remove a b = foldl (flip S.delete) b a
 
 {- A bloom filter capable of holding half a million keys with a
  - false positive rate of 1 in 1000 uses around 8 mb of memory,
@@ -208,8 +207,8 @@ genBloomFilter convert populate = do
 	bloom <- lift $ newMB (cheapHashes numhashes) numbits
 	_ <- populate $ \v -> lift $ insertMB bloom (convert v)
 	lift $ unsafeFreezeMB bloom
-	where
-		lift = liftIO . stToIO
+  where
+	lift = liftIO . stToIO
 
 bloomFilter :: Hashable t => (v -> t) -> [v] -> Bloom t -> [v]
 bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
@@ -218,14 +217,14 @@ bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
  - symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
 withKeysReferenced initial a = withKeysReferenced' initial folda
-	where
-		folda k v = return $ a k v
+  where
+	folda k v = return $ a k v
 
 {- Runs an action on each referenced key in the git repo. -}
 withKeysReferencedM :: (Key -> Annex ()) -> Annex ()
 withKeysReferencedM a = withKeysReferenced' () calla
-	where
-		calla k _ = a k
+  where
+	calla k _ = a k
 
 withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
 withKeysReferenced' initial a = do
@@ -233,54 +232,53 @@ withKeysReferenced' initial a = do
 	r <- go initial files
 	liftIO $ void clean
 	return r
-	where
-		getfiles = ifM isBareRepo
-			( return ([], return True)
-			, do
-				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.inRepo [top]
-			)
-		go v [] = return v
-		go v (f:fs) = do
-			x <- Backend.lookupFile f
-			case x of
-				Nothing -> go v fs
-				Just (k, _) -> do
-					!v' <- a k v
-					go v' fs
-
+  where
+	getfiles = ifM isBareRepo
+		( return ([], return True)
+		, do
+			top <- fromRepo Git.repoPath
+			inRepo $ LsFiles.inRepo [top]
+		)
+	go v [] = return v
+	go v (f:fs) = do
+		x <- Backend.lookupFile f
+		case x of
+			Nothing -> go v fs
+			Just (k, _) -> do
+				!v' <- a k v
+				go v' fs
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
 withKeysReferencedInGit a = do
 	rs <- relevantrefs <$> showref
 	forM_ rs (withKeysReferencedInGitRef a)
-	where
-		showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
-		relevantrefs = map (Git.Ref .  snd) .
-			nubBy uniqref .
-			filter ourbranches .
-			map (separate (== ' ')) . lines
-		uniqref (x, _) (y, _) = x == y
-		ourbranchend = '/' : show Annex.Branch.name
-		ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
-			&& not ("refs/synced/" `isPrefixOf` b)
+  where
+	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
+	relevantrefs = map (Git.Ref .  snd) .
+		nubBy uniqref .
+		filter ourbranches .
+		map (separate (== ' ')) . lines
+	uniqref (x, _) (y, _) = x == y
+	ourbranchend = '/' : show Annex.Branch.name
+	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
+		&& not ("refs/synced/" `isPrefixOf` b)
 
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
 	go <=< inRepo $ LsTree.lsTree ref
-	where
-		go [] = noop
-		go (l:ls)
-			| isSymLink (LsTree.mode l) = do
-				content <- encodeW8 . L.unpack
-					<$> catFile ref (LsTree.file l)
-				case fileKey (takeFileName content) of
-					Nothing -> go ls
-					Just k -> do
-						a k
-						go ls
-			| otherwise = go ls
+  where
+	go [] = noop
+	go (l:ls)
+		| isSymLink (LsTree.mode l) = do
+			content <- encodeW8 . L.unpack
+				<$> catFile ref (LsTree.file l)
+			case fileKey (takeFileName content) of
+				Nothing -> go ls
+				Just k -> do
+					a k
+					go ls
+		| otherwise = go ls
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.

@@ -48,8 +48,8 @@ seek rs = do
 		, [ pushLocal branch ]
 		, [ pushRemote remote branch | remote <- remotes ]
 		]
-	where
-		nobranch = error "no branch is checked out"
+  where
+	nobranch = error "no branch is checked out"
 
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"
@@ -59,23 +59,23 @@ remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
 
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
-	where
-		pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
-		wanted
-			| null rs = good =<< concat . Remote.byCost <$> available
-			| otherwise = listed
-		listed = do
-			l <- catMaybes <$> mapM (Remote.byName . Just) rs
-			let s = filter Remote.specialRemote l
-			unless (null s) $
-				error $ "cannot sync special remotes: " ++
-					unwords (map Types.Remote.name s)
-			return l
-		available = filter (not . Remote.specialRemote)
-			<$> (filterM (repoSyncable . Types.Remote.repo)
-				=<< Remote.enabledRemoteList)
-		good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
-		fastest = fromMaybe [] . headMaybe . Remote.byCost
+  where
+	pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
+	wanted
+		| null rs = good =<< concat . Remote.byCost <$> available
+		| otherwise = listed
+	listed = do
+		l <- catMaybes <$> mapM (Remote.byName . Just) rs
+		let s = filter Remote.specialRemote l
+		unless (null s) $
+			error $ "cannot sync special remotes: " ++
+				unwords (map Types.Remote.name s)
+		return l
+	available = filter (not . Remote.specialRemote)
+		<$> (filterM (repoSyncable . Types.Remote.repo)
+			=<< Remote.enabledRemoteList)
+	good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
+	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
 commit = do
@@ -90,16 +90,16 @@ commit = do
 
 mergeLocal :: Git.Ref -> CommandStart
 mergeLocal branch = go =<< needmerge
-	where
-		syncbranch = syncBranch branch
-		needmerge = do
-			unlessM (inRepo $ Git.Ref.exists syncbranch) $
-				inRepo $ updateBranch syncbranch
-			inRepo $ Git.Branch.changed branch syncbranch
-		go False = stop
-		go True = do
-			showStart "merge" $ Git.Ref.describe syncbranch
-			next $ next $ mergeFrom syncbranch
+  where
+	syncbranch = syncBranch branch
+	needmerge = do
+		unlessM (inRepo $ Git.Ref.exists syncbranch) $
+			inRepo $ updateBranch syncbranch
+		inRepo $ Git.Branch.changed branch syncbranch
+	go False = stop
+	go True = do
+		showStart "merge" $ Git.Ref.describe syncbranch
+		next $ next $ mergeFrom syncbranch
 
 pushLocal :: Git.Ref -> CommandStart
 pushLocal branch = do
@@ -109,11 +109,11 @@ pushLocal branch = do
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
 updateBranch syncbranch g = 
 	unlessM go $ error $ "failed to update " ++ show syncbranch
-	where
-		go = Git.Command.runBool "branch"
-			[ Param "-f"
-			, Param $ show $ Git.Ref.base syncbranch
-			] g
+  where
+	go = Git.Command.runBool "branch"
+		[ Param "-f"
+		, Param $ show $ Git.Ref.base syncbranch
+		] g
 
 pullRemote :: Remote -> Git.Ref -> CommandStart
 pullRemote remote branch = do
@@ -122,9 +122,9 @@ pullRemote remote branch = do
 		showOutput
 		stopUnless fetch $
 			next $ mergeRemote remote (Just branch)
-	where
-		fetch = inRepo $ Git.Command.runBool "fetch"
-			[Param $ Remote.name remote]
+  where
+	fetch = inRepo $ Git.Command.runBool "fetch"
+		[Param $ Remote.name remote]
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -136,22 +136,22 @@ mergeRemote remote b = case b of
 		branch <- inRepo Git.Branch.currentUnsafe
 		all id <$> (mapM merge $ branchlist branch)
 	Just _ -> all id <$> (mapM merge =<< tomerge (branchlist b))
-	where
-		merge = mergeFrom . remoteBranch remote
-		tomerge branches = filterM (changed remote) branches
-		branchlist Nothing = []
-		branchlist (Just branch) = [branch, syncBranch branch]
+  where
+	merge = mergeFrom . remoteBranch remote
+	tomerge branches = filterM (changed remote) branches
+	branchlist Nothing = []
+	branchlist (Just branch) = [branch, syncBranch branch]
 
 pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
-	where
-		needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
-		go False = stop
-		go True = do
-			showStart "push" (Remote.name remote)
-			next $ next $ do
-				showOutput
-				inRepo $ pushBranch remote branch
+  where
+	needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
+	go False = stop
+	go True = do
+		showStart "push" (Remote.name remote)
+		next $ next $ do
+			showOutput
+			inRepo $ pushBranch remote branch
 
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
 pushBranch remote branch g =
@@ -160,12 +160,12 @@ pushBranch remote branch g =
 		, Param $ refspec Annex.Branch.name
 		, Param $ refspec branch
 		] g
-	where
-		refspec b = concat 
-			[ show $ Git.Ref.base b
-			,  ":"
-			, show $ Git.Ref.base $ syncBranch b
-			]
+  where
+	refspec b = concat 
+		[ show $ Git.Ref.base b
+		,  ":"
+		, show $ Git.Ref.base $ syncBranch b
+		]
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
@@ -213,37 +213,37 @@ resolveMerge' u
 		withKey LsFiles.valUs $ \keyUs ->
 		withKey LsFiles.valThem $ \keyThem -> go keyUs keyThem
 	| otherwise = return False
-	where
-		go keyUs keyThem
-			| keyUs == keyThem = do
-				makelink keyUs
-				return True
-			| otherwise = do
-				liftIO $ nukeFile file
-				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
-				makelink keyUs
-				makelink keyThem
-				return True
-		file = LsFiles.unmergedFile u
-		issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
-			[Just SymlinkBlob, Nothing]
-		makelink (Just key) = do
-			let dest = mergeFile file key
-			l <- calcGitLink dest key
-			liftIO $ do
-				nukeFile dest
-				createSymbolicLink l dest
-			Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
-		makelink _ = noop
-		withKey select a = do
-			let msha = select $ LsFiles.unmergedSha u
-			case msha of
-				Nothing -> a Nothing
-				Just sha -> do
-					key <- fileKey . takeFileName
-						. encodeW8 . L.unpack 
-						<$> catObject sha
-					maybe (return False) (a . Just) key
+  where
+	go keyUs keyThem
+		| keyUs == keyThem = do
+			makelink keyUs
+			return True
+		| otherwise = do
+			liftIO $ nukeFile file
+			Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+			makelink keyUs
+			makelink keyThem
+			return True
+	file = LsFiles.unmergedFile u
+	issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
+		[Just SymlinkBlob, Nothing]
+	makelink (Just key) = do
+		let dest = mergeFile file key
+		l <- calcGitLink dest key
+		liftIO $ do
+			nukeFile dest
+			createSymbolicLink l dest
+		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
+	makelink _ = noop
+	withKey select a = do
+		let msha = select $ LsFiles.unmergedSha u
+		case msha of
+			Nothing -> a Nothing
+			Just sha -> do
+				key <- fileKey . takeFileName
+					. encodeW8 . L.unpack 
+					<$> catObject sha
+				maybe (return False) (a . Just) key
 
 {- The filename to use when resolving a conflicted merge of a file,
  - that points to a key.
@@ -262,13 +262,13 @@ mergeFile :: FilePath -> Key -> FilePath
 mergeFile file key
 	| doubleconflict = go $ key2file key
 	| otherwise = go $ shortHash $ key2file key
-	where
-		varmarker = ".variant-"
-		doubleconflict = varmarker `isSuffixOf` (dropExtension file)
-		go v = takeDirectory file
-			</> dropExtension (takeFileName file)
-			++ varmarker ++ v
-			++ takeExtension file
+  where
+	varmarker = ".variant-"
+	doubleconflict = varmarker `isSuffixOf` (dropExtension file)
+	go v = takeDirectory file
+		</> dropExtension (takeFileName file)
+		++ varmarker ++ v
+		++ takeExtension file
 		
 shortHash :: String -> String
 shortHash = take 4 . md5s . md5FilePath

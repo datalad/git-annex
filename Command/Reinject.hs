@@ -27,10 +27,10 @@ start (src:dest:[])
 		ifAnnexed src
 			(error $ "cannot used annexed file as src: " ++ src)
 			go
-	where
-		go = do
-			showStart "reinject" dest
-			next $ whenAnnexed (perform src) dest
+  where
+	go = do
+		showStart "reinject" dest
+		next $ whenAnnexed (perform src) dest
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> (Key, Backend) -> CommandPerform
@@ -43,14 +43,14 @@ perform src _dest (key, backend) = do
 			next $ cleanup key
 		, error "not reinjecting"
 		)
-	where
-		-- the file might be on a different filesystem,
-		-- so mv is used rather than simply calling
-		-- moveToObjectDir; disk space is also
-		-- checked this way.
-		move = getViaTmp key $ \tmp ->
-			liftIO $ boolSystem "mv" [File src, File tmp]
-		reject = const $ return "wrong file?"
+  where
+	-- the file might be on a different filesystem,
+	-- so mv is used rather than simply calling
+	-- moveToObjectDir; disk space is also
+	-- checked this way.
+	move = getViaTmp key $ \tmp ->
+		liftIO $ boolSystem "mv" [File src, File tmp]
+	reject = const $ return "wrong file?"
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

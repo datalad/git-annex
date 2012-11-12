@@ -63,14 +63,13 @@ start = do
  -}
 drawMap :: [Git.Repo] -> M.Map UUID String -> [UUID] -> String
 drawMap rs umap ts = Dot.graph $ repos ++ trusted ++ others
-	where
-		repos = map (node umap rs) rs
-		ruuids = ts ++ map getUncachedUUID rs
-		others = map (unreachable . uuidnode) $
-			filter (`notElem` ruuids) (M.keys umap)
-		trusted = map (trustworthy . uuidnode) ts
-		uuidnode u = Dot.graphNode (fromUUID u) $
-			M.findWithDefault "" u umap
+  where
+	repos = map (node umap rs) rs
+	ruuids = ts ++ map getUncachedUUID rs
+	others = map (unreachable . uuidnode) $
+		filter (`notElem` ruuids) (M.keys umap)
+	trusted = map (trustworthy . uuidnode) ts
+	uuidnode u = Dot.graphNode (fromUUID u) $ M.findWithDefault "" u umap
 
 hostname :: Git.Repo -> String
 hostname r
@@ -86,9 +85,9 @@ repoName :: M.Map UUID String -> Git.Repo -> String
 repoName umap r
 	| repouuid == NoUUID = fallback
 	| otherwise = M.findWithDefault fallback repouuid umap
-	where
-		repouuid = getUncachedUUID r
-		fallback = fromMaybe "unknown" $ Git.remoteName r
+  where
+	repouuid = getUncachedUUID r
+	fallback = fromMaybe "unknown" $ Git.remoteName r
 
 {- A unique id for the node for a repo. Uses the annex.uuid if available. -}
 nodeId :: Git.Repo -> String
@@ -100,32 +99,32 @@ nodeId r =
 {- A node representing a repo. -}
 node :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> String
 node umap fullinfo r = unlines $ n:edges
-	where
-		n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
-			decorate $ Dot.graphNode (nodeId r) (repoName umap r)
-		edges = map (edge umap fullinfo r) (Git.remotes r)
-		decorate
-			| Git.config r == M.empty = unreachable
-			| otherwise = reachable
+  where
+	n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
+		decorate $ Dot.graphNode (nodeId r) (repoName umap r)
+	edges = map (edge umap fullinfo r) (Git.remotes r)
+	decorate
+		| Git.config r == M.empty = unreachable
+		| otherwise = reachable
 
 {- An edge between two repos. The second repo is a remote of the first. -}
 edge :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> Git.Repo -> String	
 edge umap fullinfo from to =
 	Dot.graphEdge (nodeId from) (nodeId fullto) edgename
-	where
-		-- get the full info for the remote, to get its UUID
-		fullto = findfullinfo to
-		findfullinfo n =
-			case filter (same n) fullinfo of
-				[] -> n
-				(n':_) -> n'
-		{- Only name an edge if the name is different than the name
-		 - that will be used for the destination node, and is
-		 - different from its hostname. (This reduces visual clutter.) -}
-		edgename = maybe Nothing calcname $ Git.remoteName to
-		calcname n
-			| n `elem` [repoName umap fullto, hostname fullto] = Nothing
-			| otherwise = Just n
+  where
+	-- get the full info for the remote, to get its UUID
+	fullto = findfullinfo to
+	findfullinfo n =
+		case filter (same n) fullinfo of
+			[] -> n
+			(n':_) -> n'
+	{- Only name an edge if the name is different than the name
+	 - that will be used for the destination node, and is
+	 - different from its hostname. (This reduces visual clutter.) -}
+	edgename = maybe Nothing calcname $ Git.remoteName to
+	calcname n
+		| n `elem` [repoName umap fullto, hostname fullto] = Nothing
+		| otherwise = Just n
 
 unreachable :: String -> String
 unreachable = Dot.fillColor "red"
@@ -165,11 +164,10 @@ same a b
 	| both Git.repoIsUrl && neither Git.repoIsSsh = matching show
 	| neither Git.repoIsSsh = matching Git.repoPath
 	| otherwise = False
-		
-	where
-		matching t = t a == t b
-		both t = t a && t b
-		neither t = not (t a) && not (t b)
+  where
+	matching t = t a == t b
+	both t = t a && t b
+	neither t = not (t a) && not (t b)
 
 {- reads the config of a remote, with progress display -}
 scan :: Git.Repo -> Annex Git.Repo
@@ -192,50 +190,49 @@ tryScan r
 	| Git.repoIsSsh r = sshscan
 	| Git.repoIsUrl r = return Nothing
 	| otherwise = safely $ Git.Config.read r
-	where
-		safely a = do
-			result <- liftIO (try a :: IO (Either SomeException Git.Repo))
-			case result of
-				Left _ -> return Nothing
-				Right r' -> return $ Just r'
-		pipedconfig cmd params = safely $
-			withHandle StdoutHandle createProcessSuccess p $
-				Git.Config.hRead r
-			where
-				p = proc cmd $ toCommand params
+  where
+	safely a = do
+		result <- liftIO (try a :: IO (Either SomeException Git.Repo))
+		case result of
+			Left _ -> return Nothing
+			Right r' -> return $ Just r'
+	pipedconfig cmd params = safely $
+		withHandle StdoutHandle createProcessSuccess p $
+			Git.Config.hRead r
+	  where
+		p = proc cmd $ toCommand params
 
-		configlist =
-			onRemote r (pipedconfig, Nothing) "configlist" [] []
-		manualconfiglist = do
-			sshparams <- sshToRepo r [Param sshcmd]
-			liftIO $ pipedconfig "ssh" sshparams
-			where
-				sshcmd = cddir ++ " && " ++
-					"git config --null --list"
-				dir = Git.repoPath r
-				cddir
-					| "/~" `isPrefixOf` dir =
-						let (userhome, reldir) = span (/= '/') (drop 1 dir)
-						in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
-					| otherwise = "cd " ++ shellEscape dir
+	configlist = onRemote r (pipedconfig, Nothing) "configlist" [] []
+	manualconfiglist = do
+		sshparams <- sshToRepo r [Param sshcmd]
+		liftIO $ pipedconfig "ssh" sshparams
+	  where
+		sshcmd = cddir ++ " && " ++
+			"git config --null --list"
+		dir = Git.repoPath r
+		cddir
+			| "/~" `isPrefixOf` dir =
+				let (userhome, reldir) = span (/= '/') (drop 1 dir)
+				in "cd " ++ userhome ++ " && cd " ++ shellEscape (drop 1 reldir)
+			| otherwise = "cd " ++ shellEscape dir
 
-		-- First, try sshing and running git config manually,
-		-- only fall back to git-annex-shell configlist if that
-		-- fails.
-		-- 
-		-- This is done for two reasons, first I'd like this
-		-- subcommand to be usable on non-git-annex repos.
-		-- Secondly, configlist doesn't include information about
-		-- the remote's remotes.
-		sshscan = do
-			sshnote
-			v <- manualconfiglist
-			case v of
-				Nothing -> do
-					sshnote
-					configlist
-				ok -> return ok
+	-- First, try sshing and running git config manually,
+	-- only fall back to git-annex-shell configlist if that
+	-- fails.
+	-- 
+	-- This is done for two reasons, first I'd like this
+	-- subcommand to be usable on non-git-annex repos.
+	-- Secondly, configlist doesn't include information about
+	-- the remote's remotes.
+	sshscan = do
+		sshnote
+		v <- manualconfiglist
+		case v of
+			Nothing -> do
+				sshnote
+				configlist
+			ok -> return ok
 
-		sshnote = do
-			showAction "sshing"
-			showOutput
+	sshnote = do
+		showAction "sshing"
+		showOutput

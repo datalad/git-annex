@@ -43,24 +43,24 @@ start' allowauto = notBareRepo $ do
 	liftIO $ ensureInstalled
 	ifM isInitialized ( go , auto )
 	stop
-	where
-		go = do
-			browser <- fromRepo webBrowser
-			f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
-			ifM (checkpid <&&> checkshim f)
-				( liftIO $ openBrowser browser f 
-				, startDaemon True True $ Just $
-					const $ openBrowser browser
-				)
-		auto
-			| allowauto = liftIO startNoRepo
-			| otherwise = do
-				d <- liftIO getCurrentDirectory
-				error $ "no git repository in " ++ d
-		checkpid = do
-			pidfile <- fromRepo gitAnnexPidFile
-			liftIO $ isJust <$> checkDaemon pidfile
-		checkshim f = liftIO $ doesFileExist f
+  where
+	go = do
+		browser <- fromRepo webBrowser
+		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
+		ifM (checkpid <&&> checkshim f)
+			( liftIO $ openBrowser browser f 
+			, startDaemon True True $ Just $
+				const $ openBrowser browser
+			)
+	auto
+		| allowauto = liftIO startNoRepo
+		| otherwise = do
+			d <- liftIO getCurrentDirectory
+			error $ "no git repository in " ++ d
+	checkpid = do
+		pidfile <- fromRepo gitAnnexPidFile
+		liftIO $ isJust <$> checkDaemon pidfile
+	checkshim f = liftIO $ doesFileExist f
 
 {- When run without a repo, see if there is an autoStartFile,
  - and if so, start the first available listed repository.
@@ -111,35 +111,35 @@ firstRun = do
 		webAppThread d urlrenderer True 
 			(callback signaler)
 			(callback mainthread)
-	where
-		signaler v = do
-			putMVar v ""
-			takeMVar v
-		mainthread v _url htmlshim = do
-			browser <- maybe Nothing webBrowser <$> Git.Config.global
-			openBrowser browser htmlshim
+  where
+	signaler v = do
+		putMVar v ""
+		takeMVar v
+	mainthread v _url htmlshim = do
+		browser <- maybe Nothing webBrowser <$> Git.Config.global
+		openBrowser browser htmlshim
 
-			_wait <- takeMVar v
+		_wait <- takeMVar v
 
-			state <- Annex.new =<< Git.CurrentRepo.get
-			Annex.eval state $ do
-				dummydaemonize
-				startAssistant True id $ Just $ sendurlback v
-		sendurlback v url _htmlshim = putMVar v url
-		{- Set up the pid file in the new repo. -}
-		dummydaemonize =
-			liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
+		state <- Annex.new =<< Git.CurrentRepo.get
+		Annex.eval state $ do
+			dummydaemonize
+			startAssistant True id $ Just $ sendurlback v
+	sendurlback v url _htmlshim = putMVar v url
+
+	{- Set up the pid file in the new repo. -}
+	dummydaemonize = liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
 
 openBrowser :: Maybe FilePath -> FilePath -> IO ()
 openBrowser cmd htmlshim = go $ maybe runBrowser runCustomBrowser cmd
-	where
-		url = fileUrl htmlshim
-		go a = do
-			putStrLn ""
-			putStrLn $ "Launching web browser on " ++ url
-			unlessM (a url) $
-				error $ "failed to start web browser"
-		runCustomBrowser c u = boolSystem c [Param u]
+  where
+	url = fileUrl htmlshim
+	go a = do
+		putStrLn ""
+		putStrLn $ "Launching web browser on " ++ url
+		unlessM (a url) $
+			error $ "failed to start web browser"
+	runCustomBrowser c u = boolSystem c [Param u]
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath

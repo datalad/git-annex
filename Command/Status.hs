@@ -114,10 +114,10 @@ nojson a _ = a
 
 showStat :: Stat -> StatState ()
 showStat s = maybe noop calc =<< s
-	where
-		calc (desc, a) = do
-			(lift . showHeader) desc
-			lift . showRaw =<< a
+  where
+	calc (desc, a) = do
+		(lift . showHeader) desc
+		lift . showRaw =<< a
 
 supported_backends :: Stat
 supported_backends = stat "supported backends" $ json unwords $
@@ -133,8 +133,8 @@ remote_list level = stat n $ nojson $ lift $ do
 	rs <- fst <$> trustPartition level us
 	s <- prettyPrintUUIDs n rs
 	return $ if null s then "0" else show (length rs) ++ "\n" ++ beginning s
-	where
-		n = showTrustLevel level ++ " repositories"
+  where
+	n = showTrustLevel level ++ " repositories"
 	
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $ json id $
@@ -182,42 +182,42 @@ transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 		then return "none"
 		else return $ multiLine $
 			map (\(t, i) -> line uuidmap t i) $ sort ts
-	where
-		line uuidmap t i = unwords
-			[ showLcDirection (transferDirection t) ++ "ing"
-			, fromMaybe (key2file $ transferKey t) (associatedFile i)
-			, if transferDirection t == Upload then "to" else "from"
-			, maybe (fromUUID $ transferUUID t) Remote.name $
-				M.lookup (transferUUID t) uuidmap
-			]
+  where
+	line uuidmap t i = unwords
+		[ showLcDirection (transferDirection t) ++ "ing"
+		, fromMaybe (key2file $ transferKey t) (associatedFile i)
+		, if transferDirection t == Upload then "to" else "from"
+		, maybe (fromUUID $ transferUUID t) Remote.name $
+			M.lookup (transferUUID t) uuidmap
+		]
 
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $
 	calcfree
 		<$> getDiskReserve
 		<*> inRepo (getDiskFree . gitAnnexDir)
-	where
-		calcfree reserve (Just have) = unwords
-			[ roughSize storageUnits False $ nonneg $ have - reserve
-			, "(+" ++ roughSize storageUnits False reserve
-			, "reserved)"
-			]
-			
-		calcfree _ _ = "unknown"
-		nonneg x
-			| x >= 0 = x
-			| otherwise = 0
+  where
+	calcfree reserve (Just have) = unwords
+		[ roughSize storageUnits False $ nonneg $ have - reserve
+		, "(+" ++ roughSize storageUnits False reserve
+		, "reserved)"
+		]			
+	calcfree _ _ = "unknown"
+
+	nonneg x
+		| x >= 0 = x
+		| otherwise = 0
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ nojson $
 	calc
 		<$> (backendsKeys <$> cachedReferencedData)
 		<*> (backendsKeys <$> cachedPresentData)
-	where
-		calc x y = multiLine $
-			map (\(n, b) -> b ++ ": " ++ show n) $
-			reverse $ sort $ map swap $ M.toList $
-			M.unionWith (+) x y
+  where
+	calc x y = multiLine $
+		map (\(n, b) -> b ++ ": " ++ show n) $
+		reverse $ sort $ map swap $ M.toList $
+		M.unionWith (+) x y
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
@@ -249,39 +249,38 @@ foldKeys = foldl' (flip addKey) emptyKeyData
 addKey :: Key -> KeyData -> KeyData
 addKey key (KeyData count size unknownsize backends) =
 	KeyData count' size' unknownsize' backends'
-	where
-		{- All calculations strict to avoid thunks when repeatedly
-		 - applied to many keys. -}
-		!count' = count + 1
-		!backends' = M.insertWith' (+) (keyBackendName key) 1 backends
-		!size' = maybe size (+ size) ks
-		!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
-		ks = keySize key
+  where
+	{- All calculations strict to avoid thunks when repeatedly
+	 - applied to many keys. -}
+	!count' = count + 1
+	!backends' = M.insertWith' (+) (keyBackendName key) 1 backends
+	!size' = maybe size (+ size) ks
+	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
+	ks = keySize key
 
 showSizeKeys :: KeyData -> String
 showSizeKeys d = total ++ missingnote
-	where
-		total = roughSize storageUnits False $ sizeKeys d
-		missingnote
-			| unknownSizeKeys d == 0 = ""
-			| otherwise = aside $
-				"+ " ++ show (unknownSizeKeys d) ++
-				" keys of unknown size"
+  where
+	total = roughSize storageUnits False $ sizeKeys d
+	missingnote
+		| unknownSizeKeys d == 0 = ""
+		| otherwise = aside $
+			"+ " ++ show (unknownSizeKeys d) ++
+			" keys of unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
-	where
-		go [] = nostat
-		go keys = onsize =<< sum <$> keysizes keys
-		onsize 0 = nostat
-		onsize size = stat label $
-			json (++ aside "clean up with git-annex unused") $
-				return $ roughSize storageUnits False size
-		keysizes keys = map (fromIntegral . fileSize) <$> stats keys
-		stats keys = do
-			dir <- lift $ fromRepo dirspec
-			liftIO $ forM keys $ \k ->
-				getFileStatus (dir </> keyFile k)
+  where
+	go [] = nostat
+	go keys = onsize =<< sum <$> keysizes keys
+	onsize 0 = nostat
+	onsize size = stat label $
+		json (++ aside "clean up with git-annex unused") $
+			return $ roughSize storageUnits False size
+	keysizes keys = map (fromIntegral . fileSize) <$> stats keys
+	stats keys = do
+		dir <- lift $ fromRepo dirspec
+		liftIO $ forM keys $ \k -> getFileStatus (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

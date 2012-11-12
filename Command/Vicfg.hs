@@ -75,119 +75,116 @@ setCfg curcfg newcfg = do
 
 diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group), M.Map UUID String)
 diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap, diff cfgPreferredContentMap)
-	where
-		diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
-			(f newcfg) (f curcfg)
+  where
+	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
+		(f newcfg) (f curcfg)
 
 genCfg :: Cfg -> M.Map UUID String -> String
 genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
-	where
-		intro =
-			[ com "git-annex configuration"
-			, com ""
-			, com "Changes saved to this file will be recorded in the git-annex branch."
-			, com ""
-			, com "Lines in this file have the format:"
-			, com "  setting uuid = value"
-			]
+  where
+	intro =
+		[ com "git-annex configuration"
+		, com ""
+		, com "Changes saved to this file will be recorded in the git-annex branch."
+		, com ""
+		, com "Lines in this file have the format:"
+		, com "  setting uuid = value"
+		]
 
-		trust = settings cfgTrustMap
-			[ ""
-			, com "Repository trust configuration"
-			, com "(Valid trust levels: " ++
-			  unwords (map showTrustLevel [Trusted .. DeadTrusted]) ++
-			  ")"
-			]
-			(\(t, u) -> line "trust" u $ showTrustLevel t)
-			(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
+	trust = settings cfgTrustMap
+		[ ""
+		, com "Repository trust configuration"
+		, com "(Valid trust levels: " ++
+		  unwords (map showTrustLevel [Trusted .. DeadTrusted]) ++
+		  ")"
+		]
+		(\(t, u) -> line "trust" u $ showTrustLevel t)
+		(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
 
-		groups = settings cfgGroupMap
-			[ ""
-			, com "Repository groups"
-			, com "(Separate group names with spaces)"
-			]
-			(\(s, u) -> line "group" u $ unwords $ S.toList s)
-			(\u -> lcom $ line "group" u "")
+	groups = settings cfgGroupMap
+		[ ""
+		, com "Repository groups"
+		, com "(Separate group names with spaces)"
+		]
+		(\(s, u) -> line "group" u $ unwords $ S.toList s)
+		(\u -> lcom $ line "group" u "")
 
-		preferredcontent = settings cfgPreferredContentMap
-			[ ""
-			, com "Repository preferred contents"
-			]
-			(\(s, u) -> line "preferred-content" u s)
-			(\u -> line "preferred-content" u "")
+	preferredcontent = settings cfgPreferredContentMap
+		[ ""
+		, com "Repository preferred contents"
+		]
+		(\(s, u) -> line "preferred-content" u s)
+		(\u -> line "preferred-content" u "")
 
-		settings field desc showvals showdefaults = concat
-			[ desc
-			, concatMap showvals $
-				sort $ map swap $ M.toList $ field cfg
-			, concatMap (\u -> lcom $ showdefaults u) $
-				missing field
-			]
+	settings field desc showvals showdefaults = concat
+		[ desc
+		, concatMap showvals $ sort $ map swap $ M.toList $ field cfg
+		, concatMap (\u -> lcom $ showdefaults u) $ missing field
+		]
 
-		line setting u value =
-			[ com $ "(for " ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
-			, unwords [setting, fromUUID u, "=", value]
-			]
-		lcom = map (\l -> if "#" `isPrefixOf` l then l else "#" ++ l)
-		missing field = S.toList $ M.keysSet descs `S.difference` M.keysSet (field cfg)
+	line setting u value =
+		[ com $ "(for " ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
+		, unwords [setting, fromUUID u, "=", value]
+		]
+	lcom = map (\l -> if "#" `isPrefixOf` l then l else "#" ++ l)
+	missing field = S.toList $ M.keysSet descs `S.difference` M.keysSet (field cfg)
 
 {- If there's a parse error, returns a new version of the file,
  - with the problem lines noted. -}
 parseCfg :: Cfg -> String -> Either String Cfg
 parseCfg curcfg = go [] curcfg . lines
-	where
-		go c cfg []
-			| null (catMaybes $ map fst c) = Right cfg
-			| otherwise = Left $ unlines $
-				badheader ++ concatMap showerr (reverse c)
-		go c cfg (l:ls) = case parse (dropWhile isSpace l) cfg of
-			Left msg -> go ((Just msg, l):c) cfg ls
-			Right cfg' -> go ((Nothing, l):c) cfg' ls
+  where
+	go c cfg []
+		| null (catMaybes $ map fst c) = Right cfg
+		| otherwise = Left $ unlines $
+			badheader ++ concatMap showerr (reverse c)
+	go c cfg (l:ls) = case parse (dropWhile isSpace l) cfg of
+		Left msg -> go ((Just msg, l):c) cfg ls
+		Right cfg' -> go ((Nothing, l):c) cfg' ls
 
-		parse l cfg
-			| null l = Right cfg
-			| "#" `isPrefixOf` l = Right cfg
-			| null setting || null u = Left "missing repository uuid"
-			| otherwise = handle cfg (toUUID u) setting value'
-			where
-				(setting, rest) = separate isSpace l
-				(r, value) = separate (== '=') rest
-				value' = trimspace value
-				u = reverse $ trimspace $
-					reverse $ trimspace r
-				trimspace = dropWhile isSpace
+	parse l cfg
+		| null l = Right cfg
+		| "#" `isPrefixOf` l = Right cfg
+		| null setting || null u = Left "missing repository uuid"
+		| otherwise = handle cfg (toUUID u) setting value'
+	  where
+		(setting, rest) = separate isSpace l
+		(r, value) = separate (== '=') rest
+		value' = trimspace value
+		u = reverse $ trimspace $ reverse $ trimspace r
+		trimspace = dropWhile isSpace
 
-		handle cfg u setting value
-			| setting == "trust" = case readTrustLevel value of
-				Nothing -> badval "trust value" value
-				Just t ->
-					let m = M.insert u t (cfgTrustMap cfg)
-					in Right $ cfg { cfgTrustMap = m }
-			| setting == "group" =
-				let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
-				in Right $ cfg { cfgGroupMap = m }
-			| setting == "preferred-content" = 
-				case checkPreferredContentExpression value of
-					Just e -> Left e
-					Nothing ->
-						let m = M.insert u value (cfgPreferredContentMap cfg)
-						in Right $ cfg { cfgPreferredContentMap = m }
-			| otherwise = badval "setting" setting
+	handle cfg u setting value
+		| setting == "trust" = case readTrustLevel value of
+			Nothing -> badval "trust value" value
+			Just t ->
+				let m = M.insert u t (cfgTrustMap cfg)
+				in Right $ cfg { cfgTrustMap = m }
+		| setting == "group" =
+			let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
+			in Right $ cfg { cfgGroupMap = m }
+		| setting == "preferred-content" = 
+			case checkPreferredContentExpression value of
+				Just e -> Left e
+				Nothing ->
+					let m = M.insert u value (cfgPreferredContentMap cfg)
+					in Right $ cfg { cfgPreferredContentMap = m }
+		| otherwise = badval "setting" setting
 
-		showerr (Just msg, l) = [parseerr ++ msg, l]
-		showerr (Nothing, l)
-			-- filter out the header and parse error lines
-			-- from any previous parse failure
-			| any (`isPrefixOf` l) (parseerr:badheader) = []
-			| otherwise = [l]
+	showerr (Just msg, l) = [parseerr ++ msg, l]
+	showerr (Nothing, l)
+		-- filter out the header and parse error lines
+		-- from any previous parse failure
+		| any (`isPrefixOf` l) (parseerr:badheader) = []
+		| otherwise = [l]
 
-		badval desc val = Left $ "unknown " ++ desc ++ " \"" ++ val ++ "\""
-		badheader = 
-			[ com "There was a problem parsing your input."
-			, com "Search for \"Parse error\" to find the bad lines."
-			, com "Either fix the bad lines, or delete them (to discard your changes)."
-			]
-		parseerr = com "Parse error in next line: "
+	badval desc val = Left $ "unknown " ++ desc ++ " \"" ++ val ++ "\""
+	badheader = 
+		[ com "There was a problem parsing your input."
+		, com "Search for \"Parse error\" to find the bad lines."
+		, com "Either fix the bad lines, or delete them (to discard your changes)."
+		]
+	parseerr = com "Parse error in next line: "
 
 com :: String -> String
 com s = "# " ++ s

@@ -29,13 +29,13 @@ start = startUnused "dropunused" perform (performOther gitAnnexBadLocation) (per
 
 perform :: Key -> CommandPerform
 perform key = maybe droplocal dropremote =<< Remote.byName =<< from
-	where
-		dropremote r = do
-			showAction $ "from " ++ Remote.name r
-			ok <- Remote.removeKey r key
-			next $ Command.Drop.cleanupRemote key r ok
-		droplocal = Command.Drop.performLocal key (Just 0) -- force drop
-		from = Annex.getField $ Option.name Command.Drop.fromOption
+  where
+	dropremote r = do
+		showAction $ "from " ++ Remote.name r
+		ok <- Remote.removeKey r key
+		next $ Command.Drop.cleanupRemote key r ok
+	droplocal = Command.Drop.performLocal key (Just 0) -- force drop
+	from = Annex.getField $ Option.name Command.Drop.fromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
