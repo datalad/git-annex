@@ -124,7 +124,6 @@ cmds = concat
 #ifdef WITH_ASSISTANT
 	, Command.Watch.def
 	, Command.Assistant.def
-	, Command.XMPPGit.def
 #ifdef WITH_WEBAPP
 	, Command.WebApp.def
 #endif

@@ -12,10 +12,8 @@ module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
 import Assistant.WebApp
-import Assistant.WebApp.Configurators
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
-import Assistant.WebApp.Configurators.XMPP
 import Assistant.Types.Buddies
 import Utility.Yesod
 #ifdef WITH_PAIRING
@@ -37,6 +35,8 @@ import Assistant.XMPP.Git
 import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
+import Assistant.WebApp.Configurators
+import Assistant.WebApp.Configurators.XMPP
 #endif
 import Utility.UserInfo
 import Git
@@ -286,10 +286,6 @@ sampleQuote = T.unwords
 
 #else
 
-noPairing :: Text -> Handler RepHtml
-noPairing pairingtype = pairPage $
-	$(widgetFile "configurators/pairing/disabled")
-
 #endif
 
 pairPage :: Widget -> Handler RepHtml
@@ -297,3 +293,7 @@ pairPage w = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Pairing"
 	w
+
+noPairing :: Text -> Handler RepHtml
+noPairing pairingtype = pairPage $
+	$(widgetFile "configurators/pairing/disabled")

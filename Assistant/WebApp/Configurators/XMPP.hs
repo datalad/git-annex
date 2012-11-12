@@ -14,16 +14,16 @@ import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.SideBar
-import Assistant.Types.Buddies
-import Assistant.Alert
-import Assistant.DaemonStatus
 import Utility.Yesod
 import Utility.NotificationBroadcaster
-import Assistant.Common
 #ifdef WITH_XMPP
+import Assistant.Common
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
+import Assistant.Types.Buddies
 import Assistant.NetMessager
+import Assistant.Alert
+import Assistant.DaemonStatus
 import Utility.SRV
 #endif
 
@@ -37,6 +37,7 @@ import qualified Data.Text as T
 
 {- Displays an alert suggesting to configure XMPP, with a button. -}
 xmppNeeded :: Handler ()
+#ifdef WITH_XMPP
 xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
 	urlrender <- getUrlRender
 	void $ liftAssistant $ do
@@ -46,6 +47,9 @@ xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
 			, buttonUrl = urlrender XMPPR
 			, buttonAction = Just close
 			}
+#else
+xmppNeeded = return ()
+#endif
 
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP
@@ -104,10 +108,8 @@ buddyListDisplay = do
 		let pairedwith = catMaybes $ map (parseJID . getXMPPClientID) rs
 		catMaybes . map (buddySummary pairedwith)
 			<$> (getBuddyList <<~ buddyList)
-#else
-	let buddies = []
-#endif
 	$(widgetFile "configurators/xmpp/buddylist")
+#endif
   where
 	ident = "buddylist"
 
