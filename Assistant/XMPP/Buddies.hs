@@ -23,6 +23,10 @@ genBuddyKey j = BuddyKey $ formatJID $ baseJID j
 buddyName :: JID -> Text
 buddyName j = maybe (T.pack "") strNode (jidNode j)
 
+ucFirst :: Text -> Text
+ucFirst s = let (first, rest) = T.splitAt 1 s
+	in T.concat [T.toUpper first, rest]
+
 {- Summary of info about a buddy.
  -
  - If the buddy has no clients at all anymore, returns Nothing. -}
