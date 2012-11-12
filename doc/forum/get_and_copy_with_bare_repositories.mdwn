@@ -1,0 +1,7 @@
+is `git annex get` and `git annex copy --to somewhere` expected to work with bare repos? the [[bare repositories]] page doesn't indicate otherwise, but a `git annex get` does plain nothing in my setup.
+
+if it's supposed not to work, there should be an error message saying that and an indication on the [[bare repositories]], otherwise, how can i trace it down?
+
+in case it is just unimplemented for lack of use cases: my setup consists of several laptops using parts of a 200gb+ photo collection, a central trusted server that should host everything, and an external encrypted remote backup. clients *should* copy everything they add to both central locations, but i'd prefer the trusted server to sync the two of them too.
+
+`get` and `copy` usually operate on the current directory, which in case of a bare repo does not contain any relevant files, but i tried explicitly specifying files too. `git annex` should either look them up in master, or always operate on all files (as indexed in the `git-annex` branch) unconditionally.
