@@ -1,12 +1,13 @@
 git-annex (3.20121018) UNRELEASED; urgency=low
 
-  * assistant: Can use XMPP to notify other nodes about pushes, as well
-    as pushing to them over XMPP.
-  * webapp: Now supports pairing over XMPP.
-  * assistant: Now drops non-preferred content.
-  * assistant: Now notices, and applies config changes 
-    as they are made to the git-annex branch, including config changes
-    pushed in from remotes.
+  * assistant: Can use XMPP to notify other nodes about pushes made to other
+    repositories, as well as pushing to them directly over XMPP.
+  * wepapp: Added an XMPP configuration interface.
+  * webapp: Supports pairing over XMPP, with both friends, and other repos
+    using the same account.
+  * assistant: Drops non-preferred content when possible.
+  * assistant: Notices, and applies config changes as they are made to
+    the git-annex branch, including config changes pushed in from remotes.
   * git-annex-shell: GIT_ANNEX_SHELL_DIRECTORY can be set to limit it
     to operating on a specified directory.
   * webapp: When setting up authorized_keys, use GIT_ANNEX_SHELL_DIRECTORY.
