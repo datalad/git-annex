@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5vDem1yeIu6uith5pxfb4mdKdIWVJpCs"
+ nickname="Louis"
+ subject="Base64 vs. yEnc"
+ date="2012-11-12T02:02:17Z"
+ content="""
+Would yEnc be a suitable alternative to base64 for encoding the binary transfers over XMPP?  Or why not?
+
+Thanks!
+"""]]
