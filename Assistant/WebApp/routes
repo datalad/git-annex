@@ -31,6 +31,7 @@
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET
 /config/repository/pair/xmpp/start StartXMPPPairR GET
 /config/repository/pair/xmpp/running/#BuddyKey RunningXMPPPairR GET
+/config/repository/pair/xmpp/accept/#PairKey ConfirmXMPPPairR GET
 /config/repository/pair/xmpp/finish/#PairKey FinishXMPPPairR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET

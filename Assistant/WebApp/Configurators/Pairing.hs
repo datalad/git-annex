@@ -128,6 +128,17 @@ getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 getFinishLocalPairR _ = noLocalPairing
 #endif
 
+getConfirmXMPPPairR :: PairKey -> Handler RepHtml
+#ifdef WITH_XMPP
+getConfirmXMPPPairR pairkey@(PairKey _ t) = case parseJID t of
+	Nothing -> error "bad JID"
+	Just theirjid -> pairPage $ do
+		let name = buddyName theirjid
+		$(widgetFile "configurators/pairing/xmpp/confirm")
+#else
+getConfirmXMPPPairR _ = noXMPPPairing
+#endif
+
 getFinishXMPPPairR :: PairKey -> Handler RepHtml
 #ifdef WITH_XMPP
 getFinishXMPPPairR (PairKey theiruuid t) = case parseJID t of
@@ -140,7 +151,7 @@ getFinishXMPPPairR (PairKey theiruuid t) = case parseJID t of
 			finishXMPPPairing theirjid theiruuid
 		xmppPairEnd False $ Just theirjid
 #else
-getFinishXMPPPairR _ _ = noXMPPPairing
+getFinishXMPPPairR _ = noXMPPPairing
 #endif
 
 #ifdef WITH_XMPP

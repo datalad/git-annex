@@ -7,8 +7,8 @@
       two git annex repositories will be combined into one, with changes #
       kept in sync between them.
     $else
-      Pairing with #{username}@#{hostname} will combine the two git annex #
-      repositories into one, with changes kept in sync between them.
+      Pairing with #{username}@#{hostname} will combine your two git annex #
+      repositories into one, allowing you to share files.
   <p>
     $if start
       For security, enter a secret phrase. This same secret phrase will #

@@ -9,6 +9,8 @@
       $nothing
         A pair request has been sent to all other devices using your jabber #
         account.
+ $else
+   Pair request accepted.
  <h2>
    Configure a shared cloud repository
   $maybe name <- friend
