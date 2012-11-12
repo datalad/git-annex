@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="comment 5"
+ date="2012-11-12T12:50:26Z"
+ content="""
+To quote the website (emphasis mine):
+> PGM is appropriate for applications that require duplicate-free multicast data delivery from multiple sources to multiple receivers. *PGM does not support acknowledged delivery, nor does it guarantee ordering of packets from multiple senders.*
+"""]]
