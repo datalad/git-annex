@@ -1,4 +1,4 @@
-## version 3.20121012
+## version 3.20121112
 
 This is a major upgrade of the git-annex assistant, which is still in beta.
 
