@@ -1,0 +1,48 @@
+git-annex 3.20121112 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * assistant: Can use XMPP to notify other nodes about pushes made to other
+     repositories, as well as pushing to them directly over XMPP.
+   * wepapp: Added an XMPP configuration interface.
+   * webapp: Supports pairing over XMPP, with both friends, and other repos
+     using the same account.
+   * assistant: Drops non-preferred content when possible.
+   * assistant: Notices, and applies config changes as they are made to
+     the git-annex branch, including config changes pushed in from remotes.
+   * git-annex-shell: GIT\_ANNEX\_SHELL\_DIRECTORY can be set to limit it
+     to operating on a specified directory.
+   * webapp: When setting up authorized\_keys, use GIT\_ANNEX\_SHELL\_DIRECTORY.
+   * Preferred content path matching bugfix.
+   * Preferred content expressions cannot use "in=".
+   * Preferred content expressions can use "present".
+   * Fix handling of GIT\_DIR when it refers to a git submodule.
+   * Depend on and use the Haskell SafeSemaphore library, which provides
+     exception-safe versions of SampleVar and QSemN.
+     Thanks, Ben Gamari for an excellent patch set.
+   * file:/// URLs can now be used with the web special remote.
+   * webapp: Allow dashes in ssh key comments when pairing.
+   * uninit: Check and abort if there are symlinks to annexed content that
+     are not checked into git.
+   * webapp: Switched to using the same multicast IP address that avahi uses.
+   * bup: Don't pass - to bup-split to make it read stdin; bup 0.25
+     does not accept that.
+   * bugfix: Don't fail transferring content from read-only repos.
+     Closes: #[691341](http://bugs.debian.org/691341)
+   * configure: Check that checksum programs produce correct checksums.
+   * Re-enable dbus, using a new version of the library that fixes the memory
+     leak.
+   * NetWatcher: When dbus connection is lost, try to reconnect.
+   * Use USER and HOME environment when set, and only fall back to getpwent,
+     which doesn't work with LDAP or NIS.
+   * rsync special remote: Include annex-rsync-options when running rsync
+     to test a key's presence.
+   * The standalone tarball's runshell now takes care of installing a
+     ~/.ssh/git-annex-shell wrapper the first time it's run.
+   * webapp: Make an initial, empty commit so there is a master branch
+   * assistant: Fix syncing local drives.
+   * webapp: Fix creation of rsync.net repositories.
+   * webapp: Fix renaming of special remotes.
+   * webapp: Generate better git remote names.
+   * webapp: Ensure that rsync special remotes are enabled using the same
+     name they were originally created using.
+   * Bugfix: Fix hang in webapp when setting up a ssh remote with an absolute
+     path."""]]
