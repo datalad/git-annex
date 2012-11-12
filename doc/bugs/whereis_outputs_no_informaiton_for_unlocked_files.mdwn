@@ -1,0 +1,44 @@
+What steps will reproduce the problem?
+
+    ...:/tmp$ mkdir repro
+    ...:/tmp$ cd repro/
+    ...:/tmp/repro$ git init
+    Initialized empty Git repository in /tmp/repro/.git/
+    ...:/tmp/repro$ git annex init test
+    init test ok
+    ...:/tmp/repro$ echo "A" > a.txt
+    ...:/tmp/repro$ git annex add a.txt
+    add a.txt (checksum...) ok
+    (Recording state in git...)
+    ...:/tmp/repro$ git commit -m "add file"
+    [master (root-commit) bf53ce2] add file
+     1 file changed, 1 insertion(+)
+     create mode 120000 a.txt
+    ...:/tmp/repro$ git annex whereis a.txt
+    whereis a.txt (1 copy) 
+      	5c028c6a-2c5e-11e2-bb9c-17bd7ce81377 -- here (test)
+    ok
+    ...:/tmp/repro$ git annex unlock a.txt
+    unlock a.txt (copying...) ok
+    ...:/tmp/repro$ git annex whereis a.txt
+
+What is the expected output? What do you see instead?
+
+    I'd expect that whereis executed on an unlocked file would behave like whereis executed on a locked file.
+
+What version of git-annex are you using? On what operating system?
+
+    $ cat /etc/issue
+    Ubuntu 12.04.1 LTS \n \l
+
+    $ git-annex version
+    git-annex version: 3.20120406
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+    $ uname -a
+    Linux ... 3.2.0-31-generic #50-Ubuntu SMP Fri Sep 7 16:16:45 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+
+Please provide any additional information below.
