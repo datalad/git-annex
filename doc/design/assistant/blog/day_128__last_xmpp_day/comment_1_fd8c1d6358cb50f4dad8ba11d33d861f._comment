@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqVi9eQjkZt8EC-byTXJ8TnY7VyOHzW2s"
+ nickname="Zahary"
+ subject="Pairing on the local network"
+ date="2012-11-12T11:39:17Z"
+ content="""
+Joey, How does pairing on the local network work btw?
+Now that you have experience intercepting and relaying the git pack output maybe you can use UDP broadcast on the local network for a truly fast sync.
+With dropbox, I'm often syncing working copies of software projects between several VMs so I can test the code on all platforms before committing. I've found that to be faster (for builds) then using a VM shared folders, network shares, etc.
+"""]]
