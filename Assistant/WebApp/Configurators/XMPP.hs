@@ -33,6 +33,7 @@ import Network
 import Network.Protocol.XMPP
 import Data.Text (Text)
 import qualified Data.Text as T
+import Control.Exception (SomeException)
 #endif
 
 {- Displays an alert suggesting to configure XMPP, with a button. -}
@@ -78,9 +79,9 @@ getXMPPR' redirto = xmppPage $ do
 		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/xmpp")
 	case result of
-		FormSuccess f -> maybe (showform True) (lift . storecreds)
+		FormSuccess f -> either (showform . Just . show) (lift . storecreds)
 			=<< liftIO (validateForm f)
-		_ -> showform False
+		_ -> showform Nothing
   where
 	storecreds creds = do
 		void $ runAnnex undefined $ setXMPPCreds creds
@@ -133,7 +134,7 @@ jidField = checkBool (isJust . parseJID) bad textField
 	bad :: Text
 	bad = "This should look like an email address.."
 
-validateForm :: XMPPForm -> IO (Maybe XMPPCreds)
+validateForm :: XMPPForm -> IO (Either SomeException XMPPCreds)
 validateForm f = do
 	let jid = fromMaybe (error "bad JID") $ parseJID (formJID f)
 	let domain = T.unpack $ strDomain $ jidDomain jid
@@ -155,10 +156,9 @@ validateForm f = do
 			, xmppJID = formJID f
 			}
 
-testXMPP :: XMPPCreds -> IO (Maybe XMPPCreds)
-testXMPP creds = either (const $ return Nothing)
-	(const $ return $ Just creds)
-	=<< connectXMPP creds (const noop)
+testXMPP :: XMPPCreds -> IO (Either SomeException XMPPCreds)
+testXMPP creds = either Left (const $ Right creds)
+	<$> connectXMPP creds (const noop)
 
 #endif
 
