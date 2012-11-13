@@ -16,3 +16,5 @@ Please provide any additional information below.
 
 I use it heavily on 4 machines since a month and I really like it.
 
+> closing since this is a cabal library problem, and not something that
+> can be fixed by any change to git-annex. [[done]] --[[Joey]] 
