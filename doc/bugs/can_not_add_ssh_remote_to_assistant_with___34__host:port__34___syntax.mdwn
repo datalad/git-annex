@@ -25,3 +25,4 @@ Thanks for a nice program and all your work on debian!
 this is not really a bug more of a wishlist feature.
 
 
+[[!tag /design/assistant]]
