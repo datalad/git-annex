@@ -1,6 +1,7 @@
 git-annex (3.20121113) UNRELEASED; urgency=low
 
   * Show error message to user when testing XMPP creds.
+  * Fix build of assistant without yesod.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

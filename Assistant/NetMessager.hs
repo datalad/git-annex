@@ -9,7 +9,6 @@ module Assistant.NetMessager where
 
 import Assistant.Common
 import Assistant.Types.NetMessager
-import qualified Types.Remote as Remote
 import qualified Git
 
 import Control.Concurrent
@@ -17,7 +16,6 @@ import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Control.Exception as E
 import qualified Data.Set as S
-import qualified Data.Text as T
 
 sendNetMessage :: NetMessage -> Assistant ()
 sendNetMessage m = 
@@ -95,3 +93,4 @@ queueNetPushMessage _ = return False
 waitNetPushMessage :: PushSide -> Assistant (NetMessage)
 waitNetPushMessage side = (atomically . readTChan)
 	<<~ (getSide side . netMessagesPush . netMessager)
+
