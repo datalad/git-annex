@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="git-annex not runnable on OSX 10.8"
+ date="2012-11-13T14:42:32Z"
+ content="""
+Trying to run this release on OSX results in an error message:
+
+>  \"git-annex\" can't be opened because it is from an unidentified developer.
+>
+> Your security preferences allow installation of only
+> apps from the Mac App Store and identified
+> developers.
+"""]]
