@@ -1,7 +1,5 @@
 <div .span9>
-  <h2>
-    Your repositories
-  ^{repoTable repolist}
+  ^{repolist}
   <div .row-fluid>
     <div .span6>
       <h2>

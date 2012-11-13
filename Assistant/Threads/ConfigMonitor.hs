@@ -72,8 +72,9 @@ reloadConfigs changedconfigs = do
 		sequence_ as
 		void preferredContentMapLoad
 	{- Changes to the remote log, or the trust log, can affect the
-	 - syncRemotes list -}
-	when (Logs.Remote.remoteLog `elem` fs || Logs.Trust.trustLog `elem` fs) $
+	 - syncRemotes list. Changes to the uuid log may affect its
+	 - display so are also included. -}
+	when (any (`elem` fs) [remoteLog, trustLog, uuidLog]) $
 		updateSyncRemotes
   where
 	(fs, as) = unzip $ filter (flip S.member changedfiles . fst)

@@ -47,6 +47,9 @@
 /buddylist/#NotificationId BuddyListR GET
 /notifier/buddylist NotifierBuddyListR GET
 
+/repolist/#RepoListNotificationId RepoListR GET
+/notifier/repolist/#RepoSelector NotifierRepoListR GET
+
 /alert/close/#AlertId CloseAlert GET
 /alert/click/#AlertId ClickAlert GET
 /filebrowser FileBrowserR GET POST

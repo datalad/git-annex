@@ -97,7 +97,7 @@ getBuddyListR :: NotificationId -> Handler RepHtml
 getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
-	page <- widgetToPageContent $ buddyListDisplay
+	page <- widgetToPageContent buddyListDisplay
 	hamletToRepHtml $ [hamlet|^{pageBody page}|]
 
 buddyListDisplay :: Widget

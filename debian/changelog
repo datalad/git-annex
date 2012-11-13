@@ -2,6 +2,9 @@ git-annex (3.20121113) UNRELEASED; urgency=low
 
   * Show error message to user when testing XMPP creds.
   * Fix build of assistant without yesod.
+  * webapp: The list of repositiories refreshes when new repositories are
+    added, including when new repository configurations are pushed in from
+    remotes.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

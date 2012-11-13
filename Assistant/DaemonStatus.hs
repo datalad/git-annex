@@ -44,6 +44,7 @@ modifyDaemonStatus a = do
 		sendNotification $ changeNotifier s
 		return b
 
+
 {- Returns a function that updates the lists of syncable remotes. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
@@ -60,7 +61,9 @@ calcSyncRemotes = do
 
 {- Updates the sycRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()
-updateSyncRemotes = modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
+updateSyncRemotes = do
+	modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
+	liftIO . sendNotification =<< syncRemotesNotifier <$> getDaemonStatus
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}

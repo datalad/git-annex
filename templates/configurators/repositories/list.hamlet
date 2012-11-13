@@ -1,0 +1,36 @@
+<div ##{ident}>
+  $if onlyCloud reposelector
+    $if not (null repolist)
+      <h2>
+        Cloud repositories
+    $else
+      No cloud repositories are configured yet.
+  $else
+    $if not (null repolist)
+      <h2>
+        Repositories
+  <table .table .table-condensed>
+    <tbody>
+      $forall (num, name, actions) <- repolist
+        <tr>
+          <td>
+            #{num}
+          <td>
+            #{name}
+          <td>
+            $if needsEnabled actions
+              <a href="@{setupRepoLink actions}">
+                <i .icon-warning-sign></i> not enabled
+            $else
+              <a href="@{syncToggleLink actions}">
+                $if notSyncing actions
+                  <i .icon-pause></i> syncing paused
+                $else
+                  <i .icon-refresh></i> syncing enabled
+          <td>
+            $if needsEnabled actions
+              <a href="@{setupRepoLink actions}">
+                enable
+            $else
+              <a href="@{setupRepoLink actions}">
+                configure

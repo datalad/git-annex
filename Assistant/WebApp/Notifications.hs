@@ -62,6 +62,11 @@ getNotifierSideBarR = notifierUrl SideBarR getAlertBroadcaster
 getNotifierBuddyListR :: Handler RepPlain
 getNotifierBuddyListR = notifierUrl BuddyListR getBuddyListBroadcaster
 
+getNotifierRepoListR :: RepoSelector -> Handler RepPlain
+getNotifierRepoListR reposelector = notifierUrl route getRepoListBroadcaster
+  where
+	route nid = RepoListR $ RepoListNotificationId nid reposelector
+
 getTransferBroadcaster :: Assistant NotificationBroadcaster
 getTransferBroadcaster = transferNotifier <$> getDaemonStatus
 
@@ -70,3 +75,6 @@ getAlertBroadcaster = alertNotifier <$> getDaemonStatus
 
 getBuddyListBroadcaster :: Assistant NotificationBroadcaster
 getBuddyListBroadcaster =  getBuddyBroadcaster <$> getAssistant buddyList
+
+getRepoListBroadcaster :: Assistant NotificationBroadcaster
+getRepoListBroadcaster =  syncRemotesNotifier <$> getDaemonStatus

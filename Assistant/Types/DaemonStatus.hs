@@ -47,6 +47,8 @@ data DaemonStatus = DaemonStatus
 	, transferNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when there's a change to the alerts
 	, alertNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the syncRemotes change
+	, syncRemotesNotifier :: NotificationBroadcaster
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
@@ -67,6 +69,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure []
 	<*> pure Nothing
+	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster

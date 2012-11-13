@@ -62,6 +62,16 @@ data WebAppState = WebAppState
 	, otherRepos :: [(String, String)] -- name and path to other repos
 	}
 
+data RepoSelector = RepoSelector
+	{ onlyCloud :: Bool
+	, onlyConfigured :: Bool
+	, includeHere :: Bool
+	}
+	deriving (Read, Show, Eq)
+
+data RepoListNotificationId = RepoListNotificationId NotificationId RepoSelector
+	deriving (Read, Show, Eq)
+
 instance PathPiece SshData where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack
@@ -95,5 +105,13 @@ instance PathPiece BuddyKey where
     fromPathPiece = readish . unpack
 
 instance PathPiece PairKey where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece RepoListNotificationId where
+    toPathPiece = pack . show
+    fromPathPiece = readish . unpack
+
+instance PathPiece RepoSelector where
     toPathPiece = pack . show
     fromPathPiece = readish . unpack

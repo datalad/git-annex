@@ -158,7 +158,11 @@ getFinishXMPPPairR _ = noXMPPPairing
 xmppPairEnd :: Bool -> Maybe JID -> Handler RepHtml
 xmppPairEnd inprogress theirjid = pairPage $ do
 	let friend = buddyName <$> theirjid
-	cloudrepolist <- lift $ repoList True False False
+	let cloudrepolist = repoListDisplay $ RepoSelector
+		{ onlyCloud = True
+		, onlyConfigured = False
+		, includeHere = False
+		}
 	$(widgetFile "configurators/pairing/xmpp/end")
 #endif
 

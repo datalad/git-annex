@@ -14,6 +14,7 @@ import Assistant.DaemonStatus
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
+import Assistant.WebApp.Notifications
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
 import Utility.Yesod
@@ -51,7 +52,11 @@ getConfigR = ifM (inFirstRun)
 introDisplay :: Text -> Widget
 introDisplay ident = do
 	webapp <- lift getYesod
-	repolist <- lift $ repoList False True False
+	repolist <- lift $ repoList $ RepoSelector
+		{ onlyCloud = False
+		, onlyConfigured = True
+		, includeHere = False
+		}
 	let n = length repolist
 	let numrepos = show n
 	$(widgetFile "configurators/intro")
@@ -68,7 +73,11 @@ getRepositoriesR :: Handler RepHtml
 getRepositoriesR = bootstrap (Just Config) $ do
 	sideBarDisplay
 	setTitle "Repositories"
-	repolist <- lift $ repoList False False True
+	let repolist = repoListDisplay $ RepoSelector
+		{ onlyCloud = False
+		, onlyConfigured = False
+		, includeHere = True
+		}
 	$(widgetFile "configurators/repositories")
 
 data Actions
@@ -103,16 +112,35 @@ notSyncing :: Actions -> Bool
 notSyncing (SyncingRepoActions _ _) = False
 notSyncing _ = True
 
-repoTable :: RepoList -> Widget
-repoTable repolist = $(widgetFile "configurators/repositories/table")
+{- Called by client to get a list of repos, that refreshes
+ - when new repos as added.
+ -
+ - Returns a div, which will be inserted into the calling page.
+ -}
+getRepoListR :: RepoListNotificationId -> Handler RepHtml
+getRepoListR (RepoListNotificationId nid reposelector) = do
+	waitNotifier getRepoListBroadcaster nid
+	page <- widgetToPageContent $ repoListDisplay reposelector
+	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+
+repoListDisplay :: RepoSelector -> Widget
+repoListDisplay reposelector = do
+	autoUpdate ident (NotifierRepoListR reposelector) (10 :: Int) (10 :: Int)
+
+	repolist <- lift $ repoList reposelector
+
+	$(widgetFile "configurators/repositories/list")
+
+  where
+	ident = "repolist"
 
 type RepoList = [(String, String, Actions)]
 
 {- A numbered list of known repositories,
  - with actions that can be taken on them. -}
-repoList :: Bool -> Bool -> Bool -> Handler RepoList
-repoList onlycloud onlyconfigured includehere
-	| onlyconfigured = list =<< configured
+repoList :: RepoSelector -> Handler RepoList
+repoList reposelector
+	| onlyConfigured reposelector = list =<< configured
 	| otherwise = list =<< (++) <$> configured <*> rest
   where
 	configured = do
@@ -121,7 +149,7 @@ repoList onlycloud onlyconfigured includehere
 		runAnnex [] $ do
 			u <- getUUID
 			let l = map Remote.uuid rs
-			let l' = if includehere then u : l else l
+			let l' = if includeHere reposelector then u : l else l
 			return $ zip l' $ map mkSyncingRepoActions l'
 	rest = runAnnex [] $ do
 		m <- readRemoteLog
@@ -134,11 +162,11 @@ repoList onlycloud onlyconfigured includehere
 		return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
 	wantedrepo r
 		| Remote.readonly r = False
-		| onlycloud = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
+		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
 		| otherwise = True
 	wantedremote Nothing = False
 	wantedremote (Just (iscloud, _))
-		| onlycloud = iscloud
+		| onlyCloud reposelector = iscloud
 		| otherwise = True
 	findinfo m u = case M.lookup u m of
 		Nothing -> Nothing
