@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 3"
+ date="2012-11-13T17:54:30Z"
+ content="""
+Hmm, the current version of certificate is 1.3.1, and I installed it without trouble just now. I don't know why cabal is installing a much older version there.
+
+In any case, this is not a bug in git annex, but some problem with the library that a library it uses depends on. You can use the pre-built standalone binary until cabal sorts itself out, I suppose.
+"""]]
