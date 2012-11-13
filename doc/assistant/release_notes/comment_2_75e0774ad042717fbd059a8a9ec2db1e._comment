@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="git-annex not runnable on OSX 10.8"
+ date="2012-11-13T14:49:35Z"
+ content="""
+After telling Gatekeeper that I really want to run git-annex it still fails:
+
+[fog;~]-131> open Applications/git-annex.app 
+LSOpenURLsWithRole() failed with error -10810 for the file /Users/wichert/Applications/git-annex.app.
+
+"""]]
