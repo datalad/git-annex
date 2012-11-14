@@ -13,8 +13,9 @@ There's probably a 1:1 mapping between this special md5 encoding an a regular md
 <pre>
 import Locations
 import Types.Key
+import Utility.Misc
 
-main = interact $ \s -> case file2key s of
+main = interact $ \s -> case file2key $ firstLine s of
         Nothing -> \"bad key\"
         Just k -> hashDirMixed k ++ \" \" ++ hashDirLower k ++ \"\n\"
 </pre>
@@ -22,6 +23,6 @@ main = interact $ \s -> case file2key s of
 <pre>
 joey@gnu:~/src/git-annex>ghc --make convert.hs
 joey@gnu:~/src/git-annex>echo WORM--foo | ./ convert
-gw/Vx/ 91d/46e/
+jq/8w/ 2b1/ba3/
 </pre>
 """]]
