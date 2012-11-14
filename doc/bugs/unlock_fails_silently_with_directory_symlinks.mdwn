@@ -1,0 +1,34 @@
+What steps will reproduce the problem?
+
++    ```~/``` is tracked by git and git annex
++    ```~/text/books/foo``` is annexed
++    ```~/books``` is a symlink to ```text/books```
++    from ```~/``` execute: ```git annex unlock books/foo```
++    which returns immediately with zero exit code and does not unlock foo.
+
+What is the expected output? What do you see instead?
+
++    I expect ```~/text/books/foo`` to be unlocked
+
++    I think ```git annex unlock``` should resolve the symlinks and realize that this is a tracked file.
+
++    Also, I think ```git annex unlock``` should emit an error message if a file explicitly addressed on the commandline can not be acted upon.
+
+What version of git-annex are you using? On what operating system?
+
++    3.20121112 in debian unstable
+
+Please provide any additional information below.
+
++    I can unlock foo if I provide the full path, eg:
+from ```~/``` execute: ```git annex unlock text/books/foo```
+
++    Interestingly, the following _does_ successfully unlock the file: ```cd ~/books && git annex unlock foo```
+
+     So it seems that symlinks in $PWD are being resolved, but not those in file paths passed as arguments.
+
+Thank you, thank you!
+
+      - Jason
+
+jason@jasonwoof.com
