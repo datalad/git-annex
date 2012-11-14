@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="comment 3"
+ date="2012-11-14T07:31:11Z"
+ content="""
+how about renaming the stored files, them? if you give me a pointer on how the directory names are generated, i can write a script that does the migration (some hash of the file name?). i suppose that's just a relic from another naming scheme, isn't it?
+"""]]
