@@ -8,8 +8,8 @@
 module Assistant.XMPP.Client where
 
 import Assistant.Common
-import Utility.FileMode
 import Utility.SRV
+import Creds
 
 import Network.Protocol.XMPP
 import Network
@@ -63,23 +63,12 @@ runClientError :: Server -> JID -> T.Text -> T.Text -> XMPP a -> IO a
 runClientError s j u p x = either (error . show) return =<< runClient s j u p x
 
 getXMPPCreds :: Annex (Maybe XMPPCreds)
-getXMPPCreds = do
-	f <- xmppCredsFile
-	s <- liftIO $ catchMaybeIO $ readFile f
-	return $ readish =<< s
+getXMPPCreds = parse <$> readCacheCreds xmppCredsFile
+  where
+	parse s = readish =<< s
 
 setXMPPCreds :: XMPPCreds -> Annex ()
-setXMPPCreds creds = do
-	f <- xmppCredsFile
-	liftIO $ do
-		createDirectoryIfMissing True (parentDir f)
-		h <- openFile f WriteMode
-		modifyFileMode f $ removeModes
-			[groupReadMode, otherReadMode]
-		hPutStr h (show creds)
-		hClose h	
+setXMPPCreds creds = writeCacheCreds (show creds) xmppCredsFile
 
-xmppCredsFile :: Annex FilePath
-xmppCredsFile = do
-	dir <- fromRepo gitAnnexCredsDir
-	return $ dir </> "xmpp"
+xmppCredsFile :: FilePath
+xmppCredsFile = "xmpp"

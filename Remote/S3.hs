@@ -14,8 +14,6 @@ import Network.AWS.AWSResult
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Data.Char
-import System.Environment
-import System.Posix.Env (setEnv)
 
 import Common.Annex
 import Types.Remote
@@ -25,10 +23,8 @@ import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
+import Creds
 import Annex.Content
-import Utility.Base64
-import Annex.Perms
-import Utility.FileMode
 
 remote :: RemoteType
 remote = RemoteType {
@@ -87,7 +83,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
-		s3SetCreds fullconfig u
+		setRemoteCredPair fullconfig (s3Creds u)
 
 	defaulthost = do
 		c' <- encryptionSetup c
@@ -257,93 +253,28 @@ s3ConnectionRequired c u =
 	maybe (error "Cannot connect to S3") return =<< s3Connection c u
 
 s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
-s3Connection c u = do
-	creds <- s3GetCreds c u
-	case creds of
-		Just (ak, sk) -> return $ Just $ AWSConnection host port ak sk
-		_ -> do
-			warning $ "Set both " ++ s3AccessKey ++ " and " ++ s3SecretKey  ++ " to use S3"
-			return Nothing
+s3Connection c u = go =<< getRemoteCredPair c creds
   where
+	go Nothing = do
+		warning $ "Set both " ++ s3AccessKey ++ " and " ++ s3SecretKey  ++ " to use S3"
+		return Nothing
+	go (Just (ak, sk)) = return $ Just $ AWSConnection host port ak sk
+
+	creds = s3Creds u
+	(s3AccessKey, s3SecretKey) = credPairEnvironment creds
+
 	host = fromJust $ M.lookup "host" c
 	port = let s = fromJust $ M.lookup "port" c in
 		case reads s of
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
 
-{- S3 creds come from the environment if set, otherwise from the cache
- - in gitAnnexCredsDir, or failing that, might be stored encrypted in
- - the remote's config. -}
-s3GetCreds :: RemoteConfig -> UUID -> Annex (Maybe (String, String))
-s3GetCreds c u = maybe fromcache (return . Just) =<< liftIO getenv
-  where
-	getenv = liftM2 (,)
-		<$> get s3AccessKey
-		<*> get s3SecretKey
-	  where
-		get = catchMaybeIO . getEnv
-	fromcache = do
-		d <- fromRepo gitAnnexCredsDir
-		let f = d </> fromUUID u
-		v <- liftIO $ catchMaybeIO $ readFile f
-		case lines <$> v of
-			Just (ak:sk:[]) -> return $ Just (ak, sk)
-			_ -> fromconfig
-	fromconfig = do
-		mcipher <- remoteCipher c
-		case (M.lookup "s3creds" c, mcipher) of
-			(Just s3creds, Just cipher) -> do
-				creds <- liftIO $ decrypt s3creds cipher
-				case creds of
-					[ak, sk] -> do
-						s3CacheCreds (ak, sk) u
-						return $ Just (ak, sk)
-					_ -> do error "bad s3creds"		
-			_ -> return Nothing
-	decrypt s3creds cipher = lines 
-		<$> withDecryptedContent cipher
-			(return $ L.pack $ fromB64 s3creds)
-			(return . L.unpack)
+s3Creds :: UUID -> CredPairStorage
+s3Creds u = CredPairStorage
+	{ credPairFile = fromUUID u
+	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
+	, credPairRemoteKey = Just "s3creds"
+	}
 
-{- Stores S3 creds encrypted in the remote's config if possible to do so
- - securely, and otherwise locally in gitAnnexCredsDir. -}
-s3SetCreds :: RemoteConfig -> UUID -> Annex RemoteConfig
-s3SetCreds c u = do
-	creds <- s3GetCreds c u
-	case creds of
-		Just (ak, sk) -> do
-			mcipher <- remoteCipher c
-			case mcipher of
-				Just cipher | isTrustedCipher c -> do
-					s <- liftIO $ withEncryptedContent cipher
-						(return $ L.pack $ unlines [ak, sk])
-						(return . L.unpack)
-					return $ M.insert "s3creds" (toB64 s) c
-				_ -> do
-					s3CacheCreds (ak, sk) u
-					return c
-		_ -> return c
-
-{- The S3 creds are cached in gitAnnexCredsDir. -}
-s3CacheCreds :: (String, String) -> UUID -> Annex ()
-s3CacheCreds (ak, sk) u = do
-	d <- fromRepo gitAnnexCredsDir
-	createAnnexDirectory d
-	liftIO $ do
-		let f = d </> fromUUID u
-		h <- openFile f WriteMode
-		modifyFileMode f $ removeModes
-			[groupReadMode, otherReadMode]
-		hPutStr h $ unlines [ak, sk]
-		hClose h
-
-{- Sets the S3 creds in the environment. -}
 s3SetCredsEnv :: (String, String) -> IO ()
-s3SetCredsEnv (ak, sk) = do
-	setEnv s3AccessKey ak True
-	setEnv s3SecretKey sk True
-
-s3AccessKey :: String
-s3AccessKey = "AWS_ACCESS_KEY_ID"
-s3SecretKey :: String
-s3SecretKey = "AWS_SECRET_ACCESS_KEY"
+s3SetCredsEnv creds = setEnvCredPair creds $ s3Creds undefined
