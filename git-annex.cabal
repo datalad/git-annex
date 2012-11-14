@@ -57,7 +57,7 @@ Executable git-annex
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, async
+   SafeSemaphore
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
