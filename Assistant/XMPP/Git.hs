@@ -25,7 +25,6 @@ import qualified Git.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 import Utility.FileMode
-import Utility.ThreadScheduler
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -33,6 +32,7 @@ import System.Posix.Env
 import System.Posix.Types
 import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
+import System.Timeout
 import qualified Data.ByteString as B
 import qualified Data.Map as M
 
@@ -119,16 +119,16 @@ xmppPush cid gitpush = runPush SendPack cid handleDeferred $ do
 			then liftIO $ killThread =<< myThreadId
 			else sendNetMessage $ Pushing cid $ SendPackOutput b
 	fromxmpp outh controlh = forever $ do
-		m <- runTimeout xmppTimeout <~> waitNetPushMessage SendPack
+		m <- timeout xmppTimeout <~> waitNetPushMessage SendPack
 		case m of
-			(Right (Pushing _ (ReceivePackOutput b))) -> 
+			(Just (Pushing _ (ReceivePackOutput b))) -> 
 				liftIO $ writeChunk outh b
-			(Right (Pushing _ (ReceivePackDone exitcode))) ->
+			(Just (Pushing _ (ReceivePackDone exitcode))) ->
 				liftIO $ do
 					hPrint controlh exitcode
 					hFlush controlh
-			(Right _) -> noop
-			(Left _) -> do
+			(Just _) -> noop
+			Nothing -> do
 				debug ["timeout waiting for git receive-pack output via XMPP"]
 				-- Send a synthetic exit code to git-annex
 				-- xmppgit, which will exit and cause git push
@@ -220,12 +220,12 @@ xmppReceivePack cid = runPush ReceivePack cid handleDeferred $ do
 			sendNetMessage $ Pushing cid $ ReceivePackOutput b
 			relaytoxmpp outh
 	relayfromxmpp inh = forever $ do
-		m <- runTimeout xmppTimeout <~> waitNetPushMessage ReceivePack
+		m <- timeout xmppTimeout <~> waitNetPushMessage ReceivePack
 		case m of
-			(Right (Pushing _ (SendPackOutput b))) ->
+			(Just (Pushing _ (SendPackOutput b))) ->
 				liftIO $ writeChunk inh b
-			(Right _) -> noop
-			(Left _) -> do
+			(Just _) -> noop
+			Nothing -> do
 				debug ["timeout waiting for git send-pack output via XMPP"]
 				-- closing the handle will make
 				-- git receive-pack exit
@@ -291,5 +291,5 @@ chunkSize = 4096
  - delayed for running until the timeout is reached, so it should not be
  - excessive.
  -}
-xmppTimeout :: Seconds
-xmppTimeout = Seconds 120
+xmppTimeout :: Int
+xmppTimeout = 120000000 -- 120 seconds
