@@ -57,3 +57,6 @@ Command outputs (see, specifically, the output of status showing number of SHA25
             100 /var/lib/dpkg/status
          3.20120629 0
             650 http://ftp.us.debian.org/debian/ wheezy/main i386 Packages
+
+
+As Joey predicted, this took care of itself over time. Marking as [[bugs/done]].

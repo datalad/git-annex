@@ -5,6 +5,7 @@ git-annex (3.20121113) UNRELEASED; urgency=low
   * webapp: The list of repositiories refreshes when new repositories are
     added, including when new repository configurations are pushed in from
     remotes.
+  * OSX: Fix RunAtLoad value in plist file.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

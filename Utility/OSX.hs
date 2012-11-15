@@ -38,6 +38,7 @@ genOSXAutoStartFile label command params = unlines
 	, unlines $ map (\v -> "<string>" ++ v ++ "</string>") (command:params)
 	, "</array>"
 	, "<key>RunAtLoad</key>"
+	, "<true/>"
 	, "</dict>"
 	, "</plist>"
 	]
