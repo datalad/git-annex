@@ -29,6 +29,9 @@ import qualified Remote.Bup
 import qualified Remote.Directory
 import qualified Remote.Rsync
 import qualified Remote.Web
+#ifdef WITH_WEBDAV
+import qualified Remote.WebDAV
+#endif
 import qualified Remote.Hook
 
 remoteTypes :: [RemoteType]
@@ -41,6 +44,9 @@ remoteTypes =
 	, Remote.Directory.remote
 	, Remote.Rsync.remote
 	, Remote.Web.remote
+#ifdef WITH_WEBDAV
+	, Remote.WebDAV.remote
+#endif
 	, Remote.Hook.remote
 	]
 
