@@ -12,3 +12,4 @@ It should say:
 `<key>RunAtLoad</key>`<br>
 `<true/>`
 
+> Fixed in git. [[done]] --[[Joey]] 
