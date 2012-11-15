@@ -9,11 +9,10 @@ module Remote.WebDAV (remote) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
-import qualified Data.ByteString.Char8 as B8
+import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.Text as T
 import qualified Text.XML as XML
-import Data.Default
 
 import Common.Annex
 import Types.Remote
@@ -24,6 +23,10 @@ import Remote.Helper.Encryptable
 import Crypto
 import Creds
 import Annex.Content
+
+type DavUrl = String
+type DavUser = B8.ByteString
+type DavPass = B8.ByteString
 
 remote :: RemoteType
 remote = RemoteType {
@@ -73,8 +76,14 @@ webdavSetup u c = do
 	setRemoteCredPair c (davCreds u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f _p = davAction r False $ \creds -> do
-	error "TODO"
+store r k _f _p = do
+	f <- inRepo $ gitAnnexLocation k
+	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $ do
+		content <- L.readFile f
+		let url = Prelude.head $ davLocations baseurl k
+		putContentAndProps url user pass
+			(noProps, (contentType, content))
+		return True
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k _p = davAction r False $ \creds -> do
@@ -98,17 +107,37 @@ remove r k = davAction r False $ \creds -> do
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = davAction r noconn $ \creds -> do
 	showAction $ "checking " ++ name r
-	error "TODO"
+	return $ Right False
+	--error "TODO"
   where
 	noconn = Left $ error $ name r ++ " not configured"
 
-davAction :: Remote -> a -> (CredPair -> Annex a) -> Annex a
+davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = case config r of
 	Nothing -> return unconfigured
-	Just c -> maybe (return unconfigured) action =<< getCreds c (uuid r)
+	Just c -> do
+		mcreds <- getCreds c (uuid r)
+		case (mcreds, M.lookup "url" c) of
+			(Just (user, pass), Just url) ->
+				action (url, toDavUser user, toDavPass pass)
+			_ -> return unconfigured
 
-davUrl :: String -> FilePath -> String
-davUrl baseurl file = baseurl </> file
+toDavUser :: String -> DavUser
+toDavUser = B8.fromString
+
+toDavPass :: String -> DavPass
+toDavPass = B8.fromString
+
+{- All possibile locations to try to access a given Key.
+ -
+ - This is intentially the same as the directory special remote uses, to
+ - allow interoperability. -}
+davLocations :: DavUrl -> Key -> [DavUrl]
+davLocations baseurl k = map (davUrl baseurl) (keyPaths k)
+
+{- FIXME: Replacing / with _ to avoid needing collections. -}
+davUrl :: DavUrl -> FilePath -> DavUrl
+davUrl baseurl file = baseurl </> replace "/" "_" file
 
 {- Test if a WebDAV store is usable, by writing to a test file, and then
  - deleting the file. Exits with an error if not. -}
@@ -118,27 +147,23 @@ testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
 	liftIO $ do
 		putContentAndProps testurl username password
-			(dummyProps, (contentType, L.empty))
-		-- TODO delete testurl
+			(noProps, (contentType, L.empty))
+		deleteContent testurl username password
   where
-	username = B8.pack u
-	password = B8.pack p
+	username = toDavUser u
+	password = toDavPass p
 	testurl = davUrl baseurl "git-annex-test"
 
 {- Content-Type to use for files uploaded to WebDAV. -}
 contentType :: Maybe B8.ByteString
-contentType = Just $ B8.pack "application/octet-stream"
+contentType = Just $ B8.fromString "application/octet-stream"
 
 {- The DAV library requires that properties be specified when storing a file.
- - 
- - Also, it has a bug where if no properties are present, it generates an
- - invalid XML document, that will make putContentAndProps fail.
- - 
- - We don't really need to store any properties, so this is an
- - XML document that stores a single dummy property. -}
-dummyProps :: XML.Document
-dummyProps = XML.parseLBS_ def $ L8.pack
-	"<D:multistatus xmlns:D=\"DAV:\"><D:response><D:propstat><D:prop><D:gitannex></D:gitannex></D:prop></D:propstat></D:response></D:multistatus>"
+ - This just omits any real properties. -}
+noProps :: XML.Document
+noProps = XML.Document (XML.Prologue [] Nothing []) root []
+  where
+    root = XML.Element (XML.Name (T.pack "propertyupdate") Nothing Nothing) [] []
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c u = maybe missing (return . Just) =<< getRemoteCredPair c creds

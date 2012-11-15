@@ -112,8 +112,8 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f _p = s3Action r False $ \(conn, bucket) -> do
-	dest <- inRepo $ gitAnnexLocation k
-	res <- liftIO $ storeHelper (conn, bucket) r k dest
+	src <- inRepo $ gitAnnexLocation k
+	res <- liftIO $ storeHelper (conn, bucket) r k src
 	s3Bool res
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool

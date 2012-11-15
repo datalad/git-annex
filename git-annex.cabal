@@ -73,7 +73,7 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV
+    Build-Depends: DAV (>= 0.1)
     CPP-Options: -DWITH_WebDAV
 
   if flag(Assistant) && ! os(windows) && ! os(solaris)
