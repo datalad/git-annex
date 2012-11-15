@@ -41,7 +41,6 @@ cleanup file key = do
 	-- git as a normal, non-annexed file.
 	(s, clean) <- inRepo $ LsFiles.staged [file]
 	when (not $ null s) $ do
-		showOutput
 		inRepo $ Git.Command.run "commit" [
 			Param "-q",
 			Params "-m", Param "content removed from git annex",
