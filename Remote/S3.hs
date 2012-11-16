@@ -122,7 +122,7 @@ storeEncrypted r (cipher, enck) k _p = s3Action r False $ \(conn, bucket) ->
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
 		f <- inRepo $ gitAnnexLocation k
-		liftIO $ withEncryptedContent cipher (L.readFile f) $ \s -> L.writeFile tmp s
+		liftIO $ withEncryptedContent cipher (L.readFile f) $ L.writeFile tmp
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
 		s3Bool res
 

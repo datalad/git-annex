@@ -78,39 +78,47 @@ webdavSetup u c = do
 	creds <- getCreds c' u
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	setRemoteCredPair c (davCreds u)
+	setRemoteCredPair c' (davCreds u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f _p = davAction r False $ \(baseurl, user, pass) -> do
 	let url = davLocation baseurl k
-	liftIO $ davMkdir (urlParent url) user pass
 	f <- inRepo $ gitAnnexLocation k
 	b <- liftIO $ L.readFile f
+	liftIO $ davMkdir (urlParent url) user pass
 	v <- liftIO $ catchMaybeHttp $ putContentAndProps url user pass
 		(noProps, (contentType, b))
 	return $ isJust v
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k _p = davAction r False $ \creds -> liftIO $ do
-	error "TODO"
+storeEncrypted r (cipher, enck) k _p = davAction r False $ \(baseurl, user, pass) -> do
+	f <- inRepo $ gitAnnexLocation k
+	let url = davLocation baseurl enck
+	liftIO $ davMkdir (urlParent url) user pass
+	v <- liftIO $ withEncryptedContent cipher (L.readFile f) $ \b ->
+		catchMaybeHttp $ putContentAndProps url user pass
+			(noProps, (contentType, b))
+	return $ isJust v
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = davAction r False $ liftIO . go
-  where
-	go (baseurl, user, pass) = do
-		let url = davLocation baseurl k
-		maybe (return False) save
-			=<< catchMaybeHttp (getPropsAndContent url user pass)
-	save (_, (_, b)) = do
-		L.writeFile d b
-		return True
+retrieve r k _f d = retrieve' r k (L.writeFile d)
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) _ f = davAction r False $ \creds -> do
-	error "TODO"
+retrieveEncrypted r (cipher, enck) _ d = retrieve' r enck $ \b -> do
+	withDecryptedContent cipher (return b) (L.writeFile d)
+
+retrieve' :: Remote -> Key -> (L.ByteString -> IO ()) -> Annex Bool
+retrieve' r k saver = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
+	let url = davLocation baseurl k
+	maybe (return False) save
+		=<< catchMaybeHttp (getPropsAndContent url user pass)
+  where
+	save (_, (_, b)) = do
+		saver b
+		return True
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = davAction r False $ liftIO . go
@@ -200,7 +208,6 @@ urlParent url = reverse $ dropWhile (== '/') $ reverse $
 {- Test if a WebDAV store is usable, by writing to a test file, and then
  - deleting the file. Exits with an error if not. -}
 testDav :: String -> Maybe CredPair -> Annex ()
-testDav baseurl Nothing = error "Need to configure webdav username and password."
 testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
 	liftIO $ do
@@ -212,6 +219,7 @@ testDav baseurl (Just (u, p)) = do
 	user = toDavUser u
 	pass = toDavPass p
 	testurl = davUrl baseurl "git-annex-test"
+testDav _ Nothing = error "Need to configure webdav username and password."
 
 {- Content-Type to use for files uploaded to WebDAV. -}
 contentType :: Maybe B8.ByteString
