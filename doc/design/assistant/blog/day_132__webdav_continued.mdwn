@@ -1,0 +1,22 @@
+Two releases of the Haskell DAV library today. First release had my changes
+from yesterday. Then I realized I'd also need support for making WebDAV
+"collections" (subdirectories), and sent Clint a patch for that too, as
+well as a patch for querying DAV properties, and that was 0.2.
+Got it into Debian unstable as well. Should have everything I'll need now.
+
+The webdav special remote is now working! Still todo:
+Encryption support, progress bars, large file chunking, and webapp
+configurators. But already, it's a lot nicer than the old approach of using
+davfs2, which was really flakey and slow with large data volumes.
+
+I did notice, though, that uploading a 100 mb file made the process use 100
+mb of memory. This is a problem I've struggled with earlier with S3, the
+Haskell http libraries are prevented from streaming data by several parts
+of the protocol that cause the data to be accessed more than once. I guess
+this won't be a problem for DAV though, since it'll probably be chunking
+files anyway.
+
+---
+
+Mailed out all my Kickstarter USB key rewards, and ordered
+the T-shirts too.
