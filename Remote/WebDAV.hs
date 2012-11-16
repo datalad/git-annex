@@ -12,6 +12,7 @@ module Remote.WebDAV (remote) where
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
 import qualified Data.ByteString.UTF8 as B8
+import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Text.XML as XML
@@ -26,6 +27,7 @@ import qualified Git
 import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Helper.Chunked
 import Crypto
 import Creds
 
@@ -84,34 +86,40 @@ store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f _p = davAction r False $ \(baseurl, user, pass) -> do
 	let url = davLocation baseurl k
 	f <- inRepo $ gitAnnexLocation k
-	b <- liftIO $ L.readFile f
-	liftIO $ davMkdir (urlParent url) user pass
-	v <- liftIO $ catchMaybeHttp $ putContentAndProps url user pass
-		(noProps, (contentType, b))
-	return $ isJust v
+	liftIO $ storeHelper r url user pass =<< L.readFile f
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k _p = davAction r False $ \(baseurl, user, pass) -> do
-	f <- inRepo $ gitAnnexLocation k
 	let url = davLocation baseurl enck
-	liftIO $ davMkdir (urlParent url) user pass
-	v <- liftIO $ withEncryptedContent cipher (L.readFile f) $ \b ->
-		catchMaybeHttp $ putContentAndProps url user pass
-			(noProps, (contentType, b))
-	return $ isJust v
+	f <- inRepo $ gitAnnexLocation k
+	liftIO $ withEncryptedContent cipher (L.readFile f) $
+		storeHelper r url user pass
+
+storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
+storeHelper r urlbase user pass b = catchBoolIO $ do
+	davMkdir (urlParent urlbase) user pass
+	storeChunks urlbase chunksize storer recorder finalizer
+  where
+	chunksize = chunkSize $ config r
+	storer urls = storeChunked chunksize urls storehttp b
+	recorder url s = storehttp url (L8.fromString s)
+	finalizer srcurl desturl = 
+		moveContent srcurl (B8.fromString desturl) user pass
+	storehttp url v = putContentAndProps url user pass
+		(noProps, (contentType, v))
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = retrieve' r k (L.writeFile d)
+retrieve r k _f d = retrieveHelper r k (L.writeFile d)
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) _ d = retrieve' r enck $ \b -> do
+retrieveEncrypted r (cipher, enck) _ d = retrieveHelper r enck $ \b -> do
 	withDecryptedContent cipher (return b) (L.writeFile d)
 
-retrieve' :: Remote -> Key -> (L.ByteString -> IO ()) -> Annex Bool
-retrieve' r k saver = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
+retrieveHelper :: Remote -> Key -> (L.ByteString -> IO ()) -> Annex Bool
+retrieveHelper r k saver = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
 	let url = davLocation baseurl k
 	maybe (return False) save
 		=<< catchMaybeHttp (getPropsAndContent url user pass)
