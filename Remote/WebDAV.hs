@@ -129,11 +129,11 @@ retrieveHelper r k saver = davAction r False $ \(baseurl, user, pass) -> liftIO 
 		return True
 
 remove :: Remote -> Key -> Annex Bool
-remove r k = davAction r False $ liftIO . go
-  where
-	go (baseurl, user, pass) = do
-		let url = davLocation baseurl k
-		isJust <$> catchMaybeHttp (deleteContent url user pass)
+remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
+	-- Delete the key's whole directory, including any chunked
+	-- files, etc, in a single action.
+	let url = urlParent $ davLocation baseurl k
+	isJust <$> catchMaybeHttp (deleteContent url user pass)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = davAction r noconn $ \(baseurl, user, pass) -> do
@@ -168,7 +168,7 @@ toDavPass = B8.fromString
 
 {- The location to use to store a Key. -}
 davLocation :: DavUrl -> Key -> DavUrl
-davLocation baseurl k = davUrl baseurl $ hashDirLower k </> keyFile k
+davLocation baseurl k = davUrl baseurl $ annexLocation k hashDirLower
 
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file
