@@ -81,15 +81,14 @@ webdavSetup u c = do
 	setRemoteCredPair c (davCreds u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f _p = do
+store r k _f _p = davAction r False $ \(baseurl, user, pass) -> do
+	let url = davLocation baseurl k
+	liftIO $ davMkdir (urlParent url) user pass
 	f <- inRepo $ gitAnnexLocation k
-	davAction r False $ \(baseurl, user, pass) -> liftIO $ do
-		let url = Prelude.head $ davLocations baseurl k
-		davMkdir (urlParent url) user pass
-		b <- L.readFile f
-		v <- catchMaybeHttp $ putContentAndProps url user pass
-			(noProps, (contentType, b))
-		return $ isJust v
+	b <- liftIO $ L.readFile f
+	v <- liftIO $ catchMaybeHttp $ putContentAndProps url user pass
+		(noProps, (contentType, b))
+	return $ isJust v
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k _p = davAction r False $ \creds -> liftIO $ do
@@ -98,14 +97,13 @@ storeEncrypted r (cipher, enck) k _p = davAction r False $ \creds -> liftIO $ do
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve r k _f d = davAction r False $ liftIO . go
   where
-	go (baseurl, user, pass) = get $ davLocations baseurl k
-	  where
-		get [] = return False
-		get (u:urls) = maybe (get urls) save
-			=<< catchMaybeHttp (getPropsAndContent u user pass)
-		save (_, (_, b)) = do
-			L.writeFile d b
-			return True
+	go (baseurl, user, pass) = do
+		let url = davLocation baseurl k
+		maybe (return False) save
+			=<< catchMaybeHttp (getPropsAndContent url user pass)
+	save (_, (_, b)) = do
+		L.writeFile d b
+		return True
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -117,39 +115,24 @@ retrieveEncrypted r (cipher, enck) _ f = davAction r False $ \creds -> do
 remove :: Remote -> Key -> Annex Bool
 remove r k = davAction r False $ liftIO . go
   where
-	go (baseurl, user, pass) = delone $ davLocations baseurl k
-	  where
-		delone [] = return False
-		delone (u:urls) = maybe (delone urls) (const $ return True)
-			=<< catchMaybeHttp (deletedir u)
-
-		{- Rather than deleting first the file, and then its
-		 - immediate parent directory (to clean up), delete the
-		 - parent directory, along with all its contents in a
-		 - single recursive DAV call.
-		 - 
-		 - The file is the only thing we keep in there, and this
-		 - is faster. -}
-		deletedir u = deleteContent (urlParent u) user pass
+	go (baseurl, user, pass) = do
+		let url = davLocation baseurl k
+		isJust <$> catchMaybeHttp (deleteContent url user pass)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = davAction r noconn go
+checkPresent r k = davAction r noconn $ \(baseurl, user, pass) -> do
+	showAction $ "checking " ++ name r
+	let url = davLocation baseurl k	
+	v <- liftIO $ catchHttp $ getProps url user pass
+	case v of
+		Right _ -> return $ Right True
+		Left (Left (StatusCodeException status _))
+			| statusCode status == statusCode notFound404 -> return $ Right False
+			| otherwise -> return $ Left $ show $ statusMessage status
+		Left (Left httpexception) -> return $ Left $ show httpexception
+		Left (Right ioexception) -> return $ Left $ show ioexception
   where
 	noconn = Left $ error $ name r ++ " not configured"
-	go (baseurl, user, pass) = do
-		showAction $ "checking " ++ name r
-		liftIO $ check $ davLocations baseurl k	
-	  where
-		check [] = return $ Right False
-		check (u:urls) = do
-			v <- catchHttp $ getProps u user pass
-			case v of
-				Right _ -> return $ Right True
-				Left (Left (StatusCodeException status _))
-					| statusCode status == statusCode notFound404 -> check urls
-					| otherwise -> return $ Left $ show $ statusMessage status
-				Left (Left httpexception) -> return $ Left $ show httpexception
-				Left (Right ioexception) -> return $ Left $ show ioexception
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = case config r of
@@ -167,12 +150,9 @@ toDavUser = B8.fromString
 toDavPass :: String -> DavPass
 toDavPass = B8.fromString
 
-{- All possibile locations to try to access a given Key.
- -
- - This is intentially the same as the directory special remote uses, to
- - allow interoperability. -}
-davLocations :: DavUrl -> Key -> [DavUrl]
-davLocations baseurl k = map (davUrl baseurl) (keyPaths k)
+{- The location to use to store a Key. -}
+davLocation :: DavUrl -> Key -> DavUrl
+davLocation baseurl k = davUrl baseurl $ hashDirLower k </> keyFile k
 
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file

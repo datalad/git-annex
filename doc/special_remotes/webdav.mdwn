@@ -28,10 +28,10 @@ the webdav remote.
   WebDAV. For use when the WebDAV server has file size
   limitations. The default is to never chunk files.  
   The value can use specified using any commonly used units.
-  Example: `chunksize=100 megabytes`  
+  Example: `chunksize=75 megabytes`  
   Note that enabling chunking on an existing remote with non-chunked
   files is not recommended.
 
 Setup example:
 
-	# WEBDAV_USERNAME=joey@kitenet.net WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex encryption=joey@kitenet.net
+	# WEBDAV_USERNAME=joey@kitenet.net WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex chunksize=75mb encryption=joey@kitenet.net
