@@ -28,6 +28,9 @@ Description:
 Flag S3
   Description: Enable S3 support
 
+Flag WebDAV
+  Description: Enable WebDAV support
+
 Flag Inotify
   Description: Enable inotify support
 
@@ -68,6 +71,10 @@ Executable git-annex
   if flag(S3)
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
+
+  if flag(WebDAV)
+    Build-Depends: DAV (>= 0.2), http-conduit
+    CPP-Options: -DWITH_WebDAV
 
   if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: stm >= 2.3

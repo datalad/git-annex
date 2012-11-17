@@ -11,6 +11,7 @@ module Locations (
 	keyPaths,
 	gitAnnexLocation,
 	annexLocations,
+	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpDir,

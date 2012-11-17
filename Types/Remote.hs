@@ -16,7 +16,8 @@ import qualified Git
 import Types.Key
 import Types.UUID
 
-type RemoteConfig = M.Map String String
+type RemoteConfigKey = String
+type RemoteConfig = M.Map RemoteConfigKey String
 
 {- There are different types of remotes. -}
 data RemoteTypeA a = RemoteType {

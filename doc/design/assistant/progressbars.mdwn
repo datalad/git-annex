@@ -23,6 +23,7 @@ the MeterUpdate callback as the upload progresses.
 * rsync: **done**
 * directory: **done**
 * web: Not applicable; does not upload 
+* webdav: TODO
 * S3: TODO
 * bup: TODO
 * hook: Would require the hook interface to somehow do this, which seems

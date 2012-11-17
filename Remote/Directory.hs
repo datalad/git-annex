@@ -19,8 +19,8 @@ import Config
 import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Helper.Chunked
 import Crypto
-import Utility.DataUnits
 import Data.Int
 import Annex.Content
 
@@ -58,19 +58,6 @@ gen r u c = do
 			remotetype = remote
 		}
 
-type ChunkSize = Maybe Int64
-
-chunkSize :: Maybe RemoteConfig -> ChunkSize
-chunkSize Nothing = Nothing
-chunkSize (Just m) =
-	case M.lookup "chunksize" m of
-		Nothing -> Nothing
-		Just v -> case readSize dataUnits v of
-			Nothing -> error "bad chunksize"
-			Just size
-				| size <= 0 -> error "bad chunksize"
-				| otherwise -> Just $ fromInteger size
-
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 directorySetup u c = do
 	-- verify configuration is sane
@@ -89,14 +76,6 @@ directorySetup u c = do
 locations :: FilePath -> Key -> [FilePath]
 locations d k = map (d </>) (keyPaths k)
 
-{- An infinite stream of chunks to use for a given file. -}
-chunkStream :: FilePath -> [FilePath]
-chunkStream f = map (\n -> f ++ ".chunk" ++ show n) [1 :: Integer ..]
-
-{- A file that records the number of chunks used. -}
-chunkCount :: FilePath -> FilePath
-chunkCount f = f ++ ".chunkcount"
-
 withCheckedFiles :: (FilePath -> IO Bool) -> ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ _ [] _ _ = return False
 withCheckedFiles check Nothing d k a = go $ locations d k
@@ -107,18 +86,14 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
   where
 	go [] = return False
 	go (f:fs) = do
-		let chunkcount = chunkCount f
+		let chunkcount = f ++ chunkCount
 		ifM (check chunkcount)
 			( do
-				count <- readcount chunkcount
-				let chunks = take count $ chunkStream f
+				chunks <- listChunks f <$> readFile chunkcount
 				ifM (all id <$> mapM check chunks)
 					( a chunks , return False )
 			, go fs
 			)
-	readcount f = fromMaybe (error $ "cannot parse " ++ f)
-		. (readish :: String -> Maybe Int)
-		<$> readFile f
 
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withStoredFiles = withCheckedFiles doesFileExist
@@ -180,74 +155,32 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 				feed (sz - s) ls h
 			else return (l:ls)
 
-{- Write a L.ByteString to a file, updating a progress meter
- - after each chunk of the L.ByteString, typically every 64 kb or so. -}
-meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
-meteredWriteFile meterupdate dest b =
-	meteredWriteFile' meterupdate dest (L.toChunks b) feeder
-  where
-	feeder chunks = return ([], chunks)
-
-{- Writes a series of S.ByteString chunks to a file, updating a progress
- - meter after each chunk. The feeder is called to get more chunks. -}
-meteredWriteFile' :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
-meteredWriteFile' meterupdate dest startstate feeder =
-	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
-  where
-	feed state [] h = do
-		(state', cs) <- feeder state
-		unless (null cs) $
-			feed state' cs h
-	feed state (c:cs) h = do
-		S.hPut h c
-		meterupdate $ toInteger $ S.length c
-		feed state cs h
-
-{- Generates a list of destinations to write to in order to store a key.
- - When chunksize is specified, this list will be a list of chunks.
- - The action should store the file, and return a list of the destinations
- - it stored it to, or [] on error.
- - The stored files are only put into their final place once storage is
- - complete.
- -}
 storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
-storeHelper d chunksize key a = prep <&&> check <&&> go
+storeHelper d chunksize key storer = check <&&> go
   where
-	desttemplate = Prelude.head $ locations d key
-	dir = parentDir desttemplate
-	tmpdests = case chunksize of
-		Nothing -> [desttemplate ++ tmpprefix]
-		Just _ -> map (++ tmpprefix) (chunkStream desttemplate)
-	tmpprefix = ".tmp"
-	detmpprefix f = take (length f - tmpprefixlen) f
-	tmpprefixlen = length tmpprefix
-	prep = liftIO $ catchBoolIO $ do
-		createDirectoryIfMissing True dir
-		allowWrite dir
-		return True
+	basedest = Prelude.head $ locations d key
+	dir = parentDir basedest
 	{- The size is not exactly known when encrypting the key;
 	 - this assumes that at least the size of the key is
 	 - needed as free space. -}
 	check = checkDiskSpace (Just dir) key 0
 	go = liftIO $ catchBoolIO $ do
-		stored <- a tmpdests
-		forM_ stored $ \f -> do
-			let dest = detmpprefix f
-			renameFile f dest
-			preventWrite dest
-		when (chunksize /= Nothing) $ do
-			let chunkcount = chunkCount desttemplate
-			_ <- tryIO $ allowWrite chunkcount
-			writeFile chunkcount (show $ length stored)
-			preventWrite chunkcount
-		preventWrite dir
-		return (not $ null stored)
+		createDirectoryIfMissing True dir
+		allowWrite dir
+		preventWrite dir `after` storeChunks basedest chunksize storer recorder finalizer
+	finalizer f dest = do
+		renameFile f dest
+		preventWrite dest
+	recorder f s = do
+		void $ tryIO $ allowWrite f
+		writeFile f s
+		preventWrite f
 
 retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFile' meterupdate f files feeder
+			meteredWriteFileChunks meterupdate f files feeder
 			return True
   where
 	feeder [] = return ([], [])

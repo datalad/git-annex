@@ -116,7 +116,7 @@ getEnableS3R uuid = s3Configurator $ do
 makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeS3Remote (S3Creds ak sk) name setup config = do
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
-	liftIO $ S3.s3SetCredsEnv ( T.unpack ak, T.unpack sk)
+	liftIO $ S3.s3SetCredsEnv (T.unpack ak, T.unpack sk)
 	r <- liftAssistant $ liftAnnex $ addRemote $ do
 		makeSpecialRemote name S3.remote config
 		return remotename

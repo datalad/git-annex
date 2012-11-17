@@ -885,6 +885,11 @@ Here are all the supported configuration settings.
   Used to identify Amazon S3 special remotes.
   Normally this is automaticaly set up by `git annex initremote`.
 
+* `remote.<name>.webdav`
+
+  Used to identify webdav special remotes.
+  Normally this is automaticaly set up by `git annex initremote`.
+
 * `remote.<name>.annex-xmppaddress`
 
   Used to identify the XMPP address of a Jabber buddy.

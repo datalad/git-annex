@@ -9,7 +9,6 @@ module Assistant.NetMessager where
 
 import Assistant.Common
 import Assistant.Types.NetMessager
-import qualified Git
 
 import Control.Concurrent
 import Control.Concurrent.STM
