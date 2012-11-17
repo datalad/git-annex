@@ -176,6 +176,9 @@ repoList reposelector
 #ifdef WITH_S3
 			Just "S3" -> val True EnableS3R
 #endif
+#ifdef WITH_WEBDAV
+			Just "webdav" -> val True EnableWebDAVR
+#endif
 			_ -> Nothing
 	  where
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
