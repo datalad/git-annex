@@ -11,7 +11,6 @@ module Utility.ThreadScheduler where
 import Common
 
 import Control.Concurrent
-import Control.Exception
 import System.Posix.Terminal
 import System.Posix.Signals
 
