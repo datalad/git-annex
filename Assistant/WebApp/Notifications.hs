@@ -33,8 +33,8 @@ import qualified Data.Text as T
  -}
 autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
 autoUpdate ident geturl ms_delay ms_startdelay = do
-	let delay = show ms_delay
-	let startdelay = show ms_startdelay
+	let delay = T.pack (show ms_delay)
+	let startdelay = T.pack (show ms_startdelay)
 	addScript $ StaticR longpolling_js
 	$(widgetFile "notifications/longpolling")
 
