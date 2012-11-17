@@ -89,7 +89,7 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 		let chunkcount = f ++ chunkCount
 		ifM (check chunkcount)
 			( do
-				chunks <- getChunks f <$> readFile chunkcount
+				chunks <- listChunks f <$> readFile chunkcount
 				ifM (all id <$> mapM check chunks)
 					( a chunks , return False )
 			, go fs
@@ -155,29 +155,6 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 				feed (sz - s) ls h
 			else return (l:ls)
 
-{- Write a L.ByteString to a file, updating a progress meter
- - after each chunk of the L.ByteString, typically every 64 kb or so. -}
-meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
-meteredWriteFile meterupdate dest b =
-	meteredWriteFile' meterupdate dest (L.toChunks b) feeder
-  where
-	feeder chunks = return ([], chunks)
-
-{- Writes a series of S.ByteString chunks to a file, updating a progress
- - meter after each chunk. The feeder is called to get more chunks. -}
-meteredWriteFile' :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
-meteredWriteFile' meterupdate dest startstate feeder =
-	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
-  where
-	feed state [] h = do
-		(state', cs) <- feeder state
-		unless (null cs) $
-			feed state' cs h
-	feed state (c:cs) h = do
-		S.hPut h c
-		meterupdate $ toInteger $ S.length c
-		feed state cs h
-
 storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
 storeHelper d chunksize key storer = check <&&> go
   where
@@ -203,7 +180,7 @@ retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex 
 retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFile' meterupdate f files feeder
+			meteredWriteFileChunks meterupdate f files feeder
 			return True
   where
 	feeder [] = return ([], [])

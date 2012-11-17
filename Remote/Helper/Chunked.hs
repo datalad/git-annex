@@ -13,6 +13,7 @@ import Types.Remote
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 import Data.Int
 import qualified Control.Exception as E
 
@@ -45,8 +46,8 @@ chunkCount = ".chunkcount"
 
 {- Parses the String from the chunkCount file, and returns the files that
  - are used to store the chunks. -}
-getChunks :: FilePath -> String -> [FilePath]
-getChunks basedest chunkcount = take count $ map (basedest ++) chunkStream
+listChunks :: FilePath -> String -> [FilePath]
+listChunks basedest chunkcount = take count $ map (basedest ++) chunkStream
   where
 	count = fromMaybe 0 $ readish chunkcount
 
@@ -119,3 +120,26 @@ storeChunked chunksize dests storer content =
 			let (chunk, b') = L.splitAt sz b
 			storer d chunk
 			storechunks sz (d:useddests) ds b'
+
+{- Write a L.ByteString to a file, updating a progress meter
+ - after each chunk of the L.ByteString, typically every 64 kb or so. -}
+meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
+meteredWriteFile meterupdate dest b =
+	meteredWriteFileChunks meterupdate dest (L.toChunks b) feeder
+  where
+	feeder chunks = return ([], chunks)
+
+{- Writes a series of S.ByteString chunks to a file, updating a progress
+ - meter after each chunk. The feeder is called to get more chunks. -}
+meteredWriteFileChunks :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
+meteredWriteFileChunks meterupdate dest startstate feeder =
+	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
+  where
+	feed state [] h = do
+		(state', cs) <- feeder state
+		unless (null cs) $
+			feed state' cs h
+	feed state (c:cs) h = do
+		S.hPut h c
+		meterupdate $ toInteger $ S.length c
+		feed state cs h

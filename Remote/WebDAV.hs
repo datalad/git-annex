@@ -20,6 +20,7 @@ import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
 import Network.HTTP.Conduit (HttpException(..))
 import Network.HTTP.Types
+import System.IO.Error
 
 import Common.Annex
 import Types.Remote
@@ -108,25 +109,45 @@ storeHelper r urlbase user pass b = catchBoolIO $ do
 	storehttp url v = putContentAndProps url user pass
 		(noProps, (contentType, v))
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = retrieveHelper r k (L.writeFile d)
-
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) _ d = retrieveHelper r enck $ \b -> do
-	withDecryptedContent cipher (return b) (L.writeFile d)
-
-retrieveHelper :: Remote -> Key -> (L.ByteString -> IO ()) -> Annex Bool
-retrieveHelper r k saver = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
-	let url = davLocation baseurl k
-	maybe (return False) save
-		=<< catchMaybeHttp (getPropsAndContent url user pass)
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve r k _f d = metered Nothing k $ \meterupdate ->
+	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
+		withStoredFiles r k baseurl user pass onerr $ \urls -> do
+			meteredWriteFileChunks meterupdate d urls $
+				feeder user pass
+			return True
   where
-	save (_, (_, b)) = do
-		saver b
-		return True
+	onerr _ = return False
+
+	feeder _ _ [] = return ([], [])
+	feeder user pass (url:urls) = do
+		mb <- davGetUrlContent url user pass
+		case mb of
+			Nothing -> throwDownloadFailed
+			Just b -> return (urls, L.toChunks b)
+
+throwDownloadFailed :: IO a
+throwDownloadFailed = ioError $ mkIOError userErrorType "download failed" Nothing Nothing
+
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
+	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
+		withStoredFiles r enck baseurl user pass onerr $ \urls -> do
+			withDecryptedContent cipher (L.concat <$> feeder user pass urls []) $
+				meteredWriteFile meterupdate d
+			return True
+  where
+	onerr _ = return False
+
+	feeder _ _ [] c = return $ reverse c
+	feeder user pass (url:urls) c = do
+		mb <- davGetUrlContent url user pass
+		case mb of
+			Nothing -> throwDownloadFailed
+			Just b -> feeder user pass urls (b:c)
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
@@ -136,19 +157,47 @@ remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
 	isJust <$> catchMaybeHttp (deleteContent url user pass)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
-checkPresent r k = davAction r noconn $ \(baseurl, user, pass) -> do
-	showAction $ "checking " ++ name r
-	let url = davLocation baseurl k	
-	v <- liftIO $ catchHttp $ getProps url user pass
-	case v of
-		Right _ -> return $ Right True
-		Left (Left (StatusCodeException status _))
-			| statusCode status == statusCode notFound404 -> return $ Right False
-			| otherwise -> return $ Left $ show $ statusMessage status
-		Left (Left httpexception) -> return $ Left $ show httpexception
-		Left (Right ioexception) -> return $ Left $ show ioexception
+checkPresent r k = davAction r noconn go
   where
 	noconn = Left $ error $ name r ++ " not configured"
+
+	go (baseurl, user, pass) = do
+		showAction $ "checking " ++ name r
+		liftIO $ withStoredFiles r k baseurl user pass onerr check
+	  where
+		check [] = return $ Right True
+		check (url:urls) = do
+			v <- davUrlExists url user pass
+			if v == Right True
+				then check urls
+				else return v
+
+		{- Failed to read the chunkcount file; see if it's missing,
+		 - or if there's a problem accessing it,
+		 - or perhaps this was an intermittent error. -}
+		onerr url = do
+			v <- davUrlExists url user pass
+			if v == Right True
+				then return $ Left $ "failed to read " ++ url
+				else return v
+
+withStoredFiles
+	:: Remote
+	-> Key
+	-> DavUrl
+	-> DavUser
+	-> DavPass
+	-> (DavUrl -> IO a)
+	-> ([DavUrl] -> IO a)
+	-> IO a
+withStoredFiles r k baseurl user pass onerr a
+	| isJust $ chunkSize $ config r = do
+		let chunkcount = url ++ chunkCount
+		maybe (onerr chunkcount) (a . listChunks url . L8.toString)
+			=<< davGetUrlContent chunkcount user pass
+	| otherwise = a [url]
+  where
+	url = davLocation baseurl k
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = case config r of
@@ -172,6 +221,20 @@ davLocation baseurl k = davUrl baseurl $ annexLocation k hashDirLower
 
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file
+
+davUrlExists :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
+davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
+  where
+	decode (Right _) = Right True
+	decode (Left (Left (StatusCodeException status _)))
+		| statusCode status == statusCode notFound404 = Right False
+		| otherwise = Left $ show $ statusMessage status
+	decode (Left (Left httpexception)) = Left $ show httpexception
+	decode (Left (Right ioexception)) = Left $ show ioexception
+
+davGetUrlContent :: DavUrl -> DavUser -> DavPass -> IO  (Maybe L.ByteString)
+davGetUrlContent url user pass = fmap (snd . snd) <$>
+	catchMaybeHttp (getPropsAndContent url user pass)
 
 {- Creates a directory in WebDAV, if not already present; also creating
  - any missing parent directories. -}
