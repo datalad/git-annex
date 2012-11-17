@@ -1,0 +1,31 @@
+Worked on webdav special remotes all day. 
+
+* Got encryption working,
+  after fixing an amusing typo that made `initremote` for webdav throw away the
+  encryption configuration and store files unencrypted.
+* Factored out parts of the directory special remote that had to do with file
+  chunking, and am using that for webdav. This refactoring was painful.
+
+At this point, I feel the webdav special remote works better than the old
+davfs2 + directory special remote hack. While webdav doesn't yet have
+progress info for uploads, that info was pretty busted anyway with
+davfs2 due to how it buffers files. So ... I've merged webdav into master!
+
+-----
+
+Tomorrow, webapp configurators for Box.com and any other webdav supporting
+sites I can turn up and get to work..
+
+-----
+
+A while ago I made git-annex not store login credentials in git for special
+remotes, when it's only encrypting them with a shared cipher. The
+rationalle was that you don't want to give everyone who gets ahold of your
+git repo (which includes the encryption key) access to your passwords,
+Amazon S3 account, or whatever. I'm now considering adding a checkbox (or
+command-line flag) that allows storing the login credentials in git,
+if the user wants to. While using public key crypto is the real solution
+(and is fully supported by git-annex (but not yet configurable in the
+webapp)), this seems like a reasonable thing to do in some circumstances,
+like when you have a Box.com account you really do want to share with
+the people who use the git repo.

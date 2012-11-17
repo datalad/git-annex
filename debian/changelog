@@ -1,5 +1,6 @@
 git-annex (3.20121113) UNRELEASED; urgency=low
 
+  * New webdav special remotes.
   * Show error message to user when testing XMPP creds.
   * Fix build of assistant without yesod.
   * webapp: The list of repositiories refreshes when new repositories are
