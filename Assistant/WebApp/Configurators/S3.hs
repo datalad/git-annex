@@ -87,11 +87,10 @@ getAddS3R = s3Configurator $ do
 				, ("datacenter", T.unpack $ datacenter s3input)
 				, ("storageclass", show $ storageClass s3input)
 				]
-		_ -> showform form enctype
+		_ -> do
+			let authtoken = webAppFormAuthToken
+			$(widgetFile "configurators/adds3")
   where
-	showform form enctype = do
-		let authtoken = webAppFormAuthToken
-		$(widgetFile "configurators/adds3")
 	setgroup r = runAnnex () $
 		setStandardGroup (Remote.uuid r) TransferGroup
 
@@ -105,18 +104,16 @@ getEnableS3R uuid = s3Configurator $ do
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
 			makeS3Remote s3creds name (const noop) M.empty
-		_ -> showform form enctype
-  where
-	showform form enctype = do
-		let authtoken = webAppFormAuthToken
-		description <- lift $ runAnnex "" $
-			T.pack . concat <$> Remote.prettyListUUIDs [uuid]
-		$(widgetFile "configurators/enables3")
+		_ -> do
+			let authtoken = webAppFormAuthToken
+			description <- lift $ runAnnex "" $
+				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
+			$(widgetFile "configurators/enables3")
 
 makeS3Remote :: S3Creds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeS3Remote (S3Creds ak sk) name setup config = do
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
-	liftIO $ S3.s3SetCredsEnv (T.unpack ak, T.unpack sk)
+	liftIO $ S3.setCredsEnv (T.unpack ak, T.unpack sk)
 	r <- liftAssistant $ liftAnnex $ addRemote $ do
 		makeSpecialRemote name S3.remote config
 		return remotename

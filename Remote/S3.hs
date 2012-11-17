@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote, s3SetCredsEnv) where
+module Remote.S3 (remote, setCredsEnv) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
@@ -276,5 +276,5 @@ s3Creds u = CredPairStorage
 	, credPairRemoteKey = Just "s3creds"
 	}
 
-s3SetCredsEnv :: (String, String) -> IO ()
-s3SetCredsEnv creds = setEnvCredPair creds $ s3Creds undefined
+setCredsEnv :: (String, String) -> IO ()
+setCredsEnv creds = setEnvCredPair creds $ s3Creds undefined

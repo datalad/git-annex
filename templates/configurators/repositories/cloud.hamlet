@@ -16,9 +16,10 @@
   Low cost offline data archival.
 
 <h3>
-  <i .icon-plus-sign></i> Box.com
+  <a href="@{AddBoxComR}">
+    <i .icon-plus-sign></i> Box.com
 <p>
-  Provides free cloud storage for small amounts of data.
+  Provides <b>free</b> cloud storage for small amounts of data.
 
 <h3>
   <a href="@{AddSshR}">

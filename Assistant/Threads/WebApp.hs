@@ -24,6 +24,9 @@ import Assistant.WebApp.Configurators.Pairing
 #ifdef WITH_S3
 import Assistant.WebApp.Configurators.S3
 #endif
+#ifdef WITH_WEBDAV
+import Assistant.WebApp.Configurators.WebDAV
+#endif
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos

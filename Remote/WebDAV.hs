@@ -7,7 +7,7 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Remote.WebDAV (remote) where
+module Remote.WebDAV (remote, setCredsEnv) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
@@ -126,11 +126,8 @@ retrieve r k _f d = metered Nothing k $ \meterupdate ->
 	feeder user pass (url:urls) = do
 		mb <- davGetUrlContent url user pass
 		case mb of
-			Nothing -> throwDownloadFailed
+			Nothing -> throwIO "download failed"
 			Just b -> return (urls, L.toChunks b)
-
-throwDownloadFailed :: IO a
-throwDownloadFailed = ioError $ mkIOError userErrorType "download failed" Nothing Nothing
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
@@ -146,7 +143,7 @@ retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
 	feeder user pass (url:urls) c = do
 		mb <- davGetUrlContent url user pass
 		case mb of
-			Nothing -> throwDownloadFailed
+			Nothing -> throwIO "download failed"
 			Just b -> feeder user pass urls (b:c)
 
 remove :: Remote -> Key -> Annex Bool
@@ -228,9 +225,7 @@ davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
 	decode (Right _) = Right True
 	decode (Left (Left (StatusCodeException status _)))
 		| statusCode status == statusCode notFound404 = Right False
-		| otherwise = Left $ show $ statusMessage status
-	decode (Left (Left httpexception)) = Left $ show httpexception
-	decode (Left (Right ioexception)) = Left $ show ioexception
+	decode (Left e) = Left $ showEitherException e
 
 davGetUrlContent :: DavUrl -> DavUser -> DavPass -> IO  (Maybe L.ByteString)
 davGetUrlContent url user pass = fmap (snd . snd) <$>
@@ -266,27 +261,40 @@ catchMaybeHttp a = (Just <$> a) `E.catches`
 	]
 
 {- Catches HTTP and IO exceptions -}
-catchHttp :: IO a -> IO (Either (Either HttpException E.IOException) a)
+catchHttp :: IO a -> IO (Either EitherException a)
 catchHttp a = (Right <$> a) `E.catches`
 	[ E.Handler $ \(e :: HttpException) -> return $ Left $ Left e
 	, E.Handler $ \(e :: E.IOException) -> return $ Left $ Right e
 	]
+
+type EitherException = Either HttpException E.IOException
+
+showEitherException :: EitherException -> String
+showEitherException (Left (StatusCodeException status _)) = show $ statusMessage status
+showEitherException (Left httpexception) = show httpexception
+showEitherException (Right ioexception) = show ioexception
+
+throwIO :: String -> IO a
+throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
 urlParent :: DavUrl -> DavUrl
 urlParent url = reverse $ dropWhile (== '/') $ reverse $
 	normalizePathSegments (url ++ "/..")
 
 {- Test if a WebDAV store is usable, by writing to a test file, and then
- - deleting the file. Exits with an error if not. -}
+ - deleting the file. Exits with an IO error if not. -}
 testDav :: String -> Maybe CredPair -> Annex ()
 testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
-	liftIO $ do
+	liftIO $ either (throwIO . showEitherException) (const noop)
+		=<< catchHttp go
+  where
+	go = do
 		davMkdir baseurl user pass
 		putContentAndProps testurl user pass
 			(noProps, (contentType, L.empty))
 		deleteContent testurl user pass
-  where
+
 	user = toDavUser u
 	pass = toDavPass p
 	testurl = davUrl baseurl "git-annex-test"
@@ -318,3 +326,6 @@ davCreds u = CredPairStorage
         , credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
         , credPairRemoteKey = Just "davcreds"
         }
+
+setCredsEnv :: (String, String) -> IO ()
+setCredsEnv creds = setEnvCredPair creds $ davCreds undefined

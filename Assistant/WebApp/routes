@@ -25,6 +25,7 @@
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET
 /config/repository/add/cloud/S3 AddS3R GET
+/config/repository/add/cloud/box.com AddBoxComR GET
 
 /config/repository/pair/local/start StartLocalPairR GET
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
