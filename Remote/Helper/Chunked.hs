@@ -125,21 +125,21 @@ storeChunked chunksize dests storer content =
  - after each chunk of the L.ByteString, typically every 64 kb or so. -}
 meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate dest b =
-	meteredWriteFileChunks meterupdate dest (L.toChunks b) feeder
-  where
-	feeder chunks = return ([], chunks)
+	meteredWriteFileChunks meterupdate dest [b] return
 
-{- Writes a series of S.ByteString chunks to a file, updating a progress
- - meter after each chunk. The feeder is called to get more chunks. -}
-meteredWriteFileChunks :: MeterUpdate -> FilePath -> s -> (s -> IO (s, [S.ByteString])) -> IO ()
-meteredWriteFileChunks meterupdate dest startstate feeder =
-	E.bracket (openFile dest WriteMode) hClose (feed startstate [])
+{- Writes a series of major chunks to a file. The feeder is called to get
+ - each major chunk. Then each chunk of the L.ByteString is written,
+ - with the meter updated after each chunk. -}
+meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
+meteredWriteFileChunks meterupdate dest chunks feeder =
+	E.bracket (openFile dest WriteMode) hClose (feed chunks [])
   where
-	feed state [] h = do
-		(state', cs) <- feeder state
-		unless (null cs) $
-			feed state' cs h
-	feed state (c:cs) h = do
-		S.hPut h c
-		meterupdate $ toInteger $ S.length c
-		feed state cs h
+	feed [] [] _ = noop
+	feed (c:cs) [] h = do
+		bs <- L.toChunks <$> feeder c
+		unless (null bs) $
+			feed cs bs h
+	feed cs (b:bs) h = do
+		S.hPut h b
+		meterupdate $ toInteger $ S.length b
+		feed cs bs h

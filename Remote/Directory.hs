@@ -180,13 +180,8 @@ retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex 
 retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFileChunks meterupdate f files feeder
+			meteredWriteFileChunks meterupdate f files $ L.readFile
 			return True
-  where
-	feeder [] = return ([], [])
-	feeder (x:xs) = do
-		chunks <- L.toChunks <$> L.readFile x
-		return (xs, chunks)
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupdate ->

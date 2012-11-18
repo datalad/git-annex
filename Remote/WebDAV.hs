@@ -116,18 +116,14 @@ retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve r k _f d = metered Nothing k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
-			meteredWriteFileChunks meterupdate d urls $
-				feeder user pass
+			meteredWriteFileChunks meterupdate d urls $ \url -> do
+				mb <- davGetUrlContent url user pass
+				case mb of
+					Nothing -> throwIO "download failed"
+					Just b -> return b
 			return True
   where
 	onerr _ = return False
-
-	feeder _ _ [] = return ([], [])
-	feeder user pass (url:urls) = do
-		mb <- davGetUrlContent url user pass
-		case mb of
-			Nothing -> throwIO "download failed"
-			Just b -> return (urls, L.toChunks b)
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
