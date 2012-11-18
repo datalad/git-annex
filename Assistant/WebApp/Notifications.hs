@@ -20,7 +20,9 @@ import Utility.Yesod
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+#ifndef WITH_OLD_YESOD
 import qualified Data.Aeson.Types as Aeson
+#endif
 
 {- Add to any widget to make it auto-update using long polling.
  -
