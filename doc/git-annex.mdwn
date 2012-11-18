@@ -864,31 +864,31 @@ Here are all the supported configuration settings.
 * `remote.<name>.rsyncurl`
 
   Used by rsync special remotes, this configures
-  the location of the rsync repository to use. Normally this is automaticaly
+  the location of the rsync repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
 * `remote.<name>.buprepo`
 
   Used by bup special remotes, this configures
-  the location of the bup repository to use. Normally this is automaticaly
+  the location of the bup repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
 * `remote.<name>.directory`
 
   Used by directory special remotes, this configures
   the location of the directory where annexed files are stored for this
-  remote. Normally this is automaticaly set up by `git annex initremote`,
+  remote. Normally this is automatically set up by `git annex initremote`,
   but you can change it if needed.
 
 * `remote.<name>.s3`
 
   Used to identify Amazon S3 special remotes.
-  Normally this is automaticaly set up by `git annex initremote`.
+  Normally this is automatically set up by `git annex initremote`.
 
 * `remote.<name>.webdav`
 
   Used to identify webdav special remotes.
-  Normally this is automaticaly set up by `git annex initremote`.
+  Normally this is automatically set up by `git annex initremote`.
 
 * `remote.<name>.annex-xmppaddress`
 
