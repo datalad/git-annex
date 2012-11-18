@@ -20,6 +20,7 @@ import Utility.Yesod
 import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Aeson.Types as Aeson
 
 {- Add to any widget to make it auto-update using long polling.
  -
@@ -32,9 +33,16 @@ import qualified Data.Text as T
  - ms_startdelay is how long to delay before updating with AJAX at the start
  -}
 autoUpdate :: Text -> Route WebApp -> Int -> Int -> Widget
-autoUpdate ident geturl ms_delay ms_startdelay = do
-	let delay = T.pack (show ms_delay)
-	let startdelay = T.pack (show ms_startdelay)
+autoUpdate tident geturl ms_delay ms_startdelay = do
+#ifdef WITH_OLD_YESOD
+	let delay = show ms_delay
+	let startdelay = show ms_startdelay
+	let ident = tident
+#else
+	let delay = Aeson.String (T.pack (show ms_delay))
+	let startdelay = Aeson.String (T.pack (show ms_startdelay))
+	let ident = Aeson.String tident
+#endif
 	addScript $ StaticR longpolling_js
 	$(widgetFile "notifications/longpolling")
 
