@@ -81,12 +81,11 @@ remoteCipher c = go $ extractCipher c
 		cache <- Annex.getState Annex.ciphers
 		case M.lookup encipher cache of
 			Just cipher -> return $ Just cipher
-			Nothing -> decrypt encipher cache
-	decrypt encipher cache = do
-		showNote "gpg"
-		cipher <- liftIO $ decryptCipher encipher
-		Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-		return $ Just cipher
+			Nothing -> do
+				showNote "gpg"
+				cipher <- liftIO $ decryptCipher encipher
+				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
+				return $ Just cipher
 
 {- Checks if there is a trusted (non-shared) cipher. -}
 isTrustedCipher :: RemoteConfig -> Bool
@@ -96,9 +95,9 @@ isTrustedCipher c =
 {- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey Nothing _ = return Nothing
-cipherKey (Just c) k = maybe Nothing encrypt <$> remoteCipher c
+cipherKey (Just c) k = maybe Nothing make <$> remoteCipher c
   where
-	encrypt ciphertext = Just (ciphertext, encryptKey ciphertext k)
+	make ciphertext = Just (ciphertext, encryptKey ciphertext k)
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig

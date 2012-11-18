@@ -40,9 +40,9 @@ setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
 		mcipher <- remoteCipher c
 		case (mcipher, credPairRemoteKey storage) of
 			(Just cipher, Just key) | isTrustedCipher c -> do
-				s <- liftIO $ withEncryptedContent cipher
-					(return $ L.pack $ encodeCredPair creds)
-					(return . L.unpack)
+				s <- liftIO $ encrypt cipher
+					(feedBytes $ L.pack $ encodeCredPair creds)
+					(readBytes $ return . L.unpack)
 				return $ M.insert key (toB64 s) c
 			_ -> do
 				writeCacheCredPair creds storage
@@ -62,7 +62,9 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 			mcipher <- remoteCipher c
 			case (M.lookup key c, mcipher) of
 				(Just enccreds, Just cipher) -> do
-					creds <- liftIO $ decrypt enccreds cipher
+					creds <- liftIO $ decrypt cipher
+						(feedBytes $ L.pack $ fromB64 enccreds)
+						(readBytes $ return . L.unpack)
 					case decodeCredPair creds of
 						Just credpair -> do
 							writeCacheCredPair credpair storage 
@@ -70,9 +72,6 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 						_ -> do error $ "bad " ++ key
 				_ -> return Nothing
 		Nothing -> return Nothing
-	decrypt enccreds cipher = withDecryptedContent cipher
-		(return $ L.pack $ fromB64 enccreds)
-		(return . L.unpack)
 
 {- Gets a CredPair from the environment. -}
 getEnvCredPair :: CredPairStorage -> IO (Maybe CredPair)

@@ -110,7 +110,8 @@ store o k _f p = rsyncSend o p k <=< inRepo $ gitAnnexLocation k
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation k
-	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
+	liftIO $ decrypt cipher (feedFile src) $
+		readBytes $ L.writeFile tmp
 	rsyncSend o p enck tmp
 
 retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -128,7 +129,8 @@ retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp -> do
 	ifM (retrieve o enck undefined tmp)
 		( liftIO $ catchBoolIO $ do
-			withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
+			decrypt cipher (feedFile tmp) $
+				readBytes $ L.writeFile f
 			return True
 		, return False
 		)

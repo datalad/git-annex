@@ -7,6 +7,8 @@ git-annex (3.20121113) UNRELEASED; urgency=low
     added, including when new repository configurations are pushed in from
     remotes.
   * OSX: Fix RunAtLoad value in plist file.
+  * Getting a file from chunked directory special remotes no longer buffers
+    it all in memory.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

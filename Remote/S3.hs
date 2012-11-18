@@ -122,7 +122,8 @@ storeEncrypted r (cipher, enck) k _p = s3Action r False $ \(conn, bucket) ->
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
 		f <- inRepo $ gitAnnexLocation k
-		liftIO $ withEncryptedContent cipher (L.readFile f) $ L.writeFile tmp
+		liftIO $ encrypt cipher (feedFile f) $
+			readBytes $ L.writeFile tmp
 		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
 		s3Bool res
 
@@ -162,8 +163,8 @@ retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) _ f = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ getObject conn $ bucketKey r bucket enck
 	case res of
-		Right o -> liftIO $ 
-			withDecryptedContent cipher (return $ obj_data o) $ \content -> do
+		Right o -> liftIO $ decrypt cipher (feedBytes $ obj_data o) $ 
+			readBytes $ \content -> do
 				L.writeFile f content
 				return True
 		Left e -> s3Warning e

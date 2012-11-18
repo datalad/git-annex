@@ -18,10 +18,11 @@ module Crypto (
 	describeCipher,
 	decryptCipher,		
 	encryptKey,
-	withEncryptedHandle,
-	withDecryptedHandle,
-	withEncryptedContent,
-	withDecryptedContent,
+	feedFile,
+	feedBytes,
+	readBytes,
+	encrypt,
+	decrypt,	
 
 	prop_hmacWithCipher_sane
 ) where
@@ -90,10 +91,9 @@ describeCipher (EncryptedCipher _ (KeyIds ks)) =
 encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
 encryptCipher (Cipher c) (KeyIds ks) = do
 	let ks' = nub $ sort ks -- gpg complains about duplicate recipient keyids
-	encipher <- Gpg.pipeStrict (encrypt++recipients ks') c
+	encipher <- Gpg.pipeStrict ([ Params "--encrypt" ] ++ recipients ks') c
 	return $ EncryptedCipher encipher (KeyIds ks')
  where
-	encrypt = [ Params "--encrypt" ]
 	recipients l = force_recipients :
 		concatMap (\k -> [Param "--recipient", Param k]) l
 	-- Force gpg to only encrypt to the specified
@@ -103,9 +103,7 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher
 decryptCipher (SharedCipher t) = return $ Cipher t
-decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict decrypt t
-  where
-	decrypt = [ Param "--decrypt" ]
+decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
@@ -118,31 +116,27 @@ encryptKey c k = Key
 	, keyMtime = Nothing -- to avoid leaking data
 	}
 
-{- Runs an action, passing it a handle from which it can 
- - stream encrypted content. -}
-withEncryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
-withEncryptedHandle = Gpg.passphraseHandle [Params "--symmetric --force-mdc"] . cipherPassphrase
+type Feeder = Handle -> IO ()
+type Reader a = Handle -> IO a
 
-{- Runs an action, passing it a handle from which it can
- - stream decrypted content. -}
-withDecryptedHandle :: Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a
-withDecryptedHandle = Gpg.passphraseHandle [Param "--decrypt"] . cipherPassphrase
+feedFile :: FilePath -> Feeder
+feedFile f h = L.hPut h =<< L.readFile f
 
-{- Streams encrypted content to an action. -}
-withEncryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
-withEncryptedContent = pass withEncryptedHandle
+feedBytes :: L.ByteString -> Feeder
+feedBytes = flip L.hPut
 
-{- Streams decrypted content to an action. -}
-withDecryptedContent :: Cipher -> IO L.ByteString -> (L.ByteString -> IO a) -> IO a
-withDecryptedContent = pass withDecryptedHandle
+readBytes :: (L.ByteString -> IO a) -> Reader a
+readBytes a h = L.hGetContents h >>= a
 
-pass
-	:: (Cipher -> IO L.ByteString -> (Handle -> IO a) -> IO a) 
-	-> Cipher
-	-> IO L.ByteString
-	-> (L.ByteString -> IO a)
-	-> IO a
-pass to n s a = to n s $ a <=< L.hGetContents
+{- Runs a Feeder action, that generates content that is encrypted with the
+ - Cipher, and read by the Reader action. -}
+encrypt :: Cipher -> Feeder -> Reader a -> IO a
+encrypt = Gpg.feedRead [Params "--symmetric --force-mdc"] . cipherPassphrase
+
+{- Runs a Feeder action, that generates content that is decrypted with the
+ - Cipher, and read by the Reader action. -}
+decrypt :: Cipher -> Feeder -> Reader a -> IO a
+decrypt = Gpg.feedRead [Param "--decrypt"] . cipherPassphrase
 
 hmacWithCipher :: Cipher -> String -> String
 hmacWithCipher c = hmacWithCipher' (cipherHmac c) 

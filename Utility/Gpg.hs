@@ -7,7 +7,6 @@
 
 module Utility.Gpg where
 
-import qualified Data.ByteString.Lazy as L
 import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
@@ -54,14 +53,15 @@ pipeStrict params input = do
 		hClose to
 		hGetContentsStrict from
 
-{- Runs gpg with some parameters, first feeding it a passphrase via
- - --passphrase-fd, then feeding it an input, and passing a handle
- - to its output to an action.
+{- Runs gpg with some parameters. First sends it a passphrase via
+ - --passphrase-fd. Then runs a feeder action that is passed a handle and
+ - should write to it all the data to input to gpg. Finally, runs
+ - a reader action that is passed a handle to gpg's output. 
  -
  - Note that to avoid deadlock with the cleanup stage,
- - the action must fully consume gpg's input before returning. -}
-passphraseHandle :: [CommandParam] -> String -> IO L.ByteString -> (Handle -> IO a) -> IO a
-passphraseHandle params passphrase a b = do
+ - the reader must fully consume gpg's input before returning. -}
+feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+feedRead params passphrase feeder reader = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
 	void $ forkIO $ do
@@ -77,9 +77,9 @@ passphraseHandle params passphrase a b = do
 	where
 		go (to, from) = do
 			void $ forkIO $ do
-				L.hPut to =<< a
+				feeder to
 				hClose to
-			b from
+			reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name. -}

@@ -108,7 +108,8 @@ store h k _f _p = do
 storeEncrypted :: String -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted h (cipher, enck) k _p = withTmp enck $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation k
-	liftIO $ withEncryptedContent cipher (L.readFile src) $ L.writeFile tmp
+	liftIO $ encrypt cipher (feedFile src) $
+		readBytes $ L.writeFile tmp
 	runHook h "store" enck (Just tmp) $ return True
 
 retrieve :: String -> Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -120,7 +121,8 @@ retrieveCheap _ _ _ = return False
 retrieveEncrypted :: String -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted h (cipher, enck) _ f = withTmp enck $ \tmp ->
 	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBoolIO $ do
-		withDecryptedContent cipher (L.readFile tmp) $ L.writeFile f
+		decrypt cipher (feedFile tmp) $
+			readBytes $ L.writeFile f
 		return True
 
 remove :: String -> Key -> Annex Bool

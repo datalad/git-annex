@@ -93,8 +93,8 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k _p = davAction r False $ \(baseurl, user, pass) -> do
 	let url = davLocation baseurl enck
 	f <- inRepo $ gitAnnexLocation k
-	liftIO $ withEncryptedContent cipher (L.readFile f) $
-		storeHelper r url user pass
+	liftIO $ encrypt cipher (feedFile f) $
+		readBytes $ storeHelper r url user pass
 
 storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
 storeHelper r urlbase user pass b = catchBoolIO $ do
@@ -133,18 +133,20 @@ retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
 retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r enck baseurl user pass onerr $ \urls -> do
-			withDecryptedContent cipher (L.concat <$> feeder user pass urls []) $
-				meteredWriteFile meterupdate d
+			decrypt cipher (feeder user pass urls) $
+				readBytes $ meteredWriteFile meterupdate d
 			return True
   where
 	onerr _ = return False
 
-	feeder _ _ [] c = return $ reverse c
-	feeder user pass (url:urls) c = do
+	feeder _ _ [] _ = noop
+	feeder user pass (url:urls) h = do
 		mb <- davGetUrlContent url user pass
 		case mb of
 			Nothing -> throwIO "download failed"
-			Just b -> feeder user pass urls (b:c)
+			Just b -> do
+				L.hPut h b
+				feeder user pass urls h
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do

@@ -118,13 +118,13 @@ storeEncrypted d chunksize (cipher, enck) k p = do
 	src <- inRepo $ gitAnnexLocation k
 	metered (Just p) k $ \meterupdate ->
 		storeHelper d chunksize enck $ \dests ->
-			withEncryptedContent cipher (L.readFile src) $ \s ->
+			encrypt cipher (feedFile src) $ readBytes $ \b ->
 				case chunksize of
 					Nothing -> do
 						let dest = Prelude.head dests
-						meteredWriteFile meterupdate dest s
+						meteredWriteFile meterupdate dest b
 						return [dest]
-					Just _ -> storeSplit meterupdate chunksize dests s
+					Just _ -> storeSplit meterupdate chunksize dests b
 
 {- Splits a ByteString into chunks and writes to dests, obeying configured
  - chunk size (not to be confused with the L.ByteString chunk size).
@@ -192,9 +192,11 @@ retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -
 retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d enck $ \files ->
 		catchBoolIO $ do
-			withDecryptedContent cipher (L.concat <$> mapM L.readFile files) $
-				meteredWriteFile meterupdate f
+			decrypt cipher (feeder files) $
+				readBytes $ meteredWriteFile meterupdate f
 			return True
+  where
+	feeder files h = forM_ files $ \file -> L.hPut h =<< L.readFile file
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks
