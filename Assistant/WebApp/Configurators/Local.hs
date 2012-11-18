@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Configurators.Local where
 
@@ -49,7 +49,17 @@ data RepositoryPath = RepositoryPath Text
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
 repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
-repositoryPathField autofocus = Field { fieldParse = parse, fieldView = view }
+repositoryPathField autofocus = Field
+#ifdef WITH_OLD_YESOD
+	{ fieldParse = parse
+#else
+	{ fieldParse = \l _ -> parse l
+#endif
+	, fieldView = view
+#ifndef WITH_OLD_YESOD
+	, fieldEnctype = UrlEncoded
+#endif
+	}
   where
 	view idAttr nameAttr attrs val isReq =
 		[whamlet|<input type="text" *{attrs} id="#{idAttr}" name="#{nameAttr}" :isReq:required :autofocus:autofocus value="#{either id id val}">|]
