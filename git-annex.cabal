@@ -73,8 +73,8 @@ Executable git-annex
     CPP-Options: -DWITH_S3
 
   if flag(WebDAV)
-    Build-Depends: DAV (>= 0.2), http-conduit
-    CPP-Options: -DWITH_WebDAV
+    Build-Depends: DAV (>= 0.2), http-conduit, xml-conduit
+    CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: stm >= 2.3
