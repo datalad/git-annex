@@ -15,6 +15,7 @@ import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as LT
 import qualified Text.XML as XML
 import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
@@ -307,9 +308,7 @@ contentType = Just $ B8.fromString "application/octet-stream"
 {- The DAV library requires that properties be specified when storing a file.
  - This just omits any real properties. -}
 noProps :: XML.Document
-noProps = XML.Document (XML.Prologue [] Nothing []) root []
-  where
-    root = XML.Element (XML.Name (T.pack "propertyupdate") Nothing Nothing) [] []
+noProps = XML.parseText_ XML.def $ LT.pack "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<propertyupdate/>"
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c u = maybe missing (return . Just) =<< getRemoteCredPair c creds
