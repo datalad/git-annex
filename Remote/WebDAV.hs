@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import qualified Text.XML as XML
 import Network.URI (normalizePathSegments)
