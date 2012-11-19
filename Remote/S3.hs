@@ -24,6 +24,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Creds
+import Meters
 import Annex.Content
 
 remote :: RemoteType
@@ -111,38 +112,41 @@ s3Setup u c = handlehost $ M.lookup "host" c
 			M.delete "bucket" defaults
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f _p = s3Action r False $ \(conn, bucket) -> do
+store r k _f p = s3Action r False $ \(conn, bucket) -> do
 	src <- inRepo $ gitAnnexLocation k
-	res <- liftIO $ storeHelper (conn, bucket) r k src
+	res <- storeHelper (conn, bucket) r k p src
 	s3Bool res
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k _p = s3Action r False $ \(conn, bucket) -> 
+storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) -> 
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> do
 		f <- inRepo $ gitAnnexLocation k
 		liftIO $ encrypt cipher (feedFile f) $
 			readBytes $ L.writeFile tmp
-		res <- liftIO $ storeHelper (conn, bucket) r enck tmp
+		res <- storeHelper (conn, bucket) r enck p tmp
 		s3Bool res
 
-storeHelper :: (AWSConnection, String) -> Remote -> Key -> FilePath -> IO (AWSResult ())
-storeHelper (conn, bucket) r k file = do
-	content <- liftIO $ L.readFile file
-	-- size is provided to S3 so the whole content does not need to be
-	-- buffered to calculate it
+storeHelper :: (AWSConnection, String) -> Remote -> Key -> MeterUpdate -> FilePath -> Annex (AWSResult ())
+storeHelper (conn, bucket) r k p file = do
 	size <- maybe getsize (return . fromIntegral) $ keySize k
-	let object = setStorageClass storageclass $ 
-		S3Object bucket (bucketFile r k) ""
-			(("Content-Length", show size) : xheaders) content
-	sendObject conn object
+	meteredBytes (Just p) size $ \meterupdate ->
+		liftIO $ withMeteredFile file meterupdate $ \content -> do
+			-- size is provided to S3 so the whole content
+			-- does not need to be buffered to calculate it
+			let object = setStorageClass storageclass $ S3Object
+				bucket (bucketFile r k) ""
+				(("Content-Length", show size) : xheaders)
+				content
+			sendObject conn object
   where
 	storageclass =
 		case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
 			"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
 			_ -> STANDARD
-	getsize = fileSize <$> (liftIO $ getFileStatus file)
+
+	getsize = liftIO $ fromIntegral . fileSize <$> getFileStatus file
 	
 	xheaders = filter isxheader $ M.assocs $ fromJust $ config r
 	isxheader (h, _) = "x-amz-" `isPrefixOf` h

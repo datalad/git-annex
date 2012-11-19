@@ -11,6 +11,7 @@ module Messages (
 	showAction,
 	showProgress,
 	metered,
+	meteredBytes,
 	showSideAction,
 	doSideAction,
 	doQuietSideAction,
@@ -63,9 +64,17 @@ showProgress = handle q $
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
 metered :: (Maybe MeterUpdate) -> Key -> (MeterUpdate -> Annex a) -> Annex a
-metered combinemeterupdate key a = withOutputType $ go (keySize key)
+metered combinemeterupdate key a = go (keySize key)
   where
-	go (Just size) NormalOutput = do
+	go (Just size) = meteredBytes combinemeterupdate size a
+	go _ = a (const noop)
+
+{- Shows a progress meter while performing an action on a given number
+ - of bytes. -}
+meteredBytes :: (Maybe MeterUpdate) -> Integer -> (MeterUpdate -> Annex a) -> Annex a
+meteredBytes combinemeterupdate size a = withOutputType go
+  where
+	go NormalOutput = do
 		progress <- liftIO $ newProgress "" size
 		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 		showOutput
@@ -76,7 +85,7 @@ metered combinemeterupdate key a = withOutputType $ go (keySize key)
 			maybe noop (\m -> m n) combinemeterupdate
 		liftIO $ clearMeter stdout meter
 		return r
-	go _ _ = a (const noop)
+	go _ = a (const noop)
 
 showSideAction :: String -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
