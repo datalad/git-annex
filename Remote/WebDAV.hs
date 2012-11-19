@@ -87,28 +87,30 @@ webdavSetup u c = do
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> do
-		let url = davLocation baseurl k
 		f <- inRepo $ gitAnnexLocation k
 		liftIO $ withMeteredFile f meterupdate $
-			storeHelper r k url user pass
+			storeHelper r k baseurl user pass
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> do
-		let url = davLocation baseurl enck
 		f <- inRepo $ gitAnnexLocation k
 		liftIO $ encrypt cipher (streamMeteredFile f meterupdate) $
-			readBytes $ storeHelper r enck url user pass
+			readBytes $ storeHelper r enck baseurl user pass
 
 storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
-storeHelper r k urlbase user pass b = catchBoolIO $ do
-	davMkdir (urlParent urlbase) user pass
-	storeChunks k undefined undefined chunksize storer recorder finalizer
+storeHelper r k baseurl user pass b = catchBoolIO $ do
+	davMkdir tmpurl user pass
+	storeChunks k tmpurl keyurl chunksize storer recorder finalizer
   where
+	tmpurl = tmpLocation baseurl k
+	keyurl = davLocation baseurl k
 	chunksize = chunkSize $ config r
 	storer urls = storeChunked chunksize urls storehttp b
 	recorder url s = storehttp url (L8.fromString s)
-	finalizer srcurl desturl = 
+	finalizer srcurl desturl = do
+		void $ catchMaybeHttp (deleteContent desturl user pass)
+		davMkdir (urlParent desturl) user pass
 		moveContent srcurl (B8.fromString desturl) user pass
 	storehttp url v = putContentAndProps url user pass
 		(noProps, (contentType, v))
@@ -152,7 +154,7 @@ remove :: Remote -> Key -> Annex Bool
 remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
 	-- Delete the key's whole directory, including any chunked
 	-- files, etc, in a single action.
-	let url = urlParent $ davLocation baseurl k
+	let url = davLocation baseurl k
 	isJust <$> catchMaybeHttp (deleteContent url user pass)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
@@ -191,12 +193,12 @@ withStoredFiles
 	-> IO a
 withStoredFiles r k baseurl user pass onerr a
 	| isJust $ chunkSize $ config r = do
-		let chunkcount = url ++ chunkCount
-		maybe (onerr chunkcount) (a . listChunks url . L8.toString)
+		let chunkcount = keyurl ++ chunkCount
+		maybe (onerr chunkcount) (a . listChunks keyurl . L8.toString)
 			=<< davGetUrlContent chunkcount user pass
-	| otherwise = a [url]
+	| otherwise = a [keyurl]
   where
-	url = davLocation baseurl k
+	keyurl = davLocation baseurl k ++ keyFile k
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = case config r of
@@ -214,9 +216,15 @@ toDavUser = B8.fromString
 toDavPass :: String -> DavPass
 toDavPass = B8.fromString
 
-{- The location to use to store a Key. -}
+{- The directory where files(s) for a key are stored. -}
 davLocation :: DavUrl -> Key -> DavUrl
-davLocation baseurl k = davUrl baseurl $ keyPath k hashDirLower
+davLocation baseurl k = addTrailingPathSeparator $
+	davUrl baseurl $ hashDirLower k </> keyFile k
+
+{- Where we store temporary data for a key as it's being uploaded. -}
+tmpLocation :: DavUrl -> Key -> DavUrl
+tmpLocation baseurl k = addTrailingPathSeparator $
+	davUrl baseurl $ "tmp" </> keyFile k
 
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file
@@ -280,8 +288,9 @@ throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
 urlParent :: DavUrl -> DavUrl
-urlParent url = reverse $ dropWhile (== '/') $ reverse $
-	normalizePathSegments (url ++ "/..")
+urlParent url = dropTrailingPathSeparator $
+	normalizePathSegments (dropTrailingPathSeparator url ++ "/..")
+  where
 
 {- Test if a WebDAV store is usable, by writing to a test file, and then
  - deleting the file. Exits with an IO error if not. -}
