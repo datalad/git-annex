@@ -12,7 +12,6 @@ import Command
 import Annex.Content
 import Utility.Rsync
 import Logs.Transfer
-import Types.Remote
 import qualified Fields
 
 def :: [Command]

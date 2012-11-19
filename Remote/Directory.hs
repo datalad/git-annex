@@ -48,7 +48,7 @@ gen r u c = do
  			storeKey = store dir chunksize,
 			retrieveKeyFile = retrieve dir chunksize,
 			retrieveKeyFileCheap = retrieveCheap dir chunksize,
-			removeKey = remove dir chunksize,
+			removeKey = remove dir,
 			hasKey = checkPresent dir chunksize,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
@@ -73,9 +73,18 @@ directorySetup u c = do
 	gitConfigSpecialRemote u c' "directory" dir
 	return $ M.delete "directory" c'
 
-{- Locations to try to access a given Key in the Directory. -}
+{- Locations to try to access a given Key in the Directory.
+ - We try more than since we used to write to different hash directories. -}
 locations :: FilePath -> Key -> [FilePath]
 locations d k = map (d </>) (keyPaths k)
+
+{- Directory where the file(s) for a key are stored. -}
+storeDir :: FilePath -> Key -> FilePath
+storeDir d k = addTrailingPathSeparator $ d </> hashDirLower k </> keyFile k
+
+{- Where we store temporary data for a key as it's being uploaded. -}
+tmpDir :: FilePath -> Key -> FilePath
+tmpDir d k = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
 
 withCheckedFiles :: (FilePath -> IO Bool) -> ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ _ [] _ _ = return False
@@ -159,18 +168,22 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
 storeHelper d chunksize key storer = check <&&> go
   where
-	basedest = Prelude.head $ locations d key
-	dir = parentDir basedest
+	tmpdir = tmpDir d key
+	destdir = storeDir d key
 	{- The size is not exactly known when encrypting the key;
 	 - this assumes that at least the size of the key is
 	 - needed as free space. -}
-	check = checkDiskSpace (Just dir) key 0
-	go = liftIO $ catchBoolIO $ do
-		createDirectoryIfMissing True dir
-		allowWrite dir
-		preventWrite dir `after` storeChunks basedest chunksize storer recorder finalizer
-	finalizer f dest = do
-		renameFile f dest
+	check = do
+		liftIO $ createDirectoryIfMissing True tmpdir
+		checkDiskSpace (Just tmpdir) key 0
+	go = liftIO $ catchBoolIO $
+		storeChunks key tmpdir destdir chunksize storer recorder finalizer
+	finalizer tmp dest = do
+		void $ tryIO $ allowWrite dest -- may already exist
+		void $ tryIO $ removeDirectoryRecursive dest -- or not exist
+		createDirectoryIfMissing True (parentDir dest)
+		renameDirectory tmp dest
+		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
 	recorder f s = do
 		void $ tryIO $ allowWrite f
@@ -201,16 +214,13 @@ retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
 	go [file] = catchBoolIO $ createSymbolicLink file f >> return True
 	go _files = return False
 
-remove :: FilePath -> ChunkSize -> Key -> Annex Bool
-remove d chunksize k = liftIO $ withStoredFiles chunksize d k go
+remove :: FilePath -> Key -> Annex Bool
+remove d k = liftIO $ catchBoolIO $ do
+	allowWrite dir
+	removeDirectoryRecursive dir
+	return True
   where
-	go = all id <$$> mapM removefile
-	removefile file = catchBoolIO $ do
-		let dir = parentDir file
-		allowWrite dir
-		removeFile file
-		_ <- tryIO $ removeDirectory dir
-		return True
+	dir = storeDir d k
 
 checkPresent :: FilePath -> ChunkSize -> Key -> Annex (Either String Bool)
 checkPresent d chunksize k = liftIO $ catchMsgIO $ withStoredFiles chunksize d k $

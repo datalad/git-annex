@@ -90,7 +90,7 @@ store r k _f p = metered (Just p) k $ \meterupdate ->
 		let url = davLocation baseurl k
 		f <- inRepo $ gitAnnexLocation k
 		liftIO $ withMeteredFile f meterupdate $
-			storeHelper r url user pass
+			storeHelper r k url user pass
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
@@ -98,12 +98,12 @@ storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 		let url = davLocation baseurl enck
 		f <- inRepo $ gitAnnexLocation k
 		liftIO $ encrypt cipher (streamMeteredFile f meterupdate) $
-			readBytes $ storeHelper r url user pass
+			readBytes $ storeHelper r enck url user pass
 
-storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
-storeHelper r urlbase user pass b = catchBoolIO $ do
+storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
+storeHelper r k urlbase user pass b = catchBoolIO $ do
 	davMkdir (urlParent urlbase) user pass
-	storeChunks urlbase chunksize storer recorder finalizer
+	storeChunks k undefined undefined chunksize storer recorder finalizer
   where
 	chunksize = chunkSize $ config r
 	storer urls = storeChunked chunksize urls storehttp b

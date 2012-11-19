@@ -58,33 +58,28 @@ chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
 {- Given the base destination to use to store a value,
  - generates a stream of temporary destinations (just one when not chunking)
  - and passes it to an action, which should chunk and store the data,
- - and return the destinations it stored to, or [] on error.
- -
- - Then calles the finalizer to rename the temporary destinations into
- - their final places (and do any other cleanup), and writes the chunk count
- - (if chunking)
+ - and return the destinations it stored to, or [] on error. Then
+ - calls the storer to write the chunk count (if chunking). Finally, the
+ - fianlizer is called to rename the tmp into the dest 
+ - (and do any other cleanup).
  -}
-storeChunks :: FilePath -> ChunkSize -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO Bool
-storeChunks basedest chunksize storer recorder finalizer =
+storeChunks :: Key -> FilePath -> FilePath -> ChunkSize -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO Bool
+storeChunks key tmp dest chunksize storer recorder finalizer =
 	either (const $ return False) return
 		=<< (E.try go :: IO (Either E.SomeException Bool))
   where
 	go = do
 		stored <- storer tmpdests
-		forM_ stored $ \d -> do
-			let dest = detmpprefix d
-			finalizer d dest
 		when (chunksize /= Nothing) $ do
-			let chunkcount = basedest ++ chunkCount
+			let chunkcount = basef ++ chunkCount
 			recorder chunkcount (show $ length stored)
+		finalizer tmp dest
 		return (not $ null stored)
 
-	tmpprefix = ".tmp"
-	detmpprefix f = take (length f - tmpprefixlen) f
-	tmpprefixlen = length tmpprefix
+	basef = tmp ++ keyFile key
 	tmpdests
-		| chunksize == Nothing = [basedest ++ tmpprefix]
-		| otherwise = map (++ tmpprefix) $ map (basedest ++) chunkStream
+		| chunksize == Nothing = [basef]
+		| otherwise = map (basef ++ ) chunkStream
 
 {- Given a list of destinations to use, chunks the data according to the
  - ChunkSize, and runs the storer action to store each chunk. Returns
