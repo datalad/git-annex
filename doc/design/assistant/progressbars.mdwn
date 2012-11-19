@@ -23,7 +23,7 @@ the MeterUpdate callback as the upload progresses.
 * directory: **done**
 * web: Not applicable; does not upload 
 * webdav: **done**
-* S3: TODO
+* S3: **done**
 * bup: TODO
 * hook: Would require the hook interface to somehow do this, which seems
   too complicated. So skipping.

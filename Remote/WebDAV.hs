@@ -97,7 +97,7 @@ storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> do
 		let url = davLocation baseurl enck
 		f <- inRepo $ gitAnnexLocation k
-		liftIO $ encrypt cipher (sendMeteredFile f meterupdate) $
+		liftIO $ encrypt cipher (streamMeteredFile f meterupdate) $
 			readBytes $ storeHelper r url user pass
 
 storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool

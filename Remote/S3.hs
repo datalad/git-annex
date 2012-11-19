@@ -152,26 +152,29 @@ storeHelper (conn, bucket) r k p file = do
 	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = s3Action r False $ \(conn, bucket) -> do
-	res <- liftIO $ getObject conn $ bucketKey r bucket k
-	case res of
-		Right o -> do
-			liftIO $ L.writeFile d $ obj_data o
-			return True
-		Left e -> s3Warning e
+retrieve r k _f d = s3Action r False $ \(conn, bucket) ->
+	metered Nothing k $ \meterupdate -> do
+		res <- liftIO $ getObject conn $ bucketKey r bucket k
+		case res of
+			Right o -> do
+				liftIO $ meteredWriteFile meterupdate d $
+					obj_data o
+				return True
+			Left e -> s3Warning e
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) _ f = s3Action r False $ \(conn, bucket) -> do
-	res <- liftIO $ getObject conn $ bucketKey r bucket enck
-	case res of
-		Right o -> liftIO $ decrypt cipher (feedBytes $ obj_data o) $ 
-			readBytes $ \content -> do
-				L.writeFile f content
-				return True
-		Left e -> s3Warning e
+retrieveEncrypted r (cipher, enck) k d = s3Action r False $ \(conn, bucket) ->
+	metered Nothing k $ \meterupdate -> do
+		res <- liftIO $ getObject conn $ bucketKey r bucket enck
+		case res of
+			Right o -> liftIO $ decrypt cipher (\h -> meteredWrite meterupdate h $ obj_data o) $ 
+				readBytes $ \content -> do
+					L.writeFile d content
+					return True
+			Left e -> s3Warning e
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = s3Action r False $ \(conn, bucket) -> do

@@ -9,6 +9,7 @@ git-annex (3.20121113) UNRELEASED; urgency=low
   * OSX: Fix RunAtLoad value in plist file.
   * Getting a file from chunked directory special remotes no longer buffers
     it all in memory.
+  * S3: Added progress display for uploading and downloading.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

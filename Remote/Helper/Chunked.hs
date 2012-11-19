@@ -10,10 +10,10 @@ module Remote.Helper.Chunked where
 import Common.Annex
 import Utility.DataUnits
 import Types.Remote
+import Meters
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as S
 import Data.Int
 import qualified Control.Exception as E
 
@@ -121,25 +121,10 @@ storeChunked chunksize dests storer content =
 			storer d chunk
 			storechunks sz (d:useddests) ds b'
 
-{- Write a L.ByteString to a file, updating a progress meter
- - after each chunk of the L.ByteString, typically every 64 kb or so. -}
-meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
-meteredWriteFile meterupdate dest b =
-	meteredWriteFileChunks meterupdate dest [b] return
-
-{- Writes a series of major chunks to a file. The feeder is called to get
- - each major chunk. Then each chunk of the L.ByteString is written,
- - with the meter updated after each chunk. -}
+{- Writes a series of chunks to a file. The feeder is called to get
+ - each chunk. -}
 meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
 meteredWriteFileChunks meterupdate dest chunks feeder =
-	E.bracket (openFile dest WriteMode) hClose (feed chunks [])
-  where
-	feed [] [] _ = noop
-	feed (c:cs) [] h = do
-		bs <- L.toChunks <$> feeder c
-		unless (null bs) $
-			feed cs bs h
-	feed cs (b:bs) h = do
-		S.hPut h b
-		meterupdate $ toInteger $ S.length b
-		feed cs bs h
+	withBinaryFile dest WriteMode $ \h ->
+		forM_ chunks $ \c ->
+			meteredWrite meterupdate h =<< feeder c

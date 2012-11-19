@@ -11,6 +11,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 import qualified Data.Map as M
 import qualified Control.Exception as E
+import Data.Int
 
 import Common.Annex
 import Types.Remote
@@ -21,8 +22,8 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
-import Data.Int
 import Annex.Content
+import Meters
 
 remote :: RemoteType
 remote = RemoteType {
