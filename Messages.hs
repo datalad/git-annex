@@ -41,7 +41,6 @@ import Common
 import Types
 import Types.Messages
 import Types.Key
-import Types.Remote
 import qualified Annex
 import qualified Messages.JSON as JSON
 

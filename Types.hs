@@ -12,7 +12,8 @@ module Types (
 	UUID(..),
 	Remote,
 	RemoteType,
-	Option
+	Option,
+	MeterUpdate
 ) where
 
 import Annex
@@ -21,6 +22,7 @@ import Types.Key
 import Types.UUID
 import Types.Remote
 import Types.Option
+import Types.Meters
 
 type Backend = BackendA Annex
 type Remote = RemoteA Annex

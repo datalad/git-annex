@@ -15,6 +15,7 @@ import Data.Ord
 import qualified Git
 import Types.Key
 import Types.UUID
+import Types.Meters
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -36,10 +37,6 @@ instance Eq (RemoteTypeA a) where
 
 {- A filename associated with a Key, for display to user. -}
 type AssociatedFile = Maybe FilePath
-
-{- An action that can be run repeatedly, feeding it the number of
- - bytes sent or retrieved so far. -}
-type MeterUpdate = (Integer -> IO ())
 
 {- An individual remote. -}
 data RemoteA a = Remote {

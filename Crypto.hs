@@ -19,7 +19,6 @@ module Crypto (
 	decryptCipher,		
 	encryptKey,
 	feedFile,
-	feedFileMetered,
 	feedBytes,
 	readBytes,
 	encrypt,
@@ -37,8 +36,6 @@ import Common.Annex
 import qualified Utility.Gpg as Gpg
 import Types.Key
 import Types.Crypto
-import Types.Remote
-import Utility.Observed
 
 {- The first half of a Cipher is used for HMAC; the remainder
  - is used as the GPG symmetric encryption passphrase.
@@ -124,11 +121,6 @@ type Reader a = Handle -> IO a
 
 feedFile :: FilePath -> Feeder
 feedFile f h = L.hPut h =<< L.readFile f
-
-feedFileMetered :: FilePath -> MeterUpdate -> Feeder
-feedFileMetered f m to = withBinaryFile f ReadMode $ \h -> do
-	b <- hGetContentsObserved h $ m . toInteger
-	L.hPut to b
 
 feedBytes :: L.ByteString -> Feeder
 feedBytes = flip L.hPut

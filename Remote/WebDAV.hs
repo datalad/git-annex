@@ -31,7 +31,7 @@ import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
 import Creds
-import Utility.Observed
+import Meters
 
 type DavUrl = String
 type DavUser = B8.ByteString
@@ -89,16 +89,15 @@ store r k _f p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> do
 		let url = davLocation baseurl k
 		f <- inRepo $ gitAnnexLocation k
-		liftIO $ withBinaryFile f ReadMode $ \h -> do
-			b <- hGetContentsObserved h $ meterupdate . toInteger
-			storeHelper r url user pass b
+		liftIO $ withMeteredFile f meterupdate $
+			storeHelper r url user pass
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> do
 		let url = davLocation baseurl enck
 		f <- inRepo $ gitAnnexLocation k
-		liftIO $ encrypt cipher (feedFileMetered f meterupdate) $
+		liftIO $ encrypt cipher (sendMeteredFile f meterupdate) $
 			readBytes $ storeHelper r url user pass
 
 storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
