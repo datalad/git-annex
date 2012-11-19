@@ -25,11 +25,13 @@ Can you spot the potential data loss bugs in the above simple example?
 
 These parameters can be passed to `git annex initremote`:
 
-* `encryption` - Required. Either "none" to disable encryption of content,
+* `encryption` - Required. Either "none" to disable encryption,
   or a value that can be looked up (using gpg -k) to find a gpg encryption
-  key that will be given access to the remote. Note that additional gpg
-  keys can be given access to a remote by rerunning initremote with
-  the new key id. See [[encryption]].
+  key that will be given access to the remote, or "shared" which allows
+  every clone of the repository to access the encrypted data.
+
+  Note that additional gpg keys can be given access to a remote by
+  rerunning initremote with the new key id. See [[encryption]].
 
 * `hooktype` - Required. This specifies a collection of hooks to use for
   this remote.

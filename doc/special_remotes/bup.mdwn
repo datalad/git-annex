@@ -22,9 +22,11 @@ These parameters can be passed to `git annex initremote` to configure bup:
 * `encryption` - Required. Either "none" to disable encryption of content
   stored in bup (ssh will still be used to transport it securely),
   or a value that can be looked up (using gpg -k) to find a gpg encryption
-  key that will be given access to the remote. Note that additional gpg
-  keys can be given access to a remote by rerunning initremote with
-  the new key id. See [[encryption]].
+  key that will be given access to the remote, or "shared" which allows
+  every clone of the repository to access the encrypted data (use with caution).
+
+  Note that additional gpg keys can be given access to a remote by
+  rerunning initremote with the new key id. See [[encryption]].
 
 * `buprepo` - Required. This is passed to `bup` as the `--remote`
   to use to store data. To create the repository,`bup init` will be run.

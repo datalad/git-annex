@@ -12,7 +12,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
-import Remote.Helper.Encryptable (remoteCipher, isTrustedCipher)
+import Remote.Helper.Encryptable (remoteCipher, embedCreds)
 
 import System.Environment
 import System.Posix.Env (setEnv)
@@ -31,26 +31,32 @@ data CredPairStorage = CredPairStorage
 	, credPairRemoteKey :: Maybe RemoteConfigKey
 	}
 
-{- Stores creds in a remote's configuration, if the remote is encrypted
- - with a GPG key. Otherwise, caches them locally. -}
+{- Stores creds in a remote's configuration, if the remote allows
+ - that. Otherwise, caches them locally. -}
 setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex RemoteConfig
 setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
   where
-	go (Just creds) = do
-		mcipher <- remoteCipher c
-		case (mcipher, credPairRemoteKey storage) of
-			(Just cipher, Just key) | isTrustedCipher c -> do
-				s <- liftIO $ encrypt cipher
-					(feedBytes $ L.pack $ encodeCredPair creds)
-					(readBytes $ return . L.unpack)
-				return $ M.insert key (toB64 s) c
-			_ -> do
-				writeCacheCredPair creds storage
-				return c
+	go (Just creds)
+		| embedCreds c = case credPairRemoteKey storage of
+			Nothing -> localcache creds
+			Just key -> storeconfig creds key =<< remoteCipher c
+		| otherwise = localcache creds
 	go Nothing = return c
 
+	localcache creds = do
+		writeCacheCredPair creds storage
+		return c
+
+	storeconfig creds key (Just cipher) = do
+		s <- liftIO $ encrypt cipher
+			(feedBytes $ L.pack $ encodeCredPair creds)
+			(readBytes $ return . L.unpack)
+		return $ M.insert key (toB64 s) c
+	storeconfig creds key Nothing =
+		return $ M.insert key (toB64 $ encodeCredPair creds) c
+
 {- Gets a remote's credpair, from the environment if set, otherwise
- - from the cache in gitAnnexCredsDir, or failing that, from the encrypted
+ - from the cache in gitAnnexCredsDir, or failing that, from the
  - value in RemoteConfig. -}
 getRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
 getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
@@ -61,17 +67,20 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 		Just key -> do
 			mcipher <- remoteCipher c
 			case (M.lookup key c, mcipher) of
+				(Nothing, _) -> return Nothing
 				(Just enccreds, Just cipher) -> do
 					creds <- liftIO $ decrypt cipher
 						(feedBytes $ L.pack $ fromB64 enccreds)
 						(readBytes $ return . L.unpack)
-					case decodeCredPair creds of
-						Just credpair -> do
-							writeCacheCredPair credpair storage 
-							return $ Just credpair
-						_ -> do error $ "bad " ++ key
-				_ -> return Nothing
+					fromcreds creds
+				(Just bcreds, Nothing) ->
+					fromcreds $ fromB64 bcreds
 		Nothing -> return Nothing
+	fromcreds creds = case decodeCredPair creds of
+		Just credpair -> do
+			writeCacheCredPair credpair storage
+			return $ Just credpair
+		_ -> do error $ "bad creds"
 
 {- Gets a CredPair from the environment. -}
 getEnvCredPair :: CredPairStorage -> IO (Maybe CredPair)

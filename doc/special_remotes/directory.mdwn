@@ -10,12 +10,14 @@ the drive's mountpoint as a directory remote.
 These parameters can be passed to `git annex initremote` to configure the
 remote:
 
-* `encryption` - Required. Either "none" to disable encryption of content
-  stored in the directory,
+* `encryption` - Required. Either "none" to disable encryption,
   or a value that can be looked up (using gpg -k) to find a gpg encryption
-  key that will be given access to the remote. Note that additional gpg
-  keys can be given access to a remote by rerunning initremote with
-  the new key id. See [[encryption]].
+  key that will be given access to the remote, or "shared" which allows
+  every clone of the repository to decrypt the encrypted data.
+
+  Note that additional gpg keys can be given access to a remote by
+  rerunning initremote with the new key id. See [[encryption]].
+
 * `chunksize` - Avoid storing files larger than the specified size in the
   directory. For use on directories on mount points that have file size
   limitations. The default is to never chunk files.  

@@ -13,6 +13,9 @@ git-annex (3.20121113) UNRELEASED; urgency=low
   * directory special remote: Made more efficient and robust.
   * Bugfix: directory special remote could loop forever storing a key 
     when a too small chunksize was configured.
+  * Allow controlling whether login credentials for S3 and webdav are
+    committed to the repository, by setting embedcreds=yes|no when running
+    initremote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

@@ -87,10 +87,20 @@ remoteCipher c = go $ extractCipher c
 				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
 				return $ Just cipher
 
-{- Checks if there is a trusted (non-shared) cipher. -}
-isTrustedCipher :: RemoteConfig -> Bool
-isTrustedCipher c = 
-	isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c)
+{- Checks if the remote's config allows storing creds in the remote's config.
+ - 
+ - embedcreds=yes allows this, and embedcreds=no prevents it.
+ -
+ - If not set, the default is to only store creds when it's surely safe:
+ - When gpg encryption is used, in which case the creds will be encrypted
+ - using it. Not when a shared cipher is used.
+ -}
+embedCreds :: RemoteConfig -> Bool
+embedCreds c
+	| M.lookup "embedcreds" c == Just "yes" = True
+	| M.lookup "embedcreds" c == Just "no" = False
+	| isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c) = True
+	| otherwise = False
 
 {- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
