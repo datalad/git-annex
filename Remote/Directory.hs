@@ -158,7 +158,7 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 	feed _ [] _ = return []
 	feed sz (l:ls) h = do
 		let s = fromIntegral $ S.length l
-		if s <= sz
+		if s <= sz || sz == chunksize
 			then do
 				S.hPut h l
 				meterupdate $ toInteger s

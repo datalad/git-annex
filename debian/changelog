@@ -11,6 +11,8 @@ git-annex (3.20121113) UNRELEASED; urgency=low
     it all in memory.
   * S3: Added progress display for uploading and downloading.
   * directory special remote: Made more efficient and robust.
+  * Bugfix: directory special remote could loop forever storing a key 
+    when a too small chunksize was configured.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 
