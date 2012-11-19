@@ -10,7 +10,6 @@ This is one of those potentially hidden but time consuming problems.
 ## downloads
 
 * Watch temp file as it's coming in and use its size.
-  This is the only option for some special remotes (ie, non-rsync).
   Can either poll every .5 seconds or so to check file size, or
   could use inotify. **done**
 
@@ -23,7 +22,7 @@ the MeterUpdate callback as the upload progresses.
 * rsync: **done**
 * directory: **done**
 * web: Not applicable; does not upload 
-* webdav: TODO
+* webdav: **done**
 * S3: TODO
 * bup: TODO
 * hook: Would require the hook interface to somehow do this, which seems

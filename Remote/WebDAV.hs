@@ -31,6 +31,7 @@ import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
 import Creds
+import Utility.Observed
 
 type DavUrl = String
 type DavUser = B8.ByteString
@@ -84,17 +85,21 @@ webdavSetup u c = do
 	setRemoteCredPair c' (davCreds u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f _p = davAction r False $ \(baseurl, user, pass) -> do
-	let url = davLocation baseurl k
-	f <- inRepo $ gitAnnexLocation k
-	liftIO $ storeHelper r url user pass =<< L.readFile f
+store r k _f p = metered (Just p) k $ \meterupdate ->
+	davAction r False $ \(baseurl, user, pass) -> do
+		let url = davLocation baseurl k
+		f <- inRepo $ gitAnnexLocation k
+		liftIO $ withBinaryFile f ReadMode $ \h -> do
+			b <- hGetContentsObserved h $ meterupdate . toInteger
+			storeHelper r url user pass b
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k _p = davAction r False $ \(baseurl, user, pass) -> do
-	let url = davLocation baseurl enck
-	f <- inRepo $ gitAnnexLocation k
-	liftIO $ encrypt cipher (feedFile f) $
-		readBytes $ storeHelper r url user pass
+storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
+	davAction r False $ \(baseurl, user, pass) -> do
+		let url = davLocation baseurl enck
+		f <- inRepo $ gitAnnexLocation k
+		liftIO $ encrypt cipher (feedFileMetered f meterupdate) $
+			readBytes $ storeHelper r url user pass
 
 storeHelper :: Remote -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
 storeHelper r urlbase user pass b = catchBoolIO $ do
