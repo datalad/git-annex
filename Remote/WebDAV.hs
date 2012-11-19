@@ -216,7 +216,7 @@ toDavPass = B8.fromString
 
 {- The location to use to store a Key. -}
 davLocation :: DavUrl -> Key -> DavUrl
-davLocation baseurl k = davUrl baseurl $ annexLocation k hashDirLower
+davLocation baseurl k = davUrl baseurl $ keyPath k hashDirLower
 
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file

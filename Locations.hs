@@ -9,6 +9,7 @@ module Locations (
 	keyFile,
 	fileKey,
 	keyPaths,
+	keyPath,
 	gitAnnexLocation,
 	annexLocations,
 	annexLocation,
