@@ -18,8 +18,13 @@ run, or files to transfer, at that point.
 
 --[[Joey]]
 
+> [[done]]! --[[Joey]]
+
 -----
 
 > In the coming months, Amazon S3 will introduce an option that will allow customers to seamlessly move data between Amazon S3 and Amazon Glacier based on data lifecycle policies.
 
 -- <http://aws.amazon.com/glacier/faqs/#How_should_I_choose_between_Amazon_Glacier_and_Amazon_S3>
+
+>> They did, but it's IMHO not very useful for git-annex. It's rather
+>> intended to allow aging S3 storage out to Glacier. --[[Joey]] 

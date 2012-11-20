@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote, setCredsEnv) where
+module Remote.S3 (remote) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
@@ -22,6 +22,7 @@ import qualified Git
 import Config
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import qualified Remote.Helper.AWS as AWS
 import Crypto
 import Creds
 import Meters
@@ -84,7 +85,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
-		setRemoteCredPair fullconfig (s3Creds u)
+		setRemoteCredPair fullconfig (AWS.creds u)
 
 	defaulthost = do
 		c' <- encryptionSetup c
@@ -261,28 +262,13 @@ s3ConnectionRequired c u =
 	maybe (error "Cannot connect to S3") return =<< s3Connection c u
 
 s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
-s3Connection c u = go =<< getRemoteCredPair c creds
+s3Connection c u = go =<< getRemoteCredPair "S3" c (AWS.creds u)
   where
-	go Nothing = do
-		warning $ "Set both " ++ s3AccessKey ++ " and " ++ s3SecretKey  ++ " to use S3"
-		return Nothing
+	go Nothing = return Nothing
 	go (Just (ak, sk)) = return $ Just $ AWSConnection host port ak sk
-
-	creds = s3Creds u
-	(s3AccessKey, s3SecretKey) = credPairEnvironment creds
 
 	host = fromJust $ M.lookup "host" c
 	port = let s = fromJust $ M.lookup "port" c in
 		case reads s of
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
-
-s3Creds :: UUID -> CredPairStorage
-s3Creds u = CredPairStorage
-	{ credPairFile = fromUUID u
-	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-	, credPairRemoteKey = Just "s3creds"
-	}
-
-setCredsEnv :: (String, String) -> IO ()
-setCredsEnv creds = setEnvCredPair creds $ s3Creds undefined

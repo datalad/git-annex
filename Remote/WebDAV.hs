@@ -321,13 +321,7 @@ noProps :: XML.Document
 noProps = XML.parseText_ XML.def $ LT.pack "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<propertyupdate/>"
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
-getCreds c u = maybe missing (return . Just) =<< getRemoteCredPair c creds
-  where
-	creds = davCreds u
-	(loginvar, passwordvar) = credPairEnvironment creds
-	missing = do
-		warning $ "Set both " ++ loginvar ++ " and " ++ passwordvar ++ " to use webdav"
-		return Nothing
+getCreds c u = getRemoteCredPair "webdav" c (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage

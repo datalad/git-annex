@@ -32,6 +32,7 @@ import qualified Remote.Web
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
+import qualified Remote.Glacier
 import qualified Remote.Hook
 
 remoteTypes :: [RemoteType]
@@ -47,6 +48,7 @@ remoteTypes =
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
 #endif
+	, Remote.Glacier.remote
 	, Remote.Hook.remote
 	]
 

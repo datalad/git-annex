@@ -163,6 +163,7 @@ options = Option.common ++
 		"skip files smaller than a size"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
+	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier")) "Trust Amazon Glacier inventory"
 	] ++ Option.matcher
   where
 	setnumcopies v = Annex.changeState $

@@ -568,6 +568,17 @@ subdirectories).
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
 
+* --trust-glacier-inventory
+
+  Amazon Glacier inventories take hours to retrieve, and may not represent
+  the current state of a repository. So git-annex does not trust that
+  files that the inventory claims are in Glacier are really there.
+  This switch can be used to allow it to trust the inventory.
+
+  Be careful using this, especially if you or someone else might have recently
+  removed a file from Glacier. If you try to drop the only other copy of the
+  file, and this switch is enabled, you could lose data!  
+
 * --backend=name
 
   Specifies which key-value backend to use. This can be used when
@@ -883,6 +894,11 @@ Here are all the supported configuration settings.
 * `remote.<name>.s3`
 
   Used to identify Amazon S3 special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.glacier`
+
+  Used to identify Amazon Glacier special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
 * `remote.<name>.webdav`

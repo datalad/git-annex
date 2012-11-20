@@ -34,7 +34,7 @@ data CredPairStorage = CredPairStorage
 {- Stores creds in a remote's configuration, if the remote allows
  - that. Otherwise, caches them locally. -}
 setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex RemoteConfig
-setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
+setRemoteCredPair c storage = go =<< getRemoteCredPair' c storage
   where
 	go (Just creds)
 		| embedCreds c = case credPairRemoteKey storage of
@@ -58,8 +58,20 @@ setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
  - value in RemoteConfig. -}
-getRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
-getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
+getRemoteCredPair :: String -> RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
+getRemoteCredPair this c storage = maybe missing (return . Just) =<< getRemoteCredPair' c storage
+  where
+	(loginvar, passwordvar) = credPairEnvironment storage
+	missing = do
+		warning $ unwords
+			[ "Set both", loginvar
+			, "and", passwordvar
+			, "to use", this
+			]
+		return Nothing
+
+getRemoteCredPair' :: RemoteConfig -> CredPairStorage -> Annex (Maybe CredPair)
+getRemoteCredPair' c storage = maybe fromcache (return . Just) =<< fromenv
   where
 	fromenv = liftIO $ getEnvCredPair storage
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
@@ -90,6 +102,8 @@ getEnvCredPair storage = liftM2 (,)
   where
 	(uenv, penv) = credPairEnvironment storage
 	get = catchMaybeIO . getEnv
+
+
 
 {- Stores a CredPair in the environment. -}
 setEnvCredPair :: CredPair -> CredPairStorage -> IO ()
