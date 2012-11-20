@@ -12,7 +12,7 @@ special remote.
 Of course the 4 hour delay on retreval makes Glacier interesting. For now,
 you have to run "git annex get" twice, once to queue the retrieval, and a
 second time in 4 hours to get the file(s). There is a helpful example in
-[[using_Amazon_Glacier]].
+[[tips/using_Amazon_Glacier]].
 
 The real complication though, is that Glacier's inventories take a long
 time to get, and can be out of date. So glacier-cli caches inventory info.
