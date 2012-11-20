@@ -8,9 +8,11 @@ types of remotes. These can be used just like any normal remote by git-annex.
 They cannot be used by other git commands though.
 
 * [[S3]] (Amazon S3, and other compatible services)
+* [[Amazon_Glacier|glacier]]
 * [[bup]]
 * [[directory]]
 * [[rsync]]
+* [[webdav]]
 * [[web]]
 * [[hook]]
 
