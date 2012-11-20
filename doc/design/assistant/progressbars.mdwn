@@ -24,6 +24,7 @@ the MeterUpdate callback as the upload progresses.
 * web: Not applicable; does not upload 
 * webdav: **done**
 * S3: **done**
+* glacier: TODO (may be able to pipe to/from glacier-cli using "-")
 * bup: TODO
 * hook: Would require the hook interface to somehow do this, which seems
   too complicated. So skipping.
