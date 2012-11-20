@@ -57,6 +57,7 @@ So, git-annex plays it safe, and avoids trusting the inventory:
 	copy important_file (gpg) (checking glacier...) (to glacier...) ok
 	# git annex drop important_file
 	drop important_file (gpg) (checking glacier...)
+	  Glacier's inventory says it has a copy.
 	  However, the inventory could be out of date, if it was recently removed.
 	  (Use --trust-glacier-inventory if you're sure it's still in Glacier.)
 	
