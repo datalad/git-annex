@@ -59,12 +59,12 @@ So, git-annex plays it safe, and avoids trusting the inventory:
 	drop important_file (gpg) (checking glacier...)
 	  Glacier's inventory says it has a copy.
 	  However, the inventory could be out of date, if it was recently removed.
-	  (Use --trust-glacier-inventory if you're sure it's still in Glacier.)
+	  (Use --trust-glacier if you're sure it's still in Glacier.)
 	
 	(unsafe) 
 	  Could only verify the existence of 0 out of 1 necessary copies
 
-Like it says, you can use `--trust-glacier-inventory` if you're sure
+Like it says, you can use `--trust-glacier` if you're sure
 Glacier's inventory is correct and up-to-date.
 
 See [[special_remotes/Glacier]] for details.
