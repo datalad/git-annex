@@ -32,7 +32,7 @@ interface to add repositories and control the git-annex assistant.
 ## documentation
 
 * Want to make two nearby computers share the same synchronised folder?
-  Follow the [[local_pairing_walkthrough]].
+  Follow the [[pairing_walkthrough]].
 * Want to share a synchronised folder with a friend?
   Follow the [[share_with_a_friend_walkthrough]].
 
