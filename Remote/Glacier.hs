@@ -173,6 +173,7 @@ checkPresent r k = do
 		[ Param "archive"
 		, Param "checkpresent"
 		, Param $ remoteVault r
+		, Param "--quiet"
 		, Param $ archive r k
 		]
 
