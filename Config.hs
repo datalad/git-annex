@@ -65,6 +65,8 @@ semiCheapRemoteCost :: Int
 semiCheapRemoteCost = 110
 expensiveRemoteCost :: Int
 expensiveRemoteCost = 200
+veryExpensiveRemoteCost :: Int
+veryExpensiveRemoteCost = 1000
 
 {- Adjusts a remote's cost to reflect it being encrypted. -}
 encryptedRemoteCostAdj :: Int

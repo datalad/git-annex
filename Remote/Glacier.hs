@@ -37,7 +37,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
 gen r u c = do
-	cst <- remoteCost r expensiveRemoteCost
+	cst <- remoteCost r veryExpensiveRemoteCost
 	return $ gen' r u c cst
 gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote
 gen' r u c cst =
