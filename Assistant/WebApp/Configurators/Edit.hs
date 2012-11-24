@@ -122,10 +122,12 @@ editForm new uuid = bootstrap (Just Config) $ do
 
 	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
 	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo mremote
+	lift $ checkarchivedirectory curr
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
+			checkarchivedirectory input
 			setRepoConfig uuid mremote curr input
 			redirect RepositoriesR
 		_ -> showform form enctype curr
@@ -134,3 +136,17 @@ editForm new uuid = bootstrap (Just Config) $ do
 		let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
 		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/editrepository")
+
+	{- Makes a toplevel archive directory, so the user can get on with
+	 - using it. This is done both when displaying the form, as well
+	 - as after it's posted, because the user may not post the form,
+	 - but may see that the repo is set up to use the archive
+	 - directory. -}
+	checkarchivedirectory cfg
+		| repoGroup cfg == RepoGroupStandard SmallArchiveGroup = go
+		| repoGroup cfg == RepoGroupStandard FullArchiveGroup = go
+		| otherwise = noop
+	  where
+		go = runAnnex undefined $ inRepo $ \g ->
+			createDirectoryIfMissing True $
+				Git.repoPath g </> "archive"
