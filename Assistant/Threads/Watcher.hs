@@ -178,12 +178,15 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 		madeChange file LinkChange
 
 	{- When a new link appears, or a link is changed, after the startup
-	 - scan, handle getting or dropping the key's content. -}
+	 - scan, handle getting or dropping the key's content.
+	 - Also, moving or copying a link may caused it be be transferred
+	 - elsewhere, so check that too. -}
 	checkcontent key daemonstatus
 		| scanComplete daemonstatus = do
 			present <- liftAnnex $ inAnnex key
-			unless present $
-				queueTransfers Next key (Just file) Download
+			if present
+				then queueTransfers Next key (Just file) Upload
+				else queueTransfers Next key (Just file) Download
 			handleDrops present key (Just file)
 		| otherwise = noop
 
