@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnldTTAP8PAifJUmqhRar6RAWNWlRcencw"
+ nickname="Marco"
+ subject="git annex fix"
+ date="2012-11-24T08:51:19Z"
+ content="""
+You can try
+    git annex fix yourDirectory
+
+Hope that helps.
+"""]]
