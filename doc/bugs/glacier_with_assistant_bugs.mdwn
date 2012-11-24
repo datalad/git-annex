@@ -1,0 +1,8 @@
+When a file is moved to an archive directory, the assistant uploads it to
+glacier correctly, but then fails to drop it locally, unless it was
+started with `--trust-glacier`.
+
+Since it just uploaded the file, it should be able to drop it, without
+needing to trust glacier's inventory. Note that `git annex move` works.
+
+[[!tag /design/assistant]]
