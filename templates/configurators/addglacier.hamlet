@@ -1,0 +1,40 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding an Amazon Glacier repository
+  <p>
+    <a href="http://aws.amazon.com/glacier/">Amazon Glacier</a> is an #
+    offline cloud storage provider. It takes several hours for requested #
+    files to be retrieved from Glacier, making it mostly suitable for #
+    backups and long-term data archival. #
+    <a href="http://aws.amazon.com/glacier/pricing/">
+      Pricing details
+  <p>
+    <i .icon-warning-sign></i> By default, only files you place in #
+    "archive" directories will be archived in Amazon Glacier. #
+    You will be charged by Amazon for data #
+    uploaded to Glacier, as well as data downloaded from Glacier, and a #
+    monthly fee for data storage.
+  <p>
+    All data will be encrypted before being sent to Amazon Glacier.
+  <p>
+    When you sign up to Amazon Glacier, they provide you with an Access #
+    Key ID, and a Secret Access Key. You will need to enter both below. #
+    These access keys will be stored in a file that only you can #
+    access. #
+    <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
+      Look up your access keys
+  <p>
+    <form .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{authtoken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+            Add Glacier repository
+<div .modal .fade #workingmodal>
+  <div .modal-header>
+    <h3>
+      Making repository ...
+  <div .modal-body>
+    <p>
+      Setting up your Amazon Glacier repository. This could take a minute.

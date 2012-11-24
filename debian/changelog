@@ -16,6 +16,12 @@ git-annex (3.20121113) UNRELEASED; urgency=low
   * Allow controlling whether login credentials for S3 and webdav are
     committed to the repository, by setting embedcreds=yes|no when running
     initremote.
+  * Added smallarchive repository group, that only archives files that are
+    in archive directories.
+  * assistant: Fixed handling of toplevel archive directory and
+    client repository group.
+  * assistant: Apply preferred content settings when a new symlink
+    is created, or a symlink gets renamed. Made archive directories work.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

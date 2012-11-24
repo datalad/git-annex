@@ -21,9 +21,7 @@ import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
-#ifdef WITH_S3
-import Assistant.WebApp.Configurators.S3
-#endif
+import Assistant.WebApp.Configurators.AWS
 #ifdef WITH_WEBDAV
 import Assistant.WebApp.Configurators.WebDAV
 #endif

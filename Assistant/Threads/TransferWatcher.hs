@@ -102,11 +102,11 @@ onDel file = case parseTransferFile file of
 			threadDelay 10000000 -- 10 seconds
 			finished t minfo
 
-{- Queue uploads of files we successfully downloaded, spreading them
+{- Queue uploads of files downloaded to us, spreading them
  - out to other reachable remotes.
  -
  - Downloading a file may have caused a remote to not want it;
- - so drop it from the remote.
+ - so check for drops from remotes.
  -
  - Uploading a file may cause the local repo, or some other remote to not
  - want it; handle that too.
@@ -115,9 +115,9 @@ finishedTransfer :: Transfer -> Maybe TransferInfo -> Assistant ()
 finishedTransfer t (Just info)
 	| transferDirection t == Download =
 		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
-			handleDrops False (transferKey t) (associatedFile info)
+			handleDrops False (transferKey t) (associatedFile info) Nothing
 			queueTransfersMatching (/= transferUUID t) Later
 				(transferKey t) (associatedFile info) Upload
-	| otherwise = handleDrops True (transferKey t) (associatedFile info)
+	| otherwise = handleDrops True (transferKey t) (associatedFile info) Nothing
 finishedTransfer _ _ = noop
 

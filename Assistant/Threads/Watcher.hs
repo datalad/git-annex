@@ -187,7 +187,7 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 			if present
 				then queueTransfers Next key (Just file) Upload
 				else queueTransfers Next key (Just file) Download
-			handleDrops present key (Just file)
+			handleDrops present key (Just file) Nothing
 		| otherwise = noop
 
 onDel :: Handler

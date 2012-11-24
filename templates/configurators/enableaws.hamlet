@@ -2,14 +2,14 @@
   <h2>
     Enabling #{description}
   <p>
-    To use this Amazon S3 repository, you need an Access Key ID, and a #
+    To use this Amazon repository, you need an Access Key ID, and a #
     Secret Access Key. These access keys will be stored in a file that #
     only you can access.
   <p>
-    If this repository uses your Amazon S3 account, you can #
+    If this repository uses your Amazon account, you can #
     <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
       look up your access keys. #
-    If this repository uses someone else's Amazon S3 account, they #
+    If this repository uses someone else's Amazon account, they #
     can generate access keys for you, using their #
     <a href="https://console.aws.amazon.com/iam/home">
       IAM Management Console.
@@ -20,11 +20,11 @@
         ^{authtoken}
         <div .form-actions>
           <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-            Enable S3 repository
+            Enable Amazon repository
 <div .modal .fade #workingmodal>
   <div .modal-header>
     <h3>
       Enabling repository ...
   <div .modal-body>
     <p>
-      Enabling this Amazon S3 repository. This could take a minute.
+      Enabling this Amazon repository. This could take a minute.

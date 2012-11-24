@@ -13,6 +13,7 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Alert
 import Assistant.Commits
+import Assistant.Drop
 import Logs.Transfer
 import Logs.Location
 import Annex.Content
@@ -65,6 +66,10 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 		 - so there's no point in bothering the user about
 		 - those. The assistant should recover.
 		 -
+		 - After a successful upload, handle dropping it from
+		 - here, if desired. In this case, the remote it was
+		 - uploaded to is known to have it.
+		 -
 		 - Also, after a successful transfer, the location
 		 - log has changed. Indicate that a commit has been
 		 - made, in order to queue a push of the git-annex
@@ -74,6 +79,10 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 		whenM (liftIO $ (==) ExitSuccess <$> waitForProcess pid) $ do
 			void $ addAlert $ makeAlertFiller True $
 				transferFileAlert direction True file
+			unless isdownload $
+				handleDrops True (transferKey t)
+					(associatedFile info)
+					(Just remote)
 			recordCommit
 	  where
 		params =

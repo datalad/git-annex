@@ -19,6 +19,9 @@ something smart with such remotes.
   log is not updated in time, it will fail to drop unwanted content.
   (There's a 10 second sleep there now to avoid the race, but that's hardly
   a fix.)
+* When a file is renamed into an archive directory, it's not immediately
+  transferred to archive remotes. (Next expensive scan does successfully
+  cause the transfer to happen).
 
 ### dropping no longer preferred content
 

@@ -19,18 +19,19 @@ import Annex.Wanted
 import Config
 
 {- Drop from local and/or remote when allowed by the preferred content and
- - numcopies settings. -}
-handleDrops :: Bool -> Key -> AssociatedFile -> Assistant ()
-handleDrops _ _ Nothing = noop
-handleDrops fromhere key f = do
+ - numcopies settings. If it's known to be present on a particular remote,
+ -  -}
+handleDrops :: Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
+handleDrops _ _ Nothing _ = noop
+handleDrops fromhere key f knownpresentremote = do
 	syncrs <- syncDataRemotes <$> getDaemonStatus
 	liftAnnex $ do
 		locs <- loggedLocations key
-		handleDrops' locs syncrs fromhere key f
+		handleDrops' locs syncrs fromhere key f knownpresentremote
 
-handleDrops' :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Annex ()
-handleDrops' _ _ _ _ Nothing = noop
-handleDrops' locs rs fromhere key (Just f)
+handleDrops' :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
+handleDrops' _ _ _ _ Nothing _ = noop
+handleDrops' locs rs fromhere key (Just f) knownpresentremote
 	| fromhere = do
 		n <- getcopies
 		if checkcopies n
@@ -59,7 +60,7 @@ handleDrops' locs rs fromhere key (Just f)
 		)
 
 	dropl n = checkdrop n Nothing $ \numcopies ->
-		Command.Drop.startLocal f numcopies key
+		Command.Drop.startLocal f numcopies key knownpresentremote
 
 	dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
 		Command.Drop.startRemote f numcopies key r

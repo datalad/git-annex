@@ -176,6 +176,7 @@ repoList reposelector
 #ifdef WITH_S3
 			Just "S3" -> val True EnableS3R
 #endif
+			Just "glacier" -> val True EnableGlacierR
 #ifdef WITH_WEBDAV
 			Just "webdav" -> val True EnableWebDAVR
 #endif

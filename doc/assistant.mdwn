@@ -35,6 +35,8 @@ interface to add repositories and control the git-annex assistant.
   Follow the [[pairing_walkthrough]].
 * Want to share a synchronised folder with a friend?
   Follow the [[share_with_a_friend_walkthrough]].
+* Want to archive data to a drive or the cloud?
+  Follow the [[archival_walkthrough]]
 
 ## command line startup
 
