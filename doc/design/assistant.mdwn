@@ -9,10 +9,10 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
 * Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
 * Month 4 "cloud": [[!traillink cloud]] [[!traillink transfer_control]]
+* Month 5 "cloud continued": [[!traillink xmpp]] [[!traillink more_cloud_providers]]
 
 We are, approximately, here:
 
-* Month 5 "cloud continued": [[!traillink xmpp]] [[polls]]
 * Months 6-7 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]] [[!traillink leftovers]]
 * Months 8-11: more user-driven features and polishing (see remaining TODO items in all pages above)
 * Month 12: "Windows purgatory" [[Windows]]
