@@ -65,7 +65,7 @@ readProcessEnv cmd args environ =
 			, env = environ
 			}
 
-{- Writes a string to a process on its stdout, 
+{- Writes a string to a process on its stdin, 
  - returns its output, and also allows specifying the environment.
  -}
 writeReadProcessEnv

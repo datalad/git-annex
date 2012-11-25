@@ -21,8 +21,11 @@ import Remote.Helper.Encryptable
 import qualified Remote.Helper.AWS as AWS
 import Crypto
 import Creds
+import Meters
 import Annex.Content
 import qualified Annex
+
+import System.Process
 
 type Vault = String
 type Archive = FilePath
@@ -80,35 +83,43 @@ glacierSetup u c = do
 		]
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f _p
+store r k _f m
 	| keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
 	| otherwise = do
-	src <- inRepo $ gitAnnexLocation k
-	storeHelper r k src
+		src <- inRepo $ gitAnnexLocation k
+		metered (Just m) k $ \meterupdate ->
+			storeHelper r k $ streamMeteredFile src meterupdate
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k _p = 
-	-- With current glacier-cli UI, have to encrypt to a temp file.
-	withTmp enck $ \tmp -> do
-		f <- inRepo $ gitAnnexLocation k
-		liftIO $ encrypt cipher (feedFile f) $
-			readBytes $ L.writeFile tmp
-		storeHelper r enck tmp
+storeEncrypted r (cipher, enck) k m = do
+	f <- inRepo $ gitAnnexLocation k
+	metered (Just m) k $ \meterupdate ->
+		storeHelper r enck $ \h ->
+			encrypt cipher (feedFile f)
+				(readBytes $ meteredWrite meterupdate h)
 
-{- Glacier cannot store empty files. So empty keys are handled by
- - doing nothing on storage, and re-creating the empty file on retrieve. -}
-storeHelper :: Remote -> Key -> FilePath -> Annex Bool
-storeHelper r k file = do
-	showOutput
-	glacierAction r
+storeHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
+storeHelper r k feeder = go =<< glacierEnv c u
+  where
+	c = fromJust $ config r
+	u = uuid r
+	params = glacierParams c
 		[ Param "archive"
 		, Param "upload"
 		, Param "--name", Param $ archive r k
 		, Param $ remoteVault r
-		, File file
+		, Param "-"
 		]
+	go Nothing = return False
+	go (Just e) = do
+		showOutput
+		let p = (proc "glacier" (toCommand params)) { env = Just e }
+		liftIO $ catchBoolIO $
+			withHandle StdinHandle createProcessSuccess p $ \h -> do
+				feeder h
+				return True
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve r k _f d = retrieveHelper r k d
@@ -155,11 +166,11 @@ checkPresent r k = do
 	go =<< glacierEnv (fromJust $ config r) (uuid r)
   where
 	go Nothing = return $ Left "cannot check glacier"
-	go (Just env) = do
+	go (Just e) = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
 		v <- liftIO $ catchMsgIO $ 
-			readProcessEnv "glacier" (toCommand params) (Just env)
+			readProcessEnv "glacier" (toCommand params) (Just e)
 		case v of
 			Right s -> do
 				let probablypresent = key2file k `elem` lines s
@@ -167,7 +178,7 @@ checkPresent r k = do
 					then ifM (Annex.getFlag "trustglacier")
 						( return $ Right True, untrusted )
 					else return $ Right False
-			Left e -> return $ Left e
+			Left err -> return $ Left err
 
 	params =
 		[ Param "archive"
@@ -187,18 +198,18 @@ checkPresent r k = do
 		return $ Right False
 
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
-glacierAction r params = do
-	when (isNothing $ config r) $
-		error $ "Missing configuration for special remote " ++ name r
-	runGlacier (fromJust $ config r) (uuid r) params
+glacierAction r params = runGlacier (fromJust $ config r) (uuid r) params
 
 runGlacier :: RemoteConfig -> UUID -> [CommandParam] -> Annex Bool
 runGlacier c u params = go =<< glacierEnv c u
   where
 	go Nothing = return False
-	go (Just env) = liftIO $
-		boolSystemEnv "glacier" (datacenter:params) (Just env)
+	go (Just e) = liftIO $
+		boolSystemEnv "glacier" (glacierParams c params) (Just e)
 
+glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
+glacierParams c params = datacenter:params
+  where
 	datacenter = Param $ "--region=" ++
 		(fromJust $ M.lookup "datacenter" c)
 
@@ -207,8 +218,8 @@ glacierEnv c u = go =<< getRemoteCredPair "glacier" c creds
   where
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do
-		env <- liftIO getEnvironment
-		return $ Just $ (uk, user):(pk, pass):env
+		e <- liftIO getEnvironment
+		return $ Just $ (uk, user):(pk, pass):e
 
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds
