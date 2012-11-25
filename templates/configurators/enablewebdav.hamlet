@@ -9,7 +9,7 @@
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
-        ^{authtoken}
+        ^{webAppFormAuthToken}
         <div .form-actions>
           <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
             Enable repository

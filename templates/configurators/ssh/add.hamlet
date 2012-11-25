@@ -19,7 +19,7 @@
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
-        ^{authtoken}
+        ^{webAppFormAuthToken}
         <div .form-actions>
           <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
             Check this server

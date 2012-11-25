@@ -126,7 +126,6 @@ editForm new uuid = page "Configure repository" (Just Config) $ do
   where
 	showform form enctype curr = do
 		let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/editrepository")
 
 	{- Makes a toplevel archive directory, so the user can get on with

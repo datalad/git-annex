@@ -11,13 +11,11 @@ module Assistant.WebApp where
 
 import Assistant.WebApp.Types
 import Assistant.Common
-import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 import Locations.UserConfig
 
 import Yesod
-import Text.Hamlet
 import Data.Text (Text)
 import Control.Concurrent.STM
 import Control.Concurrent
@@ -115,14 +113,3 @@ listOtherRepos = do
 	dirs <- nub <$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
 	names <- mapM relHome dirs
 	return $ sort $ zip names dirs
-
-htmlIcon :: AlertIcon -> GWidget sub master ()
-htmlIcon ActivityIcon = bootstrapIcon "refresh"
-htmlIcon InfoIcon = bootstrapIcon "info-sign"
-htmlIcon SuccessIcon = bootstrapIcon "ok"
-htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
--- utf-8 umbrella (utf-8 cloud looks too stormy)
-htmlIcon TheCloud = [whamlet|&#9730;|]
-
-bootstrapIcon :: Text -> GWidget sub master ()
-bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]

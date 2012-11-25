@@ -259,7 +259,6 @@ promptSecret msg cont = pairPage $ do
 			(verifiableVal . fromPairMsg <$> msg)
 		u <- T.pack <$> liftIO myUserName
 		let sameusername = username == u
-		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/pairing/local/prompt")
 
 {- This counts unicode characters as more than one character,

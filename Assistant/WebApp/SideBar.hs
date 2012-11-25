@@ -88,3 +88,13 @@ getClickAlert i = do
 			redirect $ buttonUrl b
 		_ -> redirectBack
 
+htmlIcon :: AlertIcon -> GWidget sub master ()
+htmlIcon ActivityIcon = bootstrapIcon "refresh"
+htmlIcon InfoIcon = bootstrapIcon "info-sign"
+htmlIcon SuccessIcon = bootstrapIcon "ok"
+htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
+-- utf-8 umbrella (utf-8 cloud looks too stormy)
+htmlIcon TheCloud = [whamlet|&#9730;|]
+
+bootstrapIcon :: Text -> GWidget sub master ()
+bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]

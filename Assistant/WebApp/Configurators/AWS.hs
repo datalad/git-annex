@@ -102,9 +102,7 @@ getAddS3R = awsConfigurator $ do
 				, ("datacenter", T.unpack $ datacenter input)
 				, ("storageclass", show $ storageClass input)
 				]
-		_ -> do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/adds3")
+		_ -> $(widgetFile "configurators/adds3")
   where
 	setgroup r = runAnnex () $
 		setStandardGroup (Remote.uuid r) TransferGroup
@@ -124,9 +122,7 @@ getAddGlacierR = glacierConfigurator $ do
 				, ("type", "glacier")
 				, ("datacenter", T.unpack $ datacenter input)
 				]
-		_ -> do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/addglacier")
+		_ -> $(widgetFile "configurators/addglacier")
   where
 	setgroup r = runAnnex () $
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
@@ -152,7 +148,6 @@ enableAWSRemote remotetype uuid = do
 				fromJust $ M.lookup uuid m
 			makeAWSRemote remotetype creds name (const noop) M.empty
 		_ -> do
-			let authtoken = webAppFormAuthToken
 			description <- lift $ runAnnex "" $
 				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 			$(widgetFile "configurators/enableaws")

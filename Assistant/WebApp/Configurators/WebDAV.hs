@@ -62,9 +62,7 @@ getAddBoxComR = boxConfigurator $ do
 				-- performance.
 				, ("chunksize", "10mb")
 				]
-		_ -> do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/addbox.com")
+		_ -> $(widgetFile "configurators/addbox.com")
   where
 	setgroup r = runAnnex () $
 		setStandardGroup (Remote.uuid r) TransferGroup
@@ -88,7 +86,6 @@ getEnableWebDAVR uuid = do
 			FormSuccess creds -> lift $
 				makeWebDavRemote name creds (const noop) M.empty
 			_ -> do
-				let authtoken = webAppFormAuthToken
 				description <- lift $ runAnnex "" $
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 				$(widgetFile "configurators/enablewebdav")

@@ -100,9 +100,7 @@ getAddSshR = sshConfigurator $ do
 				Right sshdata -> lift $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
   where
-	showform form enctype status = do
-		let authtoken = webAppFormAuthToken
-		$(widgetFile "configurators/ssh/add")
+	showform form enctype status = $(widgetFile "configurators/ssh/add")
 
 {- To enable an existing rsync special remote, parse the SshInput from
  - its rsyncurl, and display a form whose only real purpose is to check
@@ -135,7 +133,6 @@ getEnableRsyncR u = do
 	showform form enctype status = do
 		description <- lift $ runAnnex "" $
 			T.pack . concat <$> prettyListUUIDs [u]
-		let authtoken = webAppFormAuthToken
 		$(widgetFile "configurators/ssh/enable")
 	enable sshdata = lift $ redirect $ ConfirmSshR $
 		sshdata { rsyncOnly = True }
@@ -237,8 +234,7 @@ showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
 
 getConfirmSshR :: SshData -> Handler RepHtml
-getConfirmSshR sshdata = sshConfigurator $ do
-	let authtoken = webAppFormAuthToken
+getConfirmSshR sshdata = sshConfigurator $
 	$(widgetFile "configurators/ssh/confirm")
 
 getMakeSshGitR :: SshData -> Handler RepHtml

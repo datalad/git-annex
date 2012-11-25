@@ -184,9 +184,7 @@ getAddDriveR = page "AAdd a removable drive" (Just Config) $ do
 	case res of
 		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $
 			make (T.unpack d) >>= redirect . EditNewRepositoryR
-		_ -> do
-			let authtoken = webAppFormAuthToken
-			$(widgetFile "configurators/adddrive")
+		_ -> $(widgetFile "configurators/adddrive")
   where
 	make mountpoint = do
 		liftIO $ makerepo dir

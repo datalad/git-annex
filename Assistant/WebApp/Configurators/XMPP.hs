@@ -70,9 +70,7 @@ getXMPPR' redirto = xmppPage $ do
 		oldcreds <- runAnnex Nothing getXMPPCreds
 		runFormGet $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
-	let showform problem = do
-		let authtoken = webAppFormAuthToken
-		$(widgetFile "configurators/xmpp")
+	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
 		FormSuccess f -> either (showform . Just . show) (lift . storecreds)
 			=<< liftIO (validateForm f)
