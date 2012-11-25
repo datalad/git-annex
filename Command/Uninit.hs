@@ -36,9 +36,9 @@ check = do
 		[Params "rev-parse --abbrev-ref HEAD"]
 
 seek :: [CommandSeek]
-seek = [
-	withFilesNotInGit $ whenAnnexed startCheckIncomplete,
-	withFilesInGit $ whenAnnexed startUnannex
+seek = 
+	[ withFilesNotInGit $ whenAnnexed startCheckIncomplete
+	, withFilesInGit $ whenAnnexed startUnannex
 	, withNothing start
 	]
 
