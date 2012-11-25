@@ -429,4 +429,4 @@ Git-annex stopped compiling with GHC 7.4.2 after updating Yesod and friends to t
             Text.Julius.Javascript (Text.Julius.toJavascript ident), ....]'
     make: *** [git-annex] Error 1
 
-> Reproduced this and confirmed it's fixed in git. --[[Joey]]
+> Reproduced this and confirmed it's fixed in git. --[[Joey]] [[done]]
