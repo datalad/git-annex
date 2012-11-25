@@ -76,4 +76,4 @@ What version of git-annex are you using? On what operating system?
 - version 3.20121112
 - Ubuntu 12.04 LTS, 64 bits
 
-
+> Dup of [[3.20121112_build_fails_on_Ubuntu_12.04]]. --[[Joey]] [[done]]
