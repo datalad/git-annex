@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
@@ -22,9 +22,7 @@ import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
 import Assistant.WebApp.Configurators.AWS
-#ifdef WITH_WEBDAV
 import Assistant.WebApp.Configurators.WebDAV
-#endif
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.OtherRepos

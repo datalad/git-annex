@@ -5,14 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Configurators.WebDAV where
 
 import Assistant.WebApp.Common
 import Assistant.MakeRemote
 import Assistant.Sync
+#ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
+#endif
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
@@ -48,6 +50,7 @@ webDAVCredsAForm = WebDAVInput
 	<*> pure (T.empty)
 
 getAddBoxComR :: Handler RepHtml
+#ifdef WITH_WEBDAV
 getAddBoxComR = boxConfigurator $ do
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap boxComAForm
@@ -66,8 +69,12 @@ getAddBoxComR = boxConfigurator $ do
   where
 	setgroup r = runAnnex () $
 		setStandardGroup (Remote.uuid r) TransferGroup
+#else
+getAddBoxComR = error "WebDAV not supported by this build"
+#endif
 
 getEnableWebDAVR :: UUID -> Handler RepHtml
+#ifdef WITH_WEBDAV
 getEnableWebDAVR uuid = do
 	m <- runAnnex M.empty readRemoteLog
 	let c = fromJust $ M.lookup uuid m
@@ -89,7 +96,11 @@ getEnableWebDAVR uuid = do
 				description <- lift $ runAnnex "" $
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 				$(widgetFile "configurators/enablewebdav")
+#else
+getEnableWebDAVR _ = error "WebDAV not supported by this build"
+#endif
 
+#ifdef WITH_WEBDAV
 makeWebDavRemote :: String -> WebDAVInput -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeWebDavRemote name input setup config = do
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
@@ -100,3 +111,4 @@ makeWebDavRemote name input setup config = do
 	setup r
 	liftAssistant $ syncNewRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+#endif
