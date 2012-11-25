@@ -7,7 +7,6 @@
 
 module Remote.Glacier (remote) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import System.Environment
 
@@ -22,7 +21,6 @@ import qualified Remote.Helper.AWS as AWS
 import Crypto
 import Creds
 import Meters
-import Annex.Content
 import qualified Annex
 
 import System.Process
@@ -100,6 +98,20 @@ storeEncrypted r (cipher, enck) k m = do
 			encrypt cipher (feedFile f)
 				(readBytes $ meteredWrite meterupdate h)
 
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieve r k _f d = metered Nothing k $ \meterupdate ->
+	retrieveHelper r k $
+		readBytes $ meteredWriteFile meterupdate d
+
+retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
+retrieveCheap _ _ _ = return False
+
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
+retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
+	retrieveHelper r enck $ readBytes $ \b ->
+		decrypt cipher (feedBytes b) $
+			readBytes $ meteredWriteFile meterupdate d
+
 storeHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
 storeHelper r k feeder = go =<< glacierEnv c u
   where
@@ -121,36 +133,33 @@ storeHelper r k feeder = go =<< glacierEnv c u
 				feeder h
 				return True
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = retrieveHelper r k d
-
-retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
-
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) _k d = do
-	withTmp enck $ \tmp -> do
-		ok <- retrieveHelper r enck tmp
-		if ok
-			then liftIO $ decrypt cipher (feedFile tmp) $
-				readBytes $ \content -> do
-					L.writeFile d content
-					return True
-			else return False
-
-retrieveHelper :: Remote -> Key -> FilePath -> Annex Bool
-retrieveHelper r k file = do
-	showOutput
-	ok <- glacierAction r
+retrieveHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
+retrieveHelper r k reader = go =<< glacierEnv c u
+  where
+	c = fromJust $ config r
+	u = uuid r
+	params = glacierParams c
 		[ Param "archive"
 		, Param "retrieve"
-		, Param "-o", File file
+		, Param "-o-"
 		, Param $ remoteVault r
 		, Param $ archive r k
 		]
-	unless ok $
-		showLongNote "Recommend you wait up to 4 hours, and then run this command again."
-	return ok
+	go Nothing = return False
+	go (Just e) = do
+		showOutput
+		let p = (proc "glacier" (toCommand params)) { env = Just e }
+		ok <- liftIO $ catchBoolIO $
+			withHandle StdoutHandle createProcessSuccess p $ \h ->
+				ifM (hIsEOF h)
+					( return False
+					, do
+						reader h
+						return True
+					)
+		unless ok later
+		return ok
+	later = showLongNote "Recommend you wait up to 4 hours, and then run this command again."
 
 remove :: Remote -> Key -> Annex Bool
 remove r k = glacierAction r
