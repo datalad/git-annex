@@ -1,7 +1,8 @@
 git-annex (3.20121113) UNRELEASED; urgency=low
 
   * New webdav and Amazon glacier special remotes.
-  * Show error message to user when testing XMPP creds.
+  * Display a warning when a non-existing file or directory is specified.
+  * Show error messages to user when testing XMPP creds.
   * Fix build of assistant without yesod.
   * webapp: The list of repositiories refreshes when new repositories are
     added, including when new repository configurations are pushed in from
@@ -22,7 +23,6 @@ git-annex (3.20121113) UNRELEASED; urgency=low
     client repository group.
   * assistant: Apply preferred content settings when a new symlink
     is created, or a symlink gets renamed. Made archive directories work.
-  * Display a warning when a non-existing file or directory is specified.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 
