@@ -49,3 +49,5 @@ jason@jasonwoof.com
 > have multiple seek stages that act on different types of files, so
 > any warning printed by an earlier stage may be premature if a later
 > stage comes along and deals with a file. --[[Joey]]
+
+>> Figured out a non-invasive way to add that warning. [[done]] --[[Joey]] 

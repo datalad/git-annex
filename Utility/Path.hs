@@ -104,29 +104,25 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 		same_dir_shortcurcuits_at_difference =
 			relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
 
-{- Given an original list of files, and an expanded list derived from it,
- - ensures that the original list's ordering is preserved. 
- -
- - The input list may contain a directory, like "dir" or "dir/". Any
- - items in the expanded list that are contained in that directory will
- - appear at the same position as it did in the input list.
+{- Given an original list of paths, and an expanded list derived from it,
+ - generates a list of lists, where each sublist corresponds to one of the
+ - original paths. When the original path is a direcotry, any items
+ - in the expanded list that are contained in that directory will appear in
+ - its segment.
  -}
-preserveOrder :: [FilePath] -> [FilePath] -> [FilePath]
-preserveOrder [] new = new
-preserveOrder [_] new = new -- optimisation
-preserveOrder (l:ls) new = found ++ preserveOrder ls rest
+segmentPaths :: [FilePath] -> [FilePath] -> [[FilePath]]
+segmentPaths [] new = [new]
+segmentPaths [_] new = [new] -- optimisation
+segmentPaths (l:ls) new = [found] ++ segmentPaths ls rest
 	where
 		(found, rest)=partition (l `dirContains`) new
 
-{- Runs an action that takes a list of FilePaths, and ensures that 
- - its return list preserves order.
- -
- - This assumes that it's cheaper to call preserveOrder on the result,
- - than it would be to run the action separately with each param. In the case
- - of git file list commands, that assumption tends to hold.
+{- This assumes that it's cheaper to call segmentPaths on the result,
+ - than it would be to run the action separately with each path. In
+ - the case of git file list commands, that assumption tends to hold.
  -}
-runPreserveOrder :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [FilePath]
-runPreserveOrder a files = preserveOrder files <$> a files
+runSegmentPaths :: ([FilePath] -> IO [FilePath]) -> [FilePath] -> IO [[FilePath]]
+runSegmentPaths a paths = segmentPaths paths <$> a paths
 
 {- Converts paths in the home directory to use ~/ -}
 relHome :: FilePath -> IO String

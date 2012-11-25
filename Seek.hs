@@ -22,8 +22,14 @@ import qualified Limit
 import qualified Option
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
-seekHelper a params = inRepo $ \g ->
-	runPreserveOrder (\fs -> Git.Command.leaveZombie <$> a fs g) params
+seekHelper a params = do
+	ll <- inRepo $ \g ->
+		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
+	{- Show warnings only for files/directories that do not exist. -}
+	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
+		unlessM (liftIO $ doesFileExist p <||> doesDirectoryExist p) $
+			fileNotFound p
+	return $ concat ll
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
@@ -34,7 +40,7 @@ withFilesNotInGit a params = do
 	files <- filter (not . dotfile) <$>
 		seekunless (null ps && not (null params)) ps
 	dotfiles <- seekunless (null dotps) dotps
-	prepFiltered a $ return $ preserveOrder params (files++dotfiles)
+	prepFiltered a $ return $ concat $ segmentPaths params (files++dotfiles)
   where
 	(dotps, ps) = partition dotfile params
 	seekunless True _ = return []

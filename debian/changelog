@@ -22,6 +22,7 @@ git-annex (3.20121113) UNRELEASED; urgency=low
     client repository group.
   * assistant: Apply preferred content settings when a new symlink
     is created, or a symlink gets renamed. Made archive directories work.
+  * Display a warning when a non-existing file or directory is specified.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 13 Nov 2012 13:17:07 -0400
 

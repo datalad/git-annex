@@ -23,6 +23,7 @@ module Messages (
 	showEndResult,
 	showErr,
 	warning,
+	fileNotFound,
 	indent,
 	maybeShowJSON,
 	showFullJSON,
@@ -44,6 +45,7 @@ import Types.Messages
 import Types.Key
 import qualified Annex
 import qualified Messages.JSON as JSON
+import qualified Data.Set as S
 
 showStart :: String -> String -> Annex ()
 showStart command file = handle (JSON.start command $ Just file) $
@@ -89,11 +91,13 @@ meteredBytes combinemeterupdate size a = withOutputType go
 showSideAction :: String -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
   where
-	go (MessageState v StartBlock) = do
-		p
-		Annex.changeState $ \s -> s { Annex.output = MessageState v InBlock }
-	go (MessageState _ InBlock) = return ()
-	go _ = p
+	go st
+		| sideActionBlock st == StartBlock = do
+			p
+			let st' = st { sideActionBlock = InBlock }
+			Annex.changeState $ \s -> s { Annex.output = st' }
+		| sideActionBlock st == InBlock = return ()
+		| otherwise = p
 	p = handle q $ putStrLn $ "(" ++ m ++ "...)"
 			
 showStoringStateAction :: Annex ()
@@ -149,6 +153,18 @@ warning' w = do
 	liftIO $ do
 		hFlush stdout
 		hPutStrLn stderr w
+
+{- Displays a warning one time about a file the user specified not existing. -}
+fileNotFound :: FilePath -> Annex ()
+fileNotFound file = do
+	st <- Annex.getState Annex.output
+	let shown = fileNotFoundShown st
+	when (S.notMember file shown) $ do
+		let shown' = S.insert file shown
+		let st' = st { fileNotFoundShown = shown' }
+		Annex.changeState $ \s -> s { Annex.output = st' }
+		liftIO $ hPutStrLn stderr $ unwords
+			[ "git-annex:", file, "not found" ]
 
 indent :: String -> String
 indent = join "\n" . map (\l -> "  " ++ l) . lines
