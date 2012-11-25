@@ -11,13 +11,9 @@
 module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
+import Assistant.WebApp.Common
 import Assistant.Types.Buddies
-import Utility.Yesod
 #ifdef WITH_PAIRING
-import Assistant.Common
 import Assistant.Pairing.Network
 import Assistant.Pairing.MakeRemote
 import Assistant.Ssh
@@ -42,7 +38,6 @@ import Utility.UserInfo
 import Git
 
 import Yesod
-import Data.Text (Text)
 #ifdef WITH_PAIRING
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -293,10 +288,7 @@ sampleQuote = T.unwords
 #endif
 
 pairPage :: Widget -> Handler RepHtml
-pairPage w = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Pairing"
-	w
+pairPage = page "Pairing" (Just Config)
 
 noPairing :: Text -> Handler RepHtml
 noPairing pairingtype = pairPage $

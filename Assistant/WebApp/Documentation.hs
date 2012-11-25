@@ -9,12 +9,8 @@
 
 module Assistant.WebApp.Documentation where
 
-import Assistant.Common
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
+import Assistant.WebApp.Common
 import Assistant.Install (standaloneAppBase)
-import Utility.Yesod
 import Build.SysConfig (packageversion)
 
 import Yesod
@@ -27,9 +23,7 @@ licenseFile = do
 	return $ (</> "LICENSE") <$> base
 
 getAboutR :: Handler RepHtml
-getAboutR = bootstrap (Just About) $ do
-	sideBarDisplay
-	setTitle "About git-annex"
+getAboutR = page "About git-annex" (Just About) $ do
 	builtinlicense <- isJust <$> liftIO licenseFile
 	$(widgetFile "documentation/about")
 
@@ -38,7 +32,7 @@ getLicenseR = do
 	v <- liftIO licenseFile
 	case v of
 		Nothing -> redirect AboutR
-		Just f -> bootstrap (Just About) $ do
+		Just f -> customPage (Just About) $ do
 			-- no sidebar, just pages of legalese..
 			setTitle "License"
 			license <- liftIO $ readFile f

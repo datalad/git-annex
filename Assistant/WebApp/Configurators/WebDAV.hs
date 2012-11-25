@@ -9,13 +9,9 @@
 
 module Assistant.WebApp.Configurators.WebDAV where
 
-import Assistant.Common
+import Assistant.WebApp.Common
 import Assistant.MakeRemote
 import Assistant.Sync
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
-import Utility.Yesod
 import qualified Remote.WebDAV as WebDAV
 import qualified Remote
 import Types.Remote (RemoteConfig)
@@ -24,21 +20,14 @@ import Logs.PreferredContent
 import Logs.Remote
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
 
 webDAVConfigurator :: Widget -> Handler RepHtml
-webDAVConfigurator a = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a WebDAV repository"
-	a
+webDAVConfigurator = page "Add a WebDAV repository" (Just Config)
 
 boxConfigurator :: Widget -> Handler RepHtml
-boxConfigurator a = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a Box.com repository"
-	a
+boxConfigurator = page "Add a Box.com repository" (Just Config)
 
 data WebDAVInput = WebDAVInput
 	{ user :: Text

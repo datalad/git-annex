@@ -9,15 +9,11 @@
 
 module Assistant.WebApp.Configurators.Edit where
 
-import Assistant.Common
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
+import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
-import Utility.Yesod
 import qualified Remote
 import qualified Remote.List as Remote
 import Logs.UUID
@@ -30,7 +26,6 @@ import qualified Git.Command
 import qualified Git.Config
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -116,10 +111,7 @@ getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
 getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
-editForm new uuid = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Configure repository"
-
+editForm new uuid = page "Configure repository" (Just Config) $ do
 	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
 	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo mremote
 	lift $ checkarchivedirectory curr

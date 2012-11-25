@@ -9,13 +9,9 @@
 
 module Assistant.WebApp.Configurators.Local where
 
-import Assistant.Common
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
+import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
 import Assistant.MakeRemote
-import Utility.Yesod
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -35,7 +31,6 @@ import Logs.PreferredContent
 import Utility.UserInfo
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
@@ -133,9 +128,7 @@ newRepositoryForm defpath msg = do
 
 {- Making the first repository, when starting the webapp for the first time. -}
 getFirstRepositoryR :: Handler RepHtml
-getFirstRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Getting started"	
+getFirstRepositoryR = page "Getting started" (Just Config) $ do
 	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
 	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm path
 	case res of
@@ -145,9 +138,7 @@ getFirstRepositoryR = bootstrap (Just Config) $ do
 
 {- Adding a new, separate repository. -}
 getNewRepositoryR :: Handler RepHtml
-getNewRepositoryR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add another repository"
+getNewRepositoryR = page "Add another repository" (Just Config) $ do
 	home <- liftIO myHomeDir
 	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm home
 	case res of
@@ -184,9 +175,7 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 
 {- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
-getAddDriveR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a removable drive"
+getAddDriveR = page "AAdd a removable drive" (Just Config) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
@@ -226,9 +215,7 @@ getAddDriveR = bootstrap (Just Config) $ do
 		addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
-getEnableDirectoryR uuid = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Enable a repository"
+getEnableDirectoryR uuid = page "Enable a repository" (Just Config) $ do
 	description <- lift $ runAnnex "" $
 		T.pack . concat <$> prettyListUUIDs [uuid]
 	$(widgetFile "configurators/enabledirectory")

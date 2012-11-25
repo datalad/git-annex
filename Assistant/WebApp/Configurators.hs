@@ -9,15 +9,11 @@
 
 module Assistant.WebApp.Configurators where
 
-import Assistant.Common
+import Assistant.WebApp.Common
 import Assistant.DaemonStatus
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
-import Utility.Yesod
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
@@ -30,21 +26,18 @@ import Assistant.XMPP.Client
 #endif
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Map as M
 
 {- The main configuration screen. -}
 getConfigR :: Handler RepHtml
 getConfigR = ifM (inFirstRun)
 	( getFirstRepositoryR
-	, bootstrap (Just Config) $ do
+	, page "Configuration" (Just Config) $ do
 #ifdef WITH_XMPP
 		xmppconfigured <- lift $ runAnnex False $ isJust <$> getXMPPCreds
 #else
 		let xmppconfigured = False
 #endif
-		sideBarDisplay
-		setTitle "Configuration"
 		$(widgetFile "configurators/main")
 	)
 
@@ -70,9 +63,7 @@ makeCloudRepositories = $(widgetFile "configurators/repositories/cloud")
 
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml
-getRepositoriesR = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Repositories"
+getRepositoriesR = page "Repositories" (Just Config) $ do
 	let repolist = repoListDisplay $ RepoSelector
 		{ onlyCloud = False
 		, onlyConfigured = False
@@ -120,8 +111,8 @@ notSyncing _ = True
 getRepoListR :: RepoListNotificationId -> Handler RepHtml
 getRepoListR (RepoListNotificationId nid reposelector) = do
 	waitNotifier getRepoListBroadcaster nid
-	page <- widgetToPageContent $ repoListDisplay reposelector
-	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+	p <- widgetToPageContent $ repoListDisplay reposelector
+	hamletToRepHtml $ [hamlet|^{pageBody p}|]
 
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do

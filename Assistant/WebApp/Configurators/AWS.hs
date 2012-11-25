@@ -9,13 +9,9 @@
 
 module Assistant.WebApp.Configurators.AWS where
 
-import Assistant.Common
+import Assistant.WebApp.Common
 import Assistant.MakeRemote
 import Assistant.Sync
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
-import Utility.Yesod
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 #endif
@@ -28,15 +24,11 @@ import Types.StandardGroups
 import Logs.PreferredContent
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
 
 awsConfigurator :: Widget -> Handler RepHtml
-awsConfigurator a = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add an Amazon repository"
-	a
+awsConfigurator = page "Add an Amazon repository" (Just Config)
 
 glacierConfigurator :: Widget -> Handler RepHtml
 glacierConfigurator a = do

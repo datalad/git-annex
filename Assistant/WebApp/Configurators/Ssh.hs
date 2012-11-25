@@ -9,13 +9,9 @@
 
 module Assistant.WebApp.Configurators.Ssh where
 
-import Assistant.Common
+import Assistant.WebApp.Common
 import Assistant.Ssh
 import Assistant.MakeRemote
-import Assistant.WebApp
-import Assistant.WebApp.Types
-import Assistant.WebApp.SideBar
-import Utility.Yesod
 import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
@@ -24,16 +20,12 @@ import Types.StandardGroups
 import Utility.UserInfo
 
 import Yesod
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket
 
 sshConfigurator :: Widget -> Handler RepHtml
-sshConfigurator a = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Add a remote server"
-	a
+sshConfigurator = page "Add a remote server" (Just Config)
 
 data SshInput = SshInput
 	{ hostname :: Maybe Text
@@ -291,10 +283,7 @@ getAddRsyncNetR = do
 	((result, form), enctype) <- runFormGet $
 		renderBootstrap $ sshInputAForm $
 			SshInput Nothing Nothing Nothing
-	let showform status = bootstrap (Just Config) $ do
-		sideBarDisplay
-		setTitle "Add a Rsync.net repository"	
-		let authtoken = webAppFormAuthToken
+	let showform status = page "Add a Rsync.net repository" (Just Config) $
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshinput

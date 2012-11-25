@@ -10,14 +10,10 @@
 
 module Assistant.WebApp.Configurators.XMPP where
 
-import Assistant.WebApp
-import Assistant.WebApp.Types
+import Assistant.WebApp.Common
 import Assistant.WebApp.Notifications
-import Assistant.WebApp.SideBar
-import Utility.Yesod
 import Utility.NotificationBroadcaster
 #ifdef WITH_XMPP
-import Assistant.Common
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
 import Assistant.Types.Buddies
@@ -31,7 +27,6 @@ import Yesod
 #ifdef WITH_XMPP
 import Network
 import Network.Protocol.XMPP
-import Data.Text (Text)
 import qualified Data.Text as T
 import Control.Exception (SomeException)
 #endif
@@ -97,8 +92,8 @@ getBuddyListR :: NotificationId -> Handler RepHtml
 getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
-	page <- widgetToPageContent buddyListDisplay
-	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+	p <- widgetToPageContent buddyListDisplay
+	hamletToRepHtml $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do
@@ -163,7 +158,4 @@ testXMPP creds = either Left (const $ Right creds)
 #endif
 
 xmppPage :: Widget -> Handler RepHtml
-xmppPage w = bootstrap (Just Config) $ do
-	sideBarDisplay
-	setTitle "Jabber"
-	w
+xmppPage = page "Jabber" (Just Config)

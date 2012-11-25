@@ -22,47 +22,8 @@ import Data.Text (Text)
 import Control.Concurrent.STM
 import Control.Concurrent
 
-data NavBarItem = DashBoard | Config | About
-	deriving (Eq)
-
-navBarName :: NavBarItem -> Text
-navBarName DashBoard = "Dashboard"
-navBarName Config = "Configuration"
-navBarName About = "About"
-
-navBarRoute :: NavBarItem -> Route WebApp
-navBarRoute DashBoard = HomeR
-navBarRoute Config = ConfigR
-navBarRoute About = AboutR
-
-defaultNavBar :: [NavBarItem]
-defaultNavBar = [DashBoard, Config, About]
-
-firstRunNavBar :: [NavBarItem]
-firstRunNavBar = [Config, About]
-
-selectNavBar :: Handler [NavBarItem]
-selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)
-
 inFirstRun :: Handler Bool
 inFirstRun = isNothing . relDir <$> getYesod
-
-{- Used instead of defaultContent; highlights the current page if it's
- - on the navbar. -}
-bootstrap :: Maybe NavBarItem -> Widget -> Handler RepHtml
-bootstrap navbaritem content = do
-	webapp <- getYesod
-	navbar <- map navdetails <$> selectNavBar
-	page <- widgetToPageContent $ do
-		addStylesheet $ StaticR css_bootstrap_css
-		addStylesheet $ StaticR css_bootstrap_responsive_css
-		addScript $ StaticR jquery_full_js
-		addScript $ StaticR js_bootstrap_dropdown_js
-		addScript $ StaticR js_bootstrap_modal_js
-		$(widgetFile "page")
-	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
-  where
-	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = do
@@ -156,12 +117,12 @@ listOtherRepos = do
 	return $ sort $ zip names dirs
 
 htmlIcon :: AlertIcon -> GWidget sub master ()
-htmlIcon ActivityIcon = bootStrapIcon "refresh"
-htmlIcon InfoIcon = bootStrapIcon "info-sign"
-htmlIcon SuccessIcon = bootStrapIcon "ok"
-htmlIcon ErrorIcon = bootStrapIcon "exclamation-sign"
+htmlIcon ActivityIcon = bootstrapIcon "refresh"
+htmlIcon InfoIcon = bootstrapIcon "info-sign"
+htmlIcon SuccessIcon = bootstrapIcon "ok"
+htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
 -- utf-8 umbrella (utf-8 cloud looks too stormy)
 htmlIcon TheCloud = [whamlet|&#9730;|]
 
-bootStrapIcon :: Text -> GWidget sub master ()
-bootStrapIcon name = [whamlet|<i .icon-#{name}></i>|]
+bootstrapIcon :: Text -> GWidget sub master ()
+bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]

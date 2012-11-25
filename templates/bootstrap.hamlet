@@ -3,12 +3,12 @@ $doctype 5
   <head>
     <title>
      $maybe reldir <- relDir webapp
-       #{reldir} #{pageTitle page}
+       #{reldir} #{pageTitle pageinfo}
      $nothing
-       #{pageTitle page}
+       #{pageTitle pageinfo}
     <link rel="icon" href=@{StaticR favicon_ico} type="image/x-icon">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    ^{pageHead page}
+    ^{pageHead pageinfo}
   <body>
-    ^{pageBody page}
+    ^{pageBody pageinfo}
     <div #modal></div>

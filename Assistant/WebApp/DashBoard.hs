@@ -9,16 +9,12 @@
 
 module Assistant.WebApp.DashBoard where
 
-import Assistant.Common
-import Assistant.WebApp
-import Assistant.WebApp.Types
+import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
-import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Configurators
 import Assistant.TransferQueue
 import Utility.NotificationBroadcaster
-import Utility.Yesod
 import Logs.Transfer
 import Utility.Percentage
 import Utility.DataUnits
@@ -73,20 +69,19 @@ getTransfersR :: NotificationId -> Handler RepHtml
 getTransfersR nid = do
 	waitNotifier getTransferBroadcaster nid
 
-	page <- widgetToPageContent $ transfersDisplay False
-	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+	p <- widgetToPageContent $ transfersDisplay False
+	hamletToRepHtml $ [hamlet|^{pageBody p}|]
 
 {- The main dashboard. -}
 dashboard :: Bool -> Widget
 dashboard warnNoScript = do
-	sideBarDisplay
 	let content = transfersDisplay warnNoScript
 	$(widgetFile "dashboard/main")
 
 getHomeR :: Handler RepHtml
 getHomeR = ifM (inFirstRun)
 	( redirect ConfigR
-	, bootstrap (Just DashBoard) $ dashboard True
+	, page "" (Just DashBoard) $ dashboard True
 	)
 
 {- Used to test if the webapp is running. -}
@@ -95,11 +90,11 @@ headHomeR = noop
 
 {- Same as HomeR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler RepHtml
-getNoScriptR = bootstrap (Just DashBoard) $ dashboard False
+getNoScriptR = page "" (Just DashBoard) $ dashboard False
 
 {- Same as HomeR, except with autorefreshing via meta refresh. -}
 getNoScriptAutoR :: Handler RepHtml
-getNoScriptAutoR = bootstrap (Just DashBoard) $ do
+getNoScriptAutoR = page "" (Just DashBoard) $ do
 	let ident = NoScriptR
 	let delayseconds = 3 :: Int
 	let this = NoScriptAutoR
