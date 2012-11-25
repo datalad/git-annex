@@ -90,3 +90,8 @@ Ubuntu 12.04 (current "long term support", all packages up to date)
 Please provide any additional information below.
 
 No idea how important this is for git-annex in general but reporting in case it is. Thank you for working on git annex!
+
+> I was able to reproduce this build error when I force installed
+> an old version of the haskell mtl library. So git-annex needs version
+> 2.1.1 to build, and I have adjusted the build dependencies appropriately.
+> [[done]] --[[Joey]] 

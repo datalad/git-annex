@@ -55,7 +55,7 @@ Flag DNS
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
-   unix, containers, utf8-string, network (>= 2.0), mtl,
+   unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
    bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
    base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
@@ -115,10 +115,11 @@ Test-Suite test
   Type: exitcode-stdio-1.0
   Main-Is: test.hs
   Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
-   unix, containers, utf8-string, network, mtl, bytestring, old-locale, time,
-   pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
-   base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
-   IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process
+   unix, containers, utf8-string, network, mtl (>= 2.1.1), bytestring,
+   old-locale, time, pcre-light, extensible-exceptions, dataenc, SHA,
+   process, json, HTTP, base (>= 4.5 && < 4.7), monad-control,
+   transformers-base, lifted-base, IfElse, text, QuickCheck >= 2.1,
+   bloomfilter, edit-distance, process
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c

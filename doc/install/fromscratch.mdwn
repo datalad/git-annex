@@ -3,6 +3,7 @@ quite a lot.
 
 * Haskell stuff
   * [The Haskell Platform](http://haskell.org/platform/) (GHC 7.4 or newer)
+  * [mtl](http://hackage.haskell.org.package/mtl) (2.1.1 or newer)
   * [MissingH](http://github.com/jgoerzen/missingh/wiki)
   * [pcre-light](http://hackage.haskell.org/package/pcre-light)
   * [utf8-string](http://hackage.haskell.org/package/utf8-string)
