@@ -78,7 +78,6 @@ meteredBytes combinemeterupdate size a = withOutputType go
 		progress <- liftIO $ newProgress "" size
 		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 		showOutput
-		liftIO $ displayMeter stdout meter
 		r <- a $ \n -> liftIO $ do
 			incrP progress n
 			displayMeter stdout meter
