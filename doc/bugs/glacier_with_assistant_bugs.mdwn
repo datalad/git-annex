@@ -5,4 +5,9 @@
   But other assistants that also have a copy cannot trust that, and so
   don't remove their copies.
 
+* For that matter, glacier-cli currently relies on a local cache of
+  inventory information, and so other git-annexes using the same glacier
+  repository are not able to access stuff in it, unless and until
+  `glacier vault sync` is run.
+
 [[!tag /design/assistant]]
