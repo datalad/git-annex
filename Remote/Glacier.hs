@@ -126,7 +126,6 @@ storeHelper r k feeder = go =<< glacierEnv c u
 		]
 	go Nothing = return False
 	go (Just e) = do
-		showOutput
 		let p = (proc "glacier" (toCommand params)) { env = Just e }
 		liftIO $ catchBoolIO $
 			withHandle StdinHandle createProcessSuccess p $ \h -> do
@@ -147,7 +146,6 @@ retrieveHelper r k reader = go =<< glacierEnv c u
 		]
 	go Nothing = return False
 	go (Just e) = do
-		showOutput
 		let p = (proc "glacier" (toCommand params)) { env = Just e }
 		ok <- liftIO $ catchBoolIO $
 			withHandle StdoutHandle createProcessSuccess p $ \h ->
