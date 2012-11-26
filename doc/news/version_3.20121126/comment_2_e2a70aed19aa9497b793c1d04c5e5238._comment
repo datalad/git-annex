@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 2"
+ date="2012-11-26T18:25:25Z"
+ content="""
+You have a too old version of Yesod. Either upgrade it with cabal, or build with the Makefile, after editing it to add -DWITH_OLD_YESOD to FEATURES.
+"""]]
