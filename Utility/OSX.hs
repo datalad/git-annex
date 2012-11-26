@@ -7,7 +7,6 @@
 
 module Utility.OSX where
 
-import Utility.Path
 import Utility.UserInfo
 
 import System.FilePath
