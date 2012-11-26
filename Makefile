@@ -206,15 +206,7 @@ osxapp:
 	install -d "$(OSXAPP_BASE)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)"/git-core && tar x)
 
-	touch "$(OSXAPP_BASE)/libdirs.tmp"
-	for lib in $$(otool -L "$(OSXAPP_BASE)"/bin/* "$(OSXAPP_BASE)"/git-core/* | egrep '^	' | cut -d ' ' -f 1 | sed  's/^	//' | sort | uniq); do \
-		dir=$$(dirname "$$lib"); \
-		install -d "$(OSXAPP_BASE)/$$dir"; \
-		echo "$$dir" >> "$(OSXAPP_BASE)/libdirs.tmp"; \
-		cp "$$lib" "$(OSXAPP_BASE)/$$dir"; \
-	done
-	sort "$(OSXAPP_BASE)/libdirs.tmp" | uniq > "$(OSXAPP_BASE)/libdirs"
-	rm -f "$(OSXAPP_BASE)/libdirs.tmp"
+	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
 	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
