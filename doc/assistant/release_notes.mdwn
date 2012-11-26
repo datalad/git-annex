@@ -1,3 +1,38 @@
+## version 3.20121126
+
+This adds several features to the git-annex assistant, which is still in beta.
+
+In general, anything you can configure with the assistant's web app
+will work. Some examples of use cases supported by this release include:
+
+* Using Box.com's 5 gigabytes of free storage space as a cloud transfer
+  point between between repositories that cannot directly contact
+  one-another. (Many other cloud providers are also supported, from Rsync.net
+  to Amazon S3, to your own ssh server.)
+* Archiving or backing up files to Amazon Glacier.
+* [[Sharing repositories with friends|share_with_a_friend_walkthrough]]
+  contacted through a Jabber server (such as Google Talk).
+* [[Pairing|pairing_walkthrough]] two computers that are on the same local
+  network (or VPN) and automatically keeping the files in the annex in
+  sync as changes are made to them.
+* Cloning your repository to removable drives, USB keys, etc. The assistant
+  will notice when the drive is mounted and keep it in sync.
+  Such a drive can be stored as an offline backup, or transported between
+  computers to keep them in sync.
+
+The following are known limitations of this release of the git-annex
+assistant:
+
+* The Max OSX standalone app does not work on all versions of Max OSX.
+* On Mac OSX and BSD operating systems, the assistant uses kqueue to watch
+  files. Kqueue has to open every directory it watches, so too many
+  directories will run it out of the max number of open files (typically
+  1024), and fail. See [[bugs/Issue_on_OSX_with_some_system_limits]]
+  for a workaround.
+* Retrieval of files from Amazon Glacier is not fully automated; the
+  assistant does not automatically retry in the 4 to 5 hours period 
+  when Glacier makes the files available.
+
 ## version 3.20121112
 
 This is a major upgrade of the git-annex assistant, which is still in beta.
