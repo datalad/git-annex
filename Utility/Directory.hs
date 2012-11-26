@@ -36,23 +36,22 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
  - and lazily. If the directory does not exist, no exception is thrown,
  - instead, [] is returned. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
-dirContentsRecursive topdir = dirContentsRecursive' topdir [""]
+dirContentsRecursive topdir = dirContentsRecursive' [topdir]
 
-dirContentsRecursive' :: FilePath -> [FilePath] -> IO [FilePath]
-dirContentsRecursive' _ [] = return []
-dirContentsRecursive' topdir (dir:dirs) = unsafeInterleaveIO $ do
-	(files, dirs') <- collect [] [] =<< catchDefaultIO [] (dirContents (topdir </> dir))
-	files' <- dirContentsRecursive' topdir (dirs' ++ dirs)
+dirContentsRecursive' :: [FilePath] -> IO [FilePath]
+dirContentsRecursive' [] = return []
+dirContentsRecursive' (dir:dirs) = unsafeInterleaveIO $ do
+	(files, dirs') <- collect [] [] =<< catchDefaultIO [] (dirContents dir)
+	files' <- dirContentsRecursive' (dirs' ++ dirs)
 	return (files ++ files')
 	where
 		collect files dirs' [] = return (reverse files, reverse dirs')
 		collect files dirs' (entry:entries)
 			| dirCruft entry = collect files dirs' entries
 			| otherwise = do
-				let dirEntry = dir </> entry
-				ifM (doesDirectoryExist $ topdir </> dirEntry)
-					( collect files (dirEntry:dirs') entries
-					, collect (dirEntry:files) dirs' entries
+				ifM (doesDirectoryExist entry)
+					( collect files (entry:dirs') entries
+					, collect (entry:files) dirs' entries
 					)			
 
 {- Moves one filename to another.
