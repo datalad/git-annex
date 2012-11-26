@@ -18,3 +18,5 @@ I expect to see typical gpg output.  Instead, I see
 What version of git-annex are you using? On what operating system?
 
 git annex Version: 3.20121017 on Mac OS X 10.7.5
+
+[[!tag /design/assistant/OSX]]

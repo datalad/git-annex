@@ -29,3 +29,5 @@ Even if you fix these problems, automatic versioning in lion will probably don't
 The sync should be transparent but it's not, and it's error prone. It would even be best to keep file copies in the git repo and sync them with the original folder than make symlinks.
 
 Dropbox even allows to put a symlink in the dropbox directory, and it will sync the file. 
+
+[[!tag /design/assistant/OSX]]

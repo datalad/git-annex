@@ -4,7 +4,6 @@ Misc OSX porting things:
 * icon to start webapp **done**
 * Use OSX's "network reachability functionality" to detect when on a network
   <http://developer.apple.com/library/mac/#documentation/Networking/Conceptual/SystemConfigFrameworks/SC_Intro/SC_Intro.html#//apple_ref/doc/uid/TP40001065>
-* Fix app build to work on more OSX versions.
 
 Gripes:
 
@@ -12,3 +11,7 @@ Gripes:
   to work around some bad behavior when pasting a file into the annex.
   [[details|bugs/pasting_into_annex_on_OSX]]. That's one more second
   before the file is synced out.
+
+Bugs:
+
+[[!inline pages="tagged(design/assistant/OSX)" show=0 archive=yes]]

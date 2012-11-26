@@ -6,6 +6,7 @@
  content="""
 here's the crash info:
 
+<pre>
 Process:         git-annex [84369]
 Path:            /Applications/git-annex.app/Contents/MacOS/bin/git-annex
 Identifier:      git-annex
@@ -69,7 +70,7 @@ Binary Images:
     0x7fff97139000 -     0x7fff9713aff7  libsystem_blocks.dylib (53.0.0 - compatibility 1.0.0) <8BCA214A-8992-34B2-A8B9-B74DEACA1869> /usr/lib/system/libsystem_blocks.dylib
     0x7fff9724f000 -     0x7fff9726cfff  libxpc.dylib (77.19.0 - compatibility 1.0.0) <9F57891B-D7EF-3050-BEDD-21E7C6668248> /usr/lib/system/libxpc.dylib
     0x7fff97cfe000 -     0x7fff97d08ff7  liblaunch.dylib (392.39.0 - compatibility 1.0.0) <8C235D13-2928-30E5-9E12-2CC3D6324AE2> /usr/lib/system/liblaunch.dylib
-
+</pre>
  
 
 """]]
