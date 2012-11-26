@@ -37,11 +37,11 @@ installLibs appbase = do
 	needlibs <- otool appbase
 	forM needlibs $ \lib -> do
 		let libdir = parentDir lib
-		let dest = appbase </> lib
+		let dest = appbase ++ lib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
-				createDirectoryIfMissing True (appbase </> libdir)
+				createDirectoryIfMissing True (appbase ++ libdir)
 				_ <- boolSystem "cp" [File lib, File dest]
 				putStrLn $ "installing " ++ lib
 				return $ Just libdir
