@@ -43,6 +43,7 @@ installLibs appbase = do
 			, do
 				createDirectoryIfMissing True (appbase </> libdir)
 				_ <- boolSystem "cp" [File lib, File dest]
+				putStrLn $ "installing " ++ lib
 				return $ Just libdir
 			)
 
