@@ -35,6 +35,10 @@
   using only a single backend data store. It also does not support
   partial checkouts of file contents, like git-annex does.
 
+* git-annex is similarly not [git-fat](https://github.com/jedbrown/git-fat),
+  with also uses git smudge filters, and also lacks git-annex's widely
+  distributed storage and partial checkouts.
+
 * git-annex is also not [boar](http://code.google.com/p/boar/),
   although it shares many of its goals and characteristics. Boar implements
   its own version control system, rather than simply embracing and
