@@ -67,4 +67,9 @@ So, git-annex plays it safe, and avoids trusting the inventory:
 Like it says, you can use `--trust-glacier` if you're sure
 Glacier's inventory is correct and up-to-date.
 
+A final potential gotcha with Glacier is that glacier-cli keeps a local
+mapping of file names to Glacier archives. If this cache is lost, or
+you want to retrieve files on a different box than the one that put them in
+glacier, you'll need to use `glacier vault sync` to rebuild this cache.
+
 See [[special_remotes/Glacier]] for details.
