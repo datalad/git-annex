@@ -37,7 +37,7 @@
   partial checkouts of file contents, like git-annex does.
 
 * git-annex is similarly not [git-fat](https://github.com/jedbrown/git-fat),
-  with also uses git smudge filters, and also lacks git-annex's widely
+  which also uses git smudge filters, and also lacks git-annex' widely
   distributed storage and partial checkouts.
 
 * git-annex is also not [boar](http://code.google.com/p/boar/),

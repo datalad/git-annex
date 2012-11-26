@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="Can't install"
+ date="2012-11-26T18:18:57Z"
+ content="""
+I've tried installing the latest version both through \"cabal install git-annex\", and with a git clone of the source and configure build install. In both cases i encounter this message:
+
+[273 of 290] Compiling Assistant.WebApp.Configurators.Local ( Assistant/WebApp/Configurators/Local.hs, dist/build/git-annex/git-annex-tmp/Assistant/WebApp/Configurators/Local.o )
+
+Assistant/WebApp/Configurators/Local.hs:55:11:
+
+    `fieldEnctype' is not a (visible) field of constructor `Field'
+
+cabal: Error: some packages failed to install:
+
+git-annex-3.20121126 failed during the building phase. The exception was:
+
+ExitFailure 1
+
+
+This is on Ubuntu 12.10 amd64
+
+"""]]
