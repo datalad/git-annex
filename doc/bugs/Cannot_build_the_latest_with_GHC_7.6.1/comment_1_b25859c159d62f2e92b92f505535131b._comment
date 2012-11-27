@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 1"
+ date="2012-11-27T15:48:33Z"
+ content="""
+I was told to my yesod was too old.
+
+Either upgrade yesod with cabal (After a \"cabal install yesod\" it worked on one of my computers, still failing on the other...)
+
+Or use the Makefile (failed on both the computers i tested).
+
+
+"""]]
