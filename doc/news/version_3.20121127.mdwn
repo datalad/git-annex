@@ -1,0 +1,8 @@
+git-annex 3.20121127 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix dirContentsRecursive, which had missed some files in deeply nested
+     subdirectories. Could affect various parts of git-annex.
+   * rsync: Fix bug introduced in last release that broke encrypted rsync
+     special remotes.
+   * The standalone builds now unset their special path and library path
+     variables before running the system web browser."""]]
