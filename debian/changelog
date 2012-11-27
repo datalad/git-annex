@@ -2,6 +2,8 @@ git-annex (3.20121127) UNRELEASED; urgency=low
 
   * Fix dirContentsRecursive, which had missed some files in deeply nested
     subdirectories. Could affect various parts of git-annex.
+  * rsync: Fix bug introduced in last release that broke encrypted rsync
+    special remotes.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 26 Nov 2012 16:45:19 -0400
 

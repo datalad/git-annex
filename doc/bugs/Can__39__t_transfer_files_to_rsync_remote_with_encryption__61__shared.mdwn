@@ -48,3 +48,7 @@ Here's the output with `--debug`:
 I'm using git-annex 3.20121127. I think I was able to transfer files to that remote with the previous release.
 
 Any idea how to fix this? Am I doing something wrong?
+
+> Damn. This was a completely stupid bug, calling "decrypt" where it was
+> supposed to call "encrypt". [[done]] in git; I'll have to
+> make a new release to fix this. --[[Joey]]
