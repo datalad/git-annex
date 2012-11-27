@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 7"
+ date="2012-11-27T21:13:18Z"
+ content="""
+@Nico, that's actually kind of promising; people have been reporting much earlier crashes with OSX. This later crash is one I think I can do something about! :)
+
+So, it looks like the standalone app build needs to run the web browser in a clean environment that doesn't use any of its bundled libraries. I've committed that change and it will be in a release later today.
+"""]]
