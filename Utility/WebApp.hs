@@ -41,8 +41,8 @@ localhost = "localhost"
 {- Runs a web browser on a given url.
  -
  - Note: The url *will* be visible to an attacker. -}
-runBrowser :: String -> IO Bool
-runBrowser url = boolSystem cmd [Param url]
+runBrowser :: String -> (Maybe [(String, String)]) -> IO Bool
+runBrowser url env = boolSystemEnv cmd [Param url] env
 	where
 #ifdef darwin_HOST_OS
 		cmd = "open"

@@ -21,6 +21,7 @@ import Utility.OSX
 import Utility.FreeDesktop
 #endif
 
+import Data.AssocList
 import System.Posix.Env
 
 standaloneAppBase :: IO (Maybe FilePath)
@@ -68,3 +69,24 @@ ensureInstalled = go =<< standaloneAppBase
 			createDirectoryIfMissing True (parentDir shim)
 			writeFile shim content
 			modifyFileMode shim $ addModes [ownerExecuteMode]
+
+{- Returns a cleaned up environment that lacks settings used to make the
+ - standalone builds use their bundled libraries and programs.
+ - Useful when calling programs not included in the standalone builds.
+ -
+ - For a non-standalone build, returns Nothing.
+ -}
+cleanEnvironment :: IO (Maybe [(String, String)])
+cleanEnvironment = clean <$> getEnvironment
+  where
+	clean env
+		| null vars = Nothing
+		| otherwise = Just $ catMaybes $ map (restoreorig env) env
+		| otherwise = Nothing
+	  where
+		vars = words $ lookup1 "GIT_ANNEX_STANDLONE_ENV" env
+		restoreorig oldenv p@(k, v)
+			| k `elem` vars = case lookup1 ("ORIG_" ++ k) oldenv of
+				"" -> Nothing
+				v' -> Just (k, v')
+			| otherwise = Just p

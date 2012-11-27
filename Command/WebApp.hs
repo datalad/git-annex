@@ -137,9 +137,10 @@ openBrowser cmd htmlshim = go $ maybe runBrowser runCustomBrowser cmd
 	go a = do
 		putStrLn ""
 		putStrLn $ "Launching web browser on " ++ url
-		unlessM (a url) $
+		env <- cleanEnvironment
+		unlessM (a url env) $
 			error $ "failed to start web browser"
-	runCustomBrowser c u = boolSystem c [Param u]
+	runCustomBrowser c u = boolSystemEnv c [Param u]
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath

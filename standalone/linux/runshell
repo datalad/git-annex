@@ -41,16 +41,26 @@ fi
 
 # Put our binaries first, to avoid issues with out of date or incompatable
 # system binaries.
+ORIG_PATH="$PATH"
+export ORIG_PATH
 PATH=$base/bin:$PATH
 export PATH
 
+ORIG_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+export ORIG_LD_LIBRARY_PATH
 for lib in $(cat $base/libdirs); do
 	LD_LIBRARY_PATH="$base/$lib:$LD_LIBRARY_PATH"
 done
 export LD_LIBRARY_PATH
 
+ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
+export ORIG_GIT_EXEC_PATH
 GIT_EXEC_PATH=$base/git-core
 export GIT_EXEC_PATH
+
+# Indicate which variables were exported above.
+GIT_ANNEX_STANDLONE_ENV="PATH LD_LIBRARY_PATH GIT_EXEC_PATH"
+export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then
 	cmd="$1"
