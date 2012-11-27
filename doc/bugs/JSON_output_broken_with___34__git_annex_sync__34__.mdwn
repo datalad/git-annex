@@ -16,3 +16,6 @@ Expecting valid JSON, instead this happens:
 What version of git-annex are you using? On what operating system?
 
 Newest standalone (3.20121126), Linux i386. The "json_reformat" program is from the "yajl-tools" .deb package.
+
+> [[done]]; I've updated the --json documentation to note that it only
+> works with some query commands. --[[Joey]] 

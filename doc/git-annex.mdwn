@@ -522,7 +522,8 @@ subdirectories).
 
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
-  object.
+  object. Note that json output is only usable with some git-annex commands,
+  like status and find.
 
 * --debug
 
