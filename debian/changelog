@@ -1,4 +1,4 @@
-git-annex (3.20121127) UNRELEASED; urgency=low
+git-annex (3.20121127) unstable; urgency=low
 
   * Fix dirContentsRecursive, which had missed some files in deeply nested
     subdirectories. Could affect various parts of git-annex.
@@ -7,7 +7,7 @@ git-annex (3.20121127) UNRELEASED; urgency=low
   * The standalone builds now unset their special path and library path
     variables before running the system web browser.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 26 Nov 2012 16:45:19 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Nov 2012 17:07:32 -0400
 
 git-annex (3.20121126) unstable; urgency=low
 

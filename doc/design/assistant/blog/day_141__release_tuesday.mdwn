@@ -1,0 +1,6 @@
+I had planned to do nothing today; I can't remember the last time I did
+that. Twas not to be; instead I had to make a new release to fix
+a utterly stupid typo in the rsync special remote. I'm also seeing
+some slightly encouraging signs of the OSX app being closer to working
+and this release has a further fix toward that end; unsetting all the
+environment variables before running the system's web browser.
