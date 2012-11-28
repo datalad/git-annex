@@ -221,7 +221,7 @@ glacierParams c params = datacenter:params
 		(fromJust $ M.lookup "datacenter" c)
 
 glacierEnv :: RemoteConfig -> UUID -> Annex (Maybe [(String, String)])
-glacierEnv c u = go =<< getRemoteCredPair "glacier" c creds
+glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
   where
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do

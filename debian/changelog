@@ -1,3 +1,10 @@
+git-annex (3.20121128) UNRELEASED; urgency=low
+
+  * webapp: Defaults to sharing box.com account info with friends, allowing
+    one-click enabling of the repository.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
+
 git-annex (3.20121127) unstable; urgency=low
 
   * Fix dirContentsRecursive, which had missed some files in deeply nested

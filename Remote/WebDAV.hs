@@ -7,7 +7,7 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Remote.WebDAV (remote, setCredsEnv) where
+module Remote.WebDAV (remote, davCreds, setCredsEnv) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
@@ -321,7 +321,7 @@ noProps :: XML.Document
 noProps = XML.parseText_ XML.def $ LT.pack "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<propertyupdate/>"
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
-getCreds c u = getRemoteCredPair "webdav" c (davCreds u)
+getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage

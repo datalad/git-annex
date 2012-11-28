@@ -262,7 +262,7 @@ s3ConnectionRequired c u =
 	maybe (error "Cannot connect to S3") return =<< s3Connection c u
 
 s3Connection :: RemoteConfig -> UUID -> Annex (Maybe AWSConnection)
-s3Connection c u = go =<< getRemoteCredPair "S3" c (AWS.creds u)
+s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
   where
 	go Nothing = return Nothing
 	go (Just (ak, sk)) = return $ Just $ AWSConnection host port ak sk

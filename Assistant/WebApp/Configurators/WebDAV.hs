@@ -20,6 +20,7 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.Remote
+import Creds
 
 import Yesod
 import qualified Data.Text as T
@@ -34,20 +35,26 @@ boxConfigurator = page "Add a Box.com repository" (Just Config)
 data WebDAVInput = WebDAVInput
 	{ user :: Text
 	, password :: Text
+	, embedCreds :: Bool
 	, directory :: Text
 	}
+
+toCredPair :: WebDAVInput -> CredPair
+toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
 boxComAForm :: AForm WebApp WebApp WebDAVInput
 boxComAForm = WebDAVInput
 	<$> areq textField "Username or Email" Nothing
 	<*> areq passwordField "Box.com Password" Nothing
+	<*> areq checkBoxField "Share this account with friends?" (Just True)
 	<*> areq textField "Directory" (Just "annex")
 
 webDAVCredsAForm :: AForm WebApp WebApp WebDAVInput
 webDAVCredsAForm = WebDAVInput
 	<$> areq textField "Username or Email" Nothing
 	<*> areq passwordField "Password" Nothing
-	<*> pure (T.empty)
+	<*> pure False
+	<*> pure T.empty
 
 getAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
@@ -56,8 +63,9 @@ getAddBoxComR = boxConfigurator $ do
 		runFormGet $ renderBootstrap boxComAForm
 	case result of
 		FormSuccess input -> lift $ 
-			makeWebDavRemote "box.com" input setgroup $ M.fromList
+			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
 				[ ("encryption", "shared")
+				, ("embedcreds", if embedCreds input then "yes" else "no")
 				, ("type", "webdav")
 				, ("url", "https://www.box.com/dav/" ++ T.unpack (directory input))
 				-- Box.com has a max file size of 100 mb, but
@@ -80,18 +88,23 @@ getEnableWebDAVR uuid = do
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ M.lookup "name" c
 	let url = fromJust $ M.lookup "url" c
-	go name url
+	mcreds <- runAnnex Nothing $
+		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
+	case mcreds of
+		Just creds -> webDAVConfigurator $ lift $
+			makeWebDavRemote name creds (const noop) M.empty
+		Nothing
+			| "box.com/" `isInfixOf` url ->
+				boxConfigurator $ showform name url
+			| otherwise ->
+				webDAVConfigurator $ showform name url
   where
-	go name url
-		| "box.com/" `isInfixOf` url = boxConfigurator $ enable name url
-		| otherwise = webDAVConfigurator $ enable name url
-
-	enable name url = do
+	showform name url = do
 		((result, form), enctype) <- lift $
 			runFormGet $ renderBootstrap webDAVCredsAForm
 		case result of
-			FormSuccess creds -> lift $
-				makeWebDavRemote name creds (const noop) M.empty
+			FormSuccess input -> lift $
+				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
 				description <- lift $ runAnnex "" $
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
@@ -101,10 +114,10 @@ getEnableWebDAVR _ = error "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV
-makeWebDavRemote :: String -> WebDAVInput -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
-makeWebDavRemote name input setup config = do
+makeWebDavRemote :: String -> CredPair -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
+makeWebDavRemote name creds setup config = do
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
-	liftIO $ WebDAV.setCredsEnv (T.unpack $ user input, T.unpack $ password input)
+	liftIO $ WebDAV.setCredsEnv creds
 	r <- liftAssistant $ liftAnnex $ addRemote $ do
 		makeSpecialRemote name WebDAV.remote config
 		return remotename
