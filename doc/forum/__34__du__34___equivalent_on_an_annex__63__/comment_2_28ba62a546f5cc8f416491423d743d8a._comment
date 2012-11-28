@@ -4,7 +4,7 @@
  subject="comment 2"
  date="2012-11-28T23:24:11Z"
  content="""
-Opps, seems as you want to find the biggest files in a directory tree. That can also be done:
+And if you want to find the biggest files in a directory tree:
 
-    $ find -type l -print0 | xargs -0 du -L | sort -n
+    $ find -type l -print0 | xargs -0 du -L | sort -n | tail -500
 """]]
