@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="Re: Trying to add remote server after failed attempt blocks forever"
+ date="2012-11-28T21:26:36Z"
+ content="""
+It appears to not just wait forever: there was also a **git config --null --list** process taking all CPU. 
+"""]]
