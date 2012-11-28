@@ -33,3 +33,4 @@ The fix seems to be as simple as adding 'htx' to the 'git-annex.cabal' file:
        hxt,
        pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
 
+> I removed the need for hxt, which was accidental. [[done]] --[[Joey]] 
