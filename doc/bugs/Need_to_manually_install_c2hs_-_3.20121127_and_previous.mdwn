@@ -31,3 +31,5 @@ The fix seems as easy as
     cabal install c2hs
 
 Should c2hs be included as a dep got git-annex or is this a bug in gnuidn?
+
+> If `cabal install gnuidn` fails, then this is a bug in gnuidn. --[[Joey]]
