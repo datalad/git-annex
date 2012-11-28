@@ -32,4 +32,6 @@ The fix seems as easy as
 
 Should c2hs be included as a dep got git-annex or is this a bug in gnuidn?
 
-> If `cabal install gnuidn` fails, then this is a bug in gnuidn. --[[Joey]]
+> Apparently cabal does not support automatically installing programs
+> needed for the build. I've updated the cabal installation instructions
+> to document the need to install c2hs. [[done]] --[[Joey]]
