@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 2"
+ date="2012-11-28T23:24:11Z"
+ content="""
+Opps, seems as you want to find the biggest files in a directory tree. That can also be done:
+
+    $ find -type l -print0 | xargs -0 du -L | sort -n
+"""]]
