@@ -39,7 +39,7 @@ ensureInstalled = go =<< standaloneAppBase
   where
 	go Nothing = noop
 	go (Just base) = do
-		let program = base <$> "git-annex"
+		let program = base </> "git-annex"
 		programfile <- programFile
 		createDirectoryIfMissing True (parentDir programfile)
 		writeFile programfile program
