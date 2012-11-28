@@ -21,7 +21,6 @@ import Utility.OSX
 import Utility.FreeDesktop
 #endif
 
-import Data.AssocList
 import System.Posix.Env
 
 standaloneAppBase :: IO (Maybe FilePath)
@@ -84,9 +83,10 @@ cleanEnvironment = clean <$> getEnvironment
 		| otherwise = Just $ catMaybes $ map (restoreorig env) env
 		| otherwise = Nothing
 	  where
-		vars = words $ lookup1 "GIT_ANNEX_STANDLONE_ENV" env
-		restoreorig oldenv p@(k, v)
-			| k `elem` vars = case lookup1 ("ORIG_" ++ k) oldenv of
-				"" -> Nothing
-				v' -> Just (k, v')
+		vars = words $ fromMaybe "" $
+			lookup "GIT_ANNEX_STANDLONE_ENV" env
+		restoreorig oldenv p@(k, _v)
+			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenv of
+				Nothing -> Nothing
+				(Just v') -> Just (k, v')
 			| otherwise = Just p

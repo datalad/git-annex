@@ -20,4 +20,4 @@ building using cabal from clone of git clone git://git-annex.branchable.com/, co
 
 Please provide any additional information below.
 
-
+> [[done]], using Data.List instead now.
