@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="Adding a remote server repository fails"
+ date="2012-11-28T21:17:23Z"
+ content="""
+The error message I get is:
+
+> Failed to ssh to the server. Transcript: dyld: Symbol not found: ___progname Referenced from: /usr/bin/ssh Expected in: /Users/wichert/Applications/git-annex.app/Contents/MacOS/usr/lib/libSystem.B.dylib in /usr/bin/ssh
+
+"""]]
