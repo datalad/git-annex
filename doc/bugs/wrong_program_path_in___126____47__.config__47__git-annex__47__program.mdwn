@@ -16,3 +16,5 @@ git-annex=3.20121127 on Ubuntu 12.04 LTS
 ## Please provide any additional information below.
 
 Otherwise it is working great. 
+
+> I've fixed this. [[done]] --[[Joey]] 
