@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 11"
+ date="2012-11-29T19:55:17Z"
+ content="""
+I've dealt with these ssh issues by including ssh in the app bundle.
+
+OTOH, I don't know how `git config --null --list` could possibly take any appreciable amount of CPU to run. 
+"""]]
