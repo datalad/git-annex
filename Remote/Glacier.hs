@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.Glacier (remote) where
+module Remote.Glacier (remote, jobList) where
 
 import qualified Data.Map as M
 import System.Environment
@@ -232,10 +232,10 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	(uk, pk) = credPairEnvironment creds
 
 remoteVault :: Remote -> Vault
-remoteVault = vault . fromJust . config
+remoteVault = getVault . fromJust . config
 
-vault :: RemoteConfig -> Vault
-vault = fromJust . M.lookup "vault"
+getVault :: RemoteConfig -> Vault
+getVault = fromJust . M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ key2file k
@@ -250,5 +250,50 @@ genVault c u = unlessM (runGlacier c u params) $
 	params = 
 		[ Param "vault"
 		, Param "create"
-		, Param $ vault c
+		, Param $ getVault c
 		]
+
+{- Partitions the input list of keys into ones which have
+ - glacier retieval jobs that have succeeded, or failed.
+ -
+ - A complication is that `glacier job list` will display the encrypted
+ - keys when the remote is encrypted.
+ -}
+jobList :: Remote -> [Key] -> Annex ([Key], [Key])
+jobList r keys = go =<< glacierEnv (fromJust $ config r) (uuid r)
+  where
+	params = [ Param "job", Param "list" ]
+	nada = ([], [])
+	myvault = remoteVault r
+
+	go Nothing = return nada
+	go (Just e) = do
+		v <- liftIO $ catchMaybeIO $ 
+			readProcessEnv "glacier" (toCommand params) (Just e)
+		maybe (return nada) extract v
+
+	extract s = do
+		let result@(succeeded, failed) =
+			parse nada $ (map words . lines) s
+		if result == nada
+			then return nada
+			else do
+				enckeys <- forM keys $ \k ->
+					maybe k snd <$> cipherKey (config r) k
+				let keymap = M.fromList $ zip enckeys keys
+				let convert = catMaybes . map (`M.lookup` keymap)
+				return (convert succeeded, convert failed)
+
+	parse c [] = c
+	parse c@(succeeded, failed) ((status:_date:vault:key:[]):rest)
+		| vault == myvault =
+			case file2key key of
+				Nothing -> parse c rest
+				Just k
+					| "a/d" `isPrefixOf` status ->
+						parse (k:succeeded, failed) rest
+					| "a/e" `isPrefixOf` status ->
+						parse (succeeded, k:failed) rest
+					| otherwise ->
+						parse c rest
+	parse c (_:rest) = parse c rest

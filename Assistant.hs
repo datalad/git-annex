@@ -74,6 +74,8 @@
  - Thread 20: WebApp
  - 	Spawns more threads as necessary to handle clients.
  - 	Displays the DaemonStatus.
+ - Thread 21: Glacier
+ - 	Deals with retrieving files from Amazon Glacier.
  -
  - ThreadState: (MVar)
  - 	The Annex state is stored here, which allows resuscitating the
@@ -136,6 +138,7 @@ import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
+import Assistant.Threads.Glacier
 #ifdef WITH_WEBAPP
 import Assistant.WebApp
 import Assistant.Threads.WebApp
@@ -208,6 +211,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread
 			, assist $ configMonitorThread
+			, assist $ glacierThread
 			, watch $ watchThread
 			]
 		liftIO waitForTermination
