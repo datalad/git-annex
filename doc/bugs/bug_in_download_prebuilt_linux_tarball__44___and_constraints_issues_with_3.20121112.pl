@@ -38,3 +38,8 @@ With these constraints the cabal install can work:
 
 NOTE:
 I couldn't get the markdown to cooperate, so using pl pagetype.
+
+> I suspect this is [[done]]..
+> 
+> I fixed some bugs in the prebuilt tarball in the past 2 days that prevented it
+> from transferring files.
