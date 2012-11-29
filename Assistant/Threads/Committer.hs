@@ -213,7 +213,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		ks <- liftIO $ getSymbolicLinkStatus $ contentLocation keysource
 		if deviceID ks == deviceID fs && fileID ks == fileID fs
 			then a
-			else return Nothing
+			else do
+				-- remove the hard link
+				void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
+				return Nothing
 
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.
