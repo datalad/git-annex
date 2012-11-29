@@ -19,9 +19,12 @@ import System.Posix
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
 daemonize logfd pidfile changedirectory a = do
+	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
 	out
 	where
+		checkalreadyrunning f = maybe noop (const $ alreadyRunning) 
+			=<< checkDaemon f
 		child1 = do
 			_ <- createSession
 			_ <- forkProcess child2
@@ -53,15 +56,17 @@ lockPidFile file = do
 		{ trunc = True }
 	locked' <- catchMaybeIO $ setLock fd' (WriteLock, AbsoluteSeek, 0, 0)
 	case (locked, locked') of
-		(Nothing, _) -> alreadyrunning
-		(_, Nothing) -> alreadyrunning
+		(Nothing, _) -> alreadyRunning
+		(_, Nothing) -> alreadyRunning
 		_ -> do
 			_ <- fdWrite fd' =<< show <$> getProcessID
 			renameFile newfile file
 			closeFd fd
 	where
 		newfile = file ++ ".new"
-		alreadyrunning = error "Daemon is already running."
+
+alreadyRunning :: IO ()
+alreadyRunning = error "Daemon is already running."
 
 {- Checks if the daemon is running, by checking that the pid file
  - is locked by the same process that is listed in the pid file.
