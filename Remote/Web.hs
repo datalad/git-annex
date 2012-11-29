@@ -72,9 +72,9 @@ uploadKey _ _ _ = do
 	return False
 
 dropKey :: Key -> Annex Bool
-dropKey _ = do
-	warning "removal from web not supported"
-	return False
+dropKey k = do
+	mapM_ (setUrlMissing k) =<< getUrls k
+	return True
 
 checkKey :: Key -> Annex (Either String Bool)
 checkKey key = do

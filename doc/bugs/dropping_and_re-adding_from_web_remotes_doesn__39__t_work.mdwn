@@ -129,3 +129,11 @@ When re-adding the URL, I expect the file to be re-added to the web remote. (not
 #Please provide any additional information below.
 
 This seems to be a corner case, and would probably have minimal impact on most people.
+
+> Yeah, dropping from the web is pretty weird.
+> 
+> I guess it makes sense to do if a website stops having a file and you don't
+> want git-annex to try to download from it anymore. So, I've made dropping
+> from the web remove all urls associated with the file, rather than failing.
+> 
+> [[done]] --[[Joey]]

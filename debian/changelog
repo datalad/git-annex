@@ -8,6 +8,9 @@ git-annex (3.20121128) UNRELEASED; urgency=low
   * watch: Avoid leaving hard links to files behind in .git/annex/tmp
     if a file is deleted or moved while it's being quarantined in preparation
     to being added to the annex.
+  * Allow `git annex drop --from web`; of course this does not remove
+    any file from the web, but it does make git-annex remove all urls
+    associated with a file.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
 

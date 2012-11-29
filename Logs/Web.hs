@@ -8,9 +8,9 @@
 module Logs.Web (
 	URLString,
 	webUUID,
-	setUrl,
+	getUrls,
 	setUrlPresent,
-	getUrls
+	setUrlMissing,
 ) where
 
 import Common.Annex
@@ -45,16 +45,13 @@ getUrls key = go $ urlLog key : oldurlLogs key
 			then go ls
 			else return us
 
-{- Records a change in an url for a key. -}
-setUrl :: Key -> URLString -> LogStatus -> Annex ()
-setUrl key url status = do
-	us <- getUrls key
-	unless (status == InfoPresent && url `elem` us) $ do
-		addLog (urlLog key) =<< logNow status url
-
-		-- update location log to indicate that the web has the key, or not
-		us' <- getUrls key
-		logChange key webUUID (if null us' then InfoMissing else InfoPresent)
-
 setUrlPresent :: Key -> URLString -> Annex ()
-setUrlPresent key url = setUrl key url InfoPresent
+setUrlPresent key url = do
+	us <- getUrls key
+	unless (url `elem` us) $ do
+		addLog (urlLog key) =<< logNow InfoPresent url
+		-- update location log to indicate that the web has the key
+		logChange key webUUID InfoPresent
+
+setUrlMissing :: Key -> URLString -> Annex ()
+setUrlMissing key url = addLog (urlLog key) =<< logNow InfoMissing url
