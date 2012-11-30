@@ -52,4 +52,5 @@ In any case, the setup is much, much, much more secure than Dropbox. With Dropbo
 -----
 
 ¹ My always-on computer at home is a raspberry pi with a 32GB USB stick. Best self-hosted dropbox you could imagine.
-² You can just forward the port, but not open a shell, by adding the -N command. I rarely use this.
+
+² You can just forward the port, but not open a shell, by adding the -N command. This could be useful for connecting on startup, e.g. in /etc/rc.local. I prefer to open the shell to forward the ports, maybe use it, and close it to stop it.
