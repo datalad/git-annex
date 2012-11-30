@@ -1,0 +1,14 @@
+Is it possible to let git-annex check and update the "number of copies" or "whereis" information without recalculating the checksome?
+
+The use case is this:
+
+I have a very large "repo1": 300.000 files 1.5 TB.
+
+I copy it using low level tools for performance (clone the partition, netcat over network, or whatever...)
+
+Then i do "git annex init 'repo2'". 
+All files exist in both repos and the simlinks are valid, but git-annex does not know about it. 
+The "git-annex wehereis" only shows "repo1". How can I tell him without rehashing 1.6TB?
+
+Thx
+
