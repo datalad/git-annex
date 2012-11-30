@@ -2,7 +2,7 @@ While dropbox allows modifying files in the folder, git-annex freezes
 them upon creation, using symlinks.
 
 This is a core design simplification of git-annex.
-But it is problimatic too:
+But it is problematic too:
 
 * To allow directly editing files in its folder, something like [[todo/smudge]] is
   needed, to get rid of the symlinks that stand in for the files.
