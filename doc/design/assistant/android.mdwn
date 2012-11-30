@@ -40,5 +40,5 @@ transfers when not on wifi. This may need to be configurable.
 
 ## FAT
 
-Due to use of the fat filesystem, which doesn't do symlinks, [[nosymlink]]
-is probably needed.
+Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
+is probably needed for at least older Android devices that have SD cards.
