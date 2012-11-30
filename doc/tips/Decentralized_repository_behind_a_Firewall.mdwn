@@ -46,9 +46,10 @@ In any case, the setup is much, much, much more secure than Dropbox. With Dropbo
 
 * Your data is stored in some datacenter. It's supposed to be encrypted. It might not be.
 * Lot's of people have routine access to your files, and plausible reason to. Bored employees might regularly be doing some 'maintenance work' involving your pictures.
-* The dropbox software can do anything it likes on your computer, and it's closed source and can't be audited
-* Any dropbox employee can conveiably use your installed dropbox to look at any file on your computer
+* The dropbox software can do anything it likes on your computer, and it's closed source so you don't know if it does. A disgruntled employee could put a trojan into it.
+* Dropbox might have a backdoor for employee access to any file on your computer. This might be done with the best of intentions, but a mal-intentioned or careless employee might still erase things or send sensitive files from your computer by email.
 * A truly huge amount of eyes connected to incredibly smart brains have looked at openssh and found it secure. Everybody trusts openssh. With dropbox, there is, well, dropbox. Whoever that is.
+
 -----
 
 ¹ Me=Carlo, not Joey. I'm pretty sure doing what I wrote here is a good idea, but in case it turns out to be catastrophically dumb, it's my fault, not his.
