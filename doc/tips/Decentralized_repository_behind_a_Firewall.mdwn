@@ -51,7 +51,7 @@ In any case, the setup is much, much, much more secure than Dropbox. With Dropbo
 * A truly huge amount of eyes connected to incredibly smart brains have looked at openssh and found it secure. Everybody trusts openssh. With dropbox, there is, well, dropbox. Whoever that is.
 -----
 
-¹ Me=Carlo, not Joey. Just noting so this you can direct potential flames at the correct person.
+¹ Me=Carlo, not Joey. I'm pretty sure doing what I wrote here is a good idea, but in case it turns out to be catastrophically dumb, it's my fault, not his.
 
 ² My always-on computer at home is a raspberry pi with a 32GB USB stick. Best self-hosted dropbox you could imagine.
 
