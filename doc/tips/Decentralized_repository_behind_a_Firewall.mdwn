@@ -6,7 +6,7 @@ This is totally great! Except, there is no way for your home computer to pull yo
 
 First, install *openssh-server* on your *on-the-go* computer
 
-    sudo apt-get install openssh-serverpa
+    sudo apt-get install openssh-server # Adjust to your flavor of unix
 
 Then, log into your *home* computer, with *port forwarding*:
 
