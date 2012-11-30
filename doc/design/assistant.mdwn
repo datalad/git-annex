@@ -13,8 +13,10 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
 We are, approximately, here:
 
-* Months 6-7 "9k bonus round": [[!traillink Android]] [[!traillink partial_content]] [[!traillink leftovers]]
-* Months 8-11: more user-driven features and polishing (see remaining TODO items in all pages above)
+* Month 6 "9k bonus round": [[!traillink Android]] or [[!traillink desymlink]]
+* Month 7: user-driven features and polishing
+* Month 8: whatever I don't get to in month 6
+* Months 9-11: more user-driven features and polishing (see remaining TODO items in all pages above)
 * Month 12: "Windows purgatory" [[Windows]]
 
 ## porting
@@ -23,7 +25,7 @@ We are, approximately, here:
 
 ## not yet on the map:
 
-* [[desymlink]]
+* [[partial_content]]
 * [[deltas]]
 * [[leftovers]]
 * [[other todo items|todo]]
