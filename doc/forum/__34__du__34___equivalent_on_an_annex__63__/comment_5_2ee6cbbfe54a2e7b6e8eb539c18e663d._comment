@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 5"
+ date="2012-11-30T00:29:44Z"
+ content="""
+Steve, that would be a very useful utility. I've been thinking of such a tool, but haven't gotten around to write it yet. It would be practical to have before copying big/many files from another drive. If I've been short of free space, I've executed `du -L` in the source directory, but that's a bit cumbersome.
+
+And \"gadu\" is a fine name, yes. Goes well along with my \"ga\" shortcut for \"git annex\", which I created two hours after I started using git-annex. I've probably saved thousands of keystrokes because of that. &#x263a;
+"""]]
