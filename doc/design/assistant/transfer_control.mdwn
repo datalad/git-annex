@@ -19,9 +19,6 @@ something smart with such remotes.
   log is not updated in time, it will fail to drop unwanted content.
   (There's a 10 second sleep there now to avoid the race, but that's hardly
   a fix.)
-* When a file is renamed into an archive directory, it's not immediately
-  transferred to archive remotes. (Next expensive scan does successfully
-  cause the transfer to happen).
 
 ### dropping no longer preferred content
 
@@ -48,7 +45,7 @@ the same content, this gets tricky. Let's assume there are not.)
 
 That's all! Of these, 1-4 are by far the most important.
 
-## specifying what data a remote prefers to contain **done**
+## specifying what data a remote prefers to contain (**done**)
 
 Imagine a per-remote preferred content setting, that matches things that
 should be stored on the remote.
@@ -67,7 +64,7 @@ check if preferred content settings rejects the data, and if so, drop it
 from the repo. So once all three laptops have the data, it is
 pruned from the transfer drive.
 
-## repo groups **done**
+## repo groups (**done**)
 
 Seems like git-annex needs a way to know the groups of repos. Some
 groups:
@@ -79,7 +76,7 @@ groups:
   it does not hold data for long periods of time, and tends to have a
   limited size.
 
-Add a group.log that can assign repos to these or other groups. **done**
+Add a group.log that can assign repos to these or other groups. (**done**)
 
 Some examples of using groups:
 
@@ -104,7 +101,10 @@ Currently, we have a simple drop down list to select between a few
 predefined groups with pre-defined preferred content recipes. Is this good
 enough?
 
-## the state change problem **done**
+I think so; useful recipes can be developed on the wiki and included in
+git-annex.
+
+## the state change problem (**done**)
 
 Imagine that a trusted repo has setting like `not copies=trusted:2`
 This means that `git annex get --auto` should get files not in 2 trusted

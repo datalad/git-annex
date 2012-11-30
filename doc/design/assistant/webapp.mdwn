@@ -28,7 +28,7 @@ The webapp is a web server that displays a shiny interface.
   See: [[todo/wishlist:_an_"assistant"_for_web-browsing_--_tracking_the_sources_of_the_downloads]]
 * Display the `inotify max_user_watches` exceeded message. **done**
 * Display something sane when kqueue runs out of file descriptors.
-* allow removing git remotes
+* allow removing git remotes **done**
 * allow disabling syncing to here, which should temporarily disable all
   local syncing.
 

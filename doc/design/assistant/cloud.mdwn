@@ -2,7 +2,7 @@ The [[syncing]] design assumes the network is connected. But it's often
 not in these pre-IPV6 days, so the cloud needs to be used to bridge between
 LANS.
 
-## The cloud notification problem **done**
+## The cloud notification problem (**done**)
 
 Alice and Bob have repos, and there is a cloud remote they both share.
 Alice adds a file; the assistant transfers it to the cloud remote.

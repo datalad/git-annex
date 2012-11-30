@@ -8,11 +8,11 @@ The meat of the configuration will be in configuration assistants that walk
 through setting up common use cases.
 
 * Create a repository (run when the web app is started without a configured
-  repository too).
+  repository too). **done**
 * Clone this repo to a USB drive or other removable drive. **done**
 * Make a bare repo on a remote ssh server **done**
 * Clone this repo to another host. (Needs [[pairing]]) **done**
-* Set up Amazon S3.
+* Set up Amazon S3. **done**
 * Set up encrypted rsync remote. **done**
 * Rsync.net special case **done**
 * Set up gpg encryption key; gpg key distribution.
