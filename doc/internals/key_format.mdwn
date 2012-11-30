@@ -1,0 +1,20 @@
+A git-annex key has this format:
+
+	BACKEND-sNNNN-mNNNN--NAME
+
+For example:
+
+	SHA256E-s31390--f50d7ac4c6b9031379986bc362fcefb65f1e52621ce1708d537e740fefc59cc0.mp3
+
+* The backend is one of the [[key-value_backends|backends]], which
+  are always upper-cased.
+* The name field at the end has a format dependent on the backend. It is
+  always the last field, and is prefixed with "--". Unlike other fields,
+  it may contain "-" in its content. It should not contain newline characters;
+  otherwise nearly anything goes.
+* The "-s" field is optional, and is the size of the content in bytes.
+* The "-m" field is optional, and is the mtime of the file when it was
+  added to git-annex, expressed as seconds from the epoch.
+  This is currently only used by the WORM backend.
+* Other fields could be added in the future, if needed.
+* Fields may appear, in any order (though always before the name field).

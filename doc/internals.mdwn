@@ -11,7 +11,7 @@ to the file content.
 First there are two levels of directories used for hashing, to prevent
 too many things ending up in any one directory.
 
-Each subdirectory has the name of a key in one of the
+Each subdirectory has the [[name_of_a_key|key_format]] in one of the
 [[key-value_backends|backends]]. The file inside also has the name of the key.
 This two-level structure is used because it allows the write bit to be removed
 from the subdirectories as well as from the files. That prevents accidentially
