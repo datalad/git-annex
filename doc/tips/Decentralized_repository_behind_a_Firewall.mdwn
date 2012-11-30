@@ -1,36 +1,36 @@
 If you're anything like me, you have a copy of your annex on a computer running at home¹, set up so you can access it from anywhere like this:
 
-  ssh myhome.no-ip.org
+    ssh myhome.no-ip.org
 
 This is totally great! Except, there is no way for your home computer to pull your changes, because there is no onthego.no-ip.org. You can get clunky and use a bare git repository and git push, but there is a better way.
 
 First, install openssh-server on your on-the-go computer
 
-  sudo apt-get install openssh-server
+    sudo apt-get install openssh-server
 
 Then, log into your home computer, with *port forwarding*:
 
-  ssh me@myhome.no-ip.org L 2201:localhost:22
+    ssh me@myhome.no-ip.org L 2201:localhost:22
 
 Your home computer can now ssh into your on-the-go computer, as long as you keep the above shell running. Presto, you can use the same shell to set up your remote:
 
-  ssh-keygen -t rsa
-  ssh-copy-id localhost -p 2201
-  cd ~/annex
-  git annex remote add on-the-go ssh://localhost:2201/home/myuser/annex
+    ssh-keygen -t rsa
+    ssh-copy-id localhost -p 2201
+    cd ~/annex
+    git annex remote add on-the-go ssh://localhost:2201/home/myuser/annex
 
 And run normal annex operations:
 
-  git annex sync
-  git annex get on-the-go some/big/file
-  git annex status
+    git annex sync
+    git annex get on-the-go some/big/file
+    git annex status
 
 You can add more computers by repeating with a different port, e.g. 2202 or 2203 (or any other).
 
 If you're security paranoid (like me), read on. If you're not, that's it! Thanks for reading!
 
---- paranoid area ---
-
+Paranoid Area
+---
 Note you're granting passwordless access to your on-the-go computer to your home computer. I believe that's all right, as long as:
 
 * Your home computer is really in your home, and not at a friend's house or some datacenter
@@ -46,7 +46,6 @@ In any case, the setup is much, much, much more secure than Dropbox. With Dropbo
 * The dropbox software can do anything it likes on your computer, and it's closed source and can't be audited
 * Any dropbox employee can conveiably use your installed dropbox to look at any file on your computer
 * A truly huge amount of eyes connected to incredibly smart brains have looked at openssh and found it secure. Everybody trusts openssh. With dropbox, there is, well, dropbox. Whoever that is.
-
 -----
 
 ¹ My always-on computer at home is a raspberry pi with a 32GB USB stick. Best self-hosted dropbox you could imagine.
