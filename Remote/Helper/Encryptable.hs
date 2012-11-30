@@ -44,7 +44,7 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
  - Two additional functions must be provided by the remote,
  - to support storing and retrieving encrypted content. -}
 encryptableRemote
-	:: Maybe RemoteConfig
+	:: RemoteConfig
 	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
 	-> ((Cipher, Key) -> Key -> FilePath -> Annex Bool)
 	-> Remote
@@ -103,9 +103,8 @@ embedCreds c
 	| otherwise = False
 
 {- Gets encryption Cipher, and encrypted version of Key. -}
-cipherKey :: Maybe RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
-cipherKey Nothing _ = return Nothing
-cipherKey (Just c) k = maybe Nothing make <$> remoteCipher c
+cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
+cipherKey c k = maybe Nothing make <$> remoteCipher c
   where
 	make ciphertext = Just (ciphertext, encryptKey ciphertext k)
 

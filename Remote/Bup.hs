@@ -38,7 +38,7 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r u c = do
 	buprepo <- getRemoteConfig r "buprepo" (error "missing buprepo")
 	cst <- remoteCost r (if bupLocal buprepo then semiCheapRemoteCost else expensiveRemoteCost)

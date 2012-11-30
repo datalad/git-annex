@@ -36,34 +36,31 @@ remote = RemoteType {
 	setup = s3Setup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
-gen r u c = do
-	cst <- remoteCost r expensiveRemoteCost
-	return $ gen' r u c cst
-gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote
-gen' r u c cst =
-	encryptableRemote c
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
+gen r u c = new <$> remoteCost r expensiveRemoteCost
+  where
+	new cst = encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
-  where
-	this = Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
- 		storeKey = store this,
-		retrieveKeyFile = retrieve this,
-		retrieveKeyFileCheap = retrieveCheap this,
-		removeKey = remove this,
-		hasKey = checkPresent this,
-		hasKeyCheap = False,
-		whereisKey = Nothing,
-		config = c,
-		repo = r,
-		localpath = Nothing,
-		readonly = False,
-		remotetype = remote
-	}
+	  where
+		this = Remote {
+			uuid = u,
+			cost = cst,
+			name = Git.repoDescribe r,
+ 			storeKey = store this,
+			retrieveKeyFile = retrieve this,
+			retrieveKeyFileCheap = retrieveCheap this,
+			removeKey = remove this,
+			hasKey = checkPresent this,
+			hasKeyCheap = False,
+			whereisKey = Nothing,
+			config = c,
+			repo = r,
+			localpath = Nothing,
+			readonly = False,
+			remotetype = remote
+		}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
 s3Setup u c = handlehost $ M.lookup "host" c
@@ -143,13 +140,13 @@ storeHelper (conn, bucket) r k p file = do
 			sendObject conn object
   where
 	storageclass =
-		case fromJust $ M.lookup "storageclass" $ fromJust $ config r of
+		case fromJust $ M.lookup "storageclass" $ config r of
 			"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
 			_ -> STANDARD
 
 	getsize = liftIO $ fromIntegral . fileSize <$> getFileStatus file
 	
-	xheaders = filter isxheader $ M.assocs $ fromJust $ config r
+	xheaders = filter isxheader $ M.assocs $ config r
 	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
@@ -207,10 +204,8 @@ s3Bool (Left e) = s3Warning e
 
 s3Action :: Remote -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
 s3Action r noconn action = do
-	when (isNothing $ config r) $
-		error $ "Missing configuration for special remote " ++ name r
-	let bucket = M.lookup "bucket" $ fromJust $ config r
-	conn <- s3Connection (fromJust $ config r) (uuid r)
+	let bucket = M.lookup "bucket" $ config r
+	conn <- s3Connection (config r) (uuid r)
 	case (bucket, conn) of
 		(Just b, Just c) -> action (c, b)
 		_ -> return noconn
@@ -222,7 +217,7 @@ bucketFile r = munge . key2file
 		Just "ia" -> iaMunge $ fileprefix ++ s
 		_ -> fileprefix ++ s
 	fileprefix = M.findWithDefault "" "fileprefix" c
-	c = fromJust $ config r
+	c = config r
 
 bucketKey :: Remote -> String -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty

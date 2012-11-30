@@ -17,6 +17,8 @@ import Logs.Web
 import qualified Utility.Url as Url
 import Types.Key
 
+import qualified Data.Map as M
+
 remote :: RemoteType
 remote = RemoteType {
 	typename = "web",
@@ -33,7 +35,7 @@ list = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" Git.Construct.fromUnknown
 	return [r]
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r _ _ = 
 	return Remote {
 		uuid = webUUID,
@@ -46,7 +48,7 @@ gen r _ _ =
 		hasKey = checkKey,
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
-		config = Nothing,
+		config = M.empty,
 		localpath = Nothing,
 		repo = r,
 		readonly = True,

@@ -45,34 +45,31 @@ remote = RemoteType {
 	setup = webdavSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
-gen r u c = do
-	cst <- remoteCost r expensiveRemoteCost
-	return $ gen' r u c cst
-gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote
-gen' r u c cst =
-	encryptableRemote c
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
+gen r u c = new <$> remoteCost r expensiveRemoteCost
+  where
+	new cst = encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
-  where
-	this = Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
- 		storeKey = store this,
-		retrieveKeyFile = retrieve this,
-		retrieveKeyFileCheap = retrieveCheap this,
-		removeKey = remove this,
-		hasKey = checkPresent this,
-		hasKeyCheap = False,
-		whereisKey = Nothing,
-		config = c,
-		repo = r,
-		localpath = Nothing,
-		readonly = False,
-		remotetype = remote
-	}
+	  where
+		this = Remote {
+			uuid = u,
+			cost = cst,
+			name = Git.repoDescribe r,
+ 			storeKey = store this,
+			retrieveKeyFile = retrieve this,
+			retrieveKeyFileCheap = retrieveCheap this,
+			removeKey = remove this,
+			hasKey = checkPresent this,
+			hasKeyCheap = False,
+			whereisKey = Nothing,
+			config = c,
+			repo = r,
+			localpath = Nothing,
+			readonly = False,
+			remotetype = remote
+		}
 
 webdavSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 webdavSetup u c = do
@@ -201,14 +198,12 @@ withStoredFiles r k baseurl user pass onerr a
 	keyurl = davLocation baseurl k ++ keyFile k
 
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
-davAction r unconfigured action = case config r of
-	Nothing -> return unconfigured
-	Just c -> do
-		mcreds <- getCreds c (uuid r)
-		case (mcreds, M.lookup "url" c) of
-			(Just (user, pass), Just url) ->
-				action (url, toDavUser user, toDavPass pass)
-			_ -> return unconfigured
+davAction r unconfigured action = do
+	mcreds <- getCreds (config r) (uuid r)
+	case (mcreds, M.lookup "url" $ config r) of
+		(Just (user, pass), Just url) ->
+			action (url, toDavUser user, toDavPass pass)
+		_ -> return unconfigured
 
 toDavUser :: String -> DavUser
 toDavUser = B8.fromString

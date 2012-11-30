@@ -33,7 +33,7 @@ remote = RemoteType {
 	setup = directorySetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r u c = do
 	dir <- getRemoteConfig r "directory" (error "missing directory")
 	cst <- remoteCost r cheapRemoteCost
@@ -52,7 +52,7 @@ gen r u c = do
 			hasKey = checkPresent dir chunksize,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
-			config = Nothing,
+			config = M.empty,
 			repo = r,
 			localpath = Just dir,
 			readonly = False,

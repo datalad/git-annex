@@ -36,34 +36,31 @@ remote = RemoteType {
 	setup = glacierSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
-gen r u c = do
-	cst <- remoteCost r veryExpensiveRemoteCost
-	return $ gen' r u c cst
-gen' :: Git.Repo -> UUID -> Maybe RemoteConfig -> Int -> Remote
-gen' r u c cst =
-	encryptableRemote c
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
+gen r u c = new <$> remoteCost r veryExpensiveRemoteCost
+  where
+	new cst = encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
-  where
-	this = Remote {
-		uuid = u,
-		cost = cst,
-		name = Git.repoDescribe r,
- 		storeKey = store this,
-		retrieveKeyFile = retrieve this,
-		retrieveKeyFileCheap = retrieveCheap this,
-		removeKey = remove this,
-		hasKey = checkPresent this,
-		hasKeyCheap = False,
-		whereisKey = Nothing,
-		config = c,
-		repo = r,
-		localpath = Nothing,
-		readonly = False,
-		remotetype = remote
-	}
+	  where
+		this = Remote {
+			uuid = u,
+			cost = cst,
+			name = Git.repoDescribe r,
+ 			storeKey = store this,
+			retrieveKeyFile = retrieve this,
+			retrieveKeyFileCheap = retrieveCheap this,
+			removeKey = remove this,
+			hasKey = checkPresent this,
+			hasKeyCheap = False,
+			whereisKey = Nothing,
+			config = c,
+			repo = r,
+			localpath = Nothing,
+			readonly = False,
+			remotetype = remote
+		}
 
 glacierSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 glacierSetup u c = do
@@ -115,13 +112,13 @@ retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
 storeHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
 storeHelper r k feeder = go =<< glacierEnv c u
   where
-	c = fromJust $ config r
+	c = config r
 	u = uuid r
 	params = glacierParams c
 		[ Param "archive"
 		, Param "upload"
 		, Param "--name", Param $ archive r k
-		, Param $ remoteVault r
+		, Param $ getVault $ config r
 		, Param "-"
 		]
 	go Nothing = return False
@@ -135,13 +132,13 @@ storeHelper r k feeder = go =<< glacierEnv c u
 retrieveHelper :: Remote -> Key -> (Handle -> IO ()) -> Annex Bool
 retrieveHelper r k reader = go =<< glacierEnv c u
   where
-	c = fromJust $ config r
+	c = config r
 	u = uuid r
 	params = glacierParams c
 		[ Param "archive"
 		, Param "retrieve"
 		, Param "-o-"
-		, Param $ remoteVault r
+		, Param $ getVault $ config r
 		, Param $ archive r k
 		]
 	go Nothing = return False
@@ -163,14 +160,14 @@ remove :: Remote -> Key -> Annex Bool
 remove r k = glacierAction r
 	[ Param "archive"
 	, Param "delete"
-	, Param $ remoteVault r
+	, Param $ getVault $ config r
 	, Param $ archive r k
 	]
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = do
 	showAction $ "checking " ++ name r
-	go =<< glacierEnv (fromJust $ config r) (uuid r)
+	go =<< glacierEnv (config r) (uuid r)
   where
 	go Nothing = return $ Left "cannot check glacier"
 	go (Just e) = do
@@ -190,7 +187,7 @@ checkPresent r k = do
 	params =
 		[ Param "archive"
 		, Param "checkpresent"
-		, Param $ remoteVault r
+		, Param $ getVault $ config r
 		, Param "--quiet"
 		, Param $ archive r k
 		]
@@ -205,7 +202,7 @@ checkPresent r k = do
 		return $ Right False
 
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
-glacierAction r params = runGlacier (fromJust $ config r) (uuid r) params
+glacierAction r params = runGlacier (config r) (uuid r) params
 
 runGlacier :: RemoteConfig -> UUID -> [CommandParam] -> Annex Bool
 runGlacier c u params = go =<< glacierEnv c u
@@ -231,16 +228,13 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds
 
-remoteVault :: Remote -> Vault
-remoteVault = getVault . fromJust . config
-
 getVault :: RemoteConfig -> Vault
 getVault = fromJust . M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ key2file k
   where
-	fileprefix = M.findWithDefault "" "fileprefix" $ fromJust $ config r
+	fileprefix = M.findWithDefault "" "fileprefix" $ config r
 
 -- glacier vault create will succeed even if the vault already exists.
 genVault :: RemoteConfig -> UUID -> Annex ()
@@ -260,11 +254,11 @@ genVault c u = unlessM (runGlacier c u params) $
  - keys when the remote is encrypted.
  -}
 jobList :: Remote -> [Key] -> Annex ([Key], [Key])
-jobList r keys = go =<< glacierEnv (fromJust $ config r) (uuid r)
+jobList r keys = go =<< glacierEnv (config r) (uuid r)
   where
 	params = [ Param "job", Param "list" ]
 	nada = ([], [])
-	myvault = remoteVault r
+	myvault = getVault $ config r
 
 	go Nothing = return nada
 	go (Just e) = do

@@ -29,7 +29,7 @@ remote = RemoteType {
 	setup = hookSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r u c = do
 	hooktype <- getRemoteConfig r "hooktype" (error "missing hooktype")
 	cst <- remoteCost r expensiveRemoteCost
@@ -47,7 +47,7 @@ gen r u c = do
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
-			config = Nothing,
+			config = M.empty,
 			localpath = Nothing,
 			repo = r,
 			readonly = False,

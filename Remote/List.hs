@@ -81,7 +81,7 @@ remoteListRefresh = do
 remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
 remoteGen m t r = do
 	u <- getRepoUUID r
-	addHooks =<< generate t r u (M.lookup u m)
+	addHooks =<< generate t r u (fromMaybe M.empty $ M.lookup u m)
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex Remote

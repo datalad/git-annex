@@ -20,9 +20,8 @@ import qualified Control.Exception as E
 type ChunkSize = Maybe Int64
 
 {- Gets a remote's configured chunk size. -}
-chunkSize :: Maybe RemoteConfig -> ChunkSize
-chunkSize Nothing = Nothing
-chunkSize (Just m) =
+chunkSize :: RemoteConfig -> ChunkSize
+chunkSize m =
 	case M.lookup "chunksize" m of
 		Nothing -> Nothing
 		Just v -> case readSize dataUnits v of

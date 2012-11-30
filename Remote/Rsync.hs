@@ -38,7 +38,7 @@ remote = RemoteType {
 	setup = rsyncSetup
 }
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r u c = do
 	o <- genRsyncOpts r c
 	cst <- remoteCost r expensiveRemoteCost
@@ -56,7 +56,7 @@ gen r u c = do
 			, hasKey = checkPresent r o
 			, hasKeyCheap = False
 			, whereisKey = Nothing
-			, config = Nothing
+			, config = M.empty
 			, repo = r
 			, localpath = if rsyncUrlIsPath $ rsyncUrl o
 				then Just $ rsyncUrl o
@@ -65,12 +65,12 @@ gen r u c = do
 			, remotetype = remote
 			}
 
-genRsyncOpts :: Git.Repo -> Maybe RemoteConfig -> Annex RsyncOpts
+genRsyncOpts :: Git.Repo -> RemoteConfig -> Annex RsyncOpts
 genRsyncOpts r c = do
 	url <- getRemoteConfig r "rsyncurl" (error "missing rsyncurl")
 	opts <- map Param . filter safe . words
 		<$> getRemoteConfig r "rsync-options" ""
-	let escape = maybe True (\m -> M.lookup "shellescape" m /= Just "no") c
+	let escape = M.lookup "shellescape" c /= Just "no"
 	return $ RsyncOpts url opts escape
   where
 	safe o

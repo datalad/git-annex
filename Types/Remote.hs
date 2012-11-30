@@ -27,7 +27,7 @@ data RemoteTypeA a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> Maybe RemoteConfig -> a (RemoteA a),
+	generate :: Git.Repo -> UUID -> RemoteConfig -> a (RemoteA a),
 	-- initializes or changes a remote
 	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
@@ -62,8 +62,8 @@ data RemoteA a = Remote {
 	hasKeyCheap :: Bool,
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
-	-- a Remote can have a persistent configuration store
-	config :: Maybe RemoteConfig,
+	-- a Remote has a persistent configuration store
+	config :: RemoteConfig,
 	-- git configuration for the remote
 	repo :: Git.Repo,
 	-- a Remote can be assocated with a specific local filesystem path

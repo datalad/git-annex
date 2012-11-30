@@ -83,7 +83,7 @@ configRead r = do
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
 
-gen :: Git.Repo -> UUID -> Maybe RemoteConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
 gen r u _ = new <$> remoteCost r defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
@@ -98,7 +98,7 @@ gen r u _ = new <$> remoteCost r defcst
 		, hasKey = inAnnex r
 		, hasKeyCheap = repoCheap r
 		, whereisKey = Nothing
-		, config = Nothing
+		, config = M.empty
 		, localpath = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
 			then Just $ Git.repoPath r
 			else Nothing
