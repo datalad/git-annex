@@ -30,6 +30,7 @@ You can add more computers by repeating with a different port, e.g. 2202 or 2203
 If you're security paranoid (like me), read on. If you're not, that's it! Thanks for reading!
 
 Paranoid Area
+
 ---
 Note you're granting passwordless access to your on-the-go computer to your home computer. I believe that's all right, as long as:
 
