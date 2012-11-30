@@ -6,7 +6,7 @@ This is totally great! Except, there is no way for your home computer to pull yo
 
 First, install *openssh-server* on your *on-the-go* computer
 
-    sudo apt-get install openssh-server
+    sudo apt-get install openssh-serverpa
 
 Then, log into your *home* computer, with *port forwarding*:
 
@@ -31,9 +31,9 @@ You can add more computers by repeating with a different port, e.g. 2202 or 2203
 
 If you're security paranoid (like me), read on. If you're not, that's it! Thanks for reading!
 
+---
 Paranoid Area
 
----
 Note you're granting passwordless access to your on-the-go computer to your home computer. I believe that's all right, as long as:
 
 * Your home computer is really in your home, and not at a friend's house or some datacenter
