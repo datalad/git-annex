@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 3"
+ date="2012-11-30T18:49:37Z"
+ content="""
+Very cool!
+
+So not only is archive/ a magic subdirectory due to the \"preferred content settings\" for \"client,\" but *every* subdirectory named \"archive\" similarly drops content when possible.  That's awesome to know.
+
+Also if I really wanted to manually manage all my content and still have git-annex assistant running, I could simply use \"present\" for my preferred content settings on my laptop, and it would respect my manual gets and drops.
+
+Thank you!
+
+"""]]
