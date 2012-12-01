@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 13"
+ date="2012-12-01T18:50:31Z"
+ content="""
+So it works with a controlling console, and git commands are somehow misbehaving without a controlling console. Very strange.
+
+Any chance you can `dtrace -p` the stuck git processes to see what they're doing or what resource they're blocked on?
+"""]]

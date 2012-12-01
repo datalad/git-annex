@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 2"
+ date="2012-12-01T18:34:05Z"
+ content="""
+I tried signing up for livedrive, but I cannot log into it with WebDav at all. Do they require a Pro account to use WebDav?
+
+When it's \"testing webdav server\", it tries to make a collection (a subdirectory), and uploads a file to it, and sets the file's properties, and deletes the file. One of these actions must be failing, perhaps because the webdav server implementation does not support it. Or perhaps because the webdav client library is doing something wrong. I've instrumented the test, so it'll say which one.
+"""]]
