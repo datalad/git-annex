@@ -1,5 +1,3 @@
-* Need to handle retrying downloads of files from glacier after 4 hours.
-
 * When a file is moved into archive/, the assistant that sends it to
   glacier is able to trust that it's in glacier and remove the local copy.
   But other assistants that also have a copy cannot trust that, and so
