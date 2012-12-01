@@ -292,14 +292,15 @@ urlParent url = dropTrailingPathSeparator $
 testDav :: String -> Maybe CredPair -> Annex ()
 testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
-	liftIO $ either (throwIO . showEitherException) (const noop)
-		=<< catchHttp go
+	test "make directory" $ davMkdir baseurl user pass
+	test "write file" $ putContentAndProps testurl user pass
+		(noProps, (contentType, L.empty))
+	test "delete file" $ deleteContent testurl user pass
   where
-	go = do
-		davMkdir baseurl user pass
-		putContentAndProps testurl user pass
-			(noProps, (contentType, L.empty))
-		deleteContent testurl user pass
+	test desc a = liftIO $
+		either (\e -> throwIO $ "WebDAV failed to " ++ desc ++ ": " ++ showEitherException e)
+			(const noop)
+			=<< catchHttp a
 
 	user = toDavUser u
 	pass = toDavPass p
