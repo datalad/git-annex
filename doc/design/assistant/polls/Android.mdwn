@@ -15,4 +15,4 @@ git-annex.
 Or, I can work on [[Android_porting|design/assistant/android]], and try to
 get the assistant working on Android's built-in storage.
 
-[[!poll open=yes 10 "solve the symlink problem first" 4 "port to Android first" 0 "other"]]
+[[!poll open=yes 10 "solve the symlink problem first" 5 "port to Android first" 0 "other"]]
