@@ -23,10 +23,6 @@ import Locations.UserConfig
 
 import System.Process (create_group)
 
-{- For now only one transfer is run at a time. -}
-maxTransfers :: Int
-maxTransfers = 1
-
 {- Dispatches transfers from the queue. -}
 transfererThread :: NamedThread
 transfererThread = NamedThread "Transferr" $ do
