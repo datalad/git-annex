@@ -8,6 +8,7 @@
 module Remote.Glacier (remote, jobList) where
 
 import qualified Data.Map as M
+import qualified Data.Text as T
 import System.Environment
 
 import Common.Annex
@@ -73,7 +74,7 @@ glacierSetup u c = do
 	remotename = fromJust (M.lookup "name" c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", "us-east-1")
+		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.Glacier)
 		, ("vault", defvault)
 		]
 

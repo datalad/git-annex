@@ -49,7 +49,6 @@ instance Show StorageClass where
 data AWSInput = AWSInput
 	{ accessKeyID :: Text
 	, secretAccessKey :: Text
-	-- Free form text for datacenter because Amazon adds new ones.
 	, datacenter :: Text
 	-- Only used for S3, not Glacier.
 	, storageClass :: StorageClass
@@ -65,7 +64,7 @@ s3InputAForm :: AForm WebApp WebApp AWSInput
 s3InputAForm = AWSInput
 	<$> areq textField "Access Key ID" Nothing
 	<*> areq passwordField "Secret Access Key" Nothing
-	<*> areq textField "Datacenter" (Just "US")
+	<*> areq (selectFieldList $ M.toList $ AWS.regionMap AWS.S3) "Datacenter" (Just $ AWS.defaultRegion AWS.S3)
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
 	<*> areq textField "Repository name" (Just "S3")
   where
@@ -79,7 +78,7 @@ glacierInputAForm :: AForm WebApp WebApp AWSInput
 glacierInputAForm = AWSInput
 	<$> areq textField "Access Key ID" Nothing
 	<*> areq passwordField "Secret Access Key" Nothing
-	<*> areq textField "Datacenter" (Just "us-east-1")
+	<*> areq (selectFieldList $ M.toList $ AWS.regionMap AWS.Glacier) "Datacenter" (Just $ AWS.defaultRegion AWS.Glacier)
 	<*> pure StandardRedundancy
 	<*> areq textField "Repository name" (Just "glacier")
 

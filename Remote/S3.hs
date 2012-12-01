@@ -11,6 +11,7 @@ import Network.AWS.AWSConnection
 import Network.AWS.S3Object
 import Network.AWS.S3Bucket hiding (size)
 import Network.AWS.AWSResult
+import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Data.Char
@@ -68,7 +69,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", "US")
+		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
 		, ("storageclass", "STANDARD")
 		, ("host", defaultAmazonS3Host)
 		, ("port", show defaultAmazonS3Port)
