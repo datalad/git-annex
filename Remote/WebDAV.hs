@@ -14,8 +14,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Text.Lazy as LT
-import qualified Text.XML as XML
 import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
 import Network.HTTP.Conduit (HttpException(..))
@@ -109,8 +107,8 @@ storeHelper r k baseurl user pass b = catchBoolIO $ do
 		void $ catchMaybeHttp (deleteContent desturl user pass)
 		davMkdir (urlParent desturl) user pass
 		moveContent srcurl (B8.fromString desturl) user pass
-	storehttp url v = putContentAndProps url user pass
-		(noProps, (contentType, v))
+	storehttp url v = putContent url user pass
+		(contentType, v)
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -293,8 +291,8 @@ testDav :: String -> Maybe CredPair -> Annex ()
 testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
 	test "make directory" $ davMkdir baseurl user pass
-	test "write file" $ putContentAndProps testurl user pass
-		(noProps, (contentType, L.empty))
+	test "write file" $ putContent testurl user pass
+		(contentType, L.empty)
 	test "delete file" $ deleteContent testurl user pass
   where
 	test desc a = liftIO $
@@ -310,11 +308,6 @@ testDav _ Nothing = error "Need to configure webdav username and password."
 {- Content-Type to use for files uploaded to WebDAV. -}
 contentType :: Maybe B8.ByteString
 contentType = Just $ B8.fromString "application/octet-stream"
-
-{- The DAV library requires that properties be specified when storing a file.
- - This just omits any real properties. -}
-noProps :: XML.Document
-noProps = XML.parseText_ XML.def $ LT.pack "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<propertyupdate/>"
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
