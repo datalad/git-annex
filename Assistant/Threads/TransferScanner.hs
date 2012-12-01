@@ -119,7 +119,7 @@ expensiveScan rs = unless onlyweb $ do
 			locs <- loggedLocations key
 			present <- inAnnex key
 
-			handleDrops' locs syncrs present key (Just f) Nothing
+			handleDropsFrom locs syncrs present key (Just f) Nothing
 
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs

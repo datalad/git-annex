@@ -27,11 +27,11 @@ handleDrops fromhere key f knownpresentremote = do
 	syncrs <- syncDataRemotes <$> getDaemonStatus
 	liftAnnex $ do
 		locs <- loggedLocations key
-		handleDrops' locs syncrs fromhere key f knownpresentremote
+		handleDropsFrom locs syncrs fromhere key f knownpresentremote
 
-handleDrops' :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
-handleDrops' _ _ _ _ Nothing _ = noop
-handleDrops' locs rs fromhere key (Just f) knownpresentremote
+handleDropsFrom :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
+handleDropsFrom _ _ _ _ Nothing _ = noop
+handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 	| fromhere = do
 		n <- getcopies
 		if checkcopies n
