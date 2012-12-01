@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 1"
+ date="2012-12-01T19:22:03Z"
+ content="""
+There are several difficulties with reordering the queue that way. One is that the failure may be intermittent; another is that the queue is fed by a scanning process, so doesn't always have a well-defined end.
+
+Another way to deal with this problem, which I think I prefer, is to allow multiple actions from the queue to run at once. Then slow or unreachable remotes don't block it from using other remotes. 
+"""]]
