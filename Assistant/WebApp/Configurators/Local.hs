@@ -30,7 +30,6 @@ import Types.StandardGroups
 import Logs.PreferredContent
 import Utility.UserInfo
 
-import Yesod
 import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory

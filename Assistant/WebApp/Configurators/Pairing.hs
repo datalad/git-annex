@@ -37,7 +37,6 @@ import Assistant.WebApp.Configurators.XMPP
 import Utility.UserInfo
 import Git
 
-import Yesod
 #ifdef WITH_PAIRING
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T

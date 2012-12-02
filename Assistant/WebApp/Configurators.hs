@@ -25,7 +25,6 @@ import qualified Git
 import Assistant.XMPP.Client
 #endif
 
-import Yesod
 import qualified Data.Map as M
 
 {- The main configuration screen. -}

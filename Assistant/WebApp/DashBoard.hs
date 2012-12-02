@@ -22,7 +22,6 @@ import Types.Key
 import qualified Remote
 import qualified Git
 
-import Yesod
 import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent

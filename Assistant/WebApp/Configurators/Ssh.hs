@@ -19,7 +19,6 @@ import Logs.PreferredContent
 import Types.StandardGroups
 import Utility.UserInfo
 
-import Yesod
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket

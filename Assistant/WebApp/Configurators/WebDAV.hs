@@ -22,7 +22,6 @@ import Logs.PreferredContent
 import Logs.Remote
 import Creds
 
-import Yesod
 import qualified Data.Text as T
 import qualified Data.Map as M
 

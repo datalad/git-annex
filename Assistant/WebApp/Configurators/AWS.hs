@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, FlexibleContexts, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Configurators.AWS where
 
@@ -23,7 +23,6 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
 
-import Yesod
 import qualified Data.Text as T
 import qualified Data.Map as M
 
@@ -73,6 +72,15 @@ s3InputAForm = AWSInput
 		[ ("Standard redundancy", StandardRedundancy)
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
+
+textField' :: RenderMessage master FormMessage => Field sub master Text
+textField' = Field
+    { fieldParse = fieldParse textField
+    , fieldView = \theId name attrs val _isReq ->
+        [whamlet|
+<input id="#{theId}" name="#{name}" *{attrs} type="text" value="#{either id id val}">
+|]
+    }
 
 glacierInputAForm :: AForm WebApp WebApp AWSInput
 glacierInputAForm = AWSInput

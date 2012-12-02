@@ -25,7 +25,6 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Config
 
-import Yesod
 import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.Set as S

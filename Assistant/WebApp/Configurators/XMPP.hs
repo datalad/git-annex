@@ -23,7 +23,6 @@ import Assistant.DaemonStatus
 import Utility.SRV
 #endif
 
-import Yesod
 #ifdef WITH_XMPP
 import Network
 import Network.Protocol.XMPP

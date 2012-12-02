@@ -16,6 +16,7 @@ git-annex (3.20121128) UNRELEASED; urgency=low
   * webdav: Avoid trying to set props, avoiding incompatability with
     livedrive.com. Needs DAV version 0.3.
   * webapp: Prettify error display.
+  * webapp: Fix bad interaction between required fields and modals.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
 
