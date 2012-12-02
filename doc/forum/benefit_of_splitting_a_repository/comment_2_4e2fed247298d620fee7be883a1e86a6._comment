@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlgyVag95OnpvSzQofjyX0WjW__MOMKsl0"
+ nickname="Sehr"
+ subject="comment 2"
+ date="2012-12-02T19:24:59Z"
+ content="""
+The biggest problem I am facing actually is the git pack-objects command, which takes forever. 
+
+I am not starting it manually, but \"git annex sync\" is. 
+
+Any advice on how to make this faster?
+Does it make sense at all to pack a bunch of uncompressible simlinks?
+
+I already tried the delta=false attrigute, without any (major) effect.
+"""]]
