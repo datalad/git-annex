@@ -17,10 +17,13 @@ import Assistant.Pairing
 import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.WebApp
+import Utility.Yesod
 import Logs.Transfer
+import Build.SysConfig (packageversion)
 
 import Yesod
 import Yesod.Static
+import Text.Hamlet
 import Data.Text (Text, pack, unpack)
 import Control.Concurrent.STM
 
@@ -39,7 +42,7 @@ data WebApp = WebApp
 	}
 
 instance Yesod WebApp where
-	{- Require an auth token be set when accessing any (non-static route) -}
+	{- Require an auth token be set when accessing any (non-static) route -}
 	isAuthorized _ _ = checkAuthToken secretToken
 
 	{- Add the auth token to every url generated, except static subsite
@@ -51,6 +54,20 @@ instance Yesod WebApp where
 
 	makeSessionBackend = webAppSessionBackend
 	jsLoader _ = BottomOfHeadBlocking
+
+	{- The webapp does not use defaultLayout, so this is only used
+	 - for error pages or any other built-in yesod page.
+	 - 
+	 - This can use static routes, but should use no other routes,
+	 - as that would expose the auth token.
+	 -}
+	defaultLayout content = do
+		webapp <- getYesod
+		pageinfo <- widgetToPageContent $ do
+			addStylesheet $ StaticR css_bootstrap_css
+			addStylesheet $ StaticR css_bootstrap_responsive_css
+			$(widgetFile "error")
+		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
 
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
