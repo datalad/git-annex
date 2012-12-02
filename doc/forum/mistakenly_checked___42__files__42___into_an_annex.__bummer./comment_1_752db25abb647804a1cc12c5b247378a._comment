@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 1"
+ date="2012-12-02T05:41:56Z"
+ content="""
+You can rebase or use git-filter-branch to rewrite history. As long as you don't touch the git-annex branch, git-annex won't care, at all. Have at it!
+
+Your uninit plan would also work.
+"""]]
