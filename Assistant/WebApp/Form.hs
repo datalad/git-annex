@@ -36,7 +36,7 @@ passwordField = F.passwordField
 	}
 
 {- Makes a note widget be displayed after a field. -}
-withNote :: RenderMessage master FormMessage => Field sub master a -> GWidget sub master () -> Field sub master a
+withNote :: Field sub master v -> GWidget sub master () -> Field sub master v
 withNote field note = field { fieldView = newview }
   where
 	newview theId name attrs val isReq = 
