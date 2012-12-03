@@ -14,16 +14,8 @@
         <div .alert .alert-error>
           <i .icon-warning-sign></i> #{msg}
       $of _
-        <i .icon-warning-sign></i> #
-        All your data will be synced to the Rsync.net repository, so make #
-        sure it has enough available space. Your data will be encrypted before #
-        it is sent to Rsync.net.
-  <p>
-    When you sign up for a Rsync.net account, you receive an #
-    email from them with a host name and a username. Fill that #
-    information in below. You also likely don't want to use your whole #
-    rsync.net repository for git-annex alone, so git-annex will use a #
-    subdirectory of it, as configured below.
+        <div>
+          Your data will be encrypted before it is sent to Rsync.net.
   <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>

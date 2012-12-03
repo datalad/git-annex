@@ -27,9 +27,18 @@ textField = F.textField
 |]
 	}
 
+{- Also without required attribute. -}
 passwordField :: RenderMessage master FormMessage => Field sub master Text
 passwordField = F.passwordField
 	{ fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
 <input id="#{theId}" name="#{name}" *{attrs} type="password" value="#{either id id val}">
 |]
 	}
+
+{- Makes a note widget be displayed after a field. -}
+withNote :: RenderMessage master FormMessage => Field sub master a -> GWidget sub master () -> Field sub master a
+withNote field note = field { fieldView = newview }
+  where
+	newview theId name attrs val isReq = 
+		let fieldwidget = (fieldView field) theId name attrs val isReq
+		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]

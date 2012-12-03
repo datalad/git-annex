@@ -17,6 +17,8 @@ git-annex (3.20121128) UNRELEASED; urgency=low
     livedrive.com. Needs DAV version 0.3.
   * webapp: Prettify error display.
   * webapp: Fix bad interaction between required fields and modals.
+  * webapp: Added help buttons and links next to fields that require
+    explanations.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
 

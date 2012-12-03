@@ -3,6 +3,7 @@
 /noscript/auto NoScriptAutoR GET
 /about AboutR GET
 /about/license LicenseR GET
+/about/repogroups RepoGroupR GET
 
 /config ConfigR GET
 /config/repository RepositoriesR GET

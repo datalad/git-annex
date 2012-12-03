@@ -47,13 +47,13 @@ mkSshData s = SshData
 	, rsyncOnly = False
 	}
 
-sshInputAForm :: SshInput -> AForm WebApp WebApp SshInput
-sshInputAForm def = SshInput
+sshInputAForm :: (Field WebApp WebApp Text) -> SshInput -> AForm WebApp WebApp SshInput
+sshInputAForm hostnamefield def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ hostname def)
 	<*> aopt check_username "User name" (Just $ username def)
 	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ directory def)
   where
-	check_hostname = checkM (liftIO . checkdns) textField
+	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
 		let h = T.unpack t
 		r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
@@ -89,7 +89,7 @@ getAddSshR :: Handler RepHtml
 getAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ sshInputAForm $
+		runFormGet $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just u) Nothing
 	case result of
 		FormSuccess sshinput -> do
@@ -115,7 +115,7 @@ getEnableRsyncR u = do
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- lift $
-				runFormGet $ renderBootstrap $ sshInputAForm sshinput
+				runFormGet $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (hostname sshinput') ->
@@ -276,7 +276,7 @@ makeSshRepo forcersync setup sshdata = do
 getAddRsyncNetR :: Handler RepHtml
 getAddRsyncNetR = do
 	((result, form), enctype) <- runFormGet $
-		renderBootstrap $ sshInputAForm $
+		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing
 	let showform status = page "Add a Rsync.net repository" (Just Config) $
 		$(widgetFile "configurators/addrsync.net")
@@ -290,6 +290,19 @@ getAddRsyncNetR = do
 				showform $ UnusableServer
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
+  where
+	hostnamefield = textField `withNote` help
+	help = [whamlet|
+<a .btn data-toggle="collapse" data-target="#help">
+  Help
+<div #help .collapse>
+  <div>
+    When you sign up for a Rsync.net account, you should receive an #
+    email from them with the host name and user name to put here.
+  <div>
+    The host name will be something like "usw-s001.rsync.net", and the #
+    user name something like "7491"
+|]
 
 makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler RepHtml
 makeRsyncNet sshinput reponame setup = do

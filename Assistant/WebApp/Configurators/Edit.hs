@@ -89,9 +89,10 @@ editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
-	<*> areq (selectFieldList $ customgroups++standardgroups) "Repository group" (Just $ repoGroup def)
+	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
   where
+	groups = customgroups ++ standardgroups
 	standardgroups :: [(Text, RepoGroup)]
 	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
 		[minBound :: StandardGroup .. maxBound :: StandardGroup]
@@ -99,6 +100,7 @@ editRepositoryAForm def = RepoConfig
 	customgroups = case repoGroup def of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 		_ -> []
+	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR = editForm False

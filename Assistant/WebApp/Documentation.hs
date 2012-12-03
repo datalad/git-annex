@@ -35,3 +35,7 @@ getLicenseR = do
 			setTitle "License"
 			license <- liftIO $ readFile f
 			$(widgetFile "documentation/license")
+
+getRepoGroupR :: Handler RepHtml
+getRepoGroupR = page "About repository groups" (Just About) $ do
+	$(widgetFile "documentation/repogroup")

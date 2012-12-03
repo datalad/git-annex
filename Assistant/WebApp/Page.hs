@@ -60,6 +60,7 @@ customPage navbaritem content = do
 		addScript $ StaticR jquery_full_js
 		addScript $ StaticR js_bootstrap_dropdown_js
 		addScript $ StaticR js_bootstrap_modal_js
+		addScript $ StaticR js_bootstrap_collapse_js
 		$(widgetFile "page")
 	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
   where

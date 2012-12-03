@@ -61,9 +61,9 @@ extractCreds i = AWSCreds (accessKeyID i) (secretAccessKey i)
 
 s3InputAForm :: AForm WebApp WebApp AWSInput
 s3InputAForm = AWSInput
-	<$> areq textField "Access Key ID" Nothing
-	<*> areq passwordField "Secret Access Key" Nothing
-	<*> areq (selectFieldList $ M.toList $ AWS.regionMap AWS.S3) "Datacenter" (Just $ AWS.defaultRegion AWS.S3)
+	<$> accessKeyIDField
+	<*> secretAccessKeyField
+	<*> datacenterField AWS.S3
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
 	<*> areq textField "Repository name" (Just "S3")
   where
@@ -73,27 +73,35 @@ s3InputAForm = AWSInput
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
-textField' :: RenderMessage master FormMessage => Field sub master Text
-textField' = Field
-    { fieldParse = fieldParse textField
-    , fieldView = \theId name attrs val _isReq ->
-        [whamlet|
-<input id="#{theId}" name="#{name}" *{attrs} type="text" value="#{either id id val}">
-|]
-    }
-
 glacierInputAForm :: AForm WebApp WebApp AWSInput
 glacierInputAForm = AWSInput
-	<$> areq textField "Access Key ID" Nothing
-	<*> areq passwordField "Secret Access Key" Nothing
-	<*> areq (selectFieldList $ M.toList $ AWS.regionMap AWS.Glacier) "Datacenter" (Just $ AWS.defaultRegion AWS.Glacier)
+	<$> accessKeyIDField
+	<*> secretAccessKeyField
+	<*> datacenterField AWS.Glacier
 	<*> pure StandardRedundancy
 	<*> areq textField "Repository name" (Just "glacier")
 
 awsCredsAForm :: AForm WebApp WebApp AWSCreds
 awsCredsAForm = AWSCreds
-	<$> areq textField "Access Key ID" Nothing
-	<*> areq passwordField "Secret Access Key" Nothing
+	<$> accessKeyIDField
+	<*> secretAccessKeyField
+
+accessKeyIDField :: AForm WebApp WebApp Text
+accessKeyIDField = areq (textField `withNote` help) "Access Key ID" Nothing
+  where
+	help = [whamlet|
+<a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
+  Get Amazon access keys
+|]
+
+secretAccessKeyField :: AForm WebApp WebApp Text
+secretAccessKeyField = areq passwordField "Secret Access Key" Nothing
+
+datacenterField :: AWS.Service -> AForm WebApp WebApp Text
+datacenterField service = areq (selectFieldList list) "Datacenter" defregion
+  where
+	list = M.toList $ AWS.regionMap service
+	defregion = Just $ AWS.defaultRegion service
 
 getAddS3R :: Handler RepHtml
 #ifdef WITH_S3
