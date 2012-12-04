@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://1id.com/contact/=tp"
+ nickname="Tom"
+ subject="In case it might be helpful"
+ date="2012-12-04T14:25:14Z"
+ content="""
+S3 and Glacier regions.  
+<http://docs.amazonwebservices.com/general/latest/gr/rande.html#s3_region>  
+<http://docs.amazonwebservices.com/general/latest/gr/rande.html#glacier_region>
+
+(EC2) Region list API - likely a superset of the other service regions, could be used for sanity checks.  
+<http://docs.amazonwebservices.com/AWSEC2/latest/APIReference/ApiReference-query-DescribeRegions.html>
+"""]]
