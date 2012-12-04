@@ -16,8 +16,6 @@
     <a href="http://aws.amazon.com/glacier/pricing/">
       Pricing details
   <p>
-    All data will be encrypted before being sent to Amazon Glacier.
-  <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}

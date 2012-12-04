@@ -12,8 +12,6 @@
     <a href="http://aws.amazon.com/s3/pricing/">
       Pricing details, including one year Free Usage Tier promotion
   <p>
-    All data will be encrypted before being sent to Amazon S3.
-  <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}

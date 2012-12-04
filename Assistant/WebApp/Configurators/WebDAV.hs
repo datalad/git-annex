@@ -36,6 +36,7 @@ data WebDAVInput = WebDAVInput
 	, password :: Text
 	, embedCreds :: Bool
 	, directory :: Text
+	, enableEncryption :: EnableEncryption
 	}
 
 toCredPair :: WebDAVInput -> CredPair
@@ -47,6 +48,7 @@ boxComAForm = WebDAVInput
 	<*> areq passwordField "Box.com Password" Nothing
 	<*> areq checkBoxField "Share this account with friends?" (Just True)
 	<*> areq textField "Directory" (Just "annex")
+	<*> enableEncryptionField
 
 webDAVCredsAForm :: AForm WebApp WebApp WebDAVInput
 webDAVCredsAForm = WebDAVInput
@@ -54,6 +56,7 @@ webDAVCredsAForm = WebDAVInput
 	<*> areq passwordField "Password" Nothing
 	<*> pure False
 	<*> pure T.empty
+	<*> pure NoEncryption -- not used!
 
 getAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
@@ -63,7 +66,7 @@ getAddBoxComR = boxConfigurator $ do
 	case result of
 		FormSuccess input -> lift $ 
 			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
-				[ ("encryption", "shared")
+				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
 				, ("type", "webdav")
 				, ("url", "https://www.box.com/dav/" ++ T.unpack (directory input))

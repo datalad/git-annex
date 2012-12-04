@@ -8,8 +8,6 @@
     Even a small amount of free storage is useful, as a transfer point #
     between your repositories.
   <p>
-    All data will be encrypted before being sent to Box.com.
-  <p>
     <form .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}

@@ -9,6 +9,8 @@
 
 module Assistant.WebApp.Form where
 
+import Types.Remote (RemoteConfigKey)
+
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
 import Data.Text (Text)
@@ -42,3 +44,22 @@ withNote field note = field { fieldView = newview }
 	newview theId name attrs val isReq = 
 		let fieldwidget = (fieldView field) theId name attrs val isReq
 		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]
+
+
+data EnableEncryption = SharedEncryption | NoEncryption
+	deriving (Eq)
+
+{- Adds a check box to an AForm to control encryption. -}
+enableEncryptionField :: RenderMessage master FormMessage => AForm sub master EnableEncryption
+enableEncryptionField = areq (selectFieldList choices) "Encryption" (Just SharedEncryption)
+  where
+	choices :: [(Text, EnableEncryption)]
+	choices =
+		[ ("Encrypt all data", SharedEncryption)
+		, ("Disable encryption", NoEncryption)
+		]
+
+{- Generates Remote configuration for encryption. -}
+configureEncryption :: EnableEncryption -> (RemoteConfigKey, String)
+configureEncryption SharedEncryption = ("encryption", "shared")
+configureEncryption NoEncryption = ("encryption", "none")

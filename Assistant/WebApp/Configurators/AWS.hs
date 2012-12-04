@@ -52,6 +52,7 @@ data AWSInput = AWSInput
 	-- Only used for S3, not Glacier.
 	, storageClass :: StorageClass
 	, repoName :: Text
+	, enableEncryption :: EnableEncryption
 	}
 
 data AWSCreds = AWSCreds Text Text
@@ -66,6 +67,7 @@ s3InputAForm = AWSInput
 	<*> datacenterField AWS.S3
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
 	<*> areq textField "Repository name" (Just "S3")
+	<*> enableEncryptionField
   where
 	storageclasses :: [(Text, StorageClass)]
 	storageclasses =
@@ -80,6 +82,7 @@ glacierInputAForm = AWSInput
 	<*> datacenterField AWS.Glacier
 	<*> pure StandardRedundancy
 	<*> areq textField "Repository name" (Just "glacier")
+	<*> enableEncryptionField
 
 awsCredsAForm :: AForm WebApp WebApp AWSCreds
 awsCredsAForm = AWSCreds
@@ -112,7 +115,7 @@ getAddS3R = awsConfigurator $ do
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote S3.remote (extractCreds input) name setgroup $ M.fromList
-				[ ("encryption", "shared")
+				[ configureEncryption $ enableEncryption input
 				, ("type", "S3")
 				, ("datacenter", T.unpack $ datacenter input)
 				, ("storageclass", show $ storageClass input)
@@ -133,7 +136,7 @@ getAddGlacierR = glacierConfigurator $ do
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
-				[ ("encryption", "shared")
+				[ configureEncryption $ enableEncryption input
 				, ("type", "glacier")
 				, ("datacenter", T.unpack $ datacenter input)
 				]
