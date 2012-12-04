@@ -40,3 +40,36 @@ With real files, some other standin for a missing file would be needed.
 Perhaps a 0 length, unreadable, unwritable file? On systems that
 support symlinks it could be a broken symlink like is used now, that
 is converted to a real file when it becomes present.
+
+## concrete design
+
+* Enable with annex.nosymlink or such config option.
+* Use .git/ for the git repo, but `.git/annex/objects` won't be used.
+* `git status` and similar will show all files as type changed, and
+  `git commit` would be a very bad idea. Just don't support users running
+  git commands that affect the repository in this mode.
+* However, `git status` and similar also will show deleted and new files,
+  which will be helpful for the assistant to use when starting up.
+* Cache the mtime, size etc of files, and use this to detect when they've been
+  modified when the assistant was not running. This would only need to be
+  checked at startup, probably.
+* Use dangling symlinks for standins for missing content, as now.
+  This allows just cloning one of these repositories normally, and then
+  as the files are synced in, they become real files.
+* Maintain a local mapping from keys to files in the tree. This is needed
+  when sending/receiving keys to know what file to access. Note that a key
+  can map to multiple files. And that when a file is deleted or moved, the
+  mapping needs to be updated.
+* May need a reverse mapping, from files in the tree to keys? TBD
+* The existing watch code detects when a file gets closed, and in this
+  mode, it could be a new file, or a modified file, or an unchanged file.
+  For a modified file, can compare mtime, size, etc, to see if it needs
+  to be re-added.
+* The inotify/kqueue interface does not tell us when a file is renamed.
+  So a rename has to be treated as a delete and an add, so can have a lot
+  of overhead, to re-hash the file.
+* Note that this could be used without the assistant, as a git remote
+  that content is transferred to and from. Without the assistant, changes
+  to files in this remote would not be noticed and committed, unless
+  a git-annex command were added to do so.
+  Getting it basically working as a remote would be a good 1st step.
