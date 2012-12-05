@@ -11,13 +11,15 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Logs.Location
 import Logs.Trust
-import Types.Remote (AssociatedFile)
+import Types.Remote (AssociatedFile, uuid)
 import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
 import Annex.Exception
 import Config
+
+import qualified Data.Set as S
 
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
@@ -29,6 +31,10 @@ handleDrops fromhere key f knownpresentremote = do
 		locs <- loggedLocations key
 		handleDropsFrom locs syncrs fromhere key f knownpresentremote
 
+{- The UUIDs are ones where the content is believed to be present.
+ - The Remote list can include other remotes that do not have the content;
+ - only ones that match the UUIDs will be dropped from.
+ - If allows to drop fromhere, that drop will be tried first. -}
 handleDropsFrom :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
 handleDropsFrom _ _ _ _ Nothing _ = noop
 handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
@@ -48,6 +54,7 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 
 	go [] _ = noop
 	go (r:rest) n
+		| uuid r `S.notMember` slocs = go rest n
 		| checkcopies n = dropr r n >>= go rest
 		| otherwise = noop
 
@@ -66,3 +73,5 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 		Command.Drop.startRemote f numcopies key r
 
 	safely a = either (const False) id <$> tryAnnex a
+
+	slocs = S.fromList locs

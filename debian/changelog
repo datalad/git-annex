@@ -20,6 +20,7 @@ git-annex (3.20121128) UNRELEASED; urgency=low
   * webapp: Added help buttons and links next to fields that require
     explanations.
   * webapp: Encryption can be disabled when setting up remotes.
+  * assistant: Avoid trying to drop content from remotes that don't have it.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
 
