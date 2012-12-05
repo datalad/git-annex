@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5vDem1yeIu6uith5pxfb4mdKdIWVJpCs"
+ nickname="Louis"
+ subject="AWS regions in JSON"
+ date="2012-12-05T03:27:52Z"
+ content="""
+Mitch Garnaat maintains a json data file with AWS service regions & other useful data...
+
+https://github.com/garnaat/missingcloud/blob/master/aws.json
+"""]]
