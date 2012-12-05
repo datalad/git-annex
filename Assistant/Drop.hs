@@ -20,8 +20,7 @@ import Annex.Exception
 import Config
 
 {- Drop from local and/or remote when allowed by the preferred content and
- - numcopies settings. If it's known to be present on a particular remote,
- -  -}
+ - numcopies settings. -}
 handleDrops :: Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
 handleDrops _ _ Nothing _ = noop
 handleDrops fromhere key f knownpresentremote = do
