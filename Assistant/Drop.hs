@@ -16,6 +16,7 @@ import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
+import Annex.Exception
 import Config
 
 {- Drop from local and/or remote when allowed by the preferred content and
@@ -52,7 +53,7 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 		| otherwise = noop
 
 	checkdrop n@(_, numcopies) u a = ifM (wantDrop u (Just f))
-		( ifM (doCommand $ a (Just numcopies))
+		( ifM (safely $ doCommand $ a (Just numcopies))
 			( return $ decrcopies n
 			, return n
 			)
@@ -64,3 +65,5 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 
 	dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
 		Command.Drop.startRemote f numcopies key r
+
+	safely a = either (const False) id <$> tryAnnex a
