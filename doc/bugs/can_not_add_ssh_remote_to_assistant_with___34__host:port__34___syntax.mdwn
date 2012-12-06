@@ -26,3 +26,5 @@ this is not really a bug more of a wishlist feature.
 
 
 [[!tag /design/assistant]]
+
+> Ok, it has a port field now. [[done]] --[[Joey]] 

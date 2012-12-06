@@ -60,6 +60,7 @@ pairMsgToSshData msg = do
 		, sshUserName = Just (T.pack $ remoteUserName d)
 		, sshDirectory = T.pack dir
 		, sshRepoName = genSshRepoName hostname dir
+		, sshPort = 22
 		, needsPubKey = True
 		, rsyncOnly = False
 		}

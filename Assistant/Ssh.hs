@@ -24,6 +24,7 @@ data SshData = SshData
 	, sshUserName :: Maybe Text
 	, sshDirectory :: Text
 	, sshRepoName :: String
+	, sshPort :: Int
 	, needsPubKey :: Bool
 	, rsyncOnly :: Bool
 	}
@@ -188,7 +189,6 @@ genSshKeyPair = withTempDir "git-annex-keygen" $ \dir -> do
 setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 setupSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
-	let configfile = sshdir </> "config"
 	createDirectoryIfMissing True sshdir
 
 	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $ do
@@ -200,25 +200,39 @@ setupSshKeyPair sshkeypair sshdata = do
 	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 
+	setSshConfig sshdata
+		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile) ]
+  where
+	sshprivkeyfile = "key." ++ mangleSshHostName sshdata
+	sshpubkeyfile = sshprivkeyfile ++ ".pub"
+
+{- Setups up a ssh config with a mangled hostname.
+ - Returns a modified SshData containing the mangled hostname. -}
+setSshConfig :: SshData -> [(String, String)] -> IO SshData
+setSshConfig sshdata config = do
+	sshdir <- sshDir
+	createDirectoryIfMissing True sshdir
+	let configfile = sshdir </> "config"
 	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
-		appendFile configfile $ unlines
+		appendFile configfile $ unlines $
 			[ ""
 			, "# Added automatically by git-annex"
 			, "Host " ++ mangledhost
-			, "\tHostname " ++ T.unpack (sshHostName sshdata)
-			, "\tIdentityFile ~/.ssh/" ++ sshprivkeyfile
-			]
-
+			] ++ map (\(k, v) -> "\t" ++ k ++ " " ++ v)
+				(settings ++ config)
 	return $ sshdata { sshHostName = T.pack mangledhost }
   where
-	sshprivkeyfile = "key." ++ mangledhost
-	sshpubkeyfile = sshprivkeyfile ++ ".pub"
-	mangledhost = mangleSshHostName
-		(T.unpack $ sshHostName sshdata)
-		(T.unpack <$> sshUserName sshdata)
+	mangledhost = mangleSshHostName sshdata
+	settings =
+		[ ("Hostname", T.unpack $ sshHostName sshdata)
+		, ("Port", show $ sshPort sshdata)
+		]
 
-mangleSshHostName :: String -> Maybe String -> String
-mangleSshHostName host user = "git-annex-" ++ host ++ (maybe "-" ('-':) user)
+mangleSshHostName :: SshData -> String
+mangleSshHostName sshdata = "git-annex-" ++ host ++ (maybe "-" ('-':) user)
+  where
+	host = T.unpack $ sshHostName sshdata
+	user = T.unpack <$> sshUserName sshdata
 
 unMangleSshHostName :: String -> String
 unMangleSshHostName h

@@ -27,9 +27,10 @@ sshConfigurator :: Widget -> Handler RepHtml
 sshConfigurator = page "Add a remote server" (Just Config)
 
 data SshInput = SshInput
-	{ hostname :: Maybe Text
-	, username :: Maybe Text
-	, directory :: Maybe Text
+	{ inputHostname :: Maybe Text
+	, inputUsername :: Maybe Text
+	, inputDirectory :: Maybe Text
+	, inputPort :: Int
 	}
 	deriving (Show)
 
@@ -37,21 +38,23 @@ data SshInput = SshInput
  - the result of such a form into a SshData. -}
 mkSshData :: SshInput -> SshData
 mkSshData s = SshData 
-	{ sshHostName = fromMaybe "" $ hostname s
-	, sshUserName = username s
-	, sshDirectory = fromMaybe "" $ directory s
+	{ sshHostName = fromMaybe "" $ inputHostname s
+	, sshUserName = inputUsername s
+	, sshDirectory = fromMaybe "" $ inputDirectory s
 	, sshRepoName = genSshRepoName
-		(T.unpack $ fromJust $ hostname s)
-		(maybe "" T.unpack $ directory s)
+		(T.unpack $ fromJust $ inputHostname s)
+		(maybe "" T.unpack $ inputDirectory s)
+	, sshPort = inputPort s
 	, needsPubKey = False
 	, rsyncOnly = False
 	}
 
 sshInputAForm :: (Field WebApp WebApp Text) -> SshInput -> AForm WebApp WebApp SshInput
 sshInputAForm hostnamefield def = SshInput
-	<$> aopt check_hostname "Host name" (Just $ hostname def)
-	<*> aopt check_username "User name" (Just $ username def)
-	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ directory def)
+	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
+	<*> aopt check_username "User name" (Just $ inputUsername def)
+	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
+	<*> areq intField "Port" (Just $ inputPort def)
   where
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
@@ -90,7 +93,7 @@ getAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ sshInputAForm textField $
-			SshInput Nothing (Just u) Nothing
+			SshInput Nothing (Just u) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
 			s <- liftIO $ testServer sshinput
@@ -118,7 +121,7 @@ getEnableRsyncR u = do
 				runFormGet $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
-					| isRsyncNet (hostname sshinput') ->
+					| isRsyncNet (inputHostname sshinput') ->
 						void $ lift $ makeRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
@@ -147,9 +150,10 @@ parseSshRsyncUrl :: String -> Maybe SshInput
 parseSshRsyncUrl u
 	| not (rsyncUrlIsShell u) = Nothing
 	| otherwise = Just $ SshInput
-			{ hostname = val $ unMangleSshHostName host
-			, username = if null user then Nothing else val user
-			, directory = val dir
+			{ inputHostname = val $ unMangleSshHostName host
+			, inputUsername = if null user then Nothing else val user
+			, inputDirectory = val dir
+			, inputPort = 22
 			}
   where
 	val = Just . T.pack
@@ -170,9 +174,9 @@ parseSshRsyncUrl u
  - present, while git-annex-shell is not in PATH.
  -}
 testServer :: SshInput -> IO (Either ServerStatus SshData)
-testServer (SshInput { hostname = Nothing }) = return $
+testServer (SshInput { inputHostname = Nothing }) = return $
 	Left $ UnusableServer "Please enter a host name."
-testServer sshinput@(SshInput { hostname = Just hn }) = do
+testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
 	if usable status
 		then ret status False
@@ -200,7 +204,10 @@ testServer sshinput@(SshInput { hostname = Just hn }) = do
 			 - Otherwise, trust the host key. -}
 			[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
 			, "-n" -- don't read from stdin
-			, genSshHost (fromJust $ hostname sshinput) (username sshinput)
+			, "-p", show (inputPort sshinput)
+			, genSshHost
+				(fromJust $ inputHostname sshinput)
+				(inputUsername sshinput)
 			, remotecommand
 			]
 		parsetranscript . fst <$> sshTranscript sshopts ""
@@ -248,6 +255,9 @@ makeSsh rsync setup sshdata
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
 		makeSsh' rsync setup sshdata' (Just keypair)
+	| sshPort sshdata /= 22 = do
+		sshdata' <- liftIO $ setSshConfig sshdata []
+		makeSsh' rsync setup sshdata' Nothing
 	| otherwise = makeSsh' rsync setup sshdata Nothing
 
 makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> Maybe SshKeyPair -> Handler RepHtml
@@ -277,14 +287,14 @@ getAddRsyncNetR :: Handler RepHtml
 getAddRsyncNetR = do
 	((result, form), enctype) <- runFormGet $
 		renderBootstrap $ sshInputAForm hostnamefield $
-			SshInput Nothing Nothing Nothing
+			SshInput Nothing Nothing Nothing 22
 	let showform status = page "Add a Rsync.net repository" (Just Config) $
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshinput
-			| isRsyncNet (hostname sshinput) -> do
+			| isRsyncNet (inputHostname sshinput) -> do
 				let reponame = genSshRepoName "rsync.net" 
-					(maybe "" T.unpack $ directory sshinput)
+					(maybe "" T.unpack $ inputDirectory sshinput)
 				makeRsyncNet sshinput reponame setupGroup
 			| otherwise ->
 				showform $ UnusableServer
@@ -306,7 +316,7 @@ getAddRsyncNetR = do
 
 makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler RepHtml
 makeRsyncNet sshinput reponame setup = do
-	knownhost <- liftIO $ maybe (return False) knownHost (hostname sshinput)
+	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
 	keypair <- liftIO $ genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
 		(mkSshData sshinput)
