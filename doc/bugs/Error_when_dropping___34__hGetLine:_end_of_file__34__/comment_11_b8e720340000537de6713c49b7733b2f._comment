@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.167.50"
+ subject="comment 11"
+ date="2012-12-06T22:17:37Z"
+ content="""
+Upgrading yesod then git-annex removes the problem I was seeing.  Thanks for your help with that.  Here is a `git-check-attr` session:
+
+    backups $ git check-attr --stdin annex.backend annex.numcopies --
+    athena-etc.tar.gz
+    athena-etc.tar.gz: annex.backend: unspecified
+    athena-etc.tar.gz: annex.numcopies: 2
+    athena-mail.gz
+    athena-mail.gz: annex.backend: unspecified
+    athena-mail.gz: annex.numcopies: 2
+    athena-web.tar.gz
+    athena-web.tar.gz: annex.backend: unspecified
+    athena-web.tar.gz: annex.numcopies: 2
+    [^D pressed]
+    backups $ 
+"""]]
