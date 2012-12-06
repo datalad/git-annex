@@ -4,7 +4,7 @@
 - Cpu "git" load is 100
 - Had to force quite git-annex
 
-###Install thru command line
+###Install thru command line: using Brew
 
 - Installed haskell
 - updated cabal
