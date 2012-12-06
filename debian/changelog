@@ -28,6 +28,7 @@ git-annex (3.20121128) UNRELEASED; urgency=low
     settings.
   * webapp: Allow user to specify the port when setting up a ssh or rsync
     remote.
+  * assistant: Fix syncing to just created ssh remotes.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
 

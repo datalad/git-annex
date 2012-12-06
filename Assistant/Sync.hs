@@ -174,4 +174,5 @@ syncNewRemote remote = do
 	updateSyncRemotes
 	thread <- asIO $ do
 		reconnectRemotes False [remote]
+		addScanRemotes True [remote]
 	void $ liftIO $ forkIO $ thread
