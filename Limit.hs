@@ -34,7 +34,7 @@ type AssumeNotPresent = S.Set UUID
 
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
-limited = (not . Utility.Matcher.matchesAny) <$> getMatcher'
+limited = (not . Utility.Matcher.isEmpty) <$> getMatcher'
 
 {- Gets a matcher for the user-specified limits. The matcher is cached for
  - speed; once it's obtained the user-specified limits can't change. -}

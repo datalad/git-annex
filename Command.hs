@@ -20,7 +20,7 @@ module Command (
 	notBareRepo,
 	isBareRepo,
 	numCopies,
-	autoCopies,
+	numCopiesCheck,
 	autoCopiesWith,
 	checkAuto,
 	module ReExported
@@ -109,6 +109,13 @@ isBareRepo = fromRepo Git.repoIsLocalBare
 numCopies :: FilePath  -> Annex (Maybe Int)
 numCopies file = readish <$> checkAttr "annex.numcopies" file
 
+numCopiesCheck :: FilePath -> Key -> (Int -> Int -> Bool) -> Annex Bool
+numCopiesCheck file key vs = do
+	numcopiesattr <- numCopies file
+	needed <- getNumCopies numcopiesattr
+	have <- trustExclude UnTrusted =<< Remote.keyLocations key
+	return $ length have `vs` needed
+
 {- Used for commands that have an auto mode that checks the number of known
  - copies of a key.
  -
@@ -116,16 +123,6 @@ numCopies file = readish <$> checkAttr "annex.numcopies" file
  - copies of the key is > or < than the numcopies setting, before running
  - the action.
  -}
-autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> CommandStart -> CommandStart
-autoCopies file key vs a = Annex.getState Annex.auto >>= go
-  where
-	go False = a
-	go True = do
-		numcopiesattr <- numCopies file
-		needed <- getNumCopies numcopiesattr
-		have <- trustExclude UnTrusted =<< Remote.keyLocations key
-		if length have `vs` needed then a else stop
-
 autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
 autoCopiesWith file key vs a = do
 	numcopiesattr <- numCopies file

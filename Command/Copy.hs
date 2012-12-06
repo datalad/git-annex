@@ -26,10 +26,11 @@ seek = [withField Command.Move.toOption Remote.byName $ \to ->
  - However, --auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
 start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start to from file (key, backend) = autoCopies file key (<) $
-	stopUnless shouldCopy $ 
-		Command.Move.start to from False file (key, backend)
+start to from file (key, backend) = stopUnless shouldCopy $ 
+	Command.Move.start to from False file (key, backend)
   where
-	shouldCopy = case to of
-		Nothing -> checkAuto $ wantGet (Just file)
-		Just r -> checkAuto $ wantSend (Just file) (Remote.uuid r)
+	shouldCopy = checkAuto (check <||> numCopiesCheck file key (<))
+	check = case to of
+		Nothing -> wantGet False (Just file)
+		Just r -> wantSend False (Just file) (Remote.uuid r)
+		

@@ -52,7 +52,7 @@ queueTransfers = queueTransfersMatching (const True)
  - condition. Honors preferred content settings. -}
 queueTransfersMatching :: (UUID -> Bool) -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant ()
 queueTransfersMatching matching schedule k f direction
-	| direction == Download = whenM (liftAnnex $ wantGet f) go
+	| direction == Download = whenM (liftAnnex $ wantGet True f) go
 	| otherwise = go
   where
 	go = do
@@ -72,7 +72,7 @@ queueTransfersMatching matching schedule k f direction
 			uuids <- Remote.keyLocations k
 			return $ filter (\r -> uuid r `elem` uuids) rs
 		{- Upload to all remotes that want the content. -}
-		| otherwise = filterM (wantSend f . Remote.uuid) $
+		| otherwise = filterM (wantSend True f . Remote.uuid) $
 			filter (not . Remote.readonly) rs
 	gentransfer r = Transfer
 		{ transferDirection = direction

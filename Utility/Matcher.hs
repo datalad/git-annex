@@ -26,7 +26,7 @@ module Utility.Matcher (
 	match,
 	matchM,
 	matchMrun,
-	matchesAny
+	isEmpty
 ) where
 
 import Common
@@ -105,9 +105,7 @@ matchMrun m run = go m
 		go (MNot m1) = liftM not (go m1)
 		go (MOp o) = run o
 
-{- Checks is a matcher contains no limits, and so (presumably) matches
- - anything. Note that this only checks the trivial case; it is possible
- - to construct matchers that match anything but are more complicated. -}
-matchesAny :: Matcher a -> Bool
-matchesAny MAny = True
-matchesAny _ = False
+{- Checks if a matcher contains no limits. -}
+isEmpty :: Matcher a -> Bool
+isEmpty MAny = True
+isEmpty _ = False

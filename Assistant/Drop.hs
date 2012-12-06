@@ -58,7 +58,7 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 		| checkcopies n = dropr r n >>= go rest
 		| otherwise = noop
 
-	checkdrop n@(_, numcopies) u a = ifM (wantDrop u (Just f))
+	checkdrop n@(_, numcopies) u a = ifM (wantDrop True u (Just f))
 		( ifM (safely $ doCommand $ a (Just numcopies))
 			( return $ decrcopies n
 			, return n

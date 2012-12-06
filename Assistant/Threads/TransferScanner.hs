@@ -124,9 +124,9 @@ expensiveScan rs = unless onlyweb $ do
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs
 			if present
-				then filterM (wantSend (Just f) . Remote.uuid . fst)
+				then filterM (wantSend True (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
-				else ifM (wantGet $ Just f)
+				else ifM (wantGet True $ Just f)
 					( use (genTransfer Download True) , return [] )
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)

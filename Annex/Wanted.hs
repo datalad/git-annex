@@ -15,19 +15,19 @@ import Types.Remote
 import qualified Data.Set as S
 
 {- Check if a file is preferred content for the local repository. -}
-wantGet :: AssociatedFile -> Annex Bool
-wantGet Nothing = return True
-wantGet (Just file) = isPreferredContent Nothing S.empty file
+wantGet :: Bool -> AssociatedFile -> Annex Bool
+wantGet def Nothing = return def
+wantGet def (Just file) = isPreferredContent Nothing S.empty file def
 
 {- Check if a file is preferred content for a remote. -}
-wantSend :: AssociatedFile -> UUID -> Annex Bool
-wantSend Nothing _ = return True
-wantSend (Just file) to = isPreferredContent (Just to) S.empty file
+wantSend :: Bool -> AssociatedFile -> UUID -> Annex Bool
+wantSend def Nothing _ = return def
+wantSend def (Just file) to = isPreferredContent (Just to) S.empty file def
 
 {- Check if a file can be dropped, maybe from a remote.
  - Don't drop files that are preferred content. -}
-wantDrop :: Maybe UUID -> AssociatedFile -> Annex Bool
-wantDrop _ Nothing = return True
-wantDrop from (Just file) = do
+wantDrop :: Bool -> Maybe UUID -> AssociatedFile -> Annex Bool
+wantDrop def _ Nothing = return $ not def
+wantDrop def from (Just file) = do
 	u <- maybe getUUID (return . id) from
-	not <$> isPreferredContent (Just u) (S.singleton u) file
+	not <$> isPreferredContent (Just u) (S.singleton u) file def

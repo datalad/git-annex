@@ -32,7 +32,7 @@ seek = [withField fromOption Remote.byName $ \from ->
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = autoCopiesWith file key (>) $ \numcopies ->
-	stopUnless (checkAuto $ wantDrop (Remote.uuid <$> from) (Just file)) $
+	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just file)) $
 		case from of
 			Nothing -> startLocal file numcopies key Nothing
 			Just remote -> do
