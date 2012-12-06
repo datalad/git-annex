@@ -21,3 +21,11 @@ Since adding a certain directory of files (just a bunch of PDFs) yesterday I am 
     [many more repetitions]
 
 If I `git annex get` the files and then drop them again, a further attempt at a drop gives all these errors again.
+
+> So in summary, a git-annex built against the old version of git in
+> debian stable fails to work with a newer version of git, and rebuilding
+> fixes it. FWIW, the git-annex backport to stable does not have this
+> problem, because it checks git version at runtime. But I want to avoid
+> the overhead of that check in git-annex mainline, because this old git
+> version is well, very old and increasingly unlikely to be used. So,
+> I don't think any changes to git-annex are warrented. [[done]] --[[Joey]]
