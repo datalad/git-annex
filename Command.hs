@@ -114,7 +114,7 @@ numCopies file = readish <$> checkAttr "annex.numcopies" file
  -
  - In auto mode, first checks that the number of known
  - copies of the key is > or < than the numcopies setting, before running
- - the action. Also checks any preferred content settings.
+ - the action.
  -}
 autoCopies :: FilePath -> Key -> (Int -> Int -> Bool) -> CommandStart -> CommandStart
 autoCopies file key vs a = Annex.getState Annex.auto >>= go
