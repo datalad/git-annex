@@ -13,7 +13,8 @@ This is known to not work on all OSX systems. [[/bugs/OSX_app_issues]] is collec
 
 <pre>
 sudo brew update
-sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config
+sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config libxml2
+sudo brew link libxml2
 cabal update
 cabal install git-annex --bindir=$HOME/bin
 </pre>
