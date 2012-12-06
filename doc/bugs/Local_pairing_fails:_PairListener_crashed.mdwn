@@ -14,3 +14,5 @@ Remote Machine: 3.20121113, Arch Linux (I installed the version from: https://au
 Please provide any additional information below.
 
 None as yet. Let me know if there are any log files, etc. that I can post.
+
+> So it was the period in the hostname! [[fixed|done]] --[[Joey]]

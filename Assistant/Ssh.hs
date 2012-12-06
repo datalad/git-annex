@@ -112,7 +112,7 @@ validateSshPubKey pubkey = either error return $ check $ words pubkey
 		(ssh, keytype) = separate (== '-') prefix
 
 	checkcomment comment
-		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_') comment = ok
+		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.') comment = ok
 		| otherwise = err "bad comment in ssh public key"
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
