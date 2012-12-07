@@ -11,6 +11,7 @@ module Locations (
 	keyPaths,
 	keyPath,
 	gitAnnexLocation,
+	gitAnnexMapping,
 	annexLocations,
 	annexLocation,
 	gitAnnexDir,
@@ -106,6 +107,13 @@ gitAnnexLocation key r
 	inrepo d = Git.localGitDir r </> d
 	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
 	check [] = error "internal"
+
+{- File that maps from a key to the file(s) in the git repository.
+ - Used in direct mode. -}
+gitAnnexMapping :: Key -> Git.Repo -> IO FilePath
+gitAnnexMapping key r = do
+	loc <- gitAnnexLocation key r 
+	return $ loc ++ ".map"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath

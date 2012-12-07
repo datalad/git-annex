@@ -194,7 +194,8 @@ checkDiskSpace destination key alreadythere = do
 				" more" ++ forcemsg
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
 
-{- Moves a file into .git/annex/objects/
+{- Moves a key's content into .git/annex/objects/
+ - In direct mode, moves it to the associated file, or files.
  -
  - What if the key there already has content? This could happen for
  - various reasons; perhaps the same content is being annexed again.
@@ -216,16 +217,50 @@ checkDiskSpace destination key alreadythere = do
  - meet.
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
-moveAnnex key src = do
-	dest <- inRepo $ gitAnnexLocation key
-	ifM (liftIO $ doesFileExist dest)
-		( liftIO $ removeFile src
-		, do
-			createContentDir dest
-			liftIO $ moveFile src dest
-			freezeContent dest
-			freezeContentDir dest
-		)
+moveAnnex key src = ifM isDirect
+	( storefiles =<< associatedFiles key
+	, storeobject
+	)
+  where
+	storeobject = do
+		dest <- inRepo $ gitAnnexLocation key
+		ifM (liftIO $ doesFileExist dest)
+			( liftIO $ removeFile src
+			, do
+				createContentDir dest
+				liftIO $ moveFile src dest
+				freezeContent dest
+				freezeContentDir dest
+			)
+	storefiles [] = storeobject
+	storefiles (dest:fs) = do
+		thawContent src
+		liftIO $ replacefile dest $ moveFile src
+		liftIO $ forM_ fs $ \f -> replacefile f $ createLink dest
+	replacefile file a = do
+		{- Remove any symlink or existing file. -}
+		r <- tryIO $ removeFile file
+		{- Only need to create parent directory if file did not exist. -}
+		case r of
+			Left _ -> createDirectoryIfMissing True (parentDir file)
+			_ -> noop
+		a file
+
+{- Files in the tree that are associated with a key.
+ - For use in direct mode.
+ -
+ - When no known associated files exist, returns the gitAnnexLocation. -}
+associatedFiles :: Key -> Annex [FilePath]
+associatedFiles key = do
+	mapping <- inRepo $ gitAnnexMapping key
+	files <- liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
+	if null files
+		then do
+			l <- inRepo $ gitAnnexLocation key
+			return [l]
+		else do
+			top <- fromRepo Git.repoPath
+			return $ map (top </>) files
 
 withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
 withObjectLoc key a = do
