@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -48,21 +48,57 @@ import Config
 import Annex.Exception
 import Git.SharedRepository
 import Annex.Perms
+import Annex.Content.Direct
+
+{- Performs an action, passing it the location to use for a key's content.
+ -
+ - In direct mode, the associated files will be passed. But, if there are
+ - no associated files for a key, the indirect mode action will be
+ - performed instead. -}
+withObjectLoc :: Key -> (FilePath -> Annex a) -> ([FilePath] -> Annex a) -> Annex a
+withObjectLoc key indirect direct = ifM isDirect
+	( do
+		fs <- associatedFiles key
+		if null fs
+			then goindirect
+			else direct fs
+	, goindirect
+	)
+  where
+	goindirect = indirect =<< inRepo (gitAnnexLocation key)
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex = inAnnex' doesFileExist
-inAnnex' :: (FilePath -> IO a) -> Key -> Annex a
-inAnnex' a key = do
-	whenM (fromRepo Git.repoIsUrl) $
-		error "inAnnex cannot check remote repo"
-	inRepo $ \g -> gitAnnexLocation key g >>= a
+inAnnex = inAnnex' id False $ liftIO . doesFileExist
+
+{- Generic inAnnex, handling both indirect and direct mode.
+ -
+ - In direct mode, at least one of the associated files must pass the
+ - check. Additionally, the file must be unmodified.
+ -}
+inAnnex' :: (a -> Bool) -> a -> (FilePath -> Annex a) -> Key -> Annex a
+inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
+  where
+	checkindirect loc = do
+		whenM (fromRepo Git.repoIsUrl) $
+			error "inAnnex cannot check remote repo"
+		check loc
+	checkdirect [] = return bad
+	checkdirect (loc:locs) = do
+		r <- check loc
+		if isgood r
+			then ifM (unmodifed key loc)
+				( return r
+				, checkdirect locs
+				)
+			else checkdirect locs
 
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe = inAnnex' $ \f -> openforlock f >>= check
+inAnnexSafe = inAnnex' (maybe False id) (Just False) go
 	where
+		go f = liftIO $ openforlock f >>= check
 		openforlock f = catchMaybeIO $
 			openFd f ReadOnly Nothing defaultFileFlags
 		check Nothing = return is_missing
@@ -195,6 +231,7 @@ checkDiskSpace destination key alreadythere = do
 		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
 
 {- Moves a key's content into .git/annex/objects/
+ -
  - In direct mode, moves it to the associated file, or files.
  -
  - What if the key there already has content? This could happen for
@@ -217,13 +254,9 @@ checkDiskSpace destination key alreadythere = do
  - meet.
  -}
 moveAnnex :: Key -> FilePath -> Annex ()
-moveAnnex key src = ifM isDirect
-	( storefiles =<< associatedFiles key
-	, storeobject
-	)
+moveAnnex key src = withObjectLoc key storeobject storedirect
   where
-	storeobject = do
-		dest <- inRepo $ gitAnnexLocation key
+	storeobject dest = do
 		ifM (liftIO $ doesFileExist dest)
 			( liftIO $ removeFile src
 			, do
@@ -232,41 +265,22 @@ moveAnnex key src = ifM isDirect
 				freezeContent dest
 				freezeContentDir dest
 			)
-	storefiles [] = storeobject
-	storefiles (dest:fs) = do
+	storedirect [] = storeobject =<< inRepo (gitAnnexLocation key)
+	storedirect (dest:fs) = do
 		thawContent src
-		liftIO $ replacefile dest $ moveFile src
-		liftIO $ forM_ fs $ \f -> replacefile f $ createLink dest
-	replacefile file a = do
-		{- Remove any symlink or existing file. -}
-		r <- tryIO $ removeFile file
-		{- Only need to create parent directory if file did not exist. -}
-		case r of
-			Left _ -> createDirectoryIfMissing True (parentDir file)
-			_ -> noop
-		a file
+		liftIO $ replaceFile dest $ moveFile src
+		liftIO $ forM_ fs $ \f -> replaceFile f $ createLink dest
 
-{- Files in the tree that are associated with a key.
- - For use in direct mode.
- -
- - When no known associated files exist, returns the gitAnnexLocation. -}
-associatedFiles :: Key -> Annex [FilePath]
-associatedFiles key = do
-	mapping <- inRepo $ gitAnnexMapping key
-	files <- liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
-	if null files
-		then do
-			l <- inRepo $ gitAnnexLocation key
-			return [l]
-		else do
-			top <- fromRepo Git.repoPath
-			return $ map (top </>) files
-
-withObjectLoc :: Key -> ((FilePath, FilePath) -> Annex a) -> Annex a
-withObjectLoc key a = do
-	file <- inRepo $ gitAnnexLocation key
-	let dir = parentDir file
-	a (dir, file)
+{- Replaces any existing file with a new version, by running an action.
+ - First, makes sure the file is deleted. Or, if it didn't already exist,
+ - makes sure the parent directory exists. -}
+replaceFile :: FilePath -> (FilePath -> IO ()) -> IO ()
+replaceFile file a = do
+	r <- tryIO $ removeFile file
+	case r of
+		Left _ -> createDirectoryIfMissing True (parentDir file)
+		_ -> noop
+	a file
 
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
@@ -279,18 +293,33 @@ cleanObjectLoc key = do
 			maybe noop (const $ removeparents dir (n-1))
 				<=< catchMaybeIO $ removeDirectory dir
 
-{- Removes a key's file from .git/annex/objects/ -}
+{- Removes a key's file from .git/annex/objects/
+ -
+ - In direct mode, deletes the associated files or files, and replaces
+ - them with symlinks. -}
 removeAnnex :: Key -> Annex ()
-removeAnnex key = withObjectLoc key $ \(dir, file) -> do
-	liftIO $ do
-		allowWrite dir
-		removeFile file
-	cleanObjectLoc key
+removeAnnex key = withObjectLoc key remove removedirect
+  where
+	remove file = do
+		liftIO $ do
+			allowWrite $ parentDir file
+			removeFile file
+		cleanObjectLoc key
+	removedirect fs = mapM_ resetfile fs
+	resetfile f = do
+		l <- calcGitLink f key
+		top <- fromRepo Git.repoPath
+		cwd <- liftIO getCurrentDirectory
+		let top' = fromMaybe top $ absNormPath cwd top
+		let l' = relPathDirToFile top' (fromMaybe l $ absNormPath top' l)
+		liftIO $ replaceFile f $ const $
+			createSymbolicLink l' f
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()
-fromAnnex key dest = withObjectLoc key $ \(dir, file) -> do
-	liftIO $ allowWrite dir
+fromAnnex key dest = do
+	file <- inRepo $ gitAnnexLocation key
+	liftIO $ allowWrite $ parentDir file
 	thawContent file
 	liftIO $ moveFile file dest
 	cleanObjectLoc key

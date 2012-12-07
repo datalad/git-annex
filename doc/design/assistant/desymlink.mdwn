@@ -43,11 +43,12 @@ is converted to a real file when it becomes present.
 
 ## concrete design
 
-* Enable with annex.nosymlink or such config option.
-* Use .git/ for the git repo, but `.git/annex/objects` won't be used.
+* Enable with annex.direct
+* Use .git/ for the git repo, but `.git/annex/objects` won't be used
+  for object storage.
 * `git status` and similar will show all files as type changed, and
   `git commit` would be a very bad idea. Just don't support users running
-  git commands that affect the repository in this mode.
+  git commands that affect the repository in this mode. Probably.
 * However, `git status` and similar also will show deleted and new files,
   which will be helpful for the assistant to use when starting up.
 * Cache the mtime, size etc of files, and use this to detect when they've been
@@ -61,6 +62,8 @@ is converted to a real file when it becomes present.
   can map to multiple files. And that when a file is deleted or moved, the
   mapping needs to be updated.
 * May need a reverse mapping, from files in the tree to keys? TBD
+  (Needed to make things like `git annex drop` that want to map from the
+  file back to the key work.)
 * The existing watch code detects when a file gets closed, and in this
   mode, it could be a new file, or a modified file, or an unchanged file.
   For a modified file, can compare mtime, size, etc, to see if it needs
@@ -73,3 +76,7 @@ is converted to a real file when it becomes present.
   to files in this remote would not be noticed and committed, unless
   a git-annex command were added to do so.
   Getting it basically working as a remote would be a good 1st step.
+* It could also be used without the assistant as a repository that
+  the user uses directly. Would need some git-annex commands
+  to merge changes into the repo, update caches, and commit changes.
+  This could all be done by "git annex sync".
