@@ -776,6 +776,12 @@ Here are all the supported configuration settings.
   to close it. On Mac OSX, this defaults to 1 second, to work around
   a bad interaction with software there.
 
+* `annex.direct`
+
+  Set to true to enable an (experimental) mode where files in the repository
+  are accessed directly, rather than through symlinks. Note that many git
+  and git-annex commands will not work with such a repository.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

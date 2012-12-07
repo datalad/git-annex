@@ -116,6 +116,11 @@ getDiskReserve = fromMaybe megabyte . readSize dataUnits
   where
 	megabyte = 1000000
 
+{- Gets annex.direct setting. -}
+getDirect :: Annex Bool
+getDirect = fromMaybe False . Git.Config.isTrue <$>
+	getConfig (annexConfig "direct") ""
+
 {- Gets annex.httpheaders or annex.httpheaders-command setting,
  - splitting it into lines. -}
 getHttpHeaders :: Annex [String]
