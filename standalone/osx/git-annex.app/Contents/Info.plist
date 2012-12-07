@@ -26,10 +26,6 @@
 	<string>git-annex</string>
 	<key>CFBundleVersion</key>
 	<string>0.0.1</string>
-	<key>NSAppleScriptEnabled</key>
-	<true/>
-	<key>CGDisableCoalescedUpdates</key>
-	<true/>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5</string>
 	<key>CFBundleDisplayName</key>
