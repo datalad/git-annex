@@ -51,7 +51,9 @@ otool :: FilePath -> IO [FilePath]
 otool appbase = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
 	s <- readProcess "otool" ("-L" : files)
-	return $ nub $ parseOtool s
+	return $ nub $ filter (not . framework) $ parseOtool s
+  where
+	framework f = ".framework" `isInfixOf` f
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
