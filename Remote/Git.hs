@@ -262,9 +262,9 @@ copyFromRemote r key file dest
 		-- run copy from perspective of remote
 		liftIO $ onLocal r $ do
 			ensureInitialized
-			loc <- inRepo $ gitAnnexLocation key
-			upload u key file noRetry $
-				rsyncOrCopyFile params loc dest
+			Annex.Content.sendAnnex key $ \object ->
+				upload u key file noRetry $
+					rsyncOrCopyFile params object dest
 	| Git.repoIsSsh r = feedprogressback $ \feeder -> 
 		rsyncHelper (Just feeder) 
 			=<< rsyncParamsRemote r True key dest file
@@ -324,8 +324,12 @@ copyFromRemoteCheap r key file
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Git.Repo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file p
-	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ do
-		keysrc <- inRepo $ gitAnnexLocation key
+	| not $ Git.repoIsUrl r = guardUsable r False $ commitOnCleanup r $ copylocal
+	| Git.repoIsSsh r = commitOnCleanup r $ Annex.Content.sendAnnex key $ \object ->
+		rsyncHelper (Just p) =<< rsyncParamsRemote r False key object file
+	| otherwise = error "copying to non-ssh repo not supported"
+  where
+	copylocal = Annex.Content.sendAnnex key $ \object -> do
 		params <- rsyncParams r
 		u <- getUUID
 		-- run copy from perspective of remote
@@ -336,12 +340,8 @@ copyToRemote r key file p
 				download u key file noRetry $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmp key
-							(\d -> rsyncOrCopyFile params keysrc d p)
+							(\d -> rsyncOrCopyFile params object d p)
 			)
-	| Git.repoIsSsh r = commitOnCleanup r $ do
-		keysrc <- inRepo $ gitAnnexLocation key
-		rsyncHelper (Just p) =<< rsyncParamsRemote r False key keysrc file
-	| otherwise = error "copying to non-ssh repo not supported"
 
 rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncHelper callback params = do

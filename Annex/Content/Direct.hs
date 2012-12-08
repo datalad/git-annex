@@ -7,8 +7,10 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
-	unmodifed,
+	goodContent,
 	updateCache,
+	recordedCache,
+	compareCache,
 	removeCache
 ) where
 
@@ -38,16 +40,26 @@ associatedFiles key = do
  - expensive checksum, this relies on a cache that contains the file's
  - expected mtime and inode.
  -}
-unmodifed :: Key -> FilePath -> Annex Bool
-unmodifed key file = withCacheFile key $ \cachefile -> do
-	curr <- getCache file
-	old <- catchDefaultIO Nothing $ readCache <$> readFile cachefile
+goodContent :: Key -> FilePath -> Annex Bool
+goodContent key file = do
+	old <- recordedCache key
+	compareCache file old
+
+{- Gets the recorded cache for a key. -}
+recordedCache :: Key -> Annex (Maybe Cache)
+recordedCache key = withCacheFile key $ \cachefile ->
+	catchDefaultIO Nothing $ readCache <$> readFile cachefile
+
+{- Compares a cache with the current cache for a file. -}
+compareCache :: FilePath -> Maybe Cache -> Annex Bool
+compareCache file old = do
+	curr <- liftIO $ genCache file
 	return $ isJust curr && curr == old
 
 {- Stores a cache of attributes for a file that is associated with a key. -}
 updateCache :: Key -> FilePath -> Annex ()
 updateCache key file = withCacheFile key $ \cachefile ->
-	maybe noop (writeFile cachefile . showCache) =<< getCache file
+	maybe noop (writeFile cachefile . showCache) =<< genCache file
 
 {- Removes a cache. -}
 removeCache :: Key -> Annex ()
@@ -76,8 +88,8 @@ readCache s = case words s of
 		<*> readish mtime
 	_ -> Nothing
 
-getCache :: FilePath -> IO (Maybe Cache)
-getCache f = catchDefaultIO Nothing $ toCache <$> getFileStatus f
+genCache :: FilePath -> IO (Maybe Cache)
+genCache f = catchDefaultIO Nothing $ toCache <$> getFileStatus f
 
 toCache :: FileStatus -> Maybe Cache
 toCache s

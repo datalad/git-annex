@@ -23,9 +23,8 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
-	( fieldTransfer Upload key $ \_p -> do
-		file <- inRepo $ gitAnnexLocation key
-		liftIO $ rsyncServerSend file
+	( fieldTransfer Upload key $ \_p ->
+		sendAnnex key $ liftIO . rsyncServerSend
 	, do
 		warning "requested key is not present"
 		liftIO exitFailure

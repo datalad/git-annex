@@ -16,6 +16,7 @@ module Annex.Content (
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
+	sendAnnex,
 	removeAnnex,
 	fromAnnex,
 	moveBad,
@@ -50,23 +51,6 @@ import Git.SharedRepository
 import Annex.Perms
 import Annex.Content.Direct
 
-{- Performs an action, passing it the location to use for a key's content.
- -
- - In direct mode, the associated files will be passed. But, if there are
- - no associated files for a key, the indirect mode action will be
- - performed instead. -}
-withObjectLoc :: Key -> (FilePath -> Annex a) -> ([FilePath] -> Annex a) -> Annex a
-withObjectLoc key indirect direct = ifM isDirect
-	( do
-		fs <- associatedFiles key
-		if null fs
-			then goindirect
-			else direct fs
-	, goindirect
-	)
-  where
-	goindirect = indirect =<< inRepo (gitAnnexLocation key)
-
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
 inAnnex = inAnnex' id False $ liftIO . doesFileExist
@@ -87,7 +71,7 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 	checkdirect (loc:locs) = do
 		r <- check loc
 		if isgood r
-			then ifM (unmodifed key loc)
+			then ifM (goodContent key loc)
 				( return r
 				, checkdirect locs
 				)
@@ -282,6 +266,57 @@ replaceFile file a = do
 		Left _ -> createDirectoryIfMissing True (parentDir file)
 		_ -> noop
 	a file
+
+{- Runs an action to transfer an object's content.
+ -
+ - In direct mode, it's possible for the file to change as it's being sent.
+ - If this happens, returns False. Currently, an arbitrary amount of bad
+ - data may be sent when this occurs. The send is not retried even if
+ - another file is known to have the same content; the action may not be
+ - idempotent.
+ -
+ - Since objects changing as they're transferred is a somewhat unusual
+ - situation, and since preventing writes to the file would be expensive,
+ - annoying or both, we instead detect the situation after the affect,
+ - and fail. Thus, it's up to the caller to detect a failure and take
+ - appropriate action. Such as, for example, ensuring that the bad
+ - data that was sent does not get installed into the annex it's being
+ - sent to.
+ -}
+sendAnnex :: Key -> (FilePath -> Annex Bool) -> Annex Bool
+sendAnnex key a = withObjectLoc key sendobject senddirect
+  where
+	sendobject = a
+	senddirect [] = return False
+	senddirect (f:fs) = do
+		cache <- recordedCache key
+		-- check that we have a good file
+		ifM (compareCache f cache)
+			( do
+				r <- sendobject f
+				-- see if file changed while it was being sent
+				ok <- compareCache f cache
+				return (r && ok)
+			, senddirect fs
+			)
+
+{- Performs an action, passing it the location to use for a key's content.
+ -
+ - In direct mode, the associated files will be passed. But, if there are
+ - no associated files for a key, the indirect mode action will be
+ - performed instead. -}
+withObjectLoc :: Key -> (FilePath -> Annex a) -> ([FilePath] -> Annex a) -> Annex a
+withObjectLoc key indirect direct = ifM isDirect
+	( do
+		fs <- associatedFiles key
+		if null fs
+			then goindirect
+			else direct fs
+	, goindirect
+	)
+  where
+	goindirect = indirect =<< inRepo (gitAnnexLocation key)
+
 
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
