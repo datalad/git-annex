@@ -43,6 +43,7 @@ installLibs appbase = do
 				createDirectoryIfMissing True appbase
 				putStrLn $ "installing " ++ lib
 				_ <- boolSystem "cp" [File lib, File dest]
+				_ <- boolSystem "chmod" [Param "644", File dest]
 				return $ Just appbase
 			)
 
