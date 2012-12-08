@@ -77,7 +77,7 @@ install_name_tool binary lib = do
 	ok <- boolSystem "install_name_tool"
 		[ Param "-change"
 		, File lib
-		, Param $ "@executable_path" ++ (dropFileName lib)
+		, Param $ "@executable_path" ++ (takeFileName lib)
 		, File binary
 		]
 	unless ok $
