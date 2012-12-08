@@ -11,12 +11,12 @@ if [ ! -d "$base" ]; then
 	exit 1
 fi
 
-if [ ! -e "$base/bin/git-annex" ]; then
-	echo "** base directory $base does not contain bin/git-annex" >&2
+if [ ! -e "$base/git-annex" ]; then
+	echo "** base directory $base does not contain git-annex" >&2
 	exit 1
 fi
-if [ ! -e "$base/bin/git" ]; then
-	echo "** base directory $base does not contain bin/git" >&2
+if [ ! -e "$base/git" ]; then
+	echo "** base directory $base does not contain git" >&2
 	exit 1
 fi
 
