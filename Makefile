@@ -161,7 +161,7 @@ linuxstandalone:
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/"; \
+		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/" || echo "failed to install $$bin"; \
 	done
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
@@ -200,7 +200,7 @@ osxapp:
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(OSXAPP_BASE)"; \
+		cp "$$(which "$$bin")" "$(OSXAPP_BASE)" || echo "failed to install $$bin"; \
 	done
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
