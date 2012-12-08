@@ -1,0 +1,7 @@
+Based on the thread over at <http://git-annex.branchable.com/forum/__34__du__34___equivalent_on_an_annex__63__/> I decided to finally write a du like utility for git-annex.  A 0.01 version is up over at <http://git-annex.mysteryvortex.com/git-annex-utils.html>.  It works, but I intend to make it smarter about handling git repos and annexed files, as well as adding more of the options available in the standard du utility.
+
+Currently it will tally up the sizes of links that look like they are annexed files.  I plan to make it actually interact with git and git-annex to verify the files are annexed and enable options like tallying files only from specific remotes, only missing files, not double counting files which are annexed multiple times but stored only once, etc...
+
+I'll have time to work on this on the weekends, and plan to get my git repo up soon.  After gadu is mostly complete I might work on some other tools.
+
+Releases are signed with a PGP key with fingerprint 5E1A 65D7 D5E9 56F1 C239  43DF C6C8 9A0B 6003 8953 (available on the website)
