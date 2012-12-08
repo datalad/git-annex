@@ -187,10 +187,10 @@ prepTmp key = do
  - and not being copied into place. -}
 getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmpUnchecked key action = do
-	tmp <- prepTmp key
-	ifM (action tmp)
+	tmpfile <- prepTmp key
+	ifM (action tmpfile)
 		( do
-			moveAnnex key tmp
+			moveAnnex key tmpfile
 			logStatus key InfoPresent
 			return True
 		, do
@@ -267,6 +267,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 			)
 	storedirect [] = storeobject =<< inRepo (gitAnnexLocation key)
 	storedirect (dest:fs) = do
+		updateCache key src
 		thawContent src
 		liftIO $ replaceFile dest $ moveFile src
 		liftIO $ forM_ fs $ \f -> replaceFile f $ createLink dest
@@ -305,7 +306,9 @@ removeAnnex key = withObjectLoc key remove removedirect
 			allowWrite $ parentDir file
 			removeFile file
 		cleanObjectLoc key
-	removedirect fs = mapM_ resetfile fs
+	removedirect fs = do
+		removeCache key
+		mapM_ resetfile fs
 	resetfile f = do
 		l <- calcGitLink f key
 		top <- fromRepo Git.repoPath

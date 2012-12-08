@@ -8,8 +8,8 @@
 module Annex.Content.Direct (
 	associatedFiles,
 	unmodifed,
-	getCache,
-	showCache,
+	updateCache,
+	removeCache
 ) where
 
 import Common.Annex
@@ -39,12 +39,22 @@ associatedFiles key = do
  - expected mtime and inode.
  -}
 unmodifed :: Key -> FilePath -> Annex Bool
-unmodifed key file = do
-	cachefile <- inRepo $ gitAnnexCache key
-	liftIO $ do
-		curr <- getCache file
-		old <- catchDefaultIO Nothing $ readCache <$> readFile cachefile
-		return $ isJust curr && curr == old
+unmodifed key file = withCacheFile key $ \cachefile -> do
+	curr <- getCache file
+	old <- catchDefaultIO Nothing $ readCache <$> readFile cachefile
+	return $ isJust curr && curr == old
+
+{- Stores a cache of attributes for a file that is associated with a key. -}
+updateCache :: Key -> FilePath -> Annex ()
+updateCache key file = withCacheFile key $ \cachefile ->
+	maybe noop (writeFile cachefile . showCache) =<< getCache file
+
+{- Removes a cache. -}
+removeCache :: Key -> Annex ()
+removeCache key = withCacheFile key nukeFile
+
+withCacheFile :: Key -> (FilePath -> IO a) -> Annex a
+withCacheFile key a = liftIO . a =<< inRepo (gitAnnexCache key)
 
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
