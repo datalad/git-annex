@@ -1,0 +1,42 @@
+Got object sending working in direct mode. However, I don't yet have a
+reliable way to deal with files being modified while they're being
+transferred. I have code that detects it on the sending side, but the
+receiver is still free to move the wrong content into its annex, and record
+that it has the content. So that's not acceptable, and I'll need to work
+on it some more. However, at this point I can use a direct mode repository
+as a remote and transfer files from and to it.
+
+----
+
+Automated updating of the cached mtime, etc data. Next I need to automate
+generation of the key to filename mapping files. I'm thinking that I'll make
+`git annex sync` do it. Then, once I get committing and 
+merging working in direct mode repositories (which is likely to be a
+good week's worth of work), the workflow for using these repositories
+will be something like this:
+
+	git config annex.direct true
+	git annex sync # pulls any changes, merges, updates maps and caches
+	git annex get
+	# modify files
+	git annex sync # commits and pushes changes
+
+And once I get direct mode repositories working to this degree at the
+command line, I can get on with adding support to the assistant.
+
+----
+
+Also did some more work today on the OSX app. Am in the middle of getting
+it to modify the binaries in the app to change the paths to the libraries they
+depend on. This will avoid the hacky environment variable it is currently
+using, and make runshell a much more usable environment. It's the right way
+to do it. (I can't believe I just said RPATH was the right way to do
+anything.)
+
+In the middle of this, I discovered
+<http://hackage.haskell.org/package/cabal-macosx>, which does the same
+type of thing.
+
+Anyway, I have to do some crazy hacks to work around short library name
+fields in executables that I don't want to have to be specially rebuilt in
+order to build the webapp. Like git.
