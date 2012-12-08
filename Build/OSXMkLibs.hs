@@ -36,15 +36,14 @@ installLibs :: FilePath -> IO [Maybe FilePath]
 installLibs appbase = do
 	needlibs <- otool appbase
 	forM needlibs $ \lib -> do
-		let libdir = parentDir lib
-		let dest = appbase ++ lib
+		let dest = appbase </> takeFileName lib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
-				createDirectoryIfMissing True (appbase ++ libdir)
-				_ <- boolSystem "cp" [File lib, File dest]
+				createDirectoryIfMissing True appbase
 				putStrLn $ "installing " ++ lib
-				return $ Just libdir
+				_ <- boolSystem "cp" [File lib, File dest]
+				return $ Just appbase
 			)
 
 {- Returns libraries to install. -}
@@ -52,10 +51,13 @@ otool :: FilePath -> IO [FilePath]
 otool appbase = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
 	l <- forM files $ \file -> do
-		libs <- parseOtool <$> readProcess "otool" ["-L", file]
+		libs <- filter unprocessed . parseOtool
+			<$> readProcess "otool" ["-L", file]
 		forM_ libs $ \lib -> install_name_tool file lib
 		return libs
 	return $ nub $ concat l
+  where
+	unprocessed s = not ("@executable_path" `isInfixOf` s)
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
@@ -74,7 +76,7 @@ install_name_tool binary lib = do
 	ok <- boolSystem "install_name_tool"
 		[ Param "-change"
 		, File lib
-		, Param $ "@executable_path" ++ lib
+		, Param $ "@executable_path" ++ (dropFileName lib)
 		, File binary
 		]
 	unless ok $
