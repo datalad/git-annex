@@ -1,0 +1,36 @@
+Started laying the groundwork for [[desymlink]]'s direct mode.
+I got rather far!
+
+A git repo can be configured with `annex.direct` and all actions that
+transfer objects to it will replace the symlinks with regular files.
+Removing objects also works (and puts back a broken symlink),
+as does checking if an object is present, which even detects if a file
+has been modified.
+
+So far, this works best when such a direct mode repository is used as a git
+remote of another repository. It is also possible to run a few git-annex
+commands, like "get" in a direct mode repository, though others, like
+"drop" won't work because they rely on the symlink to map back to the key.
+
+Direct mode relies on map files existing for each key in the repository, that tell
+what file(s) use it. It also relies on cache files, that contain the last
+known mtime, size, and inode of the file. So far, I've been setting these
+files up by hand.
+
+The main thing that's missing is support for transferring objects from
+direct mode repositories. There's no single place I can modify to support
+that (like I could for the stuff mentioned above), and also it's difficult
+to do safely, since files could be modified at any time. 
+
+So it'll need to quarantine files, to prevent a modified version from
+getting sent out. I could either do this by copying the file, or by
+temporarily `git annex lock`ing it. Unsure which choice would be less
+annoying..
+
+----
+
+Also did some investigation with Jimmy of the OSX app git-config hang.
+Seems to be some kind of imcompatability between the 10.7 autobuilder and
+10.8. Next step is probably to try to build on 10.8. Might also
+be worth trying <http://macdylibbundler.sourceforge.net/>, although my
+own scripts do more or less the same thing to build the app.

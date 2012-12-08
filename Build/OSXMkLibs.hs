@@ -36,24 +36,28 @@ installLibs :: FilePath -> IO [Maybe FilePath]
 installLibs appbase = do
 	needlibs <- otool appbase
 	forM needlibs $ \lib -> do
-		let libdir = parentDir lib
-		let dest = appbase ++ lib
+		let dest = appbase </> takeFileName lib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
-				createDirectoryIfMissing True (appbase ++ libdir)
-				_ <- boolSystem "cp" [File lib, File dest]
+				createDirectoryIfMissing True appbase
 				putStrLn $ "installing " ++ lib
-				return $ Just libdir
+				_ <- boolSystem "cp" [File lib, File dest]
+				return $ Just appbase
 			)
 
+{- Returns libraries to install. -}
 otool :: FilePath -> IO [FilePath]
 otool appbase = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
-	s <- readProcess "otool" ("-L" : files)
-	return $ nub $ filter (not . framework) $ parseOtool s
+	l <- forM files $ \file -> do
+		libs <- filter unprocessed . parseOtool
+			<$> readProcess "otool" ["-L", file]
+		forM_ libs $ \lib -> install_name_tool file lib
+		return libs
+	return $ nub $ concat l
   where
-	framework f = ".framework" `isInfixOf` f
+	unprocessed s = not ("@executable_path" `isInfixOf` s)
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
@@ -61,6 +65,22 @@ parseOtool = catMaybes . map parse . lines
 	parse l
 		| "\t" `isPrefixOf` l = headMaybe $ words l
 		| otherwise = Nothing
+
+{- Adjusts binaries to use libraries in paths relative to the executable.
+ -
+ - Assumes all executables are installed into the same directory, and
+ - the libraries will be installed in subdirectories that match their
+ - absolute paths. -}
+install_name_tool :: FilePath -> FilePath -> IO ()
+install_name_tool binary lib = do
+	ok <- boolSystem "install_name_tool"
+		[ Param "-change"
+		, File lib
+		, Param $ "@executable_path" ++ (dropFileName lib)
+		, File binary
+		]
+	unless ok $
+		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
 
 main :: IO ()
 main = getArgs >>= go

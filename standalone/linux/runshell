@@ -67,5 +67,5 @@ if [ "$1" ]; then
 	shift 1
 	exec "$cmd" "$@"
 else
-	$SHELL
+	sh
 fi
