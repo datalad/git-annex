@@ -23,19 +23,24 @@ import Utility.Monad
 import Utility.SafeCommand
 import Utility.Path
 
+import qualified Data.Map as M
+import qualified Data.Set as S
+
+type LibMap = M.Map FilePath String
+
 {- Recursively find and install libs, until nothing new to install is found. -}
-mklibs :: FilePath -> [FilePath] -> IO [FilePath]
-mklibs appbase libdirs = do
-	new <- catMaybes <$> installLibs appbase
+mklibs :: FilePath -> [FilePath] -> LibMap -> IO [FilePath]
+mklibs appbase libdirs libmap = do
+	(new, libmap') <- installLibs appbase libmap
 	if null new
 		then return (libdirs++new)
-		else mklibs appbase (libdirs++new)
+		else mklibs appbase (libdirs++new) libmap'
 
 {- Returns directories into which new libs were installed. -}
-installLibs :: FilePath -> IO [Maybe FilePath]
-installLibs appbase = do
-	needlibs <- otool appbase
-	forM needlibs $ \lib -> do
+installLibs :: FilePath -> LibMap -> IO ([FilePath], LibMap)
+installLibs appbase libmap = do
+	(needlibs, libmap') <- otool appbase libmap
+	libs <- forM needlibs $ \lib -> do
 		let dest = appbase </> takeFileName lib
 		ifM (doesFileExist dest)
 			( return Nothing
@@ -46,19 +51,21 @@ installLibs appbase = do
 				_ <- boolSystem "chmod" [Param "644", File dest]
 				return $ Just appbase
 			)
+	return (catMaybes libs, libmap')
 
 {- Returns libraries to install. -}
-otool :: FilePath -> IO [FilePath]
-otool appbase = do
+otool :: FilePath -> LibMap -> IO ([FilePath], LibMap)
+otool appbase libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
-	l <- forM files $ \file -> do
-		libs <- filter unprocessed . parseOtool
-			<$> readProcess "otool" ["-L", file]
-		forM_ libs $ \lib -> install_name_tool file lib
-		return libs
-	return $ nub $ concat l
+	process [] files libmap
   where
 	unprocessed s = not ("@executable_path" `isInfixOf` s)
+	process c [] m = return (nub $ concat c, m)
+	process c (file:rest) m = do
+		libs <- filter unprocessed . parseOtool
+			<$> readProcess "otool" ["-L", file]
+		m' <- install_name_tool file libs m
+		process (libs:c) (file:rest) m'
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
@@ -72,22 +79,40 @@ parseOtool = catMaybes . map parse . lines
  - Assumes all executables are installed into the same directory, and
  - the libraries will be installed in subdirectories that match their
  - absolute paths. -}
-install_name_tool :: FilePath -> FilePath -> IO ()
-install_name_tool binary lib = do
+install_name_tool :: FilePath -> [FilePath] -> LibMap -> IO LibMap
+install_name_tool _ [] libmap = return libmap
+install_name_tool binary (lib:rest) libmap = do
+	let (libname, libmap') = getLibName lib libmap
 	ok <- boolSystem "install_name_tool"
 		[ Param "-change"
 		, File lib
-		, Param $ "@executable_path" ++ (takeFileName lib)
+		, Param $ "@executable_path/" ++ libname
 		, File binary
 		]
 	unless ok $
 		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
+	install_name_tool binary rest libmap'
+
+{- Uses really short names for the library files it installs, because
+ - binaries have arbitrarily short RPATH field limits. -}
+getLibName :: FilePath -> LibMap -> (FilePath, LibMap)
+getLibName lib libmap = case M.lookup lib libmap of
+	Just n -> (n, libmap)
+	Nothing -> let n = nextfreename
+		in (n, M.insert lib n libmap)
+  where
+	names = map (\c -> [c]) letters ++
+		[[l1, l2] | l1 <- letters, l2 <- letters]
+	letters = ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9']
+	used = S.fromList $ M.elems libmap
+	nextfreename = fromMaybe (error "ran out of short library names!") $ 
+		headMaybe $ dropWhile (`S.member` used) names
 
 main :: IO ()
 main = getArgs >>= go
   where
 	go [] = error "specify OSXAPP_BASE"
 	go (appbase:_) = do
-		libdirs <- mklibs appbase []
+		libdirs <- mklibs appbase [] M.empty
 		writeFile (appbase </> "libdirs") $
 			unlines $ nub libdirs
