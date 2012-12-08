@@ -73,3 +73,9 @@ is converted to a real file when it becomes present.
   to files in this remote would not be noticed and committed, unless
   a git-annex command were added to do so.
   Getting it basically working as a remote would be a good 1st step.
+
+## TODO
+
+* Deal with files changing as they're being transferred from a direct mode
+  repository to another git repository. The remote repo currently will 
+  accept the bad data and update the location log to say it has the key.
