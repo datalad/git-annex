@@ -47,11 +47,15 @@ installLibs appbase = do
 				return $ Just libdir
 			)
 
+{- Returns libraries to install. -}
 otool :: FilePath -> IO [FilePath]
 otool appbase = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
-	s <- readProcess "otool" ("-L" : files)
-	return $ nub $ parseOtool s
+	l <- forM files $ \file -> do
+		libs <- parseOtool <$> readProcess "otool" ["-L", file]
+		forM_ libs $ \lib -> install_name_tool file lib
+		return libs
+	return $ nub $ concat l
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
@@ -59,6 +63,22 @@ parseOtool = catMaybes . map parse . lines
 	parse l
 		| "\t" `isPrefixOf` l = headMaybe $ words l
 		| otherwise = Nothing
+
+{- Adjusts binaries to use libraries in paths relative to the executable.
+ -
+ - Assumes all executables are installed into the same directory, and
+ - the libraries will be installed in subdirectories that match their
+ - absolute paths. -}
+install_name_tool :: FilePath -> FilePath -> IO ()
+install_name_tool binary lib = do
+	ok <- boolSystem "install_name_tool"
+		[ Param "-change"
+		, File lib
+		, Param $ "@executable_path" ++ lib
+		, File binary
+		]
+	unless ok $
+		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
 
 main :: IO ()
 main = getArgs >>= go

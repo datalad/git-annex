@@ -55,18 +55,18 @@ export PATH
 # different versions of a single library. And it seems to work better
 # than DYLD_FALLBACK_LIBRARY_PATH, which fails to override old system
 # versions of libraries when a program in the app needs a newer version.
-ORIG_DYLD_ROOT_PATH="$DYLD_ROOT_PATH"
-export ORIG_DYLD_ROOT_PATH
-DYLD_ROOT_PATH=$base
-export DYLD_ROOT_PATH
+#ORIG_DYLD_ROOT_PATH="$DYLD_ROOT_PATH"
+#export ORIG_DYLD_ROOT_PATH
+#DYLD_ROOT_PATH=$base
+#export DYLD_ROOT_PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$base/git-core
+GIT_EXEC_PATH=$base
 export GIT_EXEC_PATH
 
 # Indicate which variables were exported above.
-GIT_ANNEX_STANDLONE_ENV="PATH DYLD_ROOT_PATH GIT_EXEC_PATH"
+GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH"
 export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then

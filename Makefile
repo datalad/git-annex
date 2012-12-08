@@ -192,19 +192,18 @@ osxapp:
 	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
 
-	install -d "$(OSXAPP_BASE)/bin"
-	cp git-annex "$(OSXAPP_BASE)/bin/"
-	strip "$(OSXAPP_BASE)/bin/git-annex"
-	ln -sf git-annex "$(OSXAPP_BASE)/bin/git-annex-shell"
+	install -d "$(OSXAPP_BASE)"
+	cp git-annex "$(OSXAPP_BASE)"
+	strip "$(OSXAPP_BASE)/git-annex"
+	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(OSXAPP_BASE)/bin/"; \
+		cp "$$(which "$$bin")" "$(OSXAPP_BASE)"; \
 	done
 
-	install -d "$(OSXAPP_BASE)/git-core"
-	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)"/git-core && tar x)
+	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 
 	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
