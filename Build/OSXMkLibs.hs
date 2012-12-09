@@ -82,12 +82,13 @@ parseOtool = catMaybes . map parse . lines
 {- Adjusts binaries to use libraries bundled with it, rather than the
  - system libraries. -}
 install_name_tool :: FilePath -> [FilePath] -> LibMap -> IO LibMap
+install_name_tool _ [] libmap = return libmap
 install_name_tool binary libs libmap = do
 	let (libnames, libmap') = getLibNames libs libmap
 	let params = concatMap change $ zip libs libnames
 	ok <- boolSystem "install_name_tool" $ params ++ [File binary]
 	unless ok $
-		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
+		error $ "install_name_tool failed for " ++ binary
 	return libmap'
   where
 	change (lib, libname) =
