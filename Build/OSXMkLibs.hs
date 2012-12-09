@@ -79,24 +79,30 @@ parseOtool = catMaybes . map parse . lines
 		| "\t" `isPrefixOf` l = headMaybe $ words l
 		| otherwise = Nothing
 
-{- Adjusts binaries to use libraries in paths relative to the executable.
- -
- - Assumes all executables are installed into the same directory, and
- - the libraries will be installed in subdirectories that match their
- - absolute paths. -}
+{- Adjusts binaries to use libraries bundled with it, rather than the
+ - system libraries. -}
 install_name_tool :: FilePath -> [FilePath] -> LibMap -> IO LibMap
-install_name_tool _ [] libmap = return libmap
-install_name_tool binary (lib:rest) libmap = do
-	let (libname, libmap') = getLibName lib libmap
-	ok <- boolSystem "install_name_tool"
+install_name_tool binary libs libmap = do
+	let (libnames, libmap') = getLibNames libs libmap
+	let params = concatMap change $ zip libs libnames
+	ok <- boolSystem "install_name_tool" $ params ++ [File binary]
+	unless ok $
+		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
+	return libmap'
+  where
+	change (lib, libname) =
 		[ Param "-change"
 		, File lib
 		, Param $ "@executable_path/" ++ libname
-		, File binary
 		]
-	unless ok $
-		hPutStrLn stderr $ "install_name_tool failed for " ++ binary
-	install_name_tool binary rest libmap'
+
+getLibNames :: [FilePath] -> LibMap -> ([FilePath], LibMap)
+getLibNames libs libmap = go [] libs libmap
+  where
+	go c [] m = (reverse c, m)
+	go c (l:rest) m =
+		let (f, m') = getLibName l m
+		in go (f:c) rest m'
 
 {- Uses really short names for the library files it installs, because
  - binaries have arbitrarily short RPATH field limits. -}
