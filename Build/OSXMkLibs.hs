@@ -32,7 +32,7 @@ type LibMap = M.Map FilePath String
 mklibs :: FilePath -> [FilePath] -> LibMap -> IO ()
 mklibs appbase libdirs libmap = do
 	(new, libmap') <- installLibs appbase libmap
-	unless null new $
+	unless (null new) $
 		mklibs appbase (libdirs++new) libmap'
 
 {- Returns directories into which new libs were installed. -}
