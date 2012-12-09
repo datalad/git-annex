@@ -102,8 +102,7 @@ install_name_tool binary (lib:rest) libmap = do
 getLibName :: FilePath -> LibMap -> (FilePath, LibMap)
 getLibName lib libmap = case M.lookup lib libmap of
 	Just n -> (n, libmap)
-	Nothing -> let n = nextfreename
-		in (n, M.insert lib n libmap)
+	Nothing -> (nextfreename, M.insert lib nextfreename libmap)
   where
 	names = map (\c -> [c]) letters ++
 		[[l1, l2] | l1 <- letters, l2 <- letters]
