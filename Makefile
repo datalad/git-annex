@@ -210,7 +210,7 @@ osxapp:
 	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 	rm -f tmp/git-annex.dmg.bz2
-	bzip2 tmp/git-annex.dmg
+	bzip2 --fast tmp/git-annex.dmg
 
 # used by ./ghci
 getflags:
