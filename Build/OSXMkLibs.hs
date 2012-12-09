@@ -41,14 +41,17 @@ installLibs :: FilePath -> LibMap -> IO ([FilePath], LibMap)
 installLibs appbase libmap = do
 	(needlibs, libmap') <- otool appbase libmap
 	libs <- forM needlibs $ \lib -> do
-		let dest = appbase </> takeFileName lib
+		let shortlib = fromMaybe (error "internal") (M.lookup lib libmap')
+		let dest = appbase </> shortlib
+		let symdest = appbase </> takeFileName lib
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
 				createDirectoryIfMissing True appbase
-				putStrLn $ "installing " ++ lib
+				putStrLn $ "installing " ++ lib ++ " as " ++ dest
 				_ <- boolSystem "cp" [File lib, File dest]
 				_ <- boolSystem "chmod" [Param "644", File dest]
+				_ <- boolSystem "ln" [Param "-s", File shortlib, File symdest]
 				return $ Just appbase
 			)
 	return (catMaybes libs, libmap')
