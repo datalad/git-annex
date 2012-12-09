@@ -15,6 +15,7 @@ import System.Directory
 import System.IO
 import Control.Monad
 import Data.List
+import Data.String.Utils
 
 import Utility.PartialPrelude
 import Utility.Directory
@@ -41,7 +42,8 @@ installLibs appbase libmap = do
 	(needlibs, libmap') <- otool appbase libmap
 	libs <- forM needlibs $ \lib -> do
 		let shortlib = fromMaybe (error "internal") (M.lookup lib libmap')
-		let dest = appbase </> takeFileName lib
+		let fulllib = replace "/" "_" lib
+		let dest = appbase </> fulllib
 		let symdest = appbase </> shortlib
 		ifM (doesFileExist dest)
 			( return Nothing
@@ -50,7 +52,7 @@ installLibs appbase libmap = do
 				putStrLn $ "installing " ++ lib ++ " as " ++ shortlib
 				_ <- boolSystem "cp" [File lib, File dest]
 				_ <- boolSystem "chmod" [Param "644", File dest]
-				_ <- boolSystem "ln" [Param "-s", File (takeFileName lib), File symdest]
+				_ <- boolSystem "ln" [Param "-s", File fulllib, File symdest]
 				return $ Just appbase
 			)
 	return (catMaybes libs, libmap')
