@@ -62,6 +62,7 @@ otool appbase libmap = do
 	unprocessed s = not ("@executable_path" `isInfixOf` s)
 	process c [] m = return (nub $ concat c, m)
 	process c (file:rest) m = do
+		_ <- boolSystem "chmod" [Param "755", File file]
 		libs <- filter unprocessed . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		m' <- install_name_tool file libs m
