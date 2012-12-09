@@ -106,7 +106,7 @@ getLibName lib libmap = case M.lookup lib libmap of
   where
 	names = map (\c -> [c]) letters ++
 		[[l1, l2] | l1 <- letters, l2 <- letters]
-	letters = ['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9']
+	letters = ['a' .. 'z'] ++ ['0' .. '9']
 	used = S.fromList $ M.elems libmap
 	nextfreename = fromMaybe (error "ran out of short library names!") $ 
 		headMaybe $ dropWhile (`S.member` used) names
