@@ -65,7 +65,7 @@ otool appbase libmap = do
 		libs <- filter unprocessed . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		m' <- install_name_tool file libs m
-		process (libs:c) (file:rest) m'
+		process (libs:c) rest m'
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
