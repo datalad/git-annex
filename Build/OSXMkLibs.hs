@@ -29,12 +29,11 @@ import qualified Data.Set as S
 type LibMap = M.Map FilePath String
 
 {- Recursively find and install libs, until nothing new to install is found. -}
-mklibs :: FilePath -> [FilePath] -> LibMap -> IO [FilePath]
+mklibs :: FilePath -> [FilePath] -> LibMap -> IO ()
 mklibs appbase libdirs libmap = do
 	(new, libmap') <- installLibs appbase libmap
-	if null new
-		then return (libdirs++new)
-		else mklibs appbase (libdirs++new) libmap'
+	unless null new $
+		mklibs appbase (libdirs++new) libmap'
 
 {- Returns directories into which new libs were installed. -}
 installLibs :: FilePath -> LibMap -> IO ([FilePath], LibMap)
@@ -115,7 +114,4 @@ main :: IO ()
 main = getArgs >>= go
   where
 	go [] = error "specify OSXAPP_BASE"
-	go (appbase:_) = do
-		libdirs <- mklibs appbase [] M.empty
-		writeFile (appbase </> "libdirs") $
-			unlines $ nub libdirs
+	go (appbase:_) = mklibs appbase [] M.empty
