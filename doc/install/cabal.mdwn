@@ -1,7 +1,8 @@
 As a haskell package, git-annex can be installed using cabal. For example:
 
 	cabal update
-        cabal install c2hs git-annex --bindir=$HOME/bin
+	PATH=$HOME/bin:$PATH
+	cabal install c2hs git-annex --bindir=$HOME/bin
 
 The above downloads the latest release and installs it into a ~/bin/
 directory, which you can put in your PATH.
@@ -10,6 +11,7 @@ But maybe you want something newer (or older). Then [[download]] the version
 you want, and use cabal as follows inside its source tree:
 
 	cabal update
+	PATH=$HOME/bin:$PATH
 	cabal install c2hs --bindir=$HOME/bin
 	cabal install --only-dependencies
 	cabal configure
