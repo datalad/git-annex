@@ -47,7 +47,7 @@ installLibs appbase libmap = do
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
-				createDirectoryIfMissing True (parentDir fulllib)
+				createDirectoryIfMissing True (parentDir dest)
 				putStrLn $ "installing " ++ lib ++ " as " ++ shortlib
 				_ <- boolSystem "cp" [File lib, File dest]
 				_ <- boolSystem "chmod" [Param "644", File dest]
