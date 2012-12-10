@@ -36,6 +36,6 @@ descStandardGroup FullArchiveGroup = "full archive: archives all files not archi
 preferredContent :: StandardGroup -> String
 preferredContent ClientGroup = "exclude=*/archive/* and exclude=archive/*"
 preferredContent TransferGroup = "not (inallgroup=client and copies=client:2) and " ++ preferredContent ClientGroup
-preferredContent BackupGroup = "" -- all content is preferred
+preferredContent BackupGroup = "include=*"
 preferredContent SmallArchiveGroup = "(include=*/archive/* or include=archive/*) and " ++ preferredContent FullArchiveGroup
 preferredContent FullArchiveGroup = "not (copies=archive:1 or copies=smallarchive:1)"
