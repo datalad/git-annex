@@ -160,8 +160,15 @@ linuxstandalone:
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
+	set -e; \
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/" || echo "failed to install $$bin"; \
+		p="$$(which "$$bin")"; \
+		if [ -z "$$p" ]; then \
+			echo "** missing $$bin" >&2; \
+			exit 1; \
+		else \
+			cp "$$p" "$(LINUXSTANDALONE_DEST)/bin/"; \
+		fi; \
 	done
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
@@ -199,8 +206,15 @@ osxapp:
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
+	set -e; \
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(OSXAPP_BASE)" || echo "failed to install $$bin"; \
+		p="$$(which "$$bin")"; \
+		if [ -z "$$p" ]; then \
+			echo "** missing $$bin" >&2; \
+			exit 1; \
+		else \
+			cp "$$p" "$(OSXAPP_BASE)"; \
+		fi; \
 	done
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
