@@ -7,6 +7,8 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
+	changeAssociatedFiles,
+	updateAssociatedFiles,
 	goodContent,
 	updateCache,
 	recordedCache,
@@ -16,8 +18,14 @@ module Annex.Content.Direct (
 
 import Common.Annex
 import qualified Git
+import qualified Git.DiffTree as DiffTree
+import Git.Sha
+import Annex.CatFile
+import Utility.TempFile
+import Utility.FileMode
 
 import System.Posix.Types
+import qualified Data.ByteString.Lazy as L
 
 {- Files in the tree that are associated with a key.
  -
@@ -33,6 +41,45 @@ associatedFiles key = do
 		else do
 			top <- fromRepo Git.repoPath
 			return $ map (top </>) files
+
+{- Changes the associated files information for a key, applying a
+ - transformation to the list. -}
+changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex ()
+changeAssociatedFiles key transform = do
+	mapping <- inRepo $ gitAnnexMapping key
+	liftIO $ do
+		files <- catchDefaultIO [] $ lines <$> readFile mapping
+		let files' = transform files
+		when (files /= files') $
+			viaTmp writeFile mapping $ unlines files'
+
+removeAssociatedFile :: Key -> FilePath -> Annex ()
+removeAssociatedFile key file = changeAssociatedFiles key $ filter (/= file)
+
+addAssociatedFile :: Key -> FilePath -> Annex ()
+addAssociatedFile key file = changeAssociatedFiles key $ \files ->
+	if file `elem` files
+		then files
+		else file:files
+
+{- Uses git diff-tree to find files changed between two tree Shas, and
+ - updates the associated file mappings, efficiently -}
+updateAssociatedFiles :: Git.Sha -> Git.Sha -> Annex ()
+updateAssociatedFiles oldsha newsha = do
+	(items, cleanup) <- inRepo $ DiffTree.diffTree oldsha newsha
+	forM_ items update
+	void $ liftIO $ cleanup
+  where
+	update item = do
+		go DiffTree.dstsha DiffTree.dstmode addAssociatedFile
+		go DiffTree.srcsha DiffTree.srcmode removeAssociatedFile
+	  where
+		go getsha getmode a =
+			when (getsha item /= nullSha && isSymLink (getmode item)) $ do
+				key <- getkey $ getsha item
+				maybe noop (\k -> a k $ DiffTree.file item) key
+		getkey sha = fileKey . takeFileName . encodeW8 . L.unpack
+			<$> catObject sha
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -65,9 +112,6 @@ updateCache key file = withCacheFile key $ \cachefile ->
 removeCache :: Key -> Annex ()
 removeCache key = withCacheFile key nukeFile
 
-withCacheFile :: Key -> (FilePath -> IO a) -> Annex a
-withCacheFile key a = liftIO . a =<< inRepo (gitAnnexCache key)
-
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
 data Cache = Cache FileID FileOffset EpochTime
@@ -98,3 +142,6 @@ toCache s
 		(fileSize s)
 		(modificationTime s)
 	| otherwise = Nothing
+
+withCacheFile :: Key -> (FilePath -> IO a) -> Annex a
+withCacheFile key a = liftIO . a =<< inRepo (gitAnnexCache key)
