@@ -32,8 +32,7 @@ import qualified Data.ByteString.Lazy as L
  - When no known associated files exist, returns the gitAnnexLocation. -}
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do
-	mapping <- inRepo $ gitAnnexMapping key
-	files <- liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
+	files <- associatedFilesList key
 	if null files
 		then do
 			l <- inRepo $ gitAnnexLocation key
@@ -42,16 +41,21 @@ associatedFiles key = do
 			top <- fromRepo Git.repoPath
 			return $ map (top </>) files
 
+{- Raw list of files in the tree that are associated with a key. -}
+associatedFilesList :: Key -> Annex [FilePath] 
+associatedFilesList key = do
+	mapping <- inRepo $ gitAnnexMapping key
+	liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
+
 {- Changes the associated files information for a key, applying a
  - transformation to the list. -}
 changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex ()
 changeAssociatedFiles key transform = do
 	mapping <- inRepo $ gitAnnexMapping key
-	liftIO $ do
-		files <- catchDefaultIO [] $ lines <$> readFile mapping
-		let files' = transform files
-		when (files /= files') $
-			viaTmp writeFile mapping $ unlines files'
+	files <- associatedFilesList key
+	let files' = transform files
+	when (files /= files') $
+		liftIO $ viaTmp writeFile mapping $ unlines files'
 
 removeAssociatedFile :: Key -> FilePath -> Annex ()
 removeAssociatedFile key file = changeAssociatedFiles key $ filter (/= file)
@@ -63,7 +67,7 @@ addAssociatedFile key file = changeAssociatedFiles key $ \files ->
 		else file:files
 
 {- Uses git diff-tree to find files changed between two tree Shas, and
- - updates the associated file mappings, efficiently -}
+ - updates the associated file mappings, efficiently. -}
 updateAssociatedFiles :: Git.Sha -> Git.Sha -> Annex ()
 updateAssociatedFiles oldsha newsha = do
 	(items, cleanup) <- inRepo $ DiffTree.diffTree oldsha newsha
