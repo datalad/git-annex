@@ -16,7 +16,8 @@ sudo brew update
 sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config libxml2
 sudo brew link libxml2
 cabal update
-cabal install git-annex --bindir=$HOME/bin
+PATH=$HOME/bin:$PATH
+cabal install c2hs git-annex --bindir=$HOME/bin
 </pre>
 
 ## using MacPorts
@@ -31,14 +32,15 @@ sudo port install git-core ossp-uuid md5sha1sum coreutils pcre
 sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that allows pcre-light to find pcre
 
 sudo cabal update
-cabal install git-annex --bindir=$HOME/bin
+PATH=$HOME/bin:$PATH
+cabal install c2hs git-annex --bindir=$HOME/bin
 </pre>
 
 ## PATH setup
 
 Do not forget to add to your PATH variable your ~/bin folder. In your .bashrc, for example:
 <pre>
-PATH=$HOME/bin:/usr/bin/local:$PATH
+PATH=$HOME/bin:$PATH
 </pre>
 
 See also:

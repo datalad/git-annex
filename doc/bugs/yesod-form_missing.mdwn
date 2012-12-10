@@ -19,3 +19,5 @@ git checkout commit 90b62db1defdd223294935ec0bbaac883cd20c04 on OS X Lion
 Please provide any additional information below.
 
 adding yesod-form to the build depends in git-annex.cabal does indeed fix the problem!
+
+> [[done]] --[[Joey]] 

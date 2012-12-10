@@ -1,6 +1,6 @@
 #!/bin/sh
-# Runs a shell command (or interactive shell) using the binaries and
-# libraries bundled with this app.
+# Runs a shell command (or interactive shell) using the binaries 
+# bundled with this app.
 
 set -e
 
@@ -11,12 +11,12 @@ if [ ! -d "$base" ]; then
 	exit 1
 fi
 
-if [ ! -e "$base/bin/git-annex" ]; then
-	echo "** base directory $base does not contain bin/git-annex" >&2
+if [ ! -e "$base/git-annex" ]; then
+	echo "** base directory $base does not contain git-annex" >&2
 	exit 1
 fi
-if [ ! -e "$base/bin/git" ]; then
-	echo "** base directory $base does not contain bin/git" >&2
+if [ ! -e "$base/git" ]; then
+	echo "** base directory $base does not contain git" >&2
 	exit 1
 fi
 
@@ -45,20 +45,6 @@ ORIG_PATH="$PATH"
 export ORIG_PATH
 PATH=$base/bin:$PATH
 export PATH
-
-# This makes the linker first look in the library directories bundled
-# in this app. Only if it fails to find a library there will a system
-# library be used.
-# 
-# This seems to work better than DYLD_LIBRARY_PATH, which can force
-# the wrong version of a library to be used, if the app bundles two
-# different versions of a single library. And it seems to work better
-# than DYLD_FALLBACK_LIBRARY_PATH, which fails to override old system
-# versions of libraries when a program in the app needs a newer version.
-#ORIG_DYLD_ROOT_PATH="$DYLD_ROOT_PATH"
-#export ORIG_DYLD_ROOT_PATH
-#DYLD_ROOT_PATH=$base
-#export DYLD_ROOT_PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH

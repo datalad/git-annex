@@ -7,7 +7,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
 # Or with an old version of the uri library, enable -DWITH_OLD_URI
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_HOST
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
@@ -210,7 +210,7 @@ osxapp:
 	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 	rm -f tmp/git-annex.dmg.bz2
-	bzip2 tmp/git-annex.dmg
+	bzip2 --fast tmp/git-annex.dmg
 
 # used by ./ghci
 getflags:
