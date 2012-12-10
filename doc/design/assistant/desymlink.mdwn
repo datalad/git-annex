@@ -86,3 +86,17 @@ is converted to a real file when it becomes present.
 * Deal with files changing as they're being transferred from a direct mode
   repository to another git repository. The remote repo currently will 
   accept the bad data and update the location log to say it has the key.
+* `git annex sync` updates the key to files mappings for files changed,
+  but needs much other work to handle direct mode:
+  * Generate git commit, without running `git commit`, because it will
+    want to stage the full files.
+  * Update location logs for any files deleted by a commit.
+  * Generate a git merge, without running `git merge` (or possibly running
+    it in a scratch repo?), because it will stumble over the direct files.
+  * Drop contents of files deleted by a merge (including updating the
+    location log), or if we cannot drop,
+    move their contents to `.git/annex/objects/`.
+  * When a merge adds a symlink pointing at a key that is present in the
+    repo, replace the symlink with the direct file (either moving out
+    of `.git/annex/objects/` or hard-linking if the same key is present
+    elsewhere in the tree.
