@@ -43,7 +43,7 @@ fi
 # system binaries.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH=$base/bin:$PATH
+PATH=$base:$PATH
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
