@@ -17,4 +17,4 @@ test.hs:11:8:
 make: *** [test] Error 1
 </pre>
 
-Looks like a missing dep somewhere with testpack or quickcheck... I haven't had time to figure it out yet, its not git-annex specific but I thought I might log it.
+Looks like a missing dep somewhere with testpack or quickcheck... I haven't had time to figure it out yet, its not git-annex specific but I thought I might log it as a reminder for myself just in case if the osxapp is more borked than usual, I probably need to flush my .cabal directory of installed userland dependancies.
