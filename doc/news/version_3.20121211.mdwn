@@ -1,0 +1,32 @@
+git-annex 3.20121211 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * webapp: Defaults to sharing box.com account info with friends, allowing
+     one-click enabling of the repository.
+   * Fix broken .config/git-annex/program installed by standalone tarball.
+   * assistant: Retrival from glacier now handled.
+   * Include ssh in standalone tarball and OSX app.
+   * watch: Avoid leaving hard links to files behind in .git/annex/tmp
+     if a file is deleted or moved while it's being quarantined in preparation
+     to being added to the annex.
+   * Allow `git annex drop --from web`; of course this does not remove
+     any file from the web, but it does make git-annex remove all urls
+     associated with a file.
+   * webapp: S3 and Glacier forms now have a select list of all
+     currently-supported AWS regions.
+   * webdav: Avoid trying to set props, avoiding incompatability with
+     livedrive.com. Needs DAV version 0.3.
+   * webapp: Prettify error display.
+   * webapp: Fix bad interaction between required fields and modals.
+   * webapp: Added help buttons and links next to fields that require
+     explanations.
+   * webapp: Encryption can be disabled when setting up remotes.
+   * assistant: Avoid trying to drop content from remotes that don't have it.
+   * assistant: Allow periods in ssh key comments.
+   * get/copy --auto: Transfer data even if it would exceed numcopies,
+     when preferred content settings want it.
+   * drop --auto: Fix dropping content when there are no preferred content
+     settings.
+   * webapp: Allow user to specify the port when setting up a ssh or rsync
+     remote.
+   * assistant: Fix syncing to just created ssh remotes.
+   * Enable WebDAV support in Debian package. Closes: #[695532](http://bugs.debian.org/695532)"""]]
