@@ -1,4 +1,4 @@
-## version 3.20121210
+## version 3.20121211
 
 This release of the git-annex assistant (which is still in beta)
 consists of mostly bugfixes, user interface improvements, and improvements
