@@ -7,7 +7,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
 # Or with an old version of the uri library, enable -DWITH_OLD_URI
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_HOST
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
