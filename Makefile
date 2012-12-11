@@ -206,7 +206,6 @@ osxapp:
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
-	set -e; \
 	for bin in $(THIRDPARTY_BINS); do \
 		p="$$(which "$$bin")"; \
 		if [ -z "$$p" ]; then \
