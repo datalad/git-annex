@@ -1,4 +1,4 @@
-git-annex (3.20121128) UNRELEASED; urgency=low
+git-annex (3.20121211) unstable; urgency=low
 
   * webapp: Defaults to sharing box.com account info with friends, allowing
     one-click enabling of the repository.
@@ -31,7 +31,7 @@ git-annex (3.20121128) UNRELEASED; urgency=low
   * assistant: Fix syncing to just created ssh remotes.
   * Enable WebDAV support in Debian package. Closes: #695532
 
- -- Joey Hess <joeyh@debian.org>  Wed, 28 Nov 2012 13:31:07 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 11 Dec 2012 11:25:03 -0400
 
 git-annex (3.20121127) unstable; urgency=low
 
