@@ -162,7 +162,7 @@ linuxstandalone:
 
 	set -e; \
 	for bin in $(THIRDPARTY_BINS); do \
-		p="$$(which "$$bin")"; \
+		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
 		if [ -z "$$p" ]; then \
 			echo "** missing $$bin" >&2; \
 			exit 1; \
@@ -207,7 +207,7 @@ osxapp:
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
-		p="$$(which "$$bin")"; \
+		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
 		if [ -z "$$p" ]; then \
 			echo "** missing $$bin" >&2; \
 			exit 1; \
