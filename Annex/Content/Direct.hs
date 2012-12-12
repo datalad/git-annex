@@ -109,8 +109,10 @@ compareCache file old = do
 
 {- Stores a cache of attributes for a file that is associated with a key. -}
 updateCache :: Key -> FilePath -> Annex ()
-updateCache key file = withCacheFile key $ \cachefile ->
-	maybe noop (writeFile cachefile . showCache) =<< genCache file
+updateCache key file = do
+	withCacheFile key $ \cachefile -> do
+		createDirectoryIfMissing True (parentDir cachefile)
+		maybe noop (writeFile cachefile . showCache) =<< genCache file
 
 {- Removes a cache. -}
 removeCache :: Key -> Annex ()
