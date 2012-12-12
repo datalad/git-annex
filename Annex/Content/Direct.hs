@@ -27,23 +27,17 @@ import Utility.FileMode
 import System.Posix.Types
 import qualified Data.ByteString.Lazy as L
 
-{- Files in the tree that are associated with a key.
- -
- - When no known associated files exist, returns the gitAnnexLocation. -}
+{- Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do
-	files <- associatedFilesList key
-	if null files
-		then do
-			l <- inRepo $ gitAnnexLocation key
-			return [l]
-		else do
-			top <- fromRepo Git.repoPath
-			return $ map (top </>) files
+	files <- associatedFilesRelative key
+	top <- fromRepo Git.repoPath
+	return $ map (top </>) files
 
-{- Raw list of files in the tree that are associated with a key. -}
-associatedFilesList :: Key -> Annex [FilePath] 
-associatedFilesList key = do
+{- List of files in the tree that are associated with a key, relative to
+ - the top of the repo. -}
+associatedFilesRelative :: Key -> Annex [FilePath] 
+associatedFilesRelative key = do
 	mapping <- inRepo $ gitAnnexMapping key
 	liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
 
@@ -52,7 +46,7 @@ associatedFilesList key = do
 changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex ()
 changeAssociatedFiles key transform = do
 	mapping <- inRepo $ gitAnnexMapping key
-	files <- associatedFilesList key
+	files <- associatedFilesRelative key
 	let files' = transform files
 	when (files /= files') $
 		liftIO $ viaTmp writeFile mapping $ unlines files'
