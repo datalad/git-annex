@@ -10,6 +10,7 @@ module Git.LsFiles (
 	notInRepo,
 	staged,
 	stagedNotDeleted,
+	notStaged,
 	typeChanged,
 	typeChangedStaged,
 	Conflicting(..),
@@ -51,6 +52,14 @@ staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
   where
 	prefix = [Params "diff --cached --name-only -z"]
 	suffix = Param "--" : map File l
+
+{- Returns a list of all files that have unstaged changes. This includes
+ - any new files, that have not been added yet. -}
+notStaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+notStaged l repo = pipeNullSplit params repo
+  where
+	params = [Params "ls-files --others --deleted --modified --exclude-standard -z --"] ++
+		map File l
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
