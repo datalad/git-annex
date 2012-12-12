@@ -130,38 +130,18 @@ pullRemote remote branch = do
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
  - were committed, while the synced/master may have changes that some
- - other remote synced to this remote. So, merge them both.
- -
- - In direct mode, updates associated files mappings for the files that
- - were changed by the merge.
- -}
+ - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote -> (Maybe Git.Ref) -> CommandCleanup
 mergeRemote remote b = case b of
 	Nothing -> do
 		branch <- inRepo Git.Branch.currentUnsafe
-		update branch $
-			all id <$> (mapM merge $ branchlist branch)
-	Just branch -> update (Just branch) $
-		all id <$> (mapM merge =<< tomerge (branchlist b))
+		all id <$> (mapM merge $ branchlist branch)
+	Just branch -> all id <$> (mapM merge =<< tomerge (branchlist b))
   where
 	merge = mergeFrom . remoteBranch remote
 	tomerge branches = filterM (changed remote) branches
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
-
-	update Nothing a = a
-	update (Just branch) a = ifM isDirect
-		( do
-			old <- inRepo $ Git.Ref.sha branch
-			r <- a
-			new <- inRepo $ Git.Ref.sha branch
-			case (old, new) of
-				(Just oldsha, Just newsha) -> do
-					updateAssociatedFiles oldsha newsha
-				_ -> noop
-			return r
-		, a
-		)
 
 pushRemote :: Remote -> Git.Ref -> CommandStart
 pushRemote remote branch = go =<< needpush
@@ -193,13 +173,31 @@ mergeAnnex = do
 	void $ Annex.Branch.forceUpdate
 	stop
 
+{- Merges from a branch into the current branch.
+ -
+ - In direct mode, updates associated files mappings for the files that
+ - were changed by the merge. -}
 mergeFrom :: Git.Ref -> Annex Bool
-mergeFrom branch = do
-	showOutput
-	ok <- inRepo $ Git.Merge.mergeNonInteractive branch
-	if ok
-		then return ok
-		else resolveMerge
+mergeFrom branch = ifM isDirect
+	( maybe go godirect =<< inRepo Git.Branch.current
+	, go
+	)
+  where
+	go = do
+		showOutput
+		ok <- inRepo $ Git.Merge.mergeNonInteractive branch
+		if ok
+			then return ok
+			else resolveMerge
+	godirect currbranch = do
+		old <- inRepo $ Git.Ref.sha currbranch
+		r <- go
+		new <- inRepo $ Git.Ref.sha currbranch
+		case (old, new) of
+			(Just oldsha, Just newsha) -> do
+				updateAssociatedFiles oldsha newsha
+			_ -> noop
+		return r
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
