@@ -15,6 +15,7 @@
 
 module Logs.Location (
 	LogStatus(..),
+	logStatus,
 	logChange,
 	loggedLocations,
 	loggedKeys,
@@ -26,6 +27,13 @@ module Logs.Location (
 import Common.Annex
 import qualified Annex.Branch
 import Logs.Presence
+import Annex.UUID
+
+{- Log a change in the presence of a key's value in current repository. -}
+logStatus :: Key -> LogStatus -> Annex ()
+logStatus key status = do
+	u <- getUUID
+	logChange key u status
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()

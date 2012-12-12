@@ -51,7 +51,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
-import Logs.Location
+import Logs.Location hiding (logStatus)
 import Remote.List
 import qualified Git
 

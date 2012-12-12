@@ -37,6 +37,7 @@ import Config
 import Init
 import Types.Key
 import qualified Fields
+import Logs.Location
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -243,7 +244,7 @@ dropKey r key
 			whenM (Annex.Content.inAnnex key) $ do
 				Annex.Content.lockContent key $
 					Annex.Content.removeAnnex key
-				Annex.Content.logStatus key InfoMissing
+				logStatus key InfoMissing
 				Annex.Content.saveState True
 			return True
 	| Git.repoIsHttp r = error "dropping from http repo not supported"

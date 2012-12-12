@@ -52,8 +52,7 @@ orderedList = do
 	parseBackendList s = map lookupBackendName $ words s
 
 {- Generates a key for a file, trying each backend in turn until one
- - accepts it.
- -}
+ - accepts it. -}
 genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
 genKey source trybackend = do
 	bs <- orderedList
@@ -94,8 +93,7 @@ lookupFile file = do
 				return Nothing
 
 {- Looks up the backend that should be used for a file.
- - That can be configured on a per-file basis in the gitattributes file.
- -}
+ - That can be configured on a per-file basis in the gitattributes file. -}
 chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where

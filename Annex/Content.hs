@@ -10,7 +10,6 @@ module Annex.Content (
 	inAnnexSafe,
 	lockContent,
 	calcGitLink,
-	logStatus,
 	getViaTmp,
 	getViaTmpUnchecked,
 	withTmp,
@@ -33,7 +32,6 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Common.Annex
 import Logs.Location
-import Annex.UUID
 import qualified Git
 import qualified Git.Config
 import qualified Annex
@@ -131,13 +129,6 @@ calcGitLink file key = do
 	return $ relPathDirToFile (parentDir absfile) loc
 	where
 		whoops = error $ "unable to normalize " ++ file
-
-{- Updates the Logs.Location when a key's presence changes in the current
- - repository. -}
-logStatus :: Key -> LogStatus -> Annex ()
-logStatus key status = do
-	u <- getUUID
-	logChange key u status
 
 {- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 

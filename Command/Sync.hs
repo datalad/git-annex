@@ -16,6 +16,7 @@ import qualified Annex.Branch
 import qualified Annex.Queue
 import Annex.Content
 import Annex.Content.Direct
+import Annex.Direct
 import Annex.CatFile
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
@@ -29,7 +30,6 @@ import qualified Remote.Git
 import Types.Key
 import Config
 
-import qualified Data.ByteString.Lazy as L
 import Data.Hash.MD5
 
 def :: [Command]
@@ -79,14 +79,20 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
-commit = do
-	showStart "commit" ""
-	next $ next $ do
+commit = next $ next $ do
+	Annex.Branch.commit "update"
+	ifM isDirect
+		( ifM stageDirect
+			( runcommit [] , return True )
+		, runcommit [Param "-a"]
+		)
+  where
+	runcommit ps = do
+		showStart "commit" ""
 		showOutput
-		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ Git.Command.runBool "commit"
-			[Param "-a", Param "-m", Param "git-annex automatic sync"]
+		_ <- inRepo $ Git.Command.runBool "commit" $ ps ++
+			[Param "-m", Param "git-annex automatic sync"]
 		return True
 
 mergeLocal :: Git.Ref -> CommandStart
@@ -136,7 +142,7 @@ mergeRemote remote b = case b of
 	Nothing -> do
 		branch <- inRepo Git.Branch.currentUnsafe
 		all id <$> (mapM merge $ branchlist branch)
-	Just branch -> all id <$> (mapM merge =<< tomerge (branchlist b))
+	Just _ -> all id <$> (mapM merge =<< tomerge (branchlist b))
   where
 	merge = mergeFrom . remoteBranch remote
 	tomerge branches = filterM (changed remote) branches
@@ -259,9 +265,7 @@ resolveMerge' u
 		case msha of
 			Nothing -> a Nothing
 			Just sha -> do
-				key <- fileKey . takeFileName
-					. encodeW8 . L.unpack 
-					<$> catObject sha
+				key <- catKey sha
 				maybe (return False) (a . Just) key
 
 {- The filename to use when resolving a conflicted merge of a file,

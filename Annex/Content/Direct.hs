@@ -7,13 +7,18 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
-	changeAssociatedFiles,
+	removeAssociatedFile,
+	addAssociatedFile,
 	updateAssociatedFiles,
 	goodContent,
 	updateCache,
 	recordedCache,
 	compareCache,
-	removeCache
+	writeCache,
+	removeCache,
+	genCache,
+	toCache,
+	Cache
 ) where
 
 import Common.Annex
@@ -23,9 +28,9 @@ import Git.Sha
 import Annex.CatFile
 import Utility.TempFile
 import Utility.FileMode
+import Logs.Location
 
 import System.Posix.Types
-import qualified Data.ByteString.Lazy as L
 
 {- Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
@@ -42,19 +47,24 @@ associatedFilesRelative key = do
 	liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
 
 {- Changes the associated files information for a key, applying a
- - transformation to the list. -}
-changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex ()
+ - transformation to the list. Returns a copy of the new info. -}
+changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex [FilePath]
 changeAssociatedFiles key transform = do
 	mapping <- inRepo $ gitAnnexMapping key
 	files <- associatedFilesRelative key
 	let files' = transform files
 	when (files /= files') $
 		liftIO $ viaTmp writeFile mapping $ unlines files'
+	return files'
 
-removeAssociatedFile :: Key -> FilePath -> Annex ()
-removeAssociatedFile key file = changeAssociatedFiles key $ filter (/= file)
+removeAssociatedFile :: Key -> FilePath -> Annex [FilePath]
+removeAssociatedFile key file = do
+	fs <- changeAssociatedFiles key $ filter (/= file)
+	when (null fs) $
+		logStatus key InfoMissing
+	return fs
 
-addAssociatedFile :: Key -> FilePath -> Annex ()
+addAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 addAssociatedFile key file = changeAssociatedFiles key $ \files ->
 	if file `elem` files
 		then files
@@ -74,10 +84,8 @@ updateAssociatedFiles oldsha newsha = do
 	  where
 		go getsha getmode a =
 			when (getsha item /= nullSha && isSymLink (getmode item)) $ do
-				key <- getkey $ getsha item
-				maybe noop (\k -> a k $ DiffTree.file item) key
-		getkey sha = fileKey . takeFileName . encodeW8 . L.unpack
-			<$> catObject sha
+				key <- catKey (getsha item)
+				maybe noop (\k -> void $ a k $ DiffTree.file item) key
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -103,10 +111,13 @@ compareCache file old = do
 
 {- Stores a cache of attributes for a file that is associated with a key. -}
 updateCache :: Key -> FilePath -> Annex ()
-updateCache key file = do
-	withCacheFile key $ \cachefile -> do
-		createDirectoryIfMissing True (parentDir cachefile)
-		maybe noop (writeFile cachefile . showCache) =<< genCache file
+updateCache key file = maybe noop (writeCache key) =<< liftIO (genCache file)
+
+{- Writes a cache for a key. -}
+writeCache :: Key -> Cache -> Annex ()
+writeCache key cache = withCacheFile key $ \cachefile -> do
+	createDirectoryIfMissing True (parentDir cachefile)
+	writeFile cachefile $ showCache cache
 
 {- Removes a cache. -}
 removeCache :: Key -> Annex ()
@@ -115,7 +126,7 @@ removeCache key = withCacheFile key nukeFile
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
 data Cache = Cache FileID FileOffset EpochTime
-  deriving (Eq)
+  deriving (Eq, Show)
 
 showCache :: Cache -> String
 showCache (Cache inode size mtime) = unwords
