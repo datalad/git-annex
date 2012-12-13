@@ -49,6 +49,7 @@ files with git.
 * [[sync]]
 * [[encryption]]
 * [[bare_repositories]]
+* [[direct_mode]]
 * [[internals]]
 * [[scalability]]
 * [[design]]
