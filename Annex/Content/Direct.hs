@@ -126,7 +126,7 @@ removeCache key = withCacheFile key nukeFile
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
 data Cache = Cache FileID FileOffset EpochTime
-  deriving (Eq, Show)
+	deriving (Eq, Show)
 
 showCache :: Cache -> String
 showCache (Cache inode size mtime) = unwords
