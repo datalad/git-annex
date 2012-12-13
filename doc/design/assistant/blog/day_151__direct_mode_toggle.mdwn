@@ -1,0 +1,59 @@
+Built `git annex direct` and `git annex indirect` to toggle back and forth
+between direct mode. Made `git annex status` show if the repository is in
+direct mode. Now *only* merging is needed for direct mode to be basically
+usable. 
+
+I can do a little demo now. Pay attention to the "@" ls shows at the end
+of symlinks.
+
+	joey@gnu:~/tmp/bench/rdirect>ls
+	myfile@  otherfile@
+	joey@gnu:~/tmp/bench/rdirect>git annex find
+	otherfile
+	# So, two files, only one present in this repo.
+
+	joey@gnu:~/tmp/bench/rdirect>git annex direct
+	commit  
+	# On branch master
+	# Your branch is ahead of 'origin/master' by 7 commits.
+	#
+	nothing to commit (working directory clean)
+	ok
+	direct myfile ok
+	direct otherfile ok
+	direct  ok
+
+	joey@gnu:~/tmp/bench/rdirect>ls
+	myfile@  otherfile
+	# myfile is still a broken symlink because we don't have its content
+	joey@gnu:~/tmp/bench/rdirect>git annex get myfile
+	get myfile (from origin...) ok
+	(Recording state in git...)
+	joey@gnu:~/tmp/bench/rdirect>ls
+	myfile  otherfile
+
+	joey@gnu:~/tmp/bench/rdirect>echo "look mom, no symlinks" >> myfile
+	joey@gnu:~/tmp/bench/rdirect>git annex sync
+	add myfile (checksum...) ok
+	commit  
+	(Recording state in git...)
+	[master 0e8de9b] git-annex automatic sync
+	...
+	ok
+
+	joey@gnu:~/tmp/bench/rdirect>git annex indirect
+	commit  ok
+	indirect myfile ok
+	indirect otherfile ok
+	indirect  ok
+	joey@gnu:~/tmp/bench/rdirect>ls
+	myfile@  otherfile@
+
+I'd like `git annex direct` to set the repository to untrusted, but
+I didn't do it. Partly because having `git annex indirect` set it back to
+semitrusted seems possibly wrong -- the user might not trust a repo even in
+indirect mode. Or might fully trust it. The docs will encourage users to
+set direct mode repos to untrusted -- in direct mode you're operating
+without large swathes of git-annex's carefully constructed safety net.
+(When the assistant later uses direct mode, it'll untrust the repository
+automatically.)
