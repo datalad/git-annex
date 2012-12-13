@@ -173,6 +173,7 @@ linuxstandalone:
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
+	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	
 	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v -f standalone/linux/glibc-libs | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
@@ -217,6 +218,7 @@ osxapp:
 	done
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
+	install -d "$(LINUXSTANDALONE_DEST)/templates"
 
 	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
