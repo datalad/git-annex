@@ -25,5 +25,5 @@ getDiskFree path = withFilePath path $ \c_path -> do
 		( return $ Just $ toInteger free
 		, return Nothing
 		)
-	where
-		safeErrno (Errno v) = v == 0
+  where
+	safeErrno (Errno v) = v == 0

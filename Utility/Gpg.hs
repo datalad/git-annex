@@ -29,9 +29,9 @@ stdParams params = do
 		then []
 		else ["--batch", "--no-tty", "--use-agent"]
 	return $ batch ++ defaults ++ toCommand params
-	where
-		-- be quiet, even about checking the trustdb
-		defaults = ["--quiet", "--trust-model", "always"]
+  where
+	-- be quiet, even about checking the trustdb
+	defaults = ["--quiet", "--trust-model", "always"]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: [CommandParam] -> IO String
@@ -74,22 +74,22 @@ feedRead params passphrase feeder reader = do
 	params' <- stdParams $ passphrasefd ++ params
 	closeFd frompipe `after`
 		withBothHandles createProcessSuccess (proc "gpg" params') go
-	where
-		go (to, from) = do
-			void $ forkIO $ do
-				feeder to
-				hClose to
-			reader from
+  where
+	go (to, from) = do
+		void $ forkIO $ do
+			feeder to
+			hClose to
+		reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name. -}
 findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse <$> readStrict params
-	where
-		params = [Params "--with-colons --list-public-keys", Param for]
-		parse = catMaybes . map (keyIdField . split ":") . lines
-		keyIdField ("pub":_:_:_:f:_) = Just f
-		keyIdField _ = Nothing
+  where
+	params = [Params "--with-colons --list-public-keys", Param for]
+	parse = catMaybes . map (keyIdField . split ":") . lines
+	keyIdField ("pub":_:_:_:f:_) = Just f
+	keyIdField _ = Nothing
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
@@ -100,9 +100,9 @@ genRandom size = readStrict
 	, Param $ show randomquality
 	, Param $ show size
 	]
-	where
-		-- 1 is /dev/urandom; 2 is /dev/random
-		randomquality = 1 :: Int
+  where
+	-- 1 is /dev/urandom; 2 is /dev/random
+	randomquality = 1 :: Int
 
 {- A test key. This is provided pre-generated since generating a new gpg
  - key is too much work (requires too much entropy) for a test suite to
@@ -173,10 +173,10 @@ keyBlock public ls = unlines
 	, unlines ls
 	, "-----END PGP "++t++" KEY BLOCK-----"
 	]
-	where
-		t
-			| public = "PUBLIC"
-			| otherwise = "PRIVATE"
+  where
+	t
+		| public = "PUBLIC"
+		| otherwise = "PRIVATE"
 
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
@@ -184,20 +184,20 @@ testHarness :: IO a -> IO a
 testHarness a = do
 	orig <- getEnv var
 	bracket setup (cleanup orig) (const a)
-	where
-		var = "GNUPGHOME"		
+  where
+	var = "GNUPGHOME"		
 
-		setup = do
-			base <- getTemporaryDirectory
-			dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-			setEnv var dir True
-			_ <- pipeStrict [Params "--import -q"] $ unlines
-				[testSecretKey, testKey]
-			return dir
+	setup = do
+		base <- getTemporaryDirectory
+		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
+		setEnv var dir True
+		_ <- pipeStrict [Params "--import -q"] $ unlines
+			[testSecretKey, testKey]
+		return dir
 		
-		cleanup orig tmpdir = removeDirectoryRecursive tmpdir >> reset orig
-                reset (Just v) = setEnv var v True
-                reset _ = unsetEnv var
+	cleanup orig tmpdir = removeDirectoryRecursive tmpdir >> reset orig
+	reset (Just v) = setEnv var v True
+	reset _ = unsetEnv var
 
 {- Tests the test harness. -}
 testTestHarness :: IO Bool

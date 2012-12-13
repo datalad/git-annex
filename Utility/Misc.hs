@@ -33,10 +33,10 @@ readFileStrict = readFile >=> \s -> length s `seq` return s
  -}
 separate :: (a -> Bool) -> [a] -> ([a], [a])
 separate c l = unbreak $ break c l
-	where
-		unbreak r@(a, b)
-			| null b = r
-			| otherwise = (a, tail b)
+  where
+	unbreak r@(a, b)
+		| null b = r
+		| otherwise = (a, tail b)
 
 {- Breaks out the first line. -}
 firstLine :: String -> String
@@ -47,11 +47,11 @@ firstLine = takeWhile (/= '\n')
  - Segments may be empty. -}
 segment :: (a -> Bool) -> [a] -> [[a]]
 segment p l = map reverse $ go [] [] l
-	where
-		go c r [] = reverse $ c:r
-		go c r (i:is)
-			| p i = go [] (c:r) is
-			| otherwise = go (i:c) r is
+  where
+	go c r [] = reverse $ c:r
+	go c r (i:is)
+		| p i = go [] (c:r) is
+		| otherwise = go (i:c) r is
 
 prop_segment_regressionTest :: Bool
 prop_segment_regressionTest = all id
@@ -64,11 +64,11 @@ prop_segment_regressionTest = all id
 {- Includes the delimiters as segments of their own. -}
 segmentDelim :: (a -> Bool) -> [a] -> [[a]]
 segmentDelim p l = map reverse $ go [] [] l
-	where
-		go c r [] = reverse $ c:r
-		go c r (i:is)
-			| p i = go [] ([i]:c:r) is
-			| otherwise = go (i:c) r is
+  where
+	go c r [] = reverse $ c:r
+	go c r (i:is)
+		| p i = go [] ([i]:c:r) is
+		| otherwise = go (i:c) r is
 
 {- Given two orderings, returns the second if the first is EQ and returns
  - the first otherwise.
@@ -96,9 +96,9 @@ hGetSomeString h sz = do
 	fp <- mallocForeignPtrBytes sz
 	len <- withForeignPtr fp $ \buf -> hGetBufSome h buf sz
 	map (chr . fromIntegral) <$> withForeignPtr fp (peekbytes len)
-	where
-		peekbytes :: Int -> Ptr Word8 -> IO [Word8]
-		peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
+  where
+	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
+	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
 {- Reaps any zombie git processes. 
  -

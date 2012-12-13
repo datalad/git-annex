@@ -89,8 +89,8 @@ is converted to a real file when it becomes present.
 * `git annex sync` updates the key to files mappings for files changed,
   but needs much other work to handle direct mode:
   * Generate git commit, without running `git commit`, because it will
-    want to stage the full files.
-  * Update location logs for any files deleted by a commit.
+    want to stage the full files. **done**
+  * Update location logs for any files deleted by a commit. **done**
   * Generate a git merge, without running `git merge` (or possibly running
     it in a scratch repo?), because it will stumble over the direct files.
   * Drop contents of files deleted by a merge (including updating the

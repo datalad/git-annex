@@ -63,10 +63,10 @@ journalDirty = not . null <$> getJournalFiles
  -}
 journalFile :: FilePath -> Git.Repo -> FilePath
 journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
-	where
-		mangle '/' = "_"
-		mangle '_' = "__"
-		mangle c = [c]
+  where
+	mangle '/' = "_"
+	mangle '_' = "__"
+	mangle c = [c]
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
@@ -81,9 +81,9 @@ lockJournal a = do
 	createAnnexDirectory $ takeDirectory file
 	mode <- annexFileMode
 	bracketIO (lock file mode) unlock a
-	where
-		lock file mode = do
-			l <- noUmask mode $ createFile file mode
-			waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-			return l
-		unlock = closeFd
+  where
+	lock file mode = do
+		l <- noUmask mode $ createFile file mode
+		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
+		return l
+	unlock = closeFd

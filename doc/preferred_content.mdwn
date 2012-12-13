@@ -116,6 +116,8 @@ will be added later.
 
 All content is preferred.
 
+`include=*`
+
 ### small archive
 
 Only prefers content that's located in an "archive" directory, and

@@ -10,9 +10,9 @@ module Utility.Dot where -- import qualified
 {- generates a graph description from a list of lines -}
 graph :: [String] -> String
 graph s = unlines $ [header] ++ map indent s ++ [footer]
-	where
-		header = "digraph map {"
-		footer= "}"
+  where
+	header = "digraph map {"
+	footer= "}"
 
 {- a node in the graph -}
 graphNode :: String -> String -> String
@@ -21,8 +21,8 @@ graphNode nodeid desc = label desc $ quote nodeid
 {- an edge between two nodes -}
 graphEdge :: String -> String -> Maybe String -> String
 graphEdge fromid toid desc = indent $ maybe edge (`label` edge) desc
-	where
-		edge = quote fromid ++ " -> " ++ quote toid
+  where
+	edge = quote fromid ++ " -> " ++ quote toid
 
 {- adds a label to a node or edge -}
 label :: String -> String -> String
@@ -46,18 +46,18 @@ subGraph subid l color s =
 		ii setcolor ++
 		ii s ++
 		indent "}"
-	where
-		-- the "cluster_" makes dot draw a box
-		name = quote ("cluster_" ++ subid)
-		setlabel = "label=" ++ quote l
-		setfilled = "style=" ++ quote "filled"
-		setcolor = "fillcolor=" ++ quote color
-		ii x = indent (indent x) ++ "\n"
+  where
+	-- the "cluster_" makes dot draw a box
+	name = quote ("cluster_" ++ subid)
+	setlabel = "label=" ++ quote l
+	setfilled = "style=" ++ quote "filled"
+	setcolor = "fillcolor=" ++ quote color
+	ii x = indent (indent x) ++ "\n"
 
 indent ::String -> String
 indent s = '\t' : s
 
 quote :: String -> String
 quote s = "\"" ++ s' ++ "\""
-	where
-		s' = filter (/= '"') s
+  where
+	s' = filter (/= '"') s

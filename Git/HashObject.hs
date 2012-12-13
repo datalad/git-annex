@@ -29,17 +29,17 @@ hashObjectStop = CoProcess.stop
 {- Injects a file into git, returning the Sha of the object. -}
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
-	where
-		send to = do
-			fileEncoding to
-			hPutStrLn to file
-		receive from = getSha "hash-object" $ hGetLine from
+  where
+	send to = do
+		fileEncoding to
+		hPutStrLn to file
+	receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha
 hashObject objtype content repo = getSha subcmd $ do
 	s <- pipeWriteRead (map Param params) content repo
 	return s
-	where
-		subcmd = "hash-object"
-		params = [subcmd, "-t", show objtype, "-w", "--stdin"]
+  where
+	subcmd = "hash-object"
+	params = [subcmd, "-t", show objtype, "-w", "--stdin"]

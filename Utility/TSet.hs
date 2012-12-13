@@ -23,12 +23,12 @@ getTSet :: TSet a -> IO [a]
 getTSet tset = runTSet $ do
 	c <- readTChan tset
 	go [c]
-	where
-		go l = do
-			v <- tryReadTChan tset
-			case v of
-				Nothing -> return l
-				Just c -> go (c:l)
+  where
+	go l = do
+		v <- tryReadTChan tset
+		case v of
+			Nothing -> return l
+			Just c -> go (c:l)
 
 {- Puts items into a TSet. -}
 putTSet :: TSet a -> [a] -> IO ()

@@ -28,13 +28,13 @@ scheme repo = notUrl repo
  - <http://trac.haskell.org/network/ticket/40> -}
 uriRegName' :: URIAuth -> String
 uriRegName' a = fixup $ uriRegName a
-	where
-		fixup x@('[':rest)
-			| rest !! len == ']' = take len rest
-			| otherwise = x
-			where
-				len  = length rest - 1
-		fixup x = x
+  where
+	fixup x@('[':rest)
+		| rest !! len == ']' = take len rest
+		| otherwise = x
+	  where
+		len  = length rest - 1
+	fixup x = x
 
 {- Hostname of an URL repo. -}
 host :: Repo -> String
@@ -55,14 +55,14 @@ hostuser r = authpart uriUserInfo r ++ authpart uriRegName' r
 {- The full authority portion an URL repo. (ie, "user@host:port") -}
 authority :: Repo -> String
 authority = authpart assemble
-	where
-		assemble a = uriUserInfo a ++ uriRegName' a ++ uriPort a
+  where
+	assemble a = uriUserInfo a ++ uriRegName' a ++ uriPort a
 
 {- Applies a function to extract part of the uriAuthority of an URL repo. -}
 authpart :: (URIAuth -> a) -> Repo -> a
 authpart a Repo { location = Url u } = a auth
-	where
-		auth = fromMaybe (error $ "bad url " ++ show u) (uriAuthority u)
+  where
+	auth = fromMaybe (error $ "bad url " ++ show u) (uriAuthority u)
 authpart _ repo = notUrl repo
 
 notUrl :: Repo -> a

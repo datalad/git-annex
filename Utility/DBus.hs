@@ -57,10 +57,10 @@ runClient getaddr clientaction = do
 			e <- takeMVar mv
 			disconnect client
 			throw e
-	where
-		threadrunner storeerr io = loop
-			where
-				loop = catchClientError (io >> loop) storeerr
+  where
+	threadrunner storeerr io = loop
+	  where
+		loop = catchClientError (io >> loop) storeerr
 
 {- Connects to the bus, and runs the client action.
  -
@@ -73,10 +73,10 @@ persistentClient getaddr v onretry clientaction =
 	{- runClient can fail with not just ClientError, but also other
 	 - things, if dbus is not running. Let async exceptions through. -}
 	runClient getaddr clientaction `catchNonAsync` retry
-	where
-		retry e = do
-			v' <- onretry e v
-			persistentClient getaddr v' onretry clientaction
+  where
+	retry e = do
+		v' <- onretry e v
+		persistentClient getaddr v' onretry clientaction
 
 {- Catches only ClientError -}
 catchClientError :: IO () -> (ClientError -> IO ()) -> IO ()

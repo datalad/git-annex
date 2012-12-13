@@ -24,12 +24,12 @@ checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
 	h <- gitCoProcessStart params repo
 	return (h, attrs, cwd)
-	where
-		params =
-			[ Param "check-attr" 
-			, Params "-z --stdin"
-			] ++ map Param attrs ++
-			[ Param "--" ]
+  where
+	params =
+		[ Param "check-attr" 
+		, Params "-z --stdin"
+		] ++ map Param attrs ++
+		[ Param "--" ]
 
 checkAttrStop :: CheckAttrHandle -> IO ()
 checkAttrStop (h, _, _) = CoProcess.stop h
@@ -42,26 +42,26 @@ checkAttr (h, attrs, cwd) want file = do
 	case vals of
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
-	where
-		send to = do
-			fileEncoding to
-			hPutStr to $ file' ++ "\0"
-		receive from = forM attrs $ \attr -> do
-			fileEncoding from
-			l <- hGetLine from
-			return (attr, attrvalue attr l)
-		{- Before git 1.7.7, git check-attr worked best with
-		 - absolute filenames; using them worked around some bugs
-		 - with relative filenames.
-		 - 
-		 - With newer git, git check-attr chokes on some absolute
-		 - filenames, and the bugs that necessitated them were fixed,
-		 - so use relative filenames. -}
-		oldgit = Git.Version.older "1.7.7"
-		file'
-			| oldgit = absPathFrom cwd file
-			| otherwise = relPathDirToFile cwd $ absPathFrom cwd file
-		attrvalue attr l = end bits !! 0
-			where
-				bits = split sep l
-				sep = ": " ++ attr ++ ": "
+  where
+	send to = do
+		fileEncoding to
+		hPutStr to $ file' ++ "\0"
+	receive from = forM attrs $ \attr -> do
+		fileEncoding from
+		l <- hGetLine from
+		return (attr, attrvalue attr l)
+	{- Before git 1.7.7, git check-attr worked best with
+	 - absolute filenames; using them worked around some bugs
+	 - with relative filenames.
+	 - 
+	 - With newer git, git check-attr chokes on some absolute
+	 - filenames, and the bugs that necessitated them were fixed,
+	 - so use relative filenames. -}
+	oldgit = Git.Version.older "1.7.7"
+	file'
+		| oldgit = absPathFrom cwd file
+		| otherwise = relPathDirToFile cwd $ absPathFrom cwd file
+	attrvalue attr l = end bits !! 0
+	  where
+		bits = split sep l
+		sep = ": " ++ attr ++ ": "

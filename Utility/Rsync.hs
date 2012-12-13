@@ -15,11 +15,11 @@ import Data.Char
  - shell. -}
 rsyncShell :: [CommandParam] -> [CommandParam]
 rsyncShell command = [Param "-e", Param $ unwords $ map escape (toCommand command)]
-	where
-		{- rsync requires some weird, non-shell like quoting in
-                 - here. A doubled single quote inside the single quoted
-                 - string is a single quote. -}
-		escape s = "'" ++  join "''" (split "'" s) ++ "'"
+  where
+	{- rsync requires some weird, non-shell like quoting in
+	- here. A doubled single quote inside the single quoted
+	- string is a single quote. -}
+	escape s = "'" ++  join "''" (split "'" s) ++ "'"
 
 {- Runs rsync in server mode to send a file. -}
 rsyncServerSend :: FilePath -> IO Bool
@@ -60,22 +60,22 @@ rsyncProgress callback params = do
 	 - on. Reap the resulting zombie. -}
 	reapZombies
 	return r
-	where
-		p = proc "rsync" (toCommand params)
-		feedprogress prev buf h = do
-			s <- hGetSomeString h 80
-			if null s
-				then return True
-				else do
-					putStr s
-					hFlush stdout
-					let (mbytes, buf') = parseRsyncProgress (buf++s)
-					case mbytes of
-						Nothing -> feedprogress prev buf' h
-						(Just bytes) -> do
-							when (bytes /= prev) $
-								callback bytes
-							feedprogress bytes buf' h
+  where
+	p = proc "rsync" (toCommand params)
+	feedprogress prev buf h = do
+		s <- hGetSomeString h 80
+		if null s
+			then return True
+			else do
+				putStr s
+				hFlush stdout
+				let (mbytes, buf') = parseRsyncProgress (buf++s)
+				case mbytes of
+					Nothing -> feedprogress prev buf' h
+					(Just bytes) -> do
+						when (bytes /= prev) $
+							callback bytes
+						feedprogress bytes buf' h
 
 {- Checks if an rsync url involves the remote shell (ssh or rsh).
  - Use of such urls with rsync requires additional shell
@@ -84,13 +84,13 @@ rsyncUrlIsShell :: String -> Bool
 rsyncUrlIsShell s
 	| "rsync://" `isPrefixOf` s = False
 	| otherwise = go s
-	where
-		-- host::dir is rsync protocol, while host:dir is ssh/rsh
-		go [] = False
-		go (c:cs)
-			| c == '/' = False -- got to directory with no colon
-			| c == ':' = not $ ":" `isPrefixOf` cs
-			| otherwise = go cs
+  where
+	-- host::dir is rsync protocol, while host:dir is ssh/rsh
+	go [] = False
+	go (c:cs)
+		| c == '/' = False -- got to directory with no colon
+		| c == ':' = not $ ":" `isPrefixOf` cs
+		| otherwise = go cs
 
 {- Checks if a rsync url is really just a local path. -}
 rsyncUrlIsPath :: String -> Bool
@@ -113,19 +113,19 @@ rsyncUrlIsPath s
  -}
 parseRsyncProgress :: String -> (Maybe Integer, String)
 parseRsyncProgress = go [] . reverse . progresschunks
-	where
-		go remainder [] = (Nothing, remainder)
-		go remainder (x:xs) = case parsebytes (findbytesstart x) of
-			Nothing -> go (delim:x++remainder) xs
-			Just b -> (Just b, remainder)
+  where
+	go remainder [] = (Nothing, remainder)
+	go remainder (x:xs) = case parsebytes (findbytesstart x) of
+		Nothing -> go (delim:x++remainder) xs
+		Just b -> (Just b, remainder)
 
-		delim = '\r'
-		{- Find chunks that each start with delim.
-		 - The first chunk doesn't start with it
-		 - (it's empty when delim is at the start of the string). -}
-		progresschunks = drop 1 . split [delim]
-		findbytesstart s = dropWhile isSpace s
-		parsebytes s = case break isSpace s of
-			([], _) -> Nothing
-			(_, []) -> Nothing
-			(b, _) -> readish b
+	delim = '\r'
+	{- Find chunks that each start with delim.
+	 - The first chunk doesn't start with it
+	 - (it's empty when delim is at the start of the string). -}
+	progresschunks = drop 1 . split [delim]
+	findbytesstart s = dropWhile isSpace s
+	parsebytes s = case break isSpace s of
+		([], _) -> Nothing
+		(_, []) -> Nothing
+		(b, _) -> readish b

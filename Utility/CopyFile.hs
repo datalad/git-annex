@@ -17,9 +17,9 @@ copyFileExternal src dest = do
 	whenM (doesFileExist dest) $
 		removeFile dest
 	boolSystem "cp" $ params ++ [File src, File dest]
-	where
-		params = map snd $ filter fst
-			[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
-			, (SysConfig.cp_a, Param "-a")
-			, (SysConfig.cp_p && not SysConfig.cp_a, Param "-p")
-			]
+  where
+	params = map snd $ filter fst
+		[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
+		, (SysConfig.cp_a, Param "-a")
+		, (SysConfig.cp_p && not SysConfig.cp_a, Param "-p")
+		]

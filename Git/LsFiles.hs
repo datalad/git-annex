@@ -69,6 +69,12 @@ stagedDetails l repo = do
 	  where
 		(metadata, file) = separate (== '\t') s
 
+{- Returns a list of files that have unstaged changes. -}
+changedUnstaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+changedUnstaged l = pipeNullSplit params
+  where
+	params = Params "diff --name-only -z --" : map File l
+
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
 typeChangedStaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)

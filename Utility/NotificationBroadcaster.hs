@@ -45,13 +45,13 @@ newNotificationHandle :: NotificationBroadcaster -> IO NotificationHandle
 newNotificationHandle b = NotificationHandle
 	<$> pure b
 	<*> addclient
-	where
-		addclient = do
-			s <- newEmptySV
-			atomically $ do
-				l <- takeTMVar b
-				putTMVar b $ l ++ [s]
-				return $ NotificationId $ length l
+  where
+	addclient = do
+		s <- newEmptySV
+		atomically $ do
+			l <- takeTMVar b
+			putTMVar b $ l ++ [s]
+			return $ NotificationId $ length l
 
 {- Extracts the identifier from a notification handle.
  - This can be used to eg, pass the identifier through to a WebApp. -}
@@ -66,8 +66,8 @@ sendNotification :: NotificationBroadcaster -> IO ()
 sendNotification b = do
 	l <- atomically $ readTMVar b
 	mapM_ notify l
-	where
-		notify s = writeSV s ()
+  where
+	notify s = writeSV s ()
 
 {- Used by a client to block until a new notification is available since
  - the last time it tried. -}

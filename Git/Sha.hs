@@ -14,8 +14,8 @@ import Git.Types
    any trailing newline, returning the sha. -}
 getSha :: String -> IO String -> IO Sha
 getSha subcommand a = maybe bad return =<< extractSha <$> a
-	where
-		bad = error $ "failed to read sha from git " ++ subcommand
+  where
+	bad = error $ "failed to read sha from git " ++ subcommand
 
 {- Extracts the Sha from a string. There can be a trailing newline after
  - it, but nothing else. -}
@@ -24,12 +24,12 @@ extractSha s
 	| len == shaSize = val s
 	| len == shaSize + 1 && length s' == shaSize = val s'
 	| otherwise = Nothing
-	where
-		len = length s
-		s' = firstLine s
-		val v
-			| all (`elem` "1234567890ABCDEFabcdef") v = Just $ Ref v
-			| otherwise = Nothing
+  where
+	len = length s
+	s' = firstLine s
+	val v
+		| all (`elem` "1234567890ABCDEFabcdef") v = Just $ Ref v
+		| otherwise = Nothing
 
 {- Size of a git sha. -}
 shaSize :: Int

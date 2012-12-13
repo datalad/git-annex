@@ -34,10 +34,10 @@ configkey = annexConfig "uuid"
  - so use the command line tool. -}
 genUUID :: IO UUID
 genUUID = gen . lines <$> readProcess command params
-	where
-		gen [] = error $ "no output from " ++ command
-		gen (l:_) = toUUID l
-		(command:params) = words SysConfig.uuid
+  where
+	gen [] = error $ "no output from " ++ command
+	gen (l:_) = toUUID l
+	(command:params) = words SysConfig.uuid
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID
@@ -54,19 +54,19 @@ getRepoUUID r = do
 			updatecache u
 			return u
 		else return c
-	where
-		updatecache u = do
-			g <- gitRepo
-			when (g /= r) $ storeUUID cachekey u
-		cachekey = remoteConfig r "uuid"
+  where
+	updatecache u = do
+		g <- gitRepo
+		when (g /= r) $ storeUUID cachekey u
+	cachekey = remoteConfig r "uuid"
 
 removeRepoUUID :: Annex ()
 removeRepoUUID = unsetConfig configkey
 
 getUncachedUUID :: Git.Repo -> UUID
 getUncachedUUID = toUUID . Git.Config.get key ""
-	where
-		(ConfigKey key) = configkey
+  where
+	(ConfigKey key) = configkey
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()

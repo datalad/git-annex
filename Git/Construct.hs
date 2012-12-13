@@ -33,15 +33,15 @@ import Utility.UserInfo
  - directory. -}
 fromCwd :: IO Repo
 fromCwd = getCurrentDirectory >>= seekUp checkForRepo
-	where
-		norepo = error "Not in a git repository."
-		seekUp check dir = do
-			r <- check dir
-			case r of
-				Nothing -> case parentDir dir of
-					"" -> norepo
-					d -> seekUp check d
-				Just loc -> newFrom loc
+  where
+	norepo = error "Not in a git repository."
+	seekUp check dir = do
+		r <- check dir
+		case r of
+			Nothing -> case parentDir dir of
+				"" -> norepo
+				d -> seekUp check d
+			Just loc -> newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
 fromPath :: FilePath -> IO Repo
@@ -55,21 +55,21 @@ fromAbsPath dir
 		ifM (doesDirectoryExist dir') ( ret dir' , hunt )
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
-	where
-		ret = newFrom . LocalUnknown
- 		{- Git always looks for "dir.git" in preference to
-		 - to "dir", even if dir ends in a "/". -}
-		canondir = dropTrailingPathSeparator dir
-		dir' = canondir ++ ".git"
-		{- When dir == "foo/.git", git looks for "foo/.git/.git",
-		 - and failing that, uses "foo" as the repository. -}
-		hunt
-			| "/.git" `isSuffixOf` canondir =
-				ifM (doesDirectoryExist $ dir </> ".git")
-					( ret dir
-					, ret $ takeDirectory canondir
-					)
-			| otherwise = ret dir
+  where
+	ret = newFrom . LocalUnknown
+	{- Git always looks for "dir.git" in preference to
+	 - to "dir", even if dir ends in a "/". -}
+	canondir = dropTrailingPathSeparator dir
+	dir' = canondir ++ ".git"
+	{- When dir == "foo/.git", git looks for "foo/.git/.git",
+	 - and failing that, uses "foo" as the repository. -}
+	hunt
+		| "/.git" `isSuffixOf` canondir =
+			ifM (doesDirectoryExist $ dir </> ".git")
+				( ret dir
+				, ret $ takeDirectory canondir
+				)
+		| otherwise = ret dir
 
 {- Remote Repo constructor. Throws exception on invalid url.
  -
@@ -85,9 +85,9 @@ fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
 	| startswith "file://" url = fromAbsPath $ uriPath u
 	| otherwise = newFrom $ Url u
-	where
-		u = fromMaybe bad $ parseURI url
-		bad = error $ "bad url " ++ url
+  where
+	u = fromMaybe bad $ parseURI url
+	bad = error $ "bad url " ++ url
 
 {- Creates a repo that has an unknown location. -}
 fromUnknown :: IO Repo
@@ -100,21 +100,23 @@ localToUrl reference r
 	| not $ repoIsUrl reference = error "internal error; reference repo not url"
 	| repoIsUrl r = r
 	| otherwise = r { location = Url $ fromJust $ parseURI absurl }
-	where
-		absurl =
-			Url.scheme reference ++ "//" ++
-			Url.authority reference ++
-			repoPath r
+  where
+	absurl = concat
+		[ Url.scheme reference
+		, "//"
+		, Url.authority reference
+		, repoPath r
+		]
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 fromRemotes :: Repo -> IO [Repo]
 fromRemotes repo = mapM construct remotepairs
-	where
-		filterconfig f = filter f $ M.toList $ config repo
-		filterkeys f = filterconfig (\(k,_) -> f k)
-		remotepairs = filterkeys isremote
-		isremote k = startswith "remote." k && endswith ".url" k
-		construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
+  where
+	filterconfig f = filter f $ M.toList $ config repo
+	filterkeys f = filterconfig (\(k,_) -> f k)
+	remotepairs = filterkeys isremote
+	isremote k = startswith "remote." k && endswith ".url" k
+	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -126,50 +128,48 @@ remoteNamed n constructor = do
    "remote.foo.url". -}
 remoteNamedFromKey :: String -> IO Repo -> IO Repo
 remoteNamedFromKey k = remoteNamed basename
-	where
-		basename = join "." $ reverse $ drop 1 $
-				reverse $ drop 1 $ split "." k
+  where
+	basename = join "." $ reverse $ drop 1 $ reverse $ drop 1 $ split "." k
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}
 fromRemoteLocation :: String -> Repo -> IO Repo
 fromRemoteLocation s repo = gen $ calcloc s
-	where
-		gen v	
-			| scpstyle v = fromUrl $ scptourl v
-			| urlstyle v = fromUrl v
-			| otherwise = fromRemotePath v repo
-		-- insteadof config can rewrite remote location
-		calcloc l
-			| null insteadofs = l
-			| otherwise = replacement ++ drop (length bestvalue) l
-			where
-				replacement = drop (length prefix) $
-					take (length bestkey - length suffix) bestkey
-				(bestkey, bestvalue) = maximumBy longestvalue insteadofs
-				longestvalue (_, a) (_, b) = compare b a
-				insteadofs = filterconfig $ \(k, v) -> 
-					startswith prefix k &&
-					endswith suffix k &&
-					startswith v l
-				filterconfig f = filter f $
-					concatMap splitconfigs $
-						M.toList $ fullconfig repo
-				splitconfigs (k, vs) = map (\v -> (k, v)) vs
-				(prefix, suffix) = ("url." , ".insteadof")
-		urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
-		-- git remotes can be written scp style -- [user@]host:dir
-		-- but foo::bar is a git-remote-helper location instead
-		scpstyle v = ":" `isInfixOf` v 
-			&& not ("//" `isInfixOf` v)
-			&& not ("::" `isInfixOf` v)
-		scptourl v = "ssh://" ++ host ++ slash dir
-			where
-				(host, dir) = separate (== ':') v
-				slash d	| d == "" = "/~/" ++ d
-					| "/" `isPrefixOf` d = d
-					| "~" `isPrefixOf` d = '/':d
-					| otherwise = "/~/" ++ d
+  where
+	gen v	
+		| scpstyle v = fromUrl $ scptourl v
+		| urlstyle v = fromUrl v
+		| otherwise = fromRemotePath v repo
+	-- insteadof config can rewrite remote location
+	calcloc l
+		| null insteadofs = l
+		| otherwise = replacement ++ drop (length bestvalue) l
+	  where
+		replacement = drop (length prefix) $
+			take (length bestkey - length suffix) bestkey
+		(bestkey, bestvalue) = maximumBy longestvalue insteadofs
+		longestvalue (_, a) (_, b) = compare b a
+		insteadofs = filterconfig $ \(k, v) -> 
+			startswith prefix k &&
+			endswith suffix k &&
+			startswith v l
+		filterconfig f = filter f $
+			concatMap splitconfigs $ M.toList $ fullconfig repo
+		splitconfigs (k, vs) = map (\v -> (k, v)) vs
+		(prefix, suffix) = ("url." , ".insteadof")
+	urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
+	-- git remotes can be written scp style -- [user@]host:dir
+	-- but foo::bar is a git-remote-helper location instead
+	scpstyle v = ":" `isInfixOf` v 
+		&& not ("//" `isInfixOf` v)
+		&& not ("::" `isInfixOf` v)
+	scptourl v = "ssh://" ++ host ++ slash dir
+	  where
+		(host, dir) = separate (== ':') v
+		slash d	| d == "" = "/~/" ++ d
+			| "/" `isPrefixOf` d = d
+			| "~" `isPrefixOf` d = '/':d
+			| otherwise = "/~/" ++ d
 
 {- Constructs a Repo from the path specified in the git remotes of
  - another Repo. -}
@@ -191,25 +191,25 @@ repoAbsPath d = do
 
 expandTilde :: FilePath -> IO FilePath
 expandTilde = expandt True
-	where
-		expandt _ [] = return ""
-		expandt _ ('/':cs) = do
-			v <- expandt True cs
-			return ('/':v)
-		expandt True ('~':'/':cs) = do
-			h <- myHomeDir
-			return $ h </> cs
-		expandt True ('~':cs) = do
-			let (name, rest) = findname "" cs
-			u <- getUserEntryForName name
-			return $ homeDirectory u </> rest
-		expandt _ (c:cs) = do
-			v <- expandt False cs
-			return (c:v)
-		findname n [] = (n, "")
-		findname n (c:cs)
-			| c == '/' = (n, cs)
-			| otherwise = findname (n++[c]) cs
+  where
+	expandt _ [] = return ""
+	expandt _ ('/':cs) = do
+		v <- expandt True cs
+		return ('/':v)
+	expandt True ('~':'/':cs) = do
+		h <- myHomeDir
+		return $ h </> cs
+	expandt True ('~':cs) = do
+		let (name, rest) = findname "" cs
+		u <- getUserEntryForName name
+		return $ homeDirectory u </> rest
+	expandt _ (c:cs) = do
+		v <- expandt False cs
+		return (c:v)
+	findname n [] = (n, "")
+	findname n (c:cs)
+		| c == '/' = (n, cs)
+		| otherwise = findname (n++[c]) cs
 
 checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
@@ -217,28 +217,28 @@ checkForRepo dir =
 		check gitDirFile $
 			check isBareRepo $
 				return Nothing
-	where
-		check test cont = maybe cont (return . Just) =<< test
-		checkdir c = ifM c
-			( return $ Just $ LocalUnknown dir
-			, return Nothing
-			)
-		isRepo = checkdir $ gitSignature $ ".git" </> "config"
-		isBareRepo = checkdir $ gitSignature "config"
-			<&&> doesDirectoryExist (dir </> "objects")
-		gitDirFile = do
-			c <- firstLine <$>
-				catchDefaultIO "" (readFile $ dir </> ".git")
-			return $ if gitdirprefix `isPrefixOf` c
-				then Just $ Local 
-					{ gitdir = absPathFrom dir $
-						drop (length gitdirprefix) c
-					, worktree = Just dir
-					}
-				else Nothing
-			where
-				gitdirprefix = "gitdir: "
-		gitSignature file = doesFileExist $ dir </> file
+  where
+	check test cont = maybe cont (return . Just) =<< test
+	checkdir c = ifM c
+		( return $ Just $ LocalUnknown dir
+		, return Nothing
+		)
+	isRepo = checkdir $ gitSignature $ ".git" </> "config"
+	isBareRepo = checkdir $ gitSignature "config"
+		<&&> doesDirectoryExist (dir </> "objects")
+	gitDirFile = do
+		c <- firstLine <$>
+			catchDefaultIO "" (readFile $ dir </> ".git")
+		return $ if gitdirprefix `isPrefixOf` c
+			then Just $ Local 
+				{ gitdir = absPathFrom dir $
+					drop (length gitdirprefix) c
+				, worktree = Just dir
+				}
+			else Nothing
+	  where
+		gitdirprefix = "gitdir: "
+	gitSignature file = doesFileExist $ dir </> file
 
 newFrom :: RepoLocation -> IO Repo
 newFrom l = return Repo

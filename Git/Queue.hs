@@ -86,30 +86,30 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
 addCommand subcommand params files q repo =
 	updateQueue action different (length newfiles) q repo
-	where
-		key = actionKey action
-		action = CommandAction
-			{ getSubcommand = subcommand
-			, getParams = params
-			, getFiles = newfiles
-			}
-		newfiles = files ++ maybe [] getFiles (M.lookup key $ items q)
+  where
+	key = actionKey action
+	action = CommandAction
+		{ getSubcommand = subcommand
+		, getParams = params
+		, getFiles = newfiles
+		}
+	newfiles = files ++ maybe [] getFiles (M.lookup key $ items q)
 		
-		different (CommandAction { getSubcommand = s }) = s /= subcommand
-		different _ = True
+	different (CommandAction { getSubcommand = s }) = s /= subcommand
+	different _ = True
 
 {- Adds an update-index streamer to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Queue -> Repo -> IO Queue
 addUpdateIndex streamer q repo =
 	updateQueue action different 1 q repo
-	where
-		key = actionKey action
-		-- the list is built in reverse order
-		action = UpdateIndexAction $ streamer : streamers
-		streamers = maybe [] getStreamers $ M.lookup key $ items q
+  where
+	key = actionKey action
+	-- the list is built in reverse order
+	action = UpdateIndexAction $ streamer : streamers
+	streamers = maybe [] getStreamers $ M.lookup key $ items q
 
-		different (UpdateIndexAction _) = False
-		different _ = True
+	different (UpdateIndexAction _) = False
+	different _ = True
 
 {- Updates or adds an action in the queue. If the queue already contains a
  - different action, it will be flushed; this is to ensure that conflicting
@@ -118,15 +118,15 @@ updateQueue :: Action -> (Action -> Bool) -> Int -> Queue -> Repo -> IO Queue
 updateQueue !action different sizeincrease q repo
 	| null (filter different (M.elems (items q))) = return $ go q
 	| otherwise = go <$> flush q repo
-	where
-		go q' = newq
-			where		
-				!newq = q'
-					{ size = newsize
-					, items = newitems
-					}
-				!newsize = size q' + sizeincrease
-				!newitems = M.insertWith' const (actionKey action) action (items q')
+  where
+	go q' = newq
+	  where		
+		!newq = q'
+			{ size = newsize
+			, items = newitems
+			}
+		!newsize = size q' + sizeincrease
+		!newitems = M.insertWith' const (actionKey action) action (items q')
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue -> Bool
@@ -153,8 +153,8 @@ runAction repo action@(CommandAction {}) =
 		fileEncoding h
 		hPutStr h $ join "\0" $ getFiles action
 		hClose h
-	where
-		p = (proc "xargs" params) { env = gitEnv repo }
-		params = "-0":"git":baseparams
-		baseparams = toCommand $ gitCommandLine
-			(Param (getSubcommand action):getParams action) repo
+  where
+	p = (proc "xargs" params) { env = gitEnv repo }
+	params = "-0":"git":baseparams
+	baseparams = toCommand $ gitCommandLine
+		(Param (getSubcommand action):getParams action) repo

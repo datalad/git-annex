@@ -58,36 +58,36 @@ tokens = words "and or not ( )"
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op
 generate = go MAny
-	where
-		go m [] = m
-		go m ts = uncurry go $ consume m ts
+  where
+	go m [] = m
+	go m ts = uncurry go $ consume m ts
 
 {- Consumes one or more Tokens, constructs a new Matcher,
  - and returns unconsumed Tokens. -}
 consume :: Matcher op -> [Token op] -> (Matcher op, [Token op])
 consume m [] = (m, [])
 consume m (t:ts) = go t
-	where
-		go And = cont $ m `MAnd` next
-		go Or = cont $ m `MOr` next
-		go Not = cont $ m `MAnd` MNot next
-		go Open = let (n, r) = consume next rest in (m `MAnd` n, r)
-		go Close = (m, ts)
-		go (Operation o) = (m `MAnd` MOp o, ts)
+  where
+	go And = cont $ m `MAnd` next
+	go Or = cont $ m `MOr` next
+	go Not = cont $ m `MAnd` MNot next
+	go Open = let (n, r) = consume next rest in (m `MAnd` n, r)
+	go Close = (m, ts)
+	go (Operation o) = (m `MAnd` MOp o, ts)
 
-		(next, rest) = consume MAny ts
-		cont v = (v, rest)
+	(next, rest) = consume MAny ts
+	cont v = (v, rest)
 
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}
 match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
 match a m v = go m
-	where
-		go MAny = True
-		go (MAnd m1 m2) = go m1 && go m2
-		go (MOr m1 m2) =  go m1 || go m2
-		go (MNot m1) = not $ go m1
-		go (MOp o) = a o v
+  where
+	go MAny = True
+	go (MAnd m1 m2) = go m1 && go m2
+	go (MOr m1 m2) =  go m1 || go m2
+	go (MNot m1) = not $ go m1
+	go (MOp o) = a o v
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
 matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
@@ -98,12 +98,12 @@ matchM m v = matchMrun m $ \o -> o v
  - parameter. -}
 matchMrun :: forall o (m :: * -> *). Monad m => Matcher o -> (o -> m Bool) -> m Bool
 matchMrun m run = go m
-	where
-		go MAny = return True
-		go (MAnd m1 m2) = go m1 <&&> go m2
-		go (MOr m1 m2) =  go m1 <||> go m2
-		go (MNot m1) = liftM not (go m1)
-		go (MOp o) = run o
+  where
+	go MAny = return True
+	go (MAnd m1 m2) = go m1 <&&> go m2
+	go (MOr m1 m2) =  go m1 <||> go m2
+	go (MNot m1) = liftM not (go m1)
+	go (MOp o) = run o
 
 {- Checks if a matcher contains no limits. -}
 isEmpty :: Matcher a -> Bool

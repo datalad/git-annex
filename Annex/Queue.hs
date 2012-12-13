@@ -58,8 +58,8 @@ new = do
 	q <- Git.Queue.new <$> queuesize
 	store q
 	return q
-	where
-		queuesize = readish <$> getConfig (annexConfig "queuesize") ""
+  where
+	queuesize = readish <$> getConfig (annexConfig "queuesize") ""
 
 store :: Git.Queue.Queue -> Annex ()
 store q = changeState $ \s -> s { repoqueue = Just q }

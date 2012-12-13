@@ -1,0 +1,53 @@
+Yesterday I cut another release. However, getting an OSX build took until
+12:12 pm today because of a confusion about the location of lsof on OSX. The
+OSX build is now available, and I'm looking forward to hearing if it's working!
+
+----
+
+Today I've been working on making `git annex sync` commit in direct mode.
+
+For this I needed to find all new, modified, and deleted files, and I also
+need the git SHA from the index for all non-new files. There's not really
+an ideal git command to use to query this. For now I'm using
+`git ls-files --others --stage`, which works but lists more files than I
+really need to look at. It might be worth using one of the Haskell libraries
+that can directly read git's index.. but for now I'll stick with `ls-files`.
+
+It has to check all direct mode files whose content is present, which means
+one stat per file (on top of the stat that git already does), as well as one
+retrieval of the key per file (using the single `git cat-file` process that
+git-annex talks to).
+
+This is about as efficient as I can make it, except that unmodified
+annexed files whose content is not present are listed due to --stage,
+and so it has to stat those too, and currently also feeds them into `git add`.
+
+The assistant will be able to avoid all this work, except once at startup.
+
+Anyway, direct mode committing is working!
+
+For now, `git annex sync` in direct mode also adds new files. This because
+`git annex add` doesn't work yet in direct mode.
+
+It's possible for a direct mode file to be changed during a commit,
+which would be a problem since committing involves things like calculating
+the key and caching the mtime/etc, that would be screwed up. I took
+care to handle that case; it checks the mtime/etc cache before and after
+generating a key for the file, and if it detects the file has changed,
+avoids committing anything. It could retry, but if the file is a VM disk
+image or something else that's constantly modified, commit retrying forever
+would not be good.
+
+----
+
+For `git annex sync` to be usable in direct mode, it still needs
+to handle merging. It looks like I may be able to just enhance the automatic
+conflict resolution code to know about typechanged direct mode files.
+
+The other missing piece before this can really be used is that currently
+the key to file mapping is only maintained for files added locally, or
+that come in via `git annex sync`. Something needs to set up that mapping
+for files present when the repo is initally cloned. Maybe the thing
+to do is to have a `git annex directmode` command that enables/disables
+direct mode and can setup the the mapping, as well as any necessary unlocks
+and setting the trust level to untrusted.

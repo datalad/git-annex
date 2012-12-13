@@ -1,4 +1,0 @@
-git-annex 3.20121017 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix zombie cleanup reversion introduced in 3.20121009.
-   * Additional fix to support git submodules."""]]

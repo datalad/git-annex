@@ -7,7 +7,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
 # Or with an old version of the uri library, enable -DWITH_OLD_URI
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_HOST
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
@@ -160,8 +160,15 @@ linuxstandalone:
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
+	set -e; \
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(LINUXSTANDALONE_DEST)/bin/" || echo "failed to install $$bin"; \
+		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
+		if [ -z "$$p" ]; then \
+			echo "** missing $$bin" >&2; \
+			exit 1; \
+		else \
+			cp "$$p" "$(LINUXSTANDALONE_DEST)/bin/"; \
+		fi; \
 	done
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
@@ -200,7 +207,13 @@ osxapp:
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
 	for bin in $(THIRDPARTY_BINS); do \
-		cp "$$(which "$$bin")" "$(OSXAPP_BASE)" || echo "failed to install $$bin"; \
+		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
+		if [ -z "$$p" ]; then \
+			echo "** missing $$bin" >&2; \
+			exit 1; \
+		else \
+			cp "$$p" "$(OSXAPP_BASE)"; \
+		fi; \
 	done
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)

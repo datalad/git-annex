@@ -28,8 +28,8 @@ checkAttr attr file = do
 
 checkAttrHandle :: Annex Git.CheckAttrHandle
 checkAttrHandle = maybe startup return =<< Annex.getState Annex.checkattrhandle
-	where
-		startup = do
-			h <- inRepo $ Git.checkAttrStart annexAttrs
-			Annex.changeState $ \s -> s { Annex.checkattrhandle = Just h }
-			return h
+  where
+	startup = do
+		h <- inRepo $ Git.checkAttrStart annexAttrs
+		Annex.changeState $ \s -> s { Annex.checkattrhandle = Just h }
+		return h

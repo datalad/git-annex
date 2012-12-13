@@ -23,18 +23,18 @@ parentDir :: FilePath -> FilePath
 parentDir dir
 	| not $ null dirs = slash ++ join s (init dirs)
 	| otherwise = ""
-		where
-			dirs = filter (not . null) $ split s dir
-			slash = if isAbsolute dir then s else ""
-			s = [pathSeparator]
+  where
+	dirs = filter (not . null) $ split s dir
+	slash = if isAbsolute dir then s else ""
+	s = [pathSeparator]
 
 prop_parentDir_basics :: FilePath -> Bool
 prop_parentDir_basics dir
 	| null dir = True
 	| dir == "/" = parentDir dir == ""
 	| otherwise = p /= dir
-	where
-		p = parentDir dir
+  where
+	p = parentDir dir
 
 {- Checks if the first FilePath is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
@@ -42,10 +42,10 @@ prop_parentDir_basics dir
  -}
 dirContains :: FilePath -> FilePath -> Bool
 dirContains a b = a == b || a' == b' || (a'++"/") `isPrefixOf` b'
-	where
-		norm p = fromMaybe "" $ absNormPath p "."
-		a' = norm a
-		b' = norm b
+  where
+	norm p = fromMaybe "" $ absNormPath p "."
+	a' = norm a
+	b' = norm b
 
 {- Converts a filename into a normalized, absolute path.
  -
@@ -60,8 +60,8 @@ absPath file = do
  - from the specified cwd. -}
 absPathFrom :: FilePath -> FilePath -> FilePath
 absPathFrom cwd file = fromMaybe bad $ absNormPath cwd file
-	where
-		bad = error $ "unable to normalize " ++ file
+  where
+	bad = error $ "unable to normalize " ++ file
 
 {- Constructs a relative path from the CWD to a file.
  -
@@ -78,31 +78,31 @@ relPathCwdToFile f = relPathDirToFile <$> getCurrentDirectory <*> absPath f
  -}
 relPathDirToFile :: FilePath -> FilePath -> FilePath
 relPathDirToFile from to = join s $ dotdots ++ uncommon
-	where
-		s = [pathSeparator]
-		pfrom = split s from
-		pto = split s to
-		common = map fst $ takeWhile same $ zip pfrom pto
-		same (c,d) = c == d
-		uncommon = drop numcommon pto
-		dotdots = replicate (length pfrom - numcommon) ".."
-		numcommon = length common
+  where
+	s = [pathSeparator]
+	pfrom = split s from
+	pto = split s to
+	common = map fst $ takeWhile same $ zip pfrom pto
+	same (c,d) = c == d
+	uncommon = drop numcommon pto
+	dotdots = replicate (length pfrom - numcommon) ".."
+	numcommon = length common
 
 prop_relPathDirToFile_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFile_basics from to
 	| from == to = null r
 	| otherwise = not (null r)
-	where
-		r = relPathDirToFile from to 
+  where
+	r = relPathDirToFile from to 
 
 prop_relPathDirToFile_regressionTest :: Bool
 prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
-	where
-		{- Two paths have the same directory component at the same
-		 - location, but it's not really the same directory.
-		 - Code used to get this wrong. -}
-		same_dir_shortcurcuits_at_difference =
-			relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
+  where
+	{- Two paths have the same directory component at the same
+	 - location, but it's not really the same directory.
+	 - Code used to get this wrong. -}
+	same_dir_shortcurcuits_at_difference =
+		relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
 
 {- Given an original list of paths, and an expanded list derived from it,
  - generates a list of lists, where each sublist corresponds to one of the
@@ -114,8 +114,8 @@ segmentPaths :: [FilePath] -> [FilePath] -> [[FilePath]]
 segmentPaths [] new = [new]
 segmentPaths [_] new = [new] -- optimisation
 segmentPaths (l:ls) new = [found] ++ segmentPaths ls rest
-	where
-		(found, rest)=partition (l `dirContains`) new
+  where
+	(found, rest)=partition (l `dirContains`) new
 
 {- This assumes that it's cheaper to call segmentPaths on the result,
  - than it would be to run the action separately with each path. In
@@ -135,8 +135,8 @@ relHome path = do
 {- Checks if a command is available in PATH. -}
 inPath :: String -> IO Bool
 inPath command = getSearchPath >>= anyM indir
-	where
-		indir d = doesFileExist $ d </> command
+  where
+	indir d = doesFileExist $ d </> command
 
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
@@ -146,5 +146,5 @@ dotfile file
 	| f == ".." = False
 	| f == "" = False
 	| otherwise = "." `isPrefixOf` f || dotfile (takeDirectory file)
-	where
-		f = takeFileName file
+  where
+	f = takeFileName file

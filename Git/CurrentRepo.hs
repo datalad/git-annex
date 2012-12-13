@@ -39,23 +39,23 @@ get = do
 			unless (d `dirContains` cwd) $
 				changeWorkingDirectory d
 			return $ addworktree wt r
-	where
-		pathenv s = do
-			v <- getEnv s
-			case v of
-				Just d -> do
-					unsetEnv s
-					Just <$> absPath d
-				Nothing -> return Nothing
-		configure Nothing r = Git.Config.read r
-		configure (Just d) r = do
-			r' <- Git.Config.read r
-			-- Let GIT_DIR override the default gitdir.
-			absd <- absPath d
-			return $ changelocation r' $ Local
-				{ gitdir = absd
-				, worktree = worktree (location r')
-				}
-		addworktree w r = changelocation r $
-			Local { gitdir = gitdir (location r), worktree = w }
-		changelocation r l = r { location = l }
+  where
+	pathenv s = do
+		v <- getEnv s
+		case v of
+			Just d -> do
+				unsetEnv s
+				Just <$> absPath d
+			Nothing -> return Nothing
+	configure Nothing r = Git.Config.read r
+	configure (Just d) r = do
+		r' <- Git.Config.read r
+		-- Let GIT_DIR override the default gitdir.
+		absd <- absPath d
+		return $ changelocation r' $ Local
+			{ gitdir = absd
+			, worktree = worktree (location r')
+			}
+	addworktree w r = changelocation r $
+		Local { gitdir = gitdir (location r), worktree = w }
+	changelocation r l = r { location = l }

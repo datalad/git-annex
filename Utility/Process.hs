@@ -59,11 +59,11 @@ readProcessEnv cmd args environ =
 		output  <- hGetContentsStrict h
 		hClose h
 		return output
-	where
-		p = (proc cmd args)
-			{ std_out = CreatePipe
-			, env = environ
-			}
+  where
+	p = (proc cmd args)
+		{ std_out = CreatePipe
+		, env = environ
+		}
 
 {- Writes a string to a process on its stdin, 
  - returns its output, and also allows specifying the environment.
@@ -99,13 +99,13 @@ writeReadProcessEnv cmd args environ input adjusthandle = do
 
 	return output
 
-	where
-		p = (proc cmd args)
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = Inherit
-			, env = environ
-			}
+  where
+	p = (proc cmd args)
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		, env = environ
+		}
 
 {- Waits for a ProcessHandle, and throws an IOError if the process
  - did not exit successfully. -}
@@ -156,19 +156,19 @@ withHandle
 	-> (Handle -> IO a)
 	-> IO a
 withHandle h creator p a = creator p' $ a . select
-	where
-		base = p
-			{ std_in = Inherit
-			, std_out = Inherit
-			, std_err = Inherit
-			}
-		(select, p')
-			| h == StdinHandle  =
-				(stdinHandle, base { std_in = CreatePipe })
-			| h == StdoutHandle =
-				(stdoutHandle, base { std_out = CreatePipe })
-			| h == StderrHandle =
-				(stderrHandle, base { std_err = CreatePipe })
+  where
+	base = p
+		{ std_in = Inherit
+		, std_out = Inherit
+		, std_err = Inherit
+		}
+	(select, p')
+		| h == StdinHandle  =
+			(stdinHandle, base { std_in = CreatePipe })
+		| h == StdoutHandle =
+			(stdoutHandle, base { std_out = CreatePipe })
+		| h == StderrHandle =
+			(stderrHandle, base { std_err = CreatePipe })
 
 {- Like withHandle, but passes (stdin, stdout) handles to the action. -}
 withBothHandles
@@ -177,12 +177,12 @@ withBothHandles
 	-> ((Handle, Handle) -> IO a)
 	-> IO a
 withBothHandles creator p a = creator p' $ a . bothHandles
-	where
-		p' = p
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = Inherit
-			}
+  where
+	p' = p
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		}
 
 {- Forces the CreateProcessRunner to run quietly;
  - both stdout and stderr are discarded. -}
@@ -223,21 +223,21 @@ debugProcess p = do
 		[ action ++ ":"
 		, showCmd p
 		]
-	where
-		action
-			| piped (std_in p) && piped (std_out p) = "chat"
-			| piped (std_in p)                      = "feed"
-			| piped (std_out p)                     = "read"
-			| otherwise                             = "call"
-		piped Inherit = False
-		piped _ = True
+  where
+	action
+		| piped (std_in p) && piped (std_out p) = "chat"
+		| piped (std_in p)                      = "feed"
+		| piped (std_out p)                     = "read"
+		| otherwise                             = "call"
+	piped Inherit = False
+	piped _ = True
 
 {- Shows the command that a CreateProcess will run. -}
 showCmd :: CreateProcess -> String
 showCmd = go . cmdspec
-	where
-		go (ShellCommand s) = s
-		go (RawCommand c ps) = c ++ " " ++ show ps
+  where
+	go (ShellCommand s) = s
+	go (RawCommand c ps) = c ++ " " ++ show ps
 
 {- Wrappers for System.Process functions that do debug logging.
  - 

@@ -23,9 +23,9 @@ git-annex is designed for scalability. The key points are:
   improves this will improve. Scaling to hundreds of thousands of files
   is not a problem, scaling beyond that and git will start to get slow.
 
-  To some degree, git-annex works around innefficiencies in git; for
-  example it batches input sent to certian git commands that are slow
-  when run in an emormous repository.
+  To some degree, git-annex works around inefficiencies in git; for
+  example it batches input sent to certain git commands that are slow
+  when run in an enormous repository.
 
 * It can use as much, or as little bandwidth as is available. In
   particular, any interrupted file transfer can be resumed by git-annex.

@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkfHTPsiAcHEEN7Xl7WxiZmYq-vX7azxFY"
+ nickname="Vincent"
+ subject="OS/X build 2012-12-12"
+ date="2012-12-13T00:59:51Z"
+ content="""
+I installed this today from the .dmg.bz2, md5sum 1bb50b3ee5eda3cd7f4b4a70cdae1855 on OS/X 10.8.2
+
+uname -a
+Darwin foo 12.2.0 Darwin Kernel Version 12.2.0: Sat Aug 25 00:48:52 PDT 2012; root:xnu-2050.18.24~1/RELEASE_X86_64 x86_64
+
+I installed the app to the Applications folder.
+
+I had chrome and firefox running, recent versions.
+
+Double-click and it opens a new chrome window. This came up behind the existing (iconified) window. A nit, but just so you know.
+
+The configuration part of the app is shown, so far so good.
+I type in the path I want it to use (~/work/annex) and press the create button.
+It hangs forever trying to access localhost:55163
+
+    $ ps aux|grep git
+    me          85291 100.0  0.0  2460884   4160   ??  R    11:42am  12:03.72 git init --quiet /Users/me/work/annex/
+    me          85233   0.0  0.3  2687204  44064   ??  S    11:42am   0:00.44 git-annex webapp -psn_0_50204638
+    me          85226   0.0  0.0  2433432    868   ??  S    11:42am   0:00.00 /bin/sh /Applications/git-annex.app/Contents/MacOS/git-annex-webapp -psn_0_50204638
+    me          85515   0.0  0.0  2432768    620 s000  S+   11:54am   0:00.00 grep git
+
+    $ netstat -an |grep 55163
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55207        CLOSE_WAIT 
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55206        CLOSE_WAIT 
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55205        CLOSE_WAIT 
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55201        ESTABLISHED
+    tcp4       0      0  127.0.0.1.55201        127.0.0.1.55163        ESTABLISHED
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55199        CLOSE_WAIT 
+    tcp4       0      0  127.0.0.1.55163        127.0.0.1.55197        CLOSE_WAIT 
+    tcp4       0      0  127.0.0.1.55163        *.*                    LISTEN
+
+I was plugged into wired ethernet, no other interfaces up, no VPN.
+
+I have macports but no haskell packages, which ghc returns nothing.
+"""]]

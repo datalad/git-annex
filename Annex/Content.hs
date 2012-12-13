@@ -79,20 +79,20 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
 inAnnexSafe = inAnnex' (maybe False id) (Just False) go
-	where
-		go f = liftIO $ openforlock f >>= check
-		openforlock f = catchMaybeIO $
-			openFd f ReadOnly Nothing defaultFileFlags
-		check Nothing = return is_missing
-		check (Just h) = do
-			v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
-			closeFd h
-			return $ case v of
-				Just _ -> is_locked
-				Nothing -> is_unlocked
-		is_locked = Nothing
-		is_unlocked = Just True
-		is_missing = Just False
+  where
+	go f = liftIO $ openforlock f >>= check
+	openforlock f = catchMaybeIO $
+		openFd f ReadOnly Nothing defaultFileFlags
+	check Nothing = return is_missing
+	check (Just h) = do
+		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
+		closeFd h
+		return $ case v of
+			Just _ -> is_locked
+			Nothing -> is_unlocked
+	is_locked = Nothing
+	is_unlocked = Just True
+	is_missing = Just False
 
 {- Content is exclusively locked while running an action that might remove
  - it. (If the content is not present, no locking is done.) -}
@@ -100,25 +100,25 @@ lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
 	file <- inRepo $ gitAnnexLocation key
 	bracketIO (openforlock file >>= lock) unlock a
-	where
-		{- Since files are stored with the write bit disabled, have
-		 - to fiddle with permissions to open for an exclusive lock. -}
-		openforlock f = catchMaybeIO $ ifM (doesFileExist f)
-			( withModifiedFileMode f
-				(`unionFileModes` ownerWriteMode)
-				open
-			, open
-			)
-			where
-				open = openFd f ReadWrite Nothing defaultFileFlags
-		lock Nothing = return Nothing
-		lock (Just fd) = do
-			v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-			case v of
-				Left _ -> error "content is locked"
-				Right _ -> return $ Just fd
-		unlock Nothing = noop
-		unlock (Just l) = closeFd l
+  where
+	{- Since files are stored with the write bit disabled, have
+	 - to fiddle with permissions to open for an exclusive lock. -}
+	openforlock f = catchMaybeIO $ ifM (doesFileExist f)
+		( withModifiedFileMode f
+			(`unionFileModes` ownerWriteMode)
+			open
+		, open
+		)
+	  where
+		open = openFd f ReadWrite Nothing defaultFileFlags
+	lock Nothing = return Nothing
+	lock (Just fd) = do
+		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+		case v of
+			Left _ -> error "content is locked"
+			Right _ -> return $ Just fd
+	unlock Nothing = noop
+	unlock (Just l) = closeFd l
 
 {- Calculates the relative path to use to link a file to a key. -}
 calcGitLink :: FilePath -> Key -> Annex FilePath
@@ -127,8 +127,8 @@ calcGitLink file key = do
 	let absfile = fromMaybe whoops $ absNormPath cwd file
 	loc <- inRepo $ gitAnnexLocation key
 	return $ relPathDirToFile (parentDir absfile) loc
-	where
-		whoops = error $ "unable to normalize " ++ file
+  where
+	whoops = error $ "unable to normalize " ++ file
 
 {- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 
@@ -197,13 +197,13 @@ checkDiskSpace destination key alreadythere = do
 				needmorespace (need + reserve - have - alreadythere)
 			return ok
 		_ -> return True
-	where
-		dir = maybe (fromRepo gitAnnexDir) return destination
-		needmorespace n =
-			warning $ "not enough free space, need " ++ 
-				roughSize storageUnits True n ++
-				" more" ++ forcemsg
-		forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
+  where
+	dir = maybe (fromRepo gitAnnexDir) return destination
+	needmorespace n =
+		warning $ "not enough free space, need " ++ 
+			roughSize storageUnits True n ++
+			" more" ++ forcemsg
+	forcemsg = " (use --force to override this check or adjust annex.diskreserve)"
 
 {- Moves a key's content into .git/annex/objects/
  -
@@ -313,12 +313,12 @@ cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
 	file <- inRepo $ gitAnnexLocation key
 	liftIO $ removeparents file (3 :: Int)
-	where
-		removeparents _ 0 = noop
-		removeparents file n = do
-			let dir = parentDir file
-			maybe noop (const $ removeparents dir (n-1))
-				<=< catchMaybeIO $ removeDirectory dir
+  where
+	removeparents _ 0 = noop
+	removeparents file n = do
+		let dir = parentDir file
+		maybe noop (const $ removeparents dir (n-1))
+			<=< catchMaybeIO $ removeDirectory dir
 
 {- Removes a key's file from .git/annex/objects/
  -
@@ -371,19 +371,19 @@ moveBad key = do
 {- List of keys whose content exists in .git/annex/objects/ -}
 getKeysPresent :: Annex [Key]
 getKeysPresent = liftIO . traverse (2 :: Int) =<< fromRepo gitAnnexObjectDir
-	where
-		traverse depth dir = do
-			contents <- catchDefaultIO [] (dirContents dir)
-			if depth == 0
-				then continue (mapMaybe (fileKey . takeFileName) contents) []
-				else do
-					let deeper = traverse (depth - 1)
-					continue [] (map deeper contents)
-		continue keys [] = return keys
-		continue keys (a:as) = do
-			{- Force lazy traversal with unsafeInterleaveIO. -}
-			morekeys <- unsafeInterleaveIO a
-			continue (morekeys++keys) as
+  where
+	traverse depth dir = do
+		contents <- catchDefaultIO [] (dirContents dir)
+		if depth == 0
+			then continue (mapMaybe (fileKey . takeFileName) contents) []
+			else do
+				let deeper = traverse (depth - 1)
+				continue [] (map deeper contents)
+	continue keys [] = return keys
+	continue keys (a:as) = do
+		{- Force lazy traversal with unsafeInterleaveIO. -}
+		morekeys <- unsafeInterleaveIO a
+		continue (morekeys++keys) as
 
 {- Things to do to record changes to content when shutting down.
  -
@@ -396,9 +396,9 @@ saveState nocommit = doSideAction $ do
 	unless nocommit $
 		whenM alwayscommit $
 			Annex.Branch.commit "update"
-	where
-		alwayscommit = fromMaybe True . Git.Config.isTrue
-			<$> getConfig (annexConfig "alwayscommit") ""
+  where
+	alwayscommit = fromMaybe True . Git.Config.isTrue
+		<$> getConfig (annexConfig "alwayscommit") ""
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
@@ -411,41 +411,41 @@ downloadUrl urls file = do
  - This is used to speed up some rsyncs. -}
 preseedTmp :: Key -> FilePath -> Annex Bool
 preseedTmp key file = go =<< inAnnex key
-	where
-		go False = return False
-		go True = do
-			ok <- copy
-			when ok $ thawContent file
-			return ok
-		copy = ifM (liftIO $ doesFileExist file)
-				( return True
-				, do
-					s <- inRepo $ gitAnnexLocation key
-					liftIO $ copyFileExternal s file
-				)
+  where
+	go False = return False
+	go True = do
+		ok <- copy
+		when ok $ thawContent file
+		return ok
+	copy = ifM (liftIO $ doesFileExist file)
+			( return True
+			, do
+				s <- inRepo $ gitAnnexLocation key
+				liftIO $ copyFileExternal s file
+			)
 
 {- Blocks writing to an annexed file. The file is made unwritable
  - to avoid accidental edits. core.sharedRepository may change
  - who can read it. -}
 freezeContent :: FilePath -> Annex ()
 freezeContent file = liftIO . go =<< fromRepo getSharedRepository
-	where
-		go GroupShared = modifyFileMode file $
-			removeModes writeModes .
-			addModes [ownerReadMode, groupReadMode]
-		go AllShared = modifyFileMode file $
-			removeModes writeModes .
-			addModes readModes
-		go _ = preventWrite file
+  where
+	go GroupShared = modifyFileMode file $
+		removeModes writeModes .
+		addModes [ownerReadMode, groupReadMode]
+	go AllShared = modifyFileMode file $
+		removeModes writeModes .
+		addModes readModes
+	go _ = preventWrite file
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: FilePath -> Annex ()
 thawContent file = liftIO . go =<< fromRepo getSharedRepository
-	where
-		go GroupShared = groupWriteRead file
-		go AllShared = groupWriteRead file
-		go _ = allowWrite file
+  where
+	go GroupShared = groupWriteRead file
+	go AllShared = groupWriteRead file
+	go _ = allowWrite file
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
  - file accidentially being deleted. However, if core.sharedRepository
@@ -454,11 +454,11 @@ thawContent file = liftIO . go =<< fromRepo getSharedRepository
  -}
 freezeContentDir :: FilePath -> Annex ()
 freezeContentDir file = liftIO . go =<< fromRepo getSharedRepository
-	where
-		dir = parentDir file
-		go GroupShared = groupWriteRead dir
-		go AllShared = groupWriteRead dir
-		go _ = preventWrite dir
+  where
+	dir = parentDir file
+	go GroupShared = groupWriteRead dir
+	go AllShared = groupWriteRead dir
+	go _ = preventWrite dir
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
@@ -468,5 +468,5 @@ createContentDir dest = do
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
 	liftIO $ allowWrite dir
-	where
-		dir = parentDir dest
+  where
+	dir = parentDir dest

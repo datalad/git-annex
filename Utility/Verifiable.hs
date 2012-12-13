@@ -33,5 +33,5 @@ calcDigest v secret = showDigest $ hmacSha1 secret $ fromString v
 {- for quickcheck -}
 prop_verifiable_sane :: String -> String -> Bool
 prop_verifiable_sane a s = verify (mkVerifiable a secret) secret
-	where
-		secret = fromString s
+  where
+	secret = fromString s

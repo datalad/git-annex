@@ -72,9 +72,9 @@ storageUnits =
 	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committe
 	, Unit (p 0) "B" "byte"
 	]
-	where
-		p :: Integer -> Integer
-		p n = 1000^n
+  where
+	p :: Integer -> Integer
+	p n = 1000^n
 
 {- Memory units are (stupidly named) powers of 2. -}
 memoryUnits :: [Unit]
@@ -89,9 +89,9 @@ memoryUnits =
 	, Unit (p 1) "KiB" "kibibyte"
 	, Unit (p 0) "B" "byte"
 	]
-	where
-		p :: Integer -> Integer
-		p n = 2^(n*10)
+  where
+	p :: Integer -> Integer
+	p n = 2^(n*10)
 
 {- Bandwidth units are only measured in bits if you're some crazy telco. -}
 bandwidthUnits :: [Unit]
@@ -100,32 +100,32 @@ bandwidthUnits = error "stop trying to rip people off"
 {- Do you yearn for the days when men were men and megabytes were megabytes? -}
 oldSchoolUnits :: [Unit]
 oldSchoolUnits = zipWith (curry mingle) storageUnits memoryUnits
-	where
-		mingle (Unit _ a n, Unit s' _ _) = Unit s' a n
+  where
+	mingle (Unit _ a n, Unit s' _ _) = Unit s' a n
 
 {- approximate display of a particular number of bytes -}
 roughSize :: [Unit] -> Bool -> ByteSize -> String
 roughSize units abbrev i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
-	where
-		units' = reverse $ sort units -- largest first
+  where
+	units' = reverse $ sort units -- largest first
 
-		findUnit (u@(Unit s _ _):us) i'
-			| i' >= s = showUnit i' u
-			| otherwise = findUnit us i'
-		findUnit [] i' = showUnit i' (last units') -- bytes
+	findUnit (u@(Unit s _ _):us) i'
+		| i' >= s = showUnit i' u
+		| otherwise = findUnit us i'
+	findUnit [] i' = showUnit i' (last units') -- bytes
 
-		showUnit i' (Unit s a n) = let num = chop i' s in
-			show num ++ " " ++
-			(if abbrev then a else plural num n)
+	showUnit i' (Unit s a n) = let num = chop i' s in
+		show num ++ " " ++
+		(if abbrev then a else plural num n)
 
-		chop :: Integer -> Integer -> Integer
-		chop i' d = round $ (fromInteger i' :: Double) / fromInteger d
+	chop :: Integer -> Integer -> Integer
+	chop i' d = round $ (fromInteger i' :: Double) / fromInteger d
 
-		plural n u
-			| n == 1 = u
-			| otherwise = u ++ "s"
+	plural n u
+		| n == 1 = u
+		| otherwise = u ++ "s"
 
 {- displays comparison of two sizes -}
 compareSizes :: [Unit] -> Bool -> ByteSize -> ByteSize -> String
@@ -139,22 +139,22 @@ readSize :: [Unit] -> String -> Maybe ByteSize
 readSize units input
 	| null parsednum || null parsedunit = Nothing
 	| otherwise = Just $ round $ number * fromIntegral multiplier
-	where
-		(number, rest) = head parsednum
-		multiplier = head parsedunit
-		unitname = takeWhile isAlpha $ dropWhile isSpace rest
+  where
+	(number, rest) = head parsednum
+	multiplier = head parsedunit
+	unitname = takeWhile isAlpha $ dropWhile isSpace rest
 
-		parsednum = reads input :: [(Double, String)]
-		parsedunit = lookupUnit units unitname
+	parsednum = reads input :: [(Double, String)]
+	parsedunit = lookupUnit units unitname
 
-		lookupUnit _ [] = [1] -- no unit given, assume bytes
-		lookupUnit [] _ = []
-		lookupUnit (Unit s a n:us) v
-			| a ~~ v || n ~~ v = [s]
-			| plural n ~~ v || a ~~ byteabbrev v = [s]
-			| otherwise = lookupUnit us v
+	lookupUnit _ [] = [1] -- no unit given, assume bytes
+	lookupUnit [] _ = []
+	lookupUnit (Unit s a n:us) v
+		| a ~~ v || n ~~ v = [s]
+		| plural n ~~ v || a ~~ byteabbrev v = [s]
+		| otherwise = lookupUnit us v
 		
-		a ~~ b = map toLower a == map toLower b
+	a ~~ b = map toLower a == map toLower b
 		
-		plural n = n ++ "s"
-		byteabbrev a = a ++ "b"
+	plural n = n ++ "s"
+	byteabbrev a = a ++ "b"

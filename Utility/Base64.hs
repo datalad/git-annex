@@ -15,4 +15,4 @@ toB64 = encode . s2w8
 
 fromB64 :: String -> String
 fromB64 s = maybe bad w82s $ decode s
-	where bad = error "bad base64 encoded data"
+  where bad = error "bad base64 encoded data"
