@@ -11,6 +11,10 @@ who share a repository, that is stored in the [[cloud]].
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
 * Assistant.Sync.manualPull doesn't handle XMPP remotes yet.
   This is needed to handle getting back in sync after reconnection.
+* Support use of a single XMPP account with several separate git-annex repos.
+  This probably works for the simple push notification use of XMPP. But
+  XMPP pairing and the pushes over XMPP assume that anyone you're paired with
+  is intending to sync to your repository.
 
 ## design goals
 
