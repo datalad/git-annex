@@ -22,27 +22,27 @@ daemonize logfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
 	out
-	where
-		checkalreadyrunning f = maybe noop (const $ alreadyRunning) 
-			=<< checkDaemon f
-		child1 = do
-			_ <- createSession
-			_ <- forkProcess child2
-			out
-		child2 = do
-			maybe noop lockPidFile pidfile 
-			when changedirectory $
-				setCurrentDirectory "/"
-			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
-			_ <- redir nullfd stdInput
-			mapM_ (redir logfd) [stdOutput, stdError]
-			closeFd logfd
-			a
-			out
-		redir newh h = do
-			closeFd h
-			dupTo newh h
-		out = exitImmediately ExitSuccess
+  where
+	checkalreadyrunning f = maybe noop (const $ alreadyRunning) 
+		=<< checkDaemon f
+	child1 = do
+		_ <- createSession
+		_ <- forkProcess child2
+		out
+	child2 = do
+		maybe noop lockPidFile pidfile 
+		when changedirectory $
+			setCurrentDirectory "/"
+		nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+		_ <- redir nullfd stdInput
+		mapM_ (redir logfd) [stdOutput, stdError]
+		closeFd logfd
+		a
+		out
+	redir newh h = do
+		closeFd h
+		dupTo newh h
+	out = exitImmediately ExitSuccess
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
  - Writes the pid to the file, fully atomically.
@@ -62,8 +62,8 @@ lockPidFile file = do
 			_ <- fdWrite fd' =<< show <$> getProcessID
 			renameFile newfile file
 			closeFd fd
-	where
-		newfile = file ++ ".new"
+  where
+	newfile = file ++ ".new"
 
 alreadyRunning :: IO ()
 alreadyRunning = error "Daemon is already running."
@@ -82,19 +82,19 @@ checkDaemon pidfile = do
 			p <- readish <$> readFile pidfile
 			return $ check locked p
 		Nothing -> return Nothing
-	where
-		check Nothing _ = Nothing
-		check _ Nothing = Nothing
-		check (Just (pid, _)) (Just pid')
-			| pid == pid' = Just pid
-			| otherwise = error $
-				"stale pid in " ++ pidfile ++ 
-				" (got " ++ show pid' ++ 
-				"; expected " ++ show pid ++ " )"
+  where
+	check Nothing _ = Nothing
+	check _ Nothing = Nothing
+	check (Just (pid, _)) (Just pid')
+		| pid == pid' = Just pid
+		| otherwise = error $
+			"stale pid in " ++ pidfile ++ 
+			" (got " ++ show pid' ++ 
+			"; expected " ++ show pid ++ " )"
 
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
 stopDaemon pidfile = go =<< checkDaemon pidfile
-	where
-		go Nothing = noop
-		go (Just pid) = signalProcess sigTERM pid
+  where
+	go Nothing = noop
+	go (Just pid) = signalProcess sigTERM pid

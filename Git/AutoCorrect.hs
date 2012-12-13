@@ -33,11 +33,11 @@ similarityFloor = 7
 fuzzymatches :: String -> (c -> String) -> [c] -> [c]
 fuzzymatches input showchoice choices = fst $ unzip $
 	sortBy comparecost $ filter similarEnough $ zip choices costs
-        where
-                distance = restrictedDamerauLevenshteinDistance gitEditCosts input
-                costs = map (distance . showchoice) choices
-                comparecost a b = compare (snd a) (snd b)
-                similarEnough (_, cst) = cst < similarityFloor
+  where
+	distance = restrictedDamerauLevenshteinDistance gitEditCosts input
+	costs = map (distance . showchoice) choices
+	comparecost a b = compare (snd a) (snd b)
+	similarEnough (_, cst) = cst < similarityFloor
 
 {- Takes action based on git's autocorrect configuration, in preparation for
  - an autocorrected command being run. -}
@@ -49,23 +49,23 @@ prepare input showmatch matches r =
 			| n < 0 -> warn
 			| otherwise -> sleep n
 		Nothing -> list
-	where
-		list = error $ unlines $
-			[ "Unknown command '" ++ input ++ "'"
-			, ""
-			, "Did you mean one of these?"
-			] ++ map (\m -> "\t" ++ showmatch m) matches
-		warn = 
-			hPutStr stderr $ unlines
-				[ "WARNING: You called a command named '" ++
-				  input ++ "', which does not exist."
-				, "Continuing under the assumption that you meant '" ++
-				  showmatch (Prelude.head matches) ++ "'"
-				]
-		sleep n = do
-			warn
-			hPutStrLn stderr $ unwords
-				[ "in"
-				, show (fromIntegral n / 10 :: Float)
-				, "seconds automatically..."]
-			threadDelay (n * 100000) -- deciseconds to microseconds
+  where
+	list = error $ unlines $
+		[ "Unknown command '" ++ input ++ "'"
+		, ""
+		, "Did you mean one of these?"
+		] ++ map (\m -> "\t" ++ showmatch m) matches
+	warn = 
+		hPutStr stderr $ unlines
+			[ "WARNING: You called a command named '" ++
+			  input ++ "', which does not exist."
+			, "Continuing under the assumption that you meant '" ++
+			  showmatch (Prelude.head matches) ++ "'"
+			]
+	sleep n = do
+		warn
+		hPutStrLn stderr $ unwords
+			[ "in"
+			, show (fromIntegral n / 10 :: Float)
+			, "seconds automatically..."]
+		threadDelay (n * 100000) -- deciseconds to microseconds

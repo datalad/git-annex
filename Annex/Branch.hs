@@ -72,18 +72,18 @@ create = void getBranch
 {- Returns the ref of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref
 getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
-	where
-		go True = do
-			inRepo $ Git.Command.run "branch"
-				[Param $ show name, Param $ show originname]
-			fromMaybe (error $ "failed to create " ++ show name)
-				<$> branchsha
-		go False = withIndex' True $
-			inRepo $ Git.Branch.commit "branch created" fullname []
-		use sha = do
-			setIndexSha sha
-			return sha
-		branchsha = inRepo $ Git.Ref.sha fullname
+  where
+	go True = do
+		inRepo $ Git.Command.run "branch"
+			[Param $ show name, Param $ show originname]
+		fromMaybe (error $ "failed to create " ++ show name)
+			<$> branchsha
+	go False = withIndex' True $
+		inRepo $ Git.Branch.commit "branch created" fullname []
+	use sha = do
+		setIndexSha sha
+		return sha
+	branchsha = inRepo $ Git.Ref.sha fullname
 
 {- Ensures that the branch and index are up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run. -}
@@ -128,26 +128,26 @@ updateTo pairs = do
 				go branchref True [] []
 		else lockJournal $ go branchref dirty refs branches
 	return $ not $ null refs
-	where
-		isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
-		go branchref dirty refs branches = withIndex $ do
-			cleanjournal <- if dirty then stageJournal else return noop
-			let merge_desc = if null branches
-				then "update"
-				else "merging " ++
-					unwords (map Git.Ref.describe branches) ++ 
-					" into " ++ show name
-			unless (null branches) $ do
-				showSideAction merge_desc
-				mergeIndex refs
-			ff <- if dirty
-				then return False
-				else inRepo $ Git.Branch.fastForward fullname refs
-			if ff
-				then updateIndex branchref
-				else commitBranch branchref merge_desc
-					(nub $ fullname:refs)
-			liftIO cleanjournal
+  where
+	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+	go branchref dirty refs branches = withIndex $ do
+		cleanjournal <- if dirty then stageJournal else return noop
+		let merge_desc = if null branches
+			then "update"
+			else "merging " ++
+				unwords (map Git.Ref.describe branches) ++ 
+				" into " ++ show name
+		unless (null branches) $ do
+			showSideAction merge_desc
+			mergeIndex refs
+		ff <- if dirty
+			then return False
+			else inRepo $ Git.Branch.fastForward fullname refs
+		if ff
+			then updateIndex branchref
+			else commitBranch branchref merge_desc
+				(nub $ fullname:refs)
+		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or committed
  - to the branch. Due to limitatons of git cat-file, does *not* get content
@@ -168,15 +168,14 @@ getStale = get' True
 
 get' :: Bool -> FilePath -> Annex String
 get' staleok file = fromjournal =<< getJournalFile file
-	where
-		fromjournal (Just content) = return content
-		fromjournal Nothing
-			| staleok = withIndex frombranch
-			| otherwise = do
-				update
-				frombranch
-		frombranch = withIndex $
-			L.unpack <$> catFile fullname file
+  where
+	fromjournal (Just content) = return content
+	fromjournal Nothing
+		| staleok = withIndex frombranch
+		| otherwise = do
+			update
+			frombranch
+	frombranch = withIndex $ L.unpack <$> catFile fullname file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -228,27 +227,27 @@ commitBranch' branchref message parents = do
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
-	where
-		-- look for "parent ref" lines and return the refs
-		commitparents = map (Git.Ref . snd) . filter isparent .
-			map (toassoc . L.unpack) . L.lines
-		toassoc = separate (== ' ')
-		isparent (k,_) = k == "parent"
+  where
+	-- look for "parent ref" lines and return the refs
+	commitparents = map (Git.Ref . snd) . filter isparent .
+		map (toassoc . L.unpack) . L.lines
+	toassoc = separate (== ' ')
+	isparent (k,_) = k == "parent"
 		
- 		{- The race can be detected by checking the commit's
-		 - parent, which will be the newly pushed branch,
-		 - instead of the expected ref that the index was updated to. -}
-		racedetected expectedref parentrefs
-			| expectedref `elem` parentrefs = False -- good parent
-			| otherwise = True -- race!
+	{- The race can be detected by checking the commit's
+	 - parent, which will be the newly pushed branch,
+	 - instead of the expected ref that the index was updated to. -}
+	racedetected expectedref parentrefs
+		| expectedref `elem` parentrefs = False -- good parent
+		| otherwise = True -- race!
 		
-		{- To recover from the race, union merge the lost refs
-		 - into the index, and recommit on top of the bad commit. -}
-		fixrace committedref lostrefs = do
-			mergeIndex lostrefs
-			commitBranch committedref racemessage [committedref]
+	{- To recover from the race, union merge the lost refs
+	 - into the index, and recommit on top of the bad commit. -}
+	fixrace committedref lostrefs = do
+		mergeIndex lostrefs
+		commitBranch committedref racemessage [committedref]
 		
-		racemessage = message ++ " (recovery from race)"
+	racemessage = message ++ " (recovery from race)"
 
 {- Lists all files on the branch. There may be duplicates in the list. -}
 files :: Annex [FilePath]
@@ -345,9 +344,9 @@ stageJournal = withIndex $ do
 			[genstream dir h fs]
 		hashObjectStop h
 	return $ liftIO $ mapM_ removeFile $ map (dir </>) fs
-	where
-		genstream dir h fs streamer = forM_ fs $ \file -> do
-			let path = dir </> file
-			sha <- hashFile h path
-			streamer $ Git.UpdateIndex.updateIndexLine
-				sha FileBlob (asTopFilePath $ fileJournal file)
+  where
+	genstream dir h fs streamer = forM_ fs $ \file -> do
+		let path = dir </> file
+		sha <- hashFile h path
+		streamer $ Git.UpdateIndex.updateIndexLine
+			sha FileBlob (asTopFilePath $ fileJournal file)

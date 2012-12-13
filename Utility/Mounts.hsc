@@ -41,21 +41,21 @@ getMounts = do
 	_ <- c_mounts_end h
 	return mntent
 
-	where
-		getmntent h c = do
-			ptr <- c_mounts_next h
-			if (ptr == nullPtr)
-				then return $ reverse c
-				else do
-					mnt_fsname_str <- #{peek struct mntent, mnt_fsname} ptr >>= peekCString
-					mnt_dir_str <- #{peek struct mntent, mnt_dir} ptr >>= peekCString
-					mnt_type_str <- #{peek struct mntent, mnt_type} ptr >>= peekCString
-					let ent = Mntent
-						{ mnt_fsname = mnt_fsname_str
-						, mnt_dir = mnt_dir_str
-						, mnt_type = mnt_type_str
-						}
-					getmntent h (ent:c)
+  where
+	getmntent h c = do
+		ptr <- c_mounts_next h
+		if (ptr == nullPtr)
+			then return $ reverse c
+			else do
+				mnt_fsname_str <- #{peek struct mntent, mnt_fsname} ptr >>= peekCString
+				mnt_dir_str <- #{peek struct mntent, mnt_dir} ptr >>= peekCString
+				mnt_type_str <- #{peek struct mntent, mnt_type} ptr >>= peekCString
+				let ent = Mntent
+					{ mnt_fsname = mnt_fsname_str
+					, mnt_dir = mnt_dir_str
+					, mnt_type = mnt_type_str
+					}
+				getmntent h (ent:c)
 
 {- Using unsafe imports because the C functions are belived to never block.
  - Note that getmntinfo is called with MNT_NOWAIT to avoid possibly blocking;

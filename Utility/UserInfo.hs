@@ -26,7 +26,7 @@ myUserName = myVal ["USER", "LOGNAME"] userName
 
 myVal :: [String] -> (UserEntry -> String) -> IO String
 myVal envvars extract = maybe (extract <$> getpwent) return =<< check envvars
-	where
-		check [] = return Nothing
-		check (v:vs) = maybe (check vs) (return . Just) =<< getEnv v
-		getpwent = getUserEntryForID =<< getEffectiveUserID
+  where
+	check [] = return Nothing
+	check (v:vs) = maybe (check vs) (return . Just) =<< getEnv v
+	getpwent = getUserEntryForID =<< getEffectiveUserID

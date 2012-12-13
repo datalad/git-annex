@@ -23,13 +23,13 @@ inParallel a l = do
 	mvars <- mapM thread l
 	statuses <- mapM takeMVar mvars
 	return $ reduce $ partition snd $ zip l statuses
-	where
-		reduce (x,y) = (map fst x, map fst y)
-		thread v = do
-			mvar <- newEmptyMVar
-			_ <- forkIO $ do
-				r <- try (a v) :: IO (Either SomeException Bool)
-				case r of
-					Left _ -> putMVar mvar False
-					Right b -> putMVar mvar b
-			return mvar
+  where
+	reduce (x,y) = (map fst x, map fst y)
+	thread v = do
+		mvar <- newEmptyMVar
+		_ <- forkIO $ do
+			r <- try (a v) :: IO (Either SomeException Bool)
+			case r of
+				Left _ -> putMVar mvar False
+				Right b -> putMVar mvar b
+		return mvar

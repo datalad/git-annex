@@ -27,19 +27,19 @@ import qualified Build.SysConfig as SysConfig
  - port, with connection caching. -}
 sshParams :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
 sshParams (host, port) opts = go =<< sshInfo (host, port)
-	where
-		go (Nothing, params) = ret params
-		go (Just socketfile, params) = do
-			cleanstale
-			liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-			lockFile $ socket2lock socketfile
-			ret params
-		ret ps = return $ ps ++ opts ++ portParams port ++ [Param host]
-		-- If the lock pool is empty, this is the first ssh of this
-		-- run. There could be stale ssh connections hanging around
-		-- from a previous git-annex run that was interrupted.
-		cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
-			sshCleanup
+  where
+	go (Nothing, params) = ret params
+	go (Just socketfile, params) = do
+		cleanstale
+		liftIO $ createDirectoryIfMissing True $ parentDir socketfile
+		lockFile $ socket2lock socketfile
+		ret params
+	ret ps = return $ ps ++ opts ++ portParams port ++ [Param host]
+	-- If the lock pool is empty, this is the first ssh of this
+	-- run. There could be stale ssh connections hanging around
+	-- from a previous git-annex run that was interrupted.
+	cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
+		sshCleanup
 
 sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
 sshInfo (host, port) = ifM caching
@@ -55,13 +55,13 @@ sshInfo (host, port) = ifM caching
 					else return (Nothing, [])
 	, return (Nothing, [])
 	)
-	where
+  where
 #ifdef WITH_OLD_SSH
-		caching = return False
+	caching = return False
 #else
-		caching = fromMaybe SysConfig.sshconnectioncaching 
-			. Git.Config.isTrue
-			<$> getConfig (annexConfig "sshcaching") ""
+	caching = fromMaybe SysConfig.sshconnectioncaching 
+		. Git.Config.isTrue
+		<$> getConfig (annexConfig "sshcaching") ""
 #endif
 
 cacheParams :: FilePath -> [CommandParam]
@@ -81,34 +81,34 @@ sshCleanup = do
 	sockets <- filter (not . isLock) <$>
 		liftIO (catchDefaultIO [] $ dirContents dir)
 	forM_ sockets cleanup
-	where
-		cleanup socketfile = do
-			-- Drop any shared lock we have, and take an
-			-- exclusive lock, without blocking. If the lock
-			-- succeeds, nothing is using this ssh, and it can
-			-- be stopped.
-			let lockfile = socket2lock socketfile
-			unlockFile lockfile
-			mode <- annexFileMode
-			fd <- liftIO $ noUmask mode $
-				openFd lockfile ReadWrite (Just mode) defaultFileFlags
-			v <- liftIO $ tryIO $
-				setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-			case v of
-				Left _ -> noop
-				Right _ -> stopssh socketfile
-			liftIO $ closeFd fd
-		stopssh socketfile = do
-			let (host, port) = socket2hostport socketfile
-			(_, params) <- sshInfo (host, port)
-			-- "ssh -O stop" is noisy on stderr even with -q
-			void $ liftIO $ catchMaybeIO $
-				withQuietOutput createProcessSuccess $
-					proc "ssh" $ toCommand $
-						[ Params "-O stop"
-						] ++ params ++ [Param host]
-			-- Cannot remove the lock file; other processes may
-			-- be waiting on our exclusive lock to use it.
+  where
+	cleanup socketfile = do
+		-- Drop any shared lock we have, and take an
+		-- exclusive lock, without blocking. If the lock
+		-- succeeds, nothing is using this ssh, and it can
+		-- be stopped.
+		let lockfile = socket2lock socketfile
+		unlockFile lockfile
+		mode <- annexFileMode
+		fd <- liftIO $ noUmask mode $
+			openFd lockfile ReadWrite (Just mode) defaultFileFlags
+		v <- liftIO $ tryIO $
+			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+		case v of
+			Left _ -> noop
+			Right _ -> stopssh socketfile
+		liftIO $ closeFd fd
+	stopssh socketfile = do
+		let (host, port) = socket2hostport socketfile
+		(_, params) <- sshInfo (host, port)
+		-- "ssh -O stop" is noisy on stderr even with -q
+		void $ liftIO $ catchMaybeIO $
+			withQuietOutput createProcessSuccess $
+				proc "ssh" $ toCommand $
+					[ Params "-O stop"
+					] ++ params ++ [Param host]
+		-- Cannot remove the lock file; other processes may
+		-- be waiting on our exclusive lock to use it.
 
 hostport2socket :: String -> Maybe Integer -> FilePath
 hostport2socket host Nothing = host
@@ -118,8 +118,8 @@ socket2hostport :: FilePath -> (String, Maybe Integer)
 socket2hostport socket
 	| null p = (h, Nothing)
 	| otherwise = (h, readish p)
-	where
-		(h, p) = separate (== '!') $ takeFileName socket
+  where
+	(h, p) = separate (== '!') $ takeFileName socket
 
 socket2lock :: FilePath -> FilePath
 socket2lock socket = socket ++ lockExt

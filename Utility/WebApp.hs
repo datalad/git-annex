@@ -43,11 +43,11 @@ localhost = "localhost"
  - Note: The url *will* be visible to an attacker. -}
 runBrowser :: String -> (Maybe [(String, String)]) -> IO Bool
 runBrowser url env = boolSystemEnv cmd [Param url] env
-	where
+  where
 #ifdef darwin_HOST_OS
-		cmd = "open"
+	cmd = "open"
 #else
-		cmd = "xdg-open"
+	cmd = "xdg-open"
 #endif
 
 {- Binds to a socket on localhost, and runs a webapp on it.
@@ -75,25 +75,25 @@ localSocket = do
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr
 		_ -> error "unable to bind to a local socket"
-	where
-		hints = defaultHints
-			{ addrFlags = [AI_ADDRCONFIG]
-			, addrSocketType = Stream
-			}
-		{- Repeated attempts because bind sometimes fails for an
-		 - unknown reason on OSX. -} 
-		go addr = go' 100 addr
-		go' :: Int -> AddrInfo -> IO Socket
-		go' 0 _ = error "unable to bind to local socket"
-		go' n addr = do
-			r <- tryIO $ bracketOnError (open addr) sClose (use addr)
-			either (const $ go' (pred n) addr) return r
-		open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
-		use addr sock = do
-			setSocketOption sock ReuseAddr 1
-			bindSocket sock (addrAddress addr)
-			listen sock maxListenQueue
-			return sock
+  where
+	hints = defaultHints
+		{ addrFlags = [AI_ADDRCONFIG]
+		, addrSocketType = Stream
+		}
+	{- Repeated attempts because bind sometimes fails for an
+	 - unknown reason on OSX. -} 
+	go addr = go' 100 addr
+	go' :: Int -> AddrInfo -> IO Socket
+	go' 0 _ = error "unable to bind to local socket"
+	go' n addr = do
+		r <- tryIO $ bracketOnError (open addr) sClose (use addr)
+		either (const $ go' (pred n) addr) return r
+	open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
+	use addr sock = do
+		setSocketOption sock ReuseAddr 1
+		bindSocket sock (addrAddress addr)
+		listen sock maxListenQueue
+		return sock
 
 {- Checks if debugging is actually enabled. -}
 debugEnabled :: IO Bool
@@ -121,8 +121,8 @@ logRequest req = do
 		--, frombs $ lookupRequestField "referer" req
 		, frombs $ lookupRequestField "user-agent" req
 		]
-	where
-		frombs v = toString $ L.fromChunks [v]
+  where
+	frombs v = toString $ L.fromChunks [v]
 
 lookupRequestField :: CI.CI B.ByteString -> Wai.Request -> B.ByteString
 lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
@@ -179,12 +179,12 @@ insertAuthToken :: forall y. (y -> T.Text)
 	-> Builder
 insertAuthToken extractToken predicate webapp root pathbits params =
 	fromText root `mappend` encodePath pathbits' encodedparams
-	where
-		pathbits' = if null pathbits then [T.empty] else pathbits
-		encodedparams = map (TE.encodeUtf8 *** go) params'
-		go "" = Nothing
-		go x = Just $ TE.encodeUtf8 x
-		authparam = (T.pack "auth", extractToken webapp)
-		params'
-			| predicate pathbits = authparam:params
-			| otherwise = params
+  where
+	pathbits' = if null pathbits then [T.empty] else pathbits
+	encodedparams = map (TE.encodeUtf8 *** go) params'
+	go "" = Nothing
+	go x = Just $ TE.encodeUtf8 x
+	authparam = (T.pack "auth", extractToken webapp)
+	params'
+		| predicate pathbits = authparam:params
+		| otherwise = params

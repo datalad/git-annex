@@ -48,18 +48,18 @@ reRead r = read' $ r
  -}
 read' :: Repo -> IO Repo
 read' repo = go repo
-	where
-		go Repo { location = Local { gitdir = d } } = git_config d
-		go Repo { location = LocalUnknown d } = git_config d
-		go _ = assertLocal repo $ error "internal"
-		git_config d = withHandle StdoutHandle createProcessSuccess p $
-			hRead repo
-			where
-				params = ["config", "--null", "--list"]
-				p = (proc "git" params)
-					{ cwd = Just d
-					, env = gitEnv repo
-					}
+  where
+	go Repo { location = Local { gitdir = d } } = git_config d
+	go Repo { location = LocalUnknown d } = git_config d
+	go _ = assertLocal repo $ error "internal"
+	git_config d = withHandle StdoutHandle createProcessSuccess p $
+		hRead repo
+	  where
+		params = ["config", "--null", "--list"]
+		p = (proc "git" params)
+			{ cwd = Just d
+			, env = gitEnv repo
+			}
 
 {- Gets the global git config, returning a dummy Repo containing it. -}
 global :: IO (Maybe Repo)
@@ -73,9 +73,9 @@ global = do
 			return $ Just repo'
 		, return Nothing
 		)
-	where
-		params = ["config", "--null", "--list", "--global"]
-		p = (proc "git" params)
+  where
+	params = ["config", "--null", "--list", "--global"]
+	p = (proc "git" params)
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
@@ -133,10 +133,10 @@ parse s
 	| all ('=' `elem`) (take 1 ls) = sep '=' ls
 	-- --null --list output separates keys from values with newlines
 	| otherwise = sep '\n' $ split "\0" s
-	where
-		ls = lines s
-		sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .
-			map (separate (== c))
+  where
+	ls = lines s
+	sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .
+		map (separate (== c))
 
 {- Checks if a string from git config is a true value. -}
 isTrue :: String -> Maybe Bool
@@ -144,8 +144,8 @@ isTrue s
 	| s' == "true" = Just True
 	| s' == "false" = Just False
 	| otherwise = Nothing
-	where
-		s' = map toLower s
+  where
+	s' = map toLower s
 
 isBare :: Repo -> Bool
 isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r

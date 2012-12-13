@@ -32,11 +32,11 @@ instance IsString TenseText where
 
 renderTense :: Tense -> TenseText -> Text
 renderTense tense (TenseText chunks) = T.concat $ map render chunks
-	where
-		render (Tensed present past)
-			| tense == Present = present
-			| otherwise = past
-		render (UnTensed s) = s
+  where
+	render (Tensed present past)
+		| tense == Present = present
+		| otherwise = past
+	render (UnTensed s) = s
 
 {- Builds up a TenseText, separating chunks with spaces.
  -
@@ -45,13 +45,13 @@ renderTense tense (TenseText chunks) = T.concat $ map render chunks
  -}
 tenseWords :: [TenseChunk] -> TenseText
 tenseWords = TenseText . go []
-	where
-		go c [] = reverse c
-		go c (w:[]) = reverse (w:c)
-		go c ((UnTensed w):ws) = go (UnTensed (addspace w) : c) ws
-		go c ((Tensed w1 w2):ws) =
-			go (Tensed (addspace w1) (addspace w2) : c) ws
-		addspace w = T.append w " "
+  where
+	go c [] = reverse c
+	go c (w:[]) = reverse (w:c)
+	go c ((UnTensed w):ws) = go (UnTensed (addspace w) : c) ws
+	go c ((Tensed w1 w2):ws) =
+		go (Tensed (addspace w1) (addspace w2) : c) ws
+	addspace w = T.append w " "
 
 unTensed :: Text -> TenseText
 unTensed t = TenseText [UnTensed t]

@@ -21,7 +21,7 @@ override index = do
 	res <- getEnv var
 	setEnv var index True
 	return $ reset res
-	where
-		var = "GIT_INDEX_FILE"
-		reset (Just v) = setEnv var v True
-		reset _ = unsetEnv var
+  where
+	var = "GIT_INDEX_FILE"
+	reset (Just v) = setEnv var v True
+	reset _ = unsetEnv var

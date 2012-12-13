@@ -48,9 +48,9 @@ at_symlink_nofollow = #const AT_SYMLINK_NOFOLLOW
 instance Storable TimeSpec where
 	-- use the larger alignment of the two types in the struct
 	alignment _ = max sec_alignment nsec_alignment
-		where
-			sec_alignment = alignment (undefined::CTime)
-			nsec_alignment = alignment (undefined::CLong)
+	  where
+		sec_alignment = alignment (undefined::CTime)
+		nsec_alignment = alignment (undefined::CLong)
 	sizeOf _ = #{size struct timespec}
 	peek ptr = do
 		sec <- #{peek struct timespec, tv_sec} ptr
@@ -70,10 +70,10 @@ touchBoth file atime mtime follow =
 		pokeArray ptr [atime, mtime]
 		r <- c_utimensat at_fdcwd f ptr flags
 		when (r /= 0) $ throwErrno "touchBoth"
-	where
-		flags = if follow
-			then 0
-			else at_symlink_nofollow 
+  where
+	flags
+       		| follow = 0
+		| otherwise = at_symlink_nofollow 
 
 #else
 #if 0
@@ -108,10 +108,10 @@ touchBoth file atime mtime follow =
 		r <- syscall f ptr
 		when (r /= 0) $
 			throwErrno "touchBoth"
-	where
-		syscall = if follow
-			then c_lutimes
-			else c_utimes
+  where
+	syscall
+       		| follow = c_lutimes
+		| otherwise = c_utimes
 
 #else
 #warning "utimensat and lutimes not available; building without symlink timestamp preservation support"

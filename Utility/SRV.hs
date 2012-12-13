@@ -74,11 +74,11 @@ lookupSRV (SRV srv) = do
 	r <- withResolver seed $ flip DNS.lookupSRV $ B8.fromString srv
 	print r
 	return $ maybe [] (orderHosts . map tohosts) r
-	where
-		tohosts (priority, weight, port, hostname) =
-			( (priority, weight)
-			, (B8.toString hostname, PortNumber $ fromIntegral port)
-			)
+  where
+	tohosts (priority, weight, port, hostname) =
+		( (priority, weight)
+		, (B8.toString hostname, PortNumber $ fromIntegral port)
+		)
 #else
 lookupSRV = lookupSRVHost
 #endif
@@ -93,21 +93,21 @@ lookupSRVHost (SRV srv) = catchDefaultIO [] $
 
 parseSrvHost :: String -> [HostPort]
 parseSrvHost = orderHosts . catMaybes . map parse . lines
-	where
-		parse l = case words l of
-			[_, _, _, _, spriority, sweight, sport, hostname] -> do
-				let v = 
-					( readish sport :: Maybe Int
-					, readish spriority :: Maybe Int
-					, readish sweight :: Maybe Int
+  where
+	parse l = case words l of
+		[_, _, _, _, spriority, sweight, sport, hostname] -> do
+			let v = 
+				( readish sport :: Maybe Int
+				, readish spriority :: Maybe Int
+				, readish sweight :: Maybe Int
+				)
+			case v of
+				(Just port, Just priority, Just weight) -> Just
+					( (priority, weight)
+					, (hostname, PortNumber $ fromIntegral port)
 					)
-				case v of
-					(Just port, Just priority, Just weight) -> Just
-						( (priority, weight)
-						, (hostname, PortNumber $ fromIntegral port)
-						)
-					_ -> Nothing
-			_ -> Nothing
+				_ -> Nothing
+		_ -> Nothing
 
 orderHosts :: [(PriorityWeight, HostPort)] -> [HostPort]
 orderHosts = map snd . sortBy (compare `on` fst)

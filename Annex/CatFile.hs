@@ -37,8 +37,8 @@ catObjectDetails ref = do
 
 catFileHandle :: Annex Git.CatFile.CatFileHandle
 catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
-	where
-		startup = do
-			h <- inRepo Git.CatFile.catFileStart
-			Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
-			return h
+  where
+	startup = do
+		h <- inRepo Git.CatFile.catFileStart
+		Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
+		return h

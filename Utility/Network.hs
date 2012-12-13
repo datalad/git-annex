@@ -17,6 +17,5 @@ import Control.Applicative
  - use uname -n when available. -}
 getHostname :: IO (Maybe String)
 getHostname = catchMaybeIO uname_node
-	where
-		uname_node = takeWhile (/= '\n') <$>
-			readProcess "uname" ["-n"]	
+  where
+	uname_node = takeWhile (/= '\n') <$> readProcess "uname" ["-n"]

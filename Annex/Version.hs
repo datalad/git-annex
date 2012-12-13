@@ -26,9 +26,9 @@ versionField = annexConfig "version"
 
 getVersion :: Annex (Maybe Version)
 getVersion = handle <$> getConfig versionField ""
-	where
-		handle [] = Nothing
-		handle v = Just v
+  where
+	handle [] = Nothing
+	handle v = Just v
 
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion
@@ -41,6 +41,6 @@ checkVersion v
 	| v `elem` supportedVersions = noop
 	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
 	| otherwise = err "Upgrade git-annex."
-	where
-		err msg = error $ "Repository version " ++ v ++
-			" is not supported. " ++ msg
+  where
+	err msg = error $ "Repository version " ++ v ++
+		" is not supported. " ++ msg

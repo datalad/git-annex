@@ -17,11 +17,11 @@ import qualified Utility.CoProcess as CoProcess
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
 gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ params
-	where
-		setdir = Param $ "--git-dir=" ++ gitdir l
-		settree = case worktree l of
-			Nothing -> []
-			Just t -> [Param $ "--work-tree=" ++ t]
+  where
+	setdir = Param $ "--git-dir=" ++ gitdir l
+	settree = case worktree l of
+		Nothing -> []
+		Just t -> [Param $ "--work-tree=" ++ t]
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
@@ -49,8 +49,8 @@ pipeReadLazy params repo = assertLocal repo $ do
 	fileEncoding h
 	c <- hGetContents h
 	return (c, checkSuccessProcess pid)
-	where
-		p  = gitCreateProcess params repo
+  where
+	p  = gitCreateProcess params repo
 
 {- Runs a git subcommand, and returns its output, strictly.
  -
@@ -63,8 +63,8 @@ pipeReadStrict params repo = assertLocal repo $
 		output <- hGetContentsStrict h
 		hClose h
 		return output
-	where
-		p  = gitCreateProcess params repo
+  where
+	p  = gitCreateProcess params repo
 
 {- Runs a git subcommand, feeding it input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
@@ -85,8 +85,8 @@ pipeNullSplit :: [CommandParam] -> Repo -> IO ([String], IO Bool)
 pipeNullSplit params repo = do
 	(s, cleanup) <- pipeReadLazy params repo
 	return (filter (not . null) $ split sep s, cleanup)
-	where
-		sep = "\0"
+  where
+	sep = "\0"
 
 
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]

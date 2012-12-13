@@ -23,9 +23,9 @@ rotateLog logfile num
 	| otherwise = whenM (doesFileExist currfile) $ do
 		rotateLog logfile (num + 1)
 		renameFile currfile nextfile
-	where
-		currfile = filename num
-		nextfile = filename (num + 1)
-		filename n
-			| n == 0 = logfile
-			| otherwise = logfile ++ "." ++ show n
+  where
+	currfile = filename num
+	nextfile = filename (num + 1)
+	filename n
+		| n == 0 = logfile
+		| otherwise = logfile ++ "." ++ show n

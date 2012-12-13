@@ -36,8 +36,8 @@ query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
 query opts =
 	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $ \h -> do
 		parse <$> hGetContentsStrict h
-	where
-		p = proc "lsof" ("-F0can" : opts)
+  where
+	p = proc "lsof" ("-F0can" : opts)
 
 {- Parsing null-delimited output like:
  -
@@ -51,38 +51,36 @@ query opts =
  -}
 parse :: String -> [(FilePath, LsofOpenMode, ProcessInfo)]
 parse s = bundle $ go [] $ lines s
-	where
-		bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
+  where
+	bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
 
-		go c [] = c
-		go c ((t:r):ls)
-			| t == 'p' =
-				let (fs, ls') = parsefiles [] ls
-				in go ((fs, parseprocess r):c) ls'
-			| otherwise = parsefail
-		go _ _ = parsefail
+	go c [] = c
+	go c ((t:r):ls)
+		| t == 'p' =
+			let (fs, ls') = parsefiles [] ls
+			in go ((fs, parseprocess r):c) ls'
+		| otherwise = parsefail
+	go _ _ = parsefail
 
-		parseprocess l =
-			case splitnull l of
-				[pid, 'c':cmdline, ""] ->
-					case readish pid of
-						(Just n) -> ProcessInfo n cmdline
-						Nothing -> parsefail
-				_ -> parsefail
+	parseprocess l = case splitnull l of
+		[pid, 'c':cmdline, ""] ->
+			case readish pid of
+				(Just n) -> ProcessInfo n cmdline
+				Nothing -> parsefail
+		_ -> parsefail
 
-		parsefiles c [] = (c, [])
-		parsefiles c (l:ls) = 
-			case splitnull l of
-				['a':mode, 'n':file, ""] ->
-					parsefiles ((file, parsemode mode):c) ls
-				(('p':_):_) -> (c, l:ls)
-				_ -> parsefail
+	parsefiles c [] = (c, [])
+	parsefiles c (l:ls) = case splitnull l of
+		['a':mode, 'n':file, ""] ->
+			parsefiles ((file, parsemode mode):c) ls
+		(('p':_):_) -> (c, l:ls)
+		_ -> parsefail
 
-		parsemode ('r':_) = OpenReadOnly
-		parsemode ('w':_) = OpenWriteOnly
-		parsemode ('u':_) = OpenReadWrite
-		parsemode _ = OpenUnknown
+	parsemode ('r':_) = OpenReadOnly
+	parsemode ('w':_) = OpenWriteOnly
+	parsemode ('u':_) = OpenReadWrite
+	parsemode _ = OpenUnknown
 
-		splitnull = split "\0"
+	splitnull = split "\0"
 
-		parsefail = error $ "failed to parse lsof output: " ++ show s
+	parsefail = error $ "failed to parse lsof output: " ++ show s

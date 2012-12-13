@@ -26,13 +26,13 @@ normalize :: String -> Integer
 normalize = sum . mult 1 . reverse .
 		extend precision . take precision .
 		map readi . split "."
-	where
-		extend n l = l ++ replicate (n - length l) 0
-		mult _ [] = []
-		mult n (x:xs) = (n*x) : mult (n*10^width) xs
-		readi :: String -> Integer
-		readi s = case reads s of
-			((x,_):_) -> x
-			_ -> 0
-		precision = 10 -- number of segments of the version to compare
-		width = length "yyyymmddhhmmss" -- maximum width of a segment
+  where
+	extend n l = l ++ replicate (n - length l) 0
+	mult _ [] = []
+	mult n (x:xs) = (n*x) : mult (n*10^width) xs
+	readi :: String -> Integer
+	readi s = case reads s of
+		((x,_):_) -> x
+		_ -> 0
+	precision = 10 -- number of segments of the version to compare
+	width = length "yyyymmddhhmmss" -- maximum width of a segment

@@ -31,12 +31,12 @@ inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 notInRepo include_ignored l repo = pipeNullSplit params repo
-	where
-		params = [Params "ls-files --others"] ++ exclude ++
-			[Params "-z --"] ++ map File l
-		exclude
-			| include_ignored = []
-			| otherwise = [Param "--exclude-standard"]
+  where
+	params = [Params "ls-files --others"] ++ exclude ++
+		[Params "-z --"] ++ map File l
+	exclude
+		| include_ignored = []
+		| otherwise = [Param "--exclude-standard"]
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
@@ -49,15 +49,15 @@ stagedNotDeleted = staged' [Param "--diff-filter=ACMRT"]
 
 staged' :: [CommandParam] -> [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
-	where
-		prefix = [Params "diff --cached --name-only -z"]
-		suffix = Param "--" : map File l
+  where
+	prefix = [Params "diff --cached --name-only -z"]
+	suffix = Param "--" : map File l
 
 {- Returns a list of files that have unstaged changes. -}
 changedUnstaged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 changedUnstaged l = pipeNullSplit params
-	where
-		params = Params "diff --name-only -z --" : map File l
+  where
+	params = Params "diff --name-only -z --" : map File l
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
@@ -77,9 +77,9 @@ typeChanged' ps l repo = do
 	let top = repoPath repo
 	cwd <- getCurrentDirectory
 	return (map (\f -> relPathDirToFile cwd $ top </> f) fs, cleanup)
-	where
-		prefix = [Params "diff --name-only --diff-filter=T -z"]
-		suffix = Param "--" : map File l
+  where
+	prefix = [Params "diff --name-only --diff-filter=T -z"]
+	suffix = Param "--" : map File l
 
 {- A item in conflict has two possible values.
  - Either can be Nothing, when that side deleted the file. -}
@@ -108,8 +108,8 @@ unmerged :: [FilePath] -> Repo -> IO ([Unmerged], IO Bool)
 unmerged l repo = do
 	(fs, cleanup) <- pipeNullSplit params repo
 	return (reduceUnmerged [] $ catMaybes $ map parseUnmerged fs, cleanup)
-	where
-		params = Params "ls-files --unmerged -z --" : map File l
+  where
+	params = Params "ls-files --unmerged -z --" : map File l
 
 data InternalUnmerged = InternalUnmerged
 	{ isus :: Bool
@@ -131,28 +131,28 @@ parseUnmerged s
 			return $ InternalUnmerged (stage == 2) file
 				(Just blobtype) (Just sha)
 		_ -> Nothing
-	where
-		(metadata, file) = separate (== '\t') s
+  where
+	(metadata, file) = separate (== '\t') s
 
 reduceUnmerged :: [Unmerged] -> [InternalUnmerged] -> [Unmerged]
 reduceUnmerged c [] = c
 reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
-	where
-		(rest, sibi) = findsib i is
-		(blobtypeA, blobtypeB, shaA, shaB)
-			| isus i    = (iblobtype i, iblobtype sibi, isha i, isha sibi)
-			| otherwise = (iblobtype sibi, iblobtype i, isha sibi, isha i)
-		new = Unmerged
-			{ unmergedFile = ifile i
-			, unmergedBlobType = Conflicting blobtypeA blobtypeB
-			, unmergedSha = Conflicting shaA shaB
-			}
-		findsib templatei [] = ([], deleted templatei)
-		findsib templatei (l:ls)
-			| ifile l == ifile templatei = (ls, l)
-			| otherwise = (l:ls, deleted templatei)
-		deleted templatei = templatei
-			{ isus = not (isus templatei)
-			, iblobtype = Nothing
-			, isha = Nothing
-			}
+  where
+	(rest, sibi) = findsib i is
+	(blobtypeA, blobtypeB, shaA, shaB)
+		| isus i    = (iblobtype i, iblobtype sibi, isha i, isha sibi)
+		| otherwise = (iblobtype sibi, iblobtype i, isha sibi, isha i)
+	new = Unmerged
+		{ unmergedFile = ifile i
+		, unmergedBlobType = Conflicting blobtypeA blobtypeB
+		, unmergedSha = Conflicting shaA shaB
+		}
+	findsib templatei [] = ([], deleted templatei)
+	findsib templatei (l:ls)
+		| ifile l == ifile templatei = (ls, l)
+		| otherwise = (l:ls, deleted templatei)
+	deleted templatei = templatei
+		{ isus = not (isus templatei)
+		, iblobtype = Nothing
+		, isha = Nothing
+		}

@@ -47,11 +47,11 @@ parseLsTree l = TreeItem
 	, sha = s
 	, file = Git.Filename.decode f
 	}
-	where
-		-- l = <mode> SP <type> SP <sha> TAB <file>
-		-- All fields are fixed, so we can pull them out of
-		-- specific positions in the line.
-		(m, past_m) = splitAt 7 l
-		(t, past_t) = splitAt 4 past_m
-		(s, past_s) = splitAt 40 $ Prelude.tail past_t
-		f = Prelude.tail past_s
+  where
+	-- l = <mode> SP <type> SP <sha> TAB <file>
+	-- All fields are fixed, so we can pull them out of
+	-- specific positions in the line.
+	(m, past_m) = splitAt 7 l
+	(t, past_t) = splitAt 4 past_m
+	(s, past_s) = splitAt 40 $ Prelude.tail past_t
+	f = Prelude.tail past_s

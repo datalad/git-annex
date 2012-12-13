@@ -37,10 +37,10 @@ removeModes ms m = m `intersectFileModes` complement (combineModes ms)
 {- Runs an action after changing a file's mode, then restores the old mode. -}
 withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
 withModifiedFileMode file convert a = bracket setup cleanup go
-	where
-		setup = modifyFileMode' file convert
-		cleanup oldmode = modifyFileMode file (const oldmode)
-		go _ = a
+  where
+	setup = modifyFileMode' file convert
+	cleanup oldmode = modifyFileMode file (const oldmode)
+	go _ = a
 
 writeModes :: [FileMode]
 writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
@@ -83,10 +83,10 @@ noUmask :: FileMode -> IO a -> IO a
 noUmask mode a
 	| mode == stdFileMode = a
 	| otherwise = bracket setup cleanup go
-	where
-		setup = setFileCreationMask nullFileMode
-		cleanup = setFileCreationMask
-		go _ = a
+  where
+	setup = setFileCreationMask nullFileMode
+	cleanup = setFileCreationMask
+	go _ = a
 
 combineModes :: [FileMode] -> FileMode
 combineModes [] = undefined

@@ -51,8 +51,8 @@ toString(NumericV f) = show f
 toString (ListV l)
 	| null l = ""
 	| otherwise = (intercalate ";" $ map (escapesemi . toString) l) ++ ";"
-	where
-		escapesemi = join "\\;" . split ";"
+  where
+	escapesemi = join "\\;" . split ";"
 
 genDesktopEntry :: String -> String -> Bool -> FilePath -> [String] -> DesktopEntry
 genDesktopEntry name comment terminal program categories =
@@ -64,13 +64,13 @@ genDesktopEntry name comment terminal program categories =
 	, item "Exec" StringV program
 	, item "Categories" ListV (map StringV categories)
 	]
-	where
-		item x c y = (x, c y)
+  where
+	item x c y = (x, c y)
 
 buildDesktopMenuFile :: DesktopEntry -> String
 buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
-	where
-		keyvalue (k, v) = k ++ "=" ++ toString v
+  where
+	keyvalue (k, v) = k ++ "=" ++ toString v
 
 writeDesktopMenuFile :: DesktopEntry -> String -> IO ()
 writeDesktopMenuFile d file = do
@@ -115,11 +115,10 @@ userConfigDir = xdgEnvHome "CONFIG_HOME" ".config"
  - to ~/Desktop. -}
 userDesktopDir :: IO FilePath
 userDesktopDir = maybe fallback return =<< (parse <$> xdg_user_dir)
-	where
-		parse = maybe Nothing (headMaybe . lines)
-		xdg_user_dir = catchMaybeIO $
-			readProcess "xdg-user-dir" ["DESKTOP"]
-		fallback = xdgEnvHome "DESKTOP_DIR" "Desktop"
+  where
+	parse = maybe Nothing (headMaybe . lines)
+	xdg_user_dir = catchMaybeIO $ readProcess "xdg-user-dir" ["DESKTOP"]
+	fallback = xdgEnvHome "DESKTOP_DIR" "Desktop"
 
 xdgEnvHome :: String -> String -> IO String
 xdgEnvHome envbase homedef = do

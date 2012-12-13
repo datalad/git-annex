@@ -21,15 +21,15 @@ start :: JSON a => [(String, a)] -> String
 start l
 	| last s == endchar = init s
 	| otherwise = bad s
-	where
-		s = encodeStrict $ toJSObject l
+  where
+	s = encodeStrict $ toJSObject l
 
 add :: JSON a => [(String, a)] -> String
 add l
 	| head s == startchar = ',' : drop 1 s
 	| otherwise = bad s
-	where
-		s = start l
+  where
+	s = start l
 
 end :: String
 end = [endchar, '\n']

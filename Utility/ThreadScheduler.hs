@@ -26,8 +26,8 @@ runEvery n a = forever $ do
 
 threadDelaySeconds :: Seconds -> IO ()
 threadDelaySeconds (Seconds n) = unboundDelay (fromIntegral n * oneSecond)
-	where
-		oneSecond = 1000000 -- microseconds
+  where
+	oneSecond = 1000000 -- microseconds
 
 {- Like threadDelay, but not bounded by an Int.
  -
@@ -52,6 +52,6 @@ waitForTermination = do
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal lock
 	takeMVar lock
-	where
-		check sig lock = void $
-			installHandler sig (CatchOnce $ putMVar lock ()) Nothing
+  where
+	check sig lock = void $
+		installHandler sig (CatchOnce $ putMVar lock ()) Nothing

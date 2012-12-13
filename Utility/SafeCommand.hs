@@ -25,13 +25,13 @@ data CommandParam = Params String | Param String | File FilePath
  - a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
 toCommand = (>>= unwrap)
-	where
-		unwrap (Param s) = [s]
-		unwrap (Params s) = filter (not . null) (split " " s)
-		-- Files that start with a dash are modified to avoid
-		-- the command interpreting them as options.
-		unwrap (File s@('-':_)) = ["./" ++ s]
-		unwrap (File s) = [s]
+  where
+	unwrap (Param s) = [s]
+	unwrap (Params s) = filter (not . null) (split " " s)
+	-- Files that start with a dash are modified to avoid
+	-- the command interpreting them as options.
+	unwrap (File s@('-':_)) = ["./" ++ s]
+	unwrap (File s) = [s]
 
 {- Run a system command, and returns True or False
  - if it succeeded or failed.
@@ -41,9 +41,9 @@ boolSystem command params = boolSystemEnv command params Nothing
 
 boolSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 boolSystemEnv command params environ = dispatch <$> safeSystemEnv command params environ
-	where
-		dispatch ExitSuccess = True
-		dispatch _ = False
+  where
+	dispatch ExitSuccess = True
+	dispatch _ = False
 
 {- Runs a system command, returning the exit status. -}
 safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
@@ -59,26 +59,26 @@ safeSystemEnv command params environ = do
  - the shell. -}
 shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
-	where
-		-- replace ' with '"'"'
-		escaped = join "'\"'\"'" $ split "'" f
+  where
+	-- replace ' with '"'"'
+	escaped = join "'\"'\"'" $ split "'" f
 
 {- Unescapes a set of shellEscaped words or filenames. -}
 shellUnEscape :: String -> [String]
 shellUnEscape [] = []
 shellUnEscape s = word : shellUnEscape rest
-	where
-		(word, rest) = findword "" s
-		findword w [] = (w, "")
-		findword w (c:cs)
-			| c == ' ' = (w, cs)
-			| c == '\'' = inquote c w cs
-			| c == '"' = inquote c w cs
-			| otherwise = findword (w++[c]) cs
-		inquote _ w [] = (w, "")
-		inquote q w (c:cs)
-			| c == q = findword w cs
-			| otherwise = inquote q (w++[c]) cs
+  where
+	(word, rest) = findword "" s
+	findword w [] = (w, "")
+	findword w (c:cs)
+		| c == ' ' = (w, cs)
+		| c == '\'' = inquote c w cs
+		| c == '"' = inquote c w cs
+		| otherwise = findword (w++[c]) cs
+	inquote _ w [] = (w, "")
+	inquote q w (c:cs)
+		| c == q = findword w cs
+		| otherwise = inquote q (w++[c]) cs
 
 {- For quickcheck. -}
 prop_idempotent_shellEscape :: String -> Bool

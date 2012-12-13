@@ -28,11 +28,11 @@ showPercentage :: Int -> Percentage -> String
 showPercentage precision (Percentage p)
 	| precision == 0 || remainder == 0 = go $ show int
 	| otherwise = go $ show int ++ "." ++ strip0s (show remainder)
-	where
-		go v = v ++ "%"
-		int :: Integer
-		(int, frac) = properFraction (fromRational p)
-		remainder = floor (frac * multiplier) :: Integer
-		strip0s = reverse . dropWhile (== '0') . reverse
-		multiplier :: Float
-		multiplier = 10 ** (fromIntegral precision)
+  where
+	go v = v ++ "%"
+	int :: Integer
+	(int, frac) = properFraction (fromRational p)
+	remainder = floor (frac * multiplier) :: Integer
+	strip0s = reverse . dropWhile (== '0') . reverse
+	multiplier :: Float
+	multiplier = 10 ** (fromIntegral precision)

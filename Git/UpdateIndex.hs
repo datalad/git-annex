@@ -38,12 +38,12 @@ streamUpdateIndex repo as = pipeWrite params repo $ \h -> do
 	fileEncoding h
 	forM_ as (stream h)
 	hClose h
-	where
-		params = map Param ["update-index", "-z", "--index-info"]
-		stream h a = a (streamer h)
-		streamer h s = do
-			hPutStr h s
-			hPutStr h "\0"
+  where
+	params = map Param ["update-index", "-z", "--index-info"]
+	stream h a = a (streamer h)
+	streamer h s = do
+		hPutStr h s
+		hPutStr h "\0"
 
 {- A streamer that adds the current tree for a ref. Useful for eg, copying
  - and modifying branches. -}
@@ -52,8 +52,8 @@ lsTree (Ref x) repo streamer = do
 	(s, cleanup) <- pipeNullSplit params repo
 	mapM_ streamer s
 	void $ cleanup
-	where
-		params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
+  where
+	params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}

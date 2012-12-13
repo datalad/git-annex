@@ -17,21 +17,21 @@ import Annex.Perms
 {- Create a specified lock file, and takes a shared lock. -}
 lockFile :: FilePath -> Annex ()
 lockFile file = go =<< fromPool file
-	where
-		go (Just _) = noop -- already locked
-		go Nothing = do
-			mode <- annexFileMode
-			fd <- liftIO $ noUmask mode $
-				openFd file ReadOnly (Just mode) defaultFileFlags
-			liftIO $ waitToSetLock fd (ReadLock, AbsoluteSeek, 0, 0)
-			changePool $ M.insert file fd
+  where
+	go (Just _) = noop -- already locked
+	go Nothing = do
+		mode <- annexFileMode
+		fd <- liftIO $ noUmask mode $
+			openFd file ReadOnly (Just mode) defaultFileFlags
+		liftIO $ waitToSetLock fd (ReadLock, AbsoluteSeek, 0, 0)
+		changePool $ M.insert file fd
 
 unlockFile :: FilePath -> Annex ()
 unlockFile file = maybe noop go =<< fromPool file
-	where
-		go fd = do
-			liftIO $ closeFd fd
-			changePool $ M.delete file
+  where
+	go fd = do
+		liftIO $ closeFd fd
+		changePool $ M.delete file
 
 getPool :: Annex (M.Map FilePath Fd)
 getPool = getState lockpool

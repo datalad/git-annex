@@ -62,11 +62,11 @@ doMerge ch differ repo streamer = do
 	(diff, cleanup) <- pipeNullSplit (map Param differ) repo
 	go diff
 	void $ cleanup
-	where
-		go [] = noop
-		go (info:file:rest) = mergeFile info file ch repo >>=
-			maybe (go rest) (\l -> streamer l >> go rest)
-		go (_:[]) = error $ "parse error " ++ show differ
+  where
+	go [] = noop
+	go (info:file:rest) = mergeFile info file ch repo >>=
+		maybe (go rest) (\l -> streamer l >> go rest)
+	go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
@@ -78,16 +78,16 @@ mergeFile info file h repo = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	shas -> use
 		=<< either return (\s -> hashObject BlobObject (unlines s) repo)
 		=<< calcMerge . zip shas <$> mapM getcontents shas
-	where
-		[_colonmode, _bmode, asha, bsha, _status] = words info
-		use sha = return $ Just $
-			updateIndexLine sha FileBlob $ asTopFilePath file
-		-- We don't know how the file is encoded, but need to
-		-- split it into lines to union merge. Using the
-		-- FileSystemEncoding for this is a hack, but ensures there
-		-- are no decoding errors. Note that this works because
-		-- hashObject sets fileEncoding on its write handle.
-		getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
+  where
+	[_colonmode, _bmode, asha, bsha, _status] = words info
+	use sha = return $ Just $
+		updateIndexLine sha FileBlob $ asTopFilePath file
+	-- We don't know how the file is encoded, but need to
+	-- split it into lines to union merge. Using the
+	-- FileSystemEncoding for this is a hack, but ensures there
+	-- are no decoding errors. Note that this works because
+	-- hashObject sets fileEncoding on its write handle.
+	getcontents s = lines . encodeW8 . L.unpack <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -
@@ -98,7 +98,7 @@ calcMerge :: [(Ref, [String])] -> Either Ref [String]
 calcMerge shacontents
 	| null reuseable = Right $ new
 	| otherwise = Left $ fst $ Prelude.head reuseable
-	where
-		reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
-		new = sorteduniq $ concat $ map snd shacontents
-		sorteduniq = S.toList . S.fromList
+  where
+	reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
+	new = sorteduniq $ concat $ map snd shacontents
+	sorteduniq = S.toList . S.fromList
