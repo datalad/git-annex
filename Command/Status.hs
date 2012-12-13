@@ -69,6 +69,7 @@ fast_stats :: [Stat]
 fast_stats = 
 	[ supported_backends
 	, supported_remote_types
+	, repository_mode
 	, remote_list Trusted
 	, remote_list SemiTrusted
 	, remote_list UnTrusted
@@ -126,6 +127,11 @@ supported_backends = stat "supported backends" $ json unwords $
 supported_remote_types :: Stat
 supported_remote_types = stat "supported remote types" $ json unwords $
 	return $ map R.typename Remote.remoteTypes
+
+repository_mode :: Stat
+repository_mode = stat "repository mode" $ json id $ lift $
+	ifM isDirect 
+		( return "direct", return "indirect" )
 
 remote_list :: TrustLevel -> Stat
 remote_list level = stat n $ nojson $ lift $ do
