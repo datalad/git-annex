@@ -33,7 +33,7 @@ changeFailedPushMap a = do
 	v <- getAssistant failedPushMap
 	liftIO $ atomically $ store v . a . fromMaybe M.empty =<< tryTakeTMVar v
   where
- 	{- tryTakeTMVar empties the TMVar; refill it only if
+	{- tryTakeTMVar empties the TMVar; refill it only if
 	 - the modified map is not itself empty -}
 	store v m
 		| m == M.empty = noop

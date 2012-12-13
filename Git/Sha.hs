@@ -11,7 +11,7 @@ import Common
 import Git.Types
 
 {- Runs an action that causes a git subcommand to emit a Sha, and strips
-   any trailing newline, returning the sha. -}
+ - any trailing newline, returning the sha. -}
 getSha :: String -> IO String -> IO Sha
 getSha subcommand a = maybe bad return =<< extractSha <$> a
   where

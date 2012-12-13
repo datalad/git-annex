@@ -55,7 +55,7 @@ xmppClient urlrenderer d = do
 	inAssistant = liftIO . liftAssistant
 
 	{- When the client exits, it's restarted;
- 	 - if it keeps failing, back off to wait 5 minutes before
+	 - if it keeps failing, back off to wait 5 minutes before
 	 - trying it again. -}
 	retry client starttime = do
 		e <- client

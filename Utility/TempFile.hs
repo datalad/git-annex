@@ -22,7 +22,7 @@ import System.FilePath
 viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
 viaTmp a file content = do
 	pid <- getProcessID
-        let tmpfile = file ++ ".tmp" ++ show pid
+	let tmpfile = file ++ ".tmp" ++ show pid
 	createDirectoryIfMissing True (parentDir file)
 	a tmpfile content
 	renameFile tmpfile file

@@ -16,7 +16,7 @@ import System.Posix.Env (setEnv, unsetEnv, getEnv)
 import Common
 
 newtype KeyIds = KeyIds [String]
-        deriving (Ord, Eq)
+	deriving (Ord, Eq)
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do

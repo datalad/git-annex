@@ -93,7 +93,7 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 	let ks' = nub $ sort ks -- gpg complains about duplicate recipient keyids
 	encipher <- Gpg.pipeStrict ([ Params "--encrypt" ] ++ recipients ks') c
 	return $ EncryptedCipher encipher (KeyIds ks')
- where
+  where
 	recipients l = force_recipients :
 		concatMap (\k -> [Param "--recipient", Param k]) l
 	-- Force gpg to only encrypt to the specified

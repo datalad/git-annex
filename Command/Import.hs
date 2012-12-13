@@ -33,7 +33,7 @@ perform srcfile destfile = do
 		unlessM (Annex.getState Annex.force) $
 			error $ "not overwriting existing " ++ destfile ++
 				" (use --force to override)"
- 
+
 	liftIO $ createDirectoryIfMissing True (parentDir destfile)
 	liftIO $ moveFile srcfile destfile
 	Command.Add.perform destfile

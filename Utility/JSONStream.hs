@@ -14,9 +14,9 @@ module Utility.JSONStream (
 import Text.JSON
 
 {- Text.JSON does not support building up a larger JSON document piece by
-   piece as a stream. To support streaming, a hack. The JSObject is converted
-   to a string with its final "}" is left off, allowing it to be added to
-   later. -}
+ - piece as a stream. To support streaming, a hack. The JSObject is converted
+ - to a string with its final "}" is left off, allowing it to be added to
+ - later. -}
 start :: JSON a => [(String, a)] -> String
 start l
 	| last s == endchar = init s

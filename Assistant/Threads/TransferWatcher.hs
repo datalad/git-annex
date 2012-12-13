@@ -47,7 +47,7 @@ type Handler = FilePath -> Assistant ()
  -}
 runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file _filestatus =
-        either (liftIO . print) (const noop) =<< tryIO <~> handler file
+	either (liftIO . print) (const noop) =<< tryIO <~> handler file
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
@@ -97,8 +97,8 @@ onDel file = case parseTransferFile file of
 		finished <- asIO2 finishedTransfer
 		void $ liftIO $ forkIO $ do
 			{- XXX race workaround delay. The location
- 			 - log needs to be updated before finishedTransfer
- 			 - runs. -}
+			 - log needs to be updated before finishedTransfer
+			 - runs. -}
 			threadDelay 10000000 -- 10 seconds
 			finished t minfo
 

@@ -206,7 +206,7 @@ fixLink key file = do
 	return True
 
 {- Checks that the location log reflects the current status of the key,
-   in this repository only. -}
+ - in this repository only. -}
 verifyLocationLog :: Key -> String -> Annex Bool
 verifyLocationLog key desc = do
 	present <- inAnnex key

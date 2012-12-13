@@ -22,9 +22,9 @@ data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
  -    a list of start stage actions. -}
 type CommandSeek = [String] -> Annex [CommandStart]
 {- c. The start stage is run before anything is printed about the
-  -   command, is passed some input, and can early abort it
-  -   if the input does not make sense. It should run quickly and
-  -   should not modify Annex state. -}
+ -    command, is passed some input, and can early abort it
+ -    if the input does not make sense. It should run quickly and
+ -    should not modify Annex state. -}
 type CommandStart = Annex (Maybe CommandPerform)
 {- d. The perform stage is run after a message is printed about the command
  -    being run, and it should be where the bulk of the work happens. -}

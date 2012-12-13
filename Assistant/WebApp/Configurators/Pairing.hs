@@ -233,8 +233,8 @@ promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
-        case result of
-                FormSuccess v -> do
+	case result of
+		FormSuccess v -> do
 			let rawsecret = fromMaybe "" $ secretText v
 			let secret = toSecret rawsecret
 			case msg of
@@ -247,7 +247,7 @@ promptSecret msg cont = pairPage $ do
 						then cont rawsecret secret
 						else showform form enctype $ Just
 							"That's not the right secret phrase."
-                _ -> showform form enctype Nothing
+		_ -> showform form enctype Nothing
   where
 	showform form enctype mproblem = do
 		let start = isNothing msg

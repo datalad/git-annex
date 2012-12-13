@@ -46,7 +46,7 @@ instance Yesod WebApp where
 	isAuthorized _ _ = checkAuthToken secretToken
 
 	{- Add the auth token to every url generated, except static subsite
-         - urls (which can show up in Permission Denied pages). -}
+	 - urls (which can show up in Permission Denied pages). -}
 	joinPath = insertAuthToken secretToken excludeStatic
 	  where
 		excludeStatic [] = True
@@ -90,45 +90,45 @@ data RepoListNotificationId = RepoListNotificationId NotificationId RepoSelector
 	deriving (Read, Show, Eq)
 
 instance PathPiece SshData where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece NotificationId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece AlertId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece Transfer where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece PairMsg where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece SecretReminder where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece UUID where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece BuddyKey where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece PairKey where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece RepoListNotificationId where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
 
 instance PathPiece RepoSelector where
-    toPathPiece = pack . show
-    fromPathPiece = readish . unpack
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack

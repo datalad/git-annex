@@ -71,7 +71,7 @@ type AlertMap = M.Map AlertId Alert
 
 {- Higher AlertId indicates a more recent alert. -}
 newtype AlertId = AlertId Integer
-        deriving (Read, Show, Eq, Ord)
+	deriving (Read, Show, Eq, Ord)
 
 firstAlertId :: AlertId
 firstAlertId = AlertId 0
@@ -247,7 +247,7 @@ syncAlert rs = baseActivityAlert
 		[Tensed "Syncing" "Synced", "with", showRemotes rs]
 	, alertData = []
 	, alertPriority = Low
-        }
+	}
 
 scanAlert :: [Remote] -> Alert
 scanAlert rs = baseActivityAlert
