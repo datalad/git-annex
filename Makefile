@@ -218,7 +218,7 @@ osxapp:
 	done
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
-	install -d "$(LINUXSTANDALONE_DEST)/templates"
+	install -d "$(OSXAPP_BASE)/templates"
 
 	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
