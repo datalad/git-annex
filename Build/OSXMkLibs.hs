@@ -62,11 +62,12 @@ otool appbase libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
 	process [] files libmap
   where
-	unprocessed s = not ("@executable_path" `isInfixOf` s)
+	want s = not ("@executable_path" `isInfixOf` s)
+		&& not (".framework" `isInfixOf` s)
 	process c [] m = return (nub $ concat c, m)
 	process c (file:rest) m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
-		libs <- filter unprocessed . parseOtool
+		libs <- filter want . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		m' <- install_name_tool file libs m
 		process (libs:c) rest m'
