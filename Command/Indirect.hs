@@ -35,6 +35,7 @@ perform = do
 		showOutput
 		void $ inRepo $ Git.Command.runBool "commit"
 			[Param "-m", Param "commit before switching to indirect mode"]
+	showEndOk
 
 	-- Note that we set indirect mode early, so that we can use
 	-- moveAnnex in indirect mode.
@@ -77,4 +78,7 @@ perform = do
 		liftIO . nukeFile =<< inRepo (gitAnnexMapping k)
 
 cleanup :: CommandCleanup
-cleanup = return True
+cleanup = do
+	showStart "indirect" ""
+	showEndOk
+	return True

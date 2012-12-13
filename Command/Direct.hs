@@ -33,6 +33,8 @@ perform = do
 	showOutput
 	_ <- inRepo $ Git.Command.runBool "commit"
 		[Param "-a", Param "-m", Param "commit before switching to direct mode"]
+	showEndOk
+
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	forM_ l go
@@ -63,5 +65,6 @@ perform = do
 
 cleanup :: CommandCleanup
 cleanup = do
+	showStart "direct" ""
 	setDirect True
 	return True
