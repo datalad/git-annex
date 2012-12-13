@@ -61,6 +61,7 @@ is converted to a real file when it becomes present.
   can map to multiple files. And that when a file is deleted or moved, the
   mapping needs to be updated.
 * May need a reverse mapping, from files in the tree to keys? TBD
+  (Currently, getting by looking up symlinks using `git cat-file`)
 * The existing watch code detects when a file gets closed, and in this
   mode, it could be a new file, or a modified file, or an unchanged file.
   For a modified file, can compare mtime, size, etc, to see if it needs
