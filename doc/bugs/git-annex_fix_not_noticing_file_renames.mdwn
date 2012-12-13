@@ -31,3 +31,6 @@ Please provide any additional information below.
 
     git annex assistant is not noticing file renames either.
 
+> git-annex commands (other than `git annex add`) only operate on files
+> checked into git, which `directory/file1` is not, since you did not use
+> `git mv`. Once you `git add` the file, it'll work. [[done]] --[[Joey]]
