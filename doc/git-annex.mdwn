@@ -263,6 +263,21 @@ subdirectories).
   settings, and when it exits, stores any changes made back to the git-annex
   branch.
 
+* direct
+
+  Switches a repository to use direct mode, where rather than symlinks to
+  files, the files are directly present in the repository. Note that many git
+  and git-annex commands will not work in direct mode; you're mostly
+  limited to using "git annex sync" and "git annex get".
+
+  As part of the switch to direct mode, any changed files will be committed.
+
+* indirect
+
+  Switches a repository back from direct mode to the default, indirect mode.
+  
+  As part of the switch from direct mode, any changed files will be committed.
+
 # REPOSITORY MAINTENANCE COMMANDS
 
 * fsck [path ...]

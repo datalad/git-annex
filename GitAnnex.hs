@@ -62,6 +62,8 @@ import qualified Command.Sync
 import qualified Command.AddUrl
 import qualified Command.Import
 import qualified Command.Map
+import qualified Command.Direct
+import qualified Command.Indirect
 import qualified Command.Upgrade
 import qualified Command.Version
 import qualified Command.Help
@@ -118,6 +120,8 @@ cmds = concat
 	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def
+	, Command.Direct.def
+	, Command.Indirect.def
 	, Command.Upgrade.def
 	, Command.Version.def
 	, Command.Help.def

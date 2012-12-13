@@ -26,6 +26,8 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	freezeContentDir,
+	createContentDir,
+	replaceFile,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)

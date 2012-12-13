@@ -8,15 +8,28 @@ including modifying them. The disadvantage is that most regular git
 commands cannot safely be used, and only a subset of git-annex commands
 can be used.
 
-## make a direct mode repository
+## enabling (and disabling) direct mode
 
-To make a repository using direct mode, either make a fresh clone of an
-existing repository, or start a new repository. Then configure direct mode:
-`git config annex.direct true`
+Any repository can be converted to use direct mode at any time, and if you
+decide not to use it, you can convert back to indirect mode just as easily.
+Also, you can have one clone of a repository using direct mode, and another
+using indirect mode; direct mode interoperates.
 
-You're strongly encouraged to tell git-annex that direct mode repositories
-cannot be trusted to retain the content of a file (because it can be
-deleted or modified at any time). To do so: `git annex untrust .`
+To start using direct mode:
+
+	git annex direct
+
+To stop using direct mode:
+
+	git annex indirect
+
+With direct mode, you're operating without large swathes of git-annex's
+carefully constructed safety net. So you're strongly encouraged to tell
+git-annex that your direct mode repository cannot be trusted to retain
+the content of a file (because any file can be deleted or modified at
+any time). To do so:
+
+	git annex untrust .
 
 ## use a direct mode repository
 
@@ -59,5 +72,4 @@ had of something, it'll be lost.
 
 This is one reason it's wise to make git-annex untrust your direct mode
 repositories. Still, you can lose data using these sort of git commands, so
-use extreme caution. With direct mode, you're operating without large
-swathes of git-annex's carefully constructed safety net.
+use extreme caution. 

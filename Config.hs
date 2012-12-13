@@ -121,6 +121,9 @@ isDirect :: Annex Bool
 isDirect = fromMaybe False . Git.Config.isTrue <$>
 	getConfig (annexConfig "direct") ""
 
+setDirect :: Bool -> Annex ()
+setDirect b = setConfig (annexConfig "direct") (if b then "true" else "false")
+
 {- Gets annex.httpheaders or annex.httpheaders-command setting,
  - splitting it into lines. -}
 getHttpHeaders :: Annex [String]
