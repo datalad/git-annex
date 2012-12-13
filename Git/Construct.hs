@@ -125,7 +125,7 @@ remoteNamed n constructor = do
 	return $ r { remoteName = Just n }
 
 {- Sets the name of a remote based on the git config key, such as
-   "remote.foo.url". -}
+ - "remote.foo.url". -}
 remoteNamedFromKey :: String -> IO Repo -> IO Repo
 remoteNamedFromKey k = remoteNamed basename
   where

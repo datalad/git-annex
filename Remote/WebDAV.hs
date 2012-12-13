@@ -55,7 +55,7 @@ gen r u c = new <$> remoteCost r expensiveRemoteCost
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
- 			storeKey = store this,
+			storeKey = store this,
 			retrieveKeyFile = retrieve this,
 			retrieveKeyFileCheap = retrieveCheap this,
 			removeKey = remove this,
@@ -314,10 +314,10 @@ getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
-        { credPairFile = fromUUID u
-        , credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-        , credPairRemoteKey = Just "davcreds"
-        }
+	{ credPairFile = fromUUID u
+	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
+	, credPairRemoteKey = Just "davcreds"
+	}
 
 setCredsEnv :: (String, String) -> IO ()
 setCredsEnv creds = setEnvCredPair creds $ davCreds undefined

@@ -91,7 +91,7 @@ makeMatcher :: GroupMap -> UUID -> String -> Utility.Matcher.Matcher MatchFiles
 makeMatcher groupmap u s
 	| s == "standard" = standardMatcher groupmap u
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
- 	| otherwise = matchAll
+	| otherwise = matchAll
   where
 	tokens = map (parseToken (Just u) groupmap) (tokenizeMatcher s)
 

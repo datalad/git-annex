@@ -79,7 +79,7 @@ performRemote key numcopies remote = lockContent key $ do
 	stopUnless (canDropKey key numcopies have tocheck [uuid]) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
- where
+  where
 	uuid = Remote.uuid remote
 
 cleanupLocal :: Key -> CommandCleanup

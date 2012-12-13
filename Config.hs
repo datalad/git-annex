@@ -27,7 +27,7 @@ setConfig (ConfigKey key) value = do
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()
 unsetConfig (ConfigKey key) = inRepo $ Git.Command.run "config"
-        [Param "--unset", Param key]
+	[Param "--unset", Param key]
 
 {- Looks up a setting in git config. -}
 getConfig :: ConfigKey -> String -> Annex String

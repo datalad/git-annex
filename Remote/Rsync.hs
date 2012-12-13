@@ -49,7 +49,7 @@ gen r u c = do
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
- 			, storeKey = store o
+			, storeKey = store o
 			, retrieveKeyFile = retrieve o
 			, retrieveKeyFileCheap = retrieveCheap o
 			, removeKey = remove o
@@ -168,7 +168,7 @@ checkPresent r o k = do
 	-- to connect, and the file not being present.
 	Right <$> check
   where
- 	check = untilTrue (rsyncUrls o k) $ \u -> 
+	check = untilTrue (rsyncUrls o k) $ \u -> 
 		liftIO $ catchBoolIO $ do
 			withQuietOutput createProcessSuccess $
 				proc "rsync" $ toCommand $
@@ -210,8 +210,8 @@ rsyncRemote o callback params = do
 	ps = rsyncOptions o ++ defaultParams ++ params
 
 {- To send a single key is slightly tricky; need to build up a temporary
-   directory structure to pass to rsync so it can create the hash
-   directories. -}
+ - directory structure to pass to rsync so it can create the hash
+ - directories. -}
 rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> FilePath -> Annex Bool
 rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
@@ -220,7 +220,7 @@ rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
 	rsyncRemote o (Just callback)
 		[ Param "--recursive"
 		, partialParams
- 		  -- tmp/ to send contents of tmp dir
+		-- tmp/ to send contents of tmp dir
 		, Param $ addTrailingPathSeparator tmp
 		, Param $ rsyncUrl o
 		]

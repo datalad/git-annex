@@ -19,7 +19,7 @@ import Annex.Content
 
 def :: [Command]
 def = [addCheck check $ command "uninit" paramPaths seek 
-        "de-initialize git-annex and clean out repository"]
+	"de-initialize git-annex and clean out repository"]
 
 check :: Annex ()
 check = do

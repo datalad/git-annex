@@ -116,7 +116,7 @@ updateTo pairs = do
 	dirty <- journalDirty
 	(refs, branches) <- unzip <$> filterM isnewer pairs
 	if null refs
- 		{- Even when no refs need to be merged, the index
+		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
 		 - of the index. -}
 		then whenM (needUpdateIndex branchref) $ lockJournal $ do
@@ -325,7 +325,7 @@ needUpdateIndex branchref = do
  - given ref of the branch. -}
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
-        lock <- fromRepo gitAnnexIndexLock
+	lock <- fromRepo gitAnnexIndexLock
 	liftIO $ writeFile lock $ show ref ++ "\n"
 	setAnnexPerm lock
 

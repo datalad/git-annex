@@ -52,7 +52,7 @@ cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
 cleanup u name c = do
 	describeUUID u name
 	Logs.Remote.configSet u c
-        return True
+	return True
 
 {- Look up existing remote's UUID and config by name, or generate a new one -}
 findByName :: String -> Annex (UUID, R.RemoteConfig)

@@ -39,12 +39,12 @@ perform dest key = do
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
-	ok <- liftIO $ copyFileExternal src tmpdest
-        if ok
-                then do
+	ifM (liftIO $ copyFileExternal src tmpdest)
+		( do
 			liftIO $ do
 				removeFile dest
 				moveFile tmpdest dest
 			thawContent dest
 			next $ return True
-                else error "copy failed!"
+		, error "copy failed!"
+		)

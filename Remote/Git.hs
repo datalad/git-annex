@@ -414,7 +414,7 @@ rsyncParams r = do
 	o <- getRemoteConfig r "rsync-options" ""
 	return $ options ++ map Param (words o)
   where
- 	-- --inplace to resume partial files
+	-- --inplace to resume partial files
 	options = [Params "-p --progress --inplace"]
 
 commitOnCleanup :: Git.Repo -> Annex a -> Annex a

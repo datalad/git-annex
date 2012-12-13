@@ -35,13 +35,12 @@ canWatch = True
 canWatch = False
 #endif
 
-/* With inotify, discrete events will be received when making multiple changes
- * to the same filename. For example, adding it, deleting it, and adding it
- * again will be three events.
- * 
- * OTOH, with kqueue, often only one event is received, indicating the most
- * recent state of the file.
- */
+{- With inotify, discrete events will be received when making multiple changes
+ - to the same filename. For example, adding it, deleting it, and adding it
+ - again will be three events.
+ - 
+ - OTOH, with kqueue, often only one event is received, indicating the most
+ - recent state of the file. -}
 eventsCoalesce :: Bool
 #if WITH_INOTIFY
 eventsCoalesce = False
@@ -53,14 +52,13 @@ eventsCoalesce = undefined
 #endif
 #endif
 
-/* With inotify, file closing is tracked to some extent, so an add event
- * will always be received for a file once its writer closes it, and
- * (typically) not before. This may mean multiple add events for the same file.
- *
- * OTOH, with kqueue, add events will often be received while a file is
- * still being written to, and then no add event will be received once the
- * writer closes it.
- */
+{- With inotify, file closing is tracked to some extent, so an add event
+ - will always be received for a file once its writer closes it, and
+ - (typically) not before. This may mean multiple add events for the same file.
+ -
+ - OTOH, with kqueue, add events will often be received while a file is
+ - still being written to, and then no add event will be received once the
+ - writer closes it. -}
 closingTracked :: Bool
 #if WITH_INOTIFY
 closingTracked = True
@@ -72,9 +70,8 @@ closingTracked = undefined
 #endif
 #endif
 
-/* With inotify, modifications to existing files can be tracked.
- * Kqueue does not support this.
- */
+{- With inotify, modifications to existing files can be tracked.
+ - Kqueue does not support this. -}
 modifyTracked :: Bool
 #if WITH_INOTIFY
 modifyTracked = True
@@ -86,11 +83,11 @@ modifyTracked = undefined
 #endif
 #endif
 
-/* Starts a watcher thread. The runStartup action is passed a scanner action
- * to run, that will return once the initial directory scan is complete.
- * Once runStartup returns, the watcher thread continues running,
- * and processing events. Returns a DirWatcherHandle that can be used
- * to shutdown later.  */
+{- Starts a watcher thread. The runStartup action is passed a scanner action
+ - to run, that will return once the initial directory scan is complete.
+ - Once runStartup returns, the watcher thread continues running,
+ - and processing events. Returns a DirWatcherHandle that can be used
+ - to shutdown later. -}
 #if WITH_INOTIFY
 type DirWatcherHandle = INotify.INotify
 watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
