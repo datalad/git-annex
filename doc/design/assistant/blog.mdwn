@@ -3,9 +3,9 @@ The git-annex assistant is being
 I'll be blogging about my progress here on a semi-daily basis.
 
 [[!sidebar content="""
-[[!calendar type="month" pages="page(design/assistant/blog/*)"
-[[!calendar type="month" month="-1" pages="page(design/assistant/blog/*)"
-[[!calendar type="month" month="-2" pages="page(design/assistant/blog/*)"
+[[!calendar type="month" pages="page(design/assistant/blog/*)"]]
+[[!calendar type="month" month="-1" pages="page(design/assistant/blog/*)"]]
+[[!calendar type="month" month="-2" pages="page(design/assistant/blog/*)"]]
 """]]
 
 [[!inline pages="page(design/assistant/blog/*)" show=0]]
