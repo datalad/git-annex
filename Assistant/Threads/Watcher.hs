@@ -24,6 +24,7 @@ import Assistant.Drop
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
+import Utility.Lsof
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git.Command
@@ -39,7 +40,8 @@ import qualified Data.ByteString.Lazy as L
 
 checkCanWatch :: Annex ()
 checkCanWatch
-	| canWatch = 
+	| canWatch = do
+		liftIO setupLsof
 		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
 	| otherwise = error "watch mode is not available on this system"

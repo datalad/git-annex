@@ -132,11 +132,25 @@ relHome path = do
 		then "~/" ++ relPathDirToFile home path
 		else path
 
-{- Checks if a command is available in PATH. -}
+{- Checks if a command is available in PATH.
+ -
+ - The command may be fully-qualified, in which case, this succeeds as
+ - long as it exists. -}
 inPath :: String -> IO Bool
-inPath command = getSearchPath >>= anyM indir
+inPath command = isJust <$> searchPath command
+
+{- Finds a command in PATH and returns the full path to it.
+ -
+ - The command may be fully qualified already, in which case it will
+ - be returned if it exists.
+ -}
+searchPath :: String -> IO (Maybe FilePath)
+searchPath command
+	| isAbsolute command = check command
+	| otherwise = getSearchPath >>= getM indir
   where
-	indir d = doesFileExist $ d </> command
+	indir d = check $ d </> command
+	check f = ifM (doesFileExist f) ( return (Just f), return Nothing )
 
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
