@@ -63,4 +63,6 @@ One compiled using cabal from checkout 739c937
 
 Please provide any additional information below.
 
-
+> [[fixed|done]]; this turned out to be an kqueue specific bug,
+> the kqueue code statted new files, but that files for a broken symlink.
+> Using lstat instead fixed this. --[[Joey]]

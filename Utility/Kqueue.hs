@@ -80,7 +80,7 @@ getDirInfo dir = do
 	return $ DirInfo dir contents
   where
 	getDirEnt f = catchMaybeIO $ do
-		s <- getFileStatus (dir </> f)
+		s <- getSymbolicLinkStatus (dir </> f)
 		return $ DirEnt f (fileID s) (isDirectory s)
 
 {- Difference between the dirCaches of two DirInfos. -}
