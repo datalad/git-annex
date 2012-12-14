@@ -50,7 +50,7 @@ shaTestCases l = map make l
 		zip (shacmds n) (repeat check)
 	  where
 		key = "sha" ++ show n
-		check = "</dev/null | grep -q '" ++ knowngood ++ "'"
+		check = "</dev/null 2>/dev/null | grep -q '" ++ knowngood ++ "'"
 	shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
 		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
 	{- Max OSX sometimes puts GNU tools outside PATH, so look in
