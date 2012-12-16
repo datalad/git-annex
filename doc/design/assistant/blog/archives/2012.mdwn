@@ -1,1 +1,0 @@
-[[!calendar type=year year=2012 pages="page(design/assistant/blog/*)"]]
