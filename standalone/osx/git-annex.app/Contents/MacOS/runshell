@@ -51,8 +51,13 @@ export ORIG_GIT_EXEC_PATH
 GIT_EXEC_PATH=$base
 export GIT_EXEC_PATH
 
+ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
+export ORIG_GIT_TEMPLATE_DIR
+GIT_TEMPLATE_DIR="$base/templates"
+export GIT_TEMPLATE_DIR
+
 # Indicate which variables were exported above.
-GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH"
+GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then
@@ -60,5 +65,5 @@ if [ "$1" ]; then
 	shift 1
 	exec "$cmd" "$@"
 else
-	sh
+	$SHELL
 fi

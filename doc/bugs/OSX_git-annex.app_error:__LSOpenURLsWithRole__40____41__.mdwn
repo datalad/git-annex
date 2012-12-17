@@ -22,3 +22,5 @@ I'd expect to see git-annex run.  "git-annex" doesn't run and what I see (in the
 **Please provide any additional information below.**
 
 [[!tag /design/assistant/OSX]]
+
+> This was fixed a while ago. [[done]] --[[Joey]] 

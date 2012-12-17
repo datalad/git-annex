@@ -5,6 +5,7 @@ git-annex (3.20121212) UNRELEASED; urgency=low
     via symlinks. Note that direct mode is currently experimental. Many
     git and git-annex commands do not work, or can even cause data loss in
     direct mode.
+  * kqueue: Fix bug that made broken symlinks not be noticed.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 13 Dec 2012 14:06:43 -0400
 

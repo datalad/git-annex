@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 3"
+ date="2012-12-13T20:39:57Z"
+ content="""
+The assistant doesn't seem to be noticing renames or fixing files anymore, for me; that was what got me started on this bug report, though it sounds like I took it in an irrelevant direction by focusing on the command line and \"git annex fix.\"
+
+I'll double check, and submit a new bug report if I can confirm that assistant isn't doing what it should.
+"""]]

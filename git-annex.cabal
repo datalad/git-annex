@@ -84,7 +84,7 @@ Executable git-annex
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
   else
-    if (! os(windows) && ! os(solaris))
+    if (! os(windows) && ! os(solaris) && ! os(linux))
       CPP-Options: -DWITH_KQUEUE
       C-Sources: Utility/libkqueue.c
 
@@ -119,7 +119,7 @@ Test-Suite test
    old-locale, time, pcre-light, extensible-exceptions, dataenc, SHA,
    process, json, HTTP, base (>= 4.5 && < 4.7), monad-control,
    transformers-base, lifted-base, IfElse, text, QuickCheck >= 2.1,
-   bloomfilter, edit-distance, process
+   bloomfilter, edit-distance, process, SafeSemaphore
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c

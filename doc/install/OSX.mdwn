@@ -1,13 +1,20 @@
 ## git-annex.app
 
-For easy installation, [Jimmy Tang](http://www.sgenomics.org/~jtang/)
-builds a standalone git-annex.app of the git-annex assistant.
+For easy installation, use the
+[beta release of git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/).
 
-* [beta release of git-annex.app](http://downloads.kitenet.net/git-annex/OSX/git-annex.dmg.bz2)
-* [daily build of git-annex.app](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
+Be sure to select the build matching your version of OSX.
+
+This is still a work in progress. See [[/bugs/OSX_app_issues]] for problem
+reports.
+
+## autobuilds
+
+[Jimmy Tang](http://www.sgenomics.org/~jtang/) autobuilds
+the app. These autobuilds only work on OSX Lion, not Mountain Lion.
+
+* [autobuild of git-annex.app](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
   * [past builds](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/sha1/) -- directories are named from the commitid's
-
-This is known to not work on all OSX systems. [[/bugs/OSX_app_issues]] is collecting reports of problems with it in one place.
 
 ## using Brew
 

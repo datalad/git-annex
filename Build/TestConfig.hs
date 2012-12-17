@@ -2,9 +2,14 @@
 
 module Build.TestConfig where
 
+import Utility.Path
+import Utility.Monad
+
 import System.IO
 import System.Cmd
 import System.Exit
+import System.FilePath
+import System.Directory
 
 type ConfigKey = String
 data ConfigValue =
@@ -97,6 +102,23 @@ searchCmd success failure cmdsparams = search cmdsparams
 		if ret == ExitSuccess
 			then success c
 			else search cs
+
+{- Finds a command, either in PATH or perhaps in a sbin directory not in
+ - PATH. If it's in PATH the config is set to just the command name,
+ - but if it's found outside PATH, the config is set to the full path to
+ - the command. -}
+findCmdPath :: ConfigKey -> String -> Test
+findCmdPath k command = do
+	ifM (inPath command)
+		( return $ Config k $ MaybeStringConfig $ Just command
+		, do
+			r <- getM find ["/usr/sbin", "/sbin", "/usr/local/sbin"]
+			return $ Config k $ MaybeStringConfig r
+		)
+  where
+	find d =
+		let f = d </> command
+		in ifM (doesFileExist f) ( return (Just f), return Nothing )
 
 quiet :: String -> String
 quiet s = s ++ " >/dev/null 2>&1"

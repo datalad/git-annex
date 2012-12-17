@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2012-12-13T20:14:37Z"
+ content="""
+Thanks for the response!  It's good to know how it works right now.
+
+The reason I was expecting it to work on the files even if I moved them without git rename, is this:
+
+Imaginary use case:
+
+I am using git annex assistant, and not using the command line at all.  Maybe I don't know anything about git.  I am on a machine in the \"client\" group, so it drops content in \"archive\" subdirectories after storing it safely in a repository in the \"backup\" group.
+
+To add content to git annex, I drag and drop it into the git annex directory.  Assistant notices, and it gets added to the annex (it is now a symlink).  Yay!
+
+To archive content, I drag and drop the file (its symlink actually) from the git annex directory to an annex/archive directory, assistant notices, and it gets moved off to backup directories, and this symlink becomes dead.  This doesn't work because git annex assistant doesn't notice renames.
+
+To retrieve content from an archive, I drag and drop the dead link in the archive directory to a parent directory, and git annex notices and grabs the content from a backup somewhere.  This doesn't work, because git annex assistant doesn't notice renames.
+
+These kinds of operations are necessary if I'm going to archive and unarchive files, or otherwise move and manage them, while the assistant is running, without using git from the command line.
+
+
+"""]]

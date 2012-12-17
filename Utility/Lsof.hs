@@ -10,8 +10,10 @@
 module Utility.Lsof where
 
 import Common
+import Build.SysConfig as SysConfig
 
 import System.Posix.Types
+import System.Posix.Env
 
 data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
 	deriving (Show, Eq)
@@ -20,6 +22,17 @@ type CmdLine = String
 
 data ProcessInfo = ProcessInfo ProcessID CmdLine
 	deriving (Show)
+
+{- lsof is not in PATH on all systems, so SysConfig may have the absolute
+ - path where the program was found. Make sure at runtime that lsof is
+ - available, and if it's not in PATH, adjust PATH to contain it. -}
+setupLsof :: IO ()
+setupLsof = do
+	let cmd = fromMaybe "lsof" SysConfig.lsof
+	when (isAbsolute cmd) $ do
+		path <- getSearchPath
+		let path' = takeDirectory cmd : path
+		setEnv "PATH" (join [searchPathSeparator] path') True
 
 {- Checks each of the files in a directory to find open files.
  - Note that this will find hard links to files elsewhere that are open. -}

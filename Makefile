@@ -143,9 +143,6 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-THIRDPARTY_BINS=git curl lsof xargs rsync uuid wget gpg \
-	sha1sum sha224sum sha256sum sha384sum sha512sum cp ssh sh
-
 LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
 linuxstandalone:
 	$(MAKE) git-annex
@@ -160,19 +157,11 @@ linuxstandalone:
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
-	set -e; \
-	for bin in $(THIRDPARTY_BINS); do \
-		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
-		if [ -z "$$p" ]; then \
-			echo "** missing $$bin" >&2; \
-			exit 1; \
-		else \
-			cp "$$p" "$(LINUXSTANDALONE_DEST)/bin/"; \
-		fi; \
-	done
+	runghc Build/Standalone.hs "$(LINUXSTANDALONE_DEST)"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
+	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	
 	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v -f standalone/linux/glibc-libs | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
@@ -206,17 +195,10 @@ osxapp:
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
 
-	for bin in $(THIRDPARTY_BINS); do \
-		p="$$(PATH=$$PATH:/usr/sbin:/sbin:/usr/local/sbin which "$$bin")"; \
-		if [ -z "$$p" ]; then \
-			echo "** missing $$bin" >&2; \
-			exit 1; \
-		else \
-			cp "$$p" "$(OSXAPP_BASE)"; \
-		fi; \
-	done
+	runghc Build/Standalone.hs $(OSXAPP_BASE)
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
+	install -d "$(OSXAPP_BASE)/templates"
 
 	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg

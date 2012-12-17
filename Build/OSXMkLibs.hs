@@ -64,6 +64,7 @@ otool appbase libmap = do
   where
 	want s = not ("@executable_path" `isInfixOf` s)
 		&& not (".framework" `isInfixOf` s)
+		&& not ("libSystem.B" `isInfixOf` s)
 	process c [] m = return (nub $ concat c, m)
 	process c (file:rest) m = do
 		_ <- boolSystem "chmod" [Param "755", File file]

@@ -1,6 +1,6 @@
 More bugfixes today. The assistant now seems to have enough users that
 they're turning up interesting bugs, which is good. But does keep me too
-busy to add many more bugs^Wcode.
+busy to add many more bugs\^Wcode.
 
 The fun one today made it bloat to eat all memory when logging out of a
 Linux desktop. I tracked that back to a bug in the Haskell DBUS library
