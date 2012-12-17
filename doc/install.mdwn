@@ -2,7 +2,7 @@
 
 [[!table format=dsv header=yes data="""
 detailed instructions | quick install
-[[OSX]]               | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/git-annex.dmg.bz2) **beta; [[known_problems|/bugs/OSX_app_issues]]**
+[[OSX]]               | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
 [[Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
 [[Debian]]            | `apt-get install git-annex`
 [[Ubuntu]]            | `apt-get install git-annex`
