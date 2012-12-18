@@ -1,0 +1,21 @@
+Got merging working in direct mode!
+
+Basically works as outlined yesterday, although slightly less clumsily.
+Since there was already code that ran `git diff-tree` to update the
+associated files mappings after a merge, I was able to adapt that same code
+to also update the working tree.
+
+An important invariant for direct mode merges is that they should never
+cause annexed objects to be dropped. So if a file is deleted by a merge,
+and was a direct mode file that was the only place in the working copy
+where an object was stored, the object is moved into `.git/annex/objects`.
+This avoids data loss and any need to re-transfer objects after a merge.
+It also makes renames and other move complex tree manipulations always end
+up with direct mode files, when their content was present.
+
+Automatic merge conflict resoltion doesn't quite work right yet in direct
+mode.
+
+Direct mode has landed in the `master` branch, but I still consider it
+experimental, and of course the assistant still needs to be updated to
+support it.
