@@ -11,10 +11,14 @@ reports.
 ## autobuilds
 
 [Jimmy Tang](http://www.sgenomics.org/~jtang/) autobuilds
-the app. These autobuilds only work on OSX Lion, not Mountain Lion.
+the app for OSX Lion.
 
 * [autobuild of git-annex.app](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
   * [past builds](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/sha1/) -- directories are named from the commitid's
+
+[[Joey]] autobuilds the app for Mountain Lion.
+
+* [autobuild of git-annex.app](http://downloads.kitenet.net/git-annex/OSX/autobuild/git-annex.dmg.bz2) ([build logs](http://downloads.kitenet.net/git-annex/OSX/autobuild/))
 
 ## using Brew
 

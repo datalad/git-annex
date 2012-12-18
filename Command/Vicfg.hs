@@ -44,7 +44,7 @@ vicfg :: Cfg -> FilePath -> Annex ()
 vicfg curcfg f = do
 	vi <- liftIO $ catchDefaultIO "vi" $ getEnv "EDITOR"
 	-- Allow EDITOR to be processed by the shell, so it can contain options.
-	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, f]]) $
+	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		error $ vi ++ " exited nonzero; aborting"
 	r <- parseCfg curcfg <$> liftIO (readFileStrict f)
 	liftIO $ nukeFile f
