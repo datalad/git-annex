@@ -1,6 +1,7 @@
 git-annex (3.20121212) UNRELEASED; urgency=low
 
   * kqueue: Fix bug that made broken symlinks not be noticed.
+  * vicfg: Quote filename. Closes: #696193
 
  -- Joey Hess <joeyh@debian.org>  Fri, 14 Dec 2012 16:25:14 -0400
 
