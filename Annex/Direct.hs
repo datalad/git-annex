@@ -145,20 +145,7 @@ mergeDirectCleanup d oldsha newsha = do
 			| otherwise = araw f
 		f = DiffTree.file item
 
-	{- Any content that was present in direct mode and whose file is to
-	 - be modified or deleted by the merge is first moved to
-	 - .git/annex/objects, unless there are other associated files for
-	 - the content. No content is ever lost due to a direct mode merge. -}
-	moveout k f = do
-		locs <- removeAssociatedFile k f
-		when (null locs) $ do
-			r <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus f
-			case r of
-				Just s
-					| not (isSymbolicLink s) ->
-						moveAnnex k f
-				_ -> noop
-		moveout_raw f
+	moveout k f = removeDirect k f
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}
@@ -168,19 +155,24 @@ mergeDirectCleanup d oldsha newsha = do
 	
 	{- Key symlinks are replaced with their content, if it's available. -}
 	movein k f = do
-		movein_raw f
-		maybe noop id =<< toDirect k f
+		l <- calcGitLink f k
+		liftIO $ replaceFile f $ const $
+			createSymbolicLink l f
+		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
 	movein_raw f = liftIO $ do
 		createDirectoryIfMissing True $ parentDir f
-		rename (d </> f) f
+		void $ catchMaybeIO $ rename (d </> f) f
 
-{- If possible, returns an action that will convert a symlink in the
- - working tree into a direct mode file. -}
-toDirect :: Key -> FilePath -> Annex (Maybe (Annex ()))
-toDirect k f = do
+{- If possible, converts a symlink in the working tree into a direct
+ - mode file. -}
+toDirect :: Key -> FilePath -> Annex ()
+toDirect k f = maybe noop id =<< toDirectGen k f
+
+toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
+toDirectGen k f = do
 	loc <- inRepo $ gitAnnexLocation k
 	createContentDir loc -- thaws directory too
 	locs <- filter (/= f) <$> addAssociatedFile k f
@@ -197,3 +189,18 @@ toDirect k f = do
 			{- Another direct file has the content, so
 			 - hard link to it. -}
 			liftIO $ replaceFile f $ createLink loc'
+
+{- Removes a direct mode file, while retaining its content. -}
+removeDirect :: Key -> FilePath -> Annex ()
+removeDirect k f = do
+	locs <- removeAssociatedFile k f
+	when (null locs) $ do
+		r <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus f
+		case r of
+			Just s
+				| not (isSymbolicLink s) ->
+					moveAnnex k f
+			_ -> noop
+	liftIO $ do
+		nukeFile f
+		void $ catchMaybeIO $ removeDirectory $ parentDir f

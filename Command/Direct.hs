@@ -41,7 +41,7 @@ perform = do
 	next cleanup
   where
 	go = whenAnnexed $ \f (k, _) -> do
-		r <- toDirect k f
+		r <- toDirectGen k f
 		case r of
 			Nothing -> noop
 			Just a -> do

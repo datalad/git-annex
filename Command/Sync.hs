@@ -15,6 +15,7 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Annex.Queue
 import Annex.Content
+import Annex.Content.Direct
 import Annex.Direct
 import Annex.CatFile
 import qualified Git.Command
@@ -234,7 +235,8 @@ resolveMerge' :: LsFiles.Unmerged -> Annex Bool
 resolveMerge' u
 	| issymlink LsFiles.valUs && issymlink LsFiles.valThem =
 		withKey LsFiles.valUs $ \keyUs ->
-		withKey LsFiles.valThem $ \keyThem -> go keyUs keyThem
+		withKey LsFiles.valThem $ \keyThem -> do
+			go keyUs keyThem
 	| otherwise = return False
   where
 	go keyUs keyThem
@@ -242,7 +244,10 @@ resolveMerge' u
 			makelink keyUs
 			return True
 		| otherwise = do
-			liftIO $ nukeFile file
+			ifM isDirect
+				( maybe noop (\k -> removeDirect k file) keyUs
+				, liftIO $ nukeFile file
+				)
 			Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
 			makelink keyUs
 			makelink keyThem
@@ -257,6 +262,8 @@ resolveMerge' u
 			nukeFile dest
 			createSymbolicLink l dest
 		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
+		whenM (isDirect) $
+			toDirect key dest
 	makelink _ = noop
 	withKey select a = do
 		let msha = select $ LsFiles.unmergedSha u
