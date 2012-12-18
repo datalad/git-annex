@@ -94,10 +94,14 @@ is converted to a real file when it becomes present.
   * Update location logs for any files deleted by a commit. **done**
   * Generate a git merge, without running `git merge` (or possibly running
     it in a scratch repo?), because it will stumble over the direct files.
+    **done**
   * Drop contents of files deleted by a merge (including updating the
     location log), or if we cannot drop,
-    move their contents to `.git/annex/objects/`.
+    move their contents to `.git/annex/objects/`.  **no**  .. instead, 
+    avoid ever losing file contents in a direct mode merge. If the file is
+    deleted, its content is moved back to .git/annex/objects, if necessary.
   * When a merge adds a symlink pointing at a key that is present in the
     repo, replace the symlink with the direct file (either moving out
     of `.git/annex/objects/` or hard-linking if the same key is present
-    elsewhere in the tree.
+    elsewhere in the tree. **done**
+  * handle merge conflicts on direct mode files
