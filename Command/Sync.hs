@@ -15,7 +15,6 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Annex.Queue
 import Annex.Content
-import Annex.Content.Direct
 import Annex.Direct
 import Annex.CatFile
 import qualified Git.Command
@@ -179,31 +178,30 @@ mergeAnnex = do
 	void $ Annex.Branch.forceUpdate
 	stop
 
-{- Merges from a branch into the current branch.
- -
- - In direct mode, updates associated files mappings for the files that
- - were changed by the merge. -}
+{- Merges from a branch into the current branch. -}
 mergeFrom :: Git.Ref -> Annex Bool
-mergeFrom branch = ifM isDirect
-	( maybe go godirect =<< inRepo Git.Branch.current
-	, go
-	)
+mergeFrom branch = do
+	showOutput
+	ifM isDirect
+		( maybe go godirect =<< inRepo Git.Branch.current
+		, go
+		)
   where
-	go = do
-		showOutput
-		ok <- inRepo $ Git.Merge.mergeNonInteractive branch
-		if ok
-			then return ok
-			else resolveMerge
+	go = runmerge $ inRepo $ Git.Merge.mergeNonInteractive branch
 	godirect currbranch = do
 		old <- inRepo $ Git.Ref.sha currbranch
-		r <- go
+		d <- fromRepo gitAnnexMergeDir
+		r <- runmerge $ inRepo $ mergeDirect d branch
 		new <- inRepo $ Git.Ref.sha currbranch
 		case (old, new) of
-			(Just oldsha, Just newsha) -> do
-				updateAssociatedFiles oldsha newsha
+			(Just oldsha, Just newsha) ->
+				mergeDirectCleanup d oldsha newsha
 			_ -> noop
 		return r
+	runmerge a = ifM (a)
+		( return True
+		, resolveMerge
+		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since

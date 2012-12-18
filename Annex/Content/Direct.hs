@@ -9,7 +9,6 @@ module Annex.Content.Direct (
 	associatedFiles,
 	removeAssociatedFile,
 	addAssociatedFile,
-	updateAssociatedFiles,
 	goodContent,
 	updateCache,
 	recordedCache,
@@ -23,11 +22,7 @@ module Annex.Content.Direct (
 
 import Common.Annex
 import qualified Git
-import qualified Git.DiffTree as DiffTree
-import Git.Sha
-import Annex.CatFile
 import Utility.TempFile
-import Utility.FileMode
 import Logs.Location
 
 import System.Posix.Types
@@ -69,23 +64,6 @@ addAssociatedFile key file = changeAssociatedFiles key $ \files ->
 	if file `elem` files
 		then files
 		else file:files
-
-{- Uses git diff-tree to find files changed between two tree Shas, and
- - updates the associated file mappings, efficiently. -}
-updateAssociatedFiles :: Git.Sha -> Git.Sha -> Annex ()
-updateAssociatedFiles oldsha newsha = do
-	(items, cleanup) <- inRepo $ DiffTree.diffTree oldsha newsha
-	forM_ items update
-	void $ liftIO $ cleanup
-  where
-	update item = do
-		go DiffTree.dstsha DiffTree.dstmode addAssociatedFile
-		go DiffTree.srcsha DiffTree.srcmode removeAssociatedFile
-	  where
-		go getsha getmode a =
-			when (getsha item /= nullSha && isSymLink (getmode item)) $ do
-				key <- catKey (getsha item)
-				maybe noop (\k -> void $ a k $ DiffTree.file item) key
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -

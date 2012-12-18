@@ -13,8 +13,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles
 import Config
-import Annex.Content
-import Annex.Content.Direct
+import Annex.Direct
 
 def :: [Command]
 def = [command "direct" paramNothing seek "switch repository to direct mode"]
@@ -41,25 +40,13 @@ perform = do
 	void $ liftIO clean
 	next cleanup
   where
-	{- Walk tree from top and move all present objects to the
-	 - files that link to them, while updating direct mode mappings. -}
 	go = whenAnnexed $ \f (k, _) -> do
-		loc <- inRepo $ gitAnnexLocation k
-		createContentDir loc -- thaws directory too
-		locs <- filter (/= f) <$> addAssociatedFile k f
-		case locs of
-			[] -> whenM (liftIO $ doesFileExist loc) $ do
-				{- Move content from annex to direct file. -}
+		r <- toDirect k f
+		case r of
+			Nothing -> noop
+			Just a -> do
 				showStart "direct" f
-				updateCache k loc
-				thawContent loc
-				liftIO $ replaceFile f $ moveFile loc
-				showEndOk
-			(loc':_) -> do
-				{- Another direct file has the content, so
-				 - hard link to it. -}
-				showStart "direct" f
-				liftIO $ replaceFile f $ createLink loc'
+				a
 				showEndOk
 		return Nothing
 

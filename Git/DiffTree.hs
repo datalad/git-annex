@@ -8,6 +8,7 @@
 module Git.DiffTree (
 	DiffTreeItem(..),
 	diffTree,
+	diffTreeRecursive,
 	parseDiffTree
 ) where
 
@@ -31,9 +32,19 @@ data DiffTreeItem = DiffTreeItem
 
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
-diffTree src dst repo = do
-	(diff, cleanup) <- pipeNullSplit [Params "diff-tree -z --raw --no-renames -l0", Param (show src), Param (show dst)] repo
+diffTree = diffTree' []
+
+{- Diffs two tree Refs, recursing into sub-trees -}
+diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffTreeRecursive = diffTree' [Param "-r"]
+
+diffTree' :: [CommandParam] -> Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffTree' params src dst repo = do
+	(diff, cleanup) <- pipeNullSplit ps repo
 	return (parseDiffTree diff, cleanup)
+  where
+	ps = Params "diff-tree -z --raw --no-renames -l0" : params ++
+		[Param (show src), Param (show dst)]
 
 {- Parses diff-tree output. -}
 parseDiffTree :: [String] -> [DiffTreeItem]
