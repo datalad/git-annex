@@ -153,7 +153,12 @@ mergeDirectCleanup d oldsha newsha = do
 		nukeFile f
 		void $ catchMaybeIO $ removeDirectory $ parentDir f
 	
-	{- Key symlinks are replaced with their content, if it's available. -}
+	{- The symlink is created from the key, rather than moving in the
+	 - symlink created in the temp directory by the merge. This because
+	 - a conflicted merge will write to some other file in the temp
+	 - directory.
+	 -
+ 	 - Symlinks are replaced with their content, if it's available. -}
 	movein k f = do
 		l <- calcGitLink f k
 		liftIO $ replaceFile f $ const $
