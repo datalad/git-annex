@@ -293,7 +293,8 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure (if null filename then Nothing else Just filename)
 	<*> pure False
   where
-	(firstline, filename) = separate (== '\n') s
+	(firstline, rest) = separate (== '\n') s
+	(filename, _) = separate (== '\n') rest
 	bits = split " " firstline
 	numbits = length bits
 	time = if numbits > 0
