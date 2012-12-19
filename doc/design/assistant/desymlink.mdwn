@@ -87,6 +87,9 @@ is converted to a real file when it becomes present.
 * Deal with files changing as they're being transferred from a direct mode
   repository to another git repository. The remote repo currently will 
   accept the bad data and update the location log to say it has the key.
+
+## done
+
 * `git annex sync` updates the key to files mappings for files changed,
   but needs much other work to handle direct mode:
   * Generate git commit, without running `git commit`, because it will
@@ -104,4 +107,4 @@ is converted to a real file when it becomes present.
     repo, replace the symlink with the direct file (either moving out
     of `.git/annex/objects/` or hard-linking if the same key is present
     elsewhere in the tree. **done**
-  * handle merge conflicts on direct mode files
+  * handle merge conflicts on direct mode files **done**
