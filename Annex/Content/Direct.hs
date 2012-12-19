@@ -17,7 +17,8 @@ module Annex.Content.Direct (
 	removeCache,
 	genCache,
 	toCache,
-	Cache
+	Cache(..),
+	prop_read_show_direct
 ) where
 
 import Common.Annex
@@ -122,6 +123,10 @@ readCache s = case words s of
 		<*> readish size
 		<*> readish mtime
 	_ -> Nothing
+
+-- for quickcheck
+prop_read_show_direct :: Cache -> Bool
+prop_read_show_direct c = readCache (showCache c) == Just c
 
 genCache :: FilePath -> IO (Maybe Cache)
 genCache f = catchDefaultIO Nothing $ toCache <$> getFileStatus f

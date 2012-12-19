@@ -51,21 +51,18 @@ import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
+import qualified Annex.Content.Direct
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types
 
 -- instances for quickcheck
 instance Arbitrary Types.Key.Key where
-	arbitrary = do
-		n <- arbitrary
-		b <- elements ['A'..'Z']
-		return Types.Key.Key {
-			Types.Key.keyName = n,
-			Types.Key.keyBackendName = [b],
-			Types.Key.keySize = Nothing,
-			Types.Key.keyMtime = Nothing
-		}
+	arbitrary = Types.Key.Key
+		<$> arbitrary
+		<*> ((\b -> [b]) <$> elements ['A'..'Z']) -- BACKEND
+		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
+		<*> arbitrary
 
 instance Arbitrary Logs.Transfer.TransferInfo where
 	arbitrary = Logs.Transfer.TransferInfo
@@ -78,10 +75,25 @@ instance Arbitrary Logs.Transfer.TransferInfo where
 		<*> arbitrary
 
 instance Arbitrary POSIXTime where
-	arbitrary = arbitrarySizedIntegral
+	arbitrary = abs <$> arbitrarySizedIntegral
 
 instance Arbitrary ProcessID where
-	arbitrary = arbitraryBoundedIntegral
+	arbitrary = abs <$> arbitraryBoundedIntegral
+
+instance Arbitrary Annex.Content.Direct.Cache where
+	arbitrary = Annex.Content.Direct.Cache
+		<$> arbitrary
+		<*> arbitrary
+		<*> arbitrary
+
+instance Arbitrary EpochTime where
+	arbitrary = abs <$> arbitrarySizedIntegral
+
+instance Arbitrary FileID where
+	arbitrary = abs <$> arbitrarySizedIntegral
+
+instance Arbitrary FileOffset where
+	arbitrary = abs <$> arbitrarySizedIntegral
 
 main :: IO ()
 main = do
@@ -115,6 +127,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
+	, qctest "prop_read_show_direct" Annex.Content.Direct.prop_read_show_direct
 	]
 
 blackbox :: Test

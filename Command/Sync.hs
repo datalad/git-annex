@@ -15,7 +15,6 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Annex.Queue
 import Annex.Content
-import Annex.Content.Direct
 import Annex.Direct
 import Annex.CatFile
 import qualified Git.Command
