@@ -27,9 +27,9 @@ def = [command "add" paramPaths seek "add files to annex"]
 seek :: [CommandSeek]
 seek = [withFilesNotInGit start, withFilesUnlocked start]
 
-{- The add subcommand annexes a file, storing it in a backend, and then
- - moving it into the annex directory and setting up the symlink pointing
- - to its content. -}
+{- The add subcommand annexes a file, generating a key for it using a
+ - backend, and then moving it into the annex directory and setting up
+ - the symlink pointing to its content. -}
 start :: FilePath -> CommandStart
 start file = notBareRepo $ ifAnnexed file fixup add
   where
