@@ -294,7 +294,9 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure False
   where
 	(firstline, rest) = separate (== '\n') s
-	(filename, _) = separate (== '\n') rest
+	filename
+		| end rest == "\n" = beginning rest
+		| otherwise = rest
 	bits = split " " firstline
 	numbits = length bits
 	time = if numbits > 0
@@ -303,6 +305,16 @@ readTransferInfo mpid s = TransferInfo
 	bytes = if numbits > 1
 		then Just <$> readish =<< headMaybe (drop 1 bits)
 		else pure Nothing -- not failure
+
+{- for quickcheck -}
+prop_read_write_transferinfo :: TransferInfo -> Bool
+prop_read_write_transferinfo info
+	| associatedFile info == Just "" = True -- file cannot be empty
+	| transferRemote info /= Nothing = True -- remote not stored
+	| transferTid info /= Nothing = True -- tid not stored
+	| otherwise = Just (info { transferPaused = False }) == info'
+  where
+	info' = readTransferInfo (transferPid info) (writeTransferInfo info)
 
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds

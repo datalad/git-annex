@@ -1,11 +1,12 @@
 {- git-annex test suite
  -
- - Copyright 2010,2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 import Test.HUnit
 import Test.HUnit.Tools
@@ -36,6 +37,7 @@ import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
 import qualified Logs.Unused
+import qualified Logs.Transfer
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
@@ -50,7 +52,10 @@ import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
 
--- for quickcheck
+import Data.Time.Clock.POSIX
+import System.Posix.Types
+
+-- instances for quickcheck
 instance Arbitrary Types.Key.Key where
 	arbitrary = do
 		n <- arbitrary
@@ -61,6 +66,22 @@ instance Arbitrary Types.Key.Key where
 			Types.Key.keySize = Nothing,
 			Types.Key.keyMtime = Nothing
 		}
+
+instance Arbitrary Logs.Transfer.TransferInfo where
+	arbitrary = Logs.Transfer.TransferInfo
+		<$> arbitrary
+		<*> arbitrary
+		<*> pure Nothing -- cannot generate a ThreadID
+		<*> pure Nothing -- remote not needed
+		<*> arbitrary
+		<*> arbitrary
+		<*> arbitrary
+
+instance Arbitrary POSIXTime where
+	arbitrary = arbitrarySizedIntegral
+
+instance Arbitrary ProcessID where
+	arbitrary = arbitraryBoundedIntegral
 
 main :: IO ()
 main = do
@@ -93,6 +114,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
 	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
+	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
 	]
 
 blackbox :: Test
