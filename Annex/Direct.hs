@@ -175,7 +175,7 @@ toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
 	loc <- inRepo $ gitAnnexLocation k
 	createContentDir loc -- thaws directory too
-	locs <- filter (/= f) <$> addAssociatedFile k f
+	locs <- filter (/= normalise f) <$> addAssociatedFile k f
 	case locs of
 		[] -> ifM (liftIO $ doesFileExist loc)
 			( return $ Just $ do

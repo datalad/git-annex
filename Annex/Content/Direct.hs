@@ -54,16 +54,18 @@ changeAssociatedFiles key transform = do
 
 removeAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 removeAssociatedFile key file = do
-	fs <- changeAssociatedFiles key $ filter (/= file)
+	fs <- changeAssociatedFiles key $ filter (/= normalise file)
 	when (null fs) $
 		logStatus key InfoMissing
 	return fs
 
 addAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 addAssociatedFile key file = changeAssociatedFiles key $ \files ->
-	if file `elem` files
+	if file' `elem` files
 		then files
-		else file:files
+		else file':files
+  where
+	file' = normalise file
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
