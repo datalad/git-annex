@@ -17,6 +17,7 @@ import qualified Build.SysConfig as SysConfig
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
 import System.Process
+import Data.Char
 
 type SHASize = Int
 
@@ -124,10 +125,8 @@ selectExtension f
   where
 	es = filter (not . null) $ reverse $
 		take 2 $ takeWhile shortenough $
-		reverse $ split "." $ takeExtensions f
-	shortenough e
-		| '\n' `elem` e = False -- newline in extension?!
-		| otherwise = length e <= 4 -- long enough for "jpeg"
+		reverse $ split "." $ filter validExtension $ takeExtensions f
+	shortenough e = length e <= 4 -- long enough for "jpeg"
 
 {- A key's checksum is checked during fsck. -}
 checkKeyChecksum :: SHASize -> Key -> FilePath -> Annex Bool
@@ -152,5 +151,14 @@ checkKeyChecksum size key file = do
 keySha :: Key -> String
 keySha key = dropExtensions (keyName key)
 
+validExtension :: Char -> Bool
+validExtension c
+	| isAlphaNum c = True
+	| c == '.' = True
+	| otherwise = False
+
+{- Upgrade keys that have the \ prefix on their sha due to a bug, or
+ - that contain non-alphanumeric characters in their extension. -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = "\\" `isPrefixOf` keySha key
+needsUpgrade key = "\\" `isPrefixOf` keySha key ||
+	any (not . validExtension) (takeExtensions $ keyName key)
