@@ -10,6 +10,7 @@ module Types.TrustLevel (
 	TrustMap,
 	readTrustLevel,
 	showTrustLevel,
+	prop_read_show_TrustLevel
 ) where
 
 import qualified Data.Map as M
@@ -17,7 +18,7 @@ import qualified Data.Map as M
 import Types.UUID
 
 data TrustLevel = Trusted | SemiTrusted | UnTrusted | DeadTrusted
-	deriving (Eq, Enum, Ord)
+	deriving (Eq, Enum, Ord, Bounded)
 
 type TrustMap = M.Map UUID TrustLevel
 
@@ -33,3 +34,8 @@ showTrustLevel Trusted = "trusted"
 showTrustLevel UnTrusted = "untrusted"
 showTrustLevel SemiTrusted = "semitrusted"
 showTrustLevel DeadTrusted = "dead"
+
+prop_read_show_TrustLevel :: Bool
+prop_read_show_TrustLevel = all check [minBound .. maxBound]
+  where
+	check l = readTrustLevel (showTrustLevel l) == Just l

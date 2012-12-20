@@ -31,6 +31,7 @@ import qualified Git.Filename
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
+import qualified Types.TrustLevel
 import qualified Types
 import qualified GitAnnex
 import qualified Logs.UUIDBased
@@ -118,6 +119,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
 	, qctest "prop_read_show_direct" Annex.Content.Direct.prop_read_show_direct
 	, qctest "prop_parse_show_log" Logs.Presence.prop_parse_show_log
+	, qctest "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	]
 
 blackbox :: Test
