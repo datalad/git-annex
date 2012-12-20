@@ -6,7 +6,6 @@
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 import Test.HUnit
 import Test.HUnit.Tools
@@ -21,6 +20,7 @@ import System.IO.HVFS (SystemFS(..))
 import Text.JSON
 
 import Common
+import Utility.QuickCheck ()
 
 import qualified Utility.SafeCommand
 import qualified Annex
@@ -54,9 +54,6 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Annex.Content.Direct
 
-import Data.Time.Clock.POSIX
-import System.Posix.Types
-
 -- instances for quickcheck
 instance Arbitrary Types.Key.Key where
 	arbitrary = Types.Key.Key
@@ -76,32 +73,17 @@ instance Arbitrary Logs.Transfer.TransferInfo where
 		<*> arbitrary `suchThat` (/= Just "")
 		<*> arbitrary
 
-instance Arbitrary POSIXTime where
-	arbitrary = abs <$> arbitrarySizedIntegral
-
-instance Arbitrary ProcessID where
-	arbitrary = abs <$> arbitraryBoundedIntegral
-
 instance Arbitrary Annex.Content.Direct.Cache where
 	arbitrary = Annex.Content.Direct.Cache
 		<$> arbitrary
 		<*> arbitrary
 		<*> arbitrary
 
-instance Arbitrary EpochTime where
-	arbitrary = abs <$> arbitrarySizedIntegral
-
-instance Arbitrary FileID where
-	arbitrary = abs <$> arbitrarySizedIntegral
-
-instance Arbitrary FileOffset where
-	arbitrary = abs <$> arbitrarySizedIntegral
-
 instance Arbitrary Logs.Presence.LogLine where
 	arbitrary = Logs.Presence.LogLine
 		<$> arbitrary
 		<*> elements [minBound..maxBound]
-		<*> (arbitrary `suchThat` ('\n' `notElem`))
+		<*> arbitrary `suchThat` ('\n' `notElem`)
 
 main :: IO ()
 main = do
@@ -125,7 +107,6 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, qctest "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
-
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, qctest "prop_cost_sane" Config.prop_cost_sane
