@@ -309,7 +309,6 @@ readTransferInfo mpid s = TransferInfo
 {- for quickcheck -}
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info
-	| associatedFile info == Just "" = True -- file cannot be empty
 	| transferRemote info /= Nothing = True -- remote not stored
 	| transferTid info /= Nothing = True -- tid not stored
 	| otherwise = Just (info { transferPaused = False }) == info'

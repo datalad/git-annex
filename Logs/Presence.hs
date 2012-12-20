@@ -13,7 +13,7 @@
 
 module Logs.Presence (
 	LogStatus(..),
-	LogLine,
+	LogLine(LogLine),
 	addLog,
 	readLog,
 	getLog,
@@ -22,6 +22,7 @@ module Logs.Presence (
 	logNow,
 	compactLog,
 	currentLog,
+	prop_parse_show_log,
 ) where
 
 import Data.Time.Clock.POSIX
@@ -36,10 +37,10 @@ data LogLine = LogLine {
 	date :: POSIXTime,
 	status :: LogStatus,
 	info :: String
-} deriving (Eq)
+} deriving (Eq, Show)
 
 data LogStatus = InfoPresent | InfoMissing
-	deriving (Eq)
+	deriving (Eq, Show, Bounded, Enum)
 
 addLog :: FilePath -> LogLine -> Annex ()
 addLog file line = Annex.Branch.change file $ \s -> 
@@ -52,13 +53,15 @@ readLog = parseLog <$$> Annex.Branch.get
 
 {- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: String -> [LogLine]
-parseLog = mapMaybe (parseline . words) . lines
+parseLog = mapMaybe parseline . lines
   where
-	parseline (a:b:c:_) = do
-		d <- parseTime defaultTimeLocale "%s%Qs" a
-		s <- parsestatus b
-		Just $ LogLine (utcTimeToPOSIXSeconds d) s c
-	parseline _ = Nothing
+	parseline l = LogLine
+		<$> (utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" d)
+		<*> parsestatus s
+		<*> pure rest
+	  where
+		(d, pastd) = separate (== ' ') l
+		(s, rest) = separate (== ' ') pastd
 	parsestatus "1" = Just InfoPresent
 	parsestatus "0" = Just InfoMissing
 	parsestatus _ = Nothing
@@ -70,6 +73,10 @@ showLog = unlines . map genline
 	genline (LogLine d s i) = unwords [show d, genstatus s, i]
 	genstatus InfoPresent = "1"
 	genstatus InfoMissing = "0"
+
+-- for quickcheck
+prop_parse_show_log :: [LogLine] -> Bool
+prop_parse_show_log l = parseLog (showLog l) == l
 
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine

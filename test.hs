@@ -38,6 +38,7 @@ import qualified Logs.Trust
 import qualified Logs.Remote
 import qualified Logs.Unused
 import qualified Logs.Transfer
+import qualified Logs.Presence
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
@@ -60,7 +61,7 @@ import System.Posix.Types
 instance Arbitrary Types.Key.Key where
 	arbitrary = Types.Key.Key
 		<$> arbitrary
-		<*> ((\b -> [b]) <$> elements ['A'..'Z']) -- BACKEND
+		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> arbitrary
 
@@ -71,7 +72,8 @@ instance Arbitrary Logs.Transfer.TransferInfo where
 		<*> pure Nothing -- cannot generate a ThreadID
 		<*> pure Nothing -- remote not needed
 		<*> arbitrary
-		<*> arbitrary
+		-- associated file cannot be empty (but can be Nothing)
+		<*> arbitrary `suchThat` (/= Just "")
 		<*> arbitrary
 
 instance Arbitrary POSIXTime where
@@ -94,6 +96,12 @@ instance Arbitrary FileID where
 
 instance Arbitrary FileOffset where
 	arbitrary = abs <$> arbitrarySizedIntegral
+
+instance Arbitrary Logs.Presence.LogLine where
+	arbitrary = Logs.Presence.LogLine
+		<$> arbitrary
+		<*> elements [minBound..maxBound]
+		<*> (arbitrary `suchThat` ('\n' `notElem`))
 
 main :: IO ()
 main = do
@@ -128,6 +136,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
 	, qctest "prop_read_show_direct" Annex.Content.Direct.prop_read_show_direct
+	, qctest "prop_parse_show_log" Logs.Presence.prop_parse_show_log
 	]
 
 blackbox :: Test
