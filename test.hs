@@ -10,6 +10,7 @@
 import Test.HUnit
 import Test.HUnit.Tools
 import Test.QuickCheck
+import Test.QuickCheck.Instances ()
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
@@ -107,6 +108,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, qctest "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
+	, qctest "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
 	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, qctest "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest

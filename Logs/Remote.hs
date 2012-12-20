@@ -11,8 +11,11 @@ module Logs.Remote (
 	configSet,
 	keyValToConfig,
 	configToKeyVal,
+	showConfig,
+	parseConfig,
 
-	prop_idempotent_configEscape
+	prop_idempotent_configEscape,
+	prop_parse_show_Config,
 ) where
 
 import qualified Data.Map as M
@@ -86,3 +89,12 @@ configUnEscape = unescape
 {- for quickcheck -}
 prop_idempotent_configEscape :: String -> Bool
 prop_idempotent_configEscape s = s == (configUnEscape . configEscape) s
+
+prop_parse_show_Config :: RemoteConfig -> Bool
+prop_parse_show_Config c
+	-- whitespace and '=' are not supported in keys
+	| any (\k -> any isSpace k || any (== '=') k) (M.keys c) = True
+	| otherwise = parseConfig (showConfig c) ~~ Just c
+  where
+	normalize v = sort . M.toList <$> v
+	a ~~ b = normalize a == normalize b
