@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import Backend
 import qualified Types.Key
+import qualified Types.Backend
 import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
@@ -26,7 +27,7 @@ start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, oldbackend) = do
 	exists <- inAnnex key
 	newbackend <- choosebackend =<< chooseBackend file
-	if (newbackend /= oldbackend || upgradableKey key) && exists
+	if (newbackend /= oldbackend || upgradableKey oldbackend key) && exists
 		then do
 			showStart "migrate" file
 			next $ perform file key oldbackend newbackend
@@ -35,10 +36,17 @@ start file (key, oldbackend) = do
 	choosebackend Nothing = Prelude.head <$> orderedList
 	choosebackend (Just backend) = return backend
 
-{- Checks if a key is upgradable to a newer representation. -}
-{- Ideally, all keys have file size metadata. Old keys may not. -}
-upgradableKey :: Key -> Bool
-upgradableKey key = isNothing $ Types.Key.keySize key
+{- Checks if a key is upgradable to a newer representation.
+ - 
+ - Reasons for migration:
+ -  - Ideally, all keys have file size metadata. Old keys may not.
+ -  - Something has changed in the backend, such as a bug fix.
+ -}
+upgradableKey :: Backend -> Key -> Bool
+upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradable
+  where
+	backendupgradable = maybe False (\a -> a key)
+		(Types.Backend.canUpgradeKey backend)
 
 {- Store the old backend's key in the new backend
  - The old backend's key is not dropped from it, because there may

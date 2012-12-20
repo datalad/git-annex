@@ -24,6 +24,7 @@ backend = Backend
 	{ name = "URL"
 	, getKey = const $ return Nothing
 	, fsckKey = Nothing
+	, canUpgradeKey = Nothing
 	}
 
 fromUrl :: String -> Maybe Integer -> Key

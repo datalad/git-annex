@@ -16,6 +16,7 @@ data BackendA a = Backend
 	{ name :: String
 	, getKey :: KeySource -> a (Maybe Key) 
 	, fsckKey :: Maybe (Key -> FilePath -> a Bool)
+	, canUpgradeKey :: Maybe (Key -> Bool)
 	}
 
 instance Show (BackendA a) where

@@ -20,6 +20,7 @@ backend = Backend
 	{ name = "WORM"
 	, getKey = keyValue
 	, fsckKey = Nothing
+	, canUpgradeKey = Nothing
 	}
 
 {- The key includes the file size, modification time, and the

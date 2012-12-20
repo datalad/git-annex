@@ -34,6 +34,7 @@ genBackend size = Just $ Backend
 	{ name = shaName size
 	, getKey = keyValue size
 	, fsckKey = Just $ checkKeyChecksum size
+	, canUpgradeKey = Just $ needsUpgrade
 	}
 
 genBackendE :: SHASize -> Maybe Backend
@@ -61,6 +62,8 @@ shaN shasize file filesize = do
 	parse command [] = bad command
 	parse command (l:_)
 		| null sha = bad command
+		-- sha is prefixed with \ when filename contains certian chars
+		| "\\" `isPrefixOf` sha = drop 1 sha
 		| otherwise = sha
 	  where
 		sha = fst $ separate (== ' ') l
@@ -137,6 +140,17 @@ checkKeyChecksum size key file = do
 			check <$> shaN size file filesize
 		_ -> return True
   where
+	sha = keySha key
 	check s
-		| s == dropExtensions (keyName key) = True
+		| s == sha = True
+		{- A bug caused checksums to be prefixed with \ in some
+		 - cases; still accept these as legal now that the bug has been
+		 - fixed. -}
+		| '\\' : s == sha = True
 		| otherwise = False
+
+keySha :: Key -> String
+keySha key = dropExtensions (keyName key)
+
+needsUpgrade :: Key -> Bool
+needsUpgrade key = "\\" `isPrefixOf` keySha key
