@@ -7,14 +7,10 @@
 
 module Types.BranchState where
 
-data BranchState = BranchState {
-	branchUpdated :: Bool, -- has the branch been updated this run?
-	indexChecked :: Bool, -- has the index file been checked to exist?
-
-	-- the content of one file is cached
-	cachedFile :: Maybe FilePath,
-	cachedContent :: String
-}
+data BranchState = BranchState
+	{ branchUpdated :: Bool -- has the branch been updated this run?
+	, indexChecked :: Bool -- has the index file been checked to exist?
+	}
 
 startBranchState :: BranchState
-startBranchState = BranchState False False Nothing ""
+startBranchState = BranchState False False
