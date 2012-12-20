@@ -122,6 +122,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_read_show_direct" Annex.Content.Direct.prop_read_show_direct
 	, qctest "prop_parse_show_log" Logs.Presence.prop_parse_show_log
 	, qctest "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
+	, qctest "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
 	]
 
 blackbox :: Test

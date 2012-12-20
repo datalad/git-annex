@@ -15,6 +15,8 @@ module Logs.Trust (
 	lookupTrust,
 	trustMapLoad,
 	trustMapRaw,
+	
+	prop_parse_show_TrustLog,
 ) where
 
 import qualified Data.Map as M
@@ -113,3 +115,8 @@ showTrustLog Trusted = "1"
 showTrustLog UnTrusted = "0"
 showTrustLog DeadTrusted = "X"
 showTrustLog SemiTrusted = "?"
+
+prop_parse_show_TrustLog :: Bool
+prop_parse_show_TrustLog = all check [minBound .. maxBound]
+  where
+	check l = parseTrustLog (showTrustLog l) == l
