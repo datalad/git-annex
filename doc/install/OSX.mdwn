@@ -18,7 +18,7 @@ the app for OSX Lion.
 
 [[Joey]] autobuilds the app for Mountain Lion.
 
-* [autobuild of git-annex.app](http://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/git-annex.dmg.bz2) ([build logs](http://downloads.kitenet.net/git-annex/OSX/autobuild/))
+* [autobuild of git-annex.app](http://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/git-annex.dmg.bz2) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/))
 
 ## using Brew
 
