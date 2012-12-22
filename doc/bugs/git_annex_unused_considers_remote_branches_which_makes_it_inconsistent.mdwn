@@ -98,3 +98,5 @@ and possibly information in the git-annex branch.
 Gentoo Linux, git annex version 3.20121211
 
 #Please provide any additional information below.
+
+The forum post describing what I was trying to accomplish is [[forum/Best way to manage files on removable media?]]
