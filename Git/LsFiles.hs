@@ -8,6 +8,7 @@
 module Git.LsFiles (
 	inRepo,
 	notInRepo,
+	deleted,
 	staged,
 	stagedNotDeleted,
 	stagedDetails,
@@ -37,6 +38,13 @@ notInRepo include_ignored l repo = pipeNullSplit params repo
 	exclude
 		| include_ignored = []
 		| otherwise = [Param "--exclude-standard"]
+
+{- Returns a list of files in the specified locations that have been
+ - deleted. -}
+deleted :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+deleted l repo = pipeNullSplit params repo
+  where
+	params = [Params "ls-files --deleted -z --"] ++ map File l
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
@@ -112,7 +120,7 @@ data Unmerged = Unmerged
  -   1 = old version, can be ignored
  -   2 = us
  -   3 = them
- - If a line is omitted, that side deleted the file.
+ - If a line is omitted, that side removed the file.
  -}
 unmerged :: [FilePath] -> Repo -> IO ([Unmerged], IO Bool)
 unmerged l repo = do
@@ -157,11 +165,11 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
 		, unmergedBlobType = Conflicting blobtypeA blobtypeB
 		, unmergedSha = Conflicting shaA shaB
 		}
-	findsib templatei [] = ([], deleted templatei)
+	findsib templatei [] = ([], removed templatei)
 	findsib templatei (l:ls)
 		| ifile l == ifile templatei = (ls, l)
-		| otherwise = (l:ls, deleted templatei)
-	deleted templatei = templatei
+		| otherwise = (l:ls, removed templatei)
+	removed templatei = templatei
 		{ isus = not (isus templatei)
 		, iblobtype = Nothing
 		, isha = Nothing

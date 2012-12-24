@@ -27,9 +27,10 @@ import Utility.Types.DirWatcher
 import Utility.Lsof
 import qualified Annex
 import qualified Annex.Queue
-import qualified Git.Command
+import qualified Git
 import qualified Git.UpdateIndex
 import qualified Git.HashObject
+import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
 import Annex.CatFile
@@ -83,9 +84,15 @@ startupScan scanner = do
 
 		-- Notice any files that were deleted before
 		-- watching was started.
-		liftAnnex $ do
-			inRepo $ Git.Command.run "add" [Param "--update"]
-			showAction "started"
+		top <- liftAnnex $ fromRepo Git.repoPath
+		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [top]
+		forM_ fs $ \f -> do
+			liftAnnex $ Annex.Queue.addUpdateIndex =<<
+				inRepo (Git.UpdateIndex.unstageFile f)
+			maybe noop recordChange =<< madeChange f RmChange
+		void $ liftIO $ cleanup
+		
+		liftAnnex $ showAction "started"
 		
 		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
