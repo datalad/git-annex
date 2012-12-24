@@ -35,6 +35,7 @@ import qualified Backend
 import Annex.Content
 import Annex.CatFile
 import Git.Types
+import Config
 
 import Data.Bits.Utils
 import qualified Data.ByteString.Lazy as L
@@ -58,7 +59,8 @@ needLsof = error $ unlines
 watchThread :: NamedThread
 watchThread = NamedThread "Watcher" $ do
 	startup <- asIO1 startupScan
-	addhook <- hook onAdd
+	direct <- liftAnnex isDirect
+	addhook <- hook $ onAdd direct
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
@@ -124,8 +126,9 @@ runHandler handler file filestatus = void $ do
 			liftAnnex $ Annex.Queue.flushWhenFull
 			recordChange change
 
-onAdd :: Handler
-onAdd file filestatus
+onAdd :: Bool -> Handler
+onAdd isdirect file filestatus
+	| isdirect = pendingAddChange file
 	| maybe False isRegularFile filestatus = pendingAddChange file
 	| otherwise = noChange
 

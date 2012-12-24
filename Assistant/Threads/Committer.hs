@@ -147,7 +147,10 @@ delayaddDefault = Nothing
 handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
-	pending' <- findnew pending
+	direct <- liftAnnex isDirect
+	pending' <- if direct
+		then return pending
+		else findnew pending
 	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
 
 	unless (null postponed) $
@@ -155,7 +158,6 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 
 	returnWhen (null toadd) $ do
 		added <- catMaybes <$> forM toadd add
-		direct <- liftAnnex isDirect
 		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
