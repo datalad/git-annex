@@ -33,7 +33,7 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - backend, and then moving it into the annex directory and setting up
  - the symlink pointing to its content. -}
 start :: FilePath -> CommandStart
-start file = notBareRepo $ ifAnnexed file fixup add
+start file = notBareRepo $ notDirect $ ifAnnexed file fixup add
   where
 	add = do
 		s <- liftIO $ getSymbolicLinkStatus file
