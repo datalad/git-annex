@@ -31,6 +31,7 @@ import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
 import Config
 import Annex.Exception
+import Annex.Content
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -154,7 +155,8 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 
 	returnWhen (null toadd) $ do
 		added <- catMaybes <$> forM toadd add
-		if DirWatcher.eventsCoalesce || null added
+		direct <- liftAnnex isDirect
+		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
 				r <- handleAdds delayadd =<< getChanges
@@ -195,13 +197,15 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 	done change file (Just key) = do
-		link <- liftAnnex $ Command.Add.link file key True
-		when DirWatcher.eventsCoalesce $
-			liftAnnex $ do
-				sha <- inRepo $
-					Git.HashObject.hashObject BlobObject link
-				stageSymlink file sha
-				showEndOk
+		link <- liftAnnex $ ifM isDirect
+			( calcGitLink file key
+			, Command.Add.link file key True
+			)
+		liftAnnex $ whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
+			sha <- inRepo $
+				Git.HashObject.hashObject BlobObject link
+			stageSymlink file sha
+			showEndOk
 		queueTransfers Next key (Just file) Upload
 		return $ Just change
 

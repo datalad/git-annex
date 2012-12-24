@@ -16,9 +16,11 @@ import Types.KeySource
 import Backend
 import Logs.Location
 import Annex.Content
+import Annex.Content.Direct
 import Annex.Perms
 import Utility.Touch
 import Utility.FileMode
+import Config
 
 def :: [Command]
 def = [command "add" paramPaths seek "add files to annex"]
@@ -62,7 +64,11 @@ lockDown file = do
 		createLink file tmpfile
 		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
 
-{- Moves a locked down file into the annex. -}
+{- Moves a locked down file into the annex.
+ -
+ - In direct mode, leaves the file alone, and just updates bookeeping
+ - information.
+ -}
 ingest :: KeySource -> Annex (Maybe Key)
 ingest source = do
 	backend <- chooseBackend $ keyFilename source
@@ -72,9 +78,17 @@ ingest source = do
 		liftIO $ nukeFile $ contentLocation source
 		return Nothing
 	go (Just (key, _)) = do
-		handle (undo (keyFilename source) key) $
-			moveAnnex key $ contentLocation source
-		liftIO $ nukeFile $ keyFilename source
+		ifM isDirect
+			( do
+				updateCache key $ keyFilename source
+				void $ addAssociatedFile key $ keyFilename source
+				liftIO $ allowWrite $ keyFilename source
+				liftIO $ nukeFile $ contentLocation source
+			, do
+				handle (undo (keyFilename source) key) $
+					moveAnnex key $ contentLocation source
+				liftIO $ nukeFile $ keyFilename source
+			)
 		return $ Just key
 
 perform :: FilePath -> CommandPerform

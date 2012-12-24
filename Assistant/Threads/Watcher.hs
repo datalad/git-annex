@@ -223,7 +223,8 @@ onErr msg _ = do
 
 {- Adds a symlink to the index, without ever accessing the actual symlink
  - on disk. This avoids a race if git add is used, where the symlink is
- - changed to something else immediately after creation.
+ - changed to something else immediately after creation. It also allows
+ - direct mode to work.
  -}
 stageSymlink :: FilePath -> Sha -> Annex ()
 stageSymlink file sha =
