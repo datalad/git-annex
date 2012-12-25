@@ -33,6 +33,8 @@ import qualified Git.HashObject
 import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
+import Annex.Direct
+import Annex.Content.Direct
 import Annex.CatFile
 import Git.Types
 import Config
@@ -60,7 +62,7 @@ watchThread :: NamedThread
 watchThread = NamedThread "Watcher" $ do
 	startup <- asIO1 startupScan
 	direct <- liftAnnex isDirect
-	addhook <- hook $ onAdd direct
+	addhook <- hook $ if direct then onAddDirect else onAdd
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
@@ -126,11 +128,26 @@ runHandler handler file filestatus = void $ do
 			liftAnnex $ Annex.Queue.flushWhenFull
 			recordChange change
 
-onAdd :: Bool -> Handler
-onAdd isdirect file filestatus
-	| isdirect = pendingAddChange file
+onAdd :: Handler
+onAdd file filestatus
 	| maybe False isRegularFile filestatus = pendingAddChange file
 	| otherwise = noChange
+
+{- In direct mode, add events are received for both new files, and
+ - modified existing files. Or, in some cases, existing files that have not
+ - really been modified. -}
+onAddDirect :: Handler
+onAddDirect file fs = do
+	v <- liftAnnex $ catKey (Ref $ ':':file)
+	case (v, fs) of
+		(Just key, Just filestatus) ->
+			ifM (liftAnnex $ changedFileStatus key filestatus)
+				( noChange
+				, do
+					liftAnnex $ changedDirect key file
+					pendingAddChange file
+				)
+		_ -> pendingAddChange file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content

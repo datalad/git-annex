@@ -10,6 +10,7 @@ module Annex.Content.Direct (
 	removeAssociatedFile,
 	addAssociatedFile,
 	goodContent,
+	changedFileStatus,
 	updateCache,
 	recordedCache,
 	compareCache,
@@ -78,6 +79,12 @@ goodContent :: Key -> FilePath -> Annex Bool
 goodContent key file = do
 	old <- recordedCache key
 	compareCache file old
+
+changedFileStatus :: Key -> FileStatus -> Annex Bool
+changedFileStatus key status = do
+	old <- recordedCache key
+	let curr = toCache status
+	return $ curr == old
 
 {- Gets the recorded cache for a key. -}
 recordedCache :: Key -> Annex (Maybe Cache)

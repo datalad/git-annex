@@ -44,6 +44,6 @@ catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
 		Annex.changeState $ \s -> s { Annex.catfilehandle = Just h }
 		return h
 
-{- From the Sha of a symlink back to the key. -}
-catKey :: Sha -> Annex (Maybe Key)
-catKey sha = fileKey . takeFileName . encodeW8 . L.unpack  <$> catObject sha
+{- From the Sha or Ref of a symlink back to the key. -}
+catKey :: Ref -> Annex (Maybe Key)
+catKey ref = fileKey . takeFileName . encodeW8 . L.unpack  <$> catObject ref

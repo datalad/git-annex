@@ -209,3 +209,11 @@ removeDirect k f = do
 	liftIO $ do
 		nukeFile f
 		void $ catchMaybeIO $ removeDirectory $ parentDir f
+
+{- Called when a direct mode file has been changed. Its old content may be
+ - lost. -}
+changedDirect :: Key -> FilePath -> Annex ()
+changedDirect oldk f = do
+	locs <- removeAssociatedFile oldk f
+	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
+		logStatus oldk InfoMissing
