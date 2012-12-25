@@ -1,0 +1,49 @@
+Over Christmas, I'm working on making the assistant support direct
+mode. I like to have a fairly detailed plan before starting this kind of
+job, but in this case, I don't. (Also I have a cold so planning? Meh.)
+This is a process of seeing what's broken in direct mode and fixing it.
+I don't know if it'll be easy or hard. Let's find out..
+
+* First, got direct mode adding of new files working. This was not hard, all the
+  pieces I needed were there. For now, it uses the same method as in
+  indirect mode to make sure nothing can modify the file while it's being added.
+
+* An unexpected problem is that in its startup scan, the assistant runs
+  `git add --update` to detect and stage any deletions that happened
+  while it was not running. But in direct mode that also stages the full file
+  contents, so can't be used. Had to switch to using git plumbing to only
+  stage deleted files. Happily this also led to fixing a bug, where deletions
+  were not always committed at startup.
+
+* Next, got it to commit when direct mode files are modified. The Watcher
+  thread gets a inotify event when this happens, so that was easy. (Although
+  in doing that I had to disable a guard in direct mode that made annexed
+  files co-exist with regular in-git files, so such mixed repositories
+  probably won't work in direct mode yet.)
+
+  However, naughty kqueue is another story, there are no kqueue events for
+  file modifications. So this won't work on OSX or the BSDs yet. I tried
+  setting some more kqueue flags in hope that one would make such events
+  appear, but no luck. Seems I will need to find some other method to detect
+  file modifications, possibly an OSX-specific API.
+
+* Another unexpected problem: When an assistant receives new files from one
+  of its remotes, in direct mode it still sets up symlinks to the content.
+  This was because the Merger thread didn't use the `sync` command's direct
+  mode aware merge code.
+
+  One other interesting thing about file transfers in
+  direct mode is that they can sometimes happen before the git branch is
+  pushed and merged. When that happens the object is stored in indirect mode.
+  Happily the direct mode aware merger detects such objects and converts them
+  to direct mode.
+
+* Noticed that when the assistant adds a new object for a modified direct
+  mode file, it neglects to update the mapping for old object, so it
+  incorrectly still maps that object to the file. That bad data could lead to
+  unknown buggy behavior.
+
+  This is complicated by a mapping only being maintained from objects to
+  files, but not a reverse mapping. To get from files to objects currently
+  requires querying git for the symlink target, which is relatively slow.
+  
