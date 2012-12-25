@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2012-12-23T17:40:13Z"
+ content="""
+Using a plain tcp connection would be simpler than HTTP, the sending side would just need to tell the receiver to listen on a port and write any data received to a file(or the reverse). Basically what you can do with netcat.
+
+I had a similar problem, but I found that using arcfour was fast enough:
+
+.ssh/config:
+
+    Host slow
+    Ciphers arcfour
+
+"""]]
