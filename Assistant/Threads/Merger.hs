@@ -14,8 +14,8 @@ import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import qualified Annex.Branch
 import qualified Git
-import qualified Git.Merge
 import qualified Git.Branch
+import qualified Command.Sync
 
 thisThread :: ThreadName
 thisThread = "Merger"
@@ -80,8 +80,7 @@ onAdd file
 				[ "merging", show changedbranch
 				, "into", show current
 				]
-			void $ liftAnnex $ inRepo $
-				Git.Merge.mergeNonInteractive changedbranch
+			void $ liftAnnex  $ Command.Sync.mergeFrom changedbranch
 	mergecurrent _ = noop
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool

@@ -87,6 +87,12 @@ is converted to a real file when it becomes present.
 * Deal with files changing as they're being transferred from a direct mode
   repository to another git repository. The remote repo currently will 
   accept the bad data and update the location log to say it has the key.
+* When the assistant adds a modified direct mode file, it leaves behind
+  an associated files mapping to the file for the old key as well. That
+  needs to be deleted (sync deletes it in the similar situation).
+* kqueue does not deliver an event when an existing file is modified;
+  need a different way to detect file modifications (possibly an OSX specific
+  interface?)
 
 ## done
 
