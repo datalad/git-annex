@@ -33,7 +33,10 @@ any time). To do so:
 
 ## use a direct mode repository
 
-The main command that's used in direct mode repositories is
+Perhaps the best way to use a direct mode repository is with the git-annex
+assistant.
+
+Otherwise, the main command that's used in direct mode repositories is
 `git annex sync`. This automatically adds new files, commits all
 changed files to git, pushes them out, pulls down any changes, etc.
 

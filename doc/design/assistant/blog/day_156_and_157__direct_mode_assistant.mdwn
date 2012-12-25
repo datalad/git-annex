@@ -6,14 +6,16 @@ I don't know if it'll be easy or hard. Let's find out..
 
 * First, got direct mode adding of new files working. This was not hard, all the
   pieces I needed were there. For now, it uses the same method as in
-  indirect mode to make sure nothing can modify the file while it's being added.
+  indirect mode to make sure nothing can modify the file while it's being
+  added.
 
 * An unexpected problem is that in its startup scan, the assistant runs
   `git add --update` to detect and stage any deletions that happened
   while it was not running. But in direct mode that also stages the full file
   contents, so can't be used. Had to switch to using git plumbing to only
-  stage deleted files. Happily this also led to fixing a bug, where deletions
-  were not always committed at startup.
+  stage deleted files. Happily this also led to fixing a bug; deletions
+  were not always committed at startup when using the old method; with the
+  new method it can tell when there are deletions and trigger a commit.
 
 * Next, got it to commit when direct mode files are modified. The Watcher
   thread gets a inotify event when this happens, so that was easy. (Although
@@ -30,20 +32,14 @@ I don't know if it'll be easy or hard. Let's find out..
 * Another unexpected problem: When an assistant receives new files from one
   of its remotes, in direct mode it still sets up symlinks to the content.
   This was because the Merger thread didn't use the `sync` command's direct
-  mode aware merge code.
+  mode aware merge code.. so fixed that.
 
-  One other interesting thing about file transfers in
-  direct mode is that they can sometimes happen before the git branch is
-  pushed and merged. When that happens the object is stored in indirect mode.
-  Happily the direct mode aware merger detects such objects and converts them
-  to direct mode.
+* Finally there was some direct mode bookeeping the assistant has
+  to get right. For example, when a file is modified, the old object has
+  to be looked up, and be marked as not locally present any longer. That
+  lookup relies on the already running `git cat-file --batch`, so it's
+  not as fast as it could be, if I kept a local cache of the mapping
+  between files and objects. But it seems fast enough for now.
 
-* Noticed that when the assistant adds a new object for a modified direct
-  mode file, it neglects to update the mapping for old object, so it
-  incorrectly still maps that object to the file. That bad data could lead to
-  unknown buggy behavior.
-
-  This is complicated by a mapping only being maintained from objects to
-  files, but not a reverse mapping. To get from files to objects currently
-  requires querying git for the symlink target, which is relatively slow.
-  
+At this point the assistant seems to work in direct mode on Linux!
+Needs more testing..

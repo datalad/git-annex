@@ -5,6 +5,9 @@ git-annex (3.20121212) UNRELEASED; urgency=low
     via symlinks. Note that direct mode is currently experimental. Many
     git and git-annex commands do not work, or can even cause data loss in
     direct mode.
+  * assistant: Support direct mode; however kqueue based systems (including
+    OSX) do not yet support autocommitting after files are modified in
+    direct mode.
   * kqueue: Fix bug that made broken symlinks not be noticed.
   * vicfg: Quote filename. Closes: #696193
   * Bugfix: Fixed bug parsing transfer info files, where the newline after
