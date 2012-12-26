@@ -23,9 +23,9 @@ the app for OSX Lion.
 ## using Brew
 
 <pre>
-sudo brew update
-sudo brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config libxml2
-sudo brew link libxml2
+brew update
+brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config libxml2
+brew link libxml2
 cabal update
 PATH=$HOME/bin:$PATH
 cabal install c2hs git-annex --bindir=$HOME/bin
