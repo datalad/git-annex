@@ -18,6 +18,7 @@ watchDir :: FilePath -> (FilePath -> Bool) -> WatchHooks -> IO EventStream
 watchDir dir ignored hooks = do
 	unlessM fileLevelEventsSupported $
 		error "Need at least OSX 10.7.0 for file-level FSEvents"
+	scan dir
 	eventStreamCreate [dir] 1.0 True False True handle
   where
 	handle evt
@@ -52,9 +53,29 @@ watchDir dir ignored hooks = do
 				ms <- getstatus $ eventPath evt
 				runhook modifyHook ms
 	  where
-		getstatus = catchMaybeIO . getSymbolicLinkStatus
 		hasflag f = eventFlags evt .&. f /= 0
 		runhook h s = maybe noop (\a -> a (eventPath evt) s) (h hooks)
+	
+	scan d = unless (ignoredPath ignored d) $
+		mapM_ go =<< dirContentsRecursive d
+	  where		
+		go f
+			| ignoredPath ignored f = noop
+			| otherwise = do
+				ms <- getstatus f
+				case ms of
+					Nothing -> noop
+					Just s
+						| Files.isSymbolicLink s ->
+							runhook addSymlinkHook ms
+						| Files.isRegularFile s ->
+							runhook addHook ms
+						| otherwise ->
+							noop
+		  where
+			runhook h s = maybe noop (\a -> a f s) (h hooks)
+		
+	getstatus = catchMaybeIO . getSymbolicLinkStatus
 
 {- Check each component of the path to see if it's ignored. -}
 ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool
