@@ -21,7 +21,6 @@ watchDir dir ignored hooks = do
 	eventStreamCreate [dir] 1.0 True False True handle
   where
 	handle evt
-		| not (hasflag eventFlagItemIsFile) = noop
 		| ignoredPath ignored (eventPath evt) = noop
 		| otherwise = do
 			{- More than one flag may be set, if events occurred
@@ -34,15 +33,12 @@ watchDir dir ignored hooks = do
 			 - the delHook will run first, followed by the addHook.
 			 -}
 
-			{- Deletion events are received for both directories
-			 - and files, with no way to differentiate between
-			 - them. Deleting a directory always first yields
-			 - events deleting its contents though, so we
-			 - just always call delHook, and never delDirHook. -}
 			when (hasflag eventFlagItemRemoved) $
-				runhook delHook Nothing
+				if hasflag eventFlagItemIsDir
+					then runhook delDirHook Nothing
+					else runhook delHook Nothing
 			{- TODO deal with moving whole directories -}
-			when (hasflag eventFlagItemCreated || hasflag eventFlagItemRenamed) $ do
+			when (hasflag eventFlagItemCreated || (hasflag eventFlagItemRenamed && not (hasflag eventFlagItemRemoved))) $ do
 				ms <- getstatus $ eventPath evt
 				case ms of
 					Nothing -> noop
@@ -52,7 +48,7 @@ watchDir dir ignored hooks = do
 						| Files.isRegularFile s ->
 							runhook addHook ms
 						| otherwise -> noop
-			when (hasflag eventFlagItemModified) $ do
+			when (hasflag eventFlagItemModified && not (hasflag eventFlagItemIsDir)) $ do
 				ms <- getstatus $ eventPath evt
 				runhook modifyHook ms
 	  where
