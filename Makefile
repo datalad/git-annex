@@ -26,14 +26,19 @@ FEATURES:=$(shell echo $(FEATURES) | sed -e 's/-DWITH_ASSISTANT//' -e 's/-DWITH_
 else
 # BSD system
 THREADFLAGS=-threaded
-OPTFLAGS?=-DWITH_KQUEUE
-clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 ifeq ($(OS),Darwin)
+# use fsevents for OSX
+OPTFLAGS?=-DWITH_FSEVENTS
+clibs=Utility/libdiskfree.o Utility/libmounts.o
 # Ensure OSX compiler builds for 32 bit when using 32 bit ghc
 GHCARCH:=$(shell ghc -e 'print System.Info.arch')
 ifeq ($(GHCARCH),i386)
 CFLAGS=-Wall -m32
 endif
+else
+# BSD system with kqueue
+OPTFLAGS?=-DWITH_KQUEUE
+clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 endif
 endif
 endif
