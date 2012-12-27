@@ -12,7 +12,11 @@ available!
 * Kqueue has to open every directory it watches, so too many directories
   will run it out of the max number of open files (typically 1024), and fail.
   I may need to fork off multiple watcher processes to handle this.
-  See [[bugs/Issue_on_OSX_with_some_system_limits]].
+  See [[bug|bugs/Issue_on_OSX_with_some_system_limits]]. (Does not affect
+  OSX any longer).
+
+* The OSX FSEvents code is new and relatively untested. A known problem is
+  that it does not handle whole directory renames right.
 
 ## todo
 
