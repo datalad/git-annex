@@ -14,4 +14,4 @@ Gripes:
 
 Bugs:
 
-[[!inline pages="tagged(design/assistant/OSX) && !link(bugs/done)" show=0 archive=yes]]
+[[!inline pages="tagged(design/assistant/OSX) and !link(bugs/done)" show=0 archive=yes]]
