@@ -31,3 +31,7 @@ The sync should be transparent but it's not, and it's error prone. It would even
 Dropbox even allows to put a symlink in the dropbox directory, and it will sync the file. 
 
 [[!tag /design/assistant/OSX]]
+
+> Now the assistant creates new repositories using direct mode on OSX.
+> In direct mode, there is no locking of files; they can be modified
+> directly. [[done]] --[[Joey]]

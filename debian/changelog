@@ -11,6 +11,8 @@ git-annex (3.20121212) UNRELEASED; urgency=low
     as well as allowing detection of modification of files in direct mode.
     BSD systems still use kqueue, and cannot detect modifications of existing
     files in direct mode.
+  * OSX assistant: Uses direct mode by default when setting up a new
+    local repository.
   * kqueue: Fix bug that made broken symlinks not be noticed.
   * vicfg: Quote filename. Closes: #696193
   * Bugfix: Fixed bug parsing transfer info files, where the newline after
@@ -23,9 +25,6 @@ git-annex (3.20121212) UNRELEASED; urgency=low
   * SHA*E backends: Exclude non-alphanumeric characters from extensions.
   * migrate: Remove leading \ in SHA* checksums, and non-alphanumerics
     from extensions of SHA*E keys.
- 
-  -- Joey Hess <joeyh@debian.org>  Thu, 13 Dec 2012 14:06:43 -0400
- 
 
  -- Joey Hess <joeyh@debian.org>  Thu, 13 Dec 2012 14:06:43 -0400
 

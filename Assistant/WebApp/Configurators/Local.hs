@@ -29,6 +29,7 @@ import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
 import Utility.UserInfo
+import Config
 
 import qualified Data.Text as T
 import Data.Char
@@ -144,7 +145,7 @@ getNewRepositoryR = page "Add another repository" (Just Config) $ do
 		FormSuccess (RepositoryPath p) -> lift $ do
 			let path = T.unpack p
 			liftIO $ makeRepo path False
-			u <- liftIO $ initRepo path Nothing
+			u <- liftIO $ initRepo True path Nothing
 			runAnnex () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStart path
 			redirect $ SwitchToRepositoryR path
@@ -187,7 +188,7 @@ getAddDriveR = page "Add a removable drive" (Just Config) $ do
   where
 	make mountpoint = do
 		liftIO $ makerepo dir
-		u <- liftIO $ initRepo dir $ Just remotename
+		u <- liftIO $ initRepo False dir $ Just remotename
 		r <- addremote dir remotename
 		runAnnex () $ setStandardGroup u TransferGroup
 		syncRemote r
@@ -246,7 +247,7 @@ startFullAssistant path = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		makeRepo path False
-		u <- initRepo path Nothing
+		u <- initRepo True path Nothing
 		inDir path $ 
 			setStandardGroup u ClientGroup
 		addAutoStart path
@@ -271,8 +272,8 @@ inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
 	Annex.eval state a
 
-initRepo :: FilePath -> Maybe String -> IO UUID
-initRepo dir desc = inDir dir $ do
+initRepo :: Bool -> FilePath -> Maybe String -> IO UUID
+initRepo primary_assistant_repo dir desc = inDir dir $ do
 	{- Initialize a git-annex repository in a directory with a description. -}
 	unlessM isInitialized $
 		initialize desc
@@ -285,6 +286,12 @@ initRepo dir desc = inDir dir $ do
 			, Param "-m"
 			, Param "created repository"
 			]
+#ifdef darwin_HOST_OS
+	{- Use direct mode repositories by default on OSX, because
+	 - this avoids some problems with the Finder. -}
+	when primary_assistant_repo $
+		setDirect True
+#endif
 	getUUID
 
 {- Adds a directory to the autostart file. -}

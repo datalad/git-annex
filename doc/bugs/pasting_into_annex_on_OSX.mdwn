@@ -20,4 +20,9 @@ Please provide any additional information below.
 >> Reopening since I've heard from someone else that it can still happen.
 >> --[[Joey]] 
 
+>>> Closing again, since the assistant now makes new repositories on OSX
+>>> using direct mode, which should avoid this problem. NB: any existing
+>>> repositories you have on OSX should be switched to use direct mode by
+>>> manually running `git annex direct` in them. [[done]] --[[Joey]]
+
 [[!tag /design/assistant/OSX]]

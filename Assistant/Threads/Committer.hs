@@ -41,9 +41,9 @@ import Data.Either
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
 commitThread = NamedThread "Committer" $ do
-	delayadd <- liftAnnex $
-		maybe delayaddDefault (Just . Seconds) . readish
-			<$> getConfig (annexConfig "delayadd") "" 
+	delayadd <- liftAnnex $ do
+		v <- readish <$> getConfig (annexConfig "delayadd") ""
+		maybe delayaddDefault (return . Just . Seconds) v
 	runEvery (Seconds 1) <~> do
 		-- We already waited one second as a simple rate limiter.
 		-- Next, wait until at least one change is available for
@@ -115,13 +115,17 @@ shouldCommit now changes
 	thisSecond c = now `diffUTCTime` changeTime c <= 1
 
 {- OSX needs a short delay after a file is added before locking it down,
- - as pasting a file seems to try to set file permissions or otherwise
- - access the file after closing it. -}
-delayaddDefault :: Maybe Seconds
+ - when using a non-direct mode repository, as pasting a file seems to
+ - try to set file permissions or otherwise access the file after closing
+ - it. -}
+delayaddDefault :: Annex (Maybe Seconds)
 #ifdef darwin_HOST_OS
-delayaddDefault = Just $ Seconds 1
+delayaddDefault = ifM isDirect
+	( return Nothing
+	, return $ Just $ Seconds 1
+	)
 #else
-delayaddDefault = Nothing
+delayaddDefault = return Nothing
 #endif
 
 {- If there are PendingAddChanges, or InProcessAddChanges, the files
