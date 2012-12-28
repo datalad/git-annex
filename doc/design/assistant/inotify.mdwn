@@ -15,9 +15,6 @@ available!
   See [[bug|bugs/Issue_on_OSX_with_some_system_limits]]. (Does not affect
   OSX any longer).
 
-* The OSX FSEvents code is new and relatively untested. A known problem is
-  that it does not handle whole directory renames right.
-
 ## todo
 
 * Run niced and ioniced? Seems to make sense, this is a background job.

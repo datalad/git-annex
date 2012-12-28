@@ -38,23 +38,28 @@ watchDir dir ignored hooks = do
 				if hasflag eventFlagItemIsDir
 					then runhook delDirHook Nothing
 					else runhook delHook Nothing
-			{- TODO deal with moving whole directories -}
-			when (hasflag eventFlagItemCreated || (hasflag eventFlagItemRenamed && not (hasflag eventFlagItemRemoved))) $ do
-				ms <- getstatus $ eventPath evt
-				case ms of
-					Nothing -> noop
-					Just s
-						| Files.isSymbolicLink s -> 
-							runhook addSymlinkHook ms
-						| Files.isRegularFile s ->
-							runhook addHook ms
-						| otherwise -> noop
+			when (hasflag eventFlagItemCreated) $
+				maybe noop handleadd =<< getstatus (eventPath evt)
+			{- When a file or dir is renamed, a rename event is
+			 - received for both its old and its new name. -}
+			when (hasflag eventFlagItemRenamed) $
+				if hasflag eventFlagItemIsDir
+					then ifM (doesDirectoryExist $ eventPath evt)
+						( scan $ eventPath evt
+						, runhook delDirHook Nothing
+						)
+					else maybe (runhook delHook Nothing) handleadd
+						=<< getstatus (eventPath evt)
 			when (hasflag eventFlagItemModified && not (hasflag eventFlagItemIsDir)) $ do
 				ms <- getstatus $ eventPath evt
 				runhook modifyHook ms
 	  where
 		hasflag f = eventFlags evt .&. f /= 0
 		runhook h s = maybe noop (\a -> a (eventPath evt) s) (h hooks)
+		handleadd s
+			| Files.isSymbolicLink s = runhook addSymlinkHook $ Just s
+			| Files.isRegularFile s = runhook addHook $ Just s
+			| otherwise = noop
 	
 	scan d = unless (ignoredPath ignored d) $
 		mapM_ go =<< dirContentsRecursive d
