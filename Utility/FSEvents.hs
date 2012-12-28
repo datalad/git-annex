@@ -19,7 +19,7 @@ watchDir dir ignored hooks = do
 	unlessM fileLevelEventsSupported $
 		error "Need at least OSX 10.7.0 for file-level FSEvents"
 	scan dir
-	eventStreamCreate [dir] 1.0 True False True handle
+	eventStreamCreate [dir] 1.0 True True True handle
   where
 	handle evt
 		| ignoredPath ignored (eventPath evt) = noop
