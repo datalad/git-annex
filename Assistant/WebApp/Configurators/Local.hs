@@ -174,7 +174,7 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 
 {- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
-getAddDriveR = page "AAdd a removable drive" (Just Config) $ do
+getAddDriveR = page "Add a removable drive" (Just Config) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
