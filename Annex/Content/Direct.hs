@@ -84,7 +84,7 @@ changedFileStatus :: Key -> FileStatus -> Annex Bool
 changedFileStatus key status = do
 	old <- recordedCache key
 	let curr = toCache status
-	return $ curr == old
+	return $ curr /= old
 
 {- Gets the recorded cache for a key. -}
 recordedCache :: Key -> Annex (Maybe Cache)
