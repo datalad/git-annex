@@ -69,6 +69,7 @@ watchThread = NamedThread "Watcher" $ do
 	errhook <- hook onErr
 	let hooks = mkWatchHooks
 		{ addHook = addhook
+		, modifyHook = addhook
 		, delHook = delhook
 		, addSymlinkHook = addsymlinkhook
 		, delDirHook = deldirhook
