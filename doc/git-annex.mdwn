@@ -190,6 +190,9 @@ subdirectories).
   Like watch, but also automatically syncs changes to other remotes.
   Typically started at boot, or when you log in.
 
+  With the --autostart option, the assistant is started in any repositories
+  it has created.
+
 * webapp
 
   Runs a web app, that allows easy setup of a git-annex repository,
