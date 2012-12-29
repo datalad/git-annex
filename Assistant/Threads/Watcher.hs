@@ -69,7 +69,6 @@ watchThread = NamedThread "Watcher" $ do
 	errhook <- hook onErr
 	let hooks = mkWatchHooks
 		{ addHook = addhook
-		, modifyHook = addhook
 		, delHook = delhook
 		, addSymlinkHook = addsymlinkhook
 		, delDirHook = deldirhook
@@ -143,10 +142,10 @@ onAddDirect file fs = do
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ changedFileStatus key filestatus)
-				( noChange
-				, do
+				( do
 					liftAnnex $ changedDirect key file
 					pendingAddChange file
+				, noChange
 				)
 		_ -> pendingAddChange file
 
