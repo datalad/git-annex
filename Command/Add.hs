@@ -73,24 +73,36 @@ lockDown file = do
 ingest :: KeySource -> Annex (Maybe Key)
 ingest source = do
 	backend <- chooseBackend $ keyFilename source
-	genKey source backend >>= go
+	ifM isDirect
+		( do
+			mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus $ keyFilename source
+			k <- genKey source backend
+			godirect k (toCache =<< mstat)
+		, go =<< genKey source backend
+		)
   where
-	go Nothing = do
-		liftIO $ nukeFile $ contentLocation source
-		return Nothing
 	go (Just (key, _)) = do
-		ifM isDirect
+		handle (undo (keyFilename source) key) $
+			moveAnnex key $ contentLocation source
+		liftIO $ nukeFile $ keyFilename source
+		return $ Just key
+	go Nothing = failure
+
+	godirect (Just (key, _)) (Just cache) =
+		ifM (compareCache (keyFilename source) $ Just cache)
 			( do
-				updateCache key $ keyFilename source
+				writeCache key cache
 				void $ addAssociatedFile key $ keyFilename source
 				liftIO $ allowWrite $ keyFilename source
 				liftIO $ nukeFile $ contentLocation source
-			, do
-				handle (undo (keyFilename source) key) $
-					moveAnnex key $ contentLocation source
-				liftIO $ nukeFile $ keyFilename source
+				return $ Just key
+			, failure
 			)
-		return $ Just key
+	godirect _ _ = failure
+
+	failure = do
+		liftIO $ nukeFile $ contentLocation source
+		return Nothing		
 
 perform :: FilePath -> CommandPerform
 perform file = 
