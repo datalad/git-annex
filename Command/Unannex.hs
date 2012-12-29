@@ -16,7 +16,8 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 
 def :: [Command]
-def = [command "unannex" paramPaths seek "undo accidential add command"]
+def = [notDirect $
+	command "unannex" paramPaths seek "undo accidential add command"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

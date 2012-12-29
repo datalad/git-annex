@@ -18,7 +18,7 @@ def =
 	, c "edit" "same as unlock"
 	]
   where
-	c n = command n paramPaths seek
+	c n = notDirect . command n paramPaths seek
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

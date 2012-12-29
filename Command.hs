@@ -18,7 +18,6 @@ module Command (
 	whenAnnexed,
 	ifAnnexed,
 	notBareRepo,
-	notDirect,
 	isBareRepo,
 	numCopies,
 	numCopiesCheck,
@@ -103,12 +102,6 @@ notBareRepo a = do
 	whenM isBareRepo $
 		error "You cannot run this subcommand in a bare repository."
 	a
-
-notDirect :: Annex a -> Annex a
-notDirect a = ifM isDirect
-	( error "You cannot run this subcommand in a direct mode repository."
-	, a
-	)
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare

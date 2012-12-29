@@ -18,7 +18,7 @@ import qualified Annex.Branch
 import Annex.Content
 
 def :: [Command]
-def = [addCheck check $ command "uninit" paramPaths seek 
+def = [notDirect $ addCheck check $ command "uninit" paramPaths seek 
 	"de-initialize git-annex and clean out repository"]
 
 check :: Annex ()

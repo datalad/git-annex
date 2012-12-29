@@ -13,7 +13,8 @@ import qualified Annex
 import qualified Command.Add
 
 def :: [Command]
-def = [command "import" paramPaths seek "move and add files from outside git working copy"]
+def = [notDirect $ command "import" paramPaths seek
+	"move and add files from outside git working copy"]
 
 seek :: [CommandSeek]
 seek = [withPathContents start]

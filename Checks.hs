@@ -13,12 +13,17 @@ module Checks where
 import Common.Annex
 import Types.Command
 import Init
+import Config
 
 commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
 
 repoExists :: CommandCheck
 repoExists = CommandCheck 0 ensureInitialized
+
+notDirect :: Command -> Command
+notDirect = addCheck $ whenM isDirect $
+	error "You cannot run this subcommand in a direct mode repository."
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
@@ -29,3 +34,4 @@ addCheck check cmd = mutateCheck cmd $ \c ->
 
 mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
 mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }
+

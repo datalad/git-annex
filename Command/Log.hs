@@ -36,7 +36,7 @@ data RefChange = RefChange
 type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
 def :: [Command]
-def = [withOptions options $
+def = [notDirect $ withOptions options $
 	command "log" paramPaths seek "shows location log"]
 
 options :: [Option]

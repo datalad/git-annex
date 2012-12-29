@@ -19,7 +19,7 @@ import Logs.Presence
 import Logs.Transfer
 
 def :: [Command]
-def = [withOptions options $ command "move" paramPaths seek
+def = [notDirect $ withOptions options $ command "move" paramPaths seek
 	"move content of files to/from another repository"]
 
 fromOption :: Option

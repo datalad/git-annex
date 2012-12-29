@@ -14,14 +14,16 @@ import qualified Command.Add
 import Types.Key
 
 def :: [Command]
-def = [command "addunused" (paramRepeating paramNumRange)
+def = [notDirect $ command "addunused" (paramRepeating paramNumRange)
 	seek "add back unused files"]
 
 seek :: [CommandSeek]
 seek = [withUnusedMaps start]
 
 start :: UnusedMaps -> Int -> CommandStart
-start = startUnused "addunused" perform (performOther "bad") (performOther "tmp")
+start = startUnused "addunused" perform
+	(performOther "bad")
+	(performOther "tmp")
 
 perform :: Key -> CommandPerform
 perform key = next $ Command.Add.cleanup file key True

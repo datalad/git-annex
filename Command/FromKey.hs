@@ -14,7 +14,7 @@ import Annex.Content
 import Types.Key
 
 def :: [Command]
-def = [command "fromkey" (paramPair paramKey paramPath) seek
+def = [notDirect $ command "fromkey" (paramPair paramKey paramPath) seek
 	"adds a file using a specific key"]
 
 seek :: [CommandSeek]

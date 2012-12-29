@@ -34,7 +34,7 @@ import System.Posix.Types (EpochTime)
 import System.Locale
 
 def :: [Command]
-def = [withOptions options $ command "fsck" paramPaths seek
+def = [notDirect $ withOptions options $ command "fsck" paramPaths seek
 	"check for problems"]
 
 fromOption :: Option

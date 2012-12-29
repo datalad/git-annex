@@ -24,7 +24,7 @@ import Types.KeySource
 import Config
 
 def :: [Command]
-def = [withOptions [fileOption, pathdepthOption] $
+def = [notDirect $ withOptions [fileOption, pathdepthOption] $
 	command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 fileOption :: Option

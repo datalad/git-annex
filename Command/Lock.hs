@@ -12,7 +12,7 @@ import Command
 import qualified Annex.Queue
 	
 def :: [Command]
-def = [command "lock" paramPaths seek "undo unlock command"]
+def = [notDirect $ command "lock" paramPaths seek "undo unlock command"]
 
 seek :: [CommandSeek]
 seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]

@@ -16,7 +16,7 @@ import qualified Command.Add
 import Logs.Web
 
 def :: [Command]
-def = [command "rekey"
+def = [notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
 	seek "change keys used for files"]
 

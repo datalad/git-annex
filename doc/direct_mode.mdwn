@@ -42,9 +42,9 @@ changed files to git, pushes them out, pulls down any changes, etc.
 
 You can also run `git annex get` to transfer the content of files into your
 direct mode repository. Or if the direct mode repository is a remote of
-some other, regular git-annex repository, you can use commands like `git
-annex copy` and `git annex move` to transfer the contents of files to the
-direct mode repository.
+some other, regular git-annex repository, you can use commands in the other
+repository like `git annex copy` and `git annex move` to transfer the
+contents of files to the direct mode repository.
 
 You can use `git commit --staged`. (But not `git commit -a` .. It'll commit
 whole large files into git!)
@@ -53,15 +53,11 @@ You can use `git log` and other git query commands.
 
 ## what doesn't work in direct mode
 
-Don't use `git annex add` -- it thinks all direct mode files are unlocked,
-and locks them.
-
 In general git-annex commands will only work in direct mode repositories on
 files whose content is not present. That's because such files are still 
 represented as symlinks, which git-annex commands know how to operate on.
 So, `git annex get` works, but `git annex drop` and `git annex move` don't,
-and things like `git annex fsck` and `git annex status` show incomplete
-information.
+and things like `git annex status` show incomplete information.
 
 It's technically possible to make all git-annex commands work in direct
 mode repositories, so this might change. Check back to this page to see

@@ -3,8 +3,8 @@ git-annex (3.20121212) UNRELEASED; urgency=low
   * direct, indirect: New commands, that switch a repository to and from
     direct mode. In direct mode, files are accessed directly, rather than
     via symlinks. Note that direct mode is currently experimental. Many
-    git and git-annex commands do not work, or can even cause data loss in
-    direct mode.
+    git-annex commands do not work in direct mode. Some git commands can
+    cause data loss when used in direct mode repositories.
   * assistant: Support direct mode.
   * OSX assistant: Now uses the FSEvents API to detect file changes.
     This avoids issues with running out of file descriptors on large trees,

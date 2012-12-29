@@ -13,7 +13,7 @@ import qualified Annex.Queue
 import Annex.Content
 
 def :: [Command]
-def = [noCommit $ command "fix" paramPaths seek
+def = [notDirect $ noCommit $ command "fix" paramPaths seek
 	"fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]
