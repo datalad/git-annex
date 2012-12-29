@@ -104,6 +104,7 @@ data AnnexState = AnnexState
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository
+	, direct :: Maybe Bool
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -133,6 +134,7 @@ newState gitrepo = AnnexState
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
 	, shared = Nothing
+	, direct = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
 	, groupmap = Nothing

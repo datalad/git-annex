@@ -116,13 +116,20 @@ getDiskReserve = fromMaybe megabyte . readSize dataUnits
   where
 	megabyte = 1000000
 
-{- Gets annex.direct setting. -}
+{- Gets annex.direct setting, cached for speed. -}
 isDirect :: Annex Bool
-isDirect = fromMaybe False . Git.Config.isTrue <$>
-	getConfig (annexConfig "direct") ""
+isDirect = maybe fromconfig return =<< Annex.getState Annex.direct
+  where
+	fromconfig = do
+		direct <- fromMaybe False . Git.Config.isTrue <$>
+			getConfig (annexConfig "direct") ""
+		Annex.changeState $ \s -> s { Annex.direct = Just direct }
+		return direct
 
 setDirect :: Bool -> Annex ()
-setDirect b = setConfig (annexConfig "direct") (if b then "true" else "false")
+setDirect b = do
+	setConfig (annexConfig "direct") (if b then "true" else "false")
+	Annex.changeState $ \s -> s { Annex.direct = Just b }
 
 {- Gets annex.httpheaders or annex.httpheaders-command setting,
  - splitting it into lines. -}
