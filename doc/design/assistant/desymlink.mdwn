@@ -87,9 +87,9 @@ is converted to a real file when it becomes present.
 * Deal with files changing as they're being transferred from a direct mode
   repository to another git repository. The remote repo currently will 
   accept the bad data and update the location log to say it has the key.
-* kqueue does not deliver an event when an existing file is modified;
-  need a different way to detect file modifications (possibly an OSX specific
-  interface?)
+* kqueue does not deliver an event when an existing file is modified.
+  This doesn't affect OSX, which uses FSEvents now, but it makes direct
+  mode assistant not 100% on other BSD's.
 
 ## done
 
