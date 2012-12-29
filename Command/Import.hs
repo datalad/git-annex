@@ -13,14 +13,14 @@ import qualified Annex
 import qualified Command.Add
 
 def :: [Command]
-def = [notDirect $ command "import" paramPaths seek
+def = [notDirect $ notBareRepo $ command "import" paramPaths seek
 	"move and add files from outside git working copy"]
 
 seek :: [CommandSeek]
 seek = [withPathContents start]
 
 start :: (FilePath, FilePath) -> CommandStart
-start (srcfile, destfile) = notBareRepo $
+start (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
 			showStart "import" destfile

@@ -13,7 +13,7 @@ import Command
 import Option
 
 def :: [Command]
-def = [withOptions [foregroundOption, stopOption] $ 
+def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek "watch for changes"]
 
 seek :: [CommandSeek]
@@ -28,7 +28,7 @@ stopOption :: Option
 stopOption = Option.flag [] "stop" "stop daemon"
 
 start :: Bool -> Bool -> Bool -> CommandStart
-start assistant foreground stopdaemon = notBareRepo $ do
+start assistant foreground stopdaemon = do
 	if stopdaemon
 		then stopDaemon
 		else startDaemon assistant foreground Nothing -- does not return

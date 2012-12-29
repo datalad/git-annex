@@ -16,15 +16,14 @@ import Config
 import Annex.Direct
 
 def :: [Command]
-def = [command "direct" paramNothing seek "switch repository to direct mode"]
+def = [notBareRepo $ 
+	command "direct" paramNothing seek "switch repository to direct mode"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
-start = notBareRepo $
-	ifM isDirect
-		( stop , next perform )
+start = ifM isDirect ( stop , next perform )
 
 perform :: CommandPerform
 perform = do

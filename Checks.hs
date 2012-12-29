@@ -14,6 +14,7 @@ import Common.Annex
 import Types.Command
 import Init
 import Config
+import qualified Git
 
 commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
@@ -24,6 +25,10 @@ repoExists = CommandCheck 0 ensureInitialized
 notDirect :: Command -> Command
 notDirect = addCheck $ whenM isDirect $
 	error "You cannot run this subcommand in a direct mode repository."
+
+notBareRepo :: Command -> Command
+notBareRepo = addCheck $ whenM (fromRepo Git.repoIsLocalBare) $
+	error "You cannot run this subcommand in a bare repository."
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c

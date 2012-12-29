@@ -24,7 +24,7 @@ import Types.KeySource
 import Config
 
 def :: [Command]
-def = [notDirect $ withOptions [fileOption, pathdepthOption] $
+def = [notDirect $ notBareRepo $ withOptions [fileOption, pathdepthOption] $
 	command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 fileOption :: Option
@@ -39,7 +39,7 @@ seek = [withField fileOption return $ \f ->
 	withStrings $ start f d]
 
 start :: Maybe FilePath -> Maybe Int -> String -> CommandStart
-start optfile pathdepth s = notBareRepo $ go $ fromMaybe bad $ parseURI s
+start optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   where
 	bad = fromMaybe (error $ "bad url " ++ s) $
 		parseURI $ escapeURIString isUnescapedInURI s

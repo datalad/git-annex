@@ -29,7 +29,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 
 def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
+def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
 	command "webapp" paramNothing seek "launch webapp"]
 
 seek :: [CommandSeek]
@@ -39,7 +39,7 @@ start :: CommandStart
 start = start' True
 
 start' :: Bool -> CommandStart
-start' allowauto = notBareRepo $ do
+start' allowauto = do
 	liftIO $ ensureInstalled
 	ifM isInitialized ( go , auto )
 	stop

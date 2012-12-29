@@ -14,14 +14,15 @@ import Annex.Content
 import Types.Key
 
 def :: [Command]
-def = [notDirect $ command "fromkey" (paramPair paramKey paramPath) seek
-	"adds a file using a specific key"]
+def = [notDirect $ notBareRepo $
+	command "fromkey" (paramPair paramKey paramPath) seek
+		"adds a file using a specific key"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
-start (keyname:file:[]) = notBareRepo $ do
+start (keyname:file:[]) = do
 	let key = fromMaybe (error "bad key") $ file2key keyname
 	inbackend <- inAnnex key
 	unless inbackend $ error $

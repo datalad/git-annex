@@ -17,7 +17,6 @@ module Command (
 	doCommand,
 	whenAnnexed,
 	ifAnnexed,
-	notBareRepo,
 	isBareRepo,
 	numCopies,
 	numCopiesCheck,
@@ -96,12 +95,6 @@ whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
 ifAnnexed :: FilePath -> ((Key, Backend) -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
-
-notBareRepo :: Annex a -> Annex a
-notBareRepo a = do
-	whenM isBareRepo $
-		error "You cannot run this subcommand in a bare repository."
-	a
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare

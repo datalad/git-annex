@@ -23,7 +23,8 @@ import Utility.FileMode
 import Config
 
 def :: [Command]
-def = [notDirect $ command "add" paramPaths seek "add files to annex"]
+def = [notDirect $ notBareRepo $
+	command "add" paramPaths seek "add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files. -}
 seek :: [CommandSeek]
@@ -33,7 +34,7 @@ seek = [withFilesNotInGit start, withFilesUnlocked start]
  - backend, and then moving it into the annex directory and setting up
  - the symlink pointing to its content. -}
 start :: FilePath -> CommandStart
-start file = notBareRepo $ ifAnnexed file fixup add
+start file = ifAnnexed file fixup add
   where
 	add = do
 		s <- liftIO $ getSymbolicLinkStatus file

@@ -18,15 +18,14 @@ import Annex.Content
 import Annex.CatFile
 
 def :: [Command]
-def = [command "indirect" paramNothing seek "switch repository to indirect mode"]
+def = [notBareRepo $ command "indirect" paramNothing seek
+	"switch repository to indirect mode"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
-start = notBareRepo $
-	ifM isDirect
-		( next perform, stop )
+start = ifM isDirect ( next perform, stop )
 
 perform :: CommandPerform
 perform = do
