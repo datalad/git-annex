@@ -29,7 +29,6 @@ import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
 import Utility.UserInfo
-import Config
 
 import qualified Data.Text as T
 import Data.Char
@@ -128,7 +127,7 @@ newRepositoryForm defpath msg = do
 
 {- Making the first repository, when starting the webapp for the first time. -}
 getFirstRepositoryR :: Handler RepHtml
-getFirstRepositoryR = page "Getting started" (Just Config) $ do
+getFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
 	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm path
 	case res of
@@ -138,7 +137,7 @@ getFirstRepositoryR = page "Getting started" (Just Config) $ do
 
 {- Adding a new, separate repository. -}
 getNewRepositoryR :: Handler RepHtml
-getNewRepositoryR = page "Add another repository" (Just Config) $ do
+getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
 	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm home
 	case res of
@@ -175,7 +174,7 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 
 {- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
-getAddDriveR = page "Add a removable drive" (Just Config) $ do
+getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
@@ -213,7 +212,7 @@ getAddDriveR = page "Add a removable drive" (Just Config) $ do
 		addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
-getEnableDirectoryR uuid = page "Enable a repository" (Just Config) $ do
+getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 	description <- lift $ runAnnex "" $
 		T.pack . concat <$> prettyListUUIDs [uuid]
 	$(widgetFile "configurators/enabledirectory")

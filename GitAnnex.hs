@@ -170,12 +170,10 @@ options = Option.common ++
 	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier")) "Trust Amazon Glacier inventory"
 	] ++ Option.matcher
   where
-	setnumcopies v = Annex.changeState $
-		\s -> s { Annex.forcenumcopies = readish v }
-	setgitconfig :: String -> Annex ()
-	setgitconfig v = do
-		newg <- inRepo $ Git.Config.store v
-		Annex.changeState $ \s -> s { Annex.repo = newg }
+	setnumcopies v = maybe noop
+		(\n -> Annex.changeConfig $ \c -> c { annexNumCopies = n })
+		(readish v)
+	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
 
 header :: String
 header = "Usage: git-annex command [option ..]"

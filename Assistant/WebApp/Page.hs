@@ -19,24 +19,24 @@ import Yesod
 import Text.Hamlet
 import Data.Text (Text)
 
-data NavBarItem = DashBoard | Config | About
+data NavBarItem = DashBoard | Configuration | About
 	deriving (Eq)
 
 navBarName :: NavBarItem -> Text
 navBarName DashBoard = "Dashboard"
-navBarName Config = "Configuration"
+navBarName Configuration = "Configuration"
 navBarName About = "About"
 
 navBarRoute :: NavBarItem -> Route WebApp
 navBarRoute DashBoard = HomeR
-navBarRoute Config = ConfigR
+navBarRoute Configuration = ConfigurationR
 navBarRoute About = AboutR
 
 defaultNavBar :: [NavBarItem]
-defaultNavBar = [DashBoard, Config, About]
+defaultNavBar = [DashBoard, Configuration, About]
 
 firstRunNavBar :: [NavBarItem]
-firstRunNavBar = [Config, About]
+firstRunNavBar = [Configuration, About]
 
 selectNavBar :: Handler [NavBarItem]
 selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)

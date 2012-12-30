@@ -35,7 +35,6 @@ import System.IO.Unsafe (unsafeInterleaveIO)
 import Common.Annex
 import Logs.Location
 import qualified Git
-import qualified Git.Config
 import qualified Annex
 import qualified Annex.Queue
 import qualified Annex.Branch
@@ -188,7 +187,7 @@ withTmp key action = do
  - in a destination (or the annex) printing a warning if not. -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Annex Bool
 checkDiskSpace destination key alreadythere = do
-	reserve <- getDiskReserve
+	reserve <- annexDiskReserve <$> Annex.getConfig
 	free <- liftIO . getDiskFree =<< dir
 	force <- Annex.getState Annex.force
 	case (free, keySize key) of
@@ -396,11 +395,8 @@ saveState :: Bool -> Annex ()
 saveState nocommit = doSideAction $ do
 	Annex.Queue.flush
 	unless nocommit $
-		whenM alwayscommit $
+		whenM (annexAlwaysCommit <$> Annex.getConfig) $
 			Annex.Branch.commit "update"
-  where
-	alwayscommit = fromMaybe True . Git.Config.isTrue
-		<$> getConfig (annexConfig "alwayscommit") ""
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool

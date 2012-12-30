@@ -18,7 +18,6 @@ module Backend (
 import System.Posix.Files
 
 import Common.Annex
-import Config
 import qualified Annex
 import Annex.CheckAttr
 import Types.Key
@@ -39,17 +38,18 @@ orderedList = do
 	l <- Annex.getState Annex.backends -- list is cached here
 	if not $ null l
 		then return l
-		else handle =<< Annex.getState Annex.forcebackend
+		else do
+			f <- Annex.getState Annex.forcebackend
+			case f of
+				Just name | not (null name) ->
+					return [lookupBackendName name]
+				_ -> do
+					l' <- gen . annexBackends <$> Annex.getConfig
+					Annex.changeState $ \s -> s { Annex.backends = l' }
+					return l'
   where
-	handle Nothing = standard
-	handle (Just "") = standard
-	handle (Just name) = do
-		l' <- (lookupBackendName name :) <$> standard
-		Annex.changeState $ \s -> s { Annex.backends = l' }
-		return l'
-	standard = parseBackendList <$> getConfig (annexConfig "backends") ""
-	parseBackendList [] = list
-	parseBackendList s = map lookupBackendName $ words s
+	gen [] = list
+	gen l = map lookupBackendName l
 
 {- Generates a key for a file, trying each backend in turn until one
  - accepts it. -}

@@ -17,7 +17,6 @@ import Common.Annex
 import Annex hiding (new)
 import qualified Git.Queue
 import qualified Git.UpdateIndex
-import Config
 
 {- Adds a git command to the queue. -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
@@ -55,11 +54,9 @@ get = maybe new return =<< getState repoqueue
 
 new :: Annex Git.Queue.Queue
 new = do
-	q <- Git.Queue.new <$> queuesize
+	q <- Git.Queue.new . annexQueueSize <$> getConfig
 	store q
 	return q
-  where
-	queuesize = readish <$> getConfig (annexConfig "queuesize") ""
 
 store :: Git.Queue.Queue -> Annex ()
 store q = changeState $ \s -> s { repoqueue = Just q }

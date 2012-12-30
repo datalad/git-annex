@@ -10,6 +10,7 @@ module Types (
 	Backend,
 	Key,
 	UUID(..),
+	Config(..),
 	Remote,
 	RemoteType,
 	Option,
@@ -18,6 +19,7 @@ module Types (
 
 import Annex
 import Types.Backend
+import Types.Config
 import Types.Key
 import Types.UUID
 import Types.Remote

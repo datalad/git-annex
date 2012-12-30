@@ -286,7 +286,7 @@ sampleQuote = T.unwords
 #endif
 
 pairPage :: Widget -> Handler RepHtml
-pairPage = page "Pairing" (Just Config)
+pairPage = page "Pairing" (Just Configuration)
 
 noPairing :: Text -> Handler RepHtml
 noPairing pairingtype = pairPage $

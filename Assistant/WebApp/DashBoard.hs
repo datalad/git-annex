@@ -79,7 +79,7 @@ dashboard warnNoScript = do
 
 getHomeR :: Handler RepHtml
 getHomeR = ifM (inFirstRun)
-	( redirect ConfigR
+	( redirect ConfigurationR
 	, page "" (Just DashBoard) $ dashboard True
 	)
 

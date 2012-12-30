@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,6 +28,9 @@ module Annex (
 	gitRepo,
 	inRepo,
 	fromRepo,
+	getConfig,
+	changeConfig,
+	changeGitRepo,
 ) where
 
 import "mtl" Control.Monad.State.Strict
@@ -43,6 +46,7 @@ import Git.CheckAttr
 import Git.SharedRepository
 import qualified Git.Queue
 import Types.Backend
+import Types.Config
 import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
@@ -88,6 +92,7 @@ type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> Fi
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
+	, config :: Config
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
@@ -99,7 +104,6 @@ data AnnexState = AnnexState
 	, catfilehandle :: Maybe CatFileHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
-	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FileInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
@@ -118,6 +122,7 @@ data AnnexState = AnnexState
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState
 	{ repo = gitrepo
+	, config = extractConfig gitrepo
 	, backends = []
 	, remotes = []
 	, output = defaultMessageState
@@ -129,7 +134,6 @@ newState gitrepo = AnnexState
 	, catfilehandle = Nothing
 	, checkattrhandle = Nothing
 	, forcebackend = Nothing
-	, forcenumcopies = Nothing
 	, limit = Left []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
@@ -197,3 +201,18 @@ inRepo a = liftIO . a =<< gitRepo
 {- Extracts a value from the annex's git repisitory. -}
 fromRepo :: (Git.Repo -> a) -> Annex a
 fromRepo a = a <$> gitRepo
+
+{- Gets the Config settings. -}
+getConfig :: Annex Config
+getConfig = getState config
+
+{- Modifies a Config setting. -}
+changeConfig :: (Config -> Config) -> Annex ()
+changeConfig a = changeState $ \s -> s { config = a (config s) }
+
+{- Changing the git Repo data also involves re-extracting its Config. -}
+changeGitRepo :: Git.Repo -> Annex ()
+changeGitRepo r = changeState $ \s -> s
+	{ repo = r
+	, config = extractConfig r
+	}

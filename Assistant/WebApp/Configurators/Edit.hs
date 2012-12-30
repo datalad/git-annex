@@ -112,7 +112,7 @@ getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
 getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
-editForm new uuid = page "Configure repository" (Just Config) $ do
+editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
 	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo mremote
 	lift $ checkarchivedirectory curr

@@ -48,7 +48,7 @@ xmppNeeded = return ()
 
 getXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP
-getXMPPR = getXMPPR' ConfigR
+getXMPPR = getXMPPR' ConfigurationR
 #else
 getXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
@@ -155,4 +155,4 @@ testXMPP creds = either Left (const $ Right creds)
 #endif
 
 xmppPage :: Widget -> Handler RepHtml
-xmppPage = page "Jabber" (Just Config)
+xmppPage = page "Jabber" (Just Configuration)

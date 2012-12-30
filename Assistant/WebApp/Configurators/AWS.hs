@@ -27,7 +27,7 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 
 awsConfigurator :: Widget -> Handler RepHtml
-awsConfigurator = page "Add an Amazon repository" (Just Config)
+awsConfigurator = page "Add an Amazon repository" (Just Configuration)
 
 glacierConfigurator :: Widget -> Handler RepHtml
 glacierConfigurator a = do

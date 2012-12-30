@@ -200,7 +200,7 @@ transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 disk_size :: Stat
 disk_size = stat "available local disk space" $ json id $ lift $
 	calcfree
-		<$> getDiskReserve
+		<$> (annexDiskReserve <$> Annex.getConfig)
 		<*> inRepo (getDiskFree . gitAnnexDir)
   where
 	calcfree reserve (Just have) = unwords

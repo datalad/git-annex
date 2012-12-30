@@ -28,10 +28,10 @@ import Assistant.XMPP.Client
 import qualified Data.Map as M
 
 {- The main configuration screen. -}
-getConfigR :: Handler RepHtml
-getConfigR = ifM (inFirstRun)
+getConfigurationR :: Handler RepHtml
+getConfigurationR = ifM (inFirstRun)
 	( getFirstRepositoryR
-	, page "Configuration" (Just Config) $ do
+	, page "Configuration" (Just Configuration) $ do
 #ifdef WITH_XMPP
 		xmppconfigured <- lift $ runAnnex False $ isJust <$> getXMPPCreds
 #else
@@ -62,7 +62,7 @@ makeCloudRepositories = $(widgetFile "configurators/repositories/cloud")
 
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml
-getRepositoriesR = page "Repositories" (Just Config) $ do
+getRepositoriesR = page "Repositories" (Just Configuration) $ do
 	let repolist = repoListDisplay $ RepoSelector
 		{ onlyCloud = False
 		, onlyConfigured = False

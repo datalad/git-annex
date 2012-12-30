@@ -24,7 +24,7 @@ import qualified Data.Map as M
 import Network.Socket
 
 sshConfigurator :: Widget -> Handler RepHtml
-sshConfigurator = page "Add a remote server" (Just Config)
+sshConfigurator = page "Add a remote server" (Just Configuration)
 
 data SshInput = SshInput
 	{ inputHostname :: Maybe Text
@@ -288,7 +288,7 @@ getAddRsyncNetR = do
 	((result, form), enctype) <- runFormGet $
 		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
-	let showform status = page "Add a Rsync.net repository" (Just Config) $
+	let showform status = page "Add a Rsync.net repository" (Just Configuration) $
 		$(widgetFile "configurators/addrsync.net")
 	case result of
 		FormSuccess sshinput

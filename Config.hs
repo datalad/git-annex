@@ -12,7 +12,6 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
-import Utility.DataUnits
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -21,8 +20,7 @@ data ConfigKey = ConfigKey String
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
 	inRepo $ Git.Command.run "config" [Param key, Param value]
-	newg <- inRepo Git.Config.reRead
-	Annex.changeState $ \s -> s { Annex.repo = newg }
+	Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()
@@ -93,49 +91,28 @@ repoSyncable :: Git.Repo -> Annex Bool
 repoSyncable r = fromMaybe True . Git.Config.isTrue
 	<$> getRemoteConfig r "sync" ""
 
-{- If a value is specified, it is used; otherwise the default is looked up
- - in git config. forcenumcopies overrides everything. -}
-getNumCopies :: Maybe Int -> Annex Int
-getNumCopies v = perhaps (use v) =<< Annex.getState Annex.forcenumcopies
-  where
-	use (Just n) = return n
-	use Nothing = perhaps (return 1) =<< 
-		readish <$> getConfig (annexConfig "numcopies") "1"
-	perhaps fallback = maybe fallback (return . id)
-
 {- Gets the trust level set for a remote in git config. -}
 getTrustLevel :: Git.Repo -> Annex (Maybe String)
 getTrustLevel r = fromRepo $ Git.Config.getMaybe key
   where
 	(ConfigKey key) = remoteConfig r "trustlevel"
 
-{- Gets annex.diskreserve setting. -}
-getDiskReserve :: Annex Integer
-getDiskReserve = fromMaybe megabyte . readSize dataUnits
-	<$> getConfig (annexConfig "diskreserve") ""
-  where
-	megabyte = 1000000
+getNumCopies :: Maybe Int -> Annex Int
+getNumCopies (Just v) = return v
+getNumCopies Nothing = annexNumCopies <$> Annex.getConfig
 
-{- Gets annex.direct setting, cached for speed. -}
 isDirect :: Annex Bool
-isDirect = maybe fromconfig return =<< Annex.getState Annex.direct
-  where
-	fromconfig = do
-		direct <- fromMaybe False . Git.Config.isTrue <$>
-			getConfig (annexConfig "direct") ""
-		Annex.changeState $ \s -> s { Annex.direct = Just direct }
-		return direct
+isDirect = annexDirect <$> Annex.getConfig
 
 setDirect :: Bool -> Annex ()
 setDirect b = do
-	setConfig (annexConfig "direct") (if b then "true" else "false")
-	Annex.changeState $ \s -> s { Annex.direct = Just b }
+	setConfig (annexConfig "direct") $ if b then "true" else "false"
+	Annex.changeConfig $ \c -> c { annexDirect = b }
 
-{- Gets annex.httpheaders or annex.httpheaders-command setting,
- - splitting it into lines. -}
+{- Gets the http headers to use. -}
 getHttpHeaders :: Annex [String]
 getHttpHeaders = do
-	cmd <- getConfig (annexConfig "http-headers-command") ""
-	if null cmd
-		then fromRepo $ Git.Config.getList "annex.http-headers"
-		else lines <$> liftIO (readProcess "sh" ["-c", cmd])
+	v <- annexHttpHeadersCommand <$> Annex.getConfig
+	case v of
+		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
+		Nothing -> annexHttpHeaders <$> Annex.getConfig

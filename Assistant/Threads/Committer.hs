@@ -32,6 +32,7 @@ import Types.KeySource
 import Config
 import Annex.Exception
 import Annex.Content
+import qualified Annex
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -41,9 +42,9 @@ import Data.Either
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
 commitThread = NamedThread "Committer" $ do
-	delayadd <- liftAnnex $ do
-		v <- readish <$> getConfig (annexConfig "delayadd") ""
-		maybe delayaddDefault (return . Just . Seconds) v
+	delayadd <- liftAnnex $
+		maybe delayaddDefault (return . Just . Seconds)
+			=<< annexDelayAdd <$> Annex.getConfig
 	runEvery (Seconds 1) <~> do
 		-- We already waited one second as a simple rate limiter.
 		-- Next, wait until at least one change is available for

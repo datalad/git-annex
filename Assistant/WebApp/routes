@@ -5,7 +5,7 @@
 /about/license LicenseR GET
 /about/repogroups RepoGroupR GET
 
-/config ConfigR GET
+/config ConfigurationR GET
 /config/repository RepositoriesR GET
 /config/xmpp XMPPR GET
 /config/xmpp/for/pairing XMPPForPairingR GET

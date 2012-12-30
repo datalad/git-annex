@@ -18,9 +18,8 @@ import Common.Annex
 import Annex.LockPool
 import Annex.Perms
 #ifndef WITH_OLD_SSH
-import qualified Git.Config
-import Config
 import qualified Build.SysConfig as SysConfig
+import qualified Annex
 #endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
@@ -60,8 +59,7 @@ sshInfo (host, port) = ifM caching
 	caching = return False
 #else
 	caching = fromMaybe SysConfig.sshconnectioncaching 
-		. Git.Config.isTrue
-		<$> getConfig (annexConfig "sshcaching") ""
+		. annexSshCaching <$> Annex.getConfig
 #endif
 
 cacheParams :: FilePath -> [CommandParam]

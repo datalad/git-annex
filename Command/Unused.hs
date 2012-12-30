@@ -22,7 +22,6 @@ import Logs.Unused
 import Annex.Content
 import Utility.FileMode
 import Logs.Location
-import Config
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -181,11 +180,9 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  - so will easily fit on even my lowest memory systems.
  -}
 bloomCapacity :: Annex Int
-bloomCapacity = fromMaybe 500000 . readish
-	<$> getConfig (annexConfig "bloomcapacity") ""
+bloomCapacity = fromMaybe 500000 . annexBloomCapacity <$> Annex.getConfig
 bloomAccuracy :: Annex Int
-bloomAccuracy = fromMaybe 1000 . readish
-	<$> getConfig (annexConfig "bloomaccuracy") ""
+bloomAccuracy = fromMaybe 1000 . annexBloomAccuracy <$> Annex.getConfig
 bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity

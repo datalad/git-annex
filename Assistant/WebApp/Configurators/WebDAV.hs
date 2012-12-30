@@ -26,10 +26,10 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 
 webDAVConfigurator :: Widget -> Handler RepHtml
-webDAVConfigurator = page "Add a WebDAV repository" (Just Config)
+webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
 
 boxConfigurator :: Widget -> Handler RepHtml
-boxConfigurator = page "Add a Box.com repository" (Just Config)
+boxConfigurator = page "Add a Box.com repository" (Just Configuration)
 
 data WebDAVInput = WebDAVInput
 	{ user :: Text
