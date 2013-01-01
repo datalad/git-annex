@@ -28,8 +28,8 @@ module Annex (
 	gitRepo,
 	inRepo,
 	fromRepo,
-	getConfig,
-	changeConfig,
+	getGitConfig,
+	changeGitConfig,
 	changeGitRepo,
 ) where
 
@@ -46,7 +46,7 @@ import Git.CheckAttr
 import Git.SharedRepository
 import qualified Git.Queue
 import Types.Backend
-import Types.Config
+import Types.GitConfig
 import qualified Types.Remote
 import Types.Crypto
 import Types.BranchState
@@ -92,7 +92,7 @@ type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> Fi
 -- internal state storage
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
-	, config :: Config
+	, gitconfig :: GitConfig
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
@@ -122,7 +122,7 @@ data AnnexState = AnnexState
 newState :: Git.Repo -> AnnexState
 newState gitrepo = AnnexState
 	{ repo = gitrepo
-	, config = extractConfig gitrepo
+	, gitconfig = extractGitConfig gitrepo
 	, backends = []
 	, remotes = []
 	, output = defaultMessageState
@@ -202,17 +202,17 @@ inRepo a = liftIO . a =<< gitRepo
 fromRepo :: (Git.Repo -> a) -> Annex a
 fromRepo a = a <$> gitRepo
 
-{- Gets the Config settings. -}
-getConfig :: Annex Config
-getConfig = getState config
+{- Gets the GitConfig settings. -}
+getGitConfig :: Annex GitConfig
+getGitConfig = getState gitconfig
 
-{- Modifies a Config setting. -}
-changeConfig :: (Config -> Config) -> Annex ()
-changeConfig a = changeState $ \s -> s { config = a (config s) }
+{- Modifies a GitConfig setting. -}
+changeGitConfig :: (GitConfig -> GitConfig) -> Annex ()
+changeGitConfig a = changeState $ \s -> s { gitconfig = a (gitconfig s) }
 
-{- Changing the git Repo data also involves re-extracting its Config. -}
+{- Changing the git Repo data also involves re-extracting its GitConfig. -}
 changeGitRepo :: Git.Repo -> Annex ()
 changeGitRepo r = changeState $ \s -> s
 	{ repo = r
-	, config = extractConfig r
+	, gitconfig = extractGitConfig r
 	}

@@ -15,12 +15,12 @@ import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import qualified Remote
+import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
 import Types.StandardGroups
-import qualified Config
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -40,12 +40,12 @@ data RepoConfig = RepoConfig
 	}
 	deriving (Show)
 
-getRepoConfig :: UUID -> Git.Repo -> Maybe Remote -> Annex RepoConfig
-getRepoConfig uuid r mremote = RepoConfig
+getRepoConfig :: UUID -> Maybe Remote -> Annex RepoConfig
+getRepoConfig uuid mremote = RepoConfig
 	<$> pure (T.pack $ maybe "here" Remote.name mremote)
 	<*> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
-	<*> Config.repoSyncable r
+	<*> pure (maybe True (remoteAnnexSync . Remote.gitconfig) mremote)
   where
 	getrepogroup = do
 		groups <- lookupGroups uuid
@@ -113,8 +113,8 @@ getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = page "Configure repository" (Just Configuration) $ do
-	(repo, mremote) <- lift $ runAnnex undefined $ Remote.repoFromUUID uuid
-	curr <- lift $ runAnnex undefined $ getRepoConfig uuid repo mremote
+	mremote <- lift $ runAnnex undefined $ Remote.remoteFromUUID uuid
+	curr <- lift $ runAnnex undefined $ getRepoConfig uuid mremote
 	lift $ checkarchivedirectory curr
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr

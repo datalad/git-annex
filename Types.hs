@@ -10,7 +10,8 @@ module Types (
 	Backend,
 	Key,
 	UUID(..),
-	Config(..),
+	GitConfig(..),
+	RemoteGitConfig(..),
 	Remote,
 	RemoteType,
 	Option,
@@ -19,7 +20,7 @@ module Types (
 
 import Annex
 import Types.Backend
-import Types.Config
+import Types.GitConfig
 import Types.Key
 import Types.UUID
 import Types.Remote

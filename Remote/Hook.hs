@@ -29,10 +29,9 @@ remote = RemoteType {
 	setup = hookSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = do
-	hooktype <- getRemoteConfig r "hooktype" (error "missing hooktype")
-	cst <- remoteCost r expensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = do
+	cst <- remoteCost gc expensiveRemoteCost
 	return $ encryptableRemote c
 		(storeEncrypted hooktype)
 		(retrieveEncrypted hooktype)
@@ -50,9 +49,12 @@ gen r u c = do
 			config = M.empty,
 			localpath = Nothing,
 			repo = r,
+			gitconfig = gc,
 			readonly = False,
 			remotetype = remote
 		}
+  where
+	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc	
 
 hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 hookSetup u c = do

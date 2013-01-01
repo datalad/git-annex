@@ -44,7 +44,7 @@ commitThread :: NamedThread
 commitThread = NamedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
-			=<< annexDelayAdd <$> Annex.getConfig
+			=<< annexDelayAdd <$> Annex.getGitConfig
 	runEvery (Seconds 1) <~> do
 		-- We already waited one second as a simple rate limiter.
 		-- Next, wait until at least one change is available for

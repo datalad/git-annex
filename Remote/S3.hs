@@ -37,8 +37,8 @@ remote = RemoteType {
 	setup = s3Setup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = new <$> remoteCost r expensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
 	new cst = encryptableRemote c
 		(storeEncrypted this)
@@ -58,6 +58,7 @@ gen r u c = new <$> remoteCost r expensiveRemoteCost
 			whereisKey = Nothing,
 			config = c,
 			repo = r,
+			gitconfig = gc,
 			localpath = Nothing,
 			readonly = False,
 			remotetype = remote

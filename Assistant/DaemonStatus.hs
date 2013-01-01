@@ -17,7 +17,6 @@ import Logs.Trust
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Git
-import Config
 
 import Control.Concurrent.STM
 import System.Posix.Types
@@ -48,7 +47,7 @@ modifyDaemonStatus a = do
 {- Returns a function that updates the lists of syncable remotes. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
-	rs <- filterM (repoSyncable . Remote.repo) =<<
+	rs <- filter (remoteAnnexSync . Remote.gitconfig) .
 		concat . Remote.byCost <$> Remote.enabledRemoteList
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive

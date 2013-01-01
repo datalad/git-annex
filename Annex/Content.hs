@@ -187,7 +187,7 @@ withTmp key action = do
  - in a destination (or the annex) printing a warning if not. -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Annex Bool
 checkDiskSpace destination key alreadythere = do
-	reserve <- annexDiskReserve <$> Annex.getConfig
+	reserve <- annexDiskReserve <$> Annex.getGitConfig
 	free <- liftIO . getDiskFree =<< dir
 	force <- Annex.getState Annex.force
 	case (free, keySize key) of
@@ -395,7 +395,7 @@ saveState :: Bool -> Annex ()
 saveState nocommit = doSideAction $ do
 	Annex.Queue.flush
 	unless nocommit $
-		whenM (annexAlwaysCommit <$> Annex.getConfig) $
+		whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
 			Annex.Branch.commit "update"
 
 {- Downloads content from any of a list of urls. -}

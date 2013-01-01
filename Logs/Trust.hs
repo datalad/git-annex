@@ -28,7 +28,6 @@ import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
 import Remote.List
-import Config
 import qualified Types.Remote
 
 {- Filename of trust.log. -}
@@ -85,14 +84,14 @@ trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
 	logged <- trustMapRaw
 	configured <- M.fromList . catMaybes
-		<$> (mapM configuredtrust =<< remoteList)
+		<$> (map configuredtrust <$> remoteList)
 	let m = M.union overrides $ M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 	return m
   where
-	configuredtrust r = maybe Nothing (\l -> Just (Types.Remote.uuid r, l))
-		<$> maybe Nothing readTrustLevel
-			<$> getTrustLevel (Types.Remote.repo r)
+	configuredtrust r = (\l -> Just (Types.Remote.uuid r, l))
+		=<< readTrustLevel 
+		=<< remoteAnnexTrustLevel (Types.Remote.gitconfig r)
 
 {- Does not include forcetrust or git config values, just those from the
  - log file. -}

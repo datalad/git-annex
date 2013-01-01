@@ -38,10 +38,9 @@ remote = RemoteType {
 	setup = rsyncSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = do
-	o <- genRsyncOpts r c
-	cst <- remoteCost r expensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = do
+	cst <- remoteCost gc expensiveRemoteCost
 	return $ encryptableRemote c
 		(storeEncrypted o)
 		(retrieveEncrypted o)
@@ -58,27 +57,24 @@ gen r u c = do
 			, whereisKey = Nothing
 			, config = M.empty
 			, repo = r
+			, gitconfig = gc
 			, localpath = if rsyncUrlIsPath $ rsyncUrl o
 				then Just $ rsyncUrl o
 				else Nothing
 			, readonly = False
 			, remotetype = remote
 			}
-
-genRsyncOpts :: Git.Repo -> RemoteConfig -> Annex RsyncOpts
-genRsyncOpts r c = do
-	url <- getRemoteConfig r "rsyncurl" (error "missing rsyncurl")
-	opts <- map Param . filter safe . words
-		<$> getRemoteConfig r "rsync-options" ""
-	let escape = M.lookup "shellescape" c /= Just "no"
-	return $ RsyncOpts url opts escape
   where
-	safe o
+	o = RsyncOpts url opts escape
+	url = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
+	escape = M.lookup "shellescape" c /= Just "no"
+	safe opt
 		-- Don't allow user to pass --delete to rsync;
 		-- that could cause it to delete other keys
 		-- in the same hash bucket as a key it sends.
-		| o == "--delete" = False
-		| o == "--delete-excluded" = False
+		| opt == "--delete" = False
+		| opt == "--delete-excluded" = False
 		| otherwise = True
 
 rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig

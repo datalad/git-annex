@@ -19,7 +19,6 @@ import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
-import Config
 import qualified Git
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
@@ -146,9 +145,9 @@ repoList reposelector
 		unconfigured <- map snd . catMaybes . filter wantedremote 
 			. map (findinfo m)
 			<$> (trustExclude DeadTrusted $ M.keys m)
-		unsyncable <- map Remote.uuid . filter wantedrepo <$>
-			(filterM (\r -> not <$> repoSyncable (Remote.repo r))
-				=<< Remote.enabledRemoteList)
+		unsyncable <- map Remote.uuid . filter wantedrepo .
+			filter (not . remoteAnnexSync . Remote.gitconfig)
+			<$> Remote.enabledRemoteList
 		return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
 	wantedrepo r
 		| Remote.readonly r = False
@@ -189,6 +188,6 @@ getDisableSyncR = flipSync False
 
 flipSync :: Bool -> UUID -> Handler ()
 flipSync enable uuid = do
-	mremote <- runAnnex undefined $ snd <$> Remote.repoFromUUID uuid
+	mremote <- runAnnex undefined $ Remote.remoteFromUUID uuid
 	changeSyncable mremote enable
 	redirect RepositoriesR

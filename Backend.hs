@@ -44,7 +44,7 @@ orderedList = do
 				Just name | not (null name) ->
 					return [lookupBackendName name]
 				_ -> do
-					l' <- gen . annexBackends <$> Annex.getConfig
+					l' <- gen . annexBackends <$> Annex.getGitConfig
 					Annex.changeState $ \s -> s { Annex.backends = l' }
 					return l'
   where

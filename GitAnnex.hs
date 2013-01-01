@@ -171,7 +171,7 @@ options = Option.common ++
 	] ++ Option.matcher
   where
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeConfig $ \c -> c { annexNumCopies = n })
+		(\n -> Annex.changeGitConfig $ \c -> c { annexNumCopies = n })
 		(readish v)
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
 

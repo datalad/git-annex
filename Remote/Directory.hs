@@ -33,10 +33,9 @@ remote = RemoteType {
 	setup = directorySetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = do
-	dir <- getRemoteConfig r "directory" (error "missing directory")
-	cst <- remoteCost r cheapRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = do
+	cst <- remoteCost gc cheapRemoteCost
 	let chunksize = chunkSize c
 	return $ encryptableRemote c
 		(storeEncrypted dir chunksize)
@@ -54,10 +53,13 @@ gen r u c = do
 			whereisKey = Nothing,
 			config = M.empty,
 			repo = r,
+			gitconfig = gc,
 			localpath = Just dir,
 			readonly = False,
 			remotetype = remote
 		}
+  where
+	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 
 directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 directorySetup u c = do

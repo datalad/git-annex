@@ -37,8 +37,8 @@ remote = RemoteType {
 	setup = glacierSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = new <$> remoteCost r veryExpensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
   where
 	new cst = encryptableRemote c
 		(storeEncrypted this)
@@ -58,6 +58,7 @@ gen r u c = new <$> remoteCost r veryExpensiveRemoteCost
 			whereisKey = Nothing,
 			config = c,
 			repo = r,
+			gitconfig = gc,
 			localpath = Nothing,
 			readonly = False,
 			remotetype = remote

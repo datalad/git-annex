@@ -54,7 +54,7 @@ get = maybe new return =<< getState repoqueue
 
 new :: Annex Git.Queue.Queue
 new = do
-	q <- Git.Queue.new . annexQueueSize <$> getConfig
+	q <- Git.Queue.new . annexQueueSize <$> getGitConfig
 	store q
 	return q
 

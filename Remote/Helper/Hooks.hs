@@ -13,15 +13,16 @@ import Common.Annex
 import Types.Remote
 import qualified Annex
 import Annex.LockPool
-import Config
 import Annex.Perms
 
 {- Modifies a remote's access functions to first run the
  - annex-start-command hook, and trigger annex-stop-command on shutdown.
  - This way, the hooks are only run when a remote is actively being used.
  -}
-addHooks :: Remote -> Annex Remote
-addHooks r = addHooks' r <$> lookupHook r "start" <*> lookupHook r "stop"
+addHooks :: Remote -> Remote
+addHooks r = addHooks' r
+	(remoteAnnexStartCommand $ gitconfig r)
+	(remoteAnnexStopCommand $ gitconfig r)
 addHooks' :: Remote -> Maybe String -> Maybe String -> Remote
 addHooks' r Nothing Nothing = r
 addHooks' r starthook stophook = r'
@@ -83,10 +84,3 @@ runHooks r starthook stophook a = do
 			Left _ -> noop
 			Right _ -> run stophook
 		liftIO $ closeFd fd
-
-lookupHook :: Remote -> String -> Annex (Maybe String)
-lookupHook r n = go =<< getRemoteConfig (repo r) hookname ""
-  where
-	go "" = return Nothing
-	go command = return $ Just command
-	hookname =  n ++ "-command"

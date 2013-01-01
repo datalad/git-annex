@@ -16,6 +16,10 @@ import qualified Annex
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
 
+{- Looks up a setting in git config. -}
+getConfig :: ConfigKey -> String -> Annex String
+getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
+
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
@@ -27,16 +31,6 @@ unsetConfig :: ConfigKey -> Annex ()
 unsetConfig (ConfigKey key) = inRepo $ Git.Command.run "config"
 	[Param "--unset", Param key]
 
-{- Looks up a setting in git config. -}
-getConfig :: ConfigKey -> String -> Annex String
-getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
-
-{- Looks up a per-remote config setting in git config.
- - Failing that, tries looking for a global config option. -}
-getRemoteConfig :: Git.Repo -> UnqualifiedConfigKey -> String -> Annex String
-getRemoteConfig r key def = 
-	getConfig (remoteConfig r key) =<< getConfig (annexConfig key) def
-
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> UnqualifiedConfigKey -> ConfigKey
 remoteConfig r key = ConfigKey $
@@ -46,16 +40,15 @@ remoteConfig r key = ConfigKey $
 annexConfig :: UnqualifiedConfigKey -> ConfigKey
 annexConfig key = ConfigKey $ "annex." ++ key
 
-{- Calculates cost for a remote. Either the default, or as configured 
+{- Calculates cost for a remote. Either the specific default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
-remoteCost :: Git.Repo -> Int -> Annex Int
-remoteCost r def = do
-	cmd <- getRemoteConfig r "cost-command" ""
-	(fromMaybe def . readish) <$>
-		if not $ null cmd
-			then liftIO $ readProcess "sh" ["-c", cmd]
-			else getRemoteConfig r "cost" ""
+remoteCost :: RemoteGitConfig -> Int -> Annex Int
+remoteCost c def = case remoteAnnexCostCommand c of
+	Just cmd | not (null cmd) -> liftIO $
+		(fromMaybe def . readish) <$>
+			readProcess "sh" ["-c", cmd]
+	_ -> return $ fromMaybe def $ remoteAnnexCost c
 
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
@@ -81,38 +74,22 @@ prop_cost_sane = False `notElem`
 	, semiCheapRemoteCost + encryptedRemoteCostAdj < expensiveRemoteCost
 	]
 
-{- Checks if a repo should be ignored. -}
-repoNotIgnored :: Git.Repo -> Annex Bool
-repoNotIgnored r = not . fromMaybe False . Git.Config.isTrue
-	<$> getRemoteConfig r "ignore" ""
-
-{- Checks if a repo should be synced. -}
-repoSyncable :: Git.Repo -> Annex Bool
-repoSyncable r = fromMaybe True . Git.Config.isTrue
-	<$> getRemoteConfig r "sync" ""
-
-{- Gets the trust level set for a remote in git config. -}
-getTrustLevel :: Git.Repo -> Annex (Maybe String)
-getTrustLevel r = fromRepo $ Git.Config.getMaybe key
-  where
-	(ConfigKey key) = remoteConfig r "trustlevel"
-
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies (Just v) = return v
-getNumCopies Nothing = annexNumCopies <$> Annex.getConfig
+getNumCopies Nothing = annexNumCopies <$> Annex.getGitConfig
 
 isDirect :: Annex Bool
-isDirect = annexDirect <$> Annex.getConfig
+isDirect = annexDirect <$> Annex.getGitConfig
 
 setDirect :: Bool -> Annex ()
 setDirect b = do
 	setConfig (annexConfig "direct") $ if b then "true" else "false"
-	Annex.changeConfig $ \c -> c { annexDirect = b }
+	Annex.changeGitConfig $ \c -> c { annexDirect = b }
 
 {- Gets the http headers to use. -}
 getHttpHeaders :: Annex [String]
 getHttpHeaders = do
-	v <- annexHttpHeadersCommand <$> Annex.getConfig
+	v <- annexHttpHeadersCommand <$> Annex.getGitConfig
 	case v of
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
-		Nothing -> annexHttpHeaders <$> Annex.getConfig
+		Nothing -> annexHttpHeaders <$> Annex.getGitConfig

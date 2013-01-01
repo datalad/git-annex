@@ -9,6 +9,7 @@ module Annex.Version where
 
 import Common.Annex
 import Config
+import qualified Annex
 
 type Version = String
 
@@ -25,10 +26,7 @@ versionField :: ConfigKey
 versionField = annexConfig "version"
 
 getVersion :: Annex (Maybe Version)
-getVersion = handle <$> getConfig versionField ""
-  where
-	handle [] = Nothing
-	handle v = Just v
+getVersion = annexVersion <$> Annex.getGitConfig
 
 setVersion :: Annex ()
 setVersion = setConfig versionField defaultVersion

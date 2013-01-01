@@ -59,7 +59,7 @@ sshInfo (host, port) = ifM caching
 	caching = return False
 #else
 	caching = fromMaybe SysConfig.sshconnectioncaching 
-		. annexSshCaching <$> Annex.getConfig
+		. annexSshCaching <$> Annex.getGitConfig
 #endif
 
 cacheParams :: FilePath -> [CommandParam]

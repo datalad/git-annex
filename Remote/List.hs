@@ -15,8 +15,8 @@ import Common.Annex
 import qualified Annex
 import Logs.Remote
 import Types.Remote
+import Types.GitConfig
 import Annex.UUID
-import Config
 import Remote.Helper.Hooks
 import qualified Git
 import qualified Git.Config
@@ -81,7 +81,10 @@ remoteListRefresh = do
 remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
 remoteGen m t r = do
 	u <- getRepoUUID r
-	addHooks =<< generate t r u (fromMaybe M.empty $ M.lookup u m)
+	g <- fromRepo id
+	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
+	let c = fromMaybe M.empty $ M.lookup u m
+	addHooks <$> generate t r u c gc
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex Remote
@@ -97,7 +100,7 @@ updateRemote remote = do
 
 {- All remotes that are not ignored. -}
 enabledRemoteList :: Annex [Remote]
-enabledRemoteList = filterM (repoNotIgnored . repo) =<< remoteList
+enabledRemoteList = filter (not . remoteAnnexIgnore . gitconfig) <$> remoteList
 
 {- Checks if a remote is a special remote -}
 specialRemote :: Remote -> Bool

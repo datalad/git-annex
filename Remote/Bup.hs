@@ -38,35 +38,41 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r u c = do
-	buprepo <- getRemoteConfig r "buprepo" (error "missing buprepo")
-	cst <- remoteCost r (if bupLocal buprepo then semiCheapRemoteCost else expensiveRemoteCost)
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r u c gc = do
 	bupr <- liftIO $ bup2GitRemote buprepo
+	cst <- remoteCost gc $
+		if bupLocal buprepo
+			then semiCheapRemoteCost
+			else expensiveRemoteCost
 	(u', bupr') <- getBupUUID bupr u
 	
+	let new = Remote
+		{ uuid = u'
+		, cost = cst
+		, name = Git.repoDescribe r
+		, storeKey = store new buprepo
+		, retrieveKeyFile = retrieve buprepo
+		, retrieveKeyFileCheap = retrieveCheap buprepo
+		, removeKey = remove
+		, hasKey = checkPresent r bupr'
+		, hasKeyCheap = bupLocal buprepo
+		, whereisKey = Nothing
+		, config = c
+		, repo = r
+		, gitconfig = gc
+		, localpath = if bupLocal buprepo && not (null buprepo)
+			then Just buprepo
+			else Nothing
+		, remotetype = remote
+		, readonly = False
+		}
 	return $ encryptableRemote c
-		(storeEncrypted r buprepo)
+		(storeEncrypted new buprepo)
 		(retrieveEncrypted buprepo)
-		Remote
-			{ uuid = u'
-			, cost = cst
-			, name = Git.repoDescribe r
-			, storeKey = store r buprepo
-			, retrieveKeyFile = retrieve buprepo
-			, retrieveKeyFileCheap = retrieveCheap buprepo
-			, removeKey = remove
-			, hasKey = checkPresent r bupr'
-			, hasKeyCheap = bupLocal buprepo
-			, whereisKey = Nothing
-			, config = c
-			, repo = r
-			, localpath = if bupLocal buprepo && not (null buprepo)
-				then Just buprepo
-				else Nothing
-			, remotetype = remote
-			, readonly = False
-			}
+		new
+  where
+	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
 
 bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 bupSetup u c = do
@@ -106,21 +112,20 @@ pipeBup params inh outh = do
 		ExitSuccess -> return True
 		_ -> return False
 
-bupSplitParams :: Git.Repo -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
+bupSplitParams :: Remote -> BupRepo -> Key -> [CommandParam] -> Annex [CommandParam]
 bupSplitParams r buprepo k src = do
-	o <- getRemoteConfig r "bup-split-options" ""
-	let os = map Param $ words o
+	let os = map Param $ remoteAnnexBupSplitOptions $ gitconfig r
 	showOutput -- make way for bup output
 	return $ bupParams "split" buprepo 
 		(os ++ [Param "-n", Param (bupRef k)] ++ src)
 
-store :: Git.Repo -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store :: Remote -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r buprepo k _f _p = do
 	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo k [File src]
 	liftIO $ boolSystem "bup" params
 
-storeEncrypted :: Git.Repo -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: Remote -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r buprepo (cipher, enck) k _p = do
 	src <- inRepo $ gitAnnexLocation k
 	params <- bupSplitParams r buprepo enck []

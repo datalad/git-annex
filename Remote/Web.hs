@@ -35,8 +35,8 @@ list = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" Git.Construct.fromUnknown
 	return [r]
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> Annex Remote
-gen r _ _ = 
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen r _ _ gc = 
 	return Remote {
 		uuid = webUUID,
 		cost = expensiveRemoteCost,
@@ -49,6 +49,7 @@ gen r _ _ =
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
 		config = M.empty,
+		gitconfig = gc,
 		localpath = Nothing,
 		repo = r,
 		readonly = True,

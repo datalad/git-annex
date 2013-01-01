@@ -16,6 +16,7 @@ import qualified Git
 import Types.Key
 import Types.UUID
 import Types.Meters
+import Types.GitConfig
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -27,7 +28,7 @@ data RemoteTypeA a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> RemoteConfig -> a (RemoteA a),
+	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (RemoteA a),
 	-- initializes or changes a remote
 	setup :: UUID -> RemoteConfig -> a RemoteConfig
 }
@@ -64,8 +65,10 @@ data RemoteA a = Remote {
 	whereisKey :: Maybe (Key -> a [String]),
 	-- a Remote has a persistent configuration store
 	config :: RemoteConfig,
-	-- git configuration for the remote
+	-- git repo for the Remote
 	repo :: Git.Repo,
+	-- a Remote's configuration from git
+	gitconfig :: RemoteGitConfig,
 	-- a Remote can be assocated with a specific local filesystem path
 	localpath :: Maybe FilePath,
 	-- a Remote can be known to be readonly

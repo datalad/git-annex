@@ -180,9 +180,9 @@ exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
  - so will easily fit on even my lowest memory systems.
  -}
 bloomCapacity :: Annex Int
-bloomCapacity = fromMaybe 500000 . annexBloomCapacity <$> Annex.getConfig
+bloomCapacity = fromMaybe 500000 . annexBloomCapacity <$> Annex.getGitConfig
 bloomAccuracy :: Annex Int
-bloomAccuracy = fromMaybe 1000 . annexBloomAccuracy <$> Annex.getConfig
+bloomAccuracy = fromMaybe 1000 . annexBloomAccuracy <$> Annex.getGitConfig
 bloomBitsHashes :: Annex (Int, Int)
 bloomBitsHashes = do
 	capacity <- bloomCapacity
