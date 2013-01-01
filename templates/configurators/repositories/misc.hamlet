@@ -13,7 +13,7 @@
   <a href="@{StartLocalPairR}">
     <i .icon-plus-sign></i> Local computer
 <p>
-  Pair with a computer to automatically keep files in sync
+  Pair with a computer to automatically keep files in sync #
   over your local network.
 
 <p>
