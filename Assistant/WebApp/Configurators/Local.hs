@@ -29,6 +29,7 @@ import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
 import Utility.UserInfo
+import Config
 
 import qualified Data.Text as T
 import Data.Char
@@ -285,12 +286,8 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 			, Param "-m"
 			, Param "created repository"
 			]
-#ifdef darwin_HOST_OS
-	{- Use direct mode repositories by default on OSX, because
-	 - this avoids some problems with the Finder. -}
 	when primary_assistant_repo $
 		setDirect True
-#endif
 	getUUID
 
 {- Adds a directory to the autostart file. -}

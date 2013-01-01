@@ -10,10 +10,10 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
 * Month 4 "cloud": [[!traillink cloud]] [[!traillink transfer_control]]
 * Month 5 "cloud continued": [[!traillink xmpp]] [[!traillink more_cloud_providers]]
+* Month 6 "9k bonus round": [[!traillink desymlink]]
 
 We are, approximately, here:
 
-* Month 6 "9k bonus round": [[!traillink desymlink]]
 * Month 7: user-driven features and polishing; 
   [presentation at LCA2013](https://lca2013.linux.org.au/schedule/30059/view_talk)
 * Month 8: [[!traillink Android]]

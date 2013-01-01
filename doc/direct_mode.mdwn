@@ -1,12 +1,13 @@
 Normally, git-annex repositories consist of symlinks that are checked into
 git, and in turn point at the content of large files that is stored in
-`.git/annex/objects/`. Direct mode is an experimental mode that gets rid of
-the symlinks.
+`.git/annex/objects/`. Direct mode gets rid of the symlinks.
 
 The advantage of direct mode is that you can access files directly,
 including modifying them. The disadvantage is that most regular git
 commands cannot safely be used, and only a subset of git-annex commands
 can be used.
+
+Repositories created by the [[assistant]] use direct mode by default.
 
 ## enabling (and disabling) direct mode
 
