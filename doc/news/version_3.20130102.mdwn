@@ -1,0 +1,25 @@
+git-annex 3.20130102 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * direct, indirect: New commands, that switch a repository to and from
+     direct mode. In direct mode, files are accessed directly, rather than
+     via symlinks. Note that direct mode is currently experimental. Many
+     git-annex commands do not work in direct mode. Some git commands can
+     cause data loss when used in direct mode repositories.
+   * assistant: Now uses direct mode by default when setting up a new
+     local repository.
+   * OSX assistant: Uses the FSEvents API to detect file changes.
+     This avoids issues with running out of file descriptors on large trees,
+     as well as allowing detection of modification of files in direct mode.
+     Other BSD systems still use kqueue.
+   * kqueue: Fix bug that made broken symlinks not be noticed.
+   * vicfg: Quote filename. Closes: #[696193](http://bugs.debian.org/696193)
+   * Bugfix: Fixed bug parsing transfer info files, where the newline after
+     the filename was included in it. This was generally benign, but in
+     the assistant, it caused unexpected dropping of preferred content.
+   * Bugfix: Remove leading \ from checksums output by sha*sum commands,
+     when the filename contains \ or a newline. Closes: #[696384](http://bugs.debian.org/696384)
+   * fsck: Still accept checksums with a leading \ as valid, now that
+     above bug is fixed.
+   * SHA*E backends: Exclude non-alphanumeric characters from extensions.
+   * migrate: Remove leading \ in SHA* checksums, and non-alphanumerics
+     from extensions of SHA*E keys."""]]
