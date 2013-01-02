@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 1"
+ date="2013-01-02T21:11:22Z"
+ content="""
+Since you requested some feedbacks, 
+what I would like to see in the gui somewhere, 
+is where the actual config is stored (~/.config/git-annex), and an option to wipe it out and start fresh.
+Also a restart button.
+
+Best, 
+ Laszlo
+
+
+"""]]
