@@ -59,13 +59,12 @@ chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
  - and passes it to an action, which should chunk and store the data,
  - and return the destinations it stored to, or [] on error. Then
  - calls the storer to write the chunk count (if chunking). Finally, the
- - fianlizer is called to rename the tmp into the dest 
+ - finalizer is called to rename the tmp into the dest 
  - (and do any other cleanup).
  -}
 storeChunks :: Key -> FilePath -> FilePath -> ChunkSize -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO Bool
-storeChunks key tmp dest chunksize storer recorder finalizer =
-	either (const $ return False) return
-		=<< (E.try go :: IO (Either E.SomeException Bool))
+storeChunks key tmp dest chunksize storer recorder finalizer = either onerr return
+	=<< (E.try go :: IO (Either E.SomeException Bool))
   where
 	go = do
 		stored <- storer tmpdests
@@ -74,6 +73,9 @@ storeChunks key tmp dest chunksize storer recorder finalizer =
 			recorder chunkcount (show $ length stored)
 		finalizer tmp dest
 		return (not $ null stored)
+	onerr e = do
+		print e
+		return False
 
 	basef = tmp ++ keyFile key
 	tmpdests
@@ -92,21 +94,22 @@ storeChunks key tmp dest chunksize storer recorder finalizer =
  - writes a whole L.ByteString at a time.
  -}
 storeChunked :: ChunkSize -> [FilePath] -> (FilePath -> L.ByteString -> IO ()) -> L.ByteString -> IO [FilePath]
-storeChunked chunksize dests storer content =
-	either (const $ return []) return
-		=<< (E.try (go chunksize dests) :: IO (Either E.SomeException [FilePath]))
+storeChunked chunksize dests storer content = either onerr return
+	=<< (E.try (go chunksize dests) :: IO (Either E.SomeException [FilePath]))
   where
 	go _ [] = return [] -- no dests!?
-
 	go Nothing (d:_) = do
 		storer d content
 		return [d]
-
 	go (Just sz) _
 		-- always write a chunk, even if the data is 0 bytes
 		| L.null content = go Nothing dests
 		| otherwise = storechunks sz [] dests content
 		
+	onerr e = do
+		print e
+		return []
+	
 	storechunks _ _ [] _ = return [] -- ran out of dests
 	storechunks sz useddests (d:ds) b
 		| L.null b = return $ reverse useddests
