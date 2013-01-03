@@ -148,8 +148,6 @@ getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 			u <- liftIO $ initRepo True path Nothing
 			runAnnex () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStart path
-			otherrepos <- liftIO $ listOtherRepos
-			modifyWebAppState $ \s -> s { otherRepos = otherrepos }
 			redirect $ SwitchToRepositoryR path
 		_ -> $(widgetFile "configurators/newrepository")
 

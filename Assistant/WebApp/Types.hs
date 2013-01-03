@@ -76,7 +76,6 @@ type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
 
 data WebAppState = WebAppState
 	{ showIntro :: Bool -- should the into message be displayed?
-	, otherRepos :: [(String, String)] -- name and path to other repos
 	}
 
 data RepoSelector = RepoSelector

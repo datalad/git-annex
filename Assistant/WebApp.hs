@@ -13,7 +13,6 @@ import Assistant.WebApp.Types
 import Assistant.Common
 import Utility.NotificationBroadcaster
 import Utility.Yesod
-import Locations.UserConfig
 
 import Yesod
 import Data.Text (Text)
@@ -24,11 +23,7 @@ inFirstRun :: Handler Bool
 inFirstRun = isNothing . relDir <$> getYesod
 
 newWebAppState :: IO (TMVar WebAppState)
-newWebAppState = do
-	otherrepos <- listOtherRepos
-	atomically $ newTMVar $ WebAppState
-		{ showIntro = True
-		, otherRepos = otherrepos }
+newWebAppState = atomically $ newTMVar $ WebAppState { showIntro = True }
 
 liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
 liftAssistant a = liftIO . flip runAssistant a =<< assistantData <$> getYesod
@@ -102,15 +97,4 @@ redirectBack = do
 	redirectUltDest HomeR
 
 controlMenu :: Widget
-controlMenu = do
-	repolist <- lift $ otherRepos <$> getWebAppState
-	$(widgetFile "controlmenu")
-
-listOtherRepos :: IO [(String, String)]
-listOtherRepos = do
-	f <- autoStartFile
-	cwd <- getCurrentDirectory
-	dirs <- filter (\d -> not $ d `dirContains` cwd) . nub 
-		<$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
-	names <- mapM relHome dirs
-	return $ sort $ zip names dirs
+controlMenu = $(widgetFile "controlmenu")

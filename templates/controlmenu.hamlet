@@ -1,12 +1,8 @@
 <ul .dropdown-menu>
-  $forall (name, path) <- repolist
-    <li>
-      <a href="@{SwitchToRepositoryR path}">
-        <i .icon-folder-close></i> #{name}
-  $if not (null repolist)
-    <li .divider></li>
   <li>
     <a href="@{NewRepositoryR}">
-      <i .icon-plus-sign></i> Add another repository
+      <i .icon-plus-sign></i> Add another local repository
+    <a href="@{RepositorySwitcherR}">
+      <i .icon-folder-close></i> Switch repository
     <a href="@{ShutdownR}">
       <i .icon-off></i> Shut down

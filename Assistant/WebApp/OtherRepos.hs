@@ -11,14 +11,30 @@ module Assistant.WebApp.OtherRepos where
 
 import Assistant.Common
 import Assistant.WebApp.Types
+import Assistant.WebApp.Page
 import qualified Git.Construct
 import qualified Git.Config
 import Locations.UserConfig
 import qualified Utility.Url as Url
+import Utility.Yesod
 
 import Yesod
 import Control.Concurrent
 import System.Process (cwd)
+
+getRepositorySwitcherR :: Handler RepHtml
+getRepositorySwitcherR = page "Switch repository" Nothing $ do
+	repolist <- liftIO listOtherRepos
+	$(widgetFile "control/repositoryswitcher")
+
+listOtherRepos :: IO [(String, String)]
+listOtherRepos = do
+	f <- autoStartFile
+	pwd <- getCurrentDirectory
+	dirs <- filter (\d -> not $ d `dirContains` pwd) . nub
+		<$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
+	names <- mapM relHome dirs
+	return $ sort $ zip names dirs
 
 {- Starts up the assistant in the repository, and waits for it to create
  - a gitAnnexUrlFile. Waits for the assistant to be up and listening for
