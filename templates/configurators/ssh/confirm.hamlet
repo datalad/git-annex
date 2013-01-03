@@ -25,7 +25,7 @@
         The contents of your files will be stored, fully encrypted, on the #
         server. The server will not store other information about your #
         git repository. This is the best choice if you don't run the server #
-        yourself, or have sensative data.
+        yourself, or have sensitive data.
     <div .span4>
       $if needsPubKey sshdata
         <div .alert .alert-info>
