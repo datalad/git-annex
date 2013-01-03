@@ -25,7 +25,9 @@ inFirstRun = isNothing . relDir <$> getYesod
 
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = do
-	otherrepos <- listOtherRepos
+	cwd <- getCurrentDirectory
+	otherrepos <- filter (\p -> not (snd p `dirContains` cwd))
+		<$> listRepos
 	atomically $ newTMVar $ WebAppState
 		{ showIntro = True
 		, otherRepos = otherrepos }
@@ -101,14 +103,13 @@ redirectBack = do
 	setUltDestReferer
 	redirectUltDest HomeR
 
-{- List of other known repsitories, and link to add a new one. -}
-otherReposWidget :: Widget
-otherReposWidget = do
+controlMenu :: Widget
+controlMenu = do
 	repolist <- lift $ otherRepos <$> getWebAppState
-	$(widgetFile "otherrepos")
+	$(widgetFile "controlmenu")
 
-listOtherRepos :: IO [(String, String)]
-listOtherRepos = do
+listRepos :: IO [(String, String)]
+listRepos = do
 	f <- autoStartFile
 	dirs <- nub <$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
 	names <- mapM relHome dirs

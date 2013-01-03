@@ -16,7 +16,7 @@
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Current Repository: #{reldir}
               <b .caret></b>
-            ^{otherReposWidget}
+            ^{controlMenu}
       $nothing
 <div .container-fluid>
   <div .row-fluid>

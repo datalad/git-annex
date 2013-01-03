@@ -5,6 +5,9 @@
 /about/license LicenseR GET
 /about/repogroups RepoGroupR GET
 
+/shutdown ShutdownR GET
+/shutdown/confirm ShutdownConfirmedR GET
+
 /config ConfigurationR GET
 /config/repository RepositoriesR GET
 /config/xmpp XMPPR GET

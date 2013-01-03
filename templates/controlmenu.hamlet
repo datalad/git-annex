@@ -2,9 +2,11 @@
   $forall (name, path) <- repolist
     <li>
       <a href="@{SwitchToRepositoryR path}">
-        #{name}
+        <i .icon-folder-close></i> #{name}
   $if not (null repolist)
     <li .divider></li>
   <li>
     <a href="@{NewRepositoryR}">
-      Add another repository
+      <i .icon-plus-sign></i> Add another repository
+    <a href="@{ShutdownR}">
+      <i .icon-off></i> Shut down
