@@ -25,9 +25,7 @@ inFirstRun = isNothing . relDir <$> getYesod
 
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = do
-	cwd <- getCurrentDirectory
-	otherrepos <- filter (\p -> not (snd p `dirContains` cwd))
-		<$> listRepos
+	otherrepos <- listOtherRepos
 	atomically $ newTMVar $ WebAppState
 		{ showIntro = True
 		, otherRepos = otherrepos }
@@ -108,9 +106,11 @@ controlMenu = do
 	repolist <- lift $ otherRepos <$> getWebAppState
 	$(widgetFile "controlmenu")
 
-listRepos :: IO [(String, String)]
-listRepos = do
+listOtherRepos :: IO [(String, String)]
+listOtherRepos = do
 	f <- autoStartFile
-	dirs <- nub <$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
+	cwd <- getCurrentDirectory
+	dirs <- filter (\d -> not $ d `dirContains` cwd) . nub 
+		<$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
 	names <- mapM relHome dirs
 	return $ sort $ zip names dirs
