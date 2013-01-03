@@ -101,3 +101,12 @@ isSticky = checkMode stickyMode
 
 setSticky :: FilePath -> IO ()
 setSticky f = modifyFileMode f $ addModes [stickyMode]
+
+{- Writes a file, ensuring that its modes do not allow it to be read
+ - by anyone other than the current user, before any content is written. -}
+writeFileProtected :: FilePath -> String -> IO ()
+writeFileProtected file content = do
+	h <- openFile file WriteMode
+	modifyFileMode file $ removeModes [groupReadMode, otherReadMode]
+	hPutStr h content
+	hClose h

@@ -29,8 +29,8 @@ import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
-import Utility.FileMode
 import Utility.TempFile
+import Utility.FileMode
 import Git
 
 import Yesod
@@ -84,35 +84,9 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 				=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
 	go port webapp htmlshim urlfile = do
 		let url = myUrl webapp port
-		maybe noop (`writeFile` url) urlfile
-		writeHtmlShim url htmlshim
+		maybe noop (`writeFileProtected` url) urlfile
+		writeHtmlShim "Starting webapp..." url htmlshim
 		maybe noop (\a -> a url htmlshim) onstartup
-
-{- Creates a html shim file that's used to redirect into the webapp,
- - to avoid exposing the secretToken when launching the web browser. -}
-writeHtmlShim :: String -> FilePath -> IO ()
-writeHtmlShim url file = viaTmp go file $ genHtmlShim url
-  where
-	go tmpfile content = do
-		h <- openFile tmpfile WriteMode
-		modifyFileMode tmpfile $ removeModes [groupReadMode, otherReadMode]
-		hPutStr h content
-		hClose h
-
-{- TODO: generate this static file using Yesod. -}
-genHtmlShim :: String -> String
-genHtmlShim url = unlines
-	[ "<html>"
-	, "<head>"
-	, "<title>Starting webapp...</title>"
-	, "<meta http-equiv=\"refresh\" content=\"0; URL="++url++"\">"
-	, "<body>"
-	, "<p>"
-	, "<a href=\"" ++ url ++ "\">Starting webapp...</a>"
-	, "</p>"
-	, "</body>"
-	, "</html>"
-	]
 
 myUrl :: WebApp -> PortNumber -> Url
 myUrl webapp port = unpack $ yesodRender webapp urlbase HomeR []

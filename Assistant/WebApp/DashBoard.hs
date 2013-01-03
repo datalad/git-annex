@@ -125,9 +125,7 @@ openFileBrowser = do
 				boolSystem cmd [Param path]
 			return True
 		, do
-			clearUltDest
-			setUltDest $ "file://" ++ path
-			void $ redirectUltDest HomeR
+			void $ redirect $ "file://" ++ path
 			return False
 		)
   where

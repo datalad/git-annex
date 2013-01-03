@@ -10,6 +10,7 @@
 module Assistant.WebApp.Control where
 
 import Assistant.WebApp.Common
+import Locations.UserConfig
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -26,3 +27,16 @@ getShutdownConfirmedR = page "Shutdown" Nothing $ do
 		threadDelay 2000000
 		signalProcess sigTERM =<< getProcessID
 	$(widgetFile "control/shutdownconfirmed")
+
+{- Quite a hack, and doesn't redirect the browser window. -}
+getRestartR :: Handler RepHtml
+getRestartR = page "Restarting" Nothing $ do
+	void $ liftIO $ forkIO $ do
+		threadDelay 2000000
+		program <- readProgramFile
+		unlessM (boolSystem "sh" [Param "-c", Param $ restartcommand program]) $
+			error "restart failed"
+	$(widgetFile "control/restarting")
+  where
+	restartcommand program = program ++ " assistant --stop; " ++
+		program ++ " webapp"

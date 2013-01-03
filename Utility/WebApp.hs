@@ -10,6 +10,8 @@
 module Utility.WebApp where
 
 import Common
+import Utility.TempFile
+import Utility.FileMode
 
 import qualified Yesod
 import qualified Network.Wai as Wai
@@ -188,3 +190,23 @@ insertAuthToken extractToken predicate webapp root pathbits params =
 	params'
 		| predicate pathbits = authparam:params
 		| otherwise = params
+
+{- Creates a html shim file that's used to redirect into the webapp,
+ - to avoid exposing the secret token when launching the web browser. -}
+writeHtmlShim :: String -> String -> FilePath -> IO ()
+writeHtmlShim title url file = viaTmp writeFileProtected file $ genHtmlShim title url
+
+{- TODO: generate this static file using Yesod. -}
+genHtmlShim :: String -> String -> String
+genHtmlShim title url = unlines
+	[ "<html>"
+	, "<head>"
+	, "<title>"++ title ++ "</title>"
+	, "<meta http-equiv=\"refresh\" content=\"1; URL="++url++"\">"
+	, "<body>"
+	, "<p>"
+	, "<a href=\"" ++ url ++ "\">" ++ title ++ "</a>"
+	, "</p>"
+	, "</body>"
+	, "</html>"
+	]
