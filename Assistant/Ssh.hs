@@ -124,7 +124,7 @@ removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
 removeAuthorizedKeys rsynconly dir pubkey = do
 	let keyline = authorizedKeysLine rsynconly dir pubkey
 	sshdir <- sshDir
-	let keyfile = sshdir </> ".authorized_keys"
+	let keyfile = sshdir </> "authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
 	writeFile keyfile $ unlines $ filter (/= keyline) ls
 
