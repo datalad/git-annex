@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.166.255"
+ subject="comment 9"
+ date="2013-01-04T20:26:46Z"
+ content="""
+You noted in a recent blog post that direct mode won't work with mixed repositories, that is, those that have files checked into git alongside annexed ones.  Is this still the case?  Thanks.
+"""]]
