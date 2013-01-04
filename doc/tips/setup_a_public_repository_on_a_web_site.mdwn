@@ -12,8 +12,9 @@ Here's how I set it up. --[[Joey]]
 4. `git init; git annex init`
 3. We want users to be able to clone the git repository over http, because
    git-annex can download files from it over http as well. For this to
-   work, `git update-server-info` needs to get run after commits. So
-   put it in the git `post-update` hook.
+   work, `git update-server-info` needs to get run after commits. The
+   git `post-update` hook will take care of this, you just need to enable
+   the hook. `chmod +x .git/hooks/post-update`
 5. `git annex add; git commit -m added`
 6. Make sure users can still download files from the site directly.
 7. Instruct advanced users to clone a http url that ends with the "/.git/"
