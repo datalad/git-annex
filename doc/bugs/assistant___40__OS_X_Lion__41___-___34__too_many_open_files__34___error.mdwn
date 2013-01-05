@@ -24,3 +24,9 @@ What version of git-annex are you using? On what operating system?
 Please provide any additional information below.
 
 I imagine I could avoid this error by using the "ulimit -n" command to increase number of files in a shell session and then running assistant manually, so this is really only a bug report about the bundled application.
+
+> This seems to be caused by Command.Add.lockdown not closing the
+> temporary file handle, so when called in a mapM by the committer
+> thread when there are a lot of files, it could build up a lot of
+> open handles before later GC closes them. Added a manual close,
+> so I think this is [[done]]. --[[Joey]]

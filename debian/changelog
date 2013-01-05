@@ -1,6 +1,7 @@
 git-annex (3.20130103) UNRELEASED; urgency=low
 
   * webapp: Add UI to stop and restart assistant.
+  * committer: Fix a file handle leak.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Jan 2013 14:58:45 -0400
 
