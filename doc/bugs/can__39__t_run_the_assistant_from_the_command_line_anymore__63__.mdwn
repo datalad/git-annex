@@ -28,3 +28,7 @@ OS X Lion.
 Please provide any additional information below.
 
 
+> You need to install the haskell hfsevents library to build on OSX now.
+> This is a recent change documented in the release notes, but 
+> just running `cabal install` should install it automatically. [[done]]
+> --[[Joey]]
