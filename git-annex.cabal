@@ -86,7 +86,7 @@ Executable git-annex
   else
     if os(darwin)
       Build-Depends: hfsevents
-      CPP-Options: -DWITH_HFSEVENTS
+      CPP-Options: -DWITH_FSEVENTS
     else
       if (! os(windows) && ! os(solaris) && ! os(linux))
         CPP-Options: -DWITH_KQUEUE
