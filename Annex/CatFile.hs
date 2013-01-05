@@ -56,7 +56,7 @@ catKey ref = do
 {- From a file in git back to the key.
  -
  - Prefixing the file with ./ makes this work even if in a subdirectory
- - of a repo.
+ - of a repo. For some reason, HEAD is sometimes needed.
  -}
 catKeyFile :: FilePath -> Annex (Maybe Key)
-catKeyFile f = catKey $ Ref $ ":./" ++ f
+catKeyFile f = catKey $ Ref $ "HEAD:./" ++ f
