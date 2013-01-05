@@ -269,9 +269,9 @@ subdirectories).
 * direct
 
   Switches a repository to use direct mode, where rather than symlinks to
-  files, the files are directly present in the repository. Note that many git
-  and git-annex commands will not work in direct mode; you're mostly
-  limited to using "git annex sync" and "git annex get".
+  files, the files are directly present in the repository. Note that most git
+  commands and some git-annex commands will not work in direct mode; you're 
+  mostly limited to using "git annex sync" and "git annex get".
 
   As part of the switch to direct mode, any changed files will be committed.
 

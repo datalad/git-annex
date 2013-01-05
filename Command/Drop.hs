@@ -20,7 +20,7 @@ import qualified Option
 import Annex.Wanted
 
 def :: [Command]
-def = [notDirect $ withOptions [fromOption] $ command "drop" paramPaths seek
+def = [withOptions [fromOption] $ command "drop" paramPaths seek
 	"indicate content of files not currently wanted"]
 
 fromOption :: Option

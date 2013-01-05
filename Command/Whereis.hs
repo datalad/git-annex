@@ -15,7 +15,7 @@ import Remote
 import Logs.Trust
 
 def :: [Command]
-def = [notDirect $ noCommit $ command "whereis" paramPaths seek
+def = [noCommit $ command "whereis" paramPaths seek
 	"lists repositories that have file content"]
 
 seek :: [CommandSeek]

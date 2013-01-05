@@ -41,11 +41,9 @@ Otherwise, the main command that's used in direct mode repositories is
 `git annex sync`. This automatically adds new files, commits all
 changed files to git, pushes them out, pulls down any changes, etc.
 
-You can also run `git annex get` to transfer the content of files into your
-direct mode repository. Or if the direct mode repository is a remote of
-some other, regular git-annex repository, you can use commands in the other
-repository like `git annex copy` and `git annex move` to transfer the
-contents of files to the direct mode repository.
+`git annex add` and some other commands are not yet supported in direct
+mode repositories. Feel free to try any git annex command though; ones that
+don't support direct mode will refuse to do anything.
 
 You can use `git commit --staged`. (But not `git commit -a` .. It'll commit
 whole large files into git!)

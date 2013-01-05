@@ -14,9 +14,8 @@ import qualified Remote
 import Annex.Wanted
 
 def :: [Command]
-def = [notDirect $ 
-	withOptions Command.Move.options $ command "copy" paramPaths seek
-		"copy content of files to/from another repository"]
+def = [withOptions Command.Move.options $ command "copy" paramPaths seek
+	"copy content of files to/from another repository"]
 
 seek :: [CommandSeek]
 seek = [withField Command.Move.toOption Remote.byName $ \to ->
