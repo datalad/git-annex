@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.211"
+ subject="comment 7"
+ date="2013-01-05T17:48:52Z"
+ content="""
+@jsilence, this problem does not involve lsof. There was a typo in the cabal file that prevented cabal building it with hfsevents. I'm releasing a new version to cabal with this typo fixed.
+"""]]
