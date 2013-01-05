@@ -60,8 +60,8 @@ lockDown file = do
 	tmp <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory tmp
 	liftIO $ do
-		(tmpfile, handle) <- openTempFile tmp (takeFileName file)
-		hClose handle
+		(tmpfile, h) <- openTempFile tmp (takeFileName file)
+		hClose h
 		nukeFile tmpfile
 		createLink file tmpfile
 		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
