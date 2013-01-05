@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-05T00:32:44Z"
+ content="""
+After I painstakingly killed off the assistant's processes (I didn't see a way to stop it in the web interface, and issuing \"git annex assistant --stop\" did not stop it), and restarted the assistant, it synced successfully, so the error seems to have been transient.
+"""]]
