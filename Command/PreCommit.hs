@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import qualified Command.Add
 import qualified Command.Fix
+import Config
 
 def :: [Command]
 def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
@@ -19,8 +20,11 @@ def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
  - And, it needs to inject unlocked files into the annex. -}
 seek :: [CommandSeek]
 seek =
-	[ withFilesToBeCommitted $ whenAnnexed Command.Fix.start
+	[ withFilesToBeCommitted $ whenNotDirect $ whenAnnexed $ Command.Fix.start
 	, withFilesUnlockedToBeCommitted start]
+
+whenNotDirect :: (FilePath -> Annex (Maybe CommandPerform)) -> FilePath -> Annex (Maybe CommandPerform)
+whenNotDirect a f = ifM isDirect ( stop , a f )
 
 start :: FilePath -> CommandStart
 start file = next $ perform file
