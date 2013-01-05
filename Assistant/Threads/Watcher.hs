@@ -158,11 +158,11 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
   where
 	go (Just (key, _)) = do
 		link <- liftAnnex $ calcGitLink file key
-		ifM ((==) link <$> liftIO (readSymbolicLink file))
+		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
 			( do
 				s <- getDaemonStatus
 				checkcontent key s
-				ensurestaged link s
+				ensurestaged (Just link) s
 			, do
 				liftIO $ removeFile file
 				liftIO $ createSymbolicLink link file
@@ -170,8 +170,8 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 				addlink link
 			)
 	go Nothing = do -- other symlink
-		link <- liftIO (readSymbolicLink file)
-		ensurestaged link =<< getDaemonStatus
+		mlink <- liftIO (catchMaybeIO $ readSymbolicLink file)
+		ensurestaged mlink =<< getDaemonStatus
 
 	{- This is often called on symlinks that are already
 	 - staged correctly. A symlink may have been deleted
@@ -184,12 +184,13 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 	 - (If the daemon has never ran before, avoid staging
 	 - links too.)
 	 -}
-	ensurestaged link daemonstatus
+	ensurestaged (Just link) daemonstatus
 		| scanComplete daemonstatus = addlink link
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
 			_ -> addlink link
+	ensurestaged Nothing _ = noChange
 
 	{- For speed, tries to reuse the existing blob for symlink target. -}
 	addlink link = do
