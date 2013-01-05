@@ -20,9 +20,11 @@ import System.Posix.Files
 import Common.Annex
 import qualified Annex
 import Annex.CheckAttr
+import Annex.CatFile
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
+import Config
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.SHA
@@ -73,21 +75,32 @@ genKey' (b:bs) source = do
 		| otherwise = c
 
 {- Looks up the key and backend corresponding to an annexed file,
- - by examining what the file symlinks to. -}
+ - by examining what the file symlinks to.
+ -
+ - In direct mode, there is often no symlink on disk, in which case
+ - the symlink is looked up in git instead. However, a real symlink
+ - on disk still takes precedence over what was committed to git in direct
+ - mode.
+ -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
 	tl <- liftIO $ tryIO $ readSymbolicLink file
 	case tl of
-		Left _ -> return Nothing
-		Right l -> makekey l
+		Right l
+			| isLinkToAnnex l -> makekey l
+			| otherwise -> return Nothing
+		Left _ -> ifM isDirect
+			( maybe (return Nothing) makeret =<< catKeyFile file
+			, return Nothing
+			)
   where
-	makekey l = maybe (return Nothing) (makeret l) (fileKey $ takeFileName l)
-	makeret l k = let bname = keyBackendName k in
+	makekey l = maybe (return Nothing) makeret (fileKey $ takeFileName l)
+	makeret k = let bname = keyBackendName k in
 		case maybeLookupBackendName bname of
 			Just backend -> do
 				return $ Just (k, backend)
 			Nothing -> do
-				when (isLinkToAnnex l) $ warning $
+				warning $
 					"skipping " ++ file ++
 					" (unknown backend " ++ bname ++ ")"
 				return Nothing

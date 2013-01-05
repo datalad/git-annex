@@ -9,8 +9,9 @@ module Annex.CatFile (
 	catFile,
 	catObject,
 	catObjectDetails,
+	catFileHandle,
 	catKey,
-	catFileHandle
+	catKeyFile,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -46,4 +47,16 @@ catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
 
 {- From the Sha or Ref of a symlink back to the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = fileKey . takeFileName . encodeW8 . L.unpack  <$> catObject ref
+catKey ref = do
+	l <- encodeW8 . L.unpack  <$> catObject ref
+	return $ if isLinkToAnnex l
+		then fileKey $ takeFileName l
+		else Nothing
+
+{- From a file in git back to the key.
+ -
+ - Prefixing the file with ./ makes this work even if in a subdirectory
+ - of a repo.
+ -}
+catKeyFile :: FilePath -> Annex (Maybe Key)
+catKeyFile f = catKey $ Ref $ ":./" ++ f

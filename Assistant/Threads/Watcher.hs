@@ -138,7 +138,7 @@ onAdd file filestatus
  - really been modified. -}
 onAddDirect :: Handler
 onAddDirect file fs = do
-	v <- liftAnnex $ catKey (Ref $ ':':file)
+	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ changedFileStatus key filestatus)
