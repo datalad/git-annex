@@ -21,3 +21,6 @@ git-annex version 3.20130102 on Xubuntu 12.04, installed with cabal (got no erro
 Please provide any additional information below.
 
 I do not know if there is any log, or any info about the reason of the failure. Something useful could be that  ~/annex/ now contains an empty git repository, so "something" happened despite the error.
+
+> Made assistant detect misconfigured system and set enough environment
+> variables so git will work. [[done]] --[[Joey]]
