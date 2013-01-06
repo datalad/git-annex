@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2013-01-06T11:08:42Z"
+ content="""
+Yeah, I was debating between ping times (max or avg) and hop count and ultimately went with ping time because of this situation: From my office to my house is ~12 hops but because we peer with the cable modem provider the ping time is still ~5ms. But from my cell modem, it's ~8 hops but ping times of ~200ms.
+"""]]
