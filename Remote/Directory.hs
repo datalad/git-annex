@@ -111,8 +111,7 @@ withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO
 withStoredFiles = withCheckedFiles doesFileExist
 
 store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store d chunksize k _f p = do
-	src <- inRepo $ gitAnnexLocation k
+store d chunksize k _f p = sendAnnex k $ \src ->
 	metered (Just p) k $ \meterupdate -> 
 		storeHelper d chunksize k $ \dests ->
 			case chunksize of
@@ -126,8 +125,7 @@ store d chunksize k _f p = do
 						=<< L.readFile src
 
 storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted d chunksize (cipher, enck) k p = do
-	src <- inRepo $ gitAnnexLocation k
+storeEncrypted d chunksize (cipher, enck) k p = sendAnnex k $ \src -> 
 	metered (Just p) k $ \meterupdate ->
 		storeHelper d chunksize enck $ \dests ->
 			encrypt cipher (feedFile src) $ readBytes $ \b ->

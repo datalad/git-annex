@@ -9,6 +9,7 @@ git-annex (3.20130105) UNRELEASED; urgency=low
     and set environment to prevent git from failing.
   * direct: Avoid hardlinking symlinks that point to the same content
     when the content is not present.
+  * Fix transferring files to special remotes in direct mode.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Jan 2013 14:58:45 -0400
 

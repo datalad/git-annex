@@ -103,16 +103,15 @@ runHook hooktype hook k f a = maybe (return False) run =<< lookupHook hooktype h
 			)
 
 store :: String -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store h k _f _p = do
-	src <- inRepo $ gitAnnexLocation k
+store h k _f _p = sendAnnex k $ \src ->
 	runHook h "store" k (Just src) $ return True
 
 storeEncrypted :: String -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted h (cipher, enck) k _p = withTmp enck $ \tmp -> do
-	src <- inRepo $ gitAnnexLocation k
-	liftIO $ encrypt cipher (feedFile src) $
-		readBytes $ L.writeFile tmp
-	runHook h "store" enck (Just tmp) $ return True
+storeEncrypted h (cipher, enck) k _p = withTmp enck $ \tmp ->
+	sendAnnex k $ \src -> do
+		liftIO $ encrypt cipher (feedFile src) $
+			readBytes $ L.writeFile tmp
+		runHook h "store" enck (Just tmp) $ return True
 
 retrieve :: String -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve h k _f d = runHook h "retrieve" k (Just d) $ return True

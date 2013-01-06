@@ -23,6 +23,7 @@ import Crypto
 import Creds
 import Meters
 import qualified Annex
+import Annex.Content
 
 import System.Process
 
@@ -84,17 +85,15 @@ store r k _f m
 	| keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
-	| otherwise = do
-		src <- inRepo $ gitAnnexLocation k
+	| otherwise = sendAnnex k $ \src ->
 		metered (Just m) k $ \meterupdate ->
 			storeHelper r k $ streamMeteredFile src meterupdate
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k m = do
-	f <- inRepo $ gitAnnexLocation k
+storeEncrypted r (cipher, enck) k m = sendAnnex k $ \src -> do
 	metered (Just m) k $ \meterupdate ->
 		storeHelper r enck $ \h ->
-			encrypt cipher (feedFile f)
+			encrypt cipher (feedFile src)
 				(readBytes $ meteredWrite meterupdate h)
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool

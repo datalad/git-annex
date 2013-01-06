@@ -27,6 +27,7 @@ import Crypto
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Utility.UserInfo
+import Annex.Content
 
 type BupRepo = String
 
@@ -120,14 +121,12 @@ bupSplitParams r buprepo k src = do
 		(os ++ [Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r buprepo k _f _p = do
-	src <- inRepo $ gitAnnexLocation k
+store r buprepo k _f _p = sendAnnex k $ \src -> do
 	params <- bupSplitParams r buprepo k [File src]
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Remote -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r buprepo (cipher, enck) k _p = do
-	src <- inRepo $ gitAnnexLocation k
+storeEncrypted r buprepo (cipher, enck) k _p = sendAnnex k $ \src -> do
 	params <- bupSplitParams r buprepo enck []
 	liftIO $ catchBoolIO $
 		encrypt cipher (feedFile src) $ \h ->

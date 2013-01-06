@@ -93,6 +93,9 @@ annexLocation key hasher = objectDir </> keyPath key hasher
  -
  - When the file is not present, returns the location where the file should
  - be stored.
+ -
+ - This does not take direct mode into account, so in direct mode it is not
+ - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
 gitAnnexLocation key r

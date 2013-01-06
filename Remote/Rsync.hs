@@ -101,14 +101,14 @@ rsyncUrls o k = map use annexHashes
 	f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store o k _f p = rsyncSend o p k <=< inRepo $ gitAnnexLocation k
+store o k _f p = sendAnnex k $ rsyncSend o p k
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp -> do
-	src <- inRepo $ gitAnnexLocation k
-	liftIO $ encrypt cipher (feedFile src) $
-		readBytes $ L.writeFile tmp
-	rsyncSend o p enck tmp
+storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp ->
+	sendAnnex k $ \src -> do
+		liftIO $ encrypt cipher (feedFile src) $
+			readBytes $ L.writeFile tmp
+		rsyncSend o p enck tmp
 
 retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o Nothing

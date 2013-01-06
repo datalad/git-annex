@@ -309,7 +309,6 @@ withObjectLoc key indirect direct = ifM isDirect
   where
 	goindirect = indirect =<< inRepo (gitAnnexLocation key)
 
-
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
 	file <- inRepo $ gitAnnexLocation key
