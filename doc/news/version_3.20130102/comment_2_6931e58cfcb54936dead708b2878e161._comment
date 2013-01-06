@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.211"
+ subject="comment 2"
+ date="2013-01-06T18:00:46Z"
+ content="""
+You need to upgrade your Yesod to a newer version. See [[bugs/Cannot_build_the_latest_with_GHC_7.6.1]]
+"""]]
