@@ -55,16 +55,7 @@ stageDirect = do
 			(Just key, Nothing, _) -> deletedannexed file key
 			(Nothing, Nothing, _) -> deletegit file
 			(_, Just _, _) -> addgit file
-	go (file, Nothing) = do
-		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		case (mstat, toCache =<< mstat) of
-			(Nothing, _) -> noop
-			(Just stat, Just cache)
-				| isSymbolicLink stat -> addgit file
-				| otherwise -> void $ addDirect file cache
-			(Just stat, Nothing)
-				| isSymbolicLink stat -> addgit file
-				| otherwise -> noop
+	go _ = noop
 
 	modifiedannexed file oldkey cache = do
 		void $ removeAssociatedFile oldkey file

@@ -21,14 +21,19 @@ import Annex.Perms
 import Utility.Touch
 import Utility.FileMode
 import Config
+import qualified Git.HashObject
+import qualified Git.UpdateIndex
+import Git.Types
 
 def :: [Command]
-def = [notDirect $ notBareRepo $
-	command "add" paramPaths seek "add files to annex"]
+def = [notBareRepo $ command "add" paramPaths seek "add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files. -}
 seek :: [CommandSeek]
-seek = [withFilesNotInGit start, withFilesUnlocked start]
+seek =
+	[ withFilesNotInGit start
+	, whenNotDirect $ withFilesUnlocked start
+	]
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up
@@ -68,7 +73,7 @@ lockDown file = do
 
 {- Moves a locked down file into the annex.
  -
- - In direct mode, leaves the file alone, and just updates bookeeping
+ - In direct mode, leaves the file alone, and just updates bookkeeping
  - information.
  -}
 ingest :: KeySource -> Annex (Maybe Key)
@@ -146,11 +151,20 @@ link file key hascontent = handle (undo file key) $ do
 {- Note: Several other commands call this, and expect it to 
  - create the symlink and add it. -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
-cleanup file key hascontent = do
-	_ <- link file key hascontent
-	params <- ifM (Annex.getState Annex.force)
-		( return [Param "-f"]
-		, return []
-		)
-	Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
-	return True
+cleanup file key hascontent = ifM isDirect
+	( do
+		l <- calcGitLink file key
+		sha <- inRepo $ Git.HashObject.hashObject BlobObject l
+		Annex.Queue.addUpdateIndex =<<
+			inRepo (Git.UpdateIndex.stageSymlink file sha)
+		logStatus key InfoPresent
+		return True
+	, do
+		_ <- link file key hascontent
+		params <- ifM (Annex.getState Annex.force)
+			( return [Param "-f"]
+			, return []
+			)
+		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+		return True
+	)
