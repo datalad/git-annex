@@ -20,6 +20,7 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import qualified Option
+import Config
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -123,3 +124,6 @@ prepFiltered a fs = do
 
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
+
+whenNotDirect :: CommandSeek -> CommandSeek
+whenNotDirect a params = ifM isDirect ( return [] , a params )
