@@ -34,7 +34,7 @@ import System.Posix.Types (EpochTime)
 import System.Locale
 
 def :: [Command]
-def = [notDirect $ withOptions options $ command "fsck" paramPaths seek
+def = [withOptions options $ command "fsck" paramPaths seek
 	"check for problems"]
 
 fromOption :: Option
@@ -180,12 +180,18 @@ performBare key backend = check
 check :: [Annex Bool] -> Annex Bool
 check cs = all id <$> sequence cs
 
-{- Checks that the file's symlink points correctly to the content. -}
+{- Checks that the file's symlink points correctly to the content.
+ -
+ - In direct mode, there is only a symlink when the content is not present.
+ -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
 	want <- calcGitLink file key
-	have <- liftIO $ readSymbolicLink file
-	when (want /= have) $ do
+	have <- liftIO $ catchMaybeIO $ readSymbolicLink file
+	maybe noop (go want) have
+	return True
+  where
+	go want have = when (want /= have) $ do
 		{- Version 3.20120227 had a bug that could cause content
 		 - to be stored in the wrong hash directory. Clean up
 		 - after the bug by moving the content.
@@ -203,23 +209,27 @@ fixLink key file = do
 		liftIO $ removeFile file
 		liftIO $ createSymbolicLink want file
 		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
-	return True
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}
 verifyLocationLog :: Key -> String -> Annex Bool
 verifyLocationLog key desc = do
 	present <- inAnnex key
+	direct <- isDirect
+	u <- getUUID
 	
-	-- Since we're checking that a key's file is present, throw
-	-- in a permission fixup here too.
-	when present $ do
+	{- Since we're checking that a key's file is present, throw
+	 - in a permission fixup here too. -}
+	when (present && not direct) $ do
 		file <- inRepo $ gitAnnexLocation key
 		freezeContent file
 		freezeContentDir file
 
-	u <- getUUID
-	verifyLocationLog' key desc present u (logChange key u)
+	{- In direct mode, modified files will show up as not present,
+	 - but that is expected and not something to do anything about. -}
+	if (direct && not present)
+		then return True
+		else verifyLocationLog' key desc present u (logChange key u)
 
 verifyLocationLogRemote :: Key -> String -> Remote -> Bool -> Annex Bool
 verifyLocationLogRemote key desc remote present =
@@ -248,14 +258,20 @@ verifyLocationLog' key desc present u bad = do
 		bad s
 
 {- The size of the data for a key is checked against the size encoded in
- - the key's metadata, if available. -}
+ - the key's metadata, if available.
+ -
+ - Not checked in direct mode, because files can be changed directly.
+  -}
 checkKeySize :: Key -> Annex Bool
-checkKeySize key = do
-	file <- inRepo $ gitAnnexLocation key
-	ifM (liftIO $ doesFileExist file)
-		( checkKeySizeOr badContent key file
-		, return True
-		)
+checkKeySize key = ifM isDirect
+	( return True
+	, do
+		file <- inRepo $ gitAnnexLocation key
+		ifM (liftIO $ doesFileExist file)
+			( checkKeySizeOr badContent key file
+			, return True
+			)
+	)
 
 checkKeySizeRemote :: Key -> Remote -> Maybe FilePath -> Annex Bool
 checkKeySizeRemote _ _ Nothing = return True
@@ -283,10 +299,16 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 			, msg
 			]
 
+{- Runs the backend specific check on a key's content.
+ -
+ - In direct mode, this is skipped, because files can change at any time. -}
 checkBackend :: Backend -> Key -> Annex Bool
-checkBackend backend key = do
-	file <- inRepo (gitAnnexLocation key)
-	checkBackendOr badContent backend key file
+checkBackend backend key = ifM isDirect
+	( return True
+	, do
+		file <- inRepo $ gitAnnexLocation key
+		checkBackendOr badContent backend key file
+	)
 
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
@@ -335,7 +357,7 @@ missingNote file present needed untrusted =
 {- Bad content is moved aside. -}
 badContent :: Key -> Annex String
 badContent key = do
-	dest <- moveBad key
+	dest <- badContent key
 	return $ "moved to " ++ dest
 
 badContentRemote :: Remote -> Key -> Annex String
