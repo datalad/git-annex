@@ -34,33 +34,19 @@ any time). To do so:
 
 ## use a direct mode repository
 
-Perhaps the best way to use a direct mode repository is with the git-annex
-assistant.
+You can use most git-annex commands as usual in a direct mode repository.
+A few commands don't work in direct mode, and will refuse to do anything.
 
-Otherwise, the main command that's used in direct mode repositories is
-`git annex sync`. This automatically adds new files, commits all
-changed files to git, pushes them out, pulls down any changes, etc.
+Direct mode also works well with the git-annex assistant.
 
-`git annex add` and some other commands are not yet supported in direct
-mode repositories. Feel free to try any git annex command though; ones that
-don't support direct mode will refuse to do anything.
-
-You can use `git commit --staged`. (But not `git commit -a` .. It'll commit
-whole large files into git!)
-
-You can use `git log` and other git query commands.
+You can use `git commit --staged`. But not `git commit -a` .. It'll
+commit whole large files into git!
 
 ## what doesn't work in direct mode
 
-In general git-annex commands will only work in direct mode repositories on
-files whose content is not present. That's because such files are still 
-represented as symlinks, which git-annex commands know how to operate on.
-So, `git annex get` works, but `git annex drop` and `git annex move` don't,
-and things like `git annex status` show incomplete information.
-
-It's technically possible to make all git-annex commands work in direct
-mode repositories, so this might change. Check back to this page to see
-current status about what works and what doesn't.
+`git annex status` show incomplete information. A few other commands,
+like `git annex unlock` don't make sense in direct mode and will refuse to
+run.
 
 As for git commands, you can probably use some git working tree
 manipulation commands, like `git checkout` and `git revert` in useful
@@ -70,4 +56,4 @@ had of something, it'll be lost.
 
 This is one reason it's wise to make git-annex untrust your direct mode
 repositories. Still, you can lose data using these sort of git commands, so
-use extreme caution. 
+use extreme caution.
