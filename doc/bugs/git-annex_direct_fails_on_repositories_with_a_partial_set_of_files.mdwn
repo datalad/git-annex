@@ -22,3 +22,8 @@ Running 3.20130102 on OSX
 
 ## Please provide any additional information below.
 
+> More specifically, git annex direct fails, on OSX only, when there are two
+> files that both have the same content. Apparently OSX doesn't allow
+> hard linking two symbolic links together. There was no harm in it doing that
+> otherwise, but then again no reason for it to do so, so I've put in a fix.
+> [[done]] --[[Joey]] 

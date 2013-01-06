@@ -190,10 +190,13 @@ toDirectGen k f = do
 				liftIO $ replaceFile f $ moveFile loc
 			, return Nothing
 			)
-		(loc':_) -> return $ Just $ do
+		(loc':_) -> ifM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f)
 			{- Another direct file has the content, so
 			 - hard link to it. -}
-			liftIO $ replaceFile f $ createLink loc'
+			( return $ Just $ do
+				liftIO $ replaceFile f $ createLink loc'
+			, return Nothing
+			)
 
 {- Removes a direct mode file, while retaining its content. -}
 removeDirect :: Key -> FilePath -> Annex ()
