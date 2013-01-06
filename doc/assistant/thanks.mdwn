@@ -47,7 +47,7 @@ Ian McEwen, asc, Paul Tagliamonte, Sherif Abouseda, Igor Támara, Anne Wind,
 Mesar Hameed, Brandur K. Holm Petersen, Takahiro Inoue, Kai Hendry,
 Stephen Youndt, Lee Roberson, Ben Strawbridge, Andrew Greenberg, Alfred Adams
 Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin,
-Sherif Abouseda, Ben Strawbridge
+Sherif Abouseda, Ben Strawbridge, chee rabbits, Pedro Côrte-Real
 
 And special thanks to Kevin McKenzie, who also gave me a login to a Mac OSX
 machine, which has proven invaluable, and Jimmy Tang who has helped
