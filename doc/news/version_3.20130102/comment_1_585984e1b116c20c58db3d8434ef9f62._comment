@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="cabal install fails to install a 20130105 version"
+ date="2013-01-06T08:30:42Z"
+ content="""
+Not seen an announcement for that version, but cabal install fails currently on my machine with the following:
+
+    Assistant/WebApp/Configurators/Local.hs:55:11:
+        `fieldEnctype' is not a (visible) field of constructor `Field'
+    cabal: Error: some packages failed to install:
+    git-annex-3.20130105 failed during the building phase. The exception was:
+    ExitFailure 1
+
+"""]]
