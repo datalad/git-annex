@@ -269,10 +269,13 @@ subdirectories).
 * direct
 
   Switches a repository to use direct mode, where rather than symlinks to
-  files, the files are directly present in the repository. Note that most git
-  commands and some git-annex commands will not work in direct mode.
+  files, the files are directly present in the repository.
 
   As part of the switch to direct mode, any changed files will be committed.
+
+  Note that git commands that operate on the work tree are often unsafe to
+  use in direct mode repositories, and can result in data loss or other
+  bad behavior.
 
 * indirect
 
