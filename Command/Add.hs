@@ -151,13 +151,14 @@ link file key hascontent = handle (undo file key) $ do
 {- Note: Several other commands call this, and expect it to 
  - create the symlink and add it. -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
-cleanup file key hascontent = ifM isDirect
+cleanup file key hascontent = ifM (isDirect <&&> pure hascontent)
 	( do
 		l <- calcGitLink file key
 		sha <- inRepo $ Git.HashObject.hashObject BlobObject l
 		Annex.Queue.addUpdateIndex =<<
 			inRepo (Git.UpdateIndex.stageSymlink file sha)
-		logStatus key InfoPresent
+		when hascontent $
+			logStatus key InfoPresent
 		return True
 	, do
 		_ <- link file key hascontent

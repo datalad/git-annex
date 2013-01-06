@@ -22,9 +22,10 @@ import qualified Option
 import Types.Key
 import Types.KeySource
 import Config
+import Annex.Content.Direct
 
 def :: [Command]
-def = [notDirect $ notBareRepo $ withOptions [fileOption, pathdepthOption] $
+def = [notBareRepo $ withOptions [fileOption, pathdepthOption] $
 	command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 fileOption :: Option
@@ -79,6 +80,8 @@ download url file = do
 		case k of
 			Nothing -> stop
 			Just (key, _) -> do
+				whenM isDirect $
+					void $ addAssociatedFile key file
 				moveAnnex key tmp
 				setUrlPresent key url
 				next $ Command.Add.cleanup file key True
@@ -90,6 +93,8 @@ nodownload url file = do
 	if exists
 		then do
 			let key = Backend.URL.fromUrl url size
+			whenM isDirect $
+				void $ addAssociatedFile key file
 			setUrlPresent key url
 			next $ Command.Add.cleanup file key False
 		else do
