@@ -7,7 +7,8 @@
 
 module Utility.UserInfo (
 	myHomeDir,
-	myUserName
+	myUserName,
+	myUserGecos,
 ) where
 
 import Control.Applicative
@@ -23,6 +24,9 @@ myHomeDir = myVal ["HOME"] homeDirectory
 {- Current user's user name. -}
 myUserName :: IO String
 myUserName = myVal ["USER", "LOGNAME"] userName
+
+myUserGecos :: IO String
+myUserGecos = myVal [] userGecos
 
 myVal :: [String] -> (UserEntry -> String) -> IO String
 myVal envvars extract = maybe (extract <$> getpwent) return =<< check envvars

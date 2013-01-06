@@ -5,6 +5,8 @@ git-annex (3.20130105) UNRELEASED; urgency=low
   * assistant: Make expensive transfer scan work fully in direct mode.
   * More commands work in direct mode repositories: find, whereis, move, copy,
     drop, log.
+  * assistant: Detect when system is not configured with a user name,
+    and set environment to prevent git from failing.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Jan 2013 14:58:45 -0400
 

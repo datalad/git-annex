@@ -151,6 +151,7 @@ import Assistant.Threads.XMPPClient
 #else
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
+import Assistant.Environment
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -178,6 +179,7 @@ startDaemon assistant foreground webappwaiter
 startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()) -> Annex ()
 startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 	checkCanWatch
+	when assistant $ checkEnvironment
 	dstatus <- startDaemonStatus
 	liftIO $ daemonize $
 		flip runAssistant go =<< newAssistantData st dstatus
