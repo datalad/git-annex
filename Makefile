@@ -135,7 +135,8 @@ docs: $(mans)
 		--underlaydir=/dev/null --disable-plugin=shortcut \
 		--disable-plugin=smiley \
 		--plugin=comments --set comments_pagespec="*" \
-		--exclude='news/.*'
+		--exclude='news/.*' --exclude='design/assistant/blog/*' \
+		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*'
 
 clean:
 	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
