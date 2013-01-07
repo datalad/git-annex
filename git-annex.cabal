@@ -99,7 +99,7 @@ Executable git-annex
   if flag(Webapp) && flag(Assistant)
     Build-Depends: yesod, yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
-     crypto-api, hamlet, clientsession, aeson, yesod-form,
+     crypto-api, hamlet, clientsession, aeson, yesod-form (>= 1.2.0),
      template-haskell, yesod-default (>= 1.1.0), data-default
     CPP-Options: -DWITH_WEBAPP
 
