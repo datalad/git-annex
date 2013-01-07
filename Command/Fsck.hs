@@ -357,7 +357,7 @@ missingNote file present needed untrusted =
 {- Bad content is moved aside. -}
 badContent :: Key -> Annex String
 badContent key = do
-	dest <- badContent key
+	dest <- moveBad key
 	return $ "moved to " ++ dest
 
 badContentRemote :: Remote -> Key -> Annex String
