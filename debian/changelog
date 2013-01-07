@@ -1,4 +1,4 @@
-git-annex (3.20130105) UNRELEASED; urgency=low
+git-annex (3.20130107) unstable; urgency=low
 
   * webapp: Add UI to stop and restart assistant.
   * committer: Fix a file handle leak.
@@ -12,7 +12,7 @@ git-annex (3.20130105) UNRELEASED; urgency=low
     when the content is not present.
   * Fix transferring files to special remotes in direct mode.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 03 Jan 2013 14:58:45 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Jan 2013 01:01:41 -0400
 
 git-annex (3.20130102) unstable; urgency=low
 
