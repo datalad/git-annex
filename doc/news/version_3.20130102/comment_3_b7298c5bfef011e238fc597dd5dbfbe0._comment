@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="yesod update didn't help"
+ date="2013-01-06T20:32:07Z"
+ content="""
+cabal install yesod didn't work, needed --force-reinstalls, then went through - but still the same error then on installing git-annex. Since afterwards my cabal stuff seemed to be wacky and since you wrote you got the mac app fully working, I just nuked my cabal stuff and used your install. Worked so far, but since I am eager for the direct repo stuff I switched my repo to direct mode. But now I get this on sync and - which is in this case a bit worse, since I can't switch back - indirect:
+
+    [gb@Flunder Annex (master)]$ annex indirect
+    commit  git-annex: unknown response from git cat-file (\"refs/heads/git-annex:199/24d/KJK3OxzAscONhFdYI missing\",refs/heads/git-annex:199/24d/KJK3OxzAscONhFdYI
+    -----END RSA PRIVATE KEY-----
+    .log)
+    [gb@Flunder Annex (master)]$ annex sync
+    git-annex: unknown response from git cat-file (\"refs/heads/git-annex:199/24d/KJK3OxzAscONhFdYI missing\",refs/heads/git-annex:199/24d/KJK3OxzAscONhFdYI
+    -----END RSA PRIVATE KEY-----
+    .log)
+
+"""]]
