@@ -1,0 +1,13 @@
+git-annex 3.20130107 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * webapp: Add UI to stop and restart assistant.
+   * committer: Fix a file handle leak.
+   * assistant: Make expensive transfer scan work fully in direct mode.
+   * More commands work in direct mode repositories: find, whereis, move, copy,
+     drop, log, fsck, add, addurl.
+   * sync: No longer automatically adds files in direct mode.
+   * assistant: Detect when system is not configured with a user name,
+     and set environment to prevent git from failing.
+   * direct: Avoid hardlinking symlinks that point to the same content
+     when the content is not present.
+   * Fix transferring files to special remotes in direct mode."""]]
