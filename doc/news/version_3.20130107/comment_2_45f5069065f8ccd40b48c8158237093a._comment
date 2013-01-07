@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2013-01-07T20:25:05Z"
+ content="""
+you should be able to get an up to date build from here <http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg.bz2> it's rebuilt once an hour if there are changes to the git repo.
+"""]]
