@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 5"
+ date="2013-01-08T21:37:29Z"
+ content="""
+well, whatever it was, the download from jimmy's git builder works - I got the 20130107 build from his site (since I had problems with your latest osx build) and it didn't show that weird message anymore and let me sync just fine. It might be something with my repo - but the ...07 version seems to be able to handle it just fine.
+"""]]
