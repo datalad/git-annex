@@ -1,4 +1,4 @@
-(Posted a day late.)
+(Posted a day late.) [[!meta date="Mon Jan  7 16:05:13 JEST 2013"]]
 
 Got `git annex add` (and `addurl`) working in direct mode. This allowed me
 to make `git annex sync` in direct mode no longer automatically add new
