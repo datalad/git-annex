@@ -16,6 +16,7 @@ import qualified Types.Backend
 import qualified Types.Key
 import qualified Backend
 import Annex.Content
+import Annex.Content.Direct
 import Annex.Perms
 import Logs.Location
 import Logs.Trust
@@ -301,14 +302,20 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
 
 {- Runs the backend specific check on a key's content.
  -
- - In direct mode, this is skipped, because files can change at any time. -}
+ - In direct mode this is not done if the file has clearly been modified,
+ - because modification of direct mode files is allowed. It's still done
+ - if the file does not appear modified, to catch disk corruption, etc.
+ -}
 checkBackend :: Backend -> Key -> Annex Bool
-checkBackend backend key = ifM isDirect
-	( return True
-	, do
-		file <- inRepo $ gitAnnexLocation key
-		checkBackendOr badContent backend key file
-	)
+checkBackend backend key = do
+	file <- inRepo $ gitAnnexLocation key
+	ifM isDirect
+		( ifM (goodContent key file)
+			( checkBackendOr badContent backend key file
+			, return True
+			)
+		, checkBackendOr badContent backend key file
+		)
 
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
