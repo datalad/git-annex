@@ -1,0 +1,25 @@
+I was up at the crack of dawn wrestling 100 pound batteries around for 3
+hours and rewiring most of my battery bank, so today is a partial day...
+but a day with power, which is always nice.
+
+Did some design work on finally making transfers of files from direct mode
+repositories safe, even if a file is modified as it's being uploaded.
+This seems easily doable for special remotes; git to git repository
+transfers are harder, but I think I see how to do it without breaking
+backwards compatability. 
+
+(An unresolved problem is that a temp file would be left behind when a
+transfer failed due to a file being changed. What would really be nice to
+do is to use that temp file as the rsync basis when transferring the new
+version of a file. Although this really goes beyond direct mode, and into
+[[deltas]] territory.)
+
+Made fsck work better in direct mode repositories. While it's expected for
+files to change at any time in direct mode, and so fsck cannot complain
+every time there's a checksum mismatch, it is possible for it to detect
+when a file does not *seem* to have changed, then check its checksum,
+and so detect disk corruption or other data problems.
+
+Also dealt with several bug reports. One really weird one involves `git
+cat-file` failing due to some kind of gpg signed data in the git-annex
+branch. I don't understand that at all yet.
