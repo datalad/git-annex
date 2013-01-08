@@ -6,7 +6,7 @@ files.
 
 It's also now safe to mix direct mode annexed files with regular files in
 git, in the same repository. Might have been safe all along, but I've
-tested it, and it certianly works now. You just have to be careful to not
+tested it, and it certainly works now. You just have to be careful to not
 use `git commit -a` to commit changes to such files, since that'll also 
 stage the entire content of direct mode files.
 
