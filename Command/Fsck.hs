@@ -311,7 +311,8 @@ checkBackend backend key = do
 	file <- inRepo $ gitAnnexLocation key
 	ifM isDirect
 		( ifM (goodContent key file)
-			( checkBackendOr badContent backend key file
+			( checkBackendOr' (badContentDirect file) backend key file
+				(goodContent key file)
 			, return True
 			)
 		, checkBackendOr badContent backend key file
@@ -320,18 +321,26 @@ checkBackend backend key = do
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
   where
-	go = checkBackendOr (badContentRemote remote) backend key
+	go file = checkBackendOr (badContentRemote remote) backend key file
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
 checkBackendOr bad backend key file =
+	checkBackendOr' bad backend key file (return True)
+
+checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool -> Annex Bool
+checkBackendOr' bad backend key file postcheck =
 	case Types.Backend.fsckKey backend of
 		Nothing -> return True
 		Just a -> do
 			ok <- a key file
-			unless ok $ do
-				msg <- bad key
-				warning $ "Bad file content; " ++ msg
-			return ok
+			ifM postcheck
+				( do
+					unless ok $ do
+						msg <- bad key
+						warning $ "Bad file content; " ++ msg
+					return ok
+				, return True
+				)
 
 checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
 checkKeyNumCopies key file numcopies = do
@@ -366,6 +375,14 @@ badContent :: Key -> Annex String
 badContent key = do
 	dest <- moveBad key
 	return $ "moved to " ++ dest
+
+{- Bad content is left where it is, but we touch the file, so it'll be
+ - committed to a new key. -}
+badContentDirect :: FilePath -> Key -> Annex String
+badContentDirect file key = do
+	void $ liftIO $ catchMaybeIO $ touchFile file
+	logStatus key InfoMissing
+	return $ "left in place for you to examine"
 
 badContentRemote :: Remote -> Key -> Annex String
 badContentRemote remote key = do
