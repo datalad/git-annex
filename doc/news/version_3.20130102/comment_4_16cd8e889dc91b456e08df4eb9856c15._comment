@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.211"
+ subject="comment 4"
+ date="2013-01-08T18:30:00Z"
+ content="""
+The 3.20130107 release declares tighter versioned dependencies on yesod stuff, which should fix that.
+
+---
+
+I am at a loss about the error message you showed. It seems to have something to do with gpg signed data
+being present in the git-annex branch of your repository, but git-annex doesn't do that. I think you need to either file a [[bug|bugs]] report with more information, and/or email me your repository so I can investigate what's going on with it to make this happen. (joey@kitenet.net)
+"""]]
