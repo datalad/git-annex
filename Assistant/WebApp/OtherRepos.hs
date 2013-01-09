@@ -33,8 +33,9 @@ listOtherRepos = do
 	pwd <- getCurrentDirectory
 	dirs <- filter (\d -> not $ d `dirContains` pwd) . nub
 		<$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
-	names <- mapM relHome dirs
-	return $ sort $ zip names dirs
+	gooddirs <- filterM doesDirectoryExist dirs
+	names <- mapM relHome gooddirs
+	return $ sort $ zip names gooddirs
 
 {- Starts up the assistant in the repository, and waits for it to create
  - a gitAnnexUrlFile. Waits for the assistant to be up and listening for

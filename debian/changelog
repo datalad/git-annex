@@ -4,6 +4,8 @@ git-annex (3.20130108) UNRELEASED; urgency=low
   * Special remotes now all rollback storage of keys that get modified
     during the transfer, which can happen in direct mode.
   * drop: Suggest using git annex move when numcopies prevents dropping a file.
+  * webapp: Repo switcher filters out repos that do not exist any more
+    (or are on a drive that's not mounted).
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 
