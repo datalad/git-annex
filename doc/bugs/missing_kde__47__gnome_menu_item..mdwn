@@ -21,3 +21,9 @@ Wheezy
 I just installed git-annex on a squeeze system and had the same result.
 
 same with ubuntu precise 12.04
+
+> git-annex ships a /usr/share/applications/git-annex.desktop
+> file that provies the menu item. But there has never been a version
+> 1.7.10. I suspect this is user error; installing a version of git-annex
+> that predates the git-annex assistant and expecting it to have the
+> assistant and its menu item. [[done]] --[[Joey]] 
