@@ -121,16 +121,17 @@ bupSplitParams r buprepo k src = do
 		(os ++ [Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r buprepo k _f _p = sendAnnex k $ \src -> do
+store r buprepo k _f _p = sendAnnex k (rollback k buprepo) $ \src -> do
 	params <- bupSplitParams r buprepo k [File src]
 	liftIO $ boolSystem "bup" params
 
 storeEncrypted :: Remote -> BupRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r buprepo (cipher, enck) k _p = sendAnnex k $ \src -> do
-	params <- bupSplitParams r buprepo enck []
-	liftIO $ catchBoolIO $
-		encrypt cipher (feedFile src) $ \h ->
-			pipeBup params (Just h) Nothing
+storeEncrypted r buprepo (cipher, enck) k _p =
+	sendAnnex k (rollback enck buprepo) $ \src -> do
+		params <- bupSplitParams r buprepo enck []
+		liftIO $ catchBoolIO $
+			encrypt cipher (feedFile src) $ \h ->
+				pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve buprepo k _f d = do
@@ -156,6 +157,20 @@ remove :: Key -> Annex Bool
 remove _ = do
 	warning "content cannot be removed from bup remote"
 	return False
+
+{- Cannot revert having stored a key in bup, but at least the data for the
+ - key will be used for deltaing data of other keys stored later.
+ -
+ - We can, however, remove the git branch that bup created for the key.
+ -}
+rollback :: Key -> BupRepo -> Annex ()
+rollback k bupr = go =<< liftIO (bup2GitRemote bupr)
+  where
+	go r
+		| Git.repoIsUrl r = void $ onBupRemote r boolSystem "git" params
+		| otherwise = void $ liftIO $ catchMaybeIO $
+			boolSystem "git" $ Git.Command.gitCommandLine params r
+	params = [ Params "branch -D", Param (bupRef k) ]
 
 {- Bup does not provide a way to tell if a given dataset is present
  - in a bup repository. One way it to check if the git repository has

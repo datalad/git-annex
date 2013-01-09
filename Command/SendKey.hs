@@ -24,11 +24,16 @@ seek = [withKeys start]
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
 	( fieldTransfer Upload key $ \_p ->
-		sendAnnex key $ liftIO . rsyncServerSend
+		sendAnnex key rollback $ liftIO . rsyncServerSend
 	, do
 		warning "requested key is not present"
 		liftIO exitFailure
 	)
+  where
+	{- No need to do any rollback; when sendAnnex fails, a nonzero
+	 - exit will be propigated, and the remote will know the transfer
+	 - failed. -}
+	rollback = noop
 
 fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do

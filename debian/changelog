@@ -1,6 +1,8 @@
 git-annex (3.20130108) UNRELEASED; urgency=low
 
   * fsck: Better checking of file content in direct mode.
+  * Special remotes now all rollback storage of keys that get modified
+    during the transfer, which can happen in direct mode.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 

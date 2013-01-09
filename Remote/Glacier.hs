@@ -85,12 +85,12 @@ store r k _f m
 	| keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
-	| otherwise = sendAnnex k $ \src ->
+	| otherwise = sendAnnex k (void $ remove r k) $ \src ->
 		metered (Just m) k $ \meterupdate ->
 			storeHelper r k $ streamMeteredFile src meterupdate
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k m = sendAnnex k $ \src -> do
+storeEncrypted r (cipher, enck) k m = sendAnnex k (void $ remove r enck) $ \src -> do
 	metered (Just m) k $ \meterupdate ->
 		storeHelper r enck $ \h ->
 			encrypt cipher (feedFile src)

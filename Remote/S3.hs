@@ -112,15 +112,16 @@ s3Setup u c = handlehost $ M.lookup "host" c
 			M.delete "bucket" defaults
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f p = s3Action r False $ \(conn, bucket) -> sendAnnex k $ \src -> do
-	res <- storeHelper (conn, bucket) r k p src
-	s3Bool res
+store r k _f p = s3Action r False $ \(conn, bucket) -> 
+	sendAnnex k (void $ remove r k) $ \src -> do
+		res <- storeHelper (conn, bucket) r k p src
+		s3Bool res
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) -> 
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
-	withTmp enck $ \tmp -> sendAnnex k $ \src -> do
+	withTmp enck $ \tmp -> sendAnnex k (void $ remove r enck) $ \src -> do
 		liftIO $ encrypt cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		res <- storeHelper (conn, bucket) r enck p tmp

@@ -101,11 +101,11 @@ rsyncUrls o k = map use annexHashes
 	f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store o k _f p = sendAnnex k $ rsyncSend o p k
+store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp ->
-	sendAnnex k $ \src -> do
+	sendAnnex k (void $ remove o enck) $ \src -> do
 		liftIO $ encrypt cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		rsyncSend o p enck tmp

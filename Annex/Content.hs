@@ -262,21 +262,11 @@ replaceFile file a = do
 {- Runs an action to transfer an object's content.
  -
  - In direct mode, it's possible for the file to change as it's being sent.
- - If this happens, returns False. Currently, an arbitrary amount of bad
- - data may be sent when this occurs. The send is not retried even if
- - another file is known to have the same content; the action may not be
- - idempotent.
- -
- - Since objects changing as they're transferred is a somewhat unusual
- - situation, and since preventing writes to the file would be expensive,
- - annoying or both, we instead detect the situation after the affect,
- - and fail. Thus, it's up to the caller to detect a failure and take
- - appropriate action. Such as, for example, ensuring that the bad
- - data that was sent does not get installed into the annex it's being
- - sent to.
+ - If this happens, runs the rollback action and returns False. The
+ - rollback action should remove the data that was transferred for the key.
  -}
-sendAnnex :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-sendAnnex key a = withObjectLoc key sendobject senddirect
+sendAnnex :: Key -> (Annex ()) -> (FilePath -> Annex Bool) -> Annex Bool
+sendAnnex key rollback a = withObjectLoc key sendobject senddirect
   where
 	sendobject = a
 	senddirect [] = return False
@@ -287,8 +277,12 @@ sendAnnex key a = withObjectLoc key sendobject senddirect
 			( do
 				r <- sendobject f
 				-- see if file changed while it was being sent
-				ok <- compareCache f cache
-				return (r && ok)
+				ifM (compareCache f cache)
+					( return r
+					, do
+						rollback
+						return False
+					)
 			, senddirect fs
 			)
 

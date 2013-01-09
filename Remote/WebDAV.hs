@@ -83,15 +83,17 @@ webdavSetup u c = do
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> sendAnnex k $ \src ->
-		liftIO $ withMeteredFile src meterupdate $
-			storeHelper r k baseurl user pass
+	davAction r False $ \(baseurl, user, pass) -> 
+		sendAnnex k (void $ remove r k) $ \src ->
+			liftIO $ withMeteredFile src meterupdate $
+				storeHelper r k baseurl user pass
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
-	davAction r False $ \(baseurl, user, pass) -> sendAnnex k $ \src ->
-		liftIO $ encrypt cipher (streamMeteredFile src meterupdate) $
-			readBytes $ storeHelper r enck baseurl user pass
+	davAction r False $ \(baseurl, user, pass) ->
+		sendAnnex k (void $ remove r enck) $ \src ->
+			liftIO $ encrypt cipher (streamMeteredFile src meterupdate) $
+				readBytes $ storeHelper r enck baseurl user pass
 
 storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
 storeHelper r k baseurl user pass b = catchBoolIO $ do
