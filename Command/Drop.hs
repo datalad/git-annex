@@ -133,6 +133,7 @@ notEnoughCopies key need have skip bad = do
 		" necessary copies"
 	Remote.showTriedRemotes bad
 	Remote.showLocations key (have++skip)
+		"Rather than dropping this file, try using: git annex move"
 	hint
 	return False
   where

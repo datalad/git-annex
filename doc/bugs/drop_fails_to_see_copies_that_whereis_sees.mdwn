@@ -62,3 +62,8 @@ Please provide any additional information below.
 ------------------------------------------------------------------
 
 You can also reach me at ``jason@jasonwoof.com``
+
+> [[done]]; the confusing message has been improved.
+> 
+> BTW, you can use `git annex move` to ensure a file is on another repo and
+> drop it locally. --[[Joey]]

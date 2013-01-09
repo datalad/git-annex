@@ -48,18 +48,20 @@ getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
   where
 	dispatch [] = do
 		showNote "not available"
-		Remote.showLocations key []
+		showlocs
 		return False
 	dispatch remotes = trycopy remotes remotes
 	trycopy full [] = do
 		Remote.showTriedRemotes full
-		Remote.showLocations key []
+		showlocs
 		return False
 	trycopy full (r:rs) =
 		ifM (probablyPresent r)
 			( docopy r (trycopy full rs)
 			, trycopy full rs
 			)
+	showlocs = Remote.showLocations key [] $
+		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.
 	probablyPresent r

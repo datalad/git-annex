@@ -199,8 +199,8 @@ keyPossibilities' key trusted = do
 	return (sort validremotes, validtrusteduuids)
 
 {- Displays known locations of a key. -}
-showLocations :: Key -> [UUID] -> Annex ()
-showLocations key exclude = do
+showLocations :: Key -> [UUID] -> String -> Annex ()
+showLocations key exclude nolocmsg = do
 	u <- getUUID
 	uuids <- keyLocations key
 	untrusteduuids <- trustGet UnTrusted
@@ -211,7 +211,7 @@ showLocations key exclude = do
 	showLongNote $ message ppuuidswanted ppuuidsskipped
   where
 	filteruuids l x = filter (`notElem` x) l
-	message [] [] = "No other repository is known to contain the file."
+	message [] [] = nolocmsg
 	message rs [] = "Try making some of these repositories available:\n" ++ rs
 	message [] us = "Also these untrusted repositories may contain the file:\n" ++ us
 	message rs us = message rs [] ++ message [] us
