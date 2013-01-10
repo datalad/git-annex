@@ -331,13 +331,15 @@ copyFromRemoteCheap r key file
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 copyToRemote r key file p
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $ copylocal
+		guardUsable (repo r) False $ commitOnCleanup r $
+			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object ->
 			rsyncHelper (Just p) =<< rsyncParamsRemote r False key object file
 	| otherwise = error "copying to non-ssh repo not supported"
   where
-	copylocal = Annex.Content.sendAnnex key noop $ \object -> do
+	copylocal Nothing = return False
+	copylocal (Just (object, checksuccess)) = do
 		let params = rsyncParams r
 		u <- getUUID
 		-- run copy from perspective of remote
@@ -347,7 +349,7 @@ copyToRemote r key file p
 				ensureInitialized
 				download u key file noRetry $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp key
+						Annex.Content.getViaTmpChecked checksuccess key
 							(\d -> rsyncOrCopyFile params object d p)
 			)
 

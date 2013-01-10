@@ -11,11 +11,13 @@ module Annex.Content (
 	lockContent,
 	calcGitLink,
 	getViaTmp,
+	getViaTmpChecked,
 	getViaTmpUnchecked,
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
 	sendAnnex,
+	prepSendAnnex,
 	removeAnnex,
 	fromAnnex,
 	moveBad,
@@ -135,7 +137,16 @@ calcGitLink file key = do
  - and if the action succeeds, moves the temp file into 
  - the annex as a key's content. -}
 getViaTmp :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmp key action = do
+getViaTmp = getViaTmpChecked (return True)
+
+{- Like getViaTmp, but does not check that there is enough disk space
+ - for the incoming key. For use when the key content is already on disk
+ - and not being copied into place. -}
+getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
+getViaTmpUnchecked = finishGetViaTmp (return True)
+
+getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
+getViaTmpChecked check key action = do
 	tmp <- fromRepo $ gitAnnexTmpLocation key
 
 	-- Check that there is enough free disk space.
@@ -148,23 +159,14 @@ getViaTmp key action = do
 	ifM (checkDiskSpace Nothing key alreadythere)
 		( do
 			when e $ thawContent tmp
-			getViaTmpUnchecked key action
+			finishGetViaTmp check key action
 		, return False
 		)
 
-prepTmp :: Key -> Annex FilePath
-prepTmp key = do
-	tmp <- fromRepo $ gitAnnexTmpLocation key
-	createAnnexDirectory (parentDir tmp)
-	return tmp
-
-{- Like getViaTmp, but does not check that there is enough disk space
- - for the incoming key. For use when the key content is already on disk
- - and not being copied into place. -}
-getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpUnchecked key action = do
+finishGetViaTmp :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
+finishGetViaTmp check key action = do
 	tmpfile <- prepTmp key
-	ifM (action tmpfile)
+	ifM (action tmpfile <&&> check)
 		( do
 			moveAnnex key tmpfile
 			logStatus key InfoPresent
@@ -174,6 +176,12 @@ getViaTmpUnchecked key action = do
 			-- to resume its transfer
 			return False
 		)
+
+prepTmp :: Key -> Annex FilePath
+prepTmp key = do
+	tmp <- fromRepo $ gitAnnexTmpLocation key
+	createAnnexDirectory (parentDir tmp)
+	return tmp
 
 {- Creates a temp file, runs an action on it, and cleans up the temp file. -}
 withTmp :: Key -> (FilePath -> Annex a) -> Annex a
@@ -263,27 +271,38 @@ replaceFile file a = do
  -
  - In direct mode, it's possible for the file to change as it's being sent.
  - If this happens, runs the rollback action and returns False. The
- - rollback action should remove the data that was transferred for the key.
+ - rollback action should remove the data that was transferred.
  -}
 sendAnnex :: Key -> (Annex ()) -> (FilePath -> Annex Bool) -> Annex Bool
-sendAnnex key rollback a = withObjectLoc key sendobject senddirect
+sendAnnex key rollback sendobject = go =<< prepSendAnnex key
   where
-	sendobject = a
-	senddirect [] = return False
-	senddirect (f:fs) = do
+	go Nothing = return False
+	go (Just (f, checksuccess)) = do
+		r <- sendobject f
+		ifM checksuccess
+			( return r
+			, do
+				rollback
+				return False
+			)
+
+{- Returns a file that contains an object's content,
+ - and an check to run after the transfer is complete.
+ -
+ - In direct mode, it's possible for the file to change as it's being sent,
+ - and the check detects this case and returns False.
+ -}
+prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
+prepSendAnnex key = withObjectLoc key indirect direct
+  where
+	indirect f = return $ Just (f, return True)
+	direct [] = return Nothing
+	direct (f:fs) = do
 		cache <- recordedCache key
 		-- check that we have a good file
 		ifM (compareCache f cache)
-			( do
-				r <- sendobject f
-				-- see if file changed while it was being sent
-				ifM (compareCache f cache)
-					( return r
-					, do
-						rollback
-						return False
-					)
-			, senddirect fs
+			( return $ Just (f, compareCache f cache)
+			, direct fs
 			)
 
 {- Performs an action, passing it the location to use for a key's content.
