@@ -1,0 +1,15 @@
+I have 3 remotes for an annex - one on my laptop, one on a USB drive that's plugged in 50% of the time, and an rsync special remote on a friend's machine that I can access using SSH.
+
+I have tried various things (annex copy, numcopies=3) to make it move data to the rsync remote, but it doesn't seem to want to work. I have tried git annex sync. I added the remote repo using the webapp, and it looked as if it was copying my files for a bit then stopped. I have the remote repo setup as a backup in the webapp.
+
+The sizes of the directorys:
+    ~ $ du -sh Documents
+    126M	Documents
+    ~ $ du -sh /Volumes/Backup/Documents
+    227M	/Volumes/Backup/Documents
+
+and the remote
+    [c0g@womb Tom]$ du -sh MacDocuments/
+    21M	MacDocuments/
+
+I'm also curious as to why the usb drive repo is so much bigger than the thing I'm copying, but I'll worry about that later.
