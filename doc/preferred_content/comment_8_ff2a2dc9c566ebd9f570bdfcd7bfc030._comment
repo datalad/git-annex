@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 8"
+ date="2013-01-10T10:24:28Z"
+ content="""
+By way of a feature request: Maybe the way to do this is to have an additional keyword like \"config\" or \"repo\" that allows you to use vicfg and/or git config to set alternative rules and even additional group names.
+
+In git config:
+
+    annex.groups.<groupname> = present and exclude=*/archive/* and exclude=archive/*
+
+in vicfg:
+
+    # (for passport)
+    #trust A0637025-ED47-4F95-A887-346121F1B4A0 = semitrusted
+    
+    # (for passport)
+    group A0637025-ED47-4F95-A887-346121F1B4A0 = transfer
+    
+    # (for passport)
+    preferred-content A0637025-ED47-4F95-A887-346121F1B4A0 = repo
+    
+    # (for transfer)
+    group-content transfer = present and exclude=*/archive/* and exclude=archive/*
+
+"""]]
