@@ -11,6 +11,7 @@ git-annex (3.20130108) UNRELEASED; urgency=low
     from connecting to the right localhost IP for the webapp.
   * webapp: Adjust longpoll code to work with recent versions of
     shakespeare-js.
+  * assistant: Support new gvfs dbus names used in Gnome 3.6. (untested)
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 

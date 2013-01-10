@@ -96,9 +96,10 @@ checkMountMonitor client = do
 				]
 			return True
   where
-	startableservices = [gvfs]
+	startableservices = [gvfs, gvfsgdu]
 	usableservices = startableservices ++ [kde]
-	gvfs = "org.gtk.Private.GduVolumeMonitor"
+	gvfs = "org.gtk.Private.RemoteVolumeMonitor"
+	gvfsgdu = "org.gtk.Private.GduVolumeMonitor"
 	kde = "org.kde.DeviceNotifications"
 
 startOneService :: Client -> [ServiceName] -> Assistant Bool
@@ -118,10 +119,15 @@ startOneService client (x:xs) = do
 
 {- Filter matching events recieved when drives are mounted and unmounted. -}	
 mountChanged :: [MatchRule]
-mountChanged = [gvfs True, gvfs False, kde, kdefallback]
+mountChanged = [gvfs True, gvfsgdu False, kde, kdefallback]
   where
-	{- gvfs reliably generates this event whenever a
+	{- gdu gvfs reliably generates this event whenever a
 	 - drive is mounted/unmounted, whether automatically, or manually -}
+	gvfsgdu mount = matchAny
+		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
+		}
+	{- new gvfs -}
 	gvfs mount = matchAny
 		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
 		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
