@@ -268,12 +268,16 @@ copyFromRemote r key file dest
 		-- run copy from perspective of remote
 		liftIO $ onLocal (repo r) $ do
 			ensureInitialized
-			Annex.Content.sendAnnex key noop $ \object ->
-				upload u key file noRetry $
-					rsyncOrCopyFile params object dest
+			v <- Annex.Content.prepSendAnnex key
+			case v of
+				Nothing -> return False
+				Just (object, checksuccess) ->
+					upload u key file noRetry
+						(rsyncOrCopyFile params object dest)
+						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> 
 		rsyncHelper (Just feeder) 
-			=<< rsyncParamsRemote r True key dest file
+			=<< rsyncParamsRemote r Download key dest file
 	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls (repo r) key) dest
 	| otherwise = error "copying from non-ssh, non-http repo not supported"
   where
@@ -335,7 +339,7 @@ copyToRemote r key file p
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
 		Annex.Content.sendAnnex key noop $ \object ->
-			rsyncHelper (Just p) =<< rsyncParamsRemote r False key object file
+			rsyncHelper (Just p) =<< rsyncParamsRemote r Upload key object file
 	| otherwise = error "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = return False
@@ -391,19 +395,19 @@ rsyncOrCopyFile rsyncparams src dest p =
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
-rsyncParamsRemote :: Remote -> Bool -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
-rsyncParamsRemote r sending key file afile = do
+rsyncParamsRemote :: Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
+rsyncParamsRemote r direction key file afile = do
 	u <- getUUID
 	let fields = (Fields.remoteUUID, fromUUID u)
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 	Just (shellcmd, shellparams) <- git_annex_shell (repo r)
-		(if sending then "sendkey" else "recvkey")
+		(if direction == Download then "sendkey" else "recvkey")
 		[ Param $ key2file key ]
 		fields
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)
 	let o = rsyncParams r
-	if sending
+	if direction == Download
 		then return $ o ++ rsyncopts eparam dummy (File file)
 		else return $ o ++ rsyncopts eparam (File file) dummy
   where
