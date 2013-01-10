@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.1.42"
+ subject="comment 1"
+ date="2013-01-09T23:21:58Z"
+ content="""
+I have a ipv6 enabled computer here, where the webapp works fine. I think you must have something odd in your network configuration if web browsers, when sent to \"http://localhost:port/ don't manage to connect to a web server running on ipv4.
+
+The webapp only uses 127.0.0.1 if \"localhost\" resolves to that address. If \"localhost\" resolves to both ipv6 and ipv4 addresses, the webapp uses the ipv4 and not the ipv6 address. If \"localhost\" resolves to only ipv6, the webapp uses ipv6.
+
+AFAIK it's not possible to bind to both an ipv4 and an ipv6 address, and get the same port number for both, and the webapp needs a port number to use to launch the web browser. Therefore, it has to choose one address. It choses ipv4 in preference to ipv6 because there are some things that still don't support ipv6. [This commit](http://source.git-annex.branchable.com/?p=source.git;a=commit;h=467844d7d3f703f99fcde1f951f33efda5e90074) is relevant.
+"""]]
