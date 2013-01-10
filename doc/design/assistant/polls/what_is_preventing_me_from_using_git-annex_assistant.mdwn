@@ -8,6 +8,6 @@ assistant, please instead fill in this poll on behalf of less technically
 adept friends or family -- what's preventing you from introducing them to
 the assistant?
 
-[[!poll open=yes expandable=yes 0 "I'm using the assistant!" 0 "I need a Windows port" 1 "I need an Android port" 0 "I need an IPhone port (not holding my breath)" 0 "Well, it's still in beta..." 1 "I want to, but have not had the time to try it" 0 "Just inertia. I've got this dropbox/whatever that already works.." 0 "It's too hard to install (please say why in comments)" 1 "Perceived recent increase of bug reports and thus sitting it out."]]
+[[!poll open=yes expandable=yes 0 "I'm using the assistant!" 0 "I need a Windows port" 2 "I need an Android port" 0 "I need an IPhone port (not holding my breath)" 0 "Well, it's still in beta..." 1 "I want to, but have not had the time to try it" 0 "Just inertia. I've got this dropbox/whatever that already works.." 0 "It's too hard to install (please say why in comments)" 1 "Perceived recent increase of bug reports and thus sitting it out." 1 "Initially the lack of direct-mode. Now concerns about the safety of direct mode. Perhaps after the next release."]]
 
 Feel free to write in your own reasons, or add a comment to give me more info.
