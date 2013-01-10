@@ -98,7 +98,7 @@ checkMountMonitor client = do
   where
 	startableservices = [gvfs, gvfsgdu]
 	usableservices = startableservices ++ [kde]
-	gvfs = "org.gtk.Private.RemoteVolumeMonitor"
+	gvfs = "org.gtk.Private.UDisks2VolumeMonitor"
 	gvfsgdu = "org.gtk.Private.GduVolumeMonitor"
 	kde = "org.kde.DeviceNotifications"
 
@@ -124,12 +124,12 @@ mountChanged = [gvfs True, gvfsgdu False, kde, kdefallback]
 	{- gdu gvfs reliably generates this event whenever a
 	 - drive is mounted/unmounted, whether automatically, or manually -}
 	gvfsgdu mount = matchAny
-		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+		{ matchInterface = Just "org.gtk.Private.UDisks2VolumeMonitor"
 		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
 		}
 	{- new gvfs -}
 	gvfs mount = matchAny
-		{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+		{ matchInterface = Just "org.gtk.Private.UDisks2VolumeMonitor"
 		, matchMember = Just $ if mount then "MountAdded" else "MountRemoved"
 		}
 	{- This event fires when KDE prompts the user what to do with a drive,
