@@ -95,25 +95,29 @@ is converted to a real file when it becomes present.
   passed to `sendAnnex` that is called if the file is modified as it's
   transferred. That would then remove the probably corrupted file from the
   remote. (The full transfer would still run, unless there was also a way
-  to cancel an in progress transfer.)
+  to cancel an in progress transfer.) **done** (untested)
 
-  With the above, there is some potential for the bed content being
+  (With the above, there is some potential for the bad content being
   downloaded from the special remote into another repo. This would only
   happen if the other repo for some reason thinks the special remote 
   has the content. Since the location log would not be updated until the
-  transfer is successful, this should not happen.
+  transfer is successful, this should not happen.)
+
+  For local git remotes, need to check the direct mode file after it's
+  copied and before it's put into place as a key's content. **done**
+  (untested)
+
+  `git-annex-shell sendkey` needs to do something if it sent bad
+  data. This seems to not need protocol changes; it can just detect 
+  the problem and exit nonzero. Would need to do something to clean up
+  the temp file, which is probably corrupt. (Could in future use it as a
+  basis for transferring the new key..) **done** (untested)
 
   For git remotes, add a flag to `git-annex-shell recvkey` (using a field
   after the "--" to remain back-compat). With this flag, after receiving
   the data, the remote should wait for a signal that the data is good
   before it updates the location log. The signal could just be a "1"
-  sent over the ssh channel. Or another `git-annex-shell` command.
-
-  Also `git-annex-shell sendkey` needs to do something if it sent bad
-  data. This seems to not need protocol changes; it can just detect 
-  the problem and exit nonzero. Would need to do something to clean up
-  the temp file, which is probably corrupt. (Could in future use it as a
-  basis for transferring the new key..)
+  sent over the ssh channel. Or another `git-annex-shell` command. **TODO**
 
 * kqueue does not deliver an event when an existing file is modified.
   This doesn't affect OSX, which uses FSEvents now, but it makes direct
