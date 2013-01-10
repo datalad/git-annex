@@ -25,3 +25,6 @@ I've tested this with:
 * chromium
 
 Iceweasel is the only one which correctly fell back to IPv4 and worked.
+
+> Ok, I've made it use the IP address in the URL. Ugly, but avoids
+> whatever mess results in this behavior. [[done]] --[[Joey]]

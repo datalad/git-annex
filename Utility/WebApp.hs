@@ -54,14 +54,14 @@ runBrowser url env = boolSystemEnv cmd [Param url] env
 
 {- Binds to a socket on localhost, and runs a webapp on it.
  -
- - An IO action can also be run, to do something with the port number,
+ - An IO action can also be run, to do something with the address,
  - such as start a web browser to view the webapp.
  -}
-runWebApp :: Wai.Application -> (PortNumber -> IO ()) -> IO ()
+runWebApp :: Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp app observer = do
 	sock <- localSocket
 	void $ forkIO $ runSettingsSocket defaultSettings sock app
-	observer =<< socketPort sock
+	observer =<< getSocketName sock
 
 {- Binds to a local socket, selecting any free port.
  -

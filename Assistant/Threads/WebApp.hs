@@ -35,7 +35,7 @@ import Git
 
 import Yesod
 import Yesod.Static
-import Network.Socket (PortNumber)
+import Network.Socket (SockAddr)
 import Data.Text (pack, unpack)
 
 thisThread :: String
@@ -67,14 +67,14 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \port -> if noannex
+	runWebApp app' $ \addr -> if noannex
 		then withTempFile "webapp.html" $ \tmpfile _ ->
-			go port webapp tmpfile Nothing
+			go addr webapp tmpfile Nothing
 		else do
 			let st = threadState assistantdata
 			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
-			go port webapp htmlshim (Just urlfile)
+			go addr webapp htmlshim (Just urlfile)
   where
 	thread = NamedThread thisThread
 	getreldir
@@ -82,13 +82,13 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 		| otherwise = Just <$>
 			(relHome =<< absPath
 				=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
-	go port webapp htmlshim urlfile = do
-		let url = myUrl webapp port
+	go addr webapp htmlshim urlfile = do
+		let url = myUrl webapp addr
 		maybe noop (`writeFileProtected` url) urlfile
 		writeHtmlShim "Starting webapp..." url htmlshim
 		maybe noop (\a -> a url htmlshim) onstartup
 
-myUrl :: WebApp -> PortNumber -> Url
-myUrl webapp port = unpack $ yesodRender webapp urlbase HomeR []
+myUrl :: WebApp -> SockAddr -> Url
+myUrl webapp addr = unpack $ yesodRender webapp urlbase HomeR []
   where
-	urlbase = pack $ "http://localhost:" ++ show port
+	urlbase = pack $ "http://" ++ show addr

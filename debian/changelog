@@ -6,6 +6,9 @@ git-annex (3.20130108) UNRELEASED; urgency=low
   * drop: Suggest using git annex move when numcopies prevents dropping a file.
   * webapp: Repo switcher filters out repos that do not exist any more
     (or are on a drive that's not mounted).
+  * webapp: Use IP address, rather than localhost, since some systems may
+    have configuration problems or other issues that prevent web browsers
+    from connecting to the right localhost IP for the webapp.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 
