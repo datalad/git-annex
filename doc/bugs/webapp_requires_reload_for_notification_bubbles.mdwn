@@ -25,3 +25,13 @@ Please provide any additional information below.
 Javascript console error log says "Syntax error on localhost:5" which is this line:
 
     <link rel="stylesheet" href="/static/css/bootstrap.css"><link rel="stylesheet" href="/static/css/bootstrap-responsive.css"><style>body{padding-top:60px;padding-bottom:40px}.sidebar-nav{padding:9px 0}</style><script src="/static/jquery.full.js"></script><script src="/static/js/bootstrap-dropdown.js"></script><script src="/static/js/bootstrap-modal.js"></script><script src="/static/js/bootstrap-collapse.js"></script><script src="/static/longpolling.js"></script><script>function longpoll_"sidebar"() {
+
+> And the bug is the quoting inside the function name.
+> 
+> I believe this affects all builds done using shakespeare-js 1.0.0.2.
+> It may be that some browsers manage to run the javascript despite the
+> quoting. Otherwise, I don't know why noone has reported this bug
+> before now.
+> 
+> I've fixed this bug in git. Your testing with tomorrow's
+> autobuild would be appreciated. [[done]] --[[Joey]]

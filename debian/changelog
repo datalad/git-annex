@@ -9,6 +9,8 @@ git-annex (3.20130108) UNRELEASED; urgency=low
   * webapp: Use IP address, rather than localhost, since some systems may
     have configuration problems or other issues that prevent web browsers
     from connecting to the right localhost IP for the webapp.
+  * webapp: Adjust longpoll code to work with recent versions of
+    shakespeare-js.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 
