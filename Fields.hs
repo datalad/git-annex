@@ -30,3 +30,6 @@ associatedFile :: Field
 associatedFile = Field "associatedfile" $ \f ->
 	-- is the file a safe relative filename?
 	not (isAbsolute f) && not ("../" `isPrefixOf` f)
+
+direct :: Field
+direct = Field "direct" $ \f -> f == "1"

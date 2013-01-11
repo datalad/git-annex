@@ -84,6 +84,32 @@ is converted to a real file when it becomes present.
 
 ## TODO
 
+* kqueue does not deliver an event when an existing file is modified.
+  This doesn't affect OSX, which uses FSEvents now, but it makes direct
+  mode assistant not 100% on other BSD's.
+
+## done
+
+* `git annex sync` updates the key to files mappings for files changed,
+  but needs much other work to handle direct mode:
+  * Generate git commit, without running `git commit`, because it will
+    want to stage the full files. **done**
+  * Update location logs for any files deleted by a commit. **done**
+  * Generate a git merge, without running `git merge` (or possibly running
+    it in a scratch repo?), because it will stumble over the direct files.
+    **done**
+  * Drop contents of files deleted by a merge (including updating the
+    location log), or if we cannot drop,
+    move their contents to `.git/annex/objects/`.  **no**  .. instead, 
+    avoid ever losing file contents in a direct mode merge. If the file is
+    deleted, its content is moved back to .git/annex/objects, if necessary.
+  * When a merge adds a symlink pointing at a key that is present in the
+    repo, replace the symlink with the direct file (either moving out
+    of `.git/annex/objects/` or hard-linking if the same key is present
+    elsewhere in the tree. **done**
+  * handle merge conflicts on direct mode files **done**
+* support direct mode in the assistant (many little fixes)
+
 * Deal with files changing as they're being transferred from a direct mode
   repository to another git repository. The remote repo currently will 
   accept the bad data and update the location log to say it has the key.
@@ -113,34 +139,7 @@ is converted to a real file when it becomes present.
   the temp file, which is probably corrupt. (Could in future use it as a
   basis for transferring the new key..) **done**
 
-  For git remotes, add a flag to `git-annex-shell recvkey` (using a field
+  For git remotes, added a flag to `git-annex-shell recvkey` (using a field
   after the "--" to remain back-compat). With this flag, after receiving
-  the data, the remote should wait for a signal that the data is good
-  before it updates the location log. The signal could just be a "1"
-  sent over the ssh channel. Or another `git-annex-shell` command. **TODO**
-
-* kqueue does not deliver an event when an existing file is modified.
-  This doesn't affect OSX, which uses FSEvents now, but it makes direct
-  mode assistant not 100% on other BSD's.
-
-## done
-
-* `git annex sync` updates the key to files mappings for files changed,
-  but needs much other work to handle direct mode:
-  * Generate git commit, without running `git commit`, because it will
-    want to stage the full files. **done**
-  * Update location logs for any files deleted by a commit. **done**
-  * Generate a git merge, without running `git merge` (or possibly running
-    it in a scratch repo?), because it will stumble over the direct files.
-    **done**
-  * Drop contents of files deleted by a merge (including updating the
-    location log), or if we cannot drop,
-    move their contents to `.git/annex/objects/`.  **no**  .. instead, 
-    avoid ever losing file contents in a direct mode merge. If the file is
-    deleted, its content is moved back to .git/annex/objects, if necessary.
-  * When a merge adds a symlink pointing at a key that is present in the
-    repo, replace the symlink with the direct file (either moving out
-    of `.git/annex/objects/` or hard-linking if the same key is present
-    elsewhere in the tree. **done**
-  * handle merge conflicts on direct mode files **done**
-* support direct mode in the assistant (many little fixes)
+  the data, the remote fscks the data. This is not optimal, but avoids
+  needing another round-trip, or a protocol change.

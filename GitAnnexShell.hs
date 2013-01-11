@@ -122,6 +122,7 @@ checkField :: (String, String) -> Bool
 checkField (field, value)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID value
 	| field == fieldName associatedFile = fieldCheck associatedFile value
+	| field == fieldName direct = fieldCheck direct value
 	| otherwise = False
 
 failure :: IO ()

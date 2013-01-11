@@ -398,7 +398,9 @@ rsyncOrCopyFile rsyncparams src dest p =
 rsyncParamsRemote :: Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
 rsyncParamsRemote r direction key file afile = do
 	u <- getUUID
+	direct <- isDirect
 	let fields = (Fields.remoteUUID, fromUUID u)
+		: (Fields.direct, if direct then "1" else "")
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 	Just (shellcmd, shellparams) <- git_annex_shell (repo r)
 		(if direction == Download then "sendkey" else "recvkey")
