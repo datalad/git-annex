@@ -6,7 +6,7 @@ just a quick fix.
 
 ---
 
-The [[poll|what is preventing me from using git-annex assistant]] was 
+The [[poll|polls/what is preventing me from using git-annex assistant]] was 
 quite useful. Some interesting points:
 
 * 14% have been reading this blog, and rightly don't trust direct mode to
