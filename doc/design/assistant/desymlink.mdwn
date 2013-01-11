@@ -95,7 +95,7 @@ is converted to a real file when it becomes present.
   passed to `sendAnnex` that is called if the file is modified as it's
   transferred. That would then remove the probably corrupted file from the
   remote. (The full transfer would still run, unless there was also a way
-  to cancel an in progress transfer.) **done** (untested)
+  to cancel an in progress transfer.) **done**
 
   (With the above, there is some potential for the bad content being
   downloaded from the special remote into another repo. This would only
@@ -111,7 +111,7 @@ is converted to a real file when it becomes present.
   data. This seems to not need protocol changes; it can just detect 
   the problem and exit nonzero. Would need to do something to clean up
   the temp file, which is probably corrupt. (Could in future use it as a
-  basis for transferring the new key..) **done** (untested)
+  basis for transferring the new key..) **done**
 
   For git remotes, add a flag to `git-annex-shell recvkey` (using a field
   after the "--" to remain back-compat). With this flag, after receiving
