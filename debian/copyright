@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: native package
 
 Files: *
-Copyright: © 2010-2012 Joey Hess <joey@kitenet.net>
+Copyright: © 2010-2013 Joey Hess <joey@kitenet.net>
 License: GPL-3+
 
 Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
