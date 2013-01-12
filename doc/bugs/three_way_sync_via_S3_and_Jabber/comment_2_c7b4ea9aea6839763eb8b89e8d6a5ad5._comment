@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhjlfoU21OiXKH_MXw75Uq5EsX7LJW5p0"
+ nickname="Ian"
+ subject="comment 2"
+ date="2013-01-12T14:47:07Z"
+ content="""
+@Justin,
+
+It seems to be synching a least something over this channel, e.g. my work desktop and laptop seem to be keeping the git side in sync at least (I think the broken symlinks appearing and the copy --from working show this?).
+
+In the pairing window (under Config->Share with a friend) it shows ian.james.campbell as being \"paired\" on all three machines.
+
+I have a feeling there isn't supposed to be a remote helper for xmpp and the assistant is expected to take care of this through other means, IOW I shouldn't be running `git annex sync` by hand at all.
+"""]]
