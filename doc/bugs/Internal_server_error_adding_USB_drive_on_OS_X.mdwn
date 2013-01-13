@@ -14,7 +14,7 @@ git config [Param "annex.uuid",Param "6898F314-7817-4CD5-B1C3-588C55522A3B"] fai
 
 What version of git-annex are you using? On what operating system?
 
-git-annex version 3.20130107
+git-annex version 3.20130107, OS X Mountain Lion. No MacPorts/homebrew/fink installed. gcc / git are installed.
 
 Please provide any additional information below.
 
