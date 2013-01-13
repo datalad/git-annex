@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://csights.myopenid.com/"
+ ip="70.226.161.163"
+ subject="&quot;local git remotes&quot;"
+ date="2013-01-13T02:36:48Z"
+ content="""
+I am not quite sure how git-annex works and I do not know what a \"local git remote\" functionality is.
+
+How about this: call a \"git remote\" a \"git-annex store\" or just \"store\".  Then instead of a remote git remote it would be a remote git-annex store or just remote store.  :)
+
+
+
+"""]]
