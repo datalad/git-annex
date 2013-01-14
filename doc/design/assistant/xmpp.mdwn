@@ -100,7 +100,7 @@ one or more chat messages, directed to the receiver:
 	data
 	</git-annex>
 
-When `git receive-pack` edits, the receiver indicates its exit
+When `git receive-pack` exits, the receiver indicates its exit
 status with a chat message, directed at the sender:
 
 	<git-annex xmlns='git-annex' rpdone="0" />
