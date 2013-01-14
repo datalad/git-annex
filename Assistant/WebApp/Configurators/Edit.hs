@@ -24,6 +24,7 @@ import Types.StandardGroups
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
+import Git.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -64,7 +65,7 @@ setRepoConfig uuid mremote oldc newc = do
 			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
 	when (repoSyncable oldc /= repoSyncable newc) $
 		changeSyncable mremote (repoSyncable newc)
-	when (isJust mremote && repoName oldc /= repoName newc) $ do
+	when (isJust mremote && makeLegalName (T.unpack $ repoName oldc) /= makeLegalName (T.unpack $ repoName newc)) $ do
 		runAnnex undefined $ do
 			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
 			{- git remote rename expects there to be a
