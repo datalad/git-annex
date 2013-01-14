@@ -25,6 +25,7 @@ import Logs.PreferredContent
 
 import qualified Data.Text as T
 import qualified Data.Map as M
+import Data.Char
 
 awsConfigurator :: Widget -> Handler RepHtml
 awsConfigurator = page "Add an Amazon repository" (Just Configuration)
@@ -175,8 +176,14 @@ makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
 	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ AWS.setCredsEnv (T.unpack ak, T.unpack sk)
 	r <- liftAssistant $ liftAnnex $ addRemote $ do
-		makeSpecialRemote name remotetype config
+		makeSpecialRemote hostname remotetype config
 		return remotename
 	setup r
 	liftAssistant $ syncNewRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+  where
+	{- AWS services use the remote name as the basis for a host
+	 - name, so filter it to contain valid characters. -}
+	hostname = case filter isAlphaNum name of
+		[] -> "aws"
+		n -> n
