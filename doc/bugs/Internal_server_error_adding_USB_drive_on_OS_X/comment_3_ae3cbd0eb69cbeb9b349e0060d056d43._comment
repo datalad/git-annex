@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="arafel"
+ ip="94.174.218.177"
+ subject="comment 3"
+ date="2013-01-14T21:19:12Z"
+ content="""
+Pauls-MacBook-Pro:annex Paul$ cd /Volumes/G-DRIVE\ slim/annex/
+
+Pauls-MacBook-Pro:annex Paul$ git config annex.uuid 6898F314-7817-4CD5-B1C3-588C55522A3B
+
+error: could not lock config file .git/config: No such file or directory
+
+Pauls-MacBook-Pro:annex Paul$ ls -a
+
+.	..
+
+Looks like it created the directory but never got as far as 'git init'. Is it safe to just run that command, and will that (followed by the config) be enough? Or is there more to it than that? e.g. creating the remotes
+"""]]
