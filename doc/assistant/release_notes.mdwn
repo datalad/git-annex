@@ -1,6 +1,6 @@
-## version 3.20130107
+## version 3.20130107 and 3.20130114
 
-This is a bugfix release.
+These are bugfix releases.
 
 ## version 3.20130102
 
