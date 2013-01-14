@@ -254,7 +254,8 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		updateCache key src
 		thawContent src
 		liftIO $ replaceFile dest $ moveFile src
-		liftIO $ forM_ fs $ \f -> replaceFile f $ createLink dest
+		liftIO $ forM_ fs $ \f -> replaceFile f $
+			void . copyFileExternal dest
 
 {- Replaces any existing file with a new version, by running an action.
  - First, makes sure the file is deleted. Or, if it didn't already exist,

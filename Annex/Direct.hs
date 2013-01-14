@@ -24,6 +24,7 @@ import Backend
 import Types.KeySource
 import Annex.Content
 import Annex.Content.Direct
+import Utility.CopyFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -181,11 +182,11 @@ toDirectGen k f = do
 				liftIO $ replaceFile f $ moveFile loc
 			, return Nothing
 			)
-		(loc':_) -> ifM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f)
-			{- Another direct file has the content, so
-			 - hard link to it. -}
+		(loc':_) -> ifM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus loc')
+			{- Another direct file has the content; copy it. -}
 			( return $ Just $ do
-				liftIO $ replaceFile f $ createLink loc'
+				liftIO $ replaceFile f $
+					void . copyFileExternal loc'
 			, return Nothing
 			)
 

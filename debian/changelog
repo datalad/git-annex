@@ -14,6 +14,9 @@ git-annex (3.20130108) UNRELEASED; urgency=low
   * webapp: Adjust longpoll code to work with recent versions of
     shakespeare-js.
   * assistant: Support new gvfs dbus names used in Gnome 3.6.
+  * In direct mode, files with the same key are no longer hardlinked, as
+    that would cause a surprising behavior if modifying one, where the other
+    would also change.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 
