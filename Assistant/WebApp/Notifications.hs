@@ -39,7 +39,7 @@ autoUpdate tident geturl ms_delay ms_startdelay = do
 #ifdef WITH_OLD_YESOD
 	let delay = show ms_delay
 	let startdelay = show ms_startdelay
-	let ident = tident
+	let ident = "'" ++ T.unpack tident ++ "'"
 #else
 	let delay = Aeson.String (T.pack (show ms_delay))
 	let startdelay = Aeson.String (T.pack (show ms_startdelay))
