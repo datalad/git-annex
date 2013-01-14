@@ -50,3 +50,15 @@ override the dependency tree to try to force the version update with
 cabal-install, so maybe it's worth filing a bug.
 
 Thanks a lot for git-annex.
+
+> Welcome to cabal hell! This problem is why haskell's cabal system is not
+> a sufficient way for users to install git-annex, and we have to provide
+> prebuilt builds.
+> 
+> No change to git-annex can fix this problem. The problem is that
+> the old version of certificate got busted by some change to one of its
+> dependencies, and several libraries that git-annex depends on have not
+> yet been updated to use the new version of certificate. Once those
+> libraries get updated, it'll fix itself.
+> 
+> [[done]]; not git-annex bug. --[[Joey]]
