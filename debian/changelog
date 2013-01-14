@@ -1,4 +1,4 @@
-git-annex (3.20130108) UNRELEASED; urgency=low
+git-annex (3.20130114) unstable; urgency=low
 
   * Now handles the case where a file that's being transferred to a remote
     is modified in place, which direct mode allows to happen. When this
@@ -22,7 +22,7 @@ git-annex (3.20130108) UNRELEASED; urgency=low
   * assistant: Avoid committer crashing if a file is deleted at the wrong
     instant.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 15:25:18 -0400
 
 git-annex (3.20130107) unstable; urgency=low
 
