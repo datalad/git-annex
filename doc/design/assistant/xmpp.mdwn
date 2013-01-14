@@ -76,15 +76,15 @@ to each known client of each XMPP remote.
 
 To request that a remote push to us, a chat message can be sent.
 
-	<git-annex xmlns='git-annex' pushrequest="uuid" />
+	<git-annex xmlns='git-annex' pushrequest="" />
 
-When replying to an xmpppush message, this is directed at the specific
+When replying to an canpush message, this is directed at the specific
 client that indicated it could push. To solicit pushes from all clients,
-the message has to be sent directed indiviaually to each client.
+the message has to be sent directed individually to each client.
 
 When a peer is ready to send a git push, it sends:
 
-	<git-annex xmlns='git-annex' startingpush="uuid" />
+	<git-annex xmlns='git-annex' startingpush="" />
 
 The receiver runs `git receive-pack`, and sends back its output in
 one or more chat messages, directed to the client that is pushing:
