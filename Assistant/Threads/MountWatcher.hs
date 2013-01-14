@@ -105,7 +105,7 @@ checkMountMonitor client = do
 startOneService :: Client -> [ServiceName] -> Assistant Bool
 startOneService _ [] = return False
 startOneService client (x:xs) = do
-	_ <- liftIO $ callDBus client "StartServiceByName"
+	_ <- liftIO $ tryNonAsync $ callDBus client "StartServiceByName"
 		[toVariant x, toVariant (0 :: Word32)]
 	ifM (liftIO $ elem x <$> listServiceNames client)
 		( do
