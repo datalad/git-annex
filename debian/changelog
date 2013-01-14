@@ -1,7 +1,7 @@
 git-annex (3.20130114) unstable; urgency=low
 
   * Now handles the case where a file that's being transferred to a remote
-    is modified in place, which direct mode allows to happen. When this
+    is modified in place, which direct mode allows. When this
     happens, the transfer now fails, rather than allow possibly corrupt
     data into the remote.
   * fsck: Better checking of file content in direct mode.
