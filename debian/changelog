@@ -19,6 +19,8 @@ git-annex (3.20130108) UNRELEASED; urgency=low
     would also change.
   * webapp: Avoid illegal characters in hostname when creating S3 or
     Glacier remote.
+  * assistant: Avoid committer crashing if a file is deleted at the wrong
+    instant.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jan 2013 12:37:38 -0400
 

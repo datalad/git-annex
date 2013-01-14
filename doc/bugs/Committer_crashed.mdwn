@@ -26,3 +26,7 @@ Editing a text file with vim
 # What version of git-annex are you using? On what operating system?
 
 3.20130107 prebuilt tar ball on Debian testing
+
+> Could also fail in `getFileStatus`. In either case it's a race
+> with the file being deleted while it's still in the process of being
+> locked down. Fixed this [[done]] --[[Joey]]

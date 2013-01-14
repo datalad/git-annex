@@ -58,13 +58,16 @@ start file = ifAnnexed file fixup add
 {- The file that's being added is locked down before a key is generated,
  - to prevent it from being modified in between. It's hard linked into a
  - temporary location, and its writable bits are removed. It could still be
- - written to by a process that already has it open for writing. -}
-lockDown :: FilePath -> Annex KeySource
+ - written to by a process that already has it open for writing.
+ -
+ - Lockdown can fail if a file gets deleted, and Nothing will be returned.
+ -}
+lockDown :: FilePath -> Annex (Maybe KeySource)
 lockDown file = do
-	liftIO $ preventWrite file
 	tmp <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory tmp
-	liftIO $ do
+	liftIO $ catchMaybeIO $ do
+		preventWrite file
 		(tmpfile, h) <- openTempFile tmp (takeFileName file)
 		hClose h
 		nukeFile tmpfile
@@ -76,8 +79,9 @@ lockDown file = do
  - In direct mode, leaves the file alone, and just updates bookkeeping
  - information.
  -}
-ingest :: KeySource -> Annex (Maybe Key)
-ingest source = do
+ingest :: (Maybe KeySource) -> Annex (Maybe Key)
+ingest Nothing = return Nothing
+ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
 	ifM isDirect
 		( do

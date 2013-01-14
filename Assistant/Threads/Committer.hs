@@ -191,7 +191,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 				sanitycheck ks $ do
 					key <- liftAnnex $ do
 						showStart "add" $ keyFilename ks
-						Command.Add.ingest ks
+						Command.Add.ingest $ Just ks
 					done (finishedChange change) (keyFilename ks) key
 	  where
 		{- Add errors tend to be transient and will be automatically
@@ -241,7 +241,8 @@ safeToAdd delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
 		keysources <- mapM Command.Add.lockDown (map changeFile pending)
-		let inprocess' = map mkinprocess (zip pending keysources)
+		let inprocess' = catMaybes $ 
+			map mkinprocess (zip pending keysources)
 		tmpdir <- fromRepo gitAnnexTmpDir
 		openfiles <- S.fromList . map fst3 . filter openwrite <$>
 			liftIO (Lsof.queryDir tmpdir)
@@ -260,10 +261,11 @@ safeToAdd delayadd pending inprocess = do
 		| S.member (contentLocation ks) openfiles = Left change
 	check _ change = Right change
 
-	mkinprocess (c, ks) = InProcessAddChange
+	mkinprocess (c, Just ks) = Just $ InProcessAddChange
 		{ changeTime = changeTime c
 		, keySource = ks
 		}
+	mkinprocess (_, Nothing) = Nothing
 
 	canceladd (InProcessAddChange { keySource = ks }) = do
 		warning $ keyFilename ks
