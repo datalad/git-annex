@@ -1,0 +1,138 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhjlfoU21OiXKH_MXw75Uq5EsX7LJW5p0"
+ nickname="Ian"
+ subject="comment 4"
+ date="2013-01-14T19:52:16Z"
+ content="""
+Looking at the annex on dagon this evening (before trying the experiment you suggested) I see that dagon.txt and hastur.txt are present and correct while zakaz.txt is a broken symlink. On both hastur and zakaz dagon.txt has appeared as a broken link. The git history is now in sync across all three devices (according to `git log`)
+
+I hadn't touched anything since I reported the bug. Looking in the .git/annex/daemon.log on dagon I see:
+
+<pre>
+scanning...) (started...) 
+  No known network monitor available through dbus; falling back to polling
+Already up-to-date.
+Already up-to-date.
+Already up-to-date.
+fatal: unresolved deltas left after unpacking
+fatal: Unable to find remote helper for 'xmpp'
+To xmpp::ian.james.campbell@gmail.com
+   794532e..ea12017  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   d8854e7..43a80d5  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+(merging refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex into git-annex...)
+Updating 43a80d5..81afdca
+Fast-forward
+ hastur.txt |    1 +
+ zakaz.txt  |    1 +
+ 2 files changed, 2 insertions(+)
+ create mode 120000 hastur.txt
+ create mode 120000 zakaz.txt
+(Recording state in git...)
+# On branch master
+nothing to commit (working directory clean)
+Already up-to-date.
+(Recording state in git...)
+# On branch master
+nothing to commit (working directory clean)
+To xmpp::ian.james.campbell@gmail.com
+   ea12017..a6efff5  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   43a80d5..81afdca  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+(Recording state in git...)
+To xmpp::ian.james.campbell@gmail.com
+   a6efff5..931c11b  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: Unable to find remote helper for 'xmpp'
+git-annex: /home/ijc/Desktop/annex/.git/annex/tmp/xmppgit/git-remote-xmpp: openFile: resource busy (file is locked)
+fatal: The remote end hung up unexpectedly
+error: Ref refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex is at 931c11bc8f974934026f005ac63596d078e044ea but expected 8da50426cced18713b1deb8ea6bb0420cadf1076
+error: Ref refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master is at 81afdca7c69e689d34cc3fc729e1e4ec5d0fcc33 but expected 3f541e58b726ef2f46bd55bfb8e955e1418b33cb
+Already up-to-date.
+fatal: Unable to find remote helper for 'xmpp'
+fatal: cannot exec 'git-remote-xmpp': Text file busy
+fatal: The remote end hung up unexpectedly
+error: Ref refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex is at 931c11bc8f974934026f005ac63596d078e044ea but expected 8da50426cced18713b1deb8ea6bb0420cadf1076
+error: Ref refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master is at 81afdca7c69e689d34cc3fc729e1e4ec5d0fcc33 but expected 3f541e58b726ef2f46bd55bfb8e955e1418b33cb
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: Unable to find remote helper for 'xmpp'
+git-annex: <socket: 8>: hWaitForInput: resource vanished (Connection reset by peer)
+fatal: Unable to find remote helper for 'xmpp'
+git-annex: <socket: 8>: hPutBuf: resource vanished (Broken pipe)
+git-annex: forkProcess: interrupted
+</pre>
+
+I also notice that the annex assistant doesn't seem to be running on dagon any more and the webapp window says \"git annex has shutdown, you can now close this window\". The assistant is running on zakaz and hastur.
+
+On dagon I ran `/usr/bin/git-annex assistant --autostart`. THe daemon.log now contains:
+<pre>
+(scanning...) (started...) 
+  No known network monitor available through dbus; falling back to polling
+Already up-to-date.
+Already up-to-date.
+Already up-to-date.
+drop DesktopAnnex hastur.txt (gpg) ok
+</pre>
+I suppose this makes sense since hastur.txt is the only file present on all three devices, so it makes sense to remove it from the transfer repo.
+
+On zakaz the daemon.log is full of things like:
+<pre>
+gpg: cannot open tty `/dev/tty': No such device or address
+Already up-to-date.
+gpg: cannot open tty `/dev/tty': No such device or address
+fatal: protocol error: expected sha/ref, got '^A000eunpack ok
+0042ok refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex
+003fok refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master
+0000'
+send-pack: protocol error: bad band #56
+fatal: The remote end hung up unexpectedly
+fatal: The remote end hung up unexpectedly
+fatal: Unable to find remote helper for 'xmpp'
+gpg: cannot open tty `/dev/tty': No such device or address
+gpg: cannot open tty `/dev/tty': No such device or address
+fatal: The remote end hung up unexpectedly
+</pre>
+There are lots of the tty message and also some `git-annex: fd:97: hClose: resource vanished (Broken pipe)`.
+
+Hastur doesn't seem to have a daemon.log, although the daemon is running AFAICT.
+
+BTW something else I noticed is that there are quite a few defunct git children of the annex processes.
+
+e.g. on dagon `ps auxf | grep [g]it`:
+<pre>
+ijc       8792  0.0  0.3 157396 29752 ?        Sl   19:40   0:00 git-annex assistant
+ijc       8795  0.0  0.0      0     0 ?        Z    19:40   0:00  \_ [git] <defunct>
+ijc       8817  0.0  0.0      0     0 ?        Z    19:40   0:00  \_ [git] <defunct>
+ijc       8874  0.0  0.0  14156  1332 ?        S    19:41   0:00  \_ git --git-dir=/home/ijc/Desktop/annex/.git --work-tree=/home/ijc/Desktop/annex cat-file --batch
+ijc       8875  0.0  0.0  14132  1100 ?        S    19:41   0:00  \_ git --git-dir=/home/ijc/Desktop/annex/.git --work-tree=/home/ijc/Desktop/annex check-attr -z --stdin annex.backend annex.numcopies --
+ijc       8908  0.0  0.0      0     0 ?        Z    19:41   0:00  \_ [git] <defunct>
+</pre>
+
+(I only restarted the daemon just now)
+
+On zakaz:
+<pre>
+ianc     32004  0.0  0.5 229620 21708 ?        Sl   Jan12   3:04 git-annex assistant
+ianc     32007  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc     32021  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc     32106  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc     32107  0.0  0.0  13652   924 ?        S    Jan12   0:00  \_ git --git-dir=/home/ianc/Desktop/annex/.git --work-tree=/home/ianc/Desktop/annex check-attr -z --stdin annex.backend annex.numcopies --
+ianc     32113  0.0  0.0  13652  1156 ?        S    Jan12   0:00  \_ git --git-dir=/home/ianc/Desktop/annex/.git --work-tree=/home/ianc/Desktop/annex cat-file --batch
+ianc     32258  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc     32377  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc       453  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc       530  0.0  0.0      0     0 ?        Z    Jan12   0:00  \_ [git] <defunct>
+ianc      6681  0.0  0.0      0     0 ?        Z    Jan13   0:00  \_ [git] <defunct>
+ianc      6697  0.0  0.0      0     0 ?        Z    Jan13   0:00  \_ [git] <defunct>
+ianc     32232  0.0  0.4 128952 16340 ?        Sl   Jan12   0:00 git-annex xmppgit
+ianc     32239  0.0  0.4 128952 16340 ?        Sl   Jan12   0:00 git-annex xmppgit
+</pre>
+
+I'm going to create a new file on dagon as requested now. I'll post the results in a separate comment.
+"""]]
