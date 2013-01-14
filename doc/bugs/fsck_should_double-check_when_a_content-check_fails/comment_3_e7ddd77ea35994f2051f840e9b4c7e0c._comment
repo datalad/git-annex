@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 3"
+ date="2013-01-14T19:06:37Z"
+ content="""
+I would doubt you'd have three broken drives, or read errors from 3 drives. 
+
+You can use `sha256sum` to checksum the files in `bad` yourself, and compare the results with their names.
+If it matches, that would point to some kind of bug in fsck.
+"""]]
