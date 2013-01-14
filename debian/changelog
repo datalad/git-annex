@@ -2,6 +2,8 @@ git-annex (3.20130115) UNRELEASED; urgency=low
 
   * webapp: More adjustments to longpoll code to deal with changes in
     variable quoting in different versions of shakespeare-js.
+  * webapp: Avoid an error if a transfer is stopped just as it finishes.
+    Closes: #698184 
 
  -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 18:35:01 -0400
 

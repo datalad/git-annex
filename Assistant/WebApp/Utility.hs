@@ -88,7 +88,7 @@ cancelTransfer pause t = do
 		| otherwise = killThread tid
 	{- In order to stop helper processes like rsync,
 	 - kill the whole process group of the process running the transfer. -}
-	killproc pid = do
+	killproc pid = void $ catchMaybeIO $ do
 		g <- getProcessGroupIDOf pid
 		void $ tryIO $ signalProcessGroup sigTERM g
 		threadDelay 50000 -- 0.05 second grace period
