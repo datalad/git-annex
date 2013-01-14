@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-14T16:26:59Z"
+ content="""
+Why stop at checking twice? The second check could also fail with a read error, and perhaps the third one would succeed. :P
+
+Seriously, I doubt that this is likely to be a benefit with a modern drive. If the file has a read error once, then error correction has already failed, and it's likely to fail again. Even if it managed to succeed the second time, you have a file that is being read wrong some of the time, which is not a good thing for fsck to leave unnoticed.
+
+Fsck moves bad files to `.git/annex/bad`, so the data in them can be recovered if it comes to that. Hopefully
+though, there's a copy of the file in another repository, so git-annex can just get it from there instead.
+"""]]
