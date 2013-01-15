@@ -11,6 +11,7 @@ module Assistant.WebApp.Control where
 
 import Assistant.WebApp.Common
 import Locations.UserConfig
+import Utility.LogFile
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -40,3 +41,10 @@ getRestartR = page "Restarting" Nothing $ do
   where
 	restartcommand program = program ++ " assistant --stop; " ++
 		program ++ " webapp"
+
+getLogR :: Handler RepHtml
+getLogR = page "Logs" Nothing $ do
+	logfile <- lift $ runAnnex undefined $ fromRepo gitAnnexLogFile
+	logs <- liftIO $ listLogs logfile
+	logcontent <- liftIO $ concat <$> mapM readFile logs
+	$(widgetFile "control/log")

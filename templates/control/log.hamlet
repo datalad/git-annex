@@ -1,0 +1,6 @@
+<div .span9 .hero-unit>
+  <p>
+    Here's everything that has been logged by the git-annex assistant, #
+    as well as by programs it has run.
+  <pre>
+    #{logcontent}

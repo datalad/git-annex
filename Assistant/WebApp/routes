@@ -8,6 +8,7 @@
 /shutdown ShutdownR GET
 /shutdown/confirm ShutdownConfirmedR GET
 /restart RestartR GET
+/log LogR GET
 
 /config ConfigurationR GET
 /config/repository RepositoriesR GET

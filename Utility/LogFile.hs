@@ -19,7 +19,7 @@ openLog logfile = do
 
 rotateLog :: FilePath -> Int -> IO ()
 rotateLog logfile num
-	| num >= 10 = return ()
+	| num > maxLogs = return ()
 	| otherwise = whenM (doesFileExist currfile) $ do
 		rotateLog logfile (num + 1)
 		renameFile currfile nextfile
@@ -28,4 +28,15 @@ rotateLog logfile num
 	nextfile = filename (num + 1)
 	filename n
 		| n == 0 = logfile
-		| otherwise = logfile ++ "." ++ show n
+		| otherwise = rotatedLog logfile n
+
+rotatedLog :: FilePath -> Int -> FilePath
+rotatedLog logfile n = logfile ++ "." ++ show n
+
+{- Lists most recent logs last. -}
+listLogs :: FilePath -> IO [FilePath]
+listLogs logfile = filterM doesFileExist $ reverse $ 
+	logfile : map (rotatedLog logfile) [1..maxLogs]
+
+maxLogs :: Int
+maxLogs = 9
