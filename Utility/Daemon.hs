@@ -34,15 +34,21 @@ daemonize logfd pidfile changedirectory a = do
 		when changedirectory $
 			setCurrentDirectory "/"
 		nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
-		_ <- redir nullfd stdInput
-		mapM_ (redir logfd) [stdOutput, stdError]
-		closeFd logfd
+		redir nullfd stdInput
+		redirLog logfd
 		a
 		out
-	redir newh h = do
-		closeFd h
-		dupTo newh h
 	out = exitImmediately ExitSuccess
+
+redirLog :: Fd -> IO ()
+redirLog logfd = do
+	mapM_ (redir logfd) [stdOutput, stdError]
+	closeFd logfd
+
+redir :: Fd -> Fd -> IO ()
+redir newh h = do
+	closeFd h
+	void $ dupTo newh h
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
  - Writes the pid to the file, fully atomically.

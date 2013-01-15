@@ -4,6 +4,7 @@ git-annex (3.20130115) UNRELEASED; urgency=low
     variable quoting in different versions of shakespeare-js.
   * webapp: Avoid an error if a transfer is stopped just as it finishes.
     Closes: #698184 
+  * webapp: Now always logs to .git/annex/daemon.log.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 18:35:01 -0400
 

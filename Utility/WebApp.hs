@@ -40,16 +40,12 @@ import Control.Concurrent
 localhost :: String
 localhost = "localhost"
 
-{- Runs a web browser on a given url.
- -
- - Note: The url *will* be visible to an attacker. -}
-runBrowser :: String -> (Maybe [(String, String)]) -> IO Bool
-runBrowser url env = boolSystemEnv cmd [Param url] env
-  where
+{- Command to use to run a web browser. -}
+browserCommand :: FilePath
 #ifdef darwin_HOST_OS
-	cmd = "open"
+browserCommand = "open"
 #else
-	cmd = "xdg-open"
+browserCommand = "xdg-open"
 #endif
 
 {- Binds to a socket on localhost, and runs a webapp on it.

@@ -163,28 +163,40 @@ type NamedThread = IO () -> IO (String, IO ())
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 
-startDaemon :: Bool -> Bool -> Maybe (String -> FilePath -> IO ()) -> Annex ()
-startDaemon assistant foreground webappwaiter
-	| foreground = do
-		showStart (if assistant then "assistant" else "watch") "."
-		liftIO . Utility.Daemon.lockPidFile =<< fromRepo gitAnnexPidFile
-		go id
-	| otherwise = do
-		logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
-		pidfile <- fromRepo gitAnnexPidFile
-		go $ Utility.Daemon.daemonize logfd (Just pidfile) False
+{- Starts the daemon. If the daemon is run in the foreground, once it's
+ - running, can start the browser.
+ -
+ - startbrowser is passed the url and html shim file, as well as the original
+ - stdout and stderr descriptors. -}
+startDaemon :: Bool -> Bool -> Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon assistant foreground startbrowser = do
+	pidfile <- fromRepo gitAnnexPidFile
+	logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
+	if foreground
+		then do
+			liftIO $ Utility.Daemon.lockPidFile pidfile
+			origout <- liftIO $ catchMaybeIO $ 
+				fdToHandle =<< dup stdOutput
+			origerr <- liftIO $ catchMaybeIO $ 
+				fdToHandle =<< dup stdError
+			liftIO $ Utility.Daemon.redirLog logfd
+			showStart (if assistant then "assistant" else "watch") "."
+			start id $ 
+				case startbrowser of
+					Nothing -> Nothing
+					Just a -> Just $ a origout origerr
+		else
+			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
   where
-	go d = startAssistant assistant d webappwaiter
+	start daemonize webappwaiter = withThreadState $ \st -> do
+		checkCanWatch
+		when assistant $ checkEnvironment
+		dstatus <- startDaemonStatus
+		liftIO $ daemonize $
+			flip runAssistant (go webappwaiter) 
+				=<< newAssistantData st dstatus
 
-startAssistant :: Bool -> (IO () -> IO ()) -> Maybe (String -> FilePath -> IO ()) -> Annex ()
-startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
-	checkCanWatch
-	when assistant $ checkEnvironment
-	dstatus <- startDaemonStatus
-	liftIO $ daemonize $
-		flip runAssistant go =<< newAssistantData st dstatus
-  where
-	go = do
+	go webappwaiter = do
 		d <- getAssistant id
 #ifdef WITH_WEBAPP
 		urlrenderer <- liftIO newUrlRenderer
@@ -216,6 +228,7 @@ startAssistant assistant daemonize webappwaiter = withThreadState $ \st -> do
 			, assist $ glacierThread
 			, watch $ watchThread
 			]
+	
 		liftIO waitForTermination
 
 	watch a = (True, a)

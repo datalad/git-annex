@@ -16,7 +16,7 @@ import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install
 import Utility.WebApp
-import Utility.Daemon (checkDaemon, lockPidFile)
+import Utility.Daemon (checkDaemon)
 import Init
 import qualified Git
 import qualified Git.Config
@@ -27,6 +27,7 @@ import Locations.UserConfig
 import System.Posix.Directory
 import Control.Concurrent
 import Control.Concurrent.STM
+import System.Process (env, std_out, std_err)
 
 def :: [Command]
 def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
@@ -48,9 +49,10 @@ start' allowauto = do
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		ifM (checkpid <&&> checkshim f)
-			( liftIO $ openBrowser browser f 
-			, startDaemon True True $ Just $
-				const $ openBrowser browser
+			( liftIO $ openBrowser browser f Nothing Nothing
+			, startDaemon True True $ Just $ 
+				\origout origerr _url htmlshim ->
+					openBrowser browser htmlshim origout origerr
 			)
 	auto
 		| allowauto = liftIO startNoRepo
@@ -117,30 +119,30 @@ firstRun = do
 		takeMVar v
 	mainthread v _url htmlshim = do
 		browser <- maybe Nothing webBrowser <$> Git.Config.global
-		openBrowser browser htmlshim
+		openBrowser browser htmlshim Nothing Nothing
 
 		_wait <- takeMVar v
 
 		state <- Annex.new =<< Git.CurrentRepo.get
-		Annex.eval state $ do
-			dummydaemonize
-			startAssistant True id $ Just $ sendurlback v
-	sendurlback v url _htmlshim = putMVar v url
+		Annex.eval state $
+			startDaemon True True $ Just $ sendurlback v
+	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
-	{- Set up the pid file in the new repo. -}
-	dummydaemonize = liftIO . lockPidFile =<< fromRepo gitAnnexPidFile
-
-openBrowser :: Maybe FilePath -> FilePath -> IO ()
-openBrowser cmd htmlshim = go $ maybe runBrowser runCustomBrowser cmd
+openBrowser :: Maybe FilePath -> FilePath -> Maybe Handle -> Maybe Handle -> IO ()
+openBrowser cmd htmlshim outh errh = do
+	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
+	environ <- cleanEnvironment
+	(_, _, _, pid) <- createProcess p
+		{ env = environ
+		, std_out = maybe Inherit UseHandle outh
+		, std_err = maybe Inherit UseHandle errh
+		}
+	exitcode <- waitForProcess pid
+	unless (exitcode == ExitSuccess) $
+		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
   where
 	url = fileUrl htmlshim
-	go a = do
-		putStrLn ""
-		putStrLn $ "Launching web browser on " ++ url
-		env <- cleanEnvironment
-		unlessM (a url env) $
-			error $ "failed to start web browser"
-	runCustomBrowser c u = boolSystemEnv c [Param u]
+	p = proc (fromMaybe browserCommand cmd) [htmlshim]
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath

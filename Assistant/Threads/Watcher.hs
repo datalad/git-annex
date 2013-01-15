@@ -97,6 +97,7 @@ startupScan scanner = do
 		void $ liftIO $ cleanup
 		
 		liftAnnex $ showAction "started"
+		liftIO $ putStrLn ""
 		
 		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
