@@ -5,7 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Types.NamedThread where
+module Assistant.Types.NamedThread (
+	ThreadName,
+	NamedThread(..),
+	debug,
+	notice,
+) where
 
 import Common.Annex
 import Assistant.Monad
@@ -16,6 +21,12 @@ type ThreadName = String
 data NamedThread = NamedThread ThreadName (Assistant ())
 
 debug :: [String] -> Assistant ()
-debug ws = do
+debug = logaction debugM
+
+notice :: [String] -> Assistant ()
+notice = logaction noticeM
+
+logaction :: (String -> String -> IO ()) -> [String] -> Assistant ()
+logaction a ws = do
 	name <- getAssistant threadName
-	liftIO $ debugM name $ unwords $ (name ++ ":") : ws
+	liftIO $ a name $ unwords $ (name ++ ":") : ws

@@ -38,6 +38,10 @@ import Text.JSON
 import Data.Progress.Meter
 import Data.Progress.Tracker
 import Data.Quantity
+import System.Log.Logger
+import System.Log.Formatter
+import System.Log.Handler (setFormatter, LogHandler)
+import System.Log.Handler.Simple
 
 import Common
 import Types
@@ -197,11 +201,15 @@ showHeader h = handle q $
 showRaw :: String -> Annex ()
 showRaw s = handle q $ putStrLn s
 
-{- This avoids ghc's output layer crashing on invalid encoded characters in
- - filenames when printing them out.
- -}
 setupConsole :: IO ()
 setupConsole = do
+	s <- setFormatter
+		<$> streamHandler stderr DEBUG
+		<*> pure (simpleLogFormatter "[$time] $msg")
+	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
+	{- This avoids ghc's output layer crashing on
+	 - invalid encoded characters in
+	 - filenames when printing them out. -}
 	fileEncoding stdout
 	fileEncoding stderr
 

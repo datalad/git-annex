@@ -17,9 +17,6 @@ module Option (
 
 import System.Console.GetOpt
 import System.Log.Logger
-import System.Log.Formatter
-import System.Log.Handler (setFormatter, LogHandler)
-import System.Log.Handler.Simple
 
 import Common.Annex
 import qualified Annex
@@ -51,13 +48,7 @@ common =
 	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 	setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
-	setdebug = liftIO $ do
-		s <- simpledebug
-		updateGlobalLogger rootLoggerName
-			(setLevel DEBUG . setHandlers [s])
-	simpledebug = setFormatter
-		<$> streamHandler stderr DEBUG
-		<*> pure (simpleLogFormatter "[$time] $msg")
+	setdebug = liftIO $ updateGlobalLogger rootLoggerName $ setLevel DEBUG
 
 matcher :: [Option]
 matcher =
