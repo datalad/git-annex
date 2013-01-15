@@ -120,6 +120,12 @@ renderAlertMessage :: Alert -> Text
 renderAlertMessage alert = renderTense (alertTense alert) $
 	(alertMessageRender alert) (alertData alert)
 
+showAlert :: Alert -> String
+showAlert alert = T.unpack $ T.unwords $ catMaybes
+	[ renderAlertHeader alert
+	, Just $ renderAlertMessage alert
+	]
+
 alertTense :: Alert -> Tense
 alertTense alert
 	| alertClass alert == Activity = Present
