@@ -19,3 +19,7 @@ git-annex version 3.20130107, OS X Mountain Lion. No MacPorts/homebrew/fink inst
 Please provide any additional information below.
 
 Maybe something to do with the drive name having spaces? "/Volumes/git-annex" worked fine.
+
+> Good thought in the comment. I was able to reproduce the failure
+> if the removable drive already had an "annex" directory that was not
+> a git repo. I've made it handle this case. [[done]] --[[Joey]] 

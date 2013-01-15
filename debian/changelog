@@ -6,6 +6,8 @@ git-annex (3.20130115) UNRELEASED; urgency=low
     Closes: #698184 
   * webapp: Now always logs to .git/annex/daemon.log
   * webapp: Has a page to view the log, accessed from the control menu.
+  * webapp: Fix crash adding removable drive that has an annex directory
+    in it that is not a git repository.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 18:35:01 -0400
 

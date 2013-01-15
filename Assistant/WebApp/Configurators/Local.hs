@@ -199,10 +199,10 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	{- The repo may already exist, when adding removable media
 	 - that has already been used elsewhere. -}
 	makerepo dir = liftIO $ do
-		r <- E.try (inDir dir $ return True) :: IO (Either E.SomeException Bool)
+		r <- E.try (inDir dir $ getUUID) :: IO (Either E.SomeException UUID)
 		case r of
-			Right _ -> noop
-			Left _e -> do
+			Right u | u /= NoUUID -> noop
+			_ -> do
 				createDirectoryIfMissing True dir
 				makeRepo dir True
 	{- Each repository is made a remote of the other. -}
