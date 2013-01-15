@@ -1,0 +1,23 @@
+I've noticed people have some problems getting me logs when there'a a bug,
+so I worked on improving the logging of the assistant.
+
+While the assistant logged to `.git/annex/daemon.log` when started as a
+daemon, when the webapp ran it didn't log there. It's somewhat tricky to
+make the webapp redirect messages to the log, because it may start a web
+browser that wants to write to the console. Took some file descriptor
+juggling, but I made this work. Now the log is even used when the assistant
+is started for the first time in a newly created repository. So, we have
+total log coverage.
+
+Next, I made a simple page in the webapp to display the accumulated logs.
+It does not currently refresh as new things are logged. But it's easier
+for me to tell users to click on `Current Repository -> View log` than
+ask for them to look for the daemon.log file.
+
+Finally, I made all the webapp's alerts also be written to the log.
+
+---
+
+Also did the requisite bug fixes.
+
+[[!img /assistant/logs.png alt="screenshot of logs page"]]
