@@ -29,3 +29,10 @@ I installed it by hand from git sources.
 Please provide any additional information below.
 
 Thanks for the wonderful tool!
+
+> This is a duplicate of
+> [[bugs/commitBuffer:_invalid_argument___40__invalid_character__41__]],
+> which was fixed in version 3.20120924. You need to upgrade the git-annex
+> on kaotik. [[done]]
+>
+> (It has nothing to do with rsync or colon in filenames.) --[[Joey]]
