@@ -8,6 +8,8 @@ git-annex (3.20130115) UNRELEASED; urgency=low
   * webapp: Has a page to view the log, accessed from the control menu.
   * webapp: Fix crash adding removable drive that has an annex directory
     in it that is not a git repository.
+  * Deal with incompatability in gpg2, which caused prompts for encryption
+    passphrases rather than using the supplied --passphrase-fd.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 18:35:01 -0400
 

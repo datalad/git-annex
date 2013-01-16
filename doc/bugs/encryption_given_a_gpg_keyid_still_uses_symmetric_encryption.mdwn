@@ -36,3 +36,11 @@ What version of git-annex are you using? On what operating system?
 
 Please provide any additional information below.
 
+> Symmetric encryption is used as described in [[design/encryption]],
+> with the symmetric key stored encrypted using your gpg key.
+> 
+> The extra prompting described in the comments in the bug.
+> 
+> I've reproduced this with gpg 2.0.19. It is a documented incompatability
+> between gpg 1.x and 2.x; the latter needs --batch included in its
+> parameters. I've put in a fix. [[done]]

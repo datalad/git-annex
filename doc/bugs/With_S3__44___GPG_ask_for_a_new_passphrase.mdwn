@@ -15,3 +15,7 @@ So I create a new passphrase (two times) for each file I tried to upload. The pr
 What's this new passphrase for?
 
 BTW: git-annex version: 3.20130102 same precompiled binary on Arch Linux.
+
+> I've reproduced this with gpg 2.0.19. It is a documented incompatability
+> between gpg 1.x and 2.x; the latter needs --batch included in its
+> parameters. I've put in a fix. [[done]]

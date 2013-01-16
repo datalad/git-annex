@@ -58,6 +58,9 @@ pipeStrict params input = do
  - should write to it all the data to input to gpg. Finally, runs
  - a reader action that is passed a handle to gpg's output. 
  -
+ - Runs gpg in batch mode; this is necessary to avoid gpg 2.x prompting for
+ - the passphrase.
+ -
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
@@ -71,7 +74,7 @@ feedRead params passphrase feeder reader = do
 	let Fd pfd = frompipe
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
-	params' <- stdParams $ passphrasefd ++ params
+	params' <- stdParams $ [Param "--batch"] ++ passphrasefd ++ params
 	closeFd frompipe `after`
 		withBothHandles createProcessSuccess (proc "gpg" params') go
   where
