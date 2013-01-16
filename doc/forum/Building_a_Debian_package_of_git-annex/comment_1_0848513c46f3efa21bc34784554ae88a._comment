@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-16T23:05:13Z"
+ content="""
+There is a package available already: <http://packages.debian.org/unstable/git-annex>
+
+This will install even on Debian stable, I think.
+"""]]
