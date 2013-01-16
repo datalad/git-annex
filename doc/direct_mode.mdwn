@@ -49,12 +49,13 @@ A very few commands don't work in direct mode, and will refuse to do anything.
 
 Direct mode also works well with the git-annex assistant.
 
-You can use `git commit --staged`. But not `git commit -a` .. It'll
-commit whole large files into git!
+You can use `git commit --staged`, or plain `git commit`.
+But not `git commit -a`, or `git commit <file>` ..
+that'd commit whole large files into git!
 
 ## what doesn't work in direct mode
 
-`git annex status` show incomplete information. A few other commands,
+`git annex status` shows incomplete information. A few other commands,
 like `git annex unlock` don't make sense in direct mode and will refuse to
 run.
 
