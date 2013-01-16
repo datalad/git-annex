@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joksnet"
+ ip="193.253.37.245"
+ subject="Working now"
+ date="2013-01-16T01:36:43Z"
+ content="""
+Ok. I don't what happend, but it's working now. I restart gpg-agent a few times with the script found [here](https://wiki.archlinux.org/index.php/GPG#gpg-agent). And now it doesn't ask for any passphrase.
+
+Par contre, I need to export the AWS_* variables if I reboot my pc. I think is because I didn't set embedcreds=yes when initremote. Can I change it now? O I have to remote rm and initremote again?
+
+Thank you,
+Juan
+"""]]
