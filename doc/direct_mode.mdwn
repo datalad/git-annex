@@ -24,18 +24,28 @@ To stop using direct mode:
 
 	git annex indirect
 
+## safety of using direct mode
+
 With direct mode, you're operating without large swathes of git-annex's
-carefully constructed safety net. So you're strongly encouraged to tell
-git-annex that your direct mode repository cannot be trusted to retain
-the content of a file (because any file can be deleted or modified at
-any time). To do so:
+carefully constructed safety net, which ensures that past versions of
+files are preserved and can be accessed (until you dropunused them). 
+With direct mode, any file can be edited directly, or deleted at any time,
+and there's no guarantee that the old version is backed up somewhere else.
+
+So if you care about preserving the history of files, you're strongly
+encouraged to tell git-annex that your direct mode repository cannot be
+trusted to retain the content of a file. To do so:
 
 	git annex untrust .
+
+On the other hand, if you only care about the current versions of files,
+and are using git-annex with direct mode to keep files synchronised between
+computers, and manage your files, this should not be a concern for you.
 
 ## use a direct mode repository
 
 You can use most git-annex commands as usual in a direct mode repository.
-A few commands don't work in direct mode, and will refuse to do anything.
+A very few commands don't work in direct mode, and will refuse to do anything.
 
 Direct mode also works well with the git-annex assistant.
 
@@ -54,6 +64,6 @@ ways... But beware, these commands can replace files that are present in
 your repository with broken symlinks. If that file was the only copy you
 had of something, it'll be lost. 
 
-This is one reason it's wise to make git-annex untrust your direct mode
+This is one more reason it's wise to make git-annex untrust your direct mode
 repositories. Still, you can lose data using these sort of git commands, so
 use extreme caution.
