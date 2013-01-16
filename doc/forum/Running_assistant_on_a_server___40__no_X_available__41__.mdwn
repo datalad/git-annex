@@ -1,0 +1,2 @@
+How can I run the assistant on a server and access the webinterface over the network from my client pc?
+The use case I have in mind is that the server can automatically synchronize files, pushed over XMPP.
