@@ -53,6 +53,7 @@ files with git.
 * [[internals]]
 * [[scalability]]
 * [[design]]
+* [[related_software]]
 * [[what git annex is not|not]]
 * [[sitemap]]
 
