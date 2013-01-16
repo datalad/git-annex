@@ -4,6 +4,9 @@ If using Ubuntu Oneiric or newer:
 
 Otherwise, see [[manual_installation_instructions|install]].
 
+There is a PPA with a newer version of git-annex in it, maintained by
+Sergio Rubio. <https://launchpad.net/~rubiojr/+archive/git-annex>
+
 ---
 
 Warning: The version of git-annex shipped in Ubuntu Oneiric
