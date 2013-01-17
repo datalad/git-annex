@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 3"
+ date="2013-01-17T01:45:59Z"
+ content="""
+Fixed problem #1; it now no longer says to make available repositories where it has confirmed the file is not present.
+"""]]
