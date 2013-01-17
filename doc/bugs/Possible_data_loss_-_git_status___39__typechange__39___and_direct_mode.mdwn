@@ -24,4 +24,9 @@ OS: OSX 10.6.8
 
 #### Please provide any additional information below.
 
-
+> This was the pre-commit hook, made it not run in direct mode. [[done]]
+> 
+> However, it's normal to see typechanged files in direct mode, and many
+> git commands that manipulate files in the working tree *can* result in
+> data loss. This is documented on [[direct_mode]].
+> --[[Joey]]

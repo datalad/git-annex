@@ -20,7 +20,7 @@ def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
 seek :: [CommandSeek]
 seek =
 	[ whenNotDirect $ withFilesToBeCommitted $ whenAnnexed $ Command.Fix.start
-	, withFilesUnlockedToBeCommitted start]
+	, whenNotDirect $ withFilesUnlockedToBeCommitted start]
 
 start :: FilePath -> CommandStart
 start file = next $ perform file
