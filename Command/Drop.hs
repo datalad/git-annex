@@ -108,21 +108,22 @@ canDropKey key numcopiesM have check skip = do
 			findCopies key need skip have check
 
 findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
-findCopies key need skip = helper []
+findCopies key need skip = helper [] []
   where
-	helper bad have []
+	helper bad missing have []
 		| length have >= need = return True
-		| otherwise = notEnoughCopies key need have skip bad
-	helper bad have (r:rs)
+		| otherwise = notEnoughCopies key need have (skip++missing) bad
+	helper bad missing have (r:rs)
 		| length have >= need = return True
 		| otherwise = do
 			let u = Remote.uuid r
 			let duplicate = u `elem` have
 			haskey <- Remote.hasKey r key
 			case (duplicate, haskey) of
-				(False, Right True) -> helper bad (u:have) rs
-				(False, Left _)     -> helper (r:bad) have rs
-				_                   -> helper bad have rs
+				(False, Right True)  -> helper bad missing (u:have) rs
+				(False, Left _)      -> helper (r:bad) missing have rs
+				(False, Right False) -> helper bad (u:missing) have rs
+				_                    -> helper bad missing have rs
 
 notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 notEnoughCopies key need have skip bad = do
