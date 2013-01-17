@@ -149,6 +149,7 @@ blackbox = TestLabel "blackbox" $ TestList
 	, test_status
 	, test_version
 	, test_sync
+	, test_sync_regression
 	, test_map
 	, test_uninit
 	, test_upgrade
@@ -578,6 +579,35 @@ test_sync :: Test
 test_sync = "git-annex sync" ~: intmpclonerepo $ do
 	git_annex "sync" [] @? "sync failed"
 
+{- Regression test for sync merge bug fixed in
+ - 0214e0fb175a608a49b812d81b4632c081f63027 -}
+test_sync_regression :: Test
+test_sync_regression = "git-annex sync_regression" ~:
+	{- We need 3 repos to see this bug. -}
+	withtmpclonerepo False $ \r1 -> do
+		withtmpclonerepo False $ \r2 -> do
+			withtmpclonerepo False $ \r3 -> do
+				forM_ [r1, r2, r3] $ \r -> indir r $ do
+					when (r /= r1) $
+						boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+					when (r /= r2) $
+						boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+					when (r /= r3) $
+						boolSystem "git" [Params "remote add r3", File ("../../" ++ r3)] @? "remote add"
+					git_annex "get" [annexedfile] @? "get failed"
+					boolSystem "git" [Params "remote rm origin"] @? "remote rm"
+				forM_ [r3, r2, r1] $ \r -> indir r $
+					git_annex "sync" [] @? "sync failed"
+				forM_ [r3, r2] $ \r -> indir r $
+					git_annex "drop" ["--force", annexedfile] @? "drop failed"
+				indir r1 $ do
+					git_annex "sync" [] @? "sync failed in r1"
+					git_annex_expectoutput "find" ["--in", "r3"] []
+					{- This was the bug. The sync
+					 - mangled location log data and it
+					 - thought the file was still in r2 -}
+					git_annex_expectoutput "find" ["--in", "r2"] []
+
 test_map :: Test
 test_map = "git-annex map" ~: intmpclonerepo $ do
 	-- set descriptions, that will be looked for in the map
@@ -762,7 +792,9 @@ intmpbareclonerepo :: Assertion -> Assertion
 intmpbareclonerepo a = withtmpclonerepo True $ \r -> indir r a
 
 withtmpclonerepo :: Bool -> (FilePath -> Assertion) -> Assertion
-withtmpclonerepo bare = bracket (clonerepo mainrepodir tmprepodir bare) cleanup
+withtmpclonerepo bare a = do
+	dir <- tmprepodir
+	bracket (clonerepo mainrepodir dir bare) cleanup a
 
 withgitrepo :: (FilePath -> Assertion) -> Assertion
 withgitrepo = bracket (setuprepo mainrepodir) return
@@ -922,11 +954,18 @@ changeToTmpDir t = do
 tmpdir :: String
 tmpdir = ".t"
 
-mainrepodir :: String
+mainrepodir :: FilePath
 mainrepodir = tmpdir ++ "/repo"
 
-tmprepodir :: String
-tmprepodir = tmpdir ++ "/tmprepo"
+tmprepodir :: IO FilePath
+tmprepodir = go (0 :: Int)
+  where
+	go n = do
+		let d = tmpdir ++ "/tmprepo" ++ show n
+		ifM (doesDirectoryExist d)
+			( go $ n + 1
+			, return d
+			)
 
 annexedfile :: String
 annexedfile = "foo"
