@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 2"
+ date="2013-01-17T01:35:44Z"
+ content="""
+All right, the bug here involves differing changes to location log info for the same file being synced from two repositories and merged. Which probably explains why this bug was not noticed before.
+
+The union merge code generates a stream of data to feed into a single call to update-index. For each ref being merged, it calculates a union merge between that ref and the index. However, this means that the merge data for test2 is fed into update-index, and this is followed by the merge data for test3, which overwrites the previous merge data, causing the unique line from it to be lost.
+
+A fix, although perhaps not the most efficient way, is to run update-index once for each ref to merge, so that each merge builds on the one before. I've put this in place and can confirm problems #2 and #3 are fixed. Leaving open for the minor wording problem #1.
+
+Thanks for an excellent test case for this most unusual bug! (Which I should haskell-ize and add to the regression test suite, when I have time..)
+"""]]
