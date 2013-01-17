@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 2"
+ date="2013-01-17T16:29:39Z"
+ content="""
+If this is a true server, with a static IP (or some dynamic DNS), there is no need to run the assistant on it; clients using the assistant can ssh in and sync data to it directly.
+
+Anyway, you can git config web.browser to run some script with the url it will be passed to the webapp when the webapp is started. I sometimes configure it to just echo the url out; it'd also be possible to automate
+setting up a redirection for a remote browser, I suppose.
+"""]]
