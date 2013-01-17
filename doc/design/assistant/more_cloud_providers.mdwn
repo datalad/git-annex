@@ -12,5 +12,6 @@ More should be added, such as:
 * [[Amazon Glacier|todo/special_remote_for_amazon_glacier]] **done**
 * [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
   REST API; free software
+* Mediafire provides 50gb free and has a REST API.
 
 See poll at [[polls/prioritizing_special_remotes]].
