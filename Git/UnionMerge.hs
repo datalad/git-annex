@@ -38,10 +38,16 @@ merge x y repo = do
 	catFileStop h
 
 {- Merges a list of branches into the index. Previously staged changes in
- - the index are preserved (and participate in the merge). -}
+ - the index are preserved (and participate in the merge).
+ -
+ - update-index is run once per ref in turn, so that each ref is merged on
+ - top of the merge for the previous ref. It would be more efficient, but
+ - harder to calculate a single union merge involving all the refs, as well
+ - as the index.
+ -}
 mergeIndex :: CatFileHandle -> Repo -> [Ref] -> IO ()
-mergeIndex h repo bs =
-	streamUpdateIndex repo $ map (\b -> mergeTreeIndex b h repo) bs
+mergeIndex h repo bs = forM_ bs $ \b ->
+	streamUpdateIndex repo [mergeTreeIndex b h repo]
 
 {- For merging two trees. -}
 mergeTrees :: Ref -> Ref -> CatFileHandle -> Repo -> Streamer
