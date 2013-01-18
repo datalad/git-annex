@@ -44,7 +44,7 @@ associatedFilesRelative key = do
 	liftIO $ catchDefaultIO [] $ do
 		h <- openFile mapping ReadMode
 		fileEncoding h
- 		hClose h `after` (lines <$> hGetContents h)
+		lines <$> hGetContents h
 
 {- Changes the associated files information for a key, applying a
  - transformation to the list. Returns new associatedFiles value. -}
