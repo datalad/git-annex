@@ -45,3 +45,6 @@ OS: Arch Linux (3.7.2-2-ck)
 
 The second bug seams to be very specific about folder- and/or filename.
 I believe that it has something to do with the space in the foldername.
+
+> Fixed both bugs. You should be able to upgrade git-annex and re-run the command
+> and end up with a working direct-mode repository. [[done]] --[[Joey]] 
