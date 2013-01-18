@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnjjCyhVEcTRM5m4iIBqL3ZCooPx7ZYB_E"
+ nickname="Marcus"
+ subject="comment 2"
+ date="2013-01-18T09:08:05Z"
+ content="""
+>  At this point it's not clear if the file is deleted by the old assistant that you ctrl-c'd, or if it was deleted while the assistant was not running, or if it somehow gets deleted when the new assistant is started up.
+
+So how can I help to track this down? So far I can only rule out the file being deleted by some other process.
+"""]]
