@@ -29,7 +29,7 @@ import Logs.Location
 
 import System.Posix.Types
 
-{- Files in the tree that are associated with a key. -}
+{- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do
 	files <- associatedFilesRelative key
@@ -44,7 +44,7 @@ associatedFilesRelative key = do
 	liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
 
 {- Changes the associated files information for a key, applying a
- - transformation to the list. Returns a copy of the new info. -}
+ - transformation to the list. Returns new associatedFiles value. -}
 changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex [FilePath]
 changeAssociatedFiles key transform = do
 	mapping <- inRepo $ gitAnnexMapping key
@@ -52,22 +52,33 @@ changeAssociatedFiles key transform = do
 	let files' = transform files
 	when (files /= files') $
 		liftIO $ viaTmp writeFile mapping $ unlines files'
-	return files'
+	top <- fromRepo Git.repoPath
+	return $ map (top </>) files'
 
+{- Removes an associated file. Returns new associatedFiles value. -}
 removeAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 removeAssociatedFile key file = do
-	fs <- changeAssociatedFiles key $ filter (/= normalise file)
+	file' <- normaliseAssociatedFile file
+	fs <- changeAssociatedFiles key $ filter (/= file')
 	when (null fs) $
 		logStatus key InfoMissing
 	return fs
 
+{- Adds an associated file. Returns new associatedFiles value. -}
 addAssociatedFile :: Key -> FilePath -> Annex [FilePath]
-addAssociatedFile key file = changeAssociatedFiles key $ \files ->
-	if file' `elem` files
-		then files
-		else file':files
-  where
-	file' = normalise file
+addAssociatedFile key file = do
+	file' <- normaliseAssociatedFile file
+	changeAssociatedFiles key $ \files -> do
+		if file' `elem` files
+			then files
+			else file':files
+
+{- Associated files are always stored relative to the top of the repository.
+ - The input FilePath is relative to the CWD. -}
+normaliseAssociatedFile :: FilePath -> Annex FilePath
+normaliseAssociatedFile file = do
+	top <- fromRepo Git.repoPath
+	liftIO $ relPathDirToFile top <$> absPath file
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
