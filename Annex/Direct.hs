@@ -172,8 +172,8 @@ toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
 	loc <- inRepo $ gitAnnexLocation k
 	createContentDir loc -- thaws directory too
-	top <- fromRepo Git.repoPath
-	locs <- filter (/= normalise (top </> f)) <$> addAssociatedFile k f
+	absf <- liftIO $ absPath f
+	locs <- filter (/= absf) <$> addAssociatedFile k f
 	case locs of
 		[] -> ifM (liftIO $ doesFileExist loc)
 			( return $ Just $ do
@@ -183,7 +183,7 @@ toDirectGen k f = do
 				liftIO $ replaceFile f $ moveFile loc
 			, return Nothing
 			)
-		(loc':_) -> ifM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus loc')
+		(loc':_) -> ifM (liftIO $ catchBoolIO $ not . isSymbolicLink <$> getSymbolicLinkStatus loc')
 			{- Another direct file has the content; copy it. -}
 			( return $ Just $ do
 				liftIO $ replaceFile f $
