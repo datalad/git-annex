@@ -13,6 +13,7 @@ git-annex (3.20130115) UNRELEASED; urgency=low
   * bugfix: Union merges involving two or more repositories could sometimes
     result in data from one repository getting lost. This could result
     in the location log data becoming wrong, and fsck being needed to fix it.
+  * Depend on git 1.7.7.6 for --no-edit. Closes: #698399
 
  -- Joey Hess <joeyh@debian.org>  Mon, 14 Jan 2013 18:35:01 -0400
 
