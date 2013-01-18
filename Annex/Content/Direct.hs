@@ -41,7 +41,10 @@ associatedFiles key = do
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
 	mapping <- inRepo $ gitAnnexMapping key
-	liftIO $ catchDefaultIO [] $ lines <$> readFile mapping
+	liftIO $ catchDefaultIO [] $ do
+		h <- openFile mapping ReadMode
+		fileEncoding h
+ 		hClose h `after` (lines <$> hGetContents h)
 
 {- Changes the associated files information for a key, applying a
  - transformation to the list. Returns new associatedFiles value. -}
@@ -51,9 +54,15 @@ changeAssociatedFiles key transform = do
 	files <- associatedFilesRelative key
 	let files' = transform files
 	when (files /= files') $
-		liftIO $ viaTmp writeFile mapping $ unlines files'
+		liftIO $ viaTmp write mapping $ unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
+  where
+	write file content = do
+		h <- openFile file WriteMode
+		fileEncoding h
+ 		hPutStr h content
+		hClose h
 
 {- Removes an associated file. Returns new associatedFiles value. -}
 removeAssociatedFile :: Key -> FilePath -> Annex [FilePath]
