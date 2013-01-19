@@ -34,4 +34,4 @@ Javascript console error log says "Syntax error on localhost:5" which is this li
 > before now.
 > 
 > I've fixed this bug in git. Your testing with tomorrow's
-> autobuild would be appreciated. [[done]] --[[Joey]]
+> autobuild would be appreciated. --[[Joey]]
