@@ -1,0 +1,1 @@
+I have a repository with an S3 remote named `cloud`. I now no longer want to use that remote. I've dropped all the data from it (`git annex drop . --from cloud`). How do I tell my repository to forget about the remote?
