@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlYy4BrJyV1PdfqzevCVziXRp89iUH6Xzw"
+ nickname="Christopher"
+ subject="Code signing errors in log on starting git-annex.app"
+ date="2013-01-19T22:30:32Z"
+ content="""
+When I run via the App and set up a fresh repo, i get some Console.app spam (looks like one per file added to the repo dir... or maybe one per git command?):
+
+    2013-01-19 2:44:55.000 PM kernel[0]: CODE SIGNING: cs_invalid_page(0x1008b4000): p=73995[git] clearing CS_VALID
+    2013-01-19 2:44:55.000 PM kernel[0]: CODE SIGNING: cs_invalid_page(0x10f99e000): p=73996[git] clearing CS_VALID
+    2013-01-19 2:44:55.000 PM kernel[0]: CODE SIGNING: cs_invalid_page(0x102b44000): p=73997[git] clearing CS_VALID
+    2013-01-19 2:44:55.000 PM kernel[0]: CODE SIGNING: cs_invalid_page(0x1029f4000): p=73998[git] clearing CS_VALID
+    ...
+
+and nothing seems to work. The page address and the pid increment steadily with each line.  I'm using 10.8.2 (12C60) on a Mac Pro, and grabbed:
+
+     /git-annex/OSX/current/10.8.2_Mountain_Lion/git-annex.dmg.bz2	
+
+(published 14-Jan-2013 15:19)
+
+It seems to be a code signing issue, perhaps with the vendored git binaries. While things are sort-of working, the web app shows the files flying by really fast. 
+
+Using a fresh repo via `git annex webapp` works great (I built that after much teeth-knashing, brew install/link cycles, and then cabal install git-annex). 
+
+I am very excited for this to work, this is exactly what I've been waiting for to replace dropbox. Came very close to writing it myself a few times (and in Haskell no less!!). 
+"""]]
