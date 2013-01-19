@@ -35,3 +35,7 @@ Javascript console error log says "Syntax error on localhost:5" which is this li
 > 
 > I've fixed this bug in git. Your testing with tomorrow's
 > autobuild would be appreciated. --[[Joey]]
+
+>> There was a second issue as noted. I fixed that last week,
+>> and the fix is in the autobuilds if you'd like to test before
+>> the next release. [[done]] again --[[Joey]]
