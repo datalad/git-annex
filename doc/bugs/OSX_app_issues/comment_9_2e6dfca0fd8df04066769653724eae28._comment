@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="Prefer the system/path git binaries if they're a newer version"
+ date="2013-01-19T06:20:38Z"
+ content="""
+I have used homebrew to install git v1.8.0.2 but git-annex.app packages git v1.7.10.2. git 1.7 crashes due to some newer directives in my global git config.
+
+    error: Malformed value for push.default: simple
+    error: Must be one of nothing, matching, tracking or current.
+    fatal: bad config file line 38 in /Users/akraut/.gitconfig
+    
+    git-annex: fd:13: hGetLine: end of file
+    failed
+    git-annex: webapp: 1 failed
+
+"""]]
