@@ -110,6 +110,7 @@ perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
 	, verifyLocationLog key file
+	, verifyDirectMapping key file
 	, checkKeySize key
 	, checkBackend backend key
 	, checkKeyNumCopies key file numcopies
@@ -257,6 +258,19 @@ verifyLocationLog' key desc present u bad = do
 	fix s = do
 		showNote "fixing location log"
 		bad s
+
+{- Ensures the direct mode mapping file is consistent. Each file
+ - it lists for the key should exist, and the specified file should be
+ - included in it.
+ -}
+verifyDirectMapping :: Key -> FilePath -> Annex Bool
+verifyDirectMapping key file = do
+	whenM isDirect $ do
+		fs <- addAssociatedFile key file
+		forM_ fs $ \f -> 
+			unlessM (liftIO $ doesFileExist f) $
+				void $ removeAssociatedFile key f
+	return True
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
