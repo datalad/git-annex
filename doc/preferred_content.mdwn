@@ -148,4 +148,4 @@ local copy of every file. Instead, you can manually run `git annex get`,
 Only content that is present is preferred. Content in "archive"
 directories is never preferred.
 
-`present and exclude=archive/*`
+`present and exclude=*/archive/* and exclude=archive/*`

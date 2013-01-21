@@ -53,4 +53,4 @@ preferredContent BackupGroup = "include=*"
 preferredContent SmallArchiveGroup = "(include=*/archive/* or include=archive/*) and " ++ preferredContent FullArchiveGroup
 preferredContent FullArchiveGroup = "not (copies=archive:1 or copies=smallarchive:1)"
 preferredContent SourceGroup = "not (copies=1)"
-preferredContent ManualGroup = "present and exclude=archive/*"
+preferredContent ManualGroup = "present and exclude=*/archive/* and exclude=archive/*"
