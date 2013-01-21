@@ -1,5 +1,11 @@
 git-annex (3.20130122) UNRELEASED; urgency=low
 
+  * Added source repository group, that only retains files until they've
+    been transferred to another repository. Useful for things like
+    repositories on cameras.
+  * Added manual repository group. Use to prevent the assistant from
+    downloading any file contents to keep things in sync. Instead
+    `git annex get`, `git annex drop` etc can be used manually as desired.
   * webapp: More adjustments to longpoll code to deal with changes in
     variable quoting in different versions of shakespeare-js.
   * webapp: Avoid an error if a transfer is stopped just as it finishes.
