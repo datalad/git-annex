@@ -126,3 +126,26 @@ Note that if you want to archive multiple copies (not a bad idea!),
 you should instead configure all your archive repositories with a
 version of the above preferred content expression with a larger
 number of copies.
+
+### source
+
+Use for repositories where files are often added, but that do not need to
+retain files for local use. For example, a repository on a camera, where
+it's desirable to remove photos as soon as they're transferred elsewhere.
+
+The preferred content expression for these causes them to only retain
+data until a copy has been sent to some other repository.
+
+`not (copies=1)`
+
+### manual
+
+This gives you full manual control over what content is stored in the
+repository. This allows using the [[assistant]] without it trying to keep a
+local copy of every file. Instead, you can manually run `git annex get`,
+`git annex drop`, etc to manage content.
+
+Only content that is present is preferred. Content in "archive"
+directories is never preferred.
+
+`present and exclude=archive/*`

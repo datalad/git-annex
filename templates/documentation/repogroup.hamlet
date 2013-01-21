@@ -32,7 +32,17 @@
     When you copy or move a file out of an "archive" folder, it'll be #
     retrieved from the archive repository.
   <p>
-    Finally, the <b>small archive repositories</b> are like other archive #
+    The <b>small archive repositories</b> are like other archive #
     repositories, but smaller. While archive repositories normally accumulate #
     every file they can, small archive repositories only accumulate files #
     once you put them in an "archive" directory.
+  <p>
+    Sometimes useful for devices like cameras are the #
+    <b>source repositories</b>. Repositories in this group only retain #
+    files until they can be moved to some other repository, like a client #
+    or transfer repository.
+  <p>
+    Finally, repositories can be configured to be <b>manual</b>. This #
+    prevents content being automatically synced to the repository, but #
+    you can use command-line tools like `git annex get` and `git annex drop` #
+    to control what content is present.
