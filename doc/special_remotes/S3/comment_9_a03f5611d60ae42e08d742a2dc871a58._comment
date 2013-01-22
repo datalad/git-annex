@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmyFvkaewo432ELwtCoecUGou4v3jCP0Pc"
+ nickname="Eric"
+ subject="Your proposed upload exceeds the maximum allowed size"
+ date="2013-01-22T00:25:00Z"
+ content="""
+Thanks for the clarification Joey.
+
+Another question, today I tried to copy a large file into S3 and got the following error at the console.
+
+    copy large-file.tgz (gpg) (checking cloud...) (to cloud...) Reading passphrase from file descriptor 12    
+    
+                        
+     Your proposed upload exceeds the maximum allowed size
+     failed
+     git-annex: copy: 1 failed
+
+The files size is 7.4G
+"""]]
