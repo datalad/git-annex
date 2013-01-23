@@ -1,4 +1,14 @@
-I am trying to 'git annex copy large_file.tgz --to cloud' where cloud is an Amazon S3 remote.  My file is 7.4G as reported by 'ls'.  The output of the operation is...
+What steps will reproduce the problem?
+
+> Try to copy/move a file greater than 5G to S3.
+
+    git annex copy large_file.tgz --to cloud
+
+What is the expected output? What do you see instead?
+
+> Looks like git-annex may not be using the Multipart Upload API: http://docs.aws.amazon.com/AmazonS3/latest/dev/uploadobjusingmpu.html
+
+> Expected transfer to succeed, instead this error is output:
 
     copy large-file.tgz (gpg) (checking cloud...) (to cloud...) Reading passphrase from file descriptor 12    
 
@@ -7,9 +17,11 @@ I am trying to 'git annex copy large_file.tgz --to cloud' where cloud is an Amaz
      failed
      git-annex: copy: 1 failed
 
-Looks like git-annex may not be using the Multipart Upload API: http://docs.aws.amazon.com/AmazonS3/latest/dev/uploadobjusingmpu.html
+What version of git-annex are you using? On what operating system?
 
-Here is some output from my local client that may be helpful.
+> OSX 10.8.2
+
+Please provide any additional information below.
 
     annex [master●] % git annex status
 	supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
@@ -38,5 +50,4 @@ Here is some output from my local client that may be helpful.
 	default repository version: 3
 	supported repository versions: 3
 	upgrade supported from repository versions: 0 1 2
-
 
