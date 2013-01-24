@@ -1,0 +1,28 @@
+git-annex 3.20130124 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Added source repository group, that only retains files until they've
+     been transferred to another repository. Useful for things like
+     repositories on cameras.
+   * Added manual repository group. Use to prevent the assistant from
+     downloading any file contents to keep things in sync. Instead
+     `git annex get`, `git annex drop` etc can be used manually as desired.
+   * webapp: More adjustments to longpoll code to deal with changes in
+     variable quoting in different versions of shakespeare-js.
+   * webapp: Avoid an error if a transfer is stopped just as it finishes.
+     Closes: #[698184](http://bugs.debian.org/698184)
+   * webapp: Now always logs to .git/annex/daemon.log
+   * webapp: Has a page to view the log, accessed from the control menu.
+   * webapp: Fix crash adding removable drive that has an annex directory
+     in it that is not a git repository.
+   * Deal with incompatability in gpg2, which caused prompts for encryption
+     passphrases rather than using the supplied --passphrase-fd.
+   * bugfix: Union merges involving two or more repositories could sometimes
+     result in data from one repository getting lost. This could result
+     in the location log data becoming wrong, and fsck being needed to fix it.
+   * sync: Automatic merge conflict resolution now stages deleted files.
+   * Depend on git 1.7.7.6 for --no-edit. Closes: #[698399](http://bugs.debian.org/698399)
+   * Fix direct mode mapping code to always store direct mode filenames
+     relative to the top of the repository, even when operating inside a
+     subdirectory.
+   * fsck: Detect and fix consistency errors in direct mode mapping files.
+   * Avoid filename encoding errors when writing direct mode mappings."""]]
