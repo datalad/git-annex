@@ -1,4 +1,4 @@
-## 3.20130122
+## 3.20130124
 
 This is primarily a bugfix release.
 

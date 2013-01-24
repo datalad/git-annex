@@ -1,4 +1,4 @@
-git-annex (3.20130122) UNRELEASED; urgency=low
+git-annex (3.20130124) unstable; urgency=low
 
   * Added source repository group, that only retains files until they've
     been transferred to another repository. Useful for things like
@@ -27,7 +27,7 @@ git-annex (3.20130122) UNRELEASED; urgency=low
   * fsck: Detect and fix consistency errors in direct mode mapping files.
   * Avoid filename encoding errors when writing direct mode mappings.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 20 Jan 2013 16:33:18 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 22 Jan 2013 07:11:59 +1100
 
 git-annex (3.20130114) unstable; urgency=low
 
