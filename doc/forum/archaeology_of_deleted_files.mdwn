@@ -10,27 +10,27 @@ http://stackoverflow.com/questions/953481/restore-a-deleted-file-in-a-git-repo
 
 Here's a magical formula you can use to find every single file deletion in the history of your repo:
 
-git log --diff-filter=D --summary 
+    git log --diff-filter=D --summary 
 
 That will give you every commit that deleted things, and what was deleted.
 
 To bring back all the files deleted in a given commit, where COMMITHASH is the commit hash, use this command:
 
-git checkout COMMITHASH^1 -- .
+    git checkout COMMITHASH^1 -- .
 
 to bring back only a specific file:
 
-git checkout COMMITHASH^1 -- path/to/file.txt
+    git checkout COMMITHASH^1 -- path/to/file.txt
 
 to bring back only a subdirectory:
 
-git checkout COMMITHASH^1 -- sub/directory
+    git checkout COMMITHASH^1 -- sub/directory
 
 that will bring them back into the staging area.  You can see which ones just reappeared by typing:
 
-git status
+    git status
 
 then you can actually make the restore permanent by typing: 
 
-git commit -m "I just resurrected some files"
+    git commit -m "I just resurrected some files"
 
