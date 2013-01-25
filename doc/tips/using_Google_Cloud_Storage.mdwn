@@ -1,0 +1,9 @@
+[Google Cloud Storage](https://cloud.google.com/products/cloud-storage)
+supports the same API as Amazon S3, so the
+[[S3 special remote|special_remotes/S3]] can be used with it.
+Here is a configuration example:
+
+	git annex initremote cloud type=S3 encryption=none host=storage.googleapis.com port=80
+
+Thanks to jterrance for the [original tip](https://gist.github.com/4576324).
+--[[Joey]] 
