@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-25T03:39:16Z"
+ content="""
+This may have been an unrelated issue -- I just realized that I somehow ended up with a bunch of files in the annex under the directory \"misc\" and others under the directory \"Misc\" -- I'm not sure how they got that way, since I'm on OS X and those are supposed to be the same directory -- but they get synced over to a linux box where they're different directories.  This may be the source of some of the weirdness I saw; I'm not sure.  I tried to fix it all up on the linux box so everything was in its own directory.
+
+
+"""]]
