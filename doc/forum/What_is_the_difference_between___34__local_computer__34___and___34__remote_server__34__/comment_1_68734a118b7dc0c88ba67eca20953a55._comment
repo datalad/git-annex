@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-01-25T22:39:20Z"
+ content="""
+Local computer pairs with another computer on your LAN. You don't need an account on that computer, it can belong to someone else and has to be running the webapp as well for them to verify the pairing. 
+
+Remote server is for people with a ssh server out there, and does not require it be running the assistant, or even have git-annex installed. (Though it works better if at least git-annex is installed on it.)
+"""]]
