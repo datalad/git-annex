@@ -171,7 +171,6 @@ toDirect k f = maybe noop id =<< toDirectGen k f
 toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
 	loc <- inRepo $ gitAnnexLocation k
-	createContentDir loc -- thaws directory too
 	absf <- liftIO $ absPath f
 	locs <- filter (/= absf) <$> addAssociatedFile k f
 	case locs of

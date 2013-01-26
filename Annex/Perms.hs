@@ -10,6 +10,8 @@ module Annex.Perms (
 	annexFileMode,
 	createAnnexDirectory,
 	noUmask,
+	createContentDir,
+	freezeContentDir,
 ) where
 
 import Common.Annex
@@ -68,3 +70,27 @@ createAnnexDirectory dir = traverse dir [] =<< top
 		done = forM_ below $ \p -> do
 			liftIO $ createDirectory p
 			setAnnexPerm p
+
+{- Blocks writing to the directory an annexed file is in, to prevent the
+ - file accidentially being deleted. However, if core.sharedRepository
+ - is set, this is not done, since the group must be allowed to delete the
+ - file.
+ -}
+freezeContentDir :: FilePath -> Annex ()
+freezeContentDir file = liftIO . go =<< fromRepo getSharedRepository
+  where
+	dir = parentDir file
+	go GroupShared = groupWriteRead dir
+	go AllShared = groupWriteRead dir
+	go _ = preventWrite dir
+
+{- Makes the directory tree to store an annexed file's content,
+ - with appropriate permissions on each level. -}
+createContentDir :: FilePath -> Annex ()
+createContentDir dest = do
+	unlessM (liftIO $ doesDirectoryExist dir) $
+		createAnnexDirectory dir 
+	-- might have already existed with restricted perms
+	liftIO $ allowWrite dir
+  where
+	dir = parentDir dest

@@ -23,6 +23,7 @@ module Annex.Content.Direct (
 ) where
 
 import Common.Annex
+import Annex.Perms
 import qualified Git
 import Utility.TempFile
 import Logs.Location
@@ -53,7 +54,8 @@ changeAssociatedFiles key transform = do
 	mapping <- inRepo $ gitAnnexMapping key
 	files <- associatedFilesRelative key
 	let files' = transform files
-	when (files /= files') $
+	when (files /= files') $ do
+		createContentDir mapping
 		liftIO $ viaTmp write mapping $ unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
@@ -109,7 +111,7 @@ changedFileStatus key status = do
 {- Gets the recorded cache for a key. -}
 recordedCache :: Key -> Annex (Maybe Cache)
 recordedCache key = withCacheFile key $ \cachefile ->
-	catchDefaultIO Nothing $ readCache <$> readFile cachefile
+	liftIO $ catchDefaultIO Nothing $ readCache <$> readFile cachefile
 
 {- Compares a cache with the current cache for a file. -}
 compareCache :: FilePath -> Maybe Cache -> Annex Bool
@@ -124,12 +126,14 @@ updateCache key file = maybe noop (writeCache key) =<< liftIO (genCache file)
 {- Writes a cache for a key. -}
 writeCache :: Key -> Cache -> Annex ()
 writeCache key cache = withCacheFile key $ \cachefile -> do
-	createDirectoryIfMissing True (parentDir cachefile)
-	writeFile cachefile $ showCache cache
+	createContentDir cachefile
+	liftIO $ writeFile cachefile $ showCache cache
 
 {- Removes a cache. -}
 removeCache :: Key -> Annex ()
-removeCache key = withCacheFile key nukeFile
+removeCache key = withCacheFile key $ \f -> do
+	createContentDir f -- also thaws directory
+	liftIO $ nukeFile f
 
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
@@ -166,5 +170,5 @@ toCache s
 		(modificationTime s)
 	| otherwise = Nothing
 
-withCacheFile :: Key -> (FilePath -> IO a) -> Annex a
-withCacheFile key a = liftIO . a =<< inRepo (gitAnnexCache key)
+withCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
+withCacheFile key a = a =<< inRepo (gitAnnexCache key)
