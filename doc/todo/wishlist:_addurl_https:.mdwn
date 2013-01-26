@@ -6,3 +6,6 @@ To give an example, here is a PDF file:
 If you switch the https: to http: it redirects you back to https:.
 
 As more sites provide https: for non-secret traffic, this becomes more of an issue.
+
+> I've gotten rid of the use of the HTTP library, now it just uses curl.
+> [[done]] --[[Joey]]

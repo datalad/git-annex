@@ -13,7 +13,6 @@ quite a lot.
   * [lifted-base](http://hackage.haskell.org/package/lifted-base)
   * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
-  * [HTTP](http://hackage.haskell.org/package/HTTP)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)

@@ -16,8 +16,6 @@ module Utility.Url (
 ) where
 
 import Common
-import qualified Network.Browser as Browser
-import Network.HTTP
 import Network.URI
 import Data.Either
 
@@ -38,20 +36,34 @@ check url headers expected_size = handle <$> exists url headers
  - also returning its size if available. -}
 exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
 exists url headers = case parseURI url of
-	Nothing -> return (False, Nothing)
 	Just u
 		| uriScheme u == "file:" -> do
 			s <- catchMaybeIO $ getFileStatus (uriPath u)
-			return $ case s of
-				Nothing -> (False, Nothing)
-				Just stat -> (True, Just $ fromIntegral $ fileSize stat)
+			case s of
+				Just stat -> return (True, Just $ fromIntegral $ fileSize stat)
+				Nothing -> dne
 		| otherwise -> do
-			r <- request u headers HEAD
-			case rspCode r of
-				(2,_,_) -> return (True, size r)
-				_ -> return (False, Nothing)
+			output <- readProcess "curl" curlparams
+			case lastMaybe (lines output) of
+				Just ('2':_:_) -> return (True, extractsize output)
+				_ -> dne
+	Nothing -> dne
   where
-	size = liftM Prelude.read . lookupHeader HdrContentLength . rspHeaders
+	dne = return (False, Nothing)
+
+	curlparams = 
+		[ "-s"
+		, "--head"
+		, "-L"
+		, url
+		, "-w", "%{http_code}"
+		] ++ concatMap (\h -> ["-H", h]) headers
+
+	extractsize s = case lastMaybe $ filter ("Content-Length:" `isPrefixOf`) (lines s) of
+		Just l -> case lastMaybe $ words l of
+			Just sz -> readish sz
+			_ -> Nothing
+		_ -> Nothing
 
 {- Used to download large files, such as the contents of keys.
  -
@@ -80,54 +92,5 @@ download url headers options file
 
 {- Downloads a small file. -}
 get :: URLString -> Headers -> IO String
-get url headers =
-	case parseURI url of
-		Nothing -> error "url parse error"
-		Just u -> do
-			r <- request u headers GET
-			case rspCode r of
-				(2,_,_) -> return $ rspBody r
-				_ -> error $ rspReason r
-
-{- Makes a http request of an url. For example, HEAD can be used to
- - check if the url exists, or GET used to get the url content (best for
- - small urls).
- -
- - This does its own redirect following because Browser's is buggy for HEAD
- - requests.
- -}
-request :: URI -> Headers -> RequestMethod -> IO (Response String)
-request url headers requesttype = go 5 url
-  where
-	go :: Int -> URI -> IO (Response String)
-	go 0 _ = error "Too many redirects "
-	go n u = do
-		rsp <- Browser.browse $ do
-			Browser.setErrHandler ignore
-			Browser.setOutHandler ignore
-			Browser.setAllowRedirects False
-			let req = mkRequest requesttype u :: Request_String
-			snd <$> Browser.request (addheaders req)
-		case rspCode rsp of
-			(3,0,x) | x /= 5 -> redir (n - 1) u rsp
-			_ -> return rsp
-	ignore = const noop
-	redir n u rsp = case retrieveHeaders HdrLocation rsp of
-		[] -> return rsp
-		(Header _ newu:_) ->
-			case parseURIReference newu of
-				Nothing -> return rsp
-				Just newURI -> go n newURI_abs
-				  where
-#if defined VERSION_network
-#if ! MIN_VERSION_network(2,4,0)
-#define WITH_OLD_URI
-#endif
-#endif
-#ifdef WITH_OLD_URI
-					newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
-#else
-					newURI_abs = newURI `relativeTo` u
-#endif
-	addheaders req = setHeaders req (rqHeaders req ++ userheaders)
-	userheaders = rights $ map parseHeader headers
+get url headers = readProcess "curl" $
+	["-s", "-L", url] ++ concatMap (\h -> ["-H", h]) headers
