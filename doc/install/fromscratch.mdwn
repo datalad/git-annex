@@ -53,7 +53,8 @@ quite a lot.
     (or `uuidgen` from util-linux)
   * [xargs](http://savannah.gnu.org/projects/findutils/)
   * [rsync](http://rsync.samba.org/)
-  * [wget](http://www.gnu.org/software/wget/) or [curl](http://http://curl.haxx.se/) (optional, but recommended)
+  * [curl](http://http://curl.haxx.se/) (optional, but recommended)
+  * [wget](http://www.gnu.org/software/wget/) (optional)
   * [sha1sum](ftp://ftp.gnu.org/gnu/coreutils/) (optional, but recommended;
     a sha1 command will also do)
   * [gpg](http://gnupg.org/) (optional; needed for encryption)
