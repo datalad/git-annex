@@ -23,9 +23,6 @@ import qualified Annex.Branch
 
 import qualified Data.Set as S
 
-thisThread :: ThreadName
-thisThread = "ConfigMonitor"
-
 {- This thread detects when configuration changes have been made to the
  - git-annex branch and reloads cached configuration.
  -

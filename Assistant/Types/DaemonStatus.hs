@@ -16,12 +16,15 @@ import Utility.NotificationBroadcaster
 import Logs.Transfer
 
 import Control.Concurrent.STM
+import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 data DaemonStatus = DaemonStatus
+	-- All the named threads that comprise the daemon.
+	{ startedThreads :: M.Map String (Async ())
 	-- False when the daemon is performing its startup scan
-	{ scanComplete :: Bool
+	, scanComplete :: Bool
 	-- Time when a previous process of the daemon was running ok
 	, lastRunning :: Maybe POSIXTime
 	-- True when the sanity checker is running
@@ -58,7 +61,8 @@ type DaemonStatusHandle = TMVar DaemonStatus
 
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
-	<$> pure False
+	<$> pure M.empty
+	<*> pure False
 	<*> pure Nothing
 	<*> pure False
 	<*> pure Nothing

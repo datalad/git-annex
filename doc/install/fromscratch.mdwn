@@ -46,6 +46,7 @@ quite a lot.
   * [network-protocol-xmpp](http://hackage.haskell.org/package/network-protocol-xmpp)
   * [dns](http://hackage.haskell.org/package/dns)
   * [xml-types](http://hackage.haskell.org/package/xml-types)
+  * [async](http://hackage.haskell.org/package/async)
 * Shell commands
   * [git](http://git-scm.com/)
   * [uuid](http://www.ossp.org/pkg/lib/uuid/)

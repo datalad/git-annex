@@ -109,10 +109,12 @@ firstRun = do
 	urlrenderer <- newUrlRenderer
 	v <- newEmptyMVar
 	let callback a = Just $ a v
-	void $ runAssistant d $ runNamedThread $
-		webAppThread d urlrenderer True 
-			(callback signaler)
-			(callback mainthread)
+	runAssistant d $ do
+		startNamedThread $
+			webAppThread d urlrenderer True 
+				(callback signaler)
+				(callback mainthread)
+		waitNamedThreads
   where
 	signaler v = do
 		putMVar v ""

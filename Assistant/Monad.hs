@@ -19,10 +19,15 @@ module Assistant.Monad (
 	asIO,
 	asIO1,
 	asIO2,
+	NamedThread(..),
+	ThreadName,
+	debug,
+	notice
 ) where
 
 import "mtl" Control.Monad.Reader
 import Control.Monad.Base (liftBase, MonadBase)
+import System.Log.Logger
 
 import Common.Annex
 import Assistant.Types.ThreadedMonad
@@ -36,6 +41,10 @@ import Assistant.Types.Commits
 import Assistant.Types.Changes
 import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
+
+{- Information about a named thread that can be run. -}
+data NamedThread = NamedThread ThreadName (Assistant ())
+type ThreadName = String
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -118,3 +127,14 @@ asIO2 a = do
 {- Runs an IO action on a selected field of the AssistantData. -}
 (<<~) :: (a -> IO b) -> (AssistantData -> a) -> Assistant b
 io <<~ v = reader v >>= liftIO . io
+
+debug :: [String] -> Assistant ()
+debug = logaction debugM
+
+notice :: [String] -> Assistant ()
+notice = logaction noticeM
+
+logaction :: (String -> String -> IO ()) -> [String] -> Assistant ()
+logaction a ws = do
+	name <- getAssistant threadName
+	liftIO $ a name $ unwords $ (name ++ ":") : ws
