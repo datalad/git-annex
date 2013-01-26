@@ -1,6 +1,8 @@
 git-annex (3.20130125) UNRELEASED; urgency=low
 
   * webapp: Now allows restarting any threads that crash.
+  * Adjust debian package to only build-depend on DAV on architectures
+    where it is available.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 
