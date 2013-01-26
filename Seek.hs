@@ -28,7 +28,7 @@ seekHelper a params = do
 		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
 	{- Show warnings only for files/directories that do not exist. -}
 	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
-		unlessM (liftIO $ doesFileExist p <||> doesDirectoryExist p) $
+		unlessM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus p)) $
 			fileNotFound p
 	return $ concat ll
 
