@@ -35,3 +35,10 @@ functions have illegal characters in their names: *function longpoll_"sidebar"*
     		setTimeout(longpoll_"repolist", "10");
     	});
     });
+
+> This is already fixed in the 3.20130124 release. [[done]]
+> 
+> (Standalone builds of that release are not yet available for Mountian
+> Lion.
+> 
+> --[[Joey]] 
