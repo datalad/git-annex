@@ -25,7 +25,7 @@ import System.Process (create_group)
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: NamedThread
-transfererThread = NamedThread "Transferr" $ do
+transfererThread = namedThread "Transferrer" $ do
 	program <- liftIO readProgramFile
 	forever $ inTransferSlot $
 		maybe (return Nothing) (uncurry $ startTransfer program)

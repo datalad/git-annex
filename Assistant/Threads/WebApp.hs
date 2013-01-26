@@ -38,9 +38,6 @@ import Yesod.Static
 import Network.Socket (SockAddr)
 import Data.Text (pack, unpack)
 
-thisThread :: String
-thisThread = "WebApp"
-
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 type Url = String
@@ -76,7 +73,7 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
 			go addr webapp htmlshim (Just urlfile)
   where
-	thread = NamedThread thisThread
+	thread = namedThread "WebApp"
 	getreldir
 		| noannex = return Nothing
 		| otherwise = Just <$>

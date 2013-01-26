@@ -16,7 +16,7 @@ import Utility.NotificationBroadcaster
  - frequently than once every ten minutes.
  -}
 daemonStatusThread :: NamedThread
-daemonStatusThread = NamedThread "DaemonStatus" $ do
+daemonStatusThread = namedThread "DaemonStatus" $ do
 	notifier <- liftIO . newNotificationHandle
 		=<< changeNotifier <$> getDaemonStatus
 	checkpoint

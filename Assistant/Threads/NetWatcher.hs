@@ -33,7 +33,7 @@ netWatcherThread = thread dbusThread
 netWatcherThread = thread noop
 #endif
   where
-	thread = NamedThread "NetWatcher"
+	thread = namedThread "NetWatcher"
 
 {- This is a fallback for when dbus cannot be used to detect
  - network connection changes, but it also ensures that
@@ -41,7 +41,7 @@ netWatcherThread = thread noop
  - while (despite the local network staying up), are synced with
  - periodically. -}
 netWatcherFallbackThread :: NamedThread
-netWatcherFallbackThread = NamedThread "NetWatcherFallback" $
+netWatcherFallbackThread = namedThread "NetWatcherFallback" $
 	runEvery (Seconds 3600) <~> handleConnection
 
 #if WITH_DBUS

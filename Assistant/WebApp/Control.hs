@@ -12,9 +12,11 @@ module Assistant.WebApp.Control where
 import Assistant.WebApp.Common
 import Locations.UserConfig
 import Utility.LogFile
+import Assistant.DaemonStatus
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
+import qualified Data.Map as M
 
 getShutdownR :: Handler RepHtml
 getShutdownR = page "Shutdown" Nothing $
@@ -41,6 +43,12 @@ getRestartR = page "Restarting" Nothing $ do
   where
 	restartcommand program = program ++ " assistant --stop; " ++
 		program ++ " webapp"
+
+getRestartThreadR :: ThreadName -> Handler ()
+getRestartThreadR name = do
+	m <- liftAssistant $ startedThreads <$> getDaemonStatus
+	liftIO $ maybe noop snd $ M.lookup name m
+	redirectBack
 
 getLogR :: Handler RepHtml
 getLogR = page "Logs" Nothing $ do

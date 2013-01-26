@@ -154,6 +154,7 @@ import Assistant.Threads.XMPPClient
 import Assistant.Environment
 import qualified Utility.Daemon
 import Utility.LogFile
+import Utility.ThreadScheduler
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
@@ -196,7 +197,7 @@ startDaemon assistant foreground startbrowser = do
 		d <- getAssistant id
 		urlrenderer <- liftIO newUrlRenderer
 #endif
-		mapM_ startthread
+		mapM_ (startthread urlrenderer)
 			[ watch $ commitThread
 #ifdef WITH_WEBAPP
 			, assist $ webAppThread d urlrenderer False Nothing webappwaiter
@@ -224,10 +225,10 @@ startDaemon assistant foreground startbrowser = do
 			, watch $ watchThread
 			]
 	
-		waitNamedThreads
+		liftIO waitForTermination
 
 	watch a = (True, a)
 	assist a = (False, a)
-	startthread (watcher, t)
-		| watcher || assistant = startNamedThread t
+	startthread urlrenderer (watcher, t)
+		| watcher || assistant = startNamedThread (Just urlrenderer) t
 		| otherwise = noop

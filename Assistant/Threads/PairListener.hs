@@ -23,11 +23,8 @@ import Network.Socket
 import qualified Data.Text as T
 import Data.Char
 
-thisThread :: ThreadName
-thisThread = "PairListener"
-
 pairListenerThread :: UrlRenderer -> NamedThread
-pairListenerThread urlrenderer = NamedThread "PairListener" $ do
+pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	listener <- asIO1 $ go [] []
 	liftIO $ withSocketsDo $
 		runEvery (Seconds 1) $ void $ tryIO $ 

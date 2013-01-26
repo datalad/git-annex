@@ -14,6 +14,7 @@ import Assistant.Alert
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
 import Logs.Transfer
+import Assistant.Types.ThreadName
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
@@ -21,8 +22,9 @@ import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 data DaemonStatus = DaemonStatus
-	-- All the named threads that comprise the daemon.
-	{ startedThreads :: M.Map String (Async ())
+	-- All the named threads that comprise the daemon,
+	-- and actions to run to restart them.
+	{ startedThreads :: M.Map ThreadName (Async (), IO ())
 	-- False when the daemon is performing its startup scan
 	, scanComplete :: Bool
 	-- Time when a previous process of the daemon was running ok

@@ -32,7 +32,7 @@ import qualified Data.Set as S
  - be detected immediately.
  -}
 configMonitorThread :: NamedThread
-configMonitorThread = NamedThread "ConfigMonitor" $ loop =<< getConfigs
+configMonitorThread = namedThread "ConfigMonitor" $ loop =<< getConfigs
   where
 	loop old = do
 		waitBranchChange

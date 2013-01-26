@@ -1,3 +1,9 @@
+git-annex (3.20130125) UNRELEASED; urgency=low
+
+  * webapp: Now allows restarting any threads that crash.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
+
 git-annex (3.20130124) unstable; urgency=low
 
   * Added source repository group, that only retains files until they've

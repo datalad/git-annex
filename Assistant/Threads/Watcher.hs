@@ -59,7 +59,7 @@ needLsof = error $ unlines
 	]
 
 watchThread :: NamedThread
-watchThread = NamedThread "Watcher" $ do
+watchThread = namedThread "Watcher" $ do
 	startup <- asIO1 startupScan
 	direct <- liftAnnex isDirect
 	addhook <- hook $ if direct then onAddDirect else onAdd

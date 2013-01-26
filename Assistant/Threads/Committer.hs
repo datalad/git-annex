@@ -41,7 +41,7 @@ import Data.Either
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
-commitThread = NamedThread "Committer" $ do
+commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig

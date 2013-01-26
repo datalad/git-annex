@@ -131,3 +131,7 @@ instance PathPiece RepoListNotificationId where
 instance PathPiece RepoSelector where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
+
+instance PathPiece ThreadName where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack

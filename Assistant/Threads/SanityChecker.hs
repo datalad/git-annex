@@ -20,7 +20,7 @@ import Data.Time.Clock.POSIX
 
 {- This thread wakes up occasionally to make sure the tree is in good shape. -}
 sanityCheckerThread :: NamedThread
-sanityCheckerThread = NamedThread "SanityChecker" $ forever $ do
+sanityCheckerThread = namedThread "SanityChecker" $ forever $ do
 	waitForNextCheck
 
 	debug ["starting sanity check"]

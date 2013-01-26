@@ -19,7 +19,6 @@ module Assistant.Monad (
 	asIO,
 	asIO1,
 	asIO2,
-	NamedThread(..),
 	ThreadName,
 	debug,
 	notice
@@ -41,10 +40,7 @@ import Assistant.Types.Commits
 import Assistant.Types.Changes
 import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
-
-{- Information about a named thread that can be run. -}
-data NamedThread = NamedThread ThreadName (Assistant ())
-type ThreadName = String
+import Assistant.Types.ThreadName
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -59,7 +55,7 @@ instance MonadBase IO Assistant where
 	liftBase = Assistant . liftBase
 
 data AssistantData = AssistantData
-	{ threadName :: String
+	{ threadName :: ThreadName
 	, threadState :: ThreadState
 	, daemonStatusHandle :: DaemonStatusHandle
 	, scanRemoteMap :: ScanRemoteMap
@@ -75,7 +71,7 @@ data AssistantData = AssistantData
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
 newAssistantData st dstatus = AssistantData
-	<$> pure "main"
+	<$> pure (ThreadName "main")
 	<*> pure st
 	<*> pure dstatus
 	<*> newScanRemoteMap
@@ -136,5 +132,5 @@ notice = logaction noticeM
 
 logaction :: (String -> String -> IO ()) -> [String] -> Assistant ()
 logaction a ws = do
-	name <- getAssistant threadName
+	ThreadName name <- getAssistant threadName
 	liftIO $ a name $ unwords $ (name ++ ":") : ws

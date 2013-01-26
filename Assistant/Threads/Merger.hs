@@ -17,13 +17,10 @@ import qualified Git
 import qualified Git.Branch
 import qualified Command.Sync
 
-thisThread :: ThreadName
-thisThread = "Merger"
-
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
 mergeThread :: NamedThread
-mergeThread = NamedThread "Merger" $ do
+mergeThread = namedThread "Merger" $ do
 	g <- liftAnnex gitRepo
 	let dir = Git.localGitDir g </> "refs"
 	liftIO $ createDirectoryIfMissing True dir

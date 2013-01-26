@@ -22,7 +22,7 @@ import Control.Concurrent
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
 transferWatcherThread :: NamedThread
-transferWatcherThread = NamedThread "TransferWatcher" $ do
+transferWatcherThread = namedThread "TransferWatcher" $ do
 	dir <- liftAnnex $ gitAnnexTransferDir <$> gitRepo
 	liftIO $ createDirectoryIfMissing True dir
 	let hook a = Just <$> asIO2 (runHandler a)

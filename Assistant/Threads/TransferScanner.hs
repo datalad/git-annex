@@ -31,7 +31,7 @@ import qualified Data.Set as S
  - that need to be made, to keep data in sync.
  -}
 transferScannerThread :: NamedThread
-transferScannerThread = NamedThread "TransferScanner" $ do
+transferScannerThread = namedThread "TransferScanner" $ do
 	startupScan
 	go S.empty
   where

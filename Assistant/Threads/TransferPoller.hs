@@ -19,7 +19,7 @@ import qualified Data.Map as M
 {- This thread polls the status of ongoing transfers, determining how much
  - of each transfer is complete. -}
 transferPollerThread :: NamedThread
-transferPollerThread = NamedThread "TransferPoller" $ do
+transferPollerThread = namedThread "TransferPoller" $ do
 	g <- liftAnnex gitRepo
 	tn <- liftIO . newNotificationHandle =<<
 		transferNotifier <$> getDaemonStatus

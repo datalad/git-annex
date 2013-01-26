@@ -33,11 +33,8 @@ import qualified Control.Exception as E
 #warning Building without dbus support; will use mtab polling
 #endif
 
-thisThread :: ThreadName
-thisThread = "MountWatcher"
-
 mountWatcherThread :: NamedThread
-mountWatcherThread = NamedThread "MountWatcher" $
+mountWatcherThread = namedThread "MountWatcher" $
 #if WITH_DBUS
 	dbusThread
 #else

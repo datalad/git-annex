@@ -34,7 +34,7 @@ import qualified Git.Branch
 import Data.Time.Clock
 
 xmppClientThread :: UrlRenderer -> NamedThread
-xmppClientThread urlrenderer = NamedThread "XMPPClient" $
+xmppClientThread urlrenderer = namedThread "XMPPClient" $
 	restartableClient . xmppClient urlrenderer =<< getAssistant id
 
 {- Runs the client, handing restart events. -}

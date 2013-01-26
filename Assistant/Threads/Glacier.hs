@@ -24,7 +24,7 @@ import qualified Data.Set as S
  - downloads. If so, runs glacier-cli to check if the files are now
  - available, and queues the downloads. -}
 glacierThread :: NamedThread
-glacierThread = NamedThread "Glacier" $ runEvery (Seconds 3600) <~> go
+glacierThread = namedThread "Glacier" $ runEvery (Seconds 3600) <~> go
   where
 	isglacier r = Remote.remotetype r == Glacier.remote
 	go = do
