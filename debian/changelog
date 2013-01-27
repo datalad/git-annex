@@ -4,6 +4,9 @@ git-annex (3.20130125) UNRELEASED; urgency=low
   * Adjust debian package to only build-depend on DAV on architectures
     where it is available.
   * addurl --fast: Use curl, rather than haskell HTTP library, to support https.
+  * annex.autocommit: New setting, can be used to disable autocommit
+    of changed files by the assistant, while it still does data syncing
+    and other tasks.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 

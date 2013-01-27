@@ -22,15 +22,27 @@ import qualified Assistant.Threads.Transferrer as Transferrer
 import Logs.Transfer
 import Locations.UserConfig
 import qualified Config
+import Git.Config
+import Assistant.Threads.Watcher
+import Assistant.NamedThread
 
 import qualified Data.Map as M
 import Control.Concurrent
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 import System.Posix.Process (getProcessGroupIDOf)
 
-{- Use Nothing to change global sync setting. -}
+{- Use Nothing to change autocommit setting; or a remote to change
+ - its sync setting. -}
 changeSyncable :: (Maybe Remote) -> Bool -> Handler ()
-changeSyncable Nothing _ = noop -- TODO
+changeSyncable Nothing enable = liftAssistant $ do
+	liftAnnex $ Config.setConfig key (boolConfig enable)
+	liftIO . maybe noop (`throwTo` signal)
+		=<< namedThreadId watchThread
+  where
+	key = Config.annexConfig "autocommit"
+	signal
+		| enable = ResumeWatcher
+		| otherwise = PauseWatcher
 changeSyncable (Just r) True = do
 	changeSyncFlag r True
 	syncRemote r
@@ -48,13 +60,10 @@ changeSyncable (Just r) False = do
 
 changeSyncFlag :: Remote -> Bool -> Handler ()
 changeSyncFlag r enabled = runAnnex undefined $ do
-	Config.setConfig key value
+	Config.setConfig key (boolConfig enabled)
 	void $ Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
-	value
-		| enabled = "true"
-		| otherwise = "false"
 
 {- Start syncing remote, using a background thread. -}
 syncRemote :: Remote -> Handler ()

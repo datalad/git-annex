@@ -5,8 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Assistant.Threads.Watcher (
 	watchThread,
+	WatcherException(..),
 	checkCanWatch,
 	needLsof,
 	stageSymlink,
@@ -38,9 +41,12 @@ import Annex.Content.Direct
 import Annex.CatFile
 import Git.Types
 import Config
+import Utility.ThreadScheduler
 
 import Data.Bits.Utils
+import Data.Typeable
 import qualified Data.ByteString.Lazy as L
+import qualified Control.Exception as E
 
 checkCanWatch :: Annex ()
 checkCanWatch
@@ -58,8 +64,21 @@ needLsof = error $ unlines
 	, "Be warned: This can corrupt data in the annex, and make fsck complain."
 	]
 
+{- A special exception that can be thrown to pause or resume the watcher. -}
+data WatcherException = PauseWatcher | ResumeWatcher
+        deriving (Show, Eq, Typeable)
+
+instance E.Exception WatcherException
+
 watchThread :: NamedThread
-watchThread = namedThread "Watcher" $ do
+watchThread = namedThread "Watcher" $
+	ifM (liftAnnex $ annexAutoCommit <$> Annex.getGitConfig)
+		( runWatcher
+		, waitFor ResumeWatcher runWatcher
+		)
+
+runWatcher :: Assistant ()
+runWatcher = do
 	startup <- asIO1 startupScan
 	direct <- liftAnnex isDirect
 	addhook <- hook $ if direct then onAddDirect else onAdd
@@ -74,10 +93,28 @@ watchThread = namedThread "Watcher" $ do
 		, delDirHook = deldirhook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir "." ignored hooks startup
+	handle <- liftIO $ watchDir "." ignored hooks startup
 	debug [ "watching", "."]
+	
+	{- Let the DirWatcher thread run until signalled to pause it,
+	 - then wait for a resume signal, and restart. -}
+	waitFor PauseWatcher $ do
+		liftIO $ stopWatchDir handle
+		waitFor ResumeWatcher runWatcher
   where
 	hook a = Just <$> asIO2 (runHandler a)
+
+waitFor :: WatcherException -> Assistant () -> Assistant ()
+waitFor sig next = do
+	r <- liftIO $ (E.try pause :: IO (Either E.SomeException ()))
+	case r of
+		Left e -> case E.fromException e of
+			Just s
+				| s == sig -> next
+			_ -> noop
+		_ -> noop
+  where
+	pause = runEvery (Seconds 86400) noop
 
 {- Initial scartup scan. The action should return once the scan is complete. -}
 startupScan :: IO a -> Assistant a

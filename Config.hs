@@ -83,7 +83,7 @@ isDirect = annexDirect <$> Annex.getGitConfig
 
 setDirect :: Bool -> Annex ()
 setDirect b = do
-	setConfig (annexConfig "direct") $ if b then "true" else "false"
+	setConfig (annexConfig "direct") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexDirect = b }
 
 {- Gets the http headers to use. -}

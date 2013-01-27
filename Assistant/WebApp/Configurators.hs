@@ -14,6 +14,7 @@ import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Configurators.Local
+import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.UUID (getUUID)
@@ -136,10 +137,18 @@ repoList reposelector
 		rs <- filter wantedrepo . syncRemotes
 			<$> liftAssistant getDaemonStatus
 		runAnnex [] $ do
-			u <- getUUID
-			let l = map Remote.uuid rs
-			let l' = if includeHere reposelector then u : l else l
-			return $ zip l' $ map mkSyncingRepoActions l'
+			let us = map Remote.uuid rs
+			let l = zip us $ map mkSyncingRepoActions us
+			if includeHere reposelector
+				then do
+					u <- getUUID
+					autocommit <- annexAutoCommit <$> Annex.getGitConfig
+					let hereactions = if autocommit
+						then mkSyncingRepoActions u
+						else mkNotSyncingRepoActions u
+					let here = (u, hereactions)
+					return $ here : l
+				else return l
 	rest = runAnnex [] $ do
 		m <- readRemoteLog
 		unconfigured <- map snd . catMaybes . filter wantedremote 

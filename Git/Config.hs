@@ -147,5 +147,9 @@ isTrue s
   where
 	s' = map toLower s
 
+boolConfig :: Bool -> String
+boolConfig True = "true"
+boolConfig False = "false"
+
 isBare :: Repo -> Bool
 isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r

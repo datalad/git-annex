@@ -802,6 +802,11 @@ Here are all the supported configuration settings.
   are accessed directly, rather than through symlinks. Note that many git
   and git-annex commands will not work with such a repository.
 
+* `annex.autocommit`
+
+  Set to false to prevent the git-annex assistant from automatically
+  committing changes to files in the repository.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

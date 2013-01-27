@@ -33,6 +33,7 @@ data GitConfig = GitConfig
 	, annexDelayAdd :: Maybe Int
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
+	, annexAutoCommit :: Bool
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -51,6 +52,7 @@ extractGitConfig r = GitConfig
 	, annexDelayAdd = getmayberead "delayadd"
 	, annexHttpHeaders = getlist "http-headers"
 	, annexHttpHeadersCommand = getmaybe "http-headers-command"
+	, annexAutoCommit = getbool "autocommit" True
 	}
   where
 	get k def = fromMaybe def $ getmayberead k

@@ -73,6 +73,11 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 				, buttonAction = Just close
 				}
 
+namedThreadId :: NamedThread -> Assistant (Maybe ThreadId)
+namedThreadId (NamedThread name _) = do
+	m <- startedThreads <$> getDaemonStatus
+	return $ asyncThreadId . fst <$> M.lookup name m
+
 {- Waits for all named threads that have been started to finish.
  -
  - Note that if a named thread crashes, it will probably
