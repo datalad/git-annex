@@ -412,7 +412,7 @@ saveState nocommit = doSideAction $ do
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = do
-	o <- map Param . words <$> getConfig (annexConfig "web-options") ""
+	o <- map Param . annexWebOptions <$> Annex.getGitConfig
 	headers <- getHttpHeaders
 	liftIO $ anyM (\u -> Url.download u headers o file) urls
 

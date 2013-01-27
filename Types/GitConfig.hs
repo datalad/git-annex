@@ -34,6 +34,7 @@ data GitConfig = GitConfig
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: Bool
+	, annexWebOptions :: [String]
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -43,7 +44,7 @@ extractGitConfig r = GitConfig
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe "diskreserve"
 	, annexDirect = getbool "direct" False
-	, annexBackends = fromMaybe [] $ words <$> getmaybe "backends"
+	, annexBackends = getwords "backends"
 	, annexQueueSize = getmayberead "queuesize"
 	, annexBloomCapacity = getmayberead "bloomcapacity"
 	, annexBloomAccuracy = getmayberead "bloomaccuracy"
@@ -53,6 +54,7 @@ extractGitConfig r = GitConfig
 	, annexHttpHeaders = getlist "http-headers"
 	, annexHttpHeadersCommand = getmaybe "http-headers-command"
 	, annexAutoCommit = getbool "autocommit" True
+	, annexWebOptions = getwords "web-options"
 	}
   where
 	get k def = fromMaybe def $ getmayberead k
@@ -61,6 +63,7 @@ extractGitConfig r = GitConfig
 	getmayberead k = readish =<< getmaybe k
 	getmaybe k = Git.Config.getMaybe (key k) r
 	getlist k = Git.Config.getList (key k) r
+	getwords k = fromMaybe [] $ words <$> getmaybe k
 
 	key k = "annex." ++ k
 			
