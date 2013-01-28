@@ -17,7 +17,6 @@ module Utility.Url (
 
 import Common
 import Network.URI
-import Data.Either
 
 type URLString = String
 
