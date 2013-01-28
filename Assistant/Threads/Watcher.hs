@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable CPP #-}
+{-# LANGUAGE DeriveDataTypeable, CPP #-}
 
 module Assistant.Threads.Watcher (
 	watchThread,
