@@ -7,6 +7,7 @@ git-annex (3.20130125) UNRELEASED; urgency=low
   * annex.autocommit: New setting, can be used to disable autocommit
     of changed files by the assistant, while it still does data syncing
     and other tasks.
+  * assistant: Ignore .DS_Store on OSX.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 

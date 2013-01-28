@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable CPP #-}
 
 module Assistant.Threads.Watcher (
 	watchThread,
@@ -146,6 +146,9 @@ ignored = ig . takeFileName
 	ig ".git" = True
 	ig ".gitignore" = True
 	ig ".gitattributes" = True
+#ifdef darwin_HOST_OS
+	ig ".DS_Store" = True
+#endif
 	ig _ = False
 
 type Handler = FilePath -> Maybe FileStatus -> Assistant (Maybe Change)

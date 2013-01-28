@@ -18,3 +18,9 @@ OS X Lion
 
 Please provide any additional information below.
 
+> Assistant does not support .gitignore yet. Requires an efficient query
+> interface for ignores, which git does not provide.
+>
+> However, I've added a special case, OSX only ignore for .DS_Store files.
+> [[done]] --[[Joey]] 
+
