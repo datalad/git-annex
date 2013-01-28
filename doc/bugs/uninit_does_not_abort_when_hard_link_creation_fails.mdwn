@@ -38,4 +38,4 @@ Issue the following commands on a file system where hard links are disabled:
 
 git-annex should probably not be used on a file system where hard links are disabled.
 
-However, if Bob is not aware that he's using git-annex on such a filesystem, he will accidently deletes his annexed files by issuing a `git annex uninit` command.
+However, if the user is not aware that he's using git-annex on such a filesystem, he will accidently delete his annexed files by issuing a `git annex uninit` command.
