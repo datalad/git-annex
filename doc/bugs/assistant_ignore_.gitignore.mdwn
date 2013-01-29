@@ -22,3 +22,6 @@ What version of git-annex are you using? On what operating system?
 
 3.20130124, debian sid (on both machines)
 
+> As noted in [[design/assistant/inotify]]'s TODO list, this
+> needs an efficient gitignore query interface in git (DNE) 
+> or a gitignore parser. --[[Joey]] 
