@@ -120,6 +120,9 @@ testcoverage:
 	@hpc markup test --exclude=Main --exclude=QC --destdir=.hpc >/dev/null
 	@echo "(See .hpc/ for test coverage details.)"
 
+tags:
+	~/.cabal/bin/hasktags .
+
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
 ifeq ($(shell which ikiwiki),)
@@ -139,7 +142,7 @@ docs: $(mans)
 
 clean:
 	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist $(clibs) build-stamp
+		doc/.ikiwiki html dist $(clibs) build-stamp tags
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -216,4 +219,4 @@ osxapp:
 getflags:
 	@echo $(ALLFLAGS) $(clibs)
 
-.PHONY: $(bins) test install
+.PHONY: $(bins) test install tags

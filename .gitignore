@@ -22,3 +22,4 @@ cabal-dev
 # OSX related
 .DS_Store
 .virthualenv
+tags
