@@ -120,8 +120,9 @@ testcoverage:
 	@hpc markup test --exclude=Main --exclude=QC --destdir=.hpc >/dev/null
 	@echo "(See .hpc/ for test coverage details.)"
 
+# hothasktags chokes on some tempolate haskell etc, so ignore errors
 tags:
-	~/.cabal/bin/hasktags .
+	find . | grep -v /.git/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>&1
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
