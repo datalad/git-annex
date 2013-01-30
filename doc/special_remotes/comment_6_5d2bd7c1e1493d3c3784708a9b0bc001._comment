@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlBia1J9-PoXgZYj2LASf7Bs__IqK3T8qQ"
+ nickname="Greg"
+ subject="Rackspace US/UK"
+ date="2013-01-30T11:33:12Z"
+ content="""
+It'd be awesome to be able to use Rackspace as remote storage as an alternative to S3, I would submit a patch, but know 0 Haskell :D
+"""]]
