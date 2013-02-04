@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 8"
+ date="2013-02-04T03:17:06Z"
+ content="""
+It's pretty much exactly what he said:
+
+> git-annex is not a filesystem or DropBox clone. However, the git-annex assistant is addressing some of the same needs in its own unique ways. 
+
+The git-annex assistant is not exactly like DropBox; it's not a drop-in replacement that works exactly the way dropbox works.  But as it stands, right now, it can (like Dropbox) run in the background and make sure that all of your files in a special directory are mirrored to another place (a USB drive, or a server to which you have SSH access, or another computer on your home network, or another computer somewhere else which has access to the same USB drive from time to time, or has accesss to the same SSH server or S3 repository or....
+
+It works as is but is still under heavy development and features are being added rapidly.  For example, up until a month or two ago, the files in your annex were replaced with softlinks whose content resided in a hidden directory. This caused some problems esp. on OS X where native programs don't handle softlinked files very gracefully. So Joey added an entirely new way of operating called \"direct mode\" which uses ordinary files, much like Dropbox does.
+
+So -- what you should expect from git-annex assistant is a program which solves many of the same problems Dropbox does (keeping a set of files magically in sync across computers) but does it in its own way, which won't be *exactly* like Dropbox; it will be more flexible but might require a little learning to figure out exactly how to use it the way you want.  It's possible to get a very Dropbox-like system out of the box, especially now that you don't need to use softlinks, if you've got a place on the network you can use as a central remote repository for your files, or if you only want to synchronize two or more computers on the same local network.
+
+\"git-annex\" itself is the plumbing used by git-annex assistant, or to put it another way, the engine that the assistant has under the hood.  Git-annex itself is extremely simple and stable but should only be used by people already familiar with the command line, perhaps even people already familiar with git.
+
+That's my point of view as an enthusiastic user.  Joey may have his own perspective to share. :)
+
+
+
+
+"""]]
