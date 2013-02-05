@@ -1,0 +1,10 @@
+When in direct mode, renaming a file with `git mv` does not update the
+direct mode mapping to use the new filename. This can lead to unexpected
+behavior later. `fsck` will correct the mapping. --[[Joey]]
+
+Perhaps the pre-commit hook needs to update the mapping for files that were
+deleted or added. This would allow manual `git mv` (and `git rm`) to work.
+
+This also affects moves of files when the assistant is being used.
+In this case, the assistant updates the mapping to add the new name,
+but does not delete the old name from the mapping.
