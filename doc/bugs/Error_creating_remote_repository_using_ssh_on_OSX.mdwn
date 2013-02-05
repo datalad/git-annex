@@ -32,4 +32,5 @@ Please provide any additional information below.
 
 > After a little research it seems that OSX does not have a ssh-askpass
 
-
+[[!tag /design/assistant/OSX]]
+[[!meta title="ssh-askpass not available on OSX"]]
