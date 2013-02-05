@@ -87,6 +87,12 @@ is converted to a real file when it becomes present.
 * kqueue does not deliver an event when an existing file is modified.
   This doesn't affect OSX, which uses FSEvents now, but it makes direct
   mode assistant not 100% on other BSD's.
+* The mapping is not updated when files are deleted (or for the deletion
+  part of a rename). So it can contain old filenames that are no longer in
+  use. Code that uses the mapping has to take care to check that the
+  files they refer to exists, which is a good idea anyway. But,
+  it would be good to at some point update the mappings to remove deleted
+  files (fsck does this FWIW).
 
 ## done
 

@@ -247,8 +247,18 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 				freezeContent dest
 				freezeContentDir dest
 			)
-	storedirect [] = storeobject =<< inRepo (gitAnnexLocation key)
-	storedirect (dest:fs) = do
+	storedirect fs = storedirect' =<< liftIO (filterM validsymlink fs)
+
+	validsymlink f = do
+		tl <- tryIO $ readSymbolicLink f
+		return $ case tl of
+			Right l
+				| isLinkToAnnex l ->
+					Just key == fileKey (takeFileName l)
+			_ -> False
+
+	storedirect' [] = storeobject =<< inRepo (gitAnnexLocation key)
+	storedirect' (dest:fs) = do
 		updateCache key src
 		thawContent src
 		liftIO $ replaceFile dest $ moveFile src
@@ -345,9 +355,10 @@ removeAnnex key = withObjectLoc key remove removedirect
 			removeFile file
 		cleanObjectLoc key
 	removedirect fs = do
+		cache <- recordedCache key
 		removeCache key
-		mapM_ resetfile fs
-	resetfile f = do
+		mapM_ (resetfile cache) fs
+	resetfile cache f = whenM (compareCache f cache) $ do
 		l <- calcGitLink f key
 		top <- fromRepo Git.repoPath
 		cwd <- liftIO getCurrentDirectory
