@@ -226,7 +226,8 @@ resolveMerge = do
 	void $ liftIO cleanup
 
 	(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
-	Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
+	unless (null deleted) $
+		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
 	void $ liftIO cleanup2
 	
 	when merged $ do
