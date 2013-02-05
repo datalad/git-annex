@@ -20,3 +20,5 @@ Version: 3.20130124
 
 Please provide any additional information below.
 
+[[!tag /design/assistant]]
+[[!meta title="ssh password prompting"]]
