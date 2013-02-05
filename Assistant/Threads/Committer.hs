@@ -18,6 +18,7 @@ import Assistant.DaemonStatus
 import Assistant.Threads.Watcher
 import Assistant.TransferQueue
 import Logs.Transfer
+import Logs.Location
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.HashObject
@@ -204,15 +205,17 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 	done change file (Just key) = do
-		link <- liftAnnex $ ifM isDirect
-			( calcGitLink file key
-			, Command.Add.link file key True
-			)
-		liftAnnex $ whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
-			sha <- inRepo $
-				Git.HashObject.hashObject BlobObject link
-			stageSymlink file sha
-			showEndOk
+		liftAnnex $ do
+			logStatus key InfoPresent
+			link <- ifM isDirect
+				( calcGitLink file key
+				, Command.Add.link file key True
+				)
+			whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
+				sha <- inRepo $
+					Git.HashObject.hashObject BlobObject link
+				stageSymlink file sha
+				showEndOk
 		queueTransfers Next key (Just file) Upload
 		return $ Just change
 

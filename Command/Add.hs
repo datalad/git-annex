@@ -142,8 +142,6 @@ link file key hascontent = handle (undo file key) $ do
 	liftIO $ createSymbolicLink l file
 
 	when hascontent $ do
-		logStatus key InfoPresent
-	
 		-- touch the symlink to have the same mtime as the
 		-- file it points to
 		liftIO $ do
@@ -155,21 +153,21 @@ link file key hascontent = handle (undo file key) $ do
 {- Note: Several other commands call this, and expect it to 
  - create the symlink and add it. -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
-cleanup file key hascontent = ifM (isDirect <&&> pure hascontent)
-	( do
-		l <- calcGitLink file key
-		sha <- inRepo $ Git.HashObject.hashObject BlobObject l
-		Annex.Queue.addUpdateIndex =<<
-			inRepo (Git.UpdateIndex.stageSymlink file sha)
-		when hascontent $
-			logStatus key InfoPresent
-		return True
-	, do
-		_ <- link file key hascontent
-		params <- ifM (Annex.getState Annex.force)
-			( return [Param "-f"]
-			, return []
-			)
-		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
-		return True
-	)
+cleanup file key hascontent = do
+	when hascontent $
+		logStatus key InfoPresent
+	ifM (isDirect <&&> pure hascontent)
+		( do
+			l <- calcGitLink file key
+			sha <- inRepo $ Git.HashObject.hashObject BlobObject l
+			Annex.Queue.addUpdateIndex =<<
+				inRepo (Git.UpdateIndex.stageSymlink file sha)
+		, do
+			_ <- link file key hascontent
+			params <- ifM (Annex.getState Annex.force)
+				( return [Param "-f"]
+				, return []
+				)
+			Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+		)
+	return True
