@@ -64,7 +64,7 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 			Right _ -> noop
 			Left e -> do
 				let msg = unwords
-					[ fromThreadName name
+					[ fromThreadName $ threadName d
 					, "crashed:", show e
 					]
 				hPutStrLn stderr msg
