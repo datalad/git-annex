@@ -127,3 +127,6 @@ notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
 
 whenNotDirect :: CommandSeek -> CommandSeek
 whenNotDirect a params = ifM isDirect ( return [] , a params )
+
+whenDirect :: CommandSeek -> CommandSeek
+whenDirect a params = ifM isDirect ( a params, return [] )

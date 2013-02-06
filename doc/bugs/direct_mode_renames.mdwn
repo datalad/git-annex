@@ -8,6 +8,8 @@ file working properly in direct mode.
 Perhaps the pre-commit hook needs to update the mapping for files that were
 deleted or added.
 
-(This also affects moves of files when the assistant is being used.
+This also affects moves of files when the assistant is being used.
 In this case, the assistant updates the mapping to add the new name,
-but does not delete the old name from the mapping.)
+but does not delete the old name from the mapping.
+
+> [[done]]; the pre-commit hook now updates the mappings. --[[Joey]]

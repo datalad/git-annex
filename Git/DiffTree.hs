@@ -9,7 +9,7 @@ module Git.DiffTree (
 	DiffTreeItem(..),
 	diffTree,
 	diffTreeRecursive,
-	parseDiffTree
+	diffIndex,
 ) where
 
 import Numeric
@@ -20,6 +20,7 @@ import Git
 import Git.Sha
 import Git.Command
 import qualified Git.Filename
+import qualified Git.Ref
 
 data DiffTreeItem = DiffTreeItem
 	{ srcmode :: FileMode
@@ -32,19 +33,29 @@ data DiffTreeItem = DiffTreeItem
 
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
-diffTree = diffTree' []
+diffTree src dst = getdiff (Param "diff-tree")
+	[Param (show src), Param (show dst)]
 
 {- Diffs two tree Refs, recursing into sub-trees -}
 diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
-diffTreeRecursive = diffTree' [Param "-r"]
+diffTreeRecursive src dst = getdiff (Param "diff-tree")
+	[Param "-r", Param (show src), Param (show dst)]
 
-diffTree' :: [CommandParam] -> Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
-diffTree' params src dst repo = do
+{- Diffs between the repository and index. Does nothing if there is not
+ - yet a commit in the repository. -}
+diffIndex :: Repo -> IO ([DiffTreeItem], IO Bool)
+diffIndex repo = do
+	ifM (Git.Ref.headExists repo)
+		( getdiff (Param "diff-index") [Param "--cached", Param "HEAD"] repo
+		, return ([], return True)
+		)
+
+getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
 	return (parseDiffTree diff, cleanup)
   where
-	ps = Params "diff-tree -z --raw --no-renames -l0" : params ++
-		[Param (show src), Param (show dst)]
+	ps = command : Params "-z --raw --no-renames -l0" : params
 
 {- Parses diff-tree output. -}
 parseDiffTree :: [String] -> [DiffTreeItem]

@@ -37,6 +37,13 @@ exists :: Ref -> Repo -> IO Bool
 exists ref = runBool "show-ref" 
 	[Param "--verify", Param "-q", Param $ show ref]
 
+{- Checks if HEAD exists. It generally will, except for in a repository
+ - that was just created. -}
+headExists :: Repo -> IO Bool
+headExists repo = do
+	ls <- lines <$> pipeReadStrict [Param "show-ref", Param "--head"] repo
+	return $ any (" HEAD" `isSuffixOf`) ls
+
 {- Get the sha of a fully qualified git ref, if it exists. -}
 sha :: Branch -> Repo -> IO (Maybe Sha)
 sha branch repo = process <$> showref repo

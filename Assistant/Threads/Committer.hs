@@ -82,12 +82,16 @@ commitStaged = do
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			void $ inRepo $ Git.Command.runBool "commit" $ nomessage
-				[ Param "--quiet"
-				{- Avoid running the usual git-annex pre-commit hook;
-				 - watch does the same symlink fixing, and we don't want
-				 - to deal with unlocked files in these commits. -}
-				, Param "--no-verify"
+			direct <- isDirect
+			void $ inRepo $ Git.Command.runBool "commit" $ nomessage $
+				catMaybes
+				[ Just $ Param "--quiet"
+				{- In indirect mode, avoid running the
+				 - usual git-annex pre-commit hook;
+				 - watch does the same symlink fixing,
+				 - and we don't want to deal with unlocked
+				 - files in these commits. -}
+				, if direct then Nothing else Just $ Param "--no-verify"
 				]
 			{- Empty commits may be made if tree changes cancel
 			 - each other out, etc. Git returns nonzero on those,

@@ -58,9 +58,9 @@ is converted to a real file when it becomes present.
   This allows just cloning one of these repositories normally, and then
   as the files are synced in, they become real files.
 * Maintain a local mapping from keys to files in the tree. This is needed
-  when sending/receiving keys to know what file to access. Note that a key
-  can map to multiple files. And that when a file is deleted or moved, the
-  mapping needs to be updated.
+  when sending/receiving/dropping keys to know what file to access.
+  Note that a key can map to multiple files. And that when a file is
+  deleted or moved, the mapping needs to be updated.
 * May need a reverse mapping, from files in the tree to keys? TBD
   (Currently, getting by looking up symlinks using `git cat-file`)
   (Needed to make things like `git annex drop` that want to map from the
@@ -87,12 +87,6 @@ is converted to a real file when it becomes present.
 * kqueue does not deliver an event when an existing file is modified.
   This doesn't affect OSX, which uses FSEvents now, but it makes direct
   mode assistant not 100% on other BSD's.
-* The mapping is not updated when files are deleted (or for the deletion
-  part of a rename). So it can contain old filenames that are no longer in
-  use. Code that uses the mapping has to take care to check that the
-  files they refer to exists, which is a good idea anyway. But,
-  it would be good to at some point update the mappings to remove deleted
-  files (fsck does this FWIW).
 
 ## done
 

@@ -10,6 +10,7 @@ git-annex (3.20130125) UNRELEASED; urgency=low
   * assistant: Ignore .DS_Store on OSX.
   * assistant: Fix location log when adding new file in direct mode.
   * Deal with stale mappings for deleted file in direct mode.
+  * pre-commit: Update direct mode mappings. 
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 
