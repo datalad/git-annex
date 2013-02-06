@@ -196,8 +196,10 @@ startDaemon assistant foreground startbrowser = do
 #ifdef WITH_WEBAPP
 		d <- getAssistant id
 		urlrenderer <- liftIO newUrlRenderer
+		mapM_ (startthread $ Just urlrenderer)
+#else
+		mapM_ (startthread Nothing)
 #endif
-		mapM_ (startthread urlrenderer)
 			[ watch $ commitThread
 #ifdef WITH_WEBAPP
 			, assist $ webAppThread d urlrenderer False Nothing webappwaiter
@@ -230,5 +232,5 @@ startDaemon assistant foreground startbrowser = do
 	watch a = (True, a)
 	assist a = (False, a)
 	startthread urlrenderer (watcher, t)
-		| watcher || assistant = startNamedThread (Just urlrenderer) t
+		| watcher || assistant = startNamedThread urlrenderer t
 		| otherwise = noop
