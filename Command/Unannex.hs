@@ -49,14 +49,20 @@ cleanup file key = do
 	void $ liftIO clean
 
 	ifM (Annex.getState Annex.fast)
-		( do
-			-- fast mode: hard link to content in annex
-			src <- inRepo $ gitAnnexLocation key
-			liftIO $ createLink src file
-			thawContent file
-		, do
-			fromAnnex key file
-			logStatus key InfoMissing
+		( goFast
+		, go
 		)
 
 	return True
+  where
+	goFast = do
+		-- fast mode: hard link to content in annex
+		src <- inRepo $ gitAnnexLocation key
+		-- creating a hard link could fall; fall back to non fast mode
+		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
+			( thawContent file
+			, go
+			)
+	go = do
+		fromAnnex key file
+		logStatus key InfoMissing

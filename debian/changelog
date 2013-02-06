@@ -11,6 +11,8 @@ git-annex (3.20130125) UNRELEASED; urgency=low
   * assistant: Fix location log when adding new file in direct mode.
   * Deal with stale mappings for deleted file in direct mode.
   * pre-commit: Update direct mode mappings. 
+  * uninit, unannex --fast: If hard link creation fails, fall back to slow
+    mode.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 
