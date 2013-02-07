@@ -56,3 +56,6 @@ What version of git-annex are you using? On what operating system?
 
 git-annex: 3.20130124
 Debian: sid 2013-02-01
+
+> unused being confused by stale data left when switching from direct mode.
+> I've made this be cleaned up. [[done]] --[[Joey]]

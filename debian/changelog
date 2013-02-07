@@ -13,6 +13,9 @@ git-annex (3.20130125) UNRELEASED; urgency=low
   * pre-commit: Update direct mode mappings. 
   * uninit, unannex --fast: If hard link creation fails, fall back to slow
     mode.
+  * Clean up direct mode cache and mapping info when dropping keys.
+  * dropunused: Clean up stale direct mode cache and mapping info not
+    removed before.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Jan 2013 15:48:40 +1100
 

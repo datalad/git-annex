@@ -15,7 +15,6 @@ module Annex.Content.Direct (
 	recordedCache,
 	compareCache,
 	writeCache,
-	removeCache,
 	genCache,
 	toCache,
 	Cache(..),
@@ -128,12 +127,6 @@ writeCache :: Key -> Cache -> Annex ()
 writeCache key cache = withCacheFile key $ \cachefile -> do
 	createContentDir cachefile
 	liftIO $ writeFile cachefile $ showCache cache
-
-{- Removes a cache. -}
-removeCache :: Key -> Annex ()
-removeCache key = withCacheFile key $ \f -> do
-	createContentDir f -- also thaws directory
-	liftIO $ nukeFile f
 
 {- Cache a file's inode, size, and modification time to determine if it's
  - been changed. -}
