@@ -1,0 +1,18 @@
+git-annex 3.20130207 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * webapp: Now allows restarting any threads that crash.
+   * Adjust debian package to only build-depend on DAV on architectures
+     where it is available.
+   * addurl --fast: Use curl, rather than haskell HTTP library, to support https.
+   * annex.autocommit: New setting, can be used to disable autocommit
+     of changed files by the assistant, while it still does data syncing
+     and other tasks.
+   * assistant: Ignore .DS\_Store on OSX.
+   * assistant: Fix location log when adding new file in direct mode.
+   * Deal with stale mappings for deleted file in direct mode.
+   * pre-commit: Update direct mode mappings.
+   * uninit, unannex --fast: If hard link creation fails, fall back to slow
+     mode.
+   * Clean up direct mode cache and mapping info when dropping keys.
+   * dropunused: Clean up stale direct mode cache and mapping info not
+     removed before."""]]
