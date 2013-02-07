@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 1"
+ date="2013-02-07T18:12:17Z"
+ content="""
+Most of this is explained pretty well on the [[man page|git-annex]]. 
+
+`git annex webapp` doesn't do anything on its own, other than start the assistant if it is not already running, and point your browser at its built-in webapp. Starting the assistant manually will always have the same effect as opening the webapp.
+
+The assistant syncs files as configured by the preferred content settings of repositories. There's an interface to disable this syncing in the webapp, or change the setting to something that doesn't prefer all content be synced to a repository. This syncing of content is different from `git annex sync`, which only syncs git repository data. It's more like running `git annex copy --auto`
+
+The assistant enables direct mode when a new repository is created (using the webapp). It does not enable direct mode when run in an existing repository.
+"""]]
