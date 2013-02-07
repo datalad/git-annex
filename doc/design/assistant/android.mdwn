@@ -30,6 +30,8 @@ I've heard anecdoally that ipwnstudios not only has an IPhone GHC port,
 but also Android. Need to get in touch with them.
 <http://ipwnstudios.com/>
 
+Update: This looks likely: <https://github.com/neurocyte/ghc-android>
+
 ### Android specific features
 
 The app should be aware of power status, and avoid expensive background
