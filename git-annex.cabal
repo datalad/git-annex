@@ -58,7 +58,7 @@ Executable git-annex
    unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
    bytestring, old-locale, time,
    pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
-   base (>= 4.5 && < 4.7), monad-control, transformers-base, lifted-base,
+   base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore
   -- Need to list these because they're generated from .hsc files.
