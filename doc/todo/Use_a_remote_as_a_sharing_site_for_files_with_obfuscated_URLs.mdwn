@@ -3,3 +3,5 @@ There are times when it is handy to be able to upload a file to a web host somew
 It seems to be that the assistant could handle this scenario. It could generate a directory with a random name on the remote, and transfer the file there (using the existing filename) and the links could be displayed in the assistant web app to allow the user to copy them the appropriate people.
 
 Note: Joey and I had a quick chat about this use case at LCA2013.
+
+[[!tag design/assistant]]
