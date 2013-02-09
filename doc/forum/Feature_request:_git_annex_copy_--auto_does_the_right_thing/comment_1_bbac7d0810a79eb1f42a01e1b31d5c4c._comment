@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.183"
+ subject="comment 1"
+ date="2013-02-09T02:32:23Z"
+ content="""
+You can kind of do this now by:
+
+for remote in $(git remote); do git annex copy --auto --to $remote; done
+
+Although without some of the potential smarts of course.
+"""]]
