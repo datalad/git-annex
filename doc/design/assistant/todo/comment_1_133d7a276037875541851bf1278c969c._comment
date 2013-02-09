@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkF8_uQjLYm5Mf5F_JuVW-BxlvzpWjvR_o"
+ nickname="Andrew"
+ subject="Use a remote as a sharing site for files with obfuscated URLs"
+ date="2013-02-09T11:14:19Z"
+ content="""
+There are times when it is handy to be able to upload a file to a web host somewhere and share a link for that file to a select few people.
+
+It seems to be that the assistant could handle this scenario. It could generate a directory with a random name on the remote, and transfer the file there (using the existing filename) and the links could be displayed in the assistant web app to allow the user to copy them the appropriate people.
+
+Note: Joey and I had a quick chat about this use case at LCA2013.
+"""]]
