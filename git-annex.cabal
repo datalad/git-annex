@@ -8,7 +8,7 @@ Stability: Stable
 Copyright: 2010-2012 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
-Build-type: Simple
+Build-type: Custom
 Category: Utility
 Synopsis: manage files with git, without checking their contents into git
 Description:
