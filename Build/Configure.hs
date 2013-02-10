@@ -19,7 +19,6 @@ tests =
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_reflink_auto" "--reflink=auto"
-	, TestCase "uuid generator" $ selectCmd "uuid" [("uuid -m", ""), ("uuid", ""), ("uuidgen", "")]
 	, TestCase "xargs -0" $ requireCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ requireCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"

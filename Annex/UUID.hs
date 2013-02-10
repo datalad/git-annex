@@ -6,7 +6,7 @@
  - UUIDs of remotes are cached in git config, using keys named
  - remote.<name>.annex-uuid
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,20 +24,17 @@ module Annex.UUID (
 import Common.Annex
 import qualified Git
 import qualified Git.Config
-import qualified Build.SysConfig as SysConfig
 import Config
+
+import qualified Data.UUID as U
+import System.Random
 
 configkey :: ConfigKey
 configkey = annexConfig "uuid"
 
-{- Generates a UUID. There is a library for this, but it's not packaged,
- - so use the command line tool. -}
+{- Generates a random UUID, that does not include the MAC address. -}
 genUUID :: IO UUID
-genUUID = gen . lines <$> readProcess command params
-  where
-	gen [] = error $ "no output from " ++ command
-	gen (l:_) = toUUID l
-	(command:params) = words SysConfig.uuid
+genUUID = UUID . show <$> (randomIO :: IO U.UUID)
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID

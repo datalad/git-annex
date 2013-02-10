@@ -39,7 +39,6 @@ thirdpartyProgs = catMaybes
 	, Just "rsync"
 	, Just "ssh"
 	, Just "sh"
-	, headMaybe $ words SysConfig.uuid -- may include parameters
 	, ifset SysConfig.curl "curl"
 	, ifset SysConfig.wget "wget"
 	, ifset SysConfig.bup "bup"
