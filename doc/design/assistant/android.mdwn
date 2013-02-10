@@ -1,7 +1,13 @@
-Porting git-annex to Android will use the Android native SDK.
+## goals
 
-A hopefully small Java app will be developed, which runs the webapp
-daemon, and a web browser to display it.
+1. Get git-annex working at the command line in Android,
+   along with all the programs it needs.
+2. Get the webapp and assistant working. A hopefully small Java app will be
+   developed, which runs the webapp daemon, and a web browser to display it.
+
+Current status: git-annex can be built for Android, with `make android`.
+You need <https://github.com/neurocyte/ghc-android> installed first,
+and also have to `cabal install` all necessary dependencies.
 
 ### programs to port
 
@@ -13,24 +19,6 @@ available in the App Store.
 * gpg
 * git (not all git commands are needed,
   but core plumbing and a few like `git-add` are.)
-
-## GHC Android?
-
-Android's native SDK does not use glibc. GHC's runtime links with glibc.
-This could be an enormous problem. Other people want to see GHC able to
-target Android, of course, so someone may solve it before I get stuck on
-it.
-
-References:
-
-* <http://stackoverflow.com/questions/5151858/running-a-haskell-program-on-the-android-os>
-* <http://www.reddit.com/r/haskell/comments/ful84/haskell_on_android/>
-
-I've heard anecdoally that ipwnstudios not only has an IPhone GHC port,
-but also Android. Need to get in touch with them.
-<http://ipwnstudios.com/>
-
-Update: This looks likely: <https://github.com/neurocyte/ghc-android>
 
 ### Android specific features
 
