@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.Add where
 
 import Common.Annex
@@ -18,7 +20,9 @@ import Logs.Location
 import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
+#ifndef WITH_ANDROID
 import Utility.Touch
+#endif
 import Utility.FileMode
 import Config
 import qualified Git.HashObject
@@ -141,12 +145,14 @@ link file key hascontent = handle (undo file key) $ do
 	l <- calcGitLink file key
 	liftIO $ createSymbolicLink l file
 
+#ifndef WITH_ANDROID
 	when hascontent $ do
 		-- touch the symlink to have the same mtime as the
 		-- file it points to
 		liftIO $ do
 			mtime <- modificationTime <$> getFileStatus file
 			touch file (TimeSpec mtime) False
+#endif
 
 	return l
 
