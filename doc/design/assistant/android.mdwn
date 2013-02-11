@@ -44,3 +44,14 @@ transfers when not on wifi. This may need to be configurable.
 
 Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
 is probably needed for at least older Android devices that have SD cards.
+
+## Porting notes
+
+To build git, you can use the C cross compiler installed by ghc-android.
+I did so like this:
+
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 make
+
+This required coping various directories from
+~/.ghc/android-14/arm-linux-androideabi-4.7/ into
+~/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/
