@@ -1,0 +1,1 @@
+Do both friends need to be online in order for Jabber syncing to work? Or will the pushed changes be stored on the Jabber server, so that when the remote machine does come online it can pull them even if the original machine is now offline?
