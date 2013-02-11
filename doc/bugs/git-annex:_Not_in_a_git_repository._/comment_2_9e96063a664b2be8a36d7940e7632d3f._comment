@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmaMxYm33s0H-nxBo5uzYUzdIECoyR8Ug8"
+ nickname="Stefan"
+ subject="removing config"
+ date="2013-02-11T20:42:29Z"
+ content="""
+What fixed this for me was to remove .config/git-annex.
+"""]]
