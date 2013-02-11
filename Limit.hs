@@ -12,7 +12,9 @@ module Limit where
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
-#ifndef WITH_ANDROID
+#ifdef WITH_GLOB
+import System.FilePath.Glob (simplify, compile, match)
+#else
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
 #endif
@@ -85,10 +87,12 @@ limitExclude :: MkLimit
 limitExclude glob = Right $ const $ return . not . matchglob glob
 
 matchglob :: String -> Annex.FileInfo -> Bool
-#ifdef WITH_ANDROID
-matchglob _ _ = error "glob matching not supported"
-#else
 matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
+#ifdef WITH_GLOB
+	match pattern f
+  where
+	pattern = simplify $ compile glob
+#else
 	isJust $ match cregex f []
   where
 	cregex = compile regex []

@@ -57,16 +57,16 @@ Executable git-annex
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
    bytestring, old-locale, time,
-   pcre-light, extensible-exceptions, dataenc, SHA, process, json,
+   extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, UUID
+   SafeSemaphore, UUID, Glob
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   Extensions: CPP
-  GHC-Options: -threaded
+  GHC-Options: -threaded -DWITH_GLOB
 
   if flag(S3)
     Build-Depends: hS3
@@ -123,15 +123,15 @@ Test-Suite test
   Main-Is: test.hs
   Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network, mtl (>= 2.1.1), bytestring,
-   old-locale, time, pcre-light, extensible-exceptions, dataenc, SHA,
+   old-locale, time, extensible-exceptions, dataenc, SHA,
    process, json, HTTP, base (>= 4.5 && < 4.7), monad-control,
    transformers-base, lifted-base, IfElse, text, QuickCheck >= 2.1,
-   bloomfilter, edit-distance, process, SafeSemaphore
+   bloomfilter, edit-distance, process, SafeSemaphore, Glob
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
-  GHC-Options: -threaded
+  GHC-Options: -threaded -DWITH_GLOB
 
 source-repository head
   type: git

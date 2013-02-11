@@ -9,7 +9,7 @@ Should be as simple as: `yum install git-annex`
 Older version? Here's an installation recipe for Fedora 14 through 15.
 
 <pre>
-sudo yum install ghc cabal-install pcre-devel
+sudo yum install ghc cabal-install
 git clone git://git-annex.branchable.com/ git-annex
 cd git-annex
 git checkout ghc7.0
