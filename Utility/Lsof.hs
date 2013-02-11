@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, CPP #-}
 
 module Utility.Lsof where
 
@@ -52,6 +52,15 @@ query opts =
   where
 	p = proc "lsof" ("-F0can" : opts)
 
+type LsofParser = String -> [(FilePath, LsofOpenMode, ProcessInfo)]
+
+parse :: LsofParser
+#ifdef WITH_ANDROID
+parse = parseDefault
+#else
+parse = parseFormatted
+#endif
+
 {- Parsing null-delimited output like:
  -
  - pPID\0cCMDLINE\0
@@ -62,8 +71,8 @@ query opts =
  - Where each new process block is started by a pid, and a process can
  - have multiple files open.
  -}
-parse :: String -> [(FilePath, LsofOpenMode, ProcessInfo)]
-parse s = bundle $ go [] $ lines s
+parseFormatted :: LsofParser
+parseFormatted s = bundle $ go [] $ lines s
   where
 	bundle = concatMap (\(fs, p) -> map (\(f, m) -> (f, m, p)) fs)
 
@@ -97,3 +106,14 @@ parse s = bundle $ go [] $ lines s
 	splitnull = split "\0"
 
 	parsefail = error $ "failed to parse lsof output: " ++ show s
+
+{- Parses lsof's default output format. -}
+parseDefault :: LsofParser
+parseDefault = catMaybes . map parse . drop 1 . lines
+  where
+	parse l = case words l of
+		(command : spid : _user : _fd : _type : _device : _size : _node : rest) -> 
+			case readish spid of
+				Nothing -> Nothing
+				Just pid -> Just (unwords rest, OpenUnknown, ProcessInfo pid command)
+		_ -> Nothing

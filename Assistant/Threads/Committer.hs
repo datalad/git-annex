@@ -281,7 +281,10 @@ safeToAdd delayadd pending inprocess = do
 		void $ liftIO $ tryIO $ removeFile $ contentLocation ks
 	canceladd _ = noop
 
-	openwrite (_file, mode, _pid) =
-		mode == Lsof.OpenWriteOnly || mode == Lsof.OpenReadWrite
+	openwrite (_file, mode, _pid)
+		| mode == Lsof.OpenWriteOnly = True
+		| mode == Lsof.OpenReadWrite = True
+		| mode == Lsof.OpenUnknown = True
+		| otherwise = False
 
 	allRight = return . map Right

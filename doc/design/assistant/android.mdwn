@@ -24,8 +24,6 @@ and also have to `cabal install` all necessary dependencies.
 * git-annex sets `#!/bin/sh` in hook script, but that is not
   a valid path on android, and the right path needs to be determined at runtime.
 
-* support Android lsof output in lsof parser, needed for watch mode
-
 ### Android specific features
 
 The app should be aware of power status, and avoid expensive background
