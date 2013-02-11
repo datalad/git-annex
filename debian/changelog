@@ -1,3 +1,12 @@
+git-annex (3.20130208) UNRELEASED; urgency=low
+
+  * Now uses the Haskell uuid library, rather than needing a uuid program.
+  * Now uses the Haskell Glob library, rather than pcre-light, avoiding
+    the need to install libpcre. Currently done only for Cabal or when
+    the Makefile is made to use -DWITH_GLOB
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 10 Feb 2013 14:52:01 -0400
+
 git-annex (3.20130207) unstable; urgency=low
 
   * webapp: Now allows restarting any threads that crash.

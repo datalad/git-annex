@@ -24,7 +24,7 @@ the app for OSX Lion.
 
 <pre>
 brew update
-brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre libgsasl gnutls libidn libgsasl pkg-config libxml2
+brew install haskell-platform git ossp-uuid md5sha1sum coreutils libgsasl gnutls libidn libgsasl pkg-config libxml2
 brew link libxml2
 cabal update
 PATH=$HOME/bin:$PATH
@@ -38,10 +38,7 @@ The version provided by Macports is too old to work with current versions of git
 Then execute
 
 <pre>
-sudo port install git-core ossp-uuid md5sha1sum coreutils pcre gnutls libxml2 libgsasl pkgconfig
-
-sudo ln -s /opt/local/include/pcre.h  /usr/include/pcre.h # This is hack that allows pcre-light to find pcre
-
+sudo port install git-core ossp-uuid md5sha1sum coreutils gnutls libxml2 libgsasl pkgconfig
 sudo cabal update
 PATH=$HOME/bin:$PATH
 cabal install c2hs git-annex --bindir=$HOME/bin

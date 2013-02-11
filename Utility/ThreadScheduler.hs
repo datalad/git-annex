@@ -6,13 +6,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.ThreadScheduler where
 
 import Common
 
 import Control.Concurrent
-import System.Posix.Terminal
 import System.Posix.Signals
+#ifndef WITH_ANDROID
+import System.Posix.Terminal
+#endif
 
 newtype Seconds = Seconds { fromSeconds :: Int }
 	deriving (Eq, Ord, Show)
@@ -49,8 +53,10 @@ waitForTermination :: IO ()
 waitForTermination = do
 	lock <- newEmptyMVar
 	check softwareTermination lock
+#ifndef WITH_ANDROID
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal lock
+#endif
 	takeMVar lock
   where
 	check sig lock = void $

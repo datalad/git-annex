@@ -6,7 +6,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 # you can turn off some of these features.
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_GLOB
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
@@ -14,6 +14,12 @@ sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
 
 OS:=$(shell uname | sed 's/[-_].*//')
+ifeq ($(ANDROID),1)
+OPTFLAGS?=-DWITH_INOTIFY -DWITH_ANDROID
+clibs=Utility/libdiskfree.o Utility/libmounts.o
+CFLAGS:=-Wall -DWITH_ANDROID
+THREADFLAGS=-threaded
+else
 ifeq ($(OS),Linux)
 OPTFLAGS?=-DWITH_INOTIFY -DWITH_DBUS
 clibs=Utility/libdiskfree.o Utility/libmounts.o
@@ -41,6 +47,7 @@ clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
 endif
 endif
 endif
+endif
 
 ALLFLAGS = $(BASEFLAGS) $(FEATURES) $(OPTFLAGS) $(THREADFLAGS)
 
@@ -51,7 +58,8 @@ ifdef PROFILE
 GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(ALLFLAGS)
 endif
 
-GHCMAKE=ghc $(GHCFLAGS) --make
+GHC?=ghc
+GHCMAKE=$(GHC) $(GHCFLAGS) --make
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -113,7 +121,7 @@ test: $(sources) $(clibs)
 
 testcoverage:
 	rm -f test.tix test
-	ghc $(GHCFLAGS) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR)/testcoverage --make -fhpc test
+	$(GHC) $(GHCFLAGS) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR)/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -215,6 +223,19 @@ osxapp:
 		-volname git-annex -o tmp/git-annex.dmg
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast tmp/git-annex.dmg
+
+# Cross compile for Android binary.
+# Uses https://github.com/neurocyte/ghc-android
+#
+# configure is run, probing the local system.
+# So the Android should have all the same stuff that configure probes for,
+# including the same version of git.
+android:
+	$(MAKE) Build/SysConfig.hs
+	GHC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
+	CC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
+	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_GLOB -DWITH_DNS" \
+	ANDROID=1 $(MAKE) fast
 
 # used by ./ghci
 getflags:

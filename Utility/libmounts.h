@@ -5,6 +5,10 @@
 # include <sys/mount.h>
 # define GETMNTINFO
 #else
+#if defined WITH_ANDROID
+# warning mounts listing code not available for Android
+# define UNKNOWN
+#else
 #if defined (__linux__) || defined (__FreeBSD_kernel__)
 /* Linux or Debian kFreeBSD */
 #include <mntent.h>
@@ -12,6 +16,7 @@
 #else
 # warning mounts listing code not available for this OS
 # define UNKNOWN
+#endif
 #endif
 #endif
 
