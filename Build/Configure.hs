@@ -7,6 +7,7 @@ import Data.List
 import System.Process
 import Control.Applicative
 import System.FilePath
+import System.Environment
 
 import Build.TestConfig
 import Utility.SafeCommand
@@ -121,8 +122,26 @@ cleanup = removeDirectoryRecursive tmpDir
 
 run :: [TestCase] -> IO ()
 run ts = do
+	args <- getArgs
 	setup
 	config <- runTests ts
-	writeSysConfig config
+	if args == ["Android"]
+		then writeSysConfig $ androidConfig config
+		else writeSysConfig config
 	cleanup
 	cabalSetup
+
+{- Hard codes some settings to cross-compile for Android. -}
+androidConfig :: [Config] -> [Config]
+androidConfig c = overrides ++ filter (not . overridden) c
+  where
+	overrides = 
+		[ Config "cp_reflink_auto" $ BoolConfig False
+		, Config "curl" $ BoolConfig False
+		, Config "sshconnectioncaching" $ BoolConfig False
+		, Config "sha224" $ MaybeStringConfig Nothing
+		, Config "sha384" $ MaybeStringConfig Nothing
+		]
+	overridden (Config k _) = k `elem` overridekeys
+	overridekeys = map (\(Config k _) -> k) overrides
+

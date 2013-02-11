@@ -13,8 +13,8 @@ mans=git-annex.1 git-annex-shell.1
 sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
 all=$(bins) $(mans) docs
 
-OS:=$(shell uname | sed 's/[-_].*//')
-ifeq ($(ANDROID),1)
+OS?=$(shell uname | sed 's/[-_].*//')
+ifeq ($(OS),Android)
 OPTFLAGS?=-DWITH_INOTIFY -DWITH_ANDROID
 clibs=Utility/libdiskfree.o Utility/libmounts.o
 CFLAGS:=-Wall -DWITH_ANDROID
@@ -77,7 +77,7 @@ fast: $(bins)
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	$(GHCMAKE) configure
-	./configure
+	./configure $(OS)
 
 %.hs: %.hsc
 	hsc2hs $<
@@ -231,11 +231,11 @@ osxapp:
 # So the Android should have all the same stuff that configure probes for,
 # including the same version of git.
 android:
-	$(MAKE) Build/SysConfig.hs
+	OS=Android $(MAKE) Build/SysConfig.hs
 	GHC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
 	CC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
 	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_GLOB -DWITH_DNS" \
-	ANDROID=1 $(MAKE) fast
+	OS=Android $(MAKE) fast
 
 # used by ./ghci
 getflags:
