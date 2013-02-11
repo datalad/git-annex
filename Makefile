@@ -232,8 +232,8 @@ osxapp:
 # including the same version of git.
 android:
 	$(MAKE) Build/SysConfig.hs
-	GHC=$$HOME/.ghc-android-14-arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
-	CC=$$HOME/.ghc-android-14-arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
+	GHC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
+	CC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
 	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_DNS" \
 	ANDROID=1 $(MAKE) fast
 
