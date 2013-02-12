@@ -11,11 +11,7 @@ and also have to `cabal install` all necessary dependencies.
 
 ### TODO
 
-* port rsync
 * port busybox, so it doesn't need KBOX's busybox
-* port gpg
-* port ssh, so it doesn't need KBOX's version
-  (probably use dropbear, only outgoing is likely to work due to firewall)
 * Make a runshell wrapper for Android, setting paths, etc.
 * Build a standalone tarball for Android.
 * Make build system that can generate ports, and tarball, from source
@@ -47,3 +43,31 @@ I did so like this:
 	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 make
 
 This required first making cc a symlink to arm-linux-androideabi-gcc
+
+#### rsync
+
+Copy in config.sub and config.guess from recent autoconf, and build:
+
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH make
+
+Build failures can be worked around by removing uses of `S_IEXEC` and
+getpass.
+
+#### gnupg
+
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH make
+
+Build fails in docs, but see `g10/gpg`
+
+#### dropbear
+
+Use git://github.com/android/platform_external_dropbear
+
+Copy in config.sub and config.guess from recent autoconf, and build:
+
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH ./configure --host=arm-linux-androideabi --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH make
+
+TODO build fails
