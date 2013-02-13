@@ -4,7 +4,7 @@
 
 set -e
 
-base="$(dirname $0)"
+base="$(dirname $0)"/git-annex-bundle
 
 if [ ! -d "$base" ]; then
 	echo "** cannot find base directory (I seem to be $0)" >&2
@@ -22,6 +22,7 @@ fi
 
 # Install busybox links.
 if [ ! -e "$base/bin/sh" ]; then
+	echo "(First run detected ... setting up busybox ...)"
 	"$base/bin/busybox" --install "$base/bin"
 fi
 
@@ -32,7 +33,7 @@ base="$(pwd)"
 cd "$orig"
 
 # Put our binaries first, to avoid issues with out of date or incompatable
-# system binaries.
+# system or App binaries.
 ORIG_PATH="$PATH"
 export ORIG_PATH
 PATH=$base/bin:$PATH
