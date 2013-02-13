@@ -152,7 +152,7 @@ docs: $(mans)
 clean:
 	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs) build-stamp tags
-	$(MAKE) -f standalone/android clean
+	$(MAKE) -C standalone/android clean
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -241,7 +241,7 @@ android:
 ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
 androidapp:
 	$(MAKE) android
-	$(MAKE) -f standalone/android
+	$(MAKE) -C standalone/android
 
 	rm -rf "$(ANDROIDAPP_DEST)"
 
