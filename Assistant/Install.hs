@@ -14,6 +14,7 @@ import Assistant.Install.AutoStart
 import Assistant.Ssh
 import Locations.UserConfig
 import Utility.FileMode
+import Utility.Shell
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -58,7 +59,7 @@ ensureInstalled = go =<< standaloneAppBase
 		sshdir <- sshDir
 		let shim = sshdir </> "git-annex-shell"
 		let content = unlines
-			[ "#!/bin/sh"
+			[ shebang
 			, "set -e"
 			, "exec", base </> "runshell" ++ 
 			  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""

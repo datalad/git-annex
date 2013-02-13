@@ -25,6 +25,7 @@ import qualified Git.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
 import Utility.FileMode
+import Utility.Shell
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -141,7 +142,7 @@ xmppPush cid gitpush = runPush SendPack cid handleDeferred $ do
 		let wrapper = tmpdir </> "git-remote-xmpp"
 		program <- readProgramFile
 		writeFile wrapper $ unlines
-			[ "#!/bin/sh"
+			[ shebang
 			, "exec " ++ program ++ " xmppgit"
 			]
 		modifyFileMode wrapper $ addModes executeModes

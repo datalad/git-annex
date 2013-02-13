@@ -10,6 +10,7 @@ module Assistant.Ssh where
 import Common.Annex
 import Utility.TempFile
 import Utility.UserInfo
+import Utility.Shell
 import Git.Remote
 
 import Data.Text (Text)
@@ -155,7 +156,7 @@ addAuthorizedKeysCommand rsynconly dir pubkey = join "&&"
 	echoval v = "echo " ++ shellEscape v
 	wrapper = "~/.ssh/git-annex-shell"
 	script =
-		[ "#!/bin/sh"
+		[ shebang
 		, "set -e"
 		, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
 		]

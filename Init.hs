@@ -21,6 +21,7 @@ import Logs.UUID
 import Annex.Version
 import Annex.UUID
 import Utility.UserInfo
+import Utility.Shell
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
@@ -92,7 +93,8 @@ preCommitHook :: Annex FilePath
 preCommitHook = (</>) <$> fromRepo Git.localGitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
-preCommitScript = 
-	"#!/bin/sh\n" ++
-	"# automatically configured by git-annex\n" ++ 
-	"git annex pre-commit .\n"
+preCommitScript = unlines
+	[ shebang
+	, "# automatically configured by git-annex"
+	, "git annex pre-commit ."
+	]
