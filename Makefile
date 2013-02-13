@@ -152,6 +152,7 @@ docs: $(mans)
 clean:
 	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs) build-stamp tags
+	$(MAKE) -f standalone/android clean
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -240,15 +241,17 @@ android:
 ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
 androidapp:
 	$(MAKE) android
+	$(MAKE) -f standalone/android
 
 	rm -rf "$(ANDROIDAPP_DEST)"
 
-	cp -R standalone/android "$(ANDROIDAPP_DEST)"
-
-	cp -aR $(GIT_ANNEX_TMP_BUILD_DIR)/android-utilities/ $(ANDROIDAPP_DEST)/git-annex-bundle
+	cp -a standalone/android/runshell "$(ANDROIDAPP_DEST)"
+	cp -aR standalone/android/git-annex-bundle "$(ANDROIDAPP_DEST)"
 	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/bin"
 	cp git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/"
-	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/git-annex"
+
+	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip "$(ANDROIDAPP_DEST)"/git-annex-bundle/bin/*
+
 	ln -sf git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(ANDROIDAPP_DEST)/git-annex-bundle/LICENSE
 	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/templates"
