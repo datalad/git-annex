@@ -237,6 +237,24 @@ android:
 	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_GLOB -DWITH_DNS" \
 	OS=Android $(MAKE) fast
 
+ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
+androidapp:
+	$(MAKE) android
+
+	rm -rf "$(ANDROIDAPP_DEST)"
+
+	cp -R standalone/android "$(ANDROIDAPP_DEST)"
+
+	cp -aR $(GIT_ANNEX_TMP_BUILD_DIR)/android-utilities/ $(ANDROIDAPP_DEST)/git-annex-bundle
+	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/bin"
+	cp git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/"
+	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/git-annex"
+	ln -sf git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/git-annex-shell"
+	zcat standalone/licences.gz > $(ANDROIDAPP_DEST)/git-annex-bundle/LICENSE
+	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/templates"
+	
+	cd $(ANDROIDAPP_DEST) && tar czf ../git-annex-android.tar.gz .
+
 # used by ./ghci
 getflags:
 	@echo $(ALLFLAGS) $(clibs)
