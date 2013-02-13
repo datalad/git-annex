@@ -1,0 +1,37 @@
+git-annex can be used on Android, however you need to know your way around
+the command line to install and use it. (An Android app may be developed
+eventually.)
+
+## prebuilt tarball
+
+Download the [prebuilt tarball](http://downloads.kitenet.net/git-annex/android/).
+Instructions below assume it was downloaded to `/sdcard/Download`, which
+is the default if you use the web browser for the download.
+
+To use this tarball, you need to install either
+[KBOX](http://kevinboone.net/kbox.html) or
+[Terminal IDE](https://play.google.com/store/apps/details?id=com.spartacusrex.spartacuside)
+(available in Google Play).
+This is both to get a shell console, as well as a location under
+`/data` where git-annex can be installed.
+
+Open the console app you installed, and enter this command:
+
+	cd $(which sh)/..; tar xf /sdcard/Download/git-annex-android.tar.gz
+
+Now git-annex is installed, but to use it you need to enter a special
+shell environment:
+
+	runshell
+
+Now you have git-annex, git, and some other utilities available, and can
+do everything in the [[walkthrough]] and more.
+
+## building it yourself
+
+git-annex can be built for Android, with `make android`.
+You need <https://github.com/neurocyte/ghc-android> installed first,
+and also have to `cabal install` all necessary dependencies. This is not
+yet an easy process. 
+
+You also need to install git and all the utilities listed on [[fromscratch]].

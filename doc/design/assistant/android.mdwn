@@ -1,24 +1,9 @@
 ### goals
 
 1. Get git-annex working at the command line in Android,
-   along with all the programs it needs.
+   along with all the programs it needs. **done**
 2. Get the webapp and assistant working. A hopefully small Java app will be
    developed, which runs the webapp daemon, and a web browser to display it.
-
-Current status: git-annex can be built for Android, with `make android`.
-You need <https://github.com/neurocyte/ghc-android> installed first,
-and also have to `cabal install` all necessary dependencies.
-
-### TODO
-
-* port busybox, so it doesn't need KBOX's busybox
-* Make a runshell wrapper for Android, setting paths, etc.
-* Build a standalone tarball for Android.
-* Make build system that can generate ports, and tarball, from source
-  checkouts.
-
-* git-annex sets `#!/bin/sh` in hook script, but that is not
-  a valid path on android, and the right path needs to be determined at runtime.
 
 ### Android specific features
 
@@ -33,7 +18,14 @@ transfers when not on wifi. This may need to be configurable.
 Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
 is probably needed for at least older Android devices that have SD cards.
 
-### Porting notes
+### Utility porting notes
+
+#### TODO
+
+* Make build system that can generate ports, and tarball, from source
+  checkouts.
+* Remove git commands and busybox builtins that are not used, to reduce
+  size.
 
 #### git
 
@@ -65,9 +57,19 @@ Build fails in docs, but see `g10/gpg`
 
 Use git://github.com/android/platform_external_dropbear
 
-Copy in config.sub and config.guess from recent autoconf, and build:
+Copy in config.sub and config.guess from recent autoconf.
+
+Edit `cli-auth.c`, and add: `#include "netbsd_getpass.c"`
+
+Edit `cli-main.c` and remove the HOME setting.
+
+Edit options.h and set `DROPBEAR_RANDOM_DEV "/dev/urandom"`
 
 	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH ./configure --host=arm-linux-androideabi --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
-	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH make
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH make dbclient
 
-TODO build fails
+#### busybox
+
+	cp configs/android2_defconfig .config
+	# edit config and set CONFIG_FEATURE_INSTALLER=y
+	PATH=~/.ghc/android-14/arm-linux-androideabi-4.7/bin:$PATH CROSS_COMPILE=arm-linux-androideabi- make

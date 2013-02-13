@@ -6,6 +6,9 @@ This tarball should work on most Linux systems. It does not depend
 on anything except for glibc.
 
 [download tarball](http://downloads.kitenet.net/git-annex/linux/)
- 
+
+To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
+-- this sets up an environment where you can use `git annex`
+
 Warning: This is a last resort. Most Linux users should instead
 [[install]] git-annex from their distribution of choice.
