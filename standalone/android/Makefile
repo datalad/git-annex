@@ -7,6 +7,7 @@ build: source
 	mkdir -p git-annex-bundle/bin
 	
 	cd source/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 prefix= DESTDIR=../../git-annex-bundle
+	rm -f git-annex-bundle/bin/git-cvsserver
 
 	cp source/busybox/configs/android2_defconfig source/busybox/.config
 	echo 'CONFIG_FEATURE_INSTALLER=y' >> source/busybox/.config

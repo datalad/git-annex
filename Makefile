@@ -244,9 +244,10 @@ androidapp:
 	$(MAKE) -C standalone/android
 
 	rm -rf "$(ANDROIDAPP_DEST)"
+	install -d "$(ANDROIDAPP_DEST)"
 
-	cp -a standalone/android/runshell "$(ANDROIDAPP_DEST)"
 	cp -aR standalone/android/git-annex-bundle "$(ANDROIDAPP_DEST)"
+	cp -a standalone/android/runshell "$(ANDROIDAPP_DEST)"
 	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/bin"
 	cp git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/"
 
