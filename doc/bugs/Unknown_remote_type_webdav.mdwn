@@ -3,3 +3,6 @@ When I attempt to setup a [box.com special remote](http://git-annex.branchable.c
     git-annex: Unknown remote type webdav
 
 I'm using the Linux prebuilt tarball. Does it not include webdav support?
+
+> The amd64 standalone tarball was indeed built without it for the last
+> release. Fixed that. [[doen]] --[[Joey]]
