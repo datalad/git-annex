@@ -12,6 +12,10 @@ endif
 %:
 	dh $@
 
+# Builds standalone tarball with the same FEATURES as debian package.
+standalone:
+	$(MAKE) linuxstandalone
+
 # Not intended for use by anyone except the author.
 announcedir:
 	@echo ${HOME}/src/git-annex/doc/news
