@@ -17,3 +17,14 @@ transfers when not on wifi. This may need to be configurable.
 
 Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
 is probably needed for at least older Android devices that have SD cards.
+
+## TODO
+
+* In crippled filesystem mode, files are not hardlinked to a quarantine
+  directory, so the assistant's use of lsof on that directory won't work.
+  Instead, it should run lsof on the whole repository, and ignore other
+  stuff. (Not really much slower even in a large repo, according to
+  benchmarks.)
+* rsync backend creates hard links
+* migrate creates hard links between old and new keys
+* avoid all symlink creation in crippled filesystem + direct mode
