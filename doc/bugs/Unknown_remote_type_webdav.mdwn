@@ -5,4 +5,4 @@ When I attempt to setup a [box.com special remote](http://git-annex.branchable.c
 I'm using the Linux prebuilt tarball. Does it not include webdav support?
 
 > The amd64 standalone tarball was indeed built without it for the last
-> release. Fixed that. [[doen]] --[[Joey]]
+> release. Fixed that. [[done]] --[[Joey]]
