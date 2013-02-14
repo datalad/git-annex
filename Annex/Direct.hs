@@ -79,6 +79,7 @@ addDirect file cache = do
 	let source = KeySource
 		{ keyFilename = file
 		, contentLocation = file
+		, inodeCache = Just cache
 		}
 	got =<< genKey source =<< chooseBackend file
   where

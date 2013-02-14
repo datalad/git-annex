@@ -28,6 +28,7 @@ import Config
 import qualified Git.HashObject
 import qualified Git.UpdateIndex
 import Git.Types
+import Utility.InodeCache
 
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek "add files to annex"]
@@ -68,8 +69,13 @@ start file = ifAnnexed file fixup add
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
 lockDown file = ifM (crippledFileSystem)
-	( return $ Just $
-		KeySource { keyFilename = file, contentLocation = file }
+	( liftIO $ catchMaybeIO $ do
+		cache <- genInodeCache file
+		return $ KeySource
+			{ keyFilename = file
+			, contentLocation = file
+			, inodeCache = cache
+			}
 	, do
 		tmp <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory tmp
@@ -79,7 +85,12 @@ lockDown file = ifM (crippledFileSystem)
 			hClose h
 			nukeFile tmpfile
 			createLink file tmpfile
-			return $ KeySource { keyFilename = file , contentLocation = tmpfile }
+			cache <- genInodeCache tmpfile
+			return $ KeySource
+				{ keyFilename = file
+				, contentLocation = tmpfile
+				, inodeCache = cache
+				}
 	)
 
 {- Ingests a locked down file into the annex.
@@ -91,33 +102,31 @@ ingest :: (Maybe KeySource) -> Annex (Maybe Key)
 ingest Nothing = return Nothing
 ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
-	ifM isDirect
-		( do
-			mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus $ keyFilename source
-			k <- genKey source backend
-			godirect k (toInodeCache =<< mstat)
-		, go =<< genKey source backend
-		)
+	k <- genKey source backend
+	cache <- liftIO $ genInodeCache $ contentLocation source
+	case inodeCache source of
+		Nothing -> go k cache
+		Just c
+			| (Just c == cache) -> go k cache
+			| otherwise -> failure
   where
-	go (Just (key, _)) = do
+	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
+
+	goindirect (Just (key, _)) _ = do
 		handle (undo (keyFilename source) key) $
 			moveAnnex key $ contentLocation source
 		liftIO $ nukeFile $ keyFilename source
 		return $ Just key
-	go Nothing = failure
+	goindirect Nothing _ = failure
 
-	godirect (Just (key, _)) (Just cache) =
-		ifM (liftIO $ compareInodeCache (keyFilename source) $ Just cache)
-			( do
-				writeInodeCache key cache
-				void $ addAssociatedFile key $ keyFilename source
-				unlessM crippledFileSystem $
-					liftIO $ allowWrite $ keyFilename source
-				when (contentLocation source /= keyFilename source) $
-					liftIO $ nukeFile $ contentLocation source
-				return $ Just key
-			, failure
-			)
+	godirect (Just (key, _)) (Just cache) = do
+		writeInodeCache key cache
+		void $ addAssociatedFile key $ keyFilename source
+		unlessM crippledFileSystem $
+			liftIO $ allowWrite $ keyFilename source
+		when (contentLocation source /= keyFilename source) $
+			liftIO $ nukeFile $ contentLocation source
+		return $ Just key
 	godirect _ _ = failure
 
 	failure = do

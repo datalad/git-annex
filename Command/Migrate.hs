@@ -63,5 +63,9 @@ perform file oldkey oldbackend newbackend = do
 		next $ Command.ReKey.cleanup file oldkey newkey
 	genkey = do
 		content <- inRepo $ gitAnnexLocation oldkey
-		let source = KeySource { keyFilename = file, contentLocation = content }
+		let source = KeySource
+			{ keyFilename = file
+			, contentLocation = content
+			, inodeCache = Nothing
+			}
 		liftM fst <$> genKey source (Just newbackend)

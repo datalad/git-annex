@@ -75,7 +75,11 @@ download url file = do
 	liftIO $ createDirectoryIfMissing True (parentDir tmp)
 	stopUnless (downloadUrl [url] tmp) $ do
 		backend <- chooseBackend file
-		let source = KeySource { keyFilename = file, contentLocation = tmp }
+		let source = KeySource
+			{ keyFilename = file
+			, contentLocation = tmp
+			, inodeCache = Nothing
+			}
 		k <- genKey source backend
 		case k of
 			Nothing -> stop

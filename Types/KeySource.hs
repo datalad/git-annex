@@ -7,6 +7,8 @@
 
 module Types.KeySource where
 
+import Utility.InodeCache
+
 {- When content is in the process of being added to the annex,
  - and a Key generated from it, this data type is used. 
  -
@@ -16,10 +18,12 @@ module Types.KeySource where
  - for checking. The migrate command uses the content
  - of a different Key.
  -
- - 
+ - The inodeCache can be used to detect some types of modifications to
+ - files that may be made while they're in the process of being added.
  -}
 data KeySource = KeySource
 	{ keyFilename :: FilePath
 	, contentLocation :: FilePath
+	, inodeCache :: Maybe InodeCache
 	}
 	deriving (Show)
