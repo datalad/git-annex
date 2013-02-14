@@ -24,6 +24,7 @@ import Backend
 import Types.KeySource
 import Annex.Content
 import Annex.Content.Direct
+import Utility.InodeCache
 import Utility.CopyFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
@@ -45,12 +46,12 @@ stageDirect = do
 	go (file, Just sha) = do
 		mkey <- catKey sha
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		case (mkey, mstat, toCache =<< mstat) of
+		case (mkey, mstat, toInodeCache =<< mstat) of
 			(Just key, _, Just cache) -> do
 				{- All direct mode files will show as
 				 - modified, so compare the cache to see if
 				 - it really was. -}
-				oldcache <- recordedCache key
+				oldcache <- recordedInodeCache key
 				when (oldcache /= Just cache) $
 					modifiedannexed file key cache
 			(Just key, Nothing, _) -> deletedannexed file key
@@ -72,7 +73,7 @@ stageDirect = do
 
 {- Adds a file to the annex in direct mode. Can fail, if the file is
  - modified or deleted while it's being added. -}
-addDirect :: FilePath -> Cache -> Annex Bool
+addDirect :: FilePath -> InodeCache -> Annex Bool
 addDirect file cache = do
 	showStart "add" file
 	let source = KeySource
@@ -84,13 +85,13 @@ addDirect file cache = do
 	got Nothing = do
 		showEndFail
 		return False
-	got (Just (key, _)) = ifM (compareCache file $ Just cache)
+	got (Just (key, _)) = ifM (liftIO $ compareInodeCache file $ Just cache)
 		( do
 			link <- calcGitLink file key
 			sha <- inRepo $ Git.HashObject.hashObject BlobObject link
 			Annex.Queue.addUpdateIndex =<<
 				inRepo (Git.UpdateIndex.stageSymlink file sha)
-			writeCache key cache
+			writeInodeCache key cache
 			void $ addAssociatedFile key file
 			logStatus key InfoPresent
 			showEndOk
@@ -177,7 +178,7 @@ toDirectGen k f = do
 		[] -> ifM (liftIO $ doesFileExist loc)
 			( return $ Just $ do
 				{- Move content from annex to direct file. -}
-				updateCache k loc
+				updateInodeCache k loc
 				thawContent loc
 				liftIO $ replaceFile f $ moveFile loc
 			, return Nothing

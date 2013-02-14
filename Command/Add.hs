@@ -95,7 +95,7 @@ ingest (Just source) = do
 		( do
 			mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus $ keyFilename source
 			k <- genKey source backend
-			godirect k (toCache =<< mstat)
+			godirect k (toInodeCache =<< mstat)
 		, go =<< genKey source backend
 		)
   where
@@ -107,9 +107,9 @@ ingest (Just source) = do
 	go Nothing = failure
 
 	godirect (Just (key, _)) (Just cache) =
-		ifM (compareCache (keyFilename source) $ Just cache)
+		ifM (liftIO $ compareInodeCache (keyFilename source) $ Just cache)
 			( do
-				writeCache key cache
+				writeInodeCache key cache
 				void $ addAssociatedFile key $ keyFilename source
 				unlessM crippledFileSystem $
 					liftIO $ allowWrite $ keyFilename source

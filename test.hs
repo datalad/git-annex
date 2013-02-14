@@ -54,7 +54,7 @@ import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
-import qualified Annex.Content.Direct
+import qualified Utility.InodeCache
 
 -- instances for quickcheck
 instance Arbitrary Types.Key.Key where
@@ -119,7 +119,7 @@ quickcheck = TestLabel "quickcheck" $ TestList
 	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
-	, qctest "prop_read_show_direct" Annex.Content.Direct.prop_read_show_direct
+	, qctest "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
 	, qctest "prop_parse_show_log" Logs.Presence.prop_parse_show_log
 	, qctest "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	, qctest "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog

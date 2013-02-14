@@ -11,14 +11,11 @@ module Annex.Content.Direct (
 	addAssociatedFile,
 	goodContent,
 	changedFileStatus,
-	updateCache,
-	recordedCache,
-	compareCache,
-	writeCache,
-	genCache,
-	toCache,
-	Cache(..),
-	prop_read_show_direct
+	recordedInodeCache,
+	updateInodeCache,
+	writeInodeCache,
+	compareInodeCache,
+	toInodeCache,
 ) where
 
 import Common.Annex
@@ -26,8 +23,7 @@ import Annex.Perms
 import qualified Git
 import Utility.TempFile
 import Logs.Location
-
-import System.Posix.Types
+import Utility.InodeCache
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
@@ -98,70 +94,30 @@ normaliseAssociatedFile file = do
  -}
 goodContent :: Key -> FilePath -> Annex Bool
 goodContent key file = do
-	old <- recordedCache key
-	compareCache file old
+	old <- recordedInodeCache key
+	liftIO $ compareInodeCache file old
 
 changedFileStatus :: Key -> FileStatus -> Annex Bool
 changedFileStatus key status = do
-	old <- recordedCache key
-	let curr = toCache status
+	old <- recordedInodeCache key
+	let curr = toInodeCache status
 	return $ curr /= old
 
-{- Gets the recorded cache for a key. -}
-recordedCache :: Key -> Annex (Maybe Cache)
-recordedCache key = withCacheFile key $ \cachefile ->
-	liftIO $ catchDefaultIO Nothing $ readCache <$> readFile cachefile
-
-{- Compares a cache with the current cache for a file. -}
-compareCache :: FilePath -> Maybe Cache -> Annex Bool
-compareCache file old = do
-	curr <- liftIO $ genCache file
-	return $ isJust curr && curr == old
+{- Gets the recorded inode cache for a key. -}
+recordedInodeCache :: Key -> Annex (Maybe InodeCache)
+recordedInodeCache key = withInodeCacheFile key $ \f ->
+	liftIO $ catchDefaultIO Nothing $ readInodeCache <$> readFile f
 
 {- Stores a cache of attributes for a file that is associated with a key. -}
-updateCache :: Key -> FilePath -> Annex ()
-updateCache key file = maybe noop (writeCache key) =<< liftIO (genCache file)
+updateInodeCache :: Key -> FilePath -> Annex ()
+updateInodeCache key file = maybe noop (writeInodeCache key)
+	=<< liftIO (genInodeCache file)
 
 {- Writes a cache for a key. -}
-writeCache :: Key -> Cache -> Annex ()
-writeCache key cache = withCacheFile key $ \cachefile -> do
-	createContentDir cachefile
-	liftIO $ writeFile cachefile $ showCache cache
+writeInodeCache :: Key -> InodeCache -> Annex ()
+writeInodeCache key cache = withInodeCacheFile key $ \f -> do
+	createContentDir f
+	liftIO $ writeFile f $ showInodeCache cache
 
-{- Cache a file's inode, size, and modification time to determine if it's
- - been changed. -}
-data Cache = Cache FileID FileOffset EpochTime
-	deriving (Eq, Show)
-
-showCache :: Cache -> String
-showCache (Cache inode size mtime) = unwords
-	[ show inode
-	, show size
-	, show mtime
-	]
-
-readCache :: String -> Maybe Cache
-readCache s = case words s of
-	(inode:size:mtime:_) -> Cache
-		<$> readish inode
-		<*> readish size
-		<*> readish mtime
-	_ -> Nothing
-
--- for quickcheck
-prop_read_show_direct :: Cache -> Bool
-prop_read_show_direct c = readCache (showCache c) == Just c
-
-genCache :: FilePath -> IO (Maybe Cache)
-genCache f = catchDefaultIO Nothing $ toCache <$> getFileStatus f
-
-toCache :: FileStatus -> Maybe Cache
-toCache s
-	| isRegularFile s = Just $ Cache
-		(fileID s)
-		(fileSize s)
-		(modificationTime s)
-	| otherwise = Nothing
-
-withCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
-withCacheFile key a = a =<< inRepo (gitAnnexCache key)
+withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
+withInodeCacheFile key a = a =<< inRepo (gitAnnexInodeCache key)

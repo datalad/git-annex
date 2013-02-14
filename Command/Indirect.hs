@@ -73,7 +73,7 @@ perform = do
 		showEndOk
 
 	cleandirect k = do
-		liftIO . nukeFile =<< inRepo (gitAnnexCache k)
+		liftIO . nukeFile =<< inRepo (gitAnnexInodeCache k)
 		liftIO . nukeFile =<< inRepo (gitAnnexMapping k)
 
 cleanup :: CommandCleanup

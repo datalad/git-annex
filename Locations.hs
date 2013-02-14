@@ -12,7 +12,7 @@ module Locations (
 	keyPath,
 	gitAnnexLocation,
 	gitAnnexMapping,
-	gitAnnexCache,
+	gitAnnexInodeCache,
 	annexLocations,
 	annexLocation,
 	gitAnnexDir,
@@ -123,8 +123,8 @@ gitAnnexMapping key r = do
 {- File that caches information about a key's content, used to determine
  - if a file has changed.
  - Used in direct mode. -}
-gitAnnexCache :: Key -> Git.Repo -> IO FilePath
-gitAnnexCache key r  = do
+gitAnnexInodeCache :: Key -> Git.Repo -> IO FilePath
+gitAnnexInodeCache key r  = do
 	loc <- gitAnnexLocation key r 
 	return $ loc ++ ".cache"
 

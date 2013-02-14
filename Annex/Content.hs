@@ -260,7 +260,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 
 	storedirect' [] = storeobject =<< inRepo (gitAnnexLocation key)
 	storedirect' (dest:fs) = do
-		updateCache key src
+		updateInodeCache key src
 		thawContent src
 		liftIO $ replaceFile dest $ moveFile src
 		liftIO $ forM_ fs $ \f -> replaceFile f $
@@ -308,10 +308,10 @@ prepSendAnnex key = withObjectLoc key indirect direct
 	indirect f = return $ Just (f, return True)
 	direct [] = return Nothing
 	direct (f:fs) = do
-		cache <- recordedCache key
+		cache <- recordedInodeCache key
 		-- check that we have a good file
-		ifM (compareCache f cache)
-			( return $ Just (f, compareCache f cache)
+		ifM (liftIO $ compareInodeCache f cache)
+			( return $ Just (f, liftIO $ compareInodeCache f cache)
 			, direct fs
 			)
 
@@ -361,10 +361,10 @@ removeAnnex key = withObjectLoc key remove removedirect
 		liftIO $ removeFile file
 		cleanObjectLoc key
 	removedirect fs = do
-		cache <- recordedCache key
+		cache <- recordedInodeCache key
 		mapM_ (resetfile cache) fs
 		cleanObjectLoc key
-	resetfile cache f = whenM (compareCache f cache) $ do
+	resetfile cache f = whenM (liftIO $ compareInodeCache f cache) $ do
 		l <- calcGitLink f key
 		top <- fromRepo Git.repoPath
 		cwd <- liftIO getCurrentDirectory
