@@ -60,7 +60,7 @@ multicastPairMsg repeats secret pairdata stage = go M.empty repeats
 		go cache' $ pred <$> n
 	{- The multicast library currently chokes on ipv6 addresses. -}
 	sendinterface _ (IPv6Addr _) = noop
-	sendinterface cache i = void $ catchMaybeIO $
+	sendinterface cache i = void $ tryIO $
 		withSocketsDo $ bracket setup cleanup use
 	  where
 		setup = multicastSender (multicastAddress i) pairingPort

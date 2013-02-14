@@ -183,12 +183,14 @@ storeHelper d chunksize key storer = check <&&> go
 		void $ tryIO $ removeDirectoryRecursive dest -- or not exist
 		createDirectoryIfMissing True (parentDir dest)
 		renameDirectory tmp dest
-		mapM_ preventWrite =<< dirContents dest
-		preventWrite dest
+		-- may fail on some filesystems
+		void $ tryIO $ do
+			mapM_ preventWrite =<< dirContents dest
+			preventWrite dest
 	recorder f s = do
 		void $ tryIO $ allowWrite f
 		writeFile f s
-		preventWrite f
+		void $ tryIO $ preventWrite f
 
 retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
@@ -215,10 +217,11 @@ retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
 	go _files = return False
 
 remove :: FilePath -> Key -> Annex Bool
-remove d k = liftIO $ catchBoolIO $ do
-	allowWrite dir
-	removeDirectoryRecursive dir
-	return True
+remove d k = liftIO $ do
+	void $ tryIO $ allowWrite dir
+	catchBoolIO $ do
+		removeDirectoryRecursive dir
+		return True
   where
 	dir = storeDir d k
 

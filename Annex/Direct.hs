@@ -143,7 +143,7 @@ mergeDirectCleanup d oldsha newsha = do
 	 - Empty work tree directories are removed, per git behavior. -}
 	moveout_raw f = liftIO $ do
 		nukeFile f
-		void $ catchMaybeIO $ removeDirectory $ parentDir f
+		void $ tryIO $ removeDirectory $ parentDir f
 	
 	{- The symlink is created from the key, rather than moving in the
 	 - symlink created in the temp directory by the merge. This because
@@ -161,7 +161,7 @@ mergeDirectCleanup d oldsha newsha = do
 	 - directory by the merge, and are moved to the real work tree. -}
 	movein_raw f = liftIO $ do
 		createDirectoryIfMissing True $ parentDir f
-		void $ catchMaybeIO $ rename (d </> f) f
+		void $ tryIO $ rename (d </> f) f
 
 {- If possible, converts a symlink in the working tree into a direct
  - mode file. -}
@@ -203,7 +203,7 @@ removeDirect k f = do
 			_ -> noop
 	liftIO $ do
 		nukeFile f
-		void $ catchMaybeIO $ removeDirectory $ parentDir f
+		void $ tryIO $ removeDirectory $ parentDir f
 
 {- Called when a direct mode file has been changed. Its old content may be
  - lost. -}

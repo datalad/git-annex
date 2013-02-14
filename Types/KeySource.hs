@@ -12,9 +12,12 @@ module Types.KeySource where
  -
  - The contentLocation may be different from the filename
  - associated with the key. For example, the add command
- - temporarily puts the content into a lockdown directory
+ - may temporarily hard link the content into a lockdown directory
  - for checking. The migrate command uses the content
- - of a different Key. -}
+ - of a different Key.
+ -
+ - 
+ -}
 data KeySource = KeySource
 	{ keyFilename :: FilePath
 	, contentLocation :: FilePath

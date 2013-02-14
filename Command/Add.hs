@@ -67,18 +67,22 @@ start file = ifAnnexed file fixup add
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
-lockDown file = do
-	tmp <- fromRepo gitAnnexTmpDir
-	createAnnexDirectory tmp
-	liftIO $ catchMaybeIO $ do
-		preventWrite file
-		(tmpfile, h) <- openTempFile tmp (takeFileName file)
-		hClose h
-		nukeFile tmpfile
-		createLink file tmpfile
-		return $ KeySource { keyFilename = file , contentLocation = tmpfile }
+lockDown file = ifM (crippledFileSystem)
+	( return $ Just $
+		KeySource { keyFilename = file, contentLocation = file }
+	, do
+		tmp <- fromRepo gitAnnexTmpDir
+		createAnnexDirectory tmp
+		liftIO $ catchMaybeIO $ do
+			preventWrite file
+			(tmpfile, h) <- openTempFile tmp (takeFileName file)
+			hClose h
+			nukeFile tmpfile
+			createLink file tmpfile
+			return $ KeySource { keyFilename = file , contentLocation = tmpfile }
+	)
 
-{- Moves a locked down file into the annex.
+{- Ingests a locked down file into the annex.
  -
  - In direct mode, leaves the file alone, and just updates bookkeeping
  - information.
@@ -107,15 +111,18 @@ ingest (Just source) = do
 			( do
 				writeCache key cache
 				void $ addAssociatedFile key $ keyFilename source
-				liftIO $ allowWrite $ keyFilename source
-				liftIO $ nukeFile $ contentLocation source
+				unlessM crippledFileSystem $
+					liftIO $ allowWrite $ keyFilename source
+				when (contentLocation source /= keyFilename source) $
+					liftIO $ nukeFile $ contentLocation source
 				return $ Just key
 			, failure
 			)
 	godirect _ _ = failure
 
 	failure = do
-		liftIO $ nukeFile $ contentLocation source
+		when (contentLocation source /= keyFilename source) $
+			liftIO $ nukeFile $ contentLocation source
 		return Nothing		
 
 perform :: FilePath -> CommandPerform

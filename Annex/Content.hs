@@ -335,12 +335,12 @@ withObjectLoc key indirect direct = ifM isDirect
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
 	file <- inRepo $ gitAnnexLocation key
-	liftIO $ do
-		let dir = parentDir file
-		void $ catchMaybeIO $ do
-			allowWrite dir
-			removeDirectoryRecursive dir
-		removeparents dir (2 :: Int)
+	let dir = parentDir file
+	unlessM crippledFileSystem $
+		void $ liftIO $ catchMaybeIO $ allowWrite dir
+	void $ liftIO $ catchMaybeIO $ do
+		removeDirectoryRecursive dir
+	liftIO $ removeparents dir (2 :: Int)
   where
 	removeparents _ 0 = noop
 	removeparents file n = do
@@ -356,9 +356,9 @@ removeAnnex :: Key -> Annex ()
 removeAnnex key = withObjectLoc key remove removedirect
   where
 	remove file = do
-		liftIO $ do
-			allowWrite $ parentDir file
-			removeFile file
+		unlessM crippledFileSystem $
+			liftIO $ allowWrite $ parentDir file
+		liftIO $ removeFile file
 		cleanObjectLoc key
 	removedirect fs = do
 		cache <- recordedCache key
@@ -377,7 +377,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 fromAnnex :: Key -> FilePath -> Annex ()
 fromAnnex key dest = do
 	file <- inRepo $ gitAnnexLocation key
-	liftIO $ allowWrite $ parentDir file
+	unlessM crippledFileSystem $
+		liftIO $ allowWrite $ parentDir file
 	thawContent file
 	liftIO $ moveFile file dest
 	cleanObjectLoc key
@@ -390,9 +391,9 @@ moveBad key = do
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	createAnnexDirectory (parentDir dest)
-	liftIO $ do
-		allowWrite (parentDir src)
-		moveFile src dest
+	unlessM crippledFileSystem $
+		liftIO $ allowWrite (parentDir src)
+	liftIO $ moveFile src dest
 	cleanObjectLoc key
 	logStatus key InfoMissing
 	return dest
@@ -454,7 +455,8 @@ preseedTmp key file = go =<< inAnnex key
  - to avoid accidental edits. core.sharedRepository may change
  - who can read it. -}
 freezeContent :: FilePath -> Annex ()
-freezeContent file = liftIO . go =<< fromRepo getSharedRepository
+freezeContent file = unlessM crippledFileSystem $
+	liftIO . go =<< fromRepo getSharedRepository
   where
 	go GroupShared = modifyFileMode file $
 		removeModes writeModes .
@@ -467,7 +469,8 @@ freezeContent file = liftIO . go =<< fromRepo getSharedRepository
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: FilePath -> Annex ()
-thawContent file = liftIO . go =<< fromRepo getSharedRepository
+thawContent file = unlessM crippledFileSystem $
+	liftIO . go =<< fromRepo getSharedRepository
   where
 	go GroupShared = groupWriteRead file
 	go AllShared = groupWriteRead file

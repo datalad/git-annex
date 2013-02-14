@@ -203,7 +203,8 @@ fixLink key file = do
 				showNote "fixing content location"
 				dir <- liftIO $ parentDir <$> absPath file
 				let content = absPathFrom dir have
-				liftIO $ allowWrite (parentDir content)
+				unlessM crippledFileSystem $
+					liftIO $ allowWrite (parentDir content)
 				moveAnnex key content
 
 		showNote "fixing link"

@@ -35,6 +35,7 @@ data GitConfig = GitConfig
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: Bool
 	, annexWebOptions :: [String]
+	, annexCrippledFileSystem :: Bool
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -55,6 +56,7 @@ extractGitConfig r = GitConfig
 	, annexHttpHeadersCommand = getmaybe "http-headers-command"
 	, annexAutoCommit = getbool "autocommit" True
 	, annexWebOptions = getwords "web-options"
+	, annexCrippledFileSystem = getbool "crippledfilesystem" False
 	}
   where
 	get k def = fromMaybe def $ getmayberead k

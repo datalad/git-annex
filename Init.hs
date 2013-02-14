@@ -22,6 +22,8 @@ import Annex.Version
 import Annex.UUID
 import Utility.UserInfo
 import Utility.Shell
+import Utility.FileMode
+import Config
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
@@ -35,6 +37,7 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
+	probeCrippledFileSystem
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
@@ -98,3 +101,27 @@ preCommitScript = unlines
 	, "# automatically configured by git-annex"
 	, "git annex pre-commit ."
 	]
+
+probeCrippledFileSystem :: Annex ()
+probeCrippledFileSystem = do
+	tmp <- fromRepo gitAnnexTmpDir
+	let f = tmp </> "init-probe"
+	liftIO $ do
+		createDirectoryIfMissing True tmp
+		writeFile f ""
+	whenM (liftIO $ not <$> probe f) $ do
+		warning "Detected a crippled filesystem. Enabling direct mode."
+		setDirect True
+		setCrippledFileSystem True
+	liftIO $ removeFile f
+  where
+	probe f = catchBoolIO $ do
+		let f2 = f ++ "2"
+		nukeFile f2
+		createLink f f2
+		nukeFile f2
+		createSymbolicLink f f2
+		nukeFile f2
+		preventWrite f
+		allowWrite f
+		return True

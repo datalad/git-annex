@@ -86,6 +86,14 @@ setDirect b = do
 	setConfig (annexConfig "direct") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexDirect = b }
 
+crippledFileSystem :: Annex Bool
+crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig
+
+setCrippledFileSystem :: Bool -> Annex ()
+setCrippledFileSystem b = do
+	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
+	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
+
 {- Gets the http headers to use. -}
 getHttpHeaders :: Annex [String]
 getHttpHeaders = do

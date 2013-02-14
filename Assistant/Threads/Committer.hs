@@ -233,7 +233,8 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			then a
 			else do
 				-- remove the hard link
-				void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
+				when (contentLocation keysource /= keyFilename keysource) $
+					void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
 				return Nothing
 
 {- Files can Either be Right to be added now,
@@ -278,7 +279,8 @@ safeToAdd delayadd pending inprocess = do
 		warning $ keyFilename ks
 			++ " still has writers, not adding"
 		-- remove the hard link
-		void $ liftIO $ tryIO $ removeFile $ contentLocation ks
+		when (contentLocation ks /= keyFilename ks) $
+			void $ liftIO $ tryIO $ removeFile $ contentLocation ks
 	canceladd _ = noop
 
 	openwrite (_file, mode, _pid)

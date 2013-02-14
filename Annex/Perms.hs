@@ -18,6 +18,7 @@ import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex
+import Config
 
 import System.Posix.Types
 
@@ -34,7 +35,8 @@ withShared a = maybe startup a =<< Annex.getState Annex.shared
  - use the default mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
 setAnnexPerm :: FilePath -> Annex ()
-setAnnexPerm file = withShared $ liftIO . go
+setAnnexPerm file = unlessM crippledFileSystem $
+	withShared $ liftIO . go
   where
 	go GroupShared = groupWriteRead file
 	go AllShared = modifyFileMode file $ addModes $
@@ -77,7 +79,8 @@ createAnnexDirectory dir = traverse dir [] =<< top
  - file.
  -}
 freezeContentDir :: FilePath -> Annex ()
-freezeContentDir file = liftIO . go =<< fromRepo getSharedRepository
+freezeContentDir file = unlessM crippledFileSystem $
+	liftIO . go =<< fromRepo getSharedRepository
   where
 	dir = parentDir file
 	go GroupShared = groupWriteRead dir
@@ -91,6 +94,7 @@ createContentDir dest = do
 	unlessM (liftIO $ doesDirectoryExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
-	liftIO $ allowWrite dir
+	unlessM crippledFileSystem $
+		liftIO $ allowWrite dir
   where
 	dir = parentDir dest
