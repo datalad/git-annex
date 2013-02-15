@@ -155,8 +155,8 @@ mergeDirectCleanup d oldsha newsha = do
  	 - Symlinks are replaced with their content, if it's available. -}
 	movein k f = do
 		l <- calcGitLink f k
-		liftIO $ replaceFile f $ const $
-			createSymbolicLink l f
+		replaceFile f $ const $
+			liftIO $ createSymbolicLink l f
 		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
@@ -181,14 +181,15 @@ toDirectGen k f = do
 				{- Move content from annex to direct file. -}
 				updateInodeCache k loc
 				thawContent loc
-				liftIO $ replaceFile f $ moveFile loc
+				replaceFile f $
+					liftIO . moveFile loc
 			, return Nothing
 			)
 		(loc':_) -> ifM (liftIO $ catchBoolIO $ not . isSymbolicLink <$> getSymbolicLinkStatus loc')
 			{- Another direct file has the content; copy it. -}
-			( return $ Just $ do
-				liftIO $ replaceFile f $
-					void . copyFileExternal loc'
+			( return $ Just $
+				replaceFile f $
+					void . liftIO . copyFileExternal loc'
 			, return Nothing
 			)
 

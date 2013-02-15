@@ -50,6 +50,7 @@ import Annex.Exception
 import Git.SharedRepository
 import Annex.Perms
 import Annex.Content.Direct
+import Backend
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -248,33 +249,27 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 				freezeContent dest
 				freezeContentDir dest
 			)
-	storedirect fs = storedirect' =<< liftIO (filterM validsymlink fs)
-
-	validsymlink f = do
-		tl <- tryIO $ readSymbolicLink f
-		return $ case tl of
-			Right l
-				| isLinkToAnnex l ->
-					Just key == fileKey (takeFileName l)
-			_ -> False
+	storedirect fs = storedirect' =<< filterM validsymlink fs
+	validsymlink f = (==) (Just key) <$> isAnnexLink f
 
 	storedirect' [] = storeobject =<< inRepo (gitAnnexLocation key)
 	storedirect' (dest:fs) = do
 		updateInodeCache key src
 		thawContent src
-		liftIO $ replaceFile dest $ moveFile src
-		liftIO $ forM_ fs $ \f -> replaceFile f $
-			void . copyFileExternal dest
+		replaceFile dest $ liftIO . moveFile src
+		forM_ fs $ \f -> replaceFile f $
+			void . liftIO . copyFileExternal dest
 
 {- Replaces any existing file with a new version, by running an action.
  - First, makes sure the file is deleted. Or, if it didn't already exist,
  - makes sure the parent directory exists. -}
-replaceFile :: FilePath -> (FilePath -> IO ()) -> IO ()
+replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
 replaceFile file a = do
-	r <- tryIO $ removeFile file
-	case r of
-		Left _ -> createDirectoryIfMissing True (parentDir file)
-		_ -> noop
+	liftIO $ do
+		r <- tryIO $ removeFile file
+		case r of
+			Left _ -> createDirectoryIfMissing True $ parentDir file
+			_ -> noop
 	a file
 
 {- Runs an action to transfer an object's content.
@@ -370,8 +365,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 		cwd <- liftIO getCurrentDirectory
 		let top' = fromMaybe top $ absNormPath cwd top
 		let l' = relPathDirToFile top' (fromMaybe l $ absNormPath top' l)
-		liftIO $ replaceFile f $ const $
-			createSymbolicLink l' f
+		replaceFile f $ const $
+			makeAnnexLink l' f
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()

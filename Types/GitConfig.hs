@@ -36,38 +36,40 @@ data GitConfig = GitConfig
 	, annexAutoCommit :: Bool
 	, annexWebOptions :: [String]
 	, annexCrippledFileSystem :: Bool
+	, coreSymlinks :: Bool
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
-	{ annexVersion = notempty $ getmaybe "version"
-	, annexNumCopies = get "numcopies" 1
+	{ annexVersion = notempty $ getmaybe (annex "version")
+	, annexNumCopies = get (annex "numcopies") 1
 	, annexDiskReserve = fromMaybe onemegabyte $
-		readSize dataUnits =<< getmaybe "diskreserve"
-	, annexDirect = getbool "direct" False
-	, annexBackends = getwords "backends"
-	, annexQueueSize = getmayberead "queuesize"
-	, annexBloomCapacity = getmayberead "bloomcapacity"
-	, annexBloomAccuracy = getmayberead "bloomaccuracy"
-	, annexSshCaching = getmaybebool "sshcaching"
-	, annexAlwaysCommit = getbool "alwayscommit" True
-	, annexDelayAdd = getmayberead "delayadd"
-	, annexHttpHeaders = getlist "http-headers"
-	, annexHttpHeadersCommand = getmaybe "http-headers-command"
-	, annexAutoCommit = getbool "autocommit" True
-	, annexWebOptions = getwords "web-options"
-	, annexCrippledFileSystem = getbool "crippledfilesystem" False
+		readSize dataUnits =<< getmaybe (annex "diskreserve")
+	, annexDirect = getbool (annex "direct") False
+	, annexBackends = getwords (annex "backends")
+	, annexQueueSize = getmayberead (annex "queuesize")
+	, annexBloomCapacity = getmayberead (annex "bloomcapacity")
+	, annexBloomAccuracy = getmayberead (annex "bloomaccuracy")
+	, annexSshCaching = getmaybebool (annex "sshcaching")
+	, annexAlwaysCommit = getbool (annex "alwayscommit") True
+	, annexDelayAdd = getmayberead (annex "delayadd")
+	, annexHttpHeaders = getlist (annex "http-headers")
+	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
+	, annexAutoCommit = getbool (annex "autocommit") True
+	, annexWebOptions = getwords (annex "web-options")
+	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
+	, coreSymlinks = getbool "core.symlinks" True
 	}
   where
 	get k def = fromMaybe def $ getmayberead k
 	getbool k def = fromMaybe def $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe k = Git.Config.getMaybe (key k) r
-	getlist k = Git.Config.getList (key k) r
+	getmaybe k = Git.Config.getMaybe k r
+	getlist k = Git.Config.getList k r
 	getwords k = fromMaybe [] $ words <$> getmaybe k
 
-	key k = "annex." ++ k
+	annex k = "annex." ++ k
 			
 	onemegabyte = 1000000
 

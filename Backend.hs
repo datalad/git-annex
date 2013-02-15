@@ -1,6 +1,6 @@
 {- git-annex key/value backends
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,8 @@ module Backend (
 	orderedList,
 	genKey,
 	lookupFile,
+	isAnnexLink,
+	makeAnnexLink,
 	chooseBackend,
 	lookupBackendName,
 	maybeLookupBackendName
@@ -81,20 +83,20 @@ genKey' (b:bs) source = do
  - the symlink is looked up in git instead. However, a real symlink
  - on disk still takes precedence over what was committed to git in direct
  - mode.
+ -
+ - On a filesystem that does not support symlinks, git will instead store
+ - the symlink target in a regular file.
  -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
-	tl <- liftIO $ tryIO $ readSymbolicLink file
-	case tl of
-		Right l
-			| isLinkToAnnex l -> makekey l
-			| otherwise -> return Nothing
-		Left _ -> ifM isDirect
+	mkey <- isAnnexLink file
+	case mkey of
+		Just key -> makeret key
+		Nothing -> ifM isDirect
 			( maybe (return Nothing) makeret =<< catKeyFile file
 			, return Nothing
 			)
   where
-	makekey l = maybe (return Nothing) makeret (fileKey $ takeFileName l)
 	makeret k = let bname = keyBackendName k in
 		case maybeLookupBackendName bname of
 			Just backend -> do
@@ -104,6 +106,35 @@ lookupFile file = do
 					"skipping " ++ file ++
 					" (unknown backend " ++ bname ++ ")"
 				return Nothing
+
+{- Checks if a file is a symlink to a key.
+ -
+ - On a filesystem that does not support symlinks, git will instead store
+ - the symlink target in a regular file. (Only look at first 8k of file,
+ - more than enough for any symlink target.)
+ -}
+isAnnexLink :: FilePath -> Annex (Maybe Key)
+isAnnexLink file = maybe Nothing makekey <$> gettarget
+  where
+	gettarget = ifM (coreSymlinks <$> Annex.getGitConfig)
+		( liftIO $ catchMaybeIO $ readSymbolicLink file
+		, liftIO $ catchMaybeIO $ take 8192 <$> readFile file
+		)
+	makekey l
+		| isLinkToAnnex l = fileKey $ takeFileName l
+		| otherwise = Nothing
+
+{- Creates a symlink on disk.
+ -
+ - On a filesystem that does not support symlinks, writes the link target
+ - to a file. Note that git will only treat the file as a symlink if
+ - it's staged as such.
+ -}
+makeAnnexLink :: String -> FilePath -> Annex ()
+makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
+	( liftIO $ createSymbolicLink linktarget file
+	, liftIO $ writeFile file linktarget
+	)
 
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file. -}
