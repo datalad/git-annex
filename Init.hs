@@ -9,7 +9,8 @@ module Init (
 	ensureInitialized,
 	isInitialized,
 	initialize,
-	uninitialize
+	uninitialize,
+	probeCrippledFileSystem
 ) where
 
 import Common.Annex
@@ -37,7 +38,7 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
-	probeCrippledFileSystem
+	checkCrippledFileSystem
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
@@ -102,18 +103,16 @@ preCommitScript = unlines
 	, "git annex pre-commit ."
 	]
 
-probeCrippledFileSystem :: Annex ()
+probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
 	tmp <- fromRepo gitAnnexTmpDir
-	let f = tmp </> "init-probe"
+	let f = tmp </> "gaprobe"
 	liftIO $ do
 		createDirectoryIfMissing True tmp
 		writeFile f ""
-	whenM (liftIO $ not <$> probe f) $ do
-		warning "Detected a crippled filesystem. Enabling direct mode."
-		setDirect True
-		setCrippledFileSystem True
+	uncrippled <- liftIO $ probe f
 	liftIO $ removeFile f
+	return $ not uncrippled
   where
 	probe f = catchBoolIO $ do
 		let f2 = f ++ "2"
@@ -125,3 +124,9 @@ probeCrippledFileSystem = do
 		preventWrite f
 		allowWrite f
 		return True
+
+checkCrippledFileSystem :: Annex ()
+checkCrippledFileSystem = whenM (probeCrippledFileSystem) $ do
+	warning "Detected a crippled filesystem. Enabling direct mode."
+	setDirect True
+	setCrippledFileSystem True

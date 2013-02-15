@@ -16,6 +16,7 @@ import Config
 import Annex.Direct
 import Annex.Content
 import Annex.CatFile
+import Init
 
 def :: [Command]
 def = [notBareRepo $ command "indirect" paramNothing seek
@@ -25,7 +26,13 @@ seek :: [CommandSeek]
 seek = [withNothing start]
 
 start :: CommandStart
-start = ifM isDirect ( next perform, stop )
+start = ifM isDirect
+	( ifM probeCrippledFileSystem
+		( error "This repository seems to be on a crippled filesystem, you must use direct mode."
+		, next perform
+		)
+	, stop
+	)
 
 perform :: CommandPerform
 perform = do
