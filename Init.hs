@@ -17,6 +17,7 @@ import Common.Annex
 import Utility.TempFile
 import Utility.Network
 import qualified Git
+import qualified Git.LsFiles
 import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
@@ -25,6 +26,8 @@ import Utility.UserInfo
 import Utility.Shell
 import Utility.FileMode
 import Config
+import Annex.Direct
+import Backend
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
@@ -127,6 +130,13 @@ probeCrippledFileSystem = do
 
 checkCrippledFileSystem :: Annex ()
 checkCrippledFileSystem = whenM (probeCrippledFileSystem) $ do
-	warning "Detected a crippled filesystem. Enabling direct mode."
-	setDirect True
+	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
+	unlessM isDirect $ do
+		warning "Enabling direct mode."
+		top <- fromRepo Git.repoPath
+		(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+		forM_ l $ \f ->
+			maybe noop (`toDirect` f) =<< isAnnexLink f
+		void $ liftIO clean
+		setDirect True
