@@ -221,7 +221,9 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	ok <- if canrename
-		then liftIO $ renameFile src dest
+		then do
+			liftIO $ renameFile src dest
+			return True
 		else ifM crippledFileSystem
 			( liftIO $ copyFileExternal src dest
 			, do
