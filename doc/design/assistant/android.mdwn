@@ -1,9 +1,10 @@
 ### goals
 
 1. Get git-annex working at the command line in Android,
-   along with all the programs it needs. **done**
-2. Get the webapp and assistant working. A hopefully small Java app will be
-   developed, which runs the webapp daemon, and a web browser to display it.
+   along with all the programs it needs, and the assistant. **done**
+2. Get the webapp working. Needs Template Haskell, or a workaround.
+3. A hopefully small Java app will be developed, which runs the
+   webapp daemon, and a web browser to display it.
 
 ### Android specific features
 
