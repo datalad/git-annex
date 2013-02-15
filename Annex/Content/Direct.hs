@@ -15,6 +15,7 @@ module Annex.Content.Direct (
 	updateInodeCache,
 	writeInodeCache,
 	compareInodeCache,
+	removeInodeCache,
 	toInodeCache,
 ) where
 
@@ -118,6 +119,12 @@ writeInodeCache :: Key -> InodeCache -> Annex ()
 writeInodeCache key cache = withInodeCacheFile key $ \f -> do
 	createContentDir f
 	liftIO $ writeFile f $ showInodeCache cache
+
+{- Removes an inode cache. -}
+removeInodeCache :: Key -> Annex ()
+removeInodeCache key = withInodeCacheFile key $ \f -> do
+	createContentDir f -- also thaws directory
+	liftIO $ nukeFile f
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< inRepo (gitAnnexInodeCache key)

@@ -28,7 +28,6 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	replaceFile,
-	cleanObjectLoc,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -330,12 +329,9 @@ withObjectLoc key indirect direct = ifM isDirect
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
 	file <- inRepo $ gitAnnexLocation key
-	let dir = parentDir file
 	unlessM crippledFileSystem $
-		void $ liftIO $ catchMaybeIO $ allowWrite dir
-	void $ liftIO $ catchMaybeIO $ do
-		removeDirectoryRecursive dir
-	liftIO $ removeparents dir (2 :: Int)
+		void $ liftIO $ catchMaybeIO $ allowWrite $ parentDir file
+	liftIO $ removeparents file (3 :: Int)
   where
 	removeparents _ 0 = noop
 	removeparents file n = do
@@ -357,8 +353,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 		cleanObjectLoc key
 	removedirect fs = do
 		cache <- recordedInodeCache key
+		removeInodeCache key
 		mapM_ (resetfile cache) fs
-		cleanObjectLoc key
 	resetfile cache f = whenM (liftIO $ compareInodeCache f cache) $ do
 		l <- calcGitLink f key
 		top <- fromRepo Git.repoPath
