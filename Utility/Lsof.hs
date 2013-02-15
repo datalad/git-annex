@@ -109,9 +109,9 @@ parseFormatted s = bundle $ go [] $ lines s
 
 {- Parses lsof's default output format. -}
 parseDefault :: LsofParser
-parseDefault = catMaybes . map parse . drop 1 . lines
+parseDefault = catMaybes . map parseline . drop 1 . lines
   where
-	parse l = case words l of
+	parseline l = case words l of
 		(command : spid : _user : _fd : _type : _device : _size : _node : rest) -> 
 			case readish spid of
 				Nothing -> Nothing
