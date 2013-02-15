@@ -7,7 +7,13 @@ including modifying them. The disadvantage is that most regular git
 commands cannot safely be used, and only a subset of git-annex commands
 can be used.
 
-Repositories created by the [[assistant]] use direct mode by default.
+Normally, git-annex repositories start off in indirect mode. With some
+exceptions:
+
+* Repositories created by the [[assistant]] use direct mode by default.
+* Repositories on FAT and other less than stellar filesystems
+  that don't support things like symlinks will be automatically put
+  into direct mode.
 
 ## enabling (and disabling) direct mode
 
