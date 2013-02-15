@@ -75,8 +75,8 @@ instance Arbitrary Logs.Transfer.TransferInfo where
 		<*> arbitrary `suchThat` (/= Just "")
 		<*> arbitrary
 
-instance Arbitrary Annex.Content.Direct.Cache where
-	arbitrary = Annex.Content.Direct.Cache
+instance Arbitrary Utility.InodeCache.InodeCache where
+	arbitrary = Utility.InodeCache.InodeCache
 		<$> arbitrary
 		<*> arbitrary
 		<*> arbitrary
@@ -209,7 +209,7 @@ test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 $
-		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp }
+		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"
