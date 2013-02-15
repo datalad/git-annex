@@ -28,6 +28,7 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	replaceFile,
+	cleanObjectLoc,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -349,7 +350,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 	remove file = do
 		unlessM crippledFileSystem $
 			liftIO $ allowWrite $ parentDir file
-		liftIO $ removeFile file
+		liftIO $ nukeFile file
+		removeInodeCache key
 		cleanObjectLoc key
 	removedirect fs = do
 		cache <- recordedInodeCache key
@@ -389,22 +391,35 @@ moveBad key = do
 	logStatus key InfoMissing
 	return dest
 
-{- List of keys whose content exists in .git/annex/objects/ -}
+{- List of keys whose content exists in the annex. -}
 getKeysPresent :: Annex [Key]
-getKeysPresent = liftIO . traverse (2 :: Int) =<< fromRepo gitAnnexObjectDir
+getKeysPresent = do
+	direct <- isDirect
+	dir <- fromRepo gitAnnexObjectDir
+	liftIO $ traverse direct (2 :: Int) dir
   where
-	traverse depth dir = do
+	traverse direct depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
 		if depth == 0
-			then continue (mapMaybe (fileKey . takeFileName) contents) []
+			then do
+				contents' <- filterM (present direct) contents
+				let keys = mapMaybe (fileKey . takeFileName) contents'
+				continue keys []
 			else do
-				let deeper = traverse (depth - 1)
+				let deeper = traverse direct (depth - 1)
 				continue [] (map deeper contents)
 	continue keys [] = return keys
 	continue keys (a:as) = do
 		{- Force lazy traversal with unsafeInterleaveIO. -}
 		morekeys <- unsafeInterleaveIO a
 		continue (morekeys++keys) as
+
+	{- In indirect mode, look for the key. In direct mode,
+	 - the inode cache file is only present when a key's content
+	 - is present. -}
+	present False d = doesFileExist $ contentfile d
+	present True d = doesFileExist $ contentfile d ++ ".cache"
+	contentfile d = d </> takeFileName d
 
 {- Things to do to record changes to content when shutting down.
  -
@@ -436,11 +451,11 @@ preseedTmp key file = go =<< inAnnex key
 		when ok $ thawContent file
 		return ok
 	copy = ifM (liftIO $ doesFileExist file)
-			( return True
-			, do
-				s <- inRepo $ gitAnnexLocation key
-				liftIO $ copyFileExternal s file
-			)
+		( return True
+		, do
+			s <- inRepo $ gitAnnexLocation key
+			liftIO $ copyFileExternal s file
+		)
 
 {- Blocks writing to an annexed file. The file is made unwritable
  - to avoid accidental edits. core.sharedRepository may change

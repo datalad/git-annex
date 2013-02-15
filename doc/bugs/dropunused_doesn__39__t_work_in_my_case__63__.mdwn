@@ -66,3 +66,5 @@ Debian: sid 2013-02-01
 > actual key files are present (it just lists the directories). 
 > But this seems to be needed, since direct mode can leave
 > cache and mapping files behind. --[[Joey]]
+
+>> Now fixed properly. [[done]] --[[Joey]]

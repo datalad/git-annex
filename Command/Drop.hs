@@ -60,7 +60,7 @@ performLocal key numcopies knownpresentremote = lockContent key $ do
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
 	stopUnless (canDropKey key numcopies trusteduuids' tocheck []) $ do
-		whenM (inAnnex key) $ removeAnnex key
+		removeAnnex key
 		next $ cleanupLocal key
 
 performRemote :: Key -> Maybe Int -> Remote -> CommandPerform

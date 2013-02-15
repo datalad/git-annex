@@ -104,7 +104,7 @@ toPerform dest move key file = moveLock move key $ do
 			Remote.logStatus dest key InfoPresent
 		if move
 			then do
-				whenM (inAnnex key) $ removeAnnex key
+				removeAnnex key
 				next $ Command.Drop.cleanupLocal key
 			else next $ return True
 
