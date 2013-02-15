@@ -56,3 +56,13 @@ What version of git-annex are you using? On what operating system?
 
 git-annex: 3.20130124
 Debian: sid 2013-02-01
+
+> I put a fix in for this in 57780cb3a4dfe1292b72e1412ec4d2a70b6d04ce 
+> but it was buggy and I had to revert it.
+> 
+> The bug is caused by direct mode cache and mapping info.
+> This makes getKeysPresent find keys that are not present.
+> It would be expensive to make getKeysPresent check that the
+> actual key files are present (it just lists the directories). 
+> But this seems to be needed, since direct mode can leave
+> cache and mapping files behind. --[[Joey]]

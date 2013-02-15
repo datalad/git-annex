@@ -6,11 +6,14 @@ git-annex (3.20130208) UNRELEASED; urgency=low
     the Makefile is made to use -DWITH_GLOB
   * New annex.crippledfilesystem setting, allows use of git-annex
     repositories on FAT and even worse filesystems; avoiding use of
-    hard links, symlinks, and locked down permissions settings.
+    hard links and locked down permissions settings.
   * init: Detect when the repository is on a filesystem that does not
     support hard links, or symlinks, or unix permissions, and set
     annex.crippledfilesystem, as well as annex.direct.
   * add: Improved detection of files that are modified while being added.
+  * Fix a bug in direct mode, introduced in the previous release, where
+    if a file was dropped and then got back, it would be stored in indirect
+    mode.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 10 Feb 2013 14:52:01 -0400
 
