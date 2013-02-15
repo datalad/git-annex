@@ -240,8 +240,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.
  -
- - Check by running lsof on the temp directory, which
- - the KeySources are locked down in.
+ - Check by running lsof on the repository.
  -}
 safeToAdd :: Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
 safeToAdd _ [] [] = return []
@@ -249,12 +248,12 @@ safeToAdd delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
 		keysources <- mapM Command.Add.lockDown (map changeFile pending)
-		let inprocess' = catMaybes $ 
-			map mkinprocess (zip pending keysources)
-		tmpdir <- fromRepo gitAnnexTmpDir
+		let inprocess' = inprocess ++ catMaybes (map mkinprocess $ zip pending keysources)
 		openfiles <- S.fromList . map fst3 . filter openwrite <$>
-			liftIO (Lsof.queryDir tmpdir)
-		let checked = map (check openfiles) $ inprocess ++ inprocess'
+			findopenfiles (map keySource inprocess')
+		liftIO $ print openfiles
+		let checked = map (check openfiles) inprocess'
+		liftIO $ print checked
 
 		{- If new events are received when files are closed,
 		 - there's no need to retry any changes that cannot
@@ -290,3 +289,18 @@ safeToAdd delayadd pending inprocess = do
 		| otherwise = False
 
 	allRight = return . map Right
+
+	{- Normally the KeySources are locked down inside the temp directory,
+	 - so can just lsof that, which is quite efficient.
+	 -
+	 - In crippled filesystem mode, there is no lock down, so must run lsof
+	 - on each individual file.
+	 -}
+	findopenfiles keysources = ifM crippledFileSystem
+		( liftIO $ do
+			let segments = segmentXargs $ map keyFilename keysources
+			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
+		, do
+			tmpdir <- fromRepo gitAnnexTmpDir
+			liftIO $ Lsof.queryDir tmpdir
+		)
