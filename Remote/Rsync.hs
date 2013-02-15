@@ -102,14 +102,14 @@ rsyncUrls o k = map use annexHashes
 	f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k
+store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False
 
 storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove o enck) $ \src -> do
 		liftIO $ encrypt cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
-		rsyncSend o p enck tmp
+		rsyncSend o p enck True tmp
 
 retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o Nothing
@@ -216,16 +216,18 @@ rsyncRemote o callback params = do
  - (When we have the right hash directory structure, we can just
  - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
  -}
-rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> FilePath -> Annex Bool
-rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
+rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> Bool -> FilePath -> Annex Bool
+rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	ok <- ifM crippledFileSystem
-		( liftIO $ copyFileExternal src dest
-		, do
-			liftIO $ createLink src dest
-			return True
-		)
+	ok <- if canrename
+		then liftIO $ renameFile src dest
+		else ifM crippledFileSystem
+			( liftIO $ copyFileExternal src dest
+			, do
+				liftIO $ createLink src dest
+				return True
+			)
 	if ok
 		then rsyncRemote o (Just callback)
 			[ Param "--recursive"
