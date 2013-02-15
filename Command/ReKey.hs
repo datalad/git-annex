@@ -14,6 +14,8 @@ import Types.Key
 import Annex.Content
 import qualified Command.Add
 import Logs.Web
+import Config
+import Utility.CopyFile
 
 def :: [Command]
 def = [notDirect $ command "rekey"
@@ -48,8 +50,15 @@ perform file oldkey newkey = do
 linkKey :: Key -> Key -> Annex Bool
 linkKey oldkey newkey = getViaTmpUnchecked newkey $ \tmp -> do
 	src <- inRepo $ gitAnnexLocation oldkey
-	liftIO $ unlessM (doesFileExist tmp) $ createLink src tmp
-	return True
+	ifM (liftIO $ doesFileExist tmp)
+		( return True
+		, ifM crippledFileSystem
+			( liftIO $ copyFileExternal src tmp
+			, do
+				liftIO $ createLink src tmp
+				return True
+			)
+		)
 
 cleanup :: FilePath -> Key -> Key -> CommandCleanup
 cleanup file oldkey newkey = do

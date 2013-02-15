@@ -22,5 +22,4 @@ file modes, etc.
 
 ## TODO
 
-* migrate creates hard links between old and new keys
 * avoid all symlink creation in crippled filesystem + direct mode
