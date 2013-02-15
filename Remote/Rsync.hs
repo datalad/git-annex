@@ -20,6 +20,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Utility.Rsync
+import Utility.CopyFile
 import Annex.Perms
 
 type RsyncUrl = String
@@ -207,16 +208,30 @@ rsyncRemote o callback params = do
 
 {- To send a single key is slightly tricky; need to build up a temporary
  - directory structure to pass to rsync so it can create the hash
- - directories. -}
+ - directories.
+ -
+ - This would not be necessary if the hash directory structure used locally
+ - was always the same as that used on the rsync remote. So if that's ever
+ - unified, this gets nicer. Especially in the crippled filesystem case.
+ - (When we have the right hash directory structure, we can just
+ - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
+ -}
 rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> FilePath -> Annex Bool
 rsyncSend o callback k src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	liftIO $ createLink src dest
-	rsyncRemote o (Just callback)
-		[ Param "--recursive"
-		, partialParams
-		-- tmp/ to send contents of tmp dir
-		, Param $ addTrailingPathSeparator tmp
-		, Param $ rsyncUrl o
-		]
+	ok <- ifM crippledFileSystem
+		( liftIO $ copyFileExternal src dest
+		, do
+			liftIO $ createLink src dest
+			return True
+		)
+	if ok
+		then rsyncRemote o (Just callback)
+			[ Param "--recursive"
+			, partialParams
+			-- tmp/ to send contents of tmp dir
+			, Param $ addTrailingPathSeparator tmp
+			, Param $ rsyncUrl o
+			]
+		else return False
