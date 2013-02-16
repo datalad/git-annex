@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE PackageImports, CPP #-}
 
 module Limit where
 
@@ -13,7 +13,7 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 #ifdef WITH_GLOB
-import System.FilePath.Glob (simplify, compile, match)
+import "Glob" System.FilePath.Glob (simplify, compile, match)
 #else
 import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
