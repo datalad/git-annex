@@ -1,3 +1,22 @@
+## version 3.20130216
+
+This adds a port to Android. Only usable at the command line so far;
+beta qualitty.
+
+Also a bugfix release, and improves support for FAT.
+
+The following are known limitations of this release of the git-annex
+assistant:
+
+* No Android app yet.
+* On BSD operating systems (but not on OS X), the assistant uses kqueue to
+  watch files. Kqueue has to open every directory it watches, so too many
+  directories will run it out of the max number of open files (typically
+  1024), and fail. See [[this_bug|bugs/Issue_on_OSX_with_some_system_limits]]
+  for a workaround.
+* Also on systems with kqueue, modifications to existing files in direct
+  mode will not be noticed.
+
 ## version 3.20130107, 3.20130114, 3.20130124, 3.20130207
 
 These are bugfix releases.
@@ -12,20 +31,6 @@ in the repository, and the assistant will automatically commit and sync
 your changes. Direct mode is the default for new repositories created
 by the assistant. To convert your existing repository to use direct mode,
 manually run `git annex direct` inside the repository.
-
-The following are known limitations of this release of the git-annex
-assistant:
-
-* If a file in a direct mode repository is modified as it's being transferred,
-  the old version of the file can be lost, and fsck will later complain
-  about a corrupt object.
-* On BSD operating systems (but not on OS X), the assistant uses kqueue to
-  watch files. Kqueue has to open every directory it watches, so too many
-  directories will run it out of the max number of open files (typically
-  1024), and fail. See [[this_bug|bugs/Issue_on_OSX_with_some_system_limits]]
-  for a workaround.
-* Also on systems with kqueue, modifications to existing files in direct
-  mode will not be noticed.
 
 ## version 3.20121211
 
