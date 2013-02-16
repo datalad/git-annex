@@ -27,7 +27,8 @@ build: source
 	cd source/rsync && $(MAKE)
 	cp -a source/rsync/rsync git-annex-bundle/bin/
 
-	cd source/gnupg && scripts/autogen.sh
+	cd source/gnupg && git checkout gnupg-1.4.13
+	cd source/gnupg && ./autogen.sh
 	cd source/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd source/gnupg; $(MAKE) || true # expected failure in doc build
 	cp -a source/gnupg/g10/gpg git-annex-bundle/bin/
