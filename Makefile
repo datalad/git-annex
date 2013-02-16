@@ -152,7 +152,6 @@ docs: $(mans)
 clean:
 	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
 		doc/.ikiwiki html dist $(clibs) build-stamp tags
-	$(MAKE) -C standalone/android clean
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
