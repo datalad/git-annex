@@ -17,6 +17,7 @@ import qualified Annex.Queue
 import Annex.Content
 import Annex.Direct
 import Annex.CatFile
+import Annex.Link
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Merge
@@ -263,10 +264,8 @@ resolveMerge' u
 	makelink (Just key) = do
 		let dest = mergeFile file key
 		l <- calcGitLink dest key
-		liftIO $ do
-			nukeFile dest
-			createSymbolicLink l dest
-		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [dest]
+		liftIO $ nukeFile dest
+		addAnnexLink l dest
 		whenM (isDirect) $
 			toDirect key dest
 	makelink _ = noop

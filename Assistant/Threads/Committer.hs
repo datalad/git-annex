@@ -15,16 +15,13 @@ import Assistant.Types.Changes
 import Assistant.Commits
 import Assistant.Alert
 import Assistant.DaemonStatus
-import Assistant.Threads.Watcher
 import Assistant.TransferQueue
 import Logs.Transfer
 import Logs.Location
 import qualified Annex.Queue
 import qualified Git.Command
-import qualified Git.HashObject
 import qualified Git.LsFiles
 import qualified Git.Version
-import Git.Types
 import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
@@ -33,6 +30,7 @@ import Types.KeySource
 import Config
 import Annex.Exception
 import Annex.Content
+import Annex.Link
 import qualified Annex
 
 import Data.Time.Clock
@@ -216,9 +214,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 				, Command.Add.link file key True
 				)
 			whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
-				sha <- inRepo $
-					Git.HashObject.hashObject BlobObject link
-				stageSymlink file sha
+				stageSymlink file =<< hashSymlink link
 				showEndOk
 		queueTransfers Next key (Just file) Upload
 		return $ Just change

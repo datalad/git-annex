@@ -1,3 +1,10 @@
+git-annex (3.20130217) UNRELEASED; urgency=low
+
+  * Should now fully support git repositories with core.symlinks=false;
+    always using git's pseudosymlink files in such repositories.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
+
 git-annex (3.20130216) unstable; urgency=low
 
   * Now uses the Haskell uuid library, rather than needing a uuid program.

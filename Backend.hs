@@ -17,12 +17,11 @@ module Backend (
 	maybeLookupBackendName
 ) where
 
-import System.Posix.Files
-
 import Common.Annex
 import qualified Annex
 import Annex.CheckAttr
 import Annex.CatFile
+import Annex.Link
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
@@ -77,15 +76,12 @@ genKey' (b:bs) source = do
 		| otherwise = c
 
 {- Looks up the key and backend corresponding to an annexed file,
- - by examining what the file symlinks to.
+ - by examining what the file links to.
  -
- - In direct mode, there is often no symlink on disk, in which case
- - the symlink is looked up in git instead. However, a real symlink
+ - In direct mode, there is often no link on disk, in which case
+ - the symlink is looked up in git instead. However, a real link
  - on disk still takes precedence over what was committed to git in direct
  - mode.
- -
- - On a filesystem that does not support symlinks, git will instead store
- - the symlink target in a regular file.
  -}
 lookupFile :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile file = do
@@ -106,35 +102,6 @@ lookupFile file = do
 					"skipping " ++ file ++
 					" (unknown backend " ++ bname ++ ")"
 				return Nothing
-
-{- Checks if a file is a symlink to a key.
- -
- - On a filesystem that does not support symlinks, git will instead store
- - the symlink target in a regular file. (Only look at first 8k of file,
- - more than enough for any symlink target.)
- -}
-isAnnexLink :: FilePath -> Annex (Maybe Key)
-isAnnexLink file = maybe Nothing makekey <$> gettarget
-  where
-	gettarget = ifM (coreSymlinks <$> Annex.getGitConfig)
-		( liftIO $ catchMaybeIO $ readSymbolicLink file
-		, liftIO $ catchMaybeIO $ take 8192 <$> readFile file
-		)
-	makekey l
-		| isLinkToAnnex l = fileKey $ takeFileName l
-		| otherwise = Nothing
-
-{- Creates a symlink on disk.
- -
- - On a filesystem that does not support symlinks, writes the link target
- - to a file. Note that git will only treat the file as a symlink if
- - it's staged as such.
- -}
-makeAnnexLink :: String -> FilePath -> Annex ()
-makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
-	( liftIO $ createSymbolicLink linktarget file
-	, liftIO $ writeFile file linktarget
-	)
 
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file. -}

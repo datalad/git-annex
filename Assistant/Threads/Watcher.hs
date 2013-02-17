@@ -12,7 +12,6 @@ module Assistant.Threads.Watcher (
 	WatcherException(..),
 	checkCanWatch,
 	needLsof,
-	stageSymlink,
 	onAddSymlink,
 	runHandler,
 ) where
@@ -32,13 +31,13 @@ import qualified Annex
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.UpdateIndex
-import qualified Git.HashObject
 import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.CatFile
+import Annex.Link
 import Git.Types
 import Config
 import Utility.ThreadScheduler
@@ -206,7 +205,7 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 				ensurestaged (Just link) s
 			, do
 				liftIO $ removeFile file
-				liftIO $ createSymbolicLink link file
+				liftAnnex $ Backend.makeAnnexLink link file
 				checkcontent key =<< getDaemonStatus
 				addlink link
 			)
@@ -242,10 +241,7 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 				Just (currlink, sha)
 					| s2w8 link == L.unpack currlink ->
 						stageSymlink file sha
-				_ -> do
-					sha <- inRepo $
-						Git.HashObject.hashObject BlobObject link
-					stageSymlink file sha
+				_ -> stageSymlink file =<< hashSymlink link
 		madeChange file LinkChange
 
 	{- When a new link appears, or a link is changed, after the startup
@@ -289,13 +285,3 @@ onErr msg _ = do
 	liftAnnex $ warning msg
 	void $ addAlert $ warningAlert "watcher" msg
 	noChange
-
-{- Adds a symlink to the index, without ever accessing the actual symlink
- - on disk. This avoids a race if git add is used, where the symlink is
- - changed to something else immediately after creation. It also allows
- - direct mode to work.
- -}
-stageSymlink :: FilePath -> Sha -> Annex ()
-stageSymlink file sha =
-	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageSymlink file sha)

@@ -13,6 +13,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles
 import Config
+import qualified Annex
 import Annex.Direct
 import Annex.Content
 import Annex.CatFile
@@ -27,10 +28,12 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = ifM isDirect
-	( ifM probeCrippledFileSystem
-		( error "This repository seems to be on a crippled filesystem, you must use direct mode."
-		, next perform
-		)
+	( do
+		unlessM (coreSymlinks <$> Annex.getGitConfig) $
+			error "Git is configured to not use symlinks, so you must use direct mode."
+		whenM probeCrippledFileSystem $
+			error "This repository seems to be on a crippled filesystem, you must use direct mode."
+		next perform
 	, stop
 	)
 

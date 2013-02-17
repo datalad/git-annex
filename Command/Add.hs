@@ -12,22 +12,20 @@ module Command.Add where
 import Common.Annex
 import Annex.Exception
 import Command
-import qualified Annex
-import qualified Annex.Queue
 import Types.KeySource
 import Backend
 import Logs.Location
 import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
+import Annex.Link
+import qualified Annex
+import qualified Annex.Queue
 #ifndef WITH_ANDROID
 import Utility.Touch
 #endif
 import Utility.FileMode
 import Config
-import qualified Git.HashObject
-import qualified Git.UpdateIndex
-import Git.Types
 import Utility.InodeCache
 
 def :: [Command]
@@ -159,7 +157,7 @@ undo file key e = do
 link :: FilePath -> Key -> Bool -> Annex String
 link file key hascontent = handle (undo file key) $ do
 	l <- calcGitLink file key
-	liftIO $ createSymbolicLink l file
+	makeAnnexLink l file
 
 #ifndef WITH_ANDROID
 	when hascontent $ do
@@ -173,23 +171,35 @@ link file key hascontent = handle (undo file key) $ do
 	return l
 
 {- Note: Several other commands call this, and expect it to 
- - create the symlink and add it. -}
+ - create the link and add it.
+ - 
+ - In direct mode, when we have the content of the file, it's left as-is,
+ - and we just stage a symlink to git.
+ - 
+ - Otherwise, as long as the filesystem supports symlinks, we use
+ - git add, rather than directly staging the symlink to git.
+ - Using git add is best because it allows the queuing to work
+ - and is faster (staging the symlink runs hash-object commands each time).
+ - Also, using git add allows it to skip gitignored files, unless forced
+ - to include them.
+ -}
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
 	when hascontent $
 		logStatus key InfoPresent
 	ifM (isDirect <&&> pure hascontent)
-		( do
-			l <- calcGitLink file key
-			sha <- inRepo $ Git.HashObject.hashObject BlobObject l
-			Annex.Queue.addUpdateIndex =<<
-				inRepo (Git.UpdateIndex.stageSymlink file sha)
-		, do
-			_ <- link file key hascontent
-			params <- ifM (Annex.getState Annex.force)
-				( return [Param "-f"]
-				, return []
-				)
-			Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+		( stageSymlink file =<< hashSymlink =<< calcGitLink file key
+		, ifM (coreSymlinks <$> Annex.getGitConfig)
+			( do
+				_ <- link file key hascontent
+				params <- ifM (Annex.getState Annex.force)
+					( return [Param "-f"]
+					, return []
+					)
+				Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+			, do
+				l <- link file key hascontent
+				addAnnexLink l file
+			)
 		)
 	return True

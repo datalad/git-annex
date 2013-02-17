@@ -10,7 +10,6 @@ module Command.Fsck where
 import Common.Annex
 import Command
 import qualified Annex
-import qualified Annex.Queue
 import qualified Remote
 import qualified Types.Backend
 import qualified Types.Key
@@ -18,6 +17,7 @@ import qualified Backend
 import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
+import Annex.Link
 import Logs.Location
 import Logs.Trust
 import Annex.UUID
@@ -182,14 +182,14 @@ performBare key backend = check
 check :: [Annex Bool] -> Annex Bool
 check cs = all id <$> sequence cs
 
-{- Checks that the file's symlink points correctly to the content.
+{- Checks that the file's link points correctly to the content.
  -
- - In direct mode, there is only a symlink when the content is not present.
+ - In direct mode, there is only a link when the content is not present.
  -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
 	want <- calcGitLink file key
-	have <- liftIO $ catchMaybeIO $ readSymbolicLink file
+	have <- getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True
   where
@@ -210,8 +210,7 @@ fixLink key file = do
 		showNote "fixing link"
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		liftIO $ removeFile file
-		liftIO $ createSymbolicLink want file
-		Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
+		addAnnexLink want file
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}

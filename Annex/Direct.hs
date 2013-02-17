@@ -10,8 +10,6 @@ module Annex.Direct where
 import Common.Annex
 import qualified Git
 import qualified Git.LsFiles
-import qualified Git.UpdateIndex
-import qualified Git.HashObject
 import qualified Git.Merge
 import qualified Git.DiffTree as DiffTree
 import Git.Sha
@@ -24,6 +22,7 @@ import Backend
 import Types.KeySource
 import Annex.Content
 import Annex.Content.Direct
+import Annex.Link
 import Utility.InodeCache
 import Utility.CopyFile
 
@@ -88,10 +87,7 @@ addDirect file cache = do
 		return False
 	got (Just (key, _)) = ifM (liftIO $ compareInodeCache file $ Just cache)
 		( do
-			link <- calcGitLink file key
-			sha <- inRepo $ Git.HashObject.hashObject BlobObject link
-			Annex.Queue.addUpdateIndex =<<
-				inRepo (Git.UpdateIndex.stageSymlink file sha)
+			stageSymlink file =<< hashSymlink =<< calcGitLink file key
 			writeInodeCache key cache
 			void $ addAssociatedFile key file
 			logStatus key InfoPresent
@@ -155,8 +151,8 @@ mergeDirectCleanup d oldsha newsha = do
  	 - Symlinks are replaced with their content, if it's available. -}
 	movein k f = do
 		l <- calcGitLink f k
-		replaceFile f $ const $
-			liftIO $ createSymbolicLink l f
+		replaceFile f $
+			makeAnnexLink l
 		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
@@ -185,7 +181,7 @@ toDirectGen k f = do
 					liftIO . moveFile loc
 			, return Nothing
 			)
-		(loc':_) -> ifM (liftIO $ catchBoolIO $ not . isSymbolicLink <$> getSymbolicLinkStatus loc')
+		(loc':_) -> ifM (not . isJust <$> getAnnexLinkTarget loc')
 			{- Another direct file has the content; copy it. -}
 			( return $ Just $
 				replaceFile f $
@@ -197,13 +193,9 @@ toDirectGen k f = do
 removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	locs <- removeAssociatedFile k f
-	when (null locs) $ do
-		r <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus f
-		case r of
-			Just s
-				| not (isSymbolicLink s) ->
-					moveAnnex k f
-			_ -> noop
+	when (null locs) $
+		whenM (not . isJust <$> getAnnexLinkTarget f) $
+			moveAnnex k f
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
