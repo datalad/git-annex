@@ -20,7 +20,3 @@ Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
 is probably needed for at least older Android devices that have SD cards.
 Additionally, cripped filesystem mode is needed, to avoid hard links,
 file modes, etc.
-
-## TODO
-
-* avoid all symlink creation in crippled filesystem + direct mode
