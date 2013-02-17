@@ -25,3 +25,5 @@ Please provide any additional information below.
 
 
 adding 'random' to the BuildDepends in git-annex.cabal does indeed fix the error.
+
+> [[done]] --[[Joey]] 
