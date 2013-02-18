@@ -1,0 +1,44 @@
+diff --git a/openbsd-compat/getrrsetbyname.c b/openbsd-compat/getrrsetbyname.c
+index d2bea21..5b5d599 100644
+--- a/openbsd-compat/getrrsetbyname.c
++++ b/openbsd-compat/getrrsetbyname.c
+@@ -56,8 +56,7 @@
+ #include <arpa/inet.h>
+ 
+ #include "getrrsetbyname.h"
+-#include "nameser.h"
+-#include "nameser_compat.h"
++#include "arpa/nameser.h"
+ 
+ #if defined(HAVE_DECL_H_ERRNO) && !HAVE_DECL_H_ERRNO
+ extern int h_errno;
+diff --git a/uidswap.c b/uidswap.c
+index bc6194e..5cbf5d1 100644
+--- a/uidswap.c
++++ b/uidswap.c
+@@ -28,7 +28,6 @@
+ #include "xmalloc.h"
+ 
+ #ifdef ANDROID
+-#include <private/android_filesystem_config.h>
+ #include <linux/capability.h>
+ #include <linux/prctl.h>
+ #endif
+@@ -230,7 +229,7 @@ permanently_set_uid(struct passwd *pw)
+ 	debug("permanently_set_uid: %u/%u", (u_int)pw->pw_uid,
+ 	    (u_int)pw->pw_gid);
+ 
+-#ifdef ANDROID
++#if 0
+ 	if (pw->pw_uid == AID_SHELL) {
+ 		prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
+ 
+@@ -317,7 +316,7 @@ permanently_set_uid(struct passwd *pw)
+ 		    (u_int)pw->pw_uid);
+ 	}
+ 
+-#ifdef ANDROID
++#if 0
+ 	if (pw->pw_uid == AID_SHELL) {
+ 		/* set CAP_SYS_BOOT capability, so "adb reboot" will succeed */
+ 		header.version = _LINUX_CAPABILITY_VERSION;

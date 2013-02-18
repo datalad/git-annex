@@ -1,0 +1,40 @@
+--- Makefile	2013-02-18 17:28:37.897580763 -0400
++++ Makefile	2013-02-18 17:25:42.565424455 -0400
+@@ -42,7 +42,7 @@
+ CC=arm-linux-androideabi-gcc
+ LD=arm-linux-androideabi-gcc
+ CFLAGS=-g -O2 -Wall -Wpointer-arith -Wuninitialized -Wsign-compare -Wformat-security -Wno-pointer-sign -Wno-unused-result -fno-strict-aliasing -D_FORTIFY_SOURCE=2 -fno-builtin-memset -fstack-protector-all 
+-CPPFLAGS=-I. -I$(srcdir) -I/home/joey/src/git-annex/standalone/android/source/openssh/../openssl/include  $(PATHS) -DHAVE_CONFIG_H
++CPPFLAGS=-I. -I$(srcdir) -I/home/joey/src/git-annex/standalone/android/source/android_external_openssh/../openssl/include  $(PATHS) -DHAVE_CONFIG_H
+ LIBS=-lcrypto -lz 
+ SSHLIBS=
+ SSHDLIBS=
+@@ -55,7 +55,7 @@
+ SED=/bin/sed
+ ENT=
+ XAUTH_PATH=/usr/bin/xauth
+-LDFLAGS=-L. -Lopenbsd-compat/ -L/home/joey/src/git-annex/standalone/android/source/openssh/../openssl  -fstack-protector-all
++LDFLAGS=-L. -Lopenbsd-compat/ -L/home/joey/src/git-annex/standalone/android/source/android_external_openssh/../openssl  -fstack-protector-all
+ EXEEXT=
+ MANFMT=/usr/bin/nroff -mandoc
+ 
+@@ -66,8 +66,8 @@
+ 	cipher-bf1.o cipher-ctr.o cipher-3des1.o cleanup.o \
+ 	compat.o compress.o crc32.o deattack.o fatal.o hostfile.o \
+ 	log.o match.o md-sha256.o moduli.o nchan.o packet.o \
+-	readpass.o rsa.o ttymodes.o xmalloc.o addrmatch.o \
+-	atomicio.o key.o dispatch.o kex.o mac.o uidswap.o uuencode.o misc.o \
++	readpass.o rsa.o ttymodes.o xmalloc.o addrmatch.o uidswap.o \
++	atomicio.o key.o dispatch.o kex.o mac.o uuencode.o misc.o \
+ 	monitor_fdpass.o rijndael.o ssh-dss.o ssh-ecdsa.o ssh-rsa.o dh.o \
+ 	kexdh.o kexgex.o kexdhc.o kexgexc.o bufec.o kexecdh.o kexecdhc.o \
+ 	msg.o progressmeter.o dns.o entropy.o gss-genr.o umac.o jpake.o \
+@@ -77,7 +77,7 @@
+ 	sshconnect.o sshconnect1.o sshconnect2.o mux.o \
+ 	roaming_common.o roaming_client.o
+ 
+-SSHDOBJS=sshd.o auth-rhosts.o auth-passwd.o auth-rsa.o auth-rh-rsa.o \
++SSHDOBJS=sshd.o auth-rhosts.o auth-rsa.o auth-rh-rsa.o \
+ 	audit.o audit-bsm.o audit-linux.o platform.o \
+ 	sshpty.o sshlogin.o servconf.o serverloop.o \
+ 	auth.o auth1.o auth2.o auth-options.o session.o \
