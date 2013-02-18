@@ -29,3 +29,12 @@ Ubuntu 12.10 x86_64
 
 cabal-install version 0.14.0
 using version 1.14.0 of the Cabal library
+
+> The Haskell DAV library needs to be updated to build with
+> the newer version of xml-conduit. Library skew of this sort 
+> is common when using cabal.
+> 
+> You can work around this by building git-annex without webdav:
+> `cabal configure --flags=-WebDAV`
+> 
+> This is not a git-annex bug. [[done]] --[[Joey]]
