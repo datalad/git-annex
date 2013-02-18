@@ -1,0 +1,17 @@
+<div .span9 .hero-unit>
+  <h2>
+    Combine repositories?
+  <p>
+    You have created a new repository at #{newrepopath}. #
+    Do you want to combine it with your existing repository at #{mainrepopath}?
+  <p>
+    Combining the repositories will sync their files, so each will have #
+    added to it all files from the other repository.
+  <p>
+    If you want to use the new repository to hold different sorts of files, #
+    you should not combine the repositories.
+  <p>
+    <a .btn .btn-primary href="@{CombineRepository newrepopath}">
+      <i .icon-resize-small></i> Combine the repositories
+    <a .btn href="@{SwitchToRepositoryR newrepopath}">
+      <i .icon-resize-full></i> Keep the repositories separate
