@@ -10,8 +10,8 @@ build: source
 	rm -f git-annex-bundle/bin/git-cvsserver
 
 	cp source/busybox/configs/android2_defconfig source/busybox/.config
-	echo 'CONFIG_FEATURE_INSTALLER=y' >> source/busybox/.config
 	cd source/busybox && yes '' | $(MAKE) oldconfig
+	echo 'CONFIG_FEATURE_INSTALLER=y' >> source/busybox/.config
 	cd source/busybox && $(MAKE)
 	cp -a source/busybox/busybox git-annex-bundle/bin/
 
