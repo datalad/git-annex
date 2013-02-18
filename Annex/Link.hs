@@ -19,6 +19,8 @@ import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
 
+type LinkTarget = String
+
 {- Checks if a file is a link to a key. -}
 isAnnexLink :: FilePath -> Annex (Maybe Key)
 isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget file
@@ -32,7 +34,7 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
-getAnnexLinkTarget :: FilePath -> Annex (Maybe String)
+getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget file = do
 	v <- ifM (coreSymlinks <$> Annex.getGitConfig)
 		( liftIO $ catchMaybeIO $ readSymbolicLink file
@@ -51,20 +53,20 @@ getAnnexLinkTarget file = do
  - it's staged as such, so use addAnnexLink when adding a new file or
  - modified link to git.
  -}
-makeAnnexLink :: String -> FilePath -> Annex ()
+makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
 makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ createSymbolicLink linktarget file
 	, liftIO $ writeFile file linktarget
 	)
 
 {- Creates a link on disk, and additionally stages it in git. -}
-addAnnexLink :: String -> FilePath -> Annex ()
+addAnnexLink :: LinkTarget -> FilePath -> Annex ()
 addAnnexLink linktarget file = do
 	makeAnnexLink linktarget file
 	stageSymlink file =<< hashSymlink linktarget
 
 {- Injects a symlink target into git, returning its Sha. -}
-hashSymlink :: String -> Annex Sha
+hashSymlink :: LinkTarget -> Annex Sha
 hashSymlink linktarget = inRepo $ Git.HashObject.hashObject BlobObject linktarget
 
 {- Stages a symlink to the annex, using a Sha of its target. -}
