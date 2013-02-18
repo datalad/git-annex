@@ -2,6 +2,8 @@ git-annex (3.20130217) UNRELEASED; urgency=low
 
   * Should now fully support git repositories with core.symlinks=false;
     always using git's pseudosymlink files in such repositories.
+  * webapp: Allow creating repositories on filesystems that lack support for
+    symlinks.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

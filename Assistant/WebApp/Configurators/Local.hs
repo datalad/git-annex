@@ -82,7 +82,6 @@ checkRepositoryPath p = do
 		, (return $ path == home, "Sorry, using git-annex for your whole home directory is not currently supported.")
 		, (not <$> doesDirectoryExist parent, "Parent directory does not exist.")
 		, (not <$> canWrite path, "Cannot write a repository there.")
-		, (not <$> canMakeSymlink path, "That directory is on a filesystem that does not support symlinks. Try a different location.")
 		]
 	return $ 
 		case headMaybe problems of
@@ -306,16 +305,3 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
-
-{- Checks if a directory is on a filesystem that supports symlinks. -}
-canMakeSymlink :: FilePath -> IO Bool
-canMakeSymlink dir = ifM (doesDirectoryExist dir)
-	( catchBoolIO $ test dir
-	, canMakeSymlink (parentDir dir)
-	)
-  where
-	test d = do
-		let link = d </> "delete.me"
-		createSymbolicLink link link
-		removeLink link
-		return True
