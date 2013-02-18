@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20130216
+Version: 3.20130216.1
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -66,7 +66,8 @@ Executable git-annex
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   Extensions: CPP
-  GHC-Options: -threaded -DWITH_GLOB
+  GHC-Options: -threaded
+  CPP-Options: -DWITH_GLOB
 
   if flag(S3)
     Build-Depends: hS3
