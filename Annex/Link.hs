@@ -38,13 +38,18 @@ getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget file = do
 	v <- ifM (coreSymlinks <$> Annex.getGitConfig)
 		( liftIO $ catchMaybeIO $ readSymbolicLink file
-		, liftIO $ catchMaybeIO $ take 8192 <$> readFile file
+		, liftIO $ catchMaybeIO $ readfilestart file
 		)
 	case v of
 		Nothing -> return Nothing
 		Just l
 			| isLinkToAnnex l -> return v
 			| otherwise -> return Nothing
+  where
+	readfilestart f = do
+		h <- openFile f ReadMode
+		fileEncoding h
+		take 8192 <$> hGetContents h
 
 {- Creates a link on disk.
  -
