@@ -10,3 +10,6 @@ dropbox allows modifying files, git-annex freezes them upon creation,
 so this would not be 100% equivalent to dropbox. --[[Joey]]
 
 This is a big project with its own [[design pages|design/assistant]].
+
+> [[done]].. at least, we have a watch command an an assistant, which
+> is still being developed. --[[Joey]] 
