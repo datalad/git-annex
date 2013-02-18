@@ -81,7 +81,7 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe = inAnnex' (maybe False id) (Just False) go
+inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
   where
 	go f = liftIO $ openforlock f >>= check
 	openforlock f = catchMaybeIO $
@@ -240,15 +240,14 @@ checkDiskSpace destination key alreadythere = do
 moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = withObjectLoc key storeobject storedirect
   where
-	storeobject dest = do
-		ifM (liftIO $ doesFileExist dest)
-			( liftIO $ removeFile src
-			, do
-				createContentDir dest
-				liftIO $ moveFile src dest
-				freezeContent dest
-				freezeContentDir dest
-			)
+	storeobject dest = ifM (liftIO $ doesFileExist dest)
+		( liftIO $ removeFile src
+		, do
+			createContentDir dest
+			liftIO $ moveFile src dest
+			freezeContent dest
+			freezeContentDir dest
+		)
 	storedirect fs = storedirect' =<< filterM validsymlink fs
 	validsymlink f = (==) (Just key) <$> isAnnexLink f
 
@@ -278,7 +277,7 @@ replaceFile file a = do
  - If this happens, runs the rollback action and returns False. The
  - rollback action should remove the data that was transferred.
  -}
-sendAnnex :: Key -> (Annex ()) -> (FilePath -> Annex Bool) -> Annex Bool
+sendAnnex :: Key -> Annex () -> (FilePath -> Annex Bool) -> Annex Bool
 sendAnnex key rollback sendobject = go =<< prepSendAnnex key
   where
 	go Nothing = return False

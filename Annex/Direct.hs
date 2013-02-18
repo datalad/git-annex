@@ -135,7 +135,7 @@ mergeDirectCleanup d oldsha newsha = do
 			| otherwise = araw f
 		f = DiffTree.file item
 
-	moveout k f = removeDirect k f
+	moveout = removeDirect
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}
@@ -164,7 +164,7 @@ mergeDirectCleanup d oldsha newsha = do
 {- If possible, converts a symlink in the working tree into a direct
  - mode file. -}
 toDirect :: Key -> FilePath -> Annex ()
-toDirect k f = maybe noop id =<< toDirectGen k f
+toDirect k f = fromMaybe noop =<< toDirectGen k f
 
 toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
@@ -181,7 +181,7 @@ toDirectGen k f = do
 					liftIO . moveFile loc
 			, return Nothing
 			)
-		(loc':_) -> ifM (not . isJust <$> getAnnexLinkTarget loc')
+		(loc':_) -> ifM (isNothing <$> getAnnexLinkTarget loc')
 			{- Another direct file has the content; copy it. -}
 			( return $ Just $
 				replaceFile f $
@@ -194,7 +194,7 @@ removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	locs <- removeAssociatedFile k f
 	when (null locs) $
-		whenM (not . isJust <$> getAnnexLinkTarget f) $
+		whenM (isNothing <$> getAnnexLinkTarget f) $
 			moveAnnex k f
 	liftIO $ do
 		nukeFile f

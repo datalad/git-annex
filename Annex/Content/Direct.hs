@@ -75,7 +75,7 @@ removeAssociatedFile key file = do
 addAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 addAssociatedFile key file = do
 	file' <- normaliseAssociatedFile file
-	changeAssociatedFiles key $ \files -> do
+	changeAssociatedFiles key $ \files ->
 		if file' `elem` files
 			then files
 			else file':files
