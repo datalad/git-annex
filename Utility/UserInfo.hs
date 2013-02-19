@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.UserInfo (
 	myHomeDir,
 	myUserName,
@@ -26,7 +28,11 @@ myUserName :: IO String
 myUserName = myVal ["USER", "LOGNAME"] userName
 
 myUserGecos :: IO String
+#ifdef WITH_ANDROID
+myUserGecos = return "" -- userGecos crashes on Android
+#else
 myUserGecos = myVal [] userGecos
+#endif
 
 myVal :: [String] -> (UserEntry -> String) -> IO String
 myVal envvars extract = maybe (extract <$> getpwent) return =<< check envvars
