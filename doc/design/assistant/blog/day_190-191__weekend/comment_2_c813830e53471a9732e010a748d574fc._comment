@@ -1,0 +1,28 @@
+[[!comment format=c
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Two direct mode repository on the same computer"
+ date="2013-02-19T09:24:21Z"
+ content="""
+Hi,
+
+I just tried the newest git annex webapp (20130216), 
+I am still not able to configure two direct mode repositories (one normal, one backup) on the same computer.
+
+It does recognize my other partition (/mnt/the) as a removable drive, but when I add it 
+it gives me internal server error:
+\"\"\"
+Internal Server Error
+
+there is no available git remote named \"the\"
+git-annex version 3.20130216
+\"\"\"
+
+Could you please (pretty please) add a possibility to specify the removable drive as a simple folder?
+So I could choose arbitrary folder(/mnt/the/annex-backup) on my computer and 
+it would treat it as a direct mode repository.
+
+Best, 
+ Laszlo
+
+"""]]
