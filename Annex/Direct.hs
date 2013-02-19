@@ -85,7 +85,7 @@ addDirect file cache = do
 	got Nothing = do
 		showEndFail
 		return False
-	got (Just (key, _)) = ifM (liftIO $ compareInodeCache file $ Just cache)
+	got (Just (key, _)) = ifM (sameInodeCache file $ Just cache)
 		( do
 			stageSymlink file =<< hashSymlink =<< calcGitLink file key
 			writeInodeCache key cache

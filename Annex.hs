@@ -116,6 +116,7 @@ data AnnexState = AnnexState
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map String (Annex ())
+	, inodeschanged :: Maybe Bool
 	}
 
 newState :: Git.Repo -> AnnexState
@@ -145,6 +146,7 @@ newState gitrepo = AnnexState
 	, flags = M.empty
 	, fields = M.empty
 	, cleanup = M.empty
+	, inodeschanged = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

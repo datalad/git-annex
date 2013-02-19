@@ -13,6 +13,13 @@ import System.Posix.Types
 data InodeCache = InodeCache FileID FileOffset EpochTime
 	deriving (Eq, Show)
 
+{- Weak comparison of the inode caches, comparing the size and mtime, but
+ - not the actual inode.  Useful when inodes have changed, perhaps
+ - due to some filesystems being remounted. -}
+compareWeak :: InodeCache -> InodeCache -> Bool
+compareWeak (InodeCache _ size1 mtime1) (InodeCache _ size2 mtime2) =
+	size1 == size2 && mtime1 == mtime2
+
 showInodeCache :: InodeCache -> String
 showInodeCache (InodeCache inode size mtime) = unwords
 	[ show inode
@@ -42,9 +49,3 @@ toInodeCache s
 		(fileSize s)
 		(modificationTime s)
 	| otherwise = Nothing
-
-{- Compares an inode cache with the current inode of file. -}
-compareInodeCache :: FilePath -> Maybe InodeCache -> IO Bool
-compareInodeCache file old = do
-	curr <- genInodeCache file
-	return $ isJust curr && curr == old

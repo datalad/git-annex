@@ -1,6 +1,6 @@
 {- git-annex file content managing for direct mode
  -
- - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,12 +14,13 @@ module Annex.Content.Direct (
 	recordedInodeCache,
 	updateInodeCache,
 	writeInodeCache,
-	compareInodeCache,
+	sameInodeCache,
 	removeInodeCache,
 	toInodeCache,
 ) where
 
 import Common.Annex
+import qualified Annex
 import Annex.Perms
 import qualified Git
 import Utility.TempFile
@@ -94,9 +95,7 @@ normaliseAssociatedFile file = do
  - expected mtime and inode.
  -}
 goodContent :: Key -> FilePath -> Annex Bool
-goodContent key file = do
-	old <- recordedInodeCache key
-	liftIO $ compareInodeCache file old
+goodContent key file = sameInodeCache file =<< recordedInodeCache key
 
 changedFileStatus :: Key -> FileStatus -> Annex Bool
 changedFileStatus key status = do
@@ -128,3 +127,45 @@ removeInodeCache key = withInodeCacheFile key $ \f -> do
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< inRepo (gitAnnexInodeCache key)
+
+{- Checks if a file's InodeCache matches its current info.
+ -
+ - If the inodes have changed, only the size and mtime are compared.
+ -}
+sameInodeCache :: FilePath -> Maybe InodeCache -> Annex Bool
+sameInodeCache _ Nothing = return False
+sameInodeCache file (Just old) = go =<< liftIO (genInodeCache file)
+  where
+	go Nothing = return False
+	go (Just curr)
+		| curr == old = return True
+		| otherwise = ifM inodesChanged
+			( return $ compareWeak curr old
+			, return False
+			)
+
+{- Some filesystems get new inodes each time they are mounted.
+ - In order to work on such a filesystem, a sentinal file is used to detect
+ - when the inodes have changed. -}
+inodesChanged :: Annex Bool
+inodesChanged = maybe calc return =<< Annex.getState Annex.inodeschanged
+  where
+	calc = do
+		sentinalfile <- fromRepo gitAnnexInodeSentinal
+		sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
+		scache <- liftIO $ genInodeCache sentinalfile
+		scached <- liftIO $ catchMaybeIO $ readInodeCache <$> readFile sentinalcachefile
+		case (scache, scached) of
+			(Just c1, Just (Just c2)) -> changed $ c1 /= c2
+			_ -> do
+				writesentinal
+				changed True
+	changed v = do
+		Annex.changeState $ \s -> s { Annex.inodeschanged = Just v }
+		return v
+	writesentinal = do
+		sentinalfile <- fromRepo gitAnnexInodeSentinal
+		sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
+		liftIO $ writeFile sentinalfile ""
+		liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)
+			=<< genInodeCache sentinalfile

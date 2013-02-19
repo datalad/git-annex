@@ -8,6 +8,8 @@ git-annex (3.20130217) UNRELEASED; urgency=low
     the main local repository.
   * Android: Bundle now includes openssh.
   * Android: Support ssh connection caching.
+  * Direct mode: Support filesystems like FAT which can change their inodes
+    each time they are mounted.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

@@ -304,8 +304,8 @@ prepSendAnnex key = withObjectLoc key indirect direct
 	direct (f:fs) = do
 		cache <- recordedInodeCache key
 		-- check that we have a good file
-		ifM (liftIO $ compareInodeCache f cache)
-			( return $ Just (f, liftIO $ compareInodeCache f cache)
+		ifM (sameInodeCache f cache)
+			( return $ Just (f, sameInodeCache f cache)
 			, direct fs
 			)
 
@@ -356,7 +356,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 		cache <- recordedInodeCache key
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
-	resetfile cache f = whenM (liftIO $ compareInodeCache f cache) $ do
+	resetfile cache f = whenM (sameInodeCache f cache) $ do
 		l <- calcGitLink f key
 		top <- fromRepo Git.repoPath
 		cwd <- liftIO getCurrentDirectory

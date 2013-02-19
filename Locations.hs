@@ -13,6 +13,8 @@ module Locations (
 	gitAnnexLocation,
 	gitAnnexMapping,
 	gitAnnexInodeCache,
+	gitAnnexInodeSentinal,
+	gitAnnexInodeSentinalCache,
 	annexLocations,
 	annexLocation,
 	gitAnnexDir,
@@ -127,6 +129,12 @@ gitAnnexInodeCache :: Key -> Git.Repo -> IO FilePath
 gitAnnexInodeCache key r  = do
 	loc <- gitAnnexLocation key r 
 	return $ loc ++ ".cache"
+
+gitAnnexInodeSentinal :: Git.Repo -> FilePath
+gitAnnexInodeSentinal r = gitAnnexDir r </> "sentinal"
+
+gitAnnexInodeSentinalCache :: Git.Repo -> FilePath
+gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r ++ ".cache"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
