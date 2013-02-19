@@ -15,9 +15,7 @@
 <p>
   Pair with a computer to automatically keep files in sync #
   over your local network.
-
 <p>
-
   For easy sharing with friends and devices in the same location.
 
 <h3>
@@ -30,6 +28,12 @@
 <p>
 
   For easy sharing with friends and devices, over the internet.
+
+<h3>
+  <a href="@{NewRepositoryR}">
+    <i .icon-plus-sign></i> Add a local repository
+<p>
+  Make another repository on your computer.
 
 <h3>
   <i .icon-plus-sign></i> Phone

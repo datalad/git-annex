@@ -43,14 +43,9 @@ listOtherRepos = do
  -}
 getSwitchToRepositoryR :: FilePath -> Handler RepHtml
 getSwitchToRepositoryR repo = do
-	liftIO startassistant
-	url <- liftIO geturl
-	redirect url
+	liftIO $ startAssistant repo
+	redirect =<< liftIO geturl
   where
-	startassistant = do
-		program <- readProgramFile
-		void $ forkIO $ void $ createProcess $
-			(proc program ["assistant"]) { cwd = Just repo }
 	geturl = do
 		r <- Git.Config.read =<< Git.Construct.fromPath repo
 		waiturl $ gitAnnexUrlFile r
@@ -66,3 +61,9 @@ getSwitchToRepositoryR repo = do
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a
+
+startAssistant :: FilePath -> IO ()
+startAssistant repo = do
+	program <- readProgramFile
+	void $ forkIO $ void $ createProcess $
+		(proc program ["assistant"]) { cwd = Just repo }

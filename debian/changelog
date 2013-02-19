@@ -4,6 +4,8 @@ git-annex (3.20130217) UNRELEASED; urgency=low
     always using git's pseudosymlink files in such repositories.
   * webapp: Allow creating repositories on filesystems that lack support for
     symlinks.
+  * webapp: Can now add a new local repository, and make it sync with
+    the main local repository.
   * Android: Bundle now includes openssh.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400

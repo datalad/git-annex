@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
+import Assistant.WebApp.OtherRepos
 import Assistant.MakeRemote
 import Init
 import qualified Git
@@ -135,20 +136,35 @@ getFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 			startFullAssistant $ T.unpack p
 		_ -> $(widgetFile "configurators/newrepository/first")
 
-{- Adding a new, separate repository. -}
+{- Adding a new local repository, which may be entirely separate, or may
+ - be connected to the current repository. -}
 getNewRepositoryR :: Handler RepHtml
 getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
 	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm home
 	case res of
-		FormSuccess (RepositoryPath p) -> lift $ do
+		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			liftIO $ makeRepo path False
 			u <- liftIO $ initRepo True path Nothing
-			runAnnex () $ setStandardGroup u ClientGroup
+			lift $ runAnnex () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStart path
-			redirect $ SwitchToRepositoryR path
+			liftIO $ startAssistant path
+			askcombine u path
 		_ -> $(widgetFile "configurators/newrepository")
+  where
+	askcombine newrepouuid newrepopath = do
+		newrepo <- liftIO $ relHome newrepopath
+		mainrepo <- fromJust . relDir <$> lift getYesod
+		$(widgetFile "configurators/newrepository/combine")
+
+getCombineRepositoryR :: FilePath -> UUID -> Handler RepHtml
+getCombineRepositoryR newrepopath newrepouuid = do
+	r <- combineRepos newrepopath remotename
+	syncRemote r
+	redirect $ EditRepositoryR newrepouuid
+  where
+	remotename = takeFileName newrepopath
 
 data RemovableDrive = RemovableDrive 
 	{ diskFree :: Maybe Integer
@@ -188,7 +204,7 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	make mountpoint = do
 		liftIO $ makerepo dir
 		u <- liftIO $ initRepo False dir $ Just remotename
-		r <- addremote dir remotename
+		r <- combineRepos dir remotename
 		runAnnex () $ setStandardGroup u TransferGroup
 		syncRemote r
 		return u
@@ -204,12 +220,15 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 			_ -> do
 				createDirectoryIfMissing True dir
 				makeRepo dir True
-	{- Each repository is made a remote of the other. -}
-	addremote dir name = runAnnex undefined $ do
-		hostname <- maybe "host" id <$> liftIO getHostname
-		hostlocation <- fromRepo Git.repoLocation
-		liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
-		addRemote $ makeGitRemote name dir
+
+{- Each repository is made a remote of the other.
+ - Next call syncRemote to get them in sync. -}
+combineRepos :: FilePath -> String -> Handler Remote
+combineRepos dir name = runAnnex undefined $ do
+	hostname <- maybe "host" id <$> liftIO getHostname
+	hostlocation <- fromRepo Git.repoLocation
+	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
+	addRemote $ makeGitRemote name dir
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
