@@ -12,4 +12,11 @@ So, for example, `git annex commit` would run `git commit --git-dir=.git-annex`
 However, `git annex commit -a` would refuse to run, or even do something
 intelligent that does not involve staging every direct mode file.
 
+----
+
+One source of problems here is that there is some overlap between git-annex
+and git commands. Ie, `git annex add` cannot be a passthrough for `git
+add`. The git wrapper could instead be another program, or it could be
+something like `git annex git add`
+
 --[[Joey]]
