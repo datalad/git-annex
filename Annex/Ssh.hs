@@ -77,12 +77,9 @@ sshCacheDir
 	| otherwise = return Nothing
   where
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
-	usetmpdir tmpdir = do
-		u <- getUUID
-		let dir = tmpdir </> fromUUID u
-		liftIO $ catchMaybeIO $ do
-			createDirectoryIfMissing True dir
-			return $ dir
+	usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
+		createDirectoryIfMissing True tmpdir
+		return $ tmpdir
 
 portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []

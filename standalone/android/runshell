@@ -4,7 +4,8 @@
 
 set -e
 
-base="$(dirname $0)"/git-annex-bundle
+here="$(dirname $0)"
+base="$here/git-annex-bundle"
 
 if [ ! -d "$base" ]; then
 	echo "** cannot find base directory (I seem to be $0)" >&2
@@ -54,7 +55,8 @@ GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
 
 # This is a temporary directory on a non-crippled filesystem.
-GIT_ANNEX_TMP_DIR=$base/tmp
+# This needs to be as short a path as possible.
+GIT_ANNEX_TMP_DIR=$here/tmp
 export GIT_ANNEX_TMP_DIR
 mkdir -p "$GIT_ANNEX_TMP_DIR"
 
