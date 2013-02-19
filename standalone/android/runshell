@@ -21,7 +21,7 @@ if [ ! -e "$base/bin/git" ]; then
 fi
 
 # Install busybox links.
-if [ ! -e "$base/bin/sh" ]; then
+if [ ! -e "$base/bin/sha256sum" ]; then
 	echo "(First run detected ... setting up busybox ...)"
 	"$base/bin/busybox" --install "$base/bin"
 fi
@@ -52,6 +52,11 @@ export GIT_TEMPLATE_DIR
 # Indicate which variables were exported above.
 GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
+
+# This is a temporary directory on a non-crippled filesystem.
+GIT_ANNEX_TMP_DIR=$base/tmp
+export GIT_ANNEX_TMP_DIR
+mkdir -p "$GIT_ANNEX_TMP_DIR"
 
 if [ "$1" ]; then
 	cmd="$1"

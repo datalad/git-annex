@@ -11,9 +11,9 @@ build: source
 	cd source/openssl && CC=$$(which cc) ./Configure android
 	cd source/openssl && $(MAKE)
 
-	cd source/rsync && git reset --hard origin/master
+	cd source/openssh && git reset --hard
 	cd source/openssh && ./configure --host=arm-linux-androideabi --with-ssl-dir=../openssl --without-openssl-header-check
-	cd source/openssh && patch < ../../openssh.patch
+	cd source/openssh && patch -p1 < ../../openssh.patch
 	cp openssh.config.h source/openssh/config.h
 	cd source/openssh && sed -i -e 's/getrrsetbyname.o //' openbsd-compat/Makefile
 	cd source/openssh && sed -i -e 's/auth-passwd.o //' Makefile

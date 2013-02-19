@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,14 +13,15 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
+import System.Posix.Env
 
 import Common.Annex
 import Annex.LockPool
 import Annex.Perms
-#ifndef WITH_OLD_SSH
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
-#endif
+import Config
+import Annex.UUID
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
@@ -40,33 +41,48 @@ sshParams (host, port) opts = go =<< sshInfo (host, port)
 	cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
 		sshCleanup
 
+{- Returns a filename to use for a ssh connection caching socket, and
+ - parameters to enable ssh connection caching. -}
 sshInfo :: (String, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
-sshInfo (host, port) = ifM caching
-	( do
-		dir <- fromRepo gitAnnexSshDir
+sshInfo (host, port) = go =<< sshCacheDir
+  where
+	go Nothing = return (Nothing, [])
+	go (Just dir) = do
 		let socketfile = dir </> hostport2socket host port
 		if valid_unix_socket_path socketfile
-			then return (Just socketfile, cacheParams socketfile)
+			then return (Just socketfile, cacheparams socketfile)
 			else do
 				socketfile' <- liftIO $ relPathCwdToFile socketfile
 				if valid_unix_socket_path socketfile'
-					then return (Just socketfile', cacheParams socketfile')
+					then return (Just socketfile', cacheparams socketfile')
 					else return (Nothing, [])
-	, return (Nothing, [])
-	)
-  where
-#ifdef WITH_OLD_SSH
-	caching = return False
-#else
-	caching = fromMaybe SysConfig.sshconnectioncaching 
-		. annexSshCaching <$> Annex.getGitConfig
-#endif
+	cacheparams :: FilePath -> [CommandParam]
+	cacheparams socketfile =
+		[ Param "-S", Param socketfile
+		, Params "-o ControlMaster=auto -o ControlPersist=yes"
+		]
 
-cacheParams :: FilePath -> [CommandParam]
-cacheParams socketfile =
-	[ Param "-S", Param socketfile
-	, Params "-o ControlMaster=auto -o ControlPersist=yes"
-	]
+{- ssh connection caching creates sockets, so will not work on a
+ - crippled filesystem. A GIT_ANNEX_TMP_DIR can be provided to use
+ - a different filesystem. -}
+sshCacheDir :: Annex (Maybe FilePath)
+sshCacheDir
+	| SysConfig.sshconnectioncaching = ifM crippledFileSystem
+		( maybe (return Nothing) usetmpdir =<< gettmpdir
+		, ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
+			( Just <$> fromRepo gitAnnexSshDir
+			, return Nothing
+			)
+		)
+	| otherwise = return Nothing
+  where
+	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
+	usetmpdir tmpdir = do
+		u <- getUUID
+		let dir = tmpdir </> fromUUID u
+		liftIO $ catchMaybeIO $ do
+			createDirectoryIfMissing True dir
+			return $ dir
 
 portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
@@ -74,12 +90,13 @@ portParams (Just port) = [Param "-p", Param $ show port]
 
 {- Stop any unused ssh processes. -}
 sshCleanup :: Annex ()
-sshCleanup = do
-	dir <- fromRepo gitAnnexSshDir
-	sockets <- filter (not . isLock) <$>
-		liftIO (catchDefaultIO [] $ dirContents dir)
-	forM_ sockets cleanup
+sshCleanup = go =<< sshCacheDir
   where
+	go Nothing = noop
+	go (Just dir) = do
+		sockets <- filter (not . isLock) <$>
+			liftIO (catchDefaultIO [] $ dirContents dir)
+		forM_ sockets cleanup
 	cleanup socketfile = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock

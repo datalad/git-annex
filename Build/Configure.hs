@@ -138,7 +138,6 @@ androidConfig c = overrides ++ filter (not . overridden) c
 	overrides = 
 		[ Config "cp_reflink_auto" $ BoolConfig False
 		, Config "curl" $ BoolConfig False
-		, Config "sshconnectioncaching" $ BoolConfig False
 		, Config "sha224" $ MaybeStringConfig Nothing
 		, Config "sha384" $ MaybeStringConfig Nothing
 		]
