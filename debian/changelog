@@ -10,6 +10,7 @@ git-annex (3.20130217) UNRELEASED; urgency=low
   * Android: Support ssh connection caching.
   * Direct mode: Support filesystems like FAT which can change their inodes
     each time they are mounted.
+  * Direct mode: Fix support for adding a modified file.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

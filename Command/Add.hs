@@ -35,14 +35,14 @@ def = [notBareRepo $ command "add" paramPaths seek "add files to annex"]
 seek :: [CommandSeek]
 seek =
 	[ withFilesNotInGit start
-	, whenNotDirect $ withFilesUnlocked start
+	, withFilesUnlocked start
 	]
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up
  - the symlink pointing to its content. -}
 start :: FilePath -> CommandStart
-start file = ifAnnexed file fixup add
+start file = ifAnnexed file addpresent add
   where
 	add = do
 		s <- liftIO $ getSymbolicLinkStatus file
@@ -51,7 +51,11 @@ start file = ifAnnexed file fixup add
 			else do
 				showStart "add" file
 				next $ perform file
-	fixup (key, _) = do
+	addpresent (key, _) = ifM isDirect
+		( ifM (goodContent key file) ( stop , add )
+		, fixup key
+		)
+	fixup key = do
 		-- fixup from an interrupted add; the symlink
 		-- is present but not yet added to git
 		showStart "add" file
