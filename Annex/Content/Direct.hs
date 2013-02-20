@@ -17,6 +17,8 @@ module Annex.Content.Direct (
 	sameInodeCache,
 	removeInodeCache,
 	toInodeCache,
+	inodesChanged,
+	createInodeSentinalFile,
 ) where
 
 import Common.Annex
@@ -146,26 +148,45 @@ sameInodeCache file (Just old) = go =<< liftIO (genInodeCache file)
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
- - when the inodes have changed. -}
+ - when the inodes have changed.
+ -
+ - If the sentinal file does not exist, we have to assume that the
+ - inodes have changed.
+ -}
 inodesChanged :: Annex Bool
 inodesChanged = maybe calc return =<< Annex.getState Annex.inodeschanged
   where
 	calc = do
-		sentinalfile <- fromRepo gitAnnexInodeSentinal
-		sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-		scache <- liftIO $ genInodeCache sentinalfile
-		scached <- liftIO $ catchMaybeIO $ readInodeCache <$> readFile sentinalcachefile
-		case (scache, scached) of
-			(Just c1, Just (Just c2)) -> changed $ c1 /= c2
-			_ -> do
-				writesentinal
-				changed True
-	changed v = do
-		Annex.changeState $ \s -> s { Annex.inodeschanged = Just v }
-		return v
-	writesentinal = do
-		sentinalfile <- fromRepo gitAnnexInodeSentinal
-		sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-		liftIO $ writeFile sentinalfile ""
-		liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)
-			=<< genInodeCache sentinalfile
+		scache <- liftIO . genInodeCache
+			=<< fromRepo gitAnnexInodeSentinal
+		scached <- readInodeSentinalFile
+		let changed = case (scache, scached) of
+			(Just c1, Just c2) -> c1 /= c2
+			_ -> True
+		Annex.changeState $ \s -> s { Annex.inodeschanged = Just changed }
+		return changed
+
+readInodeSentinalFile :: Annex (Maybe InodeCache)
+readInodeSentinalFile = do
+	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
+	liftIO $ catchDefaultIO Nothing $
+		readInodeCache <$> readFile sentinalcachefile
+
+writeInodeSentinalFile :: Annex ()
+writeInodeSentinalFile = do
+	sentinalfile <- fromRepo gitAnnexInodeSentinal
+	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
+	liftIO $ writeFile sentinalfile ""
+	liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)
+		=<< genInodeCache sentinalfile
+
+{- The sentinal file is only created when first initializing a repository.
+ - If there are any annexed objects in the repository already, creating
+ - the file would invalidate their inode caches. -}
+createInodeSentinalFile :: Annex ()
+createInodeSentinalFile =
+	unlessM (alreadyexists <||> hasobjects)
+		writeInodeSentinalFile
+  where
+	alreadyexists = isJust <$> readInodeSentinalFile
+	hasobjects = liftIO . doesDirectoryExist =<< fromRepo gitAnnexObjectDir

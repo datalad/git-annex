@@ -27,6 +27,7 @@ import Utility.Shell
 import Utility.FileMode
 import Config
 import Annex.Direct
+import Annex.Content.Direct
 import Backend
 
 genDescription :: Maybe String -> Annex String
@@ -45,6 +46,7 @@ initialize mdescription = do
 	Annex.Branch.create
 	setVersion
 	gitPreCommitHookWrite
+	createInodeSentinalFile
 	u <- getUUID
 	describeUUID u =<< genDescription mdescription
 
