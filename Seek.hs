@@ -88,6 +88,11 @@ withFilesUnlocked' typechanged a params = do
 	let unlockedfiles = liftIO $ filterM notSymlink typechangedfiles
 	prepFiltered a unlockedfiles
 
+{- Finds files that may be modified. -}
+withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek
+withFilesMaybeModified a params =
+	prepFiltered a $ seekHelper LsFiles.modified params
+
 withKeys :: (Key -> CommandStart) -> CommandSeek
 withKeys a params = return $ map (a . parse) params
   where

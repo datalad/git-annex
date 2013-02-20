@@ -9,6 +9,7 @@ module Git.LsFiles (
 	inRepo,
 	notInRepo,
 	deleted,
+	modified,
 	staged,
 	stagedNotDeleted,
 	stagedDetails,
@@ -45,6 +46,13 @@ deleted :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 deleted l repo = pipeNullSplit params repo
   where
 	params = [Params "ls-files --deleted -z --"] ++ map File l
+
+{- Returns a list of files in the specified locations that have been
+ - modified. -}
+modified :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+modified l repo = pipeNullSplit params repo
+  where
+	params = [Params "ls-files --modified -z --"] ++ map File l
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)

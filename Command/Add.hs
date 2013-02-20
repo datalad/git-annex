@@ -31,11 +31,14 @@ import Utility.InodeCache
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek "add files to annex"]
 
-{- Add acts on both files not checked into git yet, and unlocked files. -}
+{- Add acts on both files not checked into git yet, and unlocked files.
+ -
+ - In direct mode, it acts on any files that have changed. -}
 seek :: [CommandSeek]
 seek =
 	[ withFilesNotInGit start
-	, withFilesUnlocked start
+	, whenNotDirect $ withFilesUnlocked start
+	, whenDirect $ withFilesMaybeModified start
 	]
 
 {- The add subcommand annexes a file, generating a key for it using a
