@@ -6,6 +6,7 @@ Another related feature which would be useful to have is described by tagfs [3][
 How hard would this be to implement within the existing infrastructure?
 Thanks.
 
+related post: [[multiple_sym_links___40__for_tagging_photos__41____63__]
 
 [1]: http://code.google.com/p/tagfs/
 [2]: www.tagsistant.net/
