@@ -247,9 +247,7 @@ safeToAdd delayadd pending inprocess = do
 		let inprocess' = inprocess ++ catMaybes (map mkinprocess $ zip pending keysources)
 		openfiles <- S.fromList . map fst3 . filter openwrite <$>
 			findopenfiles (map keySource inprocess')
-		liftIO $ print openfiles
 		let checked = map (check openfiles) inprocess'
-		liftIO $ print checked
 
 		{- If new events are received when files are closed,
 		 - there's no need to retry any changes that cannot
