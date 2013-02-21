@@ -17,7 +17,7 @@ export HOME
 setup () {
 	echo "Installation starting to $base"
 	mkdir -p "$base/bin"
-	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh-keygen; do
+	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
 		echo "installing $prog"
 		ln $base/lib/lib.$prog.so $base/bin/$prog
 	done
