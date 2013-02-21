@@ -1,0 +1,56 @@
+diff --git a/tools/build-debug b/tools/build-debug
+index 1f15cd2..e611956 100755
+--- a/tools/build-debug
++++ b/tools/build-debug
+@@ -34,4 +34,4 @@ fi
+ 
+ rm -rf `find . -name bin -o -name obj -prune`
+ cd jni
+-$ANDROID_NDK_ROOT/ndk-build && cd .. && ant debug
++$ANDROID_NDK_ROOT/ndk-build && cd ..
+diff --git a/tools/update.sh b/tools/update.sh
+index 57219c3..79b45ef 100755
+--- a/tools/update.sh
++++ b/tools/update.sh
+@@ -18,7 +18,7 @@ command -v "$ANDROID" >/dev/null 2>&1 || { echo >&2 "The $ANDROID tool is not fo
+ 
+ # Make sure target-11 is installed
+ 
+-$ANDROID update sdk -u -t android-11
++$ANDROID update sdk -u -t android-17
+ 
+ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ ATE_ROOT="$( cd $DIR/.. && pwd )"
+@@ -31,5 +31,5 @@ for PROJECT_FILE in $PROJECT_FILES
+ do
+     PROJECT_DIR="$( dirname "$PROJECT_FILE" )"
+     echo "Updating $PROJECT_FILE"
+-    $ANDROID update project -p "$PROJECT_DIR" --target android-11
++    $ANDROID update project -p "$PROJECT_DIR" --target android-17
+ done
+diff --git a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+index f6952f0..4b2aa5f 100644
+--- a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
++++ b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+@@ -166,7 +166,7 @@ public class TermActivity extends Activity
+         /* ... create a process ... */
+         String execPath = LaunchActivity.getDataDir(this) + "/bin/execpty";
+         ProcessBuilder execBuild =
+-                new ProcessBuilder(execPath, "/system/bin/sh", "-");
++                new ProcessBuilder(execPath, "/data/data/ga.androidterm/lib/lib.runshell.so", "");
+         execBuild.redirectErrorStream(true);
+         Process exec = null;
+         try {
+diff --git a/res/values/defaults.xml b/res/values/defaults.xml
+index 67287b2..cc2f691 100644
+--- a/res/values/defaults.xml
++++ b/res/values/defaults.xml
+@@ -13,7 +13,7 @@
+    <string name="pref_fnkey_default">4</string>
+    <string name="pref_ime_default">0</string>
+    <bool name="pref_alt_sends_esc_default">false</bool>
+-   <string name="pref_shell_default">/system/bin/sh -</string>
++   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.runshell.so</string>
+    <string name="pref_initialcommand_default"></string>
+    <string name="pref_termtype_default">screen</string>
+    <bool name="pref_close_window_on_process_exit_default">true</bool>

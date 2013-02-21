@@ -1,43 +1,53 @@
 #!/system/bin/sh
-# Runs a shell command (or interactive shell) using the binaries and
-# libraries bundled with this app.
+# This is run by the Android app, and runs a shell in an environment
+# configured for git-annex.
 
 set -e
 
-here="$(dirname $0)"
-base="$here/git-annex-bundle"
-
-if [ ! -d "$base" ]; then
-	echo "** cannot find base directory (I seem to be $0)" >&2
-	exit 1
-fi
-
-if [ ! -e "$base/bin/git-annex" ]; then
-	echo "** base directory $base does not contain bin/git-annex" >&2
-	exit 1
-fi
-if [ ! -e "$base/bin/git" ]; then
-	echo "** base directory $base does not contain bin/git" >&2
-	exit 1
-fi
-
-# Install busybox links.
-if [ ! -e "$base/bin/sha256sum" ]; then
-	echo "(First run detected ... setting up busybox ...)"
-	"$base/bin/busybox" --install "$base/bin"
-fi
-
-# Get absolute path to base, to avoid breakage when things change directories.
+# I'm installed as lib/lib.runshell.so
 orig="$(pwd)"
-cd "$base"
+cd "$0/../.."
 base="$(pwd)"
 cd "$orig"
 
-# Put our binaries first, to avoid issues with out of date or incompatable
-# system or App binaries.
-ORIG_PATH="$PATH"
-export ORIG_PATH
-PATH=$base/bin:$PATH
+# Cannot rely on Android providing a sane HOME
+HOME="/sdcard/git-annex.home"
+export HOME
+
+setup () {
+	echo "Installation starting to $base"
+	mkdir -p "$base/bin"
+	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh-keygen; do
+		echo "installing $prog"
+		ln $base/lib/lib.$prog.so $base/bin/$prog
+	done
+	$base/bin/busybox --install $base/bin
+	$base/bin/tar zxf lib/lib.git.tar.gz.so
+
+	for prog in git git-shell git-upload-pack; do
+		for link in $(cat $base/links/$prog); do
+			echo "linking $link to $prog"
+			ln $base/bin/$prog $base/$link
+		done
+		rm $base/links/$prog
+	done
+
+	mkdir -p "$base/templates"
+	mkdir -p "$base/tmp"
+	echo "Installation complete"
+}
+
+if [ ! -d "$base/bin" ]; then
+	if ! mkdir -p "$HOME"; then
+		echo "mkdir of $HOME failed!"
+	fi
+	if ! setup > $HOME/git-annex-install.log 2>&1; then
+		echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
+		sh
+	fi
+fi
+
+PATH="$base/bin:$PATH"
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
@@ -51,14 +61,13 @@ GIT_TEMPLATE_DIR="$base/templates"
 export GIT_TEMPLATE_DIR
 
 # Indicate which variables were exported above.
-GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
+GIT_ANNEX_STANDLONE_ENV="GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
 
 # This is a temporary directory on a non-crippled filesystem.
 # This needs to be as short a path as possible.
-GIT_ANNEX_TMP_DIR=$here/tmp
+GIT_ANNEX_TMP_DIR=$base/tmp
 export GIT_ANNEX_TMP_DIR
-mkdir -p "$GIT_ANNEX_TMP_DIR"
 
 if [ "$1" ]; then
 	cmd="$1"

@@ -241,22 +241,7 @@ ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
 androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
-
-	rm -rf "$(ANDROIDAPP_DEST)"
-	install -d "$(ANDROIDAPP_DEST)"
-
-	cp -aR standalone/android/git-annex-bundle "$(ANDROIDAPP_DEST)"
-	cp -a standalone/android/runshell "$(ANDROIDAPP_DEST)"
-	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/bin"
-	cp git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/"
-
-	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip "$(ANDROIDAPP_DEST)"/git-annex-bundle/bin/*
-
-	ln -sf git-annex "$(ANDROIDAPP_DEST)/git-annex-bundle/bin/git-annex-shell"
-	zcat standalone/licences.gz > $(ANDROIDAPP_DEST)/git-annex-bundle/LICENSE
-	install -d "$(ANDROIDAPP_DEST)/git-annex-bundle/templates"
-	
-	cd $(ANDROIDAPP_DEST) && tar czf ../git-annex-android.tar.gz .
+	cp standalone/android/source/term/bin/Term-debug.apk $(GIT_ANNEX_TMP_BUILD_DIR)/GitAnnex.apk
 
 # used by ./ghci
 getflags:
