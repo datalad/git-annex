@@ -8,11 +8,13 @@ set -e
 orig="$(pwd)"
 cd "$0/../.."
 base="$(pwd)"
-cd "$orig"
 
 # Cannot rely on Android providing a sane HOME
 HOME="/sdcard/git-annex.home"
 export HOME
+
+# As good a start point as any.
+cd "$HOME"
 
 setup () {
 	echo "Installation starting to $base"
