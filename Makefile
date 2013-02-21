@@ -241,7 +241,7 @@ ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
 androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
-	cp standalone/android/source/term/bin/Term-debug.apk $(GIT_ANNEX_TMP_BUILD_DIR)/GitAnnex.apk
+	cp standalone/android/source/term/bin/Term-debug.apk $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.apk
 
 # used by ./ghci
 getflags:
