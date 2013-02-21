@@ -91,6 +91,7 @@ build-utils: source
 
 	cd source/term && git reset --hard
 	cd source/term && patch -p1 <../../term.patch
+	(cd icons && tar c .) | (cd source/term/res && tar x)
 	# This renaming has a purpose. It makes the path to the app's
 	# /data directory shorter, which makes ssh connection caching
 	# sockets placed there have more space for their filenames.
