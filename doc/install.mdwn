@@ -3,6 +3,7 @@
 [[!table format=dsv header=yes data="""
 detailed instructions | quick install
 [[OSX]]               | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
+[[Android]]           | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
 [[Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
 [[Debian]]            | `apt-get install git-annex`
 [[Ubuntu]]            | `apt-get install git-annex`
@@ -14,7 +15,6 @@ detailed instructions | quick install
 [[ScientificLinux5]]  | (and other RHEL5 clones like CentOS5)
 [[openSUSE]]          | 
 Windows               | [[sorry, Windows not supported yet|todo/windows_support]]
-[[Android]]           | 
 """]]
 
 ## Using cabal

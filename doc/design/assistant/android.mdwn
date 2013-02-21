@@ -2,9 +2,8 @@
 
 1. Get git-annex working at the command line in Android,
    along with all the programs it needs, and the assistant. **done**
+2. Get an easy to install Android app built. **done**
 2. Get the webapp working. Needs Template Haskell, or a workaround.
-3. A hopefully small Java app will be developed, which runs the
-   webapp daemon, and a web browser to display it.
 
 ### Android specific features
 
@@ -20,3 +19,15 @@ Due to use of the FAT filesystem, which doesn't do symlinks, [[desymlink]]
 is probably needed for at least older Android devices that have SD cards.
 Additionally, cripped filesystem mode is needed, to avoid hard links,
 file modes, etc.
+
+## TODO
+
+* webapp
+* autostart any configured assistants. Best on boot, but may need to only
+  do it when app is opened for the first time.
+* Don't make app initially open terminal, but go to a page that
+  allows opening the webapp or terminal.
+* I have seen an assistant thread crash with an interrupted system call
+  when the device went to sleep while it was running. Auto-detect and deal with
+  that somehow.
+* Make git stop complaining that "warning: no threads uspport, ignoring --threads"
