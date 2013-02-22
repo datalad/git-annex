@@ -42,10 +42,10 @@ index f6952f0..4b2aa5f 100644
          Process exec = null;
          try {
 diff --git a/res/values/defaults.xml b/res/values/defaults.xml
-index 67287b2..cc2f691 100644
+index 67287b2..1f9afa1 100644
 --- a/res/values/defaults.xml
 +++ b/res/values/defaults.xml
-@@ -13,7 +13,7 @@
+@@ -13,10 +13,10 @@
     <string name="pref_fnkey_default">4</string>
     <string name="pref_ime_default">0</string>
     <bool name="pref_alt_sends_esc_default">false</bool>
@@ -53,4 +53,8 @@ index 67287b2..cc2f691 100644
 +   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.runshell.so</string>
     <string name="pref_initialcommand_default"></string>
     <string name="pref_termtype_default">screen</string>
-    <bool name="pref_close_window_on_process_exit_default">true</bool>
+-   <bool name="pref_close_window_on_process_exit_default">true</bool>
++   <bool name="pref_close_window_on_process_exit_default">false</bool>
+    <bool name="pref_verify_path_default">true</bool>
+    <bool name="pref_do_path_extensions_default">true</bool>
+    <bool name="pref_allow_prepend_path_default">true</bool>
