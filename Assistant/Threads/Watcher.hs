@@ -181,11 +181,11 @@ onAddDirect file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
-			ifM (liftAnnex $ changedFileStatus key filestatus)
-				( do
+			ifM (liftAnnex $ sameFileStatus key filestatus)
+				( noChange
+				, do
 					liftAnnex $ changedDirect key file
 					pendingAddChange file
-				, noChange
 				)
 		_ -> pendingAddChange file
 

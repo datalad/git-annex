@@ -10,11 +10,11 @@ module Annex.Content.Direct (
 	removeAssociatedFile,
 	addAssociatedFile,
 	goodContent,
-	changedFileStatus,
 	recordedInodeCache,
 	updateInodeCache,
 	writeInodeCache,
 	sameInodeCache,
+	sameFileStatus,
 	removeInodeCache,
 	toInodeCache,
 	inodesChanged,
@@ -99,15 +99,6 @@ normaliseAssociatedFile file = do
 goodContent :: Key -> FilePath -> Annex Bool
 goodContent key file = sameInodeCache file =<< recordedInodeCache key
 
-changedFileStatus :: Key -> FileStatus -> Annex Bool
-changedFileStatus key status = do
-	old <- recordedInodeCache key
-	let curr = toInodeCache status
-	case (old, curr) of
-		(Just o, Just c) -> compareInodeCaches o c
-		(Nothing, Nothing) -> return True
-		_ -> return False
-
 {- Gets the recorded inode cache for a key. -}
 recordedInodeCache :: Key -> Annex (Maybe InodeCache)
 recordedInodeCache key = withInodeCacheFile key $ \f ->
@@ -140,6 +131,18 @@ sameInodeCache file (Just old) = go =<< liftIO (genInodeCache file)
   where
 	go Nothing = return False
 	go (Just curr) = compareInodeCaches curr old
+
+{- Checks if a FileStatus matches the recorded InodeCache of a file. -}
+sameFileStatus :: Key -> FileStatus -> Annex Bool
+sameFileStatus key status = do
+	old <- recordedInodeCache key
+	let curr = toInodeCache status
+	r <- case (old, curr) of
+		(Just o, Just c) -> compareInodeCaches o c
+		(Nothing, Nothing) -> return True
+		_ -> return False
+	liftIO $ print ("sameFileStatus", old, curr, r)
+	return r
 
 {- If the inodes have changed, only the size and mtime are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
