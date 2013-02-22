@@ -31,3 +31,5 @@ file modes, etc.
   when the device went to sleep while it was running. Auto-detect and deal with
   that somehow.
 * Make git stop complaining that "warning: no threads uspport, ignoring --threads"
+* git does not support http remotes. To fix, need to port libcurl and
+  allow git to link to it.
