@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="comment 14"
+ date="2013-02-22T21:45:54Z"
+ content="""
+On Android 2.3.3 (Samsung Galaxy S+) KBOX works, git-annex displays the \"Terminal session is running\" notification and dies immediately.
+
+"""]]
