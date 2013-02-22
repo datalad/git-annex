@@ -59,6 +59,8 @@ build: source build-utils
 	cd $(GITTREE) && find -type f -not -samefile bin/git -not -samefile bin/git-shell -not -samefile bin/git-upload-pack|tar czf ../git.tar.gz -T -
 	cp source/git/git.tar.gz source/term/libs/armeabi/lib.git.tar.gz.so
 
+	git rev-parse HEAD > source/term/libs/armeabi/lib.version.so
+
 	cd source/term && ant debug
 
 build-utils: source
