@@ -23,7 +23,9 @@ setup () {
 	mkdir -p "$base/bin"
 	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
 		echo "installing $prog"
-		rm -f "$base/bin/$prog"
+		if [ -e "$base/bin/$prog" ]; then
+			rm "$base/bin/$prog"
+		fi
 		ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
 
@@ -32,20 +34,22 @@ setup () {
 	mv $base/bin.new/* $base/bin
 	rmdir "$base/bin.new"
 
-	$base/bin/tar zxf lib/lib.git.tar.gz.so
+	$base/bin/tar zxf $base/lib/lib.git.tar.gz.so
 	for prog in git git-shell git-upload-pack; do
 		for link in $(cat $base/links/$prog); do
 			echo "linking $link to $prog"
-			rm -f "$base/$link"
+			if [ -e ""$base/$link" ]; then
+				rm "$base/$link"
+			fi
 			ln "$base/bin/$prog" "$base/$link"
 		done
-		rm -f "$base/links/$prog"
+		rm "$base/links/$prog"
 	done
 
 	mkdir -p "$base/templates"
 	mkdir -p "$base/tmp"
 
-	cp "$base/lib/lib.version.so" "$base/installed-version"
+	cat "$base/lib/lib.version.so" > "$base/installed-version"
 	echo "Installation complete"
 }
 
