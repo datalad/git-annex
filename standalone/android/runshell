@@ -38,7 +38,7 @@ setup () {
 	for prog in git git-shell git-upload-pack; do
 		for link in $(cat $base/links/$prog); do
 			echo "linking $link to $prog"
-			if [ -e ""$base/$link" ]; then
+			if [ -e "$base/$link" ]; then
 				rm "$base/$link"
 			fi
 			ln "$base/bin/$prog" "$base/$link"
