@@ -103,7 +103,10 @@ changedFileStatus :: Key -> FileStatus -> Annex Bool
 changedFileStatus key status = do
 	old <- recordedInodeCache key
 	let curr = toInodeCache status
-	return $ curr /= old
+	case (old, curr) of
+		(Just o, Just c) -> compareInodeCaches o c
+		(Nothing, Nothing) -> return True
+		_ -> return False
 
 {- Gets the recorded inode cache for a key. -}
 recordedInodeCache :: Key -> Annex (Maybe InodeCache)
@@ -130,21 +133,22 @@ removeInodeCache key = withInodeCacheFile key $ \f -> do
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< inRepo (gitAnnexInodeCache key)
 
-{- Checks if a file's InodeCache matches its current info.
- -
- - If the inodes have changed, only the size and mtime are compared.
- -}
+{- Checks if a InodeCache matches the current version of a file. -}
 sameInodeCache :: FilePath -> Maybe InodeCache -> Annex Bool
 sameInodeCache _ Nothing = return False
 sameInodeCache file (Just old) = go =<< liftIO (genInodeCache file)
   where
 	go Nothing = return False
-	go (Just curr)
-		| curr == old = return True
-		| otherwise = ifM inodesChanged
-			( return $ compareWeak curr old
-			, return False
-			)
+	go (Just curr) = compareInodeCaches curr old
+
+{- If the inodes have changed, only the size and mtime are compared. -}
+compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
+compareInodeCaches x y
+	| x == y = return True
+	| otherwise = ifM inodesChanged
+		( return $ compareWeak x y
+		, return False
+		)
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
