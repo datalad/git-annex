@@ -53,9 +53,9 @@ build: source build-utils
 	# a tarball, along with a list of all the hard links that should be
 	# set up.
 	cd $(GITTREE) && mkdir -p links
-	cd $(GITTREE) && find -samefile bin/git > links/git
-	cd $(GITTREE) && find -samefile bin/git-shell > links/git-shell
-	cd $(GITTREE) && find -samefile bin/git-upload-pack > links/git-upload-pack
+	cd $(GITTREE) && find -samefile bin/git -not -wholename ./bin/git > links/git
+	cd $(GITTREE) && find -samefile bin/git-shell -not -wholename ./bin/git-shell > links/git-shell
+	cd $(GITTREE) && find -samefile bin/git-upload-pack -not -wholename ./bin/git-upload-pack > links/git-upload-pack
 	cd $(GITTREE) && find -type f -not -samefile bin/git -not -samefile bin/git-shell -not -samefile bin/git-upload-pack|tar czf ../git.tar.gz -T -
 	cp source/git/git.tar.gz source/term/libs/armeabi/lib.git.tar.gz.so
 
