@@ -427,7 +427,7 @@ rsyncParamsRemote r direction key file afile = do
 
 -- --inplace to resume partial files
 rsyncParams :: Remote -> [CommandParam]
-rsyncParams r = [Params "-p --progress --inplace"] ++
+rsyncParams r = [Params "--progress --inplace"] ++
 	map Param (remoteAnnexRsyncOptions $ gitconfig r)
 
 commitOnCleanup :: Remote -> Annex a -> Annex a

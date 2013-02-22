@@ -33,8 +33,6 @@ rsyncServerReceive file = rsync $ rsyncServerParams ++ [File file]
 rsyncServerParams :: [CommandParam]
 rsyncServerParams =
 	[ Param "--server"
-	-- preserve permissions
-	, Param "-p"
 	-- preserve timestamps
 	, Param "-t"
 	-- allow resuming of transfers of big files
