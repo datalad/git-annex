@@ -21,7 +21,6 @@ import Annex.Perms
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
 import Config
-import Annex.UUID
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
