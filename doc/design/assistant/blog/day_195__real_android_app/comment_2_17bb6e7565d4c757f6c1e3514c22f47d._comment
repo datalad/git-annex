@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlmNbexnCgLywD0MKyT9mG9mWFb_qVj-8I"
+ nickname="Joshua"
+ subject="Toshiba Excite 7.7 (Android 4.1.1)"
+ date="2013-02-22T00:15:46Z"
+ content="""
+Seems to run fine. I managed to create a repository, git-annex init it (had to set email and name per repository). 
+
+The first time I tried git-annex init it said \"Detected a crippled file system.\" \"Enabling direct mode.\" The final try that actually worked only mentioned the crippled filesystem and not direct mode.
+"""]]
