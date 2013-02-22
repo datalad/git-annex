@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 12"
+ date="2013-02-22T18:35:35Z"
+ content="""
+@rillian the upstream for this terminal is <https://github.com/jackpal/Android-Terminal-Emulator/>
+and I found a bug that looks similar. <https://github.com/jackpal/Android-Terminal-Emulator/issues/129>
+You might add your info there, and try the workaround documented there.
+"""]]
