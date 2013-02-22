@@ -33,3 +33,5 @@ file modes, etc.
 * Make git stop complaining that "warning: no threads uspport, ignoring --threads"
 * git does not support http remotes. To fix, need to port libcurl and
   allow git to link to it.
+* getEnvironment is broken on Android <https://github.com/neurocyte/ghc-android/issues/7>
+  and a few places use it.
