@@ -13,14 +13,15 @@ base="$(pwd)"
 HOME="/sdcard/git-annex.home"
 export HOME
 
-# As good a start point as any.
-cd "$HOME"
-
 setup () {
 	echo "Installation starting to $base"
 	cat "$base/lib/lib.version.so"
 
+	if [ -e "$base/bin" ]; then
+		mv "$base/bin" "$base/bin.old"
+	fi
 	mkdir -p "$base/bin"
+
 	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
 		echo "installing $prog"
 		if [ -e "$base/bin/$prog" ]; then
@@ -29,14 +30,14 @@ setup () {
 		ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
 
-	mkdir -p "$base/bin.new"
-	$base/bin/busybox --install $base/bin.new
-	mv $base/bin.new/* $base/bin
-	rmdir "$base/bin.new"
+	$base/bin/busybox --install $base/bin
 
+	$base/bin/rm -rf "$base/bin.old"
+
+	cd "$base"
 	$base/bin/tar zxf $base/lib/lib.git.tar.gz.so
 	for prog in git git-shell git-upload-pack; do
-		for link in $(cat $base/links/$prog); do
+		for link in $(cat "$base/links/$prog"); do
 			echo "linking $link to $prog"
 			if [ -e "$base/$link" ]; then
 				rm "$base/$link"
@@ -66,6 +67,9 @@ elif [ ! -e "$base/installed-version" ] || ! cmp "$base/installed-version" "$bas
 		echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
 	fi
 fi
+
+# As good a start point as any.
+cd "$HOME"
 
 PATH="$base/bin:$PATH"
 export PATH
