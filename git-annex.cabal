@@ -132,7 +132,8 @@ Test-Suite test
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c
   Extensions: CPP
-  GHC-Options: -threaded -DWITH_GLOB
+  GHC-Options: -threaded
+  CPP-Options: -DWITH_GLOB
 
 source-repository head
   type: git
