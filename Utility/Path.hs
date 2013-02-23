@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 {- path manipulation
  -
  - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
@@ -8,7 +9,7 @@
 module Utility.Path where
 
 import Data.String.Utils
-import System.Path
+import "MissingH" System.Path
 import System.FilePath
 import System.Directory
 import Data.List
