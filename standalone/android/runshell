@@ -4,16 +4,18 @@
 
 set -e
 
-# I'm installed as lib/lib.runshell.so
-orig="$(pwd)"
-cd "$0/../.."
-base="$(pwd)"
+prep () {
+	# I'm installed as lib/lib.runshell.so
+	orig="$(pwd)"
+	cd "$0/../.."
+	base="$(pwd)"
 
-# Cannot rely on Android providing a sane HOME
-HOME="/sdcard/git-annex.home"
-export HOME
+	# Cannot rely on Android providing a sane HOME
+	HOME="/sdcard/git-annex.home"
+	export HOME
+}
 
-setup () {
+buildtree () {
 	echo "Installation starting to $base"
 	cat "$base/lib/lib.version.so"
 
@@ -54,49 +56,68 @@ setup () {
 	echo "Installation complete"
 }
 
-if [ ! -d "$base/bin" ]; then
-	if ! mkdir -p "$HOME"; then
-		echo "mkdir of $HOME failed!"
+install () {
+	if [ ! -d "$base/bin" ]; then
+		if ! mkdir -p "$HOME"; then
+			echo "mkdir of $HOME failed!"
+		fi
+		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
+			echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
+			sh
+		fi
+	elif [ ! -e "$base/installed-version" ] || ! cmp "$base/installed-version" "$base/lib/lib.version.so" >/dev/null; then
+		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
+			echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
+		fi
 	fi
-	if ! setup > $HOME/git-annex-install.log 2>&1; then
-		echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
+}
+
+run {
+	# As good a start point as any.
+	cd "$HOME"
+
+	PATH="$base/bin:$PATH"
+	export PATH
+	
+	ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
+	export ORIG_GIT_EXEC_PATH
+	GIT_EXEC_PATH=$base/libexec/git-core
+	export GIT_EXEC_PATH
+	
+	ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
+	export ORIG_GIT_TEMPLATE_DIR
+	GIT_TEMPLATE_DIR="$base/templates"
+	export GIT_TEMPLATE_DIR
+	
+	# Indicate which variables were exported above.
+	GIT_ANNEX_STANDLONE_ENV="GIT_EXEC_PATH GIT_TEMPLATE_DIR"
+	export GIT_ANNEX_STANDLONE_ENV
+	
+	# This is a temporary directory on a non-crippled filesystem.
+	# This needs to be as short a path as possible.
+	GIT_ANNEX_TMP_DIR=$base/tmp
+	export GIT_ANNEX_TMP_DIR
+	
+	if [ "$1" ]; then
+		cmd="$1"
+		shift 1
+		exec "$cmd" "$@"
+	else
 		sh
 	fi
-elif [ ! -e "$base/installed-version" ] || ! cmp "$base/installed-version" "$base/lib/lib.version.so" >/dev/null; then
-	if ! setup > $HOME/git-annex-install.log 2>&1; then
-		echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
-	fi
+}
+
+if ! prep; then
+	echo "prep failed. Please report a bug."
+	read line
 fi
-
-# As good a start point as any.
-cd "$HOME"
-
-PATH="$base/bin:$PATH"
-export PATH
-
-ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
-export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$base/libexec/git-core
-export GIT_EXEC_PATH
-
-ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
-export ORIG_GIT_TEMPLATE_DIR
-GIT_TEMPLATE_DIR="$base/templates"
-export GIT_TEMPLATE_DIR
-
-# Indicate which variables were exported above.
-GIT_ANNEX_STANDLONE_ENV="GIT_EXEC_PATH GIT_TEMPLATE_DIR"
-export GIT_ANNEX_STANDLONE_ENV
-
-# This is a temporary directory on a non-crippled filesystem.
-# This needs to be as short a path as possible.
-GIT_ANNEX_TMP_DIR=$base/tmp
-export GIT_ANNEX_TMP_DIR
-
-if [ "$1" ]; then
-	cmd="$1"
-	shift 1
-	exec "$cmd" "$@"
-else
-	sh
+if ! install; then
+	echo "install failed. Please report a bug."
+	read line
+fi
+if ! run; then
+	# The shell could exit nonzero after successful use, so
+	# show no message, but do wait to let the user see
+	# if it failed to start.
+	read line
 fi
