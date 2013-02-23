@@ -1,0 +1,37 @@
+It would be nice if the 'unused' command could optionally display info about the actual files behind its cryptic keys.
+
+I created a (very rough) bash script that simply splices in some info from git log -S'KEY' --numstat into the unused list, like so:
+
+    arand@mas:~/annex(master)$ bash ~/utv/scripts/annex-vunused 
+    unused . (checking for unused data...) (checking master...) (checking synced/master...) (checking origin/HEAD...) (checking seagate/master...)
+    Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s1073741824--49bc20df15e412a64472421e13fe86ff1c5165e18b2afccf160d4dc19fe68a14.img
+                    8f479a4 Sat Feb 23 16:14:12 2013 +0100 remove bigfile
+                    0       1       dummy_bigfile.img
+                    2988d18 Sat Feb 23 16:13:48 2013 +0100 dummy file
+                    1       0       dummy_bigfile.img
+    (To see where data was previously used, try: git log --stat -S'KEY')To remove unwanted data: git-annex dropunused NUMBER
+    ok
+The script:
+
+    #!/bin/bash
+    
+    pipe="$(mktemp -u)"
+    mkfifo "$pipe"
+    
+    git annex unused  >"$pipe" || exit 1 &
+    
+    while read -r line
+    do
+    	key="$(echo "$line" | sed 's/^[^-]*-\([^-]*\)-.*/\1/')"
+    	echo -n "$line"
+    	test -n "$key" && \
+    		echo && \
+    		git log --format="%h %cd %s" --numstat -S"$key" | \
+    			sed '/^$/d;/git-annex automatic sync/,/^ /d;s/^/\t\t/'
+    
+    done < "$pipe"
+    rm "$pipe"
+
+It would be nice if something like this was available as an option, since it's good way to get a quick overview of what the content is, and if it's safe to drop it.
