@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlRThEwuPnr8_bcuuCTQ0rQd3w6AfeMiLY"
+ nickname="Alex"
+ subject="Further possible issues"
+ date="2013-02-23T23:17:43Z"
+ content="""
+Mm, looking at the actual code changes it may still not work with vcsh - since multiple GIT_DIRS share one GIT_WORKTREE, some symlinks will point to ~/.config/vcsh/repo.d/foo.git and some will point to ~/.config/vcsh/repo.d/bar.git. When git annex is invoked with GIT_DIR='~/.config/vcsh/repo.d/bar.git', with the changes you made files annexed by ~/.config/vcsh/repo.d/foo.git will still match isLinkToAnnex.
+"""]]
