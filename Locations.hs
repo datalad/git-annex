@@ -236,11 +236,14 @@ gitAnnexRemotesDir r = addTrailingPathSeparator $ gitAnnexDir r </> "remotes"
 gitAnnexAssistantDefaultDir :: FilePath
 gitAnnexAssistantDefaultDir = "annex"
 
-{- Checks a symlink target to see if it appears to point to annexed content. -}
+{- Checks a symlink target to see if it appears to point to annexed content.
+ -
+ - We only look at paths inside the .git directory, and not at the .git
+ - directory itself, because GIT_DIR may cause a directory name other
+ - than .git to be used.
+ -}
 isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = ('/':d) `isInfixOf` s || d `isPrefixOf` s
-  where
-	d = ".git" </> objectDir
+isLinkToAnnex s = ('/':objectDir) `isInfixOf` s
 
 {- Converts a key into a filename fragment without any directory.
  -

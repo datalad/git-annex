@@ -17,6 +17,7 @@ module Git.Construct (
 	fromRemotes,
 	fromRemoteLocation,
 	repoAbsPath,
+	newFrom,
 ) where
 
 import System.Posix.User
@@ -31,17 +32,16 @@ import Utility.UserInfo
 
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
-fromCwd :: IO Repo
-fromCwd = getCurrentDirectory >>= seekUp checkForRepo
+fromCwd :: IO (Maybe Repo)
+fromCwd = getCurrentDirectory >>= seekUp
   where
-	norepo = error "Not in a git repository."
-	seekUp check dir = do
-		r <- check dir
+	seekUp dir = do
+		r <- checkForRepo dir
 		case r of
 			Nothing -> case parentDir dir of
-				"" -> norepo
-				d -> seekUp check d
-			Just loc -> newFrom loc
+				"" -> return Nothing
+				d -> seekUp d
+			Just loc -> Just <$> newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
 fromPath :: FilePath -> IO Repo

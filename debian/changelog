@@ -13,6 +13,7 @@ git-annex (3.20130217) UNRELEASED; urgency=low
     each time they are mounted.
   * Direct mode: Fix support for adding a modified file.
   * Avoid passing -p to rsync, to interoperate with crippled filesystems.
+  * Additional GIT_DIR support bugfixes. May actually work now.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

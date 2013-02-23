@@ -47,15 +47,15 @@ get = do
 				unsetEnv s
 				Just <$> absPath d
 			Nothing -> return Nothing
-	configure Nothing r = Git.Config.read r
-	configure (Just d) r = do
-		r' <- Git.Config.read r
-		-- Let GIT_DIR override the default gitdir.
+
+	configure Nothing (Just r) = Git.Config.read r
+	configure (Just d) _ = do
 		absd <- absPath d
-		return $ changelocation r' $ Local
-			{ gitdir = absd
-			, worktree = worktree (location r')
-			}
+		cwd <- getCurrentDirectory
+		r <- newFrom $ Local { gitdir = absd, worktree = Just cwd }
+		Git.Config.read r
+	configure Nothing Nothing = error "Not in a git repository."
+
 	addworktree w r = changelocation r $
 		Local { gitdir = gitdir (location r), worktree = w }
 	changelocation r l = r { location = l }
