@@ -141,7 +141,6 @@ sameFileStatus key status = do
 		(Just o, Just c) -> compareInodeCaches o c
 		(Nothing, Nothing) -> return True
 		_ -> return False
-	liftIO $ print ("sameFileStatus", old, curr, r)
 	return r
 
 {- If the inodes have changed, only the size and mtime are compared. -}
