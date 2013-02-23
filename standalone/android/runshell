@@ -115,9 +115,4 @@ if ! install; then
 	echo "install failed. Please report a bug."
 	read line
 fi
-if ! run; then
-	# The shell could exit nonzero after successful use, so
-	# show no message, but do wait to let the user see
-	# if it failed to start.
-	read line
-fi
+run
