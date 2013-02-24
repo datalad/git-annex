@@ -65,6 +65,15 @@ build: source build-utils start
 	cd source/term && ant debug
 
 build-utils: source
+	$(MAKE) build-openssh
+	$(MAKE) build-busybox
+	$(MAKE) build-rsync
+	$(MAKE) build-gnupg
+	$(MAKE) build-git
+	$(MAKE) build-term
+	touch build-utils
+
+build-openssh:
 	cd source/openssl && CC=$$(which cc) ./Configure android
 	cd source/openssl && $(MAKE)
 
@@ -76,22 +85,27 @@ build-utils: source
 	cd source/openssh && sed -i -e 's/auth-passwd.o //' Makefile
 	cd source/openssh && $(MAKE) ssh ssh-keygen
 
+build-busybox:
 	cp busybox_config source/busybox/.config
 	cd source/busybox && yes '' | $(MAKE) oldconfig
 	cd source/busybox && $(MAKE)
 	
+build-git:
 	cd source/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 prefix= DESTDIR=installed-tree
 
+build-rsync:
 	cd source/rsync && git reset --hard origin/master && git am < ../../rsync.patch
 	cp source/automake/lib/config.sub source/automake/lib/config.guess source/rsync/
 	cd source/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd source/rsync && $(MAKE)
 
+build-gnupg:
 	cd source/gnupg && git checkout gnupg-1.4.13
 	cd source/gnupg && ./autogen.sh
 	cd source/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd source/gnupg; $(MAKE) || true # expected failure in doc build
 
+build-term:
 	cd source/term && git reset --hard
 	cd source/term && patch -p1 <../../term.patch
 	(cd icons && tar c .) | (cd source/term/res && tar x)
@@ -103,8 +117,6 @@ build-utils: source
 	cd source/term && find -name .git -prune -o -type f -print0 | xargs -0 perl -pi -e 's/jackpal/ga/g'
 	cd source/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
 	cd source/term && tools/update.sh
-
-	touch build-utils
 
 source:
 	mkdir -p source
