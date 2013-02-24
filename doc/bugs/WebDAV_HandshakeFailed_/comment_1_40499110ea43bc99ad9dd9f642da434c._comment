@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlqOu7P4tb4D-Xo2pYrjln2NsAObtErliM"
+ nickname="Alexander"
+ subject="Same problem"
+ date="2013-02-24T16:51:52Z"
+ content="""
+Hello,
+
+same problem with box.com and german telekom (https://webdav.mediencenter.t-online.de).
+I'm using git-annex (3.20130216) from debian/unstable on amd64.
+git annex --debug is not helpful I think. Any other trace I can help with?
+
+Regards,
+Alexander
+"""]]
