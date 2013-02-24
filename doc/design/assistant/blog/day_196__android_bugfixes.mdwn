@@ -22,5 +22,5 @@ Worked today on some of the obvious bugs.
 I want to set up an autobuilder for Android, but to do that I need to
 install all the haskell libraries on my server. Since getting them built
 for Android involved several days of hacking the first time, this will
-be an opporunity to make sure I can replicate that. Hopefully in less time.
+be an opportunity to make sure I can replicate that. Hopefully in less time.
 ;)

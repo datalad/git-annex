@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 8"
+ date="2013-02-23T23:23:01Z"
+ content="""
+That should not be a problem, because git-annex only acts on files that `git ls-files` lists.
+"""]]
