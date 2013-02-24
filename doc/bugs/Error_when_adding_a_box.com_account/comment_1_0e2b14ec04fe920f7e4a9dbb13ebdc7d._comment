@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://cyprio.net/"
- nickname="oz"
- subject="Duplicate"
- date="2013-02-22T17:42:30Z"
- content="""
-This is a duplicate of http://git-annex.branchable.com/bugs/WebDAV_HandshakeFailed_/ although the git-annex version is different.
-"""]]
