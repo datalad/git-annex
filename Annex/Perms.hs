@@ -70,7 +70,7 @@ createAnnexDirectory dir = traverse dir [] =<< top
 			)
 	  where
 		done = forM_ below $ \p -> do
-			liftIO $ createDirectoryIfMissing p
+			liftIO $ createDirectoryIfMissing True p
 			setAnnexPerm p
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
