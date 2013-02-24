@@ -100,7 +100,7 @@ run () {
 		shift 1
 		exec "$cmd" "$@"
 	else
-		$cmd sh
+		/system/bin/sh
 	fi
 }
 
