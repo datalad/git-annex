@@ -1,0 +1,11 @@
+Wrote a C shim to get the Android app started. This avoids it relying on
+the Android /system/bin/sh to run its shell script, or indeed relying on
+any unix utilities from Android at all, which may help on some
+systems. Pushed a new build of the Android app.
+
+Tracked down a failure a lot of people are reporting with WebDAV support
+to a backported security fix in the TLS library, and filed an upstream bug
+about it.
+
+Various other misc fixing and stuff.
+My queue of bug reports and stuff only has 47 items in it now. Urk..
