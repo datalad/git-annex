@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="Android 2.3"
+ date="2013-02-24T15:16:51Z"
+ content="""
+The updated version lets me see the failure(s), and it looks like this:
+
+    cd: can't cd to /data/data/ga.androidterm/lib/lib.runshell.so/../..
+    [: not found
+    [: not found
+    could not open //installed-version, No such file or directory
+    /data/data/ga.androidterm/lib/lib.runshell.so: cannot create
+    /sdcard/git-annex.home/git-annex-install.log: directory nonexistent
+
+    [Terminal session finished]
+
+"""]]
