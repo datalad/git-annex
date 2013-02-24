@@ -28,4 +28,5 @@ Please provide any additional information below.
 The problem is that git annex already created a /media/LACIE/travail/.git/annex/objects/K1 file (same name in uppercase) and FAT isn't realy case sensitive.
 
 
-
+> I *think* I've found the place that used createDirectory
+> rather than createDirectoryIfMissing and fixed it. [[done]] --[[Joey]]
