@@ -12,7 +12,7 @@ export ANDROID_NDK_ROOT=$(HOME)/tmp/android-ndk-r8d
 
 GITTREE=source/git/installed-tree
 
-build: source build-utils
+build: source build-utils start
 	# Debug build because it does not need signing keys.
 	cd source/term && tools/build-debug
 
@@ -30,6 +30,7 @@ build: source build-utils
 	cp source/git/git-upload-pack source/term/libs/armeabi/lib.git-upload-pack.so
 	arm-linux-androideabi-strip --strip-unneeded --remove-section=.comment --remove-section=.note source/term/libs/armeabi/*
 	cp runshell source/term/libs/armeabi/lib.runshell.so
+	cp start source/term/libs/armeabi/lib.start.so
 	
 	# remove git stuff we don't need to save space
 	rm -rf $(GITTREE)/bin/git-cvsserver \
@@ -117,7 +118,8 @@ source:
 	git clone git://github.com/jackpal/Android-Terminal-Emulator.git source/term
 
 clean:
-	rm -rf $(GITTREE) build-utils
+	rm -rf $(GITTREE)
+	rm -f build-utils start
 	cd source/busybox && $(MAKE) clean
 	#cd source/openssl && $(MAKE) clean
 	cd source/openssh && $(MAKE) clean

@@ -1,13 +1,10 @@
 #!/system/bin/sh
-# This is run by the Android app, and runs a shell in an environment
-# configured for git-annex.
+# This is runs a shell in an environment configured for git-annex.
 
 set -e
 
 prep () {
-	# I'm installed as lib/lib.runshell.so
-	orig="$(pwd)"
-	cd "$0/../.."
+	# lib.start.so will run us in the root of our app directory
 	base="$(pwd)"
 
 	# Cannot rely on Android providing a sane HOME
@@ -57,7 +54,7 @@ buildtree () {
 }
 
 install () {
-	if [ ! -d "$base/bin" ]; then
+	if [ ! -e "$base/git-annex" ]; then
 		if ! mkdir -p "$HOME"; then
 			echo "mkdir of $HOME failed!"
 		fi
