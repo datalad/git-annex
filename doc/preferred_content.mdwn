@@ -58,7 +58,7 @@ content be dropped only when there are currently 3 copies of it, including
 the repo it's being dropped from. This is different than running `git annex
 drop --copies=2`, which will drop files that current have 2 copies.
 
-## difference: "present"
+### difference: "present"
 
 There's a special "present" keyword you can use in a preferred content
 expression. This means that content is preferred if it's present,
