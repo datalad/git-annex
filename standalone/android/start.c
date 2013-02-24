@@ -39,14 +39,13 @@ main () {
 	}
 
 	/* If this is the first run, set up busybox link. */
-	if (stat("bin/busybox", &st_buf) != 0) {
-		mkdir("bin", 0777);
-		if (link("lib/lib.busybox.so", "bin/busybox") != 0) {
+	if (stat("busybox", &st_buf) != 0) {
+		if (link("lib/lib.busybox.so", "busybox") != 0) {
 			perror("link busybox");
 			exit(1);
 		}
 	}
 
-	execl("bin/busybox", "bin/busybox", "sh", "lib/lib.runshell.so", NULL);
+	execl("./busybox", "./busybox", "sh", "lib/lib.runshell.so", NULL);
 	perror("error running busybox sh");
 }

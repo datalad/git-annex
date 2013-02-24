@@ -1,70 +1,70 @@
 #!/system/bin/sh
 # This is runs a shell in an environment configured for git-annex.
+# Nearly the only command that can be used in here is busybox!
+# lib.start.so will run us in the root of our app directory
+base=$(./busybox pwd)
+cmd=$base/busybox
 
 set -e
 
 prep () {
-	# lib.start.so will run us in the root of our app directory
-	base="$(pwd)"
-
 	# Cannot rely on Android providing a sane HOME
 	HOME="/sdcard/git-annex.home"
 	export HOME
 }
 
 buildtree () {
-	echo "Installation starting to $base"
-	cat "$base/lib/lib.version.so"
+	$cmd echo "Installation starting to $base"
+	$cmd cat "lib/lib.version.so"
 
-	if [ -e "$base/bin" ]; then
-		mv "$base/bin" "$base/bin.old"
+	if $cmd test -e "$base/bin"; then
+		$cmd mv "$base/bin" "$base/bin.old"
 	fi
-	mkdir -p "$base/bin"
+	$cmd mkdir -p "$base/bin"
 
 	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
-		echo "installing $prog"
-		if [ -e "$base/bin/$prog" ]; then
-			rm "$base/bin/$prog"
+		$cmd echo "installing $prog"
+		if $cmd test -e "$base/bin/$prog"; then
+			$cmd rm "$base/bin/$prog"
 		fi
-		ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
+		$cmd ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
 
-	$base/bin/busybox --install $base/bin
+	$cmd --install $base/bin
 
-	$base/bin/rm -rf "$base/bin.old"
+	$cmd rm -rf "$base/bin.old"
 
-	cd "$base"
-	$base/bin/tar zxf $base/lib/lib.git.tar.gz.so
+	$cmd tar zxf $base/lib/lib.git.tar.gz.so
 	for prog in git git-shell git-upload-pack; do
-		for link in $(cat "$base/links/$prog"); do
-			echo "linking $link to $prog"
-			if [ -e "$base/$link" ]; then
-				rm "$base/$link"
+		for link in $($cmd cat "$base/links/$prog"); do
+			$cmd echo "linking $link to $prog"
+			if $cmd test -e "$base/$link"; then
+				$cmd rm "$base/$link"
 			fi
-			ln "$base/bin/$prog" "$base/$link"
+			$cmd ln "$base/bin/$prog" "$base/$link"
 		done
-		rm "$base/links/$prog"
+		$cmd rm "$base/links/$prog"
 	done
 
-	mkdir -p "$base/templates"
-	mkdir -p "$base/tmp"
+	$cmd mkdir -p "$base/templates"
+	$cmd mkdir -p "$base/tmp"
 
-	cat "$base/lib/lib.version.so" > "$base/installed-version"
-	echo "Installation complete"
+	$cmd cat "$base/lib/lib.version.so" > "$base/installed-version"
+	$cmd echo "Installation complete"
 }
 
 install () {
-	if [ ! -e "$base/git-annex" ]; then
-		if ! mkdir -p "$HOME"; then
-			echo "mkdir of $HOME failed!"
+	if $cmd test ! -e "$base/git-annex"; then
+		if ! $cmd mkdir -p "$HOME"; then
+			$cmd echo "mkdir of $HOME failed!"
 		fi
 		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
-			echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
-			sh
+			$cmd echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
+			$cmd sh
 		fi
-	elif [ ! -e "$base/installed-version" ] || ! cmp "$base/installed-version" "$base/lib/lib.version.so" >/dev/null; then
+	elif $cmd test ! -e "$base/installed-version" || ! $cmd cmp "$base/installed-version" "$base/lib/lib.version.so" >/dev/null; then
 		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
-			echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
+			$cmd echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
 		fi
 	fi
 }
@@ -95,21 +95,21 @@ run () {
 	GIT_ANNEX_TMP_DIR=$base/tmp
 	export GIT_ANNEX_TMP_DIR
 	
-	if [ "$1" ]; then
+	if $cmd test "$1"; then
 		cmd="$1"
 		shift 1
 		exec "$cmd" "$@"
 	else
-		sh
+		$cmd sh
 	fi
 }
 
 if ! prep; then
-	echo "prep failed. Please report a bug."
+	$cmd echo "prep failed. Please report a bug."
 	read line
 fi
 if ! install; then
-	echo "install failed. Please report a bug."
+	$cmd echo "install failed. Please report a bug."
 	read line
 fi
 run
