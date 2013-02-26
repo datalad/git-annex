@@ -56,3 +56,5 @@ OS X 10.6 (lion)
 Please provide any additional information below.
 
 Most files are affected by this, a few are not.  I don't see any pattern to which is which.
+
+> Both bugs reported here are now [[done]]. --[[Joey]]
