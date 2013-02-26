@@ -560,6 +560,14 @@ test_find = "git-annex find" ~: intmpclonerepo $ do
 	git_annex_expectoutput "find" ["--inbackend", "SHA1"] [sha1annexedfile]
 	git_annex_expectoutput "find" ["--inbackend", "WORM"] []
 
+	{- --include=* should match files in subdirectories too,
+	 - and --exclude=* should exclude them. -}
+	createDirectory "dir"
+	writeFile "dir/subfile" "subfile"
+	git_annex "add" ["dir"] @? "add of subdir failed"
+	git_annex_expectoutput "find" ["--include", "*", "--exclude", annexedfile, "--exclude", sha1annexedfile] ["dir/subfile"]
+	git_annex_expectoutput "find" ["--exclude", "*"] []
+
 test_merge :: Test
 test_merge = "git-annex merge" ~: intmpclonerepo $ do
 	git_annex "merge" [] @? "merge failed"

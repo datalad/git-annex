@@ -16,6 +16,9 @@ git-annex (3.20130217) UNRELEASED; urgency=low
   * Additional GIT_DIR support bugfixes. May actually work now.
   * webapp: Display any error message from git init if it fails to create
     a repository.
+  * Fix a reversion in matching globs introduced in the last release,
+    where "*" did not match files inside subdirectories. No longer uses
+    the Glob library.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

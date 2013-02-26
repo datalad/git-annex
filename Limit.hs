@@ -12,12 +12,8 @@ module Limit where
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
-#ifdef WITH_GLOB
-import "Glob" System.FilePath.Glob (simplify, compile, match)
-#else
-import Text.Regex.PCRE.Light.Char8
 import System.Path.WildMatch
-#endif
+import Text.Regex
 
 import Common.Annex
 import qualified Annex
@@ -86,18 +82,14 @@ addExclude = addLimit . limitExclude
 limitExclude :: MkLimit
 limitExclude glob = Right $ const $ return . not . matchglob glob
 
+{- Could just use wildCheckCase, but this way the regex is only compiled
+ - once. -}
 matchglob :: String -> Annex.FileInfo -> Bool
 matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
-#ifdef WITH_GLOB
-	match pattern f
+	isJust $ matchRegex cregex f
   where
-	pattern = simplify $ compile glob
-#else
-	isJust $ match cregex f []
-  where
-	cregex = compile regex []
+	cregex = mkRegex regex
 	regex = '^':wildToRegex glob
-#endif
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. -}
