@@ -6,7 +6,7 @@ BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
 # you can turn off some of these features.
 #
 # If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_GLOB
+FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
 
 bins=git-annex
 mans=git-annex.1 git-annex-shell.1
@@ -234,7 +234,7 @@ android:
 	OS=Android $(MAKE) Build/SysConfig.hs
 	GHC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
 	CC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
-	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_GLOB -DWITH_DNS" \
+	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_DNS" \
 	OS=Android $(MAKE) fast
 
 ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
