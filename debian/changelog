@@ -19,6 +19,8 @@ git-annex (3.20130217) UNRELEASED; urgency=low
   * Fix a reversion in matching globs introduced in the last release,
     where "*" did not match files inside subdirectories. No longer uses
     the Glob library.
+  * copy: Update location log when no copy was performed, if the location
+    log was out of date.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

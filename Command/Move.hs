@@ -79,9 +79,7 @@ toPerform dest move key file = moveLock move key $ do
 	fast <- Annex.getState Annex.fast
 	let fastcheck = fast && not move && not (Remote.hasKeyCheap dest)
 	isthere <- if fastcheck
-		then do
-			remotes <- Remote.keyPossibilities key
-			return $ Right $ dest `elem` remotes
+		then Right <$> expectedpresent
 		else Remote.hasKey dest key
 	case isthere of
 		Left err -> do
@@ -92,21 +90,26 @@ toPerform dest move key file = moveLock move key $ do
 			ok <- upload (Remote.uuid dest) key (Just file) noRetry $
 				Remote.storeKey dest key (Just file)
 			if ok
-				then finish True
+				then do
+					Remote.logStatus dest key InfoPresent
+					finish
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> finish False
+		Right True -> do
+			unlessM expectedpresent $
+				Remote.logStatus dest key InfoPresent
+			finish
   where
-	finish remotechanged = do
-		when remotechanged $
-			Remote.logStatus dest key InfoPresent
-		if move
-			then do
-				removeAnnex key
-				next $ Command.Drop.cleanupLocal key
-			else next $ return True
+	finish
+		| move = do
+			removeAnnex key
+			next $ Command.Drop.cleanupLocal key
+		| otherwise = next $ return True
+	expectedpresent = do
+		remotes <- Remote.keyPossibilities key
+		return $ dest `elem` remotes
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.
