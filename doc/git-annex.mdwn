@@ -191,7 +191,7 @@ subdirectories).
   Typically started at boot, or when you log in.
 
   With the --autostart option, the assistant is started in any repositories
-  it has created.
+  it has created. These are listed in `~/.config/git-annex/autostart`
 
 * webapp
 
