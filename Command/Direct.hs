@@ -14,6 +14,7 @@ import qualified Git.Command
 import qualified Git.LsFiles
 import Config
 import Annex.Direct
+import Annex.Version
 
 def :: [Command]
 def = [notBareRepo $ 
@@ -53,4 +54,5 @@ cleanup :: CommandCleanup
 cleanup = do
 	showStart "direct" ""
 	setDirect True
+	setVersion directModeVersion
 	return True

@@ -1,5 +1,6 @@
-git-annex (3.20130217) UNRELEASED; urgency=low
+git-annex (4.20130217) UNRELEASED; urgency=low
 
+  * annex.version is now set to 4 for direct mode repositories.
   * Should now fully support git repositories with core.symlinks=false;
     always using git's pseudosymlink files in such repositories.
   * webapp: Allow creating repositories on filesystems that lack support for

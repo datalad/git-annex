@@ -17,6 +17,7 @@ import qualified Annex
 import Annex.Direct
 import Annex.Content
 import Annex.CatFile
+import Annex.Version
 import Init
 
 def :: [Command]
@@ -88,6 +89,7 @@ perform = do
 
 cleanup :: CommandCleanup
 cleanup = do
+	setVersion defaultVersion
 	showStart "indirect" ""
 	showEndOk
 	return True

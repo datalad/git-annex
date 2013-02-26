@@ -23,5 +23,5 @@ start :: CommandStart
 start = do
 	showStart "upgrade" "."
 	r <- upgrade
-	setVersion
+	setVersion defaultVersion
 	next $ next $ return r

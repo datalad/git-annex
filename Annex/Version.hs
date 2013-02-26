@@ -1,6 +1,6 @@
 {- git-annex repository versioning
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,8 +16,11 @@ type Version = String
 defaultVersion :: Version
 defaultVersion = "3"
 
+directModeVersion :: Version
+directModeVersion = "4"
+
 supportedVersions :: [Version]
-supportedVersions = [defaultVersion]
+supportedVersions = [defaultVersion, directModeVersion]
 
 upgradableVersions :: [Version]
 upgradableVersions = ["0", "1", "2"]
@@ -28,8 +31,8 @@ versionField = annexConfig "version"
 getVersion :: Annex (Maybe Version)
 getVersion = annexVersion <$> Annex.getGitConfig
 
-setVersion :: Annex ()
-setVersion = setConfig versionField defaultVersion
+setVersion :: Version -> Annex ()
+setVersion = setConfig versionField
 
 removeVersion :: Annex ()
 removeVersion = unsetConfig versionField

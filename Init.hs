@@ -42,9 +42,9 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
+	setVersion defaultVersion
 	checkCrippledFileSystem
 	Annex.Branch.create
-	setVersion
 	gitPreCommitHookWrite
 	createInodeSentinalFile
 	u <- getUUID
@@ -143,3 +143,4 @@ checkCrippledFileSystem = whenM (probeCrippledFileSystem) $ do
 			maybe noop (`toDirect` f) =<< isAnnexLink f
 		void $ liftIO clean
 		setDirect True
+	setVersion directModeVersion
