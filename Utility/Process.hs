@@ -21,6 +21,7 @@ module Utility.Process (
 	createProcessSuccess,
 	createProcessChecked,
 	createBackgroundProcess,
+	processTranscript,
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
@@ -40,6 +41,8 @@ import System.Log.Logger
 import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
+import Data.Maybe
+import System.Posix.IO
 
 import Utility.Misc
 
@@ -116,7 +119,10 @@ forceSuccessProcess p pid = do
 		ExitSuccess -> return ()
 		ExitFailure n -> fail $ showCmd p ++ " exited " ++ show n
 
-{- Waits for a ProcessHandle and returns True if it exited successfully. -}
+{- Waits for a ProcessHandle and returns True if it exited successfully.
+ - Note that using this with createProcessChecked will throw away
+ - the Bool, and is only useful to ignore the exit code of a process,
+ - while still waiting for it. -}
 checkSuccessProcess :: ProcessHandle -> IO Bool
 checkSuccessProcess pid = do
 	code <- waitForProcess pid
@@ -145,6 +151,45 @@ createProcessChecked checker p a = do
  - Note: Zombies will result, and must be waited on. -}
 createBackgroundProcess :: CreateProcessRunner
 createBackgroundProcess p a = a =<< createProcess p
+
+{- Runs a process, optionally feeding it some input, and
+ - returns a transcript combining its stdout and stderr, and
+ - whether it succeeded or failed. -}
+processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
+processTranscript cmd opts input = do
+	(readf, writef) <- createPipe
+	readh <- fdToHandle readf
+	writeh <- fdToHandle writef
+	p@(_, _, _, pid) <- createProcess $
+		(proc cmd opts)
+			{ std_in = if isJust input then CreatePipe else Inherit
+			, std_out = UseHandle writeh
+			, std_err = UseHandle writeh
+			}
+	hClose writeh
+
+	-- fork off a thread to start consuming the output
+	transcript <- hGetContents readh
+	outMVar <- newEmptyMVar
+	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
+
+	-- now write and flush any input
+	case input of
+		Just s -> do
+			let inh = stdinHandle p
+			unless (null s) $ do
+				hPutStr inh s
+				hFlush inh
+			hClose inh
+		Nothing -> return ()
+
+	-- wait on the output
+	takeMVar outMVar
+	hClose readh
+
+	ok <- checkSuccessProcess pid
+	return (transcript, ok)
+
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes

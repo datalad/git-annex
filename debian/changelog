@@ -14,6 +14,8 @@ git-annex (3.20130217) UNRELEASED; urgency=low
   * Direct mode: Fix support for adding a modified file.
   * Avoid passing -p to rsync, to interoperate with crippled filesystems.
   * Additional GIT_DIR support bugfixes. May actually work now.
+  * webapp: Display any error message from git init if it fails to create
+    a repository.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

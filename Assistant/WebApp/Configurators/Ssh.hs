@@ -210,7 +210,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 				(inputUsername sshinput)
 			, remotecommand
 			]
-		parsetranscript . fst <$> sshTranscript sshopts ""
+		parsetranscript . fst <$> sshTranscript sshopts Nothing
 	parsetranscript s
 		| reported "git-annex-shell" = UsableSshInput
 		| reported shim = UsableSshInput
@@ -230,7 +230,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
  - and if it succeeds, runs an action. -}
 sshSetup :: [String] -> String -> Handler RepHtml -> Handler RepHtml
 sshSetup opts input a = do
-	(transcript, ok) <- liftIO $ sshTranscript opts input
+	(transcript, ok) <- liftIO $ sshTranscript opts (Just input)
 	if ok
 		then a
 		else showSshErr transcript

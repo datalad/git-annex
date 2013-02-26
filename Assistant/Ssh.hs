@@ -61,36 +61,8 @@ genSshRepoName host dir
 	| otherwise = makeLegalName $ host ++ "_" ++ dir
 
 {- The output of ssh, including both stdout and stderr. -}
-sshTranscript :: [String] -> String -> IO (String, Bool)
-sshTranscript opts input = do
-	(readf, writef) <- createPipe
-	readh <- fdToHandle readf
-	writeh <- fdToHandle writef
-	(Just inh, _, _, pid) <- createProcess $
-		(proc "ssh" opts)
-			{ std_in = CreatePipe
-			, std_out = UseHandle writeh
-			, std_err = UseHandle writeh
-			}
-	hClose writeh
-
-	-- fork off a thread to start consuming the output
-	transcript <- hGetContents readh
-	outMVar <- newEmptyMVar
-	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
-
-	-- now write and flush any input
-	unless (null input) $ do
-		hPutStr inh input
-		hFlush inh
-	hClose inh -- done with stdin
-
-	-- wait on the output
-	takeMVar outMVar
-	hClose readh
-
-	ok <- checkSuccessProcess pid
-	return (transcript, ok)
+sshTranscript :: [String] -> (Maybe String) -> IO (String, Bool)
+sshTranscript opts input = processTranscript "ssh" opts input
 
 {- Ensure that the ssh public key doesn't include any ssh options, like
  - command=foo, or other weirdness -}

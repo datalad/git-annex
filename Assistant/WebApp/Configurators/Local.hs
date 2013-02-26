@@ -276,8 +276,9 @@ startFullAssistant path = do
 {- Makes a new git repository. -}
 makeRepo :: FilePath -> Bool -> IO ()
 makeRepo path bare = do
-	unlessM (boolSystem "git" params) $
-		error "git init failed!"
+	(transcript, ok) <- processTranscript "git" (toCommand params) Nothing
+	unless ok $
+		error $ "git init failed!\nOutput:\n" ++ transcript
   where
 	baseparams = [Param "init", Param "--quiet"]
 	params

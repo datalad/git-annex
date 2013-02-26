@@ -41,7 +41,7 @@ finishedLocalPairing msg keypair = do
 			, genSshHost (sshHostName sshdata) (sshUserName sshdata)
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
-			""
+			Nothing
 	void $ makeSshRemote False sshdata
 
 {- Mostly a straightforward conversion.  Except:
