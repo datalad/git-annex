@@ -4,11 +4,12 @@
 # Add Android cross-compiler to PATH (as installed by ghc-android)
 # (This directory also needs to have a cc that is a symlink to the prefixed
 # gcc cross-compiler executable.)
-PATH:=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin:$(PATH)
+ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin
+PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
-export ANDROID_SDK_ROOT=$(HOME)/tmp/adt-bundle-linux-x86/sdk
-export ANDROID_NDK_ROOT=$(HOME)/tmp/android-ndk-r8d
+export ANDROID_SDK_ROOT?=$(HOME)/tmp/adt-bundle-linux-x86/sdk
+export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
 GITTREE=source/git/installed-tree
 
