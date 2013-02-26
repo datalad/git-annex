@@ -30,3 +30,6 @@ transfers when not on wifi. This may need to be configurable.
   allow git to link to it.
 * getEnvironment is broken on Android <https://github.com/neurocyte/ghc-android/issues/7>
   and a few places use it.
+* Enable WebDAV support. Currently needs template haskell (could be avoided
+  by changing the DAV library to not use it), and also networking support,
+  which seems broken in current ghc-android.
