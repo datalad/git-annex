@@ -13,7 +13,15 @@ export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
 GITTREE=source/git/installed-tree
 
-build: source build-utils start
+build: start
+	$(MAKE) source/openssl
+	$(MAKE) source/openssh
+	$(MAKE) source/busybox
+	$(MAKE) source/rsync
+	$(MAKE) source/gnupg
+	$(MAKE) source/git
+	$(MAKE) source/term
+
 	# Debug build because it does not need signing keys.
 	cd source/term && tools/build-debug
 
@@ -65,19 +73,12 @@ build: source build-utils start
 
 	cd source/term && ant debug
 
-build-utils: source
-	$(MAKE) build-openssh
-	$(MAKE) build-busybox
-	$(MAKE) build-rsync
-	$(MAKE) build-gnupg
-	$(MAKE) build-git
-	$(MAKE) build-term
-	touch build-utils
-
-build-openssh:
+source/openssl:
 	cd source/openssl && CC=$$(which cc) ./Configure android
 	cd source/openssl && $(MAKE)
+	touch $@
 
+source/openssh: openssh.patch openssh.config.h
 	cd source/openssh && git reset --hard
 	cd source/openssh && ./configure --host=arm-linux-androideabi --with-ssl-dir=../openssl --without-openssl-header-check
 	cd source/openssh && patch -p1 < ../../openssh.patch
@@ -85,28 +86,33 @@ build-openssh:
 	cd source/openssh && sed -i -e 's/getrrsetbyname.o //' openbsd-compat/Makefile
 	cd source/openssh && sed -i -e 's/auth-passwd.o //' Makefile
 	cd source/openssh && $(MAKE) ssh ssh-keygen
+	touch $@
 
-build-busybox:
+source/busybox: busybox_config
 	cp busybox_config source/busybox/.config
 	cd source/busybox && yes '' | $(MAKE) oldconfig
 	cd source/busybox && $(MAKE)
+	touch $@
 	
-build-git:
+source/git:
 	cd source/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 prefix= DESTDIR=installed-tree
+	touch $@
 
-build-rsync:
+source/rsync: rsync.patch
 	cd source/rsync && git reset --hard origin/master && git am < ../../rsync.patch
 	cp source/automake/lib/config.sub source/automake/lib/config.guess source/rsync/
 	cd source/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd source/rsync && $(MAKE)
+	touch $@
 
-build-gnupg:
+source/gnupg:
 	cd source/gnupg && git checkout gnupg-1.4.13
 	cd source/gnupg && ./autogen.sh
 	cd source/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd source/gnupg; $(MAKE) || true # expected failure in doc build
+	touch $@
 
-build-term:
+source/term: term.patch icons
 	cd source/term && git reset --hard
 	cd source/term && patch -p1 <../../term.patch
 	(cd icons && tar c .) | (cd source/term/res && tar x)
@@ -118,28 +124,22 @@ build-term:
 	cd source/term && find -name .git -prune -o -type f -print0 | xargs -0 perl -pi -e 's/jackpal/ga/g'
 	cd source/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
 	cd source/term && tools/update.sh
+	touch $@
 
 source:
 	mkdir -p source
-	git clone git://git.savannah.gnu.org/automake.git source/automake
-	git clone git://git.debian.org/git/d-i/busybox source/busybox
-	git clone git://git.kernel.org/pub/scm/git/git.git source/git
-	git clone git://git.samba.org/rsync.git source/rsync
-	git clone git://git.gnupg.org/gnupg.git source/gnupg
-	git clone git://git.openssl.org/openssl source/openssl
-	git clone git://github.com/CyanogenMod/android_external_openssh.git source/openssh
-	git clone git://github.com/jackpal/Android-Terminal-Emulator.git source/term
+	git clone --bare git://git.savannah.gnu.org/automake.git source/automake
+	git clone --bare git://git.debian.org/git/d-i/busybox source/busybox
+	git clone --bare git://git.kernel.org/pub/scm/git/git.git source/git
+	git clone --bare git://git.samba.org/rsync.git source/rsync
+	git clone --bare git://git.gnupg.org/gnupg.git source/gnupg
+	git clone --bare git://git.openssl.org/openssl source/openssl
+	git clone --bare git://github.com/CyanogenMod/android_external_openssh.git source/openssh
+	git clone --bare git://github.com/jackpal/Android-Terminal-Emulator.git source/term
 
 clean:
 	rm -rf $(GITTREE)
-	rm -f build-utils start
-	cd source/busybox && $(MAKE) clean
-	#cd source/openssl && $(MAKE) clean
-	cd source/openssh && $(MAKE) clean
-	cd source/git && $(MAKE) clean
-	cd source/rsync && $(MAKE) clean
-	cd source/gnupg && $(MAKE) clean
-	cd source/term && ant clean
+	rm -f start
 
-reallyclean:
+reallyclean: clean
 	rm -rf source
