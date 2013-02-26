@@ -14,6 +14,6 @@ Another optimisation is to only check each git ref once, even if multiple branch
 
 Indeed, if you go on and add 100 identical branches, you'll find it runs in just about the same time it ran with 2 branches. (There's a little overhead in getting the list of branches and throwing out the duplicates, but that's all.)
 
-What then explains your numbers? Well, I have no idea. I cannot replicate them; I tend to see about the same amount of time taken with two duplicate branches as with one branch. I suspect you just didn't get statistically valid results, which playing around with `sleep` at the command line often doesn't,
+What then explains your numbers? Well, I have no idea. I cannot replicate them; I tend to see about the same amount of time taken with two duplicate branches as with one branch. I suspect you just didn't get statistically valid results, which playing around with `time` at the command line often doesn't,
 due to caching, other active processes, etc.
 """]]
