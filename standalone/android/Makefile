@@ -13,7 +13,7 @@ export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
 GITTREE=source/git/installed-tree
 
-build: source build-utils start
+build: build-utils start
 	# Debug build because it does not need signing keys.
 	cd source/term && tools/build-debug
 
@@ -119,27 +119,27 @@ build-term:
 	cd source/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
 	cd source/term && tools/update.sh
 
-source:
+source: clones
 	mkdir -p source
-	git clone git://git.savannah.gnu.org/automake.git source/automake
-	git clone git://git.debian.org/git/d-i/busybox source/busybox
-	git clone git://git.kernel.org/pub/scm/git/git.git source/git
-	git clone git://git.samba.org/rsync.git source/rsync
-	git clone git://git.gnupg.org/gnupg.git source/gnupg
-	git clone git://git.openssl.org/openssl source/openssl
-	git clone git://github.com/CyanogenMod/android_external_openssh.git source/openssh
-	git clone git://github.com/jackpal/Android-Terminal-Emulator.git source/term
+	cd source && \
+	for p in automake busybox git rsync gnupg openssl openssh term; do \
+		git clone ../clones/$$p $$p; \
+	done
+
+clones:
+	mkdir -p clones
+	git clone --bare git://git.savannah.gnu.org/automake.git clones/automake
+	git clone --bare git://git.debian.org/git/d-i/busybox clones/busybox
+	git clone --bare git://git.kernel.org/pub/scm/git/git.git clones/git
+	git clone --bare git://git.samba.org/rsync.git clones/rsync
+	git clone --bare git://git.gnupg.org/gnupg.git clones/gnupg
+	git clone --bare git://git.openssl.org/openssl clones/openssl
+	git clone --bare git://github.com/CyanogenMod/android_external_openssh.git clones/openssh
+	git clone --bare git://github.com/jackpal/Android-Terminal-Emulator.git clones/term
 
 clean:
-	rm -rf $(GITTREE)
+	rm -rf $(GITTREE) source
 	rm -f build-utils start
-	cd source/busybox && $(MAKE) clean
-	#cd source/openssl && $(MAKE) clean
-	cd source/openssh && $(MAKE) clean
-	cd source/git && $(MAKE) clean
-	cd source/rsync && $(MAKE) clean
-	cd source/gnupg && $(MAKE) clean
-	cd source/term && ant clean
 
-reallyclean:
-	rm -rf source
+reallyclean: clean
+	rm -rf clones
