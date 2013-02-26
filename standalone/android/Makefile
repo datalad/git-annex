@@ -123,7 +123,7 @@ source/term: term.patch icons
 	# app, if it's also installed.
 	cd source/term && find -name .git -prune -o -type f -print0 | xargs -0 perl -pi -e 's/jackpal/ga/g'
 	cd source/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
-	cd source/term && tools/update.sh
+	cd source/term && tools/update.sh >/dev/null 2>&1
 	touch $@
 
 source:
