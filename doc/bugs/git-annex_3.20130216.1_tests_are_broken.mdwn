@@ -38,3 +38,6 @@ Adding `uuid` results in:
 
 
 Also: you included ".git-annex.cabal.swp" in the tarball.
+
+> These problems in the cabal file were fixed the other day. [[done]]
+> --[[Joey]]
