@@ -53,7 +53,11 @@ Flag DNS
   Description: Enable the haskell DNS library for DNS lookup
 
 Flag Production
-  Description: Enable production build
+  Description: Enable production build (slower build; faster binary)
+
+Flag Android
+  Description: Building for Android
+  Default: False
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -82,12 +86,12 @@ Executable git-annex
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant)
-    Build-Depends: async
-
   if flag(Assistant) && ! os(windows) && ! os(solaris)
-    Build-Depends: stm >= 2.3
+    Build-Depends: async, stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
+
+  if flag(Android)
+    CPP-Options: -D__ANDROID__
 
   if os(linux) && flag(Inotify)
     Build-Depends: hinotify
@@ -105,22 +109,22 @@ Executable git-annex
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
 
-  if flag(Webapp) && flag(Assistant)
+  if flag(Webapp)
     Build-Depends: yesod, yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
-     crypto-api, hamlet, clientsession, aeson, yesod-form (>= 1.2.0),
-     template-haskell, yesod-default (>= 1.1.0), data-default
+     crypto-api, hamlet, clientsession, aeson, yesod-form,
+     template-haskell, yesod-default, data-default
     CPP-Options: -DWITH_WEBAPP
 
-  if flag(Pairing) && flag(Webapp)
+  if flag(Pairing)
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP) && flag(Assistant)
+  if flag(XMPP)
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 
-  if flag(XMPP) && flag(Assistant) && flag(DNS)
+  if flag(DNS)
     Build-Depends: dns
     CPP-Options: -DWITH_DNS
 
