@@ -1,5 +1,0 @@
-#!/bin/sh
-# This runs ghci with the same flags used when compiling with ghc.
-# Certian flags need to be the same in order for ghci to reuse compiled
-# objects.
-ghci $(make getflags | sed 's/-Wall//') $@
