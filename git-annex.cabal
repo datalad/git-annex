@@ -5,7 +5,7 @@ License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2012 Joey Hess
+Copyright: 2010-2013 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
@@ -52,6 +52,9 @@ Flag XMPP
 Flag DNS
   Description: Enable the haskell DNS library for DNS lookup
 
+Flag Production
+  Description: Enable production build
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -65,7 +68,11 @@ Executable git-annex
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
-  GHC-Options: -threaded
+  CC-Options: -Wall
+  GHC-Options: -threaded -Wall
+
+  if flag(Production)
+    GHC-Options: -O2
 
   if flag(S3)
     Build-Depends: hS3
@@ -130,7 +137,6 @@ Test-Suite test
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c
-  Extensions: CPP
   GHC-Options: -threaded
 
 source-repository head
