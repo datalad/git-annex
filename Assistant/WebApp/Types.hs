@@ -88,6 +88,15 @@ data RepoSelector = RepoSelector
 data RepoListNotificationId = RepoListNotificationId NotificationId RepoSelector
 	deriving (Read, Show, Eq)
 
+{- Only needed to work around old-yesod bug that emits a warning message
+ - when a route has two parameters. -}
+data FilePathAndUUID = FilePathAndUUID FilePath UUID
+	deriving (Read, Show, Eq)
+
+instance PathPiece FilePathAndUUID where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
 instance PathPiece SshData where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

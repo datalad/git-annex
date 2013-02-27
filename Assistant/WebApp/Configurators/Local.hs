@@ -164,8 +164,8 @@ getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> lift getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
-getCombineRepositoryR :: FilePath -> UUID -> Handler RepHtml
-getCombineRepositoryR newrepopath newrepouuid = do
+getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
+getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
 	r <- combineRepos newrepopath remotename
 	syncRemote r
 	redirect $ EditRepositoryR newrepouuid
