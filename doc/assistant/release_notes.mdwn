@@ -1,3 +1,15 @@
+## version 4.20130227
+
+This release fixes a bug with globbing that broke preferred content expressions.
+So, it is a recommended upgrade from the previous release, which introduced
+that bug.
+
+In this release, the assistant is fully working on Android, although
+it must be set up using the command line.
+
+Repositories can now be placed on filesystems that lack support for symbolic
+links; FAT support is complete.
+
 ## version 3.20130216
 
 This adds a port to Android. Only usable at the command line so far;
