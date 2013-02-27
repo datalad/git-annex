@@ -47,14 +47,13 @@ install: build-stamp install-docs
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
-test: $(sources) $(clibs)
-	@if ! $(GHCMAKE) -O0 test $(clibs); then \
-		echo "** failed to build the test suite" >&2; \
-		exit 1; \
-	elif ! ./test; then \
-		echo "** test suite failed!" >&2; \
-		exit 1; \
-	fi
+test:
+# workaround for, apparently, a cabal bug
+	hsc2hs Utility/Touch.hsc
+	cabal configure --enable-tests
+	cabal build
+	rm -f Utility/Touch.hs
+	cabal test
 
 testcoverage:
 	rm -f test.tix test
