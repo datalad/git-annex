@@ -5,7 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, CPP #-}
+
+#if defined VERSION_http_conduit
+#if ! MIN_VERSION_http_conduit(1,9,0)
+#define WITH_OLD_HTTP_CONDUIT
+#endif
+#endif
 
 module Remote.WebDAV (remote, davCreds, setCredsEnv) where
 
@@ -228,7 +234,11 @@ davUrlExists :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
 davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
   where
 	decode (Right _) = Right True
+#ifdef WITH_OLD_HTTP_CONDUIT
 	decode (Left (Left (StatusCodeException status _)))
+#else
+	decode (Left (Left (StatusCodeException status _ _)))
+#endif
 		| statusCode status == statusCode notFound404 = Right False
 	decode (Left e) = Left $ showEitherException e
 
@@ -275,7 +285,12 @@ catchHttp a = (Right <$> a) `E.catches`
 type EitherException = Either HttpException E.IOException
 
 showEitherException :: EitherException -> String
-showEitherException (Left (StatusCodeException status _)) = show $ statusMessage status
+#ifdef WITH_OLD_HTTP_CONDUIT
+showEitherException (Left (StatusCodeException status _)) =
+#else
+showEitherException (Left (StatusCodeException status _ _)) =
+#endif
+	show $ statusMessage status
 showEitherException (Left httpexception) = show httpexception
 showEitherException (Right ioexception) = show ioexception
 

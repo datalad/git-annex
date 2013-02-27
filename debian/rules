@@ -1,9 +1,9 @@
 #!/usr/bin/make -f
 
 ifeq (install ok installed,$(shell dpkg-query -W -f '$${Status}' libghc-yesod-dev 2>/dev/null))
-export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_HOST -DWITH_PAIRING -DWITH_XMPP -DWITH_WEBAPP -DWITH_OLD_YESOD
+export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_HOST -DWITH_PAIRING -DWITH_XMPP -DWITH_OLD_HTTP_CONDUIT -DWITH_WEBAPP -DWITH_OLD_YESOD
 else
-export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_HOST -DWITH_PAIRING -DWITH_XMPP
+export FEATURES=-DWITH_ASSISTANT -DWITH_S3 -DWITH_HOST -DWITH_PAIRING -DWITH_XMPP -DWITH_OLD_HTTP_CONDUIT
 endif
 ifeq (install ok installed,$(shell dpkg-query -W -f '$${Status}' libghc-dav-dev 2>/dev/null))
 export FEATURES:=${FEATURES} -DWITH_WEBDAV
