@@ -1,4 +1,4 @@
-git-annex (4.20130217) UNRELEASED; urgency=low
+git-annex (4.20130227) unstable; urgency=low
 
   * annex.version is now set to 4 for direct mode repositories.
   * Should now fully support git repositories with core.symlinks=false;
@@ -24,8 +24,10 @@ git-annex (4.20130217) UNRELEASED; urgency=low
     log was out of date.
   * Makefile now builds using cabal, taking advantage of cabal's automatic
     detection of appropriate build flags.
+  * test: The test suite is now built into the git-annex binary, and can
+    be run at any time.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 14:07:24 -0400
 
 git-annex (3.20130216) unstable; urgency=low
 

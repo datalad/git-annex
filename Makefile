@@ -47,22 +47,8 @@ install: build-stamp install-docs
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
-test:
-# workaround for, apparently, a cabal bug
-	hsc2hs Utility/Touch.hsc
-	cabal configure --enable-tests
-	cabal build
-	rm -f Utility/Touch.hs
-	cabal test
-
-testcoverage:
-	rm -f test.tix test
-	$(GHC) $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
-	./test
-	@echo ""
-	@hpc report test --exclude=Main --exclude=QC
-	@hpc markup test --exclude=Main --exclude=QC --destdir=.hpc >/dev/null
-	@echo "(See .hpc/ for test coverage details.)"
+test: git-annex
+	./git-annex test
 
 # hothasktags chokes on some tempolate haskell etc, so ignore errors
 tags:
@@ -86,7 +72,7 @@ docs: $(mans)
 		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*'
 
 clean:
-	rm -rf tmp dist git-annex $(mans) test configure  *.tix .hpc \
+	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist build-stamp tags Build/SysConfig.hs
 
 sdist: clean $(mans)
@@ -175,4 +161,4 @@ androidapp:
 	$(MAKE) -C standalone/android
 	cp standalone/android/source/term/bin/Term-debug.apk tmp/git-annex.apk
 
-.PHONY: git-annex test install tags
+.PHONY: git-annex install tags

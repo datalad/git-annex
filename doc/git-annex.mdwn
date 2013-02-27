@@ -506,6 +506,10 @@ subdirectories).
   With --force, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
+* test
+
+  This runs git-annex's built-in test suite.
+
 * xmppgit
 
   This command is used internally to perform git pulls over XMPP.

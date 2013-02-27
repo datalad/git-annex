@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20130217
+Version: 4.20130227
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -63,7 +63,7 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
-   bytestring, old-locale, time,
+   bytestring, old-locale, time, testpack, HUnit,
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
@@ -127,21 +127,6 @@ Executable git-annex
   if flag(DNS)
     Build-Depends: dns
     CPP-Options: -DWITH_DNS
-
-Test-Suite test
-  Type: exitcode-stdio-1.0
-  Main-Is: test.hs
-  Build-Depends: testpack, HUnit, MissingH, hslogger, directory, filepath,
-   unix, containers, utf8-string, network, mtl (>= 2.1.1), bytestring,
-   old-locale, time, extensible-exceptions, dataenc, SHA,
-   process, json, base (>= 4.5 && < 4.7), monad-control,
-   transformers-base, lifted-base, IfElse, text, QuickCheck (>= 2.1),
-   bloomfilter, edit-distance, process, SafeSemaphore,
-   uuid, random, regex-compat
-  Other-Modules: Utility.Touch
-  Include-Dirs: Utility
-  C-Sources: Utility/libdiskfree.c
-  GHC-Options: -threaded
 
 source-repository head
   type: git

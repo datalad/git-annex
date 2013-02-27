@@ -1,11 +1,13 @@
 {- git-annex test suite
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
+module Test where
 
 import Test.HUnit
 import Test.HUnit.Tools
@@ -939,6 +941,9 @@ unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
 prepare :: IO ()
 prepare = do
+	whenM (doesDirectoryExist) tmpdir $
+		error $ "The temporary directory " ++ tmpdir ++ "already exists; cannot run test suite."
+
 	-- While PATH is mostly avoided, the commit hook does run it,
 	-- and so does git_annex_output. Make sure that the just-built
 	-- git annex is used.
