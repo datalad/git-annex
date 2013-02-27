@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="comment 7"
+ date="2013-02-27T06:53:15Z"
+ content="""
+But the error does not happen immediately after that. All the 6 log messages have the same timestamp and `git annex init --debug; date` prints a timestamp that is 3-4 seconds later.
+"""]]
