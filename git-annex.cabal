@@ -65,7 +65,6 @@ Executable git-annex
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
-  Extensions: CPP
   GHC-Options: -threaded
 
   if flag(S3)
