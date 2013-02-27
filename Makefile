@@ -13,7 +13,7 @@ fast: dist/caballog
 	$$(grep 'ghc --make' dist/caballog | head -n 1 | sed 's/ -O / /')
 	ln -sf dist/build/git-annex/git-annex git-annex
 
-dist/caballog: dist/setup-config
+dist/caballog:
 	cabal configure -f-Production
 	cabal build -v2 | tee $@
 
