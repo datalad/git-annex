@@ -124,7 +124,7 @@ Test-Suite test
    unix, containers, utf8-string, network, mtl (>= 2.1.1), bytestring,
    old-locale, time, extensible-exceptions, dataenc, SHA,
    process, json, base (>= 4.5 && < 4.7), monad-control,
-   transformers-base, lifted-base, IfElse, text, QuickCheck >= 2.1,
+   transformers-base, lifted-base, IfElse, text, QuickCheck (>= 2.1),
    bloomfilter, edit-distance, process, SafeSemaphore,
    uuid, random, regex-compat
   Other-Modules: Utility.Touch
