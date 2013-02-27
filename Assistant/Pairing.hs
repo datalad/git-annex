@@ -75,7 +75,7 @@ data PairingInProgress = PairingInProgress
 data SomeAddr = IPv4Addr HostAddress
 {- My Android build of the Network library does not currently have IPV6
  - support. -}
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 	| IPv6Addr HostAddress6
 #endif
 	deriving (Ord, Eq, Read, Show)

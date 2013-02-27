@@ -1,91 +1,24 @@
-CFLAGS=-Wall
-GIT_ANNEX_TMP_BUILD_DIR?=tmp
-BASEFLAGS=-Wall -outputdir $(GIT_ANNEX_TMP_BUILD_DIR) -IUtility
-
-# If you get build failures due to missing haskell libraries,
-# you can turn off some of these features.
-#
-# If you're using an old version of yesod, enable -DWITH_OLD_YESOD
-FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBDAV -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_OLD_HTTP_CONDUIT
-
-bins=git-annex
 mans=git-annex.1 git-annex-shell.1
-sources=Build/SysConfig.hs Utility/Touch.hs Utility/Mounts.hs
-all=$(bins) $(mans) docs
-
-OS?=$(shell uname | sed 's/[-_].*//')
-ifeq ($(OS),Android)
-OPTFLAGS?=-DWITH_INOTIFY -DWITH_ANDROID
-clibs=Utility/libdiskfree.o Utility/libmounts.o
-CFLAGS:=-Wall -DWITH_ANDROID
-THREADFLAGS=-threaded
-else
-ifeq ($(OS),Linux)
-OPTFLAGS?=-DWITH_INOTIFY -DWITH_DBUS
-clibs=Utility/libdiskfree.o Utility/libmounts.o
-THREADFLAGS=$(shell if test -e  `ghc --print-libdir`/libHSrts_thr.a; then printf -- -threaded; fi)
-else
-ifeq ($(OS),SunOS)
-# Solaris is not supported by the assistant or watch command.
-FEATURES:=$(shell echo $(FEATURES) | sed -e 's/-DWITH_ASSISTANT//' -e 's/-DWITH_WEBAPP//')
-else
-# BSD system
-THREADFLAGS=-threaded
-ifeq ($(OS),Darwin)
-# use fsevents for OSX
-OPTFLAGS?=-DWITH_FSEVENTS
-clibs=Utility/libdiskfree.o Utility/libmounts.o
-# Ensure OSX compiler builds for 32 bit when using 32 bit ghc
-GHCARCH:=$(shell ghc -e 'print System.Info.arch')
-ifeq ($(GHCARCH),i386)
-CFLAGS=-Wall -m32
-endif
-else
-# BSD system with kqueue
-OPTFLAGS?=-DWITH_KQUEUE
-clibs=Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
-endif
-endif
-endif
-endif
-
-ALLFLAGS = $(BASEFLAGS) $(FEATURES) $(OPTFLAGS) $(THREADFLAGS)
-
-PREFIX=/usr
-GHCFLAGS=-O2 $(ALLFLAGS)
-
-ifdef PROFILE
-GHCFLAGS=-prof -auto-all -rtsopts -caf-all -fforce-recomp $(ALLFLAGS)
-endif
+all=git-annex $(mans) docs
 
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
-
-# Am I typing :make in vim? Do a fast build.
-ifdef VIM
-all=fast
-endif
+PREFIX=/usr
 
 build: $(all)
-	touch build-stamp
 
-sources: $(sources)
-
-# Disables optimisation. Not for production use.
-fast: GHCFLAGS=$(ALLFLAGS)
-fast: $(bins)
+fast:
+	@if [ ! -e dist/setup-config ] || grep -- -O2 dist/setup-config; then \
+		cabal configure -f-Production; \
+	fi
+	$(MAKE) git-annex
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
-	$(GHCMAKE) configure
-	./configure $(OS)
+	cabal configure
 
-%.hs: %.hsc
-	hsc2hs $<
-
-git-annex: $(sources) $(clibs)
-	install -d $(GIT_ANNEX_TMP_BUILD_DIR)
-	$(GHCMAKE) $@ -o $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex $(clibs)
-	ln -sf $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex git-annex
+git-annex: Build/SysConfig.hs
+	cabal build
+	ln -sf dist/build/git-annex/git-annex git-annex
 
 git-annex.1: doc/git-annex.mdwn
 	./Build/mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
@@ -121,7 +54,7 @@ test: $(sources) $(clibs)
 
 testcoverage:
 	rm -f test.tix test
-	$(GHC) $(GHCFLAGS) -outputdir $(GIT_ANNEX_TMP_BUILD_DIR)/testcoverage --make -fhpc test
+	$(GHC) $(GHCFLAGS) -outputdir tmp/testcoverage --make -fhpc test
 	./test
 	@echo ""
 	@hpc report test --exclude=Main --exclude=QC
@@ -150,8 +83,8 @@ docs: $(mans)
 		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*'
 
 clean:
-	rm -rf $(GIT_ANNEX_TMP_BUILD_DIR) $(bins) $(mans) test configure  *.tix .hpc $(sources) \
-		doc/.ikiwiki html dist $(clibs) build-stamp tags
+	rm -rf tmp dist git-annex $(mans) test configure  *.tix .hpc \
+		doc/.ikiwiki html dist build-stamp tags Build/SysConfig.hs
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -160,7 +93,7 @@ sdist: clean $(mans)
 hackage: sdist
 	@cabal upload dist/*.tar.gz
 
-LINUXSTANDALONE_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.linux
+LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
 	$(MAKE) git-annex
 
@@ -194,15 +127,15 @@ linuxstandalone:
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 
-	cd $(GIT_ANNEX_TMP_BUILD_DIR) && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
+	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
-OSXAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/git-annex.app
+OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
 osxapp:
 	$(MAKE) git-annex
 
 	rm -rf "$(OSXAPP_DEST)"
-	install -d $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg
+	install -d tmp/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
 
 	install -d "$(OSXAPP_BASE)"
@@ -210,7 +143,7 @@ osxapp:
 	strip "$(OSXAPP_BASE)/git-annex"
 	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
-	cp $(OSXAPP_BASE)/LICENSE $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg/LICENSE.txt
+	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
 
 	runghc Build/Standalone.hs $(OSXAPP_BASE)
 
@@ -219,32 +152,20 @@ osxapp:
 
 	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
-	hdiutil create -size 640m -format UDRW -srcfolder $(GIT_ANNEX_TMP_BUILD_DIR)/build-dmg \
+	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast tmp/git-annex.dmg
 
-# Cross compile for Android binary.
+# Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
-#
-# configure is run, probing the local system.
-# So the Android should have all the same stuff that configure probes for,
-# including the same version of git.
 android:
-	OS=Android $(MAKE) Build/SysConfig.hs
-	GHC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-unknown-linux-androideabi-ghc \
-	CC=$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-gcc \
-	FEATURES="-DWITH_ANDROID -DWITH_ASSISTANT -DWITH_DNS" \
-	OS=Android $(MAKE) fast
+	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant DNS'
+	$(MAKE) git-annex
 
-ANDROIDAPP_DEST=$(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.android
 androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
-	cp standalone/android/source/term/bin/Term-debug.apk $(GIT_ANNEX_TMP_BUILD_DIR)/git-annex.apk
+	cp standalone/android/source/term/bin/Term-debug.apk tmp/git-annex.apk
 
-# used by ./ghci
-getflags:
-	@echo $(ALLFLAGS) $(clibs)
-
-.PHONY: $(bins) test install tags
+.PHONY: git-annex test install tags

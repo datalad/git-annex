@@ -7,6 +7,12 @@
 
 {-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
+#if defined VERSION_yesod_form
+#if ! MIN_VERSION_yesod_form(1,2,0)
+#define WITH_OLD_YESOD
+#endif
+#endif
+
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common

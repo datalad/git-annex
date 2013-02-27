@@ -28,7 +28,7 @@ myUserName :: IO String
 myUserName = myVal ["USER", "LOGNAME"] userName
 
 myUserGecos :: IO String
-#ifdef WITH_ANDROID
+#ifdef __ANDROID__
 myUserGecos = return "" -- userGecos crashes on Android
 #else
 myUserGecos = myVal [] userGecos

@@ -14,7 +14,7 @@ import Common
 
 import Control.Concurrent
 import System.Posix.Signals
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 import System.Posix.Terminal
 #endif
 
@@ -53,7 +53,7 @@ waitForTermination :: IO ()
 waitForTermination = do
 	lock <- newEmptyMVar
 	check softwareTermination lock
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal lock
 #endif

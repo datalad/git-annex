@@ -10,7 +10,7 @@
 module Utility.Shell where
 
 shellPath :: FilePath
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 shellPath = "/bin/sh"
 #else
 shellPath = "/system/bin/sh"

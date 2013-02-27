@@ -22,6 +22,8 @@ git-annex (4.20130217) UNRELEASED; urgency=low
     the Glob library.
   * copy: Update location log when no copy was performed, if the location
     log was out of date.
+  * Makefile now builds using cabal, taking advantage of cabal's automatic
+    detection of appropriate build flags.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 17 Feb 2013 16:42:16 -0400
 

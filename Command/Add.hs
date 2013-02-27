@@ -21,7 +21,7 @@ import Annex.Perms
 import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 import Utility.Touch
 #endif
 import Utility.FileMode
@@ -166,7 +166,7 @@ link file key hascontent = handle (undo file key) $ do
 	l <- calcGitLink file key
 	makeAnnexLink l file
 
-#ifndef WITH_ANDROID
+#ifndef __ANDROID__
 	when hascontent $ do
 		-- touch the symlink to have the same mtime as the
 		-- file it points to

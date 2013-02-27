@@ -1,6 +1,5 @@
 tmp
 test
-configure
 build-stamp
 Build/SysConfig.hs
 git-annex
@@ -11,9 +10,6 @@ doc/.ikiwiki
 html
 *.tix
 .hpc
-Utility/Touch.hs
-Utility/Mounts.hs
-Utility/*.o
 dist
 # Sandboxed builds
 cabal-dev

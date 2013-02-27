@@ -5,7 +5,7 @@
 # include <sys/mount.h>
 # define GETMNTINFO
 #else
-#if defined WITH_ANDROID
+#if defined __ANDROID__
 # warning mounts listing code not available for Android
 # define UNKNOWN
 #else

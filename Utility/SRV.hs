@@ -31,12 +31,10 @@ import Data.Maybe
 import ADNS.Resolver
 import Data.Either
 #else
-#ifndef WITH_HOST
 #ifdef WITH_DNS
 import qualified Network.DNS.Lookup as DNS
 import Network.DNS.Resolver
 import qualified Data.ByteString.UTF8 as B8
-#endif
 #endif
 #endif
 
@@ -64,9 +62,6 @@ lookupSRV (SRV srv) = initResolver [] $ \resolver -> do
 		resolveSRV resolver srv
 	return $ either (\_ -> []) id r
 #else
-#ifdef WITH_HOST
-lookupSRV = lookupSRVHost
-#else
 #ifdef WITH_DNS
 lookupSRV (SRV srv) = do
 	seed <- makeResolvSeed defaultResolvConf
@@ -81,7 +76,6 @@ lookupSRV (SRV srv) = do
 		)
 #else
 lookupSRV = lookupSRVHost
-#endif
 #endif
 #endif
 

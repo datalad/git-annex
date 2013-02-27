@@ -7,6 +7,12 @@
 
 {-# LANGUAGE CPP #-}
 
+#if defined VERSION_yesod_default
+#if ! MIN_VERSION_yesod_default(1,1,0)
+#define WITH_OLD_YESOD
+#endif
+#endif
+
 module Utility.Yesod where
 
 import Yesod.Default.Util

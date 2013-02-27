@@ -22,7 +22,7 @@
 # define STATCALL statfs /* statfs64 not yet tested on a real FreeBSD machine */
 # define STATSTRUCT statfs
 #else
-#if defined WITH_ANDROID
+#if defined __ANDROID__
 # warning free space checking code not available for Android
 # define UNKNOWN
 #else

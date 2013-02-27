@@ -56,7 +56,7 @@ query opts =
 type LsofParser = String -> [(FilePath, LsofOpenMode, ProcessInfo)]
 
 parse :: LsofParser
-#ifdef WITH_ANDROID
+#ifdef __ANDROID__
 parse = parseDefault
 #else
 parse = parseFormatted

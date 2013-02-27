@@ -287,7 +287,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
 	g <- gitRepo
-#ifdef WITH_ANDROID
+#ifdef __ANDROID__
 	{- Work around for weird getEnvironment breakage on Android. See
 	 - https://github.com/neurocyte/ghc-android/issues/7
 	 - Instead, use getEnv to get some key environment variables that

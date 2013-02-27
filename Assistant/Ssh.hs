@@ -15,9 +15,6 @@ import Git.Remote
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Control.Exception as E
-import System.Process (CreateProcess(..))
-import Control.Concurrent
 import Data.Char
 
 data SshData = SshData
