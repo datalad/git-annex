@@ -164,7 +164,7 @@ osxapp:
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android:
-	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant'
+	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'
 	$(MAKE) git-annex
 
 androidapp:
