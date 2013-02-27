@@ -163,7 +163,7 @@ osxapp:
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android:
-	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant DNS'
+	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant'
 	$(MAKE) git-annex
 
 androidapp:
