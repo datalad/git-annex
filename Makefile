@@ -159,6 +159,7 @@ android:
 androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
+	mkdir -p tmp
 	cp standalone/android/source/term/bin/Term-debug.apk tmp/git-annex.apk
 
 .PHONY: git-annex install tags
