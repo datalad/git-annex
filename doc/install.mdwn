@@ -4,7 +4,7 @@
 detailed instructions | quick install
 [[OSX]]               | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
 [[Android]]           | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
-[[Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/)
+[[Linux|linux_standalone]] | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/)
 [[Debian]]            | `apt-get install git-annex`
 [[Ubuntu]]            | `apt-get install git-annex`
 [[Fedora]]            | `yum install git-annex`
