@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 3.20130217
+Version: 4.20130217
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -60,7 +60,7 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random
+   SafeSemaphore, uuid, random, regex-compat
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
@@ -126,7 +126,8 @@ Test-Suite test
    old-locale, time, extensible-exceptions, dataenc, SHA,
    process, json, base (>= 4.5 && < 4.7), monad-control,
    transformers-base, lifted-base, IfElse, text, QuickCheck >= 2.1,
-   bloomfilter, edit-distance, process, SafeSemaphore, random, uuid
+   bloomfilter, edit-distance, process, SafeSemaphore,
+   uuid, random, regex-compat
   Other-Modules: Utility.Touch
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c
