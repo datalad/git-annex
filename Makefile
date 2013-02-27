@@ -41,7 +41,7 @@ install-docs: docs install-mans
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-install: build-stamp install-docs
+install: build install-docs
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install $(bins) $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
@@ -73,7 +73,7 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist build-stamp tags Build/SysConfig.hs
+		doc/.ikiwiki html dist tags Build/SysConfig.hs
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -162,4 +162,4 @@ androidapp:
 	mkdir -p tmp
 	cp standalone/android/source/term/bin/Term-debug.apk tmp/git-annex.apk
 
-.PHONY: git-annex install tags
+.PHONY: git-annex tags
