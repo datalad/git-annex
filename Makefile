@@ -99,9 +99,8 @@ hackage: sdist
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
-	$(MAKE) git-annex
-
 	rm -rf "$(LINUXSTANDALONE_DEST)"
+	$(MAKE) git-annex
 
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
 
