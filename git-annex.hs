@@ -5,12 +5,16 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 import System.Environment
 import System.FilePath
 
 import qualified GitAnnex
 import qualified GitAnnexShell
+#ifdef WITH_TESTUITE
 import qualified Test
+#endif
 
 main :: IO ()
 main = run =<< getProgName
@@ -21,6 +25,10 @@ main = run =<< getProgName
 	isshell n = takeFileName n == "git-annex-shell"
 	go a = do
 		ps <- getArgs
+#ifdef WITH_TESTUITE
 		if ps == ["test"]
 			then Test.main
 			else a ps
+#else
+		a ps
+#endif

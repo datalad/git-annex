@@ -77,7 +77,9 @@ import qualified Command.WebApp
 import qualified Command.XMPPGit
 #endif
 #endif
+#ifdef WITH_TESTUITE
 import qualified Command.Test
+#endif
 
 cmds :: [Command]
 cmds = concat
@@ -136,7 +138,9 @@ cmds = concat
 	, Command.XMPPGit.def
 #endif
 #endif
+#ifdef WITH_TESTUITE
 	, Command.Test.def
+#endif
 	]
 
 options :: [Option]

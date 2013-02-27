@@ -59,11 +59,14 @@ Flag Android
   Description: Building for Android
   Default: False
 
+Flag TestSuite
+  Description: Embed the test suite into git-annex
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
    unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
-   bytestring, old-locale, time, testpack, HUnit,
+   bytestring, old-locale, time,
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
@@ -77,6 +80,10 @@ Executable git-annex
 
   if flag(Production)
     GHC-Options: -O2
+
+  if flag(TestSuite)
+    Build-Depends: testpack, HUnit
+    CPP-Options: -DWITH_TESTSUITE
 
   if flag(S3)
     Build-Depends: hS3
