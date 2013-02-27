@@ -7,11 +7,15 @@ PREFIX=/usr
 
 build: $(all)
 
-fast:
-	@if [ ! -e dist/setup-config ] || grep -- -O2 dist/setup-config; then \
-		cabal configure -f-Production; \
-	fi
-	$(MAKE) git-annex
+# We bypass cabal, and only run the main ghc --make command for a
+# fast development built. Note: Does not rebuild C libraries.
+fast: dist/caballog
+	$$(grep 'ghc --make' dist/caballog | head -n 1 | sed 's/ -O / /')
+	ln -sf dist/build/git-annex/git-annex git-annex
+
+dist/caballog: dist/setup-config
+	cabal configure -f-Production
+	cabal build -v2 | tee $@
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	cabal configure
