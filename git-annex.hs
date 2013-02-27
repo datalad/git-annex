@@ -12,7 +12,7 @@ import System.FilePath
 
 import qualified GitAnnex
 import qualified GitAnnexShell
-#ifdef WITH_TESTUITE
+#ifdef WITH_TESTSUITE
 import qualified Test
 #endif
 
@@ -25,7 +25,7 @@ main = run =<< getProgName
 	isshell n = takeFileName n == "git-annex-shell"
 	go a = do
 		ps <- getArgs
-#ifdef WITH_TESTUITE
+#ifdef WITH_TESTSUITE
 		if ps == ["test"]
 			then Test.main
 			else a ps
