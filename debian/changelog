@@ -14,6 +14,7 @@ git-annex (4.20130227) unstable; urgency=low
     each time they are mounted.
   * Direct mode: Fix support for adding a modified file.
   * Avoid passing -p to rsync, to interoperate with crippled filesystems.
+    Closes: #700282
   * Additional GIT_DIR support bugfixes. May actually work now.
   * webapp: Display any error message from git init if it fails to create
     a repository.

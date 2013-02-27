@@ -43,7 +43,7 @@ install-docs: docs install-mans
 
 install: build install-docs
 	install -d $(DESTDIR)$(PREFIX)/bin
-	install $(bins) $(DESTDIR)$(PREFIX)/bin
+	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
