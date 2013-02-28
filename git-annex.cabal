@@ -57,6 +57,7 @@ Flag Production
 
 Flag Fast
   Description: Faster build; slower binary
+  Default: False
 
 Flag Android
   Description: Building for Android
