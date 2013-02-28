@@ -5,13 +5,18 @@ GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX=/usr
 
+# Am I typing :make in vim? Do a fast build.
+ifdef VIM
+all=fast
+endif
+
 build: $(all)
 
 # We bypass cabal, and only run the main ghc --make command for a
 # fast development built. Note: Does not rebuild C libraries.
 fast: dist/caballog
-	$$(grep 'ghc --make' dist/caballog | head -n 1)
-	ln -sf dist/build/git-annex/git-annex git-annex
+	@$$(grep 'ghc --make' dist/caballog | head -n 1)
+	@ln -sf dist/build/git-annex/git-annex git-annex
 
 dist/caballog:
 	cabal configure -f"-Production Fast"
