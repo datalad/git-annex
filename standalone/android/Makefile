@@ -76,6 +76,8 @@ build: start
 	git rev-parse HEAD > $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.version.so
 
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug
+	mkdir -p ../../tmp
+	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/git-annex.apk
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && CC=$$(which cc) ./Configure android
