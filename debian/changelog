@@ -1,6 +1,7 @@
 git-annex (4.20130228) UNRELEASED; urgency=low
 
   * Stop depending on testpack.
+  * Android: Enable test suite. 
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

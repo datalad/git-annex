@@ -70,31 +70,31 @@ propigate Counts { errors = e , failures = f }
 
 quickcheck :: [IO Result]
 quickcheck =
-	[ checkprop "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
-	, checkprop "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
-	, checkprop "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, checkprop "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
-	, checkprop "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
-	, checkprop "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, checkprop "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
-	, checkprop "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
-	, checkprop "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
-	, checkprop "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
-	, checkprop "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
-	, checkprop "prop_cost_sane" Config.prop_cost_sane
-	, checkprop "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
-	, checkprop "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
-	, checkprop "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
-	, checkprop "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
-	, checkprop "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
-	, checkprop "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
-	, checkprop "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
-	, checkprop "prop_parse_show_log" Logs.Presence.prop_parse_show_log
-	, checkprop "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
-	, checkprop "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
+	[ check "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
+	, check "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
+	, check "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
+	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
+	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
+	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
+	, check "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
+	, check "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
+	, check "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
+	, check "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
+	, check "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
+	, check "prop_cost_sane" Config.prop_cost_sane
+	, check "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
+	, check "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
+	, check "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, check "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
+	, check "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
+	, check "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
+	, check "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
+	, check "prop_parse_show_log" Logs.Presence.prop_parse_show_log
+	, check "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
+	, check "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
 	]
   where
-	checkprop desc prop = do
+	check desc prop = do
 		putStrLn desc
 		quickCheckResult prop
 
