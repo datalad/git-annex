@@ -1,0 +1,31 @@
+Seems I am not done with the Android porting just yet after all. One more
+porting day..
+
+Last night I managed to get all of Yesod to build for Android.
+I even successfully expanded some Template Haskell used in yesod-form. And
+am fairly confident I could manually expand all the TH in there, so it's
+actually useable without TH. Most of the TH is just commented out for now.
+
+However, programs using Yesod didn't link; lots of missing symbols. I have
+been fighting to fix those all day today.
+
+Finally, I managed to build [the yesod-pure demo server](https://gist.github.com/snoyberg/3870834/raw/212f0164de36524291df3ab35788e2b72d8d1e75/fib.hs),
+and I have a working web server on Android! It listens for requests, it logs
+them correctly, and it replies to requests. I did cripple yesod's routing
+code in my hack-n-slash port of it, so it fails to *display* any pages,
+but never has "Internal Server Error" in a web browser been such a sweet
+sight. ;-)
+
+At this point, I estimate about 1 or 2 weeks work to get to an Android
+webapp. I'd need to:
+
+1. More carefully port Yesod, manually expanding all Template Haskell
+   as I went, rather than commenting it all out like I did this time.
+2. Either develop a tool to automatically expand Hamlet TH splices
+   (preferred; seems doable), or convert all the webapp's templates
+   to not use Hamlet.
+
+-----
+
+I've modified 38 Haskell libraries so far to port them to Android. Mostly
+small hacks, but eep this is a lot of stuff to keep straight.
