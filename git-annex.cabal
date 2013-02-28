@@ -55,6 +55,9 @@ Flag DNS
 Flag Production
   Description: Enable production build (slower build; faster binary)
 
+Flag Fast
+  Description: Faster build; slower binary
+
 Flag Android
   Description: Building for Android
   Default: False
@@ -80,6 +83,9 @@ Executable git-annex
 
   if flag(Production)
     GHC-Options: -O2
+
+  if flag(Fast)
+    GHC-Options: -O0
 
   if flag(TestSuite)
     Build-Depends: testpack, HUnit
