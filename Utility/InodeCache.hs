@@ -9,8 +9,7 @@ module Utility.InodeCache where
 
 import Common
 import System.Posix.Types
-import Test.QuickCheck
-import Utility.QuickCheck ()
+import Utility.QuickCheck
 
 data InodeCache = InodeCache FileID FileOffset EpochTime
 	deriving (Eq, Show)

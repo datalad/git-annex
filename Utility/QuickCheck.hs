@@ -1,4 +1,4 @@
-{- QuickCheck instances
+{- QuickCheck with additional instances
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -8,9 +8,12 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module Utility.QuickCheck where
+module Utility.QuickCheck
+	( module X
+	, module Utility.QuickCheck
+	) where
 
-import Test.QuickCheck
+import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import System.Posix.Types
 

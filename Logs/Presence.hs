@@ -29,11 +29,10 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
-import Test.QuickCheck
-import Utility.QuickCheck ()
 
 import Common.Annex
 import qualified Annex.Branch
+import Utility.QuickCheck
 
 data LogLine = LogLine {
 	date :: POSIXTime,

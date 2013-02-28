@@ -14,6 +14,7 @@ import qualified Git
 import Types.Remote
 import Types.Key
 import Utility.Percentage
+import Utility.QuickCheck
 
 import System.Posix.Types
 import Data.Time.Clock
@@ -21,8 +22,6 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import Control.Concurrent
-import Test.QuickCheck
-import Utility.QuickCheck ()
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}

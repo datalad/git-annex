@@ -20,7 +20,6 @@ import System.IO.HVFS (SystemFS(..))
 import Text.JSON
 
 import Common
-import Utility.QuickCheck ()
 
 import qualified Utility.SafeCommand
 import qualified Annex

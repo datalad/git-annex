@@ -17,10 +17,9 @@ module Types.Key (
 ) where
 
 import System.Posix.Types
-import Test.QuickCheck
-import Utility.QuickCheck ()
 
 import Common
+import Utility.QuickCheck
 
 {- A Key has a unique name, is associated with a key/value backend,
  - and may contain other optional metadata. -}
