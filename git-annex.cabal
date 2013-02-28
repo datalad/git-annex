@@ -88,7 +88,7 @@ Executable git-annex
     GHC-Options: -O0
 
   if flag(TestSuite)
-    Build-Depends: testpack, HUnit
+    Build-Depends: HUnit
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(S3)

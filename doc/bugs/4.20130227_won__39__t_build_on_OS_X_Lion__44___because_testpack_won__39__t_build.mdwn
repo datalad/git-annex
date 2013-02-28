@@ -54,3 +54,4 @@ trying to compile git checkout of 4.20130227 on OS X Lion.
 Please provide any additional information below.
 
 
+> removed dependency on testpack [[done]] --[[Joey]]

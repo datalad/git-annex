@@ -10,7 +10,6 @@ quite a lot.
   * [dataenc](http://hackage.haskell.org/package/dataenc)
   * [monad-control](http://hackage.haskell.org/package/monad-control)
   * [lifted-base](http://hackage.haskell.org/package/lifted-base)
-  * [TestPack](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/testpack)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)

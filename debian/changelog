@@ -1,3 +1,9 @@
+git-annex (4.20130228) UNRELEASED; urgency=low
+
+  * Stop depending on testpack.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
+
 git-annex (4.20130227) unstable; urgency=low
 
   * annex.version is now set to 4 for direct mode repositories.

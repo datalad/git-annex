@@ -16,6 +16,11 @@ module Utility.QuickCheck
 import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import System.Posix.Types
+import qualified Data.Map as M
+import Control.Applicative
+
+instance (Arbitrary k, Arbitrary v, Eq k, Ord k) => Arbitrary (M.Map k v) where
+	arbitrary = M.fromList <$> arbitrary
 
 {- Times before the epoch are excluded. -}
 instance Arbitrary POSIXTime where

@@ -8,8 +8,8 @@
 module Test where
 
 import Test.HUnit
-import Test.HUnit.Tools
-import Test.QuickCheck.Instances ()
+import Test.QuickCheck
+import Test.QuickCheck.Test
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
@@ -17,7 +17,7 @@ import System.Posix.Env
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
-import Text.JSON
+import qualified Text.JSON
 
 import Common
 
@@ -56,41 +56,47 @@ import qualified Utility.InodeCache
 
 main :: IO ()
 main = do
+	unlessM (all isSuccess <$> sequence quickcheck) $
+		error "A quickcheck test failed!"
 	prepare
-	r <- runVerboseTests $ TestList [quickcheck, blackbox]
+	r <- runTestTT blackbox
 	cleanup tmpdir
 	propigate r
 
-propigate :: (Counts, Int) -> IO ()
-propigate (Counts { errors = e , failures = f }, _)
+propigate :: Counts -> IO ()
+propigate Counts { errors = e , failures = f }
 	| e+f > 0 = error "failed"
 	| otherwise = return ()
 
-quickcheck :: Test
-quickcheck = TestLabel "quickcheck" $ TestList
-	[ qctest "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
-	, qctest "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
-	, qctest "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, qctest "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
-	, qctest "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
-	, qctest "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, qctest "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
-	, qctest "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
-	, qctest "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
-	, qctest "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
-	, qctest "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
-	, qctest "prop_cost_sane" Config.prop_cost_sane
-	, qctest "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
-	, qctest "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
-	, qctest "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
-	, qctest "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
-	, qctest "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
-	, qctest "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
-	, qctest "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
-	, qctest "prop_parse_show_log" Logs.Presence.prop_parse_show_log
-	, qctest "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
-	, qctest "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
+quickcheck :: [IO Result]
+quickcheck =
+	[ checkprop "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
+	, checkprop "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
+	, checkprop "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
+	, checkprop "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
+	, checkprop "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
+	, checkprop "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
+	, checkprop "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
+	, checkprop "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
+	, checkprop "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
+	, checkprop "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
+	, checkprop "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
+	, checkprop "prop_cost_sane" Config.prop_cost_sane
+	, checkprop "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
+	, checkprop "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
+	, checkprop "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, checkprop "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
+	, checkprop "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
+	, checkprop "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
+	, checkprop "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
+	, checkprop "prop_parse_show_log" Logs.Presence.prop_parse_show_log
+	, checkprop "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
+	, checkprop "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
 	]
+  where
+	checkprop desc prop = do
+		putStrLn desc
+		quickCheckResult prop
 
 blackbox :: Test
 blackbox = TestLabel "blackbox" $ TestList
@@ -542,9 +548,9 @@ test_merge = "git-annex merge" ~: intmpclonerepo $ do
 test_status :: Test
 test_status = "git-annex status" ~: intmpclonerepo $ do
 	json <- git_annex_output "status" ["--json"]
-	case Text.JSON.decodeStrict json :: Text.JSON.Result (JSObject JSValue) of
-		Ok _ -> return ()
-		Error e -> assertFailure e
+	case Text.JSON.decodeStrict json :: Text.JSON.Result (Text.JSON.JSObject Text.JSON.JSValue) of
+		Text.JSON.Ok _ -> return ()
+		Text.JSON.Error e -> assertFailure e
 
 test_version :: Test
 test_version = "git-annex version" ~: intmpclonerepo $ do
