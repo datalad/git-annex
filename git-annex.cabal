@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20130227
+Version: 4.20130228
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -80,9 +80,6 @@ Executable git-annex
 
   if flag(Production)
     GHC-Options: -O2
-
-  if flag(Fast)
-    GHC-Options: -O0
 
   if flag(TestSuite)
     Build-Depends: HUnit
