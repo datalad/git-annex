@@ -25,7 +25,7 @@ buildtree () {
 	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
 		$cmd echo "installing $prog"
 		if $cmd test -e "$base/bin/$prog"; then
-			$cmd rm "$base/bin/$prog"
+			$cmd rm -f "$base/bin/$prog"
 		fi
 		$cmd ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
@@ -39,11 +39,11 @@ buildtree () {
 		for link in $($cmd cat "$base/links/$prog"); do
 			$cmd echo "linking $link to $prog"
 			if $cmd test -e "$base/$link"; then
-				$cmd rm "$base/$link"
+				$cmd rm -f "$base/$link"
 			fi
 			$cmd ln "$base/bin/$prog" "$base/$link"
 		done
-		$cmd rm "$base/links/$prog"
+		$cmd rm -f "$base/links/$prog"
 	done
 
 	$cmd mkdir -p "$base/templates"
