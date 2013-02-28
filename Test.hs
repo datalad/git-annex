@@ -64,28 +64,30 @@ main = do
 	putStrLn "Now, some broader checks ..."
 	putStrLn "  (Do not be alarmed by odd output here; it's normal."
         putStrLn "   wait for the last line to see how it went.)"
-	divider
 	prepare
-	r <- runTestTT blackbox
+	rs <- forM hunit $ \t -> do
+		divider
+		t
 	cleanup tmpdir
 	divider
-	propigate r qcok
+	propigate rs qcok
   where
 	divider = putStrLn $ take 70 $ repeat '-'
 
-propigate :: Counts -> Bool -> IO ()
-propigate Counts { errors = e , failures = f } qcok
-	| blackboxok && qcok = putStrLn "All tests ok."
+propigate :: [Counts] -> Bool -> IO ()
+propigate cs qcok
+	| countsok && qcok = putStrLn "All tests ok."
 	| otherwise = do
 		unless qcok $
 			putStrLn "Quick check tests failed! This is a bug in git-annex."
-		unless blackboxok $ do
+		unless countsok $ do
 			putStrLn "Some tests failed!"
 			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
 			putStrLn "   with utilities, such as git, installed on this system.)"
 		exitFailure
   where
-	blackboxok = e+f == 0
+	noerrors (Counts { errors = e , failures = f }) = e + f == 0
+	countsok = all noerrors cs
 
 quickcheck :: [IO Result]
 quickcheck =
@@ -117,41 +119,45 @@ quickcheck =
 		putStrLn desc
 		quickCheckResult prop
 
-blackbox :: Test
-blackbox = TestLabel "blackbox" $ TestList
+hunit :: [IO Counts]
+hunit =
 	-- test order matters, later tests may rely on state from earlier
-	[ test_init
-	, test_add
-	, test_reinject
-	, test_unannex
-	, test_drop
-	, test_get
-	, test_move
-	, test_copy
-	, test_lock
-	, test_edit
-	, test_fix
-	, test_trust
-	, test_fsck
-	, test_migrate
-	, test_unused
-	, test_describe
-	, test_find
-	, test_merge
-	, test_status
-	, test_version
-	, test_sync
-	, test_sync_regression
-	, test_map
-	, test_uninit
-	, test_upgrade
-	, test_whereis
-	, test_hook_remote
-	, test_directory_remote
-	, test_rsync_remote
-	, test_bup_remote
-	, test_crypto
+	[ check "init" test_init
+	, check "add" test_add
+	, check "reinject" test_reinject
+	, check "unannex" test_unannex
+	, check "drop" test_drop
+	, check "get" test_get
+	, check "move" test_move
+	, check "copy" test_copy
+	, check "lock" test_lock
+	, check "edit" test_edit
+	, check "fix" test_fix
+	, check "trust" test_trust
+	, check "fsck" test_fsck
+	, check "migrate" test_migrate
+	, check" unused" test_unused
+	, check "describe" test_describe
+	, check "find" test_find
+	, check "merge" test_merge
+	, check "status" test_status
+	, check "version" test_version
+	, check "sync" test_sync
+	, check "sync regression" test_sync_regression
+	, check "map" test_map
+	, check "uninit" test_uninit
+	, check "upgrade" test_upgrade
+	, check "whereis" test_whereis
+	, check "hook remote" test_hook_remote
+	, check "directory remote" test_directory_remote
+	, check "rsync remote" test_rsync_remote
+	, check "bup remote" test_bup_remote
+	, check "crypto" test_crypto
 	]
+  where
+	check desc t = do
+		putStrLn desc
+		runTestTT t
 
 test_init :: Test
 test_init = "git-annex init" ~: TestCase $ innewrepo $ do
