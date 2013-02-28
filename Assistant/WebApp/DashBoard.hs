@@ -33,7 +33,7 @@ transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
 	current <- lift $ M.toList <$> getCurrentTransfers
-	queued <- lift $ liftAssistant getTransferQueue
+	queued <- lift $ take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
 	if null transfers
