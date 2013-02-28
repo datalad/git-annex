@@ -4,6 +4,7 @@ all=git-annex $(mans) docs
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX=/usr
+CABAL=runhaskell Setup.hs
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -19,14 +20,14 @@ fast: dist/caballog
 	@ln -sf dist/build/git-annex/git-annex git-annex
 
 dist/caballog:
-	cabal configure -f"-Production" -O0
-	cabal build -v2 | tee $@
+	$(CABAL) configure -f"-Production" -O0
+	$(CABAL) build -v2 | tee $@
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
-	cabal configure
+	$(CABAL) configure
 
 git-annex: Build/SysConfig.hs
-	cabal build
+	$(CABAL) build
 	ln -sf dist/build/git-annex/git-annex git-annex
 
 git-annex.1: doc/git-annex.mdwn
@@ -154,7 +155,7 @@ osxapp:
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android:
-	cabal configure
+	$(CABAL) configure
 # cabal cannot cross compile with custom build type, so workaround
 	sed -i 's/Build-type: Custom/Build-type: Simple/' git-annex.cabal
 	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing -Webapp'
