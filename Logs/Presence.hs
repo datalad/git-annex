@@ -29,6 +29,8 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+import Test.QuickCheck
+import Utility.QuickCheck ()
 
 import Common.Annex
 import qualified Annex.Branch
@@ -74,10 +76,6 @@ showLog = unlines . map genline
 	genstatus InfoPresent = "1"
 	genstatus InfoMissing = "0"
 
--- for quickcheck
-prop_parse_show_log :: [LogLine] -> Bool
-prop_parse_show_log l = parseLog (showLog l) == l
-
 {- Generates a new LogLine with the current date. -}
 logNow :: LogStatus -> String -> Annex LogLine
 logNow s i = do
@@ -113,3 +111,13 @@ mapLog l m
 	better = maybe True newer $ M.lookup i m
 	newer l' = date l' <= date l
 	i = info l
+
+instance Arbitrary LogLine where
+	arbitrary = LogLine
+		<$> arbitrary
+		<*> elements [minBound..maxBound]
+		<*> arbitrary `suchThat` ('\n' `notElem`)
+
+prop_parse_show_log :: [LogLine] -> Bool
+prop_parse_show_log l = parseLog (showLog l) == l
+

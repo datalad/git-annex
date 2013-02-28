@@ -9,6 +9,8 @@ module Utility.InodeCache where
 
 import Common
 import System.Posix.Types
+import Test.QuickCheck
+import Utility.QuickCheck ()
 
 data InodeCache = InodeCache FileID FileOffset EpochTime
 	deriving (Eq, Show)
@@ -35,10 +37,6 @@ readInodeCache s = case words s of
 		<*> readish mtime
 	_ -> Nothing
 
--- for quickcheck
-prop_read_show_inodecache :: InodeCache -> Bool
-prop_read_show_inodecache c = readInodeCache (showInodeCache c) == Just c
-
 genInodeCache :: FilePath -> IO (Maybe InodeCache)
 genInodeCache f = catchDefaultIO Nothing $ toInodeCache <$> getFileStatus f
 
@@ -49,3 +47,12 @@ toInodeCache s
 		(fileSize s)
 		(modificationTime s)
 	| otherwise = Nothing
+
+instance Arbitrary InodeCache where
+	arbitrary = InodeCache
+		<$> arbitrary
+		<*> arbitrary
+		<*> arbitrary
+
+prop_read_show_inodecache :: InodeCache -> Bool
+prop_read_show_inodecache c = readInodeCache (showInodeCache c) == Just c

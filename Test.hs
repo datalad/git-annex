@@ -5,13 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
 module Test where
 
 import Test.HUnit
 import Test.HUnit.Tools
-import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
 import System.Posix.Directory (changeWorkingDirectory)
@@ -57,37 +54,6 @@ import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
-
--- instances for quickcheck
-instance Arbitrary Types.Key.Key where
-	arbitrary = Types.Key.Key
-		<$> arbitrary
-		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
-		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
-		<*> arbitrary
-
-instance Arbitrary Logs.Transfer.TransferInfo where
-	arbitrary = Logs.Transfer.TransferInfo
-		<$> arbitrary
-		<*> arbitrary
-		<*> pure Nothing -- cannot generate a ThreadID
-		<*> pure Nothing -- remote not needed
-		<*> arbitrary
-		-- associated file cannot be empty (but can be Nothing)
-		<*> arbitrary `suchThat` (/= Just "")
-		<*> arbitrary
-
-instance Arbitrary Utility.InodeCache.InodeCache where
-	arbitrary = Utility.InodeCache.InodeCache
-		<$> arbitrary
-		<*> arbitrary
-		<*> arbitrary
-
-instance Arbitrary Logs.Presence.LogLine where
-	arbitrary = Logs.Presence.LogLine
-		<$> arbitrary
-		<*> elements [minBound..maxBound]
-		<*> arbitrary `suchThat` ('\n' `notElem`)
 
 main :: IO ()
 main = do

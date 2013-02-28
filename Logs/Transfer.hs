@@ -21,6 +21,8 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import Control.Concurrent
+import Test.QuickCheck
+import Utility.QuickCheck ()
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -306,15 +308,6 @@ readTransferInfo mpid s = TransferInfo
 		then Just <$> readish =<< headMaybe (drop 1 bits)
 		else pure Nothing -- not failure
 
-{- for quickcheck -}
-prop_read_write_transferinfo :: TransferInfo -> Bool
-prop_read_write_transferinfo info
-	| transferRemote info /= Nothing = True -- remote not stored
-	| transferTid info /= Nothing = True -- tid not stored
-	| otherwise = Just (info { transferPaused = False }) == info'
-  where
-	info' = readTransferInfo (transferPid info) (writeTransferInfo info)
-
 parsePOSIXTime :: String -> Maybe POSIXTime
 parsePOSIXTime s = utcTimeToPOSIXSeconds
 	<$> parseTime defaultTimeLocale "%s%Qs" s
@@ -330,3 +323,23 @@ failedTransferDir u direction r = gitAnnexTransferDir r
 	</> "failed"
 	</> showLcDirection direction
 	</> filter (/= '/') (fromUUID u)
+
+instance Arbitrary TransferInfo where
+	arbitrary = TransferInfo
+		<$> arbitrary
+		<*> arbitrary
+		<*> pure Nothing -- cannot generate a ThreadID
+		<*> pure Nothing -- remote not needed
+		<*> arbitrary
+		-- associated file cannot be empty (but can be Nothing)
+		<*> arbitrary `suchThat` (/= Just "")
+		<*> arbitrary
+
+prop_read_write_transferinfo :: TransferInfo -> Bool
+prop_read_write_transferinfo info
+	| transferRemote info /= Nothing = True -- remote not stored
+	| transferTid info /= Nothing = True -- tid not stored
+	| otherwise = Just (info { transferPaused = False }) == info'
+  where
+	info' = readTransferInfo (transferPid info) (writeTransferInfo info)
+

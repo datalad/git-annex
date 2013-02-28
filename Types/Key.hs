@@ -17,6 +17,8 @@ module Types.Key (
 ) where
 
 import System.Posix.Types
+import Test.QuickCheck
+import Utility.QuickCheck ()
 
 import Common
 
@@ -73,6 +75,13 @@ file2key s = if key == Just stubKey then Nothing else key
 	addfield 's' k v = Just k { keySize = readish v }
 	addfield 'm' k v = Just k { keyMtime = readish v }
 	addfield _ _ _ = Nothing
+
+instance Arbitrary Key where
+	arbitrary = Key
+		<$> arbitrary
+		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
+		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
+		<*> arbitrary
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
