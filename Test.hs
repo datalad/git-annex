@@ -56,17 +56,36 @@ import qualified Utility.InodeCache
 
 main :: IO ()
 main = do
-	unlessM (all isSuccess <$> sequence quickcheck) $
-		error "A quickcheck test failed!"
+	divider
+	putStrLn "First, some automated quick checks of properties ..."
+	divider
+	qcok <- all isSuccess <$> sequence quickcheck
+	divider
+	putStrLn "Now, some broader checks ..."
+	putStrLn "  (Do not be alarmed by odd output here; it's normal."
+        putStrLn "   wait for the last line to see how it went.)"
+	divider
 	prepare
 	r <- runTestTT blackbox
 	cleanup tmpdir
-	propigate r
+	divider
+	propigate r qcok
+  where
+	divider = putStrLn $ take 70 $ repeat '-'
 
-propigate :: Counts -> IO ()
-propigate Counts { errors = e , failures = f }
-	| e+f > 0 = error "failed"
-	| otherwise = return ()
+propigate :: Counts -> Bool -> IO ()
+propigate Counts { errors = e , failures = f } qcok
+	| blackboxok && qcok = putStrLn "All tests ok."
+	| otherwise = do
+		unless qcok $
+			putStrLn "Quick check tests failed! This is a bug in git-annex."
+		unless blackboxok $ do
+			putStrLn "Some tests failed!"
+			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+			putStrLn "   with utilities, such as git, installed on this system.)"
+		exitFailure
+  where
+	blackboxok = e+f == 0
 
 quickcheck :: [IO Result]
 quickcheck =
