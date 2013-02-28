@@ -19,7 +19,7 @@ fast: dist/caballog
 	@ln -sf dist/build/git-annex/git-annex git-annex
 
 dist/caballog:
-	cabal configure -f"-Production Fast"
+	cabal configure -f"-Production" -O0
 	cabal build -v2 | tee $@
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
