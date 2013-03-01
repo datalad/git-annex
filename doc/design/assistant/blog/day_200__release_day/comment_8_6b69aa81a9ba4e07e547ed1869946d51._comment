@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-03-01T03:10:35Z"
+ content="""
+@Brian what you can do is go to the terminal's preferences menu and change the shell it runs to `/system/bin/sh` . This should let you open a new tab with a shell prompt. Then you can try to cd to `/data/data/ga.androidterm`, and see if both `lib/lib.start.so` and `lib/lib.busybox.so` exist.
+
+You could then try to do the same thing it does to set up the system:
+
+<pre>
+ln lib/lib.busybox.so busybox
+./busybox sh lib/lib.runshell.so
+</pre>
+"""]]
