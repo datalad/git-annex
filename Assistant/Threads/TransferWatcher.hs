@@ -115,10 +115,14 @@ finishedTransfer :: Transfer -> Maybe TransferInfo -> Assistant ()
 finishedTransfer t (Just info)
 	| transferDirection t == Download =
 		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
-			handleDrops False (transferKey t) (associatedFile info) Nothing
+			dodrops False
 			queueTransfersMatching (/= transferUUID t)
 				"newly received object"
 				Later (transferKey t) (associatedFile info) Upload
-	| otherwise = handleDrops True (transferKey t) (associatedFile info) Nothing
+	| otherwise = dodrops True
+  where
+	dodrops fromhere = handleDrops
+		("drop wanted after " ++ describeTransfer t info)
+		fromhere (transferKey t) (associatedFile info) Nothing
 finishedTransfer _ _ = noop
 

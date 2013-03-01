@@ -76,7 +76,9 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 			void $ addAlert $ makeAlertFiller True $
 				transferFileAlert direction True file
 			unless isdownload $
-				handleDrops True (transferKey t)
+				handleDrops
+					("object uploaded to " ++ show remote)
+					True (transferKey t)
 					(associatedFile info)
 					(Just remote)
 			recordCommit

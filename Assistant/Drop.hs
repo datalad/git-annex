@@ -21,23 +21,24 @@ import Config
 
 import qualified Data.Set as S
 
+type Reason = String
+
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
-handleDrops :: Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
-handleDrops _ _ Nothing _ = noop
-handleDrops fromhere key f knownpresentremote = do
+handleDrops :: Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
+handleDrops _ _ _ Nothing _ = noop
+handleDrops reason fromhere key f knownpresentremote = do
 	syncrs <- syncDataRemotes <$> getDaemonStatus
-	liftAnnex $ do
-		locs <- loggedLocations key
-		handleDropsFrom locs syncrs fromhere key f knownpresentremote
+	locs <- liftAnnex $ loggedLocations key
+	handleDropsFrom locs syncrs reason fromhere key f knownpresentremote
 
 {- The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
  - only ones that match the UUIDs will be dropped from.
  - If allows to drop fromhere, that drop will be tried first. -}
-handleDropsFrom :: [UUID] -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
-handleDropsFrom _ _ _ _ Nothing _ = noop
-handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
+handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
+handleDropsFrom _ _ _ _ _ Nothing _ = noop
+handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 	| fromhere = do
 		n <- getcopies
 		if checkcopies n
@@ -45,7 +46,7 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 			else go rs n
 	| otherwise = go rs =<< getcopies
   where
-	getcopies = do
+	getcopies = liftAnnex $ do
 		have <- length <$> trustExclude UnTrusted locs
 		numcopies <- getNumCopies =<< numCopies f
 		return (have, numcopies)
@@ -58,13 +59,22 @@ handleDropsFrom locs rs fromhere key (Just f) knownpresentremote
 		| checkcopies n = dropr r n >>= go rest
 		| otherwise = noop
 
-	checkdrop n@(_, numcopies) u a = ifM (wantDrop True u (Just f))
-		( ifM (safely $ doCommand $ a (Just numcopies))
-			( return $ decrcopies n
+	checkdrop n@(have, numcopies) u a =
+		ifM (liftAnnex $ wantDrop True u (Just f))
+			( ifM (liftAnnex $ safely $ doCommand $ a (Just numcopies))
+				( do
+					debug
+						[ "dropped"
+						, f
+						, "(from" ++ maybe "here" show u ++ ")"
+						, "(copies now " ++ show (have - 1) ++ ")"
+						, ": " ++ reason
+						]
+					return $ decrcopies n
+				, return n
+				)
 			, return n
 			)
-		, return n
-		)
 
 	dropl n = checkdrop n Nothing $ \numcopies ->
 		Command.Drop.startLocal f numcopies key knownpresentremote

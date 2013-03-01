@@ -115,12 +115,12 @@ expensiveScan rs = unless onlyweb $ do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
 		syncrs <- syncDataRemotes <$> getDaemonStatus
+		locs <- liftAnnex $ loggedLocations key
+		present <- liftAnnex $ inAnnex key
+		handleDropsFrom locs syncrs
+			"expensive scan found too many copies of object"
+			present key (Just f) Nothing
 		liftAnnex $ do
-			locs <- loggedLocations key
-			present <- inAnnex key
-
-			handleDropsFrom locs syncrs present key (Just f) Nothing
-
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs
 			if present
