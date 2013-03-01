@@ -81,7 +81,7 @@ commitStaged = do
 		Left _ -> return False
 		Right _ -> do
 			direct <- isDirect
-			void $ inRepo $ Git.Command.runBool "commit" $ nomessage $
+			let params = nomessage $
 				catMaybes
 				[ Just $ Param "--quiet"
 				{- In indirect mode, avoid running the
@@ -94,6 +94,8 @@ commitStaged = do
 			{- Empty commits may be made if tree changes cancel
 			 - each other out, etc. Git returns nonzero on those,
 			 - so don't propigate out commit failures. -}
+			void $ inRepo $ catchMaybeIO . 
+				Git.Command.runQuiet "commit" params
 			return True
   where
 	nomessage ps

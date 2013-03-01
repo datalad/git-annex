@@ -37,6 +37,12 @@ run subcommand params repo = assertLocal repo $
 	unlessM (runBool subcommand params repo) $
 		error $ "git " ++ subcommand ++ " " ++ show params ++ " failed"
 
+{- Runs git and forces it to be quiet, throwing an error if it fails. -}
+runQuiet :: String -> [CommandParam] -> Repo -> IO ()
+runQuiet subcommand params repo = withQuietOutput createProcessSuccess $
+	(proc "git" $ toCommand $ gitCommandLine (Param subcommand : params) repo)
+		{ env = gitEnv repo }
+
 {- Runs a git subcommand and returns its output, lazily.
  -
  - Also returns an action that should be used when the output is all
