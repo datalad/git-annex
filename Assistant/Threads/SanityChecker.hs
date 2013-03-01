@@ -103,10 +103,7 @@ checkLogSize n = do
 	totalsize <- liftIO $ sum <$> mapM filesize logs
 	when (totalsize > oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
-		liftIO $ do
-			rotateLog f
-			logfd <- openLog f
-			redirLog logfd
+		liftIO $ openLog f >>= redirLog
 		when (n < maxLogs + 1) $
 			checkLogSize $ n + 1
   where
