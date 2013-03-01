@@ -38,6 +38,14 @@ main () {
 		exit(1);
 	}
 
+	if (stat("lib/lib.busybox.so", &st_buf) != 0) {
+		fprintf(stderr, "Falling back to hardcoded app location; cannot find expected files in %s\n", buf);
+		if (chdir("/data/data/ga.androidterm") != 0) {
+			perror("chdir");
+			exit(1);
+		}
+	}
+
 	/* If this is the first run, set up busybox link. */
 	if (stat("busybox", &st_buf) != 0) {
 		if (link("lib/lib.busybox.so", "busybox") != 0) {
