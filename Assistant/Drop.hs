@@ -66,7 +66,7 @@ handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 					debug
 						[ "dropped"
 						, f
-						, "(from" ++ maybe "here" show u ++ ")"
+						, "(from " ++ maybe "here" show u ++ ")"
 						, "(copies now " ++ show (have - 1) ++ ")"
 						, ": " ++ reason
 						]
