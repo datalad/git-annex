@@ -1,0 +1,107 @@
+From abab0f8202998a3e88c5dc5f67a8245da6c174b3 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 28 Feb 2013 23:36:20 -0400
+Subject: [PATCH] remove IPv6 stuff
+
+---
+ Network/Socks5.hs         |    1 -
+ Network/Socks5/Command.hs |   16 ++--------------
+ Network/Socks5/Types.hs   |    3 +--
+ Network/Socks5/Wire.hs    |    2 --
+ 4 files changed, 3 insertions(+), 19 deletions(-)
+
+diff --git a/Network/Socks5.hs b/Network/Socks5.hs
+index 67b0060..80efb9c 100644
+--- a/Network/Socks5.hs
++++ b/Network/Socks5.hs
+@@ -54,7 +54,6 @@ socksConnectAddr :: Socket -> SockAddr -> SockAddr -> IO ()
+ socksConnectAddr sock sockserver destaddr = withSocks sock sockserver $ do
+ 	case destaddr of
+ 		SockAddrInet p h      -> socks5ConnectIPV4 sock h p >> return ()
+-		SockAddrInet6 p _ h _ -> socks5ConnectIPV6 sock h p >> return ()
+ 		_                     -> error "unsupported unix sockaddr type"
+ 
+ -- | connect a new socket to the socks server, and connect the stream to a FQDN
+diff --git a/Network/Socks5/Command.hs b/Network/Socks5/Command.hs
+index 2952706..db994c9 100644
+--- a/Network/Socks5/Command.hs
++++ b/Network/Socks5/Command.hs
+@@ -9,9 +9,8 @@
+ --
+ module Network.Socks5.Command
+ 	( socks5Establish
+-	, socks5ConnectIPV4
+-	, socks5ConnectIPV6
+ 	, socks5ConnectDomainName
++	, socks5ConnectIPV4 
+ 	-- * lowlevel interface
+ 	, socks5Rpc
+ 	) where
+@@ -23,7 +22,7 @@ import qualified Data.ByteString as B
+ import qualified Data.ByteString.Char8 as BC
+ import Data.Serialize
+ 
+-import Network.Socket (Socket, PortNumber, HostAddress, HostAddress6)
++import Network.Socket (Socket, PortNumber, HostAddress)
+ import Network.Socket.ByteString
+ 
+ import Network.Socks5.Types
+@@ -46,17 +45,6 @@ socks5ConnectIPV4 socket hostaddr port = onReply <$> socks5Rpc socket request
+ 		onReply (SocksAddrIPV4 h, p) = (h, p)
+ 		onReply _                    = error "ipv4 requested, got something different"
+ 
+-socks5ConnectIPV6 :: Socket -> HostAddress6 -> PortNumber -> IO (HostAddress6, PortNumber)
+-socks5ConnectIPV6 socket hostaddr6 port = onReply <$> socks5Rpc socket request
+-	where
+-		request = SocksRequest
+-			{ requestCommand  = SocksCommandConnect
+-			, requestDstAddr  = SocksAddrIPV6 hostaddr6
+-			, requestDstPort  = fromIntegral port
+-			}
+-		onReply (SocksAddrIPV6 h, p) = (h, p)
+-		onReply _                    = error "ipv6 requested, got something different"
+-
+ -- TODO: FQDN should only be ascii, maybe putting a "fqdn" data type
+ -- in front to make sure and make the BC.pack safe.
+ socks5ConnectDomainName :: Socket -> String -> PortNumber -> IO (SocksAddr, PortNumber)
+diff --git a/Network/Socks5/Types.hs b/Network/Socks5/Types.hs
+index 5dc7d5e..12dea99 100644
+--- a/Network/Socks5/Types.hs
++++ b/Network/Socks5/Types.hs
+@@ -17,7 +17,7 @@ module Network.Socks5.Types
+ import Data.ByteString (ByteString)
+ import Data.Word
+ import Data.Data
+-import Network.Socket (HostAddress, HostAddress6)
++import Network.Socket (HostAddress)
+ import Control.Exception
+ 
+ data SocksCommand =
+@@ -38,7 +38,6 @@ data SocksMethod =
+ data SocksAddr =
+ 	  SocksAddrIPV4 HostAddress
+ 	| SocksAddrDomainName ByteString
+-	| SocksAddrIPV6 HostAddress6
+ 	deriving (Show,Eq)
+ 
+ data SocksReply =
+diff --git a/Network/Socks5/Wire.hs b/Network/Socks5/Wire.hs
+index 2cfed52..d3bd9c5 100644
+--- a/Network/Socks5/Wire.hs
++++ b/Network/Socks5/Wire.hs
+@@ -41,12 +41,10 @@ data SocksResponse = SocksResponse
+ 
+ getAddr 1 = SocksAddrIPV4 <$> getWord32be
+ getAddr 3 = SocksAddrDomainName <$> (getWord8 >>= getByteString . fromIntegral)
+-getAddr 4 = SocksAddrIPV6 <$> (liftM4 (,,,) getWord32le getWord32le getWord32le getWord32le)
+ getAddr n = error ("cannot get unknown socket address type: " ++ show n)
+ 
+ putAddr (SocksAddrIPV4 h)         = putWord8 1 >> putWord32host h
+ putAddr (SocksAddrDomainName b)   = putWord8 3 >> putWord8 (fromIntegral $ B.length b) >> putByteString b
+-putAddr (SocksAddrIPV6 (a,b,c,d)) = putWord8 4 >> mapM_ putWord32host [a,b,c,d]
+ 
+ getSocksRequest 5 = do
+ 	cmd <- toEnum . fromIntegral <$> getWord8
+-- 
+1.7.10.4
+

@@ -1,0 +1,39 @@
+From 8b8a8422a9235b730049de4e6e626821abdc8393 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 28 Feb 2013 23:37:44 -0400
+Subject: [PATCH] hacks for android
+
+---
+ cbits/conv.c    |    2 +-
+ unix-time.cabal |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cbits/conv.c b/cbits/conv.c
+index 3b6a129..895e6b7 100644
+--- a/cbits/conv.c
++++ b/cbits/conv.c
+@@ -51,7 +51,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+ #else
+     strptime(src, fmt, &dst);
+ #endif
+-    return timegm(&dst);
++    return NULL; /* timegm(&dst); */
+ }
+ 
+ void c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
+diff --git a/unix-time.cabal b/unix-time.cabal
+index a905d63..98d2495 100644
+--- a/unix-time.cabal
++++ b/unix-time.cabal
+@@ -21,7 +21,7 @@ Library
+                         Data.UnixTime.Types
+                         Data.UnixTime.Sys
+   Build-Depends:        base >= 4 && < 5
+-                      , bytestring
++                      , bytestring (>= 0.10.3.0)
+                       , old-time
+   C-Sources:            cbits/conv.c
+ 
+-- 
+1.7.10.4
+
