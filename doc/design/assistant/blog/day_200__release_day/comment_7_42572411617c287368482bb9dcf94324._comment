@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="link busybox: No such file or directory"
+ date="2013-03-01T02:32:32Z"
+ content="""
+When I run the 28-Feb-2013 android version of git annex, I'm getting the error:
+
+    link busybox: No such file or directory
+
+Maybe this code is not finding the busybox.so file:
+
+    link(\"lib/lib.busybox.so\", \"busybox\")
+
+Any ideas how I can troubleshoot?
+
+I'm running Android 4.2.2.
+"""]]
