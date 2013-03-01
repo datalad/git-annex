@@ -19,7 +19,7 @@ more.
 
 A daily build is also available.
 
-* [download tarball](http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/android/))
+* [download apk](http://downloads.kitenet.net/git-annex/autobuild/android/git-annex.apk) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/android/))
 
 ## building it yourself
 
