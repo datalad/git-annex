@@ -1,7 +1,7 @@
 From 801f6dea3be43113400e41aabb443456fffcd227 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
 Date: Thu, 28 Feb 2013 23:39:40 -0400
-Subject: [PATCH] remove TH
+Subject: [PATCH 1/2] remove TH
 
 ---
  Yesod/Core.hs           |   10 ----
