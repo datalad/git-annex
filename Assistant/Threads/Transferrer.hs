@@ -20,6 +20,7 @@ import Annex.Content
 import qualified Remote
 import Types.Key
 import Locations.UserConfig
+import Assistant.Threads.TransferWatcher
 
 import System.Process (create_group)
 
@@ -46,6 +47,7 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 		, do
 			debug [ "Skipping unnecessary transfer:" , describeTransfer t info ]
 			void $ removeTransfer t
+			finishedTransfer t (Just info)
 			return Nothing
 		)
 	_ -> return Nothing

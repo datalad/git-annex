@@ -7,6 +7,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * assistant: Logs are rotated to avoid them using too much disk space.
   * assistant: Avoid noise in logs from git commit about typechanged
     files in direct mode repositories.
+  * assistant: Fix dropping content when a file is moved to an archive
+    directory.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
