@@ -8,6 +8,7 @@
 module Utility.Daemon where
 
 import Common
+import Utility.LogFile
 
 import System.Posix
 
@@ -39,16 +40,6 @@ daemonize logfd pidfile changedirectory a = do
 		a
 		out
 	out = exitImmediately ExitSuccess
-
-redirLog :: Fd -> IO ()
-redirLog logfd = do
-	mapM_ (redir logfd) [stdOutput, stdError]
-	closeFd logfd
-
-redir :: Fd -> Fd -> IO ()
-redir newh h = do
-	closeFd h
-	void $ dupTo newh h
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
  - Writes the pid to the file, fully atomically.

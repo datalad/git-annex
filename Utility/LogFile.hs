@@ -13,22 +13,24 @@ import System.Posix
 
 openLog :: FilePath -> IO Fd
 openLog logfile = do
-	rotateLog logfile 0
+	rotateLog logfile
 	openFd logfile WriteOnly (Just stdFileMode)
 		defaultFileFlags { append = True }
 
-rotateLog :: FilePath -> Int -> IO ()
-rotateLog logfile num
-	| num > maxLogs = return ()
-	| otherwise = whenM (doesFileExist currfile) $ do
-		rotateLog logfile (num + 1)
-		renameFile currfile nextfile
+rotateLog :: FilePath -> IO ()
+rotateLog logfile = go 0
   where
-	currfile = filename num
-	nextfile = filename (num + 1)
-	filename n
-		| n == 0 = logfile
-		| otherwise = rotatedLog logfile n
+	go num
+		| num > maxLogs = return ()
+		| otherwise = whenM (doesFileExist currfile) $ do
+			go (num + 1)
+			renameFile currfile nextfile
+	  where
+		currfile = filename num
+		nextfile = filename (num + 1)
+		filename n
+			| n == 0 = logfile
+			| otherwise = rotatedLog logfile n
 
 rotatedLog :: FilePath -> Int -> FilePath
 rotatedLog logfile n = logfile ++ "." ++ show n
@@ -40,3 +42,13 @@ listLogs logfile = filterM doesFileExist $ reverse $
 
 maxLogs :: Int
 maxLogs = 9
+
+redirLog :: Fd -> IO ()
+redirLog logfd = do
+	mapM_ (redir logfd) [stdOutput, stdError]
+	closeFd logfd
+
+redir :: Fd -> Fd -> IO ()
+redir newh h = do
+	closeFd h
+	void $ dupTo newh h

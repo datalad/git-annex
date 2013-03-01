@@ -4,6 +4,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * Android: Enable test suite. 
   * webapp: Only show up to 10 queued transfers.
   * Several improvements to Makefile and cabal file. Thanks, Peter Simmons
+  * assistant: Logs are rotated to avoid them using too much disk space.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

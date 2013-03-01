@@ -175,7 +175,7 @@ startDaemon assistant foreground startbrowser = do
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			liftIO $ Utility.Daemon.redirLog logfd
+			liftIO $ Utility.LogFile.redirLog logfd
 			showStart (if assistant then "assistant" else "watch") "."
 			start id $ 
 				case startbrowser of
@@ -217,7 +217,8 @@ startDaemon assistant foreground startbrowser = do
 			, assist $ transferPollerThread
 			, assist $ transfererThread
 			, assist $ daemonStatusThread
-			, assist $ sanityCheckerThread
+			, assist $ sanityCheckerDailyThread
+			, assist $ sanityCheckerHourlyThread
 			, assist $ mountWatcherThread
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread
