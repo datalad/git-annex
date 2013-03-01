@@ -5,7 +5,7 @@
 2. Deal with crippled filesystem; no symlinks; etc. **done**
 3. Get an easy to install Android app built. **done**
 4. Get the webapp working. Needs Template Haskell, or 
-   switching to <http://www.yesodweb.com/blog/2012/10/yesod-pure>
+   switching to <http://www.yesodweb.com/blog/2012/10/yesod-pure>.
 
 ### Android specific features
 
@@ -14,6 +14,12 @@ jobs when low on battery or run flat out when plugged in.
 
 The app should be aware of network status, and avoid expensive data
 transfers when not on wifi. This may need to be configurable.
+
+## Template Haskell for android?
+
+Best lead I have on getting cross compilation of TH working is that GHCJS
+does it, and that it involves compiling each file twice, once natively for
+TH and once for cross.
 
 ## TODO
 
@@ -33,3 +39,5 @@ transfers when not on wifi. This may need to be configurable.
 * Enable WebDAV support. Currently needs template haskell (could be avoided
   by changing the DAV library to not use it), and also networking support,
   which seems broken in current ghc-android.
+* Get test suite to pass. Current failure is because `git fetch` is somehow
+  broken with local repositories.
