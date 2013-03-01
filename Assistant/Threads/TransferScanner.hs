@@ -78,7 +78,7 @@ failedTransferScan r = do
 			 - that the remote doesn't already have the
 			 - key, so it's not redundantly checked here. -}
 			requeue t info
-	requeue t info = queueTransferWhenSmall (associatedFile info) t r
+	requeue t info = queueTransferWhenSmall "retrying failed transfer" (associatedFile info) t r
 
 {- This is a expensive scan through the full git work tree, finding
  - files to transfer. The scan is blocked when the transfer queue gets
@@ -108,9 +108,9 @@ expensiveScan rs = unless onlyweb $ do
 	onlyweb = all (== webUUID) $ map Remote.uuid rs
 	visiblers = let rs' = filter (not . Remote.readonly) rs
 		in if null rs' then rs else rs'
-	enqueue f (r, t) = do
-		debug ["queuing", show t]
-		queueTransferWhenSmall (Just f) t r
+	enqueue f (r, t) =
+		queueTransferWhenSmall "expensive scan found missing object"
+			(Just f) t r
 	findtransfers f (key, _) = do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}

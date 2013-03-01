@@ -65,7 +65,7 @@ onAdd file
 	| isAnnexBranch file = do
 		branchChanged
 		whenM (liftAnnex Annex.Branch.forceUpdate) $
-			queueDeferredDownloads Later
+			queueDeferredDownloads "retrying deferred download" Later
 	| "/synced/" `isInfixOf` file = do
 		mergecurrent =<< liftAnnex (inRepo Git.Branch.current)
 	| otherwise = noop

@@ -252,8 +252,8 @@ onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
 		| scanComplete daemonstatus = do
 			present <- liftAnnex $ inAnnex key
 			if present
-				then queueTransfers Next key (Just file) Upload
-				else queueTransfers Next key (Just file) Download
+				then queueTransfers "new file created" Next key (Just file) Upload
+				else queueTransfers "new or renamed file wanted" Next key (Just file) Download
 			handleDrops present key (Just file) Nothing
 		| otherwise = noop
 

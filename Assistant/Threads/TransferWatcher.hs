@@ -61,7 +61,7 @@ onAdd file = case parseTransferFile file of
   where
 	go _ Nothing = noop -- transfer already finished
 	go t (Just info) = do
-		debug [ "transfer starting:", show t]
+		debug [ "transfer starting:", describeTransfer t info ]
 		r <- headMaybe . filter (sameuuid t)
 			<$> liftAnnex Remote.remoteList
 		updateTransferInfo t info { transferRemote = r }
@@ -116,8 +116,9 @@ finishedTransfer t (Just info)
 	| transferDirection t == Download =
 		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
 			handleDrops False (transferKey t) (associatedFile info) Nothing
-			queueTransfersMatching (/= transferUUID t) Later
-				(transferKey t) (associatedFile info) Upload
+			queueTransfersMatching (/= transferUUID t)
+				"newly received object"
+				Later (transferKey t) (associatedFile info) Upload
 	| otherwise = handleDrops True (transferKey t) (associatedFile info) Nothing
 finishedTransfer _ _ = noop
 

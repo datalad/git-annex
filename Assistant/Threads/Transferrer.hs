@@ -40,11 +40,11 @@ startTransfer :: FilePath -> Transfer -> TransferInfo -> Assistant (Maybe (Trans
 startTransfer program t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
 		( do
-			debug [ "Transferring:" , show t ]
+			debug [ "Transferring:" , describeTransfer t info ]
 			notifyTransfer
 			return $ Just (t, info, transferprocess remote file)
 		, do
-			debug [ "Skipping unnecessary transfer:" , show t ]
+			debug [ "Skipping unnecessary transfer:" , describeTransfer t info ]
 			void $ removeTransfer t
 			return Nothing
 		)

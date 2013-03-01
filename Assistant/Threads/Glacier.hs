@@ -39,5 +39,5 @@ glacierThread = namedThread "Glacier" $ runEvery (Seconds 3600) <~> go
 		let l' = filter (\p -> S.member (getkey p) s) l
 		forM_ l' $ \(t, info) -> do
 			liftAnnex $ removeFailedTransfer t
-			queueTransferWhenSmall (associatedFile info) t r
+			queueTransferWhenSmall "object available from glacier" (associatedFile info) t r
 	getkey = transferKey . fst

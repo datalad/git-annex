@@ -64,6 +64,13 @@ readLcDirection "upload" = Just Upload
 readLcDirection "download" = Just Download
 readLcDirection _ = Nothing
 
+describeTransfer :: Transfer -> TransferInfo -> String
+describeTransfer t info = unwords
+	[ show $ transferDirection t
+	, show $ transferUUID t
+	, fromMaybe (key2file $ transferKey t) (associatedFile info)
+	]
+
 {- Transfers that will accomplish the same task. -}
 equivilantTransfer :: Transfer -> Transfer -> Bool
 equivilantTransfer t1 t2

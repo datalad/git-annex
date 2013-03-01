@@ -216,7 +216,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
 				stageSymlink file =<< hashSymlink link
 				showEndOk
-		queueTransfers Next key (Just file) Upload
+		queueTransfers "newly added file" Next key (Just file) Upload
 		return $ Just change
 
 	{- Check that the keysource's keyFilename still exists,
