@@ -45,19 +45,6 @@ withNote field note = field { fieldView = newview }
 		let fieldwidget = (fieldView field) theId name attrs val isReq
 		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]
 
-
-{- Makes a help button be displayed after a field, that displays a help
- - widget when clicked. Requires a unique ident for the help. -}
-withHelp :: Field sub master v -> GWidget sub master () -> Text -> Field sub master v
-withHelp field help ident = withNote field note
-  where
-	note = [whamlet|
-<a .btn data-toggle="collapse" data-target="##{ident}">
-  Help
-<div ##{ident} .collapse>
-  ^{help}
-|]
-
 data EnableEncryption = SharedEncryption | NoEncryption
 	deriving (Eq)
 

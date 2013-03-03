@@ -64,20 +64,13 @@ start' allowauto = do
 		liftIO $ isJust <$> checkDaemon pidfile
 	checkshim f = liftIO $ doesFileExist f
 
-{- When run without a repo, see if there is an autoStartFile,
- - and if so, start the first available listed repository.
- - If not, it's our first time being run! -}
+{- When run without a repo, start the first available listed repository in
+ - the autostart file. If not, it's our first time being run! -}
 startNoRepo :: IO ()
 startNoRepo = do
-	autostartfile <- autoStartFile
-	ifM (doesFileExist autostartfile) ( autoStart autostartfile , firstRun )
-
-autoStart :: FilePath -> IO ()
-autoStart autostartfile = do
-	dirs <- nub . lines <$> readFile autostartfile
-	edirs <- filterM doesDirectoryExist dirs
-	case edirs of
-		[] -> firstRun -- what else can I do? Nothing works..
+	dirs <- liftIO $ filterM doesDirectoryExist =<< readAutoStartFile
+	case dirs of
+		[] -> firstRun
 		(d:_) -> do
 			changeWorkingDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get

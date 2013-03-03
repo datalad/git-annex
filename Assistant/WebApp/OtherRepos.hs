@@ -29,11 +29,10 @@ getRepositorySwitcherR = page "Switch repository" Nothing $ do
 
 listOtherRepos :: IO [(String, String)]
 listOtherRepos = do
-	f <- autoStartFile
+	dirs <- readAutoStartFile
 	pwd <- getCurrentDirectory
-	dirs <- filter (\d -> not $ d `dirContains` pwd) . nub
-		<$> ifM (doesFileExist f) ( lines <$> readFile f, return [])
-	gooddirs <- filterM doesDirectoryExist dirs
+	gooddirs <- filterM doesDirectoryExist $
+		filter (\d -> not $ d `dirContains` pwd) dirs
 	names <- mapM relHome gooddirs
 	return $ sort $ zip names gooddirs
 

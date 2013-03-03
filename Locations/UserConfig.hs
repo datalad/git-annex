@@ -8,6 +8,7 @@
 module Locations.UserConfig where
 
 import Common
+import Utility.TempFile
 import Utility.FreeDesktop
 
 {- ~/.config/git-annex/file -}
@@ -18,6 +19,31 @@ userConfigFile file = do
 
 autoStartFile :: IO FilePath
 autoStartFile = userConfigFile "autostart"
+
+{- Returns anything listed in the autostart file (which may not exist). -}
+readAutoStartFile :: IO [FilePath]
+readAutoStartFile = do
+	f <- autoStartFile
+	nub . lines <$> catchDefaultIO "" (readFile f)
+
+{- Adds a directory to the autostart file. -}
+addAutoStartFile :: FilePath -> IO ()
+addAutoStartFile path = do
+	dirs <- readAutoStartFile
+	when (path `notElem` dirs) $ do
+		f <- autoStartFile
+		createDirectoryIfMissing True (parentDir f)
+		viaTmp writeFile f $ unlines $ dirs ++ [path]
+
+{- Removes a directory from the autostart file. -}
+removeAutoStartFile :: FilePath -> IO ()
+removeAutoStartFile path = do
+	dirs <- readAutoStartFile
+	when (path `elem` dirs) $ do
+		f <- autoStartFile
+		createDirectoryIfMissing True (parentDir f)
+		viaTmp writeFile f $ unlines $
+			filter (not . equalFilePath path) dirs
 
 {- The path to git-annex is written here; which is useful when cabal
  - has installed it to some aweful non-PATH location. -}

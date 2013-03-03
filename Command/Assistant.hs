@@ -50,21 +50,17 @@ checkAutoStart = ifM (elem "--autostart" <$> getArgs)
 
 autoStart :: IO ()
 autoStart = do
-	autostartfile <- autoStartFile
-	let nothing = error $ "Nothing listed in " ++ autostartfile
-	ifM (doesFileExist autostartfile)
-		( do
-			dirs <- nub . lines <$> readFile autostartfile
-			program <- readProgramFile
-			when (null dirs) nothing
-			forM_ dirs $ \d -> do
-				putStrLn $ "git-annex autostart in " ++ d
-				ifM (catchBoolIO $ go program d)
-					( putStrLn "ok"
-					, putStrLn "failed"
-					)
-		, nothing
-		)
+	dirs <- liftIO readAutoStartFile
+	when (null dirs) $ do
+		f <- autoStartFile
+		error $ "Nothing listed in " ++ f
+	program <- readProgramFile
+	forM_ dirs $ \d -> do
+		putStrLn $ "git-annex autostart in " ++ d
+		ifM (catchBoolIO $ go program d)
+			( putStrLn "ok"
+			, putStrLn "failed"
+			)
   where
 	go program dir = do
 		changeWorkingDirectory dir

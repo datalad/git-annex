@@ -154,7 +154,7 @@ getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 			liftIO $ makeRepo path False
 			u <- liftIO $ initRepo True path Nothing
 			lift $ runAnnex () $ setStandardGroup u ClientGroup
-			liftIO $ addAutoStart path
+			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
 		_ -> $(widgetFile "configurators/newrepository")
@@ -274,7 +274,7 @@ startFullAssistant path = do
 		u <- initRepo True path Nothing
 		inDir path $ 
 			setStandardGroup u ClientGroup
-		addAutoStart path
+		addAutoStartFile path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
@@ -322,13 +322,6 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 		inRepo $ Git.Command.run
 			[Param "config", Param "gc.auto", Param "0"]
 	getUUID
-
-{- Adds a directory to the autostart file. -}
-addAutoStart :: FilePath -> IO ()
-addAutoStart path = do
-	autostart <- autoStartFile
-	createDirectoryIfMissing True (parentDir autostart)
-	appendFile autostart $ path ++ "\n"
 
 {- Checks if the user can write to a directory.
  -
