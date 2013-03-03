@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="comment 13"
+ date="2013-03-01T23:52:53Z"
+ content="""
+I got the latest autobuild version installed and the fallback works for me--thanks. FYI, the fallback error message says: \"cannot find expected files in /data/app-lib\"
+"""]]

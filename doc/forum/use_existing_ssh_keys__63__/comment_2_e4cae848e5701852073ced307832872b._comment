@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnwz07HJdp3nzLwCAl7OGKn_3m0tTO4Mxw"
+ nickname="Teemu"
+ subject="use existing ssh keys?"
+ date="2013-03-02T12:05:30Z"
+ content="""
+I also found the key setup confusing. I have many identity files for several server / service combinations, so the webapp key setup for an ssh+rsync cloud server always failed with too many identification attempts before I had the sense to move my keys temporarily away from ~/.ssh
+
+It would be really nice if the webapp would allow one either to pick an existing identity, or to create a new one with the aid of a couple of password logins.
+
+Also, having the created key to be restricted to only running rsync in the server would improve the chances of 'Share with a friend' use case being used. I don't think many people will want to give out full shell access to their servers in order to share some files.
+"""]]
