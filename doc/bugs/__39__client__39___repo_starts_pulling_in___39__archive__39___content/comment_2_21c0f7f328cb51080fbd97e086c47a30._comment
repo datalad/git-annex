@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 2"
+ date="2013-03-03T18:44:35Z"
+ content="""
+I rebuilt and ran with --debug, and started up git annex.  It behaved itself. 
+
+I tried restarting it, unplugging and plugging back in my USB drive to see if it provoked any problems -- none.
+
+I decided to try adding something.  I added a music video to my Movies/Music directory.  It uploaded it to my ssh remote but not to the USB drive and, bizarrely, when I use \"git annex whereis\" it doesn't show it as existing *anywhere*:
+
+    annex$ git annex whereis Movies/Music/Tanlines\ -\ All\ Of\ Me.flv
+    annex$ 
+
+It does in fact exist in all three repos!  The link is there:
+
+annex$ ls -l Movies/Music/Tanlines\ -\ All\ Of\ Me.flv 
+lrwxr-xr-x  1 ed  staff  206 Mar  3 13:18 Movies/Music/Tanlines - All Of Me.flv -> ../../.git/annex/objects/0k/j6/SHA256E-s37822147--c9df1d6c9f6d2d72e039de9705ea4673160da32eb0cc9ea87e65003506d9297d.flv/SHA256E-s37822147
+
+the object is there!
+
+annex$ ls -l .git/annex/objects/0k/j6/SHA256E-s37822147--c9df1d6c9f6d2d72e039de9705ea4673160da32eb0cc9ea87e65003506d9297d.flv/SHA256E-s37822147--c9df1d6c9f6d2d72e039de9705ea4673160da32eb0cc9ea87e65003506d9297d.flv
+-r--r--r--  1 ed  staff  37822147 Mar  3 13:17 .git/annex/objects/0k/j6/SHA256E-s37822147--c9df1d6c9f6d2d72e039de9705ea4673160da32eb0cc9ea87e65003506d9297d.flv/SHA256E-s37822147--c9df1d6c9f6d2d72e039de9705ea4673160da32eb0cc9ea87e65003506d9297d.flv
+
+The corresponding object also exists in the .git/annex/objects directory of the USB remote and the ssh remote.
+
+here's a pastebin of the daemon.log: http://pastebin.com/BGRBQ6Rx
+
+Shut down the daemon to see if that changed anything; nope.  \"Whereis\" still comes up blank.  Tried a git annex fsck --fast to see if that changed anything; nope.  \"Whereis\" still comes up blank.
+
+Any ideas?  Is the log revealing at all?
+
+
+
+
+"""]]
