@@ -24,6 +24,7 @@ import Types.StandardGroups
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
+import qualified Annex
 import Git.Remote
 
 import qualified Data.Text as T
@@ -46,13 +47,16 @@ getRepoConfig uuid mremote = RepoConfig
 	<$> pure (T.pack $ maybe "here" Remote.name mremote)
 	<*> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
 	<*> getrepogroup
-	<*> pure (maybe True (remoteAnnexSync . Remote.gitconfig) mremote)
+	<*> getsyncing
   where
 	getrepogroup = do
 		groups <- lookupGroups uuid
 		return $ 
 			maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
 				(getStandardGroup groups)
+	getsyncing = case mremote of
+		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
+		Nothing -> annexAutoCommit <$> Annex.getGitConfig
 
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
