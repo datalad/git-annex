@@ -14,6 +14,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
 import qualified Git.LsFiles
+import qualified Git.Command
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
@@ -71,6 +72,7 @@ waitForNextCheck = do
 dailyCheck :: Assistant Bool
 dailyCheck = do
 	g <- liftAnnex gitRepo
+
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
 	now <- liftIO $ getPOSIXTime
@@ -81,6 +83,11 @@ dailyCheck = do
 				| isSymbolicLink s -> addsymlink file ms
 			_ -> noop
 	liftIO $ void cleanup
+
+	{- Allow git-gc to run once per day. More frequent gc is avoided
+	 - to avoid slowing things down. -}
+	void $ liftIO $ Git.Command.runBool [Param "gc", Param "--auto"] g
+
 	return True
   where
 	toonew timestamp now = now < (realToFrac (timestamp + slop) :: POSIXTime)
