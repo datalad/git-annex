@@ -9,9 +9,10 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     files in direct mode repositories.
   * assistant: Fix dropping content when a file is moved to an archive
     directory.
-  * assistant: Prevent automatic commits from causing git-gc runs,
-    as that can make things quite slow. Instead, git-gc --auto is run
-    once a day. (This can be disabled by the usual gc.auto=0 setting.)
+  * assistant: Set gc.auto=0 when creating repositories to prevent
+    automatic commits from causing git-gc runs.
+  * assistant: If gc.auto=0, run git-gc once a day, packing loose objects
+    very non-aggressively.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

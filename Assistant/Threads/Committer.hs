@@ -82,8 +82,7 @@ commitStaged = do
 		Right _ -> do
 			direct <- isDirect
 			let params = nomessage $ catMaybes
-				[ Just $ Param "-c", Just $ Param "gc.auto=0"
-				, Just $ Param "commit"
+				[ Just $ Param "commit"
 				, Just $ Param "--quiet"
 				{- In indirect mode, avoid running the
 				 - usual git-annex pre-commit hook;

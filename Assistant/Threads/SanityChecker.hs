@@ -15,6 +15,7 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import qualified Git.LsFiles
 import qualified Git.Command
+import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
@@ -85,8 +86,16 @@ dailyCheck = do
 	liftIO $ void cleanup
 
 	{- Allow git-gc to run once per day. More frequent gc is avoided
-	 - to avoid slowing things down. -}
-	void $ liftIO $ Git.Command.runBool [Param "gc", Param "--auto"] g
+	 - by default to avoid slowing things down. Only run repacks when 100x
+	 - the usual number of loose objects are present; we tend
+	 - to have a lot of small objects and they should not be a
+	 - significant size. -}
+	when (Git.Config.getMaybe "gc.auto" g == Just "0") $
+		liftIO $ void $ Git.Command.runBool
+			[ Param "-c", Param "gc.auto=670000"
+			, Param "gc"
+			, Param "--auto"
+			] g
 
 	return True
   where

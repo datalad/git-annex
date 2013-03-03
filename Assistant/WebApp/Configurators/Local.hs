@@ -302,9 +302,9 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 	{- Initialize a git-annex repository in a directory with a description. -}
 	unlessM isInitialized $
 		initialize desc
+	{- Initialize the master branch, so things that expect
+	 - to have it will work, before any files are added. -}
 	unlessM (Git.Config.isBare <$> gitRepo) $
-		{- Initialize the master branch, so things that expect
-		 - to have it will work, before any files are added. -}
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"
 			, Param "--quiet"
@@ -312,8 +312,15 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 			, Param "-m"
 			, Param "created repository"
 			]
-	when primary_assistant_repo $
+	{- Repositories directly managed by the assistant use direct mode.
+	 - 
+	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
+	 - once a day.
+	 -}
+	when primary_assistant_repo $ do
 		setDirect True
+		inRepo $ Git.Command.run
+			[Param "config", Param "gc.auto", Param "0"]
 	getUUID
 
 {- Adds a directory to the autostart file. -}
