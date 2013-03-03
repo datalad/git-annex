@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 12"
+ date="2013-03-03T21:24:18Z"
+ content="""
+restarting == Stop git-annex using the gui (Confirm shutdown daemon). Then check if there are running git process (ps -e |grep git), 
+if there are kill it, if (defunct) process present, then restart computer. Then launch git-annex using \"git-annex-webapp\" script).
+
+So its a normal program usage (start-stop cycle).
+
+The .git directory is growing. Without a single file moving/deleting/renaming/editing in the working directory.
+
+So the .git directory just grows, and I think it is a bug, and a bad one. (if we ignore the logging problem, the slow startup, the failing of disk full).
+
+I'll give it a spin to the autobuild (http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz), and report back. It will take at least 2 day, to repeat my whole experience. So expect update from me wednesday the soonest.
+
+Best, Laszlo
+
+"""]]
