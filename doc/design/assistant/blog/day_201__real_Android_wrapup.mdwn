@@ -1,3 +1,5 @@
+[[!meta title="day 201  real Android wrapup"]]
+
 I got yesod-pure fully working on Android...
 
 [[!img fib.png size=400x]]
