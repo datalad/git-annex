@@ -37,28 +37,30 @@ import qualified Utility.Gpg as Gpg
 import Types.Key
 import Types.Crypto
 
-{- The first half of a Cipher is used for HMAC; the remainder
+{- The beginning of a Cipher is used for HMAC; the remainder
  - is used as the GPG symmetric encryption passphrase.
  -
- - HMAC SHA1 needs only 64 bytes. The remainder is for expansion,
+ - HMAC SHA1 needs only 64 bytes. The rest of the HMAC key is for expansion,
  - perhaps to HMAC SHA512, which needs 128 bytes (ideally).
+ - It also provides room the Cipher to contain data in a form like base64,
+ - which does not pack a full byte of entropy into a byte of data.
  -
- - 256 is enough for gpg's symetric cipher; unlike weaker public key
+ - 256 bytes is enough for gpg's symetric cipher; unlike weaker public key
  - crypto, the key does not need to be too large.
  -}
-cipherHalf :: Int
-cipherHalf = 256
+cipherBeginning :: Int
+cipherBeginning = 256
 
 cipherSize :: Int
-cipherSize = cipherHalf * 2
+cipherSize = 512
 
 cipherPassphrase :: Cipher -> String
-cipherPassphrase (Cipher c) = drop cipherHalf c
+cipherPassphrase (Cipher c) = drop cipherBeginning c
 
 cipherHmac :: Cipher -> String
-cipherHmac (Cipher c) = take cipherHalf c
+cipherHmac (Cipher c) = take cipherBeginning c
 
-{- Creates a new Cipher, encrypted to the specificed key id. -}
+{- Creates a new Cipher, encrypted to the specified key id. -}
 genEncryptedCipher :: String -> IO StorableCipher
 genEncryptedCipher keyid = do
 	ks <- Gpg.findPubKeys keyid
@@ -103,7 +105,8 @@ encryptCipher (Cipher c) (KeyIds ks) = do
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher
 decryptCipher (SharedCipher t) = return $ Cipher t
-decryptCipher (EncryptedCipher t _) = Cipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
+decryptCipher (EncryptedCipher t _) =
+	Cipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used

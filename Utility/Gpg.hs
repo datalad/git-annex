@@ -96,7 +96,10 @@ findPubKeys for = KeyIds . parse <$> readStrict params
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
- - first newline. -}
+ - first newline. 
+ -
+ - The size is the number of bytes of entropy desired; the data is
+ - base64 encoded, so will have a somewhat longer length. -}
 genRandom :: Int -> IO String
 genRandom size = readStrict
 	[ Params "--gen-random --armor"
