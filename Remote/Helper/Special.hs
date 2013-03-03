@@ -34,7 +34,7 @@ gitConfigSpecialRemote u c k v = do
 	set ("annex-"++k) v
 	set ("annex-uuid") (fromUUID u)
   where
-	set a b = inRepo $ Git.Command.run "config"
-		[Param (configsetting a), Param b]
+	set a b = inRepo $ Git.Command.run
+		[Param "config", Param (configsetting a), Param b]
 	remotename = fromJust (M.lookup "name" c)
 	configsetting s = "remote." ++ remotename ++ "." ++ s

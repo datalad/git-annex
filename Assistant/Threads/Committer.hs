@@ -81,9 +81,9 @@ commitStaged = do
 		Left _ -> return False
 		Right _ -> do
 			direct <- isDirect
-			let params = nomessage $
-				catMaybes
-				[ Just $ Param "--quiet"
+			let params = nomessage $ catMaybes
+				[ Just $ Param "commit"
+				, Just $ Param "--quiet"
 				{- In indirect mode, avoid running the
 				 - usual git-annex pre-commit hook;
 				 - watch does the same symlink fixing,
@@ -95,7 +95,7 @@ commitStaged = do
 			 - each other out, etc. Git returns nonzero on those,
 			 - so don't propigate out commit failures. -}
 			void $ inRepo $ catchMaybeIO . 
-				Git.Command.runQuiet "commit" params
+				Git.Command.runQuiet params
 			return True
   where
 	nomessage ps

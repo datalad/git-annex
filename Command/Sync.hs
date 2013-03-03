@@ -91,7 +91,7 @@ commit = next $ next $ do
 		showOutput
 		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ Git.Command.runBool "commit" $ ps ++
+		_ <- inRepo $ Git.Command.runBool $ (Param "commit") : ps ++
 			[Param "-m", Param "git-annex automatic sync"]
 		return True
 
@@ -117,8 +117,9 @@ updateBranch :: Git.Ref -> Git.Repo -> IO ()
 updateBranch syncbranch g = 
 	unlessM go $ error $ "failed to update " ++ show syncbranch
   where
-	go = Git.Command.runBool "branch"
-		[ Param "-f"
+	go = Git.Command.runBool
+		[ Param "branch"
+		, Param "-f"
 		, Param $ show $ Git.Ref.base syncbranch
 		] g
 
@@ -130,8 +131,8 @@ pullRemote remote branch = do
 		stopUnless fetch $
 			next $ mergeRemote remote (Just branch)
   where
-	fetch = inRepo $ Git.Command.runBool "fetch"
-		[Param $ Remote.name remote]
+	fetch = inRepo $ Git.Command.runBool
+		[Param "fetch", Param $ Remote.name remote]
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -162,8 +163,9 @@ pushRemote remote branch = go =<< needpush
 
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
 pushBranch remote branch g =
-	Git.Command.runBool "push"
-		[ Param $ Remote.name remote
+	Git.Command.runBool
+		[ Param "push"
+		, Param $ Remote.name remote
 		, Param $ refspec Annex.Branch.name
 		, Param $ refspec branch
 		] g
@@ -233,8 +235,11 @@ resolveMerge = do
 	
 	when merged $ do
 		Annex.Queue.flush
-		void $ inRepo $ Git.Command.runBool "commit"
-			[Param "-m", Param "git-annex automatic merge conflict fix"]
+		void $ inRepo $ Git.Command.runBool
+			[ Param "commit"
+			, Param "-m"
+			, Param "git-annex automatic merge conflict fix"
+			]
 	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool

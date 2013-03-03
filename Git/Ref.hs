@@ -34,8 +34,8 @@ under dir r = Ref $ dir </> show (base r)
 
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
-exists ref = runBool "show-ref" 
-	[Param "--verify", Param "-q", Param $ show ref]
+exists ref = runBool
+	[Param "show-ref", Param "show-ref", Param "--verify", Param "-q", Param $ show ref]
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}

@@ -77,9 +77,8 @@ makeSpecialRemote name remotetype config = do
  - remote at the location, returns its name. -}
 makeGitRemote :: String -> String -> Annex String
 makeGitRemote basename location = makeRemote basename location $ \name ->
-	void $ inRepo $
-		Git.Command.runBool "remote"
-			[Param "add", Param name, Param location]
+	void $ inRepo $ Git.Command.runBool
+		[Param "remote", Param "add", Param name, Param location]
 
 {- If there's not already a remote at the location, adds it using the
  - action, which is passed the name of the remote to make.

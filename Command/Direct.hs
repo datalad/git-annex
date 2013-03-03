@@ -30,8 +30,12 @@ perform :: CommandPerform
 perform = do
 	showStart "commit" ""
 	showOutput
-	_ <- inRepo $ Git.Command.runBool "commit"
-		[Param "-a", Param "-m", Param "commit before switching to direct mode"]
+	_ <- inRepo $ Git.Command.runBool
+		[ Param "commit"
+		, Param "-a"
+		, Param "-m"
+		, Param "commit before switching to direct mode"
+		]
 	showEndOk
 
 	top <- fromRepo Git.repoPath

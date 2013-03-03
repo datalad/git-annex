@@ -25,25 +25,25 @@ gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ p
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
-runBool :: String -> [CommandParam] -> Repo -> IO Bool
-runBool subcommand params repo = assertLocal repo $
+runBool :: [CommandParam] -> Repo -> IO Bool
+runBool params repo = assertLocal repo $
 	boolSystemEnv "git"
-		(gitCommandLine (Param subcommand : params) repo)
+		(gitCommandLine params repo)
 		(gitEnv repo)
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
-run :: String -> [CommandParam] -> Repo -> IO ()
-run subcommand params repo = assertLocal repo $
-	unlessM (runBool subcommand params repo) $
-		error $ "git " ++ subcommand ++ " " ++ show params ++ " failed"
+run :: [CommandParam] -> Repo -> IO ()
+run params repo = assertLocal repo $
+	unlessM (runBool params repo) $
+		error $ "git " ++ show params ++ " failed"
 
 {- Runs git and forces it to be quiet, throwing an error if it fails. -}
-runQuiet :: String -> [CommandParam] -> Repo -> IO ()
-runQuiet subcommand params repo = withQuietOutput createProcessSuccess $
-	(proc "git" $ toCommand $ gitCommandLine (Param subcommand : params) repo)
+runQuiet :: [CommandParam] -> Repo -> IO ()
+runQuiet params repo = withQuietOutput createProcessSuccess $
+	(proc "git" $ toCommand $ gitCommandLine (params) repo)
 		{ env = gitEnv repo }
 
-{- Runs a git subcommand and returns its output, lazily.
+{- Runs a git command and returns its output, lazily.
  -
  - Also returns an action that should be used when the output is all
  - read (or no more is needed), that will wait on the command, and
@@ -58,7 +58,7 @@ pipeReadLazy params repo = assertLocal repo $ do
   where
 	p  = gitCreateProcess params repo
 
-{- Runs a git subcommand, and returns its output, strictly.
+{- Runs a git command, and returns its output, strictly.
  -
  - Nonzero exit status is ignored.
  -}
@@ -72,7 +72,7 @@ pipeReadStrict params repo = assertLocal repo $
   where
 	p  = gitCreateProcess params repo
 
-{- Runs a git subcommand, feeding it input, and returning its output,
+{- Runs a git command, feeding it input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
  - strictly. -}
 pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
@@ -80,7 +80,7 @@ pipeWriteRead params s repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
 		(gitEnv repo) s (Just fileEncoding)
 
-{- Runs a git subcommand, feeding it input on a handle with an action. -}
+{- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
 pipeWrite params repo = withHandle StdinHandle createProcessSuccess $
 	gitCreateProcess params repo

@@ -54,7 +54,7 @@ upgrade = do
 	showProgress
 
 	when e $ do
-		inRepo $ Git.Command.run "rm" [Param "-r", Param "-f", Param "-q", File old]
+		inRepo $ Git.Command.run [Param "rm", Param "-r", Param "-f", Param "-q", File old]
 		unless bare $ inRepo gitAttributesUnWrite
 	showProgress
 
@@ -105,8 +105,8 @@ push = do
 			Annex.Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
-			inRepo $ Git.Command.run "push"
-				[Param "origin", Param $ show Annex.Branch.name]
+			inRepo $ Git.Command.run
+				[Param "push", Param "origin", Param $ show Annex.Branch.name]
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch
@@ -129,7 +129,7 @@ gitAttributesUnWrite repo = do
 		c <- readFileStrict attributes
 		liftIO $ viaTmp writeFile attributes $ unlines $
 			filter (`notElem` attrLines) $ lines c
-		Git.Command.run "add" [File attributes] repo
+		Git.Command.run [Param "add", File attributes] repo
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"

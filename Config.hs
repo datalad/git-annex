@@ -23,13 +23,13 @@ getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
-	inRepo $ Git.Command.run "config" [Param key, Param value]
+	inRepo $ Git.Command.run [Param "config", Param key, Param value]
 	Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()
-unsetConfig (ConfigKey key) = inRepo $ Git.Command.run "config"
-	[Param "--unset", Param key]
+unsetConfig (ConfigKey key) = inRepo $ Git.Command.run
+	[Param "config", Param "--unset", Param key]
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> UnqualifiedConfigKey -> ConfigKey

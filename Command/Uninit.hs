@@ -67,6 +67,6 @@ start = next $ next $ do
 	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState False
-	inRepo $ Git.Command.run "branch"
-		[Param "-D", Param $ show Annex.Branch.name]
+	inRepo $ Git.Command.run
+		[Param "branch", Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess

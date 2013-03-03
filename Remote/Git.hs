@@ -141,10 +141,10 @@ tryGitConfigRead r
 				{- Is this remote just not available, or does
 				 - it not have git-annex-shell?
 				 - Find out by trying to fetch from the remote. -}
-				whenM (inRepo $ Git.Command.runBool "fetch" [Param "--quiet", Param n]) $ do
+				whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
 					let k = "remote." ++ n ++ ".annex-ignore"
 					warning $ "Remote " ++ n ++ " does not have git-annex installed; setting " ++ k
-					inRepo $ Git.Command.run "config" [Param k, Param "true"]
+					inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
 				return r
 			_ -> return r
 	| Git.repoIsHttp r = do

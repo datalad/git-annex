@@ -141,13 +141,13 @@ pushToRemotes now notifypushes remotes = do
  - uuid in them. While ugly, those branches are reserved for pushing by us,
  - and so our pushes will never conflict with other pushes. -}
 pushFallback :: UUID -> Git.Ref -> Remote -> Git.Repo -> IO Bool
-pushFallback u branch remote = Git.Command.runBool "push" params
+pushFallback u branch remote = Git.Command.runBool
+	[ Param "push"
+	, Param $ Remote.name remote
+	, Param $ refspec Annex.Branch.name
+	, Param $ refspec branch
+	]
   where
-	params = 
-		[ Param $ Remote.name remote
-		, Param $ refspec Annex.Branch.name
-		, Param $ refspec branch
-		]
 	{- Push to refs/synced/uuid/branch; this
 	 - avoids cluttering up the branch display. -}
 	refspec b = concat
@@ -162,7 +162,7 @@ manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Bool], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
 	results <- liftIO $ forM remotes $ \r ->
-		Git.Command.runBool "fetch" [Param $ Remote.name r] g
+		Git.Command.runBool [Param "fetch", Param $ Remote.name r] g
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r currentbranch

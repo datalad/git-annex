@@ -76,8 +76,8 @@ getBranch :: Annex Git.Ref
 getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
 	go True = do
-		inRepo $ Git.Command.run "branch"
-			[Param $ show name, Param $ show originname]
+		inRepo $ Git.Command.run
+			[Param "branch", Param $ show name, Param $ show originname]
 		fromMaybe (error $ "failed to create " ++ show name)
 			<$> branchsha
 	go False = withIndex' True $

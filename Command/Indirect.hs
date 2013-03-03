@@ -43,8 +43,11 @@ perform = do
 	showStart "commit" ""
 	whenM (stageDirect) $ do
 		showOutput
-		void $ inRepo $ Git.Command.runBool "commit"
-			[Param "-m", Param "commit before switching to indirect mode"]
+		void $ inRepo $ Git.Command.runBool
+			[ Param "commit"
+			, Param "-m"
+			, Param "commit before switching to indirect mode"
+			]
 	showEndOk
 
 	-- Note that we set indirect mode early, so that we can use

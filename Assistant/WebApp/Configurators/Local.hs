@@ -305,8 +305,9 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 	unlessM (Git.Config.isBare <$> gitRepo) $
 		{- Initialize the master branch, so things that expect
 		 - to have it will work, before any files are added. -}
-		void $ inRepo $ Git.Command.runBool "commit"
-			[ Param "--quiet"
+		void $ inRepo $ Git.Command.runBool
+			[ Param "commit"
+			, Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"
 			, Param "created repository"

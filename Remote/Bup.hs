@@ -204,8 +204,11 @@ storeBupUUID u buprepo = do
 			r' <- Git.Config.read r
 			let olduuid = Git.Config.get "annex.uuid" "" r'
 			when (olduuid == "") $
-				Git.Command.run "config"
-					[Param "annex.uuid", Param v] r'
+				Git.Command.run
+					[ Param "config"
+					, Param "annex.uuid"
+					, Param v
+					] r'
   where
 	v = fromUUID u
 

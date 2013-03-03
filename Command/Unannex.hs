@@ -34,7 +34,7 @@ cleanup :: FilePath -> Key -> CommandCleanup
 cleanup file key = do
 	liftIO $ removeFile file
 	-- git rm deletes empty directory without --cached
-	inRepo $ Git.Command.run "rm" [Params "--cached --quiet --", File file]
+	inRepo $ Git.Command.run [Params "rm --cached --quiet --", File file]
 	
 	-- If the file was already committed, it is now staged for removal.
 	-- Commit that removal now, to avoid later confusing the
@@ -42,10 +42,12 @@ cleanup file key = do
 	-- git as a normal, non-annexed file.
 	(s, clean) <- inRepo $ LsFiles.staged [file]
 	when (not $ null s) $ do
-		inRepo $ Git.Command.run "commit" [
-			Param "-q",
-			Params "-m", Param "content removed from git annex",
-			Param "--", File file]
+		inRepo $ Git.Command.run
+			[ Param "commit"
+			, Param "-q"
+			, Param "-m", Param "content removed from git annex"
+			, Param "--", File file
+			]
 	void $ liftIO clean
 
 	ifM (Annex.getState Annex.fast)

@@ -76,10 +76,11 @@ setRepoConfig uuid mremote oldc newc = do
 			let remotefetch = "remote." ++ T.unpack (repoName oldc) ++ ".fetch"
 			needfetch <- isNothing <$> fromRepo (Git.Config.getMaybe remotefetch)
 			when needfetch $
-				inRepo $ Git.Command.run "config"
-					[Param remotefetch, Param ""]
-			inRepo $ Git.Command.run "remote"
-				[ Param "rename"
+				inRepo $ Git.Command.run
+					[Param "config", Param remotefetch, Param ""]
+			inRepo $ Git.Command.run
+				[ Param "remote"
+				, Param "rename"
 				, Param $ T.unpack $ repoName oldc
 				, Param name
 				]
