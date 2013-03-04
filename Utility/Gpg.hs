@@ -96,19 +96,33 @@ findPubKeys for = KeyIds . parse <$> readStrict params
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
- - first newline. 
- -
- - The size is the number of bytes of entropy desired; the data is
- - base64 encoded, so will have a somewhat longer length. -}
+ - first newline. -}
 genRandom :: Int -> IO String
-genRandom size = readStrict
-	[ Params "--gen-random --armor"
+genRandom size = checksize <$> readStrict
+	[ Params params
 	, Param $ show randomquality
 	, Param $ show size
 	]
   where
+	params = "--gen-random --armor"
+
 	-- 1 is /dev/urandom; 2 is /dev/random
 	randomquality = 1 :: Int
+
+ 	{- The size is the number of bytes of entropy desired; the data is
+	 - base64 encoded, so needs 8 bits to represent every 6 bytes of
+	 - entropy. -}
+	expectedlength = size * 8 `div` 6
+
+	checksize s = let len = length s in
+		if len >= expectedlength
+			then s
+			else shortread len
+
+	shortread got = error $ unwords
+		[ "Not enough bytes returned from gpg", params
+		, "(got", show got, "; expected", show expectedlength, ")"
+		]
 
 {- A test key. This is provided pre-generated since generating a new gpg
  - key is too much work (requires too much entropy) for a test suite to
