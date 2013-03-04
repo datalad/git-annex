@@ -51,7 +51,7 @@ import qualified Data.Set as S
 
 getStartXMPPPairR :: Handler RepHtml
 #ifdef WITH_XMPP
-getStartXMPPPairR = ifM (isJust <$> runAnnex Nothing getXMPPCreds)
+getStartXMPPPairR = ifM (isJust <$> liftAnnex getXMPPCreds)
 	( do
 		{- Ask buddies to send presence info, to get
 		 - the buddy list populated. -}
@@ -76,13 +76,12 @@ getRunningXMPPPairR bid = do
 	go $ S.toList . buddyAssistants <$> buddy
   where
 	go (Just (clients@((Client exemplar):_))) = do
-		creds <- runAnnex Nothing getXMPPCreds
+		creds <- liftAnnex getXMPPCreds
 		let ourjid = fromJust $ parseJID =<< xmppJID <$> creds
 		let samejid = baseJID ourjid == baseJID exemplar
-		liftAssistant $ do
-			u <- liftAnnex getUUID
-			forM_ clients $ \(Client c) -> sendNetMessage $
-				PairingNotification PairReq (formatJID c) u
+		u <- liftAnnex getUUID
+		liftAssistant $ forM_ clients $ \(Client c) -> sendNetMessage $
+			PairingNotification PairReq (formatJID c) u
 		xmppPairEnd True $ if samejid then Nothing else Just exemplar
 	-- A buddy could have logged out, or the XMPP client restarted,
 	-- and there be no clients to message; handle unforseen by going back.
@@ -109,7 +108,7 @@ noLocalPairing = noPairing "local"
 getFinishLocalPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	repodir <- lift $ repoPath <$> runAnnex undefined gitRepo
+	repodir <- lift $ repoPath <$> liftAnnex gitRepo
 	liftIO $ setup repodir
 	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
   where
@@ -138,8 +137,8 @@ getFinishXMPPPairR :: PairKey -> Handler RepHtml
 getFinishXMPPPairR (PairKey theiruuid t) = case parseJID t of
 	Nothing -> error "bad JID"
 	Just theirjid -> do
+		selfuuid <- liftAnnex getUUID
 		liftAssistant $ do
-			selfuuid <- liftAnnex getUUID
 			sendNetMessage $
 				PairingNotification PairAck (formatJID theirjid) selfuuid
 			finishXMPPPairing theirjid theiruuid

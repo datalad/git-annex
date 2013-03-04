@@ -10,7 +10,8 @@
 module Assistant.WebApp where
 
 import Assistant.WebApp.Types
-import Assistant.Common
+import Assistant.Common hiding (liftAnnex)
+import qualified Assistant.Monad as Assistant
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
@@ -24,9 +25,6 @@ inFirstRun = isNothing . relDir <$> getYesod
 
 newWebAppState :: IO (TMVar WebAppState)
 newWebAppState = atomically $ newTMVar $ WebAppState { showIntro = True }
-
-liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
-liftAssistant a = liftIO . flip runAssistant a =<< assistantData <$> getYesod
 
 getWebAppState :: forall sub. GHandler sub WebApp WebAppState
 getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
@@ -43,11 +41,17 @@ modifyWebAppState a = go =<< webAppState <$> getYesod
  - When the webapp is run outside a git-annex repository, the fallback
  - value is returned.
  -}
-runAnnex :: forall sub a. a -> Annex a -> GHandler sub WebApp a
-runAnnex fallback a = ifM (noAnnex <$> getYesod)
+liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
+liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
 	( return fallback
-	, liftAssistant $ liftAnnex a
+	, liftAssistant $ Assistant.liftAnnex a
 	)
+
+liftAnnex :: forall sub a. Annex a -> GHandler sub WebApp a
+liftAnnex = liftAnnexOr $ error "internal runAnnex"
+
+liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
+liftAssistant a = liftIO . flip runAssistant a =<< assistantData <$> getYesod
 
 waitNotifier :: forall sub. (Assistant NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier getbroadcaster nid = liftAssistant $ do

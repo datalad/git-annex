@@ -123,7 +123,7 @@ getAddS3R = awsConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/adds3")
   where
-	setgroup r = runAnnex () $
+	setgroup r = liftAnnex $
 		setStandardGroup (Remote.uuid r) TransferGroup
 #else
 getAddS3R = error "S3 not supported by this build"
@@ -143,7 +143,7 @@ getAddGlacierR = glacierConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addglacier")
   where
-	setgroup r = runAnnex () $
+	setgroup r = liftAnnex $
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
@@ -162,20 +162,20 @@ enableAWSRemote remotetype uuid = do
 		runFormGet $ renderBootstrap awsCredsAForm
 	case result of
 		FormSuccess creds -> lift $ do
-			m <- runAnnex M.empty readRemoteLog
+			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
 			makeAWSRemote remotetype creds name (const noop) M.empty
 		_ -> do
-			description <- lift $ runAnnex "" $
+			description <- lift $ liftAnnex $
 				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 			$(widgetFile "configurators/enableaws")
 
 makeAWSRemote :: RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
-	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
+	remotename <- liftAnnex $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ AWS.setCredsEnv (T.unpack ak, T.unpack sk)
-	r <- liftAssistant $ liftAnnex $ addRemote $ do
+	r <- liftAnnex $ addRemote $ do
 		makeSpecialRemote hostname remotetype config
 		return remotename
 	setup r

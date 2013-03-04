@@ -153,7 +153,7 @@ getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 			let path = T.unpack p
 			liftIO $ makeRepo path False
 			u <- liftIO $ initRepo True path Nothing
-			lift $ runAnnex () $ setStandardGroup u ClientGroup
+			lift $ liftAnnexOr () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -211,7 +211,7 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 		liftIO $ makerepo dir
 		u <- liftIO $ initRepo False dir $ Just remotename
 		r <- combineRepos dir remotename
-		runAnnex () $ setStandardGroup u TransferGroup
+		liftAnnex $ setStandardGroup u TransferGroup
 		syncRemote r
 		return u
 	  where
@@ -230,7 +230,7 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 {- Each repository is made a remote of the other.
  - Next call syncRemote to get them in sync. -}
 combineRepos :: FilePath -> String -> Handler Remote
-combineRepos dir name = runAnnex undefined $ do
+combineRepos dir name = liftAnnex $ do
 	hostname <- maybe "host" id <$> liftIO getHostname
 	hostlocation <- fromRepo Git.repoLocation
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
@@ -238,7 +238,7 @@ combineRepos dir name = runAnnex undefined $ do
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
-	description <- lift $ runAnnex "" $
+	description <- lift $ liftAnnex $
 		T.pack . concat <$> prettyListUUIDs [uuid]
 	$(widgetFile "configurators/enabledirectory")
 

@@ -7,7 +7,7 @@
 
 module Assistant.WebApp.Utility where
 
-import Assistant.Common
+import Assistant.Common hiding (liftAnnex)
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
@@ -34,10 +34,10 @@ import System.Posix.Process (getProcessGroupIDOf)
 {- Use Nothing to change autocommit setting; or a remote to change
  - its sync setting. -}
 changeSyncable :: (Maybe Remote) -> Bool -> Handler ()
-changeSyncable Nothing enable = liftAssistant $ do
+changeSyncable Nothing enable = do
 	liftAnnex $ Config.setConfig key (boolConfig enable)
 	liftIO . maybe noop (`throwTo` signal)
-		=<< namedThreadId watchThread
+		=<< liftAssistant (namedThreadId watchThread)
   where
 	key = Config.annexConfig "autocommit"
 	signal
@@ -59,7 +59,7 @@ changeSyncable (Just r) False = do
 	tofrom t = transferUUID t == Remote.uuid r
 
 changeSyncFlag :: Remote -> Bool -> Handler ()
-changeSyncFlag r enabled = runAnnex undefined $ do
+changeSyncFlag r enabled = liftAnnex $ do
 	Config.setConfig key (boolConfig enabled)
 	void $ Remote.remoteListRefresh
   where

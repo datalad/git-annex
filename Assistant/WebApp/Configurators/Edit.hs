@@ -60,17 +60,17 @@ getRepoConfig uuid mremote = RepoConfig
 
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
-	when (repoDescription oldc /= repoDescription newc) $ runAnnex undefined $ do
+	when (repoDescription oldc /= repoDescription newc) $ liftAnnex $ do
 		maybe noop (describeUUID uuid . T.unpack) (repoDescription newc)
 		void uuidMapLoad
-	when (repoGroup oldc /= repoGroup newc) $ runAnnex undefined $ 
+	when (repoGroup oldc /= repoGroup newc) $ liftAnnex $ 
 		case repoGroup newc of
 			RepoGroupStandard g -> setStandardGroup uuid g
 			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
 	when (repoSyncable oldc /= repoSyncable newc) $
 		changeSyncable mremote (repoSyncable newc)
 	when (isJust mremote && makeLegalName (T.unpack $ repoName oldc) /= makeLegalName (T.unpack $ repoName newc)) $ do
-		runAnnex undefined $ do
+		liftAnnex $ do
 			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
 			{- git remote rename expects there to be a
 			 - remote.<name>.fetch, and exits nonzero if
@@ -119,8 +119,8 @@ getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = page "Configure repository" (Just Configuration) $ do
-	mremote <- lift $ runAnnex undefined $ Remote.remoteFromUUID uuid
-	curr <- lift $ runAnnex undefined $ getRepoConfig uuid mremote
+	mremote <- lift $ liftAnnex $ Remote.remoteFromUUID uuid
+	curr <- lift $ liftAnnex $ getRepoConfig uuid mremote
 	lift $ checkarchivedirectory curr
 	((result, form), enctype) <- lift $
 		runFormGet $ renderBootstrap $ editRepositoryAForm curr
@@ -145,6 +145,6 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 		| repoGroup cfg == RepoGroupStandard FullArchiveGroup = go
 		| otherwise = noop
 	  where
-		go = runAnnex undefined $ inRepo $ \g ->
+		go = liftAnnex $ inRepo $ \g ->
 			createDirectoryIfMissing True $
 				Git.repoPath g </> "archive"

@@ -33,7 +33,7 @@ import Control.Exception (SomeException)
 {- Displays an alert suggesting to configure XMPP, with a button. -}
 xmppNeeded :: Handler ()
 #ifdef WITH_XMPP
-xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
+xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 	urlrender <- getUrlRender
 	void $ liftAssistant $ do
 		close <- asIO1 removeAlert
@@ -50,7 +50,7 @@ xmppNeeded = return ()
 getXMPPR :: Handler RepHtml
 getXMPPR = xmppPage $ do
 	((result, form), enctype) <- lift $ do
-		oldcreds <- runAnnex Nothing getXMPPCreds
+		oldcreds <- liftAnnex getXMPPCreds
 		runFormGet $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
@@ -60,7 +60,7 @@ getXMPPR = xmppPage $ do
 		_ -> showform Nothing
   where
 	storecreds creds = do
-		void $ runAnnex undefined $ setXMPPCreds creds
+		void $ liftAnnex $ setXMPPCreds creds
 		liftAssistant notifyNetMessagerRestart
 		redirect StartXMPPPairR
 #else

@@ -77,7 +77,7 @@ getAddBoxComR = boxConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addbox.com")
   where
-	setgroup r = runAnnex () $
+	setgroup r = liftAnnex $
 		setStandardGroup (Remote.uuid r) TransferGroup
 #else
 getAddBoxComR = error "WebDAV not supported by this build"
@@ -86,11 +86,11 @@ getAddBoxComR = error "WebDAV not supported by this build"
 getEnableWebDAVR :: UUID -> Handler RepHtml
 #ifdef WITH_WEBDAV
 getEnableWebDAVR uuid = do
-	m <- runAnnex M.empty readRemoteLog
+	m <- liftAnnex readRemoteLog
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ M.lookup "name" c
 	let url = fromJust $ M.lookup "url" c
-	mcreds <- runAnnex Nothing $
+	mcreds <- liftAnnex $
 		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ lift $
@@ -108,7 +108,7 @@ getEnableWebDAVR uuid = do
 			FormSuccess input -> lift $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
-				description <- lift $ runAnnex "" $
+				description <- lift $ liftAnnex $
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 				$(widgetFile "configurators/enablewebdav")
 #else
@@ -118,9 +118,9 @@ getEnableWebDAVR _ = error "WebDAV not supported by this build"
 #ifdef WITH_WEBDAV
 makeWebDavRemote :: String -> CredPair -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeWebDavRemote name creds setup config = do
-	remotename <- runAnnex name $ fromRepo $ uniqueRemoteName name 0
+	remotename <- liftAnnex $ fromRepo $ uniqueRemoteName name 0
 	liftIO $ WebDAV.setCredsEnv creds
-	r <- liftAssistant $ liftAnnex $ addRemote $ do
+	r <- liftAnnex $ addRemote $ do
 		makeSpecialRemote name WebDAV.remote config
 		return remotename
 	setup r

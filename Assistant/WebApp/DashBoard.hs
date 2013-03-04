@@ -117,8 +117,7 @@ getFileBrowserR = whenM openFileBrowser $ redirectBack
  - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
-	path <- runAnnex (error "no configured repository") $
-		fromRepo Git.repoPath
+	path <- liftAnnex $ fromRepo Git.repoPath
 	ifM (liftIO $ inPath cmd <&&> inPath cmd)
 		( do
 			void $ liftIO $ forkIO $ void $

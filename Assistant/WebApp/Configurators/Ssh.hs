@@ -114,7 +114,7 @@ getAddSshR = sshConfigurator $ do
  -}
 getEnableRsyncR :: UUID -> Handler RepHtml
 getEnableRsyncR u = do
-	m <- fromMaybe M.empty . M.lookup u <$> runAnnex M.empty readRemoteLog
+	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- lift $
@@ -133,7 +133,7 @@ getEnableRsyncR u = do
 		_ -> redirect AddSshR
   where
 	showform form enctype status = do
-		description <- lift $ runAnnex "" $
+		description <- lift $ liftAnnex $
 			T.pack . concat <$> prettyListUUIDs [u]
 		$(widgetFile "configurators/ssh/enable")
 	enable sshdata = lift $ redirect $ ConfirmSshR $
@@ -350,4 +350,4 @@ isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
 
 setupGroup :: Remote -> Handler ()
-setupGroup r = runAnnex () $ setStandardGroup (Remote.uuid r) TransferGroup
+setupGroup r = liftAnnex $ setStandardGroup (Remote.uuid r) TransferGroup

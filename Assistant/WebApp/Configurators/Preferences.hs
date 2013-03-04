@@ -84,11 +84,11 @@ storePrefs p = do
 getPreferencesR :: Handler RepHtml
 getPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- lift $ do
-		current <- runAnnex undefined getPrefs
+		current <- liftAnnex getPrefs
 		runFormGet $ renderBootstrap $ prefsAForm current
 	case result of
 		FormSuccess new -> lift $ do
-			runAnnex undefined $ storePrefs new
+			liftAnnex $ storePrefs new
 			redirect ConfigurationR
 		_ -> $(widgetFile "configurators/preferences")
 

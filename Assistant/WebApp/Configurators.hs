@@ -33,7 +33,7 @@ getConfigurationR = ifM (inFirstRun)
 	( getFirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
 #ifdef WITH_XMPP
-		xmppconfigured <- lift $ runAnnex False $ isJust <$> getXMPPCreds
+		xmppconfigured <- lift $ liftAnnex $ isJust <$> getXMPPCreds
 #else
 		let xmppconfigured = False
 #endif
@@ -136,7 +136,7 @@ repoList reposelector
 	configured = do
 		rs <- filter wantedrepo . syncRemotes
 			<$> liftAssistant getDaemonStatus
-		runAnnex [] $ do
+		liftAnnex $ do
 			let us = map Remote.uuid rs
 			let l = zip us $ map mkSyncingRepoActions us
 			if includeHere reposelector
@@ -149,7 +149,7 @@ repoList reposelector
 					let here = (u, hereactions)
 					return $ here : l
 				else return l
-	rest = runAnnex [] $ do
+	rest = liftAnnex $ do
 		m <- readRemoteLog
 		unconfigured <- map snd . catMaybes . filter wantedremote 
 			. map (findinfo m)
@@ -181,7 +181,7 @@ repoList reposelector
 			_ -> Nothing
 	  where
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
-	list l = runAnnex [] $ do
+	list l = liftAnnex $ do
 		let l' = nubBy (\x y -> fst x == fst y) l
 		zip3
 			<$> pure counter
@@ -197,6 +197,6 @@ getDisableSyncR = flipSync False
 
 flipSync :: Bool -> UUID -> Handler ()
 flipSync enable uuid = do
-	mremote <- runAnnex undefined $ Remote.remoteFromUUID uuid
+	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	changeSyncable mremote enable
 	redirect RepositoriesR
