@@ -18,3 +18,7 @@ This lets GPG generate the randomness and by passing armor, it avoids newlines. 
 The encryption wiki page could have had more information. Enough code (sadly in Python, not reusing the Haskell code) to operate on the resulting files can be found in [this Gist](https://gist.github.com/pkern/5078559).
 
 -- Philipp Kern
+
+> In addition to the comment below, I have added a check that gpg outputs
+> the expected quantity of data, and the storage of the cipher is now
+> documented in [[internals]]. Think I can call this [[done]]. --[[Joey]]
