@@ -62,11 +62,12 @@ withUnusedMaps a params = do
 unusedSpec :: String -> [Int]
 unusedSpec spec
 	| "-" `isInfixOf` spec = range $ separate (== '-') spec
-	| otherwise = catMaybes [readish spec]
+	| otherwise = maybe badspec (: []) (readish spec)
   where
 	range (a, b) = case (readish a, readish b) of
 		(Just x, Just y) -> [x..y]
-		_ -> []
+		_ -> badspec
+	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
 
 {- Start action for unused content. Finds the number in the maps, and
  - calls either of 3 actions, depending on the type of unused file. -}
