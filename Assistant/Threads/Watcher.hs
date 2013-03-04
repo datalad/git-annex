@@ -206,8 +206,9 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 				checkcontent key s
 				ensurestaged (Just link) s
 			, do
-				liftIO $ removeFile file
-				liftAnnex $ Backend.makeAnnexLink link file
+				unless isdirect $ do
+					liftIO $ removeFile file
+					liftAnnex $ Backend.makeAnnexLink link file
 				checkcontent key =<< getDaemonStatus
 				addlink link
 			)
