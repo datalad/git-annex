@@ -7,8 +7,10 @@
         A pair request has been sent to #{name}. It's up to them #
         to accept it and finish pairing.
       $nothing
-        A pair request has been sent to all other devices using your jabber #
-        account.
+        A pair request has been sent to all other devices that #
+        have been configured to use your jabber account. #
+        It will be answered automatically by any that see it; #
+        no action is required on your part.
   $else
     Pair request accepted.
   <h2>
