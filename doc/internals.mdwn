@@ -51,14 +51,22 @@ space and then the description, followed by a timestamp. Example:
 If there are multiple lines for the same uuid, the one with the most recent
 timestamp wins. git-annex union merges this and other files.
 
-## `remotes.log`
+## `remote.log`
 
 Holds persistent configuration settings for [[special_remotes]] such as
 Amazon S3.
 
 The file format is one line per remote, starting with the uuid of the
-remote, followed by a space, and then a series of key=value pairs,
+remote, followed by a space, and then a series of var=value pairs,
 each separated by whitespace, and finally a timestamp.
+
+Encrypted special remotes store their encryption key here,
+in the "cipher" value. It is base64 encoded, and unless shared [[encryption]]
+is used, is encrypted to one or more gpg keys. The first 256 bytes of
+the cipher is used as the HMAC SHA1 encryption key, to encrypt filenames
+stored on the special remote. The remainder of the cipher is used as a gpg
+symmetric encryption key, to encrypt the content of files stored on the special
+remote.
 
 ## `trust.log`
 
