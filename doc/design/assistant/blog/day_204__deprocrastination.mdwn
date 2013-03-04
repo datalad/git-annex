@@ -1,0 +1,62 @@
+Tracked down the bug that's been eluding me for days. It was indeed a race, and
+could result in a file being transferred into a direct mode repository and
+ending up in indirect mode. Was easy to fix once understood, just needed to
+update the direct mode mapping before starting the transfer.
+
+While I was in there, I noticed another potential race, also in direct
+mode, where the watcher could decide to rewrite a symlink to fix its
+target, and at just the wrong time direct mode content could arrive in its
+place, and so get deleted. Fixed that too.
+
+Seems likely there are some other direct mode races. I spent quite a while
+hammering on dealing with the indirect mode races with the assistant 
+originally.
+
+-----
+
+Next on my list is revisiting XMPP.
+
+Verified that git push over XMPP works between multiple repositories that
+are sharing the same XMPP account. It does.
+
+Seeing the XMPP setup process with fresh eyes, I found several places
+wording could be improved. Also, when the user goes in and configures 
+(or reconfigures) an XMPP account, the next step is to do pairing,
+so it now redirects directly to there.
+
+Next I need to make XMPP get back into sync after a network disconnection
+or when the assistant is restarted. This currently doesn't happen until
+a XMPP push is received due to a new change being made.
+
+### back burner: yesod-pure
+
+Last night I made a yesod-pure branch, and did some exploratory conversion
+away from using Hamlet, of the Preferences page I built yesterday.
+
+I was actually finding writing pure Blaze worked *better* than Hamlet,
+at first. Was able to refactor several things into functions that in Hamlet
+are duplicated over and over in my templates, and built some stuff that makes
+rendering type safe urls in pure Blaze not particularly ungainly. For example,
+this makes a submit button and a cancel button that redirects to another page:
+
+[[!format haskell """
+        buttons = toWidget $ \redir ->
+               "Save Preferences" <>|<> redir ConfigurationR []
+"""]]
+
+The catch is how to deal with widgets that need to be nested inside other
+html. It's not possible to do this both cleanly and maximally
+efficiently, with Blaze. For max efficiency, all the html before the widget
+should be emitted, and then the widget run, and then all html after it be
+emitted. To use Blaze, it would have to instead generate the full html,
+then split it around the widget, and then emit the parts, which is less
+efficient, doesn't stream, etc.
+
+I guess that's the core of what Hamlet does; it allows a clean
+representation and due to running TH at build time, can convert this into
+an efficient (but ugly) html emitter.
+
+So, I may give up on this experiment. Or I may make the webapp less than
+maximally fast at generating html and go on with it. After all, these
+sorts of optimisations are mostly aimed at high-volume websites, not local
+webapps.
