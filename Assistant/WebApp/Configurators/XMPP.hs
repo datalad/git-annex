@@ -46,25 +46,9 @@ xmppNeeded = whenM (isNothing <$> runAnnex Nothing getXMPPCreds) $ do
 xmppNeeded = return ()
 #endif
 
+#ifdef WITH_XMPP
 getXMPPR :: Handler RepHtml
-#ifdef WITH_XMPP
-getXMPPR = getXMPPR' ConfigurationR
-#else
-getXMPPR = xmppPage $
-	$(widgetFile "configurators/xmpp/disabled")
-#endif
-
-getXMPPForPairingR :: Handler RepHtml
-#ifdef WITH_XMPP
-getXMPPForPairingR = getXMPPR' StartXMPPPairR
-#else
-getXMPPForPairingR = xmppPage $
-	$(widgetFile "configurators/xmpp/disabled")
-#endif
-
-#ifdef WITH_XMPP
-getXMPPR' :: Route WebApp -> Handler RepHtml
-getXMPPR' redirto = xmppPage $ do
+getXMPPR = xmppPage $ do
 	((result, form), enctype) <- lift $ do
 		oldcreds <- runAnnex Nothing getXMPPCreds
 		runFormGet $ renderBootstrap $ xmppAForm $
@@ -78,7 +62,10 @@ getXMPPR' redirto = xmppPage $ do
 	storecreds creds = do
 		void $ runAnnex undefined $ setXMPPCreds creds
 		liftAssistant notifyNetMessagerRestart
-		redirect redirto
+		redirect StartXMPPPairR
+#else
+getXMPPR = xmppPage $
+	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
 {- Called by client to get a list of buddies.

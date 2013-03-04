@@ -58,7 +58,7 @@ getStartXMPPPairR = ifM (isJust <$> runAnnex Nothing getXMPPCreds)
 		liftAssistant $ sendNetMessage QueryPresence
 		pairPage $
 			$(widgetFile "configurators/pairing/xmpp/prompt")
-	, redirect XMPPForPairingR -- go get XMPP configured, then come back
+	, redirect XMPPR -- go get XMPP configured, then come back
 	)
 #else
 getStartXMPPPairR = noXMPPPairing
