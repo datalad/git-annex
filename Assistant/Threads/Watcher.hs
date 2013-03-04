@@ -82,7 +82,7 @@ runWatcher = do
 	direct <- liftAnnex isDirect
 	addhook <- hook $ if direct then onAddDirect else onAdd
 	delhook <- hook onDel
-	addsymlinkhook <- hook onAddSymlink
+	addsymlinkhook <- hook $ onAddSymlink direct
 	deldirhook <- hook onDelDir
 	errhook <- hook onErr
 	let hooks = mkWatchHooks
@@ -193,10 +193,12 @@ onAddDirect file fs = do
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
-onAddSymlink :: Handler
-onAddSymlink file filestatus = go =<< liftAnnex (Backend.lookupFile file)
+onAddSymlink :: Bool -> Handler
+onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile file)
   where
 	go (Just (key, _)) = do
+		when isdirect $
+			liftAnnex $ void $ addAssociatedFile key file
 		link <- liftAnnex $ calcGitLink file key
 		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
 			( do

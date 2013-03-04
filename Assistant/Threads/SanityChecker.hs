@@ -19,6 +19,7 @@ import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
+import Config
 
 import Data.Time.Clock.POSIX
 
@@ -105,7 +106,8 @@ dailyCheck = do
 		liftAnnex $ warning msg
 		void $ addAlert $ sanityCheckFixAlert msg
 	addsymlink file s = do
-		Watcher.runHandler Watcher.onAddSymlink file s
+		isdirect <- liftAnnex isDirect
+		Watcher.runHandler (Watcher.onAddSymlink isdirect) file s
 		insanity $ "found unstaged symlink: " ++ file
 
 hourlyCheck :: Assistant ()

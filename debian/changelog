@@ -15,6 +15,9 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     very non-aggressively.
   * webapp: New preferences page allows enabling/disabling debug logging
     at runtime, as well as configuring numcopies and diskreserve.
+  * assistant: Fix bug in direct mode that could occur when a symlink is
+    moved out of an archive directory, and resulted in the file not being
+    set to direct mode when it was transferred.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
