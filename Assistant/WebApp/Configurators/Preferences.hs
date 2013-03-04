@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.Preferences (
 	getPreferencesR
@@ -68,7 +68,6 @@ getPrefs = PrefsForm
 	<*> (annexNumCopies <$> Annex.getGitConfig)
 	<*> inAutoStartFile
 	<*> ((==) <$> (pure $ Just DEBUG) <*> (liftIO $ getLevel <$> getRootLogger))
-  where
 
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
