@@ -28,7 +28,7 @@ start :: UnusedMaps -> Int -> CommandStart
 start = startUnused "dropunused" perform (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)
 
 perform :: Key -> CommandPerform
-perform key = maybe droplocal dropremote =<< Remote.byName =<< from
+perform key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
   where
 	dropremote r = do
 		showAction $ "from " ++ Remote.name r

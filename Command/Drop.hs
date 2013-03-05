@@ -27,7 +27,7 @@ fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: [CommandSeek]
-seek = [withField fromOption Remote.byName $ \from ->
+seek = [withField fromOption Remote.byNameWithUUID $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart

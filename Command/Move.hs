@@ -32,8 +32,8 @@ options :: [Option]
 options = [fromOption, toOption]
 
 seek :: [CommandSeek]
-seek = [withField toOption Remote.byName $ \to ->
-		withField fromOption Remote.byName $ \from ->
+seek = [withField toOption Remote.byNameWithUUID $ \to ->
+		withField fromOption Remote.byNameWithUUID $ \from ->
 			withFilesInGit $ whenAnnexed $ start to from True]
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart

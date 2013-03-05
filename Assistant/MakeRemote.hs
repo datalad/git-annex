@@ -52,7 +52,8 @@ addRemote :: Annex String -> Annex Remote
 addRemote a = do
 	name <- a
 	void remoteListRefresh
-	maybe (error "failed to add remote") return =<< Remote.byName (Just name)
+	maybe (error "failed to add remote") return
+		=<< Remote.byName (Just name)
 
 {- Inits a rsync special remote, and returns its name. -}
 makeRsyncRemote :: String -> String -> Annex String

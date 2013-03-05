@@ -29,8 +29,8 @@ fileOption :: Option
 fileOption = Option.field [] "file" paramFile "the associated file"
 
 seek :: [CommandSeek]
-seek = [withField Command.Move.toOption Remote.byName $ \to ->
-	withField Command.Move.fromOption Remote.byName $ \from ->
+seek = [withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
+	withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
 	withField fileOption return $ \file ->
 		withKeys $ start to from file]
 

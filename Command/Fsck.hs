@@ -61,7 +61,7 @@ options =
 
 seek :: [CommandSeek]
 seek =
-	[ withField fromOption Remote.byName $ \from ->
+	[ withField fromOption Remote.byNameWithUUID $ \from ->
 	  withIncremental $ \i -> withFilesInGit $ whenAnnexed $ start from i
 	, withIncremental $ \i -> withBarePresentKeys $ startBare i
 	]

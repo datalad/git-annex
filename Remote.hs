@@ -24,6 +24,7 @@ module Remote (
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
 	prettyListUUIDs,
@@ -72,18 +73,27 @@ addName desc n
 	| otherwise = n ++ " (" ++ desc ++ ")"
 
 {- When a name is specified, looks up the remote matching that name.
- - (Or it can be a UUID.) Only finds currently configured git remotes. -}
+ - (Or it can be a UUID.) -}
 byName :: Maybe String -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = either error Just <$> byName' n
+
+{- Like byName, but the remote must have a configured UUID. -}
+byNameWithUUID :: Maybe String -> Annex (Maybe Remote)
+byNameWithUUID n = do
+	v <- byName n
+	return $ checkuuid <$> v
+  where
+	checkuuid r
+		| uuid r == NoUUID = error $ "cannot determine uuid for " ++ name r
+		| otherwise = r
+
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
   where
 	handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
-	handle (match:_)
-		| uuid match == NoUUID = Left $ "cannot determine uuid for " ++ name match
-		| otherwise = Right match
+	handle (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),

@@ -76,7 +76,7 @@ checkUnused = chain 0
 		chain v' as
 
 checkRemoteUnused :: String -> CommandPerform
-checkRemoteUnused name = go =<< fromJust <$> Remote.byName (Just name)
+checkRemoteUnused name = go =<< fromJust <$> Remote.byNameWithUUID (Just name)
   where
 	go r = do
 		showAction "checking for unused data"

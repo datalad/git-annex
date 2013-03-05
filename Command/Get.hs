@@ -20,7 +20,7 @@ def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
 	"make content of annexed files available"]
 
 seek :: [CommandSeek]
-seek = [withField Command.Move.fromOption Remote.byName $ \from ->
+seek = [withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
