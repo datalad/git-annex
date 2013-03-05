@@ -161,8 +161,15 @@ tryGitConfigRead r
 			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 	pipedconfig cmd params =
-		withHandle StdoutHandle createProcessSuccess p $
-			Git.Config.hRead r
+		withHandle StdoutHandle createProcessSuccess p $ \h -> do
+ 			fileEncoding h
+			val <- hGetContentsStrict h
+			r' <- Git.Config.store val r
+			when (getUncachedUUID r' == NoUUID && not (null val)) $ do
+				warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+				warningIO $ "Instead, got: " ++ show val
+				warningIO $ "This is unexpected; please check the network transport!"
+			return r'
 	  where
 		p = proc cmd $ toCommand params
 

@@ -23,6 +23,7 @@ module Messages (
 	showEndResult,
 	showErr,
 	warning,
+	warningIO,
 	fileNotFound,
 	indent,
 	maybeShowJSON,
@@ -157,6 +158,12 @@ warning' w = do
 	liftIO $ do
 		hFlush stdout
 		hPutStrLn stderr w
+
+warningIO :: String -> IO ()
+warningIO w = do
+	putStr "\n"
+	hFlush stdout
+	hPutStrLn stderr w
 
 {- Displays a warning one time about a file the user specified not existing. -}
 fileNotFound :: FilePath -> Annex ()
