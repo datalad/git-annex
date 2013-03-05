@@ -23,6 +23,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * Bugfix: If the UUID of a remote is not known, prevent --from, --to,
     and other ways of specifying remotes by name from selecting it,
     since it is not possible to sanely use it.
+  * Run ssh with -T to avoid tty allocation and any login scripts that
+    may do undesired things with it.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

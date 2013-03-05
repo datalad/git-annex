@@ -33,7 +33,8 @@ sshParams (host, port) opts = go =<< sshInfo (host, port)
 		liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 		lockFile $ socket2lock socketfile
 		ret params
-	ret ps = return $ ps ++ opts ++ portParams port ++ [Param host]
+	ret ps = return $ ps ++ opts ++ portParams port ++
+		[Param "-T", Param host]
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
