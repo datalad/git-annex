@@ -81,7 +81,9 @@ byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
   where
 	handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
-	handle match = Right $ Prelude.head match
+	handle (match:_)
+		| uuid match == NoUUID = Left $ "cannot determine uuid for " ++ name match
+		| otherwise = Right match
 	matching r = n == name r || toUUID n == uuid r
 
 {- Looks up a remote by name (or by UUID, or even by description),
