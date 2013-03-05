@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-05T20:34:22Z"
+ content="""
+There are a few problems you are likely to run into if you try to store everything in git-annex:
+
+* git does not store certain things, including special file permissions, in a git repository
+* you can't check a .git directory into another git repository
+* git-annex locks files to prevent them being changed and this involves replacing them with symlinks (much less of a problem now that it has the direct mode)
+
+For these reasons, I currently encourage users to use one or more git-annex repositories to store and sync whatever large data files they need, but to confine this to subdirectories of the home directory. There are other tools like vcsh that are better suited to storing things like dotfiles in git, rather than using git-annex for that. And other tools like mr can make it easy to work with a set of repositories, so you can have your dotfiles stored in one or more repositories and your large files in others and update them all with one command. 
+
+See <http://vcs-home.branchable.com/> for more on this..
+"""]]
