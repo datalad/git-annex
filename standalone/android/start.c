@@ -39,6 +39,7 @@ main () {
 	}
 
 	if (stat("lib/lib.busybox.so", &st_buf) != 0) {
+		/* TODO my lib dir should be in LD_LIBRARY_PATH; check that */
 		fprintf(stderr, "Falling back to hardcoded app location; cannot find expected files in %s\n", buf);
 		if (chdir("/data/data/ga.androidterm") != 0) {
 			perror("chdir");
