@@ -15,6 +15,7 @@ import Assistant.Pairing
 import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Assistant.Types.ThreadName
+import Assistant.Types.NetMessager
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
@@ -57,6 +58,8 @@ data DaemonStatus = DaemonStatus
 	, alertNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when the syncRemotes change
 	, syncRemotesNotifier :: NotificationBroadcaster
+	-- When the XMPP client is in use, this will contain its JI.
+	, xmppClientID :: Maybe ClientID
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
@@ -83,3 +86,4 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
+	<*> pure Nothing

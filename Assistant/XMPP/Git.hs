@@ -264,7 +264,8 @@ handlePushInitiation (Pushing cid PushRequest) =
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		debug ["pushing to", show rs]
-		forM_ rs $ \r -> xmppPush cid $ taggedPush u branch r
+		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
+		forM_ rs $ \r -> xmppPush cid $ taggedPush u selfjid branch r
 handlePushInitiation (Pushing cid StartingPush) =
 	whenXMPPRemote cid $
 		void $ xmppReceivePack cid

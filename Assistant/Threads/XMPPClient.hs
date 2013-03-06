@@ -38,18 +38,20 @@ xmppClientThread urlrenderer = namedThread "XMPPClient" $
 	restartableClient . xmppClient urlrenderer =<< getAssistant id
 
 {- Runs the client, handing restart events. -}
-restartableClient :: IO () -> Assistant ()
-restartableClient a = forever $ do
-	tid <- liftIO $ forkIO a
-	waitNetMessagerRestart
-	liftIO $ killThread tid
+restartableClient :: (XMPPCreds -> IO ()) -> Assistant ()
+restartableClient a = forever $ go =<< liftAnnex getXMPPCreds
+  where
+	go Nothing = waitNetMessagerRestart
+	go (Just creds) = do
+		modifyDaemonStatus_ $ \s -> s
+			{ xmppClientID = Just $ xmppJID creds }
+		tid <- liftIO $ forkIO $ a creds
+		waitNetMessagerRestart
+		liftIO $ killThread tid
 
-xmppClient :: UrlRenderer -> AssistantData -> IO ()
-xmppClient urlrenderer d = do
-	v <- liftAssistant $ liftAnnex getXMPPCreds
-	case v of
-		Nothing -> noop -- will be restarted once creds get configured
-		Just c -> retry (runclient c) =<< getCurrentTime
+xmppClient :: UrlRenderer -> AssistantData -> XMPPCreds -> IO ()
+xmppClient urlrenderer d creds =
+	retry (runclient creds) =<< getCurrentTime
   where
 	liftAssistant = runAssistant d
 	inAssistant = liftIO . liftAssistant

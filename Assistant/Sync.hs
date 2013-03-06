@@ -48,11 +48,9 @@ reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
 	modifyDaemonStatus_ $ \s -> s
 		{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
-	alertWhile (syncAlert normalremotes) $ do
-		(ok, diverged) <- sync
-			=<< liftAnnex (inRepo Git.Branch.current)
-		addScanRemotes diverged rs
-		return ok
+	if null normalremotes
+		then go
+		else alertWhile (syncAlert normalremotes) go
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(xmppremotes, normalremotes) = partition isXMPPRemote gitremotes
@@ -69,6 +67,11 @@ reconnectRemotes notifypushes rs = void $ do
 	sync Nothing = do
 		diverged <- snd <$> manualPull Nothing gitremotes
 		return (True, diverged)
+	go = do
+		(ok, diverged) <- sync
+			=<< liftAnnex (inRepo Git.Branch.current)
+		addScanRemotes diverged rs
+		return ok
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same
@@ -137,7 +140,7 @@ pushToRemotes now notifypushes remotes = do
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
 		(succeeded, failed) <- liftIO $
-			inParallel (\r -> taggedPush u branch r g) rs
+			inParallel (\r -> taggedPush u Nothing branch r g) rs
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
 			sendNetMessage $ NotifyPush $

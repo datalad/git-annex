@@ -22,6 +22,7 @@ import Annex.TaggedPush
 import Remote (remoteFromUUID)
 
 import qualified Data.Set as S
+import qualified Data.Text as T
 
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
@@ -89,21 +90,21 @@ onAdd file
 			void $ liftAnnex  $ Command.Sync.mergeFrom changedbranch
 	mergecurrent _ = noop
 
-	handleDesynced = case branchTaggedBy changedbranch of
+	handleDesynced = case fromTaggedBranch changedbranch of
 		Nothing -> return False
-		Just u -> do
-			s <- desynced <$> getDaemonStatus				
-			if S.member u s
-				then do
-					modifyDaemonStatus_ $ \st -> st
-						{ desynced = S.delete u s }
-					mr <- liftAnnex $ remoteFromUUID u
-					case mr of
-						Just r -> do
+		Just (u, info) -> do
+			mr <- liftAnnex $ remoteFromUUID u
+			case mr of
+				Nothing -> return False
+				Just r -> do
+					s <- desynced <$> getDaemonStatus
+					if S.member u s || Just (T.unpack $ getXMPPClientID r) == info
+						then do
+							modifyDaemonStatus_ $ \st -> st
+								{ desynced = S.delete u s }
 							addScanRemotes True [r]
 							return True
-						Nothing -> return False
-				else return False
+						else return False
 
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y
