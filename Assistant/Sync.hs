@@ -54,6 +54,7 @@ reconnectRemotes notifypushes rs = void $ do
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(xmppremotes, normalremotes) = partition isXMPPRemote gitremotes
+	nonxmppremotes = snd $ partition isXMPPRemote rs
 	notspecialremote r
 		| Git.repoIsUrl r = True
 		| Git.repoIsLocal r = True
@@ -70,7 +71,7 @@ reconnectRemotes notifypushes rs = void $ do
 	go = do
 		(ok, diverged) <- sync
 			=<< liftAnnex (inRepo Git.Branch.current)
-		addScanRemotes diverged rs
+		addScanRemotes diverged nonxmppremotes
 		return ok
 
 {- Updates the local sync branch, then pushes it to all remotes, in
