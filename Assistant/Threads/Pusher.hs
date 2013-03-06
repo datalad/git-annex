@@ -17,8 +17,6 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 
-import Data.Time.Clock
-
 {- This thread retries pushes that failed before. -}
 pushRetryThread :: NamedThread
 pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
@@ -27,9 +25,8 @@ pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	topush <- getFailedPushesBefore (fromIntegral halfhour)
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
-		void $ alertWhile (pushRetryAlert topush) $ do
-			now <- liftIO $ getCurrentTime
-			pushToRemotes now True topush
+		void $ alertWhile (pushRetryAlert topush) $
+			pushToRemotes True topush
   where
 	halfhour = 1800
 
@@ -41,13 +38,9 @@ pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	commits <- getCommits
 	-- Now see if now's a good time to push.
 	if shouldPush commits
-		then do
-			remotes <- filter (not . Remote.readonly) 
-				. syncGitRemotes <$> getDaemonStatus
-			unless (null remotes) $
-				void $ alertWhile (pushAlert remotes) $ do
-					now <- liftIO $ getCurrentTime
-					pushToRemotes now True remotes
+		then void $ pushToRemotes True
+			=<< filter (not . Remote.readonly) . syncGitRemotes
+				<$> getDaemonStatus
 		else do
 			debug ["delaying push of", show (length commits), "commits"]
 			refillCommits commits

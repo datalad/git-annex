@@ -62,7 +62,7 @@ reconnectRemotes notifypushes rs = void $ do
 	sync (Just branch) = do
 		diverged <- snd <$> manualPull (Just branch) gitremotes
 		now <- liftIO getCurrentTime
-		ok <- pushToRemotes now notifypushes gitremotes
+		ok <- pushToRemotes' now notifypushes gitremotes
 		return (ok, diverged)
 	{- No local branch exists yet, but we can try pulling. -}
 	sync Nothing = do
@@ -97,8 +97,16 @@ reconnectRemotes notifypushes rs = void $ do
  - reachable. If the fallback fails, the push is queued to be retried
  - later.
  -}
-pushToRemotes :: UTCTime -> Bool -> [Remote] -> Assistant Bool
-pushToRemotes now notifypushes remotes = do
+pushToRemotes :: Bool -> [Remote] -> Assistant Bool
+pushToRemotes notifypushes remotes = do
+	now <- liftIO $ getCurrentTime
+	let nonxmppremotes = snd $ partition isXMPPRemote remotes
+	let go = pushToRemotes' now notifypushes remotes
+	if null nonxmppremotes
+		then go
+		else alertWhile (pushAlert nonxmppremotes) go
+pushToRemotes' :: UTCTime -> Bool -> [Remote] -> Assistant Bool
+pushToRemotes' now notifypushes remotes = do
 	(g, branch, u) <- liftAnnex $ do
 		Annex.Branch.commit "update"
 		(,,)
