@@ -58,7 +58,7 @@ runPush side clientid handledeferred a = do
 
 {- While a push is running, matching push messages are put into
  - netMessagesPush, while others that involve the same side go to
- - netMessagesDeferredPush.
+ - netMessagesPushDeferred.
  -
  - When no push is running involving the same side, returns False.
  -
