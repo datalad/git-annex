@@ -33,6 +33,10 @@ import qualified Data.Map as M
 import qualified Git.Branch
 import Data.Time.Clock
 
+{- Whether to include verbose protocol dump in debug output. -}
+protocolDebug :: Bool
+protocolDebug = True
+
 xmppClientThread :: UrlRenderer -> NamedThread
 xmppClientThread urlrenderer = namedThread "XMPPClient" $
 	restartableClient . xmppClient urlrenderer =<< getAssistant id
@@ -89,11 +93,14 @@ xmppClient urlrenderer d creds =
 
 	receivenotifications selfjid = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
-		-- inAssistant $ debug ["received:", show l]
+		when protocolDebug $
+			inAssistant $ debug ["received:", show l]
 		mapM_ (handle selfjid) l
 
-	handle _ (PresenceMessage p) = void $ inAssistant $ 
-		updateBuddyList (updateBuddies p) <<~ buddyList
+	handle _ (PresenceMessage p) = do
+		
+		void $ inAssistant $ 
+			updateBuddyList (updateBuddies p) <<~ buddyList
 	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
 	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
@@ -147,7 +154,11 @@ decodeStanza _ s = [Unknown s]
  - clients, but Pushing messages are sometimes not, and need to be exploded.
  -}
 relayNetMessage :: JID -> Assistant (XMPP ())
-relayNetMessage selfjid = convert =<< waitNetMessage
+relayNetMessage selfjid = do
+	msg <- waitNetMessage
+	when protocolDebug $
+		debug ["sending:", show msg]
+	convert msg
   where
 	convert (NotifyPush us) = return $ putStanza $ pushNotification us
 	convert QueryPresence = return $ putStanza presenceQuery
@@ -157,8 +168,11 @@ relayNetMessage selfjid = convert =<< waitNetMessage
 	convert (Pushing c pushstage) = withclient c $ \tojid -> do
 		if tojid == baseJID tojid
 			then do
-				bud <- getBuddy (genBuddyKey tojid) <<~ buddyList
-				return $ forM_ (maybe [] (S.toList . buddyAssistants) bud) $ \(Client jid) ->
+				clients <- maybe [] (S.toList . buddyAssistants)
+					<$> getBuddy (genBuddyKey tojid) <<~ buddyList
+				when protocolDebug $
+					debug ["exploded undirected message to clients", show clients]
+				return $ forM_ (clients) $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
 			else return $ putStanza $ pushMessage pushstage tojid selfjid
 
