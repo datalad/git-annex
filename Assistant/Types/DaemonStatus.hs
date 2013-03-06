@@ -20,6 +20,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 data DaemonStatus = DaemonStatus
 	-- All the named threads that comprise the daemon,
@@ -44,6 +45,8 @@ data DaemonStatus = DaemonStatus
 	, syncGitRemotes :: [Remote]
 	-- Ordered list of remotes to sync data with
 	, syncDataRemotes :: [Remote]
+	-- List of uuids of remotes that we may have gotten out of sync with.
+	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
 	-- Broadcasts notifications about all changes to the DaemonStatus
@@ -74,6 +77,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure []
 	<*> pure []
+	<*> pure S.empty
 	<*> pure Nothing
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster

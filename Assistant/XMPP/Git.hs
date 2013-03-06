@@ -19,6 +19,7 @@ import Assistant.Sync
 import qualified Command.Sync
 import qualified Annex.Branch
 import Annex.UUID
+import Annex.TaggedPush
 import Config
 import Git
 import qualified Git.Branch
@@ -251,7 +252,6 @@ handlePushInitiation :: NetMessage -> Assistant ()
 handlePushInitiation (Pushing cid CanPush) =
 	whenXMPPRemote cid $ 
 		sendNetMessage $ Pushing cid PushRequest
-
 handlePushInitiation (Pushing cid PushRequest) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
@@ -264,8 +264,7 @@ handlePushInitiation (Pushing cid PushRequest) =
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		debug ["pushing to", show rs]
-		forM_ rs $ \r -> xmppPush cid $ pushFallback u branch r
-
+		forM_ rs $ \r -> xmppPush cid $ taggedPush u branch r
 handlePushInitiation (Pushing cid StartingPush) =
 	whenXMPPRemote cid $
 		void $ xmppReceivePack cid

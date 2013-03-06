@@ -18,15 +18,16 @@ import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
 import qualified Git.Branch
-import qualified Git.Ref
 import qualified Git.Command
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Annex.Branch
 import Annex.UUID
+import Annex.TaggedPush
 
 import Data.Time.Clock
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Concurrent
 
 {- Syncs with remotes that may have been disconnected for a while.
@@ -36,17 +37,25 @@ import Control.Concurrent
  - An expensive full scan is queued when the git-annex branches of some of
  - the remotes have diverged from the local git-annex branch. Otherwise,
  - it's sufficient to requeue failed transfers.
+ -
+ - XMPP remotes are also signaled that we can push to them, and we request
+ - they push to us. Since XMPP pushes run ansynchronously, any scan of the
+ - XMPP remotes has to be deferred until they're done pushing to us, so
+ - all XMPP remotes are marked as possibly desynced.
  -}
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
-	alertWhile (syncAlert rs) $ do
+	modifyDaemonStatus_ $ \s -> s
+		{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
+	alertWhile (syncAlert normalremotes) $ do
 		(ok, diverged) <- sync
 			=<< liftAnnex (inRepo Git.Branch.current)
 		addScanRemotes diverged rs
 		return ok
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
+	(xmppremotes, normalremotes) = partition isXMPPRemote gitremotes
 	notspecialremote r
 		| Git.repoIsUrl r = True
 		| Git.repoIsLocal r = True
@@ -128,7 +137,7 @@ pushToRemotes now notifypushes remotes = do
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
 		(succeeded, failed) <- liftIO $
-			inParallel (\r -> pushFallback u branch r g) rs
+			inParallel (\r -> taggedPush u branch r g) rs
 		updatemap succeeded failed
 		when (notifypushes && (not $ null succeeded)) $
 			sendNetMessage $ NotifyPush $
@@ -137,35 +146,25 @@ pushToRemotes now notifypushes remotes = do
 		
 	push g branch remote = Command.Sync.pushBranch remote branch g
 
-{- This fallback push mode pushes to branches on the remote that have our
- - uuid in them. While ugly, those branches are reserved for pushing by us,
- - and so our pushes will never conflict with other pushes. -}
-pushFallback :: UUID -> Git.Ref -> Remote -> Git.Repo -> IO Bool
-pushFallback u branch remote = Git.Command.runBool
-	[ Param "push"
-	, Param $ Remote.name remote
-	, Param $ refspec Annex.Branch.name
-	, Param $ refspec branch
-	]
-  where
-	{- Push to refs/synced/uuid/branch; this
-	 - avoids cluttering up the branch display. -}
-	refspec b = concat
-		[ s
-		, ":"
-		, "refs/synced/" ++ fromUUID u ++ "/" ++ s
-		]
-	  where s = show $ Git.Ref.base b
-
-{- Manually pull from remotes and merge their branches. -}
+{- Manually pull from remotes and merge their branches. Returns the results
+ - of all the pulls, and whether the git-annex branches of the remotes and
+ - local had divierged before the pull.
+ -
+ - After pulling from the normal git remotes, requests pushes from any XMPP
+ - remotes. However, those pushes will run asynchronously, so their
+ - results are not included in the return data.
+ -}
 manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Bool], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
-	results <- liftIO $ forM remotes $ \r ->
+	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
+	results <- liftIO $ forM normalremotes $ \r ->
 		Git.Command.runBool [Param "fetch", Param $ Remote.name r] g
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
-	forM_ remotes $ \r ->
+	forM_ normalremotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r currentbranch
+	forM_ xmppremotes $ \r ->
+		sendNetMessage $ Pushing (getXMPPClientID r) PushRequest
 	return (results, haddiverged)
 
 {- Start syncing a newly added remote, using a background thread. -}

@@ -25,6 +25,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     since it is not possible to sanely use it.
   * Run ssh with -T to avoid tty allocation and any login scripts that
     may do undesired things with it.
+  * assistant: Get back in sync with XMPP remotes after network reconnection,
+    and on startup.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
