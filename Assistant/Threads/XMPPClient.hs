@@ -62,6 +62,11 @@ xmppClient urlrenderer d creds =
 	 - if it keeps failing, back off to wait 5 minutes before
 	 - trying it again. -}
 	retry client starttime = do
+		{- The buddy list starts empty each time
+		 - the client connects, so that stale info
+		 - is not retained. -}
+		liftAssistant $
+			updateBuddyList (const noBuddies) <<~ buddyList
 		e <- client
 		liftAssistant $ modifyDaemonStatus_ $ \s -> s
 			{ xmppClientID = Nothing }
@@ -83,11 +88,6 @@ xmppClient urlrenderer d creds =
 			modifyDaemonStatus_ $ \s -> s
 				{ xmppClientID = Just $ xmppJID creds }
 			debug ["connected", show selfjid]
-		{- The buddy list starts empty each time
-		 - the client connects, so that stale info
-		 - is not retained. -}
-		void $ inAssistant $
-			updateBuddyList (const noBuddies) <<~ buddyList
 
 		xmppThread $ receivenotifications selfjid
 		forever $ do
