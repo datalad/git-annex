@@ -52,9 +52,8 @@ instance GitAnnexTaggable Message where
 	extractGitAnnexTag = headMaybe . filter isGitAnnexTag . messagePayloads
 
 instance GitAnnexTaggable Presence where
-	-- always mark extended away and set presence priority to negative
 	insertGitAnnexTag p elt = p
-		{ presencePayloads = extendedAway : negativePriority : elt : presencePayloads p }
+		{ presencePayloads = negativePriority : elt : presencePayloads p }
 	extractGitAnnexTag = headMaybe . filter isGitAnnexTag . presencePayloads
 
 data GitAnnexTagInfo = GitAnnexTagInfo
@@ -204,10 +203,6 @@ silentMessage = (emptyMessage MessageChat)
 		, elementAttributes = []
 		, elementNodes = []
 		}
-
-{- Add to a presence to mark its client as extended away. -}
-extendedAway :: Element
-extendedAway = Element "show" [] [NodeContent $ ContentText "xa"]
 
 {- Add to a presence to give it a negative priority. -}
 negativePriority :: Element
