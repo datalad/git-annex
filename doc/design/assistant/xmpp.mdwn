@@ -14,6 +14,11 @@ who share a repository, that is stored in the [[cloud]].
   push notification use of XMPP, since unknown UUIDs will just be ignored.
   But XMPP pairing and the pushes over XMPP assume that anyone you're
   paired with is intending to sync to your repository.
+* Disconnect network, make change, stop assistant, reconnect network,
+  start assistant. Change is not propigated. Seems nothing handles
+  calling reconnectRemotes on startup. (If the change gets committed during
+  startup, it does get synced out, by other means.) This is probably not
+  xmpp specific really.
 
 ## design goals
 
