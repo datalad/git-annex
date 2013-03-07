@@ -25,6 +25,8 @@ import Git
 import qualified Git.Branch
 import Locations.UserConfig
 import qualified Types.Remote as Remote
+import qualified Remote as Remote
+import Remote.List
 import Utility.FileMode
 import Utility.Shell
 
@@ -53,7 +55,10 @@ makeXMPPGitRemote buddyname jid u = do
 	remote <- liftAnnex $ addRemote $
 		makeGitRemote buddyname $ gitXMPPLocation jid
 	liftAnnex $ storeUUID (remoteConfig (Remote.repo remote) "uuid") u
-	syncNewRemote remote
+	liftAnnex $ void remoteListRefresh
+	remote' <- liftAnnex $ fromMaybe (error "failed to add remote")
+		<$> Remote.byName (Just buddyname)
+	syncNewRemote remote'
 	return True
 
 {- Pushes over XMPP, communicating with a specific client.

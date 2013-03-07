@@ -29,6 +29,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     and on startup.
   * assistant: XMPP git pull and push requests are cached and sent when
     presence of a new client is detected.
+  * assistant: Fix syncing after XMPP pairing.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
