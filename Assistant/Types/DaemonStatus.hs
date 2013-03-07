@@ -58,7 +58,8 @@ data DaemonStatus = DaemonStatus
 	, alertNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when the syncRemotes change
 	, syncRemotesNotifier :: NotificationBroadcaster
-	-- When the XMPP client is in use, this will contain its JI.
+	-- When the XMPP client is connected, this will contain the XMPP
+	-- address.
 	, xmppClientID :: Maybe ClientID
 	}
 

@@ -47,8 +47,6 @@ restartableClient a = forever $ go =<< liftAnnex getXMPPCreds
   where
 	go Nothing = waitNetMessagerRestart
 	go (Just creds) = do
-		modifyDaemonStatus_ $ \s -> s
-			{ xmppClientID = Just $ xmppJID creds }
 		tid <- liftIO $ forkIO $ a creds
 		waitNetMessagerRestart
 		liftIO $ killThread tid
@@ -65,6 +63,8 @@ xmppClient urlrenderer d creds =
 	 - trying it again. -}
 	retry client starttime = do
 		e <- client
+		liftAssistant $ modifyDaemonStatus_ $ \s -> s
+			{ xmppClientID = Nothing }
 		now <- getCurrentTime
 		if diffUTCTime now starttime > 300
 			then do
@@ -79,7 +79,10 @@ xmppClient urlrenderer d creds =
 		selfjid <- bindJID jid
 		putStanza gitAnnexSignature
 
-		inAssistant $ debug ["connected", show selfjid]
+		inAssistant $ do
+			modifyDaemonStatus_ $ \s -> s
+				{ xmppClientID = Just $ xmppJID creds }
+			debug ["connected", show selfjid]
 		{- The buddy list starts empty each time
 		 - the client connects, so that stale info
 		 - is not retained. -}

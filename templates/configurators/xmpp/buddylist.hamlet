@@ -3,8 +3,11 @@
     <tbody>
     $if null buddies
       <tr>
-        <td> 
-          Nobody is currently available.
+        <td>
+          $if isNothing myjid
+            Not connected to the jabber server. Check your network connection ...
+          $else
+            Nobody is currently available.
     $else
       $forall (name, away, canpair, paired, buddyid) <- buddies
         <tr>
