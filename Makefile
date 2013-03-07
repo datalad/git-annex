@@ -53,7 +53,7 @@ install: build install-docs
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
 
-test: git-annex
+test: fast
 	./git-annex test
 
 # hothasktags chokes on some tempolate haskell etc, so ignore errors
