@@ -29,6 +29,7 @@ We are, approximately, here:
 ## not yet on the map:
 
 * [[partial_content]]
+* encrypted git remotes using [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt)
 * [[deltas]]
 * [[leftovers]]
 * [[other todo items|todo]]
