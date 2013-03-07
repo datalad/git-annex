@@ -250,12 +250,9 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
   where
 	matching loc r = repoIsUrl r && repoLocation r == loc
 
-whenXMPPRemote :: ClientID -> Assistant () -> Assistant ()
-whenXMPPRemote cid = unlessM (null <$> xmppRemotes cid)
-
 handlePushInitiation :: NetMessage -> Assistant ()
 handlePushInitiation (Pushing cid CanPush) =
-	whenXMPPRemote cid $ 
+	unlessM (null <$> xmppRemotes cid) $ 
 		sendNetMessage $ Pushing cid PushRequest
 handlePushInitiation (Pushing cid PushRequest) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
@@ -268,12 +265,14 @@ handlePushInitiation (Pushing cid PushRequest) =
 			<$> gitRepo
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
-		debug ["pushing to", show rs]
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
-		forM_ rs $ \r -> xmppPush cid $ taggedPush u selfjid branch r
-handlePushInitiation (Pushing cid StartingPush) =
-	whenXMPPRemote cid $
-		void $ xmppReceivePack cid
+		forM_ rs $ \r -> alertWhile (syncAlert [r]) $
+			xmppPush cid $ taggedPush u selfjid branch r
+handlePushInitiation (Pushing cid StartingPush) = do
+	rs <- xmppRemotes cid
+	unless (null rs) $
+		void $ alertWhile (syncAlert rs) $
+			xmppReceivePack cid
 handlePushInitiation _ = noop
 
 handleDeferred :: NetMessage -> Assistant ()
