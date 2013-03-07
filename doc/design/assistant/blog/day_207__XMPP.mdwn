@@ -1,0 +1,7 @@
+More XMPP fixes. The most important change is that it now stores important
+messages, like push requests, and (re)sends them when a buddy's client
+sends XMPP presence. This makes XMPP syncing much more robust, all the
+clients do not need to already be connected when messages are initially
+sent, but can come and go. Also fixed a bug preventing syncing from working
+immediately after XMPP pairing. XMPP seems to be working well now; I only
+know of one minor bug.
