@@ -35,7 +35,7 @@ import Data.Time.Clock
 
 {- Whether to include verbose protocol dump in debug output. -}
 protocolDebug :: Bool
-protocolDebug = True
+protocolDebug = False
 
 xmppClientThread :: UrlRenderer -> NamedThread
 xmppClientThread urlrenderer = namedThread "XMPPClient" $
@@ -97,10 +97,10 @@ xmppClient urlrenderer d creds =
 			inAssistant $ debug ["received:", show l]
 		mapM_ (handle selfjid) l
 
-	handle _ (PresenceMessage p) = do
-		
+	handle selfjid (PresenceMessage p) = do
 		void $ inAssistant $ 
 			updateBuddyList (updateBuddies p) <<~ buddyList
+		resendImportantMessages selfjid p
 	handle _ (GotNetMessage QueryPresence) = putStanza gitAnnexSignature
 	handle _ (GotNetMessage (NotifyPush us)) = void $ inAssistant $ pull us
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
@@ -114,6 +114,16 @@ xmppClient urlrenderer d creds =
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop
 
+	resendImportantMessages selfjid (Presence { presenceFrom = Just jid }) = do
+		let c = formatJID jid
+		(stored, sent) <- inAssistant $
+			checkImportantNetMessages (formatJID (baseJID jid), c)
+		forM_ (S.toList $ S.difference stored sent) $ \msg -> do
+			inAssistant $ debug ["sending to new client:", show c, show msg]
+			a <- inAssistant $ convertNetMsg (readdressNetMessage msg c) selfjid
+			a
+			inAssistant $ sentImportantNetMessage msg c
+	resendImportantMessages _ _ = noop
 
 data XMPPEvent
 	= GotNetMessage NetMessage
@@ -151,21 +161,27 @@ decodeStanza _ s = [Unknown s]
  - Chat messages must be directed to specific clients, not a base
  - account JID, due to git-annex clients using a negative presence priority.
  - PairingNotification messages are always directed at specific
- - clients, but Pushing messages are sometimes not, and need to be exploded.
+ - clients, but Pushing messages are sometimes not, and need to be exploded
+ - out to specific clients.
+ -
+ - Important messages, not directed at any specific client, 
+ - are cached to be sent later when additional clients connect.
  -}
 relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = do
 	msg <- waitNetMessage
 	when protocolDebug $
 		debug ["sending:", show msg]
+	handleImportant msg
 	convert msg
   where
-	convert (NotifyPush us) = return $ putStanza $ pushNotification us
-	convert QueryPresence = return $ putStanza presenceQuery
-	convert (PairingNotification stage c u) = withclient c $ \tojid -> do
-		changeBuddyPairing tojid True
-		return $ putStanza $ pairingNotification stage u tojid selfjid
-	convert (Pushing c pushstage) = withclient c $ \tojid -> do
+	handleImportant msg = case parseJID =<< isImportantNetMessage msg of
+		Just tojid
+			| tojid == baseJID tojid ->
+				storeImportantNetMessage msg (formatJID tojid) $
+					\c -> (baseJID <$> parseJID c) == Just tojid
+		_ -> noop
+	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid -> do
 		if tojid == baseJID tojid
 			then do
 				clients <- maybe [] (S.toList . buddyAssistants)
@@ -175,12 +191,29 @@ relayNetMessage selfjid = do
 				return $ forM_ (clients) $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
 			else return $ putStanza $ pushMessage pushstage tojid selfjid
+	convert msg = convertNetMsg msg selfjid
 
-	withclient c a = case parseJID c of
-		Nothing -> return noop
-		Just tojid
-			| tojid == selfjid -> return noop
-			| otherwise -> a tojid
+{- Converts a NetMessage to an XMPP action. -}
+convertNetMsg :: NetMessage -> JID -> Assistant (XMPP ())
+convertNetMsg msg selfjid = convert msg
+  where
+	convert (NotifyPush us) = return $ putStanza $ pushNotification us
+	convert QueryPresence = return $ putStanza presenceQuery
+	convert (PairingNotification stage c u) = withOtherClient selfjid c $ \tojid -> do
+		changeBuddyPairing tojid True
+		return $ putStanza $ pairingNotification stage u tojid selfjid
+	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid ->
+		return $ putStanza $  pushMessage pushstage tojid selfjid
+
+withOtherClient :: JID -> ClientID -> (JID -> Assistant (XMPP ())) -> (Assistant (XMPP ()))
+withOtherClient selfjid c a = case parseJID c of
+	Nothing -> return noop
+	Just tojid
+		| tojid == selfjid -> return noop
+		| otherwise -> a tojid
+
+withClient :: ClientID -> (JID -> XMPP ()) -> XMPP ()
+withClient c a = maybe noop a $ parseJID c
 
 {- Runs a XMPP action in a separate thread, using a session to allow it
  - to access the same XMPP client. -}

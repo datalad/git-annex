@@ -15,6 +15,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Data.ByteString (ByteString)
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 {- Messages that can be sent out of band by a network messager. -}
 data NetMessage 
@@ -46,6 +47,18 @@ data PushStage
 	-- sent when git receive-pack exits, with its exit code
 	| ReceivePackDone ExitCode
 	deriving (Show, Eq, Ord)
+
+{- NetMessages that are important (and small), and should be stored to be
+ - resent when new clients are seen. -}
+isImportantNetMessage :: NetMessage -> Maybe ClientID
+isImportantNetMessage (Pushing c CanPush) = Just c
+isImportantNetMessage (Pushing c PushRequest) = Just c
+isImportantNetMessage _ = Nothing
+
+readdressNetMessage :: NetMessage -> ClientID -> NetMessage
+readdressNetMessage (PairingNotification stage _ uuid) c = PairingNotification stage c uuid
+readdressNetMessage (Pushing _ stage) c = Pushing c stage
+readdressNetMessage m _ = m
 
 {- Things that initiate either side of a push, but do not actually send data. -}
 isPushInitiation :: PushStage -> Bool
@@ -81,6 +94,10 @@ getSide side m = m side
 data NetMessager = NetMessager
 	-- outgoing messages
 	{ netMessages :: TChan (NetMessage)
+	-- important messages for each client
+	, importantNetMessages :: TMVar (M.Map ClientID (S.Set NetMessage))
+	-- important messages that are believed to have been sent to a client
+	, sentImportantNetMessages :: TMVar (M.Map ClientID (S.Set NetMessage))
 	-- write to this to restart the net messager
 	, netMessagerRestart :: MSampleVar ()
 	-- only one side of a push can be running at a time
@@ -94,8 +111,9 @@ data NetMessager = NetMessager
 newNetMessager :: IO NetMessager
 newNetMessager = NetMessager
 	<$> atomically newTChan
+	<*> atomically (newTMVar M.empty)
+	<*> atomically (newTMVar M.empty)
 	<*> newEmptySV
 	<*> mkSideMap (newTMVar Nothing)
 	<*> mkSideMap newTChan
 	<*> mkSideMap (newTMVar S.empty)
-  where

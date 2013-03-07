@@ -14,10 +14,6 @@ who share a repository, that is stored in the [[cloud]].
   push notification use of XMPP, since unknown UUIDs will just be ignored.
   But XMPP pairing and the pushes over XMPP assume that anyone you're
   paired with is intending to sync to your repository.
-* At startup or network reconnect, git push messages are sent, often before
-  presence info has been gathered, so are not sent to any buddies.
-  Need to cache the last sent CanPush and PushRequest NetMessages for each
-  buddy, and when a new client is seen, resend.
 
 ## design goals
 

@@ -15,6 +15,7 @@ import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Control.Exception as E
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 sendNetMessage :: NetMessage -> Assistant ()
 sendNetMessage m = 
@@ -29,6 +30,42 @@ notifyNetMessagerRestart =
 
 waitNetMessagerRestart :: Assistant ()
 waitNetMessagerRestart = readSV <<~ (netMessagerRestart . netMessager)
+
+{- Store an important NetMessage for a client, and if the same message was
+ - already sent, remove it from sentImportantNetMessages. -}
+storeImportantNetMessage :: NetMessage -> ClientID -> (ClientID -> Bool) -> Assistant ()
+storeImportantNetMessage m client matchingclient = go <<~ netMessager
+  where
+	go nm = atomically $ do
+		q <- takeTMVar $ importantNetMessages nm
+		sent <- takeTMVar $ sentImportantNetMessages nm
+		putTMVar (importantNetMessages nm) $
+			M.alter (Just . maybe (S.singleton m) (S.insert m)) client q
+		putTMVar (sentImportantNetMessages nm) $
+			M.mapWithKey removematching sent
+	removematching someclient s
+		| matchingclient someclient = S.delete m s
+		| otherwise = s
+
+{- Indicates that an important NetMessage has been sent to a client. -}
+sentImportantNetMessage :: NetMessage -> ClientID -> Assistant ()
+sentImportantNetMessage m client = go <<~ (sentImportantNetMessages . netMessager)
+  where
+	go v = atomically $ do
+		sent <- takeTMVar v
+		putTMVar v $
+			M.alter (Just . maybe (S.singleton m) (S.insert m)) client sent
+
+{- Checks for important NetMessages that have been stored for a client, and
+ - sent to a client. Typically the same client for both, although 
+ - a modified or more specific client may need to be used. -}
+checkImportantNetMessages :: (ClientID, ClientID) -> Assistant (S.Set NetMessage, S.Set NetMessage)
+checkImportantNetMessages (storedclient, sentclient) = go <<~ netMessager
+  where
+	go nm = atomically $ do
+		stored <- M.lookup storedclient <$> (readTMVar $ importantNetMessages nm)
+		sent <- M.lookup sentclient <$> (readTMVar $ sentImportantNetMessages nm)
+		return (fromMaybe S.empty stored, fromMaybe S.empty sent)
 
 {- Runs an action that runs either the send or receive side of a push.
  -
