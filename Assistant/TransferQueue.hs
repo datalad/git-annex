@@ -122,13 +122,19 @@ enqueue reason schedule t info
 	| otherwise = go (\l -> l++[new])
   where
 	new = (t, info)
-	go modlist = do
-		q <- getAssistant transferQueue
-		liftIO $ atomically $ do
-			void $ modifyTVar' (queuesize q) succ
-			void $ modifyTVar' (queuelist q) modlist
+	go modlist = whenM (add modlist) $ do
 		debug [ "queued", describeTransfer t info, ": " ++ reason ]
 		notifyTransfer
+	add modlist = do
+		q <- getAssistant transferQueue
+		liftIO $ atomically $ do
+			l <- readTVar (queuelist q)
+			if (new `elem` l)
+				then do	
+					void $ modifyTVar' (queuesize q) succ
+					void $ modifyTVar' (queuelist q) modlist
+					return True
+				else return False
 
 {- Adds a transfer to the queue. -}
 queueTransfer :: Reason -> Schedule -> AssociatedFile -> Transfer -> Remote -> Assistant ()
