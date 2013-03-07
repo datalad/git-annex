@@ -57,8 +57,8 @@ introDisplay ident = do
 makeMiscRepositories :: Widget
 makeMiscRepositories = $(widgetFile "configurators/repositories/misc")
 
-makeCloudRepositories :: Widget
-makeCloudRepositories = $(widgetFile "configurators/repositories/cloud")
+makeCloudRepositories :: Bool -> Widget
+makeCloudRepositories onlyTransfer = $(widgetFile "configurators/repositories/cloud")
 
 {- Lists known repositories, followed by options to add more. -}
 getRepositoriesR :: Handler RepHtml

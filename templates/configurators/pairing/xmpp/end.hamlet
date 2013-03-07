@@ -30,4 +30,4 @@
   ^{cloudrepolist}
   <h2>
     Add a cloud repository
-  ^{makeCloudRepositories}
+  ^{makeCloudRepositories True}
