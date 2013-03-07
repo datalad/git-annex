@@ -115,3 +115,5 @@ I'm not 100% sure this sort of multiway synching is supposed to work, so maybe t
 
 This issue also made me wonder about how one would go about syncing multiple unrelated annexes via XMPP. Would you need a different gmail account for each? Maybe there is a trick similar to the email local+foo@ thing?
 
+> [[done]], turned out I left XMPP git push working,
+> but had not done all the stuff around it to get reliable syncing. Now have. --[[Joey]]
