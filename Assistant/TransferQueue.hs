@@ -129,7 +129,7 @@ enqueue reason schedule t info
 		q <- getAssistant transferQueue
 		liftIO $ atomically $ do
 			l <- readTVar (queuelist q)
-			if (new `elem` l)
+			if (new `notElem` l)
 				then do	
 					void $ modifyTVar' (queuesize q) succ
 					void $ modifyTVar' (queuelist q) modlist
