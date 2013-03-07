@@ -105,7 +105,7 @@ typeChanged' ps l repo = do
 	return (map (\f -> relPathDirToFile cwd $ top </> f) fs, cleanup)
   where
 	prefix = [Params "diff --name-only --diff-filter=T -z"]
-	suffix = Param "--" : map File l
+	suffix = Param "--" : (if null l then [File "."] else map File l)
 
 {- A item in conflict has two possible values.
  - Either can be Nothing, when that side deleted the file. -}
