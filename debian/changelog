@@ -33,6 +33,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * Bugfix: git annex add, when ran without any file or directory specified,
     should add files in the current directory, but not act on unlocked files
     elsewhere in the tree.
+  * assistant: Sync with all git remotes on startup.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

@@ -14,6 +14,7 @@ import Assistant.TransferQueue
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Drop
+import Assistant.Sync
 import Logs.Transfer
 import Logs.Location
 import Logs.Web (webUUID)
@@ -45,11 +46,14 @@ transferScannerThread = namedThread "TransferScanner" $ do
 			else do
 				mapM_ failedTransferScan rs
 				go scanned
-	{- All available remotes are scanned in full on startup,
-	 - for multiple reasons, including:
+	{- All git remotes are synced, and all available remotes
+	 - are scanned in full on startup, for multiple reasons, including:
 	 -
 	 - * This may be the first run, and there may be remotes
 	 -   already in place, that need to be synced.
+	 - * Changes may have been made last time we run, but remotes were
+	 -   not available to be synced with.
+	 - * Changes may have been made to remotes while we were down.
 	 - * We may have run before, and scanned a remote, but
 	 -   only been in a subdirectory of the git remote, and so
 	 -   not synced it all.
@@ -57,7 +61,9 @@ transferScannerThread = namedThread "TransferScanner" $ do
 	 -   and then the system (or us) crashed, and that info was
 	 -   lost.
 	 -}
-	startupScan = addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
+	startupScan = do
+		reconnectRemotes True =<< syncGitRemotes <$> getDaemonStatus
+		addScanRemotes True =<< syncDataRemotes <$> getDaemonStatus
 
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
