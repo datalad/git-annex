@@ -62,16 +62,10 @@ files with git.
 <table>
 <tr>
 <td width="50%" valign="top">
-<video controls
-src="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm" width="100%"></video><br>
-A <a href="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_with_git,_without_checking_their_contents_into_git.webm">15 minute introduction to git-annex</a>, presented by Richard Hartmann at Fosdem 2012.
+[[!inline raw=yes pages="video/Fosdem2012"]]
 </td>
 <td width="50%" valign="top">
-<video controls width="100%">
-<source type="video/mp4" src="http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4">
-<source type="video/ogg" src="http://mirror.linux.org.au/linux.conf.au/2013/ogv/gitannex.ogv">
-</video><br>
-A <a href="http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4">45 minute demo of git-annex and the assistant</a>), presented by Joey Hess at LCA 2013.
+[[!inline raw=yes pages="video/LCA2013"]]
 </td>
 </tr>
 </table>
