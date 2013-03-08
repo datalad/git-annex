@@ -62,7 +62,7 @@ files with git.
 <table>
 <tr>
 <td width="50%" valign="top">
-[[!inline raw=yes pages="videos/Fosdem2012"]]
+[[!inline raw=yes pages="videos/FOSDEM2012"]]
 </td>
 <td width="50%" valign="top">
 [[!inline raw=yes pages="videos/LCA2013"]]
