@@ -53,3 +53,16 @@ CentOS 6.3 (kernel 2.6.32)
 
 
 **Please provide any additional information below.**
+
+> Thanks for the command sequence, which I have tested here is ok with
+> a current version of git-annex (except for one cd you left out..).
+> 
+> You version of git-annex is quite old, and this
+> particular bug was fixed in version 3.20120721.
+> 
+> The bug is that it fails to correctly determine the git version at
+> compile time, and I think it thinks you have an old version of git
+> from before 1.7.7, which changed some behavior of `git check-attr`.
+> 
+> Upgrading git-annex should fix this, please let me know if not. [[done]]
+> --[[Joey]] 
