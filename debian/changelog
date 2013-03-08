@@ -34,6 +34,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     should add files in the current directory, but not act on unlocked files
     elsewhere in the tree.
   * assistant: Sync with all git remotes on startup.
+  * Switch from using regex-compat to regex-tdfa, as the C regex library
+    is rather buggy.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

@@ -13,7 +13,8 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 import System.Path.WildMatch
-import Text.Regex
+import Text.Regex.TDFA
+import Text.Regex.TDFA.String
 
 import Common.Annex
 import qualified Annex
@@ -83,12 +84,17 @@ limitExclude :: MkLimit
 limitExclude glob = Right $ const $ return . not . matchglob glob
 
 {- Could just use wildCheckCase, but this way the regex is only compiled
- - once. -}
+ - once. Also, we use regex-TDFA because it's less buggy in its support
+ - of non-unicode characters. -}
 matchglob :: String -> Annex.FileInfo -> Bool
 matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
-	isJust $ matchRegex cregex f
+	case cregex of
+		Right r -> case execute r f of
+			Right (Just _) -> True
+			_ -> False
+		Left _ -> error $ "failed to compile regex: " ++ regex
   where
-	cregex = mkRegex regex
+	cregex = compile defaultCompOpt defaultExecOpt regex
 	regex = '^':wildToRegex glob
 
 {- Adds a limit to skip files not believed to be present

@@ -19,7 +19,7 @@ quite a lot.
   * [DAV](http://hackage.haskell.org/package/DAV) (optional)
   * [SafeSemaphore](http://hackage.haskell.org/package/SafeSemaphore)
   * [UUID](http://hackage.haskell.org/package/uuid)
-  * [Glob](http://hackage.haskell.org/package/Glob)
+  * [regex-tdfa](http://hackage.haskell.org/package/regex-tdfa)
 * Optional haskell stuff, used by the [[assistant]] and its webapp (edit Makefile to disable)
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
