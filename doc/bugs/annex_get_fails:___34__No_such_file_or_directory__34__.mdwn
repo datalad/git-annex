@@ -1,4 +1,5 @@
 **What steps will reproduce the problem?**
+
 I did a basic git annex setup with two repositories talking to each other.  They are on the same macine, but I identified them via the hostname, because I intend to set up my production systems on two machines.  Since I am new to annex, I'll reproduce the full sequence of commands to create the repos and sync them.  *I* noticed the trouble at the last step, when `git annex get` failed.
 
 Here is the full sequence of commands:
@@ -37,12 +38,17 @@ Here is the full sequence of commands:
     git-annex: get: 1 failed
 
 **What is the expected output? What do you see instead?**
+
 I expected the file shared/135.mae to be copied from the remote repo to the local repo.  Instead, this command failed, and said that there was a missing file.  This file path is the one that the broken link points to, and it exists on the remote repo.
 
 **What version of git-annex are you using? On what operating system?**
+
 git version 1.7.9.6
+
 git-annex 3.20120523
+
 CentOS 6.3 (kernel 2.6.32)
+
 64bit Xeon processor
 
 
