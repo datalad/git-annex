@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 8"
+ date="2013-03-08T14:46:55Z"
+ content="""
+I've not seen this kind of strange behavior happen again so far.
+
+But I have got another example of a file which I added to git-annex via the assistant not having its symlink added to git.  Again, the content of the file is in git-annex and was even correctly transferred to a couple of remotes, but the symlink is still unstaged.
+
+I tried restarting the assistant to see if that would fix it but that didn't change anything.
+
+I imagine the symlink will be fixed during a daily scan, tomorrow maybe?  Is it problematic for the symlink not to be checked into git for a day?  Is this worth a bug report or is this really harmless behavior?
+
+"""]]
