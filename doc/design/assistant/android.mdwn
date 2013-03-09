@@ -6,6 +6,9 @@
 3. Get an easy to install Android app built. **done**
 4. Get the webapp working. Needs Template Haskell, or 
    switching to <http://www.yesodweb.com/blog/2012/10/yesod-pure>.
+5. Possibly, switch from running inside terminal app to real standalone app.
+   See <https://github.com/neurocyte/android-haskell-activity>
+   and <https://github.com/neurocyte/foreign-jni>.
 
 ### Android specific features
 
