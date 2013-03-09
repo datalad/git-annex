@@ -1,6 +1,6 @@
 Fixed the last XMPP bug I know of. Turns out it was not specific to XMPP at
 all; the assistant could forget to sync with any repository on startup
-under certian conditions.
+under certain conditions.
 
 Also fixed bugs in `git annex add` and in the glob matching, and some more.
 
