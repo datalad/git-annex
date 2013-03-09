@@ -28,7 +28,10 @@ Hypotheses:
   repeated hits to update the alerts? I added a settingsOnException handler
   that logs all exceptions, and ThreadKilled is happening several times.
   The only place in Warp that kills threads is due to a timeout installed
-  for that.
+  for that. 
+
+  **Verified** Bug filed upstream:  <https://github.com/yesodweb/wai/issues/146>
+
 * Something deep in git-annex, such as the inotidy code, could be
   preventing a web server thread from running. But then why do other
   tabs and other web browsers work while it's stuck?
