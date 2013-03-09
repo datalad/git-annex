@@ -26,3 +26,5 @@
     . &hearts;
     <p>
     Version: #{packageversion}
+    <br>
+    Build flags: #{unwords buildFlags}
