@@ -11,6 +11,7 @@ import Common.Annex
 import Command
 import qualified Build.SysConfig as SysConfig
 import Annex.Version
+import BuildFlags
 
 def :: [Command]
 def = [noCommit $ noRepo showPackageVersion $ dontCheck repoExists $
@@ -28,6 +29,7 @@ start = do
 		putStrLn $ "default repository version: " ++ defaultVersion
 		putStrLn $ "supported repository versions: " ++ vs supportedVersions
 		putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
+		putStrLn $ "build flags: " ++ unwords buildFlags
 	stop
   where
 	vs = join " "
