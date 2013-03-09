@@ -56,8 +56,13 @@ browserCommand = "xdg-open"
 runWebApp :: Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp app observer = do
 	sock <- localSocket
-	void $ forkIO $ runSettingsSocket defaultSettings sock app
+	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	observer =<< getSocketName sock
+
+webAppSettings = defaultSettings
+	-- disable buggy sloworis attack prevention code
+	{ settingsTimeout = 30 * 60
+	}
 
 {- Binds to a local socket, selecting any free port.
  -

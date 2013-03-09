@@ -36,6 +36,10 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * assistant: Sync with all git remotes on startup.
   * Switch from using regex-compat to regex-tdfa, as the C regex library
     is rather buggy.
+  * webapp: Work around bug in Warp's slowloris attack prevention code,
+    that caused regular browsers to stall when they reuse a connection
+    after leaving it idle for 30 seconds.
+    (See https://github.com/yesodweb/wai/issues/146)
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

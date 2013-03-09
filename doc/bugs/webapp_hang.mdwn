@@ -32,6 +32,8 @@ Hypotheses:
 
   **Verified** Bug filed upstream:  <https://github.com/yesodweb/wai/issues/146>
 
+  ** workaround in place **
+
 * Something deep in git-annex, such as the inotidy code, could be
   preventing a web server thread from running. But then why do other
   tabs and other web browsers work while it's stuck?
