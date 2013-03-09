@@ -46,8 +46,8 @@ xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 xmppNeeded = return ()
 #endif
 
-#ifdef WITH_XMPP
 getXMPPR :: Handler RepHtml
+#ifdef WITH_XMPP
 getXMPPR = xmppPage $ do
 	((result, form), enctype) <- lift $ do
 		oldcreds <- liftAnnex getXMPPCreds
