@@ -3,13 +3,6 @@ all the other git clones, at both the git level and the key/value level.
 
 ## bugs
 
-* Running the assistant in a fresh clone of a repository, it sometimes
-  skips downloading a file, while successfully downloading all the rest.
-  There does not seem to be an error message. This will sometimes reproduce
-  (in a fresh clone each time) several times in a row, but then stops happening,
-  which has prevented me from debugging it.
-  This could possibly have been caused by the bug fixed in 750c4ac6c282d14d19f79e0711f858367da145e4.
-
 ## TODO
 
 * Test MountWatcher on LXDE.
@@ -31,7 +24,8 @@ all the other git clones, at both the git level and the key/value level.
   bounced and the cached ssh connection not be usable.
 * Map the network of git repos, and use that map to calculate
   optimal transfers to keep the data in sync. Currently a naive flood fill
-  is done instead.
+  is done instead. Maybe use XMPP as a side channel to learn about the
+  network topology?
 * Find a more efficient way for the TransferScanner to find the transfers
   that need to be done to sync with a remote. Currently it walks the git
   working copy and checks each file. That probably needs to be done once,
@@ -247,3 +241,11 @@ redone to check it.
   Note that this solution won't cover use cases the other does. For example,
   connect a USB drive A; B syncs files from it, and then should pass them to C.
   If the files are not new, C won't immediatly request them from B.
+
+* Running the assistant in a fresh clone of a repository, it sometimes
+  skips downloading a file, while successfully downloading all the rest.
+  There does not seem to be an error message. This will sometimes reproduce
+  (in a fresh clone each time) several times in a row, but then stops happening,
+  which has prevented me from debugging it.
+  This could possibly have been caused by the bug fixed in 750c4ac6c282d14d19f79e0711f858367da145e4.
+  Provisionally closed.
