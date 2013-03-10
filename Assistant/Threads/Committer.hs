@@ -16,6 +16,7 @@ import Assistant.Commits
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.TransferQueue
+import Assistant.Drop
 import Logs.Transfer
 import Logs.Location
 import qualified Annex.Queue
@@ -64,6 +65,7 @@ commitThread = namedThread "Committer" $ do
 						void $ alertWhile commitAlert $
 							liftAnnex commitStaged
 						recordCommit
+						mapM_ checkChangeContent readychanges
 					else refill readychanges
 			else refill changes
   where
@@ -196,7 +198,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 					key <- liftAnnex $ do
 						showStart "add" $ keyFilename ks
 						Command.Add.ingest $ Just ks
-					done (finishedChange change) (keyFilename ks) key
+					maybe failedingest (done change $ keyFilename ks) key
 	  where
 		{- Add errors tend to be transient and will be automatically
 		 - dealt with, so don't pass to the alert code. -}
@@ -204,10 +206,11 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		ret _ = (True, Nothing)
 	add _ = return Nothing
 
-	done _ _ Nothing = do
+	failedingest = do
 		liftAnnex showEndFail
 		return Nothing
-	done change file (Just key) = do
+
+	done change file key = do
 		liftAnnex $ do
 			logStatus key InfoPresent
 			link <- ifM isDirect
@@ -217,8 +220,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
 				stageSymlink file =<< hashSymlink link
 				showEndOk
-		queueTransfers "newly added file" Next key (Just file) Upload
-		return $ Just change
+		return $ Just $ finishedChange change key
 
 	{- Check that the keysource's keyFilename still exists,
 	 - and is still a hard link to its contentLocation,
@@ -299,3 +301,22 @@ safeToAdd delayadd pending inprocess = do
 			tmpdir <- fromRepo gitAnnexTmpDir
 			liftIO $ Lsof.queryDir tmpdir
 		)
+
+{- After a Change is committed, queue any necessary transfers or drops
+ - of the content of the key.
+ -
+ - This is not done during the startup scan, because the expensive
+ - transfer scan does the same thing then.
+ -}
+checkChangeContent :: Change -> Assistant ()
+checkChangeContent (Change { changeInfo = i , changeFile = f }) =
+	case changeInfoKey i of
+		Nothing -> noop
+		Just k -> whenM (scanComplete <$> getDaemonStatus) $ do
+			present <- liftAnnex $ inAnnex k
+			if present
+				then queueTransfers "new file created" Next k (Just f) Upload
+				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
+			handleDrops "file renamed" present k (Just f) Nothing
+checkChangeContent _ = noop
+

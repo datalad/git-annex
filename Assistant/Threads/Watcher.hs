@@ -20,10 +20,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Changes
 import Assistant.Types.Changes
-import Assistant.TransferQueue
 import Assistant.Alert
-import Assistant.Drop
-import Logs.Transfer
 import Utility.DirWatcher
 import Utility.Types.DirWatcher
 import Utility.Lsof
@@ -178,6 +175,7 @@ onAdd file filestatus
  - really been modified. -}
 onAddDirect :: Handler
 onAddDirect file fs = do
+	debug ["add direct", file]
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
@@ -201,20 +199,16 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 			liftAnnex $ void $ addAssociatedFile key file
 		link <- liftAnnex $ calcGitLink file key
 		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
-			( do
-				s <- getDaemonStatus
-				checkcontent key s
-				ensurestaged (Just link) s
+			( ensurestaged (Just link) (Just key) =<< getDaemonStatus
 			, do
 				unless isdirect $ do
 					liftIO $ removeFile file
 					liftAnnex $ Backend.makeAnnexLink link file
-				checkcontent key =<< getDaemonStatus
-				addlink link
+				addlink link (Just key)
 			)
 	go Nothing = do -- other symlink
 		mlink <- liftIO (catchMaybeIO $ readSymbolicLink file)
-		ensurestaged mlink =<< getDaemonStatus
+		ensurestaged mlink Nothing =<< getDaemonStatus
 
 	{- This is often called on symlinks that are already
 	 - staged correctly. A symlink may have been deleted
@@ -227,16 +221,16 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 	 - (If the daemon has never ran before, avoid staging
 	 - links too.)
 	 -}
-	ensurestaged (Just link) daemonstatus
-		| scanComplete daemonstatus = addlink link
+	ensurestaged (Just link) mk daemonstatus
+		| scanComplete daemonstatus = addlink link mk
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
-			_ -> addlink link
-	ensurestaged Nothing _ = noChange
+			_ -> addlink link mk
+	ensurestaged Nothing _ _ = noChange
 
 	{- For speed, tries to reuse the existing blob for symlink target. -}
-	addlink link = do
+	addlink link mk = do
 		debug ["add symlink", file]
 		liftAnnex $ do
 			v <- catObjectDetails $ Ref $ ':':file
@@ -245,20 +239,7 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 					| s2w8 link == L.unpack currlink ->
 						stageSymlink file sha
 				_ -> stageSymlink file =<< hashSymlink link
-		madeChange file LinkChange
-
-	{- When a new link appears, or a link is changed, after the startup
-	 - scan, handle getting or dropping the key's content.
-	 - Also, moving or copying a link may caused it be be transferred
-	 - elsewhere, so check that too. -}
-	checkcontent key daemonstatus
-		| scanComplete daemonstatus = do
-			present <- liftAnnex $ inAnnex key
-			if present
-				then queueTransfers "new file created" Next key (Just file) Upload
-				else queueTransfers "new or renamed file wanted" Next key (Just file) Download
-			handleDrops "file renamed" present key (Just file) Nothing
-		| otherwise = noop
+		madeChange file $ LinkChange mk
 
 onDel :: Handler
 onDel file _ = do

@@ -14,7 +14,7 @@ import Utility.TSet
 import Data.Time.Clock
 
 {- Handlers call this when they made a change that needs to get committed. -}
-madeChange :: FilePath -> ChangeType -> Assistant (Maybe Change)
+madeChange :: FilePath -> ChangeInfo -> Assistant (Maybe Change)
 madeChange f t = Just <$> (Change <$> liftIO getCurrentTime <*> pure f <*> pure t)
 
 noChange :: Assistant (Maybe Change)

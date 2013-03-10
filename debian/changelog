@@ -8,7 +8,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * assistant: Avoid noise in logs from git commit about typechanged
     files in direct mode repositories.
   * assistant: Fix dropping content when a file is moved to an archive
-    directory.
+    directory, and getting contennt when a file is moved back out.
   * assistant: Set gc.auto=0 when creating repositories to prevent
     automatic commits from causing git-gc runs.
   * assistant: If gc.auto=0, run git-gc once a day, packing loose objects

@@ -8,12 +8,18 @@
 module Assistant.Types.Changes where
 
 import Types.KeySource
+import Types.Key
 import Utility.TSet
 
 import Data.Time.Clock
 
-data ChangeType = AddChange | LinkChange | RmChange | RmDirChange
+data ChangeInfo = AddChange Key | LinkChange (Maybe Key) | RmChange | RmDirChange
 	deriving (Show, Eq)
+
+changeInfoKey :: ChangeInfo -> Maybe Key
+changeInfoKey (AddChange k) = Just k
+changeInfoKey (LinkChange (Just k)) = Just k
+changeInfoKey _ = Nothing
 
 type ChangeChan = TSet Change
 
@@ -21,7 +27,7 @@ data Change
 	= Change 
 		{ changeTime :: UTCTime
 		, changeFile :: FilePath
-		, changeType :: ChangeType
+		, changeInfo :: ChangeInfo
 		}
 	| PendingAddChange
 		{ changeTime ::UTCTime
@@ -44,11 +50,10 @@ isInProcessAddChange :: Change -> Bool
 isInProcessAddChange (InProcessAddChange {}) = True
 isInProcessAddChange _ = False
 
-finishedChange :: Change -> Change
-finishedChange c@(InProcessAddChange { keySource = ks }) = Change
+finishedChange :: Change -> Key -> Change
+finishedChange c@(InProcessAddChange { keySource = ks }) k = Change
 	{ changeTime = changeTime c
 	, changeFile = keyFilename ks
-	, changeType = AddChange
+	, changeInfo = AddChange k
 	}
-finishedChange c = c
-
+finishedChange c _ = c
