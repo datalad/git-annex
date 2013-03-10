@@ -38,12 +38,21 @@ pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	commits <- getCommits
 	-- Now see if now's a good time to push.
 	if shouldPush commits
-		then void $ pushToRemotes True
-			=<< filter (not . Remote.readonly) . syncGitRemotes
-				<$> getDaemonStatus
+		then void $ pushToRemotes True =<< pushTargets
 		else do
 			debug ["delaying push of", show (length commits), "commits"]
 			refillCommits commits
+
+{- We want to avoid pushing to remotes that are marked readonly.
+ -
+ - Also, avoid pushing to local remotes we can easily tell are not available,
+ - to avoid ugly messages when a removable drive is not attached.
+ -}
+pushTargets :: Assistant [Remote]
+pushTargets = liftIO . filterM available =<< candidates <$> getDaemonStatus
+  where
+	candidates = filter (not . Remote.readonly) . syncGitRemotes
+	available = maybe (return True) doesDirectoryExist . Remote.localpath
 
 {- Decide if now is a good time to push to remotes.
  -
