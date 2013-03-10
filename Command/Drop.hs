@@ -89,10 +89,8 @@ cleanupLocal key = do
 
 cleanupRemote :: Key -> Remote -> Bool -> CommandCleanup
 cleanupRemote key remote ok = do
-	-- better safe than sorry: assume the remote dropped the key
-	-- even if it seemed to fail; the failure could have occurred
-	-- after it really dropped it
-	Remote.logStatus remote key InfoMissing
+	when ok $
+		Remote.logStatus remote key InfoMissing
 	return ok
 
 {- Checks specified remotes to verify that enough copies of a key exist to

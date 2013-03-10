@@ -401,10 +401,8 @@ badContentDirect file key = do
 badContentRemote :: Remote -> Key -> Annex String
 badContentRemote remote key = do
 	ok <- Remote.removeKey remote key
-	-- better safe than sorry: assume the remote dropped the key
-	-- even if it seemed to fail; the failure could have occurred
-	-- after it really dropped it
-	Remote.logStatus remote key InfoMissing
+	when ok $
+		Remote.logStatus remote key InfoMissing
 	return $ (if ok then "dropped from " else "failed to drop from ")
 		++ Remote.name remote
 
