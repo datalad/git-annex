@@ -4,7 +4,7 @@ all=git-annex $(mans) docs
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX=/usr
-CABAL=runhaskell Setup.hs
+CABAL?=runhaskell Setup.hs
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
