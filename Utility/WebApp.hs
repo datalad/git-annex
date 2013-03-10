@@ -140,9 +140,17 @@ webAppSessionBackend _ = do
 		Left e -> error $ "failed to generate random key: " ++ show e
 		Right (s, _) -> case CS.initKey s of
 			Left e -> error $ "failed to initialize key: " ++ show e
-			Right key -> return $ Just $
-
-				Yesod.clientSessionBackend key 120
+			Right key -> use key
+  where
+	timeout = 120 * 60 -- 120 minutes
+	use key =
+#if MIN_VERSION_yesod(1,1,7)
+		Just . Yesod.clientSessionBackend2 key . fst
+			<$> Yesod.clientSessionDateCacher timeout
+#else
+		return $ Just $
+			Yesod.clientSessionBackend key timeout
+#endif
 
 {- Generates a random sha512 string, suitable to be used for an
  - authentication secret. -}
