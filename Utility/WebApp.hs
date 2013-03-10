@@ -59,6 +59,7 @@ runWebApp app observer = do
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	observer =<< getSocketName sock
 
+webAppSettings :: Settings
 webAppSettings = defaultSettings
 	-- disable buggy sloworis attack prevention code
 	{ settingsTimeout = 30 * 60
@@ -140,6 +141,7 @@ webAppSessionBackend _ = do
 		Right (s, _) -> case CS.initKey s of
 			Left e -> error $ "failed to initialize key: " ++ show e
 			Right key -> return $ Just $
+
 				Yesod.clientSessionBackend key 120
 
 {- Generates a random sha512 string, suitable to be used for an

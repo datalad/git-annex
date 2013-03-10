@@ -7,12 +7,6 @@
 
 {-# LANGUAGE ScopedTypeVariables, CPP #-}
 
-#if defined VERSION_http_conduit
-#if ! MIN_VERSION_http_conduit(1,9,0)
-#define WITH_OLD_HTTP_CONDUIT
-#endif
-#endif
-
 module Remote.WebDAV (remote, davCreds, setCredsEnv) where
 
 import Network.Protocol.HTTP.DAV
@@ -234,7 +228,7 @@ davUrlExists :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
 davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
   where
 	decode (Right _) = Right True
-#ifdef WITH_OLD_HTTP_CONDUIT
+#if ! MIN_VERSION_http_conduit(1,9,0)
 	decode (Left (Left (StatusCodeException status _)))
 #else
 	decode (Left (Left (StatusCodeException status _ _)))
@@ -285,7 +279,7 @@ catchHttp a = (Right <$> a) `E.catches`
 type EitherException = Either HttpException E.IOException
 
 showEitherException :: EitherException -> String
-#ifdef WITH_OLD_HTTP_CONDUIT
+#if ! MIN_VERSION_http_conduit(1,9,0)
 showEitherException (Left (StatusCodeException status _)) =
 #else
 showEitherException (Left (StatusCodeException status _ _)) =

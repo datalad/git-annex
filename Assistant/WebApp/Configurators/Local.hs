@@ -7,12 +7,6 @@
 
 {-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
-#if defined VERSION_yesod_form
-#if ! MIN_VERSION_yesod_form(1,2,0)
-#define WITH_OLD_YESOD
-#endif
-#endif
-
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
@@ -52,15 +46,13 @@ data RepositoryPath = RepositoryPath Text
  - to use as a repository. -}
 repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
 repositoryPathField autofocus = Field
-#ifdef WITH_OLD_YESOD
+#if ! MIN_VERSION_yesod_form(1,2,0)
 	{ fieldParse = parse
 #else
 	{ fieldParse = \l _ -> parse l
-#endif
-	, fieldView = view
-#ifndef WITH_OLD_YESOD
 	, fieldEnctype = UrlEncoded
 #endif
+	, fieldView = view
 	}
   where
 	view idAttr nameAttr attrs val isReq =
