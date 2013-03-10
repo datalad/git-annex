@@ -355,7 +355,7 @@ copyToRemote r key file p
 		u <- getUUID
 		-- run copy from perspective of remote
 		liftIO $ onLocal (repo r) $ ifM (Annex.Content.inAnnex key)
-			( return False
+			( return True
 			, do
 				ensureInitialized
 				download u key file noRetry $
