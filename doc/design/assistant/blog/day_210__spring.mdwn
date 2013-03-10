@@ -1,0 +1,15 @@
+Trying to record screencasts demoing the assistant is really helping me
+see things that need to be fixed.
+
+Got the version of the haskell TLS library in Debian fixed, backporting
+some changes to fix a botched security fix that made it reject all
+certificates. So WebDAV special remotes will work again on the next release.
+
+Fixed some more problems around content being dropped when files are
+moved to archive directories, and gotten again when files are
+moved out.
+
+Fixed some problems around USB drives. One was a real jaw-dropping
+bug: "git annex drop --from usbdrive" when the drive was not
+connected still updated the location log to indicate it did not have
+the file anymore! (Thank goodness for fsck..)
