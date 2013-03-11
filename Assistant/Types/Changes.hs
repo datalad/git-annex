@@ -24,15 +24,18 @@ changeInfoKey _ = Nothing
 
 type ChangeChan = TSet Change
 
+newChangeChan :: IO ChangeChan
+newChangeChan = atomically newTSet
+
 data Change
 	= Change 
 		{ changeTime :: UTCTime
-		, changeFile :: FilePath
+		, _changeFile :: FilePath
 		, changeInfo :: ChangeInfo
 		}
 	| PendingAddChange
 		{ changeTime ::UTCTime
-		, changeFile :: FilePath
+		, _changeFile :: FilePath
 		}
 	| InProcessAddChange
 		{ changeTime ::UTCTime
@@ -40,8 +43,10 @@ data Change
 		}
 	deriving (Show)
 
-newChangeChan :: IO ChangeChan
-newChangeChan = atomically newTSet
+changeFile :: Change -> FilePath
+changeFile (Change _ f _) = f
+changeFile (PendingAddChange _ f) = f
+changeFile (InProcessAddChange _ ks) = keyFilename ks
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True
@@ -54,7 +59,7 @@ isInProcessAddChange _ = False
 finishedChange :: Change -> Key -> Change
 finishedChange c@(InProcessAddChange { keySource = ks }) k = Change
 	{ changeTime = changeTime c
-	, changeFile = keyFilename ks
+	, _changeFile = keyFilename ks
 	, changeInfo = AddChange k
 	}
 finishedChange c _ = c

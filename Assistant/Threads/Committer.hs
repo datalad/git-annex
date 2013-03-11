@@ -390,7 +390,7 @@ safeToAdd delayadd pending inprocess = do
  - transfer scan does the same thing then.
  -}
 checkChangeContent :: Change -> Assistant ()
-checkChangeContent (Change { changeInfo = i , changeFile = f }) =
+checkChangeContent change@(Change { changeInfo = i }) =
 	case changeInfoKey i of
 		Nothing -> noop
 		Just k -> whenM (scanComplete <$> getDaemonStatus) $ do
@@ -399,5 +399,6 @@ checkChangeContent (Change { changeInfo = i , changeFile = f }) =
 				then queueTransfers "new file created" Next k (Just f) Upload
 				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
 			handleDrops "file renamed" present k (Just f) Nothing
+  where
+	f = changeFile change
 checkChangeContent _ = noop
-
