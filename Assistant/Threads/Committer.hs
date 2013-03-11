@@ -80,13 +80,20 @@ waitChangeTime a = runEvery (Seconds 1) <~> do
 	changes <- getChanges
 	-- See if now's a good time to commit.
 	now <- liftIO getCurrentTime
+	debug ["got", show changes]
 	case (shouldCommit now changes, possiblyrename changes) of
 		(True, False) -> a (changes, now)
 		(True, True) -> do
-			-- Wait for other, related changes to arrive.
-			liftIO $ humanImperceptibleDelay
-			-- Don't block, but are there any?
+			{- Wait for other, related changes to arrive.
+			 - If there are multiple RmChanges, this is
+			 - probably a directory rename, so wait a full
+			 - second to get all the Changes involved. -}
+			liftIO $ if length (filter isRmChange changes) > 1
+				then threadDelaySeconds $ Seconds 1
+				else humanImperceptibleDelay
+			-- Don't block, but are there any new changes?
 			morechanges <- getAnyChanges
+			debug ["got more", show morechanges]
 			let allchanges = changes++morechanges
 			a (allchanges, now)
 		_ -> refill changes
