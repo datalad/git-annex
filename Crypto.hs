@@ -23,6 +23,8 @@ module Crypto (
 	readBytes,
 	encrypt,
 	decrypt,	
+	GpgOpts(..),
+	getGpgOpts,
 
 	prop_hmacWithCipher_sane
 ) where
@@ -34,6 +36,7 @@ import Control.Applicative
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg
+import Utility.Gpg.Types
 import Types.Key
 import Types.Crypto
 
@@ -131,10 +134,12 @@ feedBytes = flip L.hPut
 readBytes :: (L.ByteString -> IO a) -> Reader a
 readBytes a h = L.hGetContents h >>= a
 
-{- Runs a Feeder action, that generates content that is encrypted with the
- - Cipher, and read by the Reader action. -}
-encrypt :: Cipher -> Feeder -> Reader a -> IO a
-encrypt = Gpg.feedRead [Params "--symmetric --force-mdc"] . cipherPassphrase
+{- Runs a Feeder action, that generates content that is symmetrically encrypted
+ - with the Cipher using the given GnuPG options, and then read by the Reader
+ - action. -}
+encrypt :: GpgOpts -> Cipher -> Feeder -> Reader a -> IO a
+encrypt opts = Gpg.feedRead ( Params "--symmetric --force-mdc" : toParams opts )
+		. cipherPassphrase
 
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher, and read by the Reader action. -}

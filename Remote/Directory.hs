@@ -38,7 +38,7 @@ gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunksize = chunkSize c
 	return $ encryptableRemote c
-		(storeEncrypted dir chunksize)
+		(storeEncrypted dir (getGpgOpts gc) chunksize)
 		(retrieveEncrypted dir chunksize)
 		Remote {
 			uuid = u,
@@ -124,11 +124,11 @@ store d chunksize k _f p = sendAnnex k (void $ remove d k) $ \src ->
 					storeSplit meterupdate chunksize dests
 						=<< L.readFile src
 
-storeEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted d chunksize (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src -> 
+storeEncrypted :: FilePath -> GpgOpts -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted d gpgOpts chunksize (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src ->
 	metered (Just p) k $ \meterupdate ->
 		storeHelper d chunksize enck $ \dests ->
-			encrypt cipher (feedFile src) $ readBytes $ \b ->
+			encrypt gpgOpts cipher (feedFile src) $ readBytes $ \b ->
 				case chunksize of
 					Nothing -> do
 						let dest = Prelude.head dests

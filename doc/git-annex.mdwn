@@ -904,10 +904,19 @@ Here are all the supported configuration settings.
   For example, to limit the bandwidth to 100Kbyte/s, set it to "--bwlimit 100k"
   (There is no corresponding option for bup join.)
 
-* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`
+* `remote.<name>.annex-gnupg-options`
 
-  Default ssh, rsync, wget/curl, and bup options to use if a remote does not
-  have specific options.
+  Options to pass to GnuPG for symmetric encryption. For instance, to
+  use the AES cipher with a 256 bits key and disable compression, set it
+  to "--cipher-algo AES256 --compress-algo none". (These options take
+  precedence over the default GnuPG configuration, which is otherwise
+  used.)
+
+* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`,
+  `annex.gnupg-options`
+
+  Default ssh, rsync, wget/curl, bup, and GnuPG options to use if a
+  remote does not have specific options.
 
 * `annex.web-options`
 

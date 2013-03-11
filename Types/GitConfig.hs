@@ -88,6 +88,7 @@ data RemoteGitConfig = RemoteGitConfig
 	-- these settings are specific to particular types of remotes
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
+	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
 	, remoteAnnexBupSplitOptions :: [String]
@@ -107,6 +108,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
+	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 	, remoteAnnexBupRepo = getmaybe "buprepo"
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"

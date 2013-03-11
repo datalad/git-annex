@@ -43,7 +43,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ encryptableRemote c
-		(storeEncrypted o)
+		(storeEncrypted o $ getGpgOpts gc)
 		(retrieveEncrypted o)
 		Remote
 			{ uuid = u
@@ -104,10 +104,10 @@ rsyncUrls o k = map use annexHashes
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False
 
-storeEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted o (cipher, enck) k p = withTmp enck $ \tmp ->
+storeEncrypted :: RsyncOpts -> GpgOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted o gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove o enck) $ \src -> do
-		liftIO $ encrypt cipher (feedFile src) $
+		liftIO $ encrypt gpgOpts cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		rsyncSend o p enck True tmp
 

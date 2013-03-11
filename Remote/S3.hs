@@ -122,7 +122,7 @@ storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) ->
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> sendAnnex k (void $ remove r enck) $ \src -> do
-		liftIO $ encrypt cipher (feedFile src) $
+		liftIO $ encrypt (getGpgOpts r) cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		res <- storeHelper (conn, bucket) r enck p tmp
 		s3Bool res

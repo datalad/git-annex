@@ -130,7 +130,7 @@ storeEncrypted r buprepo (cipher, enck) k _p =
 	sendAnnex k (rollback enck buprepo) $ \src -> do
 		params <- bupSplitParams r buprepo enck []
 		liftIO $ catchBoolIO $
-			encrypt cipher (feedFile src) $ \h ->
+			encrypt (getGpgOpts r) cipher (feedFile src) $ \h ->
 				pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
