@@ -12,7 +12,11 @@ import System.Posix.Types
 import Utility.QuickCheck
 
 data InodeCache = InodeCache FileID FileOffset EpochTime
-	deriving (Eq, Show)
+	deriving (Show)
+
+compareStrong :: InodeCache -> InodeCache -> Bool
+compareStrong (InodeCache inode1 size1 mtime1) (InodeCache inode2 size2 mtime2) =
+	inode1 == inode2 && size1 == size2 && mtime1 == mtime2
 
 {- Weak comparison of the inode caches, comparing the size and mtime, but
  - not the actual inode.  Useful when inodes have changed, perhaps
@@ -54,4 +58,6 @@ instance Arbitrary InodeCache where
 		<*> arbitrary
 
 prop_read_show_inodecache :: InodeCache -> Bool
-prop_read_show_inodecache c = readInodeCache (showInodeCache c) == Just c
+prop_read_show_inodecache c = case readInodeCache (showInodeCache c) of
+	Nothing -> False
+	Just c' -> compareStrong c c'

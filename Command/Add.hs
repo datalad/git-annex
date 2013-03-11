@@ -109,11 +109,10 @@ ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
 	cache <- liftIO $ genInodeCache $ contentLocation source
-	case inodeCache source of
-		Nothing -> go k cache
-		Just c
-			| (Just c == cache) -> go k cache
-			| otherwise -> failure
+	case (cache, inodeCache source) of
+		(_, Nothing) -> go k cache
+		(Just newc, Just c) | compareStrong c newc -> go k cache
+		_ -> failure
   where
 	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
 

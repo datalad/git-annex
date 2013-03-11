@@ -13,6 +13,7 @@ module Annex.Content.Direct (
 	recordedInodeCache,
 	updateInodeCache,
 	writeInodeCache,
+	compareInodeCaches,
 	sameInodeCache,
 	sameFileStatus,
 	removeInodeCache,
@@ -146,7 +147,7 @@ sameFileStatus key status = do
 {- If the inodes have changed, only the size and mtime are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
 compareInodeCaches x y
-	| x == y = return True
+	| x `compareStrong` y = return True
 	| otherwise = ifM inodesChanged
 		( return $ compareWeak x y
 		, return False
@@ -167,7 +168,7 @@ inodesChanged = maybe calc return =<< Annex.getState Annex.inodeschanged
 			=<< fromRepo gitAnnexInodeSentinal
 		scached <- readInodeSentinalFile
 		let changed = case (scache, scached) of
-			(Just c1, Just c2) -> c1 /= c2
+			(Just c1, Just c2) -> not $ compareStrong c1 c2
 			_ -> True
 		Annex.changeState $ \s -> s { Annex.inodeschanged = Just changed }
 		return changed

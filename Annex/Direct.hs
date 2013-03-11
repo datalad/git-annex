@@ -51,8 +51,10 @@ stageDirect = do
 				 - modified, so compare the cache to see if
 				 - it really was. -}
 				oldcache <- recordedInodeCache key
-				when (oldcache /= Just cache) $
-					modifiedannexed file key cache
+				case oldcache of
+					Nothing -> modifiedannexed file key cache
+					Just c -> unlessM (compareInodeCaches c cache) $
+						modifiedannexed file key cache
 			(Just key, Nothing, _) -> deletedannexed file key
 			(Nothing, Nothing, _) -> deletegit file
 			(_, Just _, _) -> addgit file
