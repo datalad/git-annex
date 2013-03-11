@@ -18,6 +18,7 @@ build: $(all)
 fast: dist/caballog
 	@$$(grep 'ghc --make' dist/caballog | head -n 1)
 	@ln -sf dist/build/git-annex/git-annex git-annex
+	@$(MAKE) tags &
 
 dist/caballog: git-annex.cabal
 	$(CABAL) configure -f"-Production" -O0
