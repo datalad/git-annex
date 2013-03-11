@@ -17,3 +17,5 @@ Ideally, it would look similar to this. And yes, I put "put" in there ;)
     annex %
 
 Datetime could be ISO's YYYY-MM-DDThh:mm:ss or, personal preference, YYYY-MM-DD--hh-mm-ss. I prefer the latter as it's DNS-, tag- and filename-safe which is why I am using it for everything. In a perfect world, ISO would standardize YYYY-MM-DD-T-hh-mm-ss-Z[-SSSSSSSS][--$timezone], but meh.
+
+[[done]]

@@ -24,3 +24,5 @@ haven't learned haskell yet).
 >> directory to rsync is just a matter of changing ``type`` from ``directory``
 >> to ``rsync`` in ``.git-annex/remote.log`` and replacing the directory info
 >> with ``annex-rsyncurl = <host>:<dir>`` in ``.git/config``. --[[chrysn]]
+
+[[done]]

@@ -14,3 +14,4 @@ Some suggestions for changes to command options:
       * "-f" was removed in v0.20110417
       * since it forces unsafe operations, should be capitalized to reduce chance of accidental usage.
 
+[[done]], see comments

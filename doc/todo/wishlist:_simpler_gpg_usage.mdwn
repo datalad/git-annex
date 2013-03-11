@@ -8,3 +8,5 @@ What I'm trying to figure out is if I can generate a no-passphrase gpg key and c
 I think I can generate a no-passphrase key, but then I still have to manually copy it around to each machine.
 
 I'm not a huge gpg user so part of this is me wanting to avoid having to manage and keeping track of the keys.  This would probably be a non-issue if I used gpg on more machines and was more comfortable with it.
+
+[[done]]

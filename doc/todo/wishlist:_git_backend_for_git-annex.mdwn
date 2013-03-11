@@ -5,3 +5,5 @@ Use case: On my laptop, I might not have enough disk space to store everything. 
 Wish: ...why not use git as a version backend? That way, I could just push all my stuff to the central instance(s) and have the best of both worlds. Depending on what backend is used in the local repos, it might make sense to define a list of supported client backends with pre-computed keys.
 
 -- RichiH
+
+[[done]] (bup)
