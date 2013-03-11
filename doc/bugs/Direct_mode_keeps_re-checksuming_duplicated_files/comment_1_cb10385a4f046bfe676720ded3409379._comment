@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-11T06:31:09Z"
+ content="""
+It seems that, to fully fix this, direct mode will need to be changed to store multiple inode caches for each key.
+
+Since the files have the same content, but different inodes and/or mtimes, at least one of them is going to appear changed to sync each time.
+
+What currently happens is that the first is re-added, and so its inode cache gets stored, and then that means the second's inode cache no longer matches, and it's re-added, and its inode cache gets stored. Putting the inode cache right back in position to force re-adding the first again..
+
+Storing multiple inode caches appears easy enough, but I have not yet worked out exactly how to clear out old inode caches.
+"""]]
