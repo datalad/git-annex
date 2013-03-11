@@ -1,6 +1,6 @@
 Talks and screencasts about git-annex.
 
 These videos are also available in a public git-annex repository
-`git clone git://git.kitenet.net/downloads`
+`git clone http://downloads.kitenet.net/.git/`
 
 [[!inline pages="./videos/* and !./news/*/* and !*/Discussion" show="5"]]
