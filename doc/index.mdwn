@@ -69,7 +69,7 @@ Recent [[news]]:
 
 [[Dev blog|design/assistant/blog]]:
 <blockquote>
-[[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=3 feeds=no]]
+[[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=5 feeds=no]]
 </blockquote>
 </td>
 
@@ -81,7 +81,7 @@ Recent [[videos]]:
 
 Recent [[forum posts|forum]]:
 <blockquote>
-[[!inline pages="forum/* and !*/Discussion" archive=yes show=3 feeds=no]]
+[[!inline pages="forum/* and !*/Discussion" archive=yes show=5 feeds=no]]
 </blockquote>
 </td>
 
