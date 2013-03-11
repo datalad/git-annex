@@ -1,0 +1,15 @@
+To get started with the git-annex assistant, just pick it from
+your system's list of applications.
+
+[[!img assistant/menu.png]]
+[[!img assistant/osx-app.png]]
+
+It'll prompt you to set up a folder:
+
+[[!img assistant/makerepo.png]]
+
+Then any changes you make to its folder will automatically be committed to
+git, and synced to repositories on other computers. You can use the
+interface to add repositories and control the git-annex assistant.
+
+[[!img assistant/running.png]]

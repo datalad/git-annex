@@ -11,26 +11,13 @@ The git-annex assistant comes as part of git-annex, starting with version
 Note that the git-annex assistant is still beta quality code. See
 the [[release_notes]] for known infelicities and upgrade instructions.
 
-## quick start
+## intro screencast
 
-To get started with the git-annex assistant, just pick it from
-your system's list of applications.
-
-[[!img assistant/menu.png]]
-[[!img assistant/osx-app.png]]
-
-It'll prompt you to set up a folder:
-
-[[!img assistant/makerepo.png]]
-
-Then any changes you make to its folder will automatically be committed to
-git, and synced to repositories on other computers. You can use the
-interface to add repositories and control the git-annex assistant.
-
-[[!img assistant/running.png]]
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_introduction]]
 
 ## documentation
 
+* [[Basic usage|quickstart]]
 * Want to make two nearby computers share the same synchronised folder?
   Follow the [[pairing_walkthrough]].
 * Want to share a synchronised folder with a friend?
