@@ -1,5 +1,6 @@
 ### other stuff
 
+* [[testimonials]]
 * [[what git annex is not|not]]
 * [[related_software]]
 * [[sitemap]]
