@@ -59,7 +59,7 @@ files with git.
 
 ## talks
 
-<table>
+<table width="100%">
 <tr>
 <td width="50%" valign="top">
 [[!inline raw=yes pages="videos/FOSDEM2012"]]
