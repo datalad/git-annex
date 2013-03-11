@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-11T19:45:34Z"
+ content="""
+That's done by the \"Remote server\" option on the Repositories page.
+
+You need to have git-annex (any old version will do) installed on the server for this to work.
+
+Of course, a regular git remote will do as well, although the assistant does not set this up. You could even use github for that remote, or a similar service; any remote added with `git remote add` will be used by the assistant.
+"""]]
