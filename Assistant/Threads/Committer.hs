@@ -32,11 +32,15 @@ import Config
 import Annex.Exception
 import Annex.Content
 import Annex.Link
+import Annex.CatFile
 import qualified Annex
+import Utility.InodeCache
+import Annex.Content.Direct
 
 import Data.Time.Clock
 import Data.Tuple.Utils
 import qualified Data.Set as S
+import qualified Data.Map as M
 import Data.Either
 import Control.Concurrent
 
@@ -90,8 +94,12 @@ waitChangeTime a = runEvery (Seconds 1) <~> do
 	{- Did we perhaps only get one of the AddChange and RmChange pair
 	 - that make up a rename? -}
 	lonelychange [(PendingAddChange _ _)] = True
-	lonelychange [(Change { changeInfo = i })] | i == RmChange = True
+	lonelychange [c] | isRmChange c = True
 	lonelychange _ = False
+
+isRmChange :: Change -> Bool
+isRmChange (Change { changeInfo = i }) | i == RmChange = True
+isRmChange _ = False
 
 {- An amount of time that is hopefully imperceptably short for humans,
  - while long enough for a computer to get some work done. 
@@ -200,7 +208,9 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		refillChanges postponed
 
 	returnWhen (null toadd) $ do
-		added <- catMaybes <$> forM toadd add
+		added <- catMaybes <$> if direct
+			then adddirect toadd
+			else forM toadd add
 		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
@@ -237,6 +247,45 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		ret (Just j@(Just _)) = (True, j)
 		ret _ = (True, Nothing)
 	add _ = return Nothing
+
+	{- In direct mode, avoid overhead of re-injesting a renamed
+	 - file, by examining the other Changes to see if a removed
+	 - file has the same InodeCache as the new file. If so,
+	 - we can just update bookkeeping, and stage the file in git.
+	 -}
+	adddirect :: [Change] -> Assistant [Maybe Change]
+	adddirect toadd = do
+		ct <- liftAnnex compareInodeCachesWith
+		m <- liftAnnex $ removedKeysMap ct cs
+		if M.null m
+			then forM toadd add
+			else forM toadd $ \c -> do
+				mcache <- liftIO $ genInodeCache $ changeFile c
+				case mcache of
+					Nothing -> add c
+					Just cache ->
+						case M.lookup (inodeCacheToKey ct cache) m of
+							Nothing -> add c
+							Just k -> fastadd c k cache
+
+	fastadd :: Change -> Key -> InodeCache -> Assistant (Maybe Change)
+	fastadd change key cache = do
+		-- TODO do fast method
+		debug ["rename detected", show change, show key, show cache]
+		add change
+		--return $ Just $ finishedChange change key
+
+	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
+	removedKeysMap ct l = do
+		mks <- forM (filter isRmChange l) $ \c ->
+			catKeyFile $ changeFile c
+		M.fromList . catMaybes <$> forM (catMaybes mks) mkpair
+	  where
+		mkpair k = do
+			mcache <- recordedInodeCache k
+			case mcache of
+				Just cache -> return $ Just (inodeCacheToKey ct cache, k)
+				Nothing -> return Nothing
 
 	failedingest = do
 		liftAnnex showEndFail

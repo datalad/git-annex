@@ -11,22 +11,46 @@ import Common
 import System.Posix.Types
 import Utility.QuickCheck
 
-data InodeCache = InodeCache FileID FileOffset EpochTime
+data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
+	deriving (Show, Eq, Ord)
+
+newtype InodeCache = InodeCache InodeCachePrim
 	deriving (Show)
 
-compareStrong :: InodeCache -> InodeCache -> Bool
-compareStrong (InodeCache inode1 size1 mtime1) (InodeCache inode2 size2 mtime2) =
-	inode1 == inode2 && size1 == size2 && mtime1 == mtime2
+{- Inode caches can be compared in two different ways, either weakly
+ - or strongly. -}
+data InodeComparisonType = Weakly | Strongly
+	deriving (Eq, Ord)
 
-{- Weak comparison of the inode caches, comparing the size and mtime, but
- - not the actual inode.  Useful when inodes have changed, perhaps
+{- Strong comparison, including inodes. -}
+compareStrong :: InodeCache -> InodeCache -> Bool
+compareStrong (InodeCache x) (InodeCache y) = x == y
+
+{- Weak comparison of the inode caches, comparing the size and mtime,
+ - but not the actual inode.  Useful when inodes have changed, perhaps
  - due to some filesystems being remounted. -}
 compareWeak :: InodeCache -> InodeCache -> Bool
-compareWeak (InodeCache _ size1 mtime1) (InodeCache _ size2 mtime2) =
+compareWeak (InodeCache (InodeCachePrim _ size1 mtime1)) (InodeCache (InodeCachePrim _ size2 mtime2)) =
 	size1 == size2 && mtime1 == mtime2
 
+compareBy :: InodeComparisonType -> InodeCache -> InodeCache -> Bool
+compareBy Strongly = compareStrong
+compareBy Weakly = compareWeak
+
+{- For use in a Map; it's determined at creation time whether this
+ - uses strong or weak comparison for Eq. -}
+data InodeCacheKey = InodeCacheKey InodeComparisonType InodeCachePrim
+	deriving (Ord)
+
+instance Eq InodeCacheKey where
+	(InodeCacheKey ctx x) == (InodeCacheKey cty y) =
+		compareBy (maximum [ctx,cty]) (InodeCache x ) (InodeCache y)
+
+inodeCacheToKey :: InodeComparisonType -> InodeCache -> InodeCacheKey 
+inodeCacheToKey ct (InodeCache prim) = InodeCacheKey ct prim
+
 showInodeCache :: InodeCache -> String
-showInodeCache (InodeCache inode size mtime) = unwords
+showInodeCache (InodeCache (InodeCachePrim inode size mtime)) = unwords
 	[ show inode
 	, show size
 	, show mtime
@@ -34,10 +58,12 @@ showInodeCache (InodeCache inode size mtime) = unwords
 
 readInodeCache :: String -> Maybe InodeCache
 readInodeCache s = case words s of
-	(inode:size:mtime:_) -> InodeCache
-		<$> readish inode
-		<*> readish size
-		<*> readish mtime
+	(inode:size:mtime:_) ->
+		let prim = InodeCachePrim
+			<$> readish inode
+			<*> readish size
+			<*> readish mtime
+		in InodeCache <$> prim
 	_ -> Nothing
 
 genInodeCache :: FilePath -> IO (Maybe InodeCache)
@@ -45,17 +71,19 @@ genInodeCache f = catchDefaultIO Nothing $ toInodeCache <$> getFileStatus f
 
 toInodeCache :: FileStatus -> Maybe InodeCache
 toInodeCache s
-	| isRegularFile s = Just $ InodeCache
+	| isRegularFile s = Just $ InodeCache $ InodeCachePrim
 		(fileID s)
 		(fileSize s)
 		(modificationTime s)
 	| otherwise = Nothing
 
 instance Arbitrary InodeCache where
-	arbitrary = InodeCache
-		<$> arbitrary
-		<*> arbitrary
-		<*> arbitrary
+	arbitrary =
+		let prim = InodeCachePrim
+			<$> arbitrary
+			<*> arbitrary
+			<*> arbitrary
+		in InodeCache <$> prim
 
 prop_read_show_inodecache :: InodeCache -> Bool
 prop_read_show_inodecache c = case readInodeCache (showInodeCache c) of

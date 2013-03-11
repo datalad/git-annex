@@ -50,6 +50,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     status of that directory, rather than the whole annex.
   * Added remote.<name>.annex-gnupg-options setting.
     Thanks, guilhem for the patch.
+  * assistant: Optimised handling of renamed files in direct mode,
+    avoiding re-checksumming.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

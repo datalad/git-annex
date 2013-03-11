@@ -14,6 +14,7 @@ module Annex.Content.Direct (
 	updateInodeCache,
 	writeInodeCache,
 	compareInodeCaches,
+	compareInodeCachesWith,
 	sameInodeCache,
 	sameFileStatus,
 	removeInodeCache,
@@ -147,11 +148,14 @@ sameFileStatus key status = do
 {- If the inodes have changed, only the size and mtime are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
 compareInodeCaches x y
-	| x `compareStrong` y = return True
+	| compareStrong x y = return True
 	| otherwise = ifM inodesChanged
 		( return $ compareWeak x y
 		, return False
 		)
+
+compareInodeCachesWith :: Annex InodeComparisonType
+compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
