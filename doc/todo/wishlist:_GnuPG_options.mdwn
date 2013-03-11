@@ -12,3 +12,5 @@ And compression could be enabled on say, text files, with a suitable wildcard in
 </code></pre>
 
 This is something I could probably hack on if you think it'd be a worthwhile option ;-)
+
+> Done, and [[done]]! --[[Joey]]
