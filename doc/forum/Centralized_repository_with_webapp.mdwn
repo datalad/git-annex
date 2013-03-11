@@ -1,0 +1,13 @@
+Hi,
+
+I'm kind of new to git-annex, I've been following it for a while and tried small task, but never used it in a real situation.
+I'm now trying to sync various computers through a central server and I'm having some problems, so I think I might be doing something wrong.
+
+I have a remote server that I want to use as central server. I use the webapp to configure client 1 to use that server as remote server and using git (so I assume it stores the files and the tree). I then create the client 2 in another computer and doing the exact same steps.
+Initially everything seams to work, but after a few modifications in the clients weird things start to happen, files only in one client, some files don't get updated, etc.
+
+I guess I'm doing something wrong (maybe I need to clone the repo in client 2 instead of creating a new one?) but I can't figure out how to solve it.
+
+Any tip that could help me?
+
+Thanks!
