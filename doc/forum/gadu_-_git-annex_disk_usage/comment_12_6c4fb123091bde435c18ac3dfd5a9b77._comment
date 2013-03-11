@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 12"
+ date="2013-03-11T05:33:09Z"
+ content="""
+BTW, I think gadu still has its own uses, due to having a du like output, that can list space used by subdirectories. You can do that with git annex status *, but it's much more verbose, and doesn't show a break down by deeper subdirectories.
+"""]]
