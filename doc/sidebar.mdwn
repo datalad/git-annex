@@ -1,7 +1,8 @@
 [[!img logo_small.png link=no]]
 
-* **[[install]]**
+* [[install]]
 * [[assistant]]
+* [[walkthrough]]
 * [[tips]]
 * [[bugs]]
 * [[todo]]
