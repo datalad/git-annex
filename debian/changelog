@@ -43,6 +43,9 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * bugfix: drop --from an unavailable remote no longer updates the location
     log, incorrectly, to say the remote does not have the key.
   * assistant: Generate better commits for renames.
+  * addurl: Escape invalid characters in urls, rather than failing to
+    use an invalid url.
+  * addurl: Properly handle url-escaped characters in file:// urls.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

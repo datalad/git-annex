@@ -17,7 +17,6 @@ module Utility.Url (
 
 import Common
 import Network.URI
-import Utility.CopyFile
 
 type URLString = String
 
@@ -35,10 +34,10 @@ check url headers expected_size = handle <$> exists url headers
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size if available. -}
 exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
-exists url headers = case parseURI url of
+exists url headers = case parseURIRelaxed url of
 	Just u
 		| uriScheme u == "file:" -> do
-			s <- catchMaybeIO $ getFileStatus (uriPath u)
+			s <- catchMaybeIO $ getFileStatus (unEscapeString $ uriPath u)
 			case s of
 				Just stat -> return (True, Just $ fromIntegral $ fileSize stat)
 				Nothing -> dne
@@ -71,15 +70,18 @@ exists url headers = case parseURI url of
  - so is preferred.) Which program to use is determined at run time; it
  - would not be appropriate to test at configure time and build support
  - for only one in.
- -
- - For file:// urls, neither program works well, so we just copy.
  -}
 download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
-download url headers options file
-	| "file://" `isPrefixOf` url =
-		let f = drop (length "file://") url
-		in copyFileExternal f file
-	| otherwise = ifM (inPath "wget") (wget , curl)
+download url headers options file = 
+	case parseURIRelaxed url of
+		Just u
+			| uriScheme u == "file:" -> do
+				-- curl does not create destination file
+				-- for an empty file:// url, so pre-create
+				writeFile file ""
+				curl
+			| otherwise -> ifM (inPath "wget") (wget , curl)
+		_ -> return False
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) headers
 	wget = go "wget" $ headerparams ++ [Params "-c -O"]
@@ -96,3 +98,7 @@ download url headers options file
 get :: URLString -> Headers -> IO String
 get url headers = readProcess "curl" $
 	["-s", "-L", url] ++ concatMap (\h -> ["-H", h]) headers
+
+{- Allows for spaces and other stuff in urls, properly escaping them. -}
+parseURIRelaxed :: URLString -> Maybe URI
+parseURIRelaxed = parseURI . escapeURIString isAllowedInURI

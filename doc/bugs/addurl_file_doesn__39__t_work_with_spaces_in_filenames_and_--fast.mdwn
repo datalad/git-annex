@@ -25,4 +25,5 @@ Debian sid/experimental
     supported repository versions: 3 4
     upgrade supported from repository versions: 0 1 2
 
-
+> Relaxed url parsing so this will work, and also in http:// urls etc.
+> [[done]] --[[Joey]]
