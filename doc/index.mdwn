@@ -3,18 +3,7 @@
 To get a feel for git-annex, see the [[walkthrough]] or read about [[how_it_works]].
 
 [[!sidebar content="""
-[[!img logo_small.png link=no]]
-
-* **[[install]]**
-* [[assistant]]
-* [[tips]]
-* [[bugs]]
-* [[todo]]
-* [[forum]]
-* [[comments]]
-* [[contact]]
-* [[testimonials]]
-* <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a>
+[[!inline feeds=no template=bare pages=sidebar]]
 
 [[Feeds]]:
 
