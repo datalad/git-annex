@@ -59,7 +59,7 @@ test: fast
 
 # hothasktags chokes on some tempolate haskell etc, so ignore errors
 tags:
-	find . | grep -v /.git/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
+	@find . | grep -v /.git/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
