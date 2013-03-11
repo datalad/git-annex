@@ -17,6 +17,7 @@ module Utility.Url (
 
 import Common
 import Network.URI
+import Utility.CopyFile
 
 type URLString = String
 
@@ -71,11 +72,13 @@ exists url headers = case parseURI url of
  - would not be appropriate to test at configure time and build support
  - for only one in.
  -
- - Curl is always used for file:// urls, as wget does not support them.
+ - For file:// urls, neither program works well, so we just copy.
  -}
 download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
 download url headers options file
-	| "file://" `isPrefixOf` url = curl
+	| "file://" `isPrefixOf` url =
+		let f = drop (length "file://") url
+		in copyFileExternal f file
 	| otherwise = ifM (inPath "wget") (wget , curl)
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) headers

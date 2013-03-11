@@ -19,3 +19,8 @@ Debian sid/experimental
     default repository version: 3
     supported repository versions: 3 4
     upgrade supported from repository versions: 0 1 2
+
+> Seems that curl doesn't write the file it was asked to 
+> output to in this case. Crazy. Does not affect empty 
+> http urls. Switched to using just cp for file://
+> [[done]] --[[Joey]] 
