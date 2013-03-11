@@ -58,6 +58,36 @@ files with git.
 * [[videos]]
 * [[sitemap]]
 
+<table>
+<tr>
+
+<td valign="top">
+Recent [[news]]:
+<blockquote>
+[[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
+</blockquote>
+
+[[Dev blog|design/assistant/blog]]:
+<blockquote>
+[[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=3 feeds=no]]
+</blockquote>
+</td>
+
+<td valign="top">
+Recent [[videos]]:
+<blockquote>
+[[!inline pages="videos/* and !*/Discussion" archive=yes show=2 feeds=no]]
+</blockquote>
+
+Recent [[forum posts|forum]]:
+<blockquote>
+[[!inline pages="forum/* and !*/Discussion" archive=yes show=3 feeds=no]]
+</blockquote>
+</td>
+
+</tr>
+</table>
+
 ----
 
 git-annex is [[Free Software|license]]
