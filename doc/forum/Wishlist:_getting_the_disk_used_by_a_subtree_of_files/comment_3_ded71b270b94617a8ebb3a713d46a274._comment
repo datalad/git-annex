@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-11T05:27:38Z"
+ content="""
+You can now use \"git annex status .\"
+
+Example:
+
+<pre>
+git annex status roms
+directory: roms
+local annex keys: 1
+local annex size: 248 megabytes
+known annex keys: 277
+known annex size: 12 gigabytes
+</pre>
+"""]]
