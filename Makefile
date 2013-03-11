@@ -18,7 +18,7 @@ build: $(all)
 fast: dist/caballog
 	@$$(grep 'ghc --make' dist/caballog | head -n 1)
 	@ln -sf dist/build/git-annex/git-annex git-annex
-	@$(MAKE) tags &
+	@$(MAKE) tags >/dev/null 2>&1
 
 dist/caballog: git-annex.cabal
 	$(CABAL) configure -f"-Production" -O0
@@ -59,7 +59,7 @@ test: fast
 
 # hothasktags chokes on some tempolate haskell etc, so ignore errors
 tags:
-	@find . | grep -v /.git/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
+	find . | grep -v /.git/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
