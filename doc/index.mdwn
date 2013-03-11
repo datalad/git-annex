@@ -45,8 +45,8 @@ files with git.
 
 <table>
 <tr>
-<td valign="top">[[!inline feeds=no template=bare pages=footer/column_a]]</td>
-<td valign="top">[[!inline feeds=no template=bare pages=footer/column_b]]</td>
+<td width="50%" valign="top">[[!inline feeds=no template=bare pages=footer/column_a]]</td>
+<td widtd="50%" valign="top">[[!inline feeds=no template=bare pages=footer/column_b]]</td>
 </tr>
 </table>
 
