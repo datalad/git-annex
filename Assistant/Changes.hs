@@ -12,6 +12,7 @@ import Assistant.Types.Changes
 import Utility.TSet
 
 import Data.Time.Clock
+import Control.Concurrent.STM
 
 {- Handlers call this when they made a change that needs to get committed. -}
 madeChange :: FilePath -> ChangeInfo -> Assistant (Maybe Change)
@@ -27,13 +28,17 @@ pendingAddChange f = Just <$> (PendingAddChange <$> liftIO getCurrentTime <*> pu
 {- Gets all unhandled changes.
  - Blocks until at least one change is made. -}
 getChanges :: Assistant [Change]
-getChanges = getTSet <<~ changeChan
+getChanges = (atomically . getTSet) <<~ changeChan
+
+{- Gets all unhandled changes, without blocking. -}
+getAnyChanges :: Assistant [Change]
+getAnyChanges = (atomically . readTSet) <<~ changeChan
 
 {- Puts unhandled changes back into the channel.
  - Note: Original order is not preserved. -}
 refillChanges :: [Change] -> Assistant ()
-refillChanges cs = flip putTSet cs <<~ changeChan
+refillChanges cs = (atomically . flip putTSet cs) <<~ changeChan
 
 {- Records a change in the channel. -}
 recordChange :: Change -> Assistant ()
-recordChange c = flip putTSet1 c <<~ changeChan
+recordChange c = (atomically . flip putTSet1 c) <<~ changeChan

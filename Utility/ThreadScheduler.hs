@@ -1,6 +1,6 @@
 {- thread scheduling
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  - Copyright 2011 Bas van Dijk & Roel van Dijk
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -14,12 +14,15 @@ import Common
 
 import Control.Concurrent
 import System.Posix.Signals
+import Data.Time.Clock
 #ifndef __ANDROID__
 import System.Posix.Terminal
 #endif
 
 newtype Seconds = Seconds { fromSeconds :: Int }
 	deriving (Eq, Ord, Show)
+
+type Microseconds = Integer
 
 {- Runs an action repeatedly forever, sleeping at least the specified number
  - of seconds in between. -}
@@ -30,8 +33,6 @@ runEvery n a = forever $ do
 
 threadDelaySeconds :: Seconds -> IO ()
 threadDelaySeconds (Seconds n) = unboundDelay (fromIntegral n * oneSecond)
-  where
-	oneSecond = 1000000 -- microseconds
 
 {- Like threadDelay, but not bounded by an Int.
  -
@@ -42,7 +43,7 @@ threadDelaySeconds (Seconds n) = unboundDelay (fromIntegral n * oneSecond)
  - Taken from the unbounded-delay package to avoid a dependency for 4 lines
  - of code.
  -}
-unboundDelay :: Integer -> IO ()
+unboundDelay :: Microseconds -> IO ()
 unboundDelay time = do
 	let maxWait = min time $ toInteger (maxBound :: Int)
 	threadDelay $ fromInteger maxWait
@@ -61,3 +62,6 @@ waitForTermination = do
   where
 	check sig lock = void $
 		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
+
+oneSecond :: Microseconds
+oneSecond = 1000000

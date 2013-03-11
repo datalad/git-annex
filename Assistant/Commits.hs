@@ -9,19 +9,20 @@ module Assistant.Commits where
 
 import Assistant.Common
 import Assistant.Types.Commits
-
 import Utility.TSet
+
+import Control.Concurrent.STM
 
 {- Gets all unhandled commits.
  - Blocks until at least one commit is made. -}
 getCommits :: Assistant [Commit]
-getCommits = getTSet <<~ commitChan
+getCommits = (atomically . getTSet) <<~ commitChan
 
 {- Puts unhandled commits back into the channel.
  - Note: Original order is not preserved. -}
 refillCommits :: [Commit] -> Assistant ()
-refillCommits cs = flip putTSet cs <<~ commitChan
+refillCommits cs = (atomically . flip putTSet cs) <<~ commitChan
 
 {- Records a commit in the channel. -}
 recordCommit :: Assistant ()
-recordCommit = flip putTSet1 Commit <<~ commitChan
+recordCommit = (atomically . flip putTSet1 Commit) <<~ commitChan

@@ -1,6 +1,6 @@
 {- Transactional sets
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -}
 
 module Utility.TSet where
@@ -11,18 +11,20 @@ import Control.Concurrent.STM
 
 type TSet = TChan
 
-runTSet :: STM a -> IO a
-runTSet = atomically
-
-newTSet :: IO (TSet a)
-newTSet = atomically newTChan
+newTSet :: STM (TSet a)
+newTSet = newTChan
 
 {- Gets the contents of the TSet. Blocks until at least one item is
  - present. -}
-getTSet :: TSet a -> IO [a]
-getTSet tset = runTSet $ do
+getTSet :: TSet a -> STM [a]
+getTSet tset = do
 	c <- readTChan tset
-	go [c]
+	l <- readTSet tset
+	return $ c:l
+
+{- Gets anything currently in the TSet, without blocking. -}
+readTSet :: TSet a -> STM [a]
+readTSet tset = go []
   where
 	go l = do
 		v <- tryReadTChan tset
@@ -31,9 +33,9 @@ getTSet tset = runTSet $ do
 			Just c -> go (c:l)
 
 {- Puts items into a TSet. -}
-putTSet :: TSet a -> [a] -> IO ()
-putTSet tset vs = runTSet $ mapM_ (writeTChan tset) vs
+putTSet :: TSet a -> [a] -> STM ()
+putTSet tset vs = mapM_ (writeTChan tset) vs
 
 {- Put a single item into a TSet. -}
-putTSet1 :: TSet a -> a -> IO ()
-putTSet1 tset v = void $ runTSet $ writeTChan tset v
+putTSet1 :: TSet a -> a -> STM ()
+putTSet1 tset v = void $ writeTChan tset v

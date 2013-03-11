@@ -9,9 +9,11 @@ module Assistant.Types.Commits where
 
 import Utility.TSet
 
+import Control.Concurrent.STM
+
 type CommitChan = TSet Commit
 
 data Commit = Commit
 
 newCommitChan :: IO CommitChan
-newCommitChan = newTSet
+newCommitChan = atomically newTSet

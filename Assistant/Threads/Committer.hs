@@ -38,6 +38,7 @@ import Data.Time.Clock
 import Data.Tuple.Utils
 import qualified Data.Set as S
 import Data.Either
+import Control.Concurrent
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
@@ -45,34 +46,81 @@ commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
-	runEvery (Seconds 1) <~> do
-		-- We already waited one second as a simple rate limiter.
-		-- Next, wait until at least one change is available for
-		-- processing.
-		changes <- getChanges
-		-- Now see if now's a good time to commit.
-		time <- liftIO getCurrentTime
-		if shouldCommit time changes
+	waitChangeTime $ \(changes, time) -> do
+		readychanges <- handleAdds delayadd changes
+		if shouldCommit time readychanges
 			then do
-				readychanges <- handleAdds delayadd changes
-				if shouldCommit time readychanges
-					then do
-						debug
-							[ "committing"
-							, show (length readychanges)
-							, "changes"
-							]
-						void $ alertWhile commitAlert $
-							liftAnnex commitStaged
-						recordCommit
-						mapM_ checkChangeContent readychanges
-					else refill readychanges
-			else refill changes
+				debug
+					[ "committing"
+					, show (length readychanges)
+					, "changes"
+					]
+				void $ alertWhile commitAlert $
+					liftAnnex commitStaged
+				recordCommit
+				mapM_ checkChangeContent readychanges
+			else refill readychanges
+
+refill :: [Change] -> Assistant ()	
+refill [] = noop
+refill cs = do
+	debug ["delaying commit of", show (length cs), "changes"]
+	refillChanges cs
+
+{- Wait for one or more changes to arrive to be committed. -}
+waitChangeTime :: (([Change], UTCTime) -> Assistant ()) -> Assistant ()
+waitChangeTime a = runEvery (Seconds 1) <~> do
+	-- We already waited one second as a simple rate limiter.
+	-- Next, wait until at least one change is available for
+	-- processing.
+	changes <- getChanges
+	-- See if now's a good time to commit.
+	now <- liftIO getCurrentTime
+	case (shouldCommit now changes, lonelychange changes) of
+		(True, False) -> a (changes, now)
+		(True, True) -> do
+			-- Wait for other, related changes to arrive.
+			liftIO $ humanImperceptibleDelay
+			-- Don't block, but are there any?
+			morechanges <- getAnyChanges
+			let allchanges = changes++morechanges
+			a (allchanges, now)
+		_ -> refill changes
   where
-	refill [] = noop
-	refill cs = do
-		debug ["delaying commit of", show (length cs), "changes"]
-		refillChanges cs
+	{- Did we perhaps only get one of the AddChange and RmChange pair
+	 - that make up a rename? -}
+	lonelychange [(PendingAddChange _ _)] = True
+	lonelychange [(Change { changeInfo = i })] | i == RmChange = True
+	lonelychange _ = False
+
+{- An amount of time that is hopefully imperceptably short for humans,
+ - while long enough for a computer to get some work done. 
+ - Note that 0.001 is a little too short for rename change batching to
+ - work. -}
+humanImperceptibleInterval :: NominalDiffTime
+humanImperceptibleInterval = 0.01
+
+humanImperceptibleDelay :: IO ()
+humanImperceptibleDelay = threadDelay $
+	truncate $ humanImperceptibleInterval * fromIntegral oneSecond
+
+{- Decide if now is a good time to make a commit.
+ - Note that the list of changes has an undefined order.
+ -
+ - Current strategy: If there have been 10 changes within the past second,
+ - a batch activity is taking place, so wait for later.
+ -}
+shouldCommit :: UTCTime -> [Change] -> Bool
+shouldCommit now changes
+	| len == 0 = False
+	| len > 10000 = True -- avoid bloating queue too much
+	| length recentchanges < 10 = True
+	| otherwise = False -- batch activity
+  where
+	len = length changes
+	thissecond c = timeDelta c <= 1
+	recentchanges = filter thissecond changes
+	timeDelta c = now `diffUTCTime` changeTime c
 
 commitStaged :: Annex Bool
 commitStaged = do
@@ -104,22 +152,6 @@ commitStaged = do
 			: Param "autocommit" : ps
 		| otherwise = Param "--allow-empty-message" 
 			: Param "-m" : Param "" : ps
-
-{- Decide if now is a good time to make a commit.
- - Note that the list of changes has an undefined order.
- -
- - Current strategy: If there have been 10 changes within the past second,
- - a batch activity is taking place, so wait for later.
- -}
-shouldCommit :: UTCTime -> [Change] -> Bool
-shouldCommit now changes
-	| len == 0 = False
-	| len > 10000 = True -- avoid bloating queue too much
-	| length (filter thisSecond changes) < 10 = True
-	| otherwise = False -- batch activity
-  where
-	len = length changes
-	thisSecond c = now `diffUTCTime` changeTime c <= 1
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to

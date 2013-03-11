@@ -13,3 +13,17 @@ Fixed some problems around USB drives. One was a real jaw-dropping
 bug: "git annex drop --from usbdrive" when the drive was not
 connected still updated the location log to indicate it did not have
 the file anymore! (Thank goodness for fsck..)
+
+I've noticed that moving around files in direct mode repos is inneficient,
+because the assistant re-checksums the "new" file. One way to avoid
+that would be to have a lookup table from (inode, size, mtime) to
+key, but I don't have one, and would like to avoid adding one.
+
+Instead, I have a cunning plan to deal with this heuristically. If the
+assistant can notice a file was removed and another file added at the same
+time, it can compare the (inode, size, mtime) to see if it's a rename, and
+avoid the checksum overhead.
+
+The first step to getting there was to make the assistant better at
+batching together delete+add events into a single rename commit. I'm happy
+to say I've accomplished that, with no perceptable delay to commits.

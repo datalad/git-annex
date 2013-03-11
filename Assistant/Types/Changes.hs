@@ -12,6 +12,7 @@ import Types.Key
 import Utility.TSet
 
 import Data.Time.Clock
+import Control.Concurrent.STM
 
 data ChangeInfo = AddChange Key | LinkChange (Maybe Key) | RmChange | RmDirChange
 	deriving (Show, Eq)
@@ -40,7 +41,7 @@ data Change
 	deriving (Show)
 
 newChangeChan :: IO ChangeChan
-newChangeChan = newTSet
+newChangeChan = atomically newTSet
 
 isPendingAddChange :: Change -> Bool
 isPendingAddChange (PendingAddChange {}) = True
