@@ -68,8 +68,10 @@ start [] = do
 	globalStatus
 	stop
 start ps = do
-	mapM_ localStatus ps
+	mapM_ localStatus =<< filterM isdir ps
 	stop
+  where
+	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
 
 globalStatus :: Annex ()
 globalStatus = do
