@@ -125,11 +125,7 @@ ingest (Just source) = do
 
 	godirect (Just (key, _)) (Just cache) = do
 		writeInodeCache key cache
-		void $ addAssociatedFile key $ keyFilename source
-		unlessM crippledFileSystem $
-			liftIO $ allowWrite $ keyFilename source
-		when (contentLocation source /= keyFilename source) $
-			liftIO $ nukeFile $ contentLocation source
+		finishIngestDirect key source
 		return $ Just key
 	godirect _ _ = failure
 
@@ -137,6 +133,14 @@ ingest (Just source) = do
 		when (contentLocation source /= keyFilename source) $
 			liftIO $ nukeFile $ contentLocation source
 		return Nothing		
+
+finishIngestDirect :: Key -> KeySource -> Annex ()
+finishIngestDirect key source = do
+	void $ addAssociatedFile key $ keyFilename source
+	unlessM crippledFileSystem $
+		liftIO $ allowWrite $ keyFilename source
+	when (contentLocation source /= keyFilename source) $
+		liftIO $ nukeFile $ contentLocation source
 
 perform :: FilePath -> CommandPerform
 perform file = 

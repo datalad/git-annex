@@ -266,14 +266,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 					Just cache ->
 						case M.lookup (inodeCacheToKey ct cache) m of
 							Nothing -> add c
-							Just k -> fastadd c k cache
+							Just k -> fastadd c k
 
-	fastadd :: Change -> Key -> InodeCache -> Assistant (Maybe Change)
-	fastadd change key cache = do
-		-- TODO do fast method
-		debug ["rename detected", show change, show key, show cache]
-		add change
-		--return $ Just $ finishedChange change key
+	fastadd :: Change -> Key -> Assistant (Maybe Change)
+	fastadd change key = do
+		let source = keySource change
+		liftAnnex $ Command.Add.finishIngestDirect key source
+		done change (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -291,16 +290,15 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 
-	done change file key = do
-		liftAnnex $ do
-			logStatus key InfoPresent
-			link <- ifM isDirect
-				( calcGitLink file key
-				, Command.Add.link file key True
-				)
-			whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
-				stageSymlink file =<< hashSymlink link
-				showEndOk
+	done change file key = liftAnnex $ do
+		logStatus key InfoPresent
+		link <- ifM isDirect
+			( calcGitLink file key
+			, Command.Add.link file key True
+			)
+		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
+			stageSymlink file =<< hashSymlink link
+			showEndOk
 		return $ Just $ finishedChange change key
 
 	{- Check that the keysource's keyFilename still exists,
