@@ -16,12 +16,6 @@ To get a feel for git-annex, see the [[walkthrough]] or read about [[how_it_work
 * [[testimonials]]
 * <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a>
 
-[[News]]:
-
-<small>
-[[!inline pages="news/* and !*/discussion" archive=yes show=3 feeds=no]]
-</small>
-
 [[Feeds]]:
 
 <small>
