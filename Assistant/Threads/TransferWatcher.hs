@@ -14,7 +14,7 @@ import Assistant.Drop
 import Annex.Content
 import Logs.Transfer
 import Utility.DirWatcher
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 import qualified Remote
 
 import Control.Concurrent

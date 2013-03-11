@@ -13,7 +13,7 @@ import Assistant.BranchChange
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Utility.DirWatcher
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch

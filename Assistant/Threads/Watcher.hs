@@ -22,7 +22,7 @@ import Assistant.Changes
 import Assistant.Types.Changes
 import Assistant.Alert
 import Utility.DirWatcher
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 import Utility.Lsof
 import qualified Annex
 import qualified Annex.Queue

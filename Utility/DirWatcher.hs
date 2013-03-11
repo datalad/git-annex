@@ -13,7 +13,7 @@
 
 module Utility.DirWatcher where
 
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 
 #if WITH_INOTIFY
 import qualified Utility.INotify as INotify

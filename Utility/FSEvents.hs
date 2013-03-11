@@ -8,7 +8,7 @@
 module Utility.FSEvents where
 
 import Common hiding (isDirectory)
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 
 import System.OSX.FSEvents
 import qualified System.Posix.Files as Files

@@ -9,7 +9,7 @@ module Utility.INotify where
 
 import Common hiding (isDirectory)
 import Utility.ThreadLock
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 
 import System.INotify
 import qualified System.Posix.Files as Files

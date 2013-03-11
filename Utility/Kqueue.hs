@@ -18,7 +18,7 @@ module Utility.Kqueue (
 ) where
 
 import Common
-import Utility.Types.DirWatcher
+import Utility.DirWatcher.Types
 
 import System.Posix.Types
 import Foreign.C.Types

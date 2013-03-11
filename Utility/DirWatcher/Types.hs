@@ -5,9 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
-module Utility.Types.DirWatcher where
+module Utility.DirWatcher.Types where
 
 import Common
 
