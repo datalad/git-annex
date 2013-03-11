@@ -1,9 +1,7 @@
-Recent [[news]]:
-<blockquote>
-[[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
-</blockquote>
+### Recent [[news]]
 
-[[Dev blog|design/assistant/blog]]:
-<blockquote>
+[[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
+
+### [[Dev blog|design/assistant/blog]]
+
 [[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=5 feeds=no]]
-</blockquote>

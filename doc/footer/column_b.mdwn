@@ -1,9 +1,7 @@
-Recent [[videos]]:
-<blockquote>
-[[!inline pages="videos/* and !*/Discussion" archive=yes show=2 feeds=no]]
-</blockquote>
+### Recent [[videos]]
 
-Recent [[forum posts|forum]]:
-<blockquote>
+[[!inline pages="videos/* and !*/Discussion" archive=yes show=2 feeds=no]]
+
+### Recent [[forum posts|forum]]
+
 [[!inline pages="forum/* and !*/Discussion" archive=yes show=5 feeds=no]]
-</blockquote>
