@@ -1,1 +1,1 @@
-[[!inline pages="./video/* and !./news/*/* and !*/Discussion" show="5"]]
+[[!inline pages="./videos/* and !./news/*/* and !*/Discussion" show="5"]]
