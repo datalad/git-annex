@@ -35,50 +35,18 @@ B, then git-annex may be the tool you've been looking for to expand from
 keeping all your small important files in git, to managing your large
 files with git.
 
-## documentation
-
-* [[git-annex man page|git-annex]]
-* [[key-value backends|backends]] for data storage
-* [[special_remotes]] (including [[special_remotes/S3]] and [[special_remotes/bup]])
-* [[sync]]
-* [[encryption]]
-* [[bare_repositories]]
-* [[direct_mode]]
-* [[internals]]
-* [[scalability]]
-* [[design]]
-* [[related_software]]
-* [[what git annex is not|not]]
-* [[videos]]
-* [[sitemap]]
+<table>
+<tr>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/key_concepts]]</td>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/the_details]]</td>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/other_stuff]]</td>
+</tr>
+</table>
 
 <table>
 <tr>
-
-<td valign="top">
-Recent [[news]]:
-<blockquote>
-[[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
-</blockquote>
-
-[[Dev blog|design/assistant/blog]]:
-<blockquote>
-[[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=5 feeds=no]]
-</blockquote>
-</td>
-
-<td valign="top">
-Recent [[videos]]:
-<blockquote>
-[[!inline pages="videos/* and !*/Discussion" archive=yes show=2 feeds=no]]
-</blockquote>
-
-Recent [[forum posts|forum]]:
-<blockquote>
-[[!inline pages="forum/* and !*/Discussion" archive=yes show=5 feeds=no]]
-</blockquote>
-</td>
-
+<td valign="top">[[!inline feeds=no template=bare pages=footer/column_a]]</td>
+<td valign="top">[[!inline feeds=no template=bare pages=footer/column_b]]</td>
 </tr>
 </table>
 

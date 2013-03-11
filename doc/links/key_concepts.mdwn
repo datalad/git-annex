@@ -1,0 +1,8 @@
+### key concepts
+
+* [[git-annex man page|git-annex]]
+* [[walkthrough]]
+* [[how_it_works]]
+* [[special_remotes]]
+* [[sync]]
+* [[direct_mode]]
