@@ -24,3 +24,5 @@ Then I'll have the interesting literature there when I'm offline; the source URL
 > The only wrinkle is that the webapp runs under a new url each time
 > it starts, due to using a high port and embedding some auth token in the
 > url. --[[Joey]]
+
+[[!tag /design/assistant]]

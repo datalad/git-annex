@@ -22,3 +22,5 @@ Mac OSX 10.8.2 Mountain Lion Build 12C3006
 Please provide any additional information below.
 
 I'm really not sure what to look for next. Happy to take suggestions.
+
+[!tag /design/assistant]]

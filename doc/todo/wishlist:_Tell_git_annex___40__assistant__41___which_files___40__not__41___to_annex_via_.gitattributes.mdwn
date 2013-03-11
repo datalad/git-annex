@@ -1,3 +1,5 @@
 Title says it all.
 
 It would be nice if I could tell git annex (assistant) which files (not) to annex (automatically).
+
+[[!tag /design/assistant]]

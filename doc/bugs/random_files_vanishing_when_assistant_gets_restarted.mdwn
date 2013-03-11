@@ -22,9 +22,13 @@ I get messages like:
     
     Already up-to-date.
 
-Sorry for the german language, I'll try to reproduce it in english, later. After that, the symlinks for the file in the repository are gone. I can get them back by reverting the commit but things like that make me very nervous.
+Sorry for the german language, I'll try to reproduce it in english, later.
+After that, the symlinks for the file in the repository are gone. I can get
+them back by reverting the commit but things like that make me very nervous.
 
 
 #What version of git-annex are you using? On what operating system?
 
 3.20130102 on Arch Linux x64
+
+[!tag /design/assistant]]

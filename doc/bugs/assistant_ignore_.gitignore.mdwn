@@ -25,3 +25,5 @@ What version of git-annex are you using? On what operating system?
 > As noted in [[design/assistant/inotify]]'s TODO list, this
 > needs an efficient gitignore query interface in git (DNE) 
 > or a gitignore parser. --[[Joey]] 
+
+[[!tag /design/assistant]]
