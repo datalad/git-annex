@@ -1,3 +1,8 @@
-<div width=50%>
+Talks and screencasts about git-annex.
+
+These videos are also available in a public git-annex repository
+`git clone git://git.kitenet.net/downloads`
+
+<div width=400>
 [[!inline pages="./videos/* and !./news/*/* and !*/Discussion" show="5"]]
 </div>
