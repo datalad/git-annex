@@ -154,6 +154,9 @@ subdirectories).
 
   To avoid immediately downloading the url, specify --fast.
 
+  To avoid storing the size of the url's content, and accept whatever
+  is there at a future point, specific --relaxed. (Implies --fast.)
+
   Normally the filename is based on the full url, so will look like
   "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
   --pathdepth=N. For example, --pathdepth=1 will use "dir/subdir/bigfile",

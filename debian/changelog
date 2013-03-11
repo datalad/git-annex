@@ -54,6 +54,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     avoiding re-checksumming.
   * assistant: Detects most renames, including directory renames, and
     combines all their changes into a single commit.
+  * addurl: Add --relaxed option.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

@@ -25,7 +25,7 @@ import Config
 import Annex.Content.Direct
 
 def :: [Command]
-def = [notBareRepo $ withOptions [fileOption, pathdepthOption] $
+def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
 	command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
 
 fileOption :: Option
@@ -34,28 +34,32 @@ fileOption = Option.field [] "file" paramFile "specify what file the url is adde
 pathdepthOption :: Option
 pathdepthOption = Option.field [] "pathdepth" paramNumber "path components to use in filename"
 
+relaxedOption :: Option
+relaxedOption = Option.flag [] "relaxed" "skip size check"
+
 seek :: [CommandSeek]
 seek = [withField fileOption return $ \f ->
+	withFlag relaxedOption $ \relaxed ->
 	withField pathdepthOption (return . maybe Nothing readish) $ \d ->
-	withStrings $ start f d]
+	withStrings $ start relaxed f d]
 
-start :: Maybe FilePath -> Maybe Int -> String -> CommandStart
-start optfile pathdepth s = go $ fromMaybe bad $ parseURI s
+start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
+start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   where
 	bad = fromMaybe (error $ "bad url " ++ s) $
 		parseURI $ escapeURIString isUnescapedInURI s
 	go url = do
 		let file = fromMaybe (url2file url pathdepth) optfile
 		showStart "addurl" file
-		next $ perform s file
+		next $ perform relaxed s file
 
-perform :: String -> FilePath -> CommandPerform
-perform url file = ifAnnexed file addurl geturl
+perform :: Bool -> String -> FilePath -> CommandPerform
+perform relaxed url file = ifAnnexed file addurl geturl
   where
 	geturl = do
 		liftIO $ createDirectoryIfMissing True (parentDir file)
-		ifM (Annex.getState Annex.fast)
-			( nodownload url file , download url file )
+		ifM (Annex.getState Annex.fast <||> pure relaxed)
+			( nodownload relaxed url file , download url file )
 	addurl (key, _backend) = do
 		headers <- getHttpHeaders
 		ifM (liftIO $ Url.check url headers $ keySize key)
@@ -90,10 +94,12 @@ download url file = do
 				setUrlPresent key url
 				next $ Command.Add.cleanup file key True
 
-nodownload :: String -> FilePath -> CommandPerform
-nodownload url file = do
+nodownload :: Bool -> String -> FilePath -> CommandPerform
+nodownload relaxed url file = do
 	headers <- getHttpHeaders
-	(exists, size) <- liftIO $ Url.exists url headers
+	(exists, size) <- if relaxed
+		then pure (True, Nothing)
+		else liftIO $ Url.exists url headers
 	if exists
 		then do
 			let key = Backend.URL.fromUrl url size
