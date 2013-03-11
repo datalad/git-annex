@@ -14,7 +14,7 @@ import Utility.TSet
 import Data.Time.Clock
 import Control.Concurrent.STM
 
-data ChangeInfo = AddChange Key | LinkChange (Maybe Key) | RmChange | RmDirChange
+data ChangeInfo = AddChange Key | LinkChange (Maybe Key) | RmChange
 	deriving (Show, Eq)
 
 changeInfoKey :: ChangeInfo -> Maybe Key

@@ -43,6 +43,7 @@ import Data.Bits.Utils
 import Data.Typeable
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
+import Data.Time.Clock
 
 checkCanWatch :: Annex ()
 checkCanWatch
@@ -251,17 +252,26 @@ onDel file _ = do
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
- - use --cached to only delete it from the index. 
+ - use --cached to only delete it from the index.
  -
- - Note: This could use unstageFile, but would need to run another git
- - command to get the recursive list of files in the directory, so rm is
- - just as good. -}
+ - This queues up a lot of RmChanges, which assists the Committer in
+ - pairing up renamed files when the directory was renamed. -}
 onDelDir :: Handler
 onDelDir dir _ = do
 	debug ["directory deleted", dir]
-	liftAnnex $ Annex.Queue.addCommand "rm"
-		[Params "--quiet -r --cached --ignore-unmatch --"] [dir]
-	madeChange dir RmDirChange
+	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [dir]
+
+	liftAnnex $ forM_ fs $ \f -> Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.unstageFile f)
+
+	-- Get the events queued up as fast as possible, so the
+	-- committer sees them all in one block.
+	now <- liftIO getCurrentTime
+	forM_ fs $ \f -> recordChange $ Change now f RmChange
+
+	void $ liftIO $ clean
+	liftAnnex $ Annex.Queue.flushWhenFull
+	noChange
 
 {- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler

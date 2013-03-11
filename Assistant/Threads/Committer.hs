@@ -80,7 +80,7 @@ waitChangeTime a = runEvery (Seconds 1) <~> do
 	changes <- getChanges
 	-- See if now's a good time to commit.
 	now <- liftIO getCurrentTime
-	case (shouldCommit now changes, lonelychange changes) of
+	case (shouldCommit now changes, possiblyrename changes) of
 		(True, False) -> a (changes, now)
 		(True, True) -> do
 			-- Wait for other, related changes to arrive.
@@ -92,10 +92,13 @@ waitChangeTime a = runEvery (Seconds 1) <~> do
 		_ -> refill changes
   where
 	{- Did we perhaps only get one of the AddChange and RmChange pair
-	 - that make up a rename? -}
-	lonelychange [(PendingAddChange _ _)] = True
-	lonelychange [c] | isRmChange c = True
-	lonelychange _ = False
+	 - that make up a file rename? Or some of the pairs that make up 
+	 - a directory rename?
+	 -}
+	possiblyrename cs = all renamepart cs
+
+	renamepart (PendingAddChange _ _) = True
+	renamepart c = isRmChange c
 
 isRmChange :: Change -> Bool
 isRmChange (Change { changeInfo = i }) | i == RmChange = True
