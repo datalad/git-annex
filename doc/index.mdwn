@@ -55,22 +55,8 @@ files with git.
 * [[design]]
 * [[related_software]]
 * [[what git annex is not|not]]
+* [[videos]]
 * [[sitemap]]
-
-## talks
-
-<table width="100%">
-<tr>
-<td width="50%" valign="top">
-[[!inline raw=yes pages="videos/FOSDEM2012"]]
-</td>
-<td width="50%" valign="top">
-[[!inline raw=yes pages="videos/LCA2013"]]
-</td>
-</tr>
-</table>
-
-<br clear="all" />
 
 ----
 
