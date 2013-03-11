@@ -46,6 +46,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * addurl: Escape invalid characters in urls, rather than failing to
     use an invalid url.
   * addurl: Properly handle url-escaped characters in file:// urls.
+  * status: Can now be run with a directory path to show only the
+    status of that directory, rather than the whole annex.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 

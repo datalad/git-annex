@@ -394,12 +394,23 @@ subdirectories).
   To generate output suitable for the gource visualisation program,
   specify --gource.
 
-* status
+* status [directory ...]
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
   To only show the data that can be gathered quickly, use --fast.
+
+  When a directory is specified, shows only an abbreviated status
+  display for that directory. In this mode, all of the file matching
+  options can be used to filter the files that will be included in
+  the status.
+
+  For example, suppose you want to run "git annex get .", but
+  would first like to see how much disk space that will use.
+  Then run:
+
+	git annex status . --not --in here
 
 * map
 

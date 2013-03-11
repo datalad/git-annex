@@ -34,6 +34,7 @@ import Config
 import Utility.Percentage
 import Logs.Transfer
 import Types.TrustLevel
+import qualified Limit
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -56,17 +57,41 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [command "status" paramNothing seek
+def = [command "status" (paramOptional paramPaths) seek
 	"shows status information about the annex"]
 
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek = [withWords start]
+
+start :: [FilePath] -> CommandStart
+start [] = do
+	globalStatus
+	stop
+start ps = do
+	mapM_ localStatus ps
+	stop
+
+globalStatus :: Annex ()
+globalStatus = do
+	fast <- Annex.getState Annex.fast
+	let stats = if fast
+		then global_fast_stats
+		else global_fast_stats ++ global_slow_stats
+	showCustom "status" $ do
+		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
+		return True
+
+localStatus :: FilePath -> Annex ()
+localStatus dir = showCustom (unwords ["status", dir]) $ do
+	let stats = map (\s -> s dir) local_stats
+	evalStateT (mapM_ showStat stats) =<< getLocalStatInfo dir
+	return True
 
 {- Order is significant. Less expensive operations, and operations
  - that share data go together.
  -}
-fast_stats :: [Stat]
-fast_stats = 
+global_fast_stats :: [Stat]
+global_fast_stats = 
 	[ supported_backends
 	, supported_remote_types
 	, repository_mode
@@ -77,8 +102,8 @@ fast_stats =
 	, transfer_list
 	, disk_size
 	]
-slow_stats :: [Stat]
-slow_stats = 
+global_slow_stats :: [Stat]
+global_slow_stats = 
 	[ tmp_size
 	, bad_data_size
 	, local_annex_keys
@@ -88,15 +113,14 @@ slow_stats =
 	, bloom_info
 	, backend_usage
 	]
-
-start :: CommandStart
-start = do
-	fast <- Annex.getState Annex.fast
-	let stats = if fast then fast_stats else fast_stats ++ slow_stats
-	showCustom "status" $ do
-		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
-		return True
-	stop
+local_stats :: [FilePath -> Stat]
+local_stats =
+	[ local_dir
+	, const local_annex_keys
+	, const local_annex_size
+	, const known_annex_keys
+	, const known_annex_size
+	]
 
 stat :: String -> (String -> StatState String) -> Stat
 stat desc a = return $ Just (desc, a desc)
@@ -142,6 +166,9 @@ remote_list level = stat n $ nojson $ lift $ do
   where
 	n = showTrustLevel level ++ " repositories"
 	
+local_dir :: FilePath -> Stat
+local_dir dir = stat "directory" $ json id $ return dir
+
 local_annex_size :: Stat
 local_annex_size = stat "local annex size" $ json id $
 	showSizeKeys <$> cachedPresentData
@@ -246,6 +273,26 @@ cachedReferencedData = do
 			put s { referencedData = Just v }
 			return v
 
+getLocalStatInfo :: FilePath -> Annex StatInfo
+getLocalStatInfo dir = do
+	matcher <- Limit.getMatcher
+	(presentdata, referenceddata) <-
+		Command.Unused.withKeysFilesReferencedIn dir initial
+			(update matcher)
+	return $ StatInfo (Just presentdata) (Just referenceddata)
+  where
+	initial = (emptyKeyData, emptyKeyData)
+	update matcher key file vs@(presentdata, referenceddata) =
+		ifM (matcher $ Annex.FileInfo file file)
+			( (,)
+				<$> ifM (inAnnex key)
+					( return $ addKey key presentdata
+					, return presentdata
+					)
+				<*> pure (addKey key referenceddata)
+			, return vs
+			)
+
 emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty
 
@@ -293,4 +340,3 @@ aside s = " (" ++ s ++ ")"
 
 multiLine :: [String] -> String
 multiLine = concatMap (\l -> "\n\t" ++ l)
-

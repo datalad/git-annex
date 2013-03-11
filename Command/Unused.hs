@@ -213,36 +213,42 @@ bloomFilter convert l bloom = filter (\k -> convert k `notElemB` bloom) l
 {- Given an initial value, folds it with each key referenced by
  - symlinks in the git repo. -}
 withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
-withKeysReferenced initial a = withKeysReferenced' initial folda
+withKeysReferenced initial a = withKeysReferenced' Nothing initial folda
   where
-	folda k v = return $ a k v
+	folda k _ v = return $ a k v
 
 {- Runs an action on each referenced key in the git repo. -}
 withKeysReferencedM :: (Key -> Annex ()) -> Annex ()
-withKeysReferencedM a = withKeysReferenced' () calla
+withKeysReferencedM a = withKeysReferenced' Nothing () calla
   where
-	calla k _ = a k
+	calla k _ _ = a k
 
-withKeysReferenced' :: v -> (Key -> v -> Annex v) -> Annex v
-withKeysReferenced' initial a = do
+{- Folds an action over keys and files referenced in a particular directory. -}
+withKeysFilesReferencedIn :: FilePath -> v -> (Key -> FilePath -> v -> Annex v) -> Annex v
+withKeysFilesReferencedIn = withKeysReferenced' . Just
+
+withKeysReferenced' :: Maybe FilePath -> v -> (Key -> FilePath -> v -> Annex v) -> Annex v
+withKeysReferenced' mdir initial a = do
 	(files, clean) <- getfiles
 	r <- go initial files
 	liftIO $ void clean
 	return r
   where
-	getfiles = ifM isBareRepo
-		( return ([], return True)
-		, do
-			top <- fromRepo Git.repoPath
-			inRepo $ LsFiles.inRepo [top]
-		)
+	getfiles = case mdir of
+		Nothing -> ifM isBareRepo
+			( return ([], return True)
+			, do
+				top <- fromRepo Git.repoPath
+				inRepo $ LsFiles.inRepo [top]
+			)
+		Just dir -> inRepo $ LsFiles.inRepo [dir]
 	go v [] = return v
 	go v (f:fs) = do
 		x <- Backend.lookupFile f
 		case x of
 			Nothing -> go v fs
 			Just (k, _) -> do
-				!v' <- a k v
+				!v' <- a k f v
 				go v' fs
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
