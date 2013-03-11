@@ -1,1 +1,3 @@
+<div width=50%>
 [[!inline pages="./videos/* and !./news/*/* and !*/Discussion" show="5"]]
+</div>
