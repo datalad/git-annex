@@ -145,8 +145,8 @@ getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
-			liftIO $ makeRepo path False
-			u <- liftIO $ initRepo True path Nothing
+			isnew <- liftIO $ makeRepo path False
+			u <- liftIO $ initRepo isnew True path Nothing
 			lift $ liftAnnexOr () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
@@ -188,7 +188,11 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 				, "free)"
 				]
 
-{- Adding a removable drive. -}
+{- Adding a removable drive.
+ -
+ - The repo may already exist, when adding removable media
+ - that has already been used elsewhere.
+ -}
 getAddDriveR :: Handler RepHtml
 getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
@@ -202,8 +206,9 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 		_ -> $(widgetFile "configurators/adddrive")
   where
 	make mountpoint = do
-		liftIO $ makerepo dir
-		u <- liftIO $ initRepo False dir $ Just remotename
+		liftIO $ createDirectoryIfMissing True dir
+		isnew <- liftIO $ makeRepo dir True
+		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		r <- combineRepos dir remotename
 		liftAnnex $ setStandardGroup u TransferGroup
 		syncRemote r
@@ -211,15 +216,6 @@ getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	  where
 		dir = mountpoint </> gitAnnexAssistantDefaultDir
 		remotename = takeFileName mountpoint
-	{- The repo may already exist, when adding removable media
-	 - that has already been used elsewhere. -}
-	makerepo dir = liftIO $ do
-		r <- E.try (inDir dir $ getUUID) :: IO (Either E.SomeException UUID)
-		case r of
-			Right u | u /= NoUUID -> noop
-			_ -> do
-				createDirectoryIfMissing True dir
-				makeRepo dir True
 
 {- Each repository is made a remote of the other.
  - Next call syncRemote to get them in sync. -}
@@ -268,8 +264,8 @@ startFullAssistant :: FilePath -> Handler ()
 startFullAssistant path = do
 	webapp <- getYesod
 	url <- liftIO $ do
-		makeRepo path False
-		u <- initRepo True path Nothing
+		isnew <- makeRepo path False
+		u <- initRepo isnew True path Nothing
 		inDir path $ 
 			setStandardGroup u ClientGroup
 		addAutoStartFile path
@@ -277,13 +273,21 @@ startFullAssistant path = do
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 
-{- Makes a new git repository. -}
-makeRepo :: FilePath -> Bool -> IO ()
-makeRepo path bare = do
-	(transcript, ok) <- processTranscript "git" (toCommand params) Nothing
-	unless ok $
-		error $ "git init failed!\nOutput:\n" ++ transcript
+{- Makes a new git repository. Or, if a git repository already
+ - exists, returns False. -}
+makeRepo :: FilePath -> Bool -> IO Bool
+makeRepo path bare = ifM alreadyexists
+	( return False
+	, do
+		(transcript, ok) <-
+			processTranscript "git" (toCommand params) Nothing
+		unless ok $
+			error $ "git init failed!\nOutput:\n" ++ transcript
+		return True
+	)
   where
+  	alreadyexists = isJust <$> 
+		catchDefaultIO Nothing (Git.Construct.checkForRepo path)
 	baseparams = [Param "init", Param "--quiet"]
 	params
 		| bare = baseparams ++ [Param "--bare", File path]
@@ -295,8 +299,9 @@ inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
 	Annex.eval state a
 
-initRepo :: Bool -> FilePath -> Maybe String -> IO UUID
-initRepo primary_assistant_repo dir desc = inDir dir $ do
+{- Creates a new repository, and returns its UUID. -}
+initRepo :: Bool -> Bool -> FilePath -> Maybe String -> IO UUID
+initRepo True primary_assistant_repo dir desc = inDir dir $ do
 	{- Initialize a git-annex repository in a directory with a description. -}
 	unlessM isInitialized $
 		initialize desc
@@ -319,6 +324,11 @@ initRepo primary_assistant_repo dir desc = inDir dir $ do
 		setDirect True
 		inRepo $ Git.Command.run
 			[Param "config", Param "gc.auto", Param "0"]
+	getUUID
+{- Repo already exists, could be a non-git-annex repo though. -}
+initRepo False primary_assistant_repo dir desc = inDir dir $ do
+	unlessM isInitialized $
+		initialize desc
 	getUUID
 
 {- Checks if the user can write to a directory.

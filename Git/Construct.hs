@@ -18,6 +18,7 @@ module Git.Construct (
 	fromRemoteLocation,
 	repoAbsPath,
 	newFrom,
+	checkForRepo,
 ) where
 
 import System.Posix.User
@@ -211,6 +212,8 @@ expandTilde = expandt True
 		| c == '/' = (n, cs)
 		| otherwise = findname (n++[c]) cs
 
+{- Checks if a git repository exists in a directory. Does not find
+ - git repositories in parent directories. -}
 checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $

@@ -57,6 +57,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * addurl: Add --relaxed option.
   * assistant: Fix ~/.ssh/git-annex-shell wrapper to work when the
     ssh key does not force a command.
+  * webapp: DTRT when told to create a git repo that already exists.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
