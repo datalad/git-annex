@@ -1,13 +1,13 @@
 git-annex (4.20130228) UNRELEASED; urgency=low
 
-  * Bugfix: If the UUID of a remote is not known, prevent --from, --to,
-    and other ways of specifying remotes by name from selecting it,
-    since it is not possible to sanely use it.
   * Bugfix: git annex add, when ran without any file or directory specified,
     should add files in the current directory, but not act on unlocked files
     elsewhere in the tree.
   * Bugfix: drop --from an unavailable remote no longer updates the location
     log, incorrectly, to say the remote does not have the key.
+  * Bugfix: If the UUID of a remote is not known, prevent --from, --to,
+    and other ways of specifying remotes by name from selecting it,
+    since it is not possible to sanely use it.
 
   * Switch from using regex-compat to regex-tdfa, as the C regex library
     is rather buggy.
