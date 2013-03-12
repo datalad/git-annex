@@ -51,7 +51,8 @@ getMatcher' = do
 		Right r -> return r
 		Left l -> do
 			let matcher = Utility.Matcher.generate (reverse l)
-			Annex.changeState $ \s -> s { Annex.limit = Right matcher }
+			Annex.changeState $ \s ->
+				s { Annex.limit = Right matcher }
 			return matcher
 
 {- Adds something to the limit list, which is built up reversed. -}

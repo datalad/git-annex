@@ -147,11 +147,11 @@ options :: [Option]
 options = Option.common ++
 	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
-	, Option [] ["trust"] (ReqArg (Remote.forceTrust Trusted) paramRemote)
+	, Option [] ["trust"] (trustArg Trusted)
 		"override trust setting"
-	, Option [] ["semitrust"] (ReqArg (Remote.forceTrust SemiTrusted) paramRemote)
+	, Option [] ["semitrust"] (trustArg SemiTrusted)
 		"override trust setting back to default"
-	, Option [] ["untrust"] (ReqArg (Remote.forceTrust UnTrusted) paramRemote)
+	, Option [] ["untrust"] (trustArg UnTrusted)
 		"override trust setting to untrusted"
 	, Option ['c'] ["config"] (ReqArg setgitconfig "NAME=VALUE")
 		"override git configuration setting"
@@ -173,13 +173,16 @@ options = Option.common ++
 		"skip files smaller than a size"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
-	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier")) "Trust Amazon Glacier inventory"
+	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier"))
+		"Trust Amazon Glacier inventory"
 	] ++ Option.matcher
   where
 	setnumcopies v = maybe noop
 		(\n -> Annex.changeGitConfig $ \c -> c { annexNumCopies = n })
 		(readish v)
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
+
+	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 
 header :: String
 header = "Usage: git-annex command [option ..]"

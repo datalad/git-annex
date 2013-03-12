@@ -95,7 +95,8 @@ describeCipher (EncryptedCipher _ (KeyIds ks)) =
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
 encryptCipher (Cipher c) (KeyIds ks) = do
-	let ks' = nub $ sort ks -- gpg complains about duplicate recipient keyids
+	-- gpg complains about duplicate recipient keyids
+	let ks' = nub $ sort ks
 	encipher <- Gpg.pipeStrict ([ Params "--encrypt" ] ++ recipients ks') c
 	return $ EncryptedCipher encipher (KeyIds ks')
   where
