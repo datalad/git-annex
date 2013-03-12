@@ -37,7 +37,6 @@ import Config
 import qualified Data.Text as T
 import Data.Char
 import System.Posix.Directory
-import qualified Control.Exception as E
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
