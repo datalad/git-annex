@@ -150,8 +150,12 @@ compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool
 compareInodeCaches x y
 	| compareStrong x y = return True
 	| otherwise = ifM inodesChanged
-		( return $ compareWeak x y
-		, return False
+		( do
+			liftIO $ print ("compareInodeCaches weak")
+			return $ compareWeak x y
+		, do
+			liftIO $ print ("compareInodeCaches no inode change but cache not match")
+			return False
 		)
 
 compareInodeCachesWith :: Annex InodeComparisonType
@@ -171,9 +175,11 @@ inodesChanged = maybe calc return =<< Annex.getState Annex.inodeschanged
 		scache <- liftIO . genInodeCache
 			=<< fromRepo gitAnnexInodeSentinal
 		scached <- readInodeSentinalFile
+		liftIO $ print (scache, scached)
 		let changed = case (scache, scached) of
 			(Just c1, Just c2) -> not $ compareStrong c1 c2
 			_ -> True
+		liftIO $ print changed
 		Annex.changeState $ \s -> s { Annex.inodeschanged = Just changed }
 		return changed
 

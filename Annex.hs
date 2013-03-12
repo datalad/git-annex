@@ -31,6 +31,7 @@ module Annex (
 	getGitConfig,
 	changeGitConfig,
 	changeGitRepo,
+	withCurrentState,
 ) where
 
 import "mtl" Control.Monad.State.Strict
@@ -216,3 +217,13 @@ changeGitRepo r = changeState $ \s -> s
 	{ repo = r
 	, gitconfig = extractGitConfig r
 	}
+
+{- Converts an Annex action into an IO action, that runs with a copy
+ - of the current Annex state. 
+ -
+ - Use with caution; the action should not rely on changing the
+ - state, as it will be thrown away. -}
+withCurrentState :: Annex a -> Annex (IO a)
+withCurrentState a = do
+	s <- getState id
+	return $ eval s a

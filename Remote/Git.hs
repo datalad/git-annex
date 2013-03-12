@@ -351,6 +351,10 @@ copyToRemote r key file p
   where
 	copylocal Nothing = return False
 	copylocal (Just (object, checksuccess)) = do
+		-- The checksuccess action is going to be run in
+		-- the remote's Annex, but it needs access to the current
+		-- Annex monad's state.
+		checksuccessio <- Annex.withCurrentState checksuccess
 		let params = rsyncParams r
 		u <- getUUID
 		-- run copy from perspective of remote
@@ -360,7 +364,7 @@ copyToRemote r key file p
 				ensureInitialized
 				download u key file noRetry $
 					Annex.Content.saveState True `after`
-						Annex.Content.getViaTmpChecked checksuccess key
+						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)
 			)
 
