@@ -159,7 +159,7 @@ androidapp:
 # We bypass cabal, and only run the main ghc --make command for a
 # fast development built. Note: Does not rebuild C libraries.
 fast: dist/caballog
-	@$$(grep 'ghc --make' dist/caballog | head -n 1)
+	@$$(grep 'ghc --make' dist/caballog | head -n 1 | sed -e 's/-package-id [^ ]*//g' -e 's/-hide-all-packages//') -O0
 	@ln -sf dist/build/git-annex/git-annex git-annex
 	@$(MAKE) tags >/dev/null 2>&1
 
