@@ -10,7 +10,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     since it is not possible to sanely use it.
   * Bugfix: Fix bug in inode cache sentinal check, which broke
     copying to local repos if the repo being copied from had moved
-    to a different filesystem or otherwise changed all its inodes'
+    to a different filesystem or otherwise changed all its inodes
 
   * Switch from using regex-compat to regex-tdfa, as the C regex library
     is rather buggy.
