@@ -15,6 +15,7 @@ import Assistant.Ssh
 import Locations.UserConfig
 import Utility.FileMode
 import Utility.Shell
+import Utility.TempFile
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
@@ -53,21 +54,25 @@ ensureInstalled = go =<< standaloneAppBase
 		installAutoStart program autostartfile
 
 		{- This shim is only updated if it doesn't
-		 - already exist with the right content. This
-		 - ensures that there's no race where it would have
-		 - worked, but is unavailable due to being updated. -}
+		 - already exist with the right content. -}
 		sshdir <- sshDir
 		let shim = sshdir </> "git-annex-shell"
+		let runshell var = "exec " ++ base </> "runshell" ++
+			" git-annex-shell -c \"" ++ var ++ "\""
 		let content = unlines
 			[ shebang
 			, "set -e"
-			, "exec", base </> "runshell" ++ 
-			  " git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
+			,   runshell "$SSH_ORIGINAL_COMMAND"
+			, "else"
+			,   runshell "$@"
+			, "fi"
 			]
+
 		curr <- catchDefaultIO "" $ readFileStrict shim
 		when (curr /= content) $ do
 			createDirectoryIfMissing True (parentDir shim)
-			writeFile shim content
+			viaTmp writeFile shim content
 			modifyFileMode shim $ addModes [ownerExecuteMode]
 
 {- Returns a cleaned up environment that lacks settings used to make the

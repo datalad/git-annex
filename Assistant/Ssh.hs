@@ -127,8 +127,13 @@ addAuthorizedKeysCommand rsynconly dir pubkey = join "&&"
 	script =
 		[ shebang
 		, "set -e"
-		, "exec git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\""
+		, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
+		,   runshell "$SSH_ORIGINAL_COMMAND"
+		, "else"
+		,   runshell "$@"
+		, "fi"
 		]
+	runshell var = "exec git-annex-shell -c \"" ++ var ++ "\""
 
 authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
 authorizedKeysLine rsynconly dir pubkey

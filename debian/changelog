@@ -55,6 +55,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * assistant: Detects most renames, including directory renames, and
     combines all their changes into a single commit.
   * addurl: Add --relaxed option.
+  * assistant: Fix ~/.ssh/git-annex-shell wrapper to work when the
+    ssh key does not force a command.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
 
