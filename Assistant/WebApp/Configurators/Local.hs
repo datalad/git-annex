@@ -325,7 +325,7 @@ initRepo True primary_assistant_repo dir desc = inDir dir $ do
 			[Param "config", Param "gc.auto", Param "0"]
 	getUUID
 {- Repo already exists, could be a non-git-annex repo though. -}
-initRepo False primary_assistant_repo dir desc = inDir dir $ do
+initRepo False _ dir desc = inDir dir $ do
 	unlessM isInitialized $
 		initialize desc
 	getUUID
