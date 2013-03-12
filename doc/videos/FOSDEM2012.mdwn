@@ -4,3 +4,4 @@ A <a href="http://video.fosdem.org/2012/lightningtalks/git_annex___manage_files_
 presented by Richard Hartmann at FOSDEM 2012.
 
 [[!meta date="1 Jan 2012"]]
+[[!meta title="git-annex presentation by Richard Hartmann at FOSDEM 2012"]]
