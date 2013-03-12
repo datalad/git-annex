@@ -1,0 +1,8 @@
+A quick screencast demoing the early `git annex webapp` and
+automatic USB drive mount detection and syncing.
+
+<video controls src="http://joeyh.name/screencasts/git-annex-webapp.ogg"></video>
+
+[video](http://joeyh.name/screencasts/git-annex-webapp.ogg)
+
+[[!meta date="Sun Jul 29 14:41:41 2012 -0400"]]

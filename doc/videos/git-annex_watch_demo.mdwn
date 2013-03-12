@@ -1,0 +1,7 @@
+A quick screencast demoing the `git annex watch` daemon.
+
+<video controls src="http://joeyh.name/screencasts/git-annex-watch.ogg"></video>
+
+[video](http://joeyh.name/screencasts/git-annex-watch.ogg)
+
+[[!meta date="Mon Jun 11 16:02:14 2012 -0400"]]
