@@ -133,7 +133,9 @@ import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
+#ifdef WITH_CLIBS
 import Assistant.Threads.MountWatcher
+#endif
 import Assistant.Threads.NetWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
@@ -219,7 +221,9 @@ startDaemon assistant foreground startbrowser = do
 			, assist $ daemonStatusThread
 			, assist $ sanityCheckerDailyThread
 			, assist $ sanityCheckerHourlyThread
+#ifdef WITH_CLIBS
 			, assist $ mountWatcherThread
+#endif
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread

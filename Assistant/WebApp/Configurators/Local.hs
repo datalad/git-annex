@@ -21,7 +21,9 @@ import qualified Git.Command
 import qualified Annex
 import Locations.UserConfig
 import Utility.FreeDesktop
+#ifdef WITH_CLIBS
 import Utility.Mounts
+#endif
 import Utility.DiskFree
 import Utility.DataUnits
 import Utility.Network
@@ -236,6 +238,7 @@ getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
+#ifdef WITH_CLIBS
 driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
   where
 	gen dir = RemovableDrive
@@ -254,6 +257,9 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 		| dir == "/run/shm" = False
 		| dir == "/run/lock" = False
 		| otherwise = True
+#else
+driveList = return []
+#endif
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the

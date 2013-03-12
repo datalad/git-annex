@@ -13,17 +13,6 @@ endif
 
 build: $(all)
 
-# We bypass cabal, and only run the main ghc --make command for a
-# fast development built. Note: Does not rebuild C libraries.
-fast: dist/caballog
-	@$$(grep 'ghc --make' dist/caballog | head -n 1)
-	@ln -sf dist/build/git-annex/git-annex git-annex
-	@$(MAKE) tags >/dev/null 2>&1
-
-dist/caballog: git-annex.cabal
-	$(CABAL) configure -f"-Production" -O0
-	$(CABAL) build -v2 | tee $@
-
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	$(CABAL) configure
 
@@ -166,5 +155,24 @@ android:
 androidapp:
 	$(MAKE) android
 	$(MAKE) -C standalone/android
+
+# We bypass cabal, and only run the main ghc --make command for a
+# fast development built. Note: Does not rebuild C libraries.
+fast: dist/caballog
+	@$$(grep 'ghc --make' dist/caballog | head -n 1)
+	@ln -sf dist/build/git-annex/git-annex git-annex
+	@$(MAKE) tags >/dev/null 2>&1
+
+dist/caballog: git-annex.cabal
+	$(CABAL) configure -f"-Production" -O0
+	$(CABAL) build -v2 | tee $@
+
+# Hardcoded command line to make hdevtools start up and work.
+# You will need some memory. It's worth it.
+# Note: Don't include WebDAV or Webapp. TH use bloats memory > 500 mb!
+# TODO should be possible to derive this from caballog.
+hdevtools:
+	hdevtools --stop-server || true
+	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98
 
 .PHONY: git-annex tags

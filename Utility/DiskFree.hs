@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ForeignFunctionInterface, CPP #-}
 
 module Utility.DiskFree ( getDiskFree ) where
 
@@ -14,6 +14,8 @@ import Common
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Error
+
+#ifdef WITH_CLIBS
 
 foreign import ccall safe "libdiskfree.h diskfree" c_diskfree
 	:: CString -> IO CULLong
@@ -27,3 +29,10 @@ getDiskFree path = withFilePath path $ \c_path -> do
 		)
   where
 	safeErrno (Errno v) = v == 0
+
+#else
+
+getDiskFree :: FilePath -> IO (Maybe Integer)
+getDiskFree _ = return Nothing
+
+#endif
