@@ -1,0 +1,24 @@
+From d9fcc1fd0ebce667677679fd7e36ca3815290f2c Mon Sep 17 00:00:00 2001
+From: Martin Erik Werner <martinerikwerner@gmail.com>
+Date: Tue, 12 Mar 2013 20:37:52 +0100
+Subject: [PATCH] manpage: typo fix, specific->specify
+
+---
+ doc/git-annex.mdwn |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/doc/git-annex.mdwn b/doc/git-annex.mdwn
+index 8013c37..80002b4 100644
+--- a/doc/git-annex.mdwn
++++ b/doc/git-annex.mdwn
+@@ -155,7 +155,7 @@ subdirectories).
+   To avoid immediately downloading the url, specify --fast.
+ 
+   To avoid storing the size of the url's content, and accept whatever
+-  is there at a future point, specific --relaxed. (Implies --fast.)
++  is there at a future point, specify --relaxed. (Implies --fast.)
+ 
+   Normally the filename is based on the full url, so will look like
+   "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
+-- 
+1.7.10.4
