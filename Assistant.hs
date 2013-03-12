@@ -178,7 +178,7 @@ startDaemon assistant foreground startbrowser = do
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
 			liftIO $ Utility.LogFile.redirLog logfd
-			showStart (if assistant then "assistant" else "watch") "."
+			showStart "." desc
 			start id $ 
 				case startbrowser of
 					Nothing -> Nothing
@@ -186,6 +186,9 @@ startDaemon assistant foreground startbrowser = do
 		else
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
   where
+  	desc
+		| assistant = "assistant"
+		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do
 		checkCanWatch
 		when assistant $ checkEnvironment
