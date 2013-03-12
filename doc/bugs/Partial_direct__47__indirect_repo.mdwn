@@ -17,6 +17,6 @@ Actual:
 
 * New file copied over but seems to be in direct mode, while all the other content that is present is still symlinked
 * Files checked into git converted to direct mode files too (can tell this has happened by following step:)
-* Typing `git annex indirect` on A & B shows conversion of precisely four files (three files originally checked into git and new file added to B) back to indirect
+* Typing `git annex indirect` on A & B shows conversion of precisely four files (three files originally checked into git and new file added to B ) back to indirect
 
 Thanks.
