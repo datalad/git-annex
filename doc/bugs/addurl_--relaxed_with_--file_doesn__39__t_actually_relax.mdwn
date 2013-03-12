@@ -22,3 +22,5 @@ Debian Sid
     supported repository versions: 3 4
     upgrade supported from repository versions: 0 1 2
     build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+
+> Missed the case of adding an url to an existing file. [[done]] --[[Joey]] 

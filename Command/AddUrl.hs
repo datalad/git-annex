@@ -60,16 +60,20 @@ perform relaxed url file = ifAnnexed file addurl geturl
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		ifM (Annex.getState Annex.fast <||> pure relaxed)
 			( nodownload relaxed url file , download url file )
-	addurl (key, _backend) = do
-		headers <- getHttpHeaders
-		ifM (liftIO $ Url.check url headers $ keySize key)
-			( do
-				setUrlPresent key url
-				next $ return True
-			, do
-				warning $ "failed to verify url: " ++ url
-				stop
-			)
+	addurl (key, _backend)
+		| relaxed = do
+			setUrlPresent key url
+			next $ return True
+		| otherwise = do
+			headers <- getHttpHeaders
+			ifM (liftIO $ Url.check url headers $ keySize key)
+				( do
+					setUrlPresent key url
+					next $ return True
+				, do
+					warning $ "failed to verify url: " ++ url
+					stop
+				)
 
 download :: String -> FilePath -> CommandPerform
 download url file = do
