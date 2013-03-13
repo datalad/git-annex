@@ -3,6 +3,17 @@ all the other git clones, at both the git level and the key/value level.
 
 ## bugs
 
+* Rename detection code is now pretty good, but can occasionally fail
+  due to eg system load causing the wait for the delete+add pair to
+  not collect them together. Want to avoid making the delay longer
+  (and any length might not be enough in all cases), but in direct mode
+  a failure can mean an expensive re-checksum.
+
+  Idea: Keep a ring buffer map (what data structure?) of the last
+  N delete events, and look through it to determine if the current
+  event matches one of those. This assumes that delete events come first,
+  which they do.
+
 ## TODO
 
 * Test MountWatcher on LXDE.
