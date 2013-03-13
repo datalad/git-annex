@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://sekenre.wordpress.com/"
+ nickname="sekenre"
+ subject="Bup remotes in git-annex assistant"
+ date="2013-03-13T12:54:56Z"
+ content="""
+Hi,
+
+Is the bup remote available via the Assistant user interface?
+
+Unrelated question;
+
+If you are syncing files between two bup repos on local usb drives, does it use git to sync the changes or does it use \"bup split\" to re-add the file? (Basically, is the syncing as efficient as possible using git-annex or would I have to go to a lower level)
+
+Many Thanks,
+Sek
+"""]]
