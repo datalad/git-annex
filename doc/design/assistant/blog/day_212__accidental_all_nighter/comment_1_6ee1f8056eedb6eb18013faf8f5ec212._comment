@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl1D_4vD5ueaDw8gRsIYPO3UHRKEpFfg9I"
+ nickname="Дмитрий"
+ subject="About development in Vim"
+ date="2013-03-13T02:18:20Z"
+ content="""
+Could you describe your vim configuration for haskell development, what plugins do you use, what is in you .vimrc file and maybe even record a screencast of typical \"session\" of work?
+"""]]
