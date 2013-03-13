@@ -5,7 +5,8 @@ The webapp is a web server that displays a shiny interface.
 * Combine the replist with the dashboard. Put the list of repos or nudge
   to make repos on top, and the transfers below. Make a "+ Add repo" button
   on the list of repos that expands a hidden div, showing the repo creation
-  choices.
+  choices. Only one problem: If I have 20 repositories, all
+  I can see on the dashboard w/o scrolling is my repos..
 
 * drag and drop to reorder
 * keep it accessible to blind, etc
