@@ -1,3 +1,9 @@
+## version 4.20130314
+
+If you have already used the webapp to locally pair two computers,
+you're recommended to configure the cost of each to be 175, so
+it is used in preference to more expensive remotes on the network.
+
 ## version 4.20130227
 
 This release fixes a bug with globbing that broke preferred content expressions.

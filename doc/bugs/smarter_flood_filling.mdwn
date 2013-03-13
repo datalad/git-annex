@@ -10,11 +10,13 @@ It occurred to me this morning that there is a simple change that can avoid
 this.
 
 1. Ensure that locally paired computers have a lower cost than network
-   transfer remotes.
+   transfer remotes. (done)
 2. When queuing uploads, queue transfers to the lowest cost remotes first.
    (already done)
 3. Just before starting a transfer, re-check if the transfer is still wanted.
    (done)
+
+> [[done]]
 
 Now, unnecessary transfers to tranfer repos are avoided if it can send
 the file locally instead.

@@ -12,6 +12,7 @@ import Assistant.Ssh
 import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.MakeRemote
+import Config
 
 import Network.Socket
 import qualified Data.Text as T
@@ -42,7 +43,7 @@ finishedLocalPairing msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			Nothing
-	void $ makeSshRemote False sshdata
+	void $ makeSshRemote False sshdata (Just semiExpensiveRemoteCost)
 
 {- Mostly a straightforward conversion.  Except:
  -  * Determine the best hostname to use to contact the host.

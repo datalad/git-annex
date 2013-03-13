@@ -12,6 +12,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
+import qualified Types.Remote as Remote
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -50,10 +51,15 @@ remoteCost c def = case remoteAnnexCostCommand c of
 			readProcess "sh" ["-c", cmd]
 	_ -> return $ fromMaybe def $ remoteAnnexCost c
 
+setRemoteCost :: Remote -> Int -> Annex ()
+setRemoteCost r c = setConfig (remoteConfig (Remote.repo r) "cost") (show c)
+
 cheapRemoteCost :: Int
 cheapRemoteCost = 100
 semiCheapRemoteCost :: Int
 semiCheapRemoteCost = 110
+semiExpensiveRemoteCost :: Int
+semiExpensiveRemoteCost = 175
 expensiveRemoteCost :: Int
 expensiveRemoteCost = 200
 veryExpensiveRemoteCost :: Int
@@ -68,9 +74,10 @@ prop_cost_sane :: Bool
 prop_cost_sane = False `notElem`
 	[ expensiveRemoteCost > 0
 	, cheapRemoteCost < semiCheapRemoteCost
-	, semiCheapRemoteCost < expensiveRemoteCost
+	, semiCheapRemoteCost < semiExpensiveRemoteCost
+	, semiExpensiveRemoteCost < expensiveRemoteCost
 	, cheapRemoteCost + encryptedRemoteCostAdj > semiCheapRemoteCost
-	, cheapRemoteCost + encryptedRemoteCostAdj < expensiveRemoteCost
+	, cheapRemoteCost + encryptedRemoteCostAdj < semiExpensiveRemoteCost
 	, semiCheapRemoteCost + encryptedRemoteCostAdj < expensiveRemoteCost
 	]
 

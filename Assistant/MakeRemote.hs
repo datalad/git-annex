@@ -20,15 +20,17 @@ import qualified Command.InitRemote
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
+import Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
-makeSshRemote :: Bool -> SshData -> Assistant Remote
-makeSshRemote forcersync sshdata = do
+makeSshRemote :: Bool -> SshData -> Maybe Int -> Assistant Remote
+makeSshRemote forcersync sshdata mcost = do
 	r <- liftAnnex $
 		addRemote $ maker (sshRepoName sshdata) sshurl
+	liftAnnex $ maybe noop (setRemoteCost r) mcost
 	syncNewRemote r
 	return r
   where
