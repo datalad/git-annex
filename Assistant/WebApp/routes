@@ -1,6 +1,9 @@
 / HomeR GET HEAD
+/repositories RepositoriesR GET
+
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET
+
 /about AboutR GET
 /about/license LicenseR GET
 /about/repogroups RepoGroupR GET
@@ -12,7 +15,6 @@
 /log LogR GET
 
 /config ConfigurationR GET
-/config/repository RepositoriesR GET
 /config/preferences PreferencesR GET
 /config/xmpp XMPPR GET
 

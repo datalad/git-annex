@@ -19,21 +19,23 @@ import Yesod
 import Text.Hamlet
 import Data.Text (Text)
 
-data NavBarItem = DashBoard | Configuration | About
-	deriving (Eq)
+data NavBarItem = DashBoard | Repositories | Configuration | About
+	deriving (Eq, Ord, Enum, Bounded)
 
 navBarName :: NavBarItem -> Text
 navBarName DashBoard = "Dashboard"
+navBarName Repositories = "Repositories"
 navBarName Configuration = "Configuration"
 navBarName About = "About"
 
 navBarRoute :: NavBarItem -> Route WebApp
 navBarRoute DashBoard = HomeR
+navBarRoute Repositories = RepositoriesR
 navBarRoute Configuration = ConfigurationR
 navBarRoute About = AboutR
 
 defaultNavBar :: [NavBarItem]
-defaultNavBar = [DashBoard, Configuration, About]
+defaultNavBar = [minBound .. maxBound]
 
 firstRunNavBar :: [NavBarItem]
 firstRunNavBar = [Configuration, About]

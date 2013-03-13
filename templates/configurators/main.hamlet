@@ -2,11 +2,11 @@
   <div .row-fluid>
     <div .span4>
       <h3>
-        <a href="@{RepositoriesR}">
-          Manage repositories
+        <a href="@{PreferencesR}">
+          Preferences
       <p>
-        Distribute the files in this repository to other devices, #
-        make backups, and more, by adding repositories.
+        Tune the behavior of git-annex, including how many copies #
+        to retain of each file, and how much disk space it can use.
     <div .span4>
       $if xmppconfigured
         <h3>
@@ -22,10 +22,3 @@
        <p>
          Keep in touch with remote devices, and with your friends, #
          by configuring a jabber account.
-    <div .span4>
-      <h3>
-        <a href="@{PreferencesR}">
-          Preferences
-      <p>
-        Tune the behavior of git-annex, including how many copies #
-        to retain of each file, and how much disk space it can use.

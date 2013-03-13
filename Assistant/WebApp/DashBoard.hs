@@ -12,7 +12,7 @@ module Assistant.WebApp.DashBoard where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
 import Assistant.WebApp.Notifications
-import Assistant.WebApp.Configurators
+import Assistant.WebApp.RepoList
 import Assistant.TransferQueue
 import Utility.NotificationBroadcaster
 import Logs.Transfer

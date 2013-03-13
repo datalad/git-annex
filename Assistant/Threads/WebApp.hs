@@ -16,6 +16,7 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.DashBoard
 import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
+import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Local

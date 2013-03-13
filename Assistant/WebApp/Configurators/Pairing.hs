@@ -31,7 +31,7 @@ import Assistant.XMPP.Git
 import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
-import Assistant.WebApp.Configurators
+import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators.XMPP
 #endif
 import Utility.UserInfo
