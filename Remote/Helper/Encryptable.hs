@@ -13,7 +13,7 @@ import Common.Annex
 import Types.Remote
 import Crypto
 import qualified Annex
-import Config
+import Config.Cost
 import Utility.Base64
 
 {- Encryption setup for a remote. The user must specify whether to use

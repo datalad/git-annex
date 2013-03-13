@@ -17,6 +17,7 @@ import Types.Key
 import Types.UUID
 import Types.Meters
 import Types.GitConfig
+import Config.Cost
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -46,7 +47,7 @@ data RemoteA a = Remote {
 	-- each Remote has a human visible name
 	name :: String,
 	-- Remotes have a use cost; higher is more expensive
-	cost :: Int,
+	cost :: Cost,
 	-- Transfers a key to the remote.
 	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
 	-- retrieves a key's contents to a file

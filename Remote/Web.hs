@@ -13,6 +13,7 @@ import qualified Git
 import qualified Git.Construct
 import Annex.Content
 import Config
+import Config.Cost
 import Logs.Web
 import qualified Utility.Url as Url
 import Types.Key

@@ -42,7 +42,7 @@ import qualified Logs.Presence
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
-import qualified Config
+import qualified Config.Cost
 import qualified Crypto
 import qualified Utility.Path
 import qualified Utility.FileMode
@@ -102,7 +102,7 @@ quickcheck =
 	, check "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
 	, check "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, check "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
-	, check "prop_cost_sane" Config.prop_cost_sane
+	, check "prop_cost_sane" Config.Cost.prop_cost_sane
 	, check "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
 	, check "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
 	, check "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane

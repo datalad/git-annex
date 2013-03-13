@@ -13,6 +13,7 @@ import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
 import qualified Types.Remote as Remote
+import Config.Cost
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -44,42 +45,15 @@ annexConfig key = ConfigKey $ "annex." ++ key
 {- Calculates cost for a remote. Either the specific default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
-remoteCost :: RemoteGitConfig -> Int -> Annex Int
+remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
 remoteCost c def = case remoteAnnexCostCommand c of
 	Just cmd | not (null cmd) -> liftIO $
 		(fromMaybe def . readish) <$>
 			readProcess "sh" ["-c", cmd]
 	_ -> return $ fromMaybe def $ remoteAnnexCost c
 
-setRemoteCost :: Remote -> Int -> Annex ()
+setRemoteCost :: Remote -> Cost -> Annex ()
 setRemoteCost r c = setConfig (remoteConfig (Remote.repo r) "cost") (show c)
-
-cheapRemoteCost :: Int
-cheapRemoteCost = 100
-semiCheapRemoteCost :: Int
-semiCheapRemoteCost = 110
-semiExpensiveRemoteCost :: Int
-semiExpensiveRemoteCost = 175
-expensiveRemoteCost :: Int
-expensiveRemoteCost = 200
-veryExpensiveRemoteCost :: Int
-veryExpensiveRemoteCost = 1000
-
-{- Adjusts a remote's cost to reflect it being encrypted. -}
-encryptedRemoteCostAdj :: Int
-encryptedRemoteCostAdj = 50
-
-{- Make sure the remote cost numbers work out. -}
-prop_cost_sane :: Bool
-prop_cost_sane = False `notElem`
-	[ expensiveRemoteCost > 0
-	, cheapRemoteCost < semiCheapRemoteCost
-	, semiCheapRemoteCost < semiExpensiveRemoteCost
-	, semiExpensiveRemoteCost < expensiveRemoteCost
-	, cheapRemoteCost + encryptedRemoteCostAdj > semiCheapRemoteCost
-	, cheapRemoteCost + encryptedRemoteCostAdj < semiExpensiveRemoteCost
-	, semiCheapRemoteCost + encryptedRemoteCostAdj < expensiveRemoteCost
-	]
 
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies (Just v) = return v

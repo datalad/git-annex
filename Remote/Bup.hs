@@ -20,6 +20,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Ref
 import Config
+import Config.Cost
 import Remote.Helper.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
@@ -44,7 +45,7 @@ gen r u c gc = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
 		if bupLocal buprepo
-			then semiCheapRemoteCost
+			then nearlyCheapRemoteCost
 			else expensiveRemoteCost
 	(u', bupr') <- getBupUUID bupr u
 	

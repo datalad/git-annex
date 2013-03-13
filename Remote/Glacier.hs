@@ -16,6 +16,7 @@ import Types.Remote
 import Types.Key
 import qualified Git
 import Config
+import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import qualified Remote.Helper.AWS as AWS

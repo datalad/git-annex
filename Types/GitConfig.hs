@@ -16,6 +16,7 @@ import Common
 import qualified Git
 import qualified Git.Config
 import Utility.DataUnits
+import Config.Cost
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -77,7 +78,7 @@ extractGitConfig r = GitConfig
  - key such as <remote>.annex-foo, or if that is not set, a default from
  - annex.foo -}
 data RemoteGitConfig = RemoteGitConfig
-	{ remoteAnnexCost :: Maybe Int
+	{ remoteAnnexCost :: Maybe Cost
 	, remoteAnnexCostCommand :: Maybe String
 	, remoteAnnexIgnore :: Bool
 	, remoteAnnexSync :: Bool

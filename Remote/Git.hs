@@ -35,6 +35,7 @@ import qualified Annex.Branch
 import qualified Utility.Url as Url
 import Utility.TempFile
 import Config
+import Config.Cost
 import Init
 import Types.Key
 import qualified Fields

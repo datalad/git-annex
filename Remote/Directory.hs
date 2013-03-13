@@ -16,6 +16,7 @@ import Data.Int
 import Common.Annex
 import Types.Remote
 import qualified Git
+import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special

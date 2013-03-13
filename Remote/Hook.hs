@@ -16,6 +16,7 @@ import Types.Remote
 import Types.Key
 import qualified Git
 import Config
+import Config.Cost
 import Annex.Content
 import Remote.Helper.Special
 import Remote.Helper.Encryptable

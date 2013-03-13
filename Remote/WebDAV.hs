@@ -24,6 +24,7 @@ import Common.Annex
 import Types.Remote
 import qualified Git
 import Config
+import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Remote.Helper.Chunked

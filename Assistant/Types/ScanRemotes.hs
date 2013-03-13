@@ -13,7 +13,7 @@ import Control.Concurrent.STM
 import qualified Data.Map as M
 
 data ScanInfo = ScanInfo
-	{ scanPriority :: Int
+	{ scanPriority :: Float
 	, fullScan :: Bool
 	}
 
