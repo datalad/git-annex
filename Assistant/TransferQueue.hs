@@ -58,14 +58,14 @@ queueTransfersMatching matching reason schedule k f direction
 	| otherwise = go
   where
 	go = do
-		rs <- liftAnnex . sufficientremotes
+		rs <- liftAnnex . selectremotes
 			=<< syncDataRemotes <$> getDaemonStatus
 		let matchingrs = filter (matching . Remote.uuid) rs
 		if null matchingrs
 			then defer
 			else forM_ matchingrs $ \r ->
 				enqueue reason schedule (gentransfer r) (stubInfo f r)
-	sufficientremotes rs
+	selectremotes rs
 		{- Queue downloads from all remotes that
 		 - have the key, with the cheapest ones first.
 		 - More expensive ones will only be tried if
@@ -107,7 +107,8 @@ queueDeferredDownloads reason schedule = do
 		let sources = filter (\r -> uuid r `elem` uuids) rs
 		unless (null sources) $
 			forM_ sources $ \r ->
-				enqueue reason schedule (gentransfer r) (stubInfo f r)
+				enqueue reason schedule 
+					(gentransfer r) (stubInfo f r)
 		return $ null sources
 	  where
 		gentransfer r = Transfer

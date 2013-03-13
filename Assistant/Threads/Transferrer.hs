@@ -35,9 +35,13 @@ transfererThread = namedThread "Transferrer" $ do
 	{- Skip transfers that are already running. -}
 	notrunning = isNothing . startedTime
 
-{- By the time this is called, the daemonstatus's transfer map should
+{- By the time this is called, the daemonstatus's currentTransfers map should
  - already have been updated to include the transfer. -}
-startTransfer :: FilePath -> Transfer -> TransferInfo -> Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
+startTransfer
+	:: FilePath
+	-> Transfer
+	-> TransferInfo
+	-> Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
 startTransfer program t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
 		( do
@@ -45,7 +49,8 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 			notifyTransfer
 			return $ Just (t, info, transferprocess remote file)
 		, do
-			debug [ "Skipping unnecessary transfer:" , describeTransfer t info ]
+			debug [ "Skipping unnecessary transfer:",
+				describeTransfer t info ]
 			void $ removeTransfer t
 			finishedTransfer t (Just info)
 			return Nothing
@@ -57,8 +62,9 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 
 	transferprocess remote file = void $ do
 		(_, _, _, pid)
-			<- liftIO $ createProcess (proc program $ toCommand params)
-				{ create_group = True }
+			<- liftIO $ createProcess
+				(proc program $ toCommand params)
+					{ create_group = True }
 		{- Alerts are only shown for successful transfers.
 		 - Transfers can temporarily fail for many reasons,
 		 - so there's no point in bothering the user about
