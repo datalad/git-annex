@@ -9,13 +9,13 @@
 
 module Utility.DiskFree ( getDiskFree ) where
 
+#ifdef WITH_CLIBS
+
 import Common
 
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Error
-
-#ifdef WITH_CLIBS
 
 foreign import ccall safe "libdiskfree.h diskfree" c_diskfree
 	:: CString -> IO CULLong
