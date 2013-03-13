@@ -2,12 +2,12 @@ The webapp is a web server that displays a shiny interface.
 
 ## interface
 
-* list of files uploading and downloading **done**
-* button to open file browser on repo (`xdg-open $DIR`) **done**
-* progress bars for each file (see [[progressbars]]) **done**
+* Combine the replist with the dashboard. Put the list of repos or nudge
+  to make repos on top, and the transfers below. Make a "+ Add repo" button
+  on the list of repos that expands a hidden div, showing the repo creation
+  choices.
+
 * drag and drop to reorder
-* cancel, pause, and resume **done**
-* keep it usable w/o javascript **done**
 * keep it accessible to blind, etc
 
 ## other features
