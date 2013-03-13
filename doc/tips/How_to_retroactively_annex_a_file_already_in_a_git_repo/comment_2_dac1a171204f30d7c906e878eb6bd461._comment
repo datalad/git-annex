@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~arand"
+ nickname="arand"
+ subject="comment 2"
+ date="2013-03-13T12:05:49Z"
+ content="""
+Based on the hints given here I've worked on a filter to both annex and add urls via filter-branch:
+
+[https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-filter](https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-filter)
+
+The script above is very specific but I think there are a few ideas that can be used in general, the general structure is
+
+    #!/bin/bash
+    
+    # links that already exist
+    links=$(mktemp)
+    find . -type l >\"$links\"
+    
+    # remove from staging area first to not block and then annex
+    git rm --cached --ignore-unmatch -r bin*
+    git annex add -c annex.alwayscommit=false bin*
+
+    # compare links before and after annexing, remove links that existed before
+    newlinks=$(mktemp -u)
+    mkfifo \"$newlinks\"
+    comm -13 <(sort \"$links\") <(find . -type l | sort) > \"$newlinks\" &
+    
+    # rewrite links
+    while IFS= read -r file
+    do
+        # link is created below .git-rewrite/t/ during filter-branch, strip two parents for correct target
+        ln -sf \"$(readlink \"$file\" | sed -e 's%^\.\./\.\./%%')\" \"$file\"
+    done < \"$newlinks\"
+
+    git annex merge
+
+which would be run using
+
+    git filter-branch --tree-filter path/annex-filter --tag-filter cat -- --all
+
+or similar.
+
+* I'm using `find` to make sure the only rewritten symlinks are for the newly annexed files, this way it is possible to annex an unknown set of filenames
+* If doing several git annex commands using `-c annex.alwayscommit=false` and doing a `git annex merge` at the end instead might be faster.
+"""]]
