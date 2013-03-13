@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="Global preferences?"
+ date="2013-03-13T08:00:55Z"
+ content="""
+I just did a \"cabal install git-annex --bindir=$HOME/bin\" on Ubuntu 12.10 and I don't see the global preferences (where you configure the autostart etc.) from the screencast. How can I enable this?
+"""]]
