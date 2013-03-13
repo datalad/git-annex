@@ -88,6 +88,6 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 		maybe noop (\a -> a url htmlshim) onstartup
 
 myUrl :: WebApp -> SockAddr -> Url
-myUrl webapp addr = unpack $ yesodRender webapp urlbase HomeR []
+myUrl webapp addr = unpack $ yesodRender webapp urlbase DashboardR []
   where
 	urlbase = pack $ "http://" ++ show addr

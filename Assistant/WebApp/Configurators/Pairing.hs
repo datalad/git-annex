@@ -205,7 +205,7 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 	{- Sends pairing messages until the thread is killed,
 	 - and shows an activity alert while doing it.
 	 -
-	 - The cancel button returns the user to the HomeR. This is
+	 - The cancel button returns the user to the DashboardR. This is
 	 - not ideal, but they have to be sent somewhere, and could
 	 - have been on a page specific to the in-process pairing
 	 - that just stopped, so can't go back there.
@@ -214,7 +214,7 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 		tid <- liftIO myThreadId
 		let selfdestruct = AlertButton
 			{ buttonLabel = "Cancel"
-			, buttonUrl = urlrender HomeR
+			, buttonUrl = urlrender DashboardR
 			, buttonAction = Just $ const $ do
 				oncancel
 				killThread tid

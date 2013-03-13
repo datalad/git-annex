@@ -5,7 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp.Types where

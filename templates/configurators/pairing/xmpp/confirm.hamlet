@@ -7,5 +7,5 @@
   <p>
     <a .btn .btn-primary .btn-large href="@{FinishXMPPPairR pairkey}">
       Accept pair request
-    <a .btn .btn-large href="@{HomeR}">
+    <a .btn .btn-large href="@{DashboardR}">
       No thanks

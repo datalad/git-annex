@@ -29,7 +29,7 @@ navBarName Configuration = "Configuration"
 navBarName About = "About"
 
 navBarRoute :: NavBarItem -> Route WebApp
-navBarRoute DashBoard = HomeR
+navBarRoute DashBoard = DashboardR
 navBarRoute Repositories = RepositoriesR
 navBarRoute Configuration = ConfigurationR
 navBarRoute About = AboutR

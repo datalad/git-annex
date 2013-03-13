@@ -93,12 +93,12 @@ renderUrl urlrenderer route params = do
 	r <- readMVar urlrenderer
 	return $ r route params
 
-{- Redirects back to the referring page, or if there's none, HomeR -}
+{- Redirects back to the referring page, or if there's none, DashboardR -}
 redirectBack :: Handler ()
 redirectBack = do
 	clearUltDest
 	setUltDestReferer
-	redirectUltDest HomeR
+	redirectUltDest DashboardR
 
 controlMenu :: Widget
 controlMenu = $(widgetFile "controlmenu")

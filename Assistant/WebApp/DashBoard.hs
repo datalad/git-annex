@@ -62,7 +62,7 @@ simplifyTransfers (v@(t1, _):r@((t2, _):l))
  -
  - Note that the head of the widget is not included, only its
  - body is. To get the widget head content, the widget is also 
- - inserted onto the getHomeR page.
+ - inserted onto the getDashboardR page.
  -}
 getTransfersR :: NotificationId -> Handler RepHtml
 getTransfersR nid = do
@@ -77,21 +77,21 @@ dashboard warnNoScript = do
 	let content = transfersDisplay warnNoScript
 	$(widgetFile "dashboard/main")
 
-getHomeR :: Handler RepHtml
-getHomeR = ifM (inFirstRun)
+getDashboardR :: Handler RepHtml
+getDashboardR = ifM (inFirstRun)
 	( redirect ConfigurationR
 	, page "" (Just DashBoard) $ dashboard True
 	)
 
 {- Used to test if the webapp is running. -}
-headHomeR :: Handler ()
-headHomeR = noop
+headDashboardR :: Handler ()
+headDashboardR = noop
 
-{- Same as HomeR, except no autorefresh at all (and no noscript warning). -}
+{- Same as DashboardR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler RepHtml
 getNoScriptR = page "" (Just DashBoard) $ dashboard False
 
-{- Same as HomeR, except with autorefreshing via meta refresh. -}
+{- Same as DashboardR, except with autorefreshing via meta refresh. -}
 getNoScriptAutoR :: Handler RepHtml
 getNoScriptAutoR = page "" (Just DashBoard) $ do
 	let ident = NoScriptR

@@ -1,4 +1,4 @@
-/ HomeR GET HEAD
+/ DashboardR GET HEAD
 /repositories RepositoriesR GET
 
 /noscript NoScriptR GET
