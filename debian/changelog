@@ -48,6 +48,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     combines all their changes into a single commit.
   * assistant: Fix ~/.ssh/git-annex-shell wrapper to work when the
     ssh key does not force a command.
+  * assistant: Be smarter about avoiding unncessary transfers.
 
   * webapp: DTRT when told to create a git repo that already exists.
   * webapp: Work around bug in Warp's slowloris attack prevention code,

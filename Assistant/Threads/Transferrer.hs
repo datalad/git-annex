@@ -21,6 +21,7 @@ import qualified Remote
 import Types.Key
 import Locations.UserConfig
 import Assistant.Threads.TransferWatcher
+import Annex.Wanted
 
 import System.Process (create_group)
 
@@ -103,21 +104,40 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 			, File file
 			]
 
-{- Checks if the file to download is already present, or the remote
- - being uploaded to isn't known to have the file. -}
+{- Called right before a transfer begins, this is a last chance to avoid
+ - unnecessary transfers.
+ -
+ - For downloads, we obviously don't need to download if the already
+ - have the object.
+ -
+ - Smilarly, for uploads, check if the remote is known to already have
+ - the object.
+ -
+ - Also, uploads get queued to all remotes, in order of cost.
+ - This may mean, for example, that an object is uploaded over the LAN
+ - to a locally paired client, and once that upload is done, a more
+ - expensive transfer remote no longer wants the object. (Since
+ - all the clients have it already.) So do one last check if this is still
+ - preferred content.
+ -
+ - We'll also do one last preferred content check for downloads. An
+ - example of a case where this could be needed is if a download is queued
+ - for a file that gets moved out of an archive directory -- but before
+ - that download can happen, the file is put back in the archive.
+ -}
 shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
 shouldTransfer t info
 	| transferDirection t == Download =
-		not <$> inAnnex key
-	| transferDirection t == Upload =
-		{- Trust the location log to check if the
-		 - remote already has the key. This avoids
-		 - a roundtrip to the remote. -}
-		case transferRemote info of
-			Nothing -> return False
-			Just remote -> 
-				notElem (Remote.uuid remote)
-					<$> loggedLocations key
+		(not <$> inAnnex key) <&&> wantGet True file
+	| transferDirection t == Upload = case transferRemote info of
+		Nothing -> return False
+		Just r -> notinremote r
+			<&&> wantSend True file (Remote.uuid r)
 	| otherwise = return False
   where
 	key = transferKey t
+	file = associatedFile info
+
+	{- Trust the location log to check if the remote already has
+	 - the key. This avoids a roundtrip to the remote. -}
+	notinremote r = notElem (Remote.uuid r) <$> loggedLocations key
