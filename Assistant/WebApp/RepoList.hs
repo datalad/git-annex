@@ -16,9 +16,12 @@ import Assistant.WebApp.Utility
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
+import Remote.List (remoteListRefresh)
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
+import Config
+import Config.Cost
 import qualified Git
 #ifdef WITH_XMPP
 #endif
@@ -60,22 +63,30 @@ data Actions
 		{ setupRepoLink :: Route WebApp }
 	| SyncingRepoActions
 		{ setupRepoLink :: Route WebApp
+		, moveUpRepoList :: Route WebApp
+		, moveDownRepoList :: Route WebApp
 		, syncToggleLink :: Route WebApp
 		}
 	| NotSyncingRepoActions
 		{ setupRepoLink :: Route WebApp
+		, moveUpRepoList :: Route WebApp
+		, moveDownRepoList :: Route WebApp
 		, syncToggleLink :: Route WebApp
 		}
 
 mkSyncingRepoActions :: UUID -> Actions
 mkSyncingRepoActions u = SyncingRepoActions
 	{ setupRepoLink = EditRepositoryR u
+	, moveUpRepoList = MoveRepositoryUp u
+	, moveDownRepoList = MoveRepositoryDown u
 	, syncToggleLink = DisableSyncR u
 	}
 
 mkNotSyncingRepoActions :: UUID -> Actions
 mkNotSyncingRepoActions u = NotSyncingRepoActions
 	{ setupRepoLink = EditRepositoryR u
+	, moveUpRepoList = MoveRepositoryUp u
+	, moveDownRepoList = MoveRepositoryDown u
 	, syncToggleLink = EnableSyncR u
 	}
 
@@ -84,7 +95,7 @@ needsEnabled (DisabledRepoActions _) = True
 needsEnabled _ = False
 
 notSyncing :: Actions -> Bool
-notSyncing (SyncingRepoActions _ _) = False
+notSyncing (SyncingRepoActions _ _ _ _) = False
 notSyncing _ = True
 
 {- Called by client to get a list of repos, that refreshes
@@ -185,3 +196,40 @@ flipSync enable uuid = do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	changeSyncable mremote enable
 	redirect RepositoriesR
+
+getMoveRepositoryUp :: UUID -> Handler ()
+getMoveRepositoryUp u = do
+	reorderRepository u
+	redirect RepositoriesR
+
+getMoveRepositoryDown :: UUID -> Handler ()
+getMoveRepositoryDown u = do
+	reorderRepository u
+	redirect RepositoriesR
+
+reorderRepository :: UUID -> Handler ()
+reorderRepository uuid = do
+	liftAnnex $ do
+		remote <- fromMaybe (error "Unknown UUID") <$>
+			Remote.remoteFromUUID uuid
+		rs <- Remote.enabledRemoteList
+		let us = map Remote.uuid rs
+		case afteruuid us >>= (\u -> elemIndex u us) of
+			Nothing -> noop -- already at end
+			Just i -> do
+				let rs' = filter other rs
+				let costs = map Remote.cost rs'
+				let rs'' = (\(x, y) -> x ++ [remote] ++ y) $
+					splitAt (i + 1) rs'
+				let l = zip rs'' (insertCostAfter costs i)
+				forM_ l $ \(r, newcost) ->
+					when (Remote.cost r /= newcost) $
+						setRemoteCost r newcost
+		remoteListRefresh
+	liftAssistant updateSyncRemotes
+  where
+  	afteruuid [] = Nothing
+	afteruuid (u:us)
+		| u == uuid = headMaybe us
+		| otherwise = afteruuid us
+	other r = Remote.uuid r /= uuid

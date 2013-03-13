@@ -34,3 +34,7 @@
             $else
               <a href="@{setupRepoLink actions}">
                 configure
+              <a href="@{moveUpRepoList actions}">
+                  &uarr;
+              <a href="@{moveDownRepoList actions}">
+                  &darr;

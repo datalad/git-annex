@@ -12,7 +12,6 @@ import Assistant.Ssh
 import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.MakeRemote
-import Config
 import Config.Cost
 
 import Network.Socket
