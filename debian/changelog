@@ -1,4 +1,4 @@
-git-annex (4.20130228) UNRELEASED; urgency=low
+git-annex (4.20130314) unstable; urgency=low
 
   * Bugfix: git annex add, when ran without any file or directory specified,
     should add files in the current directory, but not act on unlocked files
@@ -71,7 +71,7 @@ git-annex (4.20130228) UNRELEASED; urgency=low
   * Stop depending on testpack.
   * Android: Enable test suite. 
 
- -- Joey Hess <joeyh@debian.org>  Wed, 27 Feb 2013 23:20:40 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 14 Mar 2013 15:29:20 -0400
 
 git-annex (4.20130227) unstable; urgency=low
 

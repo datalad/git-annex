@@ -1,8 +1,13 @@
 ## version 4.20130314
 
+This version makes a great many improvements and bugfixes, and is
+a recommended upgrade.
+
 If you have already used the webapp to locally pair two computers,
-you're recommended to configure the cost of each to be 175, so
-it is used in preference to more expensive remotes on the network.
+a bug caused the paired repository to not be given an appropriate cost.
+To fix this, go into the Repositories page in the webapp, and drag the
+repository for the locally paired computer to come before any repositories
+that it's more expensive to transfer data to.
 
 ## version 4.20130227
 
