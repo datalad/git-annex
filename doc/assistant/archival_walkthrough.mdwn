@@ -1,5 +1,3 @@
-[[!inline feeds=no template=bare pages=videos/git-annex_assistant_archiving]]
-
 Normally, the git-annex assistant makes your files be available
 wherever you use it, and so a copy of each file is stored in each repository.
 That's perfect for files you're using right now, but what about files you're
@@ -28,3 +26,7 @@ of the archive directory, and the assistant will retrieve its
 content from the archive.
 
 Note that retrieving data from Amazon Glacier takes 4 to 5 hours.
+
+### screencast
+
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_archiving]]
