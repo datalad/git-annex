@@ -1,3 +1,5 @@
+[[!inline feeds=no template=bare pages=videos/git-annex_assistant_archiving]]
+
 Normally, the git-annex assistant makes your files be available
 wherever you use it, and so a copy of each file is stored in each repository.
 That's perfect for files you're using right now, but what about files you're
