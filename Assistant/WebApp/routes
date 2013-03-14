@@ -1,8 +1,7 @@
 / DashboardR GET HEAD
 
 /repositories RepositoriesR GET
-/repositories/moveup/#UUID MoveRepositoryUp GET
-/repositories/movedown/#UUID MoveRepositoryDown GET
+/repositories/reorder RepositoriesReorderR GET
 
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET

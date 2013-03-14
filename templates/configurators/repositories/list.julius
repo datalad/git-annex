@@ -8,8 +8,14 @@ $(function() {
 		},
 		stop: function(event, ui) {
 			ui.item.children(".draghide").show();
+			var list = $("#costsortable").sortable("toArray");
+			var moved = ui.item.attr("id");
 			$.ajax({
-				'url': "http://localhost/testajax",
+				'url': "@{RepositoriesReorderR}",
+				'data': {
+					'moved': moved,
+					'list': list
+				}
 			});
 		},
 	});

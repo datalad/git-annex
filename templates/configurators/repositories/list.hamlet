@@ -11,8 +11,8 @@
         Repositories
   <table .table .table-condensed>
     <tbody #costsortable>
-      $forall (_num, name, actions) <- repolist
-        <tr .repoline>
+      $forall (num, name, (uuid, actions)) <- repolist
+        <tr .repoline ##{"costsortable_" ++ fromUUID uuid}>
           <td .handle>
             <i .icon-resize-vertical></i>
             #{name}

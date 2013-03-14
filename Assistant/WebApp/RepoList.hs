@@ -63,30 +63,22 @@ data Actions
 		{ setupRepoLink :: Route WebApp }
 	| SyncingRepoActions
 		{ setupRepoLink :: Route WebApp
-		, moveUpRepoList :: Route WebApp
-		, moveDownRepoList :: Route WebApp
 		, syncToggleLink :: Route WebApp
 		}
 	| NotSyncingRepoActions
 		{ setupRepoLink :: Route WebApp
-		, moveUpRepoList :: Route WebApp
-		, moveDownRepoList :: Route WebApp
 		, syncToggleLink :: Route WebApp
 		}
 
 mkSyncingRepoActions :: UUID -> Actions
 mkSyncingRepoActions u = SyncingRepoActions
 	{ setupRepoLink = EditRepositoryR u
-	, moveUpRepoList = MoveRepositoryUp u
-	, moveDownRepoList = MoveRepositoryDown u
 	, syncToggleLink = DisableSyncR u
 	}
 
 mkNotSyncingRepoActions :: UUID -> Actions
 mkNotSyncingRepoActions u = NotSyncingRepoActions
 	{ setupRepoLink = EditRepositoryR u
-	, moveUpRepoList = MoveRepositoryUp u
-	, moveDownRepoList = MoveRepositoryDown u
 	, syncToggleLink = EnableSyncR u
 	}
 
@@ -95,7 +87,7 @@ needsEnabled (DisabledRepoActions _) = True
 needsEnabled _ = False
 
 notSyncing :: Actions -> Bool
-notSyncing (SyncingRepoActions _ _ _ _) = False
+notSyncing (SyncingRepoActions _ _) = False
 notSyncing _ = True
 
 {- Called by client to get a list of repos, that refreshes
@@ -124,7 +116,8 @@ repoListDisplay reposelector = do
   where
 	ident = "repolist"
 
-type RepoList = [(String, String, Actions)]
+-- (num, name, (uuid, actions))
+type RepoList = [(String, String, (UUID, Actions))]
 
 {- A numbered list of known repositories,
  - with actions that can be taken on them. -}
@@ -186,7 +179,7 @@ repoList reposelector
 		zip3
 			<$> pure counter
 			<*> Remote.prettyListUUIDs (map fst l')
-			<*> pure (map snd l')
+			<*> pure l'
 	counter = map show ([1..] :: [Int])
 
 getEnableSyncR :: UUID -> Handler ()
@@ -201,15 +194,11 @@ flipSync enable uuid = do
 	changeSyncable mremote enable
 	redirect RepositoriesR
 
-getMoveRepositoryUp :: UUID -> Handler ()
-getMoveRepositoryUp u = do
-	reorderRepository u
-	redirect RepositoriesR
-
-getMoveRepositoryDown :: UUID -> Handler ()
-getMoveRepositoryDown u = do
-	reorderRepository u
-	redirect RepositoriesR
+getRepositoriesReorderR :: Handler ()
+getRepositoriesReorderR = do
+	moved <- runInputGet $ ireq textField "moved"
+	list <- lookupGetParams "list[]"
+	error $ show (moved, list)
 
 reorderRepository :: UUID -> Handler ()
 reorderRepository uuid = do
