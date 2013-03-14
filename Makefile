@@ -11,7 +11,9 @@ ifdef VIM
 all=fast
 endif
 
-build: $(all)
+build: build-stamp
+build-stamp: $(all)
+	touch $@
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
 	$(CABAL) configure
@@ -69,7 +71,7 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist tags Build/SysConfig.hs
+		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -175,4 +177,4 @@ hdevtools:
 	hdevtools --stop-server || true
 	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98
 
-.PHONY: git-annex tags
+.PHONY: git-annex tags build-stamp
