@@ -213,7 +213,7 @@ getRepositoriesReorderR = do
 		remoteListRefresh
 	liftAssistant updateSyncRemotes
   where
-  	fromjs = toUUID . snd . separate (== '_') . T.unpack
+  	fromjs = toUUID . T.unpack
 
 reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]
 reorderCosts remote rs = zip rs'' (insertCostAfter costs i)
