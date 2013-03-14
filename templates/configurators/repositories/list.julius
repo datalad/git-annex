@@ -1,0 +1,16 @@
+$(function() {
+	$("#costsortable").sortable({
+		handle: ".handle",
+		cursor: "move",
+		forceHelperSize: true,
+		start: function(event, ui) {
+			ui.item.children(".draghide").hide();
+		},
+		stop: function(event, ui) {
+			ui.item.children(".draghide").show();
+			$.ajax({
+				'url': "http://localhost/testajax",
+			});
+		},
+	});
+});

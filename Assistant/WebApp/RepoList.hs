@@ -112,6 +112,10 @@ getRepoListR (RepoListNotificationId nid reposelector) = do
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do
 	autoUpdate ident (NotifierRepoListR reposelector) (10 :: Int) (10 :: Int)
+	addScript $ StaticR jquery_ui_core_js
+	addScript $ StaticR jquery_ui_widget_js
+	addScript $ StaticR jquery_ui_mouse_js
+	addScript $ StaticR jquery_ui_sortable_js
 
 	repolist <- lift $ repoList reposelector
 
@@ -209,7 +213,7 @@ getMoveRepositoryDown u = do
 
 reorderRepository :: UUID -> Handler ()
 reorderRepository uuid = do
-	liftAnnex $ do
+	void $ liftAnnex $ do
 		remote <- fromMaybe (error "Unknown UUID") <$>
 			Remote.remoteFromUUID uuid
 		rs <- Remote.enabledRemoteList
