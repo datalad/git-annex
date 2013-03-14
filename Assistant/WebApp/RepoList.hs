@@ -118,8 +118,8 @@ repoListDisplay reposelector = do
   where
 	ident = "repolist"
 
--- (num, name, (uuid, actions))
-type RepoList = [(String, String, (UUID, Actions))]
+-- (num, name, uuid, actions)
+type RepoList = [(String, String, UUID, Actions)]
 
 {- A numbered list of known repositories,
  - with actions that can be taken on them. -}
@@ -179,10 +179,11 @@ repoList reposelector
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
 		let l' = nubBy (\x y -> fst x == fst y) l
-		zip3
+		l'' <- zip3
 			<$> pure counter
 			<*> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
+		return $ map (\(num, name, (uuid, actions)) -> (num, name, uuid, actions)) l''
 	counter = map show ([1..] :: [Int])
 
 getEnableSyncR :: UUID -> Handler ()

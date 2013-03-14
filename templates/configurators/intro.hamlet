@@ -13,7 +13,7 @@
         \ with these repositories:
         <table .table .table-striped .table-condensed>
           <tbody>
-            $forall (num, name, _) <- repolist
+            $forall (num, name, _, _) <- repolist
               <tr>
                 <td>
                   #{num}
