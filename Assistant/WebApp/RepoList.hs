@@ -27,6 +27,7 @@ import qualified Git
 #endif
 
 import qualified Data.Map as M
+import qualified Data.Text as T
 
 {- An intro message, list of repositories, and nudge to make more. -}
 introDisplay :: Text -> Widget
@@ -196,33 +197,33 @@ flipSync enable uuid = do
 
 getRepositoriesReorderR :: Handler ()
 getRepositoriesReorderR = do
-	moved <- runInputGet $ ireq textField "moved"
-	list <- lookupGetParams "list[]"
-	error $ show (moved, list)
-
-reorderRepository :: UUID -> Handler ()
-reorderRepository uuid = do
+	{- Get uuid of the moved item, and the list it was moved within. -}
+	moved <- fromjs <$> runInputGet (ireq textField "moved")
+	list <- map fromjs <$> lookupGetParams "list[]"
 	void $ liftAnnex $ do
+		{- The list may have an item for the current repository,
+		 - which needs to be filtered out, as it does not have a
+		 - cost. -}
+		u <- getUUID
+		let list' = filter (/= u) list
 		remote <- fromMaybe (error "Unknown UUID") <$>
-			Remote.remoteFromUUID uuid
+			Remote.remoteFromUUID moved
 		rs <- Remote.enabledRemoteList
-		let us = map Remote.uuid rs
-		case afteruuid us >>= (\u -> elemIndex u us) of
-			Nothing -> noop -- already at end
-			Just i -> do
-				let rs' = filter other rs
-				let costs = map Remote.cost rs'
-				let rs'' = (\(x, y) -> x ++ [remote] ++ y) $
-					splitAt (i + 1) rs'
-				let l = zip rs'' (insertCostAfter costs i)
-				forM_ l $ \(r, newcost) ->
-					when (Remote.cost r /= newcost) $
-						setRemoteCost r newcost
+		forM_ (reorderCosts moved list' remote rs) $ \(r, newcost) ->
+			when (Remote.cost r /= newcost) $
+				setRemoteCost r newcost
 		remoteListRefresh
 	liftAssistant updateSyncRemotes
   where
-  	afteruuid [] = Nothing
-	afteruuid (u:us)
-		| u == uuid = headMaybe us
-		| otherwise = afteruuid us
-	other r = Remote.uuid r /= uuid
+  	fromjs = toUUID . snd . separate (== '_') . T.unpack
+
+reorderCosts :: UUID -> [UUID] -> Remote -> [Remote] -> [(Remote, Cost)]
+reorderCosts moved list remote rs = zip rs'' (insertCostAfter costs i)
+  where
+	{- Find the index of the item in the list that the item
+	 - was moved to be after.
+	 - If it was moved to the start of the list, -1 -}
+	i = fromMaybe 0 (elemIndex moved list) - 1
+	rs' = filter (\r -> Remote.uuid r /= moved) rs
+	costs = map Remote.cost rs'
+	rs'' = (\(x, y) -> x ++ [remote] ++ y) $ splitAt (i + 1) rs'

@@ -56,6 +56,8 @@ git-annex (4.20130228) UNRELEASED; urgency=low
     (See https://github.com/yesodweb/wai/issues/146)
   * webapp: New preferences page allows enabling/disabling debug logging
     at runtime, as well as configuring numcopies and diskreserve.
+  * webapp: Repository costs can be configured by dragging repositories around
+    in the repository list.
   * webapp: Proceed automatically on from "Configure jabber account"
     to pairing.
   * webapp: Only show up to 10 queued transfers.
