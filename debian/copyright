@@ -91,16 +91,6 @@ License: MIT or GPL-2
  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Files: underlays/attachments/ikiwiki/jquery-ui*
-Copyright: © 2008 Paul Bakaus
-           © 2011 the jQuery UI Authors (http://jqueryui.com/about)
-License: GPL-2
-
-Files: static/jquery-ui*
-Copyright: © 2008 Paul Bakaus
-           © 2011 the jQuery UI Authors (http://jqueryui.com/about)
-License: GPL-2
-
 Files: static/*/bootstrap* static/img/glyphicons-halflings*
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
