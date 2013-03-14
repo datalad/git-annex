@@ -43,7 +43,6 @@ modifyDaemonStatus a = do
 		sendNotification $ changeNotifier s
 		return b
 
-
 {- Returns a function that updates the lists of syncable remotes. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do

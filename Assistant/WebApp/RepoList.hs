@@ -27,6 +27,7 @@ import qualified Git
 #endif
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 
 {- An intro message, list of repositories, and nudge to make more. -}
@@ -125,14 +126,18 @@ type RepoList = [(String, String, (UUID, Actions))]
 repoList :: RepoSelector -> Handler RepoList
 repoList reposelector
 	| onlyConfigured reposelector = list =<< configured
-	| otherwise = list =<< (++) <$> configured <*> rest
+	| otherwise = list =<< (++) <$> configured <*> unconfigured
   where
 	configured = do
-		rs <- filter wantedrepo . syncRemotes
+		syncing <- S.fromList . syncRemotes
 			<$> liftAssistant getDaemonStatus
 		liftAnnex $ do
+			rs <- filter wantedrepo <$> Remote.enabledRemoteList
 			let us = map Remote.uuid rs
-			let l = zip us $ map mkSyncingRepoActions us
+			let make r = if r `S.member` syncing
+				then mkSyncingRepoActions $ Remote.uuid r
+				else mkNotSyncingRepoActions $ Remote.uuid r
+			let l = zip us $ map make rs
 			if includeHere reposelector
 				then do
 					u <- getUUID
@@ -143,15 +148,11 @@ repoList reposelector
 					let here = (u, hereactions)
 					return $ here : l
 				else return l
-	rest = liftAnnex $ do
+	unconfigured = liftAnnex $ do
 		m <- readRemoteLog
-		unconfigured <- map snd . catMaybes . filter wantedremote 
+		map snd . catMaybes . filter wantedremote 
 			. map (findinfo m)
 			<$> (trustExclude DeadTrusted $ M.keys m)
-		unsyncable <- map Remote.uuid . filter wantedrepo .
-			filter (not . remoteAnnexSync . Remote.gitconfig)
-			<$> Remote.enabledRemoteList
-		return $ zip unsyncable (map mkNotSyncingRepoActions unsyncable) ++ unconfigured
 	wantedrepo r
 		| Remote.readonly r = False
 		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
