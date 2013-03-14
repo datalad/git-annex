@@ -132,7 +132,8 @@ repoList reposelector
 		syncing <- S.fromList . syncRemotes
 			<$> liftAssistant getDaemonStatus
 		liftAnnex $ do
-			rs <- filter wantedrepo <$> Remote.enabledRemoteList
+			rs <- filter wantedrepo . concat . Remote.byCost
+				<$> Remote.enabledRemoteList
 			let us = map Remote.uuid rs
 			let make r = if r `S.member` syncing
 				then mkSyncingRepoActions $ Remote.uuid r
