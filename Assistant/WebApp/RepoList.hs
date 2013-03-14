@@ -203,15 +203,10 @@ getRepositoriesReorderR = do
 	moved <- fromjs <$> runInputGet (ireq textField "moved")
 	list <- map fromjs <$> lookupGetParams "list[]"
 	void $ liftAnnex $ do
-		{- The list may have an item for the current repository,
-		 - which needs to be filtered out, as it does not have a
-		 - cost. -}
-		u <- getUUID
-		let list' = filter (/= u) list
 		remote <- fromMaybe (error "Unknown UUID") <$>
 			Remote.remoteFromUUID moved
-		rs <- Remote.enabledRemoteList
-		forM_ (reorderCosts moved list' remote rs) $ \(r, newcost) ->
+		rs <- catMaybes <$> mapM Remote.remoteFromUUID list
+		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
 			when (Remote.cost r /= newcost) $
 				setRemoteCost r newcost
 		remoteListRefresh
@@ -219,13 +214,13 @@ getRepositoriesReorderR = do
   where
   	fromjs = toUUID . snd . separate (== '_') . T.unpack
 
-reorderCosts :: UUID -> [UUID] -> Remote -> [Remote] -> [(Remote, Cost)]
-reorderCosts moved list remote rs = zip rs'' (insertCostAfter costs i)
+reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]
+reorderCosts remote rs = zip rs'' (insertCostAfter costs i)
   where
-	{- Find the index of the item in the list that the item
+	{- Find the index of the remote in the list that the remote
 	 - was moved to be after.
 	 - If it was moved to the start of the list, -1 -}
-	i = fromMaybe 0 (elemIndex moved list) - 1
-	rs' = filter (\r -> Remote.uuid r /= moved) rs
+	i = fromMaybe 0 (elemIndex remote rs) - 1
+	rs' = filter (\r -> Remote.uuid r /= Remote.uuid remote) rs
 	costs = map Remote.cost rs'
 	rs'' = (\(x, y) -> x ++ [remote] ++ y) $ splitAt (i + 1) rs'
