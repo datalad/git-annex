@@ -1,0 +1,5 @@
+Fighting with javascript all day and racing to get a release out. Unstuck
+the OSX and Android autobuilders. Got drag and drop repository list
+reordering working great. Tons of changes in this release!
+
+Also put up a new podcast.
