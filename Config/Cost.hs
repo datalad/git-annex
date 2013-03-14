@@ -33,8 +33,8 @@ encryptedRemoteCostAdj = 50
  - the list, inserts a new cost into the list, in between the item
  - and the item after it.
  -
- - If both items have the same cost, one of them will have its cost
- - adjusted to make room. The costs of other items in the list are left
+ - If two or move items have the same cost, their costs are adjusted
+ - to make room. The costs of other items in the list are left
  - unchanged.
  -
  - To insert the new cost before any other in the list, specify a negative
@@ -63,7 +63,10 @@ insertCostAfter l pos
 costBetween :: Cost -> Cost -> Cost
 costBetween x y
 	| x == y = x
-	| x > y = y + (x - y) / 2
+	| x > y = -- avoid fractions unless needed
+		let mid = y + (x - y) / 2
+		    mid' = fromIntegral ((floor mid) :: Int)
+		in if mid' > y then mid' else mid
 	| otherwise = costBetween y x
 
 {- Make sure the remote cost numbers work out. -}
