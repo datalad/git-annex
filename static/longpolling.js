@@ -3,12 +3,15 @@
 
 connfails=0;
 
+longpollcallbacks = $.Callbacks();
+
 function longpoll(url, divid, cont, fail) {
 	$.ajax({
 		'url': url,
 		'dataType': 'html',
 		'success': function(data, status, jqxhr) {
 			$('#' + divid).replaceWith(data);
+			longpollcallbacks.fire();
 			connfails=0;
 			cont();
 		},
