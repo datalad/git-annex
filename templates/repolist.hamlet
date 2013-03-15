@@ -24,7 +24,7 @@
             $else
               <a href="@{syncToggleLink actions}">
                 $if notSyncing actions
-                  <i .icon-pause></i> syncing paused
+                  <i .icon-ban-circle></i> syncing disabled
                 $else
                   <i .icon-refresh></i> syncing enabled
           <td .draghide>
