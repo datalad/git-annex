@@ -7,17 +7,19 @@
           $if isNothing myjid
             Not connected to the jabber server. Check your network connection ...
           $else
-            Nobody is currently available.
+            Searching...
     $else
       $forall (name, away, canpair, paired, buddyid) <- buddies
         <tr>
           <td>
-            <i .icon-user></i> #
-            $if away
-              <span .muted>
-                #{name}
+            $if isself buddyid
+              <i .icon-star></i> #
+              <span :away:.muted>
+                your other devices
             $else
-              #{name}
+              <i .icon-user></i> #
+              <span :away:.muted>
+                  #{name}
           <td>
             $if away
               <span .muted>
@@ -28,7 +30,11 @@
                   paired
               $else
                 $if canpair
-                  <a .btn .btn-primary .btn-small href="@{RunningXMPPPairR buddyid}">
-                    Start pairing
+                  $if isself buddyid
+                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairSelfR}">
+                      Share pairing
+                  $else
+                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairFriendR buddyid}">
+                      Start pairing
                 $else
                   not using git-annex

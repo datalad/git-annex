@@ -274,7 +274,8 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 		finishXMPPPairing theirjid theiruuid
 	-- Show an alert to let the user decide if they want to pair.
 	showalert = do
-		let route = ConfirmXMPPPairR (PairKey theiruuid $ formatJID theirjid)
+		let route = ConfirmXMPPPairFriendR $
+			PairKey theiruuid $ formatJID theirjid
 		url <- liftIO $ renderUrl urlrenderer route []
 		close <- asIO1 removeAlert
 		void $ addAlert $ pairRequestReceivedAlert (T.unpack $ buddyName theirjid)

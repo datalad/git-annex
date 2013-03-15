@@ -2,6 +2,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
 
   * webapp: Repository list is now included in the dashboard, and other
     UI tweaks.
+  * webapp: Improved UI for pairing your own devices together using XMPP.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

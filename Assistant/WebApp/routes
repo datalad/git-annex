@@ -42,10 +42,14 @@
 /config/repository/pair/local/start StartLocalPairR GET
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET
-/config/repository/pair/xmpp/start StartXMPPPairR GET
-/config/repository/pair/xmpp/running/#BuddyKey RunningXMPPPairR GET
-/config/repository/pair/xmpp/accept/#PairKey ConfirmXMPPPairR GET
-/config/repository/pair/xmpp/finish/#PairKey FinishXMPPPairR GET
+
+/config/repository/pair/xmpp/self/start StartXMPPPairSelfR GET
+/config/repository/pair/xmpp/self/running RunningXMPPPairSelfR GET
+
+/config/repository/pair/xmpp/friend/start StartXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/running/#BuddyKey RunningXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/accept/#PairKey ConfirmXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/finish/#PairKey FinishXMPPPairFriendR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET
 /config/repository/enable/directory/#UUID EnableDirectoryR GET

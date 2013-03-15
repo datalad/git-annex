@@ -62,7 +62,7 @@ getXMPPR = xmppPage $ do
 	storecreds creds = do
 		void $ liftAnnex $ setXMPPCreds creds
 		liftAssistant notifyNetMessagerRestart
-		redirect StartXMPPPairR
+		redirectBack
 #else
 getXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
@@ -84,6 +84,7 @@ buddyListDisplay = do
 	autoUpdate ident NotifierBuddyListR (10 :: Int) (10 :: Int)
 #ifdef WITH_XMPP
 	myjid <- lift $ liftAssistant $ xmppClientID <$> getDaemonStatus
+	let isself (BuddyKey b) = Just b == myjid
 	buddies <- lift $ liftAssistant $ do
 		rs <- filter isXMPPRemote . syncGitRemotes <$> getDaemonStatus
 		let pairedwith = catMaybes $ map (parseJID . getXMPPClientID) rs

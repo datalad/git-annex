@@ -2,36 +2,33 @@
   <a href="@{AddDriveR}">
     <i .icon-plus-sign></i> Removable drive
 <p>
-  Clone this repository to a USB drive, memory stick, or other #
-  removable media.
-<p>
+  Add a USB drive, memory stick, or other removable media. #
   For offline archiving, backups, or to #
   <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
   between computers. 
 
 <h3>
+  <a href="@{StartXMPPPairSelfR}">
+    <i .icon-plus-sign></i> Share with your other devices
+<p>
+  Keep files in sync between your devices running git-annex.
+
+<h3>
+  <a href="@{StartXMPPPairFriendR}">
+    <i .icon-plus-sign></i> Share with a friend
+<p>
+  Combine your repository with a friend's repository, and share your files.
+
+<h3>
   <a href="@{StartLocalPairR}">
     <i .icon-plus-sign></i> Local computer
 <p>
-  Pair with a computer to automatically keep files in sync #
+  Pair with a computer to keep files in sync quickly, #
   over your local network.
-<p>
-  For easy sharing with friends and devices in the same location.
-
-<h3>
-  <a href="@{StartXMPPPairR}">
-    <i .icon-plus-sign></i> Share with a friend
-<p>
-  Pair with a friend's computer, to combine your repositories and #
-  share files.
-
-<p>
-
-  For easy sharing with friends and devices, over the internet.
 
 <h3>
   <a href="@{NewRepositoryR}">
-    <i .icon-plus-sign></i> Add a local repository
+    <i .icon-plus-sign></i> Add another repository
 <p>
   Make another repository on your computer.
 
