@@ -12,6 +12,7 @@ module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
 import Assistant.WebApp.Common
+import Assistant.WebApp.Configurators
 import Assistant.Types.Buddies
 #ifdef WITH_PAIRING
 import Assistant.Pairing.Network

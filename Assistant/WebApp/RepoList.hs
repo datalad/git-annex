@@ -1,6 +1,6 @@
 {- git-annex assistant webapp repository list
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,36 +29,6 @@ import qualified Git
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-
-{- An intro message, list of repositories, and nudge to make more. -}
-introDisplay :: Text -> Widget
-introDisplay ident = do
-	webapp <- lift getYesod
-	repolist <- lift $ repoList $ RepoSelector
-		{ onlyCloud = False
-		, onlyConfigured = True
-		, includeHere = False
-		}
-	let n = length repolist
-	let numrepos = show n
-	$(widgetFile "configurators/intro")
-	lift $ modifyWebAppState $ \s -> s { showIntro = False }
-
-makeMiscRepositories :: Widget
-makeMiscRepositories = $(widgetFile "configurators/repositories/misc")
-
-makeCloudRepositories :: Bool -> Widget
-makeCloudRepositories onlyTransfer = $(widgetFile "configurators/repositories/cloud")
-
-{- Lists known repositories, followed by options to add more. -}
-getRepositoriesR :: Handler RepHtml
-getRepositoriesR = page "Repositories" (Just Repositories) $ do
-	let repolist = repoListDisplay $ RepoSelector
-		{ onlyCloud = False
-		, onlyConfigured = False
-		, includeHere = True
-		}
-	$(widgetFile "configurators/repositories")
 
 data Actions
 	= DisabledRepoActions
@@ -113,7 +83,7 @@ repoListDisplay reposelector = do
 
 	repolist <- lift $ repoList reposelector
 
-	$(widgetFile "configurators/repositories/list")
+	$(widgetFile "repolist")
 
   where
 	ident = "repolist"
