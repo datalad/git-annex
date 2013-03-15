@@ -1,6 +1,7 @@
 $(function() {
 	var setup = function() {
 		$("#costsortable").sortable({
+			items: ".repoline",
 			handle: ".handle",
 			cursor: "move",
 			forceHelperSize: true,

@@ -1,15 +1,9 @@
-<div .span9 ##{ident}>
-  $maybe reldir <- relDir webapp
-    <div .alert .alert-info>
-      <p>
-        git-annex is watching over your files in #
-        <small><tt>#{reldir}</tt></small>, #
-        and keeping them in sync with #
-        <a href="@{RepositoriesR}">
-          other repositories.
+<div ##{ident}>
+  <h2>Transfers
   $if null transfers
+    <i>
+      (no file transfers running)
   $else
-    <h2>Transfers
     $forall (transfer, info) <- transfers
       $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
         <div .row-fluid>

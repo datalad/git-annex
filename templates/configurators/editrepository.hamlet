@@ -20,7 +20,7 @@
         <div .form-actions>
           <button .btn .btn-primary type=submit>
             Save Changes
-          <a .btn href="@{RepositoriesR}">
+          <a .btn href="@{DashboardR}">
             Cancel
   $if new
     <p>

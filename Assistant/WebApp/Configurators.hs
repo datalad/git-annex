@@ -29,30 +29,10 @@ getConfigurationR = ifM (inFirstRun)
 		$(widgetFile "configurators/main")
 	)
 
-{- An intro message, list of repositories, and nudge to make more. -}
-introDisplay :: Text -> Widget
-introDisplay ident = do
-	webapp <- lift getYesod
-	repolist <- lift $ repoList $ RepoSelector
-		{ onlyCloud = False
-		, onlyConfigured = True
-		, includeHere = False
-		}
-	let n = length repolist
-	let numrepos = show n
-	$(widgetFile "configurators/intro")
-	lift $ modifyWebAppState $ \s -> s { showIntro = False }
-
-{- Lists known repositories, followed by options to add more. -}
-getRepositoriesR :: Handler RepHtml
-getRepositoriesR = page "Repositories" (Just Repositories) $ do
-	let repolist = repoListDisplay $ RepoSelector
-		{ onlyCloud = False
-		, onlyConfigured = False
-		, includeHere = True
-		}
+getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR = page "Add Repository" (Just Configuration) $ do
+	let repolist = repoListDisplay mainRepoSelector
 	$(widgetFile "configurators/repositories")
-
 
 makeMiscRepositories :: Widget
 makeMiscRepositories = $(widgetFile "configurators/repositories/misc")

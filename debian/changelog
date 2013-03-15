@@ -1,3 +1,10 @@
+git-annex (4.20130315) UNRELEASED; urgency=low
+
+  * webapp: Repository list is now included in the dashboard, and other
+    UI tweaks.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
+
 git-annex (4.20130314) unstable; urgency=low
 
   * Bugfix: git annex add, when ran without any file or directory specified,

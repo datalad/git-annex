@@ -1,8 +1,5 @@
 / DashboardR GET HEAD
 
-/repositories RepositoriesR GET
-/repositories/reorder RepositoriesReorderR GET
-
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET
 
@@ -20,6 +17,7 @@
 /config/preferences PreferencesR GET
 /config/xmpp XMPPR GET
 
+/config/addrepository AddRepositoryR GET
 /config/repository/new/first FirstRepositoryR GET
 /config/repository/new NewRepositoryR GET
 /config/repository/switcher RepositorySwitcherR GET
@@ -54,6 +52,8 @@
 /config/repository/enable/S3/#UUID EnableS3R GET
 /config/repository/enable/glacier/#UUID EnableGlacierR GET
 /config/repository/enable/webdav/#UUID EnableWebDAVR GET
+
+/config/repository/reorder RepositoriesReorderR GET
 
 /transfers/#NotificationId TransfersR GET
 /notifier/transfers NotifierTransfersR GET

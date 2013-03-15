@@ -63,7 +63,7 @@ notSyncing (SyncingRepoActions _ _) = False
 notSyncing _ = True
 
 {- Called by client to get a list of repos, that refreshes
- - when new repos as added.
+ - when new repos are added.
  -
  - Returns a div, which will be inserted into the calling page.
  -}
@@ -72,6 +72,14 @@ getRepoListR (RepoListNotificationId nid reposelector) = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
 	hamletToRepHtml $ [hamlet|^{pageBody p}|]
+
+mainRepoSelector :: RepoSelector
+mainRepoSelector = RepoSelector
+	{ onlyCloud = False
+	, onlyConfigured = False
+	, includeHere = True
+	, nudgeAddMore = False
+	}
 
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do
@@ -82,17 +90,16 @@ repoListDisplay reposelector = do
 	addScript $ StaticR jquery_ui_sortable_js
 
 	repolist <- lift $ repoList reposelector
+	let addmore = nudgeAddMore reposelector
+	let nootherrepos = length repolist < 2
 
 	$(widgetFile "repolist")
-
   where
 	ident = "repolist"
 
--- (num, name, uuid, actions)
-type RepoList = [(String, String, UUID, Actions)]
+type RepoList = [(String, UUID, Actions)]
 
-{- A numbered list of known repositories,
- - with actions that can be taken on them. -}
+{- A list of known repositories, with actions that can be taken on them. -}
 repoList :: RepoSelector -> Handler RepoList
 repoList reposelector
 	| onlyConfigured reposelector = list =<< configured
@@ -149,12 +156,10 @@ repoList reposelector
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
 		let l' = nubBy (\x y -> fst x == fst y) l
-		l'' <- zip3
-			<$> pure counter
-			<*> Remote.prettyListUUIDs (map fst l')
+		l'' <- zip
+			<$> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
-		return $ map (\(num, name, (uuid, actions)) -> (num, name, uuid, actions)) l''
-	counter = map show ([1..] :: [Int])
+		return $ map (\(name, (uuid, actions)) -> (name, uuid, actions)) l''
 
 getEnableSyncR :: UUID -> Handler ()
 getEnableSyncR = flipSync True
@@ -166,7 +171,7 @@ flipSync :: Bool -> UUID -> Handler ()
 flipSync enable uuid = do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	changeSyncable mremote enable
-	redirect RepositoriesR
+	redirectBack
 
 getRepositoriesReorderR :: Handler ()
 getRepositoriesReorderR = do

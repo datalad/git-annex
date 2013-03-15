@@ -11,8 +11,8 @@ module Assistant.WebApp.DashBoard where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
+import Assistant.WebApp.RepoList
 import Assistant.WebApp.Notifications
-import Assistant.WebApp.Configurators
 import Assistant.TransferQueue
 import Utility.NotificationBroadcaster
 import Logs.Transfer
@@ -36,12 +36,7 @@ transfersDisplay warnNoScript = do
 	queued <- lift $ take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
-	if null transfers
-		then ifM (lift $ showIntro <$> getWebAppState)
-			( introDisplay ident
-			, $(widgetFile "dashboard/transfers")
-			)
-		else $(widgetFile "dashboard/transfers")
+	$(widgetFile "dashboard/transfers")
   where
 	ident = "transfers"
 	isrunning info = not $
@@ -74,7 +69,9 @@ getTransfersR nid = do
 {- The main dashboard. -}
 dashboard :: Bool -> Widget
 dashboard warnNoScript = do
-	let content = transfersDisplay warnNoScript
+	let repolist = repoListDisplay $
+		mainRepoSelector { nudgeAddMore = True }
+	let transferlist = transfersDisplay warnNoScript
 	$(widgetFile "dashboard/main")
 
 getDashboardR :: Handler RepHtml

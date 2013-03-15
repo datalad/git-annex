@@ -2,6 +2,12 @@
   <div .row-fluid>
     <div .span4>
       <h3>
+        <a href="@{AddRepositoryR}">
+          Repositories
+      <p>
+        Configure the repositories that git-annex syncs with.
+    <div .span4>
+      <h3>
         <a href="@{PreferencesR}">
           Preferences
       <p>

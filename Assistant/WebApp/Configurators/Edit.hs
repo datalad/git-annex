@@ -128,7 +128,7 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 		FormSuccess input -> lift $ do
 			checkarchivedirectory input
 			setRepoConfig uuid mremote curr input
-			redirect RepositoriesR
+			redirect DashboardR
 		_ -> showform form enctype curr
   where
 	showform form enctype curr = do

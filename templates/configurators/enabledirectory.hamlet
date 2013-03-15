@@ -6,5 +6,5 @@
   <p>
     <a .btn href="@{AddDriveR}">
       On a removable drive
-    <a .btn href="@{RepositoriesR}">
+    <a .btn href="@{DashboardR}">
       Cancel

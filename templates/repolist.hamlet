@@ -11,7 +11,7 @@
         Repositories
   <table .table .table-condensed>
     <tbody #costsortable>
-      $forall (_num, name, uuid, actions) <- repolist
+      $forall (name, uuid, actions) <- repolist
         <tr .repoline ##{fromUUID uuid}>
           <td .handle>
             <i .icon-resize-vertical></i>
@@ -33,3 +33,15 @@
             $else
               <a href="@{setupRepoLink actions}">
                 configure
+      $if addmore
+        <tr>
+          <td colspan="3">
+            $if nootherrepos
+              <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">
+                <i .icon-plus-sign></i> Add another repository
+            $else
+              <a .btn .btn-small href="@{AddRepositoryR}">
+                <i .icon-plus-sign></i> Add another repository
+            <span>
+              &nbsp; Sync your files with another drive, device, or #
+              share with a friend.

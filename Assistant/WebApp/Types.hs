@@ -83,6 +83,7 @@ data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool
 	, onlyConfigured :: Bool
 	, includeHere :: Bool
+	, nudgeAddMore :: Bool
 	}
 	deriving (Read, Show, Eq)
 

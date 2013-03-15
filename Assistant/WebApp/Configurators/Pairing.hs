@@ -156,6 +156,7 @@ xmppPairEnd inprogress theirjid = pairPage $ do
 		{ onlyCloud = True
 		, onlyConfigured = False
 		, includeHere = False
+		, nudgeAddMore = False
 		}
 	$(widgetFile "configurators/pairing/xmpp/end")
 #endif
