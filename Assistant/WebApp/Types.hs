@@ -26,7 +26,6 @@ import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Data.Text (Text, pack, unpack)
-import Control.Concurrent.STM
 
 publicFiles "static"
 
@@ -37,7 +36,6 @@ data WebApp = WebApp
 	, secretToken :: Text
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
-	, webAppState :: TMVar WebAppState
 	, postFirstRun :: Maybe (IO String)
 	, noAnnex :: Bool
 	}
@@ -74,10 +72,6 @@ instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
 
 type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
-
-data WebAppState = WebAppState
-	{ showIntro :: Bool -- should the into message be displayed?
-	}
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool

@@ -57,7 +57,6 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 		<*> (pack <$> genRandomToken)
 		<*> getreldir
 		<*> pure $(embed "static")
-		<*> newWebAppState
 		<*> pure postfirstrun
 		<*> pure noannex
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")

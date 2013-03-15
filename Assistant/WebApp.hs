@@ -17,24 +17,10 @@ import Utility.Yesod
 
 import Yesod
 import Data.Text (Text)
-import Control.Concurrent.STM
 import Control.Concurrent
 
 inFirstRun :: Handler Bool
 inFirstRun = isNothing . relDir <$> getYesod
-
-newWebAppState :: IO (TMVar WebAppState)
-newWebAppState = atomically $ newTMVar $ WebAppState { showIntro = True }
-
-getWebAppState :: forall sub. GHandler sub WebApp WebAppState
-getWebAppState = liftIO . atomically . readTMVar =<< webAppState <$> getYesod
-
-modifyWebAppState :: forall sub. (WebAppState -> WebAppState) -> GHandler sub WebApp ()
-modifyWebAppState a = go =<< webAppState <$> getYesod
-  where
-	go s = liftIO $ atomically $ do
-		v <- takeTMVar s
-		putTMVar s $ a v
 
 {- Runs an Annex action from the webapp.
  -
