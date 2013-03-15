@@ -111,6 +111,7 @@ gen r u _ gc = go <$> remoteCost gc defcst
 			, repo = r
 			, gitconfig = gc
 			, readonly = Git.repoIsHttp r
+			, globallyAvailable = not $ Git.repoIsLocal r || Git.repoIsLocalUnknown r
 			, remotetype = remote
 			}
 

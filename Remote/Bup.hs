@@ -67,6 +67,7 @@ gen r u c gc = do
 			then Just buprepo
 			else Nothing
 		, remotetype = remote
+		, globallyAvailable = not $ bupLocal buprepo
 		, readonly = False
 		}
 	return $ encryptableRemote c

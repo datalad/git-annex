@@ -74,6 +74,8 @@ data RemoteA a = Remote {
 	localpath :: Maybe FilePath,
 	-- a Remote can be known to be readonly
 	readonly :: Bool,
+	-- a Remote can be globally available. (Ie, "in the cloud".)
+	globallyAvailable :: Bool,
 	-- the type of the remote
 	remotetype :: RemoteTypeA a
 }

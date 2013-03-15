@@ -53,15 +53,18 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	let nonxmpp = filter (not . isXMPPRemote) syncable
+	
+	liftIO $ print (nonxmpp, map Remote.globallyAvailable nonxmpp)
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
 		, syncGitRemotes =
 			filter (not . Remote.specialRemote) syncable
 		, syncDataRemotes = nonxmpp
-		, syncingToCloudRemote =
-			any (Git.repoIsUrl . Remote.repo) nonxmpp
+		, syncingToCloudRemote = any iscloud nonxmpp
 		}
+  where
+  	iscloud r = not (Remote.readonly r) && Remote.globallyAvailable r
 
 {- Updates the sycRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()
@@ -69,6 +72,7 @@ updateSyncRemotes = do
 	modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
 	status <- getDaemonStatus
 	liftIO $ sendNotification $ syncRemotesNotifier status
+
 	when (syncingToCloudRemote status) $
 		updateAlertMap $
 			M.filter $ \alert ->

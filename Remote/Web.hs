@@ -54,6 +54,7 @@ gen r _ _ gc =
 		localpath = Nothing,
 		repo = r,
 		readonly = True,
+		globallyAvailable = True,
 		remotetype = remote
 	}
 

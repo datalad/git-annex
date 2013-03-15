@@ -60,14 +60,16 @@ gen r u c gc = do
 			, config = M.empty
 			, repo = r
 			, gitconfig = gc
-			, localpath = if rsyncUrlIsPath $ rsyncUrl o
+			, localpath = if islocal
 				then Just $ rsyncUrl o
 				else Nothing
 			, readonly = False
+			, globallyAvailable = not $ islocal
 			, remotetype = remote
 			}
   where
 	o = RsyncOpts url opts escape
+	islocal = rsyncUrlIsPath $ rsyncUrl o
 	url = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
 	escape = M.lookup "shellescape" c /= Just "no"

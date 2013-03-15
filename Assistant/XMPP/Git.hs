@@ -293,7 +293,10 @@ checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
 -- TODO only display if needed
 checkCloudRepos urlrenderer r =
 #ifdef WITH_WEBAPP
-	cloudRepoNeeded urlrenderer (Remote.uuid r)
+	unlessM (syncingToCloudRemote <$> getDaemonStatus) $
+		cloudRepoNeeded urlrenderer (Remote.uuid r)
+#else
+	noop
 #endif
 
 writeChunk :: Handle -> B.ByteString -> IO ()

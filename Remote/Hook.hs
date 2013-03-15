@@ -52,6 +52,7 @@ gen r u c gc = do
 			repo = r,
 			gitconfig = gc,
 			readonly = False,
+			globallyAvailable = False,
 			remotetype = remote
 		}
   where
