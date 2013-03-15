@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-15T21:49:49Z"
+ content="""
+You don't need a webapp on your linode, probably, so disable it:
+
+cabal install git-annex -f-WebApp
+
+The template haskell in the webapp about doubles the amount of memory needed to compile it.
+
+----
+
+Alternatively, since git-annex compiles down to a self-contained binary, you can build it on another machine of the same architecture, and just copy the binary over. Or there are all kinds of pre-compiled binaries available for Linux distributions that you can use on your linode.
+"""]]

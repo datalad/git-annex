@@ -1,0 +1,16 @@
+What steps will reproduce the problem?
+
+> cabal install git-annex
+
+What is the expected output? What do you see instead?
+
+> I would expect a working git-annex on my little linode. I have a linode 768 and trouble building the latest version. The process get's killed because of an out of memory condition.
+
+What version of git-annex are you using? On what operating system?
+
+> git-annex version: 4.20130314
+> Ubuntu 12.04
+
+Please provide any additional information below.
+
+[[done]]
