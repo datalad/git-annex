@@ -13,6 +13,7 @@ module Assistant.WebApp.Configurators.XMPP where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Notifications
 import Utility.NotificationBroadcaster
+import qualified Remote
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
@@ -21,6 +22,9 @@ import Assistant.NetMessager
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.SRV
+import Assistant.WebApp.RepoList
+import Assistant.WebApp.Configurators
+import Assistant.XMPP
 #endif
 
 #ifdef WITH_XMPP
@@ -30,7 +34,7 @@ import qualified Data.Text as T
 import Control.Exception (SomeException)
 #endif
 
-{- Displays an alert suggesting to configure XMPP, with a button. -}
+{- Displays an alert suggesting to configure XMPP. -}
 xmppNeeded :: Handler ()
 #ifdef WITH_XMPP
 xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
@@ -44,6 +48,48 @@ xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 			}
 #else
 xmppNeeded = return ()
+#endif
+
+{- Displays an alert suggesting to configure a cloud repo
+ - to suppliment an XMPP remote. -}
+cloudRepoNeeded :: UrlRenderer -> UUID -> Assistant ()
+#ifdef WITH_XMPP
+cloudRepoNeeded urlrenderer for = do
+	buddyname <- getBuddyName for
+	url <- liftIO $ renderUrl urlrenderer (NeedCloudRepoR for) []
+	close <- asIO1 removeAlert
+	void $ addAlert $ cloudRepoNeededAlert buddyname $ AlertButton
+		{ buttonLabel = "Add a cloud repository"
+		, buttonUrl = url
+		, buttonAction = Just close
+		}
+#else
+cloudRepoNeeded = return ()
+#endif
+
+{- Returns the name of the friend corresponding to a
+ - repository's UUID, but not if it's our name. -}
+getBuddyName :: UUID -> Assistant (Maybe String)
+getBuddyName u = go =<< getclientjid
+  where
+	go Nothing = return Nothing
+	go (Just myjid) = (T.unpack . buddyName <$>)
+		. headMaybe 
+		. filter (\j -> baseJID j /= baseJID myjid)
+		. map fst
+		. filter (\(_, r) -> Remote.uuid r == u)
+		<$> getXMPPRemotes
+	getclientjid = maybe Nothing parseJID . xmppClientID
+		<$> getDaemonStatus
+
+getNeedCloudRepoR :: UUID -> Handler RepHtml
+#ifdef WITH_XMPP
+getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
+	buddyname <- lift $ liftAssistant $ getBuddyName for
+	$(widgetFile "configurators/xmpp/needcloudrepo")
+#else
+needCloudRepoR = xmppPage $
+	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
 getXMPPR :: Handler RepHtml
@@ -86,8 +132,7 @@ buddyListDisplay = do
 	myjid <- lift $ liftAssistant $ xmppClientID <$> getDaemonStatus
 	let isself (BuddyKey b) = Just b == myjid
 	buddies <- lift $ liftAssistant $ do
-		rs <- filter isXMPPRemote . syncGitRemotes <$> getDaemonStatus
-		let pairedwith = catMaybes $ map (parseJID . getXMPPClientID) rs
+		pairedwith <- map fst <$> getXMPPRemotes
 		catMaybes . map (buddySummary pairedwith)
 			<$> (getBuddyList <<~ buddyList)
 	$(widgetFile "configurators/xmpp/buddylist")
@@ -96,6 +141,13 @@ buddyListDisplay = do
 	ident = "buddylist"
 
 #ifdef WITH_XMPP
+
+getXMPPRemotes :: Assistant [(JID, Remote)]
+getXMPPRemotes = catMaybes . map pair . filter isXMPPRemote . syncGitRemotes
+	<$> getDaemonStatus
+  where
+  	pair r = maybe Nothing (\jid -> Just (jid, r)) $
+		parseJID $ getXMPPClientID r
 
 data XMPPForm = XMPPForm
 	{ formJID :: Text

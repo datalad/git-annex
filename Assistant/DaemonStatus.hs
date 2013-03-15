@@ -51,10 +51,14 @@ calcSyncRemotes = do
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
+	let nonxmpp = filter (not . isXMPPRemote) syncable
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
-		, syncGitRemotes = filter (not . Remote.specialRemote) syncable
-		, syncDataRemotes = filter (not . isXMPPRemote) syncable
+		, syncGitRemotes =
+			filter (not . Remote.specialRemote) syncable
+		, syncDataRemotes = nonxmpp
+		, syncingToCloudRemote =
+			any (Git.repoIsUrl . Remote.repo) nonxmpp
 		}
 
 {- Updates the sycRemotes list from the list of all remotes in Annex state. -}

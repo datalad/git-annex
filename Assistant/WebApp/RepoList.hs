@@ -81,6 +81,15 @@ mainRepoSelector = RepoSelector
 	, nudgeAddMore = False
 	}
 
+{- List of cloud repositories, configured and not. -}
+cloudRepoList :: Widget
+cloudRepoList = repoListDisplay $ RepoSelector
+	{ onlyCloud = True
+	, onlyConfigured = False
+	, includeHere = False
+	, nudgeAddMore = False
+	}
+
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do
 	autoUpdate ident (NotifierRepoListR reposelector) (10 :: Int) (10 :: Int)

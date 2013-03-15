@@ -46,6 +46,8 @@ data DaemonStatus = DaemonStatus
 	, syncGitRemotes :: [Remote]
 	-- Ordered list of remotes to sync data with
 	, syncDataRemotes :: [Remote]
+	-- Are we syncing to any cloud remotes?
+	, syncingToCloudRemote :: Bool
 	-- List of uuids of remotes that we may have gotten out of sync with.
 	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
@@ -81,6 +83,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure []
 	<*> pure []
+	<*> pure False
 	<*> pure S.empty
 	<*> pure Nothing
 	<*> newNotificationBroadcaster

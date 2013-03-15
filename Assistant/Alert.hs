@@ -34,6 +34,7 @@ data AlertName
 	| WarningAlert String
 	| PairAlert String
 	| XMPPNeededAlert
+	| CloudRepoNeededAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -329,6 +330,24 @@ xmppNeededAlert button = Alert
 	, alertMessageRender = tenseWords
 	, alertBlockDisplay = True
 	, alertName = Just $ XMPPNeededAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
+	}
+
+cloudRepoNeededAlert :: Maybe String -> AlertButton -> Alert
+cloudRepoNeededAlert friendname button = Alert
+	{ alertHeader = Just $ fromString $ unwords
+		[ "Unable to download files from"
+		, (fromMaybe "your other devices" friendname) ++ "."
+		]
+	, alertIcon = Just ErrorIcon
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = tenseWords
+	, alertBlockDisplay = True
+	, alertName = Just $ CloudRepoNeededAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}

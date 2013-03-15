@@ -111,7 +111,7 @@ xmppClient urlrenderer d creds =
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushInitiation pushstage = inAssistant $
 			unlessM (queueNetPushMessage m) $ 
-				void $ forkIO <~> handlePushInitiation m
+				void $ forkIO <~> handlePushInitiation urlrenderer m
 		| otherwise = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop

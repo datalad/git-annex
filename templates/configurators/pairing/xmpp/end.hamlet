@@ -26,7 +26,7 @@
       Make sure that your other devices are configured to access a #
       cloud repository, and that the same repository is enabled here #
       too.
-  ^{cloudrepolist}
+  ^{cloudRepoList}
   <h2>
     Add a cloud repository
   ^{makeCloudRepositories True}

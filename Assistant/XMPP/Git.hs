@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.XMPP.Git where
 
 import Assistant.Common
@@ -29,6 +31,10 @@ import qualified Remote as Remote
 import Remote.List
 import Utility.FileMode
 import Utility.Shell
+#ifdef WITH_WEBAPP
+import Assistant.WebApp (UrlRenderer)
+import Assistant.WebApp.Configurators.XMPP
+#endif
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -80,8 +86,8 @@ makeXMPPGitRemote buddyname jid u = do
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
-xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
-xmppPush cid gitpush = runPush SendPack cid handleDeferred $ do
+xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> (NetMessage -> Assistant ()) -> Assistant Bool
+xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 	sendNetMessage $ Pushing cid StartingPush
 
 	(Fd inf, writepush) <- liftIO createPipe
@@ -201,8 +207,8 @@ xmppGitRelay = do
 
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
-xmppReceivePack :: ClientID -> Assistant Bool
-xmppReceivePack cid = runPush ReceivePack cid handleDeferred $ do
+xmppReceivePack :: ClientID -> (NetMessage -> Assistant ()) -> Assistant Bool
+xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -250,11 +256,11 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
   where
 	matching loc r = repoIsUrl r && repoLocation r == loc
 
-handlePushInitiation :: NetMessage -> Assistant ()
-handlePushInitiation (Pushing cid CanPush) =
+handlePushInitiation :: UrlRenderer -> NetMessage -> Assistant ()
+handlePushInitiation _ (Pushing cid CanPush) =
 	unlessM (null <$> xmppRemotes cid) $ 
 		sendNetMessage $ Pushing cid PushRequest
-handlePushInitiation (Pushing cid PushRequest) =
+handlePushInitiation urlrenderer (Pushing cid PushRequest) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
 	go Nothing = noop
@@ -266,17 +272,29 @@ handlePushInitiation (Pushing cid PushRequest) =
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
-		forM_ rs $ \r -> alertWhile (syncAlert [r]) $
-			xmppPush cid $ taggedPush u selfjid branch r
-handlePushInitiation (Pushing cid StartingPush) = do
+		forM_ rs $ \r -> do
+			void $ alertWhile (syncAlert [r]) $
+				xmppPush cid
+					(taggedPush u selfjid branch r)
+					(handleDeferred urlrenderer)
+			checkCloudRepos urlrenderer r
+handlePushInitiation urlrenderer (Pushing cid StartingPush) = do
 	rs <- xmppRemotes cid
-	unless (null rs) $
+	unless (null rs) $ do
 		void $ alertWhile (syncAlert rs) $
-			xmppReceivePack cid
-handlePushInitiation _ = noop
+			xmppReceivePack cid (handleDeferred urlrenderer)
+		mapM_ (checkCloudRepos urlrenderer) rs
+handlePushInitiation _ _ = noop
 
-handleDeferred :: NetMessage -> Assistant ()
+handleDeferred :: UrlRenderer -> NetMessage -> Assistant ()
 handleDeferred = handlePushInitiation
+
+checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
+-- TODO only display if needed
+checkCloudRepos urlrenderer r =
+#ifdef WITH_WEBAPP
+	cloudRepoNeeded urlrenderer (Remote.uuid r)
+#endif
 
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do

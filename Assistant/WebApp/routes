@@ -16,6 +16,7 @@
 /config ConfigurationR GET
 /config/preferences PreferencesR GET
 /config/xmpp XMPPR GET
+/config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new/first FirstRepositoryR GET
