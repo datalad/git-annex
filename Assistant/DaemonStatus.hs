@@ -43,7 +43,8 @@ modifyDaemonStatus a = do
 		sendNotification $ changeNotifier s
 		return b
 
-{- Returns a function that updates the lists of syncable remotes. -}
+{- Returns a function that updates the lists of syncable remotes
+ - and other associated information. -}
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
 	rs <- filter (remoteAnnexSync . Remote.gitconfig) .
@@ -52,6 +53,7 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	let nonxmpp = filter (not . isXMPPRemote) syncable
+
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
 		, syncGitRemotes =
@@ -65,7 +67,12 @@ calcSyncRemotes = do
 updateSyncRemotes :: Assistant ()
 updateSyncRemotes = do
 	modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
-	liftIO . sendNotification =<< syncRemotesNotifier <$> getDaemonStatus
+	status <- getDaemonStatus
+	liftIO $ sendNotification $ syncRemotesNotifier status
+	when (syncingToCloudRemote status) $
+		updateAlertMap $
+			M.filter $ \alert ->
+				alertName alert /= Just CloudRepoNeededAlert
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
