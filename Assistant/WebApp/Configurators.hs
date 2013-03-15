@@ -32,10 +32,10 @@ getConfigurationR = ifM (inFirstRun)
 getAddRepositoryR :: Handler RepHtml
 getAddRepositoryR = page "Add Repository" (Just Configuration) $ do
 	let repolist = repoListDisplay mainRepoSelector
-	$(widgetFile "configurators/repositories")
+	$(widgetFile "configurators/addrepository")
 
 makeMiscRepositories :: Widget
-makeMiscRepositories = $(widgetFile "configurators/repositories/misc")
+makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 
 makeCloudRepositories :: Bool -> Widget
-makeCloudRepositories onlyTransfer = $(widgetFile "configurators/repositories/cloud")
+makeCloudRepositories onlyTransfer = $(widgetFile "configurators/addrepository/cloud")
