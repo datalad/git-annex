@@ -14,8 +14,9 @@
       $forall (name, uuid, actions) <- repolist
         <tr .repoline ##{fromUUID uuid}>
           <td .handle>
-            <i .icon-resize-vertical></i>
-            #{name}
+            <a .btn .btn-mini .disabled>
+              <i .icon-resize-vertical></i>
+            &nbsp; #{name}
           <td .draghide>
             $if needsEnabled actions
               <a href="@{setupRepoLink actions}">
