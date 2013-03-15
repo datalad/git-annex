@@ -14,7 +14,6 @@ import Common
 
 import Control.Concurrent
 import System.Posix.Signals
-import Data.Time.Clock
 #ifndef __ANDROID__
 import System.Posix.Terminal
 #endif
