@@ -6,7 +6,7 @@
  content="""
 You don't need a webapp on your linode, probably, so disable it:
 
-cabal install git-annex -F-WebApp
+cabal install git-annex -f-WebApp
 
 The template haskell in the webapp about doubles the amount of memory needed to compile it.
 

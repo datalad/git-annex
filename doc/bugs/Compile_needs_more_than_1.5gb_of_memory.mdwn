@@ -12,3 +12,5 @@ What version of git-annex are you using? On what operating system?
 > Ubuntu 12.04
 
 Please provide any additional information below.
+
+[[done]]
