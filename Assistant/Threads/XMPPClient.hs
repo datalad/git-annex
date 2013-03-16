@@ -179,16 +179,17 @@ relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = do
 	msg <- waitNetMessage
 	debug ["sending:", show $ sanitizeNetMessage msg]
-	handleImportant msg
-	convert msg
+	a1 <- handleImportant msg
+	a2 <- convert msg
+	return (a1 >> a2)
   where
 	handleImportant msg = case parseJID =<< isImportantNetMessage msg of
 		Just tojid
 			| tojid == baseJID tojid -> do
-				putStanza presenceQuery
 				storeImportantNetMessage msg (formatJID tojid) $
 					\c -> (baseJID <$> parseJID c) == Just tojid
-		_ -> noop
+				return $ putStanza presenceQuery
+		_ -> return noop
 	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid -> do
 		if tojid == baseJID tojid
 			then do
