@@ -18,6 +18,9 @@ import Utility.Yesod
 import Yesod
 import Data.Text (Text)
 import Control.Concurrent
+import qualified Network.Wai as W
+import qualified Data.ByteString.Char8 as S8
+import qualified Data.Text as T
 
 waitNotifier :: forall sub. (Assistant NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier getbroadcaster nid = liftAssistant $ do
@@ -65,6 +68,7 @@ renderUrl urlrenderer route params = do
 {- Redirects back to the referring page, or if there's none, DashboardR -}
 redirectBack :: Handler ()
 redirectBack = do
-	clearUltDest
-	setUltDestReferer
-	redirectUltDest DashboardR
+	mr <- lookup "referer" . W.requestHeaders <$> waiRequest
+	case mr of
+		Nothing -> redirect DashboardR
+		Just r -> redirect $ T.pack $ S8.unpack r
