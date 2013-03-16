@@ -14,6 +14,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * xmpp: Re-enable XA flag, since disabling it did not turn out to help
     with the problems Google Talk has with not always sending presence
     messages to clients.
+  * map: Combine duplicate repositories, for a nicer looking map.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

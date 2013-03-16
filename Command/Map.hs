@@ -35,7 +35,7 @@ seek = [withNothing start]
 
 start :: CommandStart
 start = do
-	rs <- spider =<< gitRepo
+	rs <- combineSame <$> (spider =<< gitRepo)
 
 	umap <- uuidMap
 	trusted <- trustGet Trusted
@@ -77,7 +77,7 @@ hostname r
 	| otherwise = "localhost"
 
 basehostname :: Git.Repo -> String
-basehostname r = Prelude.head $ split "." $ hostname r
+basehostname r = fromMaybe "" $ headMaybe $ split "." $ hostname r
 
 {- A name to display for a repo. Uses the name from uuid.log if available,
  - or the remote name if not. -}
@@ -236,3 +236,11 @@ tryScan r
 	sshnote = do
 		showAction "sshing"
 		showOutput
+
+{- Spidering can find multiple paths to the same repo, so this is used
+ - to combine (really remove) duplicate repos with the same UUID. -}
+combineSame :: [Git.Repo] -> [Git.Repo]
+combineSame = map snd . nubBy sameuuid . map pair
+  where
+	sameuuid (u1, _) (u2, _) = u1 == u2 && u1 /= NoUUID
+	pair r = (getUncachedUUID r, r)
