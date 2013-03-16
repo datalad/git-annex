@@ -8,6 +8,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * Add incrementalbackup repository group.
   * webapp: Encourage user to install git-annex on a server when adding
     a ssh server, rather than just funneling them through to rsync.
+  * xmpp: --debug now enables a sanitized dump of the XMPP protocol
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

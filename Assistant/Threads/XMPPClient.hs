@@ -1,6 +1,6 @@
 {- git-annex XMPP client
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -32,10 +32,6 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Git.Branch
 import Data.Time.Clock
-
-{- Whether to include verbose protocol dump in debug output. -}
-protocolDebug :: Bool
-protocolDebug = False
 
 xmppClientThread :: UrlRenderer -> NamedThread
 xmppClientThread urlrenderer = namedThread "XMPPClient" $
@@ -96,8 +92,8 @@ xmppClient urlrenderer d creds =
 
 	receivenotifications selfjid = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
-		when protocolDebug $
-			inAssistant $ debug ["received:", show l]
+		inAssistant $ debug
+			["received:", show $ map sanitizeXMPPEvent l]
 		mapM_ (handle selfjid) l
 
 	handle selfjid (PresenceMessage p) = do
@@ -122,8 +118,13 @@ xmppClient urlrenderer d creds =
 		(stored, sent) <- inAssistant $
 			checkImportantNetMessages (formatJID (baseJID jid), c)
 		forM_ (S.toList $ S.difference stored sent) $ \msg -> do
-			inAssistant $ debug ["sending to new client:", show c, show msg]
-			a <- inAssistant $ convertNetMsg (readdressNetMessage msg c) selfjid
+			let msg' = readdressNetMessage msg c
+			inAssistant $ debug
+				[ "sending to new client:"
+				, show c
+				, show $ sanitizeNetMessage msg'
+				]
+			a <- inAssistant $ convertNetMsg msg' selfjid
 			a
 			inAssistant $ sentImportantNetMessage msg c
 	resendImportantMessages _ _ = noop
@@ -135,6 +136,10 @@ data XMPPEvent
 	| Unknown ReceivedStanza
 	| ProtocolError ReceivedStanza
 	deriving Show
+
+sanitizeXMPPEvent :: XMPPEvent -> XMPPEvent
+sanitizeXMPPEvent (GotNetMessage m) = GotNetMessage $ sanitizeNetMessage m
+sanitizeXMPPEvent v = v
 
 {- Decodes an XMPP stanza into one or more events. -}
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
@@ -173,8 +178,7 @@ decodeStanza _ s = [Unknown s]
 relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = do
 	msg <- waitNetMessage
-	when protocolDebug $
-		debug ["sending:", show msg]
+	debug ["sending:", show $ sanitizeNetMessage msg]
 	handleImportant msg
 	convert msg
   where
@@ -189,8 +193,7 @@ relayNetMessage selfjid = do
 			then do
 				clients <- maybe [] (S.toList . buddyAssistants)
 					<$> getBuddy (genBuddyKey tojid) <<~ buddyList
-				when protocolDebug $
-					debug ["exploded undirected message to clients", show clients]
+				debug ["exploded undirected message to clients", show clients]
 				return $ forM_ (clients) $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
 			else return $ putStanza $ pushMessage pushstage tojid selfjid
