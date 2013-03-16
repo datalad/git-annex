@@ -87,6 +87,5 @@ instance Show (RemoteA a) where
 instance Eq (RemoteA a) where
 	x == y = uuid x == uuid y
 
--- order remotes by cost
 instance Ord (RemoteA a) where
-	compare = comparing cost
+	compare = comparing uuid

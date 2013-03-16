@@ -15,6 +15,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
     with the problems Google Talk has with not always sending presence
     messages to clients.
   * map: Combine duplicate repositories, for a nicer looking map.
+  * Fix several bugs caused by a bad Ord instance for Remote.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

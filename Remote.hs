@@ -45,6 +45,7 @@ import qualified Data.Map as M
 import Text.JSON
 import Text.JSON.Generic
 import Data.Tuple
+import Data.Ord
 
 import Common.Annex
 import Types.Remote
@@ -208,7 +209,7 @@ keyPossibilities' key trusted = do
 	allremotes <- enabledRemoteList
 	let validremotes = remotesWithUUID allremotes validuuids
 
-	return (sort validremotes, validtrusteduuids)
+	return (sortBy (comparing cost) validremotes, validtrusteduuids)
 
 {- Displays known locations of a key. -}
 showLocations :: Key -> [UUID] -> String -> Annex ()
@@ -249,7 +250,7 @@ logStatus remote key = logChange key (uuid remote)
 
 {- Orders remotes by cost, with ones with the lowest cost grouped together. -}
 byCost :: [Remote] -> [[Remote]]
-byCost = map snd . sort . M.toList . costmap
+byCost = map snd . sortBy (comparing fst) . M.toList . costmap
   where
 	costmap = M.fromListWith (++) . map costpair
 	costpair r = (cost r, [r])
