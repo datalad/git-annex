@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="modules"
+ ip="85.16.227.39"
+ subject="Great screencast"
+ date="2013-03-16T14:16:37Z"
+ content="""
+I am starting to understand the concept :) Thank you.
+
+The assistant is working perfect with local repos and removable drives but i have problems to setup a remote repos. On a fresh debian server with base setup and rsync installed and ssh-keys for login. I got a green \"Scanned 93.xxx.xx.xxx_annex\" message on dashboard, but there is never a finished transfer. Its \"queued\" on all files and nothing seems to happens on clicking the \"play\" button behind files (x-ing files removes them from dashboard). Also i saw there is a second option in your screencast for remote servers (\"Use a git reposoitory on the server\") which does not show up on my side. Do i need to setup git-annex on server for second option? (with git-annex version 4.20130314).
+
+
+
+
+
+"""]]
