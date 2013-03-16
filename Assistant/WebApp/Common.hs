@@ -7,7 +7,7 @@
 
 module Assistant.WebApp.Common (module X) where
 
-import Assistant.Common as X hiding (liftAnnex)
+import Assistant.Common as X
 import Assistant.WebApp as X
 import Assistant.WebApp.Page as X
 import Assistant.WebApp.Form as X

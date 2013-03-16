@@ -143,7 +143,7 @@ getAddGlacierR = glacierConfigurator $ do
 				]
 		_ -> $(widgetFile "configurators/addglacier")
   where
-	setgroup r = liftAnnex $
+	setgroup r = liftAnnex $ 
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
@@ -167,7 +167,7 @@ enableAWSRemote remotetype uuid = do
 				fromJust $ M.lookup uuid m
 			makeAWSRemote remotetype creds name (const noop) M.empty
 		_ -> do
-			description <- lift $ liftAnnex $
+			description <- liftAnnex $
 				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 			$(widgetFile "configurators/enableaws")
 

@@ -85,7 +85,7 @@ getBuddyName u = go =<< getclientjid
 getNeedCloudRepoR :: UUID -> Handler RepHtml
 #ifdef WITH_XMPP
 getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
-	buddyname <- lift $ liftAssistant $ getBuddyName for
+	buddyname <- liftAssistant $ getBuddyName for
 	$(widgetFile "configurators/xmpp/needcloudrepo")
 #else
 needCloudRepoR = xmppPage $
@@ -129,9 +129,9 @@ buddyListDisplay :: Widget
 buddyListDisplay = do
 	autoUpdate ident NotifierBuddyListR (10 :: Int) (10 :: Int)
 #ifdef WITH_XMPP
-	myjid <- lift $ liftAssistant $ xmppClientID <$> getDaemonStatus
+	myjid <- liftAssistant $ xmppClientID <$> getDaemonStatus
 	let isself (BuddyKey b) = Just b == myjid
-	buddies <- lift $ liftAssistant $ do
+	buddies <- liftAssistant $ do
 		pairedwith <- map fst <$> getXMPPRemotes
 		catMaybes . map (buddySummary pairedwith)
 			<$> (getBuddyList <<~ buddyList)

@@ -7,6 +7,7 @@
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp.Types where
@@ -70,6 +71,33 @@ instance Yesod WebApp where
 
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
+
+{- Runs an Annex action from the webapp.
+ -
+ - When the webapp is run outside a git-annex repository, the fallback
+ - value is returned.
+ -}
+liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
+liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
+	( return fallback
+	, liftAssistant $ liftAnnex a
+	)
+
+instance LiftAnnex (GHandler sub WebApp) where
+	liftAnnex = liftAnnexOr $ error "internal runAnnex"
+
+instance LiftAnnex (GWidget WebApp WebApp) where
+	liftAnnex = lift . liftAnnex
+
+class LiftAssistant m where
+	liftAssistant :: Assistant a -> m a
+
+instance LiftAssistant (GHandler sub WebApp) where
+	liftAssistant a = liftIO . flip runAssistant a
+		=<< assistantData <$> getYesod
+
+instance LiftAssistant (GWidget WebApp WebApp) where
+	liftAssistant = lift . liftAssistant
 
 type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
 

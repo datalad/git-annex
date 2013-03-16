@@ -19,7 +19,7 @@ import Assistant.DaemonStatus
 import qualified Remote
 import Utility.ThreadScheduler
 import Assistant.WebApp (UrlRenderer, renderUrl)
-import Assistant.WebApp.Types
+import Assistant.WebApp.Types hiding (liftAssistant)
 import Assistant.Alert
 import Assistant.Pairing
 import Assistant.XMPP.Git

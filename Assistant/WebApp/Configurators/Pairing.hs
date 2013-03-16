@@ -214,10 +214,10 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 	urlrender <- lift getUrlRender
 	reldir <- fromJust . relDir <$> lift getYesod
 
-	sendrequests <- lift $ liftAssistant $ asIO2 $ mksendrequests urlrender
+	sendrequests <- liftAssistant $ asIO2 $ mksendrequests urlrender
 	{- Generating a ssh key pair can take a while, so do it in the
 	 - background. -}
-	thread <- lift $ liftAssistant $ asIO $ do
+	thread <- liftAssistant $ asIO $ do
 		keypair <- liftIO $ genSshKeyPair
 		pairdata <- liftIO $ PairData
 			<$> getHostname

@@ -1,43 +1,23 @@
 {- git-annex assistant webapp core
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp where
 
 import Assistant.WebApp.Types
-import Assistant.Common hiding (liftAnnex)
-import qualified Assistant.Monad as Assistant
+import Assistant.Common
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
 import Yesod
 import Data.Text (Text)
 import Control.Concurrent
-
-inFirstRun :: Handler Bool
-inFirstRun = isNothing . relDir <$> getYesod
-
-{- Runs an Annex action from the webapp.
- -
- - When the webapp is run outside a git-annex repository, the fallback
- - value is returned.
- -}
-liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
-liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
-	( return fallback
-	, liftAssistant $ Assistant.liftAnnex a
-	)
-
-liftAnnex :: forall sub a. Annex a -> GHandler sub WebApp a
-liftAnnex = liftAnnexOr $ error "internal runAnnex"
-
-liftAssistant :: forall sub a. (Assistant a) -> GHandler sub WebApp a
-liftAssistant a = liftIO . flip runAssistant a =<< assistantData <$> getYesod
 
 waitNotifier :: forall sub. (Assistant NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
 waitNotifier getbroadcaster nid = liftAssistant $ do
@@ -73,6 +53,9 @@ newUrlRenderer = newEmptyMVar
 setUrlRenderer :: UrlRenderer -> (UrlRenderFunc) -> IO ()
 setUrlRenderer = putMVar
 
+inFirstRun :: Handler Bool
+inFirstRun = isNothing . relDir <$> getYesod
+
 {- Blocks until the webapp is running and has called setUrlRenderer. -}
 renderUrl :: UrlRenderer -> Route WebApp -> [(Text, Text)] -> IO Text
 renderUrl urlrenderer route params = do
@@ -85,6 +68,3 @@ redirectBack = do
 	clearUltDest
 	setUltDestReferer
 	redirectUltDest DashboardR
-
-controlMenu :: Widget
-controlMenu = $(widgetFile "controlmenu")

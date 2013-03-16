@@ -108,7 +108,7 @@ getEnableWebDAVR uuid = do
 			FormSuccess input -> lift $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
-				description <- lift $ liftAnnex $
+				description <- liftAnnex $
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 				$(widgetFile "configurators/enablewebdav")
 #else

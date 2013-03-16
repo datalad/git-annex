@@ -227,7 +227,7 @@ combineRepos dir name = liftAnnex $ do
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
-	description <- lift $ liftAnnex $
+	description <- liftAnnex $
 		T.pack . concat <$> prettyListUUIDs [uuid]
 	$(widgetFile "configurators/enabledirectory")
 

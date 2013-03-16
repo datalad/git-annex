@@ -7,8 +7,7 @@
 
 module Assistant.WebApp.Utility where
 
-import Assistant.Common hiding (liftAnnex)
-import Assistant.WebApp
+import Assistant.Common
 import Assistant.WebApp.Types
 import Assistant.DaemonStatus
 import Assistant.TransferQueue

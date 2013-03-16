@@ -13,6 +13,7 @@ module Assistant.Monad (
 	newAssistantData,
 	runAssistant,
 	getAssistant,
+	LiftAnnex,
 	liftAnnex,
 	(<~>),
 	(<<~),
@@ -90,13 +91,18 @@ runAssistant d a = runReaderT (mkAssistant a) d
 getAssistant :: (AssistantData -> a) -> Assistant a
 getAssistant = reader
 
+{- Using a type class for lifting into the annex monad allows
+ - easily lifting to it from multiple different monads. -}
+class LiftAnnex m where
+	liftAnnex :: Annex a -> m a
+
 {- Runs an action in the git-annex monad. Note that the same monad state
  - is shared amoung all assistant threads, so only one of these can run at
  - a time. Therefore, long-duration actions should be avoided. -}
-liftAnnex :: Annex a -> Assistant a
-liftAnnex a = do
-	st <- reader threadState
-	liftIO $ runThreadState st a
+instance LiftAnnex Assistant where
+	liftAnnex a = do
+		st <- reader threadState
+		liftIO $ runThreadState st a
 
 {- Runs an IO action, passing it an IO action that runs an Assistant action. -}
 (<~>) :: (IO a -> IO b) -> Assistant a -> Assistant b

@@ -65,3 +65,6 @@ customPage navbaritem content = do
 	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
+
+controlMenu :: Widget
+controlMenu = $(widgetFile "controlmenu")

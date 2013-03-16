@@ -22,7 +22,7 @@ getConfigurationR = ifM (inFirstRun)
 	( getFirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
 #ifdef WITH_XMPP
-		xmppconfigured <- lift $ liftAnnex $ isJust <$> getXMPPCreds
+		xmppconfigured <- liftAnnex $ isJust <$> getXMPPCreds
 #else
 		let xmppconfigured = False
 #endif
