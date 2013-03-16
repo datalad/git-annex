@@ -58,7 +58,10 @@ getStartXMPPPairFriendR = ifM (isJust <$> liftAnnex getXMPPCreds)
 		liftAssistant $ sendNetMessage QueryPresence
 		pairPage $
 			$(widgetFile "configurators/pairing/xmpp/friend/prompt")
-	, redirect XMPPR -- go get XMPP configured, then come back
+	, do
+		-- go get XMPP configured, then come back
+		setUltDestCurrent
+		redirect XMPPR
 	)
 #else
 getStartXMPPPairFriendR = noXMPPPairing
@@ -71,7 +74,10 @@ getStartXMPPPairSelfR :: Handler RepHtml
 #ifdef WITH_XMPP
 getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
   where
-  	go Nothing = redirect XMPPR -- go get XMPP configured, then come back
+  	go Nothing = do
+		-- go get XMPP configured, then come back
+		setUltDestCurrent
+		redirect XMPPR
 	go (Just creds) = do
 		{- Ask buddies to send presence info, to get
 		 - the buddy list populated. -}

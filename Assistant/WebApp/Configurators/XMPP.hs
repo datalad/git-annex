@@ -110,7 +110,7 @@ postXMPPR = xmppPage $ do
 	storecreds creds = do
 		void $ liftAnnex $ setXMPPCreds creds
 		liftAssistant notifyNetMessagerRestart
-		redirectBack
+		redirectUltDest DashboardR
 #else
 getXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
