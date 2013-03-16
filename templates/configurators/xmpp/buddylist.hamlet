@@ -32,7 +32,7 @@
                 $if canpair
                   $if isself buddyid
                     <a .btn .btn-primary .btn-small href="@{RunningXMPPPairSelfR}">
-                      Share pairing
+                      Start pairing
                   $else
                     <a .btn .btn-primary .btn-small href="@{RunningXMPPPairFriendR buddyid}">
                       Start pairing
