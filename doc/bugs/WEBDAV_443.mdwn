@@ -26,67 +26,7 @@ Archlinux 64: https://aur.archlinux.org/packages/git-annex/
 
 1. Try my password a couple of time. It works with Chrome, Firefox or cadaver
 2. I am using a zsh shell and try exporting both env. variables
-2. git-annex test has errors ...
- 
-----------------------------------------------------------------------
-First, some automated quick checks of properties ...
-----------------------------------------------------------------------
-prop_idempotent_deencode_git
-+++ OK, passed 100 tests.
-prop_idempotent_deencode
-+++ OK, passed 100 tests.
-prop_idempotent_fileKey
-+++ OK, passed 100 tests.
-prop_idempotent_key_encode
-+++ OK, passed 100 tests.
-prop_idempotent_shellEscape
-+++ OK, passed 100 tests.
-prop_idempotent_shellEscape_multiword
-+++ OK, passed 100 tests.
-prop_idempotent_configEscape
-+++ OK, passed 100 tests.
-prop_parse_show_Config
-+++ OK, passed 100 tests.
-prop_parentDir_basics
-+++ OK, passed 100 tests.
-prop_relPathDirToFile_basics
-+++ OK, passed 100 tests.
-prop_relPathDirToFile_regressionTest
-+++ OK, passed 1 tests.
-prop_cost_sane
-+++ OK, passed 1 tests.
-prop_hmacWithCipher_sane
-+++ OK, passed 1 tests.
-prop_TimeStamp_sane
-+++ OK, passed 1 tests.
-prop_addLog_sane
-+++ OK, passed 1 tests.
-prop_verifiable_sane
-+++ OK, passed 100 tests.
-prop_segment_regressionTest
-+++ OK, passed 1 tests.
-prop_read_write_transferinfo
-+++ OK, passed 100 tests.
-prop_read_show_inodecache
-+++ OK, passed 100 tests.
-prop_parse_show_log
-+++ OK, passed 100 tests.
-prop_read_show_TrustLevel
-+++ OK, passed 1 tests.
-prop_parse_show_TrustLog
-+++ OK, passed 1 tests.
-----------------------------------------------------------------------
-Now, some broader checks ...
-  (Do not be alarmed by odd output here; it's normal.
-   wait for the last line to see how it went.)
-----------------------------------------------------------------------
-init
-Cases: 1  Tried: 1  Errors: 0  Failures: 0
-----------------------------------------------------------------------
-add
-### Error in:   git-annex add:0           
-apple: openFile: does not exist (No such file or directory)
-Cases: 3  Tried: 1  Errors: 1  Failures: 0warning: remote HEAD refers to nonexistent ref, unable to checkout.
+3. git-annex test has errors
 
 ### Error in:   git-annex add:1           
 sha1foodup: openFile: does not exist (No such file or directory)
@@ -363,4 +303,4 @@ Some tests failed!
 > (The test suite output suggests to me that it was run on a system
 > that does not support symlinks, and may be broken in some other way
 > as well, but is not relevant to this bug report.)
- > --[[Joey]] 
+> --[[Joey]] 
