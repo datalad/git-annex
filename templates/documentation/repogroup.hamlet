@@ -19,9 +19,14 @@
     hold the files that need to be synced to other repositories, so they #
     are relatively small.
   <p>
-    You can get along without any <b>backup repositories</b>, but they're #
-    a useful safeguard. These repositories accumulate every file they can #
-    get ahold of. A large removable drive makes a good backup repository.
+    You can get along without any <b>full backup repositories</b>, but #
+    they're a useful safeguard. These repositories accumulate every file
+    they can get ahold of. A large removable drive makes a good full backup #
+    repository.
+  <p>
+    Similarly, the <b>incremental backup repositories</b> try to back up #
+    every file, but these only accumulate files that are not already #
+    present in a full or incremental backup.
   <p>
     Next we come to the <b>archive repositories</b>.
     The archive repositories coordinate together, so that each file is #

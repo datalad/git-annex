@@ -56,7 +56,7 @@ dropped. If the content would not be preferred then, the drop can be done.
 So, for example, `copies=2` in a preferred content expression lets
 content be dropped only when there are currently 3 copies of it, including
 the repo it's being dropped from. This is different than running `git annex
-drop --copies=2`, which will drop files that current have 2 copies.
+drop --copies=2`, which will drop files that currently have 2 copies.
 
 ### difference: "present"
 
@@ -108,6 +108,13 @@ will be added later.
 All content is preferred.
 
 `include=*`
+
+### incremental backup
+
+Only prefers content that's not already backed up to another backup
+or incremental backup repository.
+
+`include=* and (not copies=backup:1) and (not copies=incrementalbackup:1)`
 
 ### small archive
 
