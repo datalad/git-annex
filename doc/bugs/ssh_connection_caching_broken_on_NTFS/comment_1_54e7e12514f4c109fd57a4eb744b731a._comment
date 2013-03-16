@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-16T20:47:02Z"
+ content="""
+This failed because ssh connection caching needs fifos,
+which are not supported on NTFS. Also, the linux NTFS code behaves most strangly when asked to make a fifo; creating an empty file instead and then failing with EEXIST.
+
+In more recent versions of git-annex, you can set the `GIT_ANNEX_TMP_DIR` to point somewhere that supports fifos.
+
+Recent versions also try to detect crippled filesystems, and disable use of unix sockets along with symlinks etc.
+However, since ntfs supports symlinks, and it does not probe specially for fifo support, this won't help.
+"""]]
