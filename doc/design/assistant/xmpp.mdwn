@@ -39,7 +39,8 @@ using presence messages, and chat messages (with empty body tags,
 so clients don't display them).
 
 git-annex sets a negative presence priority, to avoid any regular messages
-getting eaten by its clients. It also sets itself extended away.
+getting eaten by its clients. It also sets itself extended away. (XA
+no longer used; see 90e47088908c2374d5d9306f4dacdf22de599cf5.)
 Note that this means that chat messages always have to be directed at
 specific git-annex clients.
 

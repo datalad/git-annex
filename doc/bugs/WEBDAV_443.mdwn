@@ -357,3 +357,10 @@ Cases: 1  Tried: 1  Errors: 1  Failures: 0
 Some tests failed!
   (This could be due to a bug in git-annex, or an incompatability
    with utilities, such as git, installed on this system.)
+
+> [[done]], see comment.
+> 
+> (The test suite output suggests to me that it was run on a system
+> that does not support symlinks, and may be broken in some other way
+> as well, but is not relevant to this bug report.)
+ > --[[Joey]] 
