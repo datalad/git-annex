@@ -11,6 +11,7 @@ data StandardGroup
 	= ClientGroup
 	| TransferGroup
 	| BackupGroup
+	| IncrementalBackupGroup
 	| SmallArchiveGroup
 	| FullArchiveGroup
 	| SourceGroup
