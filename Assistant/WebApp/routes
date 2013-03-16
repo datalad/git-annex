@@ -33,6 +33,7 @@
 /config/repository/add/drive AddDriveR GET
 /config/repository/add/ssh AddSshR GET
 /config/repository/add/ssh/confirm/#SshData ConfirmSshR GET
+/config/repository/add/ssh/retry/#SshData RetrySshR GET
 /config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET

@@ -2,22 +2,31 @@
   <h2>
     Ready to add remote server
   <div .row-fluid>
-    <div .span8>
+    <div .span9>
       <p>
         The server #{sshHostName sshdata} has been verified to be usable.
-      $if not (rsyncOnly sshdata)
-        <p>
-          You have two options for how to use the server:
-        <p>
+      <p>
+        You have two options for how to use the server:
+      <p>
+        $if not (rsyncOnly sshdata)
           <a .btn .btn-primary href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
             Use a git repository on the server
+        $else
+          <a .btn .disabled .btn-warning href="@{RetrySshR sshdata}" onclick="$('#testmodal').modal('show');">
+            Use a git repository on the server (not available) #
+          <a .btn .btn-primary href="@{RetrySshR sshdata}" onclick="$('#testmodal').modal('show');">
+            Retry
           <br>
-          All your data will be uploaded to the server, including the full #
-          git repository. This is a great choice if you want to set up #
-          other devices to use the same server, or share the repository with #
-          others.
-        <p style="text-align: center">
-          -or-
+          <i .icon-warning-sign></i> #
+          <i>
+            The server needs git and git-annex installed to use this option.
+        <br>
+        All your data will be uploaded to the server, including the full #
+        git repository. This is a great choice if you want to set up #
+        other devices to use the same server, or share the repository with #
+        others.
+      <p style="text-align: center">
+        -or-
       <p>
         <a .btn .btn-primary href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
           Use an encrypted rsync repository on the server
@@ -32,6 +41,7 @@
           <i .icon-info-sign></i> #
           A ssh key will be installed on the server, allowing git-annex to #
           access it securely without a password.
+^{sshTestModal}
 <div .modal .fade #setupmodal>
   <div .modal-header>
     <h3>

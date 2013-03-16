@@ -49,6 +49,14 @@ mkSshData s = SshData
 	, rsyncOnly = False
 	}
 
+mkSshInput :: SshData -> SshInput
+mkSshInput s = SshInput
+	{ inputHostname = Just $ sshHostName s
+	, inputUsername = sshUserName s
+	, inputDirectory = Just $ sshDirectory s
+	, inputPort = sshPort s
+	}
+
 sshInputAForm :: (Field WebApp WebApp Text) -> SshInput -> AForm WebApp WebApp SshInput
 sshInputAForm hostnamefield def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
@@ -103,6 +111,9 @@ getAddSshR = sshConfigurator $ do
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/ssh/add")
+
+sshTestModal :: Widget
+sshTestModal = $(widgetFile "configurators/ssh/testmodal")
 
 {- To enable an existing rsync special remote, parse the SshInput from
  - its rsyncurl, and display a form whose only real purpose is to check
@@ -242,6 +253,11 @@ showSshErr msg = sshConfigurator $
 getConfirmSshR :: SshData -> Handler RepHtml
 getConfirmSshR sshdata = sshConfigurator $
 	$(widgetFile "configurators/ssh/confirm")
+
+getRetrySshR :: SshData -> Handler ()
+getRetrySshR sshdata = do
+	s <- liftIO $ testServer $ mkSshInput sshdata
+	redirect $ either (const $ ConfirmSshR sshdata) ConfirmSshR s
 
 getMakeSshGitR :: SshData -> Handler RepHtml
 getMakeSshGitR = makeSsh False setupGroup
