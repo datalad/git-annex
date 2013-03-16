@@ -184,7 +184,8 @@ relayNetMessage selfjid = do
   where
 	handleImportant msg = case parseJID =<< isImportantNetMessage msg of
 		Just tojid
-			| tojid == baseJID tojid ->
+			| tojid == baseJID tojid -> do
+				putStanza presenceQuery
 				storeImportantNetMessage msg (formatJID tojid) $
 					\c -> (baseJID <$> parseJID c) == Just tojid
 		_ -> noop
