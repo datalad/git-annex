@@ -93,11 +93,13 @@ needCloudRepoR = xmppPage $
 #endif
 
 getXMPPR :: Handler RepHtml
+getXMPPR = postXMPPR
+postXMPPR :: Handler RepHtml
 #ifdef WITH_XMPP
-getXMPPR = xmppPage $ do
+postXMPPR = xmppPage $ do
 	((result, form), enctype) <- lift $ do
 		oldcreds <- liftAnnex getXMPPCreds
-		runFormGet $ renderBootstrap $ xmppAForm $
+		runFormPost $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of

@@ -108,10 +108,13 @@ datacenterField service = areq (selectFieldList list) "Datacenter" defregion
 	defregion = Just $ AWS.defaultRegion service
 
 getAddS3R :: Handler RepHtml
+getAddS3R = postAddS3R
+
+postAddS3R :: Handler RepHtml
 #ifdef WITH_S3
-getAddS3R = awsConfigurator $ do
+postAddS3R = awsConfigurator $ do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap s3InputAForm
+		runFormPost $ renderBootstrap s3InputAForm
 	case result of
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
@@ -126,13 +129,16 @@ getAddS3R = awsConfigurator $ do
 	setgroup r = liftAnnex $
 		setStandardGroup (Remote.uuid r) TransferGroup
 #else
-getAddS3R = error "S3 not supported by this build"
+postAddS3R = error "S3 not supported by this build"
 #endif
 
 getAddGlacierR :: Handler RepHtml
-getAddGlacierR = glacierConfigurator $ do
+getAddGlacierR = postAddGlacierR
+
+postAddGlacierR :: Handler RepHtml
+postAddGlacierR = glacierConfigurator $ do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap glacierInputAForm
+		runFormPost $ renderBootstrap glacierInputAForm
 	case result of
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
@@ -147,19 +153,25 @@ getAddGlacierR = glacierConfigurator $ do
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
+getEnableS3R = postEnableS3R
+
+postEnableS3R :: UUID -> Handler RepHtml
 #ifdef WITH_S3
-getEnableS3R = awsConfigurator . enableAWSRemote S3.remote
+postEnableS3R = awsConfigurator . enableAWSRemote S3.remote
 #else
-getEnableS3R _ = error "S3 not supported by this build"
+postEnableS3R _ = error "S3 not supported by this build"
 #endif
 
 getEnableGlacierR :: UUID -> Handler RepHtml
-getEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
+getEnableGlacierR = postEnableGlacierR
+
+postEnableGlacierR :: UUID -> Handler RepHtml
+postEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
 
 enableAWSRemote :: RemoteType -> UUID -> Widget
 enableAWSRemote remotetype uuid = do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap awsCredsAForm
+		runFormPost $ renderBootstrap awsCredsAForm
 	case result of
 		FormSuccess creds -> lift $ do
 			m <- liftAnnex readRemoteLog

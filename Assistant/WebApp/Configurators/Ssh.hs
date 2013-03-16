@@ -97,10 +97,12 @@ usable UsableRsyncServer = True
 usable UsableSshInput = True
 
 getAddSshR :: Handler RepHtml
-getAddSshR = sshConfigurator $ do
+getAddSshR = postAddSshR
+postAddSshR :: Handler RepHtml
+postAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ sshInputAForm textField $
+		runFormPost $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just u) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
@@ -124,12 +126,14 @@ sshTestModal = $(widgetFile "configurators/ssh/testmodal")
  - remotes, and so their configuration is not shared between repositories.
  -}
 getEnableRsyncR :: UUID -> Handler RepHtml
-getEnableRsyncR u = do
+getEnableRsyncR = postEnableRsyncR
+postEnableRsyncR :: UUID -> Handler RepHtml
+postEnableRsyncR u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- lift $
-				runFormGet $ renderBootstrap $ sshInputAForm textField sshinput
+				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
@@ -300,8 +304,10 @@ makeSshRepo forcersync setup sshdata = do
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 
 getAddRsyncNetR :: Handler RepHtml
-getAddRsyncNetR = do
-	((result, form), enctype) <- runFormGet $
+getAddRsyncNetR = postAddRsyncNetR
+postAddRsyncNetR :: Handler RepHtml
+postAddRsyncNetR = do
+	((result, form), enctype) <- runFormPost $
 		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
 	let showform status = page "Add a Rsync.net repository" (Just Configuration) $

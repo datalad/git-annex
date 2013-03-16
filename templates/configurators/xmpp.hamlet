@@ -18,7 +18,7 @@
       <small>(<tt>you@gmail.com</tt>)</small> #
       and password below.
   <p>
-    <form .form-horizontal enctype=#{enctype}>
+    <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

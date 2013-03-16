@@ -127,9 +127,11 @@ newRepositoryForm defpath msg = do
 
 {- Making the first repository, when starting the webapp for the first time. -}
 getFirstRepositoryR :: Handler RepHtml
-getFirstRepositoryR = page "Getting started" (Just Configuration) $ do
+getFirstRepositoryR = postFirstRepositoryR
+postFirstRepositoryR :: Handler RepHtml
+postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
-	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm path
+	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $
 			startFullAssistant $ T.unpack p
@@ -138,9 +140,11 @@ getFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 {- Adding a new local repository, which may be entirely separate, or may
  - be connected to the current repository. -}
 getNewRepositoryR :: Handler RepHtml
-getNewRepositoryR = page "Add another repository" (Just Configuration) $ do
+getNewRepositoryR = postNewRepositoryR
+postNewRepositoryR :: Handler RepHtml
+postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- lift $ runFormGet $ newRepositoryForm home
+	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
@@ -193,11 +197,13 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
  - that has already been used elsewhere.
  -}
 getAddDriveR :: Handler RepHtml
-getAddDriveR = page "Add a removable drive" (Just Configuration) $ do
+getAddDriveR = postAddDriveR
+postAddDriveR :: Handler RepHtml
+postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- lift $ runFormGet $
+	((res, form), enctype) <- lift $ runFormPost $
 		selectDriveForm (sort writabledrives) Nothing
 	case res of
 		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $

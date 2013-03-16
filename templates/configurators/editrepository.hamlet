@@ -13,7 +13,7 @@
         right choice if you'll use it to shuttle data back and forth #
         between other repositories. Otherwise, pick one of the other groups.
   <p>
-    <form .form-horizontal enctype=#{enctype}>
+    <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

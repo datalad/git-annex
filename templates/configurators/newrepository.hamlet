@@ -3,5 +3,5 @@
     Add another local repository
   <p>
     Where do you want to put this new repository?
-    <form .form-inline enctype=#{enctype}>
+    <form method="post" .form-inline enctype=#{enctype}>
       ^{form}

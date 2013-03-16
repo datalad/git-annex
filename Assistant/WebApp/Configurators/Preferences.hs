@@ -8,7 +8,8 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.Preferences (
-	getPreferencesR
+	getPreferencesR,
+	postPreferencesR
 ) where
 
 import Assistant.WebApp.Common
@@ -82,10 +83,12 @@ storePrefs p = do
 		if debugEnabled p then DEBUG else WARNING
 
 getPreferencesR :: Handler RepHtml
-getPreferencesR = page "Preferences" (Just Configuration) $ do
+getPreferencesR = postPreferencesR
+postPreferencesR :: Handler RepHtml
+postPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- lift $ do
 		current <- liftAnnex getPrefs
-		runFormGet $ renderBootstrap $ prefsAForm current
+		runFormPost $ renderBootstrap $ prefsAForm current
 	case result of
 		FormSuccess new -> lift $ do
 			liftAnnex $ storePrefs new

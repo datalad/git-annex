@@ -12,7 +12,7 @@
     <a href="http://aws.amazon.com/s3/pricing/">
       Pricing details, including one year Free Usage Tier promotion
   <p>
-    <form .form-horizontal enctype=#{enctype}>
+    <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

@@ -59,10 +59,12 @@ webDAVCredsAForm = WebDAVInput
 	<*> pure NoEncryption -- not used!
 
 getAddBoxComR :: Handler RepHtml
+getAddBoxComR = postAddBoxComR
+postAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
-getAddBoxComR = boxConfigurator $ do
+postAddBoxComR = boxConfigurator $ do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap boxComAForm
+		runFormPost $ renderBootstrap boxComAForm
 	case result of
 		FormSuccess input -> lift $ 
 			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
@@ -80,12 +82,14 @@ getAddBoxComR = boxConfigurator $ do
 	setgroup r = liftAnnex $
 		setStandardGroup (Remote.uuid r) TransferGroup
 #else
-getAddBoxComR = error "WebDAV not supported by this build"
+postAddBoxComR = error "WebDAV not supported by this build"
 #endif
 
 getEnableWebDAVR :: UUID -> Handler RepHtml
+getEnableWebDAVR = postEnableWebDAVR
+postEnableWebDAVR :: UUID -> Handler RepHtml
 #ifdef WITH_WEBDAV
-getEnableWebDAVR uuid = do
+postEnableWebDAVR uuid = do
 	m <- liftAnnex readRemoteLog
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ M.lookup "name" c
@@ -103,7 +107,7 @@ getEnableWebDAVR uuid = do
   where
 	showform name url = do
 		((result, form), enctype) <- lift $
-			runFormGet $ renderBootstrap webDAVCredsAForm
+			runFormPost $ renderBootstrap webDAVCredsAForm
 		case result of
 			FormSuccess input -> lift $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
@@ -112,7 +116,7 @@ getEnableWebDAVR uuid = do
 					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
 				$(widgetFile "configurators/enablewebdav")
 #else
-getEnableWebDAVR _ = error "WebDAV not supported by this build"
+postEnableWebDAVR _ = error "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV

@@ -125,11 +125,13 @@ sendXMPPPairRequest _ = noXMPPPairing
 
 {- Starts local pairing. -}
 getStartLocalPairR :: Handler RepHtml
+getStartLocalPairR = postStartLocalPairR
+postStartLocalPairR :: Handler RepHtml
 #ifdef WITH_PAIRING
-getStartLocalPairR = promptSecret Nothing $
+postStartLocalPairR = promptSecret Nothing $
 	startLocalPairing PairReq noop pairingAlert Nothing
 #else
-getStartLocalPairR = noLocalPairing
+postStartLocalPairR = noLocalPairing
 
 noLocalPairing :: Handler RepHtml
 noLocalPairing = noPairing "local"
@@ -139,8 +141,10 @@ noLocalPairing = noPairing "local"
  - authorized key first so that the originating host can immediately sync
  - with us. -}
 getFinishLocalPairR :: PairMsg -> Handler RepHtml
+getFinishLocalPairR = postFinishLocalPairR
+postFinishLocalPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
-getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
+postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	repodir <- lift $ repoPath <$> liftAnnex gitRepo
 	liftIO $ setup repodir
 	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
@@ -151,7 +155,7 @@ getFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 		remoteSshPubKey $ pairMsgData msg
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else
-getFinishLocalPairR _ = noLocalPairing
+postFinishLocalPairR _ = noLocalPairing
 #endif
 
 getConfirmXMPPPairFriendR :: PairKey -> Handler RepHtml
@@ -260,7 +264,7 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler RepHtml
 promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $
+		runFormPost $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
 	case result of
 		FormSuccess v -> do

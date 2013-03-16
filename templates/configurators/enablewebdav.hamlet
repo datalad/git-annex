@@ -6,7 +6,7 @@
     <a href="#{url}">
       #{url}
   <p>
-    <form .form-horizontal enctype=#{enctype}>
+    <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

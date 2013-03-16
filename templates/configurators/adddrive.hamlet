@@ -22,7 +22,7 @@
         <a .btn .btn-primary href="@{AddDriveR}">
           Rescan for removable drives
   $else
-    <form enctype=#{enctype}>
+    <form method="post" enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

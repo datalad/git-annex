@@ -8,7 +8,7 @@
     Even a small amount of free storage is useful, as a transfer point #
     between your repositories.
   <p>
-    <form .form-horizontal enctype=#{enctype}>
+    <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}

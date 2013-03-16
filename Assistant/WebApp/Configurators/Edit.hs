@@ -109,13 +109,22 @@ editRepositoryAForm def = RepoConfig
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
 getEditRepositoryR :: UUID -> Handler RepHtml
-getEditRepositoryR = editForm False
+getEditRepositoryR = postEditRepositoryR
+
+postEditRepositoryR :: UUID -> Handler RepHtml
+postEditRepositoryR = editForm False
 
 getEditNewRepositoryR :: UUID -> Handler RepHtml
-getEditNewRepositoryR = editForm True
+getEditNewRepositoryR = postEditNewRepositoryR
+
+postEditNewRepositoryR :: UUID -> Handler RepHtml
+postEditNewRepositoryR = editForm True
 
 getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
-getEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
+getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
+
+postEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = page "Configure repository" (Just Configuration) $ do
@@ -123,7 +132,7 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	lift $ checkarchivedirectory curr
 	((result, form), enctype) <- lift $
-		runFormGet $ renderBootstrap $ editRepositoryAForm curr
+		runFormPost $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
 			checkarchivedirectory input
