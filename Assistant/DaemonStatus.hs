@@ -53,8 +53,6 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	let nonxmpp = filter (not . isXMPPRemote) syncable
-	
-	liftIO $ print (nonxmpp, map Remote.globallyAvailable nonxmpp)
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
