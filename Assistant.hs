@@ -157,6 +157,7 @@ import Assistant.Environment
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
+import qualified Build.SysConfig as SysConfig
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
@@ -198,6 +199,7 @@ startDaemon assistant foreground startbrowser = do
 				=<< newAssistantData st dstatus
 
 	go webappwaiter = do
+		notice ["starting", desc, "version", SysConfig.packageversion]
 #ifdef WITH_WEBAPP
 		d <- getAssistant id
 		urlrenderer <- liftIO newUrlRenderer
