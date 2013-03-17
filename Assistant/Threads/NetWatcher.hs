@@ -128,4 +128,4 @@ handleConnection = reconnectRemotes True =<< networkRemotes
 {- Finds network remotes. -}
 networkRemotes :: Assistant [Remote]
 networkRemotes = liftAnnex $
-	filter (isNothing . Remote.localpath) <$> remoteList
+	filter (isNothing . Remote.localpath) <$> enabledRemoteList

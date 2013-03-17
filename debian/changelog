@@ -17,6 +17,8 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * map: Combine duplicate repositories, for a nicer looking map.
   * Fix several bugs caused by a bad Ord instance for Remote.
   * webapp: Switch all forms to POST.
+  * assistant: Avoid syncing with annex-ignored remotes when reconnecting
+    to the network, or connecting a drive.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 
