@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnR7hb8IaKB3IKZptRukje0yahmhfLOO98"
+ nickname="Adam"
+ subject="comment 1"
+ date="2013-03-17T00:30:26Z"
+ content="""
+> Made UI changes to encourage user to install git-annex on the server when adding a ssh server, rather than just funneling them through to rsync.
+
+What's the difference between having git-annex available versus not?
+"""]]
