@@ -19,6 +19,8 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * webapp: Switch all forms to POST.
   * assistant: Avoid syncing with annex-ignored remotes when reconnecting
     to the network, or connecting a drive.
+  * assistant: Fix OSX bug that prevented committing changed files to a
+    repository when in indirect mode.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

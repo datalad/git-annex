@@ -317,7 +317,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			)
 		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
 			stageSymlink file =<< hashSymlink link
-			showEndOk
+		showEndOk
 		return $ Just $ finishedChange change key
 
 	{- Check that the keysource's keyFilename still exists,

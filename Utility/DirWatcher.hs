@@ -47,10 +47,10 @@ canWatch = False
  - OTOH, with kqueue, often only one event is received, indicating the most
  - recent state of the file. -}
 eventsCoalesce :: Bool
-#if (WITH_INOTIFY || WITH_FSEVENTS)
+#if WITH_INOTIFY
 eventsCoalesce = False
 #else
-#if WITH_KQUEUE
+#if (WITH_KQUEUE || WITH_FSEVENTS)
 eventsCoalesce = True
 #else
 eventsCoalesce = undefined

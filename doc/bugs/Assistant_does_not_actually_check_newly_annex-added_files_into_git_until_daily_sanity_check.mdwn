@@ -98,3 +98,9 @@ Here it is on a newly-created, empty repo:
     add bar [2013-03-13 09:31:51 EDT] chat: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
     (checksum...) [2013-03-13 09:31:51 EDT] chat: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","cat-file","--batch"]
 
+> This bug affected OSX when indirect mode repositories were used.
+> Direct mode repositories were ok.
+> I expected to get an event from fsevents when I made the symlink,
+> and this event is not arriving (or at least not always). Switched
+> the code to use the same method for fsevents as for kqueue and that fixed
+> it. [[done]] --[[Joey]]
