@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-17T18:59:40Z"
+ content="""
+You can tell this by looking at remote.log:
+
+git show git-annex:remote.log
+
+Remotes that are encrypted will have a big \"cipher=\" block in there, and ones that are encrypted to gpg public keys will have a list of the keys following \"cipherkeys=\"
+
+
+"""]]
