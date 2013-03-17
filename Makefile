@@ -163,7 +163,7 @@ androidapp:
 fast: dist/caballog
 	@$$(grep 'ghc --make' dist/caballog | head -n 1 | sed -e 's/-package-id [^ ]*//g' -e 's/-hide-all-packages//') -O0
 	@ln -sf dist/build/git-annex/git-annex git-annex
-	@$(MAKE) tags >/dev/null 2>&1
+	@$(MAKE) tags >/dev/null 2>&1 &
 
 dist/caballog: git-annex.cabal
 	$(CABAL) configure -f"-Production" -O0
