@@ -100,3 +100,7 @@ Gentoo Linux, git annex version 3.20121211
 #Please provide any additional information below.
 
 The forum post describing what I was trying to accomplish is [[forum/Best way to manage files on removable media?]]
+
+> While it would be nice if git-annex unused could somehow know about
+> branches that exist on remotes that git doesn't have locally, this is
+> impossible. It does the best it can. [[done]] --[[Joey]]
