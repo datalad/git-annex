@@ -298,7 +298,7 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
  -
  - Note that the returned check action is, in some cases, run in the
  - Annex monad of the remote that is receiving the object, rather than
- - the sender. So it cannot rely on Annex state, particular 
+ - the sender. So it cannot rely on Annex state.
  -}
 prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
 prepSendAnnex key = withObjectLoc key indirect direct
