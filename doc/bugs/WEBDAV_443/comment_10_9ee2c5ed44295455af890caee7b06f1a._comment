@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="195.244.162.7"
+ subject="comment 10"
+ date="2013-03-18T15:47:19Z"
+ content="""
+Ok, I will try that.
+
+For your information, I have rebuild the aur package inside a VM using the latest master. All tests passed.
+
+Now I get a new error message with WEBDAV saying:
+
+```
+git-annex: WebDAV failed to write file: \"Conflict\": user error
+```
+
+As a note the current aur build is rather cumbersome because it needs to rebuild a lot of packages using cabal. I believe this is due to a few missing dependencies in the Arch repos [haskell-core] and [haskell-web] such as uuid, SafeSemaphore or c2hs.
+"""]]
