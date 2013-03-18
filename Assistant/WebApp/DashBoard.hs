@@ -25,6 +25,7 @@ import qualified Git
 import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
+import qualified Data.Text as T
 
 {- A display of currently running and queued transfers.
  -
@@ -41,6 +42,16 @@ transfersDisplay warnNoScript = do
 	ident = "transfers"
 	isrunning info = not $
 		transferPaused info || isNothing (startedTime info)
+
+{- Long filenames can mess up the transfer display, due to the
+ - browser not word-wrapping them because it thinks this_is/all_one_word.
+ -
+ - To deal with this, insert zero-width spaces every 10 characters.
+ -}
+segmentFilePath :: FilePath -> T.Text
+segmentFilePath = T.intercalate zspace . T.chunksOf 10 . T.pack
+  where
+  	zspace = T.singleton '\8203'
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}

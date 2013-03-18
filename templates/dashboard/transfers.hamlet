@@ -11,9 +11,9 @@
             <div .row-fluid>
               <h3>
                 $maybe file <- associatedFile info
-                  #{file}
+                  #{segmentFilePath file}
                 $nothing
-                  #{key2file $ transferKey transfer}
+                  #{segmentFilePath $ key2file $ transferKey transfer}
                 $case transferDirection transfer
                   $of Upload
                     &rarr;

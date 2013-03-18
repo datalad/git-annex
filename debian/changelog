@@ -23,6 +23,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
     repository when in indirect mode.
   * webapp: Improved alerts displayed when syncing with remotes, and 
     when syncing with a remote fails.
+  * webapp: Force wrap long filenames in transfer display.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 
