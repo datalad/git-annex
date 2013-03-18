@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-18T23:42:55Z"
+ content="""
+I tried to reproduce this with the standalone i386 tarball for 4.20130314. Was able to add a jabber account using my google talk account with no crash.
+
+Given the age of this bug report, I'm just going to close it. But if you still see it with the current verison, please let me know! (And I guess you'd have to tell me which jabber server you're using then..)
+"""]]
