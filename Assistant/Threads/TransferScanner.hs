@@ -12,7 +12,6 @@ import Assistant.Types.ScanRemotes
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.DaemonStatus
-import Assistant.Alert
 import Assistant.Drop
 import Assistant.Sync
 import Logs.Transfer
@@ -100,15 +99,13 @@ failedTransferScan r = do
 expensiveScan :: [Remote] -> Assistant ()
 expensiveScan rs = unless onlyweb $ do
 	debug ["starting scan of", show visiblers]
-	void $ alertWhile (scanAlert visiblers) $ do
-		g <- liftAnnex gitRepo
-		(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
-		forM_ files $ \f -> do
-			ts <- maybe (return []) (findtransfers f)
-				=<< liftAnnex (Backend.lookupFile f)
-			mapM_ (enqueue f) ts
-		void $ liftIO cleanup
-		return True
+	g <- liftAnnex gitRepo
+	(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
+	forM_ files $ \f -> do
+		ts <- maybe (return []) (findtransfers f)
+			=<< liftAnnex (Backend.lookupFile f)
+		mapM_ (enqueue f) ts
+	void $ liftIO cleanup
 	debug ["finished scan of", show visiblers]
   where
 	onlyweb = all (== webUUID) $ map Remote.uuid rs

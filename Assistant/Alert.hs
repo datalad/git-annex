@@ -35,6 +35,7 @@ data AlertName
 	| PairAlert String
 	| XMPPNeededAlert
 	| CloudRepoNeededAlert
+	| SyncAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -239,26 +240,28 @@ commitAlert = activityAlert Nothing
 showRemotes :: [Remote] -> TenseChunk
 showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
 
-pushRetryAlert :: [Remote] -> Alert
-pushRetryAlert rs = activityAlert
-	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
-	["with", showRemotes rs]
-
 syncAlert :: [Remote] -> Alert
 syncAlert rs = baseActivityAlert
-	{ alertHeader = Just $ tenseWords
+	{ alertName = Just SyncAlert
+	, alertHeader = Just $ tenseWords
 		[Tensed "Syncing" "Synced", "with", showRemotes rs]
-	, alertData = []
 	, alertPriority = Low
 	}
 
-scanAlert :: [Remote] -> Alert
-scanAlert rs = baseActivityAlert
-	{ alertHeader = Just $ tenseWords
-		[Tensed "Scanning" "Scanned", showRemotes rs]
-	, alertBlockDisplay = True
-	, alertPriority = Low
-	}
+syncResultAlert :: [Remote] -> [Remote] -> Alert
+syncResultAlert succeeded failed = makeAlertFiller (not $ null succeeded) $
+	baseActivityAlert
+		{ alertName = Just SyncAlert
+		, alertHeader = Just $ tenseWords msg
+		}
+  where
+  	msg
+		| null succeeded = ["Failed to sync with", showRemotes failed]
+		| null failed = ["Synced with", showRemotes succeeded]
+		| otherwise =
+			[ "Synced with", showRemotes succeeded
+			, "but not with", showRemotes failed
+			]
 
 sanityCheckAlert :: Alert
 sanityCheckAlert = activityAlert

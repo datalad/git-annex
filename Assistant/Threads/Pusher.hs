@@ -11,7 +11,6 @@ import Assistant.Common
 import Assistant.Commits
 import Assistant.Types.Commits
 import Assistant.Pushes
-import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.Sync
 import Utility.ThreadScheduler
@@ -25,8 +24,7 @@ pushRetryThread = namedThread "PushRetrier" $ runEvery (Seconds halfhour) <~> do
 	topush <- getFailedPushesBefore (fromIntegral halfhour)
 	unless (null topush) $ do
 		debug ["retrying", show (length topush), "failed pushes"]
-		void $ alertWhile (pushRetryAlert topush) $
-			pushToRemotes True topush
+		void $ pushToRemotes True topush
   where
 	halfhour = 1800
 

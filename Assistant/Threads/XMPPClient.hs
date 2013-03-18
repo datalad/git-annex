@@ -256,7 +256,7 @@ pull us = do
 
 	pullone [] _ = noop
 	pullone (r:rs) branch =
-		unlessM (all id . fst <$> manualPull branch [r]) $
+		unlessM (null . fst <$> manualPull branch [r]) $
 			pullone rs branch
 
 pairMsgReceived :: UrlRenderer -> PairStage -> UUID -> JID -> JID -> Assistant ()
