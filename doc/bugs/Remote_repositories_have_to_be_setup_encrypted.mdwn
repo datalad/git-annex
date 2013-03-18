@@ -23,3 +23,5 @@ What version of git-annex are you using? On what operating system?
     Release:	12.04
     Codename:	precise
 
+[[!meta title="webapp does not allow disabling encryption on rsync special remotes"]]
+[[!tag /design/assistant]]
