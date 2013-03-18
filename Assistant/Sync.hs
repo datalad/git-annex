@@ -104,7 +104,7 @@ pushToRemotes notifypushes remotes = do
 	let go = pushToRemotes' now notifypushes remotes
 	if null nonxmppremotes
 		then go
-		else alertWhile (pushAlert nonxmppremotes) go
+		else alertWhile (syncAlert nonxmppremotes) go
 pushToRemotes' :: UTCTime -> Bool -> [Remote] -> Assistant Bool
 pushToRemotes' now notifypushes remotes = do
 	(g, branch, u) <- liftAnnex $ do

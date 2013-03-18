@@ -239,10 +239,6 @@ commitAlert = activityAlert Nothing
 showRemotes :: [Remote] -> TenseChunk
 showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
 
-pushAlert :: [Remote] -> Alert
-pushAlert rs = activityAlert Nothing
-	[Tensed "Syncing" "Synced", "with", showRemotes rs]
-
 pushRetryAlert :: [Remote] -> Alert
 pushRetryAlert rs = activityAlert
 	(Just $ tenseWords [Tensed "Retrying" "Retried", "sync"])
