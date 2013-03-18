@@ -187,16 +187,16 @@ getRepositoriesReorderR = do
 	{- Get uuid of the moved item, and the list it was moved within. -}
 	moved <- fromjs <$> runInputGet (ireq textField "moved")
 	list <- map fromjs <$> lookupGetParams "list[]"
-	void $ liftAnnex $ do
-		remote <- fromMaybe (error "Unknown UUID") <$>
-			Remote.remoteFromUUID moved
+	liftAnnex $ go list =<< Remote.remoteFromUUID moved
+	liftAssistant updateSyncRemotes
+  where
+	go _ Nothing = noop
+  	go list (Just remote) = do
 		rs <- catMaybes <$> mapM Remote.remoteFromUUID list
 		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
 			when (Remote.cost r /= newcost) $
 				setRemoteCost r newcost
-		remoteListRefresh
-	liftAssistant updateSyncRemotes
-  where
+		void remoteListRefresh
   	fromjs = toUUID . T.unpack
 
 reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]

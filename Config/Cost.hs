@@ -42,7 +42,7 @@ encryptedRemoteCostAdj = 50
  - position longer than the list.
  -}
 insertCostAfter :: [Cost] -> Int -> [Cost]
-insertCostAfter [] _ = error "insertCostAfter: empty list"
+insertCostAfter [] _ = []
 insertCostAfter l pos
 	| pos < 0 = costBetween 0 (l !! 0) : l
 	| nextpos > maxpos = l ++ [1 + l !! maxpos]
