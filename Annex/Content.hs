@@ -276,10 +276,6 @@ replaceFile file a = do
  - In direct mode, it's possible for the file to change as it's being sent.
  - If this happens, runs the rollback action and returns False. The
  - rollback action should remove the data that was transferred.
- -
- - Note that the returned action is, in some cases, run in the Annex monad
- - of the remote that is receiving the object, rather than the sender.
- - So it cannot rely on Annex state, particular 
  -}
 sendAnnex :: Key -> Annex () -> (FilePath -> Annex Bool) -> Annex Bool
 sendAnnex key rollback sendobject = go =<< prepSendAnnex key
@@ -299,6 +295,10 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex key
  -
  - In direct mode, it's possible for the file to change as it's being sent,
  - and the check detects this case and returns False.
+ -
+ - Note that the returned check action is, in some cases, run in the
+ - Annex monad of the remote that is receiving the object, rather than
+ - the sender. So it cannot rely on Annex state, particular 
  -}
 prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
 prepSendAnnex key = withObjectLoc key indirect direct
