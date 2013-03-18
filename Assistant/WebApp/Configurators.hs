@@ -19,7 +19,7 @@ import Assistant.XMPP.Client
 {- The main configuration screen. -}
 getConfigurationR :: Handler RepHtml
 getConfigurationR = ifM (inFirstRun)
-	( getFirstRepositoryR
+	( redirect FirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
 #ifdef WITH_XMPP
 		xmppconfigured <- liftAnnex $ isJust <$> getXMPPCreds
