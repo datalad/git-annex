@@ -11,7 +11,6 @@ module Assistant.WebApp.Configurators where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.RepoList
-import Assistant.WebApp.Configurators.Local
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
 #endif
