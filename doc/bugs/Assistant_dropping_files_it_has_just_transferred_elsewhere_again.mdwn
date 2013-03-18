@@ -21,3 +21,6 @@ Actual:
 * File is dropped from B
 
 Seems like a resurfacing of [[forum/assistant_overzealously_moving_stuff_to_other_repos]]?  Thanks.
+
+> 4.20130227 used a regex library that was broken, at least for certian
+> filenames. I suspect that's what'd going on here. [[done]] --[[Joey]]

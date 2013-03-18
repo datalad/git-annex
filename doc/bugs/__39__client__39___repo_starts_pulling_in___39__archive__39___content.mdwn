@@ -20,3 +20,5 @@ Please provide any additional information below.
 
 One thing that would be incredibly helpful with the kinds of bugs I've seen in the assistant is if the daemon.log contained info about *why* it is dropping or transferring content.  "transferring content because there was only 1 copy and we need to fulfill numcopies" "transferring content because it matches such-and-such a preferred content expresson" "dropping content because it does not match this preferred content expression" -- that would remove a lot of mystery about the way the assistant is working.
 
+> The several bugs mentioned here seem to be fixed, so closing this report.
+> [[done]] --[[Joey]]
