@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 12"
+ date="2013-03-18T16:33:31Z"
+ content="""
+The standalone version works on either architecture, it does not depend on any system libraries, thus the name \"standalone\".
+"""]]
