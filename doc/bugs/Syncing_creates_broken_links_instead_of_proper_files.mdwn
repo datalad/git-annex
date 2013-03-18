@@ -45,3 +45,7 @@ What version of git-annex are you using? On what operating system?
     Description:	Ubuntu 12.04.1 LTS
     Release:	12.04
     Codename:	precise
+
+> [[done]]; the webapp now detects when XMPP pairing has been used but no
+> transfer remote is available, and prompts the user to create one.
+> --[[Joey]]
