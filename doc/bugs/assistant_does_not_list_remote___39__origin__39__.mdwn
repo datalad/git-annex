@@ -22,3 +22,5 @@ I tried both with direct and indirect mode for the local annex repo.
 I am sorry if I am missing the point. I checked the docs, however without much success.
 
 [[!tag /design/assistant]]
+
+[[done]]
