@@ -23,3 +23,5 @@
 Git-Annex 3.20130102
 
 Arch Linux on x64.
+
+[[done]]; was not a bug and also the webapp now offers a "manual mode" option that can be chosen instead of "client" to get the desired behavior. --[[Joey]] 
