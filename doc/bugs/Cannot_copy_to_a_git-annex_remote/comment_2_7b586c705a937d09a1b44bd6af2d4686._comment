@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-03-18T15:15:30Z"
+ content="""
+What version of git-annex are you using? Are your repositories using direct mode? What does --debug output?
+"""]]
