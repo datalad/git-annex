@@ -238,7 +238,7 @@ commitAlert = activityAlert Nothing
 	[Tensed "Committing" "Committed", "changes to git"]
 
 showRemotes :: [Remote] -> TenseChunk
-showRemotes = UnTensed . T.unwords . map (T.pack . Remote.name)
+showRemotes = UnTensed . T.intercalate ", " . map (T.pack . Remote.name)
 
 syncAlert :: [Remote] -> Alert
 syncAlert rs = baseActivityAlert
