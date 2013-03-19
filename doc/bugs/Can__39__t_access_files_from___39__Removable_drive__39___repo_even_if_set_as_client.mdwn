@@ -17,3 +17,5 @@ What version of git-annex are you using? On what operating system?
 I'm using 9e57edff287ac53fc4b1cefef7271e9ed17f2285 (Fri Feb 22 15:19:25 2013 +0000).
 
 Ubuntu 12.10 x86_64
+
+[[!tag /design/assistant]]

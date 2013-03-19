@@ -30,3 +30,5 @@ The remote in question:
       url = git@git.example.com:annex-home
       fetch = +refs/heads/*:refs/remotes/origin/*
       annex-ignore = true
+
+> belived to be [[fixed|done]] --[[Joey]] 

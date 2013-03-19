@@ -65,3 +65,5 @@ the `SHA256` key is not present.
 
 It looks like I'll have to rollback my ZFS snapshots and start over, but I'm
 wondering: how was I even able to create this situation?
+
+> [[Done]]; user error. --[[Joey]] 

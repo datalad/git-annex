@@ -24,3 +24,5 @@ Alternatively, git-annex should stop relying on any per-user services, and use k
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 3.20130102 on Linux 3.7.1, GNOME 3.7
+
+> [[done]] --[[Joey]] 

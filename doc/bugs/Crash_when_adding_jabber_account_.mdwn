@@ -28,3 +28,5 @@ OS: Ubuntu 12.04.1 LTS 3.2.0-35-generic-pae #55-Ubuntu SMP Wed Dec 5 18:04:39 UT
 On dmesg: 
 [45773.212717] git-annex[26779]: segfault at b724e840 ip 09699150 sp b4cfd038 error 7 in git-annex[8048000+1762000]
 
+[[!tag /design/assistant]]
+> [[done]], see comments --[[Joey]] 

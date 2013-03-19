@@ -13,3 +13,5 @@ I expect to remain invisible, but I get the following warning: "Oops! You are no
 ##Please provide any additional information below.
 
 Syncing between the repositories works ok.
+
+[[!tag /design/assistant]]

@@ -15,3 +15,5 @@ Version: 4.20130314, Debian
 Please provide any additional information below.
 
 I am an "webinterface only" user.
+
+[[!tag /design/assistant]]

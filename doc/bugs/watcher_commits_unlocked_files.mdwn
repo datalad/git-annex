@@ -28,3 +28,10 @@ Possible approaches:
   how to find the file to unlock it.
 
 [[!meta title="assistant: watcher_commits_unlocked_files"]]
+
+> [[done]]; I just tested and somehow this no longer happens;
+> the watcher/assistant leaves the unlocked file alone, and then
+> as soon as it's modified re-adds it.
+> 
+> Also, of course, there is direct mode, which avoids needing to unlock...
+> --[[Joey]]

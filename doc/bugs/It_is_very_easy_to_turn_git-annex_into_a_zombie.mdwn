@@ -21,3 +21,5 @@ What version of git-annex are you using? On what operating system?
 
 Please provide any additional information below.
 
+[[!meta title="strange OSX behavior when killed"]]
+[[!tag /design/assistant/OSX unreproducible]]

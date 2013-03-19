@@ -10,3 +10,6 @@ What version of git-annex are you using? On what operating system?
 
 Please provide any additional information below.
 ssh keys were installed to allow login, when ssh-askpass was not found on osx version
+
+[[!meta title="webapp rsync probe command failed on FreeNAS box"]]
+[[!tag /design/assistant]]

@@ -26,3 +26,5 @@ Workaround:
 * rename `metaarray` to `ma` again using the webapp
 
 Perhaps the renaming of the remote not surviving clones is unavoidable, but the webapp should be able to cope with the situation.  Thanks.
+
+[[!tag /design/assistant]]

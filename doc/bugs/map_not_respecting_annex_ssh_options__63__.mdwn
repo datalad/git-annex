@@ -35,3 +35,4 @@ relevant part of .git/config:
     supported repository versions: 3
     upgrade supported from repository versions: 0 1 2
 
+> [[done]], see comment --[[Joey]]
