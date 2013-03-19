@@ -33,3 +33,8 @@ Same `git annex version` on both `pilot` and `bucket`, and I ran `git annex sync
     upgrade supported from repository versions: 0 1 2
 
 How should I debug this?
+
+> [[done]], in c6fbed48 I had made some changes to allow transfers
+> to work from readonly filesystems, but a too broad error trapping
+> hid the "transfer already in progress" error it is supposed to display
+> in this case. --[[Joey]]

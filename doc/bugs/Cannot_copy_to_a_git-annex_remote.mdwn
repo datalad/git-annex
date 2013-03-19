@@ -9,3 +9,6 @@ I do "git copy --to storage FILE" and it says "Copying FILE... failed".  That's 
 How do I fix things so that I can copy again?  Nothing that I tried had any effect on the problem.
 
 Thanks!
+
+> Thanks to Jim's smart correlation of this with another bug, I've fixed
+> them both. [[done]] --[[Joey]]

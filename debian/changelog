@@ -26,6 +26,8 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * webapp: Force wrap long filenames in transfer display.
   * assistant: The ConfigMonitor left one zombie behind each time
     it checked for changes, now fixed.
+  * get, copy, move: Display an error message when an identical transfer
+    is already in progress, rather than failing with no indication why.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

@@ -113,20 +113,25 @@ runTransfer t file shouldretry a = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
+	fd <- liftIO $ prep tfile mode info
 	ok <- retry info metervar $
-		bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
+		bracketIO (return fd) (cleanup tfile) (a meter)
 	unless ok $ recordFailedTransfer t info
 	return ok
   where
-	prep tfile mode info = catchMaybeIO $ do
-		fd <- openFd (transferLockFile tfile) ReadWrite (Just mode)
-			defaultFileFlags { trunc = True }
-		locked <- catchMaybeIO $
-			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-		when (locked == Nothing) $
-			error $ "transfer already in progress"
-		writeTransferInfoFile info tfile
-		return fd
+	prep tfile mode info = do
+		mfd <- catchMaybeIO $
+			openFd (transferLockFile tfile) ReadWrite (Just mode)
+				defaultFileFlags { trunc = True }
+		case mfd of
+			Nothing -> return mfd
+			Just fd -> do
+				locked <- catchMaybeIO $
+					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
+				when (locked == Nothing) $
+					error $ "transfer already in progress"
+				void $ tryIO $ writeTransferInfoFile info tfile
+				return mfd
 	cleanup _ Nothing = noop
 	cleanup tfile (Just fd) = do
 		void $ tryIO $ removeFile tfile
