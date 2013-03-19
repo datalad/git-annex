@@ -508,7 +508,7 @@ subdirectories).
 
 	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
-* transferkey key
+* transferkeys
 
   This plumbing-level command is used by the assistant to transfer data.
 

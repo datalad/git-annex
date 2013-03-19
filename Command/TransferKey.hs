@@ -1,4 +1,5 @@
-{- git-annex command, used internally by assistant
+{- git-annex command, used internally by old versions of assistant;
+ - kept around for now so running daemons don't break when upgraded
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
