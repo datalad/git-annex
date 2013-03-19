@@ -1,5 +1,14 @@
 The webapp is a web server that displays a shiny interface.
 
+## performance
+
+Having the webapp open while transfers are
+running uses significant CPU just for the browser to update the progress 
+bar. Unsurprising, since the webapp is sending the browser a new `<div>`
+each time. Updating the DOM instead from javascript would avoid that;
+the webapp just needs to send the javascript either a full `<div>` or a 
+changed percentage and quantity complete to update a single progress bar.
+
 ## other features
 
 * there could be a UI to export a file, which would make it be served up

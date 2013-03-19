@@ -1,0 +1,40 @@
+I've been running some large transfers with the assistant, and looking at
+ways to improve performance. (I also found and fixed a zombie process
+leak.)
+
+----
+
+One thing I noticed is that the assistant pushes changes to the git-annex
+location log quite frequently during a batch transfer. If the files being
+transferred are reasonably sized, it'll be pushing once per file transfer. 
+It would be good to reduce the number of pushes, but the pushes are
+important in some network topologies to inform other nodes
+when a file gets near to them, so they can get the file too.
+
+Need to see if I can find a smart way to avoid some of the pushes.
+For example, if we've just downloaded a file, and are queuing uploads
+of the file to a remote, we probably don't need to push the git-annex
+branch to the remote.
+
+----
+
+Another performance problem is that having the webapp open while transfers
+are running uses significant CPU just for the browser to update the progress
+bar. Unsurprising, since the webapp is sending the browser a new `<div>`
+each time. Updating the DOM instead from javascript would avoid that;
+the webapp just needs to send the javascript either a full `<div>` or a
+changed percentage and quantity complete to update a single progress bar.
+
+I'd prefer to wait on doing that until I'm able to use Fay to generate
+Javascript from Haskell, because it would be much more pleasant.. will see.
+
+----
+
+Also a performance problem when performing lots of transfers, particularly
+of small files, is that the assistant forks off a `git annex transferkey`
+for each transfer, and that has to in turn start up several git commands.
+
+Today I have been working to change that, so the assistant maintains a
+pool of transfer processes, and dispatches each transfer it wants to make
+to a process from the pool. I just got all that to build, although untested
+so far, in the `transferpools` branch.
