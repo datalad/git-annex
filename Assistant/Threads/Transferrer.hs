@@ -88,19 +88,26 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 		 - made, in order to queue a push of the git-annex
 		 - branch out to remotes that did not participate
 		 - in the transfer.
+		 -
+		 - If the process failed, it could have crashed,
+		 - so remove the transfer from the list of current
+		 - transfers, just in case it didn't stop
+		 - in a way that lets the TransferWatcher do its
+		 - usual cleanup.
 		 -}
-		whenM (liftIO $ (==) ExitSuccess <$> waitForProcess pid) $ do
-			void $ addAlert $ makeAlertFiller True $
-				transferFileAlert direction True file
-			unless isdownload $
-				handleDrops
-					("object uploaded to " ++ show remote)
-					True (transferKey t)
-					(associatedFile info)
-					(Just remote)
-			recordCommit
-
-		void $ removeTransfer t
+		ifM (liftIO $ (==) ExitSuccess <$> waitForProcess pid)
+			( do
+				void $ addAlert $ makeAlertFiller True $
+					transferFileAlert direction True file
+				unless isdownload $
+					handleDrops
+						("object uploaded to " ++ show remote)
+						True (transferKey t)
+						(associatedFile info)
+						(Just remote)
+				recordCommit
+			, void $ removeTransfer t
+			)
 	  where
 		params =
 			[ Param "transferkey"
