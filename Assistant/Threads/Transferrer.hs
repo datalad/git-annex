@@ -99,6 +99,8 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 					(associatedFile info)
 					(Just remote)
 			recordCommit
+
+		void $ removeTransfer t
 	  where
 		params =
 			[ Param "transferkey"
