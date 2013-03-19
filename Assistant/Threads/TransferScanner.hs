@@ -14,6 +14,7 @@ import Assistant.TransferQueue
 import Assistant.DaemonStatus
 import Assistant.Drop
 import Assistant.Sync
+import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
 import Logs.Web (webUUID)
@@ -38,13 +39,15 @@ transferScannerThread = namedThread "TransferScanner" $ do
 	go scanned = do
 		liftIO $ threadDelaySeconds (Seconds 2)
 		(rs, infos) <- unzip <$> getScanRemote
-		if any fullScan infos || any (`S.notMember` scanned) rs
-			then do
-				expensiveScan rs
-				go $ scanned `S.union` S.fromList rs
-			else do
-				mapM_ failedTransferScan rs
-				go scanned
+		void $ alertWhile scanAlert $ do
+			if any fullScan infos || any (`S.notMember` scanned) rs
+				then do
+					expensiveScan rs
+					go $ scanned `S.union` S.fromList rs
+				else do
+					mapM_ failedTransferScan rs
+					go scanned
+			return True
 	{- All git remotes are synced, and all available remotes
 	 - are scanned in full on startup, for multiple reasons, including:
 	 -

@@ -240,6 +240,13 @@ commitAlert = activityAlert Nothing
 showRemotes :: [Remote] -> TenseChunk
 showRemotes = UnTensed . T.intercalate ", " . map (T.pack . Remote.name)
 
+scanAlert :: Alert
+scanAlert = baseActivityAlert
+	{ alertHeader = Just $
+		tenseWords [Tensed "Scanning" "Scanned", "for file transfers"]
+	, alertPriority = Low
+	}
+
 syncAlert :: [Remote] -> Alert
 syncAlert rs = baseActivityAlert
 	{ alertName = Just SyncAlert
