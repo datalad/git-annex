@@ -18,6 +18,8 @@ import Logs.Transfer
 import Logs.Location
 import Annex.Content
 import qualified Remote
+import qualified Types.Remote as Remote
+import qualified Git
 import Types.Key
 import Locations.UserConfig
 import Assistant.Threads.TransferWatcher
@@ -44,18 +46,24 @@ startTransfer
 	-> TransferInfo
 	-> Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
 startTransfer program t info = case (transferRemote info, associatedFile info) of
-	(Just remote, Just file) -> ifM (liftAnnex $ shouldTransfer t info)
-		( do
-			debug [ "Transferring:" , describeTransfer t info ]
-			notifyTransfer
-			return $ Just (t, info, transferprocess remote file)
-		, do
-			debug [ "Skipping unnecessary transfer:",
-				describeTransfer t info ]
+	(Just remote, Just file) 
+		| Git.repoIsLocalUnknown (Remote.repo remote) -> do
+			-- optimisation for removable drives not plugged in
+			liftAnnex $ recordFailedTransfer t info
 			void $ removeTransfer t
-			finishedTransfer t (Just info)
 			return Nothing
-		)
+		| otherwise -> ifM (liftAnnex $ shouldTransfer t info)
+			( do
+				debug [ "Transferring:" , describeTransfer t info ]
+				notifyTransfer
+				return $ Just (t, info, transferprocess remote file)
+			, do
+				debug [ "Skipping unnecessary transfer:",
+					describeTransfer t info ]
+				void $ removeTransfer t
+				finishedTransfer t (Just info)
+				return Nothing
+			)
 	_ -> return Nothing
   where
 	direction = transferDirection t

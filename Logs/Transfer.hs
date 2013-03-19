@@ -115,7 +115,7 @@ runTransfer t file shouldretry a = do
 	mode <- annexFileMode
 	ok <- retry info metervar $
 		bracketIO (prep tfile mode info) (cleanup tfile) (a meter)
-	unless ok $ failed info
+	unless ok $ recordFailedTransfer t info
 	return ok
   where
 	prep tfile mode info = catchMaybeIO $ do
@@ -132,10 +132,6 @@ runTransfer t file shouldretry a = do
 		void $ tryIO $ removeFile tfile
 		void $ tryIO $ removeFile $ transferLockFile tfile
 		closeFd fd
-	failed info = do
-		failedtfile <- fromRepo $ failedTransferFile t
-		createAnnexDirectory $ takeDirectory failedtfile
-		liftIO $ writeTransferInfoFile info failedtfile
 	retry oldinfo metervar run = do
 		v <- tryAnnex run
 		case v of
@@ -235,6 +231,12 @@ removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
 	f <- fromRepo $ failedTransferFile t
 	liftIO $ void $ tryIO $ removeFile f
+
+recordFailedTransfer :: Transfer -> TransferInfo -> Annex ()
+recordFailedTransfer t info = do
+	failedtfile <- fromRepo $ failedTransferFile t
+	createAnnexDirectory $ takeDirectory failedtfile
+	liftIO $ writeTransferInfoFile info failedtfile
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
