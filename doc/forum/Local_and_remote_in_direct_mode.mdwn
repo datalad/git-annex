@@ -1,0 +1,7 @@
+I have two machines (A and B ) both have a directory called "inbox"
+I want to sync these two directories. So I ran git annex assistant on machine A and set up a remote to B with **ssh** and selected **client: a repository on your computer**.
+
+The end result is that I have something that looks like a git bare repo on machine B and I have no files on A from machine B.
+
+What am I doing wrong? What shall I do to achieve my goal?
+It is kind of dropbox functionality what I want. (Which I never used for security/policy reasons.)
