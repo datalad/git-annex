@@ -94,6 +94,12 @@ pipeNullSplit params repo = do
   where
 	sep = "\0"
 
+pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [String]
+pipeNullSplitStrict params repo = do
+	s <- pipeReadStrict params repo
+	return $ filter (not . null) $ split sep s
+  where
+	sep = "\0"
 
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
 pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo

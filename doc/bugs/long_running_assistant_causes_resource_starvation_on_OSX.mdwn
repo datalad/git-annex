@@ -24,3 +24,7 @@ Please provide any additional information below.
 I'm really not sure what to look for next. Happy to take suggestions.
 
 [!tag /design/assistant]]
+
+> [[done]], I found the zombie leak; the ConfigMonitor was 
+> leaving one zombie every time it checked a push/pull.
+> Not a fast leak, but over time they would add up. --[[Joey]]

@@ -29,15 +29,17 @@ data TreeItem = TreeItem
 	, file :: FilePath
 	} deriving Show
 
-{- Lists the complete contents of a tree. -}
+{- Lists the complete contents of a tree, with lazy output. -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
-lsTree t repo = map parseLsTree <$>
-	pipeNullSplitZombie [Params "ls-tree --full-tree -z -r --", File $ show t] repo
+lsTree t repo = map parseLsTree <$> pipeNullSplitZombie ps repo
+  where
+  	ps = [Params "ls-tree --full-tree -z -r --", File $ show t]
 
 {- Lists specified files in a tree. -}
 lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]
-lsTreeFiles t fs repo = map parseLsTree <$>
-	pipeNullSplitZombie ([Params "ls-tree -z --", File $ show t] ++ map File fs) repo
+lsTreeFiles t fs repo = map parseLsTree <$> pipeNullSplitStrict ps repo
+  where
+  	ps = [Params "ls-tree -z --", File $ show t] ++ map File fs
 
 {- Parses a line of ls-tree output.
  - (The --long format is not currently supported.) -}
