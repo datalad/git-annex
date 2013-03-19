@@ -1,9 +1,6 @@
 <div ##{ident}>
   <h2>Transfers
-  $if null transfers
-    <i>
-      (no file transfers running)
-  $else
+  $if transfersrunning
     $forall (transfer, info) <- transfers
       $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
         <div .row-fluid>
@@ -39,3 +36,9 @@
             $else
               ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn" "icon-play"}
             ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn" "icon-remove"}
+  $else
+    $if scanrunning
+      <i .icon-refresh></i> Scanning for files to transfer
+    $else
+      <i>
+        (No file transfers running)

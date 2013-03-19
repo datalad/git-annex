@@ -14,13 +14,13 @@ import Assistant.TransferQueue
 import Assistant.DaemonStatus
 import Assistant.Drop
 import Assistant.Sync
-import Assistant.Alert
 import Logs.Transfer
 import Logs.Location
 import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
+import Utility.NotificationBroadcaster
 import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
@@ -37,17 +37,22 @@ transferScannerThread = namedThread "TransferScanner" $ do
 	go S.empty
   where
 	go scanned = do
+		scanrunning False
 		liftIO $ threadDelaySeconds (Seconds 2)
 		(rs, infos) <- unzip <$> getScanRemote
-		void $ alertWhile scanAlert $ do
-			if any fullScan infos || any (`S.notMember` scanned) rs
-				then do
-					expensiveScan rs
-					go $ scanned `S.union` S.fromList rs
-				else do
-					mapM_ failedTransferScan rs
-					go scanned
-			return True
+		scanrunning True
+		if any fullScan infos || any (`S.notMember` scanned) rs
+			then do
+				expensiveScan rs
+				go $ scanned `S.union` S.fromList rs
+			else do
+				mapM_ failedTransferScan rs
+				go scanned
+	scanrunning b = do
+		ds <- modifyDaemonStatus $ \s -> 
+			(s { transferScanRunning = b }, s)
+		liftIO $ sendNotification $ transferNotifier ds
+		
 	{- All git remotes are synced, and all available remotes
 	 - are scanned in full on startup, for multiple reasons, including:
 	 -

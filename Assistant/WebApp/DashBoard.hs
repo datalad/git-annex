@@ -14,6 +14,7 @@ import Assistant.WebApp.Utility
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Notifications
 import Assistant.TransferQueue
+import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Utility.Percentage
@@ -37,6 +38,10 @@ transfersDisplay warnNoScript = do
 	queued <- take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
+	let transfersrunning = not $ null transfers
+	scanrunning <- if transfersrunning
+		then return False
+		else liftAssistant $ transferScanRunning <$> getDaemonStatus
 	$(widgetFile "dashboard/transfers")
   where
 	ident = "transfers"

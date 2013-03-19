@@ -35,6 +35,8 @@ data DaemonStatus = DaemonStatus
 	, sanityCheckRunning :: Bool
 	-- Last time the sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
+	-- True when a scan for file transfers is running
+	, transferScanRunning :: Bool
 	-- Currently running file content transfers
 	, currentTransfers :: TransferMap
 	-- Messages to display to the user.
@@ -77,6 +79,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure Nothing
 	<*> pure False
 	<*> pure Nothing
+	<*> pure False
 	<*> pure M.empty
 	<*> pure M.empty
 	<*> pure firstAlertId
