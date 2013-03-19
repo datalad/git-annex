@@ -14,25 +14,23 @@ import Assistant.TransferSlots
 import Assistant.Alert
 import Assistant.Commits
 import Assistant.Drop
+import Assistant.TransferrerPool
 import Logs.Transfer
 import Logs.Location
 import Annex.Content
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Git
-import Types.Key
 import Locations.UserConfig
 import Assistant.Threads.TransferWatcher
 import Annex.Wanted
-
-import System.Process (create_group)
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: NamedThread
 transfererThread = namedThread "Transferrer" $ do
 	program <- liftIO readProgramFile
-	forever $ inTransferSlot $
-		maybe (return Nothing) (uncurry $ startTransfer program)
+	forever $ inTransferSlot program $
+		maybe (return Nothing) (uncurry $ genTransfer)
 			=<< getNextTransfer notrunning
   where
 	{- Skip transfers that are already running. -}
@@ -40,12 +38,8 @@ transfererThread = namedThread "Transferrer" $ do
 
 {- By the time this is called, the daemonstatus's currentTransfers map should
  - already have been updated to include the transfer. -}
-startTransfer
-	:: FilePath
-	-> Transfer
-	-> TransferInfo
-	-> Assistant (Maybe (Transfer, TransferInfo, Assistant ()))
-startTransfer program t info = case (transferRemote info, associatedFile info) of
+genTransfer :: Transfer -> TransferInfo -> TransferGenerator
+genTransfer t info = case (transferRemote info, associatedFile info) of
 	(Just remote, Just file) 
 		| Git.repoIsLocalUnknown (Remote.repo remote) -> do
 			-- optimisation for removable drives not plugged in
@@ -56,7 +50,7 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
-				return $ Just (t, info, transferprocess remote file)
+				return $ Just (t, info, go remote file)
 			, do
 				debug [ "Skipping unnecessary transfer:",
 					describeTransfer t info ]
@@ -69,57 +63,40 @@ startTransfer program t info = case (transferRemote info, associatedFile info) o
 	direction = transferDirection t
 	isdownload = direction == Download
 
-	transferprocess remote file = void $ do
-		(_, _, _, pid)
-			<- liftIO $ createProcess
-				(proc program $ toCommand params)
-					{ create_group = True }
-		{- Alerts are only shown for successful transfers.
-		 - Transfers can temporarily fail for many reasons,
-		 - so there's no point in bothering the user about
-		 - those. The assistant should recover.
-		 -
-		 - After a successful upload, handle dropping it from
-		 - here, if desired. In this case, the remote it was
-		 - uploaded to is known to have it.
-		 -
-		 - Also, after a successful transfer, the location
-		 - log has changed. Indicate that a commit has been
-		 - made, in order to queue a push of the git-annex
-		 - branch out to remotes that did not participate
-		 - in the transfer.
-		 -
-		 - If the process failed, it could have crashed,
-		 - so remove the transfer from the list of current
-		 - transfers, just in case it didn't stop
-		 - in a way that lets the TransferWatcher do its
-		 - usual cleanup.
-		 -}
-		ifM (liftIO $ (==) ExitSuccess <$> waitForProcess pid)
-			( do
-				void $ addAlert $ makeAlertFiller True $
-					transferFileAlert direction True file
-				unless isdownload $
-					handleDrops
-						("object uploaded to " ++ show remote)
-						True (transferKey t)
-						(associatedFile info)
-						(Just remote)
-				recordCommit
-			, void $ removeTransfer t
-			)
-	  where
-		params =
-			[ Param "transferkey"
-			, Param "--quiet"
-			, Param $ key2file $ transferKey t
-			, Param $ if isdownload
-				then "--from"
-				else "--to"
-			, Param $ Remote.name remote
-			, Param "--file"
-			, File file
-			]
+	{- Alerts are only shown for successful transfers.
+	 - Transfers can temporarily fail for many reasons,
+	 - so there's no point in bothering the user about
+	 - those. The assistant should recover.
+	 -
+	 - After a successful upload, handle dropping it from
+	 - here, if desired. In this case, the remote it was
+	 - uploaded to is known to have it.
+	 -
+	 - Also, after a successful transfer, the location
+	 - log has changed. Indicate that a commit has been
+	 - made, in order to queue a push of the git-annex
+	 - branch out to remotes that did not participate
+	 - in the transfer.
+	 -
+	 - If the process failed, it could have crashed,
+	 - so remove the transfer from the list of current
+	 - transfers, just in case it didn't stop
+	 - in a way that lets the TransferWatcher do its
+	 - usual cleanup.
+	 -}
+	go remote file transferrer = ifM (liftIO $ performTransfer transferrer t $ associatedFile info)
+		( do
+			void $ addAlert $ makeAlertFiller True $
+				transferFileAlert direction True file
+			unless isdownload $
+				handleDrops
+					("object uploaded to " ++ show remote)
+					True (transferKey t)
+					(associatedFile info)
+					(Just remote)
+			void $ recordCommit
+		, void $ removeTransfer t
+		)
 
 {- Called right before a transfer begins, this is a last chance to avoid
  - unnecessary transfers.

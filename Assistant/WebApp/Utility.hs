@@ -117,8 +117,8 @@ startTransfer t = do
 		liftIO $ throwTo tid ResumeTransfer
 	start info = liftAssistant $ do
 		program <- liftIO readProgramFile
-		inImmediateTransferSlot $
-			Transferrer.startTransfer program t info
+		inImmediateTransferSlot program $
+			Transferrer.genTransfer t info
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus
