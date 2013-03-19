@@ -5,7 +5,7 @@ For easy installation, use the
 
 Be sure to select the build matching your version of OSX.
 
-[[!img float=right /assistant/osx-app.png]]
+[[!img /assistant/osx-app.png align=right]]
 If you want to run the [[git-annex_assistant|/assistant]], just
 install the app, look for the icon, and start it up. 
 
