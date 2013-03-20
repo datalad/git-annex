@@ -9,6 +9,10 @@ each time. Updating the DOM instead from javascript would avoid that;
 the webapp just needs to send the javascript either a full `<div>` or a 
 changed percentage and quantity complete to update a single progress bar.
 
+(Another reason to do this is it'll cut down on the refreshes, which 
+sometimes make browsers ignore clicks on UI elements like the pause button, 
+if the transfer display refreshes just as the click is made.)
+
 ## other features
 
 * there could be a UI to export a file, which would make it be served up
