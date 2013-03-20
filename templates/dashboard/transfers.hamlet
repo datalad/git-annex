@@ -6,11 +6,11 @@
         <div .row-fluid>
           <div .span10>
             <div .row-fluid>
-              <h3>
+              <h3 .forcewrap>
                 $maybe file <- associatedFile info
-                  #{segmentFilePath file}
+                  #{file}
                 $nothing
-                  #{segmentFilePath $ key2file $ transferKey transfer}
+                  #{key2file $ transferKey transfer}
                 $case transferDirection transfer
                   $of Upload
                     &rarr;
