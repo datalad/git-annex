@@ -2,7 +2,7 @@ I have a NAS at home which I access both as AFP/SMB shares and thru ssh/rsync.  
 
 Two **non-special remote setups** would be:
 
-1. Mount the share and turn it into a direct mode git annex repo.  Does anybody have experience with this?  I'd suspect this to be very inefficient due to the use of all the files in .git over AFP/SMB.  Configuration as a WORM backend seems to be advised?
+1. Mount the share and turn it into a direct mode git annex repo.  Does anybody have experience with this?  I'd suspect this to be very inefficient due to the use of all the files in .git over AFP/SMB.  Configuration as a WORM backend seems to be advised? (Edit: Well, I just tried this and 'git annex init' failed as described in this [forum post](http://git-annex.branchable.com/forum/Can__39__t_init_git_annex/).  So AFP/SMB seem to be non-starters. :-(  Furthermore, AFP/SMB are immediately detected as crippled and set to direct mode automatically.)
 2. Same as 1. but with a local GIT_DIR.  This should work by having .git on the NAS link to the local GIT_DIR.
 
 Alternatively, I could treat my NAS as a [**web special remote**](http://git-annex.branchable.com/tips/using_the_web_as_a_special_remote/).  Some URL schemes come to mind:
@@ -22,3 +22,5 @@ All of these indicate a mismatch between my use case and web special remotes.
 Hence my question: **Would something like a "direct special remote" make sense?**
 
 As a starting point I'd look at a setup similar to 2. above, i.e., a remote "working copy" with local GIT_DIR.  Except that instead of a whole local .git directory a branch in an existing .git dir might be more appropriate...
+
+--Chris
