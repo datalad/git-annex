@@ -66,7 +66,12 @@ runRequests
 	-> Handle
 	-> (TransferRequest -> Annex Bool)
 	-> Annex ()
-runRequests readh writeh a = go =<< readrequests
+runRequests readh writeh a = do
+	liftIO $ do
+		hSetBuffering readh NoBuffering
+		fileEncoding readh
+		fileEncoding writeh
+	go =<< readrequests
   where
   	go (d:u:k:f:rest) = do
 		case (deserialize d, deserialize u, deserialize k, deserialize f) of
@@ -86,15 +91,19 @@ runRequests readh writeh a = go =<< readrequests
 		hPutStrLn writeh $ serialize b
 		hFlush writeh
 
-sendRequest :: TransferRequest -> Handle -> IO ()
-sendRequest (TransferRequest d r k f) h = do
+sendRequest :: Transfer -> AssociatedFile -> Handle -> IO ()
+sendRequest t f h = do
 	hPutStr h $ join fieldSep
-		[ serialize d
-		, serialize $ Remote.uuid r
-		, serialize k
+		[ serialize (transferDirection t)
+		, serialize (transferUUID t)
+		, serialize (transferKey t)
 		, serialize f
+		, "" -- adds a trailing null
 		]
 	hFlush h
+
+readResponse :: Handle -> IO Bool
+readResponse h = fromMaybe False . deserialize <$> hGetLine h
 
 fieldSep :: String
 fieldSep = "\0"
