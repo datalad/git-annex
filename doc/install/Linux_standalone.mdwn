@@ -8,7 +8,12 @@ on anything except for glibc.
 [download tarball](http://downloads.kitenet.net/git-annex/linux/current/)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
--- this sets up an environment where you can use `git annex`
+-- this sets up an environment where you can use `git annex`, as well
+as everything else included in the bundle.
+
+Alternatively, you can unpack the tarball, and add the directory to your
+`PATH`. This lets you use `git annex`, without overriding your system's
+own versions of git, etc.
 
 Warning: This is a last resort. Most Linux users should instead
 [[install]] git-annex from their distribution of choice.
