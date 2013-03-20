@@ -29,6 +29,8 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * get, copy, move: Display an error message when an identical transfer
     is already in progress, rather than failing with no indication why.
   * assistant: Several optimisations to file transfers.
+  * OSX app and standalone Linux tarball now both support being added to
+    PATH; no need to use runshell to start git-annex.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 

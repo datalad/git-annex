@@ -117,7 +117,7 @@ linuxstandalone:
 	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
-OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS
+OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp:
 	$(MAKE) git-annex
 

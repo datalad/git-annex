@@ -9,9 +9,13 @@ Be sure to select the build matching your version of OSX.
 If you want to run the [[git-annex_assistant|/assistant]], just
 install the app, look for the icon, and start it up. 
 
-To use git-annex at the command line, you need to run
-`git-annex.app/Contents/MacOS/runshell`, which sets up your shell
-to use programs bundled inside the app.
+To use git-annex at the command line, you can add
+`git-annex.app/Contents/MacOS` to your `PATH`
+
+Alternatively, from the command line you can run
+`git-annex.app/Contents/MacOS/runshell`, which makes your shell use all the
+programs bundled inside the app, including not just git-annex, but git, and
+several more. Handy if you don't otherwise have git installed.
 
 This is still a work in progress. See [[/bugs/OSX_app_issues]] for problem
 reports.

@@ -11,12 +11,14 @@ if [ ! -d "$base" ]; then
 	exit 1
 fi
 
-if [ ! -e "$base/git-annex" ]; then
-	echo "** base directory $base does not contain git-annex" >&2
+bundle="$base/bundle"
+
+if [ ! -e "$bundle/git-annex" ]; then
+	echo "** bundle directory $bundle does not contain git-annex" >&2
 	exit 1
 fi
 if [ ! -e "$base/git" ]; then
-	echo "** base directory $base does not contain git" >&2
+	echo "** bundle directory $bundle does not contain git" >&2
 	exit 1
 fi
 
@@ -43,17 +45,17 @@ fi
 # system binaries.
 ORIG_PATH="$PATH"
 export ORIG_PATH
-PATH=$base:$PATH
+PATH=$bundle:$PATH
 export PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
-GIT_EXEC_PATH=$base
+GIT_EXEC_PATH=$bundle
 export GIT_EXEC_PATH
 
 ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
 export ORIG_GIT_TEMPLATE_DIR
-GIT_TEMPLATE_DIR="$base/templates"
+GIT_TEMPLATE_DIR="$bundle/templates"
 export GIT_TEMPLATE_DIR
 
 # Indicate which variables were exported above.
