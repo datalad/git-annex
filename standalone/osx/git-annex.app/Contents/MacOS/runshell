@@ -17,7 +17,7 @@ if [ ! -e "$bundle/git-annex" ]; then
 	echo "** bundle directory $bundle does not contain git-annex" >&2
 	exit 1
 fi
-if [ ! -e "$base/git" ]; then
+if [ ! -e "$bundle/git" ]; then
 	echo "** bundle directory $bundle does not contain git" >&2
 	exit 1
 fi
