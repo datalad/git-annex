@@ -66,7 +66,12 @@ runRequests
 	-> Handle
 	-> (TransferRequest -> Annex Bool)
 	-> Annex ()
-runRequests readh writeh a = go =<< readrequests
+runRequests readh writeh a = do
+	liftIO $ do
+		hSetBuffering readh NoBuffering
+		fileEncoding readh
+		fileEncoding writeh
+	go =<< readrequests
   where
   	go (d:u:k:f:rest) = do
 		case (deserialize d, deserialize u, deserialize k, deserialize f) of
@@ -93,6 +98,7 @@ sendRequest t f h = do
 		, serialize (transferUUID t)
 		, serialize (transferKey t)
 		, serialize f
+		, "" -- adds a trailing null
 		]
 	hFlush h
 

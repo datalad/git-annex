@@ -62,6 +62,8 @@ mkTransferrer program = do
 	closeFd tread
 	myreadh <- fdToHandle myread
 	mywriteh <- fdToHandle mywrite
+	fileEncoding myreadh
+	fileEncoding mywriteh
 	return $ Transferrer
 		{ transferrerRead = myreadh
 		, transferrerWrite = mywriteh
