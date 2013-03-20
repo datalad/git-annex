@@ -31,10 +31,12 @@ import Remote (prettyListUUIDs)
 import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
+import Logs.UUID
 import Utility.UserInfo
 import Config
 
 import qualified Data.Text as T
+import qualified Data.Map as M
 import Data.Char
 import System.Posix.Directory
 
@@ -169,16 +171,12 @@ getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
   where
 	remotename = takeFileName newrepopath
 
-data RemovableDrive = RemovableDrive 
-	{ diskFree :: Maybe Integer
-	, mountPoint :: Text
-	}
-	deriving (Show, Eq, Ord)
-
-selectDriveForm :: [RemovableDrive] -> Maybe RemovableDrive -> Form RemovableDrive
-selectDriveForm drives def = renderBootstrap $ RemovableDrive
+selectDriveForm :: [RemovableDrive] -> Form RemovableDrive
+selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
-	<*> areq (selectFieldList pairs) "Select drive:" (mountPoint <$> def)
+	<*> areq (selectFieldList pairs) "Select drive:" Nothing
+	<*> areq textField "Use this directory on the drive:"
+		(Just $ T.pack gitAnnexAssistantDefaultDir)
   where
 	pairs = zip (map describe drives) (map mountPoint drives)
 	describe drive = case diskFree drive of
@@ -191,11 +189,11 @@ selectDriveForm drives def = renderBootstrap $ RemovableDrive
 				, "free)"
 				]
 
-{- Adding a removable drive.
- -
- - The repo may already exist, when adding removable media
- - that has already been used elsewhere.
- -}
+removableDriveRepository :: RemovableDrive -> FilePath
+removableDriveRepository drive =
+	T.unpack (mountPoint drive) </> T.unpack (driveRepoPath drive)
+
+{- Adding a removable drive. -}
 getAddDriveR :: Handler RepHtml
 getAddDriveR = postAddDriveR
 postAddDriveR :: Handler RepHtml
@@ -204,13 +202,43 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
 	((res, form), enctype) <- lift $ runFormPost $
-		selectDriveForm (sort writabledrives) Nothing
+		selectDriveForm (sort writabledrives)
 	case res of
-		FormSuccess (RemovableDrive { mountPoint = d }) -> lift $
-			make (T.unpack d) >>= redirect . EditNewRepositoryR
+		FormSuccess drive -> lift $ redirect $ ConfirmAddDriveR drive
 		_ -> $(widgetFile "configurators/adddrive")
+
+{- The repo may already exist, when adding removable media
+ - that has already been used elsewhere. If so, check
+ - the UUID of the repo and see if it's one we know. If not,
+ - the user must confirm the repository merge. -}
+getConfirmAddDriveR :: RemovableDrive -> Handler RepHtml
+getConfirmAddDriveR drive = do
+	ifM (needconfirm)
+		( page "Combine repositories?" (Just Configuration) $
+			$(widgetFile "configurators/adddrive/confirm")
+		, do
+			getFinishAddDriveR drive
+		)
   where
-	make mountpoint = do
+  	dir = removableDriveRepository drive
+	needconfirm = ifM (liftIO $ doesDirectoryExist dir)
+		( liftAnnex $ do
+			mu <- liftIO $ catchMaybeIO $
+				inDir dir $ getUUID
+			case mu of
+				Nothing -> return False
+				Just driveuuid -> not .
+					M.member driveuuid <$> uuidMap
+		, return False
+		)
+
+cloneModal :: Widget
+cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
+
+getFinishAddDriveR :: RemovableDrive -> Handler RepHtml
+getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
+  where
+  	make = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
 		u <- liftIO $ initRepo isnew False dir $ Just remotename
@@ -218,9 +246,9 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 		liftAnnex $ setStandardGroup u TransferGroup
 		syncRemote r
 		return u
-	  where
-		dir = mountpoint </> gitAnnexAssistantDefaultDir
-		remotename = takeFileName mountpoint
+  	mountpoint = T.unpack (mountPoint drive)
+	dir = removableDriveRepository drive
+	remotename = takeFileName mountpoint
 
 {- Each repository is made a remote of the other.
  - Next call syncRemote to get them in sync. -}
@@ -245,6 +273,7 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 	gen dir = RemovableDrive
 		<$> getDiskFree dir
 		<*> pure (T.pack dir)
+		<*> pure (T.pack gitAnnexAssistantDefaultDir)
 	-- filter out some things that are surely not removable drives
 	sane Mntent { mnt_dir = dir, mnt_fsname = dev }
 		{- We want real disks like /dev/foo, not
