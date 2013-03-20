@@ -28,6 +28,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
     it checked for changes, now fixed.
   * get, copy, move: Display an error message when an identical transfer
     is already in progress, rather than failing with no indication why.
+  * assistant: Several optimisations to file transfers.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
 
