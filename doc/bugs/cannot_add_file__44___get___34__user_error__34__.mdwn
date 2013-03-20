@@ -26,3 +26,7 @@ OS X from dmg
     upgrade supported from repository versions: 0 1 2
     build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
 
+> The OSX app is now changed so that git-annex is a wrapper
+> script using runshell. This allows putting `git-annex.app/Contents/MacOS`
+> into PATH and using git-annex, and it will find all the libraries and
+> utilities bundled with it. [[done]] --[[Joey]]
