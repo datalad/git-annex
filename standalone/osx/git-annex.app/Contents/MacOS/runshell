@@ -4,7 +4,7 @@
 
 set -e
 
-base="$(dirname $0)"
+base="$(dirname "$0")"
 
 if [ ! -d "$base" ]; then
 	echo "** cannot find base directory (I seem to be $0)" >&2
