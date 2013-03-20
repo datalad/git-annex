@@ -6,14 +6,11 @@ available!
 
 ## known bugs
 
-* When you `git annex unlock` a file, it will immediately be re-locked.
-  See [[bugs/watcher_commits_unlocked_files]].
-
 * Kqueue has to open every directory it watches, so too many directories
   will run it out of the max number of open files (typically 1024), and fail.
   I may need to fork off multiple watcher processes to handle this.
   See [[bug|bugs/Issue_on_OSX_with_some_system_limits]]. (Does not affect
-  OSX any longer).
+  OSX any longer, only other BSDs).
 
 ## todo
 
@@ -28,7 +25,7 @@ available!
 * There needs to be a way for a new version of git-annex, when installed,
   to restart any running watch or assistant daemons. Or for the daemons
   to somehow detect it's been upgraded and restart themselves. Needed
-  to allow for imcompatable changes and, I suppose, for security upgrades..
+  to allow for incompatable changes and, I suppose, for security upgrades..
 
 ## beyond Linux
 
@@ -203,3 +200,5 @@ Many races need to be dealt with by this code. Here are some of them.
 - If a file is checked into git as a normal file and gets modified
   (or merged, etc), it will be converted into an annexed file.
   See [[blog/day_7__bugfixes]]. **done**; we always check ls-files now
+- When you `git annex unlock` a file, it will immediately be re-locked.
+  See [[bugs/watcher_commits_unlocked_files]]. Seems fixed now?

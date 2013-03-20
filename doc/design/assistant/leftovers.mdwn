@@ -8,7 +8,8 @@ Things that don't fit anywhere else:
   are not kept synced, but in some situations (ie, low disk space phones),
   that is likely.
 * Drop files that have not been used lately, or meet some other criteria
-  (as long as there's a copy elsewhere).
+  (as long as there's a copy elsewhere). **done** (via preferred content;
+  eg archive directories)
 * Perhaps automatically dropunused files that have been deleted,
   although I cannot see a way to do that, since by the time the inotify
   deletion event arrives, the file is deleted, and we cannot see what
