@@ -1,4 +1,4 @@
-git-annex (4.20130315) UNRELEASED; urgency=low
+git-annex (4.20130323) unstable; urgency=low
 
   * webapp: Repository list is now included in the dashboard, and other
     UI tweaks.
@@ -36,7 +36,7 @@ git-annex (4.20130315) UNRELEASED; urgency=low
   * webapp: Confirm whether user wants to combine repositories when
     adding a removable drive that already has a repository on it.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 15 Mar 2013 00:10:07 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 22 Mar 2013 18:54:05 -0400
 
 git-annex (4.20130314) unstable; urgency=low
 
