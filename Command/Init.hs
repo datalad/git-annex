@@ -13,7 +13,7 @@ import Init
 	
 def :: [Command]
 def = [dontCheck repoExists $
-	command "init" paramDesc seek "initialize git-annex"]
+	command "init" paramDesc seek SectionSetup "initialize git-annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

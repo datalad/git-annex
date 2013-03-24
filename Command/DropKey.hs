@@ -16,7 +16,7 @@ import Types.Key
 
 def :: [Command]
 def = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
-	"drops annexed content for specified keys"] 
+	SectionPlumbing "drops annexed content for specified keys"] 
 
 seek :: [CommandSeek]
 seek = [withKeys start]

@@ -25,7 +25,7 @@ import Remote
 
 def :: [Command]
 def = [command "vicfg" paramNothing seek
-	"edit git-annex's configuration"]
+	SectionSetup "edit git-annex's configuration"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

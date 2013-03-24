@@ -14,7 +14,7 @@ import Option
 
 def :: [Command]
 def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
-	command "watch" paramNothing seek "watch for changes"]
+	command "watch" paramNothing seek SectionCommon "watch for changes"]
 
 seek :: [CommandSeek]
 seek = [withFlag stopOption $ \stopdaemon -> 

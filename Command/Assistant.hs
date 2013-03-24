@@ -20,7 +20,8 @@ import System.Posix.Directory
 def :: [Command]
 def = [noRepo checkAutoStart $ dontCheck repoExists $
 	withOptions [Command.Watch.foregroundOption, Command.Watch.stopOption, autoStartOption] $ 
-	command "assistant" paramNothing seek "automatically handle changes"]
+	command "assistant" paramNothing seek SectionCommon
+		"automatically handle changes"]
 
 autoStartOption :: Option
 autoStartOption = Option.flag [] "autostart" "start in known repositories"

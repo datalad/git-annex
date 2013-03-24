@@ -15,7 +15,7 @@ import qualified Command.Fsck
 
 def :: [Command]
 def = [notDirect $ command "reinject" (paramPair "SRC" "DEST") seek
-	"sets content of annexed file"]
+	SectionUtility "sets content of annexed file"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

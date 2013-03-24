@@ -13,7 +13,8 @@ import Assistant.XMPP.Git
 
 def :: [Command]
 def = [noCommit $ noRepo xmppGitRelay $ dontCheck repoExists $
-	command "xmppgit" paramNothing seek "git to XMPP relay (internal use)"]
+	command "xmppgit" paramNothing seek
+		SectionPlumbing "git to XMPP relay"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

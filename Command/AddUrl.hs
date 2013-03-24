@@ -26,7 +26,8 @@ import Annex.Content.Direct
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
-	command "addurl" (paramRepeating paramUrl) seek "add urls to annex"]
+	command "addurl" (paramRepeating paramUrl) seek
+		SectionCommon "add urls to annex"]
 
 fileOption :: Option
 fileOption = Option.field [] "file" paramFile "specify what file the url is added to"

@@ -58,7 +58,7 @@ type StatState = StateT StatInfo Annex
 
 def :: [Command]
 def = [command "status" (paramOptional paramPaths) seek
-	"shows status information about the annex"]
+	SectionQuery "shows status information about the annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

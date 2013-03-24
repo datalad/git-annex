@@ -19,7 +19,7 @@ import qualified Option
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
-		seek "drop unused file content"]
+		seek SectionMaintenance "drop unused file content"]
 
 seek :: [CommandSeek]
 seek = [withUnusedMaps start]

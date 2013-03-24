@@ -20,7 +20,7 @@ import Logs.UUID
 def :: [Command]
 def = [command "initremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
-	seek "sets up a special (non-git) remote"]
+	seek SectionSetup "sets up a special (non-git) remote"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

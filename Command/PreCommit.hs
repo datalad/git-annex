@@ -17,7 +17,8 @@ import Annex.Content.Direct
 import Git.Sha
 
 def :: [Command]
-def = [command "pre-commit" paramPaths seek "run by git pre-commit hook"]
+def = [command "pre-commit" paramPaths seek SectionPlumbing
+	"run by git pre-commit hook"]
 
 seek :: [CommandSeek]
 seek =

@@ -19,7 +19,8 @@ import qualified Command.Fsck
 
 def :: [Command]
 def = [notDirect $ 
-	command "migrate" paramPaths seek "switch data to different backend"]
+	command "migrate" paramPaths seek
+		SectionUtility "switch data to different backend"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

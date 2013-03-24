@@ -20,7 +20,7 @@ import Utility.CopyFile
 def :: [Command]
 def = [notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
-	seek "change keys used for files"]
+	seek SectionPlumbing "change keys used for files"]
 
 seek :: [CommandSeek]
 seek = [withPairs start]

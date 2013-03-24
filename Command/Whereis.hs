@@ -16,7 +16,7 @@ import Logs.Trust
 
 def :: [Command]
 def = [noCommit $ command "whereis" paramPaths seek
-	"lists repositories that have file content"]
+	SectionQuery "lists repositories that have file content"]
 
 seek :: [CommandSeek]
 seek = [withValue (remoteMap id) $ \m ->

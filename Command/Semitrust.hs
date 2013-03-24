@@ -14,7 +14,7 @@ import Logs.Trust
 
 def :: [Command]
 def = [command "semitrust" (paramRepeating paramRemote) seek
-	"return repository to default trust level"]
+	SectionSetup "return repository to default trust level"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

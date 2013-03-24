@@ -14,7 +14,7 @@ import Logs.Trust
 
 def :: [Command]
 def = [command "untrust" (paramRepeating paramRemote) seek
-	"do not trust a repository"]
+	SectionSetup "do not trust a repository"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

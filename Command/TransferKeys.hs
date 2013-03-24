@@ -23,7 +23,8 @@ data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
 def :: [Command]
 def = [withOptions options $
-	command "transferkeys" paramNothing seek "plumbing; transfers keys"]
+	command "transferkeys" paramNothing seek
+	SectionPlumbing "transfers keys"]
 
 options :: [Option]
 options = [readFdOption, writeFdOption]

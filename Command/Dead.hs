@@ -17,7 +17,7 @@ import qualified Data.Set as S
 
 def :: [Command]
 def = [command "dead" (paramRepeating paramRemote) seek
-	"hide a lost repository"]
+	SectionSetup "hide a lost repository"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

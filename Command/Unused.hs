@@ -37,7 +37,7 @@ import Types.Key
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "unused" paramNothing seek
-	"look for unused file content"]
+	SectionMaintenance "look for unused file content"]
 
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"

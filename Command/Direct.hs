@@ -18,7 +18,8 @@ import Annex.Version
 
 def :: [Command]
 def = [notBareRepo $ 
-	command "direct" paramNothing seek "switch repository to direct mode"]
+	command "direct" paramNothing seek
+		SectionSetup "switch repository to direct mode"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

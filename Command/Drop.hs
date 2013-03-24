@@ -21,7 +21,7 @@ import Annex.Wanted
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "drop" paramPaths seek
-	"indicate content of files not currently wanted"]
+	SectionCommon "indicate content of files not currently wanted"]
 
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"

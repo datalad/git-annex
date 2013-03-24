@@ -13,7 +13,7 @@ import Annex.Content
 
 def :: [Command]
 def = [noCommit $ command "inannex" (paramRepeating paramKey) seek
-	"checks if keys are present in the annex"]
+	SectionPlumbing "checks if keys are present in the annex"]
 
 seek :: [CommandSeek]
 seek = [withKeys start]

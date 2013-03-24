@@ -15,7 +15,7 @@ import BuildFlags
 
 def :: [Command]
 def = [noCommit $ noRepo showPackageVersion $ dontCheck repoExists $
-	command "version" paramNothing seek "show version info"]
+	command "version" paramNothing seek SectionQuery "show version info"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

@@ -11,7 +11,8 @@ import Command
 
 def :: [Command]
 def = [ dontCheck repoExists $
-	command "test" paramNothing seek "run built-in test suite"]
+	command "test" paramNothing seek SectionPlumbing
+		"run built-in test suite"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

@@ -20,7 +20,7 @@ import qualified Option
 
 def :: [Command]
 def = [withOptions options $
-	noCommit $ command "transferkey" paramKey seek
+	noCommit $ command "transferkey" paramKey seek SectionPlumbing
 		"transfers a key from or to a remote"]
 
 options :: [Option]

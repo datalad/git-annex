@@ -21,7 +21,7 @@ import qualified Command.Fsck
 
 def :: [Command]
 def = [noCommit $ noRepo showHelp $ dontCheck repoExists $
-	command "help" paramNothing seek "display help"]
+	command "help" paramNothing seek SectionUtility "display help"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

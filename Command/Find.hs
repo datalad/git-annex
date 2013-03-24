@@ -21,7 +21,7 @@ import qualified Option
 
 def :: [Command]
 def = [noCommit $ withOptions [formatOption, print0Option] $
-	command "find" paramPaths seek "lists available files"]
+	command "find" paramPaths seek SectionQuery "lists available files"]
 
 formatOption :: Option
 formatOption = Option.field [] "format" paramFormat "control format of output"

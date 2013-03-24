@@ -17,7 +17,7 @@ import Annex.Wanted
 
 def :: [Command]
 def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
-	"make content of annexed files available"]
+	SectionCommon "make content of annexed files available"]
 
 seek :: [CommandSeek]
 seek = [withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->

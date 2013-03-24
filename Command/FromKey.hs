@@ -16,7 +16,7 @@ import Types.Key
 def :: [Command]
 def = [notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
-		"adds a file using a specific key"]
+		SectionPlumbing "adds a file using a specific key"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

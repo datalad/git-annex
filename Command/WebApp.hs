@@ -31,7 +31,7 @@ import System.Process (env, std_out, std_err)
 
 def :: [Command]
 def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
-	command "webapp" paramNothing seek "launch webapp"]
+	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

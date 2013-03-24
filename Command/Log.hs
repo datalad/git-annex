@@ -37,7 +37,7 @@ type Outputter = Bool -> POSIXTime -> [UUID] -> Annex ()
 
 def :: [Command]
 def = [withOptions options $
-	command "log" paramPaths seek "shows location log"]
+	command "log" paramPaths seek SectionQuery "shows location log"]
 
 options :: [Option]
 options = passthruOptions ++ [gourceOption]

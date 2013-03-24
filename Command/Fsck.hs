@@ -36,7 +36,7 @@ import System.Locale
 
 def :: [Command]
 def = [withOptions options $ command "fsck" paramPaths seek
-	"check for problems"]
+	SectionMaintenance "check for problems"]
 
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "check remote"

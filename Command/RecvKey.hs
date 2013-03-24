@@ -21,7 +21,7 @@ import qualified Backend
 
 def :: [Command]
 def = [noCommit $ command "recvkey" paramKey seek
-	"runs rsync in server mode to receive content"]
+	SectionPlumbing "runs rsync in server mode to receive content"]
 
 seek :: [CommandSeek]
 seek = [withKeys start]

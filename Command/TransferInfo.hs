@@ -15,7 +15,7 @@ import Types.Key
 import qualified Fields
 
 def :: [Command]
-def = [noCommit $ command "transferinfo" paramKey seek
+def = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
 	"updates sender on number of bytes of content received"]
 
 seek :: [CommandSeek]

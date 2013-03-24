@@ -29,7 +29,8 @@ import Config
 import Utility.InodeCache
 
 def :: [Command]
-def = [notBareRepo $ command "add" paramPaths seek "add files to annex"]
+def = [notBareRepo $ command "add" paramPaths seek SectionCommon
+	"add files to annex"]
 
 {- Add acts on both files not checked into git yet, and unlocked files.
  -

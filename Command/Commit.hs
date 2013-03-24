@@ -14,7 +14,7 @@ import qualified Git
 
 def :: [Command]
 def = [command "commit" paramNothing seek
-	"commits any staged changes to the git-annex branch"]
+	SectionPlumbing "commits any staged changes to the git-annex branch"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

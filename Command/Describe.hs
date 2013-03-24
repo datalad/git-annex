@@ -14,7 +14,7 @@ import Logs.UUID
 
 def :: [Command]
 def = [command "describe" (paramPair paramRemote paramDesc) seek
-	"change description of a repository"]
+	SectionSetup "change description of a repository"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

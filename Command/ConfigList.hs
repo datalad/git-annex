@@ -13,7 +13,7 @@ import Annex.UUID
 
 def :: [Command]
 def = [noCommit $ command "configlist" paramNothing seek
-	"outputs relevant git configuration"]
+	SectionPlumbing "outputs relevant git configuration"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

@@ -15,7 +15,7 @@ import Types.Key
 
 def :: [Command]
 def = [notDirect $ command "addunused" (paramRepeating paramNumRange)
-	seek "add back unused files"]
+	seek SectionMaintenance "add back unused files"]
 
 seek :: [CommandSeek]
 seek = [withUnusedMaps start]

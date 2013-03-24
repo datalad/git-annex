@@ -34,7 +34,7 @@ import Data.Hash.MD5
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
-	[seek] "synchronize local repository with remotes"]
+	[seek] SectionCommon "synchronize local repository with remotes"]
 
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek

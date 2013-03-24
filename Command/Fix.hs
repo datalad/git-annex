@@ -14,7 +14,7 @@ import Annex.Content
 
 def :: [Command]
 def = [notDirect $ noCommit $ command "fix" paramPaths seek
-	"fix up symlinks to point to annexed content"]
+	SectionMaintenance "fix up symlinks to point to annexed content"]
 
 seek :: [CommandSeek]
 seek = [withFilesInGit $ whenAnnexed start]

@@ -16,7 +16,7 @@ import qualified Fields
 
 def :: [Command]
 def = [noCommit $ command "sendkey" paramKey seek
-	"runs rsync in server mode to send content"]
+	SectionPlumbing "runs rsync in server mode to send content"]
 
 seek :: [CommandSeek]
 seek = [withKeys start]

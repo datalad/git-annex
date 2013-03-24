@@ -13,7 +13,8 @@ import qualified Remote
 import Logs.Trust
 
 def :: [Command]
-def = [command "trust" (paramRepeating paramRemote) seek "trust a repository"]
+def = [command "trust" (paramRepeating paramRemote) seek
+	SectionSetup "trust a repository"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

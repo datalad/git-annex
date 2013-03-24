@@ -42,6 +42,7 @@ data Command = Command
 	, cmdname :: String
 	, cmdparamdesc :: String     -- description of params for usage
 	, cmdseek :: [CommandSeek]   -- seek stage
+	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
 	}
 
@@ -55,3 +56,13 @@ instance Eq Command where
 {- Order commands by name -}
 instance Ord Command where
 	compare = comparing cmdname
+
+{- The same sections are listed in doc/git-annex.mdwn -}
+data CommandSection 
+	= SectionCommon
+	| SectionSetup
+	| SectionMaintenance
+	| SectionQuery
+	| SectionUtility
+	| SectionPlumbing
+	deriving (Eq, Ord, Enum, Bounded)

@@ -15,7 +15,7 @@ import Annex.Wanted
 
 def :: [Command]
 def = [withOptions Command.Move.options $ command "copy" paramPaths seek
-	"copy content of files to/from another repository"]
+	SectionCommon "copy content of files to/from another repository"]
 
 seek :: [CommandSeek]
 seek = [withField Command.Move.toOption Remote.byNameWithUUID $ \to ->

@@ -28,7 +28,8 @@ data Link = Link Git.Repo Git.Repo
 
 def :: [Command]
 def = [dontCheck repoExists $
-	command "map" paramNothing seek "generate map of repositories"]
+	command "map" paramNothing seek SectionQuery
+		"generate map of repositories"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

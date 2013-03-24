@@ -40,7 +40,7 @@ import Config
 import Annex.CheckAttr
 
 {- Generates a normal command -}
-command :: String -> String -> [CommandSeek] -> String -> Command
+command :: String -> String -> [CommandSeek] -> CommandSection -> String -> Command
 command = Command [] Nothing commonChecks False
 
 {- Indicates that a command doesn't need to commit any changes to

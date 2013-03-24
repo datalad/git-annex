@@ -20,7 +20,7 @@ import Logs.Transfer
 
 def :: [Command]
 def = [withOptions options $ command "move" paramPaths seek
-	"move content of files to/from another repository"]
+	SectionCommon "move content of files to/from another repository"]
 
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "source remote"

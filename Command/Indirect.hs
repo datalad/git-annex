@@ -22,7 +22,7 @@ import Init
 
 def :: [Command]
 def = [notBareRepo $ command "indirect" paramNothing seek
-	"switch repository to indirect mode"]
+	SectionSetup "switch repository to indirect mode"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]
