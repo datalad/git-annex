@@ -11,7 +11,7 @@ set up could be accomplished:
 	XMPPCreds {xmppUsername = "joeyhess", xmppPassword = "xxxx", xmppHostname = "xmpp.l.google.com.", xmppPort = 5222, xmppJID = "joeyhess@gmail.com"}
 
 2. A git remote is created using a special url, of the form `xmpp::user@host`
-   For the above example, it would be `url = xmpp:joeyhess@gmail.com`
+   For the above example, it would be `url = xmpp::joeyhess@gmail.com`
 
 3. The uuid of one of the other clients using XMPP should be configured
    using the `annex.uuid` setting, the same as is set up for other remotes.
