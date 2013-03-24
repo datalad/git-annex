@@ -50,21 +50,23 @@ xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 xmppNeeded = return ()
 #endif
 
-{- Displays an alert suggesting to configure a cloud repo
+{- When appropriate, displays an alert suggesting to configure a cloud repo
  - to suppliment an XMPP remote. -}
-cloudRepoNeeded :: UrlRenderer -> UUID -> Assistant ()
+checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
 #ifdef WITH_XMPP
-cloudRepoNeeded urlrenderer for = do
-	buddyname <- getBuddyName for
-	url <- liftIO $ renderUrl urlrenderer (NeedCloudRepoR for) []
-	close <- asIO1 removeAlert
-	void $ addAlert $ cloudRepoNeededAlert buddyname $ AlertButton
-		{ buttonLabel = "Add a cloud repository"
-		, buttonUrl = url
-		, buttonAction = Just close
-		}
+checkCloudRepos urlrenderer r =
+	unlessM (syncingToCloudRemote <$> getDaemonStatus) $ do
+		buddyname <- getBuddyName $ Remote.uuid r
+		url <- liftIO $
+			renderUrl urlrenderer (NeedCloudRepoR $ Remote.uuid r) []
+		close <- asIO1 removeAlert
+		void $ addAlert $ cloudRepoNeededAlert buddyname $ AlertButton
+			{ buttonLabel = "Add a cloud repository"
+			, buttonUrl = url
+			, buttonAction = Just close
+			}
 #else
-cloudRepoNeeded = return ()
+checkCloudRepos _ _ = noop
 #endif
 
 {- Returns the name of the friend corresponding to a
@@ -88,7 +90,7 @@ getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
 	buddyname <- liftAssistant $ getBuddyName for
 	$(widgetFile "configurators/xmpp/needcloudrepo")
 #else
-needCloudRepoR = xmppPage $
+getNeedCloudRepoR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 

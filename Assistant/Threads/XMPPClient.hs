@@ -20,6 +20,7 @@ import qualified Remote
 import Utility.ThreadScheduler
 import Assistant.WebApp (UrlRenderer, renderUrl)
 import Assistant.WebApp.Types hiding (liftAssistant)
+import Assistant.WebApp.Configurators.XMPP (checkCloudRepos)
 import Assistant.Alert
 import Assistant.Pairing
 import Assistant.XMPP.Git
@@ -106,8 +107,9 @@ xmppClient urlrenderer d creds =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushInitiation pushstage = inAssistant $
-			unlessM (queueNetPushMessage m) $ 
-				void $ forkIO <~> handlePushInitiation urlrenderer m
+			unlessM (queueNetPushMessage m) $ do
+				let checker = checkCloudRepos urlrenderer
+				void $ forkIO <~> handlePushInitiation checker m
 		| otherwise = void $ inAssistant $ queueNetPushMessage m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop

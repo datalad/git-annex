@@ -31,10 +31,6 @@ import qualified Remote as Remote
 import Remote.List
 import Utility.FileMode
 import Utility.Shell
-#ifdef WITH_WEBAPP
-import Assistant.WebApp (UrlRenderer)
-import Assistant.WebApp.Configurators.XMPP
-#endif
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
@@ -256,11 +252,11 @@ xmppRemotes cid = case baseJID <$> parseJID cid of
   where
 	matching loc r = repoIsUrl r && repoLocation r == loc
 
-handlePushInitiation :: UrlRenderer -> NetMessage -> Assistant ()
+handlePushInitiation :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
 handlePushInitiation _ (Pushing cid CanPush) =
 	unlessM (null <$> xmppRemotes cid) $ 
 		sendNetMessage $ Pushing cid PushRequest
-handlePushInitiation urlrenderer (Pushing cid PushRequest) =
+handlePushInitiation checkcloudrepos (Pushing cid PushRequest) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
 	go Nothing = noop
@@ -276,28 +272,18 @@ handlePushInitiation urlrenderer (Pushing cid PushRequest) =
 			void $ alertWhile (syncAlert [r]) $
 				xmppPush cid
 					(taggedPush u selfjid branch r)
-					(handleDeferred urlrenderer)
-			checkCloudRepos urlrenderer r
-handlePushInitiation urlrenderer (Pushing cid StartingPush) = do
+					(handleDeferred checkcloudrepos)
+			checkcloudrepos r
+handlePushInitiation checkcloudrepos (Pushing cid StartingPush) = do
 	rs <- xmppRemotes cid
 	unless (null rs) $ do
 		void $ alertWhile (syncAlert rs) $
-			xmppReceivePack cid (handleDeferred urlrenderer)
-		mapM_ (checkCloudRepos urlrenderer) rs
+			xmppReceivePack cid (handleDeferred checkcloudrepos)
+		mapM_ checkcloudrepos rs
 handlePushInitiation _ _ = noop
 
-handleDeferred :: UrlRenderer -> NetMessage -> Assistant ()
+handleDeferred :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
 handleDeferred = handlePushInitiation
-
-checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
--- TODO only display if needed
-checkCloudRepos urlrenderer r =
-#ifdef WITH_WEBAPP
-	unlessM (syncingToCloudRemote <$> getDaemonStatus) $
-		cloudRepoNeeded urlrenderer (Remote.uuid r)
-#else
-	noop
-#endif
 
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do
