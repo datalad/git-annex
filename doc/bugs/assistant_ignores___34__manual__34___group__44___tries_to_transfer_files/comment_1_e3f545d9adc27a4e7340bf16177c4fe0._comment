@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-24T12:45:23Z"
+ content="""
+You say you changed `origin` and `here` to be in the manual group, but did you set their preferred-content to `standard`? If you did not, the group setting will not influence which files they want, and the default behavior of wanting all files will be used.
+
+Since you are running the assistant on the server, it will automatically update to have symlinks to new files when the desktop does a git push to it. It sounds like the desktop is failing to push to the server for some reason. You can look at '.git/annex/daemon.log` to see any error messages from `git push`.
+
+If you have `ssh-askpass` installed on the client, it should use it to prompt for any necessary ssh password. Given your described configuration, git-annex will be using your regular ssh keys. You can disable its built-in ssh connection caching with `git config annex.sshcaching false` if desired.
+"""]]
