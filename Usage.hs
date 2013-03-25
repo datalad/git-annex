@@ -18,11 +18,7 @@ usage header cmds commonoptions = unlines $
 	[ header
 	, ""
 	, "Options:"
-	] ++ optlines ++
-	[ ""
-	, "Commands:"
-	, ""
-	] ++ cmdlines
+	] ++ optlines ++ cmdlines
   where
 	-- To get consistent indentation of options, generate the
 	-- usage for all options at once. A command's options will
@@ -30,12 +26,17 @@ usage header cmds commonoptions = unlines $
 	alloptlines = filter (not . null) $
 		lines $ usageInfo "" $
 			concatMap cmdoptions scmds ++ commonoptions
-	(cmdlines, optlines) = go scmds alloptlines []
-	go [] os ls = (ls, os)
-	go (c:cs) os ls = go cs os' (ls++(l:o))
+	(cmdlines, optlines) = go Nothing scmds alloptlines []
+	go _ [] os ls = (ls, os)
+	go section (c:cs) os ls = go section' cs os' ls'
 	  where
+		ls' = ls++sectionheader++(l:o)
+		sectionheader
+			| section == section' = []
+			| otherwise = ["", descSection (cmdsection c) ++ ":", ""]
+		section' = Just (cmdsection c)
 		(o, os') = splitAt (length $ cmdoptions c) os
-		l = concat 
+		l = concat
 			[ cmdname c
 			, namepad (cmdname c)
 			, cmdparamdesc c

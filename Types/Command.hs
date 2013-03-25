@@ -53,9 +53,9 @@ instance Eq CommandCheck where
 instance Eq Command where
 	a == b = cmdname a == cmdname b
 
-{- Order commands by name -}
+{- Order commands by section and then by name -}
 instance Ord Command where
-	compare = comparing cmdname
+	compare = comparing (\c -> (cmdsection c, cmdname c))
 
 {- The same sections are listed in doc/git-annex.mdwn -}
 data CommandSection 
@@ -66,3 +66,11 @@ data CommandSection
 	| SectionUtility
 	| SectionPlumbing
 	deriving (Eq, Ord, Enum, Bounded)
+
+descSection :: CommandSection -> String
+descSection SectionCommon = "Commonly used commands"
+descSection SectionSetup = "Repository setup commands"
+descSection SectionMaintenance = "Repository maintenance commands"
+descSection SectionQuery = "Query commands"
+descSection SectionUtility = "Utility commands"
+descSection SectionPlumbing = "Plumbing commands"
