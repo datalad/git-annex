@@ -8,41 +8,29 @@
 module Usage where
 
 import Common.Annex
-import System.Console.GetOpt
 
 import Types.Command
 
-{- Usage message with lists of commands and options. -}
-usage :: String -> [Command] -> [Option] -> String
-usage header cmds commonoptions = unlines $ 
-	[ header
-	, ""
-	, "Options:"
-	] ++ optlines ++ cmdlines
+{- Usage message with lists of commands by section. -}
+usage :: String -> [Command] -> String
+usage header cmds = unlines $ header : concatMap go [minBound..]
   where
-	-- To get consistent indentation of options, generate the
-	-- usage for all options at once. A command's options will
-	-- be displayed after the command.
-	alloptlines = filter (not . null) $
-		lines $ usageInfo "" $
-			concatMap cmdoptions scmds ++ commonoptions
-	(cmdlines, optlines) = go Nothing scmds alloptlines []
-	go _ [] os ls = (ls, os)
-	go section (c:cs) os ls = go section' cs os' ls'
+	go section
+		| null cs = []
+		| otherwise =
+			[ ""
+			, descSection section ++ ":"
+			, ""
+			] ++ map cmdline cs
 	  where
-		ls' = ls++sectionheader++(l:o)
-		sectionheader
-			| section == section' = []
-			| otherwise = ["", descSection (cmdsection c) ++ ":", ""]
-		section' = Just (cmdsection c)
-		(o, os') = splitAt (length $ cmdoptions c) os
-		l = concat
-			[ cmdname c
-			, namepad (cmdname c)
-			, cmdparamdesc c
-			, descpad (cmdparamdesc c)
-			, cmddesc c
-			]
+		cs = filter (\c -> cmdsection c == section) scmds
+	cmdline c = concat
+		[ cmdname c
+		, namepad (cmdname c)
+		, cmdparamdesc c
+		, descpad (cmdparamdesc c)
+		, cmddesc c
+		]
 	pad n s = replicate (n - length s) ' '
 	namepad = pad $ longest cmdname + 1
 	descpad = pad $ longest cmdparamdesc + 2

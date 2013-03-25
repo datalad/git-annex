@@ -45,7 +45,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				prepCommand cmd params
 		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
   where
-	err msg = msg ++ "\n\n" ++ usage header allcmds commonoptions
+	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
 	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
 	(flags, params) = getOptCmd args cmd commonoptions err

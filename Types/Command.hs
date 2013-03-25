@@ -53,9 +53,9 @@ instance Eq CommandCheck where
 instance Eq Command where
 	a == b = cmdname a == cmdname b
 
-{- Order commands by section and then by name -}
+{- Order commands by name. -}
 instance Ord Command where
-	compare = comparing (\c -> (cmdsection c, cmdname c))
+	compare = comparing cmdname
 
 {- The same sections are listed in doc/git-annex.mdwn -}
 data CommandSection 

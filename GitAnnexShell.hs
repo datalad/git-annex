@@ -126,7 +126,7 @@ checkField (field, value)
 	| otherwise = False
 
 failure :: IO ()
-failure = error $ "bad parameters\n\n" ++ usage header cmds options
+failure = error $ "bad parameters\n\n" ++ usage header cmds
 
 checkNotLimited :: IO ()
 checkNotLimited = checkEnv "GIT_ANNEX_SHELL_LIMITED"
