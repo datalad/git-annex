@@ -40,14 +40,23 @@ data NotificationHandle = NotificationHandle NotificationBroadcaster Notificatio
 newNotificationBroadcaster :: IO NotificationBroadcaster
 newNotificationBroadcaster = atomically $ newTMVar []
 
-{- Allocates a notification handle for a client to use. -}
-newNotificationHandle :: NotificationBroadcaster -> IO NotificationHandle
-newNotificationHandle b = NotificationHandle
+{- Allocates a notification handle for a client to use.
+ -
+ - An immediate notification can be forced the first time waitNotification
+ - is called on the handle. This is useful in cases where a notification
+ - may be sent while the new handle is being constructed. Normally,
+ - such a notification would be missed. Forcing causes extra work,
+ - but ensures such notifications get seen.
+ -}
+newNotificationHandle :: Bool -> NotificationBroadcaster -> IO NotificationHandle
+newNotificationHandle force b = NotificationHandle
 	<$> pure b
 	<*> addclient
   where
 	addclient = do
-		s <- newEmptySV
+		s <- if force
+			then newSV ()
+			else newEmptySV
 		atomically $ do
 			l <- takeTMVar b
 			putTMVar b $ l ++ [s]

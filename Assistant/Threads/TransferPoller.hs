@@ -21,7 +21,7 @@ import qualified Data.Map as M
 transferPollerThread :: NamedThread
 transferPollerThread = namedThread "TransferPoller" $ do
 	g <- liftAnnex gitRepo
-	tn <- liftIO . newNotificationHandle =<<
+	tn <- liftIO . newNotificationHandle True =<<
 		transferNotifier <$> getDaemonStatus
 	forever $ do
 		liftIO $ threadDelay 500000 -- 0.5 seconds

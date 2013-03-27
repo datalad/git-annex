@@ -17,7 +17,7 @@ import Utility.NotificationBroadcaster
  -}
 daemonStatusThread :: NamedThread
 daemonStatusThread = namedThread "DaemonStatus" $ do
-	notifier <- liftIO . newNotificationHandle
+	notifier <- liftIO . newNotificationHandle False
 		=<< changeNotifier <$> getDaemonStatus
 	checkpoint
 	runEvery (Seconds tenMinutes) <~> do

@@ -30,7 +30,7 @@ waitNotifier getbroadcaster nid = liftAssistant $ do
 newNotifier :: forall sub. (Assistant NotificationBroadcaster) -> GHandler sub WebApp NotificationId
 newNotifier getbroadcaster = liftAssistant $ do
 	b <- getbroadcaster
-	liftIO $ notificationHandleToId <$> newNotificationHandle b
+	liftIO $ notificationHandleToId <$> newNotificationHandle True b
 
 {- Adds the auth parameter as a hidden field on a form. Must be put into
  - every form. -}
