@@ -159,6 +159,8 @@ import Utility.LogFile
 import Utility.ThreadScheduler
 import qualified Build.SysConfig as SysConfig
 
+import System.Log.Logger
+
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 
@@ -170,9 +172,11 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 startDaemon :: Bool -> Bool -> Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground startbrowser = do
 	pidfile <- fromRepo gitAnnexPidFile
-	logfd <- liftIO . openLog =<< fromRepo gitAnnexLogFile
+	logfile <- fromRepo gitAnnexLogFile
+	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
+			liftIO $ debugM desc $ "logging to " ++ logfile
 			liftIO $ Utility.Daemon.lockPidFile pidfile
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
@@ -194,6 +198,8 @@ startDaemon assistant foreground startbrowser = do
 		checkCanWatch
 		when assistant $ checkEnvironment
 		dstatus <- startDaemonStatus
+		logfile <- fromRepo gitAnnexLogFile
+		liftIO $ debugM desc $ "logging to " ++ logfile
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
