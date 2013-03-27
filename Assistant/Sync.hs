@@ -165,7 +165,7 @@ syncAction rs a
 	| otherwise = do
 		i <- addAlert $ syncAlert nonxmppremotes
 		failed <- a rs
-		let failed' = filter (Git.repoIsLocalUnknown . Remote.repo) failed
+		let failed' = filter (not . Git.repoIsLocalUnknown . Remote.repo) failed
 		let succeeded = filter (`notElem` failed) nonxmppremotes
 		updateAlertMap $ mergeAlert i $
 			syncResultAlert succeeded failed'
