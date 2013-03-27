@@ -167,8 +167,10 @@ syncAction rs a
 		failed <- a rs
 		let failed' = filter (not . Git.repoIsLocalUnknown . Remote.repo) failed
 		let succeeded = filter (`notElem` failed) nonxmppremotes
-		updateAlertMap $ mergeAlert i $
-			syncResultAlert succeeded failed'
+		if null succeeded && null failed'
+			then removeAlert i
+			else updateAlertMap $ mergeAlert i $
+				syncResultAlert succeeded failed'
 		return failed
   where
 	nonxmppremotes = filter (not . isXMPPRemote) rs
