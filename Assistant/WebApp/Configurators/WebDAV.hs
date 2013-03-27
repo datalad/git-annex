@@ -46,7 +46,7 @@ boxComAForm :: AForm WebApp WebApp WebDAVInput
 boxComAForm = WebDAVInput
 	<$> areq textField "Username or Email" Nothing
 	<*> areq passwordField "Box.com Password" Nothing
-	<*> areq checkBoxField "Share this account with friends?" (Just True)
+	<*> areq checkBoxField "Share this account with other devices and friends?" (Just True)
 	<*> areq textField "Directory" (Just "annex")
 	<*> enableEncryptionField
 
