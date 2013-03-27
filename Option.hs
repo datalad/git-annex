@@ -1,4 +1,4 @@
-{- git-annex command-line options
+{- common command-line options
  -
  - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
  -

@@ -18,21 +18,30 @@ import qualified Command.Copy
 import qualified Command.Sync
 import qualified Command.Whereis
 import qualified Command.Fsck
+import GitAnnex.Options
+
+import System.Console.GetOpt
 
 def :: [Command]
-def = [noCommit $ noRepo showHelp $ dontCheck repoExists $
+def = [noCommit $ noRepo showGeneralHelp $ dontCheck repoExists $
 	command "help" paramNothing seek SectionUtility "display help"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
+start ["options"] = do
+	liftIO showCommonOptions
+	stop
 start _ = do
-	liftIO showHelp
+	liftIO showGeneralHelp
 	stop
 
-showHelp :: IO ()
-showHelp = liftIO $ putStrLn $ unlines
+showCommonOptions :: IO ()
+showCommonOptions = putStrLn $ usageInfo "Common options:" options
+
+showGeneralHelp :: IO ()
+showGeneralHelp = putStrLn $ unlines
 	[ "The most commonly used git-annex commands are:"
 	, unlines $ map cmdline $ concat
 		[ Command.Init.def
@@ -45,7 +54,7 @@ showHelp = liftIO $ putStrLn $ unlines
 		, Command.Whereis.def
 		, Command.Fsck.def
 		]
-	, "Run git-annex without any options for a complete command and option list."
+	, "Run git-annex without any options for a complete command list."
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c

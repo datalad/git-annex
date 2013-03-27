@@ -48,7 +48,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
 	(fuzzy, cmds, name, args) = findCmd fuzzyok allargs allcmds err
-	(flags, params) = getOptCmd args cmd commonoptions err
+	(flags, params) = getOptCmd args cmd commonoptions
 	checkfuzzy = when fuzzy $
 		inRepo $ Git.AutoCorrect.prepare name cmdname cmds
 
@@ -74,12 +74,15 @@ findCmd fuzzyok argv cmds err
 
 {- Parses command line options, and returns actions to run to configure flags
  - and the remaining parameters for the command. -}
-getOptCmd :: Params -> Command -> [Option] -> (String -> String) -> (Flags, Params)
-getOptCmd argv cmd commonoptions err = check $
+getOptCmd :: Params -> Command -> [Option] -> (Flags, Params)
+getOptCmd argv cmd commonoptions = check $
 	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
   where
 	check (flags, rest, []) = (flags, rest)
-	check (_, _, errs) = error $ err $ concat errs
+	check (_, _, errs) = error $ unlines
+		[ concat errs
+		, commandUsage cmd
+		]
 
 {- Runs a list of Annex actions. Catches IO errors and continues
  - (but explicitly thrown errors terminate the whole command).

@@ -1,6 +1,7 @@
 git-annex (4.20130324) UNRELEASED; urgency=low
 
   * Group subcommands into sections in usage. Closes: #703797
+  * Per-command usage messages.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

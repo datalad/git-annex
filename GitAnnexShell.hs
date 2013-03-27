@@ -62,7 +62,7 @@ options = Option.common ++
 			expected ++ " but found " ++ s
 
 header :: String
-header = "Usage: git-annex-shell [-c] command [parameters ...] [option ..]"
+header = "git-annex-shell [-c] command [parameters ...] [option ...]"
 
 run :: [String] -> IO ()
 run [] = failure
