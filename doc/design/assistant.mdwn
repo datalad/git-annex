@@ -14,10 +14,12 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Month 7: user-driven features and polishing; 
   [presentation at LCA2013](http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4)
 * Month 8: [[!traillink Android]]
+* Month 9: user-driven features and polishing
 
 We are, approximately, here:
 
-* Months 9-11: more user-driven features and polishing (see remaining TODO items in all pages above)
+* Months 10-11: more user-driven features and polishing
+  (see remaining TODO items in all pages above)
 * Month 12: "Windows purgatory" [[Windows]]
 
 ## porting
