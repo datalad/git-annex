@@ -42,5 +42,7 @@ TH and once for cross.
 * Enable WebDAV support. Currently needs template haskell (could be avoided
   by changing the DAV library to not use it), and also networking support,
   which seems broken in current ghc-android.
+* Get local pairing to work. network-multicast and network-info don't
+  currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
   broken with local repositories.
