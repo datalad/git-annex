@@ -27,9 +27,7 @@ import Text.Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
 
-{- A display of currently running and queued transfers.
- -
- - Or, if there have never been any this run, an intro display. -}
+{- A display of currently running and queued transfers. -}
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- lift getYesod
