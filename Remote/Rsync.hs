@@ -22,6 +22,7 @@ import Remote.Helper.Encryptable
 import Crypto
 import Utility.Rsync
 import Utility.CopyFile
+import Utility.Metered
 import Annex.Perms
 
 type RsyncUrl = String

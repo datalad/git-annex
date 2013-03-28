@@ -10,7 +10,7 @@ module Remote.Helper.Chunked where
 import Common.Annex
 import Utility.DataUnits
 import Types.Remote
-import Meters
+import Utility.Metered
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L

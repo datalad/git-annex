@@ -24,7 +24,7 @@ import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
 import Annex.Content
-import Meters
+import Utility.Metered
 
 remote :: RemoteType
 remote = RemoteType {
@@ -154,17 +154,20 @@ storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath
 storeSplit' _ _ [] _ _ = error "ran out of dests"
 storeSplit' _ _  _ [] c = return $ reverse c
 storeSplit' meterupdate chunksize (d:dests) bs c = do
-	bs' <- E.bracket (openFile d WriteMode) hClose (feed chunksize bs)
+	bs' <- E.bracket (openFile d WriteMode) hClose $
+		feed zeroBytesProcessed chunksize bs
 	storeSplit' meterupdate chunksize dests bs' (d:c)
   where
-	feed _ [] _ = return []
-	feed sz (l:ls) h = do
-		let s = fromIntegral $ S.length l
+	feed _ _ [] _ = return []
+	feed bytes sz (l:ls) h = do
+		let len = S.length l
+		let s = fromIntegral len
 		if s <= sz || sz == chunksize
 			then do
 				S.hPut h l
-				meterupdate $ toInteger s
-				feed (sz - s) ls h
+				let bytes' = addBytesProcessed bytes len
+				meterupdate bytes'
+				feed bytes' (sz - s) ls h
 			else return (l:ls)
 
 storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool

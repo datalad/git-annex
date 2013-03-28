@@ -29,6 +29,7 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Utility.UserInfo
 import Annex.Content
+import Utility.Metered
 
 type BupRepo = String
 

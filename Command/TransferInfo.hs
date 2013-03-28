@@ -13,6 +13,7 @@ import Annex.Content
 import Logs.Transfer
 import Types.Key
 import qualified Fields
+import Utility.Metered
 
 def :: [Command]
 def = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
@@ -50,10 +51,14 @@ start (k:[]) = do
 			(update, tfile, _) <- mkProgressUpdater t info
 			liftIO $ mapM_ void
 				[ tryIO $ forever $ do
-					bytes <- readish <$> getLine
-					maybe (error "transferinfo protocol error") update bytes
+					bytes <- readUpdate
+					maybe (error "transferinfo protocol error")
+						(update . toBytesProcessed) bytes
 				, tryIO $ removeFile tfile
 				, exitSuccess
 				]
 	stop
 start _ = error "wrong number of parameters"
+
+readUpdate :: IO (Maybe Integer)
+readUpdate = readish <$> getLine

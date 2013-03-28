@@ -13,6 +13,7 @@ import Annex.Exception
 import qualified Git
 import Types.Remote
 import Types.Key
+import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 
@@ -165,12 +166,13 @@ mkProgressUpdater t info = do
 	mvar <- liftIO $ newMVar 0
 	return (liftIO . updater tfile mvar, tfile, mvar)
   where
-	updater tfile mvar bytes = modifyMVar_ mvar $ \oldbytes -> do
-		if (bytes - oldbytes >= mindelta)
+	updater tfile mvar b = modifyMVar_ mvar $ \oldbytes -> do
+		let newbytes = fromBytesProcessed b
+		if (newbytes - oldbytes >= mindelta)
 			then do
-				let info' = info { bytesComplete = Just bytes }
+				let info' = info { bytesComplete = Just newbytes }
 				_ <- tryIO $ writeTransferInfoFile info' tfile
-				return bytes
+				return newbytes
 			else return oldbytes
 	{- The minimum change in bytesComplete that is worth
 	 - updating a transfer info file for is 1% of the total

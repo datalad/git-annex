@@ -43,14 +43,15 @@ import System.Log.Logger
 import System.Log.Formatter
 import System.Log.Handler (setFormatter, LogHandler)
 import System.Log.Handler.Simple
+import qualified Data.Set as S
 
 import Common
 import Types
 import Types.Messages
+import qualified Messages.JSON as JSON
 import Types.Key
 import qualified Annex
-import qualified Messages.JSON as JSON
-import qualified Data.Set as S
+import Utility.Metered
 
 showStart :: String -> String -> Annex ()
 showStart command file = handle (JSON.start command $ Just file) $
@@ -86,7 +87,7 @@ meteredBytes combinemeterupdate size a = withOutputType go
 		meter <- liftIO $ newMeter progress "B" 25 (renderNums binaryOpts 1)
 		showOutput
 		r <- a $ \n -> liftIO $ do
-			incrP progress n
+			setP progress $ fromBytesProcessed n
 			displayMeter stdout meter
 			maybe noop (\m -> m n) combinemeterupdate
 		liftIO $ clearMeter stdout meter

@@ -15,6 +15,7 @@ import Crypto
 import qualified Annex
 import Config.Cost
 import Utility.Base64
+import Utility.Metered
 
 {- Encryption setup for a remote. The user must specify whether to use
  - an encryption key, or not encrypt. An encrypted cipher is created, or is

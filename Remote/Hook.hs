@@ -21,6 +21,7 @@ import Annex.Content
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
+import Utility.Metered
 
 remote :: RemoteType
 remote = RemoteType {

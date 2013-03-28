@@ -40,6 +40,7 @@ import Init
 import Types.Key
 import qualified Fields
 import Logs.Location
+import Utility.Metered
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -309,7 +310,7 @@ copyFromRemote r key file dest
 			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
 		Just (cmd, params) <- git_annex_shell (repo r) "transferinfo" 
 			[Param $ key2file key] fields
-		v <- liftIO $ newEmptySV
+		v <- liftIO $ (newEmptySV :: IO (MSampleVar Integer))
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -325,7 +326,7 @@ copyFromRemote r key file dest
 			send bytes
 			forever $
 				send =<< readSV v
-		let feeder = writeSV v
+		let feeder = writeSV v . fromBytesProcessed
 		bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
@@ -391,13 +392,13 @@ rsyncOrCopyFile rsyncparams src dest p =
 	dorsync = rsyncHelper (Just p) $
 		rsyncparams ++ [Param src, Param dest]
 	docopy = liftIO $ bracket
-		(forkIO $ watchfilesize 0)
+		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)
 		(const $ copyFileExternal src dest)
 	watchfilesize oldsz = do
 		threadDelay 500000 -- 0.5 seconds
 		v <- catchMaybeIO $
-			fromIntegral . fileSize
+			toBytesProcessed . fileSize
 				<$> getFileStatus dest
 		case v of
 			Just sz

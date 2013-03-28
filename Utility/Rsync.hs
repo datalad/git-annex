@@ -8,6 +8,7 @@
 module Utility.Rsync where
 
 import Common
+import Utility.Metered
 
 import Data.Char
 
@@ -44,14 +45,13 @@ rsyncServerParams =
 rsync :: [CommandParam] -> IO Bool
 rsync = boolSystem "rsync"
 
-{- Runs rsync, but intercepts its progress output and feeds bytes
- - complete values into the callback. The progress output is also output
- - to stdout. 
+{- Runs rsync, but intercepts its progress output and updates a meter.
+ - The progress output is also output to stdout. 
  -
  - The params must enable rsync's --progress mode for this to work.
  -}
-rsyncProgress :: (Integer -> IO ()) -> [CommandParam] -> IO Bool
-rsyncProgress callback params = do
+rsyncProgress :: MeterUpdate -> [CommandParam] -> IO Bool
+rsyncProgress meterupdate params = do
 	r <- withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
 	{- For an unknown reason, piping rsync's output like this does
 	 - causes it to run a second ssh process, which it neglects to wait
@@ -72,7 +72,7 @@ rsyncProgress callback params = do
 					Nothing -> feedprogress prev buf' h
 					(Just bytes) -> do
 						when (bytes /= prev) $
-							callback bytes
+							meterupdate $ toBytesProcessed bytes
 						feedprogress bytes buf' h
 
 {- Checks if an rsync url involves the remote shell (ssh or rsh).

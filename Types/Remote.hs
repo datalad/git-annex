@@ -15,9 +15,9 @@ import Data.Ord
 import qualified Git
 import Types.Key
 import Types.UUID
-import Types.Meters
 import Types.GitConfig
 import Config.Cost
+import Utility.Metered
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String

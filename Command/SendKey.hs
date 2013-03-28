@@ -13,6 +13,7 @@ import Annex.Content
 import Utility.Rsync
 import Logs.Transfer
 import qualified Fields
+import Utility.Metered
 
 def :: [Command]
 def = [noCommit $ command "sendkey" paramKey seek

@@ -22,7 +22,7 @@ import Remote.Helper.Encryptable
 import qualified Remote.Helper.AWS as AWS
 import Crypto
 import Creds
-import Meters
+import Utility.Metered
 import qualified Annex
 import Annex.Content
 
