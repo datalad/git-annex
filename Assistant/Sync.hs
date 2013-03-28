@@ -158,22 +158,25 @@ pushToRemotes' now notifypushes remotes = do
  - XMPP remotes are handled specially; since the action can only start
  - an async process for them, they are not included in the alert, but are
  - still passed to the action.
+ -
+ - Readonly remotes are also hidden (to hide the web special remote).
  -}
 syncAction :: [Remote] -> ([Remote] -> Assistant [Remote]) -> Assistant [Remote]
 syncAction rs a
-	| null nonxmppremotes = a rs
+	| null visibleremotes = a rs
 	| otherwise = do
-		i <- addAlert $ syncAlert nonxmppremotes
+		i <- addAlert $ syncAlert visibleremotes
 		failed <- a rs
 		let failed' = filter (not . Git.repoIsLocalUnknown . Remote.repo) failed
-		let succeeded = filter (`notElem` failed) nonxmppremotes
+		let succeeded = filter (`notElem` failed) visibleremotes
 		if null succeeded && null failed'
 			then removeAlert i
 			else updateAlertMap $ mergeAlert i $
 				syncResultAlert succeeded failed'
 		return failed
   where
-	nonxmppremotes = filter (not . isXMPPRemote) rs
+	visibleremotes = filter (not . Remote.readonly) $
+		filter (not . isXMPPRemote) rs
 
 {- Manually pull from remotes and merge their branches. Returns any
  - remotes that it failed to pull from, and a Bool indicating
