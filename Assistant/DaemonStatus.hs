@@ -64,7 +64,7 @@ calcSyncRemotes = do
   where
   	iscloud r = not (Remote.readonly r) && Remote.globallyAvailable r
 
-{- Updates the sycRemotes list from the list of all remotes in Annex state. -}
+{- Updates the syncRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()
 updateSyncRemotes = do
 	modifyDaemonStatus_ =<< liftAnnex calcSyncRemotes
