@@ -307,7 +307,6 @@ prepSendAnnex key = withObjectLoc key indirect direct
 	direct [] = return Nothing
 	direct (f:fs) = do
 		cache <- recordedInodeCache key
-		liftIO $ print ("prepSendAnnex pre cache", cache)
 		-- check that we have a good file
 		ifM (sameInodeCache f cache)
 			( return $ Just (f, sameInodeCache f cache)
