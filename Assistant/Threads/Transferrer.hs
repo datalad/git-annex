@@ -82,7 +82,8 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 	 - so remove the transfer from the list of current
 	 - transfers, just in case it didn't stop
 	 - in a way that lets the TransferWatcher do its
-	 - usual cleanup.
+	 - usual cleanup. However, first check if something else is
+	 - running the transfer, to avoid removing active transfers.
 	 -}
 	go remote file transferrer = ifM (liftIO $ performTransfer transferrer t $ associatedFile info)
 		( do
@@ -95,7 +96,8 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 					(associatedFile info)
 					(Just remote)
 			void $ recordCommit
-		, void $ removeTransfer t
+		, whenM (liftAnnex $ isNothing <$> checkTransfer t) $
+			void $ removeTransfer t
 		)
 
 {- Called right before a transfer begins, this is a last chance to avoid
