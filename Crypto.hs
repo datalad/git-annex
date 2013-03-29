@@ -47,10 +47,10 @@ import Types.Crypto
  - The 256 first characters that feed the MAC represent at best 192
  - bytes of entropy.  However that's more than enough for both the
  - default MAC algorithm, namely HMAC-SHA1, and the "strongest"
- - currently supported, namely HMAC-SHA512, which respectively needs
+ - currently supported, namely HMAC-SHA512, which respectively need
  - (ideally) 64 and 128 bytes of entropy.
  -
- - The remainder characters (320 bytes of entropy) is enough for GnuPG's
+ - The remaining characters (320 bytes of entropy) is enough for GnuPG's
  - symetric cipher; unlike weaker public key crypto, the key does not
  - need to be too large.
  -}
