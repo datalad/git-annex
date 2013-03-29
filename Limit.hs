@@ -204,10 +204,15 @@ addSmallerThan = addLimit . limitSize (<)
 limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit
 limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
-	Just sz -> Right $ const $ lookupFile >=> check sz
+	Just sz -> Right $ go sz
   where
-	check _ Nothing = return False
-	check sz (Just (key, _)) = return $ keySize key `vs` Just sz
+  	go sz _ fi = lookupFile fi >>= check fi sz
+	check _ sz (Just (key, _)) = return $ keySize key `vs` Just sz
+	check fi sz Nothing = do
+		filesize <- liftIO $ catchMaybeIO $
+			fromIntegral . fileSize
+				<$> getFileStatus (Annex.relFile fi)
+		return $ filesize `vs` Just sz
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

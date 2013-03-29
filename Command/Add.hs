@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,6 +27,7 @@ import Utility.Touch
 import Utility.FileMode
 import Config
 import Utility.InodeCache
+import Annex.FileMatcher
 
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek SectionCommon
@@ -37,10 +38,16 @@ def = [notBareRepo $ command "add" paramPaths seek SectionCommon
  - In direct mode, it acts on any files that have changed. -}
 seek :: [CommandSeek]
 seek =
-	[ withFilesNotInGit start
-	, whenNotDirect $ withFilesUnlocked start
-	, whenDirect $ withFilesMaybeModified start
+	[ go withFilesNotInGit
+	, whenNotDirect $ go withFilesUnlocked
+	, whenDirect $ go withFilesMaybeModified
 	]
+  where
+  	go a = withValue largeFilesMatcher $ \matcher ->
+		a $ \file -> ifM (checkFileMatcher matcher file)
+			( start file
+			, stop
+			)
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up

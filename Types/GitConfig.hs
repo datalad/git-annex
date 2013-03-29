@@ -37,6 +37,7 @@ data GitConfig = GitConfig
 	, annexAutoCommit :: Bool
 	, annexWebOptions :: [String]
 	, annexCrippledFileSystem :: Bool
+	, annexLargeFiles :: Maybe String
 	, coreSymlinks :: Bool
 	}
 
@@ -59,6 +60,7 @@ extractGitConfig r = GitConfig
 	, annexAutoCommit = getbool (annex "autocommit") True
 	, annexWebOptions = getwords (annex "web-options")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
+	, annexLargeFiles = getmaybe (annex "largefiles")
 	, coreSymlinks = getbool "core.symlinks" True
 	}
   where

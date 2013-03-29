@@ -10,6 +10,8 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * webapp: Run ssh server probes in a way that will work when the
     login shell is a monstrosity that should have died 25 years ago,
     such as csh.
+  * New annex.largefiles setting, which configures which files
+    `git annex add` and the assistant add to the annex.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 
