@@ -40,7 +40,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do
 				checkfuzzy
-				forM_ fields $ \(f, v) -> Annex.setField f v
+				forM_ fields $ uncurry Annex.setField
 				sequence_ flags
 				prepCommand cmd params
 		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
