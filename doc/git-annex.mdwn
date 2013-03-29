@@ -793,7 +793,7 @@ Here are all the supported configuration settings.
 
   Example:
 
-	annex.largefiles = largerthan=100kb or include=*.mp3
+	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
 
 * `annex.queuesize`
 
