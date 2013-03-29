@@ -11,6 +11,7 @@ import Common
 import Utility.Metered
 
 import Data.Char
+import System.Console.GetOpt
 
 {- Generates parameters to make rsync use a specified command as its remote
  - shell. -}
@@ -23,13 +24,14 @@ rsyncShell command = [Param "-e", Param $ unwords $ map escape (toCommand comman
 	escape s = "'" ++  join "''" (split "'" s) ++ "'"
 
 {- Runs rsync in server mode to send a file. -}
-rsyncServerSend :: FilePath -> IO Bool
-rsyncServerSend file = rsync $
-	rsyncServerParams ++ [Param "--sender", File file]
+rsyncServerSend :: [CommandParam] -> FilePath -> IO Bool
+rsyncServerSend options file = rsync $
+	rsyncServerParams ++ Param "--sender" : options ++ [File file]
 
 {- Runs rsync in server mode to receive a file. -}
-rsyncServerReceive :: FilePath -> IO Bool
-rsyncServerReceive file = rsync $ rsyncServerParams ++ [File file]
+rsyncServerReceive :: [CommandParam] -> FilePath -> IO Bool
+rsyncServerReceive options file = rsync $
+	rsyncServerParams ++ options ++ [File file]
 
 rsyncServerParams :: [CommandParam]
 rsyncServerParams =
@@ -127,3 +129,14 @@ parseRsyncProgress = go [] . reverse . progresschunks
 		([], _) -> Nothing
 		(_, []) -> Nothing
 		(b, _) -> readish b
+
+{- To prevent an evil client to run harmful options on the server, we
+ - cherry-pick those that are harmless. Them only are passed to rsync
+ - when executed through 'git-annex-shell'.
+ - Note: Ensure that when calling getopt, the first component of the
+ - outupt is a subset of the input.
+ -}
+rsyncSafeOptions :: [OptDescr String]
+rsyncSafeOptions = [ Option [] ["bwlimit"] (reqArgLong "bwlimit") "" ]
+  where
+	reqArgLong x = ReqArg (\v -> "--" ++ x ++ "=" ++ v) ""

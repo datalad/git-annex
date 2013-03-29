@@ -15,6 +15,7 @@ import qualified Git.Construct
 import CmdLine
 import Command
 import Annex.UUID
+import Annex (setField)
 import qualified Option
 import Fields
 import Utility.UserInfo
@@ -86,32 +87,38 @@ builtin :: String -> String -> [String] -> IO ()
 builtin cmd dir params = do
 	checkNotReadOnly cmd
 	checkDirectory $ Just dir
-	let (params', fieldparams) = partitionParams params
-	let fields = filter checkField $ parseFields fieldparams
-	dispatch False (cmd : params') cmds options fields header $
+	let (params', fieldparams, opts) = partitionParams params
+	    fields = filter checkField $ parseFields fieldparams
+	    cmds' = map (newcmd $ intercalate " " opts) cmds
+	dispatch False (cmd : params') cmds' options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
+  where
+	newseek opts seek k = setField "RsyncOptions" opts >> seek k
+	newcmd opts c = c { cmdseek = map (newseek opts) (cmdseek c) }
 
 external :: [String] -> IO ()
 external params = do
 	{- Normal git-shell commands all have the directory as their last
 	 - parameter. -}
 	let lastparam = lastMaybe =<< shellUnEscape <$> lastMaybe params
+	    (params', _, _) = partitionParams params
 	checkDirectory lastparam
 	checkNotLimited
-	unlessM (boolSystem "git-shell" $ map Param $ "-c":fst (partitionParams params)) $
+	unlessM (boolSystem "git-shell" $ map Param $ "-c":params') $
 		error "git-shell failed"
 
-{- Parameters between two -- markers are field settings, in the form:
+{- Split the input list into 3 groups separated with a double dash --.
+ - Parameters between two -- markers are field settings, in the form:
  - field=value field=value
  -
- - Parameters after the last -- are ignored, these tend to be passed by
- - rsync and not be useful.
+ - Parameters after the last -- are the command itself and its arguments e.g.,
+ - rsync --bandwidth=100.
  -}
-partitionParams :: [String] -> ([String], [String])
+partitionParams :: [String] -> ([String], [String], [String])
 partitionParams ps = case segment (== "--") ps of
-	params:fieldparams:_ -> (params, fieldparams)
-	[params] -> (params, [])
-	_ -> ([], [])
+	params:fieldparams:rest -> ( params, fieldparams, intercalate ["--"] rest )
+	[params] -> (params, [], [])
+	_ -> ([], [], [])
 
 parseFields :: [String] -> [(String, String)]
 parseFields = map (separate (== '='))

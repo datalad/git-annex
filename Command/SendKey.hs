@@ -10,10 +10,13 @@ module Command.SendKey where
 import Common.Annex
 import Command
 import Annex.Content
+import Annex
 import Utility.Rsync
 import Logs.Transfer
 import qualified Fields
 import Utility.Metered
+
+import System.Console.GetOpt
 
 def :: [Command]
 def = [noCommit $ command "sendkey" paramKey seek
@@ -23,13 +26,16 @@ seek :: [CommandSeek]
 seek = [withKeys start]
 
 start :: Key -> CommandStart
-start key = ifM (inAnnex key)
-	( fieldTransfer Upload key $ \_p ->
-		sendAnnex key rollback $ liftIO . rsyncServerSend
-	, do
-		warning "requested key is not present"
-		liftIO exitFailure
-	)
+start key = do
+	(opts,_,_) <- getOpt Permute rsyncSafeOptions <$>
+			maybe [] (split " ") <$> getField "RsyncOptions"
+	ifM (inAnnex key)
+		( fieldTransfer Upload key $ \_p ->
+			sendAnnex key rollback $ liftIO . rsyncServerSend (map Param opts)
+		, do
+			warning "requested key is not present"
+			liftIO exitFailure
+		)
   where
 	{- No need to do any rollback; when sendAnnex fails, a nonzero
 	 - exit will be propigated, and the remote will know the transfer
