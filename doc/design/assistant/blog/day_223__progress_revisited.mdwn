@@ -9,7 +9,7 @@ about whether an update contained the total number of bytes transferred, or
 the delta of bytes transferred since the last update. One way this bug
 showed up was progress bars that seemed to stick at 0% for a long time.
 Happened for most special remotes, although not for rsync or git remotes.
-In order to fix it comprehensively, I add a new BytesProcessed data type,
+In order to fix it comprehensively, I added a new BytesProcessed data type,
 that is explicitly a total quantity of bytes, not a delta. And checked and
 fixed all the places that used a delta as that type was knitted into
 the code.
