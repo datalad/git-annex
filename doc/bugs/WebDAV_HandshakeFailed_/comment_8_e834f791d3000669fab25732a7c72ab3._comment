@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlqOu7P4tb4D-Xo2pYrjln2NsAObtErliM"
+ nickname="Alexander"
+ subject="box.com fixed"
+ date="2013-03-29T15:15:31Z"
+ content="""
+yes, box.com is now working. thanks.
+
+german telekom still doesn't work though, due to the lock/unlock issue; see http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=698379
+
+best regards,
+alexander
+"""]]
