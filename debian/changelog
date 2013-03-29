@@ -13,6 +13,9 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * New annex.largefiles setting, which configures which files
     `git annex add` and the assistant add to the annex.
   * assistant: Check small files into git directly.
+  * Remotes can be configured to use other MAC algorithms than HMACSHA1
+    to encrypt filenames.
+    Thanks, guilhem for the patch.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 
