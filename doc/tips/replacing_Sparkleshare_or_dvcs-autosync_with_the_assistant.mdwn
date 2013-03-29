@@ -8,6 +8,10 @@ thing, but even better!
 
 ----
 
+First, get git-annex version 4.20130401 or newer.
+
+----
+
 Let's suppose you're delveloping a video game, written in C. You have
 source code, and some large game assets. You want to ensure the source
 code is stored in git -- that's what git's for! And you want to store
