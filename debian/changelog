@@ -5,6 +5,8 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * webapp: Fix a race that sometimes caused alerts or other notifications
     to be missed if they occurred while a page was loading.
   * webapp: Progess bar fixes for many types of special remotes.
+  * Build debian package without using cabal, which writes to HOME.
+    Closes: #704205
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 
