@@ -55,8 +55,16 @@ safeSystemEnv command params environ = do
 		{ env = environ }
 	waitForProcess pid
 
+{- Wraps a shell command line inside sh -c, allowing it to be run in a
+ - login shell that may not support POSIX shell, eg csh. -}
+shellWrap :: String -> String
+shellWrap cmdline = "sh -c " ++ shellEscape cmdline
+
 {- Escapes a filename or other parameter to be safely able to be exposed to
- - the shell. -}
+ - the shell.
+ -
+ - This method works for POSIX shells, as well as other shells like csh.
+ -}
 shellEscape :: String -> String
 shellEscape f = "'" ++ escaped ++ "'"
   where

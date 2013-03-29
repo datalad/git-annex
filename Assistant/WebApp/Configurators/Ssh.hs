@@ -206,7 +206,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 		, rsyncOnly = status == UsableRsyncServer
 		}
 	probe extraopts = do
-		let remotecommand = join ";"
+		let remotecommand = shellWrap $ join ";"
 			[ report "loggedin"
 			, checkcommand "git-annex-shell"
 			, checkcommand "rsync"
@@ -236,6 +236,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			"Failed to ssh to the server. Transcript: " ++ s
 	  where
 		reported r = token r `isInfixOf` s
+	
 	checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
 	token r = "git-annex-probe " ++ r
 	report r = "echo " ++ token r
@@ -287,7 +288,7 @@ makeSsh' rsync setup sshdata keypair =
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
-	remoteCommand = join "&&" $ catMaybes
+	remoteCommand = shellWrap $ join "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
 		, if rsync then Nothing else Just "git init --bare --shared"

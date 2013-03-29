@@ -7,6 +7,9 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * webapp: Progess bar fixes for many types of special remotes.
   * Build debian package without using cabal, which writes to HOME.
     Closes: #704205
+  * webapp: Run ssh server probes in a way that will work when the
+    login shell is a monstrosity that should have died 25 years ago,
+    such as csh.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

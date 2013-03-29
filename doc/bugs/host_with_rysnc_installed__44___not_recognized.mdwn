@@ -13,3 +13,7 @@ ssh keys were installed to allow login, when ssh-askpass was not found on osx ve
 
 [[!meta title="webapp rsync probe command failed on FreeNAS box"]]
 [[!tag /design/assistant]]
+
+> [[done]]; based on the error message it's using csh and 
+> the assistant will now wrap its shell commands to work with csh.
+> --[[Joey]]
