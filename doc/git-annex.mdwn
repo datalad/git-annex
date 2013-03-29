@@ -821,9 +821,9 @@ Here are all the supported configuration settings.
 
 * `annex.direct`
 
-  Set to true to enable an (experimental) mode where files in the repository
-  are accessed directly, rather than through symlinks. Note that many git
-  and git-annex commands will not work with such a repository.
+  Set to true when the repository is in direct mode. Should not be set
+  manually; use the "git annex direct" and "git annex indirect" commands
+  instead.
 
 * `annex.crippledfilesystem`
 
