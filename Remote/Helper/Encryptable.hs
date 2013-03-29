@@ -12,6 +12,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Types.Remote
 import Crypto
+import Types.Crypto
 import qualified Annex
 import Config.Cost
 import Utility.Base64
@@ -107,7 +108,8 @@ embedCreds c
 cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey c k = maybe Nothing make <$> remoteCipher c
   where
-	make ciphertext = Just (ciphertext, encryptKey ciphertext k)
+	make ciphertext = Just (ciphertext, encryptKey mac ciphertext k)
+	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig

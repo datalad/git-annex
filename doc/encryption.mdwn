@@ -21,6 +21,13 @@ If you want to use encryption, run `git annex initremote` with
 Typically, you will say "encryption=2512E3C7" to use a specific gpg key.
 Or, you might say "encryption=joey@kitenet.net" to search for matching keys.
 
+The default MAC algorithm to be applied on the filenames is HMACSHA1. A
+stronger one, for instance HMACSHA512, one can be chosen upon creation
+of the special remote with the option `mac=HMACSHA512`. The available
+MAC algorithms are HMACSHA1, HMACSHA224, HMACSHA256, HMACSHA384, and
+HMACSHA512. Note that it is not possible to change algorithm for a
+non-empty remote.
+
 The [[encryption_design|design/encryption]] allows additional encryption keys
 to be added on to a special remote later. Once a key is added, it is able
 to access content that has already been stored in the special remote.

@@ -59,10 +59,11 @@ for each file in the repository, contact the encrypted remote to check
 if it has the file. This can be done without enumeration, although it will
 mean running gpg once per file fscked, to get the encrypted filename.
 
-So, the files stored in the remote should be encrypted. But, it needs
-to be a repeatable encryption, so they cannot just be gpg encrypted,
-that would yeild a new name each time. Instead, HMAC is used. Any hash
-could be used with HMAC; currently SHA1 is used.
+So, the files stored in the remote should be encrypted. But, it needs to
+be a repeatable encryption, so they cannot just be gpg encrypted, that
+would yeild a new name each time. Instead, HMAC is used. Any hash could
+be used with HMAC. SHA-1 is the default, but [[other_hashes|/encryption]]
+can be chosen for new remotes.
 
 It was suggested that it might not be wise to use the same cipher for both
 gpg and HMAC. Being paranoid, it's best not to tie the security of one

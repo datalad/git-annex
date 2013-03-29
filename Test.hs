@@ -103,7 +103,7 @@ quickcheck =
 	, check "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, check "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, check "prop_cost_sane" Config.Cost.prop_cost_sane
-	, check "prop_hmacWithCipher_sane" Crypto.prop_hmacWithCipher_sane
+	, check "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
 	, check "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
 	, check "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
 	, check "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane

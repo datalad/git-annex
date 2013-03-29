@@ -26,12 +26,11 @@ module Crypto (
 	GpgOpts(..),
 	getGpgOpts,
 
-	prop_hmacWithCipher_sane
+	prop_HmacSha1WithCipher_sane
 ) where
 
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
-import Data.Digest.Pure.SHA
 import Control.Applicative
 
 import Common.Annex
@@ -40,16 +39,20 @@ import Utility.Gpg.Types
 import Types.Key
 import Types.Crypto
 
-{- The beginning of a Cipher is used for HMAC; the remainder
- - is used as the GPG symmetric encryption passphrase.
+{- The beginning of a Cipher is used for MAC'ing; the remainder is used
+ - as the GPG symmetric encryption passphrase. Note that the cipher
+ - itself is base-64 encoded, hence the string is longer than
+ - 'cipherSize': 683 characters, padded to 684.
  -
- - HMAC SHA1 needs only 64 bytes. The rest of the HMAC key is for expansion,
- - perhaps to HMAC SHA512, which needs 128 bytes (ideally).
- - It also provides room the Cipher to contain data in a form like base64,
- - which does not pack a full byte of entropy into a byte of data.
+ - The 256 first characters that feed the MAC represent at best 192
+ - bytes of entropy.  However that's more than enough for both the
+ - default MAC algorithm, namely HMAC-SHA1, and the "strongest"
+ - currently supported, namely HMAC-SHA512, which respectively needs
+ - (ideally) 64 and 128 bytes of entropy.
  -
- - 256 bytes is enough for gpg's symetric cipher; unlike weaker public key
- - crypto, the key does not need to be too large.
+ - The remainder characters (320 bytes of entropy) is enough for GnuPG's
+ - symetric cipher; unlike weaker public key crypto, the key does not
+ - need to be too large.
  -}
 cipherBeginning :: Int
 cipherBeginning = 256
@@ -60,8 +63,8 @@ cipherSize = 512
 cipherPassphrase :: Cipher -> String
 cipherPassphrase (Cipher c) = drop cipherBeginning c
 
-cipherHmac :: Cipher -> String
-cipherHmac (Cipher c) = take cipherBeginning c
+cipherMac :: Cipher -> String
+cipherMac (Cipher c) = take cipherBeginning c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
 genEncryptedCipher :: String -> IO StorableCipher
@@ -115,10 +118,10 @@ decryptCipher (EncryptedCipher t _) =
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
-encryptKey :: Cipher -> Key -> Key
-encryptKey c k = Key
-	{ keyName = hmacWithCipher c (key2file k)
-	, keyBackendName = "GPGHMACSHA1"
+encryptKey :: Mac -> Cipher -> Key -> Key
+encryptKey mac c k = Key
+	{ keyName = macWithCipher mac c (key2file k)
+	, keyBackendName = "GPG" ++ showMac mac
 	, keySize = Nothing -- size and mtime omitted
 	, keyMtime = Nothing -- to avoid leaking data
 	}
@@ -147,13 +150,13 @@ encrypt opts = Gpg.feedRead ( Params "--symmetric --force-mdc" : toParams opts )
 decrypt :: Cipher -> Feeder -> Reader a -> IO a
 decrypt = Gpg.feedRead [Param "--decrypt"] . cipherPassphrase
 
-hmacWithCipher :: Cipher -> String -> String
-hmacWithCipher c = hmacWithCipher' (cipherHmac c) 
-hmacWithCipher' :: String -> String -> String
-hmacWithCipher' c s = showDigest $ hmacSha1 (fromString c) (fromString s)
+macWithCipher :: Mac -> Cipher -> String -> String
+macWithCipher mac c = macWithCipher' mac (cipherMac c)
+macWithCipher' :: Mac -> String -> String -> String
+macWithCipher' mac c s = calcMac mac (fromString c) (fromString s)
 
-{- Ensure that hmacWithCipher' returns the same thing forevermore. -}
-prop_hmacWithCipher_sane :: Bool
-prop_hmacWithCipher_sane = known_good == hmacWithCipher' "foo" "bar"
+{- Ensure that macWithCipher' returns the same thing forevermore. -}
+prop_HmacSha1WithCipher_sane :: Bool
+prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
   where
 	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
