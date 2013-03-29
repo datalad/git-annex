@@ -44,7 +44,7 @@ seek =
 	]
   where
   	go a = withValue largeFilesMatcher $ \matcher ->
-		a $ \file -> ifM (checkFileMatcher matcher file)
+		a $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 			( start file
 			, stop
 			)
