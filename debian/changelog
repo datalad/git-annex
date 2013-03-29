@@ -12,6 +12,7 @@ git-annex (4.20130324) UNRELEASED; urgency=low
     such as csh.
   * New annex.largefiles setting, which configures which files
     `git annex add` and the assistant add to the annex.
+  * assistant: Check small files into git directly.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

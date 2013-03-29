@@ -14,11 +14,11 @@ import Utility.TSet
 import Data.Time.Clock
 import Control.Concurrent.STM
 
-data ChangeInfo = AddChange Key | LinkChange (Maybe Key) | RmChange
+data ChangeInfo = AddKeyChange Key | AddFileChange | LinkChange (Maybe Key) | RmChange
 	deriving (Show, Eq)
 
 changeInfoKey :: ChangeInfo -> Maybe Key
-changeInfoKey (AddChange k) = Just k
+changeInfoKey (AddKeyChange k) = Just k
 changeInfoKey (LinkChange (Just k)) = Just k
 changeInfoKey _ = Nothing
 
@@ -60,6 +60,6 @@ finishedChange :: Change -> Key -> Change
 finishedChange c@(InProcessAddChange { keySource = ks }) k = Change
 	{ changeTime = changeTime c
 	, _changeFile = keyFilename ks
-	, changeInfo = AddChange k
+	, changeInfo = AddKeyChange k
 	}
 finishedChange c _ = c

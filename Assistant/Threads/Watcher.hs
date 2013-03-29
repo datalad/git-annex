@@ -168,15 +168,19 @@ runHandler handler file filestatus = void $ do
 			liftAnnex $ Annex.Queue.flushWhenFull
 			recordChange change
 
-checkAdd :: FileMatcher -> FilePath -> Assistant (Maybe Change)
-checkAdd matcher file = ifM (liftAnnex $ checkFileMatcher matcher file)
+{- Small files are added to git as-is, while large ones go into the annex. -}
+add :: FileMatcher -> FilePath -> Assistant (Maybe Change)
+add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 	( pendingAddChange file
-	, noChange
+	, do
+		liftAnnex $ Annex.Queue.addCommand "add"
+			[Params "--force --"] [file]
+		madeChange file AddFileChange
 	)
 
 onAdd :: FileMatcher -> Handler
 onAdd matcher file filestatus
-	| maybe False isRegularFile filestatus = checkAdd matcher file
+	| maybe False isRegularFile filestatus = add matcher file
 	| otherwise = noChange
 
 {- In direct mode, add events are received for both new files, and
@@ -192,9 +196,9 @@ onAddDirect matcher file fs = do
 				( noChange
 				, do
 					liftAnnex $ changedDirect key file
-					checkAdd matcher file
+					add matcher file
 				)
-		_ -> checkAdd matcher file
+		_ -> add matcher file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
