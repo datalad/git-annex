@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmaygIuV4bIfp-U5IRH51FwKHq-i7_os0c"
+ nickname="Mike"
+ subject="comment 4"
+ date="2013-03-29T03:48:41Z"
+ content="""
+running the shell script directly:
+    [~]> ./test.sh                             23:43:25
+    git-annex-probe loggedin
+    /usr/local/bin/rsync
+    git-annex-probe rsync
+
+Running your ssh command:
+    git-annex-probe loggedin
+    if: Expression Syntax.
+"""]]
