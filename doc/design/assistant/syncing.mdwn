@@ -25,11 +25,6 @@ syncs?
 ## TODO
 
 * Test MountWatcher on LXDE.
-* git-annex needs a simple speed control knob, which can be plumbed
-  through to, at least, rsync. A good job for an hour in an
-  airport somewhere.
-* Find a way to probe available outgoing bandwidth, to throttle so
-  we don't bufferbloat the network to death.
 * Add a hook, so when there's a change to sync, a program can be run
    and do its own signaling.
 * --debug will show often unnecessary work being done. Optimise.
