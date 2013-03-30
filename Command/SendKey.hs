@@ -16,8 +16,6 @@ import Logs.Transfer
 import qualified Fields
 import Utility.Metered
 
-import System.Console.GetOpt
-
 def :: [Command]
 def = [noCommit $ command "sendkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to send content"]
@@ -27,8 +25,8 @@ seek = [withKeys start]
 
 start :: Key -> CommandStart
 start key = do
-	(opts,_,_) <- getOpt Permute rsyncSafeOptions <$>
-			maybe [] words <$> getField "RsyncOptions"
+	opts <- filterRsyncSafeOptions . maybe [] words
+		<$> getField "RsyncOptions"
 	ifM (inAnnex key)
 		( fieldTransfer Upload key $ \_p ->
 			sendAnnex key rollback $ liftIO . rsyncServerSend (map Param opts)

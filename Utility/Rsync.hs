@@ -12,6 +12,7 @@ import Utility.Metered
 
 import Data.Char
 import System.Console.GetOpt
+import Data.Tuple.Utils
 
 {- Generates parameters to make rsync use a specified command as its remote
  - shell. -}
@@ -130,13 +131,10 @@ parseRsyncProgress = go [] . reverse . progresschunks
 		(_, []) -> Nothing
 		(b, _) -> readish b
 
-{- Rsync options that are safe to pass to rsync in server mode, without
- - causing it to eg, expose files.
- -
- - Note: Ensure that when calling getopt, the first component of the
- - output is a subset of the input.
- -}
-rsyncSafeOptions :: [OptDescr String]
-rsyncSafeOptions = [ Option [] ["bwlimit"] (reqArgLong "bwlimit") "" ]
+{- Filters options to those that are safe to pass to rsync in server mode,
+ - without causing it to eg, expose files. -}
+filterRsyncSafeOptions :: [String] -> [String]
+filterRsyncSafeOptions = fst3 . getOpt Permute
+	[ Option [] ["bwlimit"] (reqArgLong "bwlimit") "" ]
   where
 	reqArgLong x = ReqArg (\v -> "--" ++ x ++ "=" ++ v) ""

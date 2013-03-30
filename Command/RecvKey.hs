@@ -20,8 +20,6 @@ import qualified Types.Key
 import qualified Types.Backend
 import qualified Backend
 
-import System.Console.GetOpt
-
 def :: [Command]
 def = [noCommit $ command "recvkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to receive content"]
@@ -44,8 +42,8 @@ start key = ifM (inAnnex key)
 	)
   where
 	go tmp = do
-		(opts,_,_) <- getOpt Permute rsyncSafeOptions <$>
-				maybe [] words <$> getField "RsyncOptions"
+		opts <- filterRsyncSafeOptions . maybe [] words
+			<$> getField "RsyncOptions"
 		ifM (liftIO $ rsyncServerReceive (map Param opts) tmp)
 			( ifM (isJust <$> Fields.getField Fields.direct)
 				( directcheck tmp
