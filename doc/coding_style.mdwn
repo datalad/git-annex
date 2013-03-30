@@ -24,7 +24,7 @@ of the function, and avoids excessive indentation of the where cause content.
 The definitions within the where clause should be put on separate lines,
 each indented with a tab.
 
-	foo = do
+	main = do
 		foo
 		bar
 		foo
