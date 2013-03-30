@@ -130,11 +130,11 @@ parseRsyncProgress = go [] . reverse . progresschunks
 		(_, []) -> Nothing
 		(b, _) -> readish b
 
-{- To prevent an evil client to run harmful options on the server, we
- - cherry-pick those that are harmless. Them only are passed to rsync
- - when executed through 'git-annex-shell'.
+{- Rsync options that are safe to pass to rsync in server mode, without
+ - causing it to eg, expose files.
+ -
  - Note: Ensure that when calling getopt, the first component of the
- - outupt is a subset of the input.
+ - output is a subset of the input.
  -}
 rsyncSafeOptions :: [OptDescr String]
 rsyncSafeOptions = [ Option [] ["bwlimit"] (reqArgLong "bwlimit") "" ]
