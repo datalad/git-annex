@@ -33,3 +33,5 @@ On the first line the option is indeed there, but it's somehow not forwarded to 
 
 git-annex 4.20130227, on Debian GNU/Linux (sid, i386).
 
+> [[done]], --bwlimit is now passed through from the caller.
+> Thanks, guilhem
