@@ -93,8 +93,8 @@ builtin cmd dir params = do
 	dispatch False (cmd : params') cmds' options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
   where
-	newseek opts seek k = setField "RsyncOptions" opts >> seek k
-	newcmd opts c = c { cmdseek = map (newseek opts) (cmdseek c) }
+	addrsyncopts opts seek k = setField "RsyncOptions" opts >> seek k
+	newcmd opts c = c { cmdseek = map (addrsyncopts opts) (cmdseek c) }
 
 external :: [String] -> IO ()
 external params = do
