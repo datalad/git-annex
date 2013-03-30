@@ -28,7 +28,7 @@ seek = [withKeys start]
 start :: Key -> CommandStart
 start key = do
 	(opts,_,_) <- getOpt Permute rsyncSafeOptions <$>
-			maybe [] (split " ") <$> getField "RsyncOptions"
+			maybe [] words <$> getField "RsyncOptions"
 	ifM (inAnnex key)
 		( fieldTransfer Upload key $ \_p ->
 			sendAnnex key rollback $ liftIO . rsyncServerSend (map Param opts)

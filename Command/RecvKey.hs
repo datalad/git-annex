@@ -45,7 +45,7 @@ start key = ifM (inAnnex key)
   where
 	go tmp = do
 		(opts,_,_) <- getOpt Permute rsyncSafeOptions <$>
-				maybe [] (split " ") <$> getField "RsyncOptions"
+				maybe [] words <$> getField "RsyncOptions"
 		ifM (liftIO $ rsyncServerReceive (map Param opts) tmp)
 			( ifM (isJust <$> Fields.getField Fields.direct)
 				( directcheck tmp

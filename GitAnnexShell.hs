@@ -89,7 +89,7 @@ builtin cmd dir params = do
 	checkDirectory $ Just dir
 	let (params', fieldparams, opts) = partitionParams params
 	    fields = filter checkField $ parseFields fieldparams
-	    cmds' = map (newcmd $ intercalate " " opts) cmds
+	    cmds' = map (newcmd $ unwords opts) cmds
 	dispatch False (cmd : params') cmds' options fields header $
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
   where
