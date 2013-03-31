@@ -1,0 +1,47 @@
+I've posted a poll: [[polls/goals_for_April]]
+
+----
+
+Today added UI to the webapp to delete repositories, which many
+users have requested. It can delete the local repository,
+with appropriate cautions and sanity checks:
+
+[[!img /assistant/deleterepository.png]]
+
+More likely, you'll use it to remove a remote, which is done with no muss
+and no fuss, since that doesn't delete any data and the remote can always
+be added back if you change your mind.
+
+It also has an option to fully delete the data on a remote. This doesn't
+actually delete the remote right away. All it does is marks the remote
+as untrusted[1], and configures it to not want any content.
+This causes all the content on it to be sucked off to whatever
+other repositories can hold it.
+
+I had to adjust the preferred content expressions to make that work. For
+example, when deleting an archive drive, your local (client) repository
+does not normally want to hold all the data it has in "archive"
+directories. With the adjusted preferred content expressions, any data on
+an untrusted or dead repository is wanted. An interesting result is that
+once a client repository has moved content from an untrusted remote, it
+will decide it doesn't want it anymore, and shove it out to any other
+remote that will accept it. Which is just the behavior we want. All it took
+to get all this behavior is adding "or (not copies=semitrusted:1)" to the
+preferred content expressions!
+
+For most special remotes, just sucking the data from them is sufficient to
+pretty well delete them. You'd want to delete an Amazon bucket or glacier
+once it's empty, and git repositories need to be fully deleted. Since this
+would need unique code for each type of special remote, and it would be
+code that a) deletes possibly large quantities of data with no real way to
+sanity check it and b) doesn't get run and tested very often; it's not
+something I'm thrilled about fully automating. However, I would like to
+make the assistant detect when all the content has been sucked out of a
+remote, and pop up at least a message prompting to finish the deletion.
+Future work.
+
+-----
+
+[1] I really, really wanted to mark it dead, but letting puns drive code
+is probably a bad idea. I had no idea I'd get here when I started
+developing this feature this morning.. Honest!
