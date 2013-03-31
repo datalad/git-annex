@@ -851,7 +851,7 @@ cleanup dir = do
 		-- removed via directory permissions; undo
 		recurseDir SystemFS dir >>=
 			filterM doesDirectoryExist >>=
-			mapM_ Utility.FileMode.allowWrite
+				mapM_ Utility.FileMode.allowWrite
 		removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion

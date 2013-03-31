@@ -1,0 +1,23 @@
+<div .span9 .hero-unit>
+  <h2>
+    Deleting repository contents
+  <p>
+    The repository "#{reponame}" has now been removed from the list, and #
+    marked as a dead repository. But, this program is not currently #
+    able to delete the contents of remote repositories.
+  $maybe path <- Remote.localpath oldremote
+    <p>
+      <i .icon-warning-sign></i> #
+      To delete the repository, remove everything in <tt>#{path}</tt>
+    <p>
+      (If the repository is on a removable drive, make sure it's mounted #
+      first.)
+  $nothing
+    $if Git.repoIsUrl (Remote.repo oldremote)
+      <p>
+        <i .icon-warning-sign></i> #
+        To delete the repository, remove everything in <tt>#{Git.repoLocation (Remote.repo oldremote)}</tt>
+    $else
+      <p>
+        <i .icon-warning-sign></i> #
+        It's up to you to finish deleting the contents of the repository.

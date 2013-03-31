@@ -1,0 +1,21 @@
+<div .span9 .hero-unit>
+  <h2>
+    Delete repository #
+    <small>
+      #{reponame}
+  <p>
+    There are two ways you can choose to delete the repository:
+  <p>
+    The repository can be removed from the list of repositories, #
+    but its contents left as-is. This prevents further syncing #
+    to the repository. You can add the repository back at any time.
+    <br>
+    <a .btn .btn-default href="@{DeleteRepositoryFromListR uuid}">
+      <i .icon-minus></i> Remove repository from list
+  <p style="text-align: center">
+    -or-
+  <p>
+    All data in the repository can be deleted. This is dangerous!
+    <br>
+     <a .btn .btn-danger  href="@{DeleteRepositoryContentsR uuid}">
+       <i .icon-warning-sign></i> Remove repository and all its contents

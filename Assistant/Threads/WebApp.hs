@@ -18,7 +18,6 @@ import Assistant.WebApp.SideBar
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
-import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
@@ -26,6 +25,8 @@ import Assistant.WebApp.Configurators.AWS
 import Assistant.WebApp.Configurators.WebDAV
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences
+import Assistant.WebApp.Configurators.Edit
+import Assistant.WebApp.Configurators.Delete
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos

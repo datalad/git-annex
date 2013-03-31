@@ -31,6 +31,10 @@ start ws = do
 
 perform :: UUID -> CommandPerform
 perform uuid = do
+	markDead uuid
+	next $ return True
+
+markDead :: UUID -> Annex ()
+markDead uuid = do
 	trustSet uuid DeadTrusted
 	groupSet uuid S.empty
-	next $ return True

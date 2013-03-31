@@ -19,9 +19,11 @@
         ^{webAppFormAuthToken}
         <div .form-actions>
           <button .btn .btn-primary type=submit>
-            Save Changes
-          <a .btn href="@{DashboardR}">
-            Cancel
+            Save Changes #
+          <a href="@{DashboardR}">
+            Cancel #
+          <a href="@{DeleteRepositoryR uuid}">
+            Delete repository
   $if new
     <p>
       In a hurry? Feel free to skip this step! You can always come back #
