@@ -48,5 +48,5 @@ perhaps I shouldn't be trying that anyway -- I was wanting to create a direct mo
 
 The reason not to use a special directory remote (at least I think this is right judging from the wiki info) is that the camera won't grok the filenames under .git/annex/... so the photos need to be left with their names as created by the camera.
 
-Anyway, while experimenting with that idea, I bumped into the above, which seems like a continuation of this bag.
+Anyway, while experimenting with that idea, I bumped into the above, which seems like a continuation of this bug.
 """]]
