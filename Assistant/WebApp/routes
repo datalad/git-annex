@@ -31,7 +31,7 @@
 /config/repository/sync/enable/#UUID EnableSyncR GET
 /config/repository/delete/choose/#UUID DeleteRepositoryR GET
 /config/repository/delete/fromlist/#UUID DeleteRepositoryFromListR GET
-/config/repository/delete/contents/#UUID DeleteRepositoryContentsR GET POST
+/config/repository/delete/contents/start/#UUID StartDeleteRepositoryContentsR GET
 /config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
 /config/repository/add/drive AddDriveR GET POST

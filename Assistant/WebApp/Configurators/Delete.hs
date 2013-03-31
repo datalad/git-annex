@@ -12,14 +12,16 @@ module Assistant.WebApp.Configurators.Delete where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
+import Assistant.ScanRemotes
 import qualified Remote
-import qualified Types.Remote as Remote
 import Remote.List (remoteListRefresh)
-import Command.Dead (markDead)
 import qualified Git.Command
 import qualified Git
 import Locations.UserConfig
 import Utility.FileMode
+import Logs.Trust
+import Logs.PreferredContent
+import Types.StandardGroups
 
 import qualified Data.Text as T
 import System.IO.HVFS (SystemFS(..))
@@ -28,7 +30,7 @@ getDeleteRepositoryR :: UUID -> Handler RepHtml
 getDeleteRepositoryR uuid = go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
   	go Nothing = redirect DeleteCurrentRepositoryR
-	go (Just r) = page "Delete repository" (Just Configuration) $ do
+	go (Just r) = deletionPage $ do
 		reponame <- liftAnnex $ concat <$> Remote.prettyListUUIDs [uuid]
 		$(widgetFile "configurators/delete/choose")
 
@@ -51,24 +53,17 @@ removeRemote uuid = do
 	updateSyncRemotes
 	return remote
 
-getDeleteRepositoryContentsR :: UUID -> Handler RepHtml
-getDeleteRepositoryContentsR = deleteRepositoryContents
+getStartDeleteRepositoryContentsR :: UUID -> Handler RepHtml
+getStartDeleteRepositoryContentsR uuid = deletionPage $ do
+	remote <- fromMaybe (error "unknown remote")
+		<$> liftAnnex (Remote.remoteFromUUID uuid)
+	liftAnnex $ do
+		trustSet uuid UnTrusted
+		setStandardGroup uuid UnwantedGroup
+	liftAssistant $ addScanRemotes True [remote]
 
-postDeleteRepositoryContentsR :: UUID -> Handler RepHtml
-postDeleteRepositoryContentsR = deleteRepositoryContents
-
-deleteRepositoryContents :: UUID -> Handler RepHtml
-deleteRepositoryContents uuid = dangerPage $ do
 	reponame <- liftAnnex $ concat <$> Remote.prettyListUUIDs [uuid]
-	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap $ sanityVerifierAForm $
-			SanityVerifier magicphrase
-	case result of
-		FormSuccess _ -> do
-			liftAnnex $ markDead uuid
-			oldremote <- liftAssistant $ removeRemote uuid
-			$(widgetFile "configurators/delete/repositorycontents/nextstep")
-		_ -> $(widgetFile "configurators/delete/repositorycontents")
+	$(widgetFile "configurators/delete/started")
 
 getDeleteCurrentRepositoryR :: Handler RepHtml
 getDeleteCurrentRepositoryR = deleteCurrentRepository
@@ -121,6 +116,9 @@ sanityVerifierAForm template = SanityVerifier
 		insane textField
 	
 	insane = "Maybe this is not a good idea..." :: Text
+
+deletionPage :: Widget -> Handler RepHtml
+deletionPage = page "Delete repository" (Just Configuration)
 
 dangerPage :: Widget -> Handler RepHtml
 dangerPage = page "Danger danger danger" (Just Configuration)

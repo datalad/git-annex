@@ -20,8 +20,8 @@ git-annex (4.20130324) UNRELEASED; urgency=low
     Thanks, guilhem for the patch.
   * webapp: Added UI to delete repositories. Closes: #689847
   * Adjust built-in preferred content expressions to make most types
-    of repositories want content that is only located on untrusted or dead
-    repositories.
+    of repositories want content that is only located on untrusted, dead,
+    and unwanted repositories.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

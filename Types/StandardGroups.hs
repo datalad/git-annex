@@ -51,26 +51,27 @@ descStandardGroup SmallArchiveGroup = "small archive: archives files located in 
 descStandardGroup FullArchiveGroup = "full archive: archives all files not archived elsewhere"
 descStandardGroup SourceGroup = "file source: moves files on to other repositories"
 descStandardGroup ManualGroup = "manual mode: only stores files you manually choose"
-descStandardGroup UnwantedGroup "unwanted: a repository in the process of being removed"
+descStandardGroup UnwantedGroup = "unwanted: remove content from this repository"
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String
-preferredContent ClientGroup = normal
+preferredContent ClientGroup = lastResort
 	"exclude=*/archive/* and exclude=archive/*"
-preferredContent TransferGroup = normal $
+preferredContent TransferGroup = lastResort $
 	"not (inallgroup=client and copies=client:2) and " ++ preferredContent ClientGroup
 preferredContent BackupGroup = "include=*"
-preferredContent IncrementalBackupGroup = normal $
+preferredContent IncrementalBackupGroup = lastResort $
 	"include=* and (not copies=incrementalbackup:1)"
-preferredContent SmallArchiveGroup = normal $
+preferredContent SmallArchiveGroup = lastResort $
 	"(include=*/archive/* or include=archive/*) and " ++ preferredContent FullArchiveGroup
-preferredContent FullArchiveGroup = normal $
+preferredContent FullArchiveGroup = lastResort $
 	"not (copies=archive:1 or copies=smallarchive:1)"
 preferredContent SourceGroup = "not (copies=1)"
-preferredContent ManualGroup = normal $
+preferredContent ManualGroup = lastResort $
 	"present and exclude=*/archive/* and exclude=archive/*"
 preferredContent UnwantedGroup = "exclude=*"
-  where
-  	{- Most repositories want any content that is only on untrusted
-	 - or dead repositories. -}
-	normal s = "(" ++ s ++ ") or (not copies=semitrusted:1)"
+  	
+{- Most repositories want any content that is only on untrusted
+ - or dead repositories. -}
+lastResort :: String -> String
+lastResort s = "(" ++ s ++ ") or (not copies=semitrusted:1)"
