@@ -47,7 +47,7 @@
     files until they can be moved to some other repository, like a client #
     or transfer repository.
   <p>
-    Finally, repositories can be configured to be <b>manual</b>. This #
+    Finally, repositories can be configured to be in <b>manual mode</b>. This #
     prevents content being automatically synced to the repository, but #
     you can use command-line tools like `git annex get` and `git annex drop` #
     to control what content is present.
