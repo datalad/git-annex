@@ -21,3 +21,11 @@ What version of git-annex are you using? On what operating system?
     Codename:	precise
 
 [[!tag /design/assistant]]
+
+> Status: You can delete the current repository. You can also remove
+> repositories from the list of remotes (without deleting their content)
+> and you can tell it you want to stop using a remote, and it will
+> suck all content off that remote until it's empty.
+> 
+> Still todo: Detect when a remote has been sucked dry, and actually delete
+> it. --[[Joey]]
