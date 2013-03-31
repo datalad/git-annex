@@ -36,6 +36,10 @@ We are, approximately, here:
 * [[leftovers]]
 * [[other todo items|todo]]
 
+## polls
+
+I post [[polls]] occasionally to make decisions. You can vote!
+
 ## blog
 
 I'm blogging about my progress in the [[blog]] on a semi-daily basis.
