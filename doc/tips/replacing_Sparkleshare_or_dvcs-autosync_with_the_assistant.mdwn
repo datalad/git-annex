@@ -8,7 +8,7 @@ thing, but even better!
 
 ----
 
-First, get git-annex version 4.20130429 or newer.
+First, get git-annex version 4.20130329 or newer.
 
 ----
 
