@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZWCbRYPVnwscdkdEDwgQHZJLwW6H_AHo"
+ nickname="Tobias"
+ subject="bup fail?"
+ date="2013-03-31T21:05:32Z"
+ content="""
+I've run into problems storing a huge number of files in the bup repo. It seems that thousands of branches are a problem. I don't know if it's a problem of git-annex, bup, or the filesystem.
+
+How about adding an option to store tree/commit ids in git-annex instead of using branches in bup?
+"""]]
