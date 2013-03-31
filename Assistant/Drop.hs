@@ -41,25 +41,39 @@ handleDropsFrom _ _ _ _ _ Nothing _ = noop
 handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 	| fromhere = do
 		n <- getcopies
-		if checkcopies n
+		if checkcopies n Nothing
 			then go rs =<< dropl n
 			else go rs n
 	| otherwise = go rs =<< getcopies
   where
 	getcopies = liftAnnex $ do
-		have <- length <$> trustExclude UnTrusted locs
+		(untrusted, have) <- trustPartition UnTrusted locs
 		numcopies <- getNumCopies =<< numCopies f
-		return (have, numcopies)
-	checkcopies (have, numcopies) = have > numcopies
-	decrcopies (have, numcopies) = (have - 1, numcopies)
+		return (length have, numcopies, S.fromList untrusted)
+
+	{- Check that we have enough copies still to drop the content.
+	 - When the remote being dropped from is untrusted, it was not
+	 - counted as a copy, so having only numcopies suffices. Otherwise,
+	 - we need more than numcopies to safely drop. -}
+	checkcopies (have, numcopies, _untrusted) Nothing = have > numcopies
+	checkcopies (have, numcopies, untrusted) (Just u)
+		| S.member u untrusted = have >= numcopies
+		| otherwise = have > numcopies
+	
+	decrcopies (have, numcopies, untrusted) Nothing =
+		(have - 1, numcopies, untrusted)
+	decrcopies v@(_have, _numcopies, untrusted) (Just u)
+		| S.member u untrusted = v
+		| otherwise = decrcopies v Nothing
 
 	go [] _ = noop
 	go (r:rest) n
 		| uuid r `S.notMember` slocs = go rest n
-		| checkcopies n = dropr r n >>= go rest
+		| checkcopies n (Just $ Remote.uuid r) =
+			dropr r n >>= go rest
 		| otherwise = noop
 
-	checkdrop n@(have, numcopies) u a =
+	checkdrop n@(have, numcopies, _untrusted) u a =
 		ifM (liftAnnex $ wantDrop True u (Just f))
 			( ifM (liftAnnex $ safely $ doCommand $ a (Just numcopies))
 				( do
@@ -70,7 +84,7 @@ handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 						, "(copies now " ++ show (have - 1) ++ ")"
 						, ": " ++ reason
 						]
-					return $ decrcopies n
+					return $ decrcopies n u
 				, return n
 				)
 			, return n
