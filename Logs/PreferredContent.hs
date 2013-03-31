@@ -43,7 +43,7 @@ preferredContentSet uuid@(UUID _) val = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change preferredContentLog $
 		showLog id . changeLog ts uuid val . parseLog Just
-	Annex.changeState $ \s -> s { Annex.groupmap = Nothing }
+	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
 preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Checks if a file is preferred content for the specified repository
