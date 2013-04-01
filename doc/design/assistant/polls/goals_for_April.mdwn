@@ -3,7 +3,7 @@ features done in a month if I'm lucky. I have only 3 more funded months,
 and parts of one will be spent working on porting to Windows, so choose wisely!
 --[[Joey]]
 
-[[!poll open=yes expandable=yes 4 "upload and download rate limiting" 14 "get webapp working on Android" 3 "deltas: speed up syncing modified versions of existing files" 8 "encrypted git remotes using git-remote-gcrypt" 0 "add support for more cloud storage remotes" 19 "don't work on features, work on making it easier to install and use" 2 "Handle duplicate files" 4 "direct mode (aka real files instead of symlinks)" 3 "start windows port now" 1 "optimize file transfer using rsync in the case of changing files"]]
+[[!poll open=yes expandable=yes 4 "upload and download rate limiting" 14 "get webapp working on Android" 3 "deltas: speed up syncing modified versions of existing files" 8 "encrypted git remotes using git-remote-gcrypt" 0 "add support for more cloud storage remotes" 19 "don't work on features, work on making it easier to install and use" 2 "Handle duplicate files" 5 "direct mode (aka real files instead of symlinks)" 3 "start windows port now" 1 "optimize file transfer using rsync in the case of changing files"]]
 
 References:
 
