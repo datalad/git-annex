@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkWG4T4SGZxY-q4Wo8Jbxwb67g4J-WYmQM"
+ nickname="Mark"
+ subject="don't work on features option"
+ date="2013-04-01T14:03:35Z"
+ content="""
+The \"don't work on features...\" poll entry is a bit vague, so I figured stating my interpretation of it and why I choose it might be a good idea.
+I've had git-annex installed for the last few months during which it has been steadily improving, but IMO it still lacks polish.
+From time to time I see transient issues: (even on the current version)
+
+- random download stalling when I know the remote is accessible
+- files disappearing then reappearing without an obvious cause
+- xmmp hanging
+
+I do not have any means of replicating these issues (though IIRC some of the recently worked on bugs related to these issues).
+In my past experience this indicates that there are all sorts of 'fun' bugs hiding in the source which you seem to be chasing down.
+Heck, I could have a simple configuration error from when I set things up on my remote server.
+There was little documentation available when I setup my remote server for this and unless I have missed something in the RecentChanges feed, there still is relatively little.
+So, some issues with my xmmp daemon, local ssh keys via ssh-agent, or bad $PATH stuff could be causing things to subtlety malfunction at no fault of git-annex.
+
+Falling back to the command line only tends to be a good response, but outside of the assistant there does not seem to be any manual way to handle the special remotes.
+Fair enough, but it would seem logical for error handling to recognize that these are assistant only urls rather than some generic \"bad url\".
+Just getting the right error messages while a small touch would be a sign of some polish even though it is a nitpick.
+
+Perhaps some simple test code run repeatedly to form a stress test could reveal some odd behavior, but I'm not sure myself.
+
+With all of that said, I like what has been done so far and I'm hoping to see all the nooks of git-annex get the polishing that they deserve.
+"""]]
