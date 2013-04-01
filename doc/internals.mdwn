@@ -10,6 +10,7 @@ to the file content.
 
 First there are two levels of directories used for hashing, to prevent
 too many things ending up in any one directory.
+See [[hashing]] for details.
 
 Each subdirectory has the [[name_of_a_key|key_format]] in one of the
 [[key-value_backends|backends]]. The file inside also has the name of the key.
@@ -107,7 +108,9 @@ somewhere else.
 
 These log files record [[location_tracking]] information
 for file contents. Again these are placed in two levels of subdirectories
-for hashing. The name of the key is the filename, and the content
+for hashing. See [[hashing]] for details.
+
+The name of the key is the filename, and the content
 consists of a timestamp, either 1 (present) or 0 (not present), and
 the UUID of the repository that has or lacks the file content.
 
