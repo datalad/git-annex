@@ -20,7 +20,6 @@ module Command (
 	isBareRepo,
 	numCopies,
 	numCopiesCheck,
-	autoCopiesWith,
 	checkAuto,
 	module ReExported
 ) where
@@ -108,26 +107,6 @@ numCopiesCheck file key vs = do
 	needed <- getNumCopies numcopiesattr
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
 	return $ length have `vs` needed
-
-{- Used for commands that have an auto mode that checks the number of known
- - copies of a key.
- -
- - In auto mode, first checks that the number of known
- - copies of the key is > or < than the numcopies setting, before running
- - the action.
- -}
-autoCopiesWith :: FilePath -> Key -> (Int -> Int -> Bool) -> (Maybe Int -> CommandStart) -> CommandStart
-autoCopiesWith file key vs a = do
-	numcopiesattr <- numCopies file
-	Annex.getState Annex.auto >>= auto numcopiesattr
-  where
-	auto numcopiesattr False = a numcopiesattr
-	auto numcopiesattr True = do
-		needed <- getNumCopies numcopiesattr
-		have <- trustExclude UnTrusted =<< Remote.keyLocations key
-		if length have `vs` needed
-			then a numcopiesattr
-			else stop
 
 checkAuto :: Annex Bool -> Annex Bool
 checkAuto checker = ifM (Annex.getState Annex.auto)

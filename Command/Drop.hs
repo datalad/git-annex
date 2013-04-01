@@ -31,7 +31,7 @@ seek = [withField fromOption Remote.byNameWithUUID $ \from ->
 	withFilesInGit $ whenAnnexed $ start from]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = autoCopiesWith file key (>) $ \numcopies ->
+start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just file)) $
 		case from of
 			Nothing -> startLocal file numcopies key Nothing
@@ -138,3 +138,24 @@ notEnoughCopies key need have skip bad = do
   where
 	unsafe = showNote "unsafe"
 	hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"
+
+{- In auto mode, only runs the action if there are enough copies
+ - copies on other semitrusted repositories.
+ -
+ - Passes any numcopies attribute of the file on to the action as an
+ - optimisation. -}
+checkDropAuto :: Maybe Remote -> FilePath -> Key -> (Maybe Int -> CommandStart) -> CommandStart
+checkDropAuto mremote file key a = do
+	numcopiesattr <- numCopies file
+	Annex.getState Annex.auto >>= auto numcopiesattr
+  where
+	auto numcopiesattr False = a numcopiesattr
+	auto numcopiesattr True = do
+		needed <- getNumCopies numcopiesattr
+		locs <- Remote.keyLocations key
+		uuid <- getUUID
+		let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
+		locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
+		if length locs' >= needed
+			then a numcopiesattr
+			else stop
