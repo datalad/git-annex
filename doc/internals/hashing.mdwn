@@ -13,13 +13,9 @@ This uses two directories, each with a three-letter name, such as "f87/4d5"
 
 The directory names come from the md5sum of the [[key|key_format]].
 
-Note that you cannot use the `md5sum` utility from coreutils to generate
-the same hash. Why it generates something else is unknown. The md5 hash
-libraries for programming languages will work though. 
-
 For example:
 
-	python -c 'import hashlib, sys; print hashlib.md5(sys.argv[1]).hexdigest()'
+	echo -n	"SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" | md5sum
 
 ## old hash format
 
