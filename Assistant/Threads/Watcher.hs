@@ -184,24 +184,29 @@ onAdd matcher file filestatus
 	| otherwise = noChange
 
 {- In direct mode, add events are received for both new files, and
- - modified existing files.
- -
- - It's possible to get an add event for an existing file that is not
- - really modified, but it might have just been deleted and been put back,
- - so it's restaged to make sure. -}
+ - modified existing files. -}
 onAddDirect :: FileMatcher -> Handler
 onAddDirect matcher file fs = do
-	debug ["add direct", file]
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ sameFileStatus key filestatus)
-				( add matcher file
+				{- It's possible to get an add event for
+				 - an existing file that is not
+				 - really modified, but it might have
+				 - just been deleted and been put back,
+				 - so it symlink is restaged to make sure. -}
+				( do
+					link <- liftAnnex $ calcGitLink file key
+					addLink file link (Just key)
 				, do
+					debug ["changed direct", file]
 					liftAnnex $ changedDirect key file
 					add matcher file
 				)
-		_ -> add matcher file
+		_ -> do
+			debug ["add direct", file]
+			add matcher file
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -220,7 +225,7 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 				unless isdirect $ do
 					liftIO $ removeFile file
 					liftAnnex $ Backend.makeAnnexLink link file
-				addlink link (Just key)
+				addLink file link (Just key)
 			)
 	go Nothing = do -- other symlink
 		mlink <- liftIO (catchMaybeIO $ readSymbolicLink file)
@@ -238,24 +243,25 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 	 - links too.)
 	 -}
 	ensurestaged (Just link) mk daemonstatus
-		| scanComplete daemonstatus = addlink link mk
+		| scanComplete daemonstatus = addLink file link mk
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
-			_ -> addlink link mk
+			_ -> addLink file link mk
 	ensurestaged Nothing _ _ = noChange
 
-	{- For speed, tries to reuse the existing blob for symlink target. -}
-	addlink link mk = do
-		debug ["add symlink", file]
-		liftAnnex $ do
-			v <- catObjectDetails $ Ref $ ':':file
-			case v of
-				Just (currlink, sha)
-					| s2w8 link == L.unpack currlink ->
-						stageSymlink file sha
-				_ -> stageSymlink file =<< hashSymlink link
-		madeChange file $ LinkChange mk
+{- For speed, tries to reuse the existing blob for symlink target. -}
+addLink :: FilePath -> FilePath -> Maybe Key -> Assistant (Maybe Change)
+addLink file link mk = do
+	debug ["add symlink", file]
+	liftAnnex $ do
+		v <- catObjectDetails $ Ref $ ':':file
+		case v of
+			Just (currlink, sha)
+				| s2w8 link == L.unpack currlink ->
+					stageSymlink file sha
+			_ -> stageSymlink file =<< hashSymlink link
+	madeChange file $ LinkChange mk
 
 onDel :: Handler
 onDel file _ = do
