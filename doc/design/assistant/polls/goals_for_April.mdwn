@@ -10,6 +10,7 @@ References:
 * [[rate_limiting]]
 * [[Android]]
 * [[deltas]] to speed up syncing modified files (at least for remotes using rsync)
+* [[encrypted_git_remotes]]
 * [[more_cloud_providers]] (OpenStack Swift, Owncloud, Google drive,
   Dropbox, Mediafire, nimbus.io, Mega, etc.)
 * [[old poll on "what is preventing me from using git-annex assistant"|what_is_preventing_me_from_using_git-annex_assistant]]
