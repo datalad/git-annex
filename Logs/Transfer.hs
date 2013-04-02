@@ -70,6 +70,7 @@ describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
 	, fromMaybe (key2file $ transferKey t) (associatedFile info)
+	, show $ bytesComplete info
 	]
 
 {- Transfers that will accomplish the same task. -}
