@@ -151,6 +151,11 @@ adjustTransfersSTM dstatus a = do
 	s <- takeTMVar dstatus
 	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
 
+{- Checks if a transfer is currently running. -}
+checkRunningTransferSTM :: DaemonStatusHandle -> Transfer -> STM Bool
+checkRunningTransferSTM dstatus t = M.member t . currentTransfers
+	<$> readTMVar dstatus
+
 {- Alters a transfer's info, if the transfer is in the map. -}
 alterTransferInfo :: Transfer -> (TransferInfo -> TransferInfo) -> Assistant ()
 alterTransferInfo t a = updateTransferInfo' $ M.adjust a t

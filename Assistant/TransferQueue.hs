@@ -136,14 +136,18 @@ enqueue reason schedule t info
 		notifyTransfer
 	add modlist = do
 		q <- getAssistant transferQueue
-		liftIO $ atomically $ do
-			l <- readTVar (queuelist q)
-			if (t `notElem` map fst l)
-				then do	
-					void $ modifyTVar' (queuesize q) succ
-					void $ modifyTVar' (queuelist q) modlist
-					return True
-				else return False
+		dstatus <- getAssistant daemonStatusHandle
+		liftIO $ atomically $ ifM (checkRunningTransferSTM dstatus t)
+			( return False
+			, do
+				l <- readTVar (queuelist q)
+				if (t `notElem` map fst l)
+					then do	
+						void $ modifyTVar' (queuesize q) succ
+						void $ modifyTVar' (queuelist q) modlist
+						return True
+					else return False
+			)
 
 {- Adds a transfer to the queue. -}
 queueTransfer :: Reason -> Schedule -> AssociatedFile -> Transfer -> Remote -> Assistant ()
