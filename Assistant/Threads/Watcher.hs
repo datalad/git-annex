@@ -158,7 +158,7 @@ type Handler = FilePath -> Maybe FileStatus -> Assistant (Maybe Change)
  -}
 runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
-	r <- tryIO <~> handler file filestatus
+	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
 		Left e -> liftIO $ print e
 		Right Nothing -> noop
@@ -167,6 +167,10 @@ runHandler handler file filestatus = void $ do
 			-- flushing the queue fast enough.
 			liftAnnex $ Annex.Queue.flushWhenFull
 			recordChange change
+  where
+  	normalize f
+		| "./" `isPrefixOf` file = drop 2 f
+		| otherwise = f
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
 add :: FileMatcher -> FilePath -> Assistant (Maybe Change)
