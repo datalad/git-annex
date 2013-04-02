@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbv1oKTKhbBp0Ljh_WGU7BFSWWxBr7D3U"
+ nickname="Pauli"
+ subject="Just to add"
+ date="2013-04-02T19:01:09Z"
+ content="""
+
+When i do 'git annex get .' on my usb-remote i get these kind of prints:
+
+    get Archive/Maps/cities/diskcache/voices/slovenian_f/slovenian_female/g5ext_000 (not available) 
+    No other repository is known to contain the file.
+    failed
+
+
+No repository contains the file? Well why cannot i then get it removed from the listing .. 
+"""]]
