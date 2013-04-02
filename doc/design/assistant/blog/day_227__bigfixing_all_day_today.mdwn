@@ -1,0 +1,21 @@
+The [[xmpp screencast|videos/git-annex_assistant_remote_sharing]]
+is at long last done!
+
+----
+
+Fixed a bug that could cause the assistant to unstage files
+from git sometimes. This happened because of a bad optimisation; adding a
+file when it's already present and unchanged was optimised to do nothing.
+But if the file had just been removed, and was put back, this resulted
+in the removal being staged, and the add not being staged. Ugly bug,
+although the assistant's daily sanity check automatically restaged the
+files.
+
+Underlying that bug was a more important problem: git-annex does not always
+update working tree files atomically. So a crash at just the wrong instant
+could cause a file to be deleted from the working tree. I fixed that too;
+all changes to files in the working tree should now be staged in a temp
+file, which is renamed into place atomically.
+
+Also made a bunch of improvements to the dashboard's transfer display, and
+to the handling of the underlying transfer queue.
