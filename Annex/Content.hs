@@ -51,7 +51,6 @@ import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
-import Backend
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
