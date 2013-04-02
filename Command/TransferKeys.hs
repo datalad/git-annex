@@ -84,8 +84,9 @@ runRequests readh writeh a = do
 						(TransferRequest direction remote key file)
 			_ -> sendresult False
 		go rest
-	go [] = return ()
-	go _ = error "transferkeys protocol error"
+	go [] = noop
+	go [""] = noop
+	go v = error $ "transferkeys protocol error: " ++ show v
 
 	readrequests = liftIO $ split fieldSep <$> hGetContents readh
 	sendresult b = liftIO $ do
