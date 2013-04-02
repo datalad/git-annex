@@ -62,10 +62,8 @@ onAdd file = case parseTransferFile file of
 	go _ Nothing = noop -- transfer already finished
 	go t (Just info) = do
 		debug [ "transfer starting:", describeTransfer t info ]
-		r <- headMaybe . filter (sameuuid t)
-			<$> liftAnnex Remote.remoteList
+		r <- liftAnnex $ Remote.remoteFromUUID $ transferUUID t
 		updateTransferInfo t info { transferRemote = r }
-	sameuuid t r = Remote.uuid r == transferUUID t
 
 {- Called when a transfer information file is updated.
  -
