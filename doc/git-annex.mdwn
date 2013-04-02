@@ -1018,7 +1018,8 @@ but the SHA256E backend for ogg files:
 	*.ogg annex.backend=SHA256E
 
 The numcopies setting can also be configured on a per-file-type basis via
-the `annex.numcopies` attribute in `.gitattributes` files.
+the `annex.numcopies` attribute in `.gitattributes` files. This overrides
+any value set using `annex.numcopies` in `.git/config`.
 For example, this makes two copies be needed for wav files:
 
 	*.wav annex.numcopies=2
