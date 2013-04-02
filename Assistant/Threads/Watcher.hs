@@ -184,8 +184,11 @@ onAdd matcher file filestatus
 	| otherwise = noChange
 
 {- In direct mode, add events are received for both new files, and
- - modified existing files. Or, in some cases, existing files that have not
- - really been modified. -}
+ - modified existing files.
+ -
+ - It's possible to get an add event for an existing file that is not
+ - really modified, but it might have just been deleted and been put back,
+ - so it's restaged to make sure. -}
 onAddDirect :: FileMatcher -> Handler
 onAddDirect matcher file fs = do
 	debug ["add direct", file]
@@ -193,7 +196,7 @@ onAddDirect matcher file fs = do
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ sameFileStatus key filestatus)
-				( noChange
+				( add matcher file
 				, do
 					liftAnnex $ changedDirect key file
 					add matcher file
