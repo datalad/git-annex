@@ -32,6 +32,7 @@ import Annex.Wanted
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 type Reason = String
 
@@ -58,6 +59,7 @@ queueTransfersMatching matching reason schedule k f direction
 	| otherwise = go
   where
 	go = do
+		
 		rs <- liftAnnex . selectremotes
 			=<< syncDataRemotes <$> getDaemonStatus
 		let matchingrs = filter (matching . Remote.uuid) rs
@@ -67,15 +69,21 @@ queueTransfersMatching matching reason schedule k f direction
 				enqueue reason schedule (gentransfer r) (stubInfo f r)
 	selectremotes rs
 		{- Queue downloads from all remotes that
-		 - have the key, with the cheapest ones first.
-		 - More expensive ones will only be tried if
-		 - downloading from a cheap one fails. -}
+		 - have the key. The list of remotes is ordered with
+		 - cheapest first. More expensive ones will only be tried
+		 - if downloading from a cheap one fails. -}
 		| direction == Download = do
-			uuids <- Remote.keyLocations k
-			return $ filter (\r -> uuid r `elem` uuids) rs
-		{- Upload to all remotes that want the content. -}
-		| otherwise = filterM (wantSend True f . Remote.uuid) $
-			filter (not . Remote.readonly) rs
+			s <- locs
+			return $ filter (inset s) rs
+		{- Upload to all remotes that want the content and don't
+		 - already have it. -}
+		| otherwise = do
+			s <- locs
+			filterM (wantSend True f . Remote.uuid) $
+				filter (\r -> not (inset s r || Remote.readonly r)) rs
+	  where
+	  	locs = S.fromList <$> Remote.keyLocations k
+		inset s r = S.member (Remote.uuid r) s
 	gentransfer r = Transfer
 		{ transferDirection = direction
 		, transferKey = k
