@@ -4,7 +4,7 @@
  subject="comment 8"
  date="2013-01-11T20:02:39Z"
  content="""
-@Alexandre, what you want can be achieved by setting up XMPP pairing, and also [[local pairing|assistant/pairing_walkthrough]]. Then when computers are on the same network, transfers are done via the LAN.
+@Alexandre, what you want can be achieved by setting up XMPP pairing, and also [[local pairing|assistant/local_pairing_walkthrough]]. Then when computers are on the same network, transfers are done via the LAN.
 
 @Laszlo, this can be set up without using the webapp. Just make the two repositories, using the webapp. Then go into each and run \"git remote add myotherrepo $path_to_other_repo\". Then assistant will automatically sync them. I *have* thought about adding a configurator for this to the webapp. It would help to know what use cases you're getting at with this.
 
