@@ -44,5 +44,5 @@
               <a .btn .btn-small href="@{AddRepositoryR}">
                 <i .icon-plus-sign></i> Add another repository
             <span>
-              &nbsp; Sync your files with another drive, device, or #
+              &nbsp; Sync your files with another device, or #
               share with a friend.
