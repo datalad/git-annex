@@ -222,9 +222,9 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
 			( ensurestaged (Just link) (Just key) =<< getDaemonStatus
 			, do
-				unless isdirect $ do
-					liftIO $ removeFile file
-					liftAnnex $ Backend.makeAnnexLink link file
+				unless isdirect $
+					liftAnnex $ replaceFile file $
+						makeAnnexLink link
 				addLink file link (Just key)
 			)
 	go Nothing = do -- other symlink

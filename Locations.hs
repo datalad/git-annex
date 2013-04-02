@@ -148,7 +148,7 @@ gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 gitAnnexTmpDir :: Git.Repo -> FilePath
 gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 
-{- The temp file to use for a given key. -}
+{- The temp file to use for a given key's content. -}
 gitAnnexTmpLocation :: Key -> Git.Repo -> FilePath
 gitAnnexTmpLocation key r = gitAnnexTmpDir r </> keyFile key
 

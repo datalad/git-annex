@@ -49,6 +49,7 @@ import Config
 import Annex.Exception
 import Git.SharedRepository
 import Annex.Perms
+import Annex.Link
 import Annex.Content.Direct
 import Backend
 
@@ -256,20 +257,33 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		updateInodeCache key src
 		thawContent src
 		replaceFile dest $ liftIO . moveFile src
+		{- Copy to any other locations. -}
 		forM_ fs $ \f -> replaceFile f $
-			void . liftIO . copyFileExternal dest
+			liftIO . void . copyFileExternal dest
 
-{- Replaces any existing file with a new version, by running an action.
- - First, makes sure the file is deleted. Or, if it didn't already exist,
- - makes sure the parent directory exists. -}
+{- Replaces a possibly already existing file with a new version, 
+ - atomically, by running an action.
+
+ - The action is passed a temp file, which it can write to, and once
+ - done the temp file is moved into place.
+ -}
 replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
 replaceFile file a = do
+	tmpdir <- fromRepo gitAnnexTmpDir
+	createAnnexDirectory tmpdir
+	tmpfile <- liftIO $ do
+		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir $
+			takeFileName file
+		hClose h
+		return tmpfile
+	a tmpfile
 	liftIO $ do
-		r <- tryIO $ removeFile file
+		r <- tryIO $ rename tmpfile file
 		case r of
-			Left _ -> createDirectoryIfMissing True $ parentDir file
+			Left _ -> do
+				createDirectoryIfMissing True $ parentDir file
+				rename tmpfile file
 			_ -> noop
-	a file
 
 {- Runs an action to transfer an object's content.
  -
@@ -366,8 +380,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 		cwd <- liftIO getCurrentDirectory
 		let top' = fromMaybe top $ absNormPath cwd top
 		let l' = relPathDirToFile top' (fromMaybe l $ absNormPath top' l)
-		replaceFile f $ const $
-			makeAnnexLink l' f
+		replaceFile f $ makeAnnexLink l'
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()

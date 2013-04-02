@@ -60,7 +60,9 @@ getAnnexLinkTarget file = do
  -}
 makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
 makeAnnexLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
-	( liftIO $ createSymbolicLink linktarget file
+	( liftIO $ do
+		void $ tryIO $ removeFile file
+		createSymbolicLink linktarget file
 	, liftIO $ writeFile file linktarget
 	)
 

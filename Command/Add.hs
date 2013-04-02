@@ -175,7 +175,7 @@ undo file key e = do
 link :: FilePath -> Key -> Bool -> Annex String
 link file key hascontent = handle (undo file key) $ do
 	l <- calcGitLink file key
-	makeAnnexLink l file
+	replaceFile file $ makeAnnexLink l
 
 #ifndef __ANDROID__
 	when hascontent $ do

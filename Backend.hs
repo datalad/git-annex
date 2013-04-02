@@ -11,7 +11,6 @@ module Backend (
 	genKey,
 	lookupFile,
 	isAnnexLink,
-	makeAnnexLink,
 	chooseBackend,
 	lookupBackendName,
 	maybeLookupBackendName
