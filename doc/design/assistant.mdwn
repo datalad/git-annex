@@ -31,7 +31,7 @@ We are, approximately, here:
 
 * [[rate_limiting]]
 * [[partial_content]]
-* encrypted git remotes using [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt)
+* [[encrypted_git_remotes]]
 * [[deltas]]
 * [[leftovers]]
 * [[other todo items|todo]]
