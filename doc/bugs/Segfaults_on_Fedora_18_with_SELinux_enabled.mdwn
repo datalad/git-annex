@@ -58,3 +58,8 @@ Running the whole thing with --debug doesn't appear to provide anything useful:
     
     [1]  + exit 139   GITWRAP annex webapp --debug
     [0 zerodogg@browncoats annexed]$ Created new window in existing browser session.
+
+> On IRC it developed that it segfaulted at other times, and gdb complained
+> of a library mismatch. Seems something changed in Fedora libc, and 
+> the 32 bit binary is not working on 64 bit. I've brought back the 64 bit
+> standalone builds, which work. [[done]] --[[Joey]]
