@@ -22,5 +22,5 @@ Warning: This is a last resort. Most Linux users should instead
 
 A daily build is also available.
 
-* [download tarball](http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/i386/))
-
+* i386: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/i386/))
+* amd64: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/amd64/))
