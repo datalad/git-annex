@@ -72,7 +72,7 @@ main = do
 	divider
 	propigate rs qcok
   where
-	divider = putStrLn $ take 70 $ repeat '-'
+	divider = putStrLn $ replicate 70 '-'
 
 propigate :: [Counts] -> Bool -> IO ()
 propigate cs qcok

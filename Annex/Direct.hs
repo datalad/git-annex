@@ -122,7 +122,7 @@ mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldsha newsha = do
 	(items, cleanup) <- inRepo $ DiffTree.diffTreeRecursive oldsha newsha
 	forM_ items updated
-	void $ liftIO $ cleanup
+	void $ liftIO cleanup
 	liftIO $ removeDirectoryRecursive d
   where
 	updated item = do

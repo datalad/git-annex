@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE PackageImports, CPP #-}
+{-# LANGUAGE CPP #-}
 
 module Limit where
 
@@ -128,7 +128,7 @@ limitIn name = Right $ \notpresent -> check $
 limitPresent :: Maybe UUID -> MkLimit
 limitPresent u _ = Right $ const $ check $ \key -> do
 	hereu <- getUUID
-	if u == Just hereu || u == Nothing
+	if u == Just hereu || isNothing u
 		then inAnnex key
 		else do
 			us <- Remote.keyLocations key

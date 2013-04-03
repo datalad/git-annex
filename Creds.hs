@@ -92,7 +92,7 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 		Just credpair -> do
 			writeCacheCredPair credpair storage
 			return $ Just credpair
-		_ -> do error $ "bad creds"
+		_ -> error "bad creds"
 
 {- Gets a CredPair from the environment. -}
 getEnvCredPair :: CredPairStorage -> IO (Maybe CredPair)

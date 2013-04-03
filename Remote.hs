@@ -150,7 +150,7 @@ prettyListUUIDs :: [UUID] -> Annex [String]
 prettyListUUIDs uuids = do
 	hereu <- getUUID
 	m <- uuidDescriptions
-	return $ map (\u -> prettify m hereu u) uuids
+	return $ map (prettify m hereu) uuids
   where
 	finddescription m u = M.findWithDefault "" u m
 	prettify m hereu u

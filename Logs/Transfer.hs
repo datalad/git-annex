@@ -130,8 +130,8 @@ runTransfer t file shouldretry a = do
 			Just fd -> do
 				locked <- catchMaybeIO $
 					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-				when (locked == Nothing) $
-					error $ "transfer already in progress"
+				when (isNothing locked) $
+					error "transfer already in progress"
 				void $ tryIO $ writeTransferInfoFile info tfile
 				return mfd
 	cleanup _ Nothing = noop
@@ -169,7 +169,7 @@ mkProgressUpdater t info = do
   where
 	updater tfile mvar b = modifyMVar_ mvar $ \oldbytes -> do
 		let newbytes = fromBytesProcessed b
-		if (newbytes - oldbytes >= mindelta)
+		if newbytes - oldbytes >= mindelta
 			then do
 				let info' = info { bytesComplete = Just newbytes }
 				_ <- tryIO $ writeTransferInfoFile info' tfile
@@ -213,7 +213,7 @@ checkTransfer t = do
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]
 getTransfers = do
-	transfers <- catMaybes . map parseTransferFile . concat <$> findfiles
+	transfers <- mapMaybe parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
 	return $ map (\(t, Just i) -> (t, i)) $
 		filter running $ zip transfers infos
@@ -265,7 +265,7 @@ transferLockFile infofile = let (d,f) = splitFileName infofile in
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer
 parseTransferFile file
-	| "lck." `isPrefixOf` (takeFileName file) = Nothing
+	| "lck." `isPrefixOf` takeFileName file = Nothing
 	| otherwise = case drop (length bits - 3) bits of
 		[direction, u, key] -> Transfer
 			<$> readLcDirection direction
@@ -291,17 +291,17 @@ writeTransferInfoFile info tfile = do
 writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	[ (maybe "" show $ startedTime info) ++
-	  (maybe "" (\b -> " " ++ show b) $ bytesComplete info)
+	  (maybe "" (\b -> ' ' : show b) (bytesComplete info))
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
-readTransferInfoFile :: (Maybe ProcessID) -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe ProcessID -> FilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
 	h <- openFile tfile ReadMode
 	fileEncoding h
 	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
 
-readTransferInfo :: (Maybe ProcessID) -> String -> Maybe TransferInfo
+readTransferInfo :: Maybe ProcessID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
 	<$> time
 	<*> pure mpid
@@ -353,8 +353,8 @@ instance Arbitrary TransferInfo where
 
 prop_read_write_transferinfo :: TransferInfo -> Bool
 prop_read_write_transferinfo info
-	| transferRemote info /= Nothing = True -- remote not stored
-	| transferTid info /= Nothing = True -- tid not stored
+	| isJust (transferRemote info) = True -- remote not stored
+	| isJust (transferTid info) = True -- tid not stored
 	| otherwise = Just (info { transferPaused = False }) == info'
   where
 	info' = readTransferInfo (transferPid info) (writeTransferInfo info)

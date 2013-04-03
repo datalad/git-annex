@@ -94,8 +94,7 @@ lookupFile file = do
   where
 	makeret k = let bname = keyBackendName k in
 		case maybeLookupBackendName bname of
-			Just backend -> do
-				return $ Just (k, backend)
+			Just backend -> return $ Just (k, backend)
 			Nothing -> do
 				warning $
 					"skipping " ++ file ++

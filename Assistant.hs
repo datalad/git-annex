@@ -196,7 +196,8 @@ startDaemon assistant foreground startbrowser = do
 		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do
 		checkCanWatch
-		when assistant $ checkEnvironment
+		when assistant
+			checkEnvironment
 		dstatus <- startDaemonStatus
 		logfile <- fromRepo gitAnnexLogFile
 		liftIO $ debugM desc $ "logging to " ++ logfile

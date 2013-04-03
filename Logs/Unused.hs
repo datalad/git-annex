@@ -31,7 +31,7 @@ readUnusedLog :: FilePath -> Annex UnusedMap
 readUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	ifM (liftIO $ doesFileExist f)
-		( M.fromList . catMaybes . map parse . lines
+		( M.fromList . mapMaybe parse . lines
 			<$> liftIO (readFile f)
 		, return M.empty
 		)

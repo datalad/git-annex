@@ -34,7 +34,4 @@ add :: JSON a => [(String, a)] -> IO ()
 add v = putStr $ Stream.add v
 
 complete :: JSON a => [(String, a)] -> IO ()
-complete v = putStr $ concat
-	[ Stream.start v
-	, Stream.end
-	]
+complete v = putStr $ Stream.start v ++ Stream.end

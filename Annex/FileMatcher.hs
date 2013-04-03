@@ -47,7 +47,7 @@ parsedToMatcher parsed = case partitionEithers parsed of
 
 parseToken :: MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
 parseToken checkpresent groupmap t
-	| any (== t) Utility.Matcher.tokens = Right $ Utility.Matcher.token t
+	| t `elem` tokens = Right $ token t
 	| t == "present" = use checkpresent
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
 		M.fromList
@@ -61,7 +61,7 @@ parseToken checkpresent groupmap t
 			]
   where
 	(k, v) = separate (== '=') t
-	use a = Utility.Matcher.Operation <$> a v
+	use a = Operation <$> a v
 
 {- This is really dumb tokenization; there's no support for quoted values.
  - Open and close parens are always treated as standalone tokens;
@@ -76,7 +76,7 @@ tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
 largeFilesMatcher :: Annex FileMatcher
 largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
-  	go Nothing = return $ matchAll
+  	go Nothing = return matchAll
 	go (Just expr) = do
 		m <- groupMap
 		u <- getUUID

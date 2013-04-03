@@ -33,7 +33,7 @@ import Backend
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
-	hostname <- maybe "" id <$> liftIO getHostname
+	hostname <- fromMaybe "" <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
 	username <- liftIO myUserName
 	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
@@ -132,7 +132,7 @@ probeCrippledFileSystem = do
 		return True
 
 checkCrippledFileSystem :: Annex ()
-checkCrippledFileSystem = whenM (probeCrippledFileSystem) $ do
+checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
 	unlessM isDirect $ do

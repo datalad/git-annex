@@ -104,7 +104,7 @@ getSide side m = m side
 
 data NetMessager = NetMessager
 	-- outgoing messages
-	{ netMessages :: TChan (NetMessage)
+	{ netMessages :: TChan NetMessage
 	-- important messages for each client
 	, importantNetMessages :: TMVar (M.Map ClientID (S.Set NetMessage))
 	-- important messages that are believed to have been sent to a client

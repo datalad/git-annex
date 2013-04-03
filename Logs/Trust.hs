@@ -70,7 +70,7 @@ trustPartition level ls
 		return $ partition (`elem` candidates) ls
 
 {- Filters UUIDs to those not matching a TrustLevel. -}
-trustExclude :: TrustLevel -> [UUID] -> Annex ([UUID])
+trustExclude :: TrustLevel -> [UUID] -> Annex [UUID]
 trustExclude level ls = snd <$> trustPartition level ls
 
 {- trustLog in a map, overridden with any values from forcetrust or

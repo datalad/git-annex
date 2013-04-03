@@ -139,11 +139,10 @@ sameFileStatus :: Key -> FileStatus -> Annex Bool
 sameFileStatus key status = do
 	old <- recordedInodeCache key
 	let curr = toInodeCache status
-	r <- case (old, curr) of
+	case (old, curr) of
 		(Just o, Just c) -> compareInodeCaches o c
 		(Nothing, Nothing) -> return True
 		_ -> return False
-	return r
 
 {- If the inodes have changed, only the size and mtime are compared. -}
 compareInodeCaches :: InodeCache -> InodeCache -> Annex Bool

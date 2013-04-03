@@ -122,8 +122,8 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	getbool k def = fromMaybe def $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe k = maybe (Git.Config.getMaybe (key k) r) Just $
-		Git.Config.getMaybe (remotekey k) r
+	getmaybe k = mplus (Git.Config.getMaybe (key k) r)
+		(Git.Config.getMaybe (remotekey k) r)
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
 	key k = "annex." ++ k

@@ -189,7 +189,7 @@ change file a = lockJournal $ a <$> getStale file >>= set file
 
 {- Records new content of a file into the journal -}
 set :: FilePath -> String -> Annex ()
-set file content = setJournalFile file content
+set = setJournalFile
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
@@ -197,7 +197,7 @@ commit message = whenM journalDirty $ lockJournal $ do
 	cleanjournal <- stageJournal
 	ref <- getBranch
 	withIndex $ commitBranch ref message [fullname]
-	liftIO $ cleanjournal
+	liftIO cleanjournal
 
 {- Commits the staged changes in the index to the branch.
  - 
@@ -355,7 +355,7 @@ stageJournal = withIndex $ do
 		Git.UpdateIndex.streamUpdateIndex g
 			[genstream dir h fs]
 		hashObjectStop h
-	return $ liftIO $ mapM_ removeFile $ map (dir </>) fs
+	return $ liftIO $ mapM_ (removeFile . (dir </>)) fs
   where
 	genstream dir h fs streamer = forM_ fs $ \file -> do
 		let path = dir </> file

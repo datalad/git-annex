@@ -14,4 +14,4 @@ import Assistant.Types.ThreadName
 data NamedThread = NamedThread ThreadName (Assistant ())
 
 namedThread :: String -> Assistant () -> NamedThread
-namedThread name a = NamedThread (ThreadName name) a
+namedThread = NamedThread . ThreadName

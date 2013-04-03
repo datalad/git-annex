@@ -71,7 +71,7 @@ showProgress = handle q $
 
 {- Shows a progress meter while performing a transfer of a key.
  - The action is passed a callback to use to update the meter. -}
-metered :: (Maybe MeterUpdate) -> Key -> (MeterUpdate -> Annex a) -> Annex a
+metered :: Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 metered combinemeterupdate key a = go (keySize key)
   where
 	go (Just size) = meteredBytes combinemeterupdate size a
@@ -79,7 +79,7 @@ metered combinemeterupdate key a = go (keySize key)
 
 {- Shows a progress meter while performing an action on a given number
  - of bytes. -}
-meteredBytes :: (Maybe MeterUpdate) -> Integer -> (MeterUpdate -> Annex a) -> Annex a
+meteredBytes :: Maybe MeterUpdate -> Integer -> (MeterUpdate -> Annex a) -> Annex a
 meteredBytes combinemeterupdate size a = withOutputType go
   where
 	go NormalOutput = do

@@ -66,11 +66,11 @@ makeGroupMap :: M.Map UUID (S.Set Group) -> GroupMap
 makeGroupMap byuuid = GroupMap byuuid bygroup
   where
 	bygroup = M.fromListWith S.union $
-		concat $ map explode $ M.toList byuuid
+		concatMap explode $ M.toList byuuid
 	explode (u, s) = map (\g -> (g, S.singleton u)) (S.toList s)
 
 {- If a repository is in exactly one standard group, returns it. -}
 getStandardGroup :: S.Set Group -> Maybe StandardGroup
-getStandardGroup s = case catMaybes $ map toStandardGroup $ S.toList s of
+getStandardGroup s = case mapMaybe toStandardGroup $ S.toList s of
 	[g] -> Just g
 	_ -> Nothing

@@ -127,7 +127,7 @@ retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
 retrieveCheap o k f = ifM (preseedTmp k f) ( retrieve o k undefined f , return False )
 
 retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp -> do
+retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp ->
 	ifM (retrieve o enck undefined tmp)
 		( liftIO $ catchBoolIO $ do
 			decrypt cipher (feedFile tmp) $
