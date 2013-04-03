@@ -1,9 +1,9 @@
 What steps will reproduce the problem?
 
 Unsure. I believe:
-- Add a git remote
-- Mark it as dead
-- Remove the git remote, re-add with the same name
+* Add a git remote
+* Mark it as dead
+* Remove the git remote, re-add with the same name
 
 What is the expected output? What do you see instead?
 
