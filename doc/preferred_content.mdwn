@@ -88,7 +88,7 @@ any repository that can will back it up.)
 
 All content is preferred, unless it's in a "archive" directory.
 
-`(exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted:1)`
+`(exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
 
 ### transfer
 
@@ -100,7 +100,7 @@ USB drive used in a sneakernet.
 The preferred content expression for these causes them to get and retain
 data until all clients have a copy.
 
-`(not (inallgroup=client and copies=client:2) and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted:1)`
+`(not (inallgroup=client and copies=client:2) and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
 
 The "copies=client:2" part of the above handles the case where
 there is only one client repository. It makes a transfer repository
@@ -119,20 +119,20 @@ All content is preferred.
 Only prefers content that's not already backed up to another backup
 or incremental backup repository.
 
-`(include=* and (not copies=backup:1) and (not copies=incrementalbackup:1)) or (not copies=semitrusted:1)`
+`(include=* and (not copies=backup:1) and (not copies=incrementalbackup:1)) or (not copies=semitrusted+:1)`
 
 ### small archive
 
 Only prefers content that's located in an "archive" directory, and
 only if it's not already been archived somewhere else.
 
-`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted:1)`
+`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
 
 ### full archive
 
 All content is preferred, unless it's already been archived somewhere else.
 
-`(not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted:1)`
+`(not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
 
 Note that if you want to archive multiple copies (not a bad idea!),
 you should instead configure all your archive repositories with a
@@ -160,7 +160,7 @@ local copy of every file. Instead, you can manually run `git annex get`,
 Only content that is present is preferred. Content in "archive"
 directories is never preferred.
 
-`(present and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted:1)`
+`(present and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
 
 ### unwanted
 

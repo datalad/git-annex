@@ -145,8 +145,8 @@ addCopies = addLimit . limitCopies
 
 limitCopies :: MkLimit
 limitCopies want = case split ":" want of
-	[v, n] -> case readTrustLevel v of
-		Just trust -> go n $ checktrust trust
+	[v, n] -> case parsetrustspec v of
+		Just pred -> go n $ checktrust pred
 		Nothing -> go n $ checkgroup v
 	[n] -> go n $ const $ return True
 	_ -> Left "bad value for copies"
@@ -160,8 +160,11 @@ limitCopies want = case split ":" want of
 		us <- filter (`S.notMember` notpresent)
 			<$> (filterM good =<< Remote.keyLocations key)
 		return $ length us >= n
-	checktrust t u = (== t) <$> lookupTrust u
+	checktrust pred u = pred <$> lookupTrust u
 	checkgroup g u = S.member g <$> lookupGroups u
+	parsetrustspec s
+		| "+" `isSuffixOf` s = (>=) <$> readTrustLevel (beginning s)
+		| otherwise = (==) <$> readTrustLevel s
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}

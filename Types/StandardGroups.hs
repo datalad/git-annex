@@ -74,4 +74,4 @@ preferredContent UnwantedGroup = "exclude=*"
 {- Most repositories want any content that is only on untrusted
  - or dead repositories. -}
 lastResort :: String -> String
-lastResort s = "(" ++ s ++ ") or (not copies=semitrusted:1)"
+lastResort s = "(" ++ s ++ ") or (not copies=semitrusted+:1)"
