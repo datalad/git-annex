@@ -13,6 +13,7 @@ import Common.Annex
 import Assistant.Types.NamedThread
 import Assistant.Types.ThreadName
 import Assistant.Types.DaemonStatus
+import Assistant.Types.UrlRenderer
 import Assistant.DaemonStatus
 import Assistant.Monad
 
@@ -32,13 +33,8 @@ import qualified Data.Text as T
  -
  - Named threads are run by a management thread, so if they crash
  - an alert is displayed, allowing the thread to be restarted. -}
-#ifdef WITH_WEBAPP
-startNamedThread :: Maybe UrlRenderer -> NamedThread -> Assistant ()
+startNamedThread :: UrlRenderer -> NamedThread -> Assistant ()
 startNamedThread urlrenderer namedthread@(NamedThread name a) = do
-#else
-startNamedThread :: Maybe Bool -> NamedThread -> Assistant ()
-startNamedThread urlrenderer namedthread@(NamedThread name a) = do
-#endif
 	m <- startedThreads <$> getDaemonStatus
 	case M.lookup name m of
 		Nothing -> start
@@ -69,17 +65,14 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 					]
 				hPutStrLn stderr msg
 #ifdef WITH_WEBAPP
-				button <- runAssistant d $
-					case urlrenderer of
-						Nothing -> return Nothing
-						Just renderer -> do
-							close <- asIO1 removeAlert
-							url <- liftIO $ renderUrl renderer (RestartThreadR name) []
-							return $ Just $ AlertButton
-								{ buttonLabel = T.pack "Restart Thread"
-								, buttonUrl = url
-								, buttonAction = Just close
-								}
+				button <- runAssistant d $ do
+					close <- asIO1 removeAlert
+					url <- liftIO $ renderUrl urlrenderer (RestartThreadR name) []
+					return $ Just $ AlertButton
+						{ buttonLabel = T.pack "Restart Thread"
+						, buttonUrl = url
+						, buttonAction = Just close
+						}
 				runAssistant d $ void $
 					addAlert $ (warningAlert (fromThreadName name) msg)
 						{ alertButton = button }

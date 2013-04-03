@@ -154,6 +154,7 @@ import Assistant.Threads.XMPPClient
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
 import Assistant.Environment
+import Assistant.Types.UrlRenderer
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -205,15 +206,16 @@ startDaemon assistant foreground startbrowser = do
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
 
-	go webappwaiter = do
-		notice ["starting", desc, "version", SysConfig.packageversion]
+
 #ifdef WITH_WEBAPP
+	go webappwaiter = do
 		d <- getAssistant id
-		urlrenderer <- liftIO newUrlRenderer
-		mapM_ (startthread $ Just urlrenderer)
 #else
-		mapM_ (startthread Nothing)
+	go _webappwaiter = do
 #endif
+		notice ["starting", desc, "version", SysConfig.packageversion]
+		urlrenderer <- liftIO newUrlRenderer
+		mapM_ (startthread urlrenderer)
 			[ watch $ commitThread
 #ifdef WITH_WEBAPP
 			, assist $ webAppThread d urlrenderer False Nothing webappwaiter

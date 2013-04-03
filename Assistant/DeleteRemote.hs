@@ -5,13 +5,18 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.DeleteRemote where
 
 import Assistant.Common
-import Assistant.WebApp
+#ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
+import Assistant.WebApp
+#endif
 import Assistant.Alert
 import Assistant.DaemonStatus
+import Assistant.Types.UrlRenderer
 import qualified Remote
 import Remote.List
 import qualified Git.Command
@@ -42,6 +47,7 @@ finishRemovingRemote urlrenderer uuid = do
 	void $ removeRemote uuid
 	liftAnnex $ trustSet uuid DeadTrusted
 
+#ifdef WITH_WEBAPP
 	desc <- liftAnnex $ Remote.prettyUUID uuid
 	url <- liftIO $ renderUrl urlrenderer (FinishedDeletingRepositoryContentsR uuid) []
 	close <- asIO1 removeAlert
@@ -50,3 +56,4 @@ finishRemovingRemote urlrenderer uuid = do
 		, buttonUrl = url
 		, buttonAction = Just close
 		}
+#endif

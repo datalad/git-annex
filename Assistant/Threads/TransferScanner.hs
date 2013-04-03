@@ -8,7 +8,6 @@
 module Assistant.Threads.TransferScanner where
 
 import Assistant.Common
-import Assistant.WebApp
 import Assistant.Types.ScanRemotes
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
@@ -16,6 +15,7 @@ import Assistant.DaemonStatus
 import Assistant.Drop
 import Assistant.Sync
 import Assistant.DeleteRemote
+import Assistant.Types.UrlRenderer
 import Logs.Transfer
 import Logs.Location
 import Logs.Group

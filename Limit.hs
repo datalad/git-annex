@@ -146,7 +146,7 @@ addCopies = addLimit . limitCopies
 limitCopies :: MkLimit
 limitCopies want = case split ":" want of
 	[v, n] -> case parsetrustspec v of
-		Just pred -> go n $ checktrust pred
+		Just checker -> go n $ checktrust checker
 		Nothing -> go n $ checkgroup v
 	[n] -> go n $ const $ return True
 	_ -> Left "bad value for copies"
@@ -160,7 +160,7 @@ limitCopies want = case split ":" want of
 		us <- filter (`S.notMember` notpresent)
 			<$> (filterM good =<< Remote.keyLocations key)
 		return $ length us >= n
-	checktrust pred u = pred <$> lookupTrust u
+	checktrust checker u = checker <$> lookupTrust u
 	checkgroup g u = S.member g <$> lookupGroups u
 	parsetrustspec s
 		| "+" `isSuffixOf` s = (>=) <$> readTrustLevel (beginning s)
