@@ -127,9 +127,8 @@ expensiveScan urlrenderer rs = unless onlyweb $ do
 
 	debug ["finished scan of", show visiblers]
 
-	nuke <- asIO1  $ finishRemovingRemote urlrenderer
-	liftIO $ forM_ (S.toList removablers) $
-		void . tryNonAsync . nuke
+	remove <- asIO1 $ removableRemote urlrenderer
+	liftIO $ mapM_ (void . tryNonAsync . remove) $ S.toList removablers
   where
 	onlyweb = all (== webUUID) $ map Remote.uuid rs
 	visiblers = let rs' = filter (not . Remote.readonly) rs
