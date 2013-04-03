@@ -28,6 +28,7 @@ module Remote (
 	byCost,
 	prettyPrintUUIDs,
 	prettyListUUIDs,
+	prettyUUID,
 	remoteFromUUID,
 	remotesWithUUID,
 	remotesWithoutUUID,
@@ -158,6 +159,10 @@ prettyListUUIDs uuids = do
 		| otherwise = n
 	  where
 		n = finddescription m u
+
+{- Nice display of a remote's name and/or description. -}
+prettyUUID :: UUID -> Annex String
+prettyUUID u = concat <$> prettyListUUIDs [u]
 
 {- Gets the remote associated with a UUID.
  - There's no associated remote when this is the UUID of the local repo. -}

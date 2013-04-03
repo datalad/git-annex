@@ -29,10 +29,6 @@
 /config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
 /config/repository/sync/disable/#UUID DisableSyncR GET
 /config/repository/sync/enable/#UUID EnableSyncR GET
-/config/repository/delete/choose/#UUID DeleteRepositoryR GET
-/config/repository/delete/fromlist/#UUID DeleteRepositoryFromListR GET
-/config/repository/delete/contents/start/#UUID StartDeleteRepositoryContentsR GET
-/config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
 /config/repository/add/drive AddDriveR GET POST
 /config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
@@ -46,6 +42,12 @@
 /config/repository/add/cloud/S3 AddS3R GET POST
 /config/repository/add/cloud/glacier AddGlacierR GET POST
 /config/repository/add/cloud/box.com AddBoxComR GET POST
+
+/config/repository/delete/choose/#UUID DeleteRepositoryR GET
+/config/repository/delete/fromlist/#UUID DeleteRepositoryFromListR GET
+/config/repository/delete/contents/start/#UUID StartDeleteRepositoryContentsR GET
+/config/repository/delete/contents/finish/#UUID FinishedDeletingRepositoryContentsR GET
+/config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
 /config/repository/pair/local/start StartLocalPairR GET POST
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET

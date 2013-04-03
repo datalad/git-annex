@@ -148,8 +148,7 @@ postEnableRsyncR u = do
 		_ -> redirect AddSshR
   where
 	showform form enctype status = do
-		description <- liftAnnex $
-			T.pack . concat <$> prettyListUUIDs [u]
+		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
 	enable sshdata = lift $ redirect $ ConfirmSshR $
 		sshdata { rsyncOnly = True }

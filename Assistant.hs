@@ -238,7 +238,7 @@ startDaemon assistant foreground startbrowser = do
 #endif
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread
-			, assist $ transferScannerThread
+			, assist $ transferScannerThread urlrenderer
 			, assist $ configMonitorThread
 			, assist $ glacierThread
 			, watch $ watchThread

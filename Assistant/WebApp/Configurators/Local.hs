@@ -27,7 +27,7 @@ import Utility.Mounts
 import Utility.DiskFree
 import Utility.DataUnits
 import Utility.Network
-import Remote (prettyListUUIDs)
+import Remote (prettyUUID)
 import Annex.UUID
 import Types.StandardGroups
 import Logs.PreferredContent
@@ -261,8 +261,7 @@ combineRepos dir name = liftAnnex $ do
 
 getEnableDirectoryR :: UUID -> Handler RepHtml
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
-	description <- liftAnnex $
-		T.pack . concat <$> prettyListUUIDs [uuid]
+	description <- liftAnnex $ T.pack <$> prettyUUID uuid
 	$(widgetFile "configurators/enabledirectory")
 
 {- List of removable drives. -}

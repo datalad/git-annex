@@ -10,48 +10,35 @@
 module Assistant.WebApp.Configurators.Delete where
 
 import Assistant.WebApp.Common
+import Assistant.DeleteRemote
 import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import qualified Remote
-import Remote.List (remoteListRefresh)
-import qualified Git.Command
 import qualified Git
 import Locations.UserConfig
 import Utility.FileMode
 import Logs.Trust
+import Logs.Remote
 import Logs.PreferredContent
 import Types.StandardGroups
 
-import qualified Data.Text as T
 import System.IO.HVFS (SystemFS(..))
+import qualified Data.Text as T
+import qualified Data.Map as M
 
 getDeleteRepositoryR :: UUID -> Handler RepHtml
 getDeleteRepositoryR uuid = go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
   	go Nothing = redirect DeleteCurrentRepositoryR
 	go (Just r) = deletionPage $ do
-		reponame <- liftAnnex $ concat <$> Remote.prettyListUUIDs [uuid]
+		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/choose")
 
 getDeleteRepositoryFromListR :: UUID -> Handler RepHtml
 getDeleteRepositoryFromListR uuid = do
 	void $ liftAssistant $ removeRemote uuid
 	redirect DashboardR
-
-removeRemote :: UUID -> Assistant Remote
-removeRemote uuid = do
-	remote <- fromMaybe (error "unknown remote")
-		<$> liftAnnex (Remote.remoteFromUUID uuid)
-	liftAnnex $ do
-		inRepo $ Git.Command.run
-			[ Param "remote"
-			, Param "remove"
-			, Param (Remote.name remote)
-			]
-		void $ remoteListRefresh
-	updateSyncRemotes
-	return remote
 
 getStartDeleteRepositoryContentsR :: UUID -> Handler RepHtml
 getStartDeleteRepositoryContentsR uuid = deletionPage $ do
@@ -62,8 +49,15 @@ getStartDeleteRepositoryContentsR uuid = deletionPage $ do
 		setStandardGroup uuid UnwantedGroup
 	liftAssistant $ addScanRemotes True [remote]
 
-	reponame <- liftAnnex $ concat <$> Remote.prettyListUUIDs [uuid]
+	reponame <- liftAnnex $ Remote.prettyUUID uuid
 	$(widgetFile "configurators/delete/started")
+
+getFinishedDeletingRepositoryContentsR :: UUID -> Handler RepHtml
+getFinishedDeletingRepositoryContentsR uuid = deletionPage $ do
+	reponame <- liftAnnex $ Remote.prettyUUID uuid
+	{- If it's not listed in the remote log, it must be a git repo. -}
+	gitrepo <- liftAnnex $ M.notMember uuid <$> readRemoteLog
+	$(widgetFile "configurators/delete/finished")	
 
 getDeleteCurrentRepositoryR :: Handler RepHtml
 getDeleteCurrentRepositoryR = deleteCurrentRepository

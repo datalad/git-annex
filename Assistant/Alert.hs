@@ -34,6 +34,7 @@ data AlertName
 	| WarningAlert String
 	| PairAlert String
 	| XMPPNeededAlert
+	| RemoteRemovalAlert String
 	| CloudRepoNeededAlert
 	| SyncAlert
 	deriving (Eq)
@@ -347,6 +348,23 @@ cloudRepoNeededAlert friendname button = Alert
 	, alertMessageRender = tenseWords
 	, alertBlockDisplay = True
 	, alertName = Just $ CloudRepoNeededAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
+	}
+
+remoteRemovalAlert :: String -> AlertButton -> Alert
+remoteRemovalAlert desc button = Alert
+	{ alertHeader = Just $ fromString $
+		"The repository \"" ++ desc ++ 
+		"\" has been emptied, and can now be removed."
+	, alertIcon = Just InfoIcon
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = tenseWords
+	, alertBlockDisplay = True
+	, alertName = Just $ RemoteRemovalAlert desc
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}

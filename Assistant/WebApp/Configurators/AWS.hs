@@ -180,7 +180,7 @@ enableAWSRemote remotetype uuid = do
 			makeAWSRemote remotetype creds name (const noop) M.empty
 		_ -> do
 			description <- liftAnnex $
-				T.pack . concat <$> Remote.prettyListUUIDs [uuid]
+				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableaws")
 
 makeAWSRemote :: RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()

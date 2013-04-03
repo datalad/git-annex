@@ -8,14 +8,17 @@
 module Assistant.Threads.TransferScanner where
 
 import Assistant.Common
+import Assistant.WebApp
 import Assistant.Types.ScanRemotes
 import Assistant.ScanRemotes
 import Assistant.TransferQueue
 import Assistant.DaemonStatus
 import Assistant.Drop
 import Assistant.Sync
+import Assistant.DeleteRemote
 import Logs.Transfer
 import Logs.Location
+import Logs.Group
 import Logs.Web (webUUID)
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -31,8 +34,8 @@ import qualified Data.Set as S
 {- This thread waits until a remote needs to be scanned, to find transfers
  - that need to be made, to keep data in sync.
  -}
-transferScannerThread :: NamedThread
-transferScannerThread = namedThread "TransferScanner" $ do
+transferScannerThread :: UrlRenderer -> NamedThread
+transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 	startupScan
 	go S.empty
   where
@@ -43,7 +46,7 @@ transferScannerThread = namedThread "TransferScanner" $ do
 		scanrunning True
 		if any fullScan infos || any (`S.notMember` scanned) rs
 			then do
-				expensiveScan rs
+				expensiveScan urlrenderer rs
 				go $ scanned `S.union` S.fromList rs
 			else do
 				mapM_ failedTransferScan rs
@@ -67,6 +70,8 @@ transferScannerThread = namedThread "TransferScanner" $ do
 	 - * We may have run before, and had transfers queued,
 	 -   and then the system (or us) crashed, and that info was
 	 -   lost.
+	 - * A remote may be in the unwanted group, and this is a chance
+	 -   to determine if the remote has been emptied.
 	 -}
 	startupScan = do
 		reconnectRemotes True =<< syncGitRemotes <$> getDaemonStatus
@@ -103,26 +108,46 @@ failedTransferScan r = do
  -
  - TODO: It would be better to first drop as much as we can, before
  - transferring much, to minimise disk use.
+ - 
+ - During the scan, we'll also check if any unwanted repositories are empty,
+ - and can be removed. While unrelated, this is a cheap place to do it,
+ - since we need to look at the locations of all keys anyway.
  -}
-expensiveScan :: [Remote] -> Assistant ()
-expensiveScan rs = unless onlyweb $ do
+expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
+expensiveScan urlrenderer rs = unless onlyweb $ do
 	debug ["starting scan of", show visiblers]
+
+	unwantedrs <- liftAnnex $ S.fromList
+		<$> filterM inUnwantedGroup (map Remote.uuid rs)
+
 	g <- liftAnnex gitRepo
 	(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
-	forM_ files $ \f -> do
-		ts <- maybe (return []) (findtransfers f)
-			=<< liftAnnex (Backend.lookupFile f)
-		mapM_ (enqueue f) ts
+	removablers <- scan unwantedrs files
 	void $ liftIO cleanup
+
 	debug ["finished scan of", show visiblers]
+
+	nuke <- asIO1  $ finishRemovingRemote urlrenderer
+	liftIO $ forM_ (S.toList removablers) $
+		void . tryNonAsync . nuke
   where
 	onlyweb = all (== webUUID) $ map Remote.uuid rs
 	visiblers = let rs' = filter (not . Remote.readonly) rs
 		in if null rs' then rs else rs'
+
+	scan unwanted [] = return unwanted
+	scan unwanted (f:fs) = do
+		(unwanted', ts) <- maybe
+			(return (unwanted, []))
+			(findtransfers f unwanted)
+				=<< liftAnnex (Backend.lookupFile f)
+		mapM_ (enqueue f) ts
+		scan unwanted' fs
+
 	enqueue f (r, t) =
 		queueTransferWhenSmall "expensive scan found missing object"
 			(Just f) t r
-	findtransfers f (key, _) = do
+	findtransfers f unwanted (key, _) = do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
 		syncrs <- syncDataRemotes <$> getDaemonStatus
@@ -134,11 +159,13 @@ expensiveScan rs = unless onlyweb $ do
 		liftAnnex $ do
 			let slocs = S.fromList locs
 			let use a = return $ catMaybes $ map (a key slocs) syncrs
-			if present
+			ts <- if present
 				then filterM (wantSend True (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
 				else ifM (wantGet True $ Just f)
 					( use (genTransfer Download True) , return [] )
+			let unwanted' = S.difference unwanted slocs
+			return (unwanted', ts)
 
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
 genTransfer direction want key slocs r

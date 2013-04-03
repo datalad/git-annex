@@ -113,7 +113,7 @@ postEnableWebDAVR uuid = do
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
 				description <- liftAnnex $
-					T.pack . concat <$> Remote.prettyListUUIDs [uuid]
+					T.pack <$> Remote.prettyUUID uuid
 				$(widgetFile "configurators/enablewebdav")
 #else
 postEnableWebDAVR _ = error "WebDAV not supported by this build"

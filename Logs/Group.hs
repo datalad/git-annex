@@ -13,6 +13,7 @@ module Logs.Group (
 	groupMap,
 	groupMapLoad,
 	getStandardGroup,
+	inUnwantedGroup
 ) where
 
 import qualified Data.Map as M
@@ -74,3 +75,7 @@ getStandardGroup :: S.Set Group -> Maybe StandardGroup
 getStandardGroup s = case mapMaybe toStandardGroup $ S.toList s of
 	[g] -> Just g
 	_ -> Nothing
+
+inUnwantedGroup :: UUID -> Annex Bool
+inUnwantedGroup u = elem UnwantedGroup 
+	. mapMaybe toStandardGroup . S.toList <$> lookupGroups u
