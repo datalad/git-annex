@@ -24,7 +24,7 @@ import Assistant.Monad
 import Assistant.DaemonStatus
 import Assistant.WebApp.Types
 import Assistant.WebApp
-import Yesod.Core
+import Yesod
 #endif
 
 {- Makes a button for an alert that opens a Route. The button will
