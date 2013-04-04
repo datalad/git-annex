@@ -29,3 +29,5 @@ What version of git-annex are you using? On what operating system?
 > 
 > Still todo: Detect when a remote has been sucked dry, and actually delete
 > it. --[[Joey]]
+
+>> [[done]] --[[Joey]]
