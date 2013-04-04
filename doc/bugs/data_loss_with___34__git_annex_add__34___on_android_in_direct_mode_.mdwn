@@ -15,3 +15,5 @@ The git-annex package was dated 2013-03-23 and downloaded from
 **Please provide any additional information below.**
 
 I wish I could provide files that became duplicates, but I didn't make copies before adding them...  Did this twice, first adding JPG and MP4 files, then adding WAVs.  After that, I saw that of 100 JPGs and 8 MP4s, about half the JPGs and all of the MP4s had become copies of a single JPG.  Of 11 WAV files, two had been replaced with copies of one of the others.
+
+> [[done]]; turned out to be Android bug unrelated to git-annex. --[[Joey]]
