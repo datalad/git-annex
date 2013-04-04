@@ -27,16 +27,20 @@ import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
 import qualified Data.Map as M
 
+notCurrentRepo :: UUID -> Handler RepHtml -> Handler RepHtml
+notCurrentRepo uuid a = go =<< liftAnnex (Remote.remoteFromUUID uuid)
+  where
+  	go Nothing = redirect DeleteCurrentRepositoryR
+	go (Just _) = a
+
 getDisableRepositoryR :: UUID -> Handler RepHtml
-getDisableRepositoryR uuid = do
+getDisableRepositoryR uuid = notCurrentRepo uuid $ do
 	void $ liftAssistant $ disableRemote uuid
 	redirect DashboardR
 
 getDeleteRepositoryR :: UUID -> Handler RepHtml
-getDeleteRepositoryR uuid = go =<< liftAnnex (Remote.remoteFromUUID uuid)
-  where
-  	go Nothing = redirect DeleteCurrentRepositoryR
-	go (Just r) = deletionPage $ do
+getDeleteRepositoryR uuid = notCurrentRepo uuid $
+	deletionPage $ do
 		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/start")
 

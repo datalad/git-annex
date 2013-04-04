@@ -32,8 +32,18 @@
               <a href="@{setupRepoLink actions}">
                 enable
             $else
-              <a href="@{setupRepoLink actions}">
-                configure
+              <span .dropdown #menu-#{fromUUID uuid}>
+                <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{fromUUID uuid}">
+                  <i .icon-cog></i> settings
+                  <b .caret></b>
+                <ul .dropdown-menu>
+                  <li>
+                    <a href="@{setupRepoLink actions}">
+                      <i .icon-pencil></i> Edit
+                    <a href="@{DisableRepositoryR uuid}">
+                      <i .icon-minus></i> Disable
+                    <a href="@{DeleteRepositoryR uuid}">
+                      <i .icon-trash></i> Delete
       $if addmore
         <tr>
           <td colspan="3">

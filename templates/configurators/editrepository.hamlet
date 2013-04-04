@@ -1,6 +1,9 @@
 <div .span9 .hero-unit>
   <h2>
-    Configuring repository
+    $if new
+      Repository created
+    $else
+      Editing repository
   $if new
     <p>
       This repository is set up and ready to go!
@@ -20,10 +23,8 @@
         <div .form-actions>
           <button .btn .btn-primary type=submit>
             Save Changes #
-          <a href="@{DashboardR}">
+          <a .btn href="@{DashboardR}">
             Cancel #
-          <a href="@{DeleteRepositoryR uuid}">
-            Delete repository
   $if new
     <p>
       In a hurry? Feel free to skip this step! You can always come back #
