@@ -188,7 +188,7 @@ check cs = all id <$> sequence cs
  -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
-	want <- calcGitLink file key
+	want <- inRepo $ gitAnnexLink file key
 	have <- getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True
@@ -223,7 +223,7 @@ verifyLocationLog key desc = do
 	{- Since we're checking that a key's file is present, throw
 	 - in a permission fixup here too. -}
 	when (present && not direct) $ do
-		file <- inRepo $ gitAnnexLocation key
+		file <- calcRepo $ gitAnnexLocation key
 		freezeContent file
 		freezeContentDir file
 
@@ -281,7 +281,7 @@ checkKeySize :: Key -> Annex Bool
 checkKeySize key = ifM isDirect
 	( return True
 	, do
-		file <- inRepo $ gitAnnexLocation key
+		file <- calcRepo $ gitAnnexLocation key
 		ifM (liftIO $ doesFileExist file)
 			( checkKeySizeOr badContent key file
 			, return True
@@ -322,7 +322,7 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
  -}
 checkBackend :: Backend -> Key -> Annex Bool
 checkBackend backend key = do
-	file <- inRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
 	ifM isDirect
 		( ifM (goodContent key file)
 			( checkBackendOr' (badContentDirect file) backend key file
@@ -443,14 +443,14 @@ needFsck _ _ = return True
  -}
 recordFsckTime :: Key -> Annex ()
 recordFsckTime key = do
-	parent <- parentDir <$> inRepo (gitAnnexLocation key)
+	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
 	liftIO $ void $ tryIO $ do
 		touchFile parent
 		setSticky parent
 
 getFsckTime :: Key -> Annex (Maybe EpochTime)
 getFsckTime key = do
-	parent <- parentDir <$> inRepo (gitAnnexLocation key)
+	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
 	liftIO $ catchDefaultIO Nothing $ do
 		s <- getFileStatus parent
 		return $ if isSticky $ fileMode s

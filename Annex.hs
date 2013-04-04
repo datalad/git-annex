@@ -28,6 +28,7 @@ module Annex (
 	gitRepo,
 	inRepo,
 	fromRepo,
+	calcRepo,
 	getGitConfig,
 	changeGitConfig,
 	changeGitRepo,
@@ -202,6 +203,11 @@ inRepo a = liftIO . a =<< gitRepo
 {- Extracts a value from the annex's git repisitory. -}
 fromRepo :: (Git.Repo -> a) -> Annex a
 fromRepo a = a <$> gitRepo
+
+calcRepo :: (Git.Repo -> GitConfig -> IO a) -> Annex a
+calcRepo a = do
+	s <- getState id
+	liftIO $ a (repo s) (gitconfig s)
 
 {- Gets the GitConfig settings. -}
 getGitConfig :: Annex GitConfig

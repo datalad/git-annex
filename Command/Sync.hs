@@ -14,7 +14,6 @@ import qualified Remote
 import qualified Annex
 import qualified Annex.Branch
 import qualified Annex.Queue
-import Annex.Content
 import Annex.Direct
 import Annex.CatFile
 import Annex.Link
@@ -268,7 +267,7 @@ resolveMerge' u
 		[Just SymlinkBlob, Nothing]
 	makelink (Just key) = do
 		let dest = mergeFile file key
-		l <- calcGitLink dest key
+		l <- inRepo $ gitAnnexLink dest key
 		liftIO $ nukeFile dest
 		addAnnexLink l dest
 		whenM (isDirect) $

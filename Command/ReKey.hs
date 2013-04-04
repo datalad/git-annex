@@ -49,7 +49,7 @@ perform file oldkey newkey = do
 {- Make a hard link to the old key content, to avoid wasting disk space. -}
 linkKey :: Key -> Key -> Annex Bool
 linkKey oldkey newkey = getViaTmpUnchecked newkey $ \tmp -> do
-	src <- inRepo $ gitAnnexLocation oldkey
+	src <- calcRepo $ gitAnnexLocation oldkey
 	ifM (liftIO $ doesFileExist tmp)
 		( return True
 		, ifM crippledFileSystem

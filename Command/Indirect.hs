@@ -82,13 +82,13 @@ perform = do
 		cleandirect k -- clean before content directory gets frozen
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 			moveAnnex k f
-			l <- calcGitLink f k
+			l <- inRepo $ gitAnnexLink f k
 			liftIO $ createSymbolicLink l f
 		showEndOk
 
 	cleandirect k = do
-		liftIO . nukeFile =<< inRepo (gitAnnexInodeCache k)
-		liftIO . nukeFile =<< inRepo (gitAnnexMapping k)
+		liftIO . nukeFile =<< calcRepo (gitAnnexInodeCache k)
+		liftIO . nukeFile =<< calcRepo (gitAnnexMapping k)
 
 cleanup :: CommandCleanup
 cleanup = do

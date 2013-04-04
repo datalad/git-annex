@@ -42,7 +42,7 @@ associatedFiles key = do
  - the top of the repo. -}
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
-	mapping <- inRepo $ gitAnnexMapping key
+	mapping <- calcRepo $ gitAnnexMapping key
 	liftIO $ catchDefaultIO [] $ do
 		h <- openFile mapping ReadMode
 		fileEncoding h
@@ -52,7 +52,7 @@ associatedFilesRelative key = do
  - transformation to the list. Returns new associatedFiles value. -}
 changeAssociatedFiles :: Key -> ([FilePath] -> [FilePath]) -> Annex [FilePath]
 changeAssociatedFiles key transform = do
-	mapping <- inRepo $ gitAnnexMapping key
+	mapping <- calcRepo $ gitAnnexMapping key
 	files <- associatedFilesRelative key
 	let files' = transform files
 	when (files /= files') $ do
@@ -124,7 +124,7 @@ removeInodeCache key = withInodeCacheFile key $ \f -> do
 	liftIO $ nukeFile f
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
-withInodeCacheFile key a = a =<< inRepo (gitAnnexInodeCache key)
+withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 
 {- Checks if a InodeCache matches the current version of a file. -}
 sameInodeCache :: FilePath -> Maybe InodeCache -> Annex Bool

@@ -9,7 +9,6 @@ module Annex.Content (
 	inAnnex,
 	inAnnexSafe,
 	lockContent,
-	calcGitLink,
 	getViaTmp,
 	getViaTmpChecked,
 	getViaTmpUnchecked,
@@ -101,7 +100,7 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
-	file <- inRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
 	bracketIO (openforlock file >>= lock) unlock a
   where
 	{- Since files are stored with the write bit disabled, have
@@ -122,16 +121,6 @@ lockContent key a = do
 			Right _ -> return $ Just fd
 	unlock Nothing = noop
 	unlock (Just l) = closeFd l
-
-{- Calculates the relative path to use to link a file to a key. -}
-calcGitLink :: FilePath -> Key -> Annex FilePath
-calcGitLink file key = do
-	cwd <- liftIO getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPath cwd file
-	loc <- inRepo $ gitAnnexLocation key
-	return $ relPathDirToFile (parentDir absfile) loc
-  where
-	whoops = error $ "unable to normalize " ++ file
 
 {- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 
@@ -251,7 +240,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	storedirect fs = storedirect' =<< filterM validsymlink fs
 	validsymlink f = (==) (Just key) <$> isAnnexLink f
 
-	storedirect' [] = storeobject =<< inRepo (gitAnnexLocation key)
+	storedirect' [] = storeobject =<< calcRepo (gitAnnexLocation key)
 	storedirect' (dest:fs) = do
 		updateInodeCache key src
 		thawContent src
@@ -341,11 +330,11 @@ withObjectLoc key indirect direct = ifM isDirect
 	, goindirect
 	)
   where
-	goindirect = indirect =<< inRepo (gitAnnexLocation key)
+	goindirect = indirect =<< calcRepo (gitAnnexLocation key)
 
 cleanObjectLoc :: Key -> Annex ()
 cleanObjectLoc key = do
-	file <- inRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
 	unlessM crippledFileSystem $
 		void $ liftIO $ catchMaybeIO $ allowWrite $ parentDir file
 	liftIO $ removeparents file (3 :: Int)
@@ -374,7 +363,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
 	resetfile cache f = whenM (sameInodeCache f cache) $ do
-		l <- calcGitLink f key
+		l <- inRepo $ gitAnnexLink f key
 		top <- fromRepo Git.repoPath
 		cwd <- liftIO getCurrentDirectory
 		let top' = fromMaybe top $ absNormPath cwd top
@@ -384,7 +373,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()
 fromAnnex key dest = do
-	file <- inRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
 	unlessM crippledFileSystem $
 		liftIO $ allowWrite $ parentDir file
 	thawContent file
@@ -395,7 +384,7 @@ fromAnnex key dest = do
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	src <- inRepo $ gitAnnexLocation key
+	src <- calcRepo $ gitAnnexLocation key
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	createAnnexDirectory (parentDir dest)
@@ -468,7 +457,7 @@ preseedTmp key file = go =<< inAnnex key
 	copy = ifM (liftIO $ doesFileExist file)
 		( return True
 		, do
-			s <- inRepo $ gitAnnexLocation key
+			s <- calcRepo $ gitAnnexLocation key
 			liftIO $ copyFileExternal s file
 		)
 

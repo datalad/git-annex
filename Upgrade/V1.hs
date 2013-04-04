@@ -92,7 +92,7 @@ updateSymlinks = do
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
-				link <- calcGitLink f k
+				link <- inRepo $ gitAnnexLink f k
 				liftIO $ removeFile f
 				liftIO $ createSymbolicLink link f
 				Annex.Queue.addCommand "add" [Param "--"] [f]

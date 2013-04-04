@@ -63,7 +63,7 @@ perform file oldkey oldbackend newbackend = do
 	go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
 		next $ Command.ReKey.cleanup file oldkey newkey
 	genkey = do
-		content <- inRepo $ gitAnnexLocation oldkey
+		content <- calcRepo $ gitAnnexLocation oldkey
 		let source = KeySource
 			{ keyFilename = file
 			, contentLocation = content

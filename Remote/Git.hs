@@ -111,6 +111,7 @@ gen r u _ gc = go <$> remoteCost gc defcst
 				else Nothing
 			, repo = r
 			, gitconfig = gc
+				{ remoteGitConfig = Just $ extractGitConfig r }
 			, readonly = Git.repoIsHttp r
 			, globallyAvailable = not $ Git.repoIsLocal r || Git.repoIsLocalUnknown r
 			, remotetype = remote
@@ -332,7 +333,8 @@ copyFromRemote r key file dest
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		loc <- liftIO $ gitAnnexLocation key (repo r)
+		loc <- liftIO $ gitAnnexLocation key (repo r) $
+			fromJust $ remoteGitConfig $ gitconfig r
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)

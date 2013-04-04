@@ -30,6 +30,8 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * webapp: Improved transfer queue management.
   * init: Probe whether the filesystem supports fifos, and if not,
     disable ssh connection caching.
+  * Use lower case hash directories for storing files on crippled filesystems,
+    same as is already done for bare repositories.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

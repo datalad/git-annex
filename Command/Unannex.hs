@@ -60,7 +60,7 @@ cleanup file key = do
   where
 	goFast = do
 		-- fast mode: hard link to content in annex
-		src <- inRepo $ gitAnnexLocation key
+		src <- calcRepo $ gitAnnexLocation key
 		-- creating a hard link could fall; fall back to non fast mode
 		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
 			( thawContent file

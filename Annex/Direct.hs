@@ -89,7 +89,8 @@ addDirect file cache = do
 		return False
 	got (Just (key, _)) = ifM (sameInodeCache file $ Just cache)
 		( do
-			stageSymlink file =<< hashSymlink =<< calcGitLink file key
+			l <- inRepo $ gitAnnexLink file key
+			stageSymlink file =<< hashSymlink l
 			writeInodeCache key cache
 			void $ addAssociatedFile key file
 			logStatus key InfoPresent
@@ -152,7 +153,7 @@ mergeDirectCleanup d oldsha newsha = do
 	 -
  	 - Symlinks are replaced with their content, if it's available. -}
 	movein k f = do
-		l <- calcGitLink f k
+		l <- inRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
 	
@@ -169,7 +170,7 @@ toDirect k f = fromMaybe noop =<< toDirectGen k f
 
 toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
-	loc <- inRepo $ gitAnnexLocation k
+	loc <- calcRepo $ gitAnnexLocation k
 	absf <- liftIO $ absPath f
 	locs <- filter (/= absf) <$> addAssociatedFile k f
 	case locs of

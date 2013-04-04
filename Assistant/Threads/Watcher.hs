@@ -201,7 +201,7 @@ onAddDirect matcher file fs = do
 				 - just been deleted and been put back,
 				 - so it symlink is restaged to make sure. -}
 				( do
-					link <- liftAnnex $ calcGitLink file key
+					link <- liftAnnex $ inRepo $ gitAnnexLink file key
 					addLink file link (Just key)
 				, do
 					debug ["changed direct", file]
@@ -222,7 +222,7 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 	go (Just (key, _)) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
-		link <- liftAnnex $ calcGitLink file key
+		link <- liftAnnex $ inRepo $ gitAnnexLink file key
 		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
 			( ensurestaged (Just link) (Just key) =<< getDaemonStatus
 			, do

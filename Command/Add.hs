@@ -168,13 +168,13 @@ undo file key e = do
 	-- fromAnnex could fail if the file ownership is weird
 	tryharder :: IOException -> Annex ()
 	tryharder _ = do
-		src <- inRepo $ gitAnnexLocation key
+		src <- calcRepo $ gitAnnexLocation key
 		liftIO $ moveFile src file
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Bool -> Annex String
 link file key hascontent = handle (undo file key) $ do
-	l <- calcGitLink file key
+	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
 #ifndef __ANDROID__
@@ -206,7 +206,9 @@ cleanup file key hascontent = do
 	when hascontent $
 		logStatus key InfoPresent
 	ifM (isDirect <&&> pure hascontent)
-		( stageSymlink file =<< hashSymlink =<< calcGitLink file key
+		( do
+			l <- inRepo $ gitAnnexLink file key
+			stageSymlink file =<< hashSymlink l
 		, ifM (coreSymlinks <$> Annex.getGitConfig)
 			( do
 				_ <- link file key hascontent

@@ -88,7 +88,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
 
-	-- these settings are specific to particular types of remotes
+	{- These settings are specific to particular types of remotes
+	 - including special remotes. -}
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
 	, remoteAnnexGnupgOptions :: [String]
@@ -97,6 +98,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexHookType :: Maybe String
+	{- A regular git remote's git repository config. -}
+	, remoteGitConfig :: Maybe GitConfig
 	}
 
 extractRemoteGitConfig :: Git.Repo -> String -> RemoteGitConfig
@@ -117,6 +120,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
+	, remoteGitConfig = Nothing
 	}
   where
 	getbool k def = fromMaybe def $ getmaybebool k

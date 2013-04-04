@@ -11,6 +11,7 @@ module Locations (
 	keyPaths,
 	keyPath,
 	gitAnnexLocation,
+	gitAnnexLink,
 	gitAnnexMapping,
 	gitAnnexInodeCache,
 	gitAnnexInodeSentinal,
@@ -88,7 +89,7 @@ annexLocations key = map (annexLocation key) annexHashes
 annexLocation :: Key -> Hasher -> FilePath
 annexLocation key hasher = objectDir </> keyPath key hasher
 
-{- Annexed file's absolute location in a repository.
+{- Annexed object's absolute location in a repository.
  -
  - When there are multiple possible locations, returns the one where the
  - file is actually present.
@@ -99,35 +100,50 @@ annexLocation key hasher = objectDir </> keyPath key hasher
  - This does not take direct mode into account, so in direct mode it is not
  - the actual location of the file's content.
  -}
-gitAnnexLocation :: Key -> Git.Repo -> IO FilePath
-gitAnnexLocation key r
-	| Git.repoIsLocalBare r =
-		{- Bare repositories default to hashDirLower for new
-		 - content, as it's more portable. -}
+gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLocation key r config = gitAnnexLocation' key r (annexCrippledFileSystem config)
+gitAnnexLocation' :: Key -> Git.Repo -> Bool -> IO FilePath
+gitAnnexLocation' key r crippled
+	{- Bare repositories default to hashDirLower for new
+	 - content, as it's more portable.
+	 -
+	 - Repositories on filesystems that are crippled also use
+	 - hashDirLower, since they do not use symlinks and it's
+	 - more portable. -}
+	| Git.repoIsLocalBare r || crippled =
 		check $ map inrepo $ annexLocations key
-	| otherwise =
-		{- Non-bare repositories only use hashDirMixed, so
-		 - don't need to do any work to check if the file is
-		 - present. -}
-		return $ inrepo $ annexLocation key hashDirMixed
+	{- Non-bare repositories only use hashDirMixed, so
+	 - don't need to do any work to check if the file is
+	 - present. -}
+	| otherwise = return $ inrepo $ annexLocation key hashDirMixed
   where
 	inrepo d = Git.localGitDir r </> d
 	check locs@(l:_) = fromMaybe l <$> firstM doesFileExist locs
 	check [] = error "internal"
 
+{- Calculates a symlink to link a file to an annexed object. -}
+gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
+gitAnnexLink file key r = do
+	cwd <- getCurrentDirectory
+	let absfile = fromMaybe whoops $ absNormPath cwd file
+	loc <- gitAnnexLocation' key r False
+	return $ relPathDirToFile (parentDir absfile) loc
+  where
+  	whoops = error $ "unable to normalize " ++ file
+
 {- File that maps from a key to the file(s) in the git repository.
  - Used in direct mode. -}
-gitAnnexMapping :: Key -> Git.Repo -> IO FilePath
-gitAnnexMapping key r = do
-	loc <- gitAnnexLocation key r 
+gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexMapping key r config = do
+	loc <- gitAnnexLocation key r config
 	return $ loc ++ ".map"
 
 {- File that caches information about a key's content, used to determine
  - if a file has changed.
  - Used in direct mode. -}
-gitAnnexInodeCache :: Key -> Git.Repo -> IO FilePath
-gitAnnexInodeCache key r  = do
-	loc <- gitAnnexLocation key r 
+gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexInodeCache key r config  = do
+	loc <- gitAnnexLocation key r config
 	return $ loc ++ ".cache"
 
 gitAnnexInodeSentinal :: Git.Repo -> FilePath

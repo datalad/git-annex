@@ -10,7 +10,6 @@ module Command.Fix where
 import Common.Annex
 import Command
 import qualified Annex.Queue
-import Annex.Content
 
 def :: [Command]
 def = [notDirect $ noCommit $ command "fix" paramPaths seek
@@ -22,7 +21,7 @@ seek = [withFilesInGit $ whenAnnexed start]
 {- Fixes the symlink to an annexed file. -}
 start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = do
-	link <- calcGitLink file key
+	link <- inRepo $ gitAnnexLink file key
 	stopUnless ((/=) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file)) $ do
 		showStart "fix" file
 		next $ perform file link

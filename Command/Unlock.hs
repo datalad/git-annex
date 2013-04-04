@@ -35,7 +35,7 @@ perform dest key = do
 	unlessM (inAnnex key) $ error "content not present"
 	unlessM (checkDiskSpace Nothing key 0) $ error "cannot unlock"
 
-	src <- inRepo $ gitAnnexLocation key
+	src <- calcRepo $ gitAnnexLocation key
 	tmpdest <- fromRepo $ gitAnnexTmpLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
