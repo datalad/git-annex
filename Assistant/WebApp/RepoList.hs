@@ -20,6 +20,7 @@ import Remote.List (remoteListRefresh)
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
+import Logs.Group
 import Config
 import Config.Cost
 import qualified Git
@@ -41,6 +42,8 @@ data Actions
 		{ setupRepoLink :: Route WebApp
 		, syncToggleLink :: Route WebApp
 		}
+	| UnwantedRepoActions
+		{ setupRepoLink :: Route WebApp }
 
 mkSyncingRepoActions :: UUID -> Actions
 mkSyncingRepoActions u = SyncingRepoActions
@@ -54,6 +57,11 @@ mkNotSyncingRepoActions u = NotSyncingRepoActions
 	, syncToggleLink = EnableSyncR u
 	}
 
+mkUnwantedRepoActions :: UUID -> Actions
+mkUnwantedRepoActions u = UnwantedRepoActions
+	{ setupRepoLink = EditRepositoryR u
+	}
+
 needsEnabled :: Actions -> Bool
 needsEnabled (DisabledRepoActions _) = True
 needsEnabled _ = False
@@ -61,6 +69,10 @@ needsEnabled _ = False
 notSyncing :: Actions -> Bool
 notSyncing (SyncingRepoActions _ _) = False
 notSyncing _ = True
+
+notWanted :: Actions -> Bool
+notWanted (UnwantedRepoActions _) = True
+notWanted _ = False
 
 {- Called by client to get a list of repos, that refreshes
  - when new repos are added.
@@ -115,16 +127,19 @@ repoList reposelector
 	| otherwise = list =<< (++) <$> configured <*> unconfigured
   where
 	configured = do
-		syncing <- S.fromList . syncRemotes
+		syncing <- S.fromList . map Remote.uuid . syncRemotes
 			<$> liftAssistant getDaemonStatus
 		liftAnnex $ do
-			rs <- filter wantedrepo . concat . Remote.byCost
+			unwanted <- S.fromList
+				<$> filterM inUnwantedGroup (S.toList syncing)
+			rs <- filter selectedrepo . concat . Remote.byCost
 				<$> Remote.enabledRemoteList
 			let us = map Remote.uuid rs
-			let make r = if r `S.member` syncing
-				then mkSyncingRepoActions $ Remote.uuid r
-				else mkNotSyncingRepoActions $ Remote.uuid r
-			let l = zip us $ map make rs
+			let maker u
+				| u `S.member` unwanted = mkUnwantedRepoActions u
+				| u `S.member` syncing = mkSyncingRepoActions u
+				| otherwise = mkNotSyncingRepoActions u
+			let l = zip us $ map (maker . Remote.uuid) rs
 			if includeHere reposelector
 				then do
 					u <- getUUID
@@ -137,15 +152,15 @@ repoList reposelector
 				else return l
 	unconfigured = liftAnnex $ do
 		m <- readRemoteLog
-		map snd . catMaybes . filter wantedremote 
+		map snd . catMaybes . filter selectedremote 
 			. map (findinfo m)
 			<$> (trustExclude DeadTrusted $ M.keys m)
-	wantedrepo r
+	selectedrepo r
 		| Remote.readonly r = False
 		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
 		| otherwise = True
-	wantedremote Nothing = False
-	wantedremote (Just (iscloud, _))
+	selectedremote Nothing = False
+	selectedremote (Just (iscloud, _))
 		| onlyCloud reposelector = iscloud
 		| otherwise = True
 	findinfo m u = case M.lookup u m of
