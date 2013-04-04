@@ -28,6 +28,8 @@ git-annex (4.20130324) UNRELEASED; urgency=low
     from git.
   * Update working tree files fully atomically.
   * webapp: Improved transfer queue management.
+  * init: Probe whether the filesystem supports fifos, and if not,
+    disable ssh connection caching.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
 

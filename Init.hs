@@ -18,6 +18,7 @@ import Utility.TempFile
 import Utility.Network
 import qualified Git
 import qualified Git.LsFiles
+import qualified Git.Config
 import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
@@ -44,6 +45,7 @@ initialize mdescription = do
 	prepUUID
 	setVersion defaultVersion
 	checkCrippledFileSystem
+	checkFifoSupport
 	Annex.Branch.create
 	gitPreCommitHookWrite
 	createInodeSentinalFile
@@ -144,3 +146,21 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		void $ liftIO clean
 		setDirect True
 	setVersion directModeVersion
+
+probeFifoSupport :: Annex Bool
+probeFifoSupport = do
+	tmp <- fromRepo gitAnnexTmpDir
+	let f = tmp </> "gaprobe"
+	liftIO $ do
+		createDirectoryIfMissing True tmp
+		nukeFile f
+		createNamedPipe f ownerReadMode
+		ms <- tryIO $ getFileStatus f
+		nukeFile f
+		return $ either (const False) isNamedPipe ms
+
+checkFifoSupport :: Annex ()
+checkFifoSupport = unlessM probeFifoSupport $ do
+	warning "Detected a filesystem without fifo support."
+	warning "Disabling ssh connection caching."
+	setConfig (annexConfig "sshcaching") (Git.Config.boolConfig False)

@@ -61,3 +61,6 @@ However ssh connection caching breaks things on NTFS volumes.  If I turn off con
 but it would be nifty if git-annex could detect the filesystem type and do The Right Thing.
 
 Thanks for all the work on git-annex -- it's an awesome project!
+
+> [[done]], `git annex init` now probes for fifo support and disables ssh
+> connection caching if it cannot make one. --[[Joey]] 
