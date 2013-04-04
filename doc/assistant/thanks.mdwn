@@ -231,6 +231,9 @@ Tyree, Aaron Whitehouse
   toy project into something much more, and showed me the interest was there.
 * Rsync.net, for providing me a free account so I can make sure git-annex
   works well with it.
+* LeastAuthority.com, for providing me a free Tahoe-LAFS grid account,
+  so I can test git-annex with that, and back up the git-annex assistant
+  screencasts.
 * Anna and Mark, for the loan of the video camera; as well as the rest of
   my family, for your support. Even when I couldn't explain what I was
   working on.
