@@ -43,12 +43,6 @@
 /config/repository/add/cloud/glacier AddGlacierR GET POST
 /config/repository/add/cloud/box.com AddBoxComR GET POST
 
-/config/repository/delete/choose/#UUID DeleteRepositoryR GET
-/config/repository/delete/fromlist/#UUID DeleteRepositoryFromListR GET
-/config/repository/delete/contents/start/#UUID StartDeleteRepositoryContentsR GET
-/config/repository/delete/contents/finish/#UUID FinishedDeletingRepositoryContentsR GET
-/config/repository/delete/here DeleteCurrentRepositoryR GET POST
-
 /config/repository/pair/local/start StartLocalPairR GET POST
 /config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
 /config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET POST
@@ -68,6 +62,13 @@
 /config/repository/enable/webdav/#UUID EnableWebDAVR GET POST
 
 /config/repository/reorder RepositoriesReorderR GET
+
+/config/repository/disable/#UUID DisableRepositoryR GET
+
+/config/repository/delete/confirm/#UUID DeleteRepositoryR GET
+/config/repository/delete/start/#UUID StartDeleteRepositoryR GET
+/config/repository/delete/finish/#UUID FinishDeleteRepositoryR GET
+/config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
 /transfers/#NotificationId TransfersR GET
 /notifier/transfers NotifierTransfersR GET

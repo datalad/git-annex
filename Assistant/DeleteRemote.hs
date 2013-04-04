@@ -19,7 +19,6 @@ import Logs.Transfer
 import Logs.Location
 import Assistant.Alert
 import Assistant.DaemonStatus
-import Assistant.Types.UrlRenderer
 import qualified Remote
 import Remote.List
 import qualified Git.Command
@@ -30,8 +29,8 @@ import qualified Data.Text as T
 
 {- Removes a remote (but leave the repository as-is), and returns the old
  - Remote data. -}
-removeRemote :: UUID -> Assistant Remote
-removeRemote uuid = do
+disableRemote :: UUID -> Assistant Remote
+disableRemote uuid = do
 	remote <- fromMaybe (error "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
@@ -43,6 +42,12 @@ removeRemote uuid = do
 		void $ remoteListRefresh
 	updateSyncRemotes
 	return remote
+
+{- Removes a remote, marking it dead .-}
+removeRemote :: UUID -> Assistant Remote
+removeRemote uuid = do
+	liftAnnex $ trustSet uuid DeadTrusted
+	disableRemote uuid
 
 {- Called when a Remote is probably empty, to remove it.
  -
@@ -71,18 +76,22 @@ removableRemote urlrenderer uuid = do
 		a <- liftAnnex $ Annex.withCurrentState $ loggedKeysFor uuid
 		liftIO a
 
+{- With the webapp, this asks the user to click on a button to finish
+ - removing the remote.
+ -
+ - Without the webapp, just do the removal now.
+ -}
 finishRemovingRemote :: UrlRenderer -> UUID -> Assistant ()
 finishRemovingRemote urlrenderer uuid = do
-	void $ removeRemote uuid
-	liftAnnex $ trustSet uuid DeadTrusted
-
 #ifdef WITH_WEBAPP
 	desc <- liftAnnex $ Remote.prettyUUID uuid
-	url <- liftIO $ renderUrl urlrenderer (FinishedDeletingRepositoryContentsR uuid) []
+	url <- liftIO $ renderUrl urlrenderer (FinishDeleteRepositoryR uuid) []
 	close <- asIO1 removeAlert
 	void $ addAlert $ remoteRemovalAlert desc $ AlertButton
-		{ buttonLabel = T.pack "Finish removal"
+		{ buttonLabel = T.pack "Finish deletion process"
 		, buttonUrl = url
 		, buttonAction = Just close
 		}
+#else
+	
 #endif
