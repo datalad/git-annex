@@ -302,3 +302,6 @@ Some tests failed!
 > that does not support symlinks, and may be broken in some other way
 > as well, but is not relevant to this bug report.)
 > --[[Joey]] 
+
+> Closing this bug since the bug submitter cannot reproduce it and
+> had many problems that seems to point at a bad build. [[done]] --[[Joey]]
