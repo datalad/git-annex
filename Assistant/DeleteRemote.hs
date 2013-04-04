@@ -23,7 +23,6 @@ import qualified Annex
 
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
-import Assistant.WebApp
 import Assistant.Alert
 import qualified Data.Text as T
 #endif
