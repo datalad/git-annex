@@ -51,3 +51,6 @@ This was working correctly on a previous version, but I'm not sure which one of 
 * 3.20130114
 * 3.20130216
 * 4.20130227
+
+> Closing this bug report since my comment below seems a reasonable
+> explanation for the behavior you saw. [[done]] --[[Joey]] 
