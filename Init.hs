@@ -154,8 +154,9 @@ probeFifoSupport = do
 	liftIO $ do
 		createDirectoryIfMissing True tmp
 		nukeFile f
-		createNamedPipe f ownerReadMode
-		ms <- tryIO $ getFileStatus f
+		ms <- tryIO $ do
+			createNamedPipe f ownerReadMode
+			getFileStatus f
 		nukeFile f
 		return $ either (const False) isNamedPipe ms
 
