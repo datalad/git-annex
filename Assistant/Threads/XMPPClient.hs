@@ -18,7 +18,7 @@ import Assistant.Sync
 import Assistant.DaemonStatus
 import qualified Remote
 import Utility.ThreadScheduler
-import Assistant.WebApp (UrlRenderer, renderUrl)
+import Assistant.WebApp (UrlRenderer)
 import Assistant.WebApp.Types hiding (liftAssistant)
 import Assistant.WebApp.Configurators.XMPP (checkCloudRepos)
 import Assistant.Alert
@@ -281,16 +281,12 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 		finishXMPPPairing theirjid theiruuid
 	-- Show an alert to let the user decide if they want to pair.
 	showalert = do
-		let route = ConfirmXMPPPairFriendR $
-			PairKey theiruuid $ formatJID theirjid
-		url <- liftIO $ renderUrl urlrenderer route []
-		close <- asIO1 removeAlert
-		void $ addAlert $ pairRequestReceivedAlert (T.unpack $ buddyName theirjid)
-			AlertButton
-				{ buttonUrl = url
-				, buttonLabel = T.pack "Respond"
-				, buttonAction = Just close
-				}
+		button <- mkAlertButton (T.pack "Respond") urlrenderer $
+			ConfirmXMPPPairFriendR $
+				PairKey theiruuid $ formatJID theirjid
+		void $ addAlert $ pairRequestReceivedAlert
+			(T.unpack $ buddyName theirjid)
+			button
 
 pairMsgReceived _ PairAck theiruuid _selfjid theirjid =
 	{- PairAck must come from one of the buddies we are pairing with;

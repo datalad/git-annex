@@ -11,7 +11,7 @@ import Assistant.Common
 import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.Pairing.MakeRemote
-import Assistant.WebApp (UrlRenderer, renderUrl)
+import Assistant.WebApp (UrlRenderer)
 import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
@@ -101,14 +101,8 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
-	url <- liftIO $ renderUrl urlrenderer (FinishLocalPairR msg) []
-	closealert <- asIO1 removeAlert
-	void $ addAlert $ pairRequestReceivedAlert repo
-		AlertButton
-			{ buttonUrl = url
-			, buttonLabel = T.pack "Respond"
-			, buttonAction = Just closealert
-			}
+	button <- mkAlertButton (T.pack "Respond") urlrenderer (FinishLocalPairR msg)
+	void $ addAlert $ pairRequestReceivedAlert repo button
   where
 	repo = pairRepo msg
 

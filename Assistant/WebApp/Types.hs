@@ -14,7 +14,6 @@ module Assistant.WebApp.Types where
 
 import Assistant.Common
 import Assistant.Ssh
-import Assistant.Alert
 import Assistant.Pairing
 import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster

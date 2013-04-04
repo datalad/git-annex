@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.WebApp
 import Assistant.WebApp.Types
 import Assistant.WebApp.Notifications
-import Assistant.Alert
+import Assistant.Alert.Utility
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod

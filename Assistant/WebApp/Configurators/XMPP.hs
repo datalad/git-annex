@@ -57,14 +57,9 @@ checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
 checkCloudRepos urlrenderer r =
 	unlessM (syncingToCloudRemote <$> getDaemonStatus) $ do
 		buddyname <- getBuddyName $ Remote.uuid r
-		url <- liftIO $
-			renderUrl urlrenderer (NeedCloudRepoR $ Remote.uuid r) []
-		close <- asIO1 removeAlert
-		void $ addAlert $ cloudRepoNeededAlert buddyname $ AlertButton
-			{ buttonLabel = "Add a cloud repository"
-			, buttonUrl = url
-			, buttonAction = Just close
-			}
+		button <- mkAlertButton "Add a cloud repository" urlrenderer $
+			NeedCloudRepoR $ Remote.uuid r
+		void $ addAlert $ cloudRepoNeededAlert buddyname button
 #else
 checkCloudRepos _ _ = noop
 #endif

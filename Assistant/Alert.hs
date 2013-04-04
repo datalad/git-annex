@@ -1,198 +1,45 @@
 {- git-annex assistant alerts
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Assistant.Alert where
 
 import Common.Annex
+import Assistant.Types.Alert
+import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
 
-import qualified Data.Text as T
-import Data.Text (Text)
-import qualified Data.Map as M
 import Data.String
+import qualified Data.Text as T
 
-{- Different classes of alerts are displayed differently. -}
-data AlertClass = Success | Message | Activity | Warning | Error
-	deriving (Eq, Ord)
+#ifdef WITH_WEBAPP
+import Assistant.Monad
+import Assistant.DaemonStatus
+import Assistant.WebApp.Types
+import Assistant.WebApp
+import Yesod.Core
+#endif
 
-data AlertPriority = Filler | Low | Medium | High | Pinned
-	deriving (Eq, Ord)
-
-{- An alert can have an name, which is used to combine it with other similar
- - alerts. -}
-data AlertName 
-	= FileAlert TenseChunk
-	| SanityCheckFixAlert
-	| WarningAlert String
-	| PairAlert String
-	| XMPPNeededAlert
-	| RemoteRemovalAlert String
-	| CloudRepoNeededAlert
-	| SyncAlert
-	deriving (Eq)
-
-{- The first alert is the new alert, the second is an old alert.
- - Should return a modified version of the old alert. -}
-type AlertCombiner = Alert -> Alert -> Maybe Alert
-
-data Alert = Alert
-	{ alertClass :: AlertClass
-	, alertHeader :: Maybe TenseText
-	, alertMessageRender :: [TenseChunk] -> TenseText
-	, alertData :: [TenseChunk]
-	, alertBlockDisplay :: Bool
-	, alertClosable :: Bool
-	, alertPriority :: AlertPriority
-	, alertIcon :: Maybe AlertIcon
-	, alertCombiner :: Maybe AlertCombiner
-	, alertName :: Maybe AlertName
-	, alertButton :: Maybe AlertButton
-	}
-
-data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
-
-{- When clicked, a button always redirects to a URL
- - It may also run an IO action in the background, which is useful
- - to make the button close or otherwise change the alert. -}
-data AlertButton = AlertButton
-	{ buttonLabel :: Text
-	, buttonUrl :: Text
-	, buttonAction :: Maybe (AlertId -> IO ())
-	}
-
-type AlertPair = (AlertId, Alert)
-
-type AlertMap = M.Map AlertId Alert
-
-{- Higher AlertId indicates a more recent alert. -}
-newtype AlertId = AlertId Integer
-	deriving (Read, Show, Eq, Ord)
-
-firstAlertId :: AlertId
-firstAlertId = AlertId 0
-
-nextAlertId :: AlertId -> AlertId
-nextAlertId (AlertId i) = AlertId $ succ i
-
-{- This is as many alerts as it makes sense to display at a time.
- - A display might be smaller, or larger, the point is to not overwhelm the
- - user with a ton of alerts. -}
-displayAlerts :: Int
-displayAlerts = 6
-
-{- This is not a hard maximum, but there's no point in keeping a great
- - many filler alerts in an AlertMap, so when there's more than this many,
- - they start being pruned, down toward displayAlerts. -}
-maxAlerts :: Int
-maxAlerts = displayAlerts * 2
-
-{- The desired order is the reverse of:
- -
- - - Pinned alerts
- - - High priority alerts, newest first
- - - Medium priority Activity, newest first (mostly used for Activity)
- - - Low priority alerts, newest first
- - - Filler priorty alerts, newest first
- - - Ties are broken by the AlertClass, with Errors etc coming first.
- -}
-compareAlertPairs :: AlertPair -> AlertPair -> Ordering
-compareAlertPairs
-	(aid, Alert { alertClass = aclass, alertPriority = aprio })
-	(bid, Alert { alertClass = bclass, alertPriority = bprio })
-	 = compare aprio bprio
-		`thenOrd` compare aid bid
-			`thenOrd` compare aclass bclass
-
-sortAlertPairs :: [AlertPair] -> [AlertPair]
-sortAlertPairs = sortBy compareAlertPairs
-
-{- Renders an alert's header for display, if it has one. -}
-renderAlertHeader :: Alert -> Maybe Text
-renderAlertHeader alert = renderTense (alertTense alert) <$> alertHeader alert
-
-{- Renders an alert's message for display. -}
-renderAlertMessage :: Alert -> Text
-renderAlertMessage alert = renderTense (alertTense alert) $
-	(alertMessageRender alert) (alertData alert)
-
-showAlert :: Alert -> String
-showAlert alert = T.unpack $ T.unwords $ catMaybes
-	[ renderAlertHeader alert
-	, Just $ renderAlertMessage alert
-	]
-
-alertTense :: Alert -> Tense
-alertTense alert
-	| alertClass alert == Activity = Present
-	| otherwise = Past
-
-{- Checks if two alerts display the same. -}
-effectivelySameAlert :: Alert -> Alert -> Bool
-effectivelySameAlert x y = all id 
-	[ alertClass x == alertClass y
-	, alertHeader x == alertHeader y
-	, alertData x == alertData y
-	, alertBlockDisplay x == alertBlockDisplay y
-	, alertClosable x == alertClosable y
-	, alertPriority x == alertPriority y
-	]
-
-makeAlertFiller :: Bool -> Alert -> Alert
-makeAlertFiller success alert
-	| isFiller alert = alert
-	| otherwise = alert
-		{ alertClass = if c == Activity then c' else c
-		, alertPriority = Filler
-		, alertClosable = True
-		, alertButton = Nothing
-		, alertIcon = Just $ if success then SuccessIcon else ErrorIcon
+{- Makes a button for an alert that opens a Route. The button will
+ - close the alert it's attached to when clicked. -}
+#ifdef WITH_WEBAPP
+mkAlertButton :: T.Text -> UrlRenderer -> Route WebApp -> Assistant AlertButton
+mkAlertButton label urlrenderer route = do
+	close <- asIO1 removeAlert
+	url <- liftIO $ renderUrl urlrenderer route []
+	return $ AlertButton
+		{ buttonLabel = label
+		, buttonUrl = url
+		, buttonAction = Just close
 		}
-  where
-	c = alertClass alert
-	c'
-		| success = Success
-		| otherwise = Error
-
-isFiller :: Alert -> Bool
-isFiller alert = alertPriority alert == Filler
-
-{- Updates the Alertmap, adding or updating an alert.
- -
- - Any old filler that looks the same as the alert is removed.
- -
- - Or, if the alert has an alertCombiner that combines it with
- - an old alert, the old alert is replaced with the result, and the
- - alert is removed.
- -
- - Old filler alerts are pruned once maxAlerts is reached.
- -}
-mergeAlert :: AlertId -> Alert -> AlertMap -> AlertMap
-mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
-  where
-	pruneSame k al' = k == i || not (effectivelySameAlert al al')
-	pruneBloat m'
-		| bloat > 0 = M.fromList $ pruneold $ M.toList m'
-		| otherwise = m'
-	  where
-		bloat = M.size m' - maxAlerts
-		pruneold l =
-	 		let (f, rest) = partition (\(_, a) -> isFiller a) l
-			in drop bloat f ++ rest
-	updatePrune = pruneBloat $ M.filterWithKey pruneSame $
-		M.insertWith' const i al m
-	updateCombine combiner = 
-		let combined = M.mapMaybe (combiner al) m
-		in if M.null combined
-			then updatePrune
-			else M.delete i $ M.union combined m
+#endif
 
 baseActivityAlert :: Alert
 baseActivityAlert = Alert

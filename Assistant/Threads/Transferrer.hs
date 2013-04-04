@@ -12,6 +12,7 @@ import Assistant.DaemonStatus
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Assistant.Alert
+import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
 import Assistant.TransferrerPool

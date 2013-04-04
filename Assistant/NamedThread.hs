@@ -23,8 +23,8 @@ import qualified Data.Map as M
 import qualified Control.Exception as E
 
 #ifdef WITH_WEBAPP
-import Assistant.WebApp
 import Assistant.WebApp.Types
+import Assistant.Types.Alert
 import Assistant.Alert
 import qualified Data.Text as T
 #endif
@@ -65,17 +65,13 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 					]
 				hPutStrLn stderr msg
 #ifdef WITH_WEBAPP
-				button <- runAssistant d $ do
-					close <- asIO1 removeAlert
-					url <- liftIO $ renderUrl urlrenderer (RestartThreadR name) []
-					return $ Just $ AlertButton
-						{ buttonLabel = T.pack "Restart Thread"
-						, buttonUrl = url
-						, buttonAction = Just close
-						}
-				runAssistant d $ void $
-					addAlert $ (warningAlert (fromThreadName name) msg)
-						{ alertButton = button }
+				button <- runAssistant d $ mkAlertButton
+					(T.pack "Restart Thread")
+					urlrenderer 
+					(RestartThreadR name)
+				runAssistant d $ void $ addAlert $
+					(warningAlert (fromThreadName name) msg)
+						{ alertButton = Just button }
 #endif
 
 namedThreadId :: NamedThread -> Assistant (Maybe ThreadId)

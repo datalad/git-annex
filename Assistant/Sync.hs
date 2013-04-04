@@ -12,6 +12,7 @@ import Assistant.Pushes
 import Assistant.NetMessager
 import Assistant.Types.NetMessager
 import Assistant.Alert
+import Assistant.Alert.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import qualified Command.Sync

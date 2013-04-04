@@ -10,14 +10,10 @@
 module Assistant.DeleteRemote where
 
 import Assistant.Common
-#ifdef WITH_WEBAPP
-import Assistant.WebApp.Types
-import Assistant.WebApp
-#endif
+import Assistant.Types.UrlRenderer
 import Assistant.TransferQueue
 import Logs.Transfer
 import Logs.Location
-import Assistant.Alert
 import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
@@ -25,7 +21,12 @@ import qualified Git.Command
 import Logs.Trust
 import qualified Annex
 
+#ifdef WITH_WEBAPP
+import Assistant.WebApp.Types
+import Assistant.WebApp
+import Assistant.Alert
 import qualified Data.Text as T
+#endif
 
 {- Removes a remote (but leave the repository as-is), and returns the old
  - Remote data. -}
@@ -82,16 +83,12 @@ removableRemote urlrenderer uuid = do
  - Without the webapp, just do the removal now.
  -}
 finishRemovingRemote :: UrlRenderer -> UUID -> Assistant ()
-finishRemovingRemote urlrenderer uuid = do
 #ifdef WITH_WEBAPP
+finishRemovingRemote urlrenderer uuid = do
 	desc <- liftAnnex $ Remote.prettyUUID uuid
-	url <- liftIO $ renderUrl urlrenderer (FinishDeleteRepositoryR uuid) []
-	close <- asIO1 removeAlert
-	void $ addAlert $ remoteRemovalAlert desc $ AlertButton
-		{ buttonLabel = T.pack "Finish deletion process"
-		, buttonUrl = url
-		, buttonAction = Just close
-		}
+	button <- mkAlertButton (T.pack "Finish deletion process") urlrenderer $
+		FinishDeleteRepositoryR uuid
+	void $ addAlert $ remoteRemovalAlert desc button
 #else
-	
+finishRemovingRemote _ uuid = void $ removeRemote uuid
 #endif

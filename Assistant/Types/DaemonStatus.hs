@@ -10,12 +10,12 @@
 module Assistant.Types.DaemonStatus where
 
 import Common.Annex
-import Assistant.Alert
 import Assistant.Pairing
 import Utility.NotificationBroadcaster
 import Logs.Transfer
 import Assistant.Types.ThreadName
 import Assistant.Types.NetMessager
+import Assistant.Types.Alert
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
