@@ -1,0 +1,17 @@
+Got caught up on bug reports and made some bug fixes.
+
+The one bug I was really worried about, a strange file corruption problem
+on Android, turned out not to be a bug in git-annex. (Nor is it a bug that
+will affect regular users.)
+
+The only interesting bug fixed was a mixed case hash directory name
+collision when a repository is put on a VFAT filesystem (or other
+filesystem with similar semantics). I was able to fix that nicely; since
+such a repository will be in crippled filesystem mode due to other
+limitations of the filesystem, and so won't be using symlinks,
+it doesn't need to use the mixed case hash directory names.
+
+Last night, finished up the repository removal code, and associated UI
+tweaks. It works very well.
+
+Will probably make a release tomorrow.
