@@ -13,6 +13,10 @@ This is one of those potentially hidden but time consuming problems.
   Can either poll every .5 seconds or so to check file size, or
   could use inotify. **done**
 
+* TODO: Encrypted remotes download to a different temp file, and so the 
+  progress bar actually only appears for the decryption once the download
+  is complete.
+
 ## uploads
 
 Each individual remote type needs to implement its own support for calling
