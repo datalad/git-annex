@@ -735,6 +735,7 @@ test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ 
 			, "type=directory"
 			, "encryption=" ++ Utility.Gpg.testKeyId
 			, "directory=dir"
+			, "highRandomQuality=false"
 			]
 		initremote @? "initremote failed"
 		initremote @? "initremote failed when run twice in a row"

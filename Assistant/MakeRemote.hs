@@ -69,11 +69,15 @@ makeRsyncRemote name location = makeRemote name location $
 		, ("type", "rsync")
 		]
 
-{- Inits a special remote. -}
+{- Inits a special remote. Currently, only 'weak' ciphers can be
+ - generated from the assistant, because otherwise GnuPG may block once
+ - the entropy pool is drained, and as of now there's no way to tell the
+ - user to perform IO actions to refill the pool. -}
 makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex ()
 makeSpecialRemote name remotetype config = do
 	(u, c) <- Command.InitRemote.findByName name
-	c' <- R.setup remotetype u $ M.union config c
+	c' <- R.setup remotetype u $
+		M.insert "highRandomQuality" "false" $ M.union config c
 	describeUUID u name
 	configSet u c'
 

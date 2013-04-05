@@ -85,7 +85,8 @@ feedRead params passphrase feeder reader = do
 		reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
- - a key id, or a name. -}
+ - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
+ - GnuPG's manpage.) -}
 findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse <$> readStrict params
   where
@@ -97,8 +98,8 @@ findPubKeys for = KeyIds . parse <$> readStrict params
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
-genRandom :: Int -> IO String
-genRandom size = checksize <$> readStrict
+genRandom :: Bool -> Int -> IO String
+genRandom highQuality size = checksize <$> readStrict
 	[ Params params
 	, Param $ show randomquality
 	, Param $ show size
@@ -106,8 +107,13 @@ genRandom size = checksize <$> readStrict
   where
 	params = "--gen-random --armor"
 
-	-- 1 is /dev/urandom; 2 is /dev/random
-	randomquality = 1 :: Int
+	-- See http://www.gnupg.org/documentation/manuals/gcrypt/Quality-of-random-numbers.html
+	-- for the meaning of random quality levels.
+	-- The highest available is 2, which is the default for OpenPGP
+	-- key generation; Note that it uses the blocking PRNG /dev/random
+	-- on the Linux kernel, hence the running time may take a while.
+	randomquality :: Int
+	randomquality = if highQuality then 2 else 1
 
  	{- The size is the number of bytes of entropy desired; the data is
 	 - base64 encoded, so needs 8 bits to represent every 6 bytes of

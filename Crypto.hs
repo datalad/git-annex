@@ -67,15 +67,16 @@ cipherMac :: Cipher -> String
 cipherMac (Cipher c) = take cipherBeginning c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: String -> IO StorableCipher
-genEncryptedCipher keyid = do
+genEncryptedCipher :: String -> Bool -> IO StorableCipher
+genEncryptedCipher keyid highQuality = do
 	ks <- Gpg.findPubKeys keyid
-	random <- Gpg.genRandom cipherSize
+	random <- Gpg.genRandom highQuality cipherSize
 	encryptCipher (Cipher random) ks
 
 {- Creates a new, shared Cipher. -}
-genSharedCipher :: IO StorableCipher
-genSharedCipher = SharedCipher <$> Gpg.genRandom cipherSize
+genSharedCipher :: Bool -> IO StorableCipher
+genSharedCipher highQuality =
+	SharedCipher <$> Gpg.genRandom highQuality cipherSize
 
 {- Updates an existing Cipher, re-encrypting it to add a keyid. -}
 updateEncryptedCipher :: String -> StorableCipher -> IO StorableCipher
