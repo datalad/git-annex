@@ -1,0 +1,14 @@
+What steps will reproduce the problem?
+1. Create a Repository
+2. Add a Remote Server
+
+What is the expected output? What do you see instead?
+The option "Use a git repository on the server" is marked as not available
+
+What version of git-annex are you using? On what operating system?
+Version: 4.20130405 but on Webapp ist shows: Version: 4.20130324
+Linux 64bit
+
+Please provide any additional information below.
+git and git-annex are available on the Remote Server
+
