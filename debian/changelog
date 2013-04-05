@@ -1,4 +1,4 @@
-git-annex (4.20130324) UNRELEASED; urgency=low
+git-annex (4.20130405) unstable; urgency=low
 
   * Group subcommands into sections in usage. Closes: #703797
   * Per-command usage messages.
@@ -33,7 +33,7 @@ git-annex (4.20130324) UNRELEASED; urgency=low
   * Use lower case hash directories for storing files on crippled filesystems,
     same as is already done for bare repositories.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 25 Mar 2013 10:21:46 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 05 Apr 2013 10:42:18 -0400
 
 git-annex (4.20130323) unstable; urgency=low
 
