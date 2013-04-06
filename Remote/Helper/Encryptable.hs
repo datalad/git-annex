@@ -32,9 +32,9 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
 	(Just "shared", Just (EncryptedCipher _ _)) -> cannotchange
 	(Just _, Just (SharedCipher _)) -> cannotchange
 	(Just "shared", Nothing) -> use "encryption setup" . genSharedCipher
-					=<< highRandomQuality
+		=<< highRandomQuality
 	(Just keyid, Nothing) -> use "encryption setup" . genEncryptedCipher keyid
-					=<< highRandomQuality
+		=<< highRandomQuality
 	(Just keyid, Just v) -> use "encryption updated" $ updateEncryptedCipher keyid v
   where
 	cannotchange = error "Cannot change encryption type of existing remote."
@@ -43,8 +43,9 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
 		showNote $ m ++ " " ++ describeCipher cipher
 		return $ M.delete "encryption" $ M.delete "highRandomQuality" $
 				storeCipher c cipher
-	highRandomQuality = (&&) (maybe True (/="false") (M.lookup "highRandomQuality" c))
-				 <$> fmap not (Annex.getState Annex.fast)
+	highRandomQuality = 
+		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
+			<$> fmap not (Annex.getState Annex.fast)
 
 {- Modifies a Remote to support encryption.
  -

@@ -1,5 +1,10 @@
 git-annex (4.20130406) UNRELEASED; urgency=low
 
+  * initremote: Generates encryption keys with high quality entropy.
+    This can be disabled using --fast to get the old behavior.
+    The assistant still uses low-quality entropy when creating encrypted
+    remotes, to avoid delays.
+    Thanks, guilhem for the patch.
   * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
