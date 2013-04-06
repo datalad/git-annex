@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.166.255"
+ subject="comment 2"
+ date="2013-04-06T19:06:24Z"
+ content="""
+Thanks for taking the time to reply.
+
+1) The corruption spread between repositories so I resorted to restoring from a backup from some days ago, and then I restored newly added files by manually copying the symlinks from the old repo into the new one.  Of course I can't update the git-annex branch by hand.  I've run `git annex fsck`: does that re-create the location log information for the symlinks that I re-added, at least for the local repository even if it doesn't know about copies elsewhere?
+
+2) I initially tried to git clone from my restored backup, rather than just moving the restore into place.  But then while this clone showed no errors on a `git fsck --full`, any git-annex command, such as `init` (following [this](http://git-annex.branchable.com/tips/what_to_do_when_a_repository_is_corrupted/)), gives the following sort of error:
+
+    error: invalid object 100644 <long-SHA-string> for '<path to one of git annex's log files>'
+(unfortunately I lost my xterm so don't have one of my actual errors in full).  Can you think of any reason why doing a clone of the backup copy would cause this?  Instead I have just mv'd the backup copy into place and it works fine.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="identical filename"
+ date="2013-04-06T09:09:17Z"
+ content="""
+Same happens, with identical filename+content just in a different subdirectory.
+
+    annex/a.txt
+    annex/back/a.txt
+"""]]
