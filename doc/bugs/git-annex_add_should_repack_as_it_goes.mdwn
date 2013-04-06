@@ -22,3 +22,11 @@ Darwin pluto.local 12.3.0 Darwin Kernel Version 12.3.0: Sun Jan  6 22:37:10 PST 
 (Mac OS 10.8.3)
 
 git version 1.8.2
+
+> Based on the benchmarks below, repacking even once does not speed things
+> up; repacking repeatedly as `git annex add` runs would slow things down.
+> 
+> It might be worth following up with the git developers why `git commit`
+> scans loose objects after it has already output the commit sha1sum.
+> 
+> Don't see any improvements git-annex can make. [[done]] --[[Joey]]
