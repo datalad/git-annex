@@ -52,8 +52,8 @@ stageDirect = do
 				 - it really was. -}
 				oldcache <- recordedInodeCache key
 				case oldcache of
-					Nothing -> modifiedannexed file key cache
-					Just c -> unlessM (compareInodeCaches c cache) $
+					[] -> modifiedannexed file key cache
+					_ -> unlessM (elemInodeCaches cache oldcache) $
 						modifiedannexed file key cache
 			(Just key, Nothing, _) -> deletedannexed file key
 			(Nothing, Nothing, _) -> deletegit file
@@ -87,11 +87,11 @@ addDirect file cache = do
 	got Nothing = do
 		showEndFail
 		return False
-	got (Just (key, _)) = ifM (sameInodeCache file $ Just cache)
+	got (Just (key, _)) = ifM (sameInodeCache file [cache])
 		( do
 			l <- inRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
-			writeInodeCache key cache
+			addInodeCache key cache
 			void $ addAssociatedFile key file
 			logStatus key InfoPresent
 			showEndOk

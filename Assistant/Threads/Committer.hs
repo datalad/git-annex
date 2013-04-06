@@ -297,13 +297,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	removedKeysMap ct l = do
 		mks <- forM (filter isRmChange l) $ \c ->
 			catKeyFile $ changeFile c
-		M.fromList . catMaybes <$> forM (catMaybes mks) mkpair
+		M.fromList . concat <$> mapM mkpairs (catMaybes mks)
 	  where
-		mkpair k = do
-			mcache <- recordedInodeCache k
-			case mcache of
-				Just cache -> return $ Just (inodeCacheToKey ct cache, k)
-				Nothing -> return Nothing
+		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
+			recordedInodeCache k
 
 	failedingest = do
 		liftAnnex showEndFail

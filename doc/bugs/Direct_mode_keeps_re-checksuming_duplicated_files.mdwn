@@ -20,3 +20,6 @@ Secondly, the sync can take quite a while if you have lots of duplicates or a lo
 ##What version of git-annex are you using? On what operating system?
 
 git-annex version: 4.20130227 on Archlinux
+
+> [[done]]; fixed inode caching code to support multiple files for the
+> same content. --[[Joey]] 

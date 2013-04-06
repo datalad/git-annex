@@ -1,3 +1,9 @@
+git-annex (4.20130406) UNRELEASED; urgency=low
+
+  * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
+
 git-annex (4.20130405) unstable; urgency=low
 
   * Group subcommands into sections in usage. Closes: #703797

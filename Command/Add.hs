@@ -132,7 +132,7 @@ ingest (Just source) = do
 	goindirect Nothing _ = failure
 
 	godirect (Just (key, _)) (Just cache) = do
-		writeInodeCache key cache
+		addInodeCache key cache
 		finishIngestDirect key source
 		return $ Just key
 	godirect _ _ = failure

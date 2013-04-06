@@ -12,10 +12,12 @@ module Annex.Content.Direct (
 	goodContent,
 	recordedInodeCache,
 	updateInodeCache,
+	addInodeCache,
 	writeInodeCache,
 	compareInodeCaches,
 	compareInodeCachesWith,
 	sameInodeCache,
+	elemInodeCaches,
 	sameFileStatus,
 	removeInodeCache,
 	toInodeCache,
@@ -101,21 +103,36 @@ normaliseAssociatedFile file = do
 goodContent :: Key -> FilePath -> Annex Bool
 goodContent key file = sameInodeCache file =<< recordedInodeCache key
 
-{- Gets the recorded inode cache for a key. -}
-recordedInodeCache :: Key -> Annex (Maybe InodeCache)
+{- Gets the recorded inode cache for a key. 
+ -
+ - A key can be associated with multiple files, so may return more than
+ - one. -}
+recordedInodeCache :: Key -> Annex [InodeCache]
 recordedInodeCache key = withInodeCacheFile key $ \f ->
-	liftIO $ catchDefaultIO Nothing $ readInodeCache <$> readFile f
+	liftIO $ catchDefaultIO [] $
+		mapMaybe readInodeCache . lines <$> readFile f
 
-{- Stores a cache of attributes for a file that is associated with a key. -}
+{- Caches an inode for a file.
+ -
+ - Anything else already cached is preserved.
+ -}
 updateInodeCache :: Key -> FilePath -> Annex ()
-updateInodeCache key file = maybe noop (writeInodeCache key)
+updateInodeCache key file = maybe noop (addInodeCache key)
 	=<< liftIO (genInodeCache file)
 
-{- Writes a cache for a key. -}
-writeInodeCache :: Key -> InodeCache -> Annex ()
-writeInodeCache key cache = withInodeCacheFile key $ \f -> do
+{- Adds another inode to the cache for a key. -}
+addInodeCache :: Key -> InodeCache -> Annex ()
+addInodeCache key cache = do
+	oldcaches <- recordedInodeCache key
+	unlessM (elemInodeCaches cache oldcaches) $
+		writeInodeCache key (cache:oldcaches)
+
+{- Writes inode cache for a key. -}
+writeInodeCache :: Key -> [InodeCache] -> Annex ()
+writeInodeCache key caches = withInodeCacheFile key $ \f -> do
 	createContentDir f
-	liftIO $ writeFile f $ showInodeCache cache
+	liftIO $ writeFile f $
+		unlines $ map showInodeCache caches
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
@@ -127,12 +144,12 @@ withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 
 {- Checks if a InodeCache matches the current version of a file. -}
-sameInodeCache :: FilePath -> Maybe InodeCache -> Annex Bool
-sameInodeCache _ Nothing = return False
-sameInodeCache file (Just old) = go =<< liftIO (genInodeCache file)
+sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
+sameInodeCache _ [] = return False
+sameInodeCache file old = go =<< liftIO (genInodeCache file)
   where
 	go Nothing = return False
-	go (Just curr) = compareInodeCaches curr old
+	go (Just curr) = elemInodeCaches curr old
 
 {- Checks if a FileStatus matches the recorded InodeCache of a file. -}
 sameFileStatus :: Key -> FileStatus -> Annex Bool
@@ -140,8 +157,8 @@ sameFileStatus key status = do
 	old <- recordedInodeCache key
 	let curr = toInodeCache status
 	case (old, curr) of
-		(Just o, Just c) -> compareInodeCaches o c
-		(Nothing, Nothing) -> return True
+		(_, Just c) -> elemInodeCaches c old
+		([], Nothing) -> return True
 		_ -> return False
 
 {- If the inodes have changed, only the size and mtime are compared. -}
@@ -152,6 +169,13 @@ compareInodeCaches x y
 		( return $ compareWeak x y
 		, return False
 		)
+
+elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
+elemInodeCaches _ [] = return False
+elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)
+	( return True
+	, elemInodeCaches c ls
+	)
 
 compareInodeCachesWith :: Annex InodeComparisonType
 compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
