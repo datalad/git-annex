@@ -27,3 +27,5 @@ Something vaguely like this should work as the preferred content
 expression for the clients:
 
 	exclude=archive/* or (include=archive/* and (not (copies=archive:1 or copies=smallarchive:1)))
+
+> [[done]] --[[Joey]]

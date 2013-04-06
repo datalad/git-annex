@@ -55,21 +55,22 @@ descStandardGroup UnwantedGroup = "unwanted: remove content from this repository
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String
-preferredContent ClientGroup = lastResort
-	"exclude=*/archive/* and exclude=archive/*"
-preferredContent TransferGroup = lastResort
-	"not (inallgroup=client and copies=client:2) and " ++ preferredContent ClientGroup
+preferredContent ClientGroup = lastResort $
+	"(exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")"
+preferredContent TransferGroup = lastResort $
+	"not (inallgroup=client and copies=client:2) and (" ++ preferredContent ClientGroup ++ ")"
 preferredContent BackupGroup = "include=*"
-preferredContent IncrementalBackupGroup = lastResort
+preferredContent IncrementalBackupGroup = lastResort $
 	"include=* and (not copies=incrementalbackup:1)"
 preferredContent SmallArchiveGroup = lastResort $
-	"(include=*/archive/* or include=archive/*) and " ++ preferredContent FullArchiveGroup
-preferredContent FullArchiveGroup = lastResort
-	"not (copies=archive:1 or copies=smallarchive:1)"
+	"(include=*/archive/* or include=archive/*) and (" ++ preferredContent FullArchiveGroup ++ ")"
+preferredContent FullArchiveGroup = lastResort notArchived
 preferredContent SourceGroup = "not (copies=1)"
-preferredContent ManualGroup = lastResort
-	"present and exclude=*/archive/* and exclude=archive/*"
+preferredContent ManualGroup = "present and (" ++ preferredContent ClientGroup ++ ")"
 preferredContent UnwantedGroup = "exclude=*"
+
+notArchived :: String
+notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
   	
 {- Most repositories want any content that is only on untrusted
  - or dead repositories. -}

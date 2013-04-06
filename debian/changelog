@@ -6,6 +6,9 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     remotes, to avoid delays.
     Thanks, guilhem for the patch.
   * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
+  * Adjust preferred content expressions so that content in archive
+    directories is preferred until it has reached an archive or smallarchive
+    repository.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

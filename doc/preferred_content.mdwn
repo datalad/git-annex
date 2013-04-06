@@ -86,9 +86,10 @@ any repository that can will back it up.)
 
 ### client
 
-All content is preferred, unless it's in a "archive" directory.
+All content is preferred, unless it's for a file in a "archive" directory,
+which has reached an archive repository.
 
-`(exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
+`((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)`
 
 ### transfer
 
@@ -100,7 +101,7 @@ USB drive used in a sneakernet.
 The preferred content expression for these causes them to get and retain
 data until all clients have a copy.
 
-`(not (inallgroup=client and copies=client:2) and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
+`(not (inallgroup=client and copies=client:2) and ($client)`
 
 The "copies=client:2" part of the above handles the case where
 there is only one client repository. It makes a transfer repository
@@ -152,15 +153,18 @@ data until a copy has been sent to some other repository.
 
 ### manual
 
-This gives you full manual control over what content is stored in the
+This gives you nearly full manual control over what content is stored in the
 repository. This allows using the [[assistant]] without it trying to keep a
 local copy of every file. Instead, you can manually run `git annex get`,
-`git annex drop`, etc to manage content.
+`git annex drop`, etc to manage content. Only content that is present
+is preferred.
 
-Only content that is present is preferred. Content in "archive"
-directories is never preferred.
+The exception to this manual control is that content that a client
+repository would not want is not preferred. So, files in archive
+directories are not preferred once their content has 
+reached an archive repository.
 
-`(present and exclude=*/archive/* and exclude=archive/*) or (not copies=semitrusted+:1)`
+`present and ($client)`
 
 ### unwanted
 
