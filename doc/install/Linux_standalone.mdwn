@@ -24,3 +24,9 @@ A daily build is also available.
 
 * i386: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/i386/))
 * amd64: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/amd64/))
+
+## gitannex-install
+
+Eskild Hustvedt has contributed a (gitannex-install)[https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install]
+script to manage keeping up to date with new releases using the standalone
+built.
