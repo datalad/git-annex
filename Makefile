@@ -4,7 +4,7 @@ all=git-annex $(mans) docs
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX=/usr
-CABAL?=cabal # set to "runghc Setup.hs" if you lack a cabal program
+CABAL?=cabal # set to "./Setup" if you lack a cabal program
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -16,6 +16,7 @@ build-stamp: $(all)
 	touch $@
 
 Build/SysConfig.hs: configure.hs Build/TestConfig.hs Build/Configure.hs
+	if [ "$(CABAL)" = ./Setup ]; then ghc --make Setup; fi
 	$(CABAL) configure
 
 git-annex: Build/SysConfig.hs
@@ -71,7 +72,8 @@ docs: $(mans)
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp
+		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
+		Setup.hi Setup.o Setup
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh

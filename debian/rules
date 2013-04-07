@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 # Avoid using cabal, as it writes to $HOME
-export CABAL=runghc Setup.hs
+export CABAL=./Setup
 
 %:
 	dh $@
