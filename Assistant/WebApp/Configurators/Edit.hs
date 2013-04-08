@@ -14,6 +14,7 @@ import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
+import Assistant.ScanRemotes
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
@@ -60,18 +61,12 @@ getRepoConfig uuid mremote = RepoConfig
 
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
-	when (repoDescription oldc /= repoDescription newc) $ liftAnnex $ do
+	when descriptionChanged $ liftAnnex $ do
 		maybe noop (describeUUID uuid . T.unpack) (repoDescription newc)
 		void uuidMapLoad
-	when (repoGroup oldc /= repoGroup newc) $ liftAnnex $ 
-		case repoGroup newc of
-			RepoGroupStandard g -> setStandardGroup uuid g
-			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
-	when (repoSyncable oldc /= repoSyncable newc) $
-		changeSyncable mremote (repoSyncable newc)
-	when (isJust mremote && makeLegalName (T.unpack $ repoName oldc) /= makeLegalName (T.unpack $ repoName newc)) $ do
+	when nameChanged $ do
 		liftAnnex $ do
-			name <- fromRepo $ uniqueRemoteName (T.unpack $ repoName newc) 0
+			name <- fromRepo $ uniqueRemoteName (legalName newc) 0
 			{- git remote rename expects there to be a
 			 - remote.<name>.fetch, and exits nonzero if
 			 - there's not. Special remotes don't normally
@@ -90,6 +85,28 @@ setRepoConfig uuid mremote oldc newc = do
 				]
 			void $ Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes
+	when groupChanged $ do
+		liftAnnex $ case repoGroup newc of
+			RepoGroupStandard g -> setStandardGroup uuid g
+			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
+		{- Enabling syncing will cause a scan,
+		 - so avoid queueing a duplicate scan. -}
+		when (repoSyncable newc && not syncableChanged) $ liftAssistant $
+			case mremote of
+				Just remote -> do
+					addScanRemotes True [remote]
+				Nothing -> do
+					addScanRemotes True
+						=<< syncDataRemotes <$> getDaemonStatus
+	when syncableChanged $
+		changeSyncable mremote (repoSyncable newc)
+  where
+  	syncableChanged = repoSyncable oldc /= repoSyncable newc
+	groupChanged = repoGroup oldc /= repoGroup newc
+	nameChanged = isJust mremote && legalName oldc /= legalName newc
+	descriptionChanged = repoDescription oldc /= repoDescription newc
+
+	legalName = makeLegalName . T.unpack . repoName
 
 editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
 editRepositoryAForm def = RepoConfig
