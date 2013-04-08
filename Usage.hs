@@ -95,6 +95,8 @@ paramGroup :: String
 paramGroup = "GROUP"
 paramSize :: String
 paramSize = "SIZE"
+paramAddress :: String
+paramAddress = "ADDRESS"
 paramKeyValue :: String
 paramKeyValue = "K=V"
 paramNothing :: String

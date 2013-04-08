@@ -161,6 +161,7 @@ import Utility.ThreadScheduler
 import qualified Build.SysConfig as SysConfig
 
 import System.Log.Logger
+import Network.Socket (HostName)
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
@@ -170,8 +171,8 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  -
  - startbrowser is passed the url and html shim file, as well as the original
  - stdout and stderr descriptors. -}
-startDaemon :: Bool -> Bool -> Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
-startDaemon assistant foreground startbrowser = do
+startDaemon :: Bool -> Bool -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon assistant foreground listenhost startbrowser = do
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	logfd <- liftIO $ openLog logfile
@@ -218,7 +219,7 @@ startDaemon assistant foreground startbrowser = do
 		mapM_ (startthread urlrenderer)
 			[ watch $ commitThread
 #ifdef WITH_WEBAPP
-			, assist $ webAppThread d urlrenderer False Nothing webappwaiter
+			, assist $ webAppThread d urlrenderer False listenhost Nothing webappwaiter
 #ifdef WITH_PAIRING
 			, assist $ pairListenerThread urlrenderer
 #endif

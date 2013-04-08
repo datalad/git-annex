@@ -23,24 +23,33 @@ import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
 import Locations.UserConfig
+import qualified Option
 
 import System.Posix.Directory
 import Control.Concurrent
 import Control.Concurrent.STM
 import System.Process (env, std_out, std_err)
+import Network.Socket (HostName)
+import System.Environment
 
 def :: [Command]
-def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
+def = [ withOptions [listenOption] $
+	noCommit $ noRepo startNoRepo $ dontCheck repoExists $ notBareRepo $
 	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+listenOption :: Option
+listenOption = Option.field [] "listen" paramAddress
+	"accept connections to this address"
 
-start :: CommandStart
+seek :: [CommandSeek]
+seek = [withField listenOption return $ \listenhost ->
+	withNothing $ start listenhost]
+
+start :: Maybe HostName -> CommandStart
 start = start' True
 
-start' :: Bool -> CommandStart
-start' allowauto = do
+start' :: Bool -> Maybe HostName -> CommandStart
+start' allowauto listenhost = do
 	liftIO $ ensureInstalled
 	ifM isInitialized ( go , auto )
 	stop
@@ -49,10 +58,14 @@ start' allowauto = do
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		ifM (checkpid <&&> checkshim f)
-			( liftIO $ openBrowser browser f Nothing Nothing
-			, startDaemon True True $ Just $ 
-				\origout origerr _url htmlshim ->
-					openBrowser browser htmlshim origout origerr
+			( if isJust listenhost
+				then error "The assistant is already running, so --listen cannot be used."
+				else liftIO $ openBrowser browser f Nothing Nothing
+			, startDaemon True True listenhost $ Just $ 
+				\origout origerr url htmlshim ->
+					if isJust listenhost
+						then maybe noop (`hPutStrLn` url) origout
+						else openBrowser browser htmlshim origout origerr
 			)
 	auto
 		| allowauto = liftIO startNoRepo
@@ -68,13 +81,20 @@ start' allowauto = do
  - the autostart file. If not, it's our first time being run! -}
 startNoRepo :: IO ()
 startNoRepo = do
+	-- FIXME should be able to reuse regular getopt, but 
+	-- it currently runs in the Annex monad.
+	args <- getArgs
+	let listenhost = headMaybe $ map (snd . separate (== '=')) $ 
+		filter ("--listen=" `isPrefixOf`) args
+
 	dirs <- liftIO $ filterM doesDirectoryExist =<< readAutoStartFile
 	case dirs of
-		[] -> firstRun
+		[] -> firstRun listenhost
 		(d:_) -> do
 			changeWorkingDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ doCommand $ start' False
+			void $ Annex.eval state $ doCommand $
+				start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
@@ -89,8 +109,8 @@ startNoRepo = do
  - Note that it's important that mainthread never terminates! Much
  - of this complication is due to needing to keep the mainthread running.
  -}
-firstRun :: IO ()
-firstRun = do
+firstRun :: Maybe HostName -> IO ()
+firstRun listenhost = do
 	{- Without a repository, we cannot have an Annex monad, so cannot
 	 - get a ThreadState. Using undefined is only safe because the
 	 - webapp checks its noAnnex field before accessing the
@@ -104,7 +124,7 @@ firstRun = do
 	let callback a = Just $ a v
 	runAssistant d $ do
 		startNamedThread urlrenderer $
-			webAppThread d urlrenderer True 
+			webAppThread d urlrenderer True listenhost
 				(callback signaler)
 				(callback mainthread)
 		waitNamedThreads
@@ -112,15 +132,21 @@ firstRun = do
 	signaler v = do
 		putMVar v ""
 		takeMVar v
-	mainthread v _url htmlshim = do
-		browser <- maybe Nothing webBrowser <$> Git.Config.global
-		openBrowser browser htmlshim Nothing Nothing
-
-		_wait <- takeMVar v
-
-		state <- Annex.new =<< Git.CurrentRepo.get
-		Annex.eval state $
-			startDaemon True True $ Just $ sendurlback v
+	mainthread v url htmlshim
+		| isJust listenhost = do
+			putStrLn url
+			go
+		| otherwise = do
+			browser <- maybe Nothing webBrowser <$> Git.Config.global
+			openBrowser browser htmlshim Nothing Nothing
+			go
+	  where
+		go = do
+			_wait <- takeMVar v
+			state <- Annex.new =<< Git.CurrentRepo.get
+			Annex.eval state $
+				startDaemon True True listenhost $ Just $
+					sendurlback v
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
 openBrowser :: Maybe FilePath -> FilePath -> Maybe Handle -> Maybe Handle -> IO ()

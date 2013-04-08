@@ -31,5 +31,5 @@ start :: Bool -> Bool -> Bool -> CommandStart
 start assistant foreground stopdaemon = do
 	if stopdaemon
 		then stopDaemon
-		else startDaemon assistant foreground Nothing -- does not return
+		else startDaemon assistant foreground Nothing Nothing -- does not return
 	stop

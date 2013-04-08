@@ -38,7 +38,7 @@ import Git
 
 import Yesod
 import Yesod.Static
-import Network.Socket (SockAddr)
+import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
@@ -49,10 +49,11 @@ webAppThread
 	:: AssistantData
 	-> UrlRenderer
 	-> Bool
+	-> Maybe HostName
 	-> Maybe (IO String)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $ liftIO $ do
+webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup = thread $ liftIO $ do
 	webapp <- WebApp
 		<$> pure assistantdata
 		<*> (pack <$> genRandomToken)
@@ -60,13 +61,14 @@ webAppThread assistantdata urlrenderer noannex postfirstrun onstartup = thread $
 		<*> pure $(embed "static")
 		<*> pure postfirstrun
 		<*> pure noannex
+		<*> pure listenhost
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp app' $ \addr -> if noannex
+	runWebApp listenhost app' $ \addr -> if noannex
 		then withTempFile "webapp.html" $ \tmpfile _ ->
 			go addr webapp tmpfile Nothing
 		else do

@@ -10,6 +10,8 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     directories is preferred until it has reached an archive or smallarchive
     repository.
   * Avoid using runghc when building the Debian package, as that needs ghci.
+  * webapp: New --listen= option allows running the webapp on one computer
+    and connecting to it from another. (Note: Does not yet use HTTPS.)
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

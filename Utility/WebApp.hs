@@ -37,7 +37,7 @@ import Data.Monoid
 import Control.Arrow ((***))
 import Control.Concurrent
 
-localhost :: String
+localhost :: HostName
 localhost = "localhost"
 
 {- Command to use to run a web browser. -}
@@ -48,14 +48,15 @@ browserCommand = "open"
 browserCommand = "xdg-open"
 #endif
 
-{- Binds to a socket on localhost, and runs a webapp on it.
+{- Binds to a socket on localhost, or possibly a different specified
+ - hostname or address, and runs a webapp on it.
  -
  - An IO action can also be run, to do something with the address,
  - such as start a web browser to view the webapp.
  -}
-runWebApp :: Wai.Application -> (SockAddr -> IO ()) -> IO ()
-runWebApp app observer = do
-	sock <- localSocket
+runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
+runWebApp h app observer = do
+	sock <- getSocket h
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	observer =<< getSocketName sock
 
@@ -65,21 +66,23 @@ webAppSettings = defaultSettings
 	{ settingsTimeout = 30 * 60
 	}
 
-{- Binds to a local socket, selecting any free port.
+{- Binds to a local socket, or if specified, to a socket on the specified
+ - hostname or address. Selets any free port.
  -
  - Prefers to bind to the ipv4 address rather than the ipv6 address
  - of localhost, if it's available.
- -
- - As a (very weak) form of security, only connections from 
- - localhost are accepted. -}
-localSocket :: IO Socket
-localSocket = do
-	addrs <- getAddrInfo (Just hints) (Just localhost) Nothing
+ -}
+getSocket :: Maybe HostName -> IO Socket
+getSocket h = do
+	addrs <- getAddrInfo (Just hints) hostname Nothing
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr
 		_ -> error "unable to bind to a local socket"
   where
+	hostname
+		| isJust h = h
+		| otherwise = Just localhost
 	hints = defaultHints
 		{ addrFlags = [AI_ADDRCONFIG]
 		, addrSocketType = Stream

@@ -26,6 +26,7 @@ import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Data.Text (Text, pack, unpack)
+import Network.Socket (HostName)
 
 publicFiles "static"
 
@@ -38,6 +39,7 @@ data WebApp = WebApp
 	, getStatic :: Static
 	, postFirstRun :: Maybe (IO String)
 	, noAnnex :: Bool
+	, listenHost ::Maybe HostName
 	}
 
 instance Yesod WebApp where
