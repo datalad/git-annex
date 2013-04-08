@@ -26,6 +26,22 @@ if the transfer display refreshes just as the click is made.)
 * allow disabling syncing to here, which should temporarily disable all
   local syncing. **done**
 
+## better headless support
+
+`--listen` is insecure, and using HTTPS would still not make it 100% secure
+as there would be no way for the browser to verify its certificate.
+
+I do have a better idea, but it'd be hard to implement.
+`git annex webapp --remote user@host:dir` could ssh to the remote host,
+run the webapp there, listening only on localhost, and then send the
+port the webapp chose back over the ssh connection. Then the same
+ssh connection could be reused (using ssh connection caching) to set up
+port forwarding from a port on the local host to the remote webapp.
+
+This would need to handle the first run case too, which would require
+forwarding a second port once the webapp made the repository and
+the second webapp started up.
+
 ## first start **done**
 
 * make git repo **done**
