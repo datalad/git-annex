@@ -60,7 +60,7 @@ makeXMPPGitRemote buddyname jid u = do
 	liftAnnex $ void remoteListRefresh
 	remote' <- liftAnnex $ fromMaybe (error "failed to add remote")
 		<$> Remote.byName (Just buddyname)
-	syncNewRemote remote'
+	syncRemote remote'
 	return True
 
 {- Pushes over XMPP, communicating with a specific client.

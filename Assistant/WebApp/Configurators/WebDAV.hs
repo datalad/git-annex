@@ -128,6 +128,6 @@ makeWebDavRemote name creds setup config = do
 		makeSpecialRemote name WebDAV.remote config
 		return remotename
 	setup r
-	liftAssistant $ syncNewRemote r
+	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 #endif

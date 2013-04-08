@@ -191,7 +191,7 @@ makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
 		makeSpecialRemote hostname remotetype config
 		return remotename
 	setup r
-	liftAssistant $ syncNewRemote r
+	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
   where
 	{- AWS services use the remote name as the basis for a host

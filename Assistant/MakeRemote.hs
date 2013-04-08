@@ -32,7 +32,7 @@ makeSshRemote forcersync sshdata mcost = do
 	r <- liftAnnex $
 		addRemote $ maker (sshRepoName sshdata) sshurl
 	liftAnnex $ maybe noop (setRemoteCost r) mcost
-	syncNewRemote r
+	syncRemote r
 	return r
   where
 	rsync = forcersync || rsyncOnly sshdata

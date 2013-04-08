@@ -10,9 +10,9 @@
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.Utility
 import Assistant.WebApp.OtherRepos
 import Assistant.MakeRemote
+import Assistant.Sync
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -166,7 +166,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
 getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
 	r <- combineRepos newrepopath remotename
-	syncRemote r
+	liftAssistant $ syncRemote r
 	redirect $ EditRepositoryR newrepouuid
   where
 	remotename = takeFileName newrepopath
@@ -244,7 +244,7 @@ getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
 		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		r <- combineRepos dir remotename
 		liftAnnex $ setStandardGroup u TransferGroup
-		syncRemote r
+		liftAssistant $ syncRemote r
 		return u
   	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive

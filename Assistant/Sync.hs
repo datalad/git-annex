@@ -204,9 +204,9 @@ manualPull currentbranch remotes = do
 		sendNetMessage $ Pushing (getXMPPClientID r) PushRequest
 	return (catMaybes failed, haddiverged)
 
-{- Start syncing a newly added remote, using a background thread. -}
-syncNewRemote :: Remote -> Assistant ()
-syncNewRemote remote = do
+{- Start syncing a remote, using a background thread. -}
+syncRemote :: Remote -> Assistant ()
+syncRemote remote = do
 	updateSyncRemotes
 	thread <- asIO $ do
 		reconnectRemotes False [remote]

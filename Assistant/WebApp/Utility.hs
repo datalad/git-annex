@@ -44,7 +44,7 @@ changeSyncable Nothing enable = do
 		| otherwise = PauseWatcher
 changeSyncable (Just r) True = do
 	changeSyncFlag r True
-	syncRemote r
+	liftAssistant $ syncRemote r
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
 	liftAssistant $ updateSyncRemotes
@@ -63,10 +63,6 @@ changeSyncFlag r enabled = liftAnnex $ do
 	void $ Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
-
-{- Start syncing remote, using a background thread. -}
-syncRemote :: Remote -> Handler ()
-syncRemote = liftAssistant . syncNewRemote
 
 pauseTransfer :: Transfer -> Handler ()
 pauseTransfer = cancelTransfer True
