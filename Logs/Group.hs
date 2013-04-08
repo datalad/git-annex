@@ -44,7 +44,12 @@ groupChange uuid@(UUID _) modifier = do
 		showLog (unwords . S.toList) .
 			changeLog ts uuid (modifier curr) .
 				parseLog (Just . S.fromList . words)
-	Annex.changeState $ \s -> s { Annex.groupmap = Nothing }
+	
+	-- The changed group invalidates the preferred content cache.
+	Annex.changeState $ \s -> s
+		{ Annex.groupmap = Nothing
+		, Annex.preferredcontentmap = Nothing
+		}
 groupChange NoUUID _ = error "unknown UUID; cannot modify"
 
 groupSet :: UUID -> S.Set Group -> Annex ()
