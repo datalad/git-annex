@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-09T17:33:06Z"
+ content="""
+You seem to have told the assistant you want it to directly manage a git repository on the USB drive. So it keeps a git-annex assistant daemon running on that drive. Which yes, makes it impossible to unmount it.
+
+So, don't do that. Make the repository on the drive by selecting Add Repository -> Removable drive, which creates a bare repository and never runs the assistant in it.
+"""]]
