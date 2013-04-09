@@ -439,10 +439,20 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls. -}
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl urls file = do
-	o <- map Param . annexWebOptions <$> Annex.getGitConfig
-	headers <- getHttpHeaders
-	liftIO $ anyM (\u -> Url.download u headers o file) urls
+downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
+  where
+  	go Nothing = do
+		opts <- map Param . annexWebOptions <$> Annex.getGitConfig
+		headers <- getHttpHeaders
+		liftIO $ anyM (\u -> Url.download u headers opts file) urls
+	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
+	downloadcmd basecmd url =
+		boolSystem "sh" [Param "-c", Param $ gencmd basecmd url]
+			<&&> doesFileExist file
+	gencmd basecmd url = 
+		replace "%file" (shellEscape file) $
+			replace "%url" (shellEscape url)
+				basecmd
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

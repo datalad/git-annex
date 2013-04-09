@@ -966,7 +966,7 @@ Here are all the supported configuration settings.
 * `annex.web-options`
 
   Options to use when using wget or curl to download a file from the web.
-  (wget is always used in preference to curl if available).
+  (wget is always used in preference to curl if available.)
   For example, to force ipv4 only, set it to "-4"
 
 * `annex.http-headers`
@@ -978,6 +978,16 @@ Here are all the supported configuration settings.
 
   If set, the command is run and each line of its output is used as a HTTP
   header. This overrides annex.http-headers.
+
+* `annex.web-download-command`
+
+  Use to specify a command to run to download a file from the web.
+  (The default is to use wget or curl.)
+
+  In the command line, %url is replaced with the url to download,
+  and %file is replaced with the file that it should be saved to.
+  Note that both these values will automatically be quoted, since
+  the command is run in a shell.
 
 * `remote.<name>.rsyncurl`
 

@@ -36,6 +36,7 @@ data GitConfig = GitConfig
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: Bool
 	, annexWebOptions :: [String]
+	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
 	, coreSymlinks :: Bool
@@ -59,6 +60,7 @@ extractGitConfig r = GitConfig
 	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
 	, annexAutoCommit = getbool (annex "autocommit") True
 	, annexWebOptions = getwords (annex "web-options")
+	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, coreSymlinks = getbool "core.symlinks" True
