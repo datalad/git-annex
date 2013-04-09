@@ -50,7 +50,7 @@ data Alert = Alert
 	, alertButton :: Maybe AlertButton
 	}
 
-data AlertIcon = ActivityIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
+data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
 
 type AlertMap = M.Map AlertId Alert
 

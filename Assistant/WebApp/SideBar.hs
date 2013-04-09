@@ -88,8 +88,9 @@ getClickAlert i = do
 			redirect $ buttonUrl b
 		_ -> redirectBack
 
-htmlIcon :: AlertIcon -> GWidget sub master ()
-htmlIcon ActivityIcon = bootstrapIcon "refresh"
+htmlIcon :: AlertIcon -> GWidget WebApp WebApp ()
+htmlIcon ActivityIcon = [whamlet|<img src="@{StaticR activityicon_gif}" alt="">|]
+htmlIcon SyncIcon = [whamlet|<img src="@{StaticR syncicon_gif}" alt="">|]
 htmlIcon InfoIcon = bootstrapIcon "info-sign"
 htmlIcon SuccessIcon = bootstrapIcon "ok"
 htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"

@@ -94,6 +94,7 @@ syncAlert rs = baseActivityAlert
 	, alertHeader = Just $ tenseWords
 		[Tensed "Syncing" "Synced", "with", showRemotes rs]
 	, alertPriority = Low
+	, alertIcon = Just SyncIcon
 	}
 
 syncResultAlert :: [Remote] -> [Remote] -> Alert

@@ -36,9 +36,10 @@
             $else
               ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn" "icon-play"}
             ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn" "icon-remove"}
+  $if scanrunning
+    <img src="@{StaticR activityicon_gif}" alt=""> #
+    Scanning for files to transfer
   $else
-    $if scanrunning
-      <i .icon-refresh></i> Scanning for files to transfer
-    $else
+    $if (not transfersrunning)
       <i>
         (No file transfers running)
