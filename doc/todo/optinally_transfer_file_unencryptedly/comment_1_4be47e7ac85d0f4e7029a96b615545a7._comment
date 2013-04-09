@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.212"
+ subject="rsh?"
+ date="2013-04-09T16:11:50Z"
+ content="""
+I don't use it myself, but rsync can be used with others remote shells, among which rsh supports unencrypted streams. You probably want to set up a secure authorization mechanism to deny access to intruders, and for that kerberos comes to the rescue :-) I didn't try the combination, but it should work over git-annex already.
+"""]]
