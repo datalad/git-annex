@@ -20,7 +20,6 @@ import Network.Wai.Logger
 import Control.Monad.IO.Class
 import Network.HTTP.Types
 import System.Log.Logger
-import Data.ByteString.Lazy.UTF8
 import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import Control.Exception
@@ -28,6 +27,7 @@ import Crypto.Random
 import Data.Digest.Pure.SHA
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -67,22 +67,21 @@ webAppSettings = defaultSettings
 	}
 
 {- Binds to a local socket, or if specified, to a socket on the specified
- - hostname or address. Selets any free port.
+ - hostname or address. Selets any free port, unless the hostname ends with
+ - ":port"
  -
  - Prefers to bind to the ipv4 address rather than the ipv6 address
  - of localhost, if it's available.
  -}
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
-	addrs <- getAddrInfo (Just hints) hostname Nothing
+	addrs <- getAddrInfo (Just hints) (Just hostname) port
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr
 		_ -> error "unable to bind to a local socket"
   where
-	hostname
-		| isJust h = h
-		| otherwise = Just localhost
+	(hostname, port) = maybe (localhost, Nothing) splitHostPort h
 	hints = defaultHints
 		{ addrFlags = [AI_ADDRCONFIG]
 		, addrSocketType = Stream
@@ -101,6 +100,18 @@ getSocket h = do
 		bindSocket sock (addrAddress addr)
 		listen sock maxListenQueue
 		return sock
+
+{- Splits address:port. For IPv6, use [address]:port. The port is optional. -}
+splitHostPort :: String -> (HostName, Maybe ServiceName)
+splitHostPort s
+	| "[" `isPrefixOf` s = let (h, p) = break (== ']') (drop 1 s)
+		in if "]:" `isPrefixOf` p
+			then (h, Just $ drop 2 p)
+			else (h, Nothing)
+	| otherwise = let (h, p) = separate (== ':') s
+		in if null p
+			then (h, Nothing)
+			else (h, Just p)
 
 {- Checks if debugging is actually enabled. -}
 debugEnabled :: IO Bool
@@ -129,7 +140,7 @@ logRequest req = do
 		, frombs $ lookupRequestField "user-agent" req
 		]
   where
-	frombs v = toString $ L.fromChunks [v]
+	frombs v = L8.toString $ L.fromChunks [v]
 
 lookupRequestField :: CI.CI B.ByteString -> Wai.Request -> B.ByteString
 lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
