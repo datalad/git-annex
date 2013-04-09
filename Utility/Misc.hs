@@ -11,6 +11,7 @@ import System.IO
 import Control.Monad
 import Foreign
 import Data.Char
+import Data.List
 import Control.Applicative
 import System.Posix.Process (getAnyProcessStatus)
 
@@ -69,6 +70,23 @@ segmentDelim p l = map reverse $ go [] [] l
 	go c r (i:is)
 		| p i = go [] ([i]:c:r) is
 		| otherwise = go (i:c) r is
+
+{- Replaces multiple values in a string.
+ -
+ - Takes care to skip over just-replaced values, so that they are not
+ - mangled. For example, massReplace [("foo", "new foo")] does not
+ - replace the "new foo" with "new new foo".
+ -}
+massReplace :: [(String, String)] -> String -> String
+massReplace vs = go [] vs
+  where
+
+	go acc _ [] = concat $ reverse acc
+	go acc [] (c:cs) = go ([c]:acc) vs cs
+	go acc ((val, replacement):rest) s
+		| val `isPrefixOf` s =
+			go (replacement:acc) vs (drop (length val) s)
+		| otherwise = go acc rest s
 
 {- Given two orderings, returns the second if the first is EQ and returns
  - the first otherwise.

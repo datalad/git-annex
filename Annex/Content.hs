@@ -447,12 +447,12 @@ downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
 		liftIO $ anyM (\u -> Url.download u headers opts file) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
-		boolSystem "sh" [Param "-c", Param $ gencmd basecmd url]
+		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]
 			<&&> doesFileExist file
-	gencmd basecmd url = 
-		replace "%file" (shellEscape file) $
-			replace "%url" (shellEscape url)
-				basecmd
+	gencmd url = massReplace
+		[ ("%file", shellEscape file)
+		, ("%url", shellEscape url)
+		]
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}
