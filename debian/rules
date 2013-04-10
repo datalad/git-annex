@@ -3,6 +3,9 @@
 # Avoid using cabal, as it writes to $HOME
 export CABAL=./Setup
 
+# Do use the changelog's version number, rather than making one up.
+export VERSION_FROM_CHANGELOG=1
+
 %:
 	dh $@
 

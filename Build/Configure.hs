@@ -8,9 +8,12 @@ import System.Process
 import Control.Applicative
 import System.FilePath
 import System.Environment
+import Data.Maybe
 
 import Build.TestConfig
 import Utility.SafeCommand
+import Utility.Monad
+import Utility.Exception
 
 tests :: [TestCase]
 tests =
@@ -70,14 +73,34 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
-{- Pulls package version out of the changelog. -}
+{- Version is usually based on the major version from the changelog, 
+ - plus the date of the last commit, plus the git rev of that commit.
+ - This works for autobuilds, ad-hoc builds, etc.
+ -
+ - For official builds, VERSION_FROM_CHANGELOG makes it use just the most
+ - recent version from the changelog.
+ -
+ - If git or a git repo is not available, or something goes wrong,
+ - just use the version from the changelog. -}
 getVersion :: Test
 getVersion = do
-	version <- getVersionString
+	changelogversion <- getChangelogVersion
+	version <- ifM (isJust <$> catchMaybeIO (getEnv "VERSION_FROM_CHANGELOG"))
+		( return changelogversion
+		, catchDefaultIO changelogversion $ do
+			let major = takeWhile (/= '.') changelogversion
+			autoversion <- readProcess "sh"
+				[ "-c"
+				, "git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/'"
+				] ""
+			if null autoversion
+				then return changelogversion
+				else return $ concat [ major, ".", autoversion ]
+		)
 	return $ Config "packageversion" (StringConfig version)
 	
-getVersionString :: IO String
-getVersionString = do
+getChangelogVersion :: IO String
+getChangelogVersion = do
 	changelog <- readFile "CHANGELOG"
 	let verline = head $ lines changelog
 	return $ middle (words verline !! 1)
@@ -97,7 +120,7 @@ getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()
 cabalSetup = do
-	version <- getVersionString
+	version <- getChangelogVersion
 	cabal <- readFile cabalfile
 	writeFile tmpcabalfile $ unlines $ 
 		map (setfield "Version" version) $

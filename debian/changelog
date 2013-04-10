@@ -14,6 +14,8 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     and connecting to it from another. (Note: Does not yet use HTTPS.)
   * webapp: When a repository's group is changed, rescan for transfers.
   * Added annex.web-download-command setting.
+  * The version number is now derived from git, unless built with
+    VERSION_FROM_CHANGELOG.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 
