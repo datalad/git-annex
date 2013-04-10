@@ -19,6 +19,9 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * webapp: Added animations.
   * assistant: Stop any transfers the assistant initiated on shutdown.
   * assistant: Added sequence numbers to XMPP git push packets. (Not yet used.)
+  * assistant: Bug fix to avoid annexing the files that git uses
+    to stand in for symlinks on FAT and other filesystem not supporting
+    symlinks.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

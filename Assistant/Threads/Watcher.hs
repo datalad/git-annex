@@ -80,7 +80,10 @@ runWatcher = do
 	startup <- asIO1 startupScan
 	matcher <- liftAnnex $ largeFilesMatcher
 	direct <- liftAnnex isDirect
-	addhook <- hook $ if direct then onAddDirect matcher else onAdd matcher
+	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
+	addhook <- hook $ if direct
+		then onAddDirect symlinkssupported matcher
+		else onAdd matcher
 	delhook <- hook onDel
 	addsymlinkhook <- hook $ onAddSymlink direct
 	deldirhook <- hook onDelDir
@@ -188,9 +191,10 @@ onAdd matcher file filestatus
 	| otherwise = noChange
 
 {- In direct mode, add events are received for both new files, and
- - modified existing files. -}
-onAddDirect :: FileMatcher -> Handler
-onAddDirect matcher file fs = do
+ - modified existing files.
+ -}
+onAddDirect :: Bool -> FileMatcher -> Handler
+onAddDirect symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
@@ -203,37 +207,59 @@ onAddDirect matcher file fs = do
 				( do
 					link <- liftAnnex $ inRepo $ gitAnnexLink file key
 					addLink file link (Just key)
-				, do
+				, guardSymlinkStandin (Just key) $ do
 					debug ["changed direct", file]
 					liftAnnex $ changedDirect key file
 					add matcher file
 				)
-		_ -> do
+		_ -> guardSymlinkStandin Nothing $ do
 			debug ["add direct", file]
 			add matcher file
+  where
+ 	{- On a filesystem without symlinks, we'll get changes for regular
+	 - files that git uses to stand-in for symlinks. Detect when
+	 - this happens, and stage the symlink, rather than annexing the
+	 - file. -}
+	guardSymlinkStandin mk a
+		| symlinkssupported = a
+		| otherwise = do
+			linktarget <- liftAnnex $ getAnnexLinkTarget file
+			liftIO $ print (file, linktarget)
+			case linktarget of
+				Nothing -> a
+				Just lt -> do
+					case fileKey $ takeFileName lt of
+						Nothing -> noop
+						Just key -> void $ liftAnnex $
+							addAssociatedFile key file
+					onAddSymlink' linktarget mk True file fs
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
 onAddSymlink :: Bool -> Handler
-onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile file)
+onAddSymlink isdirect file filestatus = do
+	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
+	kv <- liftAnnex (Backend.lookupFile file)
+	onAddSymlink' linktarget (fmap fst kv) isdirect file filestatus
+
+onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
+onAddSymlink' linktarget mk isdirect file filestatus = go mk
   where
-	go (Just (key, _)) = do
+  	go (Just key) = do
 		when isdirect $
 			liftAnnex $ void $ addAssociatedFile key file
 		link <- liftAnnex $ inRepo $ gitAnnexLink file key
-		ifM ((==) (Just link) <$> liftIO (catchMaybeIO $ readSymbolicLink file))
-			( ensurestaged (Just link) (Just key) =<< getDaemonStatus
-			, do
+		if linktarget == Just link
+			then ensurestaged (Just link) =<< getDaemonStatus
+			else do
 				unless isdirect $
 					liftAnnex $ replaceFile file $
 						makeAnnexLink link
 				addLink file link (Just key)
-			)
-	go Nothing = do -- other symlink
-		mlink <- liftIO (catchMaybeIO $ readSymbolicLink file)
-		ensurestaged mlink Nothing =<< getDaemonStatus
+	-- other symlink, not git-annex
+	go Nothing = ensurestaged linktarget =<< getDaemonStatus
 
 	{- This is often called on symlinks that are already
 	 - staged correctly. A symlink may have been deleted
@@ -246,13 +272,13 @@ onAddSymlink isdirect file filestatus = go =<< liftAnnex (Backend.lookupFile fil
 	 - (If the daemon has never ran before, avoid staging
 	 - links too.)
 	 -}
-	ensurestaged (Just link) mk daemonstatus
+	ensurestaged (Just link) daemonstatus
 		| scanComplete daemonstatus = addLink file link mk
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange
 			_ -> addLink file link mk
-	ensurestaged Nothing _ _ = noChange
+	ensurestaged Nothing _ = noChange
 
 {- For speed, tries to reuse the existing blob for symlink target. -}
 addLink :: FilePath -> FilePath -> Maybe Key -> Assistant (Maybe Change)

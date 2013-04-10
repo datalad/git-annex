@@ -16,3 +16,7 @@ Linux
 Please provide any additional information below.
 
 
+> Reproduced the core bug, which is that the assistant saw symlink standin
+> files as new files, and annexed them. Now it doesn't, and I have
+> it running on FAT with no trouble; can even rename symlink standin files
+> and it commits symlink changes. Calling this [[done]]. --[[Joey]]
