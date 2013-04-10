@@ -81,6 +81,11 @@ startupScanAlert :: Alert
 startupScanAlert = activityAlert Nothing
 	[Tensed "Performing" "Performed", "startup scan"]
 
+{- Displayed when a shutdown is occurring, so will be seen after shutdown
+ - has happened. -}
+shutdownAlert :: Alert
+shutdownAlert = warningAlert "shutdown" "git-annex has been shut down"
+
 commitAlert :: Alert
 commitAlert = activityAlert Nothing
 	[Tensed "Committing" "Committed", "changes to git"]

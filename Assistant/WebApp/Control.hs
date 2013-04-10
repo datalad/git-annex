@@ -14,6 +14,7 @@ import Locations.UserConfig
 import Utility.LogFile
 import Assistant.DaemonStatus
 import Assistant.WebApp.Utility
+import Assistant.Alert
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -25,6 +26,10 @@ getShutdownR = page "Shutdown" Nothing $
 
 getShutdownConfirmedR :: Handler RepHtml
 getShutdownConfirmedR = do
+	{- Remove all alerts for currently running activities. -}
+	liftAssistant $ do
+		updateAlertMap $ M.filter $ \a -> alertClass a /= Activity
+		void $ addAlert shutdownAlert
 	{- Stop transfers the assistant is running,
 	 - otherwise they would continue past shutdown.
 	 - Pausing transfers prevents more being started up (and stops
