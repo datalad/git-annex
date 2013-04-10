@@ -1,8 +1,8 @@
-What steps will reproduce the problem?rob@riker:~/Podcasts/TuxRadar Linux Podcast (Ogg)$ ls
+What steps will reproduce the problem?
 
 Example below illustrates downloading a podcast with git annex addurl:
 
-# list directory before...
+list directory before...
 ~/Podcasts/TuxRadar Linux Podcast (Ogg)$ ls
 folder.jpg           tuxradar_s04e24.ogg
 tuxradar_s04e09.ogg  tuxradar_s05e01.ogg
@@ -16,7 +16,7 @@ tuxradar_s04e21.ogg  www.tuxradar.com_files_podcast_tuxradar_s04e17.ogg
 tuxradar_s04e22.ogg  www.tuxradar.com_files_podcast_tuxradar_s04e18.ogg
 tuxradar_s04e23.ogg
 
-# download file
+download file
 ~/Podcasts/TuxRadar Linux Podcast (Ogg)$ git annex addurl http://www.tuxradar.com/files/podcast/tuxradar_s05e05.ogg
 addurl www.tuxradar.com_files_podcast_tuxradar_s05e05.ogg (downloading http://www.tuxradar.com/files/podcast/tuxradar_s05e05.ogg ...) --2013-04-10 21:18:12--  http://www.tuxradar.com/files/podcast/tuxradar_s05e05.ogg
 Resolving www.tuxradar.com (www.tuxradar.com)... 80.244.178.150
@@ -32,7 +32,7 @@ Saving to: `/home/rob/Podcasts/.git/annex/tmp/URL--http&c%%www.tuxradar.com%file
 (checksum...) ok
 (Recording state in git...)
 
-# file appears to have been downloaded, but isn't there
+file appears to have been downloaded, but isn't there
 ~/Podcasts/TuxRadar Linux Podcast (Ogg)$ ls
 folder.jpg           tuxradar_s04e24.ogg
 tuxradar_s04e09.ogg  tuxradar_s05e01.ogg
