@@ -17,6 +17,7 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * The version number is now derived from git, unless built with
     VERSION_FROM_CHANGELOG.
   * webapp: Added animations.
+  * assistant: Stop any transfers the assistant initiated on shutdown.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

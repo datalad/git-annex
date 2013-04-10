@@ -13,6 +13,7 @@ import Assistant.WebApp.Common
 import Locations.UserConfig
 import Utility.LogFile
 import Assistant.DaemonStatus
+import Assistant.WebApp.Utility
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -23,13 +24,20 @@ getShutdownR = page "Shutdown" Nothing $
 	$(widgetFile "control/shutdown")
 
 getShutdownConfirmedR :: Handler RepHtml
-getShutdownConfirmedR = page "Shutdown" Nothing $ do
-	{- Wait 2 seconds before shutting down, to give the web page time
-	 - to display. -}
-	void $ liftIO $ forkIO $ do
-		threadDelay 2000000
-		signalProcess sigTERM =<< getProcessID
-	$(widgetFile "control/shutdownconfirmed")
+getShutdownConfirmedR = do
+	{- Stop transfers the assistant is running,
+	 - otherwise they would continue past shutdown.
+	 - Pausing transfers prevents more being started up (and stops
+	 - the transfer processes). -}
+	ts <- liftAssistant $ M.keys . currentTransfers <$> getDaemonStatus
+	mapM_ pauseTransfer ts
+	page "Shutdown" Nothing $ do
+		{- Wait 2 seconds before shutting down, to give the web
+		 - page time to load in the browser. -}
+		void $ liftIO $ forkIO $ do
+			threadDelay 2000000
+			signalProcess sigTERM =<< getProcessID
+		$(widgetFile "control/shutdownconfirmed")
 
 {- Quite a hack, and doesn't redirect the browser window. -}
 getRestartR :: Handler RepHtml
