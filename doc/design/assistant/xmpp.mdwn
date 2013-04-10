@@ -88,16 +88,21 @@ When a peer is ready to send a git push, it sends:
 The receiver runs `git receive-pack`, and sends back its output in
 one or more chat messages, directed to the client that is pushing:
 
-	<git-annex xmlns='git-annex' rp="">
+	<git-annex xmlns='git-annex' rp="N">
 	007b27ca394d26a05d9b6beefa1b07da456caa2157d7 refs/heads/git-annex report-status delete-refs side-band-64k quiet ofs-delta
 	</git-annex>
 
 The sender replies with the data from `git push`, in 
 one or more chat messages, directed to the receiver:
 
-	<git-annex xmlns='git-annex' sp="">
+	<git-annex xmlns='git-annex' sp="N">
 	data
 	</git-annex>
+
+The value of rp and sp used to be empty, but now it's a sequence number.
+This indicates the sequence of this packet, counting from 1. The receiver
+and sender each have their own sequence numbers. These sequence numbers
+are not really used yet, but are available for debugging.
 
 When `git receive-pack` exits, the receiver indicates its exit
 status with a chat message, directed at the sender:

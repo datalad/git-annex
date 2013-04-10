@@ -134,13 +134,13 @@ pushMessage = gitAnnexMessage . encode
 	encode CanPush = gitAnnexTag canPushAttr T.empty
 	encode PushRequest = gitAnnexTag pushRequestAttr T.empty
 	encode StartingPush = gitAnnexTag startingPushAttr T.empty
-	encode (ReceivePackOutput b) = 
-		gitAnnexTagContent receivePackAttr T.empty $ encodeTagContent b
-	encode (SendPackOutput b) =
-		gitAnnexTagContent sendPackAttr T.empty $ encodeTagContent b
+	encode (ReceivePackOutput n b) = 
+		gitAnnexTagContent receivePackAttr (val n) $ encodeTagContent b
+	encode (SendPackOutput n b) =
+		gitAnnexTagContent sendPackAttr (val n) $ encodeTagContent b
 	encode (ReceivePackDone code) =
-		gitAnnexTag receivePackDoneAttr $ 
-			T.pack $ show $ encodeExitCode code
+		gitAnnexTag receivePackDoneAttr $ val $ encodeExitCode code
+	val = T.pack . show
 
 decodeMessage :: Message -> Maybe NetMessage
 decodeMessage m = decode =<< gitAnnexTagInfo m
@@ -160,10 +160,8 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		, pushdecoder $ const $ Just CanPush
 		, pushdecoder $ const $ Just PushRequest
 		, pushdecoder $ const $ Just StartingPush
-		, pushdecoder $ 
-			fmap ReceivePackOutput . decodeTagContent . tagElement
-		, pushdecoder $
-			fmap SendPackOutput . decodeTagContent . tagElement
+		, pushdecoder $ gen ReceivePackOutput
+		, pushdecoder $ gen SendPackOutput
 		, pushdecoder $
 			fmap (ReceivePackDone . decodeExitCode) . readish .
 				T.unpack . tagValue
@@ -171,6 +169,10 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 	pushdecoder a m' i = Pushing
 		<$> (formatJID <$> messageFrom m')
 		<*> a i
+	gen c i = do
+	  	packet <- decodeTagContent $ tagElement i
+		let sequence = fromMaybe 0 $ readish $ T.unpack $ tagValue i
+		return $ c sequence packet
 
 decodeExitCode :: Int -> ExitCode
 decodeExitCode 0 = ExitSuccess

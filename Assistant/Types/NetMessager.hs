@@ -42,12 +42,17 @@ data PushStage
 	-- indicates that a push is starting
 	| StartingPush
 	-- a chunk of output of git receive-pack
-	| ReceivePackOutput ByteString
+	| ReceivePackOutput SequenceNum ByteString
 	-- a chuck of output of git send-pack
-	| SendPackOutput ByteString
+	| SendPackOutput SequenceNum ByteString
 	-- sent when git receive-pack exits, with its exit code
 	| ReceivePackDone ExitCode
 	deriving (Show, Eq, Ord)
+
+{- A sequence number. Incremented by one per packet in a sequence,
+ - starting with 1 for the first packet. 0 means sequence numbers are
+ - not being used. -}
+type SequenceNum = Int
 
 {- NetMessages that are important (and small), and should be stored to be
  - resent when new clients are seen. -}
@@ -64,8 +69,8 @@ readdressNetMessage m _ = m
 {- Convert a NetMessage to something that can be logged. -}
 sanitizeNetMessage :: NetMessage -> NetMessage
 sanitizeNetMessage (Pushing c stage) = Pushing c $ case stage of
-	ReceivePackOutput _ -> ReceivePackOutput elided
-	SendPackOutput _ -> SendPackOutput elided
+	ReceivePackOutput n _ -> ReceivePackOutput n elided
+	SendPackOutput n _ -> SendPackOutput n elided
 	s -> s
   where
   	elided = B8.pack "<elided>"
@@ -85,8 +90,8 @@ pushDestinationSide :: PushStage -> PushSide
 pushDestinationSide CanPush = ReceivePack
 pushDestinationSide PushRequest = SendPack
 pushDestinationSide StartingPush = ReceivePack
-pushDestinationSide (ReceivePackOutput _) = SendPack
-pushDestinationSide (SendPackOutput _) = ReceivePack
+pushDestinationSide (ReceivePackOutput _ _) = SendPack
+pushDestinationSide (SendPackOutput _ _) = ReceivePack
 pushDestinationSide (ReceivePackDone _) = SendPack
 
 type SideMap a = PushSide -> a

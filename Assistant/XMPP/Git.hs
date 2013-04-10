@@ -108,7 +108,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 	outh <- liftIO $ fdToHandle writepush
 	controlh <- liftIO $ fdToHandle writecontrol
 	
-	t1 <- forkIO <~> toxmpp inh
+	t1 <- forkIO <~> toxmpp 0 inh
 	t2 <- forkIO <~> fromxmpp outh controlh
 
 	{- This can take a long time to run, so avoid running it in the
@@ -122,15 +122,19 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 
 	return r
   where
-	toxmpp inh = forever $ do
+	toxmpp seqnum inh = do
 		b <- liftIO $ B.hGetSome inh chunkSize
 		if B.null b
 			then liftIO $ killThread =<< myThreadId
-			else sendNetMessage $ Pushing cid $ SendPackOutput b
+			else do
+				let seqnum' = succ seqnum
+				sendNetMessage $ Pushing cid $
+					SendPackOutput seqnum' b
+				toxmpp seqnum' inh
 	fromxmpp outh controlh = forever $ do
 		m <- timeout xmppTimeout <~> waitNetPushMessage SendPack
 		case m of
-			(Just (Pushing _ (ReceivePackOutput b))) -> 
+			(Just (Pushing _ (ReceivePackOutput _ b))) -> 
 				liftIO $ writeChunk outh b
 			(Just (Pushing _ (ReceivePackDone exitcode))) ->
 				liftIO $ do
@@ -213,7 +217,7 @@ xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 		}
 	(Just inh, Just outh, _, pid) <- liftIO $ createProcess p
 	readertid <- forkIO <~> relayfromxmpp inh
-	relaytoxmpp outh
+	relaytoxmpp 0 outh
 	code <- liftIO $ waitForProcess pid
 	void $ sendNetMessage $ Pushing cid $ ReceivePackDone code
 	liftIO $ do
@@ -222,16 +226,17 @@ xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 		hClose outh
 		return $ code == ExitSuccess
   where
-	relaytoxmpp outh = do
+	relaytoxmpp seqnum outh = do
 		b <- liftIO $ B.hGetSome outh chunkSize
 		-- empty is EOF, so exit
 		unless (B.null b) $ do
-			sendNetMessage $ Pushing cid $ ReceivePackOutput b
-			relaytoxmpp outh
+			let seqnum' = succ seqnum
+			sendNetMessage $ Pushing cid $ ReceivePackOutput seqnum' b
+			relaytoxmpp seqnum' outh
 	relayfromxmpp inh = forever $ do
 		m <- timeout xmppTimeout <~> waitNetPushMessage ReceivePack
 		case m of
-			(Just (Pushing _ (SendPackOutput b))) ->
+			(Just (Pushing _ (SendPackOutput _ b))) ->
 				liftIO $ writeChunk inh b
 			(Just _) -> noop
 			Nothing -> do
