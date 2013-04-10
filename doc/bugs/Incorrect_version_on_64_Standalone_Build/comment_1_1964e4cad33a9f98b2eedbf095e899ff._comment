@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-10T20:38:28Z"
+ content="""
+Hmm, I think this is an artifact of my release process. I copy the nightly autobuild to there, and typically do this in the morning, so there are some commits from changes to this wiki. Until I commit a new version to `debian/changelog`, `git annex version` can report wrong information. In particular, in commit c709623ff8e56490bb5802cb53880ae237f9f1d9 I changed the version number from a placeholder 4.20130324 to 4.20130405.
+
+There's a tradeoff between waiting for the next autobuild (only run once a day because the server has other users), taking the time to manually run a build, and getting the new release out to users quickly when I announce it.
+
+I think the thing to do is make it use the date of the *last* commit as the version number for autobuilds, and include the git rev in there too. Then users will know exactly what they've gotten.
+"""]]
