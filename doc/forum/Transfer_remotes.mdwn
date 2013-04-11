@@ -1,0 +1,3 @@
+Hi!
+
+I have a laptop A on which I setup a box.com special remote as a transfer encrypted repository. It is quite unclear to me how I should configure laptop B to use the same box.com remote and share files between the two machines.
