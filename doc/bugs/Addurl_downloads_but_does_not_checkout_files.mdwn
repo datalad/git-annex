@@ -69,3 +69,6 @@ Please provide any additional information below.
 The repository in question was created by the assistant and I tried the above with the assistant both running and not running, with no difference. I have also tried downloading other files.
 
 EDIT: formatting
+
+> Bug only affected direct mode. I think it used to work but I broke
+> it when fixing another bug in direct mode. [[fixed|done]] --[[Joey]] 

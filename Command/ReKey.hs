@@ -14,6 +14,7 @@ import Types.Key
 import Annex.Content
 import qualified Command.Add
 import Logs.Web
+import Logs.Location
 import Config
 import Utility.CopyFile
 
@@ -70,4 +71,6 @@ cleanup file oldkey newkey = do
 
 	-- Update symlink to use the new key.
 	liftIO $ removeFile file
-	Command.Add.cleanup file newkey True
+	Command.Add.addLink file newkey True
+	logStatus newkey InfoPresent
+	return True

@@ -14,6 +14,7 @@ import Command
 import Backend
 import qualified Command.Add
 import qualified Annex
+import qualified Annex.Queue
 import qualified Backend.URL
 import qualified Utility.Url as Url
 import Annex.Content
@@ -23,6 +24,7 @@ import Types.Key
 import Types.KeySource
 import Config
 import Annex.Content.Direct
+import Logs.Location
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
@@ -92,12 +94,21 @@ download url file = do
 		k <- genKey source backend
 		case k of
 			Nothing -> stop
-			Just (key, _) -> do
-				whenM isDirect $
-					void $ addAssociatedFile key file
-				moveAnnex key tmp
-				setUrlPresent key url
-				next $ Command.Add.cleanup file key True
+			Just (key, _) -> next $ cleanup url file key (Just tmp)
+
+cleanup :: String -> FilePath -> Key -> Maybe FilePath -> CommandCleanup
+cleanup url file key mtmp = do
+	when (isJust mtmp) $
+		logStatus key InfoPresent
+	setUrlPresent key url
+	Command.Add.addLink file key False
+	whenM isDirect $ do
+		void $ addAssociatedFile key file
+		{- For moveAnnex to work in direct mode, the symlink
+		 - must already exist, so flush the queue. -}
+		Annex.Queue.flush
+	maybe noop (moveAnnex key) mtmp
+	return True
 
 nodownload :: Bool -> String -> FilePath -> CommandPerform
 nodownload relaxed url file = do
@@ -108,10 +119,7 @@ nodownload relaxed url file = do
 	if exists
 		then do
 			let key = Backend.URL.fromUrl url size
-			whenM isDirect $
-				void $ addAssociatedFile key file
-			setUrlPresent key url
-			next $ Command.Add.cleanup file key False
+			next $ cleanup url file key Nothing
 		else do
 			warning $ "unable to access url: " ++ url
 			stop

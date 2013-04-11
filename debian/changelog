@@ -6,6 +6,7 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     remotes, to avoid delays.
     Thanks, guilhem for the patch.
   * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
+  * addurl: Bugfix: Did not properly add file in direct mode.
   * Adjust preferred content expressions so that content in archive
     directories is preferred until it has reached an archive or smallarchive
     repository.

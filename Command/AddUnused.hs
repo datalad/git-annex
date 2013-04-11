@@ -9,6 +9,7 @@ module Command.AddUnused where
 
 import Common.Annex
 import Logs.Unused
+import Logs.Location
 import Command
 import qualified Command.Add
 import Types.Key
@@ -26,7 +27,10 @@ start = startUnused "addunused" perform
 	(performOther "tmp")
 
 perform :: Key -> CommandPerform
-perform key = next $ Command.Add.cleanup file key True
+perform key = next $ do
+	logStatus key InfoPresent
+	Command.Add.addLink file key False
+	return True
   where
 	file = "unused." ++ key2file key
 

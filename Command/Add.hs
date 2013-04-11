@@ -188,19 +188,29 @@ link file key hascontent = handle (undo file key) $ do
 
 	return l
 
-{- Note: Several other commands call this, and expect it to 
- - create the link and add it.
- - 
- - In direct mode, when we have the content of the file, it's left as-is,
- - and we just stage a symlink to git.
- - 
- - Otherwise, as long as the filesystem supports symlinks, we use
+{- Creates the symlink to the annexed content, and stages it in git.
+ -
+ - As long as the filesystem supports symlinks, we use
  - git add, rather than directly staging the symlink to git.
  - Using git add is best because it allows the queuing to work
  - and is faster (staging the symlink runs hash-object commands each time).
  - Also, using git add allows it to skip gitignored files, unless forced
  - to include them.
  -}
+addLink :: FilePath -> Key -> Bool -> Annex ()
+addLink file key hascontent = ifM (coreSymlinks <$> Annex.getGitConfig)
+	( do
+		_ <- link file key hascontent
+		params <- ifM (Annex.getState Annex.force)
+			( return [Param "-f"]
+			, return []
+			)
+		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
+	, do
+		l <- link file key hascontent
+		addAnnexLink l file
+	)
+
 cleanup :: FilePath -> Key -> Bool -> CommandCleanup
 cleanup file key hascontent = do
 	when hascontent $
@@ -209,17 +219,6 @@ cleanup file key hascontent = do
 		( do
 			l <- inRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
-		, ifM (coreSymlinks <$> Annex.getGitConfig)
-			( do
-				_ <- link file key hascontent
-				params <- ifM (Annex.getState Annex.force)
-					( return [Param "-f"]
-					, return []
-					)
-				Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
-			, do
-				l <- link file key hascontent
-				addAnnexLink l file
-			)
+		, addLink file key hascontent
 		)
 	return True
