@@ -144,9 +144,9 @@ fromPerform src move key file = moveLock move key $
 		, handle move =<< go
 		)
   where
-	go = download (Remote.uuid src) key (Just file) noRetry $ do
+	go = download (Remote.uuid src) key (Just file) noRetry $ \p -> do
 		showAction $ "from " ++ Remote.name src
-		getViaTmp key $ Remote.retrieveKeyFile src key (Just file)
+		getViaTmp key $ \t -> Remote.retrieveKeyFile src key (Just file) t p
 	handle _ False = stop -- failed
 	handle False True = next $ return True -- copy complete
 	handle True True = do -- finish moving

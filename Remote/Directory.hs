@@ -197,15 +197,15 @@ storeHelper d chunksize key storer = check <&&> go
 		writeFile f s
 		void $ tryIO $ preventWrite f
 
-retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve d chunksize k _ f = metered Nothing k $ \meterupdate ->
+retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve d chunksize k _ f p = metered (Just p) k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
 			meteredWriteFileChunks meterupdate f files $ L.readFile
 			return True
 
-retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted d chunksize (cipher, enck) k f = metered Nothing k $ \meterupdate ->
+retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d enck $ \files ->
 		catchBoolIO $ do
 			decrypt cipher (feeder files) $

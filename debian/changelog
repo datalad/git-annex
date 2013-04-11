@@ -26,6 +26,8 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * addurl: Register transfer so the webapp can see it.
   * addurl: Automatically retry downloads that fail, as long as some
     additional content was downloaded.
+  * webapp: Much improved progress bar display for downloads from encrypted
+    remotes.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

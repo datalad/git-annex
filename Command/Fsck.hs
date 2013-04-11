@@ -150,9 +150,10 @@ performRemote key file backend numcopies remote =
 			( return True
 			, ifM (Annex.getState Annex.fast)
 				( return False
-				, Remote.retrieveKeyFile remote key Nothing tmp
+				, Remote.retrieveKeyFile remote key Nothing tmp dummymeter
 				)
 			)
+	dummymeter _ = noop
 
 {- To fsck a bare repository, fsck each key in the location log. -}
 withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek

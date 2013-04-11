@@ -115,20 +115,15 @@ storeEncrypted o gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
 			readBytes $ L.writeFile tmp
 		rsyncSend o p enck True tmp
 
-retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve o k _ f = untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o Nothing
-	-- use inplace when retrieving to support resuming
-	[ Param "--inplace"
-	, Param u
-	, Param f
-	]
+retrieve :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve o k _ f p = rsyncRetrieve o k f (Just p)
 
 retrieveCheap :: RsyncOpts -> Key -> FilePath -> Annex Bool
-retrieveCheap o k f = ifM (preseedTmp k f) ( retrieve o k undefined f , return False )
+retrieveCheap o k f = ifM (preseedTmp k f) ( rsyncRetrieve o k f Nothing , return False )
 
-retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted o (cipher, enck) _ f = withTmp enck $ \tmp ->
-	ifM (retrieve o enck undefined tmp)
+retrieveEncrypted :: RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted o (cipher, enck) _ f p = withTmp enck $ \tmp ->
+	ifM (rsyncRetrieve o enck tmp (Just p))
 		( liftIO $ catchBoolIO $ do
 			decrypt cipher (feedFile tmp) $
 				readBytes $ L.writeFile f
@@ -196,6 +191,15 @@ withRsyncScratchDir a = do
   where
 	nuke d = liftIO $ whenM (doesDirectoryExist d) $
 		removeDirectoryRecursive d
+
+rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
+rsyncRetrieve o k dest callback =
+	untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o callback
+		-- use inplace when retrieving to support resuming
+		[ Param "--inplace"
+		, Param u
+		, Param dest
+		]
 
 rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do

@@ -97,8 +97,8 @@ forwardRetry old new = bytesComplete old < bytesComplete new
 upload :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
 upload u key = runTransfer (Transfer Upload u key)
 
-download :: UUID -> Key -> AssociatedFile -> RetryDecider -> Annex Bool -> Annex Bool
-download u key file shouldretry a = runTransfer (Transfer Download u key) file shouldretry (const a)
+download :: UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex Bool) -> Annex Bool
+download u key = runTransfer (Transfer Download u key)
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information

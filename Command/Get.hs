@@ -69,7 +69,7 @@ getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r continue = do
-		ok <- download (Remote.uuid r) key (Just file) noRetry $ do
+		ok <- download (Remote.uuid r) key (Just file) noRetry $ \p -> do
 			showAction $ "from " ++ Remote.name r
-			Remote.retrieveKeyFile r key (Just file) dest
+			Remote.retrieveKeyFile r key (Just file) dest p
 		if ok then return ok else continue

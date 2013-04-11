@@ -114,7 +114,7 @@ download url file = do
 			)
 		return $ Backend.URL.fromUrl url size
   	runtransfer dummykey tmp = 
-		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ do
+		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp
 		

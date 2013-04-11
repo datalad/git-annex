@@ -29,7 +29,7 @@ addHooks' r starthook stophook = r'
   where
 	r' = r
 		{ storeKey = \k f p -> wrapper $ storeKey r k f p
-		, retrieveKeyFile = \k f d -> wrapper $ retrieveKeyFile r k f d
+		, retrieveKeyFile = \k f d p -> wrapper $ retrieveKeyFile r k f d p
 		, retrieveKeyFileCheap = \k f -> wrapper $ retrieveKeyFileCheap r k f
 		, removeKey = \k -> wrapper $ removeKey r k
 		, hasKey = \k -> wrapper $ hasKey r k

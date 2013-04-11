@@ -116,14 +116,14 @@ storeEncrypted h gpgOpts (cipher, enck) k _p = withTmp enck $ \tmp ->
 			readBytes $ L.writeFile tmp
 		runHook h "store" enck (Just tmp) $ return True
 
-retrieve :: String -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve h k _f d = runHook h "retrieve" k (Just d) $ return True
+retrieve :: String -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve h k _f d _p = runHook h "retrieve" k (Just d) $ return True
 
 retrieveCheap :: String -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: String -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted h (cipher, enck) _ f = withTmp enck $ \tmp ->
+retrieveEncrypted :: String -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted h (cipher, enck) _ f _p = withTmp enck $ \tmp ->
 	runHook h "retrieve" enck (Just tmp) $ liftIO $ catchBoolIO $ do
 		decrypt cipher (feedFile tmp) $
 			readBytes $ L.writeFile f

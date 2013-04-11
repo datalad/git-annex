@@ -271,8 +271,10 @@ dropKey r key
 		[]
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-copyFromRemote r key file dest
+copyFromRemote :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+copyFromRemote r key file dest _p = copyFromRemote' r key file dest
+copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
+copyFromRemote' r key file dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
 		let params = rsyncParams r
 		u <- getUUID
@@ -338,7 +340,7 @@ copyFromRemoteCheap r key file
 		liftIO $ catchBoolIO $ createSymbolicLink loc file >> return True
 	| Git.repoIsSsh (repo r) =
 		ifM (Annex.Content.preseedTmp key file)
-			( copyFromRemote r key Nothing file
+			( copyFromRemote' r key Nothing file
 			, return False
 			)
 	| otherwise = return False
@@ -367,7 +369,7 @@ copyToRemote r key file p
 			( return True
 			, do
 				ensureInitialized
-				download u key file noRetry $
+				download u key file noRetry $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)

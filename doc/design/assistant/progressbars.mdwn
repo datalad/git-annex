@@ -12,10 +12,33 @@ This is one of those potentially hidden but time consuming problems.
 * Watch temp file as it's coming in and use its size.
   Can either poll every .5 seconds or so to check file size, or
   could use inotify. **done**
+* When easily available, remotes call the MeterUpdate callback as uploads
+  progress. **done**
 
-* TODO: Encrypted remotes download to a different temp file, and so the 
-  progress bar actually only appears for the decryption once the download
-  is complete.
+* TODO a bad interaction can happen between the TransferPoller and the
+  TransferWatcher when downloading from an encrypted remote. If
+  a partially transferred file exists already, in the gitAnnexTmpLocation
+  of the (un-encrypted) key, the TransferPoller will trust it to have
+  the right size of the content downloaded. This will stomp, every 0.5
+  seconds, over the updates to the size that the TransferWatcher is seeing
+  in the transfer log files.
+
+  We still need the TransferPoller for the remotes that don't have
+  download meters. This includes git, web, bup, and hook.
+
+  Need to teach the TransferPoller to detect when transfer logs for downloads
+  have file size info, and use it, rather than looking at the temp file.
+  The question is, how to do this efficiently? It could just poll the
+  transfer log every time, and if size is nonzero, ignore the temp file.
+  This would work, but it would require a lot more work than the simple
+  statting of the file it does now. And this runs every 0.5 seconds.
+
+  I could try to convert all remotes I care about to having progress
+  for downloads. But converting the web special remote will be hard..
+
+  I think perhaps the best solution is to make the TransferWatcher also watch
+  the temp files. Then if one changes, it can get its new size. If a
+  transfer info file changes, it can get the size from there.
 
 ## uploads
 

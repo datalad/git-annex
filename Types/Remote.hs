@@ -50,8 +50,10 @@ data RemoteA a = Remote {
 	cost :: Cost,
 	-- Transfers a key to the remote.
 	storeKey :: Key -> AssociatedFile -> MeterUpdate -> a Bool,
-	-- retrieves a key's contents to a file
-	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> a Bool,
+	-- Retrieves a key's contents to a file.
+	-- (The MeterUpdate does not need to be used if it retrieves
+	-- directly to the file, and not to an intermediate file.)
+	retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Bool,
 	-- retrieves a key's contents to a tmp file, if it can be done cheaply
 	retrieveKeyFileCheap :: Key -> FilePath -> a Bool,
 	-- removes a key's contents

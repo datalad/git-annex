@@ -118,8 +118,8 @@ storeHelper r k baseurl user pass b = catchBoolIO $ do
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = metered Nothing k $ \meterupdate ->
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
 			meteredWriteFileChunks meterupdate d urls $ \url -> do
@@ -131,8 +131,8 @@ retrieve r k _f d = metered Nothing k $ \meterupdate ->
   where
 	onerr _ = return False
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r enck baseurl user pass onerr $ \urls -> do
 			decrypt cipher (feeder user pass urls) $

@@ -136,8 +136,8 @@ storeEncrypted r buprepo (cipher, enck) k _p =
 			encrypt (getGpgOpts r) cipher (feedFile src) $ \h ->
 				pipeBup params (Just h) Nothing
 
-retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve buprepo k _f d = do
+retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve buprepo k _f d _p = do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
 	liftIO $ catchBoolIO $ do
 		tofile <- openFile d WriteMode
@@ -146,8 +146,8 @@ retrieve buprepo k _f d = do
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted buprepo (cipher, enck) _ f = liftIO $ catchBoolIO $
+retrieveEncrypted :: BupRepo -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted buprepo (cipher, enck) _ f _p = liftIO $ catchBoolIO $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
 		decrypt cipher (\toh -> L.hPut toh =<< L.hGetContents h) $
 			readBytes $ L.writeFile f

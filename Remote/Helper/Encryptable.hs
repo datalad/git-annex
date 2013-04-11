@@ -54,7 +54,7 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
 encryptableRemote
 	:: RemoteConfig
 	-> ((Cipher, Key) -> Key -> MeterUpdate -> Annex Bool)
-	-> ((Cipher, Key) -> Key -> FilePath -> Annex Bool)
+	-> ((Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool)
 	-> Remote
 	-> Remote
 encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r = 
@@ -70,9 +70,9 @@ encryptableRemote c storeKeyEncrypted retrieveKeyFileEncrypted r =
 	store k f p = cip k >>= maybe
 		(storeKey r k f p)
 		(\enck -> storeKeyEncrypted enck k p)
-	retrieve k f d = cip k >>= maybe
-		(retrieveKeyFile r k f d)
-		(\enck -> retrieveKeyFileEncrypted enck k d)
+	retrieve k f d p = cip k >>= maybe
+		(retrieveKeyFile r k f d p)
+		(\enck -> retrieveKeyFileEncrypted enck k d p)
 	retrieveCheap k d = cip k >>= maybe
 		(retrieveKeyFileCheap r k d)
 		(\_ -> return False)

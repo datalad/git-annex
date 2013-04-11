@@ -152,9 +152,9 @@ storeHelper (conn, bucket) r k p file = do
 	xheaders = filter isxheader $ M.assocs $ config r
 	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = s3Action r False $ \(conn, bucket) ->
-	metered Nothing k $ \meterupdate -> do
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve r k _f d p = s3Action r False $ \(conn, bucket) ->
+	metered (Just p) k $ \meterupdate -> do
 		res <- liftIO $ getObject conn $ bucketKey r bucket k
 		case res of
 			Right o -> do
@@ -166,9 +166,9 @@ retrieve r k _f d = s3Action r False $ \(conn, bucket) ->
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d = s3Action r False $ \(conn, bucket) ->
-	metered Nothing k $ \meterupdate -> do
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted r (cipher, enck) k d p = s3Action r False $ \(conn, bucket) ->
+	metered (Just p) k $ \meterupdate -> do
 		res <- liftIO $ getObject conn $ bucketKey r bucket enck
 		case res of
 			Right o -> liftIO $ decrypt cipher (\h -> meteredWrite meterupdate h $ obj_data o) $ 

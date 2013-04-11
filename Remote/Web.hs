@@ -59,8 +59,8 @@ gen r _ _ gc =
 		remotetype = remote
 	}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> Annex Bool
-downloadKey key _file dest = get =<< getUrls key
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+downloadKey key _file dest _p = get =<< getUrls key
   where
 	get [] = do
 		warning "no known url"

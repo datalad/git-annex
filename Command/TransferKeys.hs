@@ -59,8 +59,8 @@ start readh writeh = do
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
-		| otherwise = download (Remote.uuid remote) key file forwardRetry $
-			getViaTmp key $ Remote.retrieveKeyFile remote key file
+		| otherwise = download (Remote.uuid remote) key file forwardRetry $ \p ->
+			getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 runRequests
 	:: Handle

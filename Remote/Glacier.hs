@@ -83,31 +83,31 @@ glacierSetup u c = do
 		]
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store r k _f m
+store r k _f p
 	| keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
 	| otherwise = sendAnnex k (void $ remove r k) $ \src ->
-		metered (Just m) k $ \meterupdate ->
+		metered (Just p) k $ \meterupdate ->
 			storeHelper r k $ streamMeteredFile src meterupdate
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted r (cipher, enck) k m = sendAnnex k (void $ remove r enck) $ \src -> do
-	metered (Just m) k $ \meterupdate ->
+storeEncrypted r (cipher, enck) k p = sendAnnex k (void $ remove r enck) $ \src -> do
+	metered (Just p) k $ \meterupdate ->
 		storeHelper r enck $ \h ->
 			encrypt (getGpgOpts r) cipher (feedFile src)
 				(readBytes $ meteredWrite meterupdate h)
 
-retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieve r k _f d = metered Nothing k $ \meterupdate ->
+retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	retrieveHelper r k $
 		readBytes $ meteredWriteFile meterupdate d
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> Annex Bool
-retrieveEncrypted r (cipher, enck) k d = metered Nothing k $ \meterupdate ->
+retrieveEncrypted :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
 	retrieveHelper r enck $ readBytes $ \b ->
 		decrypt cipher (feedBytes b) $
 			readBytes $ meteredWriteFile meterupdate d

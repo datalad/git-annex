@@ -52,8 +52,8 @@ toPerform remote key file = go $
 
 fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
 fromPerform remote key file = go $
-	download (uuid remote) key file forwardRetry $
-		getViaTmp key $ Remote.retrieveKeyFile remote key file
+	download (uuid remote) key file forwardRetry $ \p ->
+		getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 go :: Annex Bool -> CommandPerform
 go a = ifM a ( liftIO exitSuccess,  liftIO exitFailure)
