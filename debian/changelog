@@ -23,6 +23,9 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * assistant: Bug fix to avoid annexing the files that git uses
     to stand in for symlinks on FAT and other filesystem not supporting
     symlinks.
+  * addurl: Register transfer so the webapp can see it.
+  * addurl: Automatically retry downloads that fail, as long as some
+    additional content was downloaded.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

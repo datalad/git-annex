@@ -51,6 +51,7 @@ transferPollerThread = namedThread "TransferPoller" $ do
 			maybe noop (newsize t info . bytesComplete) mi
 
 	newsize t info sz
-		| bytesComplete info /= sz && isJust sz =
+		| bytesComplete info /= sz && isJust sz = do
+			liftIO $ print ("alterTransferInfo called", sz)
 			alterTransferInfo t $ \i -> i { bytesComplete = sz }
 		| otherwise = noop

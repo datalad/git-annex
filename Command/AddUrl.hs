@@ -25,6 +25,8 @@ import Types.KeySource
 import Config
 import Annex.Content.Direct
 import Logs.Location
+import qualified Logs.Transfer as Transfer
+import Utility.Daemon (checkDaemon)
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
@@ -81,10 +83,9 @@ perform relaxed url file = ifAnnexed file addurl geturl
 download :: String -> FilePath -> CommandPerform
 download url file = do
 	showAction $ "downloading " ++ url ++ " "
-	let dummykey = Backend.URL.fromUrl url Nothing
+	dummykey <- genkey
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
-	liftIO $ createDirectoryIfMissing True (parentDir tmp)
-	stopUnless (downloadUrl [url] tmp) $ do
+	stopUnless (runtransfer dummykey tmp) $ do
 		backend <- chooseBackend file
 		let source = KeySource
 			{ keyFilename = file
@@ -95,6 +96,28 @@ download url file = do
 		case k of
 			Nothing -> stop
 			Just (key, _) -> next $ cleanup url file key (Just tmp)
+  where
+	{- Generate a dummy key to use for this download, before we can
+	 - examine the file and find its real key. This allows resuming
+	 - downloads, as the dummy key for a given url is stable.
+	 -
+	 - If the assistant is running, actually hits the url here,
+	 - to get the size, so it can display a pretty progress bar.
+	 -}
+	genkey = do
+		pidfile <- fromRepo gitAnnexPidFile
+		size <- ifM (liftIO $ isJust <$> checkDaemon pidfile)
+			( do
+				headers <- getHttpHeaders
+				liftIO $ snd <$> Url.exists url headers
+			, return Nothing
+			)
+		return $ Backend.URL.fromUrl url size
+  	runtransfer dummykey tmp = 
+		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ do
+			liftIO $ createDirectoryIfMissing True (parentDir tmp)
+			downloadUrl [url] tmp
+		
 
 cleanup :: String -> FilePath -> Key -> Maybe FilePath -> CommandCleanup
 cleanup url file key mtmp = do
