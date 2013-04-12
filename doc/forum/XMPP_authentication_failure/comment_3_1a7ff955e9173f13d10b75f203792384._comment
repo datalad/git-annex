@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-12T22:25:12Z"
+ content="""
+John has gotten back to me with some analysis. The authentication failure is when SCRAM-SHA-1 is used. Ejabberd is rejecting the client's authentication request with a reason of \"bad-protocol\". It's not clear if ejabberd is broken or if gsasl is generating a bad SCRAM-SHA-1 authentication. We're inclined toward the latter, and will be forwarding this on to ejabberd.
+
+The only way to turn off this authentication in ejabberd is to configure it to store passwords in plain text, or downgrade to a version older than 2.1.9, which first added it. Note that debian stable contains 2.1.5.3, so is not currently affected, for example.
+"""]]
