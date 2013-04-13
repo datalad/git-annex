@@ -52,18 +52,19 @@ data Splice = Splice
 	, spliceStart :: Coord
 	, spliceEnd :: Coord
 	, splicedExpression :: String
-	, splicedResult :: String
+	, splicedCode :: String
 	}
 	deriving (Read, Show)
 
 number :: Parser Int
 number = read <$> many1 digit
 
-{- A pair of Coords is written in one of two ways:
- - "95:21-73" or "(92,25)-(94,2)"
+{- A pair of Coords is written in one of three ways:
+ - "95:21-73", "1:1", or "(92,25)-(94,2)"
+ - (Does that middle one really represent a pair? Unknown.)
  -}
 coordsParser :: Parser (Coord, Coord)
-coordsParser = (singleline <|> multiline) <?> "Coords"
+coordsParser = (try singleline <|> try weird <|> multiline) <?> "Coords"
   where
   	singleline = do
 		line <- number
@@ -72,6 +73,12 @@ coordsParser = (singleline <|> multiline) <?> "Coords"
 		char '-'
 		endcol <- number
 		return $ (Coord line startcol, Coord line endcol)
+
+	weird = do
+		line <- number
+		char ':'
+		col <- number
+		return $ (Coord line col, Coord line col)
 
 	multiline = do
 		start <- fromparens
@@ -99,7 +106,8 @@ spliceParser = do
 	file <- many1 (noneOf ":\n")
 	char ':'
 	(start, end) <- coordsParser
-	string ": Splicing expression"
+	string ": Splicing "
+	string "expression" <|> string "declarations"
 	newline
 
 	expression <- indentedLine
@@ -108,12 +116,31 @@ spliceParser = do
 	string "======>"	
 	newline
 
-	{- All lines of the splice result will start with the same
+	{- All lines of the splice code will start with the same
 	 - indent, which is stripped. Any other indentation is preserved. -}
-	i <- lookAhead indent
-	result <- unlines <$> many1 (string i >> restOfLine)
+	indent <- lookAhead indent
+	let getcodeline = do
+		string indent
+		restOfLine
 
-	return $ Splice file start end expression result
+	{- For reasons unknown, GHC will sometimes claim a splice
+	 - is at 1:1, and then inside the splice code block,
+	 - the first line will give the actual coordinates of the splice. -}
+	let getrealcoords = do
+		string indent
+		string file
+		char ':'
+		char '\n' `after` coordsParser
+
+	realcoords <- try (Right <$> getrealcoords) <|> (Left <$> getcodeline)
+	codelines <- many getcodeline
+	return $ case realcoords of
+		Left firstcodeline -> 
+			Splice file start end expression
+				(unlines $ firstcodeline:codelines)
+		Right (realstart, realend) ->
+			Splice file realstart realend expression
+				(unlines codelines)
 
 {- Extracts the splices, ignoring the rest of the compiler output. -}
 splicesExtractor :: Parser [Splice]
@@ -143,6 +170,7 @@ splicesExtractor = rights <$> many extract
 applySplices :: Maybe String -> [Splice] -> IO ()
 applySplices imports l@(first:_) = do
 	let f = splicedFile first
+	putStrLn $ "splicing " ++ f
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	writeFile f $ concat $ addimports $ expand lls l
   where
@@ -174,7 +202,7 @@ expandSplice s lls = concat [before, new:splicerest, end]
 		_ -> ([], [])
 	new = concat
 		[ beforesplice
-		, addindent (findindent splicestart) (mangleCode $ splicedResult s)
+		, addindent (findindent splicestart) (mangleCode $ splicedCode s)
 		, deqqend $ drop (coordColumn ce) splicestart
 		]
 	  where
