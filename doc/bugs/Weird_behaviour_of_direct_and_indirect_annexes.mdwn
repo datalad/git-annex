@@ -27,6 +27,8 @@ Instead, it is not a symlink. However, doing
 
 results in what I would expect (until the content of Direct/Test.File is changed, when it ceases to be a symlink in ~/Indirect once more)
 
+
+
 ## What version of git-annex are you using? On what operating system?
 git-annex version: 4.20130405
 
@@ -44,3 +46,7 @@ It seems to me that if I do
     ~/Direct$ echo Even More Content > Test.File
 
 that all three copies are stored in ~/Indirect, so the functionality I'm after seems to work. However, ~/Indirect/Test.File ends up not being a symlink, which I think is odd/unexpected.
+
+
+**Edit:  Doing a git annex sync in ~/Indirect results in the continuing behaviour to be correct, so there's some issue telling Direct that Indirect is no longer in direct-mode?**
+This appears to fix it, but I guess shouldn't be necessary.
