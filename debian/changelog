@@ -28,6 +28,10 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     additional content was downloaded.
   * webapp: Much improved progress bar display for downloads from encrypted
     remotes.
+  * Ssh connection caching is now also used by rsync special remotes.
+    Thanks, guilhem for the patch.
+  * Added per-remote annex-rsync-transport option.
+    Thanks, guilhem for the patch.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 
