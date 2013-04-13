@@ -201,16 +201,10 @@ expandSplice s lls = concat [before, new:splicerest, end]
 		l:r -> (expandtabs l, take (length r) (repeat []))
 		_ -> ([], [])
 	new = concat
-		[ beforesplice
+		[ joinsplice $ deqqstart $ take (coordColumn cs - 1) splicestart
 		, addindent (findindent splicestart) (mangleCode $ splicedCode s)
 		, deqqend $ drop (coordColumn ce) splicestart
 		]
-	  where
-		beforesplice = 
-			let s = deqqstart $ take (coordColumn cs - 1) splicestart
-			in if all isSpace s
-				then ""
-				else s ++ " $ "
 
 	{- coordinates assume tabs are expanded to 8 spaces -}
 	expandtabs = replace "\t" (take 8 $ repeat ' ')
@@ -221,6 +215,23 @@ expandSplice s lls = concat [before, new:splicerest, end]
 		_ -> s
 	deqqend (')':s) = s
 	deqqend s = s
+
+	{- Prepare the code that comes just before the splice so
+	 - the splice will combine with it appropriately. -}
+	joinsplice s
+		-- all indentation? Skip it, we'll use the splice's indentation
+		| all isSpace s = ""
+		-- function definition needs no preparation
+		-- ie: foo = $(splice)
+		| "=" `isSuffixOf` s' = s
+		-- already have a $ to set off the splice
+		-- ie: foo $ $(splice)
+		| "$" `isSuffixOf` s' = s
+		-- need to add a $ to set off the splice
+		-- ie: bar $(splice)
+		| otherwise = s ++ " $ "
+	  where
+	  	s' = filter (not . isSpace) s
 
 	findindent = length . takeWhile isSpace
 	addindent n = unlines . map (i ++) . lines
