@@ -173,13 +173,16 @@ expandSplice s lls = concat [before, new:splicerest, end]
 		l:r -> (expandtabs l, take (length r) (repeat []))
 		_ -> ([], [])
 	new = concat
-		[ let s = deqqstart $ take (coordColumn cs - 1) splicestart
-		  in if all isSpace s
-		  	then ""
-			else s
+		[ beforesplice
 		, addindent (findindent splicestart) (mangleCode $ splicedResult s)
 		, deqqend $ drop (coordColumn ce) splicestart
 		]
+	  where
+		beforesplice = 
+			let s = deqqstart $ take (coordColumn cs - 1) splicestart
+			in if all isSpace s
+				then ""
+				else s ++ " $ "
 
 	{- coordinates assume tabs are expanded to 8 spaces -}
 	expandtabs = replace "\t" (take 8 $ repeat ' ')
