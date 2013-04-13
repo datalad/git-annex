@@ -943,6 +943,15 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force ipv6, and limit
   the bandwidth to 100Kbyte/s, set it to "-6 --bwlimit 100"
 
+* `remote.<name>.annex-rsync-transport`
+
+  The remote shell to use to connect to the rsync remote. Possible
+  values are `ssh` (the default) and `rsh`, together with their
+  arguments, for instance `ssh -p 2222 -c blowfish`; Note that the
+  remote hostname should not appear there, see rsync(1) for details.
+  When the transport used is `ssh`, connections are automatically cached
+  unless `annex.sshcaching` is unset.
+
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.

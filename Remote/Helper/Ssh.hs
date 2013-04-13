@@ -22,9 +22,10 @@ sshToRepo :: Git.Repo -> [CommandParam] -> Annex [CommandParam]
 sshToRepo repo sshcmd = do
 	g <- fromRepo id
 	let c = extractRemoteGitConfig g (Git.repoDescribe repo)
-	let opts = map Param $ remoteAnnexSshOptions c
-	params <- sshParams (Git.Url.hostuser repo, Git.Url.port repo) opts
-	return $ params ++ sshcmd
+	    opts = map Param $ remoteAnnexSshOptions c
+            host = Git.Url.hostuser repo
+	params <- sshCachingOptions (host, Git.Url.port repo) opts
+	return $ params ++ Param host : sshcmd
 
 {- Generates parameters to run a git-annex-shell command on a remote
  - repository. -}

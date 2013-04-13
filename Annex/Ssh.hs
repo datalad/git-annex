@@ -8,8 +8,9 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Ssh (
-	sshParams,
+	sshCachingOptions,
 	sshCleanup,
+	sshReadPort,
 ) where
 
 import qualified Data.Map as M
@@ -24,8 +25,8 @@ import Config
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
-sshParams :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
-sshParams (host, port) opts = go =<< sshInfo (host, port)
+sshCachingOptions :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
+sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
@@ -33,8 +34,7 @@ sshParams (host, port) opts = go =<< sshInfo (host, port)
 		liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 		lockFile $ socket2lock socketfile
 		ret params
-	ret ps = return $ ps ++ opts ++ portParams port ++
-		[Param "-T", Param host]
+	ret ps = return $ ps ++ opts ++ portParams port ++ [Param "-T"]
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
@@ -154,3 +154,15 @@ sizeof_sockaddr_un_sun_path = 100
  - appear on disk. -}
 valid_unix_socket_path :: FilePath -> Bool
 valid_unix_socket_path f = length (decodeW8 f) < sizeof_sockaddr_un_sun_path
+
+{- Parses the SSH port, and returns the other OpenSSH options. If
+ - several ports are found, the last one takes precedence. -}
+sshReadPort :: [String] -> (Maybe Integer, [String])
+sshReadPort params = (port, reverse args)
+  where
+	(port,args) = aux (Nothing, []) params
+	aux (p,ps) [] = (p,ps)
+	aux (_,ps) ("-p":p:rest) = aux (readPort p, ps) rest
+	aux (p,ps) (q:rest) | "-p" `isPrefixOf` q = aux (readPort $ drop 2 q, ps) rest
+			    | otherwise = aux (p,q:ps) rest
+	readPort p = fmap fst $ listToMaybe $ reads p

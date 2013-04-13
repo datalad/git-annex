@@ -94,6 +94,7 @@ data RemoteGitConfig = RemoteGitConfig
 	 - including special remotes. -}
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
+	, remoteAnnexRsyncTransport :: [String]
 	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
@@ -116,6 +117,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
+	, remoteAnnexRsyncTransport = getoptions "rsync-transport"
 	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 	, remoteAnnexBupRepo = getmaybe "buprepo"

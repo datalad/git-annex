@@ -17,6 +17,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Annex.Content
+import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
@@ -44,6 +45,9 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
+	(transport, url) <- rsyncTransport
+	let o = RsyncOpts url (transport ++ opts) escape
+	    islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ encryptableRemote c
 		(storeEncrypted o $ getGpgOpts gc)
 		(retrieveEncrypted o)
@@ -69,9 +73,6 @@ gen r u c gc = do
 			, remotetype = remote
 			}
   where
-	o = RsyncOpts url opts escape
-	islocal = rsyncUrlIsPath $ rsyncUrl o
-	url = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
 	escape = M.lookup "shellescape" c /= Just "no"
 	safe opt
@@ -81,6 +82,28 @@ gen r u c gc = do
 		| opt == "--delete" = False
 		| opt == "--delete-excluded" = False
 		| otherwise = True
+	rawurl = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+	(login,resturl) = case separate (=='@') rawurl of
+			(h, "") -> (Nothing, h)
+			(l, h)  -> (Just l, h)
+	loginopt = maybe [] (\l -> ["-l",l]) login
+	fromNull as xs | null xs = as
+		       | otherwise = xs
+	rsyncTransport = if rsyncUrlIsShell rawurl
+		then (\rsh -> return (rsyncShell rsh, resturl)) =<<
+			case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
+				"ssh":sshopts -> do
+					let (port, sshopts') = sshReadPort sshopts
+					    host = takeWhile (/=':') resturl
+					-- Connection caching
+					(Param "ssh":) <$> sshCachingOptions
+						(host, port)
+						(map Param $ loginopt ++ sshopts')
+				"rsh":rshopts -> return $ map Param $ "rsh" :
+					loginopt ++ rshopts
+				rsh -> error $ "Unknown Rsync transport: "
+					++ unwords rsh
+		else return ([], rawurl)
 
 rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
 rsyncSetup u c = do
