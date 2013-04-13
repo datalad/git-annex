@@ -198,9 +198,38 @@ expandSplice s lls = concat [before, new:splicerest, end]
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
-mangleCode = 
-	{- ghc mayb incorrectly escape "}" within a multi-line string. -}
-	replace " \\}" " }"
+mangleCode = fix_bad_escape . remove_package_version
+  where
+	{- GHC may incorrectly escape "}" within a multi-line string. -}
+	fix_bad_escape = replace " \\}" " }"
+
+	{- GHC may add full package and version qualifications for
+	 - symbols from unimported modules. We don't want these.
+	 -
+	 - Examples:
+	 -   "blaze-html-0.4.3.1:Text.Blaze.Internal.preEscapedText" 
+	 -   "ghc-prim:GHC.Types.:"
+	 -}
+	remove_package_version s = case parse findQualifiedSymbols "" s of
+		Left e -> s
+		Right symbols -> concat $ 
+			map (either (\c -> [c]) mangleSymbol) symbols
+
+	findQualifiedSymbols :: Parser [Either Char String]
+	findQualifiedSymbols = many $
+		try (Right <$> qualifiedSymbol) <|> (Left <$> anyChar)
+
+	qualifiedSymbol :: Parser String
+	qualifiedSymbol = do
+		token
+		char ':'
+		token
+
+	token :: Parser String
+	token = many1 $ satisfy isAlphaNum <|> oneOf "-.'"
+
+	mangleSymbol "GHC.Types." = ""
+	mangleSymbol s = s
 
 main = do
 	r <- parseFromFile splicesExtractor "log"
