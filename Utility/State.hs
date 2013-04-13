@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE PackageImports #-}
-
 module Utility.State where
 
 import "mtl" Control.Monad.State.Strict
