@@ -171,8 +171,8 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		<*> a i
 	gen c i = do
 	  	packet <- decodeTagContent $ tagElement i
-		let sequence = fromMaybe 0 $ readish $ T.unpack $ tagValue i
-		return $ c sequence packet
+		let seqnum = fromMaybe 0 $ readish $ T.unpack $ tagValue i
+		return $ c seqnum packet
 
 decodeExitCode :: Int -> ExitCode
 decodeExitCode 0 = ExitSuccess
