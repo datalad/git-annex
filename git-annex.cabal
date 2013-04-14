@@ -76,8 +76,9 @@ Executable git-annex
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   CC-Options: -Wall
-  GHC-Options: -threaded -Wall -XPackageImports
+  GHC-Options: -threaded -Wall
   CPP-Options: -DWITH_CLIBS
+  Extensions: PackageImports
 
   if flag(Production)
     GHC-Options: -O2
