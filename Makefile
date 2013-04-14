@@ -161,15 +161,15 @@ osxapp: Build/Standalone Build/OSXMkLibs
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
-	echo "Native build, to get TH splices.."
+	echo "Running native build, to get TH splices.."
 	$(CABAL) configure -f"-Production" -O0
-	$(CABAL) build -v2 --ghc-options=-ddump-splices 2>&1 | tee dist/caballog
+	$(CABAL) build --ghc-options=-ddump-splices 2> dist/dump-splices
 	mkdir -p tmp
 	rsync -az --delete --exclude tmp . tmp/androidtree
 	cd tmp/androidtree && $(MAKE) android-stage2
 	
 android-stage2: Build/EvilSplicer
-	./Build/EvilSplicer tmp/splices dist/caballog standalone/android/evilsplicer-headers.hs
+	./Build/EvilSplicer tmp/splices dist/dump-splices standalone/android/evilsplicer-headers.hs
 # Copy the files with expanded splices to the source tree, but
 # only if the existing source file is not newer. (So, if a file
 # used to have TH splices but they were removed, it will be newer,
