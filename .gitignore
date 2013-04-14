@@ -4,7 +4,6 @@ build-stamp
 Build/SysConfig.hs
 Build/InstallDesktopFile
 Build/EvilSplicer
-Build/InstallDesktopFile
 Build/Standalone
 Build/OSXMkLibs
 git-annex
