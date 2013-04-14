@@ -1,3 +1,5 @@
+{-# LANGUAGE PackageImports #-}
+
 module Common (module X) where
 
 import Control.Monad as X hiding (join)
