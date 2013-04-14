@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkurjhi0CRJvgm7QNaZDWS9hitBtavqIpc"
+ nickname="Bret"
+ subject="Snow Leopard Issues"
+ date="2013-04-14T20:17:17Z"
+ content="""
+I was able to build snow leopard completely for the first time over last night (it took a very long time to build all the tools and dependancies).  Woohoo!
+
+The way I was able to fully build on a 32-bit 10.6 machine was this
+
+1. Delete ~/.ghc and ~/.cabal.  They were full of random things and were causing problems.
+2. `brew uninstall ghc and haskell-platform`
+3. `brew update`
+4. `brew install git ossp-uuid md5sha1sum coreutils libgsasl gnutls libidn libgsasl pkg-config libxml2`
+5. `brew upgrade git ossp-uuid md5sha1sum coreutils libgsasl gnutls libidn libgsasl pkg-config libxml2` (Some of these were already installed/up to date.
+6. `brew link libxml2`
+7. `brew install haskell-platform`  (This takes a long, long time).
+8. `cabal update` (assuming you have added `~/.cabal/bin` to your path
+9. `cabal install cablal-install`
+10. `cabal install c2hs`
+11. `cabal install git-annex`
+
+
+It also appears to be running fairly smoothly than it had in the past on a 32-bit SL system.  Thats also neat.  
+
+The problem is that it seems to not really work as git annex though, probably due to the error relating you get when you start up the webapp:
+Running
+`git annex webapp` 
+The browser starts up, and I get 3 of these errors:
+`Watcher crashed: Need at least OSX 10.7.0 for file-level FSEvents`
+
+Pairing with a local computer appears to work to systems running 10.7, but when you complete the process, they never show up in the repository list.
+
+
+Also on a side note, when running `git annex webapp` it triggers the opening of an html file in whatever the default html file handler is.  I edit a lot of html, so for me that is usually a text editor.  I had to change the file handler to open html files with my web browser for the `git annex webapp` to actually work.  Is there a way to change that so that `git annex webapp` uses the default web browser for the system rather than the default html file handler?
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 18"
+ date="2013-04-14T20:13:54Z"
+ content="""
+@Marvin, just to be clear, it was `ssh-add -D` that fixed it for you?
+
+To make the fix stick, you need to make a ~/.ssh/annex/ directory, and move the keys to there, and then edit ~/.ssh/config to use the new path to the key file. This should prevent gnome-keyring from seeing them.
+"""]]
