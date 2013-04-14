@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="99.48.75.171"
+ subject="comment 4"
+ date="2013-04-14T01:07:19Z"
+ content="""
+@pradermecker: I think that the CLI would be able to do what you're describing (to some extent), but the issue is that the filenames it creates will be hashes, and not in the folder pattern that is on your laptop. Of course, if the plug computer uses file metadata to determine file info, and will search a directory tree, then it probably won't care that the files are named strange things.
+
+As a quick example:
+
+I have a repo with three files in it:
+
+    $ ls -R
+    .:
+    File 1  File 2  File 3
+
+I copy those files to a directory remote:
+
+    $ git annex copy --to=test-dir *
+    copy File 1 (to test-dir...) 
+    ok                      
+    copy File 2 (to test-dir...) 
+    ok                      
+    copy File 3 (to test-dir...) 
+    ok                      
+    (Recording state in git...)
+
+Then I look at what's in my directory remote:
+
+    $ cd ../remote
+    $ ls -R
+    .:
+    0d4  d35  f15
+
+    ./0d4:
+    d37
+
+    ./0d4/d37:
+    SHA256-s7--a940d8aadc02f798331b2d46f1a8ad2c9821783060f4a0810da42bf785855c1c
+
+    ./0d4/d37/SHA256-s7--a940d8aadc02f798331b2d46f1a8ad2c9821783060f4a0810da42bf785855c1c:
+    SHA256-s7--a940d8aadc02f798331b2d46f1a8ad2c9821783060f4a0810da42bf785855c1c
+
+    ./d35:
+    55c
+
+    ./d35/55c:
+    SHA256-s7--ab1ad6a49c022416008887464b8dc03b523b9e81530cf47d1f6f7712c1b30955
+
+    ./d35/55c/SHA256-s7--ab1ad6a49c022416008887464b8dc03b523b9e81530cf47d1f6f7712c1b30955:
+    SHA256-s7--ab1ad6a49c022416008887464b8dc03b523b9e81530cf47d1f6f7712c1b30955
+
+    ./f15:
+    3f2
+
+    ./f15/3f2:
+    SHA256-s7--d1993f1115215aa6389e33fa9979fb39bb29e5bed14661baf1cf6af3182f0164
+
+    ./f15/3f2/SHA256-s7--d1993f1115215aa6389e33fa9979fb39bb29e5bed14661baf1cf6af3182f0164:
+    SHA256-s7--d1993f1115215aa6389e33fa9979fb39bb29e5bed14661baf1cf6af3182f0164
+
+I haven't checked, but I think that the assistant will be able to use a special remote that you create from the CLI once you create it.
+
+To create a remote without encryption using the CLI, try a command of the form `git annex initremote remote-name blah blah blah encryption=none`
+Also see the information at [[special_remotes/directory]], [[special_remotes/rsync]], and [[Repo accessible from \"dumb\" client without git-annex]].
+"""]]
