@@ -53,21 +53,27 @@ offsetCoord a b = Coord
 	(coordLine a - coordLine b)
 	(coordColumn a - coordColumn b)
 
+data SpliceType = SpliceExpression | SpliceDeclaration
+	deriving (Read, Show, Eq)
+
 data Splice = Splice
 	{ splicedFile :: FilePath
 	, spliceStart :: Coord
 	, spliceEnd :: Coord
 	, splicedExpression :: String
 	, splicedCode :: String
+	, spliceType :: SpliceType
 	}
 	deriving (Read, Show)
+
+isExpressionSplice :: Splice -> Bool
+isExpressionSplice s = spliceType s == SpliceExpression
 
 number :: Parser Int
 number = read <$> many1 digit
 
 {- A pair of Coords is written in one of three ways:
  - "95:21-73", "1:1", or "(92,25)-(94,2)"
- - (Does that middle one really represent a pair? Unknown.)
  -}
 coordsParser :: Parser (Coord, Coord)
 coordsParser = (try singleline <|> try weird <|> multiline) <?> "Coords"
@@ -113,7 +119,8 @@ spliceParser = do
 	char ':'
 	(start, end) <- coordsParser
 	string ": Splicing "
-	string "expression" <|> string "declarations"
+	splicetype <- tosplicetype
+		<$> (string "expression" <|> string "declarations")
 	newline
 
 	expression <- indentedLine
@@ -129,9 +136,11 @@ spliceParser = do
 		string indent
 		restOfLine
 
-	{- For reasons unknown, GHC will sometimes claim a splice
-	 - is at 1:1, and then inside the splice code block,
-	 - the first line will give the actual coordinates of the splice. -}
+	{- When splicing declarations, GHC will output a splice
+	 - at 1:1, and then inside the splice code block,
+	 - the first line will give the actual coordinates of the
+	 - line that was spliced.
+	 -}
 	let getrealcoords = do
 		string indent
 		string file
@@ -144,9 +153,15 @@ spliceParser = do
 		Left firstcodeline -> 
 			Splice file start end expression
 				(unlines $ firstcodeline:codelines)
+				splicetype
 		Right (realstart, realend) ->
 			Splice file realstart realend expression
 				(unlines codelines)
+				splicetype
+  where
+  	tosplicetype "declarations" = SpliceDeclaration
+	tosplicetype "expression" = SpliceExpression
+	tosplicetype s = error $ "unknown splice type: " ++ s
 
 {- Extracts the splices, ignoring the rest of the compiler output. -}
 splicesExtractor :: Parser [Splice]
@@ -169,24 +184,38 @@ splicesExtractor = rights <$> many extract
  - This means that a splice can modify the logical lines within its block
  - as it likes, without interfering with the Coords of other splices.
  - 
+ - When splicing in declarations, they are not placed on the line
+ - that defined them, because at least with Yesod, that line has another TH
+ - splice, and things would get mixed up. Since declarations are stand
+ - alone, they can go anywhere, and are added to the very end of the file.
+ -
  - As well as expanding splices, this can add a block of imports to the
  - file. These are put right before the first line in the file that
  - starts with "import "
  -}
 applySplices :: FilePath -> Maybe String -> [Splice] -> IO ()
-applySplices destdir imports l@(first:_) = do
+applySplices destdir imports splices@(first:_) = do
 	let f = splicedFile first
 	let dest = (destdir </> f)
 	putStrLn $ "splicing " ++ f
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
-	let newcontent = concat $ addimports $ expand lls l
+	let newcontent = concat $ addimports $
+		expanddeclarations declarationsplices $
+		expandexpressions lls expressionsplices
 	oldcontent <- catchMaybeIO $ readFileStrict dest
 	when (oldcontent /= Just newcontent) $
 		writeFile dest newcontent
   where
-  	expand lls [] = lls
-  	expand lls (s:rest) = expand (expandSplice s lls) rest
+	(expressionsplices, declarationsplices) =
+		partition isExpressionSplice splices
+
+  	expandexpressions lls [] = lls
+  	expandexpressions lls (s:rest) =
+		expandexpressions (expandExpressionSplice s lls) rest
+
+	expanddeclarations [] lls = lls
+	expanddeclarations l lls = lls ++ map (mangleCode . splicedCode) l
 
 	addimports lls = case imports of
 		Nothing -> lls
@@ -200,8 +229,8 @@ applySplices destdir imports l@(first:_) = do
 					, end
 					]
 
-expandSplice :: Splice -> [String] -> [String]
-expandSplice s lls = concat [before, new:splicerest, end]
+expandExpressionSplice :: Splice -> [String] -> [String]
+expandExpressionSplice s lls = concat [before, new:splicerest, end]
   where
 	cs = spliceStart s
 	ce = spliceEnd s
