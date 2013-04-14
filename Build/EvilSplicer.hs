@@ -181,7 +181,7 @@ applySplices destdir imports l@(first:_) = do
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
 	let newcontent = concat $ addimports $ expand lls l
-	oldcontent <- catchMaybeIO $ readFile dest
+	oldcontent <- catchMaybeIO $ readFileStrict dest
 	when (oldcontent /= Just newcontent) $
 		writeFile dest newcontent
   where
