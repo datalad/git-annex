@@ -13,6 +13,8 @@ git-union-merge.1
 doc/.ikiwiki
 html
 *.tix
+*.o
+*.hi
 .hpc
 dist
 # Sandboxed builds
