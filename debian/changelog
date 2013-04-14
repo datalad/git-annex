@@ -32,6 +32,12 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     Thanks, guilhem for the patch.
   * Added per-remote annex-rsync-transport option.
     Thanks, guilhem for the patch.
+  * assistant: Work around horrible, terrible, very bad behavior of
+    gnome-keyring, by not storing special-purpose ssh keys in ~/.ssh/*.pub.
+    Apparently gnome-keyring apparently will load and indiscriminately use
+    such keys in some cases, even if they are not using any of the standard
+    ssh key names. Instead store the keys in ~/.ssh/annex/,
+    which gnome-keyring will not check.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 
