@@ -2,6 +2,11 @@ tmp
 test
 build-stamp
 Build/SysConfig.hs
+Build/InstallDesktopFile
+Build/EvilSplicer
+Build/InstallDesktopFile
+Build/Standalone
+Build/OSXMkLibs
 git-annex
 git-annex.1
 git-annex-shell.1

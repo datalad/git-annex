@@ -27,6 +27,7 @@ git-annex.1: doc/git-annex.mdwn
 	./Build/mdwn2man git-annex 1 doc/git-annex.mdwn > git-annex.1
 git-annex-shell.1: doc/git-annex-shell.mdwn
 	./Build/mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
+
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 
@@ -40,11 +41,11 @@ install-docs: docs install-mans
 		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
 	fi
 
-install: build install-docs
+install: build install-docs Build/InstallDesktopFile
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
-	runghc Build/InstallDesktopFile.hs $(PREFIX)/bin/git-annex || true
+	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
 
 test: git-annex
 	./git-annex test
@@ -73,7 +74,20 @@ docs: $(mans)
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
-		Setup.hi Setup.o Setup
+		Setup.hi Setup.o Setup Build/InstallDesktopFile \
+		Build/EvilSplicer Build/InstallDesktopFile \
+		Build/Standalone Build/OSXMkLibs
+
+Build/InstallDesktopFile: Build/InstallDesktopFile.hs
+	$(GHC) --make $@
+Build/EvilSplicer: Build/EvilSplicer.hs
+	$(GHC) --make $@
+Build/InstallDesktopFile: Build/InstallDesktopFile.hs
+	$(GHC) --make $@
+Build/Standalone: Build/Standalone.hs
+	$(GHC) --make $@
+Build/OSXMkLibs: Build/OSXMkLibs.hs
+	$(GHC) --make $@
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -83,7 +97,7 @@ hackage: sdist
 	@cabal upload dist/*.tar.gz
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone:
+linuxstandalone: Build/Standalone
 	$(MAKE) git-annex
 
 	rm -rf "$(LINUXSTANDALONE_DEST)"
@@ -96,7 +110,7 @@ linuxstandalone:
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 
-	runghc Build/Standalone.hs "$(LINUXSTANDALONE_DEST)"
+	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/git-core"
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
@@ -120,7 +134,7 @@ linuxstandalone:
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
-osxapp:
+osxapp: Build/Standalone Build/OSXMkLibs
 	$(MAKE) git-annex
 
 	rm -rf "$(OSXAPP_DEST)"
@@ -134,12 +148,12 @@ osxapp:
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
 
-	runghc Build/Standalone.hs $(OSXAPP_BASE)
+	./Build/Standalone $(OSXAPP_BASE)
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
 
-	runghc Build/OSXMkLibs.hs $(OSXAPP_BASE)
+	./Build/OSXMkLibs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
 	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
@@ -148,7 +162,7 @@ osxapp:
 
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
-android:
+android: Build/EvilSplicer
 	echo "Native build, to get TH splices.."
 	$(CABAL) configure -f"-Production" -O0
 	$(CABAL) build -v2 --ghc-options=-ddump-splices 2>&1 | tee dist/caballog
@@ -156,8 +170,8 @@ android:
 	rsync -az --delete --exclude tmp . tmp/androidtree
 	cd tmp/androidtree && $(MAKE) android-stage2
 	
-android-stage2: 
-	runghc Build/EvilSplicer.hs tmp/splices dist/caballog standalone/android/evilsplicer-headers.hs
+android-stage2: Build/EvilSplicer
+	./Build/EvilSplicer tmp/splices dist/caballog standalone/android/evilsplicer-headers.hs
 # Copy the files with expanded splices to the source tree, but
 # only if the existing source file is not newer. (So, if a file
 # used to have TH splices but they were removed, it will be newer,

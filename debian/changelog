@@ -10,7 +10,7 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * Adjust preferred content expressions so that content in archive
     directories is preferred until it has reached an archive or smallarchive
     repository.
-  * Avoid using runghc when building the Debian package, as that needs ghci.
+  * Avoid using runghc, as that needs ghci.
   * webapp: New --listen= option allows running the webapp on one computer
     and connecting to it from another. (Note: Does not yet use HTTPS.)
   * webapp: When a repository's group is changed, rescan for transfers.
