@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="marvin"
+ ip="91.152.75.65"
+ subject="comment 8"
+ date="2013-04-14T00:37:21Z"
+ content="""
+The key in authorized file is the same as git-annex pub key ( key.git-annex-192.168.1.43-marvin.pub )
+Which is also the only ssh key in the authorized file. Is it assumed keys are always used instead of only passwords?
+"""]]
