@@ -35,6 +35,7 @@ import Data.Char
 import System.Environment
 import System.FilePath
 import System.Directory
+import Control.Monad
 
 import Utility.Monad
 import Utility.Misc
@@ -179,7 +180,10 @@ applySplices destdir imports l@(first:_) = do
 	putStrLn $ "splicing " ++ f
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
-	writeFile dest $ concat $ addimports $ expand lls l
+	let newcontent = concat $ addimports $ expand lls l
+	oldcontent <- catchMaybeIO $ readFile dest
+	when (oldcontent /= Just newcontent) $
+		writeFile dest newcontent
   where
   	expand lls [] = lls
   	expand lls (s:rest) = expand (expandSplice s lls) rest
