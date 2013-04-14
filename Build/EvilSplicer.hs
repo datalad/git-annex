@@ -280,10 +280,22 @@ expandExpressionSplice s lls = concat [before, new:splicerest, end]
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
-mangleCode = fix_bad_escape . remove_package_version
+mangleCode = nested_instances . fix_bad_escape . remove_package_version
   where
 	{- GHC may incorrectly escape "}" within a multi-line string. -}
 	fix_bad_escape = replace " \\}" " }"
+
+	{- GHC may output this:
+	 -
+	 - instance RenderRoute WebApp where
+	 -   data instance Route WebApp
+	 -        ^^^^^^^^
+	 - The marked word should not be there.
+	 -
+	 - FIXME: This is a yesod-specific hack, it should look for the
+	 - outer instance.
+	 -}
+	nested_instances = replace "  data instance Route" "  data Route" 
 
 	{- GHC may add full package and version qualifications for
 	 - symbols from unimported modules. We don't want these.
