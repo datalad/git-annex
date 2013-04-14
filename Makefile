@@ -74,8 +74,10 @@ docs: $(mans)
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
-		Setup.hi Setup.o Setup Build/InstallDesktopFile \
-		Build/EvilSplicer Build/Standalone Build/OSXMkLibs
+		Setup.hi Setup.o Setup \
+		Build/InstallDesktopFile Build/EvilSplicer Build/Standalone Build/OSXMkLibs \
+		Build/InstallDesktopFile.hi Build/EvilSplicer.hi Build/Standalone.hi Build/OSXMkLibs.hi \
+		Build/InstallDesktopFile.o Build/EvilSplicer.o Build/Standalone.hi Build/OSXMkLibs.o
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@
