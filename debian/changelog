@@ -3,41 +3,39 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * initremote: Generates encryption keys with high quality entropy.
     This can be disabled using --fast to get the old behavior.
     The assistant still uses low-quality entropy when creating encrypted
-    remotes, to avoid delays.
-    Thanks, guilhem for the patch.
+    remotes, to avoid delays. (Thanks, guilhem for the patch.)
   * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
-  * addurl: Bugfix: Did not properly add file in direct mode.
-  * Adjust preferred content expressions so that content in archive
-    directories is preferred until it has reached an archive or smallarchive
-    repository.
-  * Avoid using runghc, as that needs ghci.
-  * webapp: New --listen= option allows running the webapp on one computer
-    and connecting to it from another. (Note: Does not yet use HTTPS.)
-  * webapp: When a repository's group is changed, rescan for transfers.
-  * Added annex.web-download-command setting.
-  * The version number is now derived from git, unless built with
-    VERSION_FROM_CHANGELOG.
-  * webapp: Added animations.
-  * assistant: Stop any transfers the assistant initiated on shutdown.
-  * assistant: Added sequence numbers to XMPP git push packets. (Not yet used.)
-  * assistant: Bug fix to avoid annexing the files that git uses
-    to stand in for symlinks on FAT and other filesystem not supporting
-    symlinks.
-  * addurl: Register transfer so the webapp can see it.
-  * addurl: Automatically retry downloads that fail, as long as some
-    additional content was downloaded.
-  * webapp: Much improved progress bar display for downloads from encrypted
-    remotes.
-  * Ssh connection caching is now also used by rsync special remotes.
-    Thanks, guilhem for the patch.
-  * Added per-remote annex-rsync-transport option.
-    Thanks, guilhem for the patch.
   * assistant: Work around horrible, terrible, very bad behavior of
     gnome-keyring, by not storing special-purpose ssh keys in ~/.ssh/*.pub.
     Apparently gnome-keyring apparently will load and indiscriminately use
     such keys in some cases, even if they are not using any of the standard
     ssh key names. Instead store the keys in ~/.ssh/annex/,
     which gnome-keyring will not check.
+  * addurl: Bugfix: Did not properly add file in direct mode.
+  * assistant: Bug fix to avoid annexing the files that git uses
+    to stand in for symlinks on FAT and other filesystem not supporting
+    symlinks.
+  * Adjust preferred content expressions so that content in archive
+    directories is preferred until it has reached an archive or smallarchive
+    repository.
+  * webapp: New --listen= option allows running the webapp on one computer
+    and connecting to it from another. (Note: Does not yet use HTTPS.)
+  * Added annex.web-download-command setting.
+  * Added per-remote annex-rsync-transport option. (guilhem again)
+  * Ssh connection caching is now also used by rsync special remotes.
+    (guilhem yet again)
+  * The version number is now derived from git, unless built with
+    VERSION_FROM_CHANGELOG.
+  * assistant: Stop any transfers the assistant initiated on shutdown.
+  * assistant: Added sequence numbers to XMPP git push packets. (Not yet used.)
+  * addurl: Register transfer so the webapp can see it.
+  * addurl: Automatically retry downloads that fail, as long as some
+    additional content was downloaded.
+  * webapp: Much improved progress bar display for downloads from encrypted
+    remotes.
+  * Avoid using runghc, as that needs ghci.
+  * webapp: When a repository's group is changed, rescan for transfers.
+  * webapp: Added animations.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 
