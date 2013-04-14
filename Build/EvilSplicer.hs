@@ -4,11 +4,12 @@
  - and the splices dumped to a log. For example:
  -   cabal build --ghc-options=-ddump-splices 2>&1 | tee log
  -
- - Along with the log, a "headers" file may also be provided, containing
+ - Along with the log, a headers file may also be provided, containing
  - additional imports needed by the template haskell code.
  -
  - This program will parse the log, and expand all splices therein,
- - modifying files in the source tree. They can then be built a second
+ - writing files to the specified destdir (which can be "." to modify
+ - the source tree directly). They can then be built a second
  - time, with a ghc that does not support TH.
  -
  - Note that template haskell code may refer to symbols that are not
@@ -31,10 +32,14 @@ import Data.Either
 import Data.List
 import Data.String.Utils
 import Data.Char
+import System.Environment
+import System.FilePath
+import System.Directory
 
 import Utility.Monad
 import Utility.Misc
 import Utility.Exception
+import Utility.Path
 
 data Coord = Coord
 	{ coordLine :: Int
@@ -150,7 +155,7 @@ splicesExtractor = rights <$> many extract
 	compilerJunkLine = restOfLine
 
 {- Modifies the source file, expanding the splices, which all must
- - have the same splicedFile.
+ - have the same splicedFile. Writes the new file to the destdir.
  -
  - Each splice's Coords refer to the original position in the file,
  - and not to its position after any previous splices may have inserted
@@ -167,12 +172,14 @@ splicesExtractor = rights <$> many extract
  - file. These are put right before the first line in the file that
  - starts with "import "
  -}
-applySplices :: Maybe String -> [Splice] -> IO ()
-applySplices imports l@(first:_) = do
+applySplices :: FilePath -> Maybe String -> [Splice] -> IO ()
+applySplices destdir imports l@(first:_) = do
 	let f = splicedFile first
+	let dest = (destdir </> f)
 	putStrLn $ "splicing " ++ f
 	lls <- map (++ "\n") . lines <$> readFileStrict f
-	writeFile f $ concat $ addimports $ expand lls l
+	createDirectoryIfMissing True (parentDir dest)
+	writeFile dest $ concat $ addimports $ expand lls l
   where
   	expand lls [] = lls
   	expand lls (s:rest) = expand (expandSplice s lls) rest
@@ -273,11 +280,18 @@ mangleCode = fix_bad_escape . remove_package_version
 	mangleSymbol "GHC.Types." = ""
 	mangleSymbol s = s
 
-main = do
-	r <- parseFromFile splicesExtractor "log"
-	case r of
-		Left e -> error $ show e
-		Right splices -> do
-			let groups = groupBy (\a b -> splicedFile a == splicedFile b) splices
-			imports <- catchMaybeIO $ readFile "imports"
-			mapM_ (applySplices imports) groups
+main :: IO ()
+main = go =<< getArgs
+  where
+	go (destdir:log:header:[]) = run destdir log (Just header)
+	go (destdir:log:[]) = run destdir log Nothing
+  	go _ = error "usage: EvilSplicer destdir logfile [headerfile]"
+
+	run destdir log mheader = do
+		r <- parseFromFile splicesExtractor log
+		case r of
+			Left e -> error $ show e
+			Right splices -> do
+				let groups = groupBy (\a b -> splicedFile a == splicedFile b) splices
+				imports <- maybe (return Nothing) (catchMaybeIO . readFile) mheader
+				mapM_ (applySplices destdir imports) groups

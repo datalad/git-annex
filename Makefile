@@ -149,12 +149,24 @@ osxapp:
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android:
-	$(CABAL) configure
+	echo "Native build, to get TH splices.."
+	$(CABAL) configure -f"-Production" -O0
+	$(CABAL) build -v2 --ghc-options=-ddump-splices 2>&1 | tee dist/caballog
+	mkdir -p tmp
+	rsync -az --delete --exclude tmp . tmp/androidtree
+	cd tmp/androidtree && $(MAKE) android-stage2
+	
+android-stage2: 
+	runghc Build/EvilSplicer.hs tmp/splices dist/caballog standalone/android/evilsplicer-headers.hs
+# Copy the files with expanded splices to the source tree, but
+# only if the existing source file is not newer. (So, if a file
+# used to have TH splices but they were removed, it will be newer,
+# and not overwritten.)
+	cp -uR tmp/splices/* .
 # cabal cannot cross compile with custom build type, so workaround
 	sed -i 's/Build-type: Custom/Build-type: Simple/' git-annex.cabal
 	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing -Webapp'
 	$(MAKE) git-annex
-	sed -i 's/Build-type: Simple/Build-type: Custom/' git-annex.cabal
 
 androidapp:
 	$(MAKE) android
