@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="ssh agent?"
+ date="2013-04-14T18:34:45Z"
+ content="""
+The only other thing I can think of is that if you have a ssh-agent, it might somehow be caching the git-annex key and incorrectly sending it to ssh. If this were the case, then unsetting `SSH_AUTH_SOCK` or stopping the agent would presumably make the problem go away.
+
+In @marvin's log, I see:
+
+<pre>
+debug1: Offering RSA public key: marvin@marvin-U-100
+</pre>
+
+This is different from what I see when ssh is using a regular key in `.ssh/`:
+
+<pre>
+debug1: Offering RSA public key: /home/joey/.ssh/id_rsa
+</pre>
+
+Marvin's log does not show where it gets this \"marvin@marvin-U-100\".. which makes me suspect it comes from a ssh agent.
+"""]]
