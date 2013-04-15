@@ -197,14 +197,14 @@ applySplices :: FilePath -> Maybe String -> [Splice] -> IO ()
 applySplices destdir imports splices@(first:_) = do
 	let f = splicedFile first
 	let dest = (destdir </> f)
-	putStrLn $ "splicing " ++ f
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
 	let newcontent = concat $ addimports $
 		expanddeclarations declarationsplices $
 		expandexpressions lls expressionsplices
 	oldcontent <- catchMaybeIO $ readFileStrict dest
-	when (oldcontent /= Just newcontent) $
+	when (oldcontent /= Just newcontent) $ do
+		putStrLn $ "splicing " ++ f
 		writeFile dest newcontent
   where
 	(expressionsplices, declarationsplices) =
