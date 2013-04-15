@@ -163,9 +163,9 @@ osxapp: Build/Standalone Build/OSXMkLibs
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
 	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production" -O0; fi
+	mkdir -p tmp
 	$(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices
 	echo "Setting up Android build tree.."
-	mkdir -p tmp
 	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/android/evilsplicer-headers.hs
 	rsync -az --exclude tmp --exclude dist . tmp/androidtree
 # Copy the files with expanded splices to the source tree, but
@@ -178,7 +178,11 @@ android: Build/EvilSplicer
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-core, shakespeare-js, shakespeare, blaze-markup, /' tmp/androidtree/git-annex.cabal
 # cabal cannot cross compile with custom build type, so workaround
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
-	if [ ! -e tmp/androidtree/dist/setup-config ]; then cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'; fi
+	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
+		cd tmp/androidtree; \
+		cabal configure \
+		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'; \
+	fi
 	$(MAKE) -C tmp/androidtree git-annex
 
 androidapp:
