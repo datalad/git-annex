@@ -27,7 +27,7 @@ widgetFile = widgetFileNoReload $ def
 		}
 	}
 #endif
-#endif
 
 hamletTemplate :: FilePath -> FilePath
 hamletTemplate f = globFile "hamlet" f
+#endif
