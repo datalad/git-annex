@@ -268,7 +268,7 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 		-- function definition needs no preparation
 		-- ie: foo = $(splice)
 		| "=" `isSuffixOf` s' = s
-		-- nor does lambda definition
+		-- nor does lambda definition or case expression
 		| "->" `isSuffixOf` s' = s
 		-- nor does a let .. in declaration
 		| "in" `isSuffixOf` s' = s

@@ -5,6 +5,7 @@
  -
  - ** DO NOT COMMIT ** 
  -}
+import qualified Data.Text
 import qualified Data.Text.Lazy.Builder
 import qualified Text.Shakespeare
 import qualified Text.Hamlet
