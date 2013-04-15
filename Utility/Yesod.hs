@@ -16,6 +16,7 @@ import Data.Default (def)
 import Text.Hamlet
 #endif
 
+#ifndef __ANDROID__
 widgetFile :: String -> Q Exp
 #if ! MIN_VERSION_yesod_default(1,1,0)
 widgetFile = widgetFileNoReload
@@ -25,6 +26,7 @@ widgetFile = widgetFileNoReload $ def
 		{ hamletNewlines = AlwaysNewlines
 		}
 	}
+#endif
 #endif
 
 hamletTemplate :: FilePath -> FilePath
