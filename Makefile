@@ -162,23 +162,24 @@ osxapp: Build/Standalone Build/OSXMkLibs
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	$(CABAL) configure -f"-Production" -O0
-	$(CABAL) build --ghc-options=-ddump-splices 2> dist/dump-splices
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production" -O0; fi
+	$(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices
+	echo "Setting up Android build tree.."
 	mkdir -p tmp
-	rsync -az --delete --exclude tmp . tmp/androidtree
-	cd tmp/androidtree && $(MAKE) android-stage2
-	
-android-stage2: Build/EvilSplicer
-	./Build/EvilSplicer tmp/splices dist/dump-splices standalone/android/evilsplicer-headers.hs
+	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/android/evilsplicer-headers.hs
+	rsync -az --exclude tmp --exclude dist . tmp/androidtree
 # Copy the files with expanded splices to the source tree, but
 # only if the existing source file is not newer. (So, if a file
 # used to have TH splices but they were removed, it will be newer,
 # and not overwritten.)
-	cp -uR tmp/splices/* .
+	cp -uR tmp/splices/* tmp/androidtree
+	cd tmp/androidtree && $(MAKE) git-annex
+# Some additional dependencies needed by the expanded splices.
+	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-core, shakespeare-js, shakespeare, blaze-markup, /' tmp/androidtree/git-annex.cabal
 # cabal cannot cross compile with custom build type, so workaround
-	sed -i 's/Build-type: Custom/Build-type: Simple/' git-annex.cabal
-	$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing -Webapp'
-	$(MAKE) git-annex
+	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
+	if [ ! -e tmp/androidtree/dist/setup-config ]; then cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'; fi
+	$(MAKE) -C tmp/androidtree git-annex
 
 androidapp:
 	$(MAKE) android
