@@ -162,7 +162,7 @@ genSshKeyPair = withTempDir "git-annex-keygen" $ \dir -> do
  - regular ssh experience at all. Returns a modified SshData containing the
  - mangled hostname.
  -
- - Note that the key files are put in ~/.ssh/annex/, rather than directly
+ - Note that the key files are put in ~/.ssh/git-annex/, rather than directly
  - in ssh because of an **INSANE** behavior of gnome-keyring: It loads
  - ~/.ssh/*.pub, and uses them indiscriminately. But using this key
  - for a normal login to the server will force git-annex-shell to run,
@@ -185,7 +185,7 @@ setupSshKeyPair sshkeypair sshdata = do
 	setSshConfig sshdata
 		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile) ]
   where
-	sshprivkeyfile = "annex" </> "key." ++ mangleSshHostName sshdata
+	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
 	sshpubkeyfile = sshprivkeyfile ++ ".pub"
 
 {- Setups up a ssh config with a mangled hostname.
