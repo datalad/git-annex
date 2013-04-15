@@ -10,12 +10,10 @@ The git repositories between both machines should be synced and all files should
 
 Instead the one machine shows a message "Failed to sync with host1_Images" and in the log it says
 
-=============================
-[2013-04-15 15:57:22 CEST] PairListener: Syncing with host1_Images 
-git-annex-shell: Only allowed to access ~/Documents not ~/Images/
-fatal: The remote end hung up unexpectedly
-Already up-to-date.
-=============================
+    [2013-04-15 15:57:22 CEST] PairListener: Syncing with host1_Images 
+    git-annex-shell: Only allowed to access ~/Documents not ~/Images/
+    fatal: The remote end hung up unexpectedly
+    Already up-to-date.
 
 I do not know how to debug this further cause I do not understand where this access-permission is configured.
 
