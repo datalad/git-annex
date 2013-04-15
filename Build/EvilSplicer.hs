@@ -123,31 +123,15 @@ spliceParser = do
 		<$> (string "expression" <|> string "declarations")
 	newline
 
-	expression <- indentedLine
+	getthline <- expressionextractor
+	expression <- unlines <$> many1 getthline
 
 	indent
 	string "======>"	
 	newline
 
-	{- All lines of the splice code will start with the same
-	 - indent, which is stripped. Any other indentation is preserved. -}
-	indent <- lookAhead indent
-	let getcodeline = do
-		string indent
-		restOfLine
-
-	{- When splicing declarations, GHC will output a splice
-	 - at 1:1, and then inside the splice code block,
-	 - the first line will give the actual coordinates of the
-	 - line that was spliced.
-	 -}
-	let getrealcoords = do
-		string indent
-		string file
-		char ':'
-		char '\n' `after` coordsParser
-
-	realcoords <- try (Right <$> getrealcoords) <|> (Left <$> getcodeline)
+	getcodeline <- expressionextractor
+	realcoords <- try (Right <$> getrealcoords file) <|> (Left <$> getcodeline)
 	codelines <- many getcodeline
 	return $ case realcoords of
 		Left firstcodeline -> 
@@ -162,6 +146,24 @@ spliceParser = do
   	tosplicetype "declarations" = SpliceDeclaration
 	tosplicetype "expression" = SpliceExpression
 	tosplicetype s = error $ "unknown splice type: " ++ s
+
+	{- All lines of the indented expression start with the same
+	 - indent, which is stripped. Any other indentation is preserved. -}
+	expressionextractor = do
+		i <- lookAhead indent
+		return $ try $ do
+			string i
+			restOfLine
+	
+	{- When splicing declarations, GHC will output a splice
+	 - at 1:1, and then inside the splice code block,
+	 - the first line will give the actual coordinates of the
+	 - line that was spliced. -}
+	getrealcoords file = do
+		indent
+		string file
+		char ':'
+		char '\n' `after` coordsParser
 
 {- Extracts the splices, ignoring the rest of the compiler output. -}
 splicesExtractor :: Parser [Splice]
@@ -230,20 +232,22 @@ applySplices destdir imports splices@(first:_) = do
 					]
 
 expandExpressionSplice :: Splice -> [String] -> [String]
-expandExpressionSplice s lls = concat [before, new:splicerest, end]
+expandExpressionSplice s lls = concat [before, spliced:padding, end]
   where
 	cs = spliceStart s
 	ce = spliceEnd s
 
 	(before, rest) = splitAt (coordLine cs - 1) lls
 	(oldlines, end) = splitAt (1 + coordLine (offsetCoord ce cs)) rest
-	(splicestart, splicerest) = case oldlines of
-		l:r -> (expandtabs l, take (length r) (repeat []))
-		_ -> ([], [])
-	new = concat
+	(splicestart, padding, spliceend) = case map expandtabs oldlines of
+		ss:r
+			| null r -> (ss, [], ss)
+			| otherwise -> (ss, take (length r) (repeat []), last r)
+		_ -> ([], [], [])
+	spliced = concat
 		[ joinsplice $ deqqstart $ take (coordColumn cs - 1) splicestart
 		, addindent (findindent splicestart) (mangleCode $ splicedCode s)
-		, deqqend $ drop (coordColumn ce) splicestart
+		, deqqend $ drop (coordColumn ce) spliceend
 		]
 
 	{- coordinates assume tabs are expanded to 8 spaces -}
