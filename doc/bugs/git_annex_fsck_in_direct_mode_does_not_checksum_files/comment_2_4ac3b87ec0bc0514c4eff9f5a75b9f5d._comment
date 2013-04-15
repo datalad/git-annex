@@ -1,0 +1,26 @@
+[[!comment format=txt
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 2"
+ date="2013-04-15T01:32:52Z"
+ content="""
+I'm still somewhat confused about the following commit (which seems to suggest fsck in direct mode could actually checksum files):
+
+commit 0da2507fd622120217cf03038b851b47c47ace53
+Author: Joey Hess <joey@kitenet.net>
+Date:   Tue Jan 8 15:07:00 2013 -0400
+
+    improve direct mode fsck
+    
+    An earlier commit (mislabeled) made direct mode fsck check file checksums.
+    While it's expected for files to change at any time in direct mode, and so
+    fsck cannot complain every time there's a checksum mismatch, it is possible
+    for it to detect when a file does not *seem* to have changed, then check
+    its checksum, and so detect disk corruption or other problems.
+    
+    This commit improves that, by checking a second time, if the checksum
+    fails, that the file is still not modified, before taking action. This way,
+    a direct mode file can be modified while being fscked.
+
+
+"""]]
