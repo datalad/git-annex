@@ -173,14 +173,13 @@ android: Build/EvilSplicer
 # used to have TH splices but they were removed, it will be newer,
 # and not overwritten.)
 	cp -uR tmp/splices/* tmp/androidtree
-	cd tmp/androidtree && $(MAKE) git-annex
 # Some additional dependencies needed by the expanded splices.
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-core, shakespeare-js, shakespeare, blaze-markup, /' tmp/androidtree/git-annex.cabal
 # cabal cannot cross compile with custom build type, so workaround
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
 		cd tmp/androidtree; \
-		cabal configure \
+		cabal configure; \
 		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'; \
 	fi
 	$(MAKE) -C tmp/androidtree git-annex
