@@ -5,6 +5,9 @@ Subject: [PATCH 2/2] replaced TH in Yesod.Internal.Core
 
 Done by running a build with -ddump-splices and manually pasting in the
 spliced code, and then modifying it until it compiles.
+
+(This predated the Evil Splicer, and both this and the previous patch need
+to be redone to use it.)
 ---
  Yesod/Internal/Core.hs |  211 +++++++++++++++++++++++++++++++++++++++++++++---
  1 file changed, 201 insertions(+), 10 deletions(-)

@@ -1,17 +1,19 @@
-From 7be8bf3ba75acc5209066e6ba31ae589c541f344 Mon Sep 17 00:00:00 2001
+From aa18210b7cc124e11fb71640d993de77492b63b1 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:30:01 -0400
-Subject: [PATCH] axe murdered
+Date: Mon, 15 Apr 2013 15:08:31 -0400
+Subject: [PATCH] remove TH
 
+Export functions referred to by TH splices, as these will be needed when
+using the Evil Splicer
 ---
- Text/Hamlet.hs |  215 +-------------------------------------------------------
- 1 file changed, 2 insertions(+), 213 deletions(-)
+ Text/Hamlet.hs | 219 ++-------------------------------------------------------
+ 1 file changed, 6 insertions(+), 213 deletions(-)
 
 diff --git a/Text/Hamlet.hs b/Text/Hamlet.hs
-index 4ac870a..bc8edd5 100644
+index 4ac870a..63b8555 100644
 --- a/Text/Hamlet.hs
 +++ b/Text/Hamlet.hs
-@@ -11,35 +11,22 @@
+@@ -11,35 +11,26 @@
  module Text.Hamlet
      ( -- * Plain HTML
        Html
@@ -46,10 +48,14 @@ index 4ac870a..bc8edd5 100644
      , CloseStyle (..)
 +    , condH
 +    , maybeH
++
++    -- referred to in TH splices
++    , attrsToHtml
++    , asHtmlUrl
      ) where
  
  import Text.Shakespeare.Base
-@@ -90,14 +77,6 @@ type HtmlUrl url = Render url -> Html
+@@ -90,14 +81,6 @@ type HtmlUrl url = Render url -> Html
  -- | A function generating an 'Html' given a message translator and a URL rendering function.
  type HtmlUrlI18n msg url = Translate msg -> Render url -> Html
  
@@ -64,7 +70,7 @@ index 4ac870a..bc8edd5 100644
  unIdent :: Ident -> String
  unIdent (Ident s) = s
  
-@@ -159,169 +138,9 @@ recordToFieldNames conStr = do
+@@ -159,169 +142,9 @@ recordToFieldNames conStr = do
    [fields] <- return [fields | RecC name fields <- cons, name == conName]
    return [fieldName | (fieldName, _, _) <- fields]
  
@@ -234,7 +240,7 @@ index 4ac870a..bc8edd5 100644
  data HamletRules = HamletRules
      { hrFromHtml :: Exp
      , hrWithEnv :: (Env -> Q Exp) -> Q Exp
-@@ -333,36 +152,6 @@ data Env = Env
+@@ -333,36 +156,6 @@ data Env = Env
      , msgRender :: Maybe ((Exp -> Q Exp) -> Q Exp)
      }
  
@@ -272,5 +278,5 @@ index 4ac870a..bc8edd5 100644
  varName _ "" = error "Illegal empty varName"
  varName scope v@(_:_) = fromMaybe (strToExp v) $ lookup (Ident v) scope
 -- 
-1.7.10.4
+1.8.2.rc3
 
