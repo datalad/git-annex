@@ -14,6 +14,7 @@ import qualified Text.Css
 import qualified "blaze-markup" Text.Blaze.Internal
 import qualified Data.Monoid
 import qualified Yesod.Widget
+import qualified Yesod.Routes.TH.Types
 {- End EvilSplicer headers. -}
 
 

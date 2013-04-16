@@ -174,7 +174,7 @@ android: Build/EvilSplicer
 # and not overwritten.)
 	cp -uR tmp/splices/* tmp/androidtree
 # Some additional dependencies needed by the expanded splices.
-	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, /' tmp/androidtree/git-annex.cabal
+	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, /' tmp/androidtree/git-annex.cabal
 # cabal cannot cross compile with custom build type, so workaround
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
