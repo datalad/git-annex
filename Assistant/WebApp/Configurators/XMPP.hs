@@ -64,6 +64,7 @@ checkCloudRepos urlrenderer r =
 checkCloudRepos _ _ = noop
 #endif
 
+#ifdef WITH_XMPP
 {- Returns the name of the friend corresponding to a
  - repository's UUID, but not if it's our name. -}
 getBuddyName :: UUID -> Assistant (Maybe String)
@@ -78,6 +79,7 @@ getBuddyName u = go =<< getclientjid
 		<$> getXMPPRemotes
 	getclientjid = maybe Nothing parseJID . xmppClientID
 		<$> getDaemonStatus
+#endif
 
 getNeedCloudRepoR :: UUID -> Handler RepHtml
 #ifdef WITH_XMPP
@@ -85,7 +87,7 @@ getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
 	buddyname <- liftAssistant $ getBuddyName for
 	$(widgetFile "configurators/xmpp/needcloudrepo")
 #else
-getNeedCloudRepoR = xmppPage $
+getNeedCloudRepoR _ = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 

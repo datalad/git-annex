@@ -87,9 +87,6 @@ getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
 			$(widgetFile "configurators/pairing/xmpp/self/prompt")
 #else
 getStartXMPPPairSelfR = noXMPPPairing
-
-noXMPPPairing :: Handler RepHtml
-noXMPPPairing = noPairing "XMPP"
 #endif
 
 getRunningXMPPPairFriendR :: BuddyKey -> Handler RepHtml
@@ -187,7 +184,7 @@ getFinishXMPPPairFriendR (PairKey theiruuid t) = case parseJID t of
 			finishXMPPPairing theirjid theiruuid
 		xmppPairStatus False $ Just theirjid
 #else
-getFinishXMPPPairR _ = noXMPPPairing
+getFinishXMPPPairFriendR _ = noXMPPPairing
 #endif
 
 {- Displays a page indicating pairing status and 
