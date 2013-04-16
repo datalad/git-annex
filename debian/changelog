@@ -36,6 +36,9 @@ git-annex (4.20130406) UNRELEASED; urgency=low
   * Avoid using runghc, as that needs ghci.
   * webapp: When a repository's group is changed, rescan for transfers.
   * webapp: Added animations.
+  * webapp: Include the repository directory in the mangled hostname and
+    ssh key name, so that a locked down ssh key for one repository is not
+    re-used when setting up additional repositories on the same server.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

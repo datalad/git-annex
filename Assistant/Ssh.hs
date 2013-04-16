@@ -210,18 +210,27 @@ setSshConfig sshdata config = do
 		, ("Port", show $ sshPort sshdata)
 		]
 
+{- This hostname is specific to a given repository on the ssh host,
+ - so it is based on the real hostname, the username, and the directory.
+ -}
 mangleSshHostName :: SshData -> String
-mangleSshHostName sshdata = "git-annex-" ++ host ++ (maybe "-" ('-':) user)
+mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
+	++ "-" ++ filter safe extra
   where
-	host = T.unpack $ sshHostName sshdata
-	user = T.unpack <$> sshUserName sshdata
+	extra = join "_" $ map T.unpack $ catMaybes
+		[ sshUserName sshdata
+		, Just $ sshDirectory sshdata
+		]
+	safe c
+		| isAlphaNum c = True
+		| c == '_' = True
+		| otherwise = False
 
+{- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
-unMangleSshHostName h
-	| "git-annex-" `isPrefixOf` h = join "-" (beginning $ drop 2 dashbits)
-	| otherwise = h
-  where
-	dashbits = split "-" h
+unMangleSshHostName h = case split "-" h of
+	("git":"annex":rest) -> join "-" (beginning rest)
+	_ -> h
 
 {- Does ssh have known_hosts data for a hostname? -}
 knownHost :: Text -> IO Bool

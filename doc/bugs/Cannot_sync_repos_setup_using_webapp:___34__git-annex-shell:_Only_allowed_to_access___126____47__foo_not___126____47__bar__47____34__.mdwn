@@ -24,3 +24,6 @@ Machine 2: Ubuntu 12.04 with Git-Annex 4.20130405 installed using cabal.
 
 ###Please provide any additional information below.
 
+> [[done]]; when setting up a new repo it will now use
+> a ssh key that is different for each repository on the host.
+> --[[Joey]]
