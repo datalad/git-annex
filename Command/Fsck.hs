@@ -112,7 +112,7 @@ perform key file backend numcopies = check
 	, verifyLocationLog key file
 	, verifyDirectMapping key file
 	, checkKeySize key
-	, checkBackend backend key
+	, checkBackend backend key (Just file)
 	, checkKeyNumCopies key file numcopies
 	]
 
@@ -177,7 +177,7 @@ performBare :: Key -> Backend -> Annex Bool
 performBare key backend = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
-	, checkBackend backend key
+	, checkBackend backend key Nothing
 	]
 
 check :: [Annex Bool] -> Annex Bool
@@ -321,17 +321,19 @@ checkKeySizeOr bad key file = case Types.Key.keySize key of
  - because modification of direct mode files is allowed. It's still done
  - if the file does not appear modified, to catch disk corruption, etc.
  -}
-checkBackend :: Backend -> Key -> Annex Bool
-checkBackend backend key = do
-	file <- calcRepo $ gitAnnexLocation key
-	ifM isDirect
-		( ifM (goodContent key file)
-			( checkBackendOr' (badContentDirect file) backend key file
-				(goodContent key file)
-			, return True
-			)
-		, checkBackendOr badContent backend key file
+checkBackend :: Backend -> Key -> Maybe FilePath -> Annex Bool
+checkBackend backend key mfile = go =<< isDirect
+  where
+  	go False = do
+		content <- calcRepo $ gitAnnexLocation key
+		checkBackendOr badContent backend key content
+	go True = maybe nocheck checkdirect mfile
+	checkdirect file = ifM (goodContent key file)
+		( checkBackendOr' (badContentDirect file) backend key file
+			(goodContent key file)
+		, nocheck
 		)
+	nocheck = return True
 
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go

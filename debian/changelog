@@ -40,6 +40,8 @@ git-annex (4.20130406) UNRELEASED; urgency=low
     ssh key name, so that a locked down ssh key for one repository is not
     re-used when setting up additional repositories on the same server.
   * Fall back to internal url downloader when built without curl.
+  * fsck: Check content of direct mode files (only when the inode cache
+    thinks they are unmodified).
 
  -- Joey Hess <joeyh@debian.org>  Sat, 06 Apr 2013 15:24:15 -0400
 

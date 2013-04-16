@@ -55,7 +55,7 @@ upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradab
  - be other files still pointing at that key. -}
 perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
 perform file oldkey oldbackend newbackend = do
-	ifM (Command.Fsck.checkBackend oldbackend oldkey)
+	ifM (Command.Fsck.checkBackend oldbackend oldkey (Just file))
 		( maybe stop go =<< genkey
 		, stop
 		)

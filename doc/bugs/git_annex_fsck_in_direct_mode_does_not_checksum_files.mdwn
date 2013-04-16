@@ -14,4 +14,5 @@ git-annex version: 4.20130405, Linux
 
 Please provide any additional information below.
 
-
+> I've fixed it, fsck is indeed checksumming direct mode files now, as long
+> as they're not known to be modified. [[done]] --[[Joey]]
