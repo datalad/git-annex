@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-04-16T18:39:30Z"
+ content="""
+Switching repositories uses curl to discover when the other daemon has started. If you installed <https://aur.archlinux.org/packages/git-annex-bin/> , it will use the curl binary provided by your distribution. It looks like yours is broken.
+
+> \"I have describe one problem but they are many, so it does not take long to realize that the apps is not working properly.\"
+
+Yes, that's the real problem, isn't it? <https://aur.archlinux.org/packages/git-annex-bin/> 
+takes the binary built for the standalone tarball and dumps it into a filesystem without any of its support libraries, and just hopes it works. It's not at all surpising that it continually fails to work. Which is causing bug report noise that takes away from my time working on actual improvements to git-annex.
+
+I'm sorry, but I cannot support that package. Use <https://aur.archlinux.org/packages.php?ID=44272> or install using cabal or use the standalone tarball.
+"""]]
