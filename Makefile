@@ -164,7 +164,7 @@ android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
 	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production" -O0; fi
 	mkdir -p tmp
-	$(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices
+	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; fi
 	echo "Setting up Android build tree.."
 	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/android/evilsplicer-headers.hs
 	rsync -az --exclude tmp --exclude dist . tmp/androidtree
