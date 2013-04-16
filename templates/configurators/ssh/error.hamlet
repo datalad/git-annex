@@ -4,7 +4,9 @@
   <p>
     Something went wrong setting up the repository on the remote server.
   <p>
-    Transcript: #{msg}
+    Transcript:
+    <pre>
+      #{msg}
   <p>
     <a .btn .btn-primary href="#">
      Retry
