@@ -288,7 +288,11 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
-mangleCode = nested_instances . fix_bad_escape . remove_package_version
+mangleCode = declaration_parens
+	. remove_declaration_splices
+	. nested_instances 
+	. fix_bad_escape 
+	. remove_package_version
   where
 	{- GHC may incorrectly escape "}" within a multi-line string. -}
 	fix_bad_escape = replace " \\}" " }"
@@ -304,6 +308,18 @@ mangleCode = nested_instances . fix_bad_escape . remove_package_version
 	 - outer instance.
 	 -}
 	nested_instances = replace "  data instance Route" "  data Route" 
+
+	{- GHC does not properly parenthesise generated data type
+	 - declarations. -}
+	declaration_parens = replace "StaticR Route Static" "StaticR (Route Static)"
+
+	{- Outright hack: It should remove declaration splices, and does
+	 - not, so here I remove the declaration splices used for yesod.
+	 -}
+	remove_declaration_splices s
+		| "publicFiles" `isPrefixOf` s = ""
+		| "mkYesodData" `isPrefixOf` s = ""
+		| otherwise = s
 
 	{- GHC may add full package and version qualifications for
 	 - symbols from unimported modules. We don't want these.
