@@ -109,7 +109,7 @@ postXMPPR = xmppPage $ do
 		liftAssistant notifyNetMessagerRestart
 		redirectUltDest DashboardR
 #else
-getXMPPR = xmppPage $
+postXMPPR = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
