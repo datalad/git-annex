@@ -48,8 +48,9 @@ Build-Depends:
 	ikiwiki,
 	perlmagick,
 	git,
-	uuid,
 	rsync,
+	wget,
+	curl,
 	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.3
@@ -61,7 +62,6 @@ Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	git (>= 1:1.7.7.6),
-	uuid,
 	rsync,
 	wget,
 	curl,
