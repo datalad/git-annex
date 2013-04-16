@@ -46,6 +46,7 @@ quite a lot.
   * [dns](http://hackage.haskell.org/package/dns)
   * [xml-types](http://hackage.haskell.org/package/xml-types)
   * [async](http://hackage.haskell.org/package/async)
+  * [HTTP](http://hackage.haskell.org/package/HTTP)
 * Shell commands
   * [git](http://git-scm.com/)
   * [xargs](http://savannah.gnu.org/projects/findutils/)

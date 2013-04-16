@@ -45,6 +45,7 @@ Build-Depends:
 	libghc-gnutls-dev (>= 0.1.4),
 	libghc-xml-types-dev,
 	libghc-async-dev,
+	libghc-http-dev,
 	ikiwiki,
 	perlmagick,
 	git,
