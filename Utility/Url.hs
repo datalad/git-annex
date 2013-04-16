@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,6 +17,11 @@ module Utility.Url (
 
 import Common
 import Network.URI
+import qualified Network.Browser as Browser
+import Network.HTTP
+import Data.Either
+
+import qualified Build.SysConfig
 
 type URLString = String
 
@@ -32,7 +37,13 @@ check url headers expected_size = handle <$> exists url headers
 	handle (True, s) = expected_size == s
 
 {- Checks that an url exists and could be successfully downloaded,
- - also returning its size if available. -}
+ - also returning its size if available. 
+ -
+ - For a file: url, check it directly.
+ -
+ - Uses curl otherwise, when available, since curl handles https better
+ - than does Haskell's Network.Browser.
+ -}
 exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
 exists url headers = case parseURIRelaxed url of
 	Just u
@@ -41,11 +52,17 @@ exists url headers = case parseURIRelaxed url of
 			case s of
 				Just stat -> return (True, Just $ fromIntegral $ fileSize stat)
 				Nothing -> dne
-		| otherwise -> do
-			output <- readProcess "curl" curlparams
-			case lastMaybe (lines output) of
-				Just ('2':_:_) -> return (True, extractsize output)
-				_ -> dne
+		| otherwise -> if Build.SysConfig.curl
+			then do
+				output <- readProcess "curl" curlparams
+				case lastMaybe (lines output) of
+					Just ('2':_:_) -> return (True, extractsize output)
+					_ -> dne
+			else do
+				r <- request u headers HEAD
+				case rspCode r of
+					(2,_,_) -> return (True, size r)
+					_ -> return (False, Nothing)
 	Nothing -> dne
   where
 	dne = return (False, Nothing)
@@ -63,6 +80,8 @@ exists url headers = case parseURIRelaxed url of
 			Just sz -> readish sz
 			_ -> Nothing
 		_ -> Nothing
+
+	size = liftM Prelude.read . lookupHeader HdrContentLength . rspHeaders
 
 {- Used to download large files, such as the contents of keys.
  -
@@ -94,10 +113,63 @@ download url headers options file =
 	go cmd opts = boolSystem cmd $
 		options++opts++[File file, File url]
 
-{- Downloads a small file. -}
+{- Downloads a small file.
+ -
+ - Uses curl if available since it handles HTTPS better than
+ - the Haskell libraries do. -}
 get :: URLString -> Headers -> IO String
-get url headers = readProcess "curl" $
-	["-s", "-L", url] ++ concatMap (\h -> ["-H", h]) headers
+get url headers = if Build.SysConfig.curl
+	then readProcess "curl" $
+		["-s", "-L", url] ++ concatMap (\h -> ["-H", h]) headers
+	else case parseURI url of
+		Nothing -> error "url parse error"
+		Just u -> do
+			r <- request u headers GET
+			case rspCode r of
+				(2,_,_) -> return $ rspBody r
+				_ -> error $ rspReason r
+
+{- Uses Network.Browser to make a http request of an url.
+ - For example, HEAD can be used to check if the url exists,
+ - or GET used to get the url content (best for small urls).
+ -
+ - This does its own redirect following because Browser's is buggy for HEAD
+ - requests.
+ -}
+request :: URI -> Headers -> RequestMethod -> IO (Response String)
+request url headers requesttype = go 5 url
+  where
+	go :: Int -> URI -> IO (Response String)
+	go 0 _ = error "Too many redirects "
+	go n u = do
+		rsp <- Browser.browse $ do
+			Browser.setErrHandler ignore
+			Browser.setOutHandler ignore
+			Browser.setAllowRedirects False
+			let req = mkRequest requesttype u :: Request_String
+			snd <$> Browser.request (addheaders req)
+		case rspCode rsp of
+			(3,0,x) | x /= 5 -> redir (n - 1) u rsp
+			_ -> return rsp
+	addheaders req = setHeaders req (rqHeaders req ++ userheaders)
+	userheaders = rights $ map parseHeader headers
+	ignore = const noop
+	redir n u rsp = case retrieveHeaders HdrLocation rsp of
+		[] -> return rsp
+		(Header _ newu:_) ->
+			case parseURIReference newu of
+				Nothing -> return rsp
+				Just newURI -> go n $
+#if defined VERSION_network
+#if ! MIN_VERSION_network(2,4,0)
+#define WITH_OLD_URI
+#endif
+#endif
+#ifdef WITH_OLD_URI
+					fromMaybe newURI (newURI `relativeTo` u)
+#else
+					newURI `relativeTo` u
+#endif
 
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI

@@ -30,3 +30,17 @@ I have tried other available version on Arch linux (AUR git-annex-bin, AUR git-a
 At that stage, what I would like to be able is to try to figure out what is going on using the log file.
 Thanks
 
+> This could happen when using the amd64 standalone build, because I 
+> forgot to install curl into its chroot, so it was not included in the
+> bundle. If the host system also lacked curl, or something prevented
+> curl from working, it would fail like this.
+> 
+> I've included curl into the amd64 standalone build. I've also made the
+> assistant fall back to using a built-in http client if it is built
+> without curl.
+> 
+> None of which helps at all with the Arch git-annex-bin hack, since
+> that binary will be built with a working curl (when my amd64 standalone
+> builder builds it), and then installed onto a system, that,
+> apparently, has a broken curl. Which is one of many reasons I cannot
+> support that hack. [[done]] --[[Joey]]
