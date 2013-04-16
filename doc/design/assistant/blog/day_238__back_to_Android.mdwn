@@ -1,0 +1,11 @@
+Back to really working toward an Android webapp now. I have been improving
+the EvilSplicer, and the build machinery, and build environment all day.
+Slow but steady progress.
+
+First milestone of the day was when I got `yesod-form` to build with all
+Template Haskell automatically expanded by the EvilSplicer. (With a few
+manual fixups where it's buggy.)
+
+At this point the Android build with the webapp enabled successfully
+builds several files containing Yesod code.. And I suspect I am very close
+to getting a first webapp build for Android.
