@@ -347,6 +347,7 @@ mangleCode = declaration_parens
 	token = many1 $ satisfy isAlphaNum <|> oneOf "-.'"
 
 	mangleSymbol "GHC.Types." = ""
+	mangleSymbol "GHC.Tuple.()" = "()"
 	mangleSymbol s = s
 
 main :: IO ()
