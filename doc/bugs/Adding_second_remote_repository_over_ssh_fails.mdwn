@@ -25,4 +25,13 @@ What version of git-annex are you using? On what operating system?
 
 Please provide any additional information below.
 
-Also noticed if a user has no full name set in unix account, creating remote repository always fails
+> This bug would appear to be the same as a bug I fixed today.
+> 
+> Except this last bit:
+
+**Also noticed if a user has no full name set in unix account, creating
+remote repository always fails**
+
+> So, I'm going to repurpose this bug to track that problem. --[[Joey]]
+
+[[!meta title="assistant can fail to make git repository if remote server is lacking GECOS"]]
