@@ -185,11 +185,6 @@ splicesExtractor = rights <$> many extract
  - splices on the same line is not currently supported.
  - This means that a splice can modify the logical lines within its block
  - as it likes, without interfering with the Coords of other splices.
- - 
- - When splicing in declarations, they are not placed on the line
- - that defined them, because at least with Yesod, that line has another TH
- - splice, and things would get mixed up. Since declarations are stand
- - alone, they can go anywhere, and are added to the very end of the file.
  -
  - As well as expanding splices, this can add a block of imports to the
  - file. These are put right before the first line in the file that
@@ -201,23 +196,16 @@ applySplices destdir imports splices@(first:_) = do
 	let dest = (destdir </> f)
 	lls <- map (++ "\n") . lines <$> readFileStrict f
 	createDirectoryIfMissing True (parentDir dest)
-	let newcontent = concat $ addimports $
-		expanddeclarations declarationsplices $
-		expandexpressions lls expressionsplices
+	let newcontent = concat $ addimports $ expand lls splices
 	oldcontent <- catchMaybeIO $ readFileStrict dest
 	when (oldcontent /= Just newcontent) $ do
 		putStrLn $ "splicing " ++ f
 		writeFile dest newcontent
   where
-	(expressionsplices, declarationsplices) =
-		partition isExpressionSplice splices
-
-  	expandexpressions lls [] = lls
-  	expandexpressions lls (s:rest) =
-		expandexpressions (expandExpressionSplice s lls) rest
-
-	expanddeclarations [] lls = lls
-	expanddeclarations l lls = lls ++ map (mangleCode . splicedCode) l
+  	expand lls [] = lls
+  	expand lls (s:rest)
+		| isExpressionSplice s = expand (expandExpressionSplice s lls) rest
+		| otherwise = expand (expandDeclarationSplice s lls) rest
 
 	addimports lls = case imports of
 		Nothing -> lls
@@ -231,6 +219,18 @@ applySplices destdir imports splices@(first:_) = do
 					, end
 					]
 
+{- Declaration splices are expanded to replace their whole line. -}
+expandDeclarationSplice :: Splice -> [String] -> [String]
+expandDeclarationSplice s lls = concat [before, [splice], end]
+  where
+	cs = spliceStart s
+	ce = spliceEnd s
+
+	(before, rest) = splitAt (coordLine cs - 1) lls
+	(_oldlines, end) = splitAt (1 + coordLine (offsetCoord ce cs)) rest
+	splice = mangleCode $ splicedCode s
+
+{- Expression splices are expanded within their line. -}
 expandExpressionSplice :: Splice -> [String] -> [String]
 expandExpressionSplice s lls = concat [before, spliced:padding, end]
   where
@@ -290,12 +290,22 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 mangleCode :: String -> String
 mangleCode = declaration_parens
 	. remove_declaration_splices
+	. yesod_url_render_hack
 	. nested_instances 
-	. fix_bad_escape 
+	. collapse_multiline_strings
 	. remove_package_version
   where
-	{- GHC may incorrectly escape "}" within a multi-line string. -}
-	fix_bad_escape = replace " \\}" " }"
+  	{- For some reason, GHC sometimes doesn't like the multiline
+	 - strings it creates. It seems to get hung up on \{ at the
+	 - start of a new line sometimes, wanting it to not be escaped.
+	 -
+	 - To work around what is likely a GHC bug, just collapse
+	 - multiline strings. -}
+	collapse_multiline_strings = parsecAndReplace $ do
+		string "\\\n"
+		many1 $ oneOf " \t"
+		string "\\"
+		return ""
 
 	{- GHC may output this:
 	 -
@@ -328,14 +338,12 @@ mangleCode = declaration_parens
 	 -   "blaze-html-0.4.3.1:Text.Blaze.Internal.preEscapedText" 
 	 -   "ghc-prim:GHC.Types.:"
 	 -}
-	remove_package_version s = case parse findQualifiedSymbols "" s of
-		Left e -> s
-		Right symbols -> concat $ 
-			map (either (\c -> [c]) mangleSymbol) symbols
+	remove_package_version = parsecAndReplace $
+		mangleSymbol <$> qualifiedSymbol
 
-	findQualifiedSymbols :: Parser [Either Char String]
-	findQualifiedSymbols = many $
-		try (Right <$> qualifiedSymbol) <|> (Left <$> anyChar)
+	mangleSymbol "GHC.Types." = ""
+	mangleSymbol "GHC.Tuple." = ""
+	mangleSymbol s = s
 
 	qualifiedSymbol :: Parser String
 	qualifiedSymbol = do
@@ -346,9 +354,60 @@ mangleCode = declaration_parens
 	token :: Parser String
 	token = many1 $ satisfy isAlphaNum <|> oneOf "-.'"
 
-	mangleSymbol "GHC.Types." = ""
-	mangleSymbol "GHC.Tuple.()" = "()"
-	mangleSymbol s = s
+{- This works around a problem in the expanded template haskell for Yesod
+ - type-safe url rendering.
+ -
+ - It generates code like this:
+ - 
+ -                                  (toHtml
+ -                                     (\ u_a2ehE -> urender_a2ehD u_a2ehE []
+ -                                        (CloseAlert aid)))));
+ -
+ - Where urender_a2ehD is the function returned by getUrlRenderParams.
+ - But, that function that only takes 2 params, not 3.
+ - And toHtml doesn't take a parameter at all!
+ - 
+ - So, this modifes the code, to look like this:
+ - 
+ -                                  (toHtml
+ -                                     (flip urender_a2ehD []
+ -                                        (CloseAlert aid)))));
+ - 
+ - FIXME: Investigate and fix this properly.
+ -}
+yesod_url_render_hack :: String -> String
+yesod_url_render_hack = parsecAndReplace $ do
+	string "(toHtml"
+	whitespace
+	string "(\\"
+	whitespace
+	token
+	whitespace
+	string "->"
+	whitespace
+	renderer <- token
+	whitespace
+	token
+	whitespace
+	return $ "(toHtml (flip " ++ renderer ++ " "
+  where
+	whitespace :: Parser String
+	whitespace = many $ oneOf " \t\r\n"
+
+	token :: Parser String
+	token = many1 $ satisfy isAlphaNum <|> oneOf "_"
+
+{- Given a Parser that finds strings it wants to modify,
+ - and returns the modified string, does a mass 
+ - find and replace throughout the input string.
+ - Rather slow, but crazy powerful. -}
+parsecAndReplace :: Parser String -> String -> String
+parsecAndReplace p s = case parse find "" s of
+	Left e -> s
+	Right l -> concatMap (either (\c -> [c]) id) l
+  where
+  	find :: Parser [Either Char String]
+	find = many $ try (Right <$> p) <|> (Left <$> anyChar)
 
 main :: IO ()
 main = go =<< getArgs
