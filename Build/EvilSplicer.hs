@@ -289,6 +289,8 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = declaration_parens
+	. case_layout
+	. case_layout_multiline
 	. remove_declaration_splices
 	. yesod_url_render_hack
 	. yesod_static_route_render_hack
@@ -307,6 +309,58 @@ mangleCode = declaration_parens
 		many1 $ oneOf " \t"
 		string "\\"
 		return ""
+
+	{- GHC outputs splices using explicit braces rather than layout.
+	 - For a case expression, it does something weird:
+	 -
+	 - case foo of {
+	 -   xxx -> blah
+	 -   yyy -> blah };
+	 -
+	 - This is not legal Haskell; the statements in the case must be
+	 - separated by ';'
+	 -
+	 - To fix, we could just put a semicolon at the start of every line
+	 - containing " -> " ... Except that lambdas also contain that.
+	 - But we can get around that: GHC outputs lambas like this:
+	 -
+	 - \ foo
+	 -   -> bar
+	 -
+	 - Or like this:
+	 -
+	 - \ foo -> bar
+	 -
+	 - So, we can put the semicolon at the start of every line
+	 - containing " -> " unless there's a "\ " first, or it's
+	 - all whitespace up until it.
+	 -}
+	case_layout = parsecAndReplace $ do
+		newline
+		indent <- many1 $ char ' '
+		prefix <- manyTill (noneOf "\n") (try (string "-> "))
+		if "\\ " `isInfixOf` prefix
+			then unexpected "lambda expression"
+			else if null prefix
+				then unexpected "second line of lambda"
+				else return $ "\n" ++ indent ++ "; " ++ prefix ++ " -> "
+	{- Sometimes cases themselves span multiple lines:
+	 -
+	 - Nothing
+	 -   -> foo
+	 -}
+	case_layout_multiline = parsecAndReplace $ do
+		newline
+		indent <- many1 $ char ' '
+		firstline <- manyTill (noneOf "\n") newline
+
+		string indent
+		indent2 <- many1 $ char ' '
+		string "-> "
+		if "\\ " `isInfixOf` firstline
+			then unexpected "lambda expression"
+			else return $ "\n" ++ indent ++ "; " ++ firstline ++ "\n"
+				++ indent ++ indent2 ++ "-> "
 
 	{- GHC may output this:
 	 -
