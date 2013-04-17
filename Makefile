@@ -82,7 +82,7 @@ Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@
 Build/EvilSplicer: Build/EvilSplicer.hs
 	$(GHC) --make $@
-Build/Standalone: Build/Standalone.hs
+Build/Standalone: Build/Standalone.hs Build/SysConfig.hs
 	$(GHC) --make $@
 Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@
