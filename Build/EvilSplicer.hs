@@ -291,6 +291,7 @@ mangleCode :: String -> String
 mangleCode = declaration_parens
 	. remove_declaration_splices
 	. yesod_url_render_hack
+	. yesod_static_route_render_hack
 	. nested_instances 
 	. collapse_multiline_strings
 	. remove_package_version
@@ -353,6 +354,45 @@ mangleCode = declaration_parens
 
 	token :: Parser String
 	token = many1 $ satisfy isAlphaNum <|> oneOf "-.'"
+
+{- This works around a problem in the expanded template haskell for Yesod's
+ - static site route rendering.
+ -
+ - renderRoute (StaticR sub_a1nUH)
+ -   = \ (a_a1nUI, b_a1nUJ)
+ -       -> (((pack "static") : a_a1nUI), b_a1nUJ)
+ -       (renderRoute sub_a1nUH)
+ -
+ - That is missing parens around the lambda expression (which 
+ - is supposed to be applied to renderRoute). Add those parens.
+ -}
+yesod_static_route_render_hack :: String -> String
+yesod_static_route_render_hack = parsecAndReplace $ do
+	def <- string "renderRoute (StaticR sub_a1nUH)"
+	whitespace
+	string "= \\ ("
+	t1 <- token
+	string ", "
+	t2 <- token
+	string ")"
+	whitespace
+	f <- string "-> (((pack \"static\") : "
+	string t1
+	string "), "
+	string t2
+	string ")"
+	return $ concat
+		[ def
+		, " = (\\ (", t1, ",", t2, ") "
+		, f, t1, "), ", t2, "))"
+		]
+  where
+	whitespace :: Parser String
+	whitespace = many $ oneOf " \t\r\n"
+
+	token :: Parser String
+	token = many1 $ satisfy isAlphaNum <|> oneOf "_"
+
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
