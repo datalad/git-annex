@@ -13,7 +13,7 @@ import Control.Applicative
 import Control.Monad
 import System.Directory
 
-import qualified Build.InstallDesktopFile as InstallDesktopFile
+import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
 
 main = defaultMainWithHooks simpleUserHooks
@@ -58,6 +58,6 @@ installManpages copyDest verbosity pkg lbi =
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
 installDesktopFile copyDest verbosity pkg lbi =
-	InstallDesktopFile.install $ dstBinDir </> "git-annex"
+	DesktopFile.install $ dstBinDir </> "git-annex"
   where
 	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest
