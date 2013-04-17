@@ -1,7 +1,5 @@
 {- Checks system configuration and generates SysConfig.hs. -}
 
-module Build.Configure where
-
 import System.Directory
 import Data.List
 import System.Process

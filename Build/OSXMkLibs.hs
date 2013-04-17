@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Build.OSXMkLibs where
-
 import Control.Applicative
 import System.Environment
 import Data.Maybe

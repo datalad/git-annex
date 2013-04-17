@@ -7,8 +7,6 @@
 
 {-# LANGUAGE CPP #-}
 
-module Build.Standalone where
-
 import Control.Applicative
 import Control.Monad.IfElse
 import System.Environment

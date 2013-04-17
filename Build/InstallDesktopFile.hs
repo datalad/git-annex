@@ -8,8 +8,6 @@
 
 {-# LANGUAGE CPP #-}
 
-module Build.InstallDesktopFile where
-
 import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path
