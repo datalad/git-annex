@@ -6,6 +6,7 @@
  - ** DO NOT COMMIT ** 
  -}
 import qualified Data.Monoid
+import qualified Data.Map
 import qualified Data.Foldable
 import qualified Data.Text
 import qualified Data.Text.Lazy.Builder
@@ -16,6 +17,9 @@ import qualified Text.Css
 import qualified "blaze-markup" Text.Blaze.Internal
 import qualified Yesod.Widget
 import qualified Yesod.Routes.TH.Types
+import qualified Yesod.Routes.Dispatch
+import qualified WaiAppStatic.Storage.Embedded
+import qualified Data.FileEmbed
 {- End EvilSplicer headers. -}
 
 
