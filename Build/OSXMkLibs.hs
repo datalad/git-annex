@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+module Main where
+
 import Control.Applicative
 import System.Environment
 import Data.Maybe

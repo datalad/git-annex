@@ -25,6 +25,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+module Main where
+
 import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))

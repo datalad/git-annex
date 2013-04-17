@@ -8,6 +8,8 @@
 
 {-# LANGUAGE CPP #-}
 
+module Main where
+
 import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path

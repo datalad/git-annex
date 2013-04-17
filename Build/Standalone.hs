@@ -7,6 +7,8 @@
 
 {-# LANGUAGE CPP #-}
 
+module Main where
+
 import Control.Applicative
 import Control.Monad.IfElse
 import System.Environment
