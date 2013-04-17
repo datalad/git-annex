@@ -486,13 +486,13 @@ yesod_url_render_hack = parsecAndReplace $ do
 	whitespace
 	string "(\\"
 	whitespace
-	token
+	wtf <- token
 	whitespace
 	string "->"
 	whitespace
 	renderer <- token
 	whitespace
-	token
+	string wtf
 	whitespace
 	return $ "(toHtml (flip " ++ renderer ++ " "
   where
