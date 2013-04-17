@@ -389,14 +389,6 @@ mangleCode = declaration_parens
 	 - declarations. -}
 	declaration_parens = replace "StaticR Route Static" "StaticR (Route Static)"
 
-	{- Outright hack: It should remove declaration splices, and does
-	 - not, so here I remove the declaration splices used for yesod.
-	 -}
-	remove_declaration_splices s
-		| "publicFiles" `isPrefixOf` s = ""
-		| "mkYesodData" `isPrefixOf` s = ""
-		| otherwise = s
-
 	{- GHC may add full package and version qualifications for
 	 - symbols from unimported modules. We don't want these.
 	 -
