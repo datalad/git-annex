@@ -1,0 +1,44 @@
+git-annex 4.20130417 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * initremote: Generates encryption keys with high quality entropy.
+     This can be disabled using --fast to get the old behavior.
+     The assistant still uses low-quality entropy when creating encrypted
+     remotes, to avoid delays. (Thanks, guilhem for the patch.)
+   * Bugfix: Direct mode no longer repeatedly checksums duplicated files.
+   * assistant: Work around horrible, terrible, very bad behavior of
+     gnome-keyring, by not storing special-purpose ssh keys in ~/.ssh/*.pub.
+     Apparently gnome-keyring apparently will load and indiscriminately use
+     such keys in some cases, even if they are not using any of the standard
+     ssh key names. Instead store the keys in ~/.ssh/annex/,
+     which gnome-keyring will not check.
+   * addurl: Bugfix: Did not properly add file in direct mode.
+   * assistant: Bug fix to avoid annexing the files that git uses
+     to stand in for symlinks on FAT and other filesystem not supporting
+     symlinks.
+   * Adjust preferred content expressions so that content in archive
+     directories is preferred until it has reached an archive or smallarchive
+     repository.
+   * webapp: New --listen= option allows running the webapp on one computer
+     and connecting to it from another. (Note: Does not yet use HTTPS.)
+   * Added annex.web-download-command setting.
+   * Added per-remote annex-rsync-transport option. (guilhem again)
+   * Ssh connection caching is now also used by rsync special remotes.
+     (guilhem yet again)
+   * The version number is now derived from git, unless built with
+     VERSION\_FROM\_CHANGELOG.
+   * assistant: Stop any transfers the assistant initiated on shutdown.
+   * assistant: Added sequence numbers to XMPP git push packets. (Not yet used.)
+   * addurl: Register transfer so the webapp can see it.
+   * addurl: Automatically retry downloads that fail, as long as some
+     additional content was downloaded.
+   * webapp: Much improved progress bar display for downloads from encrypted
+     remotes.
+   * Avoid using runghc, as that needs ghci.
+   * webapp: When a repository's group is changed, rescan for transfers.
+   * webapp: Added animations.
+   * webapp: Include the repository directory in the mangled hostname and
+     ssh key name, so that a locked down ssh key for one repository is not
+     re-used when setting up additional repositories on the same server.
+   * Fall back to internal url downloader when built without curl.
+   * fsck: Check content of direct mode files (only when the inode cache
+     thinks they are unmodified)."""]]
