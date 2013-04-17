@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2013-04-17T22:28:39Z"
+ content="""
+Yeah, I agree, this would be nice. 
+
+For your own domain, you can configure DNS like this: [[http://support.google.com/a/bin/answer.py?hl=en&answer=34143]] to make XMPP find the right server. But for some that's not an option and the \"advanced\" mode would be useful in that case.
+"""]]
