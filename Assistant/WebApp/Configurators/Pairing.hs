@@ -37,8 +37,8 @@ import Assistant.WebApp.Configurators.XMPP
 import Utility.UserInfo
 import Git
 
-#ifdef WITH_PAIRING
 import qualified Data.Text as T
+#ifdef WITH_PAIRING
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as B
 import Data.Char
