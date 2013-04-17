@@ -297,6 +297,7 @@ mangleCode = declaration_parens
 	. nested_instances 
 	. collapse_multiline_strings
 	. remove_package_version
+	. emptylambda
   where
   	{- For some reason, GHC sometimes doesn't like the multiline
 	 - strings it creates. It seems to get hung up on \{ at the
@@ -339,11 +340,13 @@ mangleCode = declaration_parens
 		newline
 		indent <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
-		if "\\ " `isInfixOf` prefix
-			then unexpected "lambda expression"
-			else if null prefix
-				then unexpected "second line of lambda"
-				else return $ "\n" ++ indent ++ "; " ++ prefix ++ " -> "
+		if length prefix > 10
+			then unexpected "too long a prefix"
+			else if "\\ " `isInfixOf` prefix
+				then unexpected "lambda expression"
+				else if null prefix
+					then unexpected "second line of lambda"
+					else return $ "\n" ++ indent ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
 	 -
 	 - Nothing
@@ -361,6 +364,14 @@ mangleCode = declaration_parens
 			then unexpected "lambda expression"
 			else return $ "\n" ++ indent ++ "; " ++ firstline ++ "\n"
 				++ indent ++ indent2 ++ "-> "
+
+	{- (foo, \ -> bar) is not valid haskell, GHC.
+	 - Change to (foo, bar)
+	 -
+	 - (Does this ever happen outside a tuple? Only saw
+	 - it inside them..
+	 -}
+	emptylambda = replace ", \\ -> " ", "
 
 	{- GHC may output this:
 	 -
@@ -402,12 +413,18 @@ mangleCode = declaration_parens
 
 	qualifiedSymbol :: Parser String
 	qualifiedSymbol = do
-		token
+		s <- token
 		char ':'
-		token
+		if length s < 5
+			then unexpected "too short to be a namespace"
+			else do
+				token
 
 	token :: Parser String
-	token = many1 $ satisfy isAlphaNum <|> oneOf "-.'"
+	token = do
+		t <- satisfy isLetter
+		oken <- many $ satisfy isAlphaNum <|> oneOf "-.'"
+		return $ t:oken
 
 {- This works around a problem in the expanded template haskell for Yesod's
  - static site route rendering.
