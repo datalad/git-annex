@@ -58,7 +58,7 @@ webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup
 		<$> pure assistantdata
 		<*> (pack <$> genRandomToken)
 		<*> getreldir
-		<*> pure $(embed "static")
+		<*> pure staticRoutes
 		<*> pure postfirstrun
 		<*> pure noannex
 		<*> pure listenhost

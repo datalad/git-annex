@@ -30,6 +30,9 @@ import Network.Socket (HostName)
 
 publicFiles "static"
 
+staticRoutes :: Static
+staticRoutes = $(embed "static")
+
 mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 data WebApp = WebApp
