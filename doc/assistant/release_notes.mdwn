@@ -1,3 +1,19 @@
+## version 4.20130417
+
+This version contains numerous bug fixes, and improvements.
+
+One bug that was fixed can affect users of gnome-keyring who
+have set up remote repositories on ssh servers using the webapp.
+The gnome-keyring may load the restricted key that is set up
+for that, and make it be used for regular logins to the server;
+with the result that you'll get an error message about "git-annex-shell"
+when sshing to the server. 
+
+If you experience this problem you can fix it by
+moving `.ssh/key.git-annex*` to `.ssh/git-annex/` (creating
+that directory first), and edit `.ssh/config` to reflect the new
+location of the key. You will also need to restart gnome-keyring.
+
 ## version 4.20130323, 4.20130405
 
 These versions continue fixing bugs and adding features.
