@@ -293,7 +293,6 @@ mangleCode :: String -> String
 mangleCode = declaration_parens
 	. case_layout
 	. case_layout_multiline
-	. remove_declaration_splices
 	. yesod_url_render_hack
 	. yesod_static_route_render_hack
 	. nested_instances 
