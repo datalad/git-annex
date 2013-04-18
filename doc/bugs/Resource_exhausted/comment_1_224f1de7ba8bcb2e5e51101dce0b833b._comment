@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 1"
+ date="2013-04-18T06:18:29Z"
+ content="""
+Once resource exhausted git-annex has git <defunct> process too:
+19785 ?        00:00:00 git <defunct>
+
+It can't be killed, only if I restart the computer.
+
+"""]]
