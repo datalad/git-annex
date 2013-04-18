@@ -1,5 +1,3 @@
-[[!meta title="on Arch Linux, git commit -m tries to run an editor on the commit message"]]
-
 What steps will reproduce the problem?
 
 Use git-annex and add file to repo.
@@ -25,3 +23,5 @@ On Arch Linux.
 Please provide any additional information below.
 
 I'm not sure if the git interface has changed, but I do see that --allow-empty-message does still exist.  If I run the git commit command (with a '' after the -m), it does indeed start up vim for me.  Would we benefit from just making a custom commit message ("Commit from date YYYYMMDDTHHMMSSZ")?
+
+> [[fixed|done]] --[[Joey]]
