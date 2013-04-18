@@ -20,6 +20,7 @@ import qualified Yesod.Routes.TH.Types
 import qualified Yesod.Routes.Dispatch
 import qualified WaiAppStatic.Storage.Embedded
 import qualified Data.FileEmbed
+import qualified Data.ByteString.Internal
 {- End EvilSplicer headers. -}
 
 
