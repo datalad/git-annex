@@ -1,4 +1,6 @@
 Normally, the content of files in the annex is prevented from being modified.
+(Unless your repository is using [[direct_mode]].)
+
 That's a good thing, because it might be the only copy, you wouldn't
 want to lose it in a fumblefingered mistake.
 
