@@ -290,16 +290,52 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
-mangleCode = declaration_parens
+mangleCode = lambdaparens
+	. declaration_parens
 	. case_layout
 	. case_layout_multiline
 	. yesod_url_render_hack
-	. yesod_static_route_render_hack
 	. nested_instances 
 	. collapse_multiline_strings
 	. remove_package_version
 	. emptylambda
   where
+  	{- Lambdas are often output without parens around them.
+	 - This breaks when the lambda is immediately applied to a
+	 - parameter.
+	 - 
+	 - For example:
+	 -
+	 - renderRoute (StaticR sub_a1nUH)
+	 -   = \ (a_a1nUI, b_a1nUJ)
+	 -       -> (((pack "static") : a_a1nUI),
+	 -            b_a1nUJ)
+	 -       (renderRoute sub_a1nUH)
+	 -
+	 - There are sometimes many lines of lambda code that need to be
+	 - parenthesised. Approach: find the "->" and scan down the
+	 - column to the first non-whitespace. This is assumed
+	 - to be the expression after the lambda.
+	 -
+	 - This does not handle nested unparenthesised lambdas.
+	 -}
+	lambdaparens = parsecAndReplace $ do
+		string " \\ "
+		lambdaparams <- restofline
+		indent <- many1 $ char ' '
+		string "-> "
+		firstline <- restofline
+		lambdalines <- many $ try $ do
+			string indent
+			char ' '
+			l <- restofline
+			return $ indent ++ " " ++ l
+		return $ " (\\ " ++ lambdaparams ++ "\n" ++
+			indent ++ "-> " ++
+			intercalate "\n" (firstline:lambdalines) ++ ")\n"
+
+	restofline = manyTill (noneOf "\n") newline
+
   	{- For some reason, GHC sometimes doesn't like the multiline
 	 - strings it creates. It seems to get hung up on \{ at the
 	 - start of a new line sometimes, wanting it to not be escaped.
@@ -356,7 +392,7 @@ mangleCode = declaration_parens
 	case_layout_multiline = parsecAndReplace $ do
 		newline
 		indent <- many1 $ char ' '
-		firstline <- manyTill (noneOf "\n") newline
+		firstline <- restofline
 
 		string indent
 		indent2 <- many1 $ char ' '
@@ -418,45 +454,6 @@ mangleCode = declaration_parens
 		t <- satisfy isLetter
 		oken <- many $ satisfy isAlphaNum <|> oneOf "-.'"
 		return $ t:oken
-
-{- This works around a problem in the expanded template haskell for Yesod's
- - static site route rendering.
- -
- - renderRoute (StaticR sub_a1nUH)
- -   = \ (a_a1nUI, b_a1nUJ)
- -       -> (((pack "static") : a_a1nUI), b_a1nUJ)
- -       (renderRoute sub_a1nUH)
- -
- - That is missing parens around the lambda expression (which 
- - is supposed to be applied to renderRoute). Add those parens.
- -}
-yesod_static_route_render_hack :: String -> String
-yesod_static_route_render_hack = parsecAndReplace $ do
-	def <- string "renderRoute (StaticR sub_a1nUH)"
-	whitespace
-	string "= \\ ("
-	t1 <- token
-	string ", "
-	t2 <- token
-	string ")"
-	whitespace
-	f <- string "-> (((pack \"static\") : "
-	string t1
-	string "), "
-	string t2
-	string ")"
-	return $ concat
-		[ def
-		, " = (\\ (", t1, ",", t2, ") "
-		, f, t1, "), ", t2, "))"
-		]
-  where
-	whitespace :: Parser String
-	whitespace = many $ oneOf " \t\r\n"
-
-	token :: Parser String
-	token = many1 $ satisfy isAlphaNum <|> oneOf "_"
-
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
