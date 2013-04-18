@@ -1,3 +1,10 @@
+git-annex (4.20130418) UNRELEASED; urgency=low
+
+  * assistant: Work around misfeature in git 1.8.2 that makes
+    `git commit --alow-empty -m ""` run an editor.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
+
 git-annex (4.20130417) unstable; urgency=low
 
   * initremote: Generates encryption keys with high quality entropy.

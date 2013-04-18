@@ -175,10 +175,14 @@ commitStaged = do
 			return True
   where
 	nomessage ps
-		| Git.Version.older "1.7.2" = Param "-m"
-			: Param "autocommit" : ps
-		| otherwise = Param "--allow-empty-message" 
-			: Param "-m" : Param "" : ps
+		| Git.Version.older "1.7.2" =
+			Param "-m" : Param "autocommit" : ps
+		| Git.Version.older "1.7.8" =
+			Param "--allow-empty-message" :
+			Param "-m" : Param "" : ps
+		| otherwise =
+			Param "--allow-empty-message" :
+			Param "--no-edit" : Param "-m" : Param "" : ps
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to
