@@ -158,11 +158,12 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast tmp/git-annex.dmg
 
+ANDROID_FLAGS='Assistant -Pairing -XMPP'
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production" -O0; fi
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production $(ANDROID_FLAGS)" -O0; fi
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."
@@ -182,7 +183,7 @@ android: Build/EvilSplicer
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
 		cd tmp/androidtree; \
 		cabal configure; \
-		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f'Android Assistant -Pairing'; \
+		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f"Android $(ANDROID_FLAGS)"; \
 	fi
 	$(MAKE) -C tmp/androidtree git-annex
 
