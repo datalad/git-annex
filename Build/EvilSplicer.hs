@@ -317,7 +317,8 @@ mangleCode = lambdaparens
 	 - column to the first non-whitespace. This is assumed
 	 - to be the expression after the lambda.
 	 -
-	 - This does not handle nested unparenthesised lambdas.
+	 - Runs recursively on the body of the lambda, to handle nested
+	 - lambdas.
 	 -}
 	lambdaparens = parsecAndReplace $ do
 		string " \\ "
@@ -330,9 +331,12 @@ mangleCode = lambdaparens
 			char ' '
 			l <- restofline
 			return $ indent ++ " " ++ l
-		return $ " (\\ " ++ lambdaparams ++ "\n" ++
-			indent ++ "-> " ++
-			intercalate "\n" (firstline:lambdalines) ++ ")\n"
+		return $ concat 
+			[ " (\\ " ++ lambdaparams ++ "\n"
+			, indent ++ "-> "
+			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
+			, ")\n"
+			]
 
 	restofline = manyTill (noneOf "\n") newline
 
