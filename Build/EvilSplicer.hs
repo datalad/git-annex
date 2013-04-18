@@ -290,7 +290,8 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
-mangleCode = lambdaparens
+mangleCode = flip_colon
+	. lambdaparens
 	. declaration_parens
 	. case_layout
 	. case_layout_multiline
@@ -321,7 +322,10 @@ mangleCode = lambdaparens
 	 - lambdas.
 	 -}
 	lambdaparens = parsecAndReplace $ do
-		string " \\ "
+		-- skip lambdas inside tuples or parens
+		prefix <- noneOf "(, \n"
+		preindent <- many1 $ oneOf " \n"
+		string "\\ "
 		lambdaparams <- restofline
 		indent <- many1 $ char ' '
 		string "-> "
@@ -332,7 +336,8 @@ mangleCode = lambdaparens
 			l <- restofline
 			return $ indent ++ " " ++ l
 		return $ concat 
-			[ " (\\ " ++ lambdaparams ++ "\n"
+			[ prefix:preindent
+			, "(\\ " ++ lambdaparams ++ "\n"
 			, indent ++ "-> "
 			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
 			, ")\n"
@@ -458,6 +463,11 @@ mangleCode = lambdaparens
 		t <- satisfy isLetter
 		oken <- many $ satisfy isAlphaNum <|> oneOf "-.'"
 		return $ t:oken
+
+	{- This works when it's "GHC.Types.:", but we strip
+	 - that above, so have to fix up after it here. 
+	 - The ; is added by case_layout. -}
+	flip_colon = replace "; : _ " "; _ : "
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
