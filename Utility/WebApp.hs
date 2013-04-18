@@ -40,12 +40,17 @@ import Control.Concurrent
 localhost :: HostName
 localhost = "localhost"
 
-{- Command to use to run a web browser. -}
-browserCommand :: FilePath
+{- Builds a command to use to start or open a web browser showing an url. -}
+browserProc :: String -> CreateProcess
 #ifdef darwin_HOST_OS
-browserCommand = "open"
+browserProc url = proc "open" [url]
 #else
-browserCommand = "xdg-open"
+#ifdef __ANDROID__
+browserProc url = proc "am"
+	["start", "-a", "android.intent.action.VIEW", "-d", url]
+#else
+browserProc url = proc "xdg-open" [url]
+#endif
 #endif
 
 {- Binds to a socket on localhost, or possibly a different specified

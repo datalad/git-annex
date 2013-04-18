@@ -150,7 +150,7 @@ firstRun listenhost = do
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
 openBrowser :: Maybe FilePath -> FilePath -> Maybe Handle -> Maybe Handle -> IO ()
-openBrowser cmd htmlshim outh errh = do
+openBrowser mcmd htmlshim outh errh = do
 	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 	environ <- cleanEnvironment
 	(_, _, _, pid) <- createProcess p
@@ -163,7 +163,9 @@ openBrowser cmd htmlshim outh errh = do
 		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
   where
 	url = fileUrl htmlshim
-	p = proc (fromMaybe browserCommand cmd) [htmlshim]
+	p = case mcmd of
+		Just cmd -> proc cmd [htmlshim]
+		Nothing -> browserProc htmlshim
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath
