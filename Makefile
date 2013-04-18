@@ -158,7 +158,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast tmp/git-annex.dmg
 
-ANDROID_FLAGS='Assistant -Pairing -XMPP'
+ANDROID_FLAGS=Assistant -Pairing -XMPP
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
