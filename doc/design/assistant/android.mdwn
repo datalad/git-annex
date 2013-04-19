@@ -34,9 +34,6 @@ transfers when not on wifi. This may need to be configurable.
   and a few places use it.
 * XMPP support. I got all haskell libraries installed, but it fails to find
   several C libraries at link time.
-* WebDAV. All haskell libraries are installed, but it fails at link
-  time due to some missing symbols that are not in the Android libc.
-  (DNS lookup stuff)
 * Get local pairing to work. network-multicast and network-info don't
   currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
