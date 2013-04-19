@@ -1,5 +1,8 @@
 {- Expands template haskell splices
  -
+ - You should probably just use http://hackage.haskell.org/package/zeroth
+ - instead. I wish I had known about it before writing this.
+ -
  - First, the code must be built with a ghc that supports TH,
  - and the splices dumped to a log. For example:
  -   cabal build --ghc-options=-ddump-splices 2>&1 | tee log
