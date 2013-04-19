@@ -4,4 +4,4 @@ Same as the desktop webapp, users will be able to enter a directory they
 want the first time they run it, but to save typing on android, anything
 that gets enough votes will be included in a list of choices as well.
 
-[[!poll open=yes expandable=yes 0 "/sdcard/annex" 0 "Whole /sdcard" 1 "DCIM directory (photos and videos only)"]]
+[[!poll open=yes expandable=yes 1 "/sdcard/annex" 1 "Whole /sdcard" 1 "DCIM directory (photos and videos only)"]]
