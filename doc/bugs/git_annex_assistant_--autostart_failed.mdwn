@@ -36,3 +36,4 @@ The ~/.config/git-annex/autostart file looks like this:
     /home/tobru/annex/repo4
     /home/tobru/annex/repo5
 
+> Closing, seems local misconfiguration. --[[Joey]] [[done]]
