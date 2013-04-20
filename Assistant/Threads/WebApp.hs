@@ -37,7 +37,6 @@ import Utility.FileMode
 import Git
 
 import Yesod
-import Yesod.Static
 import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 
