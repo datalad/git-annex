@@ -2,7 +2,10 @@ git-annex (4.20130418) UNRELEASED; urgency=low
 
   * assistant: Work around misfeature in git 1.8.2 that makes
     `git commit --alow-empty -m ""` run an editor.
-  * Install FDO desktop menu file when webapp is started in standalone mode.
+  * webapp: Install FDO desktop menu file when started in standalone mode.
+  * webapp: Don't default to making repository in cwd when started
+    from within a directory containing a git-annex file (eg, standalone
+    tarball directory).
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
