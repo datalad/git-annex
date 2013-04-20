@@ -51,7 +51,7 @@ ensureInstalled = go =<< standaloneAppBase
 		autostartfile <- userAutoStart osxAutoStartLabel
 #else
 		installMenu program
-			=<< desktopMenuFilePath "git-annex" <$> userConfigDir
+			=<< desktopMenuFilePath "git-annex" <$> userDataDir
 		autostartfile <- autoStartPath "git-annex" <$> userConfigDir
 #endif
 		installAutoStart program autostartfile
