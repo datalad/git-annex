@@ -10,20 +10,20 @@
 module Assistant.WebApp.Configurators.WebDAV where
 
 import Assistant.WebApp.Common
-import Assistant.MakeRemote
-import Assistant.Sync
+import Creds
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
-#endif
+import Assistant.MakeRemote
+import Assistant.Sync
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.Remote
-import Creds
 
-import qualified Data.Text as T
 import qualified Data.Map as M
+#endif
+import qualified Data.Text as T
 
 webDAVConfigurator :: Widget -> Handler RepHtml
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
