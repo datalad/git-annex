@@ -18,8 +18,8 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
 We are, approximately, here:
 
-* Months 10: bugfixing, Android webapp
-* Months 111: more user-driven features and polishing
+* Month 10: bugfixing, Android webapp
+* Month 11: more user-driven features and polishing
 * Month 12: "Windows purgatory" [[Windows]]
 
 ## porting
