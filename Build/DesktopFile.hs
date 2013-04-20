@@ -26,24 +26,6 @@ import System.Posix.Files
 import System.FilePath
 import Data.Maybe
 
-{- The command can be either just "git-annex", or the full path to use
- - to run it. -}
-desktop :: FilePath -> DesktopEntry
-desktop command = genDesktopEntry
-	"Git Annex"
-	"Track and sync the files in your Git Annex"
-	False
-	(command ++ " webapp")
-	["Network", "FileTransfer"]
-
-autostart :: FilePath -> DesktopEntry
-autostart command = genDesktopEntry
-	"Git Annex Assistant"
-	"Autostart"
-	False
-	(command ++ " assistant --autostart")
-	[]
-
 systemwideInstall :: IO Bool
 systemwideInstall = isroot <||> destdirset
   where

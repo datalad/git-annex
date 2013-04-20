@@ -11,6 +11,7 @@ module Assistant.Install where
 
 import Assistant.Common
 import Assistant.Install.AutoStart
+import Assistant.Install.Menu
 import Assistant.Ssh
 import Locations.UserConfig
 import Utility.FileMode
@@ -49,6 +50,8 @@ ensureInstalled = go =<< standaloneAppBase
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
 #else
+		installMenu program
+			=<< desktopMenuFilePath "git-annex" <$> userConfigDir
 		autostartfile <- autoStartPath "git-annex" <$> userConfigDir
 #endif
 		installAutoStart program autostartfile
