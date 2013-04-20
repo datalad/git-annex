@@ -17,6 +17,7 @@ import Utility.Monad
 import Locations.UserConfig
 import Utility.OSX
 import Assistant.Install.AutoStart
+import Assistant.Install.Menu
 
 import Control.Applicative
 import System.Directory
@@ -42,7 +43,7 @@ inDestDir f = do
 writeFDODesktop :: FilePath -> IO ()
 writeFDODesktop command = do
 	datadir <- ifM systemwideInstall ( return systemDataDir, userDataDir )
-	writeDesktopMenuFile (desktop command) 
+	installMenu command
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
 
 	configdir <- ifM systemwideInstall ( return systemConfigDir, userConfigDir )
