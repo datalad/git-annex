@@ -1,0 +1,6 @@
+Ported all the C libraries needed for XMPP to Android. (gnutls,
+libgcrypt, libgpg-error, nettle, xml2, gsasl, etc). Finally
+got it all to link. What a pain.
+
+Bonus: Local pairing support builds for Android now, seems recent changes to
+the network library for WebDAV also fixed it.
