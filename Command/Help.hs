@@ -42,7 +42,7 @@ showCommonOptions = putStrLn $ usageInfo "Common options:" options
 
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines
-	[ "The most commonly used git-annex commands are:"
+	[ "The most frequently used git-annex commands are:"
 	, unlines $ map cmdline $ concat
 		[ Command.Init.def
 		, Command.Add.def
@@ -54,7 +54,9 @@ showGeneralHelp = putStrLn $ unlines
 		, Command.Whereis.def
 		, Command.Fsck.def
 		]
-	, "Run git-annex without any options for a complete command list."
+	, "Run 'git-annex' for a complete command list."
+	, "Run 'git-annex command --help' for help on a specific command."
+	, "Run `git annex help options' for a list of common options."
 	]
   where
 	cmdline c = "\t" ++ cmdname c ++ "\t" ++ cmddesc c
