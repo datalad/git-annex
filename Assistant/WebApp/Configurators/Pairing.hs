@@ -14,6 +14,7 @@ import Assistant.Pairing
 import Assistant.WebApp.Common
 import Assistant.WebApp.Configurators
 import Assistant.Types.Buddies
+import Annex.UUID
 #ifdef WITH_PAIRING
 import Assistant.Pairing.Network
 import Assistant.Pairing.MakeRemote
@@ -22,7 +23,6 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
 import Utility.Network
-import Annex.UUID
 #endif
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client
