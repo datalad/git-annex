@@ -24,7 +24,7 @@ import System.Console.GetOpt
 
 def :: [Command]
 def = [noCommit $ noRepo showGeneralHelp $ dontCheck repoExists $
-	command "help" paramNothing seek SectionUtility "display help"]
+	command "help" paramNothing seek SectionQuery "display help"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
