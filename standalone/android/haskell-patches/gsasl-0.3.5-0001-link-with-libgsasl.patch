@@ -1,0 +1,27 @@
+From c7d39a8f91af93203194313195a79b04d80a16a3 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Sun, 21 Apr 2013 15:22:00 -0400
+Subject: [PATCH] link with libgsasl
+
+This requires libgsasl.a (and no .so) be installed in the ugly hardcoded
+lib dir. When built this way, the haskell gsasl library will link the
+library into executables with no further options.
+---
+ gsasl.cabal |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gsasl.cabal b/gsasl.cabal
+index c5c2b19..a31cc71 100644
+--- a/gsasl.cabal
++++ b/gsasl.cabal
+@@ -27,6 +27,7 @@ library
+   ghc-options: -Wall -O2
+   hs-source-dirs: lib
+   c-sources: cbits/hsgsasl-shim.c
++  LD-Options: -L /home/joey/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/
+ 
+   build-depends:
+       base >= 4.0 && < 5.0
+-- 
+1.7.10.4
+

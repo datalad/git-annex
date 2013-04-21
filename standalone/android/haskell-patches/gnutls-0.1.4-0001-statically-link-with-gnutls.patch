@@ -1,0 +1,35 @@
+From c46af28d00a67d372bf59490d288c8cb77bae307 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Sun, 21 Apr 2013 17:14:03 -0400
+Subject: [PATCH] statically link with gnutls
+
+This requires libgnutls.a (and no .so) be installed in the ugly hardcoded
+lib dir. When built this way, the haskell gnutls library will link the
+library into executables with no further options.
+
+Also includes dependencies of libgnutls (needed since it's a static
+library).
+---
+ gnutls.cabal |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/gnutls.cabal b/gnutls.cabal
+index a20e7ed..d8f4a1f 100644
+--- a/gnutls.cabal
++++ b/gnutls.cabal
+@@ -31,10 +31,11 @@ source-repository this
+ library
+   hs-source-dirs: lib
+   ghc-options: -Wall -O2
++  LD-Options: -L /home/joey/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/   -lgcrypt -lgpg-error -lz
+ 
+   build-depends:
+       base >= 4.0 && < 5.0
+-    , bytestring >= 0.9
++    , bytestring >= 0.10.3.0
+     , transformers >= 0.2
+     , monads-tf >= 0.1 && < 0.2
+ 
+-- 
+1.7.10.4
+
