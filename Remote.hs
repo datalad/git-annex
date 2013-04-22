@@ -19,7 +19,6 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
-	enabledRemoteList,
 	specialRemote,
 	remoteMap,
 	uuidDescriptions,
@@ -211,7 +210,8 @@ keyPossibilities' key trusted = do
 	let validtrusteduuids = validuuids `intersect` trusted
 
 	-- remotes that match uuids that have the key
-	allremotes <- enabledRemoteList
+	allremotes <- filter (not . remoteAnnexIgnore . gitconfig)
+		<$> remoteList
 	let validremotes = remotesWithUUID allremotes validuuids
 
 	return (sortBy (comparing cost) validremotes, validtrusteduuids)

@@ -68,7 +68,9 @@ reconnectRemotes notifypushes rs = void $ do
 	go = do
 		(failed, diverged) <- sync
 			=<< liftAnnex (inRepo Git.Branch.current)
-		addScanRemotes diverged nonxmppremotes
+		addScanRemotes diverged $
+			filter (not . remoteAnnexIgnore . Remote.gitconfig)
+				nonxmppremotes
 		return failed
 
 {- Updates the local sync branch, then pushes it to all remotes, in

@@ -157,7 +157,7 @@ handleMount :: FilePath -> Assistant ()
 handleMount dir = do
 	debug ["detected mount of", dir]
 	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
-	reconnectRemotes True $ filter (not . remoteAnnexIgnore . Remote.gitconfig) rs
+	reconnectRemotes True rs
 
 {- Finds remotes located underneath the mount point.
  -

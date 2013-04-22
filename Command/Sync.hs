@@ -73,7 +73,7 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		return l
 	available = filter (not . Remote.specialRemote)
 		. filter (remoteAnnexSync . Types.Remote.gitconfig)
-		<$> Remote.enabledRemoteList
+		<$> Remote.remoteList
 	good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 

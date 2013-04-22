@@ -6,6 +6,9 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * webapp: Don't default to making repository in cwd when started
     from within a directory containing a git-annex file (eg, standalone
     tarball directory).
+  * sync, assistant: Sync with remotes that have annex-ignore set,
+    so that git remotes on servers without git-annex installed can be used
+    to keep clients' git repos in sync.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

@@ -904,13 +904,16 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex
-  from using this remote by default. (You can still request it be used
-  by the --from and --to options.)
+  from storing file contents on this remote by default.
+  (You can still request it be used by the --from and --to options.)
 
   This is, for example, useful if the remote is located somewhere
   without git-annex-shell. (For example, if it's on GitHub).
   Or, it could be used if the network connection between two
   repositories is too slow to be used normally.
+
+  This does not prevent git-annex sync (or the git-annex assistant) from
+  syncing the git repository to the remote.
 
 * `remote.<name>.annex-sync`
 

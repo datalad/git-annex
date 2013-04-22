@@ -48,18 +48,19 @@ modifyDaemonStatus a = do
 calcSyncRemotes :: Annex (DaemonStatus -> DaemonStatus)
 calcSyncRemotes = do
 	rs <- filter (remoteAnnexSync . Remote.gitconfig) .
-		concat . Remote.byCost <$> Remote.enabledRemoteList
+		concat . Remote.byCost <$> Remote.remoteList
 	alive <- trustExclude DeadTrusted (map Remote.uuid rs)
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
-	let nonxmpp = filter (not . isXMPPRemote) syncable
+	let syncdata = filter (not . remoteAnnexIgnore . Remote.gitconfig) $
+		filter (not . isXMPPRemote) syncable
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
 		, syncGitRemotes =
 			filter (not . Remote.specialRemote) syncable
-		, syncDataRemotes = nonxmpp
-		, syncingToCloudRemote = any iscloud nonxmpp
+		, syncDataRemotes = syncdata
+		, syncingToCloudRemote = any iscloud syncdata
 		}
   where
   	iscloud r = not (Remote.readonly r) && Remote.globallyAvailable r

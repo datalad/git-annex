@@ -133,7 +133,7 @@ repoList reposelector
 			unwanted <- S.fromList
 				<$> filterM inUnwantedGroup (S.toList syncing)
 			rs <- filter selectedrepo . concat . Remote.byCost
-				<$> Remote.enabledRemoteList
+				<$> Remote.remoteList
 			let us = map Remote.uuid rs
 			let maker u
 				| u `S.member` unwanted = mkUnwantedRepoActions u

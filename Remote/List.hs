@@ -98,10 +98,6 @@ updateRemote remote = do
 			Remote.Git.configRead r
 		| otherwise = return r
 
-{- All remotes that are not ignored. -}
-enabledRemoteList :: Annex [Remote]
-enabledRemoteList = filter (not . remoteAnnexIgnore . gitconfig) <$> remoteList
-
 {- Checks if a remote is a special remote -}
 specialRemote :: Remote -> Bool
 specialRemote r = remotetype r /= Remote.Git.remote
