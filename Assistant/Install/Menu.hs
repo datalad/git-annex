@@ -12,8 +12,10 @@ module Assistant.Install.Menu where
 import Utility.FreeDesktop
 
 installMenu :: FilePath -> FilePath -> IO ()
-installMenu command file = do
-#ifndef darwin_HOST_OS
+installMenu command file =
+#ifdef darwin_HOST_OS
+	return ()
+#else
 	writeDesktopMenuFile (fdoDesktopMenu command) file
 #endif
 
