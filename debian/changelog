@@ -13,6 +13,9 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     don't have user.name set in git config, and put in a workaround
     so that commits to the git-annex branch (and the assistant)
     will still succeed despite git not liking the system configuration.
+  * webapp: When told to add a git repository on a remote server, and
+    the repository already exists as a non-bare repository, use it,
+    rather than initializing a bare repository in the same directory.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

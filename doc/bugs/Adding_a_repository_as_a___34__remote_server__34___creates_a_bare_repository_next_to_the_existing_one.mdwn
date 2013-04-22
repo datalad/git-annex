@@ -13,3 +13,9 @@ git-annex version: 4.20130324, Ubuntu 11.04
 **Please provide any additional information below.**
 
 [[!tag /design/assistant]]
+
+> I have made it check for the .git directory and reuse the existing
+> repository if it's there. [[done]] --[[Joey]]
+> 
+> (The comment about `git-annex-shell` is incorrect; it has nothing
+> to do with this.)

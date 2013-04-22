@@ -290,7 +290,7 @@ makeSsh' rsync setup sshdata keypair =
 	remoteCommand = shellWrap $ join "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
-		, if rsync then Nothing else Just "git init --bare --shared"
+		, if rsync then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
 		, if rsync then Nothing else Just "git annex init"
 		, if needsPubKey sshdata
 			then addAuthorizedKeysCommand (rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
