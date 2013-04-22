@@ -1,13 +1,13 @@
-{- git-annex assistant environment
+{- git-annex environment
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Environment where
+module Annex.Environment where
 
-import Assistant.Common
+import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 
@@ -18,9 +18,14 @@ import System.Posix.Env
  - environment variables. -}
 checkEnvironment :: Annex ()
 checkEnvironment = do
-	username <- liftIO myUserName
-	gecos <- liftIO myUserGecos
 	gitusername <- fromRepo $ Git.Config.getMaybe "user.name"
-	when (null gecos && (gitusername == Nothing || gitusername == Just "")) $
+	when (gitusername == Nothing || gitusername == Just "") $
+		liftIO checkEnvironmentIO
+
+checkEnvironmentIO :: IO ()
+checkEnvironmentIO = do
+	whenM (null <$> myUserGecos) $ do
+		username <- myUserName
 		-- existing environment is not overwritten
-		liftIO $ setEnv "GIT_AUTHOR_NAME" username False
+		setEnv "GIT_AUTHOR_NAME" username False
+		setEnv "GIT_COMMITTER_NAME" username False

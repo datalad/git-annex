@@ -15,6 +15,7 @@ import Assistant.NamedThread
 import Assistant.Threads.WebApp
 import Assistant.WebApp
 import Assistant.Install
+import Annex.Environment
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
 import Init
@@ -111,6 +112,7 @@ startNoRepo = do
  -}
 firstRun :: Maybe HostName -> IO ()
 firstRun listenhost = do
+	checkEnvironmentIO
 	{- Without a repository, we cannot have an Annex monad, so cannot
 	 - get a ThreadState. Using undefined is only safe because the
 	 - webapp checks its noAnnex field before accessing the

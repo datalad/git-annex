@@ -24,6 +24,7 @@ import qualified Git
 import qualified Git.AutoCorrect
 import Annex.Content
 import Annex.Ssh
+import Annex.Environment
 import Command
 
 type Params = [String]
@@ -39,6 +40,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		Right g -> do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do
+				checkEnvironment
 				checkfuzzy
 				forM_ fields $ uncurry Annex.setField
 				sequence_ flags

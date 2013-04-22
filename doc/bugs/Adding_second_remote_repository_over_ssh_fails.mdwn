@@ -35,3 +35,7 @@ remote repository always fails**
 > So, I'm going to repurpose this bug to track that problem. --[[Joey]]
 
 [[!meta title="assistant can fail to make git repository if remote server is lacking GECOS"]]
+
+>> [[done]]; git-annex always checks for missing gecos and enables
+>> a workaround. This does mean the server needs to be upgraded in order
+>> for the fix to work. --[[Joey]]

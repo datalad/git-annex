@@ -154,7 +154,6 @@ import Assistant.Threads.XMPPClient
 #warning Building without the webapp. You probably need to install Yesod..
 import Assistant.Types.UrlRenderer
 #endif
-import Assistant.Environment
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
@@ -198,8 +197,6 @@ startDaemon assistant foreground listenhost startbrowser = do
 		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do
 		checkCanWatch
-		when assistant
-			checkEnvironment
 		dstatus <- startDaemonStatus
 		logfile <- fromRepo gitAnnexLogFile
 		liftIO $ debugM desc $ "logging to " ++ logfile
