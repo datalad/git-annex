@@ -49,3 +49,8 @@ Please provide any additional information below.
 
 I use a symlink to the repository to change into it.
 
+> Closing this bug as user error. If the `git-annex` branch
+> gets merged into master by the user, then that adds all its log files
+> to master, and so they're visible as regular files. Solution: Don't do
+> that, or if you do that, use `git log --stat` to find the commit that
+> adds all those files, and `git revery` the commit. [[done]] --[[Joey]]
