@@ -17,7 +17,7 @@ import Annex.Direct
 import Annex.Version
 
 def :: [Command]
-def = [notBareRepo $ 
+def = [notBareRepo $ noDaemonRunning $
 	command "direct" paramNothing seek
 		SectionSetup "switch repository to direct mode"]
 

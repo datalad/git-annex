@@ -21,8 +21,9 @@ import Annex.Version
 import Init
 
 def :: [Command]
-def = [notBareRepo $ command "indirect" paramNothing seek
-	SectionSetup "switch repository to indirect mode"]
+def = [notBareRepo $ noDaemonRunning $
+	command "indirect" paramNothing seek
+		SectionSetup "switch repository to indirect mode"]
 
 seek :: [CommandSeek]
 seek = [withNothing start]

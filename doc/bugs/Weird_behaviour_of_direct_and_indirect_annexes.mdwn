@@ -50,3 +50,8 @@ that all three copies are stored in ~/Indirect, so the functionality I'm after s
 
 **Edit:  Doing a git annex sync in ~/Indirect results in the continuing behaviour to be correct, so there's some issue telling Direct that Indirect is no longer in direct-mode?**
 This appears to fix it, but I guess shouldn't be necessary.
+
+> AFAICS, the entire problem is that the assistant does not notice when the
+> repository it's running in is changed from direct to indirect mode. Since this
+> has also been reported to cause problems with the assistant, I have added
+> a check to prevent it from being done. [[done]] --[[Joey]] 

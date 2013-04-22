@@ -3,7 +3,7 @@
  - Common sanity checks for commands, and an interface to selectively
  - remove them, or add others.
  - 
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Common.Annex
 import Types.Command
 import Init
 import Config
+import Utility.Daemon
 import qualified Git
 
 commonChecks :: [CommandCheck]
@@ -24,11 +25,17 @@ repoExists = CommandCheck 0 ensureInitialized
 
 notDirect :: Command -> Command
 notDirect = addCheck $ whenM isDirect $
-	error "You cannot run this subcommand in a direct mode repository."
+	error "You cannot run this command in a direct mode repository."
 
 notBareRepo :: Command -> Command
 notBareRepo = addCheck $ whenM (fromRepo Git.repoIsLocalBare) $
-	error "You cannot run this subcommand in a bare repository."
+	error "You cannot run this command in a bare repository."
+
+noDaemonRunning :: Command -> Command
+noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
+	error "You cannot run this command while git-annex watch or git-annex assistant is running."
+  where
+  	daemonpid = liftIO . checkDaemon =<< fromRepo gitAnnexPidFile
 
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
