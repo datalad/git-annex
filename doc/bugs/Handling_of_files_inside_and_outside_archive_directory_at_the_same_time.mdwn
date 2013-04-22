@@ -4,3 +4,6 @@ some time ago, I accidentially copied some files from the archive to the non-arc
 
 Best
 Karsten
+
+[[!tag /design/assistant]]
+[[!meta title="assistant preferred content handling of files inside and outside archive directory at the same time"]]
