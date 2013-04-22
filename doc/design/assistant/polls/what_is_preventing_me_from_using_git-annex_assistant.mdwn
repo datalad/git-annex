@@ -12,5 +12,5 @@ the assistant?
 
 Feel free to write in your own reasons, or add a comment to give me more info.
 
-Note: Poll is now closed. Neatly all these issues have been dealt with.
+Note: Poll is now closed. Nearly all these issues have been dealt with.
 Please file bug reports if any of these issues still affect you.
