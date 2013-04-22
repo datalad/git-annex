@@ -53,6 +53,7 @@ import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.AddUrl
+import qualified Command.RmUrl
 import qualified Command.Import
 import qualified Command.Map
 import qualified Command.Direct
@@ -85,6 +86,7 @@ cmds = concat
 	, Command.Lock.def
 	, Command.Sync.def
 	, Command.AddUrl.def
+	, Command.RmUrl.def
 	, Command.Import.def
 	, Command.Init.def
 	, Command.Describe.def

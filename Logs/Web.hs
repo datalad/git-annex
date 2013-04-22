@@ -54,4 +54,7 @@ setUrlPresent key url = do
 		logChange key webUUID InfoPresent
 
 setUrlMissing :: Key -> URLString -> Annex ()
-setUrlMissing key url = addLog (urlLog key) =<< logNow InfoMissing url
+setUrlMissing key url = do
+	addLog (urlLog key) =<< logNow InfoMissing url
+	whenM (null <$> getUrls key) $
+		logChange key webUUID InfoMissing

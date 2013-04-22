@@ -20,6 +20,7 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     or git-annex watch daemon is running.
   * assistant: When built with git before 1.8.0, use `git remote rm`
     to delete a remote. Newer git uses `git remote remove`.
+  * rmurl: New command, removes one of the recorded urls for a file.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

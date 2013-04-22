@@ -168,6 +168,10 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
+* rmurl file url
+
+  Record that the file is no longer available at the url.
+
 * import [path ...]
 
   Moves files from somewhere outside the git working copy, and adds them to
