@@ -42,4 +42,7 @@ Best,
  Laszlo
 
 [[!tag /design/assistant]]
-[[!meta title "assistant can try to add too many files at once in batch add mode"]]
+[[!meta title="assistant can try to add too many files at once in batch add mode"]]
+
+> Seems that [[Stress_test]] is the same person reporting the same bug
+> with a test case, so closing this as a duplicate. [[done]] --[[Joey]]
