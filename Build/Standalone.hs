@@ -60,12 +60,15 @@ progDir topdir = topdir
 progDir topdir = topdir </> "bin"
 #endif
 
-installProg :: FilePath -> FilePath -> IO ()
+installProg :: FilePath -> FilePath -> IO (FilePath, FilePath)
 installProg dir prog = searchPath prog >>= go
   where
 	go Nothing = error $ "cannot find " ++ prog ++ " in PATH"
-	go (Just f) = unlessM (boolSystem "install" [File f, File dir]) $
-		error $ "install failed for " ++ prog
+	go (Just f) = do
+		let dest = dir </> takeFileName f
+		unlessM (boolSystem "install" [File f, File dest]) $
+			error $ "install failed for " ++ prog
+		return (dest, f)
 
 main = getArgs >>= go
   where
@@ -73,5 +76,5 @@ main = getArgs >>= go
         go (topdir:_) = do
 		let dir = progDir topdir
 		createDirectoryIfMissing True dir
-		forM_ thirdpartyProgs $ installProg dir
-		
+		installed <- forM thirdpartyProgs $ installProg dir
+		writeFile "tmp/standalone-installed" (show installed)
