@@ -18,6 +18,7 @@ import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
 import qualified Git.Command
+import qualified Git.Version
 import Logs.Trust
 import qualified Annex
 
@@ -36,7 +37,11 @@ disableRemote uuid = do
 	liftAnnex $ do
 		inRepo $ Git.Command.run
 			[ Param "remote"
-			, Param "remove"
+			-- name of this subcommand changed
+			, Param $
+				if Git.Version.older "1.8.0"
+					then "rm"
+					else "remove"
 			, Param (Remote.name remote)
 			]
 		void $ remoteListRefresh

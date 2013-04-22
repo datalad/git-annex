@@ -35,3 +35,12 @@ The log shows:
 
 
 
+> Seems that `git remote remove` is new as of git 1.8.0 or so.
+> Older gits only support `git remote rm`. Which newer gits
+> support as well. but it seems to be in the process
+> of being deprecated so I'd rather not use it.
+> 
+> So, I've made the version of git it's
+> built for determine which subcommand it uses. [[done]] --[[Joey]]
+> 
+> (You can run `git remote rm repo` by hand to clean up from this BTW.)

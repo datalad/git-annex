@@ -18,6 +18,8 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     rather than initializing a bare repository in the same directory.
   * direct, indirect: Refuse to do anything when the assistant
     or git-annex watch daemon is running.
+  * assistant: When built with git before 1.8.0, use `git remote rm`
+    to delete a remote. Newer git uses `git remote remove`.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
