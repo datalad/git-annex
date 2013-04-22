@@ -22,3 +22,6 @@ file should remain in the main repo, file2 should remain in the annex
     git version 1.8.1.5
 
 Mac OSX 10.8.2 Build 12C60
+
+> Closing this bug, as I cannot reproduce it and the bug reporter is
+> not responding. [[done]] --[[Joey]] 
