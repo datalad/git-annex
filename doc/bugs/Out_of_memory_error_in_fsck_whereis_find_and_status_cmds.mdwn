@@ -76,3 +76,5 @@ Any thoughts on how I can get git-annex (esp. fsck) to complete would be appreci
 
 Thanks
 Giovanni
+
+[[!tag moreinfo]]

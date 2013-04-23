@@ -16,4 +16,4 @@ Please provide any additional information below.
 
 I am an "webinterface only" user.
 
-[[!tag /design/assistant]]
+[[!tag /design/assistant moreinfo]]

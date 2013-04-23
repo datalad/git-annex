@@ -12,3 +12,5 @@ Webapp starts. git-annex: Not in a git repository.
 See also
 [[bugs/git-annex:_Not_in_a_git_repository._/]]
 where the same error message occurs
+
+[[!tag /design/assistant moreinfo]]

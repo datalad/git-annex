@@ -48,4 +48,4 @@ git-annex HEAD from yesterdays git. Ubuntu 12.10
 
 Please provide any additional information below.
 
-[[!tag /design/assistant unreproducible]]
+[[!tag /design/assistant moreinfo]]

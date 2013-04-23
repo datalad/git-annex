@@ -1,4 +1,4 @@
-This is a subset of [[/todo]] for items tagged for the assistant.
-Link items to [[todo/done]] when done.
+This is a subset of [[/todo]] and [[/bugs]] 
+for items tagged for the assistant.
 
 [[!inline pages="tagged(design/assistant) and !link(bugs/done)" show=0 archive=yes]]

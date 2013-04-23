@@ -35,3 +35,5 @@ There's no indication if the jabber communication is working successfully.  It c
 It would be helpful if there were some indication in the Dashboard as to the number of files/directories/objects that git annex believes exists in each location.  It could be that it's not accessing the Box.com server successfully, but again, this is difficult to determine.
 
 It's great to see that git annex might make a box.com account useful for automatic upload and sync... looking forward to getting it to work on both sides! Thanks for making this!
+
+[[!tag /design/assistant moreinfo]]

@@ -32,3 +32,5 @@ git-annex 4.20130323, Mac OS X on the repo where the file was edited, Arch Linux
 **Please provide any additional information below.**
 
 I have observed this problem setting up the repos through the webapp as well, so I don't think it is related to setting up the repos manually. I think the way vim is writing the files seems to be tickling a race condition (both command-line vim and MacVim produce the behavior). I started trying to work around it by switching to emacs to edit those files, and the files haven't disappeared from the edited repo (so far at least).
+
+[[!tag /design/assistant moreinfo]]

@@ -40,3 +40,6 @@ relatively high number of files relatively low disk space usage
 
 Best, 
  Laszlo
+
+[[!meta title="assistant Stress test"]]
+[[!tag /design/assistant]]
