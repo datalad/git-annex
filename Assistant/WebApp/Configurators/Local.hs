@@ -19,7 +19,7 @@ import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
-import Locations.UserConfig
+import Config.Files
 import Utility.FreeDesktop
 #ifdef WITH_CLIBS
 import Utility.Mounts

@@ -1,11 +1,11 @@
-{- git-annex user config files
+{- git-annex extra config files
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Locations.UserConfig where
+module Config.Files where
 
 import Common
 import Utility.TempFile

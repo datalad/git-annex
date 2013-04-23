@@ -19,8 +19,8 @@ import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
 import qualified Assistant.Threads.Transferrer as Transferrer
 import Logs.Transfer
-import Locations.UserConfig
 import qualified Config
+import Config.Files
 import Git.Config
 import Assistant.Threads.Watcher
 import Assistant.NamedThread

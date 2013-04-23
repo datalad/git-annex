@@ -16,7 +16,7 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import qualified Remote
 import qualified Git
-import Locations.UserConfig
+import Config.Files
 import Utility.FileMode
 import Logs.Trust
 import Logs.Remote

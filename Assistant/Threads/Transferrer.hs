@@ -22,7 +22,7 @@ import Annex.Content
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Git
-import Locations.UserConfig
+import Config.Files
 import Assistant.Threads.TransferWatcher
 import Annex.Wanted
 

@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
 import Assistant.Ssh
-import Locations.UserConfig
+import Config.Files
 import Utility.FileMode
 import Utility.Shell
 import Utility.TempFile

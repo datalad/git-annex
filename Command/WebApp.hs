@@ -23,7 +23,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
-import Locations.UserConfig
+import Config.Files
 import qualified Option
 
 import System.Posix.Directory

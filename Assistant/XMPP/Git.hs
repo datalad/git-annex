@@ -25,7 +25,7 @@ import Annex.TaggedPush
 import Config
 import Git
 import qualified Git.Branch
-import Locations.UserConfig
+import Config.Files
 import qualified Types.Remote as Remote
 import qualified Remote as Remote
 import Remote.List

@@ -16,7 +16,7 @@ import Assistant.WebApp.Common
 import qualified Annex
 import qualified Git
 import Config
-import Locations.UserConfig
+import Config.Files
 import Utility.DataUnits
 
 import qualified Data.Text as T

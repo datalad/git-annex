@@ -14,7 +14,7 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.Page
 import qualified Git.Construct
 import qualified Git.Config
-import Locations.UserConfig
+import Config.Files
 import qualified Utility.Url as Url
 import Utility.Yesod
 

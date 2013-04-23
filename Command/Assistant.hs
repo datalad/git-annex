@@ -12,7 +12,7 @@ import Command
 import qualified Option
 import qualified Command.Watch
 import Init
-import Locations.UserConfig
+import Config.Files
 
 import System.Environment
 import System.Posix.Directory

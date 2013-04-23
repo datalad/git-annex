@@ -10,7 +10,7 @@
 module Assistant.WebApp.Control where
 
 import Assistant.WebApp.Common
-import Locations.UserConfig
+import Config.Files
 import Utility.LogFile
 import Assistant.DaemonStatus
 import Assistant.WebApp.Utility
