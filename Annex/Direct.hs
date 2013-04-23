@@ -43,10 +43,15 @@ stageDirect = do
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
 	go (file, Just sha) = do
-		mkey <- catKey sha
+		shakey <- catKey sha
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
-		case (mkey, mstat, toInodeCache =<< mstat) of
-			(Just key, _, Just cache) -> do
+		filekey <- isAnnexLink file
+		case (shakey, filekey, mstat, toInodeCache =<< mstat) of
+			(_, Just key, _, _)
+				| shakey == filekey -> noop
+				{- A changed symlink. -}
+				| otherwise -> stageannexlink file key
+			(Just key, _, _, Just cache) -> do
 				{- All direct mode files will show as
 				 - modified, so compare the cache to see if
 				 - it really was. -}
@@ -55,9 +60,9 @@ stageDirect = do
 					[] -> modifiedannexed file key cache
 					_ -> unlessM (elemInodeCaches cache oldcache) $
 						modifiedannexed file key cache
-			(Just key, Nothing, _) -> deletedannexed file key
-			(Nothing, Nothing, _) -> deletegit file
-			(_, Just _, _) -> addgit file
+			(Just key, _, Nothing, _) -> deletedannexed file key
+			(Nothing, _, Nothing, _) -> deletegit file
+			(_, _, Just _, _) -> addgit file
 	go _ = noop
 
 	modifiedannexed file oldkey cache = do
@@ -68,6 +73,11 @@ stageDirect = do
 		void $ removeAssociatedFile key file
 		deletegit file
 	
+	stageannexlink file key = do
+		l <- inRepo $ gitAnnexLink file key
+		stageSymlink file =<< hashSymlink l
+		void $ addAssociatedFile key file
+
 	addgit file = Annex.Queue.addCommand "add" [Param "-f"] [file]
 
 	deletegit file = Annex.Queue.addCommand "rm" [Param "-f"] [file]
