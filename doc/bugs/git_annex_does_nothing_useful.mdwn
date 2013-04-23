@@ -60,3 +60,8 @@ Alright, what if I just try to get a non-existent file?
 Alright, it didn't fail with an error, that's very strange. What is going on here?
 
 [[!meta title="v1 file is ignored"]]
+
+> I don't think I want to make git-annex deal with v1 files, and
+> I doubt there are many repos left using them. This seems to be a case
+> of an upgrade not being done, for whatever reason. Closing [[done]]
+> --[[Joey]]
