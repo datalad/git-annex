@@ -80,8 +80,9 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 commit :: CommandStart
 commit = next $ next $ do
 	ifM isDirect
-		( ifM stageDirect
-			( runcommit [] , return True )
+		( do
+			void $ stageDirect
+			runcommit []
 		, runcommit [Param "-a"]
 		)
   where
@@ -90,8 +91,9 @@ commit = next $ next $ do
 		showOutput
 		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ Git.Command.runBool $ (Param "commit") : ps ++
+		let params = (Param "commit") : ps ++
 			[Param "-m", Param "git-annex automatic sync"]
+		_ <- inRepo $ tryIO . Git.Command.runQuiet params
 		return True
 
 mergeLocal :: Git.Ref -> CommandStart
