@@ -7,9 +7,9 @@ The remote is an ssh URL: ssh://user@host/path/to/repo.git. Fetching the URL wor
 What is the expected output? What do you see instead?
 I expect git-annex to retrieve the file from the remote.
 Insted I see this:
+
         get foobar (from origin...)                                              
-        git-annex-shell: user error (unrecognized option `--uuid'                
-                                                                                 
+        git-annex-shell: user error (unrecognized option `--uuid'                                                                                       
                                                                                  
         Usage: git-annex-shell [-c] command [parameters ...] [option ..]         
                                                                                  
