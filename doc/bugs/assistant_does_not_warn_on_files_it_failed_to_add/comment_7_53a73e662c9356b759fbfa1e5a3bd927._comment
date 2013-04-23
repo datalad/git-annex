@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-04-23T22:11:32Z"
+ content="""
+I have added some messages when add fails to indicate why it failed. Going through the failure modes while doing this, the most likely reason does seem to be that the file is changed while it's in the process of being checksummed. You can upgrade to tonight's build to get a version with these added messages.
+
+Can you run the assistant with `--debug` and send a complete log of the problem happening?
+
+(The sanity checker not adding the files seems to be a red herring; I was wrong and it only adds any symlinks that failed to get staged.)
+
+(Re the .gitignore red herring, the one place in the assistant that *does* honor .gitignore is the startup scan. However this will not affect the assistant's behavior when files are added to the repository after it's started up and is running. I suspect that if you just look at `git log --stat` you will see that the temp files used by DownThemAll are being added, and then deleted from the git repository. But this is a red herring, so meh.)
+"""]]
