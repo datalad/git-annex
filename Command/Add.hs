@@ -122,7 +122,7 @@ ingest (Just source) = do
 	case (cache, inodeCache source) of
 		(_, Nothing) -> go k cache
 		(Just newc, Just c) | compareStrong c newc -> go k cache
-		_ -> failure
+		_ -> failure "changed while it was being added"
   where
 	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
 
@@ -131,15 +131,16 @@ ingest (Just source) = do
 			moveAnnex key $ contentLocation source
 		liftIO $ nukeFile $ keyFilename source
 		return $ Just key
-	goindirect Nothing _ = failure
+	goindirect Nothing _ = failure "failed to generate a key"
 
 	godirect (Just (key, _)) (Just cache) = do
 		addInodeCache key cache
 		finishIngestDirect key source
 		return $ Just key
-	godirect _ _ = failure
+	godirect _ _ = failure "failed to generate a key"
 
-	failure = do
+	failure msg = do
+		warning $ keyFilename source ++ " " ++ msg
 		when (contentLocation source /= keyFilename source) $
 			liftIO $ nukeFile $ contentLocation source
 		return Nothing		
