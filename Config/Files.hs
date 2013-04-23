@@ -54,4 +54,7 @@ programFile = userConfigFile "program"
 readProgramFile :: IO FilePath
 readProgramFile = do
 	programfile <- programFile
-	catchDefaultIO "git-annex" $ readFile programfile
+	catchDefaultIO cmd $ 
+		fromMaybe cmd . headMaybe . lines <$> readFile programfile
+  where
+  	cmd = "git-annex"
