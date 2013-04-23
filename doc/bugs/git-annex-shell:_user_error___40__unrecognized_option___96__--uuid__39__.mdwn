@@ -1,6 +1,8 @@
 What steps will reproduce the problem?
 On Arch Linux, using a cabal installation or prebuilt binaries:
+
     git-annex get foobar
+
 The remote is an ssh URL: ssh://user@host/path/to/repo.git. Fetching the URL worked just fine.
 
 
