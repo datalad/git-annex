@@ -44,3 +44,10 @@ Insted I see this:
 What version of git-annex are you using? On what operating system?
 git-annex does not understand a '--version' switch and I cannot find another option to print the version. It's the latest I just installed via cabal.
 OS is Arch Linux on kernel 3.8.8
+
+> This happens if the remote server has a very old version of
+> git-annex-shell. While I would not, today, add a new option like
+> --uuid that breaks backwards compatability as happened here, 
+> I don't intend to try to make git-annex backwards compatible
+> with that old version. Not even Debian stable has such an old version of 
+> git-annex anymore, so there's no excuse not to upgrade. [[done]]
