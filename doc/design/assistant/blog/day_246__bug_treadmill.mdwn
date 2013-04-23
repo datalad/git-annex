@@ -1,0 +1,18 @@
+There seem to be a steady state of enough bug reports coming in that I can
+work on them whenever I'm not working on anything else. As I did all day
+today.
+
+This doesn't bother me if the bug reports are of real bugs that I can
+reproduce and fix, but I'm spending a lot of time currently following up to
+messages and asking simple questions like "what version number" and "can I
+please see the whole log file". And just trying to guess what a vague
+problem report means and read people's minds to get to a definite bug
+with a test case that I can then fix.
+
+I've noticed the overall quality of bug reports nosedive over the past
+several months. My guess is this means that git-annex has found a less
+technical audience. I need to find something to do about this.
+
+With that whining out of the way ...
+I fixed a pretty ugly bug on FAT/Android today, and
+I am 100% caught up on messages right now!
