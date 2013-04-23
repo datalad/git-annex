@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-23T17:54:14Z"
+ content="""
+Are files that you add in machine A showing up in machine B as broken symlinks? If so, jabber sync is working and the problem is with the Box.com remore. If not, the problem must be with the jabber sync.
+
+The log includes something like this when git is pulling over jabber:
+
+<pre>
+[2013-04-22 14:08:05 JEST] XMPPClient: Syncing with youraccount
+To xmpp::youraccount@gmail.com
+   385f85c..3aae8b7  git-annex -> refs/synced/8ff0aa10-0a9d-4184-b16f-27b32ef87372/ZmFtaWx5QGtpdGVuZXQubmV0/git-annex
+</pre>
+
+You can turn on debugging (--debug at startup or Enable debug logging in Configuration -> Preferences) to get full XMPP protocol dumps in the log. If you do not see something like the above, please do so, and paste them, so I can debug why it's not working.
+
+> When editing the Box.com repository, the option to select a directory no longer appears
+
+This is normal; it doesn't make sense to change the directory the remote uses once the remote is in use.
+"""]]
