@@ -19,3 +19,6 @@ Preliminary indication is that they're treating it as a functionality change the
 However, I think it's:
 * Unfortunate, as fitting Calibre together with git-annex seems like a neat idea.
 * Useful to make sure that this kind of "doesn't play well together" condition is documented, even if only as a bug report.
+
+> [[done]]; the assistant uses direct mode by default now to avoid
+> this kind of thing. --[[Joey]] 
