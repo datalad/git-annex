@@ -22,7 +22,7 @@ changeInfoKey (AddKeyChange k) = Just k
 changeInfoKey (LinkChange (Just k)) = Just k
 changeInfoKey _ = Nothing
 
-type ChangeChan = TSet Change
+type ChangeChan = TSet [Change]
 
 newChangeChan :: IO ChangeChan
 newChangeChan = atomically newTSet
