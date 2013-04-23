@@ -31,7 +31,7 @@ start [] = do
 	error $ "Specify a name for the remote. " ++
 		if null names
 			then ""
-			else "Either a new name, or one of these existing special remotes: " ++ join " " names
+			else "Either a new name, or one of these existing special remotes: " ++ intercalate " " names
 start (name:ws) = do
 	(u, c) <- findByName name
 	let fullconfig = config `M.union` c	

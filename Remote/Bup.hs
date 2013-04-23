@@ -257,7 +257,7 @@ bup2GitRemote r
   where
 	bits = split ":" r
 	host = Prelude.head bits
-	dir = join ":" $ drop 1 bits
+	dir = intercalate ":" $ drop 1 bits
 	-- "host:~user/dir" is not supported specially by bup;
 	-- "host:dir" is relative to the home directory;
 	-- "host:" goes in ~/.bup

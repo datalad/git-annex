@@ -2,7 +2,7 @@
 
 module Common (module X) where
 
-import Control.Monad as X hiding (join)
+import Control.Monad as X
 import Control.Monad.IfElse as X
 import Control.Applicative as X
 import "mtl" Control.Monad.State.Strict as X (liftIO)
@@ -10,7 +10,7 @@ import Control.Exception.Extensible as X (IOException)
 
 import Data.Maybe as X
 import Data.List as X hiding (head, tail, init, last)
-import Data.String.Utils as X
+import Data.String.Utils as X hiding (join)
 
 import "MissingH" System.Path as X
 import System.FilePath as X

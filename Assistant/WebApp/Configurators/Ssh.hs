@@ -205,7 +205,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 		, rsyncOnly = status == UsableRsyncServer
 		}
 	probe extraopts = do
-		let remotecommand = shellWrap $ join ";"
+		let remotecommand = shellWrap $ intercalate ";"
 			[ report "loggedin"
 			, checkcommand "git-annex-shell"
 			, checkcommand "rsync"
@@ -287,7 +287,7 @@ makeSsh' rsync setup sshdata keypair =
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
-	remoteCommand = shellWrap $ join "&&" $ catMaybes
+	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
 		, if rsync then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
@@ -353,7 +353,7 @@ makeRsyncNet sshinput reponame setup = do
 	 - one recommended by rsync.net documentation. I touch the file first
 	 - to not need to use a different method to create it.
 	 -}
-	let remotecommand = join ";"
+	let remotecommand = intercalate ";"
 		[ "mkdir -p .ssh"
 		, "touch .ssh/authorized_keys"
 		, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"

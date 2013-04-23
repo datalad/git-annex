@@ -130,7 +130,8 @@ remoteNamed n constructor = do
 remoteNamedFromKey :: String -> IO Repo -> IO Repo
 remoteNamedFromKey k = remoteNamed basename
   where
-	basename = join "." $ reverse $ drop 1 $ reverse $ drop 1 $ split "." k
+	basename = intercalate "." $ 
+		reverse $ drop 1 $ reverse $ drop 1 $ split "." k
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}

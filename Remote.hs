@@ -238,7 +238,7 @@ showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = noop
 showTriedRemotes remotes =
 	showLongNote $ "Unable to access these remotes: " ++
-		join ", " (map name remotes)
+		intercalate ", " (map name remotes)
 
 forceTrust :: TrustLevel -> String -> Annex ()
 forceTrust level remotename = do

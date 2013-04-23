@@ -123,7 +123,7 @@ storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
 storeCipher c (EncryptedCipher t ks) = 
 	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
   where
-	showkeys (KeyIds l) = join "," l
+	showkeys (KeyIds l) = intercalate "," l
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher

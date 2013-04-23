@@ -30,7 +30,7 @@ import Utility.Base64
  - refs, per git-check-ref-format.
  -}
 toTaggedBranch :: UUID -> Maybe String -> Git.Branch -> Git.Branch
-toTaggedBranch u info b = Git.Ref $ join "/" $ catMaybes
+toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
 	[ Just "refs/synced"
 	, Just $ fromUUID u
 	, toB64 <$> info

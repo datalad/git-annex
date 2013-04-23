@@ -95,7 +95,7 @@ runRequests readh writeh a = do
 
 sendRequest :: Transfer -> AssociatedFile -> Handle -> IO ()
 sendRequest t f h = do
-	hPutStr h $ join fieldSep
+	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
 		, serialize (transferUUID t)
 		, serialize (transferKey t)

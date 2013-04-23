@@ -20,7 +20,6 @@ module Git.Queue (
 import qualified Data.Map as M
 import System.IO
 import System.Process
-import Data.String.Utils
 
 import Utility.SafeCommand
 import Common
@@ -151,7 +150,7 @@ runAction repo (UpdateIndexAction streamers) =
 runAction repo action@(CommandAction {}) =
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
 		fileEncoding h
-		hPutStr h $ join "\0" $ getFiles action
+		hPutStr h $ intercalate "\0" $ getFiles action
 		hClose h
   where
 	p = (proc "xargs" params) { env = gitEnv repo }

@@ -97,7 +97,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 	env <- liftIO getEnvironment
 	path <- liftIO getSearchPath
 	let myenv = M.fromList
-		[ ("PATH", join [searchPathSeparator] $ tmpdir:path)
+		[ ("PATH", intercalate [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)

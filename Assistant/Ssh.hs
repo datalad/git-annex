@@ -105,11 +105,11 @@ removeAuthorizedKeys rsynconly dir pubkey = do
  - present.
  -}
 addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
-addAuthorizedKeysCommand rsynconly dir pubkey = join "&&"
+addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
 	[ "mkdir -p ~/.ssh"
-	, join "; "
+	, intercalate "; "
 		[ "if [ ! -e " ++ wrapper ++ " ]"
-		, "then (" ++ join ";" (map echoval script) ++ ") > " ++ wrapper
+		, "then (" ++ intercalate ";" (map echoval script) ++ ") > " ++ wrapper
 		, "fi"
 		]
 	, "chmod 700 " ++ wrapper
@@ -217,7 +217,7 @@ mangleSshHostName :: SshData -> String
 mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 	++ "-" ++ filter safe extra
   where
-	extra = join "_" $ map T.unpack $ catMaybes
+	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
 		, Just $ sshDirectory sshdata
 		]
@@ -229,7 +229,7 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
 unMangleSshHostName h = case split "-" h of
-	("git":"annex":rest) -> join "-" (beginning rest)
+	("git":"annex":rest) -> intercalate "-" (beginning rest)
 	_ -> h
 
 {- Does ssh have known_hosts data for a hostname? -}

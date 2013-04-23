@@ -27,12 +27,10 @@ start = do
 		showPackageVersion
 		putStrLn $ "local repository version: " ++ fromMaybe "unknown" v
 		putStrLn $ "default repository version: " ++ defaultVersion
-		putStrLn $ "supported repository versions: " ++ vs supportedVersions
-		putStrLn $ "upgrade supported from repository versions: " ++ vs upgradableVersions
+		putStrLn $ "supported repository versions: " ++ unwords supportedVersions
+		putStrLn $ "upgrade supported from repository versions: " ++ unwords upgradableVersions
 		putStrLn $ "build flags: " ++ unwords buildFlags
 	stop
-  where
-	vs = join " "
 
 showPackageVersion :: IO ()
 showPackageVersion = putStrLn $ "git-annex version: " ++ SysConfig.packageversion

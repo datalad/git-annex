@@ -143,7 +143,7 @@ oldlog2key l
 -- as the v2 key that it is.
 readKey1 :: String -> Key
 readKey1 v
-	| mixup = fromJust $ file2key $ join ":" $ Prelude.tail bits
+	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
 	| otherwise = Key
 		{ keyName = n
 		, keyBackendName = b
@@ -153,7 +153,7 @@ readKey1 v
   where
 	bits = split ":" v
 	b = Prelude.head bits
-	n = join ":" $ drop (if wormy then 3 else 1) bits
+	n = intercalate ":" $ drop (if wormy then 3 else 1) bits
 	t = if wormy
 		then Just (Prelude.read (bits !! 1) :: EpochTime)
 		else Nothing
@@ -165,7 +165,7 @@ readKey1 v
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyBackendName = b, keySize = s, keyMtime = t } =
-	join ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
+	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
   where
 	showifhere Nothing = ""
 	showifhere (Just v) = show v

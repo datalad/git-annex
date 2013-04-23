@@ -121,7 +121,7 @@ keyValueE size source = keyValue size source >>= maybe (return Nothing) addE
 selectExtension :: FilePath -> String
 selectExtension f
 	| null es = ""
-	| otherwise = join "." ("":es)
+	| otherwise = intercalate "." ("":es)
   where
 	es = filter (not . null) $ reverse $
 		take 2 $ takeWhile shortenough $

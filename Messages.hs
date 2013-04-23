@@ -179,7 +179,7 @@ fileNotFound file = do
 			[ "git-annex:", file, "not found" ]
 
 indent :: String -> String
-indent = join "\n" . map (\l -> "  " ++ l) . lines
+indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
 
 {- Shows a JSON fragment only when in json mode. -}
 maybeShowJSON :: JSON a => [(String, a)] -> Annex ()
