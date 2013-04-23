@@ -56,12 +56,14 @@ start :: FilePath -> CommandStart
 start file = ifAnnexed file addpresent add
   where
 	add = do
-		s <- liftIO $ getSymbolicLinkStatus file
-		if isSymbolicLink s || not (isRegularFile s)
-			then stop
-			else do
-				showStart "add" file
-				next $ perform file
+		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
+		case ms of
+			Nothing -> stop
+			Just s
+				| isSymbolicLink s || not (isRegularFile s) -> stop
+				| otherwise -> do
+					showStart "add" file
+					next $ perform file
 	addpresent (key, _) = ifM isDirect
 		( ifM (goodContent key file) ( stop , add )
 		, fixup key
