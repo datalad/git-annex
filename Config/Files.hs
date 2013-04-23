@@ -24,26 +24,26 @@ autoStartFile = userConfigFile "autostart"
 readAutoStartFile :: IO [FilePath]
 readAutoStartFile = do
 	f <- autoStartFile
-	nub . lines <$> catchDefaultIO "" (readFile f)
+	nub . map dropTrailingPathSeparator . lines
+		<$> catchDefaultIO "" (readFile f)
+
+modifyAutoStartFile :: ([FilePath] -> [FilePath]) -> IO ()
+modifyAutoStartFile func = do
+	dirs <- readAutoStartFile
+	let dirs' = nubBy equalFilePath $ func dirs
+	when (dirs' /= dirs) $ do
+		f <- autoStartFile
+		createDirectoryIfMissing True (parentDir f)
+		viaTmp writeFile f $ unlines $ dirs'
 
 {- Adds a directory to the autostart file. -}
 addAutoStartFile :: FilePath -> IO ()
-addAutoStartFile path = do
-	dirs <- readAutoStartFile
-	when (path `notElem` dirs) $ do
-		f <- autoStartFile
-		createDirectoryIfMissing True (parentDir f)
-		viaTmp writeFile f $ unlines $ dirs ++ [path]
+addAutoStartFile path = modifyAutoStartFile $ (:) path
 
 {- Removes a directory from the autostart file. -}
 removeAutoStartFile :: FilePath -> IO ()
-removeAutoStartFile path = do
-	dirs <- readAutoStartFile
-	when (path `elem` dirs) $ do
-		f <- autoStartFile
-		createDirectoryIfMissing True (parentDir f)
-		viaTmp writeFile f $ unlines $
-			filter (not . equalFilePath path) dirs
+removeAutoStartFile path = modifyAutoStartFile $
+	filter (not . equalFilePath path)
 
 {- The path to git-annex is written here; which is useful when cabal
  - has installed it to some aweful non-PATH location. -}
