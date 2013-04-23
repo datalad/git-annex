@@ -22,3 +22,5 @@ To be precise, I suspect that the kqueue limit is 256, I had 325 files in the 'q
 
 > This affects BSD systems that use Kqueue. It no longer affects OSX,
 > since we use FSEvents there instead. --[[Joey]] 
+
+[[!tag /design/assistant]]
