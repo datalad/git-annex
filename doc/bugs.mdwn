@@ -7,7 +7,7 @@ This is git-annex's bug list.
 * [[Bugs_needing_more_info|moreinfo]]
 * [[Closed_bugs|bugs/done]]
 """
-]]]
+]]
 
 [[!inline pages="./bugs/* and !./bugs/*/* and !./bugs/done and !link(done) 
 and !./bugs/moreinfo and !link(moreinfo)
