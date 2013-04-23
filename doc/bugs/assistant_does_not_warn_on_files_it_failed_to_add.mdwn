@@ -22,3 +22,25 @@ OS: Arch Linux
 Please provide any additional information below.
 
 The assistant in this case is being used as nothing more than a way for me to see which files have been added (--verbose, --foreground and --debug with 'watch' outputs nothing..). No remotes or anything like that.
+
+> I have made the assistant re-queue any file that it fails to add,
+> so it will retry it later. Typically within a few seconds. [[done]]
+> 
+> I have only been able to think of one scenario in which this could
+> happen. It's pretty unusual:
+> 
+> * Something writes to a file, and closes it.
+> * Assistant sees file has no writers, and locks it down in preparation
+>   to add it.
+> * Something then re-opens the file to write to it some more.
+>   Note that it would seem to need to bypass permissions that prevent
+>   the file from being written to in order to do this. It makes a change
+>   to the file.
+> * Assistant is checksumming file, reaches end, and detects it has been
+>   tampered with and gives up.
+> 
+> I would still like more information about circumstances that
+> cause this to happen, because while a possible scenario, the 
+> above is too weird to believe anyone could run into it.
+> 
+> --[[Joey]] 

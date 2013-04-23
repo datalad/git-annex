@@ -256,14 +256,14 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		| otherwise = a
 
 	add :: Change -> Assistant (Maybe Change)
-	add change@(InProcessAddChange { keySource = ks }) = do
+	add change@(InProcessAddChange { keySource = ks }) =
 		alertWhile' (addFileAlert $ keyFilename ks) $
 			liftM ret $ catchMaybeIO <~> do
 				sanitycheck ks $ do
 					key <- liftAnnex $ do
 						showStart "add" $ keyFilename ks
 						Command.Add.ingest $ Just ks
-					maybe failedingest (done change $ keyFilename ks) key
+					maybe (failedingest change) (done change $ keyFilename ks) key
 	  where
 		{- Add errors tend to be transient and will be automatically
 		 - dealt with, so don't pass to the alert code. -}
@@ -306,7 +306,8 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
 			recordedInodeCache k
 
-	failedingest = do
+	failedingest change = do
+		refill [change]
 		liftAnnex showEndFail
 		return Nothing
 
