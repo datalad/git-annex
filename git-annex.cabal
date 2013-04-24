@@ -113,7 +113,6 @@ Executable git-annex
       if (! os(windows) && ! os(solaris) && ! os(linux))
         CPP-Options: -DWITH_KQUEUE
         C-Sources: Utility/libkqueue.c
-        Includes: sys/event.h
 
   if os(linux) && flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
