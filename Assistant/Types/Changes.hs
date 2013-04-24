@@ -65,7 +65,7 @@ isInProcessAddChange _ = False
 
 retryChange :: Change -> Change
 retryChange (InProcessAddChange time ks) =
-	Change time (keyFilename ks) AddFileChange
+	PendingAddChange time (keyFilename ks)
 retryChange c = c
 
 finishedChange :: Change -> Key -> Change
