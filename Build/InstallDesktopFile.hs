@@ -6,11 +6,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Main where
 
-import Build.InstallDesktopFile
+import Build.DesktopFile
+
+import System.Environment
 
 main :: IO ()
 main = getArgs >>= go
