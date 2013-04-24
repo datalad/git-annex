@@ -25,6 +25,9 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     dummy symlinks used on crippled filesystems.
   * Detect when the remote is broken like bitbucket is, and exits 0 when
     it fails to run git-annex-shell.
+  * assistant: Several improvements to performance and behavior when
+    performing bulk adds of a large number of files (tens to hundreds
+    of thousands).
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
