@@ -33,13 +33,9 @@ pushThread :: NamedThread
 pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
 	-- We already waited two seconds as a simple rate limiter.
 	-- Next, wait until at least one commit has been made
-	commits <- getCommits
+	void getCommits
 	-- Now see if now's a good time to push.
-	if shouldPush commits
-		then void $ pushToRemotes True =<< pushTargets
-		else do
-			debug ["delaying push of", show (length commits), "commits"]
-			refillCommits commits
+	void $ pushToRemotes True =<< pushTargets
 
 {- We want to avoid pushing to remotes that are marked readonly.
  -
@@ -51,14 +47,3 @@ pushTargets = liftIO . filterM available =<< candidates <$> getDaemonStatus
   where
 	candidates = filter (not . Remote.readonly) . syncGitRemotes
 	available = maybe (return True) doesDirectoryExist . Remote.localpath
-
-{- Decide if now is a good time to push to remotes.
- -
- - Current strategy: Immediately push all commits. The commit machinery
- - already determines batches of changes, so we can't easily determine
- - batches better.
- -}
-shouldPush :: [Commit] -> Bool
-shouldPush commits
-	| not (null commits) = True
-	| otherwise = False

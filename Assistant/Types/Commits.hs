@@ -7,13 +7,13 @@
 
 module Assistant.Types.Commits where
 
-import Utility.TSet
+import Utility.TList
 
 import Control.Concurrent.STM
 
-type CommitChan = TSet Commit
+type CommitChan = TList Commit
 
 data Commit = Commit
 
 newCommitChan :: IO CommitChan
-newCommitChan = atomically newTSet
+newCommitChan = atomically newTList
