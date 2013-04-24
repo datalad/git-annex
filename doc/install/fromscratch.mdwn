@@ -13,6 +13,7 @@ quite a lot.
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
+  * [dlist](http://hackage.haskell.org/package/dlist)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)
   * [edit-distance](http://hackage.haskell.org/package/edit-distance)
   * [hS3](http://hackage.haskell.org/package/hS3) (optional)
