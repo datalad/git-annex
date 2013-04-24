@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="163.1.167.50"
+ subject="comment 3"
+ date="2013-04-24T17:09:50Z"
+ content="""
+It's a userspace fuse mount so the assistant won't know it's a mountpoint unless mounted.  Also I don't want the automatic sync since I like to keep this respository manual as a kind of backup.  Thanks for the info.
+"""]]
