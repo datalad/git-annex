@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 2"
+ date="2013-04-24T06:30:16Z"
+ content="""
+Hi,
+
+First of all thank you for your time looking into my bug. I try to research more from my side.
+
+The 'Resource exhausted' bugreport 
+(which lost its title, and could not click on it to add this testcase as a comment)
+was tested on real data, my own working directory (a copy of it).
+This bugreport is tested on the output of this small shell script.
+
+None of them succeeded to import, and I quickly assumed it is the exact same.
+
+So I will test again, raising the ulimit to 81920, and report.
+
+    The main problem with this directory tree is that it has more directories than inotify can watch, in the default configuration
+
+I would be perfectly fine if I could configure git-annex to sync those directory only once a month or once a week
+(ie. check for update once a week). So no need to watch it real time, those are my archived work files.
+
+    I don't think that 51 thousand directories is a particularly realistic amount for any real-world usage of git-annex.
+
+Well, it is not 25000 dir in a single a folder, but rather something like this:
+
+    work_done/2009/workname/back9/back8/back7/back6/back5
+
+Where each 'backX' contains a whole backup the work until it. 
+So the directory structure is a bit more deep, and no 25000 subdirectory in a single dir. 
+But the overall numbers are right.
+
+If I could somehow mark this **work_done** dir to not sync real time (or work_done/2008,work_done/2009,work_done/2010,work_done/2011,work_done/2012 subdir in them), 
+then my whole issue would vanish.
+
+I only want to use git-annex to have a backup of this directory. 
+In case of laptop theft, or misfunction I could have a backup. 
+I dont need live sync anywhere, I have directories which I know I will not touch for months.
+
+Best,
+ Laszlo
+
+
+
+"""]]
