@@ -136,21 +136,14 @@ guardUsable r onerr a
  - returns the updated repo. -}
 tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
-	| not $ M.null $ Git.config r = return r -- already read
+	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
 		v <- onRemote r (pipedsshconfig, Left undefined) "configlist" [] []
-		case (v, Git.remoteName r) of
-			(Right r', _) -> return r'
-			(Left _, Just n) -> do
-				{- Is this remote just not available, or does
-				 - it not have git-annex-shell?
-				 - Find out by trying to fetch from the remote. -}
-				whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
-					let k = "remote." ++ n ++ ".annex-ignore"
-					warning $ "Remote " ++ n ++ " does not have git-annex installed; setting " ++ k
-					inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
-				return r
-			_ -> return r
+		case v of
+			Right r'
+				| haveconfig r' -> return r'
+				| otherwise -> configlist_failed
+			Left _ -> configlist_failed
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ safely $ geturlconfig headers
@@ -159,6 +152,8 @@ tryGitConfigRead r
 		ensureInitialized
 		Annex.getState Annex.repo
   where
+	haveconfig = not . M.null . Git.config
+
 	-- Reading config can fail due to IO error or
 	-- for other reasons; catch all possible exceptions.
 	safely a = either (const $ return r) return
@@ -199,6 +194,18 @@ tryGitConfigRead r
 			new : exchange ls new
 		| otherwise =
 			old : exchange ls new
+
+	{- Is this remote just not available, or does
+	 - it not have git-annex-shell?
+	 - Find out by trying to fetch from the remote. -}
+	configlist_failed = case Git.remoteName r of
+		Nothing -> return r
+		Just n -> do
+			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
+				let k = "remote." ++ n ++ ".annex-ignore"
+				warning $ "Remote " ++ n ++ " does not have git-annex installed; setting " ++ k
+				inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
+			return r
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine

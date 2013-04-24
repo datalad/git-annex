@@ -23,6 +23,8 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * rmurl: New command, removes one of the recorded urls for a file.
   * sync: Bug fix, avoid adding to the annex the 
     dummy symlinks used on crippled filesystems.
+  * Detect when the remote is broken like bitbucket is, and exits 0 when
+    it fails to run git-annex-shell.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

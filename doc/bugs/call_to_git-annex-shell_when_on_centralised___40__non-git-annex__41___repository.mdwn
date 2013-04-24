@@ -204,3 +204,5 @@ Here is the contents of .git/config (the last line was added by git annex sync)
 	fetch = +refs/heads/*:refs/remotes/aaatos/*
 	annex-ignore = true
 """]]
+
+> Reproduced and fixed. [[done]] --[[Joey]] 
