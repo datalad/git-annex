@@ -42,3 +42,6 @@ refillChanges cs = (atomically . flip appendTList cs) <<~ changePool
 {- Records a change to the pool. -}
 recordChange :: Change -> Assistant ()
 recordChange c = (atomically . flip snocTList c) <<~ changePool
+
+recordChanges :: [Change] -> Assistant ()
+recordChanges = refillChanges

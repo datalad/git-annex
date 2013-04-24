@@ -130,8 +130,7 @@ startupScan scanner = do
 		top <- liftAnnex $ fromRepo Git.repoPath
 		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [top]
 		forM_ fs $ \f -> do
-			liftAnnex $ Annex.Queue.addUpdateIndex =<<
-				inRepo (Git.UpdateIndex.unstageFile f)
+			liftAnnex $ onDel' f
 			maybe noop recordChange =<< madeChange f RmChange
 		void $ liftIO $ cleanup
 		
@@ -296,10 +295,13 @@ addLink file link mk = do
 onDel :: Handler
 onDel file _ = do
 	debug ["file deleted", file]
-	liftAnnex $ 
-		Annex.Queue.addUpdateIndex =<<
-			inRepo (Git.UpdateIndex.unstageFile file)
+	liftAnnex $ onDel' file
 	madeChange file RmChange
+
+onDel' :: FilePath -> Annex ()
+onDel' file = do
+	Annex.Queue.addUpdateIndex =<<
+		inRepo (Git.UpdateIndex.unstageFile file)
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -312,13 +314,12 @@ onDelDir dir _ = do
 	debug ["directory deleted", dir]
 	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [dir]
 
-	liftAnnex $ forM_ fs $ \f -> Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.unstageFile f)
+	liftAnnex $ mapM_ onDel' fs
 
 	-- Get the events queued up as fast as possible, so the
 	-- committer sees them all in one block.
 	now <- liftIO getCurrentTime
-	forM_ fs $ \f -> recordChange $ Change now f RmChange
+	recordChanges $ map (\f -> Change now f RmChange) fs
 
 	void $ liftIO $ clean
 	liftAnnex $ Annex.Queue.flushWhenFull
