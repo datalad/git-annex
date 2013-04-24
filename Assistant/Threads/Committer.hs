@@ -302,7 +302,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			recordedInodeCache k
 
 	failedingest change = do
-		refill [change]
+		refill [retryChange change]
 		liftAnnex showEndFail
 		return Nothing
 

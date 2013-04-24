@@ -63,6 +63,11 @@ isInProcessAddChange :: Change -> Bool
 isInProcessAddChange (InProcessAddChange {}) = True
 isInProcessAddChange _ = False
 
+retryChange :: Change -> Change
+retryChange (InProcessAddChange time ks) =
+	Change time (keyFilename ks) AddFileChange
+retryChange c = c
+
 finishedChange :: Change -> Key -> Change
 finishedChange c@(InProcessAddChange { keySource = ks }) k = Change
 	{ changeTime = changeTime c
