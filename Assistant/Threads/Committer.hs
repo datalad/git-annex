@@ -231,9 +231,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		refillChanges postponed
 
 	returnWhen (null toadd) $ do
-		added <- catMaybes <$> if direct
-			then adddirect toadd
-			else forM toadd add
+		added <- addaction toadd $
+			catMaybes <$> if direct
+				then adddirect toadd
+				else forM toadd add
 		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
@@ -256,19 +257,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		| otherwise = a
 
 	add :: Change -> Assistant (Maybe Change)
-	add change@(InProcessAddChange { keySource = ks }) =
-		alertWhile' (addFileAlert $ keyFilename ks) $
-			liftM ret $ catchMaybeIO <~> do
-				sanitycheck ks $ do
-					key <- liftAnnex $ do
-						showStart "add" $ keyFilename ks
-						Command.Add.ingest $ Just ks
-					maybe (failedingest change) (done change $ keyFilename ks) key
-	  where
-		{- Add errors tend to be transient and will be automatically
-		 - dealt with, so don't pass to the alert code. -}
-		ret (Just j@(Just _)) = (True, j)
-		ret _ = (True, Nothing)
+	add change@(InProcessAddChange { keySource = ks }) = 
+		catchDefaultIO Nothing <~> do
+			sanitycheck ks $ do
+				key <- liftAnnex $ do
+					showStart "add" $ keyFilename ks
+					Command.Add.ingest $ Just ks
+				maybe (failedingest change) (done change $ keyFilename ks) key
 	add _ = return Nothing
 
 	{- In direct mode, avoid overhead of re-injesting a renamed
@@ -335,6 +330,26 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 				when (contentLocation keysource /= keyFilename keysource) $
 					void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
 				return Nothing
+
+	{- Shown an alert while performing an action to add a file or
+	 - files. When only one file is added, its name is shown
+	 - in the alert. When it's a batch add, the number of files added
+	 - is shown.
+	 -
+	 - Add errors tend to be transient and will be
+	 - automatically dealt with, so the alert is always told
+	 - the add succeeded.
+	 -}
+	addaction [] a = a
+	addaction toadd a = alertWhile' (addFileAlert msg) $
+		(,) 
+			<$> pure True
+			<*> a
+	  where
+	  	msg = case toadd of
+			(InProcessAddChange { keySource = ks }:[]) ->
+				keyFilename ks
+			_ -> show (length toadd) ++ " files"
 
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.

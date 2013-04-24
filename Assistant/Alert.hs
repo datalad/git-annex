@@ -233,7 +233,7 @@ fileAlert msg file = (activityAlert Nothing [f])
 	render fs = tenseWords $ msg : fs
 	combiner new old = take 10 $ new ++ old
 
-addFileAlert :: FilePath -> Alert
+addFileAlert :: String -> Alert
 addFileAlert = fileAlert (Tensed "Adding" "Added")
 
 {- This is only used as a success alert after a transfer, not during it. -}

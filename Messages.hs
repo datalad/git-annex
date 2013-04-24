@@ -31,7 +31,6 @@ module Messages (
 	showCustom,
 	showHeader,
 	showRaw,
-	
 	setupConsole
 ) where
 
