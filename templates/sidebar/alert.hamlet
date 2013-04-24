@@ -14,7 +14,11 @@
   $nothing
     $maybe i <- alertIcon alert
       ^{htmlIcon i} #
-  #{renderAlertMessage alert}
+  $if multiline
+    $forall l <- messagelines
+      #{l}<br>
+  $else
+    #{message}
   $maybe button <- alertButton alert
     <br>
     <a .btn .btn-primary href="@{ClickAlert aid}">

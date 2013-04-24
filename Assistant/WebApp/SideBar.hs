@@ -20,6 +20,7 @@ import Utility.Yesod
 
 import Yesod
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Map as M
 import Control.Concurrent
 
@@ -47,6 +48,9 @@ sideBarDisplay = do
 		let closable = alertClosable alert
 		let block = alertBlockDisplay alert
 		let divclass = bootstrapclass $ alertClass alert
+		let message = renderAlertMessage alert
+		let messagelines = T.lines message
+		let multiline = length messagelines > 1
 		$(widgetFile "sidebar/alert")
 
 {- Called by client to get a sidebar display.
