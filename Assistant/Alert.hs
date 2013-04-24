@@ -66,7 +66,7 @@ warningAlert name msg = Alert
 	, alertClosable = True
 	, alertPriority = High
 	, alertIcon = Just ErrorIcon
-	, alertCombiner = Just $ dataCombiner (++)
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertName = Just $ WarningAlert name
 	, alertButton = Nothing
 	}
