@@ -300,6 +300,11 @@ onDel file _ = do
 
 onDel' :: FilePath -> Annex ()
 onDel' file = do
+	whenM isDirect $ do
+		mkey <- catKeyFile file
+		case mkey of
+			Nothing -> noop
+			Just key -> void $ removeAssociatedFile key file
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
 

@@ -157,23 +157,21 @@ commitStaged = do
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			direct <- isDirect
-			let params = nomessage $ catMaybes
-				[ Just $ Param "--quiet"
-				{- In indirect mode, avoid running the
-				 - usual git-annex pre-commit hook;
-				 - watch does the same symlink fixing,
-				 - and we don't want to deal with unlocked
-				 - files in these commits. -}
-				, if direct then Nothing else Just $ Param "--no-verify"
-				]
 			{- Empty commits may be made if tree changes cancel
 			 - each other out, etc. Git returns nonzero on those,
 			 - so don't propigate out commit failures. -}
 			void $ inRepo $ catchMaybeIO . 
-				Git.Command.runQuiet (Param "commit" : params)
+				Git.Command.runQuiet
+					(Param "commit" : nomessage params)
 			return True
   where
+	params =
+		[ Param "--quiet"
+		{- Avoid running the usual pre-commit hook;
+		 - the Watcher does the same symlink fixing,
+		 - and direct mode bookkeeping updating. -}
+		, Param "--no-verify"
+		]
 	nomessage ps
 		| Git.Version.older "1.7.2" =
 			Param "-m" : Param "autocommit" : ps
