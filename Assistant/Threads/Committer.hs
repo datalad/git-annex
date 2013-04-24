@@ -140,7 +140,7 @@ humanImperceptibleDelay = threadDelay $
 shouldCommit :: UTCTime -> [Change] -> Bool
 shouldCommit now changes
 	| len == 0 = False
-	| len > 10000 = True -- avoid bloating queue too much
+	| len > 5000 = True -- avoid bloating change pool too much
 	| length recentchanges < 10 = True
 	| otherwise = False -- batch activity
   where
