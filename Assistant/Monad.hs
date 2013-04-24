@@ -66,7 +66,7 @@ data AssistantData = AssistantData
 	, transferrerPool :: TransferrerPool
 	, failedPushMap :: FailedPushMap
 	, commitChan :: CommitChan
-	, changeChan :: ChangeChan
+	, changePool :: ChangePool
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
 	, netMessager :: NetMessager
@@ -83,7 +83,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newTransferrerPool
 	<*> newFailedPushMap
 	<*> newCommitChan
-	<*> newChangeChan
+	<*> newChangePool
 	<*> newBranchChangeHandle
 	<*> newBuddyList
 	<*> newNetMessager

@@ -1,6 +1,6 @@
 {- git-annex assistant change tracking
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,23 +9,22 @@ module Assistant.Types.Changes where
 
 import Types.KeySource
 import Types.Key
-import Utility.TSet
+import Utility.TList
 
-import Data.Time.Clock
 import Control.Concurrent.STM
+import Data.Time.Clock
 
-data ChangeInfo = AddKeyChange Key | AddFileChange | LinkChange (Maybe Key) | RmChange
-	deriving (Show, Eq)
+{- An un-ordered pool of Changes that have been noticed and should be
+ - staged and committed. Changes will typically be in order, but ordering
+ - may be lost. In any case, order should not matter, as any given Change
+ - may later be reverted by a later Change (ie, a file is added and then
+ - deleted). Code that processes the changes needs to deal with such
+ - scenarios.
+ -}
+type ChangePool = TList Change
 
-changeInfoKey :: ChangeInfo -> Maybe Key
-changeInfoKey (AddKeyChange k) = Just k
-changeInfoKey (LinkChange (Just k)) = Just k
-changeInfoKey _ = Nothing
-
-type ChangeChan = TSet [Change]
-
-newChangeChan :: IO ChangeChan
-newChangeChan = atomically newTSet
+newChangePool :: IO ChangePool
+newChangePool = atomically newTList
 
 data Change
 	= Change 
@@ -42,6 +41,14 @@ data Change
 		, keySource :: KeySource
 		}
 	deriving (Show)
+
+data ChangeInfo = AddKeyChange Key | AddFileChange | LinkChange (Maybe Key) | RmChange
+	deriving (Show, Eq, Ord)
+
+changeInfoKey :: ChangeInfo -> Maybe Key
+changeInfoKey (AddKeyChange k) = Just k
+changeInfoKey (LinkChange (Just k)) = Just k
+changeInfoKey _ = Nothing
 
 changeFile :: Change -> FilePath
 changeFile (Change _ f _) = f
