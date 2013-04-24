@@ -14,7 +14,7 @@ import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
-import Locations.UserConfig
+import Config.Files
 import Utility.OSX
 import Assistant.Install.AutoStart
 import Assistant.Install.Menu
