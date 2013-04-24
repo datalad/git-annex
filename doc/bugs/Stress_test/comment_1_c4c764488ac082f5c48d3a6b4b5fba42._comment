@@ -11,7 +11,7 @@ I tried this test, and noticed that it was taking the assistant rather a long ti
 I was unable to reproduce any problem with the webapp. Please provide lots of details to back up \"it just crashes the GUI\".
 
 The main problem with this directory tree is that it has more directories than inotify can watch, in the default configuration. 
-So after it adds the first 81920 directories, it begins failing to watch any more, and printing a message about you needing to increase the inotify limits for each additional directory. I don't think that 51 thousand directories is a particularly realistic amount for any real-world usage of git-annex. (It will also break file manager, dropbox, etc, which all use inotify in the same way.)
+So after it adds the first 8192 directories, it begins failing to watch any more, and printing a message about you needing to increase the inotify limits for each additional directory. I don't think that 51 thousand directories is a particularly realistic amount for any real-world usage of git-annex. (It will also break file manager, dropbox, etc, which all use inotify in the same way.)
 
 The other main time sink is that git-annex needs to run `git hash-object` once per file to stage its symlink. That is a lot of processes to run, and perhaps it could be sped up by using `git fast-import`.
 """]]
