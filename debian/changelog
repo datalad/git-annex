@@ -29,6 +29,8 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     performing bulk adds of a large number of files (tens to hundreds
     of thousands).
   * assistant: Sanitize XMPP presence information logged for debugging.
+  * initremote: If two existing remotes have the same name,
+    prefer the one with a higher trust level.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

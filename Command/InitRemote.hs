@@ -16,6 +16,9 @@ import qualified Logs.Remote
 import qualified Types.Remote as R
 import Annex.UUID
 import Logs.UUID
+import Logs.Trust
+
+import Data.Ord
 
 def :: [Command]
 def = [command "initremote"
@@ -57,15 +60,18 @@ cleanup u name c = do
 {- Look up existing remote's UUID and config by name, or generate a new one -}
 findByName :: String -> Annex (UUID, R.RemoteConfig)
 findByName name = do
-	m <- Logs.Remote.readRemoteLog
-	maybe generate return $ findByName' name m
+	t <- trustMap
+	matches <- sortBy (comparing $ \(u, _c) -> M.lookup u t )
+		. findByName' name
+		<$> Logs.Remote.readRemoteLog
+	maybe generate return $ headMaybe matches
   where
 	generate = do
 		uuid <- liftIO genUUID
 		return (uuid, M.insert nameKey name M.empty)
 
-findByName' :: String ->  M.Map UUID R.RemoteConfig -> Maybe (UUID, R.RemoteConfig)
-findByName' n = headMaybe . filter (matching . snd) . M.toList
+findByName' :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
+findByName' n = filter (matching . snd) . M.toList
   where
 	matching c = case M.lookup nameKey c of
 		Nothing -> False

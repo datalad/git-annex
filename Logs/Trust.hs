@@ -9,6 +9,7 @@ module Logs.Trust (
 	trustLog,
 	TrustLevel(..),
 	trustGet,
+	trustMap,
 	trustSet,
 	trustPartition,
 	trustExclude,
