@@ -29,6 +29,7 @@ import Types.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Wanted
+import Utility.TList
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
@@ -94,8 +95,7 @@ queueTransfersMatching matching reason schedule k f direction
 		| direction == Download = do
 			q <- getAssistant transferQueue
 			void $ liftIO $ atomically $
-				modifyTVar' (deferreddownloads q) $
-					\l -> (k, f):l
+				consTList (deferreddownloads q) (k, f)
 		| otherwise = noop
 
 {- Queues any deferred downloads that can now be accomplished, leaving
@@ -103,12 +103,11 @@ queueTransfersMatching matching reason schedule k f direction
 queueDeferredDownloads :: Reason -> Schedule -> Assistant ()
 queueDeferredDownloads reason schedule = do
 	q <- getAssistant transferQueue
-	l <- liftIO $ atomically $ swapTVar (deferreddownloads q) []
+	l <- liftIO $ atomically $ readTList (deferreddownloads q)
 	rs <- syncDataRemotes <$> getDaemonStatus
 	left <- filterM (queue rs) l
 	unless (null left) $
-		liftIO $ atomically $ modifyTVar' (deferreddownloads q) $
-			\new -> new ++ left
+		liftIO $ atomically $ appendTList (deferreddownloads q) left
   where
 	queue rs (k, f) = do
 		uuids <- liftAnnex $ Remote.keyLocations k

@@ -12,11 +12,12 @@ import Logs.Transfer
 import Types.Remote
 
 import Control.Concurrent.STM
+import Utility.TList
 
 data TransferQueue = TransferQueue
 	{ queuesize :: TVar Int
 	, queuelist :: TVar [(Transfer, TransferInfo)]
-	, deferreddownloads :: TVar [(Key, AssociatedFile)]
+	, deferreddownloads :: TList (Key, AssociatedFile)
 	}
 
 data Schedule = Next | Later
@@ -26,4 +27,4 @@ newTransferQueue :: IO TransferQueue
 newTransferQueue = atomically $ TransferQueue
 	<$> newTVar 0
 	<*> newTVar []
-	<*> newTVar []
+	<*> newTList

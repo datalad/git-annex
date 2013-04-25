@@ -9,7 +9,6 @@ module Assistant.Threads.Pusher where
 
 import Assistant.Common
 import Assistant.Commits
-import Assistant.Types.Commits
 import Assistant.Pushes
 import Assistant.DaemonStatus
 import Assistant.Sync
