@@ -208,3 +208,8 @@ makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
 	hostname = case filter isAlphaNum name of
 		[] -> "aws"
 		n -> n
+
+getRepoInfo :: RemoteConfig -> Widget
+getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
+  where
+	bucket = fromMaybe "" $ M.lookup "bucket" c

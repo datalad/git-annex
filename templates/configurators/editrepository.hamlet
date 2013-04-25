@@ -29,3 +29,7 @@
     <p>
       In a hurry? Feel free to skip this step! You can always come back #
       and configure this repository later.
+  <h3>
+    Repository information
+  <p>
+    ^{repoInfo}

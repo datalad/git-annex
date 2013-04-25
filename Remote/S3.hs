@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote, iaHost, isIAHost) where
+module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
@@ -283,3 +283,6 @@ isIA c = maybe False isIAHost (M.lookup "host" c)
 
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h
+
+iaItemUrl :: String -> String
+iaItemUrl bucket = "http://archive.org/details/" ++ bucket

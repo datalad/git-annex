@@ -163,19 +163,17 @@ repoList reposelector
 	selectedremote (Just (iscloud, _))
 		| onlyCloud reposelector = iscloud
 		| otherwise = True
-	findinfo m u = case M.lookup u m of
-		Nothing -> Nothing
-		Just c -> case M.lookup "type" c of
-			Just "rsync" -> val True EnableRsyncR
-			Just "directory" -> val False EnableDirectoryR
+	findinfo m u = case M.lookup "type" =<< M.lookup u m of
+		Just "rsync" -> val True EnableRsyncR
+		Just "directory" -> val False EnableDirectoryR
 #ifdef WITH_S3
-			Just "S3" -> val True EnableS3R
+		Just "S3" -> val True EnableS3R
 #endif
-			Just "glacier" -> val True EnableGlacierR
+		Just "glacier" -> val True EnableGlacierR
 #ifdef WITH_WEBDAV
-			Just "webdav" -> val True EnableWebDAVR
+		Just "webdav" -> val True EnableWebDAVR
 #endif
-			_ -> Nothing
+		_ -> Nothing
 	  where
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do

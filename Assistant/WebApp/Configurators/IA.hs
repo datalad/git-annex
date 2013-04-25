@@ -16,8 +16,10 @@ import qualified Remote.S3 as S3
 #endif
 import qualified Remote
 import Types.StandardGroups
+import Types.Remote (RemoteConfig)
 import Logs.PreferredContent
 import Logs.Remote
+import qualified Utility.Url as Url
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -163,3 +165,22 @@ escapeBucket = map toLower . replace " " ""
 {- IA S3 API likes headers to be URI escaped, escaping spaces looks ugly. -}
 escapeHeader :: String -> String
 escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
+
+getRepoInfo :: RemoteConfig -> Widget
+getRepoInfo c = do
+	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url []
+	[whamlet|
+<a href="#{url}">
+  Internet Archive page
+$if (not exists)
+  <p>
+    The page will only appear once some files #
+    have been uploaded, and the Internet Archive has processed them.
+|]
+  where
+  	bucket = fromMaybe "" $ M.lookup "bucket" c
+#ifdef WITH_S3
+	url = S3.iaItemUrl bucket
+#else
+	url = ""
+#endif

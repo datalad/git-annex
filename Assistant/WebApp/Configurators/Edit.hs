@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Configurators.Edit where
 
@@ -15,12 +15,18 @@ import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
+import qualified Assistant.WebApp.Configurators.AWS as AWS
+import qualified Assistant.WebApp.Configurators.IA as IA
+#ifdef WITH_S3
+import qualified Remote.S3 as S3
+#endif
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.List as Remote
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
+import Logs.Remote
 import Types.StandardGroups
 import qualified Git
 import qualified Git.Command
@@ -155,12 +161,12 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 			checkdirectories input
 			setRepoConfig uuid mremote curr input
 			redirect DashboardR
-		_ -> showform form enctype curr
+		_ -> do
+			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
+			m <- liftAnnex readRemoteLog
+			let repoInfo = getRepoInfo mremote (M.lookup uuid m)
+			$(widgetFile "configurators/editrepository")
   where
-	showform form enctype curr = do
-		let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-		$(widgetFile "configurators/editrepository")
-
 	{- Makes a toplevel archive or public directory, so the user can
 	 - get on with using it. This is done both when displaying the form,
 	 - as well as after it's posted, because the user may not post the form,
@@ -175,3 +181,21 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 		go d = liftAnnex $ inRepo $ \g ->
 			createDirectoryIfMissing True $
 				Git.repoPath g </> d
+
+getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
+getRepoInfo (Just r) (Just c) = case M.lookup "type" c of
+	Just "S3"
+#ifdef WITH_S3
+		| S3.isIA c -> IA.getRepoInfo c
+#endif
+		| otherwise -> AWS.getRepoInfo c
+	Just t
+		| t /= "git" -> [whamlet|#{t} remote|]
+	_ -> getGitRepoInfo $ Remote.repo r
+getRepoInfo (Just r) _ = getRepoInfo (Just r) (Just $ Remote.config r)
+getRepoInfo _ _ = [whamlet|git repository|]
+
+getGitRepoInfo :: Git.Repo -> Widget
+getGitRepoInfo r = do
+	let loc = Git.repoLocation r
+	[whamlet|git repository located at <tt>#{loc}</tt>|]

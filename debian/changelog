@@ -35,6 +35,8 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * webapp: Can now set up Internet Archive repositories.
   * S3: Dropping content from the Internet Archive doesn't work, but
     their API indicates it does. Always refuse to drop from there.
+  * webapp: Display some additional information about a repository on its edit
+    page.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
