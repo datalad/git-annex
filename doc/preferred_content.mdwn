@@ -72,6 +72,15 @@ Note that `not present` is a very bad thing to put in a preferred content
 expression. It'll make it prefer to get content that's not present, and
 drop content that is present! Don't go there..
 
+### difference: "inmydir"
+
+There's a special "inmydir" keyword you can use in a preferred content
+expression of a special remote. This means that the content is preferred
+if it's in a directory (located anywhere in the tree) with a special name.
+
+The name of the directory can be configured using 
+`git annex initremote $remote mydir=$dirname`
+
 ## standard expressions
 
 git-annex comes with some standard preferred content expressions, that can

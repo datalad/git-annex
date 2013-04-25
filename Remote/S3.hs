@@ -1,6 +1,6 @@
-{- Amazon S3 remotes.
+{- S3 remotes
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -30,6 +30,9 @@ import Crypto
 import Creds
 import Utility.Metered
 import Annex.Content
+import Logs.Web
+
+type Bucket = String
 
 remote :: RemoteType
 remote = RemoteType {
@@ -112,8 +115,13 @@ s3Setup u c = if isIA c then archiveorg else defaulthost
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = s3Action r False $ \(conn, bucket) -> 
 	sendAnnex k (void $ remove' r k) $ \src -> do
-		res <- storeHelper (conn, bucket) r k p src
-		s3Bool res
+		ok <- s3Bool =<< storeHelper (conn, bucket) r k p src
+
+		-- Store public URL to item in Internet Archive.
+		when (ok && isIA (config r)) $
+			setUrlPresent k (iaKeyUrl r k)
+
+		return ok
 
 storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) -> 
@@ -122,10 +130,9 @@ storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) ->
 	withTmp enck $ \tmp -> sendAnnex k (void $ remove' r enck) $ \src -> do
 		liftIO $ encrypt (getGpgOpts r) cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
-		res <- storeHelper (conn, bucket) r enck p tmp
-		s3Bool res
+		s3Bool =<< storeHelper (conn, bucket) r enck p tmp
 
-storeHelper :: (AWSConnection, String) -> Remote -> Key -> MeterUpdate -> FilePath -> Annex (AWSResult ())
+storeHelper :: (AWSConnection, Bucket) -> Remote -> Key -> MeterUpdate -> FilePath -> Annex (AWSResult ())
 storeHelper (conn, bucket) r k p file = do
 	size <- maybe getsize (return . fromIntegral) $ keySize k
 	meteredBytes (Just p) size $ \meterupdate ->
@@ -173,6 +180,9 @@ retrieveEncrypted r (cipher, enck) k d p = s3Action r False $ \(conn, bucket) ->
 					return True
 			Left e -> s3Warning e
 
+{- Internet Archive doesn't easily allow removing content.
+ - While it may remove the file, there are generally other files
+ - derived from it that it does not remove. -}
 remove :: Remote -> RemoteConfig -> Key -> Annex Bool
 remove r c k
 	| isIA c = do
@@ -181,9 +191,8 @@ remove r c k
 	| otherwise = remove' r k
 
 remove' :: Remote -> Key -> Annex Bool
-remove' r k = s3Action r False $ \(conn, bucket) -> do
-	res <- liftIO $ deleteObject conn $ bucketKey r bucket k
-	s3Bool res
+remove' r k = s3Action r False $ \(conn, bucket) ->
+	s3Bool =<< liftIO (deleteObject conn $ bucketKey r bucket k)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = s3Action r noconn $ \(conn, bucket) -> do
@@ -208,7 +217,7 @@ s3Bool :: AWSResult () -> Annex Bool
 s3Bool (Right _) = return True
 s3Bool (Left e) = s3Warning e
 
-s3Action :: Remote -> a -> ((AWSConnection, String) -> Annex a) -> Annex a
+s3Action :: Remote -> a -> ((AWSConnection, Bucket) -> Annex a) -> Annex a
 s3Action r noconn action = do
 	let bucket = M.lookup "bucket" $ config r
 	conn <- s3Connection (config r) (uuid r)
@@ -225,7 +234,7 @@ bucketFile r = munge . key2file
 	fileprefix = M.findWithDefault "" "fileprefix" c
 	c = config r
 
-bucketKey :: Remote -> String -> Key -> S3Object
+bucketKey :: Remote -> Bucket -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
 
 {- Internet Archive limits filenames to a subset of ascii,
@@ -284,5 +293,10 @@ isIA c = maybe False isIAHost (M.lookup "host" c)
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h
 
-iaItemUrl :: String -> String
+iaItemUrl :: Bucket -> URLString
 iaItemUrl bucket = "http://archive.org/details/" ++ bucket
+
+iaKeyUrl :: Remote -> Key -> URLString
+iaKeyUrl r k = "http://archive.org/download/" ++ bucket ++ "/" ++ bucketFile r k
+  where
+	bucket = fromJust $ M.lookup "bucket" $ config r
