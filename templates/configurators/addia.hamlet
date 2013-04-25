@@ -1,0 +1,33 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding an Internet Archive repository
+  <p>
+    <a href="http://archive.org/">The Internet Archive</a> allows anyone #
+    to publically archive their information, for free.
+  <p>
+    All you need to do is #
+    <a href="http://archive.org/account/login.createaccount.php">
+      Create an account
+  <p>
+    To protect your pirvacy, only files located in a public folder #
+    will be sent to the Internet Archive by default.
+  <p>
+    Note that you cannot remove information once it has been sent to the #
+    Internet Archive. So before you continue, please make sure you want #
+    to make your files public, and that your files conform to the #
+    <a href="http://archive.org/about/terms.php">Terms of Use</a>.
+  <p>
+    <form method="post" .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{webAppFormAuthToken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+            Add Internet Archive repository
+<div .modal .fade #workingmodal>
+  <div .modal-header>
+    <h3>
+      Making repository ...
+  <div .modal-body>
+    <p>
+      Setting up your Internet Archive repository. This could take a minute.

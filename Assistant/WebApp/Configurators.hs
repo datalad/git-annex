@@ -36,5 +36,9 @@ getAddRepositoryR = page "Add Repository" (Just Configuration) $ do
 makeMiscRepositories :: Widget
 makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 
-makeCloudRepositories :: Bool -> Widget
-makeCloudRepositories onlyTransfer = $(widgetFile "configurators/addrepository/cloud")
+makeCloudRepositories :: Widget
+makeCloudRepositories = $(widgetFile "configurators/addrepository/cloud")
+
+makeArchiveRepositories :: Widget
+makeArchiveRepositories = $(widgetFile "configurators/addrepository/archive")
+

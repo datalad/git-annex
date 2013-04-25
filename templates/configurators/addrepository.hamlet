@@ -11,4 +11,9 @@
       <h2>
         Store your data in the cloud
 
-      ^{makeCloudRepositories False}
+      ^{makeCloudRepositories}
+
+      <h2>
+        Archive your data
+
+      ^{makeArchiveRepositories}

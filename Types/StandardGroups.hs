@@ -16,6 +16,7 @@ data StandardGroup
 	| FullArchiveGroup
 	| SourceGroup
 	| ManualGroup
+	| PublicGroup
 	| UnwantedGroup
 	deriving (Eq, Ord, Enum, Bounded, Show)
 
@@ -28,6 +29,7 @@ fromStandardGroup SmallArchiveGroup = "smallarchive"
 fromStandardGroup FullArchiveGroup = "archive"
 fromStandardGroup SourceGroup = "source"
 fromStandardGroup ManualGroup = "manual"
+fromStandardGroup PublicGroup = "public"
 fromStandardGroup UnwantedGroup = "unwanted"
 
 toStandardGroup :: String -> Maybe StandardGroup
@@ -39,6 +41,7 @@ toStandardGroup "smallarchive" = Just SmallArchiveGroup
 toStandardGroup "archive" = Just FullArchiveGroup
 toStandardGroup "source" = Just SourceGroup
 toStandardGroup "manual" = Just ManualGroup
+toStandardGroup "public" = Just PublicGroup
 toStandardGroup "unwanted" = Just UnwantedGroup
 toStandardGroup _ = Nothing
 
@@ -51,6 +54,7 @@ descStandardGroup SmallArchiveGroup = "small archive: archives files located in 
 descStandardGroup FullArchiveGroup = "full archive: archives all files not archived elsewhere"
 descStandardGroup SourceGroup = "file source: moves files on to other repositories"
 descStandardGroup ManualGroup = "manual mode: only stores files you manually choose"
+descStandardGroup PublicGroup = "public: only stores files located in \"public\" directories"
 descStandardGroup UnwantedGroup = "unwanted: remove content from this repository"
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
@@ -67,6 +71,7 @@ preferredContent SmallArchiveGroup = lastResort $
 preferredContent FullArchiveGroup = lastResort notArchived
 preferredContent SourceGroup = "not (copies=1)"
 preferredContent ManualGroup = "present and (" ++ preferredContent ClientGroup ++ ")"
+preferredContent PublicGroup = "include=*/public/* or include=public/*"
 preferredContent UnwantedGroup = "exclude=*"
 
 notArchived :: String

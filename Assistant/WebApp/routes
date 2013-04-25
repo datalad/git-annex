@@ -40,6 +40,7 @@
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET POST
 /config/repository/add/cloud/S3 AddS3R GET POST
+/config/repository/add/cloud/IA AddIAR GET POST
 /config/repository/add/cloud/glacier AddGlacierR GET POST
 /config/repository/add/cloud/box.com AddBoxComR GET POST
 
@@ -58,6 +59,7 @@
 /config/repository/enable/rsync/#UUID EnableRsyncR GET POST
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
 /config/repository/enable/S3/#UUID EnableS3R GET POST
+/config/repository/enable/IA/#UUID EnableIAR GET POST
 /config/repository/enable/glacier/#UUID EnableGlacierR GET POST
 /config/repository/enable/webdav/#UUID EnableWebDAVR GET POST
 

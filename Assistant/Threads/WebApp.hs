@@ -22,6 +22,7 @@ import Assistant.WebApp.Configurators.Local
 import Assistant.WebApp.Configurators.Ssh
 import Assistant.WebApp.Configurators.Pairing
 import Assistant.WebApp.Configurators.AWS
+import Assistant.WebApp.Configurators.IA
 import Assistant.WebApp.Configurators.WebDAV
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences

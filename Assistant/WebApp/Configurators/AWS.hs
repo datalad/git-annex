@@ -63,7 +63,7 @@ extractCreds i = AWSCreds (accessKeyID i) (secretAccessKey i)
 
 s3InputAForm :: AForm WebApp WebApp AWSInput
 s3InputAForm = AWSInput
-	<$> accessKeyIDField
+	<$> accessKeyIDFieldWithHelp
 	<*> secretAccessKeyField
 	<*> datacenterField AWS.S3
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
@@ -78,7 +78,7 @@ s3InputAForm = AWSInput
 
 glacierInputAForm :: AForm WebApp WebApp AWSInput
 glacierInputAForm = AWSInput
-	<$> accessKeyIDField
+	<$> accessKeyIDFieldWithHelp
 	<*> secretAccessKeyField
 	<*> datacenterField AWS.Glacier
 	<*> pure StandardRedundancy
@@ -87,11 +87,14 @@ glacierInputAForm = AWSInput
 
 awsCredsAForm :: AForm WebApp WebApp AWSCreds
 awsCredsAForm = AWSCreds
-	<$> accessKeyIDField
+	<$> accessKeyIDFieldWithHelp
 	<*> secretAccessKeyField
 
-accessKeyIDField :: AForm WebApp WebApp Text
-accessKeyIDField = areq (textField `withNote` help) "Access Key ID" Nothing
+accessKeyIDField :: Widget -> AForm WebApp WebApp Text
+accessKeyIDField help = areq (textField `withNote` help) "Access Key ID" Nothing
+
+accessKeyIDFieldWithHelp :: AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp = accessKeyIDField help
   where
 	help = [whamlet|
 <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">

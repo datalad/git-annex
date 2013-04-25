@@ -166,6 +166,14 @@ reached an archive repository.
 
 `present and ($client)`
 
+### public
+
+This is used for publishing information to a repository that can be
+publically accessed. Only files inside `public` directories will be
+stored in a public repository.
+
+`include=*/public/* or include=public/*`
+
 ### unwanted
 
 Use for repositories that you don't want to exist. This will result

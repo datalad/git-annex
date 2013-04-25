@@ -14,4 +14,4 @@
   ^{cloudRepoList}
   <h2>
     Add a cloud repository
-  ^{makeCloudRepositories True}
+  ^{makeCloudRepositories}
