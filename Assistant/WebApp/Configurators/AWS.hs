@@ -156,11 +156,17 @@ postAddGlacierR = glacierConfigurator $ do
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
-getEnableS3R = postEnableS3R
+getEnableS3R uuid = do
+	m <- liftAnnex readRemoteLog
+	let host = fromMaybe "" $ M.lookup "host" $
+		fromJust $ M.lookup uuid m
+	if S3.isIAHost host
+		then redirect $ EnableIAR uuid
+		else postEnableS3R uuid
 
 postEnableS3R :: UUID -> Handler RepHtml
 #ifdef WITH_S3
-postEnableS3R = awsConfigurator . enableAWSRemote S3.remote
+postEnableS3R uuid = awsConfigurator $ enableAWSRemote S3.remote uuid
 #else
 postEnableS3R _ = error "S3 not supported by this build"
 #endif

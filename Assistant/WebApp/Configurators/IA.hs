@@ -17,11 +17,11 @@ import qualified Remote.S3 as S3
 import qualified Remote
 import Types.StandardGroups
 import Logs.PreferredContent
+import Logs.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
-import Network.Socket (HostName)
 import Network.URI
 
 iaConfigurator :: Widget -> Handler RepHtml
@@ -83,6 +83,11 @@ iaInputAForm = IAInput
 	mediatypes :: [(Text, MediaType)]
 	mediatypes = map (\t -> (T.pack $ showMediaType t, t)) [minBound..]
 
+iaCredsAForm :: AForm WebApp WebApp AWS.AWSCreds
+iaCredsAForm = AWS.AWSCreds
+        <$> accessKeyIDFieldWithHelp
+        <*> AWS.secretAccessKeyField
+
 accessKeyIDFieldWithHelp :: AForm WebApp WebApp Text
 accessKeyIDFieldWithHelp = AWS.accessKeyIDField help
   where
@@ -106,7 +111,7 @@ postAddIAR = iaConfigurator $ do
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
-					, Just ("host", iaHost)
+					, Just ("host", S3.iaHost)
 					, Just ("bucket", escapeHeader name)
 					, Just ("x-archive-meta-title", escapeHeader $ T.unpack $ itemDescription input)
 					, if mediaType input == MediaOmitted
@@ -129,20 +134,32 @@ getEnableIAR = postEnableIAR
 
 postEnableIAR :: UUID -> Handler RepHtml
 #ifdef WITH_S3
-postEnableIAR = iaConfigurator . AWS.enableAWSRemote S3.remote
+postEnableIAR = iaConfigurator . enableIARemote
 #else
 postEnableIAR _ = error "S3 not supported by this build"
 #endif
+
+enableIARemote :: UUID -> Widget
+enableIARemote uuid = do
+	((result, form), enctype) <- lift $
+		runFormPost $ renderBootstrap iaCredsAForm
+	case result of
+		FormSuccess creds -> lift $ do
+			m <- liftAnnex readRemoteLog
+			let name = fromJust $ M.lookup "name" $
+				fromJust $ M.lookup uuid m
+			AWS.makeAWSRemote S3.remote creds name (const noop) M.empty
+		_ -> do
+			description <- liftAnnex $
+				T.pack <$> Remote.prettyUUID uuid
+			$(widgetFile "configurators/enableia")
 
 {- Convert a description into a bucket name, which will also be
  - used as the repository name.
  - IA seems to need only lower case, and no spaces. -}
 escapeBucket :: String -> String
-escapeBucket = map toLower . replace " " "-"
+escapeBucket = map toLower . replace " " ""
 
 {- IA S3 API likes headers to be URI escaped, escaping spaces looks ugly. -}
 escapeHeader :: String -> String
 escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
-
-iaHost :: HostName
-iaHost = "s3.us.archive.org"

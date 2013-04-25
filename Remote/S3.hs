@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.S3 (remote) where
+module Remote.S3 (remote, iaHost, isIAHost) where
 
 import Network.AWS.AWSConnection
 import Network.AWS.S3Object
@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Data.Char
+import Network.Socket (HostName)
 
 import Common.Annex
 import Types.Remote
@@ -81,7 +82,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 		
 	handlehost Nothing = defaulthost
 	handlehost (Just h)
-		| ".archive.org" `isSuffixOf` map toLower h = archiveorg
+		| isIAHost h = archiveorg
 		| otherwise = defaulthost
 
 	use fullconfig = do
@@ -270,3 +271,10 @@ s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
 		case reads s of
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
+
+{- Hostname to use for archive.org S3. -}
+iaHost :: HostName
+iaHost = "s3.us.archive.org"
+
+isIAHost :: HostName -> Bool
+isIAHost h = ".archive.org" `isSuffixOf` map toLower h
