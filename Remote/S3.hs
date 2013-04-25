@@ -54,7 +54,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			storeKey = store this,
 			retrieveKeyFile = retrieve this,
 			retrieveKeyFileCheap = retrieveCheap this,
-			removeKey = remove this,
+			removeKey = remove this c,
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
@@ -68,7 +68,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 		}
 
 s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
-s3Setup u c = handlehost $ M.lookup "host" c
+s3Setup u c = if isIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -80,11 +80,6 @@ s3Setup u c = handlehost $ M.lookup "host" c
 		, ("bucket", defbucket)
 		]
 		
-	handlehost Nothing = defaulthost
-	handlehost (Just h)
-		| isIAHost h = archiveorg
-		| otherwise = defaulthost
-
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
 		setRemoteCredPair fullconfig (AWS.creds u)
@@ -116,7 +111,7 @@ s3Setup u c = handlehost $ M.lookup "host" c
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = s3Action r False $ \(conn, bucket) -> 
-	sendAnnex k (void $ remove r k) $ \src -> do
+	sendAnnex k (void $ remove' r k) $ \src -> do
 		res <- storeHelper (conn, bucket) r k p src
 		s3Bool res
 
@@ -124,7 +119,7 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) -> 
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
-	withTmp enck $ \tmp -> sendAnnex k (void $ remove r enck) $ \src -> do
+	withTmp enck $ \tmp -> sendAnnex k (void $ remove' r enck) $ \src -> do
 		liftIO $ encrypt (getGpgOpts r) cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		res <- storeHelper (conn, bucket) r enck p tmp
@@ -178,8 +173,15 @@ retrieveEncrypted r (cipher, enck) k d p = s3Action r False $ \(conn, bucket) ->
 					return True
 			Left e -> s3Warning e
 
-remove :: Remote -> Key -> Annex Bool
-remove r k = s3Action r False $ \(conn, bucket) -> do
+remove :: Remote -> RemoteConfig -> Key -> Annex Bool
+remove r c k
+	| isIA c = do
+		warning "Cannot remove content from the Internet Archive"
+		return False
+	| otherwise = remove' r k
+
+remove' :: Remote -> Key -> Annex Bool
+remove' r k = s3Action r False $ \(conn, bucket) -> do
 	res <- liftIO $ deleteObject conn $ bucketKey r bucket k
 	s3Bool res
 
@@ -275,6 +277,9 @@ s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName
 iaHost = "s3.us.archive.org"
+
+isIA :: RemoteConfig -> Bool
+isIA c = maybe False isIAHost (M.lookup "host" c)
 
 isIAHost :: HostName -> Bool
 isIAHost h = ".archive.org" `isSuffixOf` map toLower h
