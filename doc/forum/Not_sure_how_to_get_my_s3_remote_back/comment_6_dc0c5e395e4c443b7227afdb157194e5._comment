@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-04-25T02:18:56Z"
+ content="""
+What you could do to help track down how this occurred is to check out the `git-annex` branch, and use `git blame` to find out when the second remote with the same name was first added to the `remote.log` file.
+
+Then you should be able to tell, either from the email address used for that commit, or at least the date of the commit, whether this occurred recently when you enabled the S3 remote in the webapp, or perhaps at some time in the past.
+"""]]

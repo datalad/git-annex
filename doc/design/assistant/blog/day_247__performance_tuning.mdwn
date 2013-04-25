@@ -13,4 +13,4 @@ that function to add items to the list is way cool.
 
 Other tuning seems to have decreased the time it would take to import 100k
 files from somewhere in the range of a full day (too long to wait to see),
-to around 3.5 hours. I don't know if that's good, but it's certianly better.
+to around 3.5 hours. I don't know if that's good, but it's certainly better.
