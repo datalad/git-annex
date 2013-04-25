@@ -203,9 +203,12 @@ onAddDirect symlinkssupported matcher file fs = do
 				 - really modified, but it might have
 				 - just been deleted and been put back,
 				 - so it symlink is restaged to make sure. -}
-				( do
-					link <- liftAnnex $ inRepo $ gitAnnexLink file key
-					addLink file link (Just key)
+				( ifM (scanComplete <$> getDaemonStatus)
+					( do
+						link <- liftAnnex $ inRepo $ gitAnnexLink file key
+						addLink file link (Just key)
+					, noChange
+					)
 				, guardSymlinkStandin (Just key) $ do
 					debug ["changed direct", file]
 					liftAnnex $ changedDirect key file
