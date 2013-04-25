@@ -32,7 +32,7 @@ getChanges = (atomically . getTList) <<~ changePool
 
 {- Gets all unhandled changes, without blocking. -}
 getAnyChanges :: Assistant [Change]
-getAnyChanges = (atomically . readTList) <<~ changePool
+getAnyChanges = (atomically . takeTList) <<~ changePool
 
 {- Puts unhandled changes back into the pool.
  - Note: Original order is not preserved. -}

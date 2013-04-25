@@ -39,7 +39,7 @@ type Reason = String
 
 {- Reads the queue's content without blocking or changing it. -}
 getTransferQueue :: Assistant [(Transfer, TransferInfo)]
-getTransferQueue = (atomically . readTVar . queuelist) <<~ transferQueue
+getTransferQueue = (atomically . readTList . queuelist) <<~ transferQueue
 
 stubInfo :: AssociatedFile -> Remote -> TransferInfo
 stubInfo f r = stubTransferInfo
@@ -126,10 +126,9 @@ queueDeferredDownloads reason schedule = do
 
 enqueue :: Reason -> Schedule -> Transfer -> TransferInfo -> Assistant ()
 enqueue reason schedule t info
-	| schedule == Next = go (new:)
-	| otherwise = go (\l -> l++[new])
+	| schedule == Next = go consTList
+	| otherwise = go snocTList
   where
-	new = (t, info)
 	go modlist = whenM (add modlist) $ do
 		debug [ "queued", describeTransfer t info, ": " ++ reason ]
 		notifyTransfer
@@ -139,11 +138,11 @@ enqueue reason schedule t info
 		liftIO $ atomically $ ifM (checkRunningTransferSTM dstatus t)
 			( return False
 			, do
-				l <- readTVar (queuelist q)
+				l <- readTList (queuelist q)
 				if (t `notElem` map fst l)
 					then do	
 						void $ modifyTVar' (queuesize q) succ
-						void $ modifyTVar' (queuelist q) modlist
+						void $ modlist (queuelist q) (t, info)
 						return True
 					else return False
 			)
@@ -184,9 +183,9 @@ getNextTransfer acceptable = do
 		if sz < 1
 			then retry -- blocks until queuesize changes
 			else do
-				(r@(t,info):rest) <- readTVar (queuelist q)
-				writeTVar (queuelist q) rest
+				(r@(t,info):rest) <- readTList (queuelist q)
 				void $ modifyTVar' (queuesize q) pred
+				setTList (queuelist q) rest
 				if acceptable info
 					then do
 						adjustTransfersSTM dstatus $
@@ -218,8 +217,7 @@ dequeueTransfers c = do
 
 dequeueTransfersSTM :: TransferQueue -> (Transfer -> Bool) -> STM [(Transfer, TransferInfo)]
 dequeueTransfersSTM q c = do
-	(removed, ts) <- partition (c . fst)
-		<$> readTVar (queuelist q)
+	(removed, ts) <- partition (c . fst) <$> readTList (queuelist q)
 	void $ writeTVar (queuesize q) (length ts)
-	void $ writeTVar (queuelist q) ts
+	setTList (queuelist q) ts
 	return removed

@@ -25,10 +25,14 @@ newTList = newEmptyTMVar
 getTList :: TList a -> STM [a]
 getTList tlist = D.toList <$> takeTMVar tlist
 
-{- Gets anything currently in the TList, without blocking.
+{- Takes anything currently in the TList, without blocking.
  - TList is left empty. -}
+takeTList :: TList a -> STM [a]
+takeTList tlist = maybe [] D.toList <$> tryTakeTMVar tlist
+
+{- Reads anything in the list, without modifying it, or blocking. -}
 readTList :: TList a -> STM [a]
-readTList tlist = maybe [] D.toList <$> tryTakeTMVar tlist
+readTList tlist = maybe [] D.toList <$> tryReadTMVar tlist
 
 {- Mutates a TList. -}
 modifyTList :: TList a -> (D.DList a -> D.DList a) -> STM ()
@@ -50,3 +54,6 @@ snocTList tlist v = modifyTList tlist $ \dl -> D.snoc dl v
 
 appendTList :: TList a -> [a] -> STM ()
 appendTList tlist l = modifyTList tlist $ \dl -> D.append dl (D.fromList l)
+
+setTList :: TList a -> [a] -> STM ()
+setTList tlist l = modifyTList tlist $ const $ D.fromList l

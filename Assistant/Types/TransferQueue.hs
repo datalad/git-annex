@@ -16,7 +16,7 @@ import Utility.TList
 
 data TransferQueue = TransferQueue
 	{ queuesize :: TVar Int
-	, queuelist :: TVar [(Transfer, TransferInfo)]
+	, queuelist :: TList (Transfer, TransferInfo)
 	, deferreddownloads :: TList (Key, AssociatedFile)
 	}
 
@@ -26,5 +26,5 @@ data Schedule = Next | Later
 newTransferQueue :: IO TransferQueue
 newTransferQueue = atomically $ TransferQueue
 	<$> newTVar 0
-	<*> newTVar []
+	<*> newTList
 	<*> newTList
