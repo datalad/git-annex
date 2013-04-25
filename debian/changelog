@@ -28,6 +28,7 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * assistant: Several improvements to performance and behavior when
     performing bulk adds of a large number of files (tens to hundreds
     of thousands).
+  * assistant: Sanitize XMPP presence information logged for debugging.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

@@ -10,11 +10,12 @@ module Assistant.Types.NetMessager where
 import Common.Annex
 import Assistant.Pairing
 
-import Data.Text (Text)
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B8
+import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
 
@@ -67,14 +68,20 @@ readdressNetMessage (Pushing _ stage) c = Pushing c stage
 readdressNetMessage m _ = m
 
 {- Convert a NetMessage to something that can be logged. -}
-sanitizeNetMessage :: NetMessage -> NetMessage
-sanitizeNetMessage (Pushing c stage) = Pushing c $ case stage of
-	ReceivePackOutput n _ -> ReceivePackOutput n elided
-	SendPackOutput n _ -> SendPackOutput n elided
-	s -> s
+logNetMessage :: NetMessage -> String
+logNetMessage (Pushing c stage) = show $ Pushing (logClientID c) $
+	case stage of
+		ReceivePackOutput n _ -> ReceivePackOutput n elided
+		SendPackOutput n _ -> SendPackOutput n elided
+		s -> s
   where
   	elided = B8.pack "<elided>"
-sanitizeNetMessage m = m
+logNetMessage (PairingNotification stage c uuid) =
+	show $ PairingNotification stage (logClientID c) uuid
+logNetMessage m = show m
+
+logClientID :: ClientID -> ClientID
+logClientID c = T.concat [T.take 1 c, T.pack $ show $ T.length c]
 
 {- Things that initiate either side of a push, but do not actually send data. -}
 isPushInitiation :: PushStage -> Bool

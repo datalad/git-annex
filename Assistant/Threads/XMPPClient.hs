@@ -84,7 +84,7 @@ xmppClient urlrenderer d creds =
 		inAssistant $ do
 			modifyDaemonStatus_ $ \s -> s
 				{ xmppClientID = Just $ xmppJID creds }
-			debug ["connected", show selfjid]
+			debug ["connected", logJid selfjid]
 
 		xmppThread $ receivenotifications selfjid
 		forever $ do
@@ -94,7 +94,7 @@ xmppClient urlrenderer d creds =
 	receivenotifications selfjid = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
 		inAssistant $ debug
-			["received:", show $ map sanitizeXMPPEvent l]
+			["received:", show $ map logXMPPEvent l]
 		mapM_ (handle selfjid) l
 
 	handle selfjid (PresenceMessage p) = do
@@ -123,8 +123,8 @@ xmppClient urlrenderer d creds =
 			let msg' = readdressNetMessage msg c
 			inAssistant $ debug
 				[ "sending to new client:"
-				, show c
-				, show $ sanitizeNetMessage msg'
+				, logJid jid
+				, show $ logNetMessage msg'
 				]
 			a <- inAssistant $ convertNetMsg msg' selfjid
 			a
@@ -139,9 +139,28 @@ data XMPPEvent
 	| ProtocolError ReceivedStanza
 	deriving Show
 
-sanitizeXMPPEvent :: XMPPEvent -> XMPPEvent
-sanitizeXMPPEvent (GotNetMessage m) = GotNetMessage $ sanitizeNetMessage m
-sanitizeXMPPEvent v = v
+logXMPPEvent :: XMPPEvent -> String
+logXMPPEvent (GotNetMessage m) = logNetMessage m
+logXMPPEvent (PresenceMessage p) = logPresence p
+logXMPPEvent (Ignorable (ReceivedPresence p)) = "Ignorable " ++ logPresence p
+logXMPPEvent v = show v
+
+logPresence :: Presence -> String
+logPresence (p@Presence { presenceFrom = Just jid }) = unwords
+	[ "Presence from"
+	, logJid jid
+	, show $ extractGitAnnexTag p
+	]
+logPresence _ = "Presence from unknown"
+
+logJid :: JID -> String
+logJid jid =
+	let name = T.unpack (buddyName jid)
+	    resource = maybe "" (T.unpack . strResource) (jidResource jid)
+	in take 1 name ++ show (length name) ++ "/" ++ resource
+
+logClient :: Client -> String
+logClient (Client jid) = logJid jid
 
 {- Decodes an XMPP stanza into one or more events. -}
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
@@ -180,7 +199,7 @@ decodeStanza _ s = [Unknown s]
 relayNetMessage :: JID -> Assistant (XMPP ())
 relayNetMessage selfjid = do
 	msg <- waitNetMessage
-	debug ["sending:", show $ sanitizeNetMessage msg]
+	debug ["sending:", logNetMessage msg]
 	a1 <- handleImportant msg
 	a2 <- convert msg
 	return (a1 >> a2)
@@ -197,7 +216,7 @@ relayNetMessage selfjid = do
 			then do
 				clients <- maybe [] (S.toList . buddyAssistants)
 					<$> getBuddy (genBuddyKey tojid) <<~ buddyList
-				debug ["exploded undirected message to clients", show clients]
+				debug ["exploded undirected message to clients", unwords $ map logClient clients]
 				return $ forM_ (clients) $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
 			else return $ putStanza $ pushMessage pushstage tojid selfjid
