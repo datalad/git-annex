@@ -4,9 +4,9 @@ I setup 3 repositories on my laptop and 3 on my server using the webapp, see the
 
 Laptop <- sync with -> Server
 
-/home/fabian/Dokumente (Client) <-> /mnt/raid/Dokumente (Full-Backup)
-/home/fabian/Bilder (Client) <-> /mnt/raid/Bilder (Full-Backup)
-/mnt/data-common/Audio (Manual) <-> /mnt/raid/Audio (Full-Backup)
+    /home/fabian/Dokumente (Client) <-> /mnt/raid/Dokumente (Full-Backup)
+    /home/fabian/Bilder (Client)    <-> /mnt/raid/Bilder (Full-Backup)
+    /mnt/data-common/Audio (Manual) <-> /mnt/raid/Audio (Full-Backup)
 
 As you can see, the Audio folder is in manual mode on the laptop, so it does not get any files automatically.
 If I now want to get a folder with 'git-annex get' I get the following error:
