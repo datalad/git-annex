@@ -1,0 +1,7 @@
+Quiet day. Only did minor things, like adding webapp UI for changing the
+directory used by Internet Archive remotes, and splitting out an
+`enableremote` command from `initremote`.
+
+My Android development environment is set up and ready to go on my Motorola
+Droid. The current Android build of git-annex fails to link at run time, so
+my work is cut out for me. Probably broke something while enabling XMPP?
