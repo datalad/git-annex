@@ -45,7 +45,7 @@ extractCreds i = AWS.AWSCreds (accessKeyID i) (secretAccessKey i)
  - We add a few other common types, mapped to what we've been told
  - is the closest match.
  -}
-data MediaType = MediaImages | MediaAudio | MediaMovies | MediaText | MediaSoftware | MediaOmitted
+data MediaType = MediaImages | MediaAudio | MediaVideo | MediaText | MediaSoftware | MediaOmitted
 	deriving (Eq, Ord, Enum, Bounded)
 
 {- Format a MediaType for entry into the IA metadata -}
@@ -53,25 +53,25 @@ formatMediaType :: MediaType -> String
 formatMediaType MediaText = "texts"
 formatMediaType MediaImages = "image"
 formatMediaType MediaSoftware = "software"
-formatMediaType MediaMovies = "movies"
+formatMediaType MediaVideo = "movies"
 formatMediaType MediaAudio = "audio"
 formatMediaType MediaOmitted = ""
 
-{- A default collection to use for each Mediatype, where one is known. -}
+{- A default collection to use for each Mediatype. -}
 collectionMediaType :: MediaType -> Maybe String
 collectionMediaType MediaText = Just "opensource"
-collectionMediaType MediaImages = Just "ourmedia"
-collectionMediaType MediaSoftware = Nothing
-collectionMediaType MediaMovies = Just "opensource_movies"
+collectionMediaType MediaImages = Just "opensource" -- not ideal
+collectionMediaType MediaSoftware = Just "opensource -- not ideal
+collectionMediaType MediaVideo = Just "opensource_movies"
 collectionMediaType MediaAudio = Just "opensource_audio"
-collectionMediaType MediaOmitted = Nothing
+collectionMediaType MediaOmitted = Jusr "opensource"
 
 {- Format a MediaType for user display. -}
 showMediaType :: MediaType -> String
 showMediaType MediaText = "texts"
 showMediaType MediaImages = "photos & images"
 showMediaType MediaSoftware = "software"
-showMediaType MediaMovies = "videos & movies"
+showMediaType MediaVideo = "videos & movies"
 showMediaType MediaAudio = "audio & music"
 showMediaType MediaOmitted = "other"
 
