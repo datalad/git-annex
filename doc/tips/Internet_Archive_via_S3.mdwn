@@ -8,6 +8,15 @@ correspond to "items" at the Internet Archive, and use git-annex to upload
 your files to there. Of course, your use of the Internet Archive must
 comply with their [terms of service](http://www.archive.org/about/terms.php).
 
+A nice added feature is that whenever git-annex sends a file to the
+Internet Archive, it records its url, the same as if you'd run `git annex
+addurl`. So any users who can clone your repository can download the files
+from archive.org, without needing any login or password info. This makes
+the Internet Archive a nice way to publish the large files associated with
+a public git repository.
+
+----
+
 Sign up for an account, and get your access keys here:
 <http://www.archive.org/account/s3.php>
 	
