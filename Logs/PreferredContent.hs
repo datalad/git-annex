@@ -30,7 +30,9 @@ import qualified Utility.Matcher
 import Annex.FileMatcher
 import Annex.UUID
 import Types.Group
+import Types.Remote (RemoteConfig)
 import Logs.Group
+import Logs.Remote
 import Types.StandardGroups
 
 {- Filename of preferred-content.log. -}
@@ -65,8 +67,9 @@ preferredContentMap = maybe preferredContentMapLoad return
 preferredContentMapLoad :: Annex Annex.PreferredContentMap
 preferredContentMapLoad = do
 	groupmap <- groupMap
+	configmap <- readRemoteLog
 	m <- simpleMap
-		. parseLogWithUUID ((Just .) . makeMatcher groupmap)
+		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap)
 		<$> Annex.Branch.get preferredContentLog
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
@@ -79,30 +82,30 @@ preferredContentMapRaw = simpleMap . parseLog Just
  - because the configuration is shared amoung repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> UUID -> String -> FileMatcher
-makeMatcher groupmap u s
-	| s == "standard" = standardMatcher groupmap u
+makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> String -> FileMatcher
+makeMatcher groupmap configmap u expr
+	| expr == "standard" = standardMatcher groupmap configmap u
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
 	| otherwise = matchAll
   where
-	tokens = map (parseToken (limitPresent $ Just u) groupmap) (tokenizeMatcher s)
+	tokens = exprParser groupmap configmap (Just u) expr
 
 {- Standard matchers are pre-defined for some groups. If none is defined,
  - or a repository is in multiple groups with standard matchers, match all. -}
-standardMatcher :: GroupMap -> UUID -> FileMatcher
-standardMatcher m u = maybe matchAll (makeMatcher m u . preferredContent) $
-	getStandardGroup =<< u `M.lookup` groupsByUUID m
+standardMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> FileMatcher
+standardMatcher groupmap configmap u = 
+	maybe matchAll (makeMatcher groupmap configmap u . preferredContent) $
+		getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: String -> Maybe String
-checkPreferredContentExpression s
-	| s == "standard" = Nothing
-	| otherwise = case parsedToMatcher vs of
+checkPreferredContentExpression expr
+	| expr == "standard" = Nothing
+	| otherwise = case parsedToMatcher tokens of
 		Left e -> Just e
 		Right _ -> Nothing
   where
-	vs = map (parseToken (limitPresent Nothing) emptyGroupMap)
-		(tokenizeMatcher s)
+	tokens = exprParser emptyGroupMap M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group, unless something is already set. -}

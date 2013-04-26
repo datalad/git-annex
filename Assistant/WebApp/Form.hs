@@ -47,6 +47,18 @@ withNote field note = field { fieldView = newview }
 		let fieldwidget = (fieldView field) theId name attrs val isReq
 		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]
 
+{- Note that the toggle string must be unique on the form. -}
+withExpandableNote :: Field sub master v -> (String, GWidget sub master ()) -> Field sub master v
+withExpandableNote field (toggle, note) = withNote field expandablenote
+  where
+  	ident = "toggle_" ++ toggle
+  	expandablenote = [whamlet|
+<a .btn data-toggle="collapse" data-target="##{ident}">
+  #{toggle}
+<div ##{ident} .collapse>
+  ^{note}
+|]
+
 data EnableEncryption = SharedEncryption | NoEncryption
 	deriving (Eq)
 

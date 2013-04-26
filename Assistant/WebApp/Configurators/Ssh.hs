@@ -323,17 +323,14 @@ postAddRsyncNetR = do
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
   where
-	hostnamefield = textField `withNote` help
+	hostnamefield = textField `withExpandableNote` ("Help", help)
 	help = [whamlet|
-<a .btn data-toggle="collapse" data-target="#help">
-  Help
-<div #help .collapse>
-  <div>
-    When you sign up for a Rsync.net account, you should receive an #
-    email from them with the host name and user name to put here.
-  <div>
-    The host name will be something like "usw-s001.rsync.net", and the #
-    user name something like "7491"
+<div>
+  When you sign up for a Rsync.net account, you should receive an #
+  email from them with the host name and user name to put here.
+<div>
+  The host name will be something like "usw-s001.rsync.net", and the #
+  user name something like "7491"
 |]
 
 makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler RepHtml

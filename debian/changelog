@@ -32,11 +32,12 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * initremote: If two existing remotes have the same name,
     prefer the one with a higher trust level.
   * Add public repository group.
+    (And inpreferreddir to preferred content expressions.)
   * webapp: Can now set up Internet Archive repositories.
   * S3: Dropping content from the Internet Archive doesn't work, but
     their API indicates it does. Always refuse to drop from there.
-  * webapp: Display some additional information about a repository on its edit
-    page.
+  * webapp: Display some additional information about a repository on
+    its edit page.
   * Automatically register public urls for files uploaded to the
     Internet Archive.
 

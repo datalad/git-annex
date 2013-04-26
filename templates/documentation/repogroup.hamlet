@@ -50,7 +50,7 @@
     If you configure a repository that can be viwed by the public, #
     but you don't want all your files to show up there, you can #
     configure it to be a <b>public repository</b>. Then only files #
-    located in a "public" directory will be sent to it.
+    located in a particular directory will be sent to it.
   <p>
     Finally, repositories can be configured to be in <b>manual mode</b>. This #
     prevents content being automatically synced to the repository, but #

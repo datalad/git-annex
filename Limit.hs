@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -88,9 +88,9 @@ limitExclude glob = Right $ const $ return . not . matchglob glob
  - once. Also, we use regex-TDFA because it's less buggy in its support
  - of non-unicode characters. -}
 matchglob :: String -> Annex.FileInfo -> Bool
-matchglob glob (Annex.FileInfo { Annex.matchFile = f }) =
+matchglob glob fi =
 	case cregex of
-		Right r -> case execute r f of
+		Right r -> case execute r (Annex.matchFile fi) of
 			Right (Just _) -> True
 			_ -> False
 		Left _ -> error $ "failed to compile regex: " ++ regex
@@ -137,6 +137,11 @@ limitPresent u _ = Right $ const $ check $ \key -> do
 	check a = lookupFile >=> handle a
 	handle _ Nothing = return False
 	handle a (Just (key, _)) = a key
+
+{- Limit to content that is in a directory, anywhere in the repository tree -}
+limitInDir :: FilePath -> MkLimit
+limitInDir dir = const $ Right $ const $ \fi -> return $
+	any (== dir) $ splitPath $ takeDirectory $ Annex.matchFile fi
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}

@@ -114,8 +114,8 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
-editRepositoryAForm def = RepoConfig
+editRepositoryAForm :: RepoConfig -> Maybe Remote.RemoteConfig -> AForm WebApp WebApp RepoConfig
+editRepositoryAForm def remoteconfig = RepoConfig
 	<$> areq textField "Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
@@ -123,7 +123,7 @@ editRepositoryAForm def = RepoConfig
   where
 	groups = customgroups ++ standardgroups
 	standardgroups :: [(Text, RepoGroup)]
-	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
+	standardgroups = map (\g -> (T.pack $ descStandardGroup remoteconfig g , RepoGroupStandard g))
 		[minBound :: StandardGroup .. maxBound :: StandardGroup]
 	customgroups :: [(Text, RepoGroup)]
 	customgroups = case repoGroup def of
@@ -153,34 +153,31 @@ editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
-	lift $ checkdirectories curr
+	config <- M.lookup uuid <$> liftAnnex readRemoteLog
+	lift $ checkdirectories curr config
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap $ editRepositoryAForm curr
+		runFormPost $ renderBootstrap $ editRepositoryAForm curr config
 	case result of
 		FormSuccess input -> lift $ do
-			checkdirectories input
+			checkdirectories input config
 			setRepoConfig uuid mremote curr input
 			redirect DashboardR
 		_ -> do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			m <- liftAnnex readRemoteLog
-			let repoInfo = getRepoInfo mremote (M.lookup uuid m)
+			let repoInfo = getRepoInfo mremote config
 			$(widgetFile "configurators/editrepository")
   where
-	{- Makes a toplevel archive or public directory, so the user can
-	 - get on with using it. This is done both when displaying the form,
-	 - as well as after it's posted, because the user may not post the form,
-	 - but may see that the repo is set up to use the archive
-	 - directory. -}
-	checkdirectories cfg
-		| repoGroup cfg == RepoGroupStandard SmallArchiveGroup = go "archive"
-		| repoGroup cfg == RepoGroupStandard FullArchiveGroup = go "archive"
-		| repoGroup cfg == RepoGroupStandard PublicGroup = go "public"
-		| otherwise = noop
-	  where
-		go d = liftAnnex $ inRepo $ \g ->
-			createDirectoryIfMissing True $
-				Git.repoPath g </> d
+	{- Makes any special directory associated with the repository.
+	 - This is done both when displaying the form, as well as after
+	 - it's posted, because the user may not post the form,
+	 - but may see that the repo is set up to use the directory. -}
+	checkdirectories cfg repoconfig = case repoGroup cfg of
+		RepoGroupStandard gr -> case specialDirectory repoconfig gr of
+			Just d -> liftAnnex $ inRepo $ \g ->
+				createDirectoryIfMissing True $
+					Git.repoPath g </> d
+			Nothing -> noop
+		_ -> noop
 
 getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
 getRepoInfo (Just r) (Just c) = case M.lookup "type" c of

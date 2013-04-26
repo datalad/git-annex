@@ -7,6 +7,11 @@
 
 module Types.StandardGroups where
 
+import Types.Remote (RemoteConfig)
+
+import qualified Data.Map as M
+import Data.Maybe
+
 data StandardGroup
 	= ClientGroup
 	| TransferGroup
@@ -45,17 +50,25 @@ toStandardGroup "public" = Just PublicGroup
 toStandardGroup "unwanted" = Just UnwantedGroup
 toStandardGroup _ = Nothing
 
-descStandardGroup :: StandardGroup -> String
-descStandardGroup ClientGroup = "client: a repository on your computer"
-descStandardGroup TransferGroup = "transfer: distributes files to clients"
-descStandardGroup BackupGroup = "full backup: backs up all files"
-descStandardGroup IncrementalBackupGroup = "incremental backup: backs up files not backed up elsewhere"
-descStandardGroup SmallArchiveGroup = "small archive: archives files located in \"archive\" directories"
-descStandardGroup FullArchiveGroup = "full archive: archives all files not archived elsewhere"
-descStandardGroup SourceGroup = "file source: moves files on to other repositories"
-descStandardGroup ManualGroup = "manual mode: only stores files you manually choose"
-descStandardGroup PublicGroup = "public: only stores files located in \"public\" directories"
-descStandardGroup UnwantedGroup = "unwanted: remove content from this repository"
+descStandardGroup :: Maybe RemoteConfig -> StandardGroup -> String
+descStandardGroup _ ClientGroup = "client: a repository on your computer"
+descStandardGroup _ TransferGroup = "transfer: distributes files to clients"
+descStandardGroup _ BackupGroup = "full backup: backs up all files"
+descStandardGroup _ IncrementalBackupGroup = "incremental backup: backs up files not backed up elsewhere"
+descStandardGroup _ SmallArchiveGroup = "small archive: archives files located in \"archive\" directories"
+descStandardGroup _ FullArchiveGroup = "full archive: archives all files not archived elsewhere"
+descStandardGroup _ SourceGroup = "file source: moves files on to other repositories"
+descStandardGroup _ ManualGroup = "manual mode: only stores files you manually choose"
+descStandardGroup _ UnwantedGroup = "unwanted: remove content from this repository"
+descStandardGroup c PublicGroup = "public: only stores files located in \"" ++ fromJust (specialDirectory c PublicGroup) ++ "\" directories"
+
+specialDirectory :: Maybe RemoteConfig -> StandardGroup -> Maybe FilePath
+specialDirectory _ SmallArchiveGroup = Just "archive"
+specialDirectory _ FullArchiveGroup = Just "archive"
+specialDirectory (Just c) PublicGroup = Just $
+	fromMaybe "public" $ M.lookup "preferreddir" c
+specialDirectory Nothing PublicGroup = Just "public"
+specialDirectory _ _ = Nothing
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> String
@@ -71,7 +84,7 @@ preferredContent SmallArchiveGroup = lastResort $
 preferredContent FullArchiveGroup = lastResort notArchived
 preferredContent SourceGroup = "not (copies=1)"
 preferredContent ManualGroup = "present and (" ++ preferredContent ClientGroup ++ ")"
-preferredContent PublicGroup = "include=*/public/* or include=public/*"
+preferredContent PublicGroup = "inpreferreddir"
 preferredContent UnwantedGroup = "exclude=*"
 
 notArchived :: String

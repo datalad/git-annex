@@ -14,9 +14,11 @@ import Limit
 import Utility.Matcher
 import Types.Group
 import Logs.Group
+import Logs.Remote
 import Annex.UUID
 import qualified Annex
 import Git.FilePath
+import Types.Remote (RemoteConfig)
 
 import Data.Either
 import qualified Data.Set as S
@@ -45,10 +47,22 @@ parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-parseToken :: MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
-parseToken checkpresent groupmap t
+exprParser :: GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token MatchFiles)]
+exprParser groupmap configmap mu expr =
+	map parse $ tokenizeMatcher expr
+  where
+	parse = parseToken 
+		(limitPresent mu)
+		(limitInDir preferreddir)
+		groupmap
+	preferreddir = fromMaybe "public" $
+		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
+
+parseToken :: MkLimit -> MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
+parseToken checkpresent checkpreferreddir groupmap t
 	| t `elem` tokens = Right $ token t
 	| t == "present" = use checkpresent
+	| t == "inpreferreddir" = use checkpreferreddir
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
 		M.fromList
 			[ ("include", limitInclude)
@@ -78,9 +92,9 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
   where
   	go Nothing = return matchAll
 	go (Just expr) = do
-		m <- groupMap
+		gm <- groupMap
+		rc <- readRemoteLog
 		u <- getUUID
-		either badexpr return $ parsedToMatcher $
-			map (parseToken (limitPresent $ Just u) m)
-				(tokenizeMatcher expr)
+		either badexpr return $
+			parsedToMatcher $ exprParser gm rc (Just u) expr
 	badexpr e = error $ "bad annex.largefiles configuration: " ++ e

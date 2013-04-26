@@ -33,7 +33,7 @@ data IAInput = IAInput
 	{ accessKeyID :: Text
 	, secretAccessKey :: Text
 	, mediaType :: MediaType
-	, itemDescription :: Text
+	, itemName :: Text
 	}
 
 extractCreds :: IAInput -> AWS.AWSCreds
@@ -80,10 +80,20 @@ iaInputAForm = IAInput
 	<$> accessKeyIDFieldWithHelp
 	<*> AWS.secretAccessKeyField
 	<*> areq (selectFieldList mediatypes) "Media Type" (Just MediaOmitted)
-	<*> areq textField "Description" Nothing
+	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) "Item Name" Nothing
   where
 	mediatypes :: [(Text, MediaType)]
 	mediatypes = map (\t -> (T.pack $ showMediaType t, t)) [minBound..]
+
+itemNameHelp :: Widget
+itemNameHelp = [whamlet|
+<div>
+  Each item stored in the Internet Archive must have a unique name.
+<div>
+  Once you create the item, a special directory will appear #
+  with a name matching the item name. Files you put in that directory #
+  will be uploaded to your Internet Archive item.
+|]
 
 iaCredsAForm :: AForm WebApp WebApp AWS.AWSCreds
 iaCredsAForm = AWS.AWSCreds
@@ -108,20 +118,21 @@ postAddIAR = iaConfigurator $ do
 		runFormPost $ renderBootstrap iaInputAForm
 	case result of
 		FormSuccess input -> lift $ do
-			let name = escapeBucket $ T.unpack $ itemDescription input
+			let name = escapeBucket $ T.unpack $ itemName input
 			AWS.makeAWSRemote S3.remote (extractCreds input) name setgroup $
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
 					, Just ("host", S3.iaHost)
 					, Just ("bucket", escapeHeader name)
-					, Just ("x-archive-meta-title", escapeHeader $ T.unpack $ itemDescription input)
+					, Just ("x-archive-meta-title", escapeHeader $ T.unpack $ itemName input)
 					, if mediaType input == MediaOmitted
 						then Nothing
 						else Just ("x-archive-mediatype", formatMediaType $ mediaType input)
 					, (,) <$> pure "x-archive-meta-collection" <*> collectionMediaType (mediaType input)
 					-- Make item show up ASAP.
 					, Just ("x-archive-interactive-priority", "1")
+					, Just ("preferreddir", name)
 					]
 		_ -> $(widgetFile "configurators/addia")
   where
@@ -156,11 +167,11 @@ enableIARemote uuid = do
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableia")
 
-{- Convert a description into a bucket name, which will also be
- - used as the repository name.
+{- Convert a description into a bucket item name, which will also be
+ - used as the repository name, and the preferreddir.
  - IA seems to need only lower case, and no spaces. -}
 escapeBucket :: String -> String
-escapeBucket = map toLower . replace " " ""
+escapeBucket = map toLower . replace " " "-"
 
 {- IA S3 API likes headers to be URI escaped, escaping spaces looks ugly. -}
 escapeHeader :: String -> String
