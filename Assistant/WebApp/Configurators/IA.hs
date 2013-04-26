@@ -152,6 +152,7 @@ postEnableIAR = iaConfigurator . enableIARemote
 postEnableIAR _ = error "S3 not supported by this build"
 #endif
 
+#ifdef WITH_S3
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	((result, form), enctype) <- lift $
@@ -166,6 +167,7 @@ enableIARemote uuid = do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableia")
+#endif
 
 {- Convert a description into a bucket item name, which will also be
  - used as the repository name, and the preferreddir.

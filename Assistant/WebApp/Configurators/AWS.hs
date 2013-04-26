@@ -156,6 +156,7 @@ postAddGlacierR = glacierConfigurator $ do
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 
 getEnableS3R :: UUID -> Handler RepHtml
+#ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
 	let host = fromMaybe "" $ M.lookup "host" $
@@ -163,6 +164,9 @@ getEnableS3R uuid = do
 	if S3.isIAHost host
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
+#else
+getEnableS3R = postEnableS3R
+#endif
 
 postEnableS3R :: UUID -> Handler RepHtml
 #ifdef WITH_S3
