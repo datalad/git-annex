@@ -39,6 +39,13 @@ passwordField = F.passwordField
 |]
 	}
 
+{- Useful in an AForm when sometimes a field is not used. -}
+dummyField :: RenderMessage master FormMessage => Field sub master Text
+dummyField = Field
+	{ fieldView = \_theId _name _attrs _val _isReq -> return ()
+	, fieldParse = const $ return $ Right Nothing
+	}
+
 {- Makes a note widget be displayed after a field. -}
 withNote :: Field sub master v -> GWidget sub master () -> Field sub master v
 withNote field note = field { fieldView = newview }

@@ -61,10 +61,10 @@ formatMediaType MediaOmitted = ""
 collectionMediaType :: MediaType -> Maybe String
 collectionMediaType MediaText = Just "opensource"
 collectionMediaType MediaImages = Just "opensource" -- not ideal
-collectionMediaType MediaSoftware = Just "opensource -- not ideal
+collectionMediaType MediaSoftware = Just "opensource" -- not ideal
 collectionMediaType MediaVideo = Just "opensource_movies"
 collectionMediaType MediaAudio = Just "opensource_audio"
-collectionMediaType MediaOmitted = Jusr "opensource"
+collectionMediaType MediaOmitted = Just "opensource"
 
 {- Format a MediaType for user display. -}
 showMediaType :: MediaType -> String
@@ -182,10 +182,10 @@ getRepoInfo c = do
 	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url []
 	[whamlet|
 <a href="#{url}">
-  Internet Archive page
+  Internet Archive item
 $if (not exists)
   <p>
-    The page will only appear once some files #
+    The page will only be available once some files #
     have been uploaded, and the Internet Archive has processed them.
 |]
   where

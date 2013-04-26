@@ -45,26 +45,32 @@ data RepoConfig = RepoConfig
 	{ repoName :: Text
 	, repoDescription :: Maybe Text
 	, repoGroup :: RepoGroup
+	, repoAssociatedDirectory :: Maybe Text
 	, repoSyncable :: Bool
 	}
 	deriving (Show)
 
 getRepoConfig :: UUID -> Maybe Remote -> Annex RepoConfig
-getRepoConfig uuid mremote = RepoConfig
-	<$> pure (T.pack $ maybe "here" Remote.name mremote)
-	<*> (maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap)
-	<*> getrepogroup
-	<*> getsyncing
-  where
-	getrepogroup = do
-		groups <- lookupGroups uuid
-		return $ 
-			maybe (RepoGroupCustom $ unwords $ S.toList groups) RepoGroupStandard
-				(getStandardGroup groups)
-	getsyncing = case mremote of
+getRepoConfig uuid mremote = do
+	groups <- lookupGroups uuid
+	remoteconfig <- M.lookup uuid <$> readRemoteLog
+	let (repogroup, associateddirectory) = case getStandardGroup groups of
+		Nothing -> (RepoGroupCustom $ unwords $ S.toList groups, Nothing)
+		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
+	
+	description <- maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap
+
+	syncable <- case mremote of
 		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
 		Nothing -> annexAutoCommit <$> Annex.getGitConfig
 
+	return $ RepoConfig
+		(T.pack $ maybe "here" Remote.name mremote)
+		description
+		repogroup
+		(T.pack <$> associateddirectory)
+		syncable
+		
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
 	when descriptionChanged $ liftAnnex $ do
@@ -91,6 +97,17 @@ setRepoConfig uuid mremote oldc newc = do
 				]
 			void $ Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes
+	when associatedDirectoryChanged $ case repoAssociatedDirectory newc of
+		Nothing -> noop
+		Just t
+			| T.null t -> noop
+			| otherwise -> liftAnnex $ do
+				let dir = takeBaseName $ T.unpack t
+				m <- readRemoteLog
+				case M.lookup uuid m of
+					Nothing -> noop
+					Just remoteconfig -> configSet uuid $
+						M.insert "preferreddir" dir remoteconfig
 	when groupChanged $ do
 		liftAnnex $ case repoGroup newc of
 			RepoGroupStandard g -> setStandardGroup uuid g
@@ -108,28 +125,34 @@ setRepoConfig uuid mremote oldc newc = do
 		changeSyncable mremote (repoSyncable newc)
   where
   	syncableChanged = repoSyncable oldc /= repoSyncable newc
+	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc
 	groupChanged = repoGroup oldc /= repoGroup newc
 	nameChanged = isJust mremote && legalName oldc /= legalName newc
 	descriptionChanged = repoDescription oldc /= repoDescription newc
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> Maybe Remote.RemoteConfig -> AForm WebApp WebApp RepoConfig
-editRepositoryAForm def remoteconfig = RepoConfig
+editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
+editRepositoryAForm def = RepoConfig
 	<$> areq textField "Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
+	<*> associateddirectory
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
   where
 	groups = customgroups ++ standardgroups
 	standardgroups :: [(Text, RepoGroup)]
-	standardgroups = map (\g -> (T.pack $ descStandardGroup remoteconfig g , RepoGroupStandard g))
+	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
 		[minBound :: StandardGroup .. maxBound :: StandardGroup]
 	customgroups :: [(Text, RepoGroup)]
 	customgroups = case repoGroup def of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
 		_ -> []
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
+
+	associateddirectory = case repoAssociatedDirectory def of
+		Nothing -> aopt dummyField "" Nothing
+		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
 getEditRepositoryR :: UUID -> Handler RepHtml
 getEditRepositoryR = postEditRepositoryR
@@ -153,27 +176,28 @@ editForm :: Bool -> UUID -> Handler RepHtml
 editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
-	config <- M.lookup uuid <$> liftAnnex readRemoteLog
-	lift $ checkdirectories curr config
+	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap $ editRepositoryAForm curr config
+		runFormPost $ renderBootstrap $ editRepositoryAForm curr
 	case result of
 		FormSuccess input -> lift $ do
-			checkdirectories input config
 			setRepoConfig uuid mremote curr input
+			liftAnnex $ checkAssociatedDirectory input mremote
 			redirect DashboardR
 		_ -> do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			let repoInfo = getRepoInfo mremote config
+			repoInfo <- getRepoInfo mremote . M.lookup uuid
+				<$> liftAnnex readRemoteLog
 			$(widgetFile "configurators/editrepository")
-  where
-	{- Makes any special directory associated with the repository.
-	 - This is done both when displaying the form, as well as after
-	 - it's posted, because the user may not post the form,
-	 - but may see that the repo is set up to use the directory. -}
-	checkdirectories cfg repoconfig = case repoGroup cfg of
-		RepoGroupStandard gr -> case specialDirectory repoconfig gr of
-			Just d -> liftAnnex $ inRepo $ \g ->
+
+{- Makes any directory associated with the repository. -}
+checkAssociatedDirectory :: RepoConfig -> Maybe Remote -> Annex ()
+checkAssociatedDirectory _ Nothing = noop
+checkAssociatedDirectory cfg (Just r) = do
+	repoconfig <- M.lookup (Remote.uuid r) <$> readRemoteLog
+	case repoGroup cfg of
+		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
+			Just d -> inRepo $ \g ->
 				createDirectoryIfMissing True $
 					Git.repoPath g </> d
 			Nothing -> noop
