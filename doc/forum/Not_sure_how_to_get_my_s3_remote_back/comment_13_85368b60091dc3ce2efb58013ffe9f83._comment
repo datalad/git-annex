@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 13"
+ date="2013-04-26T21:16:30Z"
+ content="""
+I tend to agree with you.  At first I liked the idea that initremote could be used to re-initialize a remote, but then I got confused about what the name of that remote was.  I suppose git annex status could have told me.  I kept wanting to have something like \"git annex remote\" (which would list them) and then \"git annex remote init\" to initialize them.  That way the remote actions would follow the same sort of interface as \"git remote\", where you could list, init, create, edit, rename, enable, disable, kill (dead?), etc.  The main drawback I see with that is having too many levels to type.
+
+I really like the idea of having the ability to \"git annex remote show s3\" and it will tell me what the type, uuid, options, etc are for that remote.
+"""]]
