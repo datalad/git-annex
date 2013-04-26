@@ -10,6 +10,7 @@ More should be added, such as:
   shakey; a better method would be to use its API) **done**
 * Dropbox? That would be ironic.. Via its API, presumably.
 * [[Amazon Glacier|todo/special_remote_for_amazon_glacier]] **done**
+* Internet Archive **done**
 * [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
   REST API; free software
 * Mediafire provides 50gb free and has a REST API.
