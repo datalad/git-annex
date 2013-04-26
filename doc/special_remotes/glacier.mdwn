@@ -27,7 +27,7 @@ the Glacier remote.
   every clone of the repository to access the encrypted data (use with caution).
 
   Note that additional gpg keys can be given access to a remote by
-  rerunning initremote with the new key id. See [[encryption]].
+  running enableremote with the new key id. See [[encryption]].
 
 * `embedcreds` - Optional. Set to "yes" embed the login credentials inside
   the git repository, which allows other clones to also access them. This is

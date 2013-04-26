@@ -40,6 +40,9 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     its edit page.
   * Automatically register public urls for files uploaded to the
     Internet Archive.
+  * To enable an existing special remote, the new enableremote command
+    must be used. The initremote command now is used only to create
+    new special remotes.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

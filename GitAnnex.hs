@@ -30,6 +30,7 @@ import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
+import qualified Command.EnableRemote
 import qualified Command.Fsck
 import qualified Command.Unused
 import qualified Command.DropUnused
@@ -91,6 +92,7 @@ cmds = concat
 	, Command.Init.def
 	, Command.Describe.def
 	, Command.InitRemote.def
+	, Command.EnableRemote.def
 	, Command.Reinject.def
 	, Command.Unannex.def
 	, Command.Uninit.def

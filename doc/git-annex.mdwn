@@ -236,15 +236,40 @@ subdirectories).
 
 * initremote name [param=value ...]
 
-  Sets up a special remote. The remote's
-  configuration is specified by the parameters. If a remote
-  with the specified name has already been configured, its configuration
-  is modified by any values specified. In either case, the remote will be
-  added to `.git/config`.
+  Creates a new special remote, and adds it to `.git/config`. 
+  
+  The remote's configuration is specified by the parameters. Different
+  types of special remotes need different configuration values. The
+  command will prompt for parameters as needed.
+
+  All special remotes support encryption. You must either specify
+  encryption=none to disable encryption, or use encryption=keyid
+  (or encryption=emailaddress) to specify a gpg key that can access
+  the encrypted special remote.
 
   Example Amazon S3 remote:
 
-	initremote mys3 type=S3 encryption=none datacenter=EU
+	git annex initremote mys3 type=S3 encryption=me@example.com datacenter=EU
+
+* enableremote name [param=value ...]
+
+  Enables use of an existing special remote in the current repository,
+  which may be a different repository than the one in which it was
+  originally created with the initremote command. 
+  
+  The name of the remote is the same name used when origianlly 
+  creating that remote with "initremote". Run "git annex enableremote"
+  with no parameters to get a list of special remote names.
+
+  Some special remotes may need parameters to be specified every time.
+  For example, the directory special remote requires a directory= parameter.
+  
+  This command can also be used to modify the configuration of an existing
+  special remote, by specifying new values for parameters that were originally
+  set when using initremote. For example, to add a new gpg key to the keys
+  that can access an encrypted remote:
+
+	git annex initremote mys3 encryption=friend@example.com
 
 * trust [repository ...]
 

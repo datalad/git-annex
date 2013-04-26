@@ -69,17 +69,22 @@ makeRsyncRemote name location = makeRemote name location $
 		, ("type", "rsync")
 		]
 
-{- Inits a special remote. Currently, only 'weak' ciphers can be
- - generated from the assistant, because otherwise GnuPG may block once
- - the entropy pool is drained, and as of now there's no way to tell the
- - user to perform IO actions to refill the pool. -}
+{- Inits a new special remote, or enables an existing one.
+ -
+ - Currently, only 'weak' ciphers can be generated from the assistant,
+ - because otherwise GnuPG may block once the entropy pool is drained,
+ - and as of now there's no way to tell the user to perform IO actions
+ - to refill the pool. -}
 makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex ()
-makeSpecialRemote name remotetype config = do
-	(u, c) <- Command.InitRemote.findByName name
-	c' <- R.setup remotetype u $
-		M.insert "highRandomQuality" "false" $ M.union config c
-	describeUUID u name
-	configSet u c'
+makeSpecialRemote name remotetype config =
+	go =<< Command.InitRemote.findExisting name
+  where
+  	go Nothing = go =<< Just <$> Command.InitRemote.generateNew name
+	go (Just (u, c)) = do
+		c' <- R.setup remotetype u $
+			M.insert "highRandomQuality" "false" $ M.union config c
+		describeUUID u name
+		configSet u c'
 
 {- Returns the name of the git remote it created. If there's already a
  - remote at the location, returns its name. -}

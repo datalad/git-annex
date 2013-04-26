@@ -26,7 +26,7 @@ These parameters can be passed to `git annex initremote` to configure bup:
   every clone of the repository to access the encrypted data (use with caution).
 
   Note that additional gpg keys can be given access to a remote by
-  rerunning initremote with the new key id. See [[encryption]].
+  running enableremote with the new key id. See [[encryption]].
 
 * `buprepo` - Required. This is passed to `bup` as the `--remote`
   to use to store data. To create the repository,`bup init` will be run.

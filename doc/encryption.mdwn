@@ -31,10 +31,10 @@ non-empty remote.
 The [[encryption_design|design/encryption]] allows additional encryption keys
 to be added on to a special remote later. Once a key is added, it is able
 to access content that has already been stored in the special remote.
-To add a new key, just run `git annex initremote` again, specifying the
+To add a new key, just run `git annex enableremote` specifying the
 new encryption key:
 
-	git annex initremote myremote encryption=788A3F4C
+	git annex enableremote myremote encryption=788A3F4C
 
 Note that once a key has been given access to a remote, it's not
 possible to revoke that access, short of deleting the remote. See

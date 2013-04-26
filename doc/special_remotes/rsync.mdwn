@@ -21,7 +21,7 @@ These parameters can be passed to `git annex initremote` to configure rsync:
   every clone of the repository to decrypt the encrypted data.
 
   Note that additional gpg keys can be given access to a remote by
-  rerunning initremote with the new key id. See [[encryption]].
+  running enableremote with the new key id. See [[encryption]].
 
 * `rsyncurl` - Required. This is the url or `hostname:/directory` to 
   pass to rsync to tell it where to store content.
@@ -31,7 +31,7 @@ These parameters can be passed to `git annex initremote` to configure rsync:
   setups, but not with some hosting providers that do not expose rsynced
   filenames to the shell. You'll know you need this option if `git annex get`
   from the special remote fails with an error message containing a single
-  quote (`'`) character. If that happens, you can re-run initremote
+  quote (`'`) character. If that happens, you can run enableremote
   setting shellescape=no.
 
 The `annex-rsync-options` git configuration setting can be used to pass

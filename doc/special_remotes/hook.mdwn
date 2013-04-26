@@ -31,7 +31,7 @@ These parameters can be passed to `git annex initremote`:
   every clone of the repository to access the encrypted data.
 
   Note that additional gpg keys can be given access to a remote by
-  rerunning initremote with the new key id. See [[encryption]].
+  running enableremote with the new key id. See [[encryption]].
 
 * `hooktype` - Required. This specifies a collection of hooks to use for
   this remote.

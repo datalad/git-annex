@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011,2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,26 +23,23 @@ import Data.Ord
 def :: [Command]
 def = [command "initremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
-	seek SectionSetup "sets up a special (non-git) remote"]
+	seek SectionSetup "creates a special (non-git) remote"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
-start [] = do
-	names <- remoteNames
-	error $ "Specify a name for the remote. " ++
-		if null names
-			then ""
-			else "Either a new name, or one of these existing special remotes: " ++ intercalate " " names
-start (name:ws) = do
-	(u, c) <- findByName name
-	let fullconfig = config `M.union` c	
-	t <- findType fullconfig
+start [] = error "Specify a name for the remote."
+start (name:ws) = ifM (isJust <$> findExisting name)
+	( error $ "There is already a special remote named \"" ++ name ++
+		"\". (Use enableremote to enable an existing special remote.)"
+	, do
+		(u, c) <- generateNew name
+		t <- findType config
 
-	showStart "initremote" name
-	next $ perform t u name $ M.union config c
-
+		showStart "initremote" name
+		next $ perform t u name $ M.union config c
+	)
   where
 	config = Logs.Remote.keyValToConfig ws
 
@@ -57,21 +54,22 @@ cleanup u name c = do
 	Logs.Remote.configSet u c
 	return True
 
-{- Look up existing remote's UUID and config by name, or generate a new one -}
-findByName :: String -> Annex (UUID, R.RemoteConfig)
-findByName name = do
+{- See if there's an existing special remote with this name. -}
+findExisting :: String -> Annex (Maybe (UUID, R.RemoteConfig))
+findExisting name = do
 	t <- trustMap
 	matches <- sortBy (comparing $ \(u, _c) -> M.lookup u t )
-		. findByName' name
+		. findByName name
 		<$> Logs.Remote.readRemoteLog
-	maybe generate return $ headMaybe matches
-  where
-	generate = do
-		uuid <- liftIO genUUID
-		return (uuid, M.insert nameKey name M.empty)
+	return $ headMaybe matches
 
-findByName' :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
-findByName' n = filter (matching . snd) . M.toList
+generateNew :: String -> Annex (UUID, R.RemoteConfig)
+generateNew name = do
+	uuid <- liftIO genUUID
+	return (uuid, M.singleton nameKey name)
+
+findByName :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
+findByName n = filter (matching . snd) . M.toList
   where
 	matching c = case M.lookup nameKey c of
 		Nothing -> False

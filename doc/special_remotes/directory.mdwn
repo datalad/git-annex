@@ -16,7 +16,7 @@ remote:
   every clone of the repository to decrypt the encrypted data.
 
   Note that additional gpg keys can be given access to a remote by
-  rerunning initremote with the new key id. See [[encryption]].
+  running enableremote with the new key id. See [[encryption]].
 
 * `chunksize` - Avoid storing files larger than the specified size in the
   directory. For use on directories on mount points that have file size
