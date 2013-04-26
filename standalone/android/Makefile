@@ -18,13 +18,13 @@ GIT_ANNEX_ANDROID_SOURCETREE?=../tmp/android-sourcetree
 GITTREE=$(GIT_ANNEX_ANDROID_SOURCETREE)/git/installed-tree
 
 build: start
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/git
-	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/term
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp
+	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp
 
 	# Debug build because it does not need signing keys.
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && tools/build-debug
@@ -79,12 +79,12 @@ build: start
 	mkdir -p ../../tmp
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/git-annex.apk
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/openssl:
+$(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && CC=$$(which cc) ./Configure android
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && $(MAKE)
 	touch $@
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/openssh: openssh.patch openssh.config.h
+$(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp: openssh.patch openssh.config.h
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && git reset --hard
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && ./configure --host=arm-linux-androideabi --with-ssl-dir=../openssl --without-openssl-header-check
 	cat openssh.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && patch -p1)
@@ -94,31 +94,31 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh: openssh.patch openssh.config.h
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && $(MAKE) ssh ssh-keygen
 	touch $@
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/busybox: busybox_config
+$(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp: busybox_config
 	cp busybox_config $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/.config
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && yes '' | $(MAKE) oldconfig
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && $(MAKE)
 	touch $@
 	
-$(GIT_ANNEX_ANDROID_SOURCETREE)/git:
+$(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/git && $(MAKE) install NO_OPENSSL=1 NO_GETTEXT=1 NO_GECOS_IN_PWENT=1 NO_GETPASS=1 NO_NSEC=1 NO_MKDTEMP=1 NO_PTHREADS=1 NO_PERL=1 NO_CURL=1 NO_EXPAT=1 NO_TCLTK=1 NO_ICONV=1 prefix= DESTDIR=installed-tree
 	touch $@
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/rsync: rsync.patch
+$(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
 	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard origin/master && git am)
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.sub $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.guess $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && $(MAKE)
 	touch $@
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg:
+$(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && git checkout gnupg-1.4.13
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./autogen.sh
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg; $(MAKE) || true # expected failure in doc build
 	touch $@
 
-$(GIT_ANNEX_ANDROID_SOURCETREE)/term: term.patch icons
+$(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp: term.patch icons
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && git reset --hard
 	cat term.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && patch -p1)
 	(cd icons && tar c .) | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term/res && tar x)
