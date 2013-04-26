@@ -49,15 +49,14 @@ withNote field note = field { fieldView = newview }
 
 {- Note that the toggle string must be unique on the form. -}
 withExpandableNote :: Field sub master v -> (String, GWidget sub master ()) -> Field sub master v
-withExpandableNote field (toggle, note) = withNote field expandablenote
-  where
-  	ident = "toggle_" ++ toggle
-  	expandablenote = [whamlet|
+withExpandableNote field (toggle, note) = withNote field $ [whamlet|
 <a .btn data-toggle="collapse" data-target="##{ident}">
   #{toggle}
 <div ##{ident} .collapse>
   ^{note}
 |]
+  where
+  	ident = "toggle_" ++ toggle
 
 data EnableEncryption = SharedEncryption | NoEncryption
 	deriving (Eq)
