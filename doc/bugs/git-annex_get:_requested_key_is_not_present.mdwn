@@ -11,7 +11,7 @@ Laptop <- sync with -> Server
 As you can see, the Audio folder is in manual mode on the laptop, so it does not get any files automatically.
 If I now want to get a folder with 'git-annex get' I get the following error:
 
-    fabian@fabian-thinkpad ~/Audio $ git annex get Musik/
+    fabian@fabian-thinkpad /mnt/data-common/Audio $ git-annex get Musik
     get Musik/+⁄-/2003 - You Are Here (Bonus Disc)/01 - I've Been Lost.ogg (from eifel.fritz.box__mnt_raid_Audio...) 
       requested key is not present
     rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
