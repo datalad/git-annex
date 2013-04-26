@@ -30,14 +30,3 @@ I do not really know the minimal setup to reproduce this problem.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 4.20130417 on Gentoo Linux using Ebuilds from Haskell overlay
-
-
-### Please provide any additional information below.
-
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
-
-
-# End of transcript or log.
-"""]]
