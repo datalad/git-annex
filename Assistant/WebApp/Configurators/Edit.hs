@@ -151,7 +151,7 @@ editRepositoryAForm def = RepoConfig
 	help = [whamlet|<a href="@{RepoGroupR}">What's this?</a>|]
 
 	associateddirectory = case repoAssociatedDirectory def of
-		Nothing -> aopt dummyField "" Nothing
+		Nothing -> aopt hiddenField "" Nothing
 		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
 getEditRepositoryR :: UUID -> Handler RepHtml
