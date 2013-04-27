@@ -2,7 +2,7 @@
   <a href="@{AddBoxComR}">
     <i .icon-plus-sign></i> Box.com
 <p>
-  Provides <b>free</b> cloud storage for small amounts of data.
+  Provides free cloud storage for small amounts of data.
 
 <h3>
   <a href="@{AddRsyncNetR}">
