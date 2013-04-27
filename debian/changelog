@@ -43,6 +43,9 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * To enable an existing special remote, the new enableremote command
     must be used. The initremote command now is used only to create
     new special remotes.
+  * webapp: Now automatically fills in any creds used by an existing remote
+    when creating a new remote of the same type. Done for Internet Archive,
+    S3, Glacier, and Box.com remotes.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

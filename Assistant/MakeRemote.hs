@@ -1,6 +1,6 @@
 {- git-annex assistant remote creation utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Logs.Remote
 import Git.Remote
 import Config
 import Config.Cost
+import Creds
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -125,3 +126,25 @@ uniqueRemoteName basename n r
 		| n == 0 = legalbasename
 		| otherwise = legalbasename ++ show n
 	legalbasename = makeLegalName basename
+
+{- Finds a CredPair belonging to any Remote that is of a given type
+ - and matches some other criteria.
+ -
+ - This can be used as a default when another repository is being set up
+ - using the same service.
+ -
+ - A function must be provided that returns the CredPairStorage
+ - to use for a particular Remote's uuid.
+ -}
+previouslyUsedCredPair
+	:: (UUID -> CredPairStorage)
+	-> RemoteType
+	-> (Remote -> Bool)
+	-> Annex (Maybe CredPair)
+previouslyUsedCredPair getstorage remotetype criteria =
+	getM fromstorage =<< filter criteria . filter sametype <$> remoteList
+  where
+	sametype r = R.typename (R.remotetype r) == R.typename remotetype
+	fromstorage r = do
+		let storage = getstorage (R.uuid r)
+		getRemoteCredPair (R.config r) storage

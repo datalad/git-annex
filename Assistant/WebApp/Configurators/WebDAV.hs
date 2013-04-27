@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for WebDAV remotes
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Logs.Remote
 import qualified Data.Map as M
 #endif
 import qualified Data.Text as T
+import Network.URI
 
 webDAVConfigurator :: Widget -> Handler RepHtml
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
@@ -42,18 +43,18 @@ data WebDAVInput = WebDAVInput
 toCredPair :: WebDAVInput -> CredPair
 toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
-boxComAForm :: AForm WebApp WebApp WebDAVInput
-boxComAForm = WebDAVInput
-	<$> areq textField "Username or Email" Nothing
-	<*> areq passwordField "Box.com Password" Nothing
+boxComAForm :: Maybe CredPair -> AForm WebApp WebApp WebDAVInput
+boxComAForm defcreds = WebDAVInput
+	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
+	<*> areq passwordField "Box.com Password" (T.pack . snd <$> defcreds)
 	<*> areq checkBoxField "Share this account with other devices and friends?" (Just True)
 	<*> areq textField "Directory" (Just "annex")
 	<*> enableEncryptionField
 
-webDAVCredsAForm :: AForm WebApp WebApp WebDAVInput
-webDAVCredsAForm = WebDAVInput
-	<$> areq textField "Username or Email" Nothing
-	<*> areq passwordField "Password" Nothing
+webDAVCredsAForm :: Maybe CredPair -> AForm WebApp WebApp WebDAVInput
+webDAVCredsAForm defcreds = WebDAVInput
+	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
+	<*> areq passwordField "Password" (T.pack . snd <$> defcreds)
 	<*> pure False
 	<*> pure T.empty
 	<*> pure NoEncryption -- not used!
@@ -63,8 +64,9 @@ getAddBoxComR = postAddBoxComR
 postAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
 postAddBoxComR = boxConfigurator $ do
+	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap boxComAForm
+		runFormPost $ renderBootstrap $ boxComAForm defcreds
 	case result of
 		FormSuccess input -> lift $ 
 			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
@@ -106,8 +108,11 @@ postEnableWebDAVR uuid = do
 				webDAVConfigurator $ showform name url
   where
 	showform name url = do
+		defcreds <- liftAnnex $ 
+			maybe (pure Nothing) previouslyUsedWebDAVCreds $
+				urlHost url
 		((result, form), enctype) <- lift $
-			runFormPost $ renderBootstrap webDAVCredsAForm
+			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> lift $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
@@ -131,3 +136,15 @@ makeWebDavRemote name creds setup config = do
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 #endif
+
+{- Only returns creds previously used for the same hostname. -}
+previouslyUsedWebDAVCreds :: String -> Annex (Maybe CredPair)
+previouslyUsedWebDAVCreds hostname =
+	previouslyUsedCredPair WebDAV.davCreds WebDAV.remote samehost
+  where
+	samehost url = case urlHost =<< WebDAV.configUrl url of
+		Nothing -> False
+		Just h -> h == hostname
+
+urlHost :: String -> Maybe String
+urlHost url = uriRegName <$> (uriAuthority =<< parseURI url)

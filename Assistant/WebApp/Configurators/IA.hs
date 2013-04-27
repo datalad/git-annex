@@ -13,13 +13,17 @@ import Assistant.WebApp.Common
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
+import qualified Remote.Helper.AWS as AWS
+import Assistant.MakeRemote
 #endif
 import qualified Remote
+import qualified Types.Remote as Remote
 import Types.StandardGroups
 import Types.Remote (RemoteConfig)
 import Logs.PreferredContent
 import Logs.Remote
 import qualified Utility.Url as Url
+import Creds
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -75,10 +79,10 @@ showMediaType MediaVideo = "videos & movies"
 showMediaType MediaAudio = "audio & music"
 showMediaType MediaOmitted = "other"
 
-iaInputAForm :: AForm WebApp WebApp IAInput
-iaInputAForm = IAInput
-	<$> accessKeyIDFieldWithHelp
-	<*> AWS.secretAccessKeyField
+iaInputAForm :: Maybe CredPair -> AForm WebApp WebApp IAInput
+iaInputAForm defcreds = IAInput
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 	<*> areq (selectFieldList mediatypes) "Media Type" (Just MediaOmitted)
 	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) "Item Name" Nothing
   where
@@ -95,13 +99,19 @@ itemNameHelp = [whamlet|
   will be uploaded to your Internet Archive item.
 |]
 
-iaCredsAForm :: AForm WebApp WebApp AWS.AWSCreds
-iaCredsAForm = AWS.AWSCreds
-        <$> accessKeyIDFieldWithHelp
-        <*> AWS.secretAccessKeyField
+iaCredsAForm :: Maybe CredPair -> AForm WebApp WebApp AWS.AWSCreds
+iaCredsAForm defcreds = AWS.AWSCreds
+        <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+        <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 
-accessKeyIDFieldWithHelp :: AForm WebApp WebApp Text
-accessKeyIDFieldWithHelp = AWS.accessKeyIDField help
+#ifdef WITH_S3
+previouslyUsedIACreds :: Annex (Maybe CredPair)
+previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
+	AWS.isIARemoteConfig . Remote.config
+#endif
+
+accessKeyIDFieldWithHelp :: Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   where
 	help = [whamlet|
 <a href="http://archive.org/account/s3.php">
@@ -114,8 +124,9 @@ getAddIAR = postAddIAR
 postAddIAR :: Handler RepHtml
 #ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
+	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap iaInputAForm
+		runFormPost $ renderBootstrap $ iaInputAForm defcreds
 	case result of
 		FormSuccess input -> lift $ do
 			let name = escapeBucket $ T.unpack $ itemName input
@@ -155,8 +166,9 @@ postEnableIAR _ = error "S3 not supported by this build"
 #ifdef WITH_S3
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
+	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap iaCredsAForm
+		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> lift $ do
 			m <- liftAnnex readRemoteLog

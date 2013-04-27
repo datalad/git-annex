@@ -7,7 +7,7 @@
 
 {-# LANGUAGE ScopedTypeVariables, CPP #-}
 
-module Remote.WebDAV (remote, davCreds, setCredsEnv) where
+module Remote.WebDAV (remote, davCreds, setCredsEnv, configUrl) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
@@ -203,10 +203,13 @@ withStoredFiles r k baseurl user pass onerr a
 davAction :: Remote -> a -> ((DavUrl, DavUser, DavPass) -> Annex a) -> Annex a
 davAction r unconfigured action = do
 	mcreds <- getCreds (config r) (uuid r)
-	case (mcreds, M.lookup "url" $ config r) of
+	case (mcreds, configUrl r) of
 		(Just (user, pass), Just url) ->
 			action (url, toDavUser user, toDavPass pass)
 		_ -> return unconfigured
+
+configUrl :: Remote -> Maybe DavUrl
+configUrl r = M.lookup "url" $ config r
 
 toDavUser :: String -> DavUser
 toDavUser = B8.fromString

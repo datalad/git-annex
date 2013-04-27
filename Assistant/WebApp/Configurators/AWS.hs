@@ -19,9 +19,11 @@ import qualified Remote.Glacier as Glacier
 import qualified Remote.Helper.AWS as AWS
 import Logs.Remote
 import qualified Remote
+import qualified Types.Remote as Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
+import Creds
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -61,10 +63,10 @@ data AWSCreds = AWSCreds Text Text
 extractCreds :: AWSInput -> AWSCreds
 extractCreds i = AWSCreds (accessKeyID i) (secretAccessKey i)
 
-s3InputAForm :: AForm WebApp WebApp AWSInput
-s3InputAForm = AWSInput
-	<$> accessKeyIDFieldWithHelp
-	<*> secretAccessKeyField
+s3InputAForm :: Maybe CredPair -> AForm WebApp WebApp AWSInput
+s3InputAForm defcreds = AWSInput
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 	<*> datacenterField AWS.S3
 	<*> areq (selectFieldList storageclasses) "Storage class" (Just StandardRedundancy)
 	<*> areq textField "Repository name" (Just "S3")
@@ -76,33 +78,33 @@ s3InputAForm = AWSInput
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
-glacierInputAForm :: AForm WebApp WebApp AWSInput
-glacierInputAForm = AWSInput
-	<$> accessKeyIDFieldWithHelp
-	<*> secretAccessKeyField
+glacierInputAForm :: Maybe CredPair -> AForm WebApp WebApp AWSInput
+glacierInputAForm defcreds = AWSInput
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 	<*> datacenterField AWS.Glacier
 	<*> pure StandardRedundancy
 	<*> areq textField "Repository name" (Just "glacier")
 	<*> enableEncryptionField
 
-awsCredsAForm :: AForm WebApp WebApp AWSCreds
-awsCredsAForm = AWSCreds
-	<$> accessKeyIDFieldWithHelp
-	<*> secretAccessKeyField
+awsCredsAForm :: Maybe CredPair -> AForm WebApp WebApp AWSCreds
+awsCredsAForm defcreds = AWSCreds
+	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
+	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 
-accessKeyIDField :: Widget -> AForm WebApp WebApp Text
-accessKeyIDField help = areq (textField `withNote` help) "Access Key ID" Nothing
+accessKeyIDField :: Widget -> Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDField help def = areq (textField `withNote` help) "Access Key ID" def
 
-accessKeyIDFieldWithHelp :: AForm WebApp WebApp Text
-accessKeyIDFieldWithHelp = accessKeyIDField help
+accessKeyIDFieldWithHelp :: Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp def = accessKeyIDField help def
   where
 	help = [whamlet|
 <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
   Get Amazon access keys
 |]
 
-secretAccessKeyField :: AForm WebApp WebApp Text
-secretAccessKeyField = areq passwordField "Secret Access Key" Nothing
+secretAccessKeyField :: Maybe Text -> AForm WebApp WebApp Text
+secretAccessKeyField def = areq passwordField "Secret Access Key" def
 
 datacenterField :: AWS.Service -> AForm WebApp WebApp Text
 datacenterField service = areq (selectFieldList list) "Datacenter" defregion
@@ -116,8 +118,9 @@ getAddS3R = postAddS3R
 postAddS3R :: Handler RepHtml
 #ifdef WITH_S3
 postAddS3R = awsConfigurator $ do
+	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap s3InputAForm
+		runFormPost $ renderBootstrap $ s3InputAForm defcreds
 	case result of
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
@@ -140,8 +143,9 @@ getAddGlacierR = postAddGlacierR
 
 postAddGlacierR :: Handler RepHtml
 postAddGlacierR = glacierConfigurator $ do
+	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap glacierInputAForm
+		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
 		FormSuccess input -> lift $ do
 			let name = T.unpack $ repoName input
@@ -159,9 +163,7 @@ getEnableS3R :: UUID -> Handler RepHtml
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
-	let host = fromMaybe "" $ M.lookup "host" $
-		fromJust $ M.lookup uuid m
-	if S3.isIAHost host
+	if isIARemoteConfig $ fromJust $ M.lookup uuid m
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
 #else
@@ -183,8 +185,9 @@ postEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
 
 enableAWSRemote :: RemoteType -> UUID -> Widget
 enableAWSRemote remotetype uuid = do
+	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap awsCredsAForm
+		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
 		FormSuccess creds -> lift $ do
 			m <- liftAnnex readRemoteLog
@@ -217,3 +220,14 @@ getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
   where
 	bucket = fromMaybe "" $ M.lookup "bucket" c
+
+#ifdef WITH_S3
+isIARemoteConfig :: RemoteConfig -> Bool
+isIARemoteConfig = S3.isIAHost . fromMaybe "" . M.lookup "host"
+#endif
+
+previouslyUsedAWSCreds :: Annex (Maybe CredPair)
+previouslyUsedAWSCreds = getM gettype [S3.remote, Glacier.remote]
+  where
+	gettype t = previouslyUsedCredPair AWS.creds t $
+		not . isIARemoteConfig . Remote.config
