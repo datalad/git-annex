@@ -9,11 +9,16 @@ who share a repository, that is stored in the [[cloud]].
 * Do git-annex clients sharing an account with regular clients cause confusing
   things to happen? 
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
+
 * Support use of a single XMPP account with several separate and
   independant git-annex repos. This probably works for the simple
   push notification use of XMPP, since unknown UUIDs will just be ignored.
   But XMPP pairing and the pushes over XMPP assume that anyone you're
   paired with is intending to sync to your repository.
+  [[bugs/xmpp_needs_one_account_per_distinct_repository]]
+
+  There are really two cases here, "Share with your other devices",
+  and 
 
 ## design goals
 
