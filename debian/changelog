@@ -46,6 +46,7 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * webapp: Now automatically fills in any creds used by an existing remote
     when creating a new remote of the same type. Done for Internet Archive,
     S3, Glacier, and Box.com remotes.
+  * Store an annex-uuid file in the bucket when setting up a new S3 remote.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

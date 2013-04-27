@@ -8,7 +8,7 @@
 module Remote.S3 (remote, iaHost, isIA, isIAHost, iaItemUrl) where
 
 import Network.AWS.AWSConnection
-import Network.AWS.S3Object
+import Network.AWS.S3Object hiding (getStorageClass)
 import Network.AWS.S3Bucket hiding (size)
 import Network.AWS.AWSResult
 import qualified Data.Text as T
@@ -96,7 +96,8 @@ s3Setup u c = if isIA c then archiveorg else defaulthost
 	archiveorg = do
 		showNote "Internet Archive mode"
 		maybe (error "specify bucket=") (const noop) $
-			M.lookup "bucket" archiveconfig
+			getBucket archiveconfig
+		writeUUIDFile archiveconfig u
 		use archiveconfig
 	  where
 		archiveconfig =
@@ -139,21 +140,14 @@ storeHelper (conn, bucket) r k p file = do
 		liftIO $ withMeteredFile file meterupdate $ \content -> do
 			-- size is provided to S3 so the whole content
 			-- does not need to be buffered to calculate it
-			let object = setStorageClass storageclass $ S3Object
+			let object = S3Object
 				bucket (bucketFile r k) ""
-				(("Content-Length", show size) : xheaders)
+				(("Content-Length", show size) : getXheaders (config r))
 				content
-			sendObject conn object
+			sendObject conn $
+				setStorageClass (getStorageClass $ config r) object
   where
-	storageclass =
-		case fromJust $ M.lookup "storageclass" $ config r of
-			"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
-			_ -> STANDARD
-
 	getsize = liftIO $ fromIntegral . fileSize <$> getFileStatus file
-	
-	xheaders = filter isxheader $ M.assocs $ config r
-	isxheader (h, _) = "x-amz-" `isPrefixOf` h
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
 retrieve r k _f d p = s3Action r False $ \(conn, bucket) ->
@@ -229,10 +223,12 @@ bucketFile :: Remote -> Key -> FilePath
 bucketFile r = munge . key2file
   where
 	munge s = case M.lookup "mungekeys" c of
-		Just "ia" -> iaMunge $ fileprefix ++ s
-		_ -> fileprefix ++ s
-	fileprefix = M.findWithDefault "" "fileprefix" c
+		Just "ia" -> iaMunge $ filePrefix c ++ s
+		_ -> filePrefix c ++ s
 	c = config r
+
+filePrefix :: RemoteConfig -> String
+filePrefix = M.findWithDefault "" "fileprefix"
 
 bucketKey :: Remote -> Bucket -> Key -> S3Object
 bucketKey r bucket k = S3Object bucket (bucketFile r k) "" [] L.empty
@@ -255,17 +251,42 @@ genBucket c u = do
 	showAction "checking bucket"
 	loc <- liftIO $ getBucketLocation conn bucket 
 	case loc of
-		Right _ -> noop
+		Right _ -> writeUUIDFile c u
 		Left err@(NetworkError _) -> s3Error err
 		Left (AWSError _ _) -> do
 			showAction $ "creating bucket in " ++ datacenter
 			res <- liftIO $ createBucketIn conn bucket datacenter
 			case res of
-				Right _ -> noop
+				Right _ -> writeUUIDFile c u
 				Left err -> s3Error err
   where
-	bucket = fromJust $ M.lookup "bucket" c
+	bucket = fromJust $ getBucket c
 	datacenter = fromJust $ M.lookup "datacenter" c
+
+{- Writes the UUID to an annex-uuid file within the bucket.
+ -
+ - If the file already exists in the bucket, it must match.
+ -
+ - Note that IA items do not get created by createBucketIn. 
+ - Rather, they are created the first time a file is stored in them.
+ - So this also takes care of that.
+ -}
+writeUUIDFile :: RemoteConfig -> UUID -> Annex ()
+writeUUIDFile c u = do
+	conn <- s3ConnectionRequired c u
+	go conn =<< liftIO (tryNonAsync $ getObject conn $ mkobject L.empty)
+  where
+	go _conn (Right (Right o)) = unless (obj_data o == uuidb) $
+		error $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ L.unpack (obj_data o)
+	go conn _ = do
+		let object = setStorageClass (getStorageClass c) (mkobject uuidb)
+		either s3Error return =<< liftIO (sendObject conn object)
+
+	file = filePrefix c ++ "annex-uuid"
+	uuidb = L.pack $ fromUUID u
+	bucket = fromJust $ getBucket c
+
+	mkobject = S3Object bucket file "" (getXheaders c)
 
 s3ConnectionRequired :: RemoteConfig -> UUID -> Annex AWSConnection
 s3ConnectionRequired c u =
@@ -283,6 +304,19 @@ s3Connection c u = go =<< getRemoteCredPairFor "S3" c (AWS.creds u)
 		[(p, _)] -> p
 		_ -> error $ "bad S3 port value: " ++ s
 
+getBucket :: RemoteConfig -> Maybe Bucket
+getBucket = M.lookup "bucket"
+
+getStorageClass :: RemoteConfig -> StorageClass
+getStorageClass c = case fromJust $ M.lookup "storageclass" c of
+	"REDUCED_REDUNDANCY" -> REDUCED_REDUNDANCY
+	_ -> STANDARD
+	
+getXheaders :: RemoteConfig -> [(String, String)]
+getXheaders = filter isxheader . M.assocs
+  where
+	isxheader (h, _) = "x-amz-" `isPrefixOf` h
+
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName
 iaHost = "s3.us.archive.org"
@@ -299,4 +333,4 @@ iaItemUrl bucket = "http://archive.org/details/" ++ bucket
 iaKeyUrl :: Remote -> Key -> URLString
 iaKeyUrl r k = "http://archive.org/download/" ++ bucket ++ "/" ++ bucketFile r k
   where
-	bucket = fromJust $ M.lookup "bucket" $ config r
+	bucket = fromMaybe "" $ getBucket $ config r
