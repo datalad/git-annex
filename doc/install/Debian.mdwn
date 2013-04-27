@@ -1,8 +1,16 @@
-If using Debian testing or unstable:
+## Debian testing or unstable
 
-* `sudo apt-get install git-annex`
+	sudo apt-get install git-annex
 
-If using Debian 6.0 stable:
+## Debian 7.0 "wheezy":
 
-* Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
-* `sudo apt-get -t squeeze-backports install git-annex`
+	sudo apt-get install git-annex
+
+Note: This version does not include support for the [[assistant]].
+The version of git-annex in unstable can be easily installed in wheezy.
+
+## Debian 6.0 "squeeze"
+
+Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
+
+	sudo apt-get -t squeeze-backports install git-annex
