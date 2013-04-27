@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 6"
+ date="2013-04-27T21:44:19Z"
+ content="""
+I *think* that'd work... the only thing would be that the SSH remote wouldn't get any files that *weren't* in archive directories, right?  They'd migrate from the client to the backup to satisfy numcopies, and that would be it, two copies and we're done.  Since it's not in an archive directory, the ssh remote doesn't want it.
+"""]]
