@@ -431,3 +431,4 @@ whereis Art books/The Figure in Repose.pdf (2 copies)
 
 This is with "numcopies=2"  homeworld is trusted, backup, standard.  toshiba is semitrusted, backup, standard.  here is client, semitrusted, standard.
 
+[[done]]
