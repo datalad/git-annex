@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnLgNOfkl8c6oQu9b42U0Pm_uC4n3Gkgiw"
+ nickname="Mark"
+ subject="Thanks!"
+ date="2013-04-29T01:24:55Z"
+ content="""
+I was not looking forward to figuring out how to come up with all of those haskell build deps on Precise, so thanks to François Marier for putting this together.  (Does Ubuntu/launchpad autobuild all of the architectures, or do they need to be contributed? I see that `armhf` isn't there at the moment...)
+"""]]
