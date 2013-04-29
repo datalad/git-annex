@@ -1,0 +1,110 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~maestro-alubia"
+ nickname="maestro-alubia"
+ subject="comment 2"
+ date="2013-04-29T21:04:30Z"
+ content="""
+Thanks for explaining the error message.
+
+I did some investigation but I am not really understanding what is going on.
+
+But step by step, lets take a file without any confusing characters in filename (e.g. '/'), so we use the file \".directory\".
+
+1.) I run on the client:
+[[!format sh \"\"\"
+fabian@fabian-thinkpad /mnt/data-common/Audio $ ls -la .directory 
+lrwxrwxrwx 1 fabian fabian 180 25. Apr 17:15 .directory -> .git/annex/objects/Ff/m9/SHA256E-s91--378daa8e2a232ae5a04d9f6c83003d8ccfe6c8b7547c1789a130ba94017283ed/SHA256E-s91--378daa8e2a232ae5a04d9f6c83003d8ccfe6c8b7547c1789a130ba94017283ed
+fabian@fabian-thinkpad /mnt/data-common/Audio $ basename $(git cat-file -p \"HEAD:.directory\")
+SHA256E-s91--378daa8e2a232ae5a04d9f6c83003d8ccfe6c8b7547c1789a130ba94017283ed
+\"\"\"]]
+
+2.) I run on the server:
+
+[[!format sh \"\"\"
+fabian@eifel:/mnt/raid/Audio$ ls -la .directory 
+-rw----r-x 1 fabian fabian 91 Dez 13 17:35 .directory
+fabian@eifel:/mnt/raid/Audio$ basename $(git cat-file -p \"HEAD:.directory\")
+SHA256E-s91--378daa8e2a232ae5a04d9f6c83003d8ccfe6c8b7547c1789a130ba94017283ed
+fabian@eifel:/mnt/raid/Audio$ git-annex fsck .directory 
+fsck .directory (checksum...) ok
+\"\"\"]]
+
+So obviously the file is present on the server (it is using direct mode).
+
+3.) On the client again:
+
+[[!format sh \"\"\"
+fabian@fabian-thinkpad /mnt/data-common/Audio $ git-annex get .directory 
+get .directory (from eifel.fritz.box__mnt_raid_Audio...) 
+  requested key is not present
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(605) [Receiver=3.0.9]
+
+  Unable to access these remotes: eifel.fritz.box__mnt_raid_Audio
+
+  Try making some of these repositories available:
+  	efe13d8c-2b02-455f-9874-b7043caa332f -- eifel.fritz.box__mnt_raid_Audio (fabian@eifel:/mnt/raid/Audio)
+failed
+git-annex: get: 1 failed
+fsck .directory (checking eifel.fritz.box__mnt_raid_Audio...) (fixing location log) 
+  ** Based on the location log, .directory
+  ** was expected to be present, but its content is missing.
+
+  ** No known copies exist of .directory
+failed
+(Recording state in git...)
+git-annex: fsck: 1 failed
+fabian@fabian-thinkpad /mnt/data-common/Audio $ git-annex get .directory 
+get .directory (not available) 
+  No other repository is known to contain the file.
+failed
+git-annex: get: 1 failed
+\"\"\"]]
+
+Also running \"git annex sync\" on both sides does not help.
+
+This is the configuration:
+
+Client:
+[[!format sh \"\"\"
+fabian@fabian-thinkpad /mnt/data-common/Audio $ cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = a1f816fe-3fce-4887-a85c-b7b9e501a5d7
+	version = 3
+[remote \"eifel.fritz.box__mnt_raid_Audio\"]
+	url = ssh://fabian@git-annex-eifel.fritz.box-fabian_mntraidAudio/mnt/raid/Audio/
+	fetch = +refs/heads/*:refs/remotes/eifel.fritz.box__mnt_raid_Audio/*
+	annex-uuid = efe13d8c-2b02-455f-9874-b7043caa332f
+	annex-cost = 175.0
+\"\"\"]]
+
+Server:
+[[!format sh \"\"\"
+fabian@eifel:/mnt/raid/Audio$ cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = efe13d8c-2b02-455f-9874-b7043caa332f
+	version = 3
+	direct = true
+[gc]
+	auto = 0
+[remote \"fabianthinkpad.fritz.box__mnt_datacommon_Audio\"]
+	url = ssh://fabian@git-annex-fabian-thinkpad.fritz.box-fabian_mntdatacommonAudio/mnt/data-common/Audio/
+	fetch = +refs/heads/*:refs/remotes/fabianthinkpad.fritz.box__mnt_datacommon_Audio/*
+	annex-uuid = a1f816fe-3fce-4887-a85c-b7b9e501a5d7
+	annex-cost = 175.0
+\"\"\"]]
+
+Please let me know if you need more information.
+
+Btw: I sent some money to my flattr account so I can support you soon. Thanks again for your work!
+"""]]
