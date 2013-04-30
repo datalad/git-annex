@@ -25,6 +25,7 @@ import Assistant.Alert
 import Assistant.Pairing
 import Assistant.XMPP.Git
 import Annex.UUID
+import Logs.UUID
 
 import Network.Protocol.XMPP
 import Control.Concurrent
@@ -282,19 +283,26 @@ pull us = do
 		unlessM (null . fst <$> manualPull branch [r]) $
 			pullone rs branch
 
+{- PairReq from another client using our JID is automatically
+ - accepted. This is so pairing devices all using the same XMPP
+ - account works without confirmations.
+ -
+ - Also, autoaccept PairReq from the same JID of any repo we've
+ - already paired with, as long as the UUID in the PairReq is
+ - one we know about.
+-}
 pairMsgReceived :: UrlRenderer -> PairStage -> UUID -> JID -> JID -> Assistant ()
 pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 	| baseJID selfjid == baseJID theirjid = autoaccept
 	| otherwise = do
 		knownjids <- catMaybes . map (parseJID . getXMPPClientID)
 			. filter isXMPPRemote . syncRemotes <$> getDaemonStatus
-		if any (== baseJID theirjid) knownjids
+		um <- liftAnnex uuidMap
+		if any (== baseJID theirjid) knownjids && M.member theiruuid um
 			then autoaccept
 			else showalert
 
   where
-	-- PairReq from another client using our JID, or the JID of
-	-- any repo we're already paired with is automatically accepted.
 	autoaccept = do
 		selfuuid <- liftAnnex getUUID
 		sendNetMessage $
@@ -309,9 +317,9 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 			(T.unpack $ buddyName theirjid)
 			button
 
+{- PairAck must come from one of the buddies we are pairing with;
+ - don't pair with just anyone. -}
 pairMsgReceived _ PairAck theiruuid _selfjid theirjid =
-	{- PairAck must come from one of the buddies we are pairing with;
-	 - don't pair with just anyone. -}
 	whenM (isBuddyPairing theirjid) $ do
 		changeBuddyPairing theirjid False
 		selfuuid <- liftAnnex getUUID

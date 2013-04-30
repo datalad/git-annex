@@ -71,7 +71,7 @@ Some possible fixes:
 2. Or, only auto-accept pair requests from friends we're already paired with
    when they come from a repository whose UUID we already know. This
    enhancment to fix #1 makes it easier to build more robust networks of
-   repositories.
+   repositories. **done**
 
 Hmm, I don't think those fixes are sufficient. Suppose they're in place.
 Then when Alice shares A2 with Bob, both his repositories will ask him to
@@ -101,3 +101,7 @@ So, we need another fix:
 
   Or there could be a warning about account reuse. Doesn't seem likely to
   be effective.
+
+-----
+
+> [[done]]. I've put in the fixes around pairing with friends. --[[Joey]]
