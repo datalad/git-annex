@@ -131,9 +131,12 @@ decodePairingNotification m = parse . words . T.unpack . tagValue
 pushMessage :: PushStage -> JID -> JID -> Message
 pushMessage = gitAnnexMessage . encode
   where
-	encode CanPush = gitAnnexTag canPushAttr T.empty
-	encode PushRequest = gitAnnexTag pushRequestAttr T.empty
-	encode StartingPush = gitAnnexTag startingPushAttr T.empty
+	encode (CanPush u) =
+		gitAnnexTag canPushAttr $ T.pack $ fromUUID u
+	encode (PushRequest u) =
+		gitAnnexTag pushRequestAttr $ T.pack $ fromUUID u
+	encode (StartingPush u) =
+		gitAnnexTag startingPushAttr $ T.pack $ fromUUID u
 	encode (ReceivePackOutput n b) = 
 		gitAnnexTagContent receivePackAttr (val n) $ encodeTagContent b
 	encode (SendPackOutput n b) =
@@ -157,11 +160,11 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		, receivePackDoneAttr
 		]
 		[ decodePairingNotification
-		, pushdecoder $ const $ Just CanPush
-		, pushdecoder $ const $ Just PushRequest
-		, pushdecoder $ const $ Just StartingPush
-		, pushdecoder $ gen ReceivePackOutput
-		, pushdecoder $ gen SendPackOutput
+		, pushdecoder $ gen CanPush
+		, pushdecoder $ gen PushRequest
+		, pushdecoder $ gen StartingPush
+		, pushdecoder $ seqgen ReceivePackOutput
+		, pushdecoder $ seqgen SendPackOutput
 		, pushdecoder $
 			fmap (ReceivePackDone . decodeExitCode) . readish .
 				T.unpack . tagValue
@@ -169,7 +172,8 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 	pushdecoder a m' i = Pushing
 		<$> (formatJID <$> messageFrom m')
 		<*> a i
-	gen c i = do
+	gen c = Just . c . toUUID . T.unpack . tagValue
+	seqgen c i = do
 	  	packet <- decodeTagContent $ tagElement i
 		let seqnum = fromMaybe 0 $ readish $ T.unpack $ tagValue i
 		return $ c seqnum packet

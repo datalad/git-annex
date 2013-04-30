@@ -69,18 +69,18 @@ containing:
 For pairing, a chat message is sent to every known git-annex client,
 containing:
 
-	<git-annex xmlns='git-annex' pairing="PairReq|PairAck|PairDone uuid" />
+	<git-annex xmlns='git-annex' pairing="PairReq|PairAck|PairDone myuuid" />
 
 ### git push over XMPP
 
 To indicate that we could push over XMPP, a chat message is sent,
 to each known client of each XMPP remote.
 
-	<git-annex xmlns='git-annex' canpush="" />
+	<git-annex xmlns='git-annex' canpush="myuuid" />
 
 To request that a remote push to us, a chat message can be sent.
 
-	<git-annex xmlns='git-annex' pushrequest="" />
+	<git-annex xmlns='git-annex' pushrequest="myuuid" />
 
 When replying to an canpush message, this is directed at the specific
 client that indicated it could push. To solicit pushes from all clients,
@@ -88,7 +88,7 @@ the message has to be sent directed individually to each client.
 
 When a peer is ready to send a git push, it sends:
 
-	<git-annex xmlns='git-annex' startingpush="" />
+	<git-annex xmlns='git-annex' startingpush="myuuid" />
 
 The receiver runs `git receive-pack`, and sends back its output in
 one or more chat messages, directed to the client that is pushing:

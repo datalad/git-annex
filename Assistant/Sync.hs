@@ -113,7 +113,7 @@ pushToRemotes' now notifypushes remotes = do
 	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
 	ret <- go True branch g u normalremotes
 	forM_ xmppremotes $ \r ->
-		sendNetMessage $ Pushing (getXMPPClientID r) CanPush
+		sendNetMessage $ Pushing (getXMPPClientID r) (CanPush u)
 	return ret
   where
 	go _ Nothing _ _ _ = return [] -- no branch, so nothing to do
@@ -202,8 +202,9 @@ manualPull currentbranch remotes = do
 	haddiverged <- liftAnnex Annex.Branch.forceUpdate
 	forM_ normalremotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r currentbranch
+	u <- liftAnnex getUUID
 	forM_ xmppremotes $ \r ->
-		sendNetMessage $ Pushing (getXMPPClientID r) PushRequest
+		sendNetMessage $ Pushing (getXMPPClientID r) (PushRequest u)
 	return (catMaybes failed, haddiverged)
 
 {- Start syncing a remote, using a background thread. -}

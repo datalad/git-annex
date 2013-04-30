@@ -37,11 +37,11 @@ type ClientID = Text
 
 data PushStage
 	-- indicates that we have data to push over the out of band network
-	= CanPush
+	= CanPush UUID
 	-- request that a git push be sent over the out of band network
-	| PushRequest
+	| PushRequest UUID
 	-- indicates that a push is starting
-	| StartingPush
+	| StartingPush UUID
 	-- a chunk of output of git receive-pack
 	| ReceivePackOutput SequenceNum ByteString
 	-- a chuck of output of git send-pack
@@ -58,8 +58,8 @@ type SequenceNum = Int
 {- NetMessages that are important (and small), and should be stored to be
  - resent when new clients are seen. -}
 isImportantNetMessage :: NetMessage -> Maybe ClientID
-isImportantNetMessage (Pushing c CanPush) = Just c
-isImportantNetMessage (Pushing c PushRequest) = Just c
+isImportantNetMessage (Pushing c (CanPush _)) = Just c
+isImportantNetMessage (Pushing c (PushRequest _)) = Just c
 isImportantNetMessage _ = Nothing
 
 readdressNetMessage :: NetMessage -> ClientID -> NetMessage
@@ -85,18 +85,18 @@ logClientID c = T.concat [T.take 1 c, T.pack $ show $ T.length c]
 
 {- Things that initiate either side of a push, but do not actually send data. -}
 isPushInitiation :: PushStage -> Bool
-isPushInitiation CanPush = True
-isPushInitiation PushRequest = True
-isPushInitiation StartingPush = True
+isPushInitiation (CanPush _) = True
+isPushInitiation (PushRequest _) = True
+isPushInitiation (StartingPush _) = True
 isPushInitiation _ = False
 
 data PushSide = SendPack | ReceivePack
 	deriving (Eq, Ord)
 
 pushDestinationSide :: PushStage -> PushSide
-pushDestinationSide CanPush = ReceivePack
-pushDestinationSide PushRequest = SendPack
-pushDestinationSide StartingPush = ReceivePack
+pushDestinationSide (CanPush _) = ReceivePack
+pushDestinationSide (PushRequest _) = SendPack
+pushDestinationSide (StartingPush _) = ReceivePack
 pushDestinationSide (ReceivePackOutput _ _) = SendPack
 pushDestinationSide (SendPackOutput _ _) = ReceivePack
 pushDestinationSide (ReceivePackDone _) = SendPack

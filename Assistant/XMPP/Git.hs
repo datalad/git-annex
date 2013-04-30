@@ -21,6 +21,7 @@ import Assistant.Sync
 import qualified Command.Sync
 import qualified Annex.Branch
 import Annex.UUID
+import Logs.UUID
 import Annex.TaggedPush
 import Config
 import Git
@@ -84,7 +85,8 @@ makeXMPPGitRemote buddyname jid u = do
  -}
 xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> (NetMessage -> Assistant ()) -> Assistant Bool
 xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
-	sendNetMessage $ Pushing cid StartingPush
+	u <- liftAnnex getUUID
+	sendNetMessage $ Pushing cid (StartingPush u)
 
 	(Fd inf, writepush) <- liftIO createPipe
 	(readpush, Fd outf) <- liftIO createPipe
@@ -247,26 +249,29 @@ xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 					hClose inh
 					killThread =<< myThreadId
 
-xmppRemotes :: ClientID -> Assistant [Remote]
-xmppRemotes cid = case baseJID <$> parseJID cid of
+xmppRemotes :: ClientID -> UUID -> Assistant [Remote]
+xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
 	Nothing -> return []
 	Just jid -> do
 		let loc = gitXMPPLocation jid
-		filter (matching loc . Remote.repo) . syncGitRemotes 
+		um <- liftAnnex uuidMap
+		filter (matching loc . Remote.repo) . filter (knownuuid um) . syncGitRemotes 
 			<$> getDaemonStatus
   where
 	matching loc r = repoIsUrl r && repoLocation r == loc
+	knownuuid um r = Remote.uuid r == theiruuid || M.member theiruuid um
 
 handlePushInitiation :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
-handlePushInitiation _ (Pushing cid CanPush) =
-	unlessM (null <$> xmppRemotes cid) $ 
-		sendNetMessage $ Pushing cid PushRequest
-handlePushInitiation checkcloudrepos (Pushing cid PushRequest) =
+handlePushInitiation _ (Pushing cid (CanPush theiruuid)) =
+	unlessM (null <$> xmppRemotes cid theiruuid) $ do
+		u <- liftAnnex getUUID
+		sendNetMessage $ Pushing cid (PushRequest u)
+handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
 	go Nothing = noop
 	go (Just branch) = do
-		rs <- xmppRemotes cid
+		rs <- xmppRemotes cid theiruuid
 		liftAnnex $ Annex.Branch.commit "update"
 		(g, u) <- liftAnnex $ (,)
 			<$> gitRepo
@@ -279,8 +284,8 @@ handlePushInitiation checkcloudrepos (Pushing cid PushRequest) =
 					(taggedPush u selfjid branch r)
 					(handleDeferred checkcloudrepos)
 			checkcloudrepos r
-handlePushInitiation checkcloudrepos (Pushing cid StartingPush) = do
-	rs <- xmppRemotes cid
+handlePushInitiation checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
+	rs <- xmppRemotes cid theiruuid
 	unless (null rs) $ do
 		void $ alertWhile (syncAlert rs) $
 			xmppReceivePack cid (handleDeferred checkcloudrepos)
