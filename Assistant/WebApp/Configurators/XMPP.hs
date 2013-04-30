@@ -43,7 +43,7 @@ xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 		close <- asIO1 removeAlert
 		addAlert $ xmppNeededAlert $ AlertButton
 			{ buttonLabel = "Configure a Jabber account"
-			, buttonUrl = urlrender XMPPR
+			, buttonUrl = urlrender XMPPConfigR
 			, buttonAction = Just close
 			}
 #else
@@ -91,11 +91,27 @@ getNeedCloudRepoR _ = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
-getXMPPR :: Handler RepHtml
-getXMPPR = postXMPPR
-postXMPPR :: Handler RepHtml
+getXMPPConfigR :: Handler RepHtml
+getXMPPConfigR = postXMPPConfigR
+
+postXMPPConfigR :: Handler RepHtml
+postXMPPConfigR = xmppform DashboardR
+
+getXMPPConfigForPairFriendR :: Handler RepHtml
+getXMPPConfigForPairFriendR = postXMPPConfigForPairFriendR
+
+postXMPPConfigForPairFriendR :: Handler RepHtml
+postXMPPConfigForPairFriendR = xmppform StartXMPPPairFriendR
+
+getXMPPConfigForPairSelfR :: Handler RepHtml
+getXMPPConfigForPairSelfR = postXMPPConfigForPairSelfR
+
+postXMPPConfigForPairSelfR :: Handler RepHtml
+postXMPPConfigForPairSelfR = xmppform StartXMPPPairSelfR
+
+xmppform :: Route WebApp -> Handler RepHtml
 #ifdef WITH_XMPP
-postXMPPR = xmppPage $ do
+xmppform next = xmppPage $ do
 	((result, form), enctype) <- lift $ do
 		oldcreds <- liftAnnex getXMPPCreds
 		runFormPost $ renderBootstrap $ xmppAForm $
@@ -109,9 +125,9 @@ postXMPPR = xmppPage $ do
 	storecreds creds = do
 		void $ liftAnnex $ setXMPPCreds creds
 		liftAssistant notifyNetMessagerRestart
-		redirectUltDest DashboardR
+		redirect next
 #else
-postXMPPR = xmppPage $
+xmppform = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 

@@ -60,8 +60,7 @@ getStartXMPPPairFriendR = ifM (isJust <$> liftAnnex getXMPPCreds)
 			$(widgetFile "configurators/pairing/xmpp/friend/prompt")
 	, do
 		-- go get XMPP configured, then come back
-		setUltDestCurrent
-		redirect XMPPR
+		redirect XMPPConfigForPairFriendR
 	)
 #else
 getStartXMPPPairFriendR = noXMPPPairing
@@ -76,8 +75,7 @@ getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
   where
   	go Nothing = do
 		-- go get XMPP configured, then come back
-		setUltDestCurrent
-		redirect XMPPR
+		redirect XMPPConfigForPairSelfR
 	go (Just creds) = do
 		{- Ask buddies to send presence info, to get
 		 - the buddy list populated. -}
