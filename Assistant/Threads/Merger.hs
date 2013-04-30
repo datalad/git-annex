@@ -32,10 +32,11 @@ mergeThread = namedThread "Merger" $ do
 	let dir = Git.localGitDir g </> "refs"
 	liftIO $ createDirectoryIfMissing True dir
 	let hook a = Just <$> asIO2 (runHandler a)
-	addhook <- hook onAdd
+	changehook <- hook onChange
 	errhook <- hook onErr
 	let hooks = mkWatchHooks
-		{ addHook = addhook
+		{ addHook = changehook
+		, modifyHook = changehook
 		, errHook = errhook
 		}
 	void $ liftIO $ watchDir dir (const False) hooks id
@@ -55,19 +56,14 @@ runHandler handler file _filestatus =
 onErr :: Handler
 onErr msg = error msg
 
-{- Called when a new branch ref is written.
- -
- - This relies on git's atomic method of updating branch ref files,
- - which is to first write the new file to .lock, and then rename it
- - over the old file. So, ignore .lock files, and the rename ensures
- - the watcher sees a new file being added on each update.
+{- Called when a new branch ref is written, or a branch ref is modified.
  -
  - At startup, synthetic add events fire, causing this to run, but that's
  - ok; it ensures that any changes pushed since the last time the assistant
  - ran are merged in.
  -}
-onAdd :: Handler
-onAdd file
+onChange :: Handler
+onChange file
 	| ".lock" `isSuffixOf` file = noop
 	| isAnnexBranch file = do
 		branchChanged
@@ -75,7 +71,7 @@ onAdd file
 		when diverged $
 			unlessM handleDesynced $
 				queueDeferredDownloads "retrying deferred download" Later
-	| "/synced/" `isInfixOf` file = do
+	| "/synced/" `isInfixOf` file =
 		mergecurrent =<< liftAnnex (inRepo Git.Branch.current)
 	| otherwise = noop
   where
