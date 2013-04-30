@@ -12,6 +12,7 @@ module Annex.Perms (
 	noUmask,
 	createContentDir,
 	freezeContentDir,
+	thawContentDir,
 ) where
 
 import Common.Annex
@@ -86,6 +87,10 @@ freezeContentDir file = unlessM crippledFileSystem $
 	go GroupShared = groupWriteRead dir
 	go AllShared = groupWriteRead dir
 	go _ = preventWrite dir
+
+thawContentDir :: FilePath -> Annex ()
+thawContentDir file = unlessM crippledFileSystem $
+	liftIO $ allowWrite $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}

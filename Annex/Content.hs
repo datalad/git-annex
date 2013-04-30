@@ -353,8 +353,7 @@ removeAnnex :: Key -> Annex ()
 removeAnnex key = withObjectLoc key remove removedirect
   where
 	remove file = do
-		unlessM crippledFileSystem $
-			liftIO $ allowWrite $ parentDir file
+		thawContentDir file
 		liftIO $ nukeFile file
 		removeInodeCache key
 		cleanObjectLoc key
@@ -374,8 +373,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 fromAnnex :: Key -> FilePath -> Annex ()
 fromAnnex key dest = do
 	file <- calcRepo $ gitAnnexLocation key
-	unlessM crippledFileSystem $
-		liftIO $ allowWrite $ parentDir file
+	thawContentDir file
 	thawContent file
 	liftIO $ moveFile file dest
 	cleanObjectLoc key
@@ -388,8 +386,7 @@ moveBad key = do
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	createAnnexDirectory (parentDir dest)
-	unlessM crippledFileSystem $
-		liftIO $ allowWrite (parentDir src)
+	thawContentDir src
 	liftIO $ moveFile src dest
 	cleanObjectLoc key
 	logStatus key InfoMissing
