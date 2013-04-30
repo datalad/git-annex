@@ -25,6 +25,7 @@ import Annex.Content.Direct
 import Annex.Link
 import Utility.InodeCache
 import Utility.CopyFile
+import Annex.Perms
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -187,6 +188,7 @@ toDirectGen k f = do
 		[] -> ifM (liftIO $ doesFileExist loc)
 			( return $ Just $ do
 				{- Move content from annex to direct file. -}
+				thawContentDir loc
 				updateInodeCache k loc
 				thawContent loc
 				replaceFile f $ liftIO . moveFile loc

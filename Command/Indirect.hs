@@ -18,6 +18,7 @@ import Annex.Direct
 import Annex.Content
 import Annex.CatFile
 import Annex.Version
+import Annex.Perms
 import Init
 
 def :: [Command]
@@ -80,6 +81,7 @@ perform = do
 
 	fromdirect f k = do
 		showStart "indirect" f
+		thawContentDir =<< calcRepo (gitAnnexLocation k)
 		cleandirect k -- clean before content directory gets frozen
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 			moveAnnex k f

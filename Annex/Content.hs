@@ -242,6 +242,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 
 	storedirect' [] = storeobject =<< calcRepo (gitAnnexLocation key)
 	storedirect' (dest:fs) = do
+		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		updateInodeCache key src
 		thawContent src
 		replaceFile dest $ liftIO . moveFile src
@@ -358,6 +359,7 @@ removeAnnex key = withObjectLoc key remove removedirect
 		removeInodeCache key
 		cleanObjectLoc key
 	removedirect fs = do
+		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		cache <- recordedInodeCache key
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
