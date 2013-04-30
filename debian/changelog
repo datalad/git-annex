@@ -48,6 +48,11 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     S3, Glacier, and Box.com remotes.
   * Store an annex-uuid file in the bucket when setting up a new S3 remote.
   * Support building with DAV 0.4.
+  * assistant: Improved XMPP protocol to better support multiple repositories
+    using the same XMPP account. Fixes bad behavior when sharing with a friend
+    when you or the friend have multiple reposotories on an XMPP account.
+    Note that XMPP pairing with your own devices still pairs with all
+    repositories using your XMPP account.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
