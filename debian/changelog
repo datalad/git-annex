@@ -47,6 +47,7 @@ git-annex (4.20130418) UNRELEASED; urgency=low
     when creating a new remote of the same type. Done for Internet Archive,
     S3, Glacier, and Box.com remotes.
   * Store an annex-uuid file in the bucket when setting up a new S3 remote.
+  * Support building with DAV 0.4.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 

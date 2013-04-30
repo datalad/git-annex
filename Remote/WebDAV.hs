@@ -231,7 +231,7 @@ davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file
 
 davUrlExists :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
+davUrlExists url user pass = decode <$> catchHttp get
   where
 	decode (Right _) = Right True
 #if ! MIN_VERSION_http_conduit(1,9,0)
@@ -241,6 +241,11 @@ davUrlExists url user pass = decode <$> catchHttp (getProps url user pass)
 #endif
 		| statusCode status == statusCode notFound404 = Right False
 	decode (Left e) = Left $ showEitherException e
+#if ! MIN_VERSION_DAV(0,4,0)
+	get = getProps url user pass
+#else
+	get = getProps url user pass Nothing
+#endif
 
 davGetUrlContent :: DavUrl -> DavUser -> DavPass -> IO  (Maybe L.ByteString)
 davGetUrlContent url user pass = fmap (snd . snd) <$>
