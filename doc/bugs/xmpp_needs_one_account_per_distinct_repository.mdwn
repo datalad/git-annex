@@ -85,7 +85,7 @@ So, we need another fix:
 
 * Send UUID in XMPP git push protocol messages. Only respond to git push
   messages from a known UUID, and ignore all others. (XMPP pairing
-  already sends the UUID, so it will be known.)
+  already sends the UUID, so it will be known.) **done**
 
 ----
 
