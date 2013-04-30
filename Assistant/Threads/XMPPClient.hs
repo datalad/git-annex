@@ -219,7 +219,9 @@ relayNetMessage selfjid = do
 				debug ["exploded undirected message to clients", unwords $ map logClient clients]
 				return $ forM_ (clients) $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
-			else return $ putStanza $ pushMessage pushstage tojid selfjid
+			else do
+				debug ["to client:", logJid tojid]
+				return $ putStanza $ pushMessage pushstage tojid selfjid
 	convert msg = convertNetMsg msg selfjid
 
 {- Converts a NetMessage to an XMPP action. -}
