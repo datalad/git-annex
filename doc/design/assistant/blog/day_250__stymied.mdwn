@@ -10,7 +10,7 @@ Instead, today I worked on making the webapp require less redundant
 password entry when adding multiple repositories using the same cloud
 provider. This is especially needed for the Internet Archive, since users
 will often want to have quite a few repositories, for different IA items.
-Implemented it for for box.com, and Amazon too.
+Implemented it for box.com, and Amazon too.
 
 Francois Marier has built an Ubuntu PPA for git-annex, containing the
 current version, with the assistant and webapp. It's targeted at Precise,
