@@ -1,14 +1,37 @@
 git-annex (4.20130418) UNRELEASED; urgency=low
 
+  * sync, assistant: Behavior changes: Sync with remotes that have
+    annex-ignore set, so that git remotes on servers without git-annex
+    installed can be used to keep clients' git repos in sync.
   * assistant: Work around misfeature in git 1.8.2 that makes
     `git commit --alow-empty -m ""` run an editor.
+  * sync: Bug fix, avoid adding to the annex the 
+    dummy symlinks used on crippled filesystems.
+  * Add public repository group.
+    (And inpreferreddir to preferred content expressions.)
+  * webapp: Can now set up Internet Archive repositories.
+  * S3: Dropping content from the Internet Archive doesn't work, but
+    their API indicates it does. Always refuse to drop from there.
+  * Automatically register public urls for files uploaded to the
+    Internet Archive.
+  * To enable an existing special remote, the new enableremote command
+    must be used. The initremote command now is used only to create
+    new special remotes.
+  * initremote: If two existing remotes have the same name,
+    prefer the one with a higher trust level.
+  * assistant: Improved XMPP protocol to better support multiple repositories
+    using the same XMPP account. Fixes bad behavior when sharing with a friend
+    when you or the friend have multiple reposotories on an XMPP account.
+    Note that XMPP pairing with your own devices still pairs with all
+    repositories using your XMPP account.
+  * assistant: Fix bug that could cause incoming pushes to not get
+    merged into the local tree. Particularly affected XMPP pushes.
+  * webapp: Display some additional information about a repository on
+    its edit page.
   * webapp: Install FDO desktop menu file when started in standalone mode.
   * webapp: Don't default to making repository in cwd when started
     from within a directory containing a git-annex file (eg, standalone
     tarball directory).
-  * sync, assistant: Sync with remotes that have annex-ignore set,
-    so that git remotes on servers without git-annex installed can be used
-    to keep clients' git repos in sync.
   * Detect systems that have no user name set in GECOS, and also
     don't have user.name set in git config, and put in a workaround
     so that commits to the git-annex branch (and the assistant)
@@ -21,40 +44,17 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * assistant: When built with git before 1.8.0, use `git remote rm`
     to delete a remote. Newer git uses `git remote remove`.
   * rmurl: New command, removes one of the recorded urls for a file.
-  * sync: Bug fix, avoid adding to the annex the 
-    dummy symlinks used on crippled filesystems.
   * Detect when the remote is broken like bitbucket is, and exits 0 when
     it fails to run git-annex-shell.
   * assistant: Several improvements to performance and behavior when
     performing bulk adds of a large number of files (tens to hundreds
     of thousands).
   * assistant: Sanitize XMPP presence information logged for debugging.
-  * initremote: If two existing remotes have the same name,
-    prefer the one with a higher trust level.
-  * Add public repository group.
-    (And inpreferreddir to preferred content expressions.)
-  * webapp: Can now set up Internet Archive repositories.
-  * S3: Dropping content from the Internet Archive doesn't work, but
-    their API indicates it does. Always refuse to drop from there.
-  * webapp: Display some additional information about a repository on
-    its edit page.
-  * Automatically register public urls for files uploaded to the
-    Internet Archive.
-  * To enable an existing special remote, the new enableremote command
-    must be used. The initremote command now is used only to create
-    new special remotes.
   * webapp: Now automatically fills in any creds used by an existing remote
     when creating a new remote of the same type. Done for Internet Archive,
     S3, Glacier, and Box.com remotes.
   * Store an annex-uuid file in the bucket when setting up a new S3 remote.
   * Support building with DAV 0.4.
-  * assistant: Improved XMPP protocol to better support multiple repositories
-    using the same XMPP account. Fixes bad behavior when sharing with a friend
-    when you or the friend have multiple reposotories on an XMPP account.
-    Note that XMPP pairing with your own devices still pairs with all
-    repositories using your XMPP account.
-  * assistant: Fix bug that could cause incoming pushes to not get
-    merged into the local tree. Particularly affected XMPP pushes.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
 
