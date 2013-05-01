@@ -1,4 +1,4 @@
-git-annex (4.20130418) UNRELEASED; urgency=low
+git-annex (4.20130501) unstable; urgency=low
 
   * sync, assistant: Behavior changes: Sync with remotes that have
     annex-ignore set, so that git remotes on servers without git-annex
@@ -56,7 +56,7 @@ git-annex (4.20130418) UNRELEASED; urgency=low
   * Store an annex-uuid file in the bucket when setting up a new S3 remote.
   * Support building with DAV 0.4.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 18 Apr 2013 16:22:48 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 01 May 2013 01:42:46 -0400
 
 git-annex (4.20130417) unstable; urgency=low
 
