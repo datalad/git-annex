@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-04-30T23:36:12Z"
+ content="""
+@andrew I've reproduced and fixed this problem. It does not seem to be related to cwebber's problem.
+
+Waiting on a test case from cwebber. His permissions seem ok, so I don't know what's causing that.
+"""]]

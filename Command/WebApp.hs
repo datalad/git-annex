@@ -137,6 +137,7 @@ firstRun listenhost = do
 	mainthread v url htmlshim
 		| isJust listenhost = do
 			putStrLn url
+			hFlush stdout
 			go
 		| otherwise = do
 			browser <- maybe Nothing webBrowser <$> Git.Config.global
@@ -154,6 +155,7 @@ firstRun listenhost = do
 openBrowser :: Maybe FilePath -> FilePath -> Maybe Handle -> Maybe Handle -> IO ()
 openBrowser mcmd htmlshim outh errh = do
 	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
+	hFlush stdout
 	environ <- cleanEnvironment
 	(_, _, _, pid) <- createProcess p
 		{ env = environ
