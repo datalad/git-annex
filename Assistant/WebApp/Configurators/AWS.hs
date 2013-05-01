@@ -142,6 +142,7 @@ getAddGlacierR :: Handler RepHtml
 getAddGlacierR = postAddGlacierR
 
 postAddGlacierR :: Handler RepHtml
+#ifdef WITH_S3
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- lift $
@@ -158,6 +159,9 @@ postAddGlacierR = glacierConfigurator $ do
   where
 	setgroup r = liftAnnex $ 
 		setStandardGroup (Remote.uuid r) SmallArchiveGroup
+#else
+postAddGlacierR = error "S3 not supported by this build"
+#endif
 
 getEnableS3R :: UUID -> Handler RepHtml
 #ifdef WITH_S3
@@ -184,6 +188,7 @@ postEnableGlacierR :: UUID -> Handler RepHtml
 postEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
 
 enableAWSRemote :: RemoteType -> UUID -> Widget
+#ifdef WITH_S3
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- lift $
@@ -198,6 +203,9 @@ enableAWSRemote remotetype uuid = do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableaws")
+#else
+enableAWSRemote _ _ = error "S3 not supported by this build"
+#endif
 
 makeAWSRemote :: RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
 makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
@@ -224,10 +232,10 @@ getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
 #ifdef WITH_S3
 isIARemoteConfig :: RemoteConfig -> Bool
 isIARemoteConfig = S3.isIAHost . fromMaybe "" . M.lookup "host"
-#endif
 
 previouslyUsedAWSCreds :: Annex (Maybe CredPair)
 previouslyUsedAWSCreds = getM gettype [S3.remote, Glacier.remote]
   where
 	gettype t = previouslyUsedCredPair AWS.creds t $
 		not . isIARemoteConfig . Remote.config
+#endif
