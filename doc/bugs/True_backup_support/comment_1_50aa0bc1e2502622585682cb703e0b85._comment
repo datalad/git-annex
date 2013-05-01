@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="I think this already works"
+ date="2013-05-01T03:09:13Z"
+ content="""
+I think this should already work in the latest git version, I have been using this feature for the last week or so.
+
+This change was described in [[/design/assistant/blog/day_245__misc/]], and I asked for it [[here|/forum/Automatically_syncronise_centralised_repository/]].
+"""]]
