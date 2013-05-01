@@ -730,15 +730,17 @@ test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ 
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
-		let initremote = git_annex "initremote"
+		let a cmd = git_annex cmd
 			[ "foo"
 			, "type=directory"
 			, "encryption=" ++ Utility.Gpg.testKeyId
 			, "directory=dir"
 			, "highRandomQuality=false"
 			]
-		initremote @? "initremote failed"
-		initremote @? "initremote failed when run twice in a row"
+		a "initremote" @? "initremote failed"
+		not <$> a "initremote" @? "initremote failed to fail when run twice in a row"
+		a "enableremote" @? "enableremote failed"
+		a "enableremote" @? "enableremote failed when run twice in a row"
 		git_annex "get" [annexedfile] @? "get of file failed"
 		annexed_present annexedfile
 		git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
