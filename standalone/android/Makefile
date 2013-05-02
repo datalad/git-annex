@@ -13,7 +13,7 @@ export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
 # Where to store the $(GIT_ANNEX_ANDROID_SOURCETREE)s to utilities. This
 # directory will be created by `make source`.
-GIT_ANNEX_ANDROID_SOURCETREE?=../tmp/android-sourcetree
+GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/tmp/android-sourcetree
 
 GITTREE=$(GIT_ANNEX_ANDROID_SOURCETREE)/git/installed-tree
 
