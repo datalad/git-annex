@@ -66,7 +66,7 @@ start' allowauto listenhost = do
 				\origout origerr url htmlshim ->
 					if isJust listenhost
 						then maybe noop (`hPutStrLn` url) origout
-						else openBrowser browser htmlshim origout origerr
+						else openBrowser browser htmlshim url origout origerr
 			)
 	auto
 		| allowauto = liftIO startNoRepo
@@ -141,7 +141,7 @@ firstRun listenhost = do
 			go
 		| otherwise = do
 			browser <- maybe Nothing webBrowser <$> Git.Config.global
-			openBrowser browser htmlshim Nothing Nothing
+			openBrowser browser htmlshim url Nothing Nothing
 			go
 	  where
 		go = do
@@ -152,8 +152,8 @@ firstRun listenhost = do
 					sendurlback v
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
-openBrowser :: Maybe FilePath -> FilePath -> Maybe Handle -> Maybe Handle -> IO ()
-openBrowser mcmd htmlshim outh errh = do
+openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+openBrowser mcmd htmlshim realurl outh errh = do
 	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 	hFlush stdout
 	environ <- cleanEnvironment
@@ -166,10 +166,17 @@ openBrowser mcmd htmlshim outh errh = do
 	unless (exitcode == ExitSuccess) $
 		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
   where
-	url = fileUrl htmlshim
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
-		Nothing -> browserProc htmlshim
+		Nothing -> browserProc htmlshim url
+#ifdef __ANDROID__
+	{- Android does not support file:// urls, but neither is
+	 - the security of the url in the process table important
+	 - there, so just use the real url. -}
+	url = realurl
+#else
+	url = fileUrl htmlshim
+#endif
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath
