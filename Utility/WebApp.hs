@@ -87,10 +87,7 @@ getSocket h = do
 		_ -> error "unable to bind to a local socket"
   where
 	(hostname, port) = maybe (localhost, Nothing) splitHostPort h
-	hints = defaultHints
-		{ addrFlags = [AI_ADDRCONFIG]
-		, addrSocketType = Stream
-		}
+	hints = defaultHints { addrSocketType = Stream }
 	{- Repeated attempts because bind sometimes fails for an
 	 - unknown reason on OSX. -} 
 	go addr = go' 100 addr
