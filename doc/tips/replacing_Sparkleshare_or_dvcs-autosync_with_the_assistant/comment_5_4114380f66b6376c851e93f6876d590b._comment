@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="mimetypes"
+ date="2013-05-01T20:37:33Z"
+ content="""
+Does `annex.largefiles` support mimetypes? F.e. `git config annex.largefiles \"not mimetype=text/plain\"`
+"""]]

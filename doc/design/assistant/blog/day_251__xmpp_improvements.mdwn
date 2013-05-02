@@ -3,7 +3,7 @@ since February, or possibly earlier, not counting trips. Whoops!
 
 Also, I was feeling overwhelmed with the complexity of fixing XMPP to not
 be buggy when there are multiple separate repos using the same XMPP
-account. Let my subconcious work on that, and last night it served up the
+account. Let my subconscious work on that, and last night it served up the
 solution, in detail. Built it today.
 
 It's only a partial solution, really. If you want to use the same XMPP
@@ -21,7 +21,7 @@ Before, it would merge them all together without warning.
 ----
 
 While I was testing that, I think I found out the real reason why XMPP
-pushes have seemed a little unrelaible. It turns out to not be an XMPP
+pushes have seemed a little unreliable. It turns out to not be an XMPP
 issue at all! Instead, the merger was simply not always
 noticing when `git receive-pack` updated a ref, and not merging it into
 master. That was easily fixed.
