@@ -29,8 +29,9 @@ start = do
 		putStrLn $ "default repository version: " ++ defaultVersion
 		putStrLn $ "supported repository versions: " ++ unwords supportedVersions
 		putStrLn $ "upgrade supported from repository versions: " ++ unwords upgradableVersions
-		putStrLn $ "build flags: " ++ unwords buildFlags
 	stop
 
 showPackageVersion :: IO ()
-showPackageVersion = putStrLn $ "git-annex version: " ++ SysConfig.packageversion
+showPackageVersion = do
+	putStrLn $ "git-annex version: " ++ SysConfig.packageversion
+	putStrLn $ "build flags: " ++ unwords buildFlags
