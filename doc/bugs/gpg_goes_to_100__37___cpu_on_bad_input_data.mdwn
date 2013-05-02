@@ -2,7 +2,7 @@
 Bad input data given to gpg will make it lock.
 
 ### What steps will reproduce the problem?
-Trying to download gpg encrypted data from remote with bad/incorrect dat
+Trying to download gpg encrypted data from remote with bad/incorrect data
 
 ### What version of git-annex are you using? On what operating system?
 4.20130501-gd9e288b, on ubuntu 13.04
