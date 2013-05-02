@@ -127,7 +127,7 @@ xmppform next = xmppPage $ do
 		liftAssistant notifyNetMessagerRestart
 		redirect next
 #else
-xmppform = xmppPage $
+xmppform _ = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
