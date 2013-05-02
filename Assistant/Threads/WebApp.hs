@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.Threads.WebApp where
@@ -54,6 +54,11 @@ webAppThread
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
 webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup = thread $ liftIO $ do
+#ifdef __ANDROID__
+	when (isJust listenhost) $
+		-- See Utility.WebApp
+		error "Sorry, --listen is not currently supported on Android"
+#endif
 	webapp <- WebApp
 		<$> pure assistantdata
 		<*> (pack <$> genRandomToken)
