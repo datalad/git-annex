@@ -173,7 +173,7 @@ android: Build/EvilSplicer
 # only if the existing source file is not newer. (So, if a file
 # used to have TH splices but they were removed, it will be newer,
 # and not overwritten.)
-	cp -uR tmp/splices/* tmp/androidtree
+	cp -uR tmp/splices/* tmp/androidtree || true
 # Some additional dependencies needed by the expanded splices.
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
