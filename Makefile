@@ -177,7 +177,7 @@ android: Build/EvilSplicer
 # Some additional dependencies needed by the expanded splices.
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
-	sed -i 's/GHC-Options: \\(.*\\)-Wall/GHC-Options: \\1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
+	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
@@ -186,6 +186,10 @@ android: Build/EvilSplicer
 		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f"Android $(ANDROID_FLAGS)"; \
 	fi
 	$(MAKE) -C tmp/androidtree git-annex
+
+adb:
+	ANDROID_FLAGS="-Production" $(MAKE) android
+	adb push tmp/androidtree/dist/build/git-annex/git-annex /data/data/ga.androidterm/bin/git-annex
 
 androidapp:
 	$(MAKE) android
