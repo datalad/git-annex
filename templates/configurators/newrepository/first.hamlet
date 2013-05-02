@@ -2,10 +2,7 @@
   <h2>
     Welcome to git-annex!
   <p>
-    There's just one thing to do before you can start using the power #
-    and convenience of git-annex.
-  <h2>
-    Create a git-annex repository
+    To get started, let's create a git-annex repository.
   <p>
     Files in this repository will managed by git-annex, #
     and kept in sync with your repositories on other devices.
