@@ -18,6 +18,12 @@ moving `.ssh/key.git-annex*` to `.ssh/git-annex/` (creating
 that directory first), and edit `.ssh/config` to reflect the new
 location of the key. You will also need to restart gnome-keyring.
 
+Another change relates to files in `archive/` directories. Client repositories
+now sync these files between themselves like any other files, until
+the files reach an archive repository. Only then are they removed from
+the client repositories. So you need to ensure you have at least one
+archive repository if you want to use the `archive/` directory feature.
+
 ## version 4.20130323, 4.20130405
 
 These versions continue fixing bugs and adding features.
