@@ -11,18 +11,16 @@ I have an archive repo (rsync) and a smallarchive repo (glacier). The assistant 
 
 Mac OSX 10.8.3 (Build 12D78)
 
-git-annex version: 4.20130501-ged2fc6f
-
-local repository version: 4
-default repository version: 3
-supported repository versions: 3 4
-upgrade supported from repository versions: 0 1 2
-build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+    git-annex version: 4.20130501-ged2fc6f
+    
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
 
 
 ### Please provide any additional information below.
-
-This is new behavior
 
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
