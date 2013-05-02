@@ -170,7 +170,7 @@ openBrowser mcmd htmlshim realurl outh errh = do
   where
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
-		Nothing -> browserProc htmlshim url
+		Nothing -> browserProc url
 #ifdef __ANDROID__
 	{- Android does not support file:// urls, but neither is
 	 - the security of the url in the process table important
