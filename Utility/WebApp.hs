@@ -72,7 +72,7 @@ webAppSettings = defaultSettings
 	}
 
 {- Binds to a local socket, or if specified, to a socket on the specified
- - hostname or address. Selets any free port, unless the hostname ends with
+ - hostname or address. Selects any free port, unless the hostname ends with
  - ":port"
  -
  - Prefers to bind to the ipv4 address rather than the ipv6 address
@@ -80,6 +80,18 @@ webAppSettings = defaultSettings
  -}
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
+#ifdef __ANDROID__
+	-- getAddrInfo currently segfaults on Android.
+	-- The HostName is ignored by this code.
+	when (isJust h) $
+		error "getSocket with HostName not supported on Android"
+	addr <- inet_addr "127.0.0.1"
+ 	sock <- socket AF_INET Stream defaultProtocol
+	preparesocket sock
+	bindSocket sock (SockAddrInet aNY_PORT addr)
+	use sock
+  where
+#else
 	addrs <- getAddrInfo (Just hints) (Just hostname) port
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
@@ -94,12 +106,16 @@ getSocket h = do
 	go' :: Int -> AddrInfo -> IO Socket
 	go' 0 _ = error "unable to bind to local socket"
 	go' n addr = do
-		r <- tryIO $ bracketOnError (open addr) sClose (use addr)
+		r <- tryIO $ bracketOnError (open addr) sClose (useaddr addr)
 		either (const $ go' (pred n) addr) return r
 	open addr = socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
-	use addr sock = do
-		setSocketOption sock ReuseAddr 1
+	useaddr addr sock = do
+		preparesocket sock
 		bindSocket sock (addrAddress addr)
+		use sock
+#endif
+	preparesocket sock = setSocketOption sock ReuseAddr 1
+	use sock = do
 		listen sock maxListenQueue
 		return sock
 
