@@ -32,9 +32,10 @@ transfers when not on wifi. This may need to be configurable.
   allow git to link to it.
 * getEnvironment is broken on Android <https://github.com/neurocyte/ghc-android/issues/7>
   and a few places use it.
-* XMPP support. I got all haskell libraries installed, but it fails to find
-  several C libraries at link time.
 * Get local pairing to work. network-multicast and network-info don't
   currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
   broken with local repositories.
+* Webapp: Bootstrap icons are not displayed. Check, is this a problem
+  with the icon file not being served up with right content, or is it
+  a browser incompatability?
