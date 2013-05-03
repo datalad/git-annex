@@ -31,3 +31,5 @@
 * S3, glacier, and local pairing are not yet enabled for Android.
 * The "Files" link doesn't start a file browser. Should be possible to do
   on Android via intents, I suppose?
+* Does not detect mounted USB drives. getMounts is failing
+  probably?
