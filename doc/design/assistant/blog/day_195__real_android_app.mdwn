@@ -1,12 +1,12 @@
 Well, it's built. [Real Android app for git-annex](http://downloads.kitenet.net/git-annex/android/current/).
 
-[[!img /assistant/android/appinstalled.png]]
+[[!img /android/appinstalled.png]]
 
 When installed, this will open a terminal in which you have access to
 git-annex and all the git commands and busybox commands as well. No webapp
 yet, but command line users should feel right at home.
 
-[[!img /assistant/android/terminal.png]]
+[[!img /android/terminal.png]]
 
 Please test it out, at least as far as installing it, opening the terminal,
 and checking that you can run `git annex`; I've only been able to test on

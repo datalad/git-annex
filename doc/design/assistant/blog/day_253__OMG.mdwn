@@ -1,4 +1,4 @@
-[[!img /assistant/android/webapp.png alt="git-annex webapp on Android"]]
+[[!img /android/webapp.png alt="git-annex webapp on Android"]]
 
 I fixed what I thought was keeping the webapp from working on Android, but
 then it started segfaulting every time it was started. Eventually I
