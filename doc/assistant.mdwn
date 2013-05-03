@@ -18,7 +18,7 @@ the [[release_notes]] for known infelicities and upgrade instructions.
 ## documentation
 
 * [[Basic usage|quickstart]]
-* [[Android documentation/Android]]
+* [[Android documentation|/Android]]
 * Want to make two nearby computers share the same synchronised folder?  
   Follow the [[local_pairing_walkthrough]].
 * Or perhaps you want to share files between computers in different
