@@ -15,10 +15,10 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
   [presentation at LCA2013](http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4)
 * Month 8: [[!traillink Android]]
 * Month 9: [[screencasts|videos]] and polishing
+* Month 10: bugfixing, Android webapp
 
 We are, approximately, here:
 
-* Month 10: bugfixing, Android webapp
 * Month 11: more user-driven features and polishing
 * Month 12: "Windows purgatory" [[Windows]]
 
