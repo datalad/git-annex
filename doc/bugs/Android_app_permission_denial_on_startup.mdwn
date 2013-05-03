@@ -13,3 +13,4 @@ Just downloaded the .apk (Friday May 3rd).  Android 4.2.2 on Google/LG Nexus 4
 ### Please provide any additional information below.
 
 See this [screenshot](https://docs.google.com/file/d/0B8tqeaAn45VORU1ET1ZpTWxLTjQ/edit?usp=sharing).
+Feel free to ping me on IRC if you need additional info or want to test a fix.
