@@ -59,6 +59,13 @@ Command", and clear out the default `git annex webapp &` setting.
 Or, if you'd like to run the assistant automatically, but not open the
 webapp, change the "Initial Command" to: `git annex assistant --autostart`
 
+## using from adb shell
+
+To set up the git-annex environment from within `adb shell`, run:
+`/data/data/ga.androidterm/runshell`
+
+This will launch a shell that has git-annex, git, etc in PATH.
+
 ## disk space usage
 
 The git-annex app uses 65 MB of space on your Android device.
