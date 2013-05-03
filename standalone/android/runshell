@@ -104,9 +104,7 @@ run () {
 		shift 1
 		exec "$cmd" "$@"
 	else
-		if $cmd test -e "$HOME/.config/git-annex/autostart"; then
-			git annex assistant --autostart || $cmd true
-		fi
+		git annex webapp &
 		/system/bin/sh
 	fi
 }
