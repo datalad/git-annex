@@ -10,6 +10,7 @@ module Utility.FileMode where
 import Common
 
 import Control.Exception (bracket)
+import Utility.Exception
 import System.Posix.Types
 import Foreign (complement)
 
@@ -103,10 +104,16 @@ setSticky :: FilePath -> IO ()
 setSticky f = modifyFileMode f $ addModes [stickyMode]
 
 {- Writes a file, ensuring that its modes do not allow it to be read
- - by anyone other than the current user, before any content is written. -}
+ - by anyone other than the current user, before any content is written.
+ -
+ - On a filesystem that does not support file permissions, this is the same
+ - as writeFile.
+ -}
 writeFileProtected :: FilePath -> String -> IO ()
 writeFileProtected file content = do
 	h <- openFile file WriteMode
-	modifyFileMode file $ removeModes [groupReadMode, otherReadMode]
+	void $ tryIO $
+		modifyFileMode file $
+			removeModes [groupReadMode, otherReadMode]
 	hPutStr h content
 	hClose h
