@@ -58,3 +58,10 @@ Command", and clear out the default `git annex webapp &` setting.
 
 Or, if you'd like to run the assistant automatically, but not open the
 webapp, change the "Initial Command" to: `git annex assistant --autostart`
+
+## disk space usage
+
+The git-annex app uses 65 MB of space on your Android device.
+Do not be fooled by larger numbers that Android may display for its size,
+like "273 MB". Android does not correctly calculate the size of hard linked
+files, so its numbers are wrong.
