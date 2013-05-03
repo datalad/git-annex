@@ -36,6 +36,3 @@ transfers when not on wifi. This may need to be configurable.
   currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
   broken with local repositories.
-* Webapp: Bootstrap icons are not displayed. Check, is this a problem
-  with the icon file not being served up with right content, or is it
-  a browser incompatability?
