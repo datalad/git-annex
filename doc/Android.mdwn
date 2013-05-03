@@ -5,7 +5,7 @@ and other devices.
 [[Android installation instructions|/install/android]]
 
 When you run the git-annex Android app, two windows will open. The first is
-a terminal window, and the second is a web browser running the git-annex
+a terminal window, and the second is a web browser showing the git-annex
 webapp.
 
 [[!img apps.png alt="two windows"]]
