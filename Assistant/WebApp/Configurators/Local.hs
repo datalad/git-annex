@@ -138,12 +138,21 @@ getFirstRepositoryR :: Handler RepHtml
 getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler RepHtml
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
+#ifdef __ANDROID__
+	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
+	let path = "/sdcard/annex"
+#else
+	let androidspecial = False
 	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
+#endif
 	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> lift $
-			startFullAssistant $ T.unpack p
+			startFullAssistant (T.unpack p) ClientGroup
 		_ -> $(widgetFile "configurators/newrepository/first")
+
+getAndroidCameraRepositoryR :: Handler ()
+getAndroidCameraRepositoryR = startFullAssistant "/sdcard/DCIM" SourceGroup
 
 {- Adding a new local repository, which may be entirely separate, or may
  - be connected to the current repository. -}
@@ -299,14 +308,13 @@ driveList = return []
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
  - url to the new webapp. -}
-startFullAssistant :: FilePath -> Handler ()
-startFullAssistant path = do
+startFullAssistant :: FilePath -> StandardGroup -> Handler ()
+startFullAssistant path group = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
 		u <- initRepo isnew True path Nothing
-		inDir path $ 
-			setStandardGroup u ClientGroup
+		inDir path $ setStandardGroup u group
 		addAutoStartFile path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp

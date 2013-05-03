@@ -21,8 +21,9 @@
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
 
 /config/addrepository AddRepositoryR GET
-/config/repository/new/first FirstRepositoryR GET POST
 /config/repository/new NewRepositoryR GET POST
+/config/repository/new/first FirstRepositoryR GET POST
+/config/repository/new/androidcamera AndroidCameraRepositoryR GET
 /config/repository/switcher RepositorySwitcherR GET
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
 /config/repository/combine/#FilePathAndUUID CombineRepositoryR GET

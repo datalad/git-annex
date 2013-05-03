@@ -12,22 +12,6 @@ webapp.
 
 [[!toc ]]
 
-## using the webapp
-
-You can use the webapp on Android much the same as on any other
-operating system, to set up the git-annex assistant.
-
-The repository created by the webapp on your Android device is configured,
-by default, as a "source" repository. This way, when you create a file on
-Android (by, for example, taking a picture), it will be uploaded from your
-Android device, and then its content removed from the device. This saves
-storage space.
-
-If you want to send files to your Android, and use them there, you should
-edit the repository's configuration, and select "client". Bear in mind that
-this will make it try to get every file placed in your repository on any
-other computer, which might take up a lot of space.
-
 ## closing and reopening the webapp
 
 The webapp does not need to be left open after you've set up your
