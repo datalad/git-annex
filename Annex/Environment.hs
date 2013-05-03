@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Environment where
 
 import Common.Annex
@@ -27,8 +29,14 @@ checkEnvironmentIO :: IO ()
 checkEnvironmentIO = do
 	whenM (null <$> myUserGecos) $ do
 		username <- myUserName
-		-- existing environment is not overwritten
-		setEnv "GIT_AUTHOR_NAME" username False
-		setEnv "GIT_COMMITTER_NAME" username False
-		hostname <- getHostName
-		setEnv "EMAIL" (username ++ "@" ++ hostname) False
+		ensureEnv "GIT_AUTHOR_NAME" username
+		ensureEnv "GIT_COMMITTER_NAME" username
+  where
+#ifndef __ANDROID__
+  	-- existing environment is not overwritten
+	ensureEnv var val = setEnv var val False
+#else
+	-- Environment setting is broken on Android, so this is dealt with
+	-- in runshell instead.
+	ensureEnv _ _ = noop
+#endif

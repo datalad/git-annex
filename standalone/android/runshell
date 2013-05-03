@@ -58,10 +58,10 @@ buildtree () {
 }
 
 install () {
+	if ! $cmd mkdir -p "$HOME"; then
+		$cmd echo "mkdir of $HOME failed!"
+	fi
 	if $cmd test ! -e "$base/bin/git-annex"; then
-		if ! $cmd mkdir -p "$HOME"; then
-			$cmd echo "mkdir of $HOME failed!"
-		fi
 		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
 			$cmd echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
 			$cmd sh
@@ -86,7 +86,7 @@ run () {
 	export ORIG_GIT_TEMPLATE_DIR
 	GIT_TEMPLATE_DIR="$base/templates"
 	export GIT_TEMPLATE_DIR
-	
+
 	# Indicate which variables were exported above.
 	GIT_ANNEX_STANDLONE_ENV="GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 	export GIT_ANNEX_STANDLONE_ENV
@@ -98,18 +98,17 @@ run () {
 	# /tmp probably doesn't exist, so also use it as TMPDIR
 	TMPDIR=$GIT_ANNEX_TMP_DIR
 	export TMPDIR
-	
+
+	if $cmd test ! -e "$HOME/.gitconfig"; then
+		git config --global user.email "git-annex@android"
+		git config --global user.name "android"
+	fi
+
 	if $cmd test "$1"; then
 		cmd="$1"
 		shift 1
 		exec "$cmd" "$@"
 	else
-		# Ensure home directory exists, even if it got deleted
-		# somehow.
-		if ! $cmd mkdir -p "$HOME"; then
-			$cmd echo "mkdir of $HOME failed!"
-		fi
-
 		# As good a start point as any.
 		cd "$HOME"
 
