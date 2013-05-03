@@ -36,6 +36,9 @@ import Blaze.ByteString.Builder (Builder)
 import Data.Monoid
 import Control.Arrow ((***))
 import Control.Concurrent
+#ifdef __ANDROID__
+import Data.Endian
+#endif
 
 localhost :: HostName
 localhost = "localhost"
@@ -63,7 +66,16 @@ runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp h app observer = do
 	sock <- getSocket h
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
-	observer =<< getSocketName sock
+	sockaddr <- fixSockAddr <$> getSocketName sock
+	observer sockaddr
+
+fixSockAddr :: SockAddr -> SockAddr
+#ifdef __ANDROID__
+{- On Android, the port is currently incorrectly returned in network
+ - byte order, which is wrong on little endian systems. -}
+fixSockAddr (SockAddrInet (PortNum port) addr) = SockAddrInet (PortNum $ swapEndian port) addr
+#endif
+fixSockAddr addr = addr
 
 webAppSettings :: Settings
 webAppSettings = defaultSettings

@@ -100,6 +100,7 @@ Executable git-annex
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Android)
+    Build-Depends: data-endian
     CPP-Options: -D__ANDROID__
 
   if os(linux) && flag(Inotify)
