@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Definite improvement"
+ date="2013-05-03T06:27:12Z"
+ content="""
+Hi,
+
+I have just tried it out again with the latest (20130501) version.
+
+It is really nice to see you have been working on it, and it have improved tremendously!
+The logging issue solved, and logrotates even, and it finished importing without crashing!
+
+Remaining polishing things:
+
+a)
+The import time is not as good (as you write), it slowes itself down.
+It is true the first 10000 files import in about an hour, but it finishes with everything
+in 9 hours 20 minutes.
+(on a normal laptop, the last 5000 file portion took more then 2 hours)
+
+b) 
+Every startup means rechecksuming everything, so it means the second start took also around 8-12 hours.
+(I don't know exactly because it finished somewhere during the night, but it was longer then 8 hours)
+I don't think rechecksuming is necessary at all, if the filename, size and date have not modified, 
+then why rechecksuming (sha) it?
+
+
+c) 
+It is leaking. 
+At the second startup, it reported it successfully added:
+    Added 2375 files 5 files probe25366.txt
+
+I have not touched the directory. ls confirms leaking:
+
+    After first start (importing):
+    annex_many/.git$ ls -lR |wc -l
+    770199
+
+    After second startup:
+    annex_many/.git$ ls -lR |wc -l
+    788351
+
+d) Without ulimit raise, it does not work at all.
+I think it could be solved by not watching each and every directory all the time.
+Every users will likely have a working directory and some which he don't intend to touch/modify at all.
+Some usecases: photo archiving, video archiving, finished work archiving, etc
+
+All the above results with the stress test script. 
+I would love to have a confirmation by a thirdparty.
+
+Overall I'm impressed with the work you have done.
+
+Best, 
+ Laszlo
+
+"""]]
