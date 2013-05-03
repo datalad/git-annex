@@ -1,6 +1,6 @@
 {- git-annex environment
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ import Utility.UserInfo
 import qualified Git.Config
 
 import System.Posix.Env
+import Network.BSD
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
@@ -29,3 +30,5 @@ checkEnvironmentIO = do
 		-- existing environment is not overwritten
 		setEnv "GIT_AUTHOR_NAME" username False
 		setEnv "GIT_COMMITTER_NAME" username False
+		hostname <- getHostName
+		setEnv "EMAIL" (username ++ "@" ++ hostname) False
