@@ -63,7 +63,10 @@ start' allowauto listenhost = do
 		ifM (checkpid <&&> checkshim f)
 			( if isJust listenhost
 				then error "The assistant is already running, so --listen cannot be used."
-				else liftIO $ openBrowser browser f Nothing Nothing
+				else do
+					url <- liftIO . readFile
+						=<< fromRepo gitAnnexUrlFile
+					liftIO $ openBrowser browser f url Nothing Nothing
 			, startDaemon True True listenhost $ Just $ 
 				\origout origerr url htmlshim ->
 					if isJust listenhost
