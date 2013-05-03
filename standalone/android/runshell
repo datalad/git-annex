@@ -74,9 +74,6 @@ install () {
 }
 
 run () {
-	# As good a start point as any.
-	cd "$HOME"
-
 	PATH="$base/bin:$PATH"
 	export PATH
 	
@@ -104,7 +101,12 @@ run () {
 		shift 1
 		exec "$cmd" "$@"
 	else
-		git annex webapp &
+		# As good a start point as any.
+		if $cmd test -d "$HOME"; then
+			cd "$HOME"
+		fi
+		$cmd echo "Starting webapp ..."
+		$cmd nohup git annex webapp >/dev/null &
 		/system/bin/sh
 	fi
 }
