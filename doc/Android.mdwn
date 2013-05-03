@@ -8,6 +8,8 @@ When you run the git-annex Android app, two windows will open. The first is
 a terminal window, and the second is a web browser running the git-annex
 webapp.
 
+[[!img apps.png alt="two windows"]]
+
 ## using the webapp
 
 You can use the webapp on Android much the same as on any other
