@@ -1,3 +1,34 @@
+diff --git a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+index f6952f0..1a8df8f 100644
+--- a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
++++ b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+@@ -166,7 +166,7 @@ public class TermActivity extends Activity
+         /* ... create a process ... */
+         String execPath = LaunchActivity.getDataDir(this) + "/bin/execpty";
+         ProcessBuilder execBuild =
+-                new ProcessBuilder(execPath, "/system/bin/sh", "-");
++                new ProcessBuilder(execPath, "/data/data/ga.androidterm/lib/lib.start.so", "");
+         execBuild.redirectErrorStream(true);
+         Process exec = null;
+         try {
+diff --git a/res/values/defaults.xml b/res/values/defaults.xml
+index 67287b2..c2103ba 100644
+--- a/res/values/defaults.xml
++++ b/res/values/defaults.xml
+@@ -13,10 +13,10 @@
+    <string name="pref_fnkey_default">4</string>
+    <string name="pref_ime_default">0</string>
+    <bool name="pref_alt_sends_esc_default">false</bool>
+-   <string name="pref_shell_default">/system/bin/sh -</string>
+-   <string name="pref_initialcommand_default"></string>
++   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.start.so</string>
++   <string name="pref_initialcommand_default">git annex webapp &amp;</string>
+    <string name="pref_termtype_default">screen</string>
+-   <bool name="pref_close_window_on_process_exit_default">true</bool>
++   <bool name="pref_close_window_on_process_exit_default">false</bool>
+    <bool name="pref_verify_path_default">true</bool>
+    <bool name="pref_do_path_extensions_default">true</bool>
+    <bool name="pref_allow_prepend_path_default">true</bool>
 diff --git a/tools/build-debug b/tools/build-debug
 index 1f15cd2..e611956 100755
 --- a/tools/build-debug
@@ -28,33 +59,3 @@ index 57219c3..79b45ef 100755
 -    $ANDROID update project -p "$PROJECT_DIR" --target android-11
 +    $ANDROID update project -p "$PROJECT_DIR" --target android-17
  done
-diff --git a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
-index f6952f0..4b2aa5f 100644
---- a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
-+++ b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
-@@ -166,7 +166,7 @@ public class TermActivity extends Activity
-         /* ... create a process ... */
-         String execPath = LaunchActivity.getDataDir(this) + "/bin/execpty";
-         ProcessBuilder execBuild =
--                new ProcessBuilder(execPath, "/system/bin/sh", "-");
-+                new ProcessBuilder(execPath, "/data/data/ga.androidterm/lib/lib.start.so", "");
-         execBuild.redirectErrorStream(true);
-         Process exec = null;
-         try {
-diff --git a/res/values/defaults.xml b/res/values/defaults.xml
-index 67287b2..1f9afa1 100644
---- a/res/values/defaults.xml
-+++ b/res/values/defaults.xml
-@@ -13,10 +13,10 @@
-    <string name="pref_fnkey_default">4</string>
-    <string name="pref_ime_default">0</string>
-    <bool name="pref_alt_sends_esc_default">false</bool>
--   <string name="pref_shell_default">/system/bin/sh -</string>
-+   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.start.so</string>
-    <string name="pref_initialcommand_default"></string>
-    <string name="pref_termtype_default">screen</string>
--   <bool name="pref_close_window_on_process_exit_default">true</bool>
-+   <bool name="pref_close_window_on_process_exit_default">false</bool>
-    <bool name="pref_verify_path_default">true</bool>
-    <bool name="pref_do_path_extensions_default">true</bool>
-    <bool name="pref_allow_prepend_path_default">true</bool>
