@@ -56,7 +56,7 @@ terminal. A fairly full set of tools is provided, including `git`, `ssh`,
 
 To prevent the webapp from being automatically started
 when a terminal window opens, go into the terminal preferences, to "Inital
-Command", and clear out the default `git annex webapp &` setting.
+Command", and clear out the default `git annex webapp` setting.
 
 Or, if you'd like to run the assistant automatically, but not open the
 webapp, change the "Initial Command" to: `git annex assistant --autostart`

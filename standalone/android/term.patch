@@ -22,7 +22,7 @@ index 67287b2..c2103ba 100644
 -   <string name="pref_shell_default">/system/bin/sh -</string>
 -   <string name="pref_initialcommand_default"></string>
 +   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.start.so</string>
-+   <string name="pref_initialcommand_default">git annex webapp &amp;</string>
++   <string name="pref_initialcommand_default">git annex webapp</string>
     <string name="pref_termtype_default">screen</string>
 -   <bool name="pref_close_window_on_process_exit_default">true</bool>
 +   <bool name="pref_close_window_on_process_exit_default">false</bool>
