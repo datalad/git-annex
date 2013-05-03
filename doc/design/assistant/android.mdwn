@@ -1,27 +1,11 @@
-### goals
-
-1. Get git-annex working at the command line in Android,
-   along with all the programs it needs, and the assistant. **done**
-2. Deal with crippled filesystem; no symlinks; etc. **done**
-3. Get an easy to install Android app built. **done**
-4. Get the webapp working. Needs Template Haskell, or 
-   switching to <http://www.yesodweb.com/blog/2012/10/yesod-pure>.
-5. Possibly, switch from running inside terminal app to real standalone app.
-   See <https://github.com/neurocyte/android-haskell-activity>
-   and <https://github.com/neurocyte/foreign-jni>.
-
-### Android specific features
-
-The app should be aware of power status, and avoid expensive background
-jobs when low on battery or run flat out when plugged in.
-
-The app should be aware of network status, and avoid expensive data
-transfers when not on wifi. This may need to be configurable.
-
 ## TODO
 
 * Don't make app initially open terminal + webapp, but go to a page that
-  allows opening the webapp or terminal.
+  allows opening the webapp or terminal.  
+  Possibly, switch from running inside terminal app to real standalone app.
+  See <https://github.com/neurocyte/android-haskell-activity>
+  and <https://github.com/neurocyte/foreign-jni>.
+
 * I have seen an assistant thread crash with an interrupted system call
   when the device went to sleep while it was running. Auto-detect and deal with
   that somehow.
@@ -35,3 +19,7 @@ transfers when not on wifi. This may need to be configurable.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
   broken with local repositories.
 * Make app autostart on boot, optionally. <http://stackoverflow.com/questions/1056570/how-to-autostart-an-android-application>
+* The app should be aware of power status, and avoid expensive background
+  jobs when low on battery or run flat out when plugged in.
+* The app should be aware of network status, and avoid expensive data
+  transfers when not on wifi. This may need to be configurable.
