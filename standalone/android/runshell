@@ -92,7 +92,7 @@ run () {
 	export GIT_ANNEX_STANDLONE_ENV
 	
 	# This is a temporary directory on a non-crippled filesystem.
-	# This needs to be as short a path as possible.
+	# Needs to be as short a path as possible, for ssh sockets.
 	GIT_ANNEX_TMP_DIR=$base/tmp
 	export GIT_ANNEX_TMP_DIR
 	
@@ -111,8 +111,7 @@ run () {
 		cd "$HOME"
 
 		$cmd echo "Starting git-annex interface, please wait ..."
-		# For some reason this needs to run in the foreground.
-		$cmd nohup git annex webapp
+		$cmd nohup git-annex webapp || $cmd true
 		$cmd echo "The git-annex interface is no longer running."
 		/system/bin/sh
 	fi
