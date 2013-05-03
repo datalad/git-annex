@@ -120,7 +120,7 @@ Executable git-annex
     CPP-Options: -DWITH_DBUS
 
   if flag(Webapp)
-    Build-Depends: yesod, yesod-static, case-insensitive,
+    Build-Depends: yesod (< 1.2), yesod-static, case-insensitive,
      http-types, transformers, wai, wai-logger, warp, blaze-builder,
      crypto-api, hamlet, clientsession, aeson, yesod-form,
      template-haskell, yesod-default, data-default

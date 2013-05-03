@@ -1,6 +1,9 @@
 git-annex (4.20130502) UNRELEASED; urgency=low
 
   * Android: The webapp is ported and working.
+  * Temporarily add an upper bound to the version of yesod that can be built
+    with, since yesod 1.2 has a great many changes that will require extensive
+    work on the webapp.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
