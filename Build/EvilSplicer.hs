@@ -358,7 +358,7 @@ mangleCode = flip_colon
 		string "\\\n"
 		many1 $ oneOf " \t"
 		string "\\"
-		return ""
+		return "\\n"
 
 	{- GHC outputs splices using explicit braces rather than layout.
 	 - For a case expression, it does something weird:
