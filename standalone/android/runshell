@@ -49,9 +49,9 @@ buildtree () {
 	$cmd mkdir -p "$base/templates"
 	$cmd mkdir -p "$base/tmp"
 
-	echo "#!/system/bin/sh" > "$base/runshell"
-	echo "exec $base/lib/lib.start.so" >> "$base/runshell"
-	chmod 755 runshell
+	$cmd echo "#!/system/bin/sh" > "$base/runshell"
+	$cmd echo "exec $base/lib/lib.start.so" >> "$base/runshell"
+	$cmd chmod 755 runshell
 
 	$cmd cat "$base/lib/lib.version.so" > "$base/installed-version"
 	$cmd echo "Installation complete"
