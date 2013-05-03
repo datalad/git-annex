@@ -20,9 +20,7 @@ transfers when not on wifi. This may need to be configurable.
 
 ## TODO
 
-* autostart any configured assistants. Best on boot, but may need to only
-  do it when app is opened for the first time.
-* Don't make app initially open terminal, but go to a page that
+* Don't make app initially open terminal + webapp, but go to a page that
   allows opening the webapp or terminal.
 * I have seen an assistant thread crash with an interrupted system call
   when the device went to sleep while it was running. Auto-detect and deal with
@@ -36,3 +34,4 @@ transfers when not on wifi. This may need to be configurable.
   currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
   broken with local repositories.
+* Make app autostart on boot, optionally. <http://stackoverflow.com/questions/1056570/how-to-autostart-an-android-application>
