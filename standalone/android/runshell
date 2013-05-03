@@ -101,10 +101,15 @@ run () {
 		shift 1
 		exec "$cmd" "$@"
 	else
-		# As good a start point as any.
-		if $cmd test -d "$HOME"; then
-			cd "$HOME"
+		# Ensure home directory exists, even if it got deleted
+		# somehow.
+		if ! $cmd mkdir -p "$HOME"; then
+			$cmd echo "mkdir of $HOME failed!"
 		fi
+
+		# As good a start point as any.
+		cd "$HOME"
+
 		$cmd echo "Starting webapp ..."
 		$cmd nohup git annex webapp >/dev/null &
 		/system/bin/sh
