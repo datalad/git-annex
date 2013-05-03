@@ -31,7 +31,7 @@ other computer, which might take up a lot of space.
 The webapp does not need to be left open after you've set up your
 repository. As long as the terminal window is left open, git-annex will
 remain running and sync your files. To re-open the webapp after closing it,
-click on the + icon in the terminal window.
+use the [[!img newwindow.png alt="New Window"]] icon in the terminal window.
 
 ## starting git-annex
 
