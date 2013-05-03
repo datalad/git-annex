@@ -110,8 +110,10 @@ run () {
 		# As good a start point as any.
 		cd "$HOME"
 
-		$cmd echo "Starting webapp ..."
-		$cmd nohup git annex webapp >/dev/null &
+		$cmd echo "Starting git-annex interface, please wait ..."
+		# For some reason this needs to run in the foreground.
+		$cmd nohup git annex webapp
+		$cmd echo "The git-annex interface is no longer running."
 		/system/bin/sh
 	fi
 }
