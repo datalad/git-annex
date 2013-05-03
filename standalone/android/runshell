@@ -95,6 +95,9 @@ run () {
 	# Needs to be as short a path as possible, for ssh sockets.
 	GIT_ANNEX_TMP_DIR=$base/tmp
 	export GIT_ANNEX_TMP_DIR
+	# /tmp probably doesn't exist, so also use it as TMPDIR
+	TMPDIR=$GIT_ANNEX_TMP_DIR
+	export TMPDIR
 	
 	if $cmd test "$1"; then
 		cmd="$1"
