@@ -4,7 +4,7 @@
   <p>
     To get started, let's create a git-annex repository.
   <p>
-    Files in this repository will managed by git-annex, #
+    Files in this repository will be managed by git-annex, #
     and kept in sync with your repositories on other devices.
   <p>
     <form method="post" .form-inline enctype=#{enctype}>
