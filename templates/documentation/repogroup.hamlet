@@ -47,7 +47,7 @@
     files until they can be moved to some other repository, like a client #
     or transfer repository.
   <p>
-    If you configure a repository that can be viwed by the public, #
+    If you configure a repository that can be viewed by the public, #
     but you don't want all your files to show up there, you can #
     configure it to be a <b>public repository</b>. Then only files #
     located in a directory you choose will be sent to it.
