@@ -36,3 +36,25 @@ These parameters can be passed to `git annex initremote` to configure rsync:
 
 The `annex-rsync-options` git configuration setting can be used to pass
 parameters to rsync.
+
+## annex-rsync-transport
+
+You can use the `annex-rsync-transport` git configuration setting to choose
+whether we run rsync over ssh or rsh.  This setting is also used to specify
+parameters that git annex will pass to ssh/rsh.
+
+ssh is the default transport; if you'd like to run rsync over rsh, modify your
+.git/config to include
+
+        annex-rsync-transport = rsh
+
+under the appropriate remote.
+
+To pass parameters to ssh/rsh, include the parameters after "rsh" or
+"ssh".  For example, to configure ssh to use the private key at
+`/path/to/private/key`, specify
+
+         annex-rsync-transport = ssh -i /path/to/private/key
+
+Note that environment variables aren't expanded here, so for example, you
+cannot specify `-i $HOME/.ssh/private_key`.
