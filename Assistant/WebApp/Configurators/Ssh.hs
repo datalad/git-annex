@@ -65,7 +65,13 @@ sshInputAForm hostnamefield def = SshInput
 	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
 	<*> areq intField "Port" (Just $ inputPort def)
   where
+	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
+		bad_username textField
+
 #ifndef __ANDROID__
+	bad_hostname = "cannot resolve host name" :: Text
+	bad_username = "bad user name" :: Text
+
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
 		let h = T.unpack t
@@ -82,12 +88,6 @@ sshInputAForm hostnamefield def = SshInput
 	-- getAddrInfo currently broken on Android
 	check_hostname = hostnamefield -- unchecked
 #endif
-
-	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
-		bad_username textField
-		
-	bad_hostname = "cannot resolve host name" :: Text
-	bad_username = "bad user name" :: Text
 
 data ServerStatus
 	= UntestedServer
