@@ -85,6 +85,19 @@ index b7b9d91..3c10b11 100644
  #endif
  
  /*
+diff --git a/readconf.c b/readconf.c
+index 097bb05..dcbc008 100644
+--- a/readconf.c
++++ b/readconf.c
+@@ -1085,7 +1085,7 @@ read_config_file(const char *filename, const char *host, Options *options,
+ 	if ((f = fopen(filename, "r")) == NULL)
+ 		return 0;
+ 
+-	if (checkperm) {
++	if (checkperm && 0) {
+ 		struct stat sb;
+ 
+ 		if (fstat(fileno(f), &sb) == -1)
 diff --git a/ssh-add.c b/ssh-add.c
 index 738644d..f6fce4a 100644
 --- a/ssh-add.c
