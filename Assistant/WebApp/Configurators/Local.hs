@@ -313,12 +313,12 @@ driveList = return []
  - repository, by running the postFirstRun callback, which returns the
  - url to the new webapp. -}
 startFullAssistant :: FilePath -> StandardGroup -> Handler ()
-startFullAssistant path group = do
+startFullAssistant path repogroup = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
 		u <- initRepo isnew True path Nothing
-		inDir path $ setStandardGroup u group
+		inDir path $ setStandardGroup u repogroup
 		addAutoStartFile path
 		changeWorkingDirectory path
 		fromJust $ postFirstRun webapp
