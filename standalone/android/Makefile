@@ -32,7 +32,7 @@ build: start
 	# Install executables as pseudo-libraries so they will be
 	# unpacked from the .apk.
 	mkdir -p $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi
-	cp ../../tmp/androidtree/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
+	cp ../../tmp/androidtree/dist/build/git-annex/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.busybox.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/ssh $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.ssh.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/ssh-keygen $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.ssh-keygen.so

@@ -181,11 +181,9 @@ android: Build/EvilSplicer
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
-		cd tmp/androidtree; \
-		cabal configure; \
-		$$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f"Android $(ANDROID_FLAGS)"; \
+		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f"Android $(ANDROID_FLAGS)"; \
 	fi
-	$(MAKE) -C tmp/androidtree git-annex
+	cd tmp/androidtree && $(CABAL) build
 
 adb:
 	ANDROID_FLAGS="-Production" $(MAKE) android
