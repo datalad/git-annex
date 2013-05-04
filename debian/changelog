@@ -1,4 +1,4 @@
-git-annex (4.20130501) unstable; urgency=low
+git-annex (4.20130501~bpo70+1) wheezy-backports; urgency=low
 
   * sync, assistant: Behavior changes: Sync with remotes that have
     annex-ignore set, so that git remotes on servers without git-annex
