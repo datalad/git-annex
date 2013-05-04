@@ -42,7 +42,7 @@ Build-Depends:
 	libghc-network-multicast-dev,
 	libghc-network-info-dev,
 	libghc-safesemaphore-dev,
-	libghc-network-protocol-xmpp-dev (>= 0.4.3-1+b1),
+	libghc-network-protocol-xmpp-dev (>= 0.4.3),
 	libghc-gnutls-dev (>= 0.1.4),
 	libghc-xml-types-dev,
 	libghc-async-dev,
