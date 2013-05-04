@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Ssh where
 
@@ -66,7 +67,9 @@ sshInputAForm hostnamefield def = SshInput
   where
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
+#ifndef __ANDROID__
 		let h = T.unpack t
+		let canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
 		r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
 		return $ case catMaybes . map addrCanonName <$> r of
 			-- canonicalize input hostname if it had no dot
@@ -75,7 +78,10 @@ sshInputAForm hostnamefield def = SshInput
 				| otherwise -> Right $ T.pack fullname
 			Just [] -> Right t
 			Nothing -> Left bad_hostname
-	canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
+#else
+		-- getAddrInfo currently broken on Android
+		return $ Right t
+#endif
 
 	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 		bad_username textField
