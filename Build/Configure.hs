@@ -120,7 +120,7 @@ getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()
 cabalSetup = do
-	version <- getChangelogVersion
+	version <- takeWhile (/= '~') <$> getChangelogVersion
 	cabal <- readFile cabalfile
 	writeFile tmpcabalfile $ unlines $ 
 		map (setfield "Version" version) $
