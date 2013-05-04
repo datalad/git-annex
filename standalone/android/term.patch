@@ -1,3 +1,15 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index b0e866a..1ab8515 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -7,6 +7,7 @@
+     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+     <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
+     <uses-permission android:name="android.permission.WAKE_LOCK" />
+     <permission android:name="jackpal.androidterm.permission.RUN_SCRIPT"
+                 android:label="@string/perm_run_script"
 diff --git a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
 index f6952f0..1a8df8f 100644
 --- a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
@@ -12,7 +24,7 @@ index f6952f0..1a8df8f 100644
          Process exec = null;
          try {
 diff --git a/res/values/defaults.xml b/res/values/defaults.xml
-index 67287b2..c2103ba 100644
+index 67287b2..9b7cfcd 100644
 --- a/res/values/defaults.xml
 +++ b/res/values/defaults.xml
 @@ -13,10 +13,10 @@
