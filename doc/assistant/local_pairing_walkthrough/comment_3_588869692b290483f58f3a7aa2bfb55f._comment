@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="Ports to open on the firewall?"
+ date="2013-05-04T03:56:55Z"
+ content="""
+I'm trying to get local pairing working between two local machines (same switch, both connected via cat5 cables) and they're not seeing each other, though I can happily ssh from one box to the other.
+
+In order to eliminate possible sources of problems, I tried these insecure settings:
+
+* add a `-A INPUT -j ACCEPT` to the top of my firewall rules
+* use `password` as the shared secret
+
+but I still can't get past \"pairing in progress\" when pairing with a \"Local computer\".
+
+Is there any way to get information as to where the two machines are failing to see one another?
+"""]]
