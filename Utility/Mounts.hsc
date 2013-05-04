@@ -3,7 +3,7 @@
  - Derived from hsshellscript, originally written by
  - Volker Wysk <hsss@volker-wysk.de>
  - 
- - Modified to support BSD and Mac OS X by
+ - Modified to support BSD, Mac OS X, and Android by
  - Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU LGPL version 2.1 or higher.
@@ -16,13 +16,18 @@ module Utility.Mounts (
 	getMounts
 ) where
 
+#ifndef __ANDROID__
 import Control.Monad
 import Foreign
 import Foreign.C
 import GHC.IO hiding (finally, bracket)
 import Prelude hiding (catch)
-
 #include "libmounts.h"
+#else
+import Utility.Exception
+import Data.Maybe
+import Control.Applicative
+#endif
 
 {- This is a stripped down mntent, containing only
  - fields available everywhere. -}
@@ -31,6 +36,8 @@ data Mntent = Mntent
 	, mnt_dir :: FilePath
 	, mnt_type :: String
 	} deriving (Read, Show, Eq, Ord)
+
+#ifndef __ANDROID__
 
 getMounts :: IO [Mntent]
 getMounts = do
@@ -67,3 +74,22 @@ foreign import ccall unsafe "libmounts.h mounts_next" c_mounts_next
         :: Ptr () -> IO (Ptr ())
 foreign import ccall unsafe "libmounts.h mounts_end" c_mounts_end
         :: Ptr () -> IO CInt
+
+#else
+
+{- Android does not support getmntent (well, it's a no-op stub in Bionic).
+ - 
+ - But, the linux kernel's /proc/mounts is available to be parsed.
+ -}
+getMounts :: IO [Mntent]
+getMounts = catchDefaultIO [] $
+	mapMaybe (parse . words) . lines <$> readFile "/proc/mounts"
+  where
+  	parse (device:mountpoint:fstype:_rest) = Just $ Mntent
+		{ mnt_fsname = device
+		, mnt_dir = mountpoint
+		, mnt_type = fstype
+		}
+	parse _ = Nothing
+
+#endif

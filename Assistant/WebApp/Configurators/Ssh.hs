@@ -65,9 +65,9 @@ sshInputAForm hostnamefield def = SshInput
 	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
 	<*> areq intField "Port" (Just $ inputPort def)
   where
+#ifndef __ANDROID__
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
-#ifndef __ANDROID__
 		let h = T.unpack t
 		let canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
 		r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
@@ -79,8 +79,8 @@ sshInputAForm hostnamefield def = SshInput
 			Just [] -> Right t
 			Nothing -> Left bad_hostname
 #else
-		-- getAddrInfo currently broken on Android
-		return $ Right t
+	-- getAddrInfo currently broken on Android
+	check_hostname = hostnamefield -- unchecked
 #endif
 
 	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)

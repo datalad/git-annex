@@ -300,6 +300,10 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 		| dir == "/tmp" = False
 		| dir == "/run/shm" = False
 		| dir == "/run/lock" = False
+#ifdef __ANDROID__
+		| dir == "/mnt/sdcard" = False
+		| dir == "/sdcard" = False
+#endif
 		| otherwise = True
 #else
 driveList = return []

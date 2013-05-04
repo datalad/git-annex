@@ -6,7 +6,7 @@
 # define GETMNTINFO
 #else
 #if defined __ANDROID__
-# warning mounts listing code not available for Android
+/* Android is handled by the Haskell code, not here. */
 # define UNKNOWN
 #else
 #if defined (__linux__) || defined (__FreeBSD_kernel__)
