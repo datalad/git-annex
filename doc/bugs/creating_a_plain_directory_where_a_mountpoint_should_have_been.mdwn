@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+This is a one-off thing, not a reproducible bug.  It was just so weird that I wanted to make a note of it in case somebody else had the same problem and it was reproducible.
+
+I have a remote on the a USB drive which I mount once in a while on /Volumes/TOSHIBAEXT which has a remote on /Volumes/TOSHIBAEXT/annex.   It's a remote which I created by hand using "git clone" a long time ago, not something the assistant set up for me.
+
+Anyway, today the assistant kept reporting that it could not sync to it.  I didn't know why, because I checked in my Finder sidebar and it showed a mounted drive called TOSHIBAEXT.  It's only when I checked with the command line that I noticed something was up!  There was now an ordinary directory at /Volumes/TOSHIBAEXT/annex.   This had apparently been created at some point when the drive was unmounted, so when it re-mounted, because there was a directory in the way, it re-mounted at "/Volumes/TOSHIBAEXT 1".  But it was displayed in the finder sidebar as just "TOSHIBAEXT" anyway because the finder hides this workaround from the user for whatever reason.
+
+Presumably git-annex assistant at some point, for some reason, created an ordinary directory where it expected to find the annex.
+
+I wonder if this may have to do with the fact that this is a non-bare, created-by-hand repo, from before I was using the assistant, not a normal bare remote that the assistant would have created for me if I'd been using the webapp.
+
+### What steps will reproduce the problem?
+
+I've only seen it once, and report the bug not as an outstanding issue but only as a heads-up that this has ever happened.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130501-gb61740e
+
+OS X lion (10.7)
+
+### Please provide any additional information below.
+
+I wasn't logging when this happened.
+
+Again, just a heads-up; I'll keep my eye open for this happening again and post more info if it does.
