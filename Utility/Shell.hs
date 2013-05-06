@@ -9,12 +9,18 @@
 
 module Utility.Shell where
 
-shellPath :: FilePath
+shellPath_portable :: FilePath
+shellPath_portable = "/bin/sh"
+
+shellPath_local :: FilePath
 #ifndef __ANDROID__
-shellPath = "/bin/sh"
+shellPath_local = shellPath_portable
 #else
-shellPath = "/system/bin/sh"
+shellPath_local = "/system/bin/sh"
 #endif
 
-shebang :: String
-shebang = "#!" ++ shellPath
+shebang_portable :: String
+shebang_portable = "#!" ++ shellPath_portable
+
+shebang_local :: String
+shebang_local = "#!" ++ shellPath_local

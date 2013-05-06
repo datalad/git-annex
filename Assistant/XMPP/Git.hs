@@ -156,7 +156,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 		let wrapper = tmpdir </> "git-remote-xmpp"
 		program <- readProgramFile
 		writeFile wrapper $ unlines
-			[ shebang
+			[ shebang_local
 			, "exec " ++ program ++ " xmppgit"
 			]
 		modifyFileMode wrapper $ addModes executeModes

@@ -106,7 +106,7 @@ preCommitHook = (</>) <$> fromRepo Git.localGitDir <*> pure "hooks/pre-commit"
 
 preCommitScript :: String
 preCommitScript = unlines
-	[ shebang
+	[ shebang_local
 	, "# automatically configured by git-annex"
 	, "git annex pre-commit ."
 	]

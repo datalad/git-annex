@@ -63,7 +63,7 @@ ensureInstalled = go =<< standaloneAppBase
 		let runshell var = "exec " ++ base </> "runshell" ++
 			" git-annex-shell -c \"" ++ var ++ "\""
 		let content = unlines
-			[ shebang
+			[ shebang_local
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
 			,   runshell "$SSH_ORIGINAL_COMMAND"
