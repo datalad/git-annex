@@ -13,7 +13,7 @@
 * git does not support http remotes. To fix, need to port libcurl and
   allow git to link to it.
 * getEnvironment is broken on Android <https://github.com/neurocyte/ghc-android/issues/7>
-  and a few places use it.
+  and a few places use it. I have some horrible workarounds in place.
 * Get local pairing to work. network-multicast and network-info don't
   currently install.
 * Get test suite to pass. Current failure is because `git fetch` is somehow
