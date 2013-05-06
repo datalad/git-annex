@@ -40,7 +40,7 @@ Build-Depends:
 	libghc-blaze-builder-dev,
 	libghc-crypto-api-dev,
 	libghc-network-multicast-dev,
-	libghc-network-info-dev,
+	libghc-network-info-dev [linux-any kfreebsd-any],
 	libghc-safesemaphore-dev,
 	libghc-network-protocol-xmpp-dev (>= 0.4.3-1+b1),
 	libghc-gnutls-dev (>= 0.1.4),
