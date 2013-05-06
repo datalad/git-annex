@@ -12,3 +12,25 @@ There needs to be a way for the user to browse files not on the gadget and
 request they be transferred to it. This could be done as a browser in the
 web app, or using a subdirectory full of placeholder files (not symlinks;
 see [[Android]]) that start transfer of the real file when accessed.
+
+----
+
+Currently, Android uses the "source" repository type in some
+configurations. This makes files be removed as soon as they are sent
+somewhere else.
+
+A compromise that avoids needing UI might be to change "source" so it
+retained files for a while after they were created, even after they were
+uploaded elsewhere. For example, it could hold onto them for a day. This
+would allow the user time to do things with new files before they are
+removed from the android device.
+
+Once way to implement that would be a new preferred content expression like
+"age(1 day)". But this would need at least a daily full transfer scan to be
+run. 
+
+Another way would be to have a way to make drops of files be deferred
+for a period of time. This approach would not need to be specific to the
+"source" repository type. And seems easy enough to do, just have a
+configuration setting for the time interval, and an ordered drop queue
+and a thread that waits as needed before dropping.
