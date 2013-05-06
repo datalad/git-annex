@@ -76,7 +76,7 @@ Executable git-annex
   Include-Dirs: Utility
   C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   CC-Options: -Wall
-  GHC-Options: -threaded -Wall
+  GHC-Options: -Wall
   CPP-Options: -DWITH_CLIBS
   Extensions: PackageImports
 
@@ -98,6 +98,7 @@ Executable git-annex
   if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: async, stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
+    GHC-Options: -threaded
 
   if flag(Android)
     Build-Depends: data-endian

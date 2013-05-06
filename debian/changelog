@@ -4,6 +4,9 @@ git-annex (4.20130502) UNRELEASED; urgency=low
   * Temporarily add an upper bound to the version of yesod that can be built
     with, since yesod 1.2 has a great many changes that will require extensive
     work on the webapp.
+  * Disable building with the haskell threaded runtime when the assistant
+    is not built. This may fix builds on s390x and sparc, which are failing
+    to link -lHSrts_thr
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
