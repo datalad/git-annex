@@ -14,7 +14,7 @@
             ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "icon-folder-open icon-white"}
           <li .dropdown #menu1>
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
-              Current Repository: #{reldir}
+              Repository: #{reldir}
               <b .caret></b>
             ^{controlMenu}
       $nothing
