@@ -62,6 +62,9 @@ Flag Android
 Flag TestSuite
   Description: Embed the test suite into git-annex
 
+Flag TDFA
+  Description: Use regex-tdfa for wildcards
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -70,7 +73,7 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, transformers-base, lifted-base,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, regex-tdfa, dlist
+   SafeSemaphore, uuid, random, dlist
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
@@ -86,6 +89,10 @@ Executable git-annex
   if flag(TestSuite)
     Build-Depends: HUnit
     CPP-Options: -DWITH_TESTSUITE
+
+  if flag(TDFA)
+    Build-Depends: regex-tdfa
+    CPP-Options: -DWITH_TDFA
 
   if flag(S3)
     Build-Depends: hS3

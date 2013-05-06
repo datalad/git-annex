@@ -7,6 +7,8 @@ git-annex (4.20130502) UNRELEASED; urgency=low
   * Disable building with the haskell threaded runtime when the assistant
     is not built. This may fix builds on s390x and sparc, which are failing
     to link -lHSrts_thr
+  * Avoid depending on regex-tdfa on mips, mipsel, and s390, where it fails
+    to build.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
