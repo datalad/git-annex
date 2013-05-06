@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 10"
+ date="2013-05-06T12:18:39Z"
+ content="""
+One of the points is:
+
+* The app should be aware of power status, and avoid expensive background jobs when low on battery or run flat out when plugged in.
+
+This isn't good for situations where the device is plugged in and charging, but will only be so for a limited time (such as charging during a car journey) as the device would charge slower.
+
+Could this behaviour be configurable too?
+"""]]
