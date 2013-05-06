@@ -44,13 +44,19 @@ start key = ifM (inAnnex key)
 	go tmp = do
 		opts <- filterRsyncSafeOptions . maybe [] words
 			<$> getField "RsyncOptions"
-		ifM (liftIO $ rsyncServerReceive (map Param opts) tmp)
-			( ifM (isJust <$> Fields.getField Fields.direct)
+		ok <- liftIO $ rsyncServerReceive (map Param opts) tmp
+
+		-- The file could have been received with permissions that
+		-- do not allow reading it, so this is done before the
+		-- directcheck.
+		freezeContent tmp
+
+		if ok
+			then ifM (isJust <$> Fields.getField Fields.direct)
 				( directcheck tmp
 				, return True
 				)
-			, return False
-			)
+			else return False
 	{- If the sending repository uses direct mode, the file
 	 - it sends could be modified as it's sending it. So check
 	 - that the right size file was received, and that the key/value

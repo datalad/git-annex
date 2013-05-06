@@ -12,6 +12,9 @@ git-annex (4.20130502) UNRELEASED; urgency=low
   * direct: Fix a bug that could cause some files to be left in indirect mode.
   * When initializing a directory special remote with a relative path,
     the path is made absolute.
+  * git-annex-shell: Ensure that received files can be read. Files
+    transferred from some Android devices may have very broken permissions
+    as received.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 

@@ -470,9 +470,8 @@ preseedTmp key file = go =<< inAnnex key
 			liftIO $ copyFileExternal s file
 		)
 
-{- Blocks writing to an annexed file. The file is made unwritable
- - to avoid accidental edits. core.sharedRepository may change
- - who can read it. -}
+{- Blocks writing to an annexed file, and modifies file permissions to
+ - allow reading it, per core.sharedRepository setting. -}
 freezeContent :: FilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
 	liftIO . go =<< fromRepo getSharedRepository
@@ -483,7 +482,9 @@ freezeContent file = unlessM crippledFileSystem $
 	go AllShared = modifyFileMode file $
 		removeModes writeModes .
 		addModes readModes
-	go _ = preventWrite file
+	go _ = modifyFileMode file $
+		removeModes writeModes .
+		addModes [ownerReadMode]
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
