@@ -68,9 +68,9 @@ sshInputAForm hostnamefield def = SshInput
 	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 		bad_username textField
 
+	bad_username = "bad user name" :: Text
 #ifndef __ANDROID__
 	bad_hostname = "cannot resolve host name" :: Text
-	bad_username = "bad user name" :: Text
 
 	check_hostname = checkM (liftIO . checkdns) hostnamefield
 	checkdns t = do
