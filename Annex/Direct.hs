@@ -182,25 +182,27 @@ toDirect k f = fromMaybe noop =<< toDirectGen k f
 toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
 	loc <- calcRepo $ gitAnnexLocation k
-	absf <- liftIO $ absPath f
-	locs <- filter (/= absf) <$> addAssociatedFile k f
-	case locs of
-		[] -> ifM (liftIO $ doesFileExist loc)
-			( return $ Just $ do
-				{- Move content from annex to direct file. -}
-				thawContentDir loc
-				updateInodeCache k loc
-				thawContent loc
-				replaceFile f $ liftIO . moveFile loc
-			, return Nothing
-			)
-		(loc':_) -> ifM (isNothing <$> getAnnexLinkTarget loc')
-			{- Another direct file has the content; copy it. -}
-			( return $ Just $
+	ifM (liftIO $ doesFileExist loc)
+		( fromindirect loc
+		, fromdirect
+		)
+  where
+  	fromindirect loc = return $ Just $ do
+		{- Move content from annex to direct file. -}
+		thawContentDir loc
+		updateInodeCache k loc
+		thawContent loc
+		replaceFile f $ liftIO . moveFile loc
+	fromdirect = do
+		{- Copy content from another direct file. -}
+		absf <- liftIO $ absPath f
+		locs <- filterM (\loc -> isNothing <$> getAnnexLinkTarget loc) =<<
+			(filter (/= absf) <$> addAssociatedFile k f)
+		case locs of
+			(loc:_) -> return $ Just $
 				replaceFile f $
-					liftIO . void . copyFileExternal loc'
-			, return Nothing
-			)
+					liftIO . void . copyFileExternal loc
+			_ -> return Nothing
 
 {- Removes a direct mode file, while retaining its content. -}
 removeDirect :: Key -> FilePath -> Annex ()

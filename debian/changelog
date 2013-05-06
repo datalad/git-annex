@@ -9,6 +9,7 @@ git-annex (4.20130502) UNRELEASED; urgency=low
     to link -lHSrts_thr
   * Avoid depending on regex-tdfa on mips, mipsel, and s390, where it fails
     to build.
+  * direct: Fix a bug that could cause some files to be left in indirect mode.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
