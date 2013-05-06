@@ -25,9 +25,6 @@
   transfers when not on wifi. This may need to be configurable.
 * Jabber and Webdav configuration both fail with
   "getProtocolByname: does not exist (no such protocol name: tcp)"
-* Ssh server fails with "Unknown uuid: cannot modify". git-annex-shell configlist
-  reading problem?
-* Enabling debug logging in the webapp doesn't seem to work.
 * glacier and local pairing are not yet enabled for Android.
 * The "Files" link doesn't start a file browser. Should be possible to do
   on Android via intents, I suppose?
