@@ -29,3 +29,5 @@ Mac OSX 10.8.3 (Build 12D78)
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
