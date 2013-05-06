@@ -68,13 +68,14 @@ directorySetup u c = do
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $
 		M.lookup "directory" c
-	liftIO $ unlessM (doesDirectoryExist dir) $
-		error $ "Directory does not exist: " ++ dir
+	absdir <- liftIO $ absPath dir
+	liftIO $ unlessM (doesDirectoryExist absdir) $
+		error $ "Directory does not exist: " ++ absdir
 	c' <- encryptionSetup c
 
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
-	gitConfigSpecialRemote u c' "directory" dir
+	gitConfigSpecialRemote u c' "directory" absdir
 	return $ M.delete "directory" c'
 
 {- Locations to try to access a given Key in the Directory.

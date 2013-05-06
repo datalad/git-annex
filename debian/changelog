@@ -10,6 +10,8 @@ git-annex (4.20130502) UNRELEASED; urgency=low
   * Avoid depending on regex-tdfa on mips, mipsel, and s390, where it fails
     to build.
   * direct: Fix a bug that could cause some files to be left in indirect mode.
+  * When initializing a directory special remote with a relative path,
+    the path is made absolute.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
