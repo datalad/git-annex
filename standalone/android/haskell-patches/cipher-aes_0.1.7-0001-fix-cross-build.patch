@@ -1,0 +1,26 @@
+From ef1cfb5c9731f1e99d013e704ed465d3cff35df2 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 7 May 2013 17:38:22 -0400
+Subject: [PATCH] fix cross build
+
+---
+ cipher-aes.cabal |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/cipher-aes.cabal b/cipher-aes.cabal
+index 02ddfd0..c47bf0c 100644
+--- a/cipher-aes.cabal
++++ b/cipher-aes.cabal
+@@ -38,9 +38,6 @@ Library
+                      cbits/aes.c
+                      cbits/gf.c
+                      cbits/cpu.c
+-  if os(linux) && (arch(i386) || arch(x86_64))
+-    CC-options:      -mssse3 -maes -mpclmul -DWITH_AESNI
+-    C-sources:       cbits/aes_x86ni.c
+ 
+ Test-Suite test-cipher-aes
+   type:              exitcode-stdio-1.0
+-- 
+1.7.10.4
+
