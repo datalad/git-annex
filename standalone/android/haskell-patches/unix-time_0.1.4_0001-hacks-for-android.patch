@@ -1,12 +1,12 @@
-From 0f6fe7d649993223ec8987b1aee652850e9d10f3 Mon Sep 17 00:00:00 2001
+From 4e484f4eba21da64f94604e68391bf2e211ed8d6 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
 Date: Tue, 7 May 2013 16:08:28 -0400
 Subject: [PATCH] hacks for android
 
 ---
- cbits/conv.c    | 2 +-
- unix-time.cabal | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ cbits/conv.c    |  2 +-
+ unix-time.cabal | 29 ++---------------------------
+ 2 files changed, 3 insertions(+), 28 deletions(-)
 
 diff --git a/cbits/conv.c b/cbits/conv.c
 index 3b6a129..895e6b7 100644
@@ -22,7 +22,7 @@ index 3b6a129..895e6b7 100644
  
  void c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
 diff --git a/unix-time.cabal b/unix-time.cabal
-index a905d63..2de06c6 100644
+index a905d63..cb69ce5 100644
 --- a/unix-time.cabal
 +++ b/unix-time.cabal
 @@ -8,7 +8,7 @@ Synopsis:               Unix time parser/formatter and utilities
@@ -34,15 +34,41 @@ index a905d63..2de06c6 100644
  Extra-Source-Files:     cbits/conv.c cbits/config.h.in configure configure.ac
  Extra-Tmp-Files:        config.log config.status autom4te.cache cbits/config.h
  
-@@ -21,7 +21,7 @@ Library
+@@ -21,33 +21,8 @@ Library
                          Data.UnixTime.Types
                          Data.UnixTime.Sys
    Build-Depends:        base >= 4 && < 5
 -                      , bytestring
 +                      , bytestring (>= 0.10.3.0)
                        , old-time
-   C-Sources:            cbits/conv.c
+-  C-Sources:            cbits/conv.c
+-
+-Test-Suite doctests
+-  Type:                 exitcode-stdio-1.0
+-  HS-Source-Dirs:       test
+-  Ghc-Options:          -threaded -Wall
+-  Main-Is:              doctests.hs
+-  Build-Depends:        base
+-                      , doctest >= 0.9.3
+-
+-Test-Suite spec
+-  Type:                 exitcode-stdio-1.0
+-  Default-Language:     Haskell2010
+-  Hs-Source-Dirs:       test
+-  Ghc-Options:          -Wall
+-  Main-Is:              Spec.hs
+-  Other-Modules:        UnixTimeSpec
+-  Build-Depends:        base
+-                      , bytestring
+-                      , hspec
+-                      , old-locale
+-                      , old-time
+-                      , QuickCheck
+-                      , time
+-                      , unix-time
  
+ Source-Repository head
+   Type:                 git
 -- 
 1.8.2.rc3
 
