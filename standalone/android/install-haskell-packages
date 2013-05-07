@@ -1,0 +1,118 @@
+#!/bin/sh
+# Bootstraps from an empty cabal to all the necessary haskell packages
+# being installed, with the necessary patches to work on Android.
+#
+# Packages are installed at specific versions we have patches for. Newer
+# versions often break cross-compilation by adding TH, etc.
+# 
+# Needs some extra C libraries to be installed inside the cross-compiler
+# lib directory: libgnutls libxml2
+
+# lib dir
+set -e
+
+PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+
+# Not run every time because we don't care about the latest versions.
+if [ ! -e $HOME/.ghc/android-14/arm-linux-androideabi-4.7/cabal/packages/hackage.haskell.org ]; then
+	cabal update
+fi
+
+rm -rf tmp
+mkdir tmp
+cd tmp
+
+patched () {
+	pkg=$1
+	version=$2
+	shift 2
+	cabal unpack $pkg-$version
+	cd $pkg-$version
+	for patch in ../../haskell-patches/${pkg}_*; do
+		echo applying $patch
+		patch -p1 < $patch
+	done
+	cabal install "$@"
+	cd ..
+}
+
+cabal install bytestring-0.10.3.0 text-0.11.2.3 parsec-3.1.3
+patched network 2.4.1.0
+cabal install cereal-0.3.5.2
+patched socks 0.4.2
+cabal install hslogger-1.2.1
+patched MissingH 1.2.0.0
+patched unix-time 0.1.4
+patched async 2.0.1.4
+patched zlib 0.5.4.00
+patched primitive 0.5.0.1
+patched vector 0.10.0.1
+patched distributive 0.3
+cabal install hashable-1.1.2.5
+patched case-insensitive 0.4.0.1
+cabal install nats-0.1 semigroups-0.9 tagged-0.4.4 comonad-3.0.1.1 comonad-transformers-3.0.1
+patched profunctors 3.3
+patched split 0.2.1.2patched split 0.2.1.2
+cabal install monads-tf-0.1.0.1
+patched gnutls 0.1.4
+cabal install attoparsec-0.10.4.0 blaze-builder-0.3.1.1 
+patched syb 0.3.7
+patched aeson 0.6.1.0
+patched lifted-base 0.2.0.2
+patched resourcet 0.4.4
+patched monad-control 0.3.1.4
+cabal install conduit-0.5.6
+patched monad-logger 0.2.3.2
+cabal install reflection-1.1.7 bifunctors-3.2 semigroupoids-3.0.2
+cabal install bifunctors-3.2 comonads-fd-3.0.1 groupoids-3.0.1.1
+cabal install profunctor-extras-3.3
+patched lens 3.8.5
+cabal install xml-types-0.3.3
+patched libxml-sax 0.7.3
+patched network-conduit 0.6.2.2
+cabal install asn1-data-0.7.1 asn1-types-0.1.3 attoparsec-conduit-0.5.0.3
+cabal install blaze-builder-conduit-0.5.0.3 blaze-markup-0.5.1.5 blaze-html-0.5.1.3
+patched cipher-aes 0.1.7
+cabal install cprng-aes-0.3.4
+cabal install http-types-0.8.0 mime-types-0.1.0.3
+cabal install certificate-1.3.7 system-fileio-0.3.11 tls-1.1.2
+cabal install utf8-string-0.3.7 publicsuffixlist-0.1 xml-conduit-1.0.3.3
+cabal install zlib-bindings-0.1.1.3 zlib-conduit-0.5.0.3
+patched process 1.1.0.2
+patched shakespeare 1.0.3
+patched hamlet 1.1.6.1
+patched xml-hamlet 0.4.0.3
+cabal install certificate-1.3.7 http-conduit-1.8.7.1
+cabal install dataenc-0.12 hxt-charproperties-9.1.1 \
+	hxt-regex-xmlschema-9.1.0 hxt-unicode-9.0.2 hxt-9.3.1.1 
+cabal install -f-templateHaskell QuickCheck-2.5.1.1a
+cabal install Crypto-4.2.5.1
+patched HTTP 4000.2.8
+patched hS3 0.5.7
+patched file-embed 0.0.4.7
+patched gsasl 0.3.5 \
+	--ghc-options=-I$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/include/ \
+	--ld-options="-L $HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/"
+patched network-protocol-xmpp 0.4.4
+patched shakespeare-css 1.0.2
+patched shakespeare-i18n 1.0.0.2
+patched shakespeare-js 1.1.2
+patched persistent 1.1.5.1
+cabal install largeword-1.0.4 crypto-api-0.10.2 http-date-0.0.4 \
+	cryptohash-0.8.3 vault-0.2.0.4 unix-compat-0.4.1.1 \
+	crypto-conduit-0.4.3 wai-1.3.0.3
+patched wai-app-static 1.3.1
+cabal install byteorder-1.0.4 stringsearch-0.3.6.4 wai-logger-0.3.0
+patched wai-extra 1.3.2.1
+patched yesod-routes 1.1.2
+patched DAV 0.3
+patched yesod-core 1.1.8
+patched yesod-persistent 1.1.0.1
+patched yesod-form 1.2.1.1
+cabal install warp-1.3.7.2 yaml-0.8.2
+patched yesod-default 1.1.3.2
+patched yesod 1.1.8
+patched yesod-static 1.1.2
+
+cd ..
+rm -rf tmp
