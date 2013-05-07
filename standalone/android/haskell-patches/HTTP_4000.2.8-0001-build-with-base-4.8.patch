@@ -1,0 +1,25 @@
+From 413b087d3f6b1f4e80313035797144621356c36c Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 7 May 2013 18:17:29 -0400
+Subject: [PATCH] build with base 4.8
+
+---
+ HTTP.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/HTTP.cabal b/HTTP.cabal
+index 76cb5d6..c7019f0 100644
+--- a/HTTP.cabal
++++ b/HTTP.cabal
+@@ -85,7 +85,7 @@ Library
+                  Network.HTTP.Utils
+                  Paths_HTTP
+   GHC-options: -fwarn-missing-signatures -Wall
+-  Build-depends: base >= 2 && < 4.7, network < 2.5, parsec
++  Build-depends: base >= 2 && < 4.8, network < 2.5, parsec
+   Extensions: FlexibleInstances
+   if flag(old-base)
+     Build-depends: base < 3
+-- 
+1.7.10.4
+
