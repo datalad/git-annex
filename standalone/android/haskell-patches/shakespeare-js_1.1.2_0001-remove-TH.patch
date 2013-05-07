@@ -1,14 +1,14 @@
-From f3e31696cfb45a528e4b4b6f016dc7101d7cd4fb Mon Sep 17 00:00:00 2001
+From 332c71b3f6bc4786b914e675020a23c492beee5a Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:36:06 -0400
+Date: Tue, 7 May 2013 19:28:06 -0400
 Subject: [PATCH] remove TH
 
 ---
  Text/Coffee.hs     |   54 -------------------------------------------------
- Text/Julius.hs     |   53 +-----------------------------------------------
+ Text/Julius.hs     |   56 ++++-----------------------------------------------
  Text/Roy.hs        |   54 -------------------------------------------------
  Text/TypeScript.hs |   57 +---------------------------------------------------
- 4 files changed, 2 insertions(+), 216 deletions(-)
+ 4 files changed, 5 insertions(+), 216 deletions(-)
 
 diff --git a/Text/Coffee.hs b/Text/Coffee.hs
 index 2481936..3f7f9c3 100644
@@ -80,7 +80,7 @@ index 2481936..3f7f9c3 100644
 -coffeeFileDebug = coffeeFileReload
 -{-# DEPRECATED coffeeFileDebug "Please use coffeeFileReload instead." #-}
 diff --git a/Text/Julius.hs b/Text/Julius.hs
-index 230eac3..b990f73 100644
+index 230eac3..1a0376f 100644
 --- a/Text/Julius.hs
 +++ b/Text/Julius.hs
 @@ -14,17 +14,8 @@ module Text.Julius
@@ -102,15 +102,20 @@ index 230eac3..b990f73 100644
      , Javascript (..)
      , RawJavascript (..)
  
-@@ -37,7 +28,6 @@ module Text.Julius
+@@ -37,9 +28,11 @@ module Text.Julius
      , renderJavascriptUrl
  
        -- ** internal, used by 'Text.Coffee'
 -    , javascriptSettings
        -- ** internal
      , juliusUsedIdentifiers
++
++      -- used by TH splices
++    , asJavascriptUrl
      ) where
-@@ -101,47 +91,6 @@ instance RawJS TL.Text where rawJS = RawJavascript . fromLazyText
+ 
+ import Language.Haskell.TH.Quote (QuasiQuoter (..))
+@@ -101,47 +94,6 @@ instance RawJS TL.Text where rawJS = RawJavascript . fromLazyText
  instance RawJS Builder where rawJS = RawJavascript
  instance RawJS Bool where rawJS = RawJavascript . toJavascript
  
