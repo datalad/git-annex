@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://sekenre.wordpress.com/"
+ nickname="sekenre"
+ subject="Synchronizing Bup repositories"
+ date="2013-05-07T16:46:34Z"
+ content="""
+Hi All,
+
+I managed to answer my questions above about copying changes between local bup repositories efficiently.
+
+You run the following commands 
+
+    git annex copy . --to bup_repo_1                      # Uses bup split in the background (slow)
+    rsync -av /mnt/repodisk1/repo/ /mnt/repodisk2/repo/ \
+    --exclude=config --exclude=*.bloom --exclude=*.midx   # rsync without bup-specific indices (speed depends on delta between repositories)
+    BUP_DIR=/mnt/repodisk2/repo/ bup midx -a && bup bloom # rebuild bup-specific indices on the target (this is extremely fast)
+    git annex copy . --to bup_repo_2                      # Records file is now available in repo2 (also extremely fast)
+
+Now `git annex whereis` will show the correct location and `git annex get <file> --from bup_repo_2` will work.
+
+So far in my testing I haven't found any problems...
+
+"""]]
