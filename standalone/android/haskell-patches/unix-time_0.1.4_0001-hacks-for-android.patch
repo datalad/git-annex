@@ -1,12 +1,12 @@
-From 8b8a8422a9235b730049de4e6e626821abdc8393 Mon Sep 17 00:00:00 2001
+From 0f6fe7d649993223ec8987b1aee652850e9d10f3 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:37:44 -0400
+Date: Tue, 7 May 2013 16:08:28 -0400
 Subject: [PATCH] hacks for android
 
 ---
- cbits/conv.c    |    2 +-
- unix-time.cabal |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ cbits/conv.c    | 2 +-
+ unix-time.cabal | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/cbits/conv.c b/cbits/conv.c
 index 3b6a129..895e6b7 100644
@@ -22,9 +22,18 @@ index 3b6a129..895e6b7 100644
  
  void c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
 diff --git a/unix-time.cabal b/unix-time.cabal
-index a905d63..98d2495 100644
+index a905d63..2de06c6 100644
 --- a/unix-time.cabal
 +++ b/unix-time.cabal
+@@ -8,7 +8,7 @@ Synopsis:               Unix time parser/formatter and utilities
+ Description:            Fast parser\/formatter\/utilities for Unix time
+ Category:               Data
+ Cabal-Version:          >= 1.10
+-Build-Type:             Configure
++Build-Type:             Simple
+ Extra-Source-Files:     cbits/conv.c cbits/config.h.in configure configure.ac
+ Extra-Tmp-Files:        config.log config.status autom4te.cache cbits/config.h
+ 
 @@ -21,7 +21,7 @@ Library
                          Data.UnixTime.Types
                          Data.UnixTime.Sys
@@ -35,5 +44,5 @@ index a905d63..98d2495 100644
    C-Sources:            cbits/conv.c
  
 -- 
-1.7.10.4
+1.8.2.rc3
 
