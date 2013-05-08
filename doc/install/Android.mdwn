@@ -22,12 +22,10 @@ git-annex can be built for Android, with `make android`. It's not an easy
 process:
 
 * First, install <https://github.com/neurocyte/ghc-android>.
-* You also need to install git and all the utilities listed on [[fromscratch]],
-  on the system doing the building.
-* Use ghc-android's cabal to install all necessary dependencies.
-  Some packages will fail to install on Android; patches to fix them
-  are in `standalone/android/haskell-patches/`
 * You will need to have the Android SDK and NDK installed; see
   `standalone/android/Makefile` to configure the paths to them. You'll also
   need ant, and the JDK.
+* In `standalone/android/`, run `install-haskell-packages native; install-haskell-packages`
+* You also need to install git and all the utilities listed on [[fromscratch]],
+  on the system doing the building.
 * Then to build the full Android app bundle, use `make androidapp`
