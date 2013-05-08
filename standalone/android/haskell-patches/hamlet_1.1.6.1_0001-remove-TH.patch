@@ -1,13 +1,12 @@
-From aa18210b7cc124e11fb71640d993de77492b63b1 Mon Sep 17 00:00:00 2001
+From b2c677ed39f1aca3a1111691ba51b26f7fd414a4 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Mon, 15 Apr 2013 15:08:31 -0400
+Date: Wed, 8 May 2013 01:50:58 -0400
 Subject: [PATCH] remove TH
 
-Export functions referred to by TH splices, as these will be needed when
-using the Evil Splicer
 ---
- Text/Hamlet.hs | 219 ++-------------------------------------------------------
- 1 file changed, 6 insertions(+), 213 deletions(-)
+ Text/Hamlet.hs |  219 ++------------------------------------------------------
+ hamlet.cabal   |    2 +-
+ 2 files changed, 7 insertions(+), 214 deletions(-)
 
 diff --git a/Text/Hamlet.hs b/Text/Hamlet.hs
 index 4ac870a..63b8555 100644
@@ -277,6 +276,19 @@ index 4ac870a..63b8555 100644
  varName :: Scope -> String -> Exp
  varName _ "" = error "Illegal empty varName"
  varName scope v@(_:_) = fromMaybe (strToExp v) $ lookup (Ident v) scope
+diff --git a/hamlet.cabal b/hamlet.cabal
+index 73fa6a8..4348508 100644
+--- a/hamlet.cabal
++++ b/hamlet.cabal
+@@ -50,7 +50,7 @@ library
+                    , text             >= 0.7     && < 0.12
+                    , containers       >= 0.2
+                    , blaze-builder    >= 0.2     && < 0.4
+-                   , process          >= 1.0     && < 1.2
++                   , process          >= 1.0     && < 1.3
+                    , blaze-html       >= 0.5     && < 0.6
+                    , blaze-markup     >= 0.5.1   && < 0.6
+ 
 -- 
-1.8.2.rc3
+1.7.10.4
 
