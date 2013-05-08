@@ -123,6 +123,7 @@ install_pkgs () {
 		--ghc-options=-I$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/include/ \
 		--ld-options="-L $HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/"
 	onlycross patched network-protocol-xmpp 0.4.4
+	onlynative network-protocol-xmpp
 	patched shakespeare-css 1.0.2
 	patched shakespeare-i18n 1.0.0.2
 	patched shakespeare-js 1.1.2
