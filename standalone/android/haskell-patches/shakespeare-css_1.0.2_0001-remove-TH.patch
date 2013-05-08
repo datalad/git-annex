@@ -1,14 +1,15 @@
-From cb77113314702175f066cd801dee5c38d3e26576 Mon Sep 17 00:00:00 2001
+From 8f058e84892a8c4202275f524f74bd6a7097ad40 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:35:51 -0400
+Date: Wed, 8 May 2013 02:07:15 -0400
 Subject: [PATCH] remove TH
 
 ---
- Text/Cassius.hs   |   23 ---------------
- Text/Css.hs       |   84 -----------------------------------------------------
- Text/CssCommon.hs |    4 ---
- Text/Lucius.hs    |   30 +------------------
- 4 files changed, 1 insertion(+), 140 deletions(-)
+ Text/Cassius.hs       |   23 --------------
+ Text/Css.hs           |   84 -------------------------------------------------
+ Text/CssCommon.hs     |    4 ---
+ Text/Lucius.hs        |   30 +-----------------
+ shakespeare-css.cabal |    2 +-
+ 5 files changed, 2 insertions(+), 141 deletions(-)
 
 diff --git a/Text/Cassius.hs b/Text/Cassius.hs
 index ce05374..ae56b0a 100644
@@ -255,6 +256,19 @@ index b71614e..a902e1c 100644
  parseTopLevels :: Parser [TopLevel]
  parseTopLevels =
      go id
+diff --git a/shakespeare-css.cabal b/shakespeare-css.cabal
+index de2497b..874a3b5 100644
+--- a/shakespeare-css.cabal
++++ b/shakespeare-css.cabal
+@@ -33,7 +33,7 @@ library
+                    , shakespeare      >= 1.0     && < 1.1
+                    , template-haskell
+                    , text             >= 0.11.1.1 && < 0.12
+-                   , process          >= 1.0      && < 1.2
++                   , process          >= 1.0      && < 1.3
+                    , parsec           >= 2        && < 4
+                    , transformers
+ 
 -- 
 1.7.10.4
 

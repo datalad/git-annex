@@ -1,15 +1,16 @@
-From 2e6721d571148cb77fb8c906042f6fa61e660999 Mon Sep 17 00:00:00 2001
+From 10484c5f68431349b249f07517c392c4a90bdb05 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:35:41 -0400
+Date: Wed, 8 May 2013 01:47:19 -0400
 Subject: [PATCH] remove TH
 
 ---
  Text/Shakespeare.hs      |  109 ----------------------------------------------
  Text/Shakespeare/Base.hs |   28 ------------
- 2 files changed, 137 deletions(-)
+ shakespeare.cabal        |    2 +-
+ 3 files changed, 1 insertion(+), 138 deletions(-)
 
 diff --git a/Text/Shakespeare.hs b/Text/Shakespeare.hs
-index e774e65..d300951 100644
+index 7750135..fabbf66 100644
 --- a/Text/Shakespeare.hs
 +++ b/Text/Shakespeare.hs
 @@ -12,11 +12,7 @@ module Text.Shakespeare
@@ -24,7 +25,7 @@ index e774e65..d300951 100644
      , shakespeareUsedIdentifiers
      , RenderUrl
      , VarType
-@@ -133,39 +129,6 @@ defaultShakespeareSettings = ShakespeareSettings {
+@@ -135,39 +131,6 @@ defaultShakespeareSettings = ShakespeareSettings {
    , modifyFinalValue = Nothing
  }
  
@@ -64,7 +65,7 @@ index e774e65..d300951 100644
  type QueryParameters = [(TS.Text, TS.Text)]
  type RenderUrl url = (url -> QueryParameters -> TS.Text)
  type Shakespeare url = RenderUrl url -> Builder
-@@ -300,54 +263,6 @@ pack' = TS.pack
+@@ -302,54 +265,6 @@ pack' = TS.pack
  {-# NOINLINE pack' #-}
  #endif
  
@@ -119,7 +120,7 @@ index e774e65..d300951 100644
  data VarType = VTPlain | VTUrl | VTUrlParam | VTMixin
  
  getVars :: Content -> [(Deref, VarType)]
-@@ -367,30 +282,6 @@ data VarExp url = EPlain Builder
+@@ -369,30 +284,6 @@ data VarExp url = EPlain Builder
  shakespeareUsedIdentifiers :: ShakespeareSettings -> String -> [(Deref, VarType)]
  shakespeareUsedIdentifiers settings = concatMap getVars . contentFromString settings
  
@@ -189,6 +190,19 @@ index 7c96898..ef769b1 100644
  derefParens, derefCurlyBrackets :: UserParser a Deref
  derefParens        = between (char '(') (char ')') parseDeref
  derefCurlyBrackets = between (char '{') (char '}') parseDeref
+diff --git a/shakespeare.cabal b/shakespeare.cabal
+index 01c8d5d..0fff966 100644
+--- a/shakespeare.cabal
++++ b/shakespeare.cabal
+@@ -27,7 +27,7 @@ library
+                    , template-haskell
+                    , parsec           >= 2       && < 4
+                    , text             >= 0.7     && < 0.12
+-                   , process          >= 1.0     && < 1.2
++                   , process          >= 1.0     && < 1.3
+ 
+     exposed-modules: 
+                      Text.Shakespeare
 -- 
 1.7.10.4
 
