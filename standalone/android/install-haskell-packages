@@ -127,7 +127,7 @@ install_pkgs () {
 	onlycross patched wai-extra 1.3.2.1
 	patched yesod-routes 1.1.2
 	onlycross unpatched http-conduit-1.8.7.1
-	patched DAV 0.3
+	onlycross patched DAV 0.3
 	patched yesod-core 1.1.8
 	patched yesod-persistent 1.1.0.1
 	patched yesod-form 1.2.1.1
