@@ -299,6 +299,7 @@ mangleCode = flip_colon
 	. case_layout
 	. case_layout_multiline
 	. yesod_url_render_hack
+	. text_builder_hack
 	. nested_instances 
 	. collapse_multiline_strings
 	. remove_package_version
@@ -514,6 +515,10 @@ yesod_url_render_hack = parsecAndReplace $ do
 
 	token :: Parser String
 	token = many1 $ satisfy isAlphaNum <|> oneOf "_"
+
+{- Use exported symbol. -}
+text_builder_hack :: String -> String
+text_builder_hack = replace "Data.Text.Lazy.Builder.Internal.fromText" "Data.Text.Lazy.Builder.fromText"
 
 {- Given a Parser that finds strings it wants to modify,
  - and returns the modified string, does a mass 
