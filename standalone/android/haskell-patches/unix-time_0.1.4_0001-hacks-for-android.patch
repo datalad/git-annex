@@ -1,18 +1,24 @@
-From 4e484f4eba21da64f94604e68391bf2e211ed8d6 Mon Sep 17 00:00:00 2001
+From 4023b952871ad2bc248db887716d06932ac0dbb9 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Tue, 7 May 2013 16:08:28 -0400
+Date: Wed, 8 May 2013 14:00:19 -0400
 Subject: [PATCH] hacks for android
 
 ---
- cbits/conv.c    |  2 +-
- unix-time.cabal | 29 ++---------------------------
- 2 files changed, 3 insertions(+), 28 deletions(-)
+ cbits/conv.c    |    4 +---
+ unix-time.cabal |   28 ++--------------------------
+ 2 files changed, 3 insertions(+), 29 deletions(-)
 
 diff --git a/cbits/conv.c b/cbits/conv.c
-index 3b6a129..895e6b7 100644
+index 3b6a129..5a68f91 100644
 --- a/cbits/conv.c
 +++ b/cbits/conv.c
-@@ -51,7 +51,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+@@ -1,5 +1,3 @@
+-#include "config.h"
+-
+ #if IS_LINUX
+ /* Linux cheats AC_CHECK_FUNCS(strptime_l), sigh. */
+ #define THREAD_SAFE 0
+@@ -51,7 +49,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
  #else
      strptime(src, fmt, &dst);
  #endif
@@ -22,7 +28,7 @@ index 3b6a129..895e6b7 100644
  
  void c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
 diff --git a/unix-time.cabal b/unix-time.cabal
-index a905d63..cb69ce5 100644
+index a905d63..f32d952 100644
 --- a/unix-time.cabal
 +++ b/unix-time.cabal
 @@ -8,7 +8,7 @@ Synopsis:               Unix time parser/formatter and utilities
@@ -34,15 +40,15 @@ index a905d63..cb69ce5 100644
  Extra-Source-Files:     cbits/conv.c cbits/config.h.in configure configure.ac
  Extra-Tmp-Files:        config.log config.status autom4te.cache cbits/config.h
  
-@@ -21,33 +21,8 @@ Library
+@@ -21,34 +21,10 @@ Library
                          Data.UnixTime.Types
                          Data.UnixTime.Sys
    Build-Depends:        base >= 4 && < 5
 -                      , bytestring
 +                      , bytestring (>= 0.10.3.0)
                        , old-time
--  C-Sources:            cbits/conv.c
--
+   C-Sources:            cbits/conv.c
+ 
 -Test-Suite doctests
 -  Type:                 exitcode-stdio-1.0
 -  HS-Source-Dirs:       test
@@ -66,9 +72,10 @@ index a905d63..cb69ce5 100644
 -                      , QuickCheck
 -                      , time
 -                      , unix-time
- 
+-
  Source-Repository head
    Type:                 git
+   Location:             https://github.com/kazu-yamamoto/unix-time
 -- 
-1.8.2.rc3
+1.7.10.4
 
