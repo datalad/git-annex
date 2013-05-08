@@ -8,8 +8,9 @@
 # Needs some extra C libraries to be installed inside the cross-compiler
 # lib directory: libgnutls libxml2
 #
-# The same versions are also installed in the host system. This is needed
-# in order to use the EvilSplicer to expand Template Haskell.
+# When run with "native" as a parameter, the same versions are installed
+# in the host system. This is needed in order to use the EvilSplicer to
+# expand Template Haskell.
 
 # lib dir
 set -e
@@ -146,17 +147,17 @@ install_pkgs () {
 	rm -rf tmp
 }
 
-# First, the native build.
-native=1
-if [ ! -e $HOME/.cabal/packages/hackage.haskell.org ]; then
-	cabal update
+if [ "$1" = native ]; then
+	native=1
+	if [ ! -e $HOME/.cabal/packages/hackage.haskell.org ]; then
+		cabal update
+	fi
+	install_pkgs
+else
+	native=0
+	PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+	if [ ! -e $HOME/.ghc/android-14/arm-linux-androideabi-4.7/cabal/packages/hackage.haskell.org ]; then
+		cabal update
+	fi
+	install_pkgs
 fi
-install_pkgs
-
-# Now the cross compile.
-native=0
-PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
-if [ ! -e $HOME/.ghc/android-14/arm-linux-androideabi-4.7/cabal/packages/hackage.haskell.org ]; then
-	cabal update
-fi
-install_pkgs
