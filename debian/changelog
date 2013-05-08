@@ -17,6 +17,7 @@ git-annex (4.20130502) UNRELEASED; urgency=low
     as received.
   * SHA: Add a runtime sanity check that sha commands output something
     that appears to be a real sha.
+  * configure: Better checking that sha commands output in the desired format.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 

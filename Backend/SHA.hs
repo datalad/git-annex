@@ -12,11 +12,11 @@ import qualified Annex
 import Types.Backend
 import Types.Key
 import Types.KeySource
+import Utility.ExternalSHA
 
 import qualified Build.SysConfig as SysConfig
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
-import System.Process
 import Data.Char
 
 type SHASize = Int
@@ -55,49 +55,11 @@ shaNameE size = shaName size ++ "E"
 shaN :: SHASize -> FilePath -> Integer -> Annex String
 shaN shasize file filesize = do
 	showAction "checksum"
-	case shaCommand shasize filesize of
-		Left sha -> liftIO $ sha <$> L.readFile file
-		Right command -> liftIO $ 
-			sanitycheck command . parse command . lines <$>
-				readsha command (toCommand [File file])
-  where
-	parse command [] = bad command
-	parse command (l:_)
-		| null sha = bad command
-		-- sha is prefixed with \ when filename contains certian chars
-		| "\\" `isPrefixOf` sha = drop 1 sha
-		| otherwise = sha
-	  where
-		sha = fst $ separate (== ' ') l
-	bad command = error $ command ++ " parse error"
-
-	{- sha commands output the filename, so need to set fileEncoding -}
-	readsha command args =
-		withHandle StdoutHandle createProcessSuccess p $ \h -> do
-			fileEncoding h
-			output  <- hGetContentsStrict h
-			hClose h
-			return output
-	  where
-		p = (proc command args) { std_out = CreatePipe }
-
-	{- Check that we've correctly parsing the output of the command,
-	 - by making sure the sha we read is of the expected length. -}
-	sanitycheck command sha
-		| length sha /= expectedlen =
-			error $ "Failed to parse the output of " ++ command
-		| any (`notElem` "0123456789abcdef") sha' =
-			error $ "Unexpected character in output of " ++ command ++ "\"" ++ sha ++ "\""
-		| otherwise = sha'
-	  where
-	  	sha' = map toLower sha
-		expectedlen = case shasize of
-			1 -> 40
-			256 -> 64
-			512 -> 128
-			224 -> 56
-			384 -> 96
-			_ -> 0
+	liftIO $ case shaCommand shasize filesize of
+		Left sha -> sha <$> L.readFile file
+		Right command ->
+			either error return 
+				=<< externalSHA command shasize file
 
 shaCommand :: SHASize -> Integer -> Either (L.ByteString -> String) String
 shaCommand shasize filesize

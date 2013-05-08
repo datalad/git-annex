@@ -14,6 +14,7 @@ import Build.TestConfig
 import Utility.SafeCommand
 import Utility.Monad
 import Utility.Exception
+import Utility.ExternalSHA
 
 tests :: [TestCase]
 tests =
@@ -45,17 +46,24 @@ tests =
  - On some systems, shaN is used instead, but on other
  - systems, it might be "hashalot", which does not produce
  - usable checksums. Only accept programs that produce
- - known-good hashes. -}
+ - known-good hashes when run on files. -}
 shaTestCases :: [(Int, String)] -> [TestCase]
 shaTestCases l = map make l
   where
-	make (n, knowngood) = TestCase key $ maybeSelectCmd key $ 
-		zip (shacmds n) (repeat check)
+	make (n, knowngood) = TestCase key $ 
+		Config key . MaybeStringConfig <$> search (shacmds n)
 	  where
 		key = "sha" ++ show n
-		check = "</dev/null 2>/dev/null | grep -q '" ++ knowngood ++ "'"
+	  	search [] = return Nothing
+		search (c:cmds) = do
+			sha <- externalSHA c n "/dev/null"
+			if sha == Right knowngood
+				then return $ Just c
+				else search cmds
+	
 	shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
 		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
+
 	{- Max OSX sometimes puts GNU tools outside PATH, so look in
 	 - the location it uses, and remember where to run them
 	 - from. -}
