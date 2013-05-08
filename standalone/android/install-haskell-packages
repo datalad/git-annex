@@ -52,6 +52,12 @@ onlycross () {
 	fi
 }
 
+onlynative () {
+	if [ "$native" ]; then
+		eval $@
+	fi
+}
+
 install_pkgs () {
 	rm -rf tmp
 	mkdir tmp
@@ -129,6 +135,7 @@ install_pkgs () {
 	patched yesod-routes 1.1.2
 	onlycross unpatched http-conduit-1.8.7.1
 	onlycross patched DAV 0.3
+	onlynative unpatched DAV
 	patched yesod-core 1.1.8
 	patched yesod-persistent 1.1.0.1
 	patched yesod-form 1.2.1.1
@@ -142,6 +149,8 @@ install_pkgs () {
 	unpatched edit-distance-0.2.1.2
 	unpatched uuid-1.2.12
 	unpatched json-0.7
+	unpatched SHA-1.6.1
+	onlycross unpatched data-endian-0.0.1
 	
 	cd ..
 	rm -rf tmp
