@@ -135,7 +135,6 @@ makeWebDavRemote name creds setup config = do
 	setup r
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
-#endif
 
 {- Only returns creds previously used for the same hostname. -}
 previouslyUsedWebDAVCreds :: String -> Annex (Maybe CredPair)
@@ -145,6 +144,7 @@ previouslyUsedWebDAVCreds hostname =
 	samehost url = case urlHost =<< WebDAV.configUrl url of
 		Nothing -> False
 		Just h -> h == hostname
+#endif
 
 urlHost :: String -> Maybe String
 urlHost url = uriRegName <$> (uriAuthority =<< parseURI url)
