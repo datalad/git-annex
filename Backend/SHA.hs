@@ -57,8 +57,9 @@ shaN shasize file filesize = do
 	showAction "checksum"
 	case shaCommand shasize filesize of
 		Left sha -> liftIO $ sha <$> L.readFile file
-		Right command -> liftIO $ parse command . lines <$>
-			readsha command (toCommand [File file])
+		Right command -> liftIO $ 
+			sanitycheck command . parse command . lines <$>
+				readsha command (toCommand [File file])
   where
 	parse command [] = bad command
 	parse command (l:_)
@@ -69,6 +70,7 @@ shaN shasize file filesize = do
 	  where
 		sha = fst $ separate (== ' ') l
 	bad command = error $ command ++ " parse error"
+
 	{- sha commands output the filename, so need to set fileEncoding -}
 	readsha command args =
 		withHandle StdoutHandle createProcessSuccess p $ \h -> do
@@ -78,6 +80,24 @@ shaN shasize file filesize = do
 			return output
 	  where
 		p = (proc command args) { std_out = CreatePipe }
+
+	{- Check that we've correctly parsing the output of the command,
+	 - by making sure the sha we read is of the expected length. -}
+	sanitycheck command sha
+		| length sha /= expectedlen =
+			error $ "Failed to parse the output of " ++ command
+		| any (`notElem` "0123456789abcdef") sha' =
+			error $ "Unexpected character in output of " ++ command ++ "\"" ++ sha ++ "\""
+		| otherwise = sha'
+	  where
+	  	sha' = map toLower sha
+		expectedlen = case shasize of
+			1 -> 40
+			256 -> 64
+			512 -> 128
+			224 -> 56
+			384 -> 96
+			_ -> 0
 
 shaCommand :: SHASize -> Integer -> Either (L.ByteString -> String) String
 shaCommand shasize filesize
