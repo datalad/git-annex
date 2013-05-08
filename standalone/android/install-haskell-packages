@@ -136,6 +136,8 @@ install_pkgs () {
 	patched yesod 1.1.8
 	patched yesod-static 1.1.2
 	unpatched ifelse-0.85
+	unpatched SafeSemaphore-0.9.0 bloomfilter-1.2.6.10 \
+		edit-distance-0.2.1.2 json-0.7 uuid-1.2.12
 	
 	cd ..
 	rm -rf tmp
