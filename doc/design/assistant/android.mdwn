@@ -1,3 +1,11 @@
+The Android port is just about usable. Still, we have some fun todo items
+to improve it.
+
+## high-priority TODO
+
+* [[bugs/Android_app_permission_denial_on_startup]]
+* S3 doesn't work
+
 ## TODO
 
 * Don't make app initially open terminal + webapp, but go to a page that
