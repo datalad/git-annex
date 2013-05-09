@@ -177,7 +177,6 @@ startDaemon assistant foreground listenhost startbrowser = do
 	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
-			showStart "." desc
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
