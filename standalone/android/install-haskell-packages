@@ -15,16 +15,22 @@
 # lib dir
 set -e
 
-doit () {
-	echo "$@"
-	eval "$@"
+if [ "$1" ]; then
+	mode="$1"
+	shift 1
+fi
+cabalopts="$@"
+
+cabalinstall () {
+	echo cabal install "$@" "$cabalopts"
+	eval cabal install "$@" "$cabalopts"
 }
 
 patched () {
 	pkg=$1
 	version=$2
 	if [ "$native" ]; then
-		doit cabal install --force-reinstalls $pkg-$version
+		cabalinstall --force-reinstalls $pkg-$version
 	else
 		shift 2
 		cabal unpack $pkg-$version
@@ -33,16 +39,16 @@ patched () {
 			echo applying $patch
 			patch -p1 < $patch
 		done
-		doit cabal install "$@"
+		cabalinstall "$@"
 		cd ..
 	fi
 }
 
 unpatched () {
 	if [ "$native" ]; then
-		doit cabal install "$@"
+		cabalinstall "$@"
 	else
-		doit cabal install "$@"
+		cabalinstall "$@"
 	fi
 }
 
@@ -146,7 +152,8 @@ install_pkgs () {
 	patched yesod-static 1.1.2
 	unpatched ifelse-0.85
 	unpatched SafeSemaphore-0.9.0
-	unpatched bloomfilter-1.2.6.10
+	onlycross unpatched bloomfilter-1.2.6.10 --constraint 'bytestring >= 0.10.3.0'
+	onlynative unpatched bloomfilter-1.2.6.10
 	unpatched edit-distance-0.2.1.2
 	unpatched uuid-1.2.12
 	unpatched json-0.7
@@ -157,17 +164,34 @@ install_pkgs () {
 	rm -rf tmp
 }
 
-if [ "$1" = native ]; then
+native_install () {
+	echo "Native install"
 	native=1
 	if [ ! -e $HOME/.cabal/packages/hackage.haskell.org ]; then
 		cabal update
 	fi
 	install_pkgs
-else
+}
+
+cross_install () {
+	echo "Cross install"
 	native=
 	PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
 	if [ ! -e $HOME/.ghc/android-14/arm-linux-androideabi-4.7/cabal/packages/hackage.haskell.org ]; then
 		cabal update
 	fi
 	install_pkgs
-fi
+}
+
+case "$mode" in
+	native)
+		native_install
+	;;
+	cross)
+		cross_install
+	;;
+	"")
+		cross_install
+		native_install
+	;;
+esac
