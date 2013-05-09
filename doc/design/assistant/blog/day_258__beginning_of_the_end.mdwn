@@ -12,7 +12,7 @@ It's identical, except it runs Windows.
 
 I installed the Haskell Platform for Windows on it, and removed
 some of the bloatware to free up disk space and memory for development.
-While a rather disgusting experience, I certianly have a usable Haskell
+While a rather disgusting experience, I certainly have a usable Haskell
 development environment on this OS a lot faster than I did on Android!
 Cabal is happily installing some stuff, and other stuff wants me to install
 Cygwin.
