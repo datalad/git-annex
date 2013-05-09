@@ -175,10 +175,14 @@ native_install () {
 	install_pkgs
 }
 
+cross_path () {
+	PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+}
+
 cross_install () {
 	echo "Cross install"
 	native=
-	PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+	cross_path
 	if [ ! -e $HOME/.ghc/android-14/arm-linux-androideabi-4.7/cabal/packages/hackage.haskell.org ]; then
 		cabal update
 	fi
@@ -190,6 +194,14 @@ case "$mode" in
 		native_install
 	;;
 	cross)
+		cross_install
+	;;
+	cleancross)
+		# cross install, first removing all currently installed
+		# packages except those part of ghc
+		rm -f $(grep -l $HOME/.ghc/android-14/arm-linux-androideabi-4.7/.cabal/lib/ $HOME/.ghc/android-14/arm-linux-androideabi-4.7/lib/ghc-*/package.conf.d/*.conf)
+		cross_path
+		ghc-pkg recache
 		cross_install
 	;;
 	"")
