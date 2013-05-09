@@ -159,6 +159,7 @@ install_pkgs () {
 	unpatched json-0.7
 	unpatched SHA-1.6.1
 	onlycross unpatched data-endian-0.0.1
+	unpatched hinotify-0.3.5
 	
 	cd ..
 	rm -rf tmp
