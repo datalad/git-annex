@@ -45,22 +45,18 @@ patched () {
 }
 
 unpatched () {
-	if [ "$native" ]; then
-		cabalinstall "$@"
-	else
-		cabalinstall "$@"
-	fi
+	cabalinstall "$@"
 }
 
 onlycross () {
 	if [ ! "$native" ]; then
-		eval $@
+		eval "$@"
 	fi
 }
 
 onlynative () {
 	if [ "$native" ]; then
-		eval $@
+		eval "$@"
 	fi
 }
 
@@ -153,7 +149,7 @@ install_pkgs () {
 	patched yesod-static 1.1.2
 	unpatched ifelse-0.85
 	unpatched SafeSemaphore-0.9.0
-	onlycross unpatched bloomfilter-1.2.6.10 --constraint 'bytestring >= 0.10.3.0'
+	if [ ! "$native" ]; then cabal install bloomfilter-1.2.6.10 --constraint 'bytestring >= 0.10.3.0'; fi
 	onlynative unpatched bloomfilter-1.2.6.10
 	unpatched edit-distance-0.2.1.2
 	unpatched uuid-1.2.12
