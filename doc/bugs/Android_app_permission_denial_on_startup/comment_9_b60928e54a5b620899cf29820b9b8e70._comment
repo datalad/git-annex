@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmSbJHbvlxbCjtPXk_Io3qP3MFqJr3pUgQ"
+ nickname="Christopher"
+ subject="New permission type"
+ date="2013-05-09T22:01:38Z"
+ content="""
+I observe that I am encountering the same on my Galaxy Nexus running CM10.1; I see indication that the \"INTERACT_ACROSS_USERS_FULL\" is a new permission in Android 4.2 that relates to the use of multiple users, which is one of the new features of 4.2.
+
+It's possible that there are bugs here... See: https://code.google.com/p/android/issues/detail?id=39801
+"""]]
