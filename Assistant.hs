@@ -177,15 +177,17 @@ startDaemon assistant foreground listenhost startbrowser = do
 	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
-			liftIO $ debugM desc $ "logging to " ++ logfile
-			liftIO $ Utility.Daemon.lockPidFile pidfile
+			showStart "." desc
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			liftIO $ Utility.LogFile.redirLog logfd
-			showStart "." desc
-			start id $ 
+			let undaemonize a = do
+				debugM desc $ "logging to " ++ logfile
+				Utility.Daemon.lockPidFile pidfile
+				Utility.LogFile.redirLog logfd
+				a
+			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a origout origerr
