@@ -109,7 +109,8 @@ install_pkgs () {
 	unpatched crypto-api-0.10.2
 	unpatched cprng-aes-0.3.4
 	unpatched http-types-0.8.0 mime-types-0.1.0.3
-	unpatched certificate-1.3.7 system-fileio-0.3.11 tls-1.1.2
+	patched certificate-1.3.7
+	unpatched system-fileio-0.3.11 tls-1.1.2
 	unpatched utf8-string-0.3.7
 	unpatched publicsuffixlist-0.1
 	unpatched xml-conduit-1.0.3.3
