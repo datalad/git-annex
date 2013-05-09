@@ -45,6 +45,9 @@ rsyncServerParams =
 	, Params "-e.Lsf ."
 	]
 
+rsyncUseDestinationPermissions :: CommandParam
+rsyncUseDestinationPermissions = Param "--chmod=ugo=rwX"
+
 rsync :: [CommandParam] -> IO Bool
 rsync = boolSystem "rsync"
 

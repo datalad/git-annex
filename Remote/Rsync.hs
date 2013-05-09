@@ -155,18 +155,20 @@ retrieveEncrypted o (cipher, enck) _ f p = withTmp enck $ \tmp ->
 		)
 
 remove :: RsyncOpts -> Key -> Annex Bool
-remove o k = withRsyncScratchDir $ \tmp -> liftIO $ do
-	{- Send an empty directory to rysnc to make it delete. -}
-	let dummy = tmp </> keyFile k
-	createDirectoryIfMissing True dummy
-	rsync $ rsyncOptions o ++
-		map (\s -> Param $ "--include=" ++ s) includes ++
-		[ Param "--exclude=*" -- exclude everything else
-		, Params "--quiet --delete --recursive"
-		, partialParams
-		, Param $ addTrailingPathSeparator dummy
-		, Param $ rsyncUrl o
-		]
+remove o k = do
+	ps <- sendParams
+	withRsyncScratchDir $ \tmp -> liftIO $ do
+		{- Send an empty directory to rysnc to make it delete. -}
+		let dummy = tmp </> keyFile k
+		createDirectoryIfMissing True dummy
+		rsync $ rsyncOptions o ++ ps ++
+			map (\s -> Param $ "--include=" ++ s) includes ++
+			[ Param "--exclude=*" -- exclude everything else
+			, Params "--quiet --delete --recursive"
+			, partialParams
+			, Param $ addTrailingPathSeparator dummy
+			, Param $ rsyncUrl o
+			]
   where
 	{- Specify include rules to match the directories where the
 	 - content could be. Note that the parent directories have
@@ -199,6 +201,15 @@ checkPresent r o k = do
  -}
 partialParams :: CommandParam
 partialParams = Params "--partial --partial-dir=.rsync-partial"
+
+{- When sending files from crippled filesystems, the permissions can be all
+ - messed up, and it's better to use the default permissions on the
+ - destination. -}
+sendParams :: Annex [CommandParam]
+sendParams = ifM crippledFileSystem
+	( return [rsyncUseDestinationPermissions]
+	, return []
+	)
 
 {- Runs an action in an empty scratch directory that can be used to build
  - up trees for rsync. -}
@@ -261,8 +272,9 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 				liftIO $ createLink src dest
 				return True
 			)
+	ps <- sendParams
 	if ok
-		then rsyncRemote o (Just callback)
+		then rsyncRemote o (Just callback) $ ps ++
 			[ Param "--recursive"
 			, partialParams
 			-- tmp/ to send contents of tmp dir

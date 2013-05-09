@@ -23,8 +23,6 @@
   jobs when low on battery or run flat out when plugged in.
 * The app should be aware of network status, and avoid expensive data
   transfers when not on wifi. This may need to be configurable.
-* Jabber and Webdav configuration both fail with
-  "getProtocolByname: does not exist (no such protocol name: tcp)"
 * glacier and local pairing are not yet enabled for Android.
 * The "Files" link doesn't start a file browser. Should be possible to do
   on Android via intents, I suppose?
