@@ -122,13 +122,7 @@ writeCacheCreds :: Creds -> FilePath -> Annex ()
 writeCacheCreds creds file = do
 	d <- fromRepo gitAnnexCredsDir
 	createAnnexDirectory d
-	liftIO $ do
-		let f = d </> file
-		h <- openFile f WriteMode
-		modifyFileMode f $ removeModes
-			[groupReadMode, otherReadMode]
-		hPutStr h creds
-		hClose h
+	liftIO $ writeFileProtected (d </> file) creds
 
 readCacheCredPair :: CredPairStorage -> Annex (Maybe CredPair)
 readCacheCredPair storage = maybe Nothing decodeCredPair
