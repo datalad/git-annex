@@ -92,8 +92,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 	(readpush, Fd outf) <- liftIO createPipe
 	(Fd controlf, writecontrol) <- liftIO createPipe
 
-	tmp <- liftAnnex $ fromRepo gitAnnexTmpDir
-	let tmpdir = tmp </> "xmppgit"
+	tmpdir <- gettmpdir
 	installwrapper tmpdir
 
 	env <- liftIO getEnvironment
@@ -160,6 +159,17 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 			, "exec " ++ program ++ " xmppgit"
 			]
 		modifyFileMode wrapper $ addModes executeModes
+	{- Use GIT_ANNEX_TMP_DIR if set, since that may be a better temp
+	 - dir (ie, not on a crippled filesystem where we can't make
+	 - the wrapper executable). -}
+	gettmpdir = do
+		v <- liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
+		case v of
+			Nothing -> do
+				tmp <- liftAnnex $ fromRepo gitAnnexTmpDir
+				return $ tmp </> "xmppgit"
+			Just d -> return $ d </> "xmppgit"
+				
 
 type EnvVar = String
 

@@ -4,7 +4,8 @@ to improve it.
 ## high-priority TODO
 
 * [[bugs/Android_app_permission_denial_on_startup]]
-* S3 doesn't work
+* S3 doesn't work (at least to Internet Archive: 
+  "connect: does not exist (connection refused)")
 
 ## TODO
 
