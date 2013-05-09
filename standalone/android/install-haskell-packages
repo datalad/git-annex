@@ -91,6 +91,7 @@ install_pkgs () {
 	patched yesod-persistent
 	patched yesod-form
 	patched crypto-numbers
+	patched certificate
 	patched yesod-auth
 	patched yesod
 	patched shakespeare-text
