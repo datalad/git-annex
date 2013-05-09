@@ -1,11 +1,11 @@
 I have a repository synchronized between two PCs and box.com . I chose encryption for box.com. Today on my work computer I changed files, on box.com I see that there are changed files today. When I got home, I still see files with yesterday's date.
 One thing to mention is that currently the work PC is not accessible. 
 
-1. How do I debug this problem? I have logging set to debug via web console, saved, restarted deamon, but after restart the debug checkbox is unchecked.
+1. How do I debug this problem? I have logging set to debug via web console, saved, restarted daemon, but after restart the debug checkbox is unchecked.
 From logs it looks like that after failing to connect to work pc via ssh it gives up:
 
     [2013-05-09 21:42:52 CEST] main: Syncing with box.com
-this is first and last line mentioning box today, I restarted the deamon several times around 22:14 :
+this is first and last line mentioning box today, I restarted the daemon several times around 22:14 :
 
     [2013-05-09 22:11:40 CEST] TransferScanner: Syncing with [work pc repo]
     Already up-to-date.
