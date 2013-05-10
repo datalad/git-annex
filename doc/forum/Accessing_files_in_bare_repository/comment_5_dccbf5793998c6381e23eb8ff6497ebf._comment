@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 5"
+ date="2013-05-10T04:23:28Z"
+ content="""
+Thanks for your help. Unfortunately that doesn't do the trick either:
+
+git annex sync
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+commit
+ok
+git-annex: no branch is checked out
+
+After this, git annex find still yields no results.
+"""]]
