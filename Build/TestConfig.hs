@@ -4,6 +4,7 @@ module Build.TestConfig where
 
 import Utility.Path
 import Utility.Monad
+import Utility.SafeCommand
 
 import System.IO
 import System.Cmd
@@ -75,8 +76,8 @@ requireCmd k cmdline = do
 {- Checks if a command is available by running a command line. -}
 testCmd :: ConfigKey -> String -> Test
 testCmd k cmdline = do
-	ret <- system $ quiet cmdline
-	return $ Config k (BoolConfig $ ret == ExitSuccess)
+	ok <- boolSystem "sh" [ Param "-c", Param $ quiet cmdline ]
+	return $ Config k (BoolConfig ok)
 
 {- Ensures that one of a set of commands is available by running each in
  - turn. The Config is set to the first one found. -}
@@ -98,8 +99,8 @@ searchCmd success failure cmdsparams = search cmdsparams
   where
 	search [] = failure $ fst $ unzip cmdsparams
 	search ((c, params):cs) = do
-		ret <- system $ quiet $ c ++ " " ++ params
-		if ret == ExitSuccess
+		ok <- boolSystem "sh" [ Param "-c", Param $ quiet $ c ++ " " ++ params ]
+		if ok
 			then success c
 			else search cs
 
