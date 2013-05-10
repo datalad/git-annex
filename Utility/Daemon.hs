@@ -5,12 +5,16 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Daemon where
 
 import Common
 import Utility.LogFile
 
+#if 0
 import System.Posix
+#endif
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -

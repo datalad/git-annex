@@ -5,11 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.LogFile where
 
 import Common
 
+#if 0
 import System.Posix
+#endif
 
 openLog :: FilePath -> IO Fd
 openLog logfile = do

@@ -24,7 +24,9 @@ module Annex.Branch (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+#if 0
 import System.Posix.Env
+#endif
 
 import Common.Annex
 import Annex.BranchState

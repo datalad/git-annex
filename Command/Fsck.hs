@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.Fsck where
 
 import Common.Annex
@@ -28,7 +30,9 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 
+#if 0
 import System.Posix.Process (getProcessID)
+#endif
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Posix.Types (EpochTime)

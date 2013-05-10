@@ -5,11 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+#if 0
 import System.Posix.Process (getProcessID)
+#endif
 
 import Common.Annex
 import Types.Remote

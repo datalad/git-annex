@@ -8,6 +8,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git (
 	Repo(..),
 	Ref(..),
@@ -30,7 +32,9 @@ module Git (
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
+#if 0
 import System.Posix.Files
+#endif
 
 import Common
 import Git.Types
@@ -127,4 +131,8 @@ hookPath script repo = do
 	ifM (catchBoolIO $ isexecutable hook)
 		( return $ Just hook , return Nothing )
   where
+#if __WINDOWS__
+	isexecutable f = doesFileExist f
+#else
 	isexecutable f = isExecutable . fileMode <$> getFileStatus f
+#endif

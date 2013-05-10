@@ -5,9 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module GitAnnexShell where
 
+#if 0
 import System.Posix.Env
+#endif
 import System.Console.GetOpt
 
 import Common.Annex

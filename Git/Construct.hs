@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.Construct (
 	fromCwd,
 	fromAbsPath,
@@ -21,7 +23,9 @@ module Git.Construct (
 	checkForRepo,
 ) where
 
+#if 0
 import System.Posix.User
+#endif
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
 

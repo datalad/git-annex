@@ -13,7 +13,9 @@ import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 
+#if 0
 import System.Posix.Env
+#endif
 import Network.BSD
 
 {- Checks that the system's environment allows git to function.

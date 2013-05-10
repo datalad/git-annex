@@ -5,13 +5,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Gpg where
 
 import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception (bracket)
+#if 0
 import System.Posix.Env (setEnv, unsetEnv, getEnv)	
+#endif
 
 import Common
 
@@ -20,6 +24,7 @@ newtype KeyIds = KeyIds [String]
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do
+#ifndef __WINDOWS__
 	-- Enable batch mode if GPG_AGENT_INFO is set, to avoid extraneous
 	-- gpg output about password prompts. GPG_BATCH is set by the test
 	-- suite for a similar reason.
@@ -29,6 +34,9 @@ stdParams params = do
 		then []
 		else ["--batch", "--no-tty", "--use-agent"]
 	return $ batch ++ defaults ++ toCommand params
+#else
+	return $ defaults ++ toCommand params
+#endif
   where
 	-- be quiet, even about checking the trustdb
 	defaults = ["--quiet", "--trust-model", "always"]
@@ -64,6 +72,7 @@ pipeStrict params input = do
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+#ifndef __WINDOWS__
 feedRead params passphrase feeder reader = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
@@ -83,6 +92,9 @@ feedRead params passphrase feeder reader = do
 			feeder to
 			hClose to
 		reader from
+#else
+feedRead = error "feedRead TODO"
+#endif
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
@@ -204,6 +216,7 @@ keyBlock public ls = unlines
 		| public = "PUBLIC"
 		| otherwise = "PRIVATE"
 
+#if 0
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
 testHarness :: IO a -> IO a
@@ -230,3 +243,4 @@ testTestHarness :: IO Bool
 testTestHarness = do
 	keys <- testHarness $ findPubKeys testKeyId
 	return $ KeyIds [testKeyId] == keys
+#endif

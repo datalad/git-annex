@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module CmdLine (
 	dispatch,
 	usage,
@@ -15,7 +17,9 @@ import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
 import System.Console.GetOpt
+#if 0
 import System.Posix.Signals
+#endif
 
 import Common.Annex
 import qualified Annex

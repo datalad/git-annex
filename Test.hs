@@ -5,15 +5,19 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Test where
 
 import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Test
 
+#if 0
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import System.Posix.Env
+#endif
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))

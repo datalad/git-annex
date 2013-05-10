@@ -14,7 +14,9 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
+#if 0
 import System.Posix.Env
+#endif
 
 import Common.Annex
 import Annex.LockPool

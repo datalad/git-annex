@@ -5,10 +5,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.CurrentRepo where
 
+#if 0
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Env (getEnv, unsetEnv)
+#endif
 
 import Common
 import Git.Types
