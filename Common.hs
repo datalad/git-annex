@@ -1,4 +1,4 @@
-{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE PackageImports, CPP #-}
 
 module Common (module X) where
 
@@ -16,8 +16,10 @@ import "MissingH" System.Path as X
 import System.FilePath as X
 import System.Directory as X
 import System.IO as X hiding (FilePath)
+#if 0
 import System.Posix.Files as X
 import System.Posix.IO as X
+#endif
 import System.Exit as X
 
 import Utility.Misc as X

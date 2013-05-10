@@ -22,18 +22,24 @@ import Assistant.Install.Menu
 import Control.Applicative
 import System.Directory
 import System.Environment
+#if 0
 import System.Posix.User
 import System.Posix.Files
+#endif
 import System.FilePath
 import Data.Maybe
 
 systemwideInstall :: IO Bool
+#if 0
 systemwideInstall = isroot <||> destdirset
   where
 	isroot = do
 		uid <- fromIntegral <$> getRealUserID
 		return $ uid == (0 :: Int)
 	destdirset = isJust <$> catchMaybeIO (getEnv "DESTDIR")
+#else
+systemwideInstall = return False
+#endif
 
 inDestDir :: FilePath -> IO FilePath
 inDestDir f = do

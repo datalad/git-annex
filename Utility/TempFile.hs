@@ -5,11 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.TempFile where
 
 import Control.Exception (bracket)
 import System.IO
+#if 0
 import System.Posix.Process
+#endif
 import System.Directory
 
 import Utility.Exception
@@ -20,12 +24,16 @@ import System.FilePath
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
 viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
+#if 0
 viaTmp a file content = do
 	pid <- getProcessID
 	let tmpfile = file ++ ".tmp" ++ show pid
 	createDirectoryIfMissing True (parentDir file)
 	a tmpfile content
 	renameFile tmpfile file
+#else
+viaTmp = error "viaTMP TODO"
+#endif
 
 type Template = String
 
@@ -44,6 +52,7 @@ withTempFile template a = bracket create remove use
 {- Runs an action with a temp directory, then removes the directory and
  - all its contents. -}
 withTempDir :: Template -> (FilePath -> IO a) -> IO a
+#if 0
 withTempDir template = bracket create remove
   where
 	remove = removeDirectoryRecursive
@@ -56,3 +65,6 @@ withTempDir template = bracket create remove
 		let dir = tmpdir </> t ++ "." ++ show n
 		r <- tryIO $ createDirectory dir
 		either (const $ makedir tmpdir t $ n + 1) (const $ return dir) r
+#else
+withTempDir = error "withTempDir TODO"
+#endif

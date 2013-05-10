@@ -86,6 +86,9 @@ Executable git-annex
   if flag(Production)
     GHC-Options: -O2
 
+  if os(windows)
+    CPP-Options: -D__WINDOWS__
+
   if flag(TestSuite)
     Build-Depends: HUnit
     CPP-Options: -DWITH_TESTSUITE

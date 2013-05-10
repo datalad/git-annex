@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Misc where
 
 import System.IO
@@ -13,7 +15,9 @@ import Foreign
 import Data.Char
 import Data.List
 import Control.Applicative
+#if 0
 import System.Posix.Process (getAnyProcessStatus)
+#endif
 
 import Utility.Exception
 
@@ -118,6 +122,7 @@ hGetSomeString h sz = do
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
+#if 0
 {- Reaps any zombie git processes. 
  -
  - Warning: Not thread safe. Anything that was expecting to wait
@@ -128,3 +133,5 @@ reapZombies = do
 	-- throws an exception when there are no child processes
 	catchDefaultIO Nothing (getAnyProcessStatus False True)
 		>>= maybe (return ()) (const reapZombies)
+
+#endif

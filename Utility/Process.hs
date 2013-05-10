@@ -6,7 +6,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE CPP, Rank2Types #-}
 
 module Utility.Process (
 	module X,
@@ -42,7 +42,9 @@ import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
 import Data.Maybe
+#if 0
 import System.Posix.IO
+#endif
 
 import Utility.Misc
 
@@ -156,6 +158,7 @@ createBackgroundProcess p a = a =<< createProcess p
  - returns a transcript combining its stdout and stderr, and
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
+#if 0
 processTranscript cmd opts input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
@@ -189,7 +192,9 @@ processTranscript cmd opts input = do
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
-
+#else
+processTranscript = error "processTranscript TODO"
+#endif
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes
