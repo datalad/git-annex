@@ -13,7 +13,7 @@ import Common.Annex
 import Utility.UserInfo
 import qualified Git.Config
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Env
 #endif
 import Network.BSD

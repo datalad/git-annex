@@ -30,7 +30,7 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #endif
 import Data.Time.Clock.POSIX

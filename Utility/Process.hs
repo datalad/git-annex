@@ -42,7 +42,7 @@ import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
 import Data.Maybe
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.IO
 #endif
 
@@ -158,7 +158,7 @@ createBackgroundProcess p a = a =<< createProcess p
  - returns a transcript combining its stdout and stderr, and
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
-#if 0
+#ifndef mingw32_HOST_OS
 processTranscript cmd opts input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf

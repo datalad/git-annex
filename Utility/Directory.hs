@@ -10,7 +10,7 @@
 module Utility.Directory where
 
 import System.IO.Error
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
 import System.Directory
@@ -61,7 +61,7 @@ dirContentsRecursive' (dir:dirs) = unsafeInterleaveIO $ do
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
 moveFile :: FilePath -> FilePath -> IO ()
-#if 0
+#ifndef mingw32_HOST_OS
 moveFile src dest = tryIO (rename src dest) >>= onrename
   where
 	onrename (Right _) = noop

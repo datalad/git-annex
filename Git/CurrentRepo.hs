@@ -9,7 +9,7 @@
 
 module Git.CurrentRepo where
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Env (getEnv, unsetEnv)
 #endif

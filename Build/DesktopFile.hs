@@ -22,7 +22,7 @@ import Assistant.Install.Menu
 import Control.Applicative
 import System.Directory
 import System.Environment
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.User
 import System.Posix.Files
 #endif
@@ -30,7 +30,7 @@ import System.FilePath
 import Data.Maybe
 
 systemwideInstall :: IO Bool
-#if 0
+#ifndef mingw32_HOST_OS 
 systemwideInstall = isroot <||> destdirset
   where
 	isroot = do

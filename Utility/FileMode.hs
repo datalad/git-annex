@@ -19,7 +19,7 @@ import Foreign (complement)
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
 modifyFileMode f convert = void $ modifyFileMode' f convert
-#if 0
+#ifndef __WINDOWS__
 modifyFileMode' :: FilePath -> (FileMode -> FileMode) -> IO FileMode
 modifyFileMode' f convert = do
 	s <- getFileStatus f
@@ -39,7 +39,7 @@ addModes ms m = combineModes (m:ms)
 
 {- Removes the specified FileModes from the input mode. -}
 removeModes :: [FileMode] -> FileMode -> FileMode
-#if 0
+#ifndef __WINDOWS__
 removeModes ms m = m `intersectFileModes` complement (combineModes ms)
 #else
 removeModes = error "removeModes TODO"
@@ -54,21 +54,21 @@ withModifiedFileMode file convert a = bracket setup cleanup go
 	go _ = a
 
 writeModes :: [FileMode]
-#if 0
+#ifndef __WINDOWS__
 writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
 #else
 writeModes = []
 #endif
 
 readModes :: [FileMode]
-#if 0
+#ifndef __WINDOWS__
 readModes = [ownerReadMode, groupReadMode, otherReadMode]
 #else
 readModes = []
 #endif
 
 executeModes :: [FileMode]
-#if 0
+#ifndef __WINDOWS__
 executeModes = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
 #else
 executeModes = []
@@ -76,7 +76,7 @@ executeModes = []
 
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
-#if 0
+#ifndef __WINDOWS__
 preventWrite f = modifyFileMode f $ removeModes writeModes
 #else
 preventWrite _ = return ()
@@ -84,7 +84,7 @@ preventWrite _ = return ()
 
 {- Turns a file's owner write bit back on. -}
 allowWrite :: FilePath -> IO ()
-#if 0
+#ifndef __WINDOWS__
 allowWrite f = modifyFileMode f $ addModes [ownerWriteMode]
 #else
 allowWrite _ = return ()
@@ -92,7 +92,7 @@ allowWrite _ = return ()
 
 {- Allows owner and group to read and write to a file. -}
 groupWriteRead :: FilePath -> IO ()
-#if 0
+#ifndef __WINDOWS__
 groupWriteRead f = modifyFileMode f $ addModes
 	[ ownerWriteMode, groupWriteMode
 	, ownerReadMode, groupReadMode
@@ -101,14 +101,14 @@ groupWriteRead f = modifyFileMode f $ addModes
 groupWriteRead _ = return ()
 #endif
 
-#if 0
+#ifndef __WINDOWS__
 checkMode :: FileMode -> FileMode -> Bool
 checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
 #endif
 
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
-#if 0
+#ifndef __WINDOWS__
 isSymLink = checkMode symbolicLinkMode
 #else
 isSymLink _ = False
@@ -116,7 +116,7 @@ isSymLink _ = False
 
 {- Checks if a file has any executable bits set. -}
 isExecutable :: FileMode -> Bool
-#if 0
+#ifndef __WINDOWS__
 isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 #else
 isExecutable _ = False
@@ -125,7 +125,7 @@ isExecutable _ = False
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}
 noUmask :: FileMode -> IO a -> IO a
-#if 0
+#ifndef __WINDOWS__
 noUmask mode a
 	| mode == stdFileMode = a
 	| otherwise = bracket setup cleanup go
@@ -138,7 +138,7 @@ noUmask _ a = a
 #endif
 
 combineModes :: [FileMode] -> FileMode
-#if 0
+#ifndef __WINDOWS__
 combineModes [] = undefined
 combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
@@ -150,7 +150,7 @@ stickyMode :: FileMode
 stickyMode = 512
 
 isSticky :: FileMode -> Bool
-#if 0
+#ifndef __WINDOWS__
 isSticky = checkMode stickyMode
 #else
 isSticky _ = False
@@ -166,7 +166,7 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-#if 0
+#ifndef __WINDOWS__
 writeFileProtected file content = do
 	h <- openFile file WriteMode
 	void $ tryIO $

@@ -11,7 +11,7 @@ module Utility.LogFile where
 
 import Common
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix
 #endif
 

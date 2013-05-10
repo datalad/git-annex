@@ -17,7 +17,7 @@ import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
 import System.Console.GetOpt
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #endif
 

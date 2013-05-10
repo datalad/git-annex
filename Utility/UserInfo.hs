@@ -14,7 +14,7 @@ module Utility.UserInfo (
 ) where
 
 import Control.Applicative
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.User
 import System.Posix.Env
 #endif
@@ -23,7 +23,7 @@ import System.Posix.Env
  -
  - getpwent will fail on LDAP or NIS, so use HOME if set. -}
 myHomeDir :: IO FilePath
-#if 0
+#ifndef mingw32_HOST_OS
 myHomeDir = myVal ["HOME"] homeDirectory
 #else
 myHomeDir = error "myHomeDir TODO"
@@ -31,7 +31,7 @@ myHomeDir = error "myHomeDir TODO"
 
 {- Current user's user name. -}
 myUserName :: IO String
-#if 0
+#ifndef mingw32_HOST_OS
 myUserName = myVal ["USER", "LOGNAME"] userName
 #else
 myUserName = error "myUserName TODO"
@@ -41,14 +41,14 @@ myUserGecos :: IO String
 #ifdef __ANDROID__
 myUserGecos = return "" -- userGecos crashes on Android
 #else
-#if 0
+#ifndef mingw32_HOST_OS
 myUserGecos = myVal [] userGecos
 #else
 myUserGecos = error "myUserGecos TODO"
 #endif
 #endif
 
-#if 0
+#ifndef mingw32_HOST_OS
 myVal :: [String] -> (UserEntry -> String) -> IO String
 myVal envvars extract = maybe (extract <$> getpwent) return =<< check envvars
   where

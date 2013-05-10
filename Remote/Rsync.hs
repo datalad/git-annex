@@ -11,7 +11,7 @@ module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #endif
 

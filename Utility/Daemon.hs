@@ -12,7 +12,7 @@ module Utility.Daemon where
 import Common
 import Utility.LogFile
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix
 #endif
 

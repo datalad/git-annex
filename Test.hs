@@ -13,7 +13,7 @@ import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Test
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import System.Posix.Env

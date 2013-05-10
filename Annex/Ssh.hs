@@ -14,7 +14,7 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Env
 #endif
 

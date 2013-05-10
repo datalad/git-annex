@@ -11,7 +11,7 @@ module Utility.TempFile where
 
 import Control.Exception (bracket)
 import System.IO
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Process
 #endif
 import System.Directory
@@ -24,7 +24,7 @@ import System.FilePath
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
 viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
-#if 0
+#ifndef mingw32_HOST_OS
 viaTmp a file content = do
 	pid <- getProcessID
 	let tmpfile = file ++ ".tmp" ++ show pid
@@ -52,7 +52,7 @@ withTempFile template a = bracket create remove use
 {- Runs an action with a temp directory, then removes the directory and
  - all its contents. -}
 withTempDir :: Template -> (FilePath -> IO a) -> IO a
-#if 0
+#ifndef mingw32_HOST_OS
 withTempDir template = bracket create remove
   where
 	remove = removeDirectoryRecursive

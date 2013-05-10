@@ -17,7 +17,7 @@ import Types.Remote (RemoteConfig, RemoteConfigKey)
 import Remote.Helper.Encryptable (remoteCipher, embedCreds)
 
 import System.Environment
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Env (setEnv)
 #endif
 import qualified Data.ByteString.Lazy.Char8 as L

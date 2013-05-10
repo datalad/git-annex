@@ -23,7 +23,7 @@ module Git.Construct (
 	checkForRepo,
 ) where
 
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.User
 #endif
 import qualified Data.Map as M hiding (map, split)

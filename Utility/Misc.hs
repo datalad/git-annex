@@ -15,7 +15,7 @@ import Foreign
 import Data.Char
 import Data.List
 import Control.Applicative
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getAnyProcessStatus)
 #endif
 
@@ -122,7 +122,7 @@ hGetSomeString h sz = do
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
-#if 0
+#ifndef mingw32_HOST_OS
 {- Reaps any zombie git processes. 
  -
  - Warning: Not thread safe. Anything that was expecting to wait

@@ -13,7 +13,7 @@ import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception (bracket)
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Env (setEnv, unsetEnv, getEnv)	
 #endif
 
@@ -216,7 +216,7 @@ keyBlock public ls = unlines
 		| public = "PUBLIC"
 		| otherwise = "PRIVATE"
 
-#if 0
+#ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but a directory with the test key set up to be used. -}
 testHarness :: IO a -> IO a

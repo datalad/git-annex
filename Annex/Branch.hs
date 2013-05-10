@@ -24,7 +24,7 @@ module Annex.Branch (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-#if 0
+#ifndef mingw32_HOST_OS
 import System.Posix.Env
 #endif
 
