@@ -9,6 +9,7 @@ import Control.Applicative
 import System.FilePath
 import System.Environment
 import Data.Maybe
+import Control.Monad.IfElse
 
 import Build.TestConfig
 import Utility.SafeCommand
@@ -81,19 +82,21 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
+{- For release builds, VERSION_FROM_CHANGELOG makes it use just the most
+ - recent version from the changelog. -}
+isReleaseBuild :: IO Bool
+isReleaseBuild = isJust <$> catchMaybeIO (getEnv "VERSION_FROM_CHANGELOG")
+
 {- Version is usually based on the major version from the changelog, 
  - plus the date of the last commit, plus the git rev of that commit.
  - This works for autobuilds, ad-hoc builds, etc.
- -
- - For official builds, VERSION_FROM_CHANGELOG makes it use just the most
- - recent version from the changelog.
  -
  - If git or a git repo is not available, or something goes wrong,
  - just use the version from the changelog. -}
 getVersion :: Test
 getVersion = do
 	changelogversion <- getChangelogVersion
-	version <- ifM (isJust <$> catchMaybeIO (getEnv "VERSION_FROM_CHANGELOG"))
+	version <- ifM (isReleaseBuild)
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
 			let major = takeWhile (/= '.') changelogversion
@@ -160,7 +163,8 @@ run ts = do
 		then writeSysConfig $ androidConfig config
 		else writeSysConfig config
 	cleanup
-	cabalSetup
+	whenM (isReleaseBuild) $
+		cabalSetup
 
 {- Hard codes some settings to cross-compile for Android. -}
 androidConfig :: [Config] -> [Config]
