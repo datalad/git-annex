@@ -17,6 +17,7 @@ Build-Depends:
 	libghc-quickcheck2-dev,
 	libghc-monad-control-dev (>= 0.3),
 	libghc-lifted-base-dev,
+	libghc-unix-compat-dev,
 	libghc-dlist-dev,
 	libghc-uuid-dev,
 	libghc-json-dev,
