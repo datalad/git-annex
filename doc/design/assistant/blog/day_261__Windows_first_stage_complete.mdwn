@@ -14,7 +14,7 @@ The things that are most problimatic so far:
   really horrible dotfile type locking in the Windows code paths, but I
   don't trust it at all of course.
 * There is, apparently, no way to set an environment variable in Windows
-  from Haskell. It is only possible to set up a new processes's environment
+  from Haskell. It is only possible to set up a new process' environment
   before starting it. Luckily most of the really crucial environment
   variable stuff in git-annex is of this latter sort, but there were
   a few places I had to stub out code that tries to manipulate git-annex's
