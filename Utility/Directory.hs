@@ -5,14 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.Directory where
 
 import System.IO.Error
-#ifndef mingw32_HOST_OS
-import System.Posix.Files
-#endif
+import System.PosixCompat.Files
 import System.Directory
 import Control.Exception (throw)
 import Control.Monad
@@ -61,7 +57,6 @@ dirContentsRecursive' (dir:dirs) = unsafeInterleaveIO $ do
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
 moveFile :: FilePath -> FilePath -> IO ()
-#ifndef mingw32_HOST_OS
 moveFile src dest = tryIO (rename src dest) >>= onrename
   where
 	onrename (Right _) = noop
@@ -89,9 +84,6 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
-#else
-moveFile = error "moveFile TODO"
-#endif
 
 {- Removes a file, which may or may not exist.
  -
