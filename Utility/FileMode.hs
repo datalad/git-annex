@@ -13,13 +13,13 @@ import Common
 
 import Control.Exception (bracket)
 import Utility.Exception
-import System.Posix.Types
+import System.PosixCompat.Types
+import System.PosixCompat.Files
 import Foreign (complement)
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
 modifyFileMode f convert = void $ modifyFileMode' f convert
-#ifndef __WINDOWS__
 modifyFileMode' :: FilePath -> (FileMode -> FileMode) -> IO FileMode
 modifyFileMode' f convert = do
 	s <- getFileStatus f
@@ -28,9 +28,6 @@ modifyFileMode' f convert = do
 	when (new /= old) $
 		setFileMode f new
 	return old
-#else
-modifyFileMode' = error "modifyFileMode' TODO"
-#endif
 
 {- Adds the specified FileModes to the input mode, leaving the rest
  - unchanged. -}
@@ -39,11 +36,7 @@ addModes ms m = combineModes (m:ms)
 
 {- Removes the specified FileModes from the input mode. -}
 removeModes :: [FileMode] -> FileMode -> FileMode
-#ifndef __WINDOWS__
 removeModes ms m = m `intersectFileModes` complement (combineModes ms)
-#else
-removeModes = error "removeModes TODO"
-#endif
 
 {- Runs an action after changing a file's mode, then restores the old mode. -}
 withModifiedFileMode :: FilePath -> (FileMode -> FileMode) -> IO a -> IO a
@@ -54,73 +47,43 @@ withModifiedFileMode file convert a = bracket setup cleanup go
 	go _ = a
 
 writeModes :: [FileMode]
-#ifndef __WINDOWS__
 writeModes = [ownerWriteMode, groupWriteMode, otherWriteMode]
-#else
-writeModes = []
-#endif
 
 readModes :: [FileMode]
-#ifndef __WINDOWS__
 readModes = [ownerReadMode, groupReadMode, otherReadMode]
-#else
-readModes = []
-#endif
 
 executeModes :: [FileMode]
-#ifndef __WINDOWS__
 executeModes = [ownerExecuteMode, groupExecuteMode, otherExecuteMode]
-#else
-executeModes = []
-#endif
 
 {- Removes the write bits from a file. -}
 preventWrite :: FilePath -> IO ()
-#ifndef __WINDOWS__
 preventWrite f = modifyFileMode f $ removeModes writeModes
-#else
-preventWrite _ = return ()
-#endif
 
 {- Turns a file's owner write bit back on. -}
 allowWrite :: FilePath -> IO ()
-#ifndef __WINDOWS__
 allowWrite f = modifyFileMode f $ addModes [ownerWriteMode]
-#else
-allowWrite _ = return ()
-#endif
 
 {- Allows owner and group to read and write to a file. -}
 groupWriteRead :: FilePath -> IO ()
-#ifndef __WINDOWS__
 groupWriteRead f = modifyFileMode f $ addModes
 	[ ownerWriteMode, groupWriteMode
 	, ownerReadMode, groupReadMode
 	]
-#else
-groupWriteRead _ = return ()
-#endif
 
-#ifndef __WINDOWS__
 checkMode :: FileMode -> FileMode -> Bool
 checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
-#endif
 
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
-#ifndef __WINDOWS__
-isSymLink = checkMode symbolicLinkMode
-#else
+#ifdef __WINDOWS__
 isSymLink _ = False
+#else
+isSymLink = checkMode symbolicLinkMode
 #endif
 
 {- Checks if a file has any executable bits set. -}
 isExecutable :: FileMode -> Bool
-#ifndef __WINDOWS__
 isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
-#else
-isExecutable _ = False
-#endif
 
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}
@@ -138,22 +101,18 @@ noUmask _ a = a
 #endif
 
 combineModes :: [FileMode] -> FileMode
-#ifndef __WINDOWS__
 combineModes [] = undefined
 combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
+
+isSticky :: FileMode -> Bool
+#ifdef __WINDOWS__
+isSticky _ = False
 #else
-combineModes _ = error "combineModes TODO"
-#endif
+isSticky = checkMode stickyMode
 
 stickyMode :: FileMode
 stickyMode = 512
-
-isSticky :: FileMode -> Bool
-#ifndef __WINDOWS__
-isSticky = checkMode stickyMode
-#else
-isSticky _ = False
 #endif
 
 setSticky :: FilePath -> IO ()
@@ -166,7 +125,6 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-#ifndef __WINDOWS__
 writeFileProtected file content = do
 	h <- openFile file WriteMode
 	void $ tryIO $
@@ -174,6 +132,3 @@ writeFileProtected file content = do
 			removeModes [groupReadMode, otherReadMode]
 	hPutStr h content
 	hClose h
-#else
-writeFileProtected = writeFile
-#endif
