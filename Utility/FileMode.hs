@@ -113,10 +113,10 @@ isSticky = checkMode stickyMode
 
 stickyMode :: FileMode
 stickyMode = 512
-#endif
 
 setSticky :: FilePath -> IO ()
 setSticky f = modifyFileMode f $ addModes [stickyMode]
+#endif
 
 {- Writes a file, ensuring that its modes do not allow it to be read
  - by anyone other than the current user, before any content is written.

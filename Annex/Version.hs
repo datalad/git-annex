@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Version where
 
 import Common.Annex
@@ -23,7 +25,11 @@ supportedVersions :: [Version]
 supportedVersions = [defaultVersion, directModeVersion]
 
 upgradableVersions :: [Version]
+#ifndef __WINDOWS__
 upgradableVersions = ["0", "1", "2"]
+#else
+upgradableVersions = ["2"]
+#endif
 
 versionField :: ConfigKey
 versionField = annexConfig "version"

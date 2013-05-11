@@ -18,6 +18,7 @@ import qualified Build.SysConfig as SysConfig
 import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
 import Data.Char
+import System.PosixCompat.Files
 
 type SHASize = Int
 

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Content (
 	inAnnex,
 	inAnnexSafe,
@@ -31,6 +33,7 @@ module Annex.Content (
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
+import System.PosixCompat.Files
 
 import Common.Annex
 import Logs.Location
@@ -84,14 +87,22 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
   where
 	go f = liftIO $ openforlock f >>= check
 	openforlock f = catchMaybeIO $
+#ifndef __WINDOWS__
 		openFd f ReadOnly Nothing defaultFileFlags
+#else
+		return ()
+#endif
 	check Nothing = return is_missing
 	check (Just h) = do
+#ifndef __WINDOWS__
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
 		return $ case v of
 			Just _ -> is_locked
 			Nothing -> is_unlocked
+#else
+		return is_unlocked
+#endif
 	is_locked = Nothing
 	is_unlocked = Just True
 	is_missing = Just False
@@ -100,6 +111,9 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
+#ifdef __WINDOWS__
+	a
+#else
 	file <- calcRepo $ gitAnnexLocation key
 	bracketIO (openforlock file >>= lock) unlock a
   where
@@ -121,6 +135,7 @@ lockContent key a = do
 			Right _ -> return $ Just fd
 	unlock Nothing = noop
 	unlock (Just l) = closeFd l
+#endif
 
 {- Runs an action, passing it a temporary filename to get,
  - and if the action succeeds, moves the temp file into 

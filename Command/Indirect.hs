@@ -7,6 +7,8 @@
 
 module Command.Indirect where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Command
 import qualified Git

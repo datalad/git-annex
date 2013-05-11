@@ -7,6 +7,8 @@
 
 module Command.Import where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Command
 import qualified Annex

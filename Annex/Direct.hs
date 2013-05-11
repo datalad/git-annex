@@ -27,6 +27,8 @@ import Utility.InodeCache
 import Utility.CopyFile
 import Annex.Perms
 
+import System.PosixCompat.Files
+
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
 stageDirect :: Annex Bool

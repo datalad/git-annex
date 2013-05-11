@@ -22,6 +22,7 @@ import qualified Annex
 import Config
 
 import System.Posix.Types
+import System.PosixCompat.Files
 
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = maybe startup a =<< Annex.getState Annex.shared

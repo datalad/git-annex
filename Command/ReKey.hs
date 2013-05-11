@@ -7,6 +7,8 @@
 
 module Command.ReKey where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Command
 import qualified Annex

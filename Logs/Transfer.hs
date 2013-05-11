@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Logs.Transfer where
 
 import Common.Annex
@@ -18,6 +20,7 @@ import Utility.Percentage
 import Utility.QuickCheck
 
 import System.Posix.Types
+import System.PosixCompat.Files
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -122,6 +125,7 @@ runTransfer t file shouldretry a = do
 	return ok
   where
 	prep tfile mode info = do
+#ifndef __WINDOWS__
 		mfd <- catchMaybeIO $
 			openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
@@ -134,11 +138,18 @@ runTransfer t file shouldretry a = do
 					error "transfer already in progress"
 				void $ tryIO $ writeTransferInfoFile info tfile
 				return mfd
+#else
+		catchMaybeIO $ do
+			writeFile (transferLockFile tfile) ""
+			writeTransferInfoFile info tfile
+#endif
 	cleanup _ Nothing = noop
 	cleanup tfile (Just fd) = do
 		void $ tryIO $ removeFile tfile
 		void $ tryIO $ removeFile $ transferLockFile tfile
+#ifndef __WINDOWS__
 		closeFd fd
+#endif
 	retry oldinfo metervar run = do
 		v <- tryAnnex run
 		case v of
@@ -195,8 +206,9 @@ startTransferInfo file = TransferInfo
 {- If a transfer is still running, returns its TransferInfo. -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
-	mode <- annexFileMode
 	tfile <- fromRepo $ transferFile t
+#ifndef __WINDOWS__
+	mode <- annexFileMode
 	mfd <- liftIO $ catchMaybeIO $
 		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags
 	case mfd of
@@ -209,6 +221,13 @@ checkTransfer t = do
 				Nothing -> return Nothing
 				Just (pid, _) -> liftIO $ catchDefaultIO Nothing $
 					readTransferInfoFile (Just pid) tfile
+#else
+	ifM (liftIO $ doesFileExist $ transferLockFile tfile)
+		( liftIO $ catchDefaultIO Nothing $
+			readTransferInfoFile Nothing tfile
+		, return Nothing
+		)
+#endif
 
 {- Gets all currently running transfers. -}
 getTransfers :: Annex [(Transfer, TransferInfo)]

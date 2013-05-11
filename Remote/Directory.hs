@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.Directory (remote) where
 
 import qualified Data.ByteString.Lazy as L
@@ -217,10 +219,14 @@ retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meter
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks
+#ifndef __WINDOWS__
 retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
   where
 	go [file] = catchBoolIO $ createSymbolicLink file f >> return True
 	go _files = return False
+#else
+retrieveCheap _ _ _ _ = return False
+#endif
 
 remove :: FilePath -> Key -> Annex Bool
 remove d k = liftIO $ do

@@ -9,6 +9,8 @@
 
 module Command.Fsck where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Command
 import qualified Annex
@@ -30,8 +32,10 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Process (getProcessID)
+#else
+import System.Random (getStdRandom, random)
 #endif
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -142,10 +146,14 @@ performRemote key file backend numcopies remote =
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
-		pid <- liftIO getProcessID
+#ifndef __WINDOWS__
+		v <- liftIO getProcessID
+#else
+		v <- liftIO (getStdRandom random :: IO Int)
+#endif
 		t <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory t
-		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
+		let tmp = t </> "fsck" ++ show v ++ "." ++ keyFile key
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
@@ -453,7 +461,9 @@ recordFsckTime key = do
 	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
 	liftIO $ void $ tryIO $ do
 		touchFile parent
+#ifndef __WINDOWS__
 		setSticky parent
+#endif
 
 getFsckTime :: Key -> Annex (Maybe EpochTime)
 getFsckTime key = do

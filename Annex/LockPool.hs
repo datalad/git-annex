@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.LockPool where
 
 import qualified Data.Map as M
@@ -20,17 +22,24 @@ lockFile file = go =<< fromPool file
   where
 	go (Just _) = noop -- already locked
 	go Nothing = do
+#ifndef __WINDOWS__
 		mode <- annexFileMode
 		fd <- liftIO $ noUmask mode $
 			openFd file ReadOnly (Just mode) defaultFileFlags
 		liftIO $ waitToSetLock fd (ReadLock, AbsoluteSeek, 0, 0)
+#else
+		liftIO $ writeFile file ""
+		let fd = 0
+#endif
 		changePool $ M.insert file fd
 
 unlockFile :: FilePath -> Annex ()
 unlockFile file = maybe noop go =<< fromPool file
   where
 	go fd = do
+#ifndef __WINDOWS__
 		liftIO $ closeFd fd
+#endif
 		changePool $ M.delete file
 
 getPool :: Annex (M.Map FilePath Fd)

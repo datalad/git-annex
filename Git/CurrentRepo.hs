@@ -9,7 +9,7 @@
 
 module Git.CurrentRepo where
 
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Env (getEnv, unsetEnv)
 #endif
@@ -39,18 +39,24 @@ get = do
 	case wt of
 		Nothing -> return r
 		Just d -> do
+#ifndef __WINDOWS__
 			cwd <- getCurrentDirectory
 			unless (d `dirContains` cwd) $
 				changeWorkingDirectory d
+#endif
 			return $ addworktree wt r
   where
 	pathenv s = do
+#ifndef __WINDOWS__
 		v <- getEnv s
 		case v of
 			Just d -> do
 				unsetEnv s
 				Just <$> absPath d
 			Nothing -> return Nothing
+#else
+		return Nothing
+#endif
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do

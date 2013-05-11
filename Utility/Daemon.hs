@@ -12,9 +12,10 @@ module Utility.Daemon where
 import Common
 import Utility.LogFile
 
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix
 #endif
+import System.Posix.Types
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -
@@ -23,6 +24,7 @@ import System.Posix
  -
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
+#ifndef __WINDOWS__
 daemonize logfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
@@ -44,11 +46,15 @@ daemonize logfd pidfile changedirectory a = do
 		a
 		out
 	out = exitImmediately ExitSuccess
+#else
+daemonize = error "daemonize TODO"
+#endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
  - Writes the pid to the file, fully atomically.
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
+#ifndef __WINDOWS__
 lockPidFile file = do
 	createDirectoryIfMissing True (parentDir file)
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
@@ -65,6 +71,9 @@ lockPidFile file = do
 			closeFd fd
   where
 	newfile = file ++ ".new"
+#else
+lockPidFile = error "lockPidFile TODO"
+#endif
 
 alreadyRunning :: IO ()
 alreadyRunning = error "Daemon is already running."
@@ -74,6 +83,7 @@ alreadyRunning = error "Daemon is already running."
  -
  - If it's running, returns its pid. -}
 checkDaemon :: FilePath -> IO (Maybe ProcessID)
+#ifndef __WINDOWS__
 checkDaemon pidfile = do
 	v <- catchMaybeIO $
 		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
@@ -92,10 +102,17 @@ checkDaemon pidfile = do
 			"stale pid in " ++ pidfile ++ 
 			" (got " ++ show pid' ++ 
 			"; expected " ++ show pid ++ " )"
+#else
+checkDaemon = error "checkDaemon TODO"
+#endif
 
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
+#ifndef __WINDOWS__
 stopDaemon pidfile = go =<< checkDaemon pidfile
   where
 	go Nothing = noop
 	go (Just pid) = signalProcess sigTERM pid
+#else
+stopDaemon = error "stopDaemon TODO"
+#endif

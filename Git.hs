@@ -32,7 +32,7 @@ module Git (
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Files
 #endif
 

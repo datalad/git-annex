@@ -11,8 +11,10 @@ module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Process (getProcessID)
+#else
+import System.Random (getStdRandom, random)
 #endif
 
 import Common.Annex
@@ -219,10 +221,14 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
-	pid <- liftIO getProcessID
+#ifndef __WINDOWS__
+	v <- liftIO getProcessID
+#else
+	v <- liftIO (getStdRandom random :: IO Int)
+#endif
 	t <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory t
-	let tmp = t </> "rsynctmp" </> show pid
+	let tmp = t </> "rsynctmp" </> show v
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
 	nuke tmp `after` a tmp
@@ -273,8 +279,12 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 		else ifM crippledFileSystem
 			( liftIO $ copyFileExternal src dest
 			, do
+#ifndef __WINDOWS__
 				liftIO $ createLink src dest
 				return True
+#else
+				liftIO $ copyFileExternal src dest
+#endif
 			)
 	ps <- sendParams
 	if ok

@@ -7,6 +7,8 @@
 
 module Command.RecvKey where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Command
 import CmdLine

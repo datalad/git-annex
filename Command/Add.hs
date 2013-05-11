@@ -9,6 +9,8 @@
 
 module Command.Add where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Annex.Exception
 import Command

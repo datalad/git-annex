@@ -12,6 +12,8 @@ import Types.Backend
 import Types.Key
 import Types.KeySource
 
+import System.PosixCompat.Files
+
 backends :: [Backend]
 backends = [backend]
 

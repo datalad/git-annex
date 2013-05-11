@@ -10,10 +10,12 @@
 module Annex.Environment where
 
 import Common.Annex
+#ifndef __WINDOWS__
 import Utility.UserInfo
+#endif
 import qualified Git.Config
 
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Env
 #endif
 import Network.BSD
@@ -28,7 +30,10 @@ checkEnvironment = do
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
-checkEnvironmentIO = do
+checkEnvironmentIO =
+#ifdef __WINDOWS__
+	noop
+#else
 	whenM (null <$> myUserGecos) $ do
 		username <- myUserName
 		ensureEnv "GIT_AUTHOR_NAME" username
@@ -41,4 +46,5 @@ checkEnvironmentIO = do
 	-- Environment setting is broken on Android, so this is dealt with
 	-- in runshell instead.
 	ensureEnv _ _ = noop
+#endif
 #endif

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.Git (
 	remote,
 	configRead,
@@ -341,6 +343,7 @@ copyFromRemote' r key file dest
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
+#ifndef __WINDOWS__
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
@@ -350,6 +353,7 @@ copyFromRemoteCheap r key file
 			( copyFromRemote' r key Nothing file
 			, return False
 			)
+#endif
 	| otherwise = return False
 
 {- Tries to copy a key's content to a remote's annex. -}
@@ -396,12 +400,14 @@ rsyncHelper callback params = do
  - filesystem. Then cp could be faster. -}
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
+#ifdef __WINDOWS__
+	dorsync
+  where
+#else
 	ifM (sameDeviceIds src dest) (docopy, dorsync)
   where
 	sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
 	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
-	dorsync = rsyncHelper (Just p) $
-		rsyncparams ++ [Param src, Param dest]
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
 		(void . tryIO . killThread)
@@ -417,6 +423,9 @@ rsyncOrCopyFile rsyncparams src dest p =
 					p sz
 					watchfilesize sz
 			_ -> watchfilesize oldsz
+#endif
+	dorsync = rsyncHelper (Just p) $
+		rsyncparams ++ [Param src, Param dest]
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}

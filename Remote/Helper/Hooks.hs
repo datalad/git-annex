@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.Helper.Hooks (addHooks) where
 
 import qualified Data.Map as M
@@ -70,6 +72,7 @@ runHooks r starthook stophook a = do
 
 		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
 	runstop lck = do
+#ifndef __WINDOWS__
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, we're the only process using this remote,
@@ -84,3 +87,6 @@ runHooks r starthook stophook a = do
 			Left _ -> noop
 			Right _ -> run stophook
 		liftIO $ closeFd fd
+#else
+		run stophook
+#endif

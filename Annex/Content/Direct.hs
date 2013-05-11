@@ -33,6 +33,8 @@ import Utility.TempFile
 import Logs.Location
 import Utility.InodeCache
 
+import System.PosixCompat.Files
+
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do

@@ -19,6 +19,7 @@ import Text.Regex.TDFA.String
 #else
 import System.Path.WildMatch
 #endif
+import System.PosixCompat.Files
 
 import Common.Annex
 import qualified Annex

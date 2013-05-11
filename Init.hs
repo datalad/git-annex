@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Init (
 	ensureInitialized,
 	isInitialized,
@@ -34,11 +36,15 @@ import Backend
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
+	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
+#ifndef __WINDOWS__
 	let at = if null hostname then "" else "@"
 	username <- liftIO myUserName
-	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
 	return $ concat [username, at, hostname, ":", reldir]
+#else
+	return $ concat [hostname, ":", reldir]
+#endif
 
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
@@ -113,6 +119,9 @@ preCommitScript = unlines
 
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
+#ifdef __WINDOWS__
+	return True
+#else
 	tmp <- fromRepo gitAnnexTmpDir
 	let f = tmp </> "gaprobe"
 	liftIO $ do
@@ -132,6 +141,7 @@ probeCrippledFileSystem = do
 		preventWrite f
 		allowWrite f
 		return True
+#endif
 
 checkCrippledFileSystem :: Annex ()
 checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
@@ -149,6 +159,9 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
+#ifdef __WINDOWS__
+	return False
+#else
 	tmp <- fromRepo gitAnnexTmpDir
 	let f = tmp </> "gaprobe"
 	liftIO $ do
@@ -159,6 +172,7 @@ probeFifoSupport = do
 			getFileStatus f
 		nukeFile f
 		return $ either (const False) isNamedPipe ms
+#endif
 
 checkFifoSupport :: Annex ()
 checkFifoSupport = unlessM probeFifoSupport $ do

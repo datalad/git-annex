@@ -122,16 +122,18 @@ hGetSomeString h sz = do
 	peekbytes :: Int -> Ptr Word8 -> IO [Word8]
 	peekbytes len buf = mapM (peekElemOff buf) [0..pred len]
 
-#ifndef mingw32_HOST_OS
 {- Reaps any zombie git processes. 
  -
  - Warning: Not thread safe. Anything that was expecting to wait
  - on a process and get back an exit status is going to be confused
  - if this reap gets there first. -}
 reapZombies :: IO ()
+#ifndef mingw32_HOST_OS
 reapZombies = do
 	-- throws an exception when there are no child processes
 	catchDefaultIO Nothing (getAnyProcessStatus False True)
 		>>= maybe (return ()) (const reapZombies)
 
+#else
+reapZombies = return ()
 #endif

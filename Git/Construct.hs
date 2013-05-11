@@ -23,7 +23,7 @@ module Git.Construct (
 	checkForRepo,
 ) where
 
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.User
 #endif
 import qualified Data.Map as M hiding (map, split)
@@ -196,6 +196,9 @@ repoAbsPath d = do
 	return $ h </> d'
 
 expandTilde :: FilePath -> IO FilePath
+#ifdef __WINDOWS__
+expandTilde = return
+#else
 expandTilde = expandt True
   where
 	expandt _ [] = return ""
@@ -216,6 +219,7 @@ expandTilde = expandt True
 	findname n (c:cs)
 		| c == '/' = (n, cs)
 		| otherwise = findname (n++[c]) cs
+#endif
 
 {- Checks if a git repository exists in a directory. Does not find
  - git repositories in parent directories. -}

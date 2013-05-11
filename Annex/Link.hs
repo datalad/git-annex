@@ -19,6 +19,8 @@ import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
 
+import System.PosixCompat.Files
+
 type LinkTarget = String
 
 {- Checks if a file is a link to a key. -}

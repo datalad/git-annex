@@ -24,8 +24,10 @@ module Annex.Branch (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-#ifndef mingw32_HOST_OS
-import System.Posix.Env
+#ifdef __ANDROID__
+import System.Posix.Env (getEnv)
+#else
+import System.Environment (getEnvironment)
 #endif
 
 import Common.Annex
@@ -290,12 +292,14 @@ withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
 	g <- gitRepo
 #ifdef __ANDROID__
-	{- Work around for weird getEnvironment breakage on Android. See
+	{- This should not be necessary on Android, but there is some
+	 - weird getEnvironment breakage. See
 	 - https://github.com/neurocyte/ghc-android/issues/7
-	 - Instead, use getEnv to get some key environment variables that
+	 - Use getEnv to get some key environment variables that
 	 - git expects to have. -}
 	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
-	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
+	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> 
+		catchMaybeIO (getEnv k)
 	e <- liftIO $ catMaybes <$> forM keyenv getEnvPair
 #else
 	e <- liftIO getEnvironment

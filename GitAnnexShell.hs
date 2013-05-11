@@ -5,13 +5,9 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module GitAnnexShell where
 
-#ifndef mingw32_HOST_OS
-import System.Posix.Env
-#endif
+import System.Environment
 import System.Console.GetOpt
 
 import Common.Annex
@@ -149,7 +145,7 @@ checkNotReadOnly cmd
 
 checkDirectory :: Maybe FilePath -> IO ()
 checkDirectory mdir = do
-	v <- getEnv "GIT_ANNEX_SHELL_DIRECTORY"
+	v <- catchMaybeIO $ getEnv "GIT_ANNEX_SHELL_DIRECTORY"
 	case (v, mdir) of
 		(Nothing, _) -> noop
 		(Just d, Nothing) -> req d Nothing
@@ -179,7 +175,7 @@ checkDirectory mdir = do
 
 checkEnv :: String -> IO ()
 checkEnv var = do
-	v <- getEnv var
+	v <- catchMaybeIO $ getEnv var
 	case v of
 		Nothing -> noop
 		Just "" -> noop

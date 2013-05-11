@@ -20,6 +20,7 @@ import Network.URI
 import qualified Network.Browser as Browser
 import Network.HTTP
 import Data.Either
+import System.PosixCompat.Files
 
 import qualified Build.SysConfig
 

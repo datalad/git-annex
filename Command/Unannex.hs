@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.Unannex where
 
 import Common.Annex
@@ -58,6 +60,9 @@ cleanup file key = do
 
 	return True
   where
+#ifdef __WINDOWS__
+	goFast = go
+#else
 	goFast = do
 		-- fast mode: hard link to content in annex
 		src <- calcRepo $ gitAnnexLocation key
@@ -66,6 +71,7 @@ cleanup file key = do
 			( thawContent file
 			, go
 			)
+#endif
 	go = do
 		fromAnnex key file
 		logStatus key InfoMissing

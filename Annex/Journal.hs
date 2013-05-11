@@ -9,6 +9,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Journal where
 
 import System.IO.Binary
@@ -77,13 +79,23 @@ fileJournal = replace "//" "_" . replace "_" "/"
  - contention with other git-annex processes. -}
 lockJournal :: Annex a -> Annex a
 lockJournal a = do
-	file <- fromRepo gitAnnexJournalLock
-	createAnnexDirectory $ takeDirectory file
+	lockfile <- fromRepo gitAnnexJournalLock
+	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock file mode) unlock a
+	bracketIO (lock lockfile mode) unlock a
   where
-	lock file mode = do
-		l <- noUmask mode $ createFile file mode
+	lock lockfile mode = do
+#ifndef __WINDOWS__
+		l <- noUmask mode $ createFile lockfile mode
 		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 		return l
+#else
+		writeFile lockfile ""
+		return lockfile
+#endif
+#ifndef __WINDOWS__
 	unlock = closeFd
+#else
+	unlock = removeFile
+#endif
+

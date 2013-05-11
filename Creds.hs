@@ -109,12 +109,16 @@ getEnvCredPair storage = liftM2 (,)
 
 {- Stores a CredPair in the environment. -}
 setEnvCredPair :: CredPair -> CredPairStorage -> IO ()
+#ifndef __WINDOWS__
 setEnvCredPair (l, p) storage = do
 	set uenv l
 	set penv p
   where
 	(uenv, penv) = credPairEnvironment storage
 	set var val = setEnv var val True
+#else
+setEnvCredPair _ _ = error "setEnvCredPair TODO"
+#endif
 
 writeCacheCredPair :: CredPair -> CredPairStorage -> Annex ()
 writeCacheCredPair credpair storage =

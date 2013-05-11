@@ -14,7 +14,7 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
-#ifndef mingw32_HOST_OS
+#ifndef __WINDOWS__
 import System.Posix.Env
 #endif
 
@@ -78,7 +78,11 @@ sshCacheDir
 		)
 	| otherwise = return Nothing
   where
+#ifndef __WINDOWS__
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
+#else
+	gettmpdir = return Nothing
+#endif
 	usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
 		createDirectoryIfMissing True tmpdir
 		return tmpdir
@@ -97,6 +101,7 @@ sshCleanup = go =<< sshCacheDir
 			liftIO (catchDefaultIO [] $ dirContents dir)
 		forM_ sockets cleanup
 	cleanup socketfile = do
+#ifndef __WINDOWS__
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, nothing is using this ssh, and it can
@@ -112,6 +117,9 @@ sshCleanup = go =<< sshCacheDir
 			Left _ -> noop
 			Right _ -> stopssh socketfile
 		liftIO $ closeFd fd
+#else
+		stopssh socketfile
+#endif
 	stopssh socketfile = do
 		let (host, port) = socket2hostport socketfile
 		(_, params) <- sshInfo (host, port)

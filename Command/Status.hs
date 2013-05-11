@@ -13,6 +13,7 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map as M
 import Text.JSON
 import Data.Tuple
+import System.PosixCompat.Files
 
 import Common.Annex
 import qualified Types.Backend as B

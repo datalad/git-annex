@@ -11,6 +11,8 @@
 
 module Seek where
 
+import System.PosixCompat.Files
+
 import Common.Annex
 import Types.Command
 import Types.Key

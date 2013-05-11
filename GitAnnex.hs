@@ -23,7 +23,9 @@ import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
+#ifndef __WINDOWS__
 import qualified Command.TransferKeys
+#endif
 import qualified Command.ReKey
 import qualified Command.Reinject
 import qualified Command.Fix
@@ -73,7 +75,9 @@ import qualified Command.XMPPGit
 #endif
 #endif
 #ifdef WITH_TESTSUITE
+#ifndef __WINDOWS__
 import qualified Command.Test
+#endif
 #endif
 
 cmds :: [Command]
@@ -107,7 +111,9 @@ cmds = concat
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def
+#ifndef __WINDOWS__
 	, Command.TransferKeys.def
+#endif
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
@@ -137,7 +143,9 @@ cmds = concat
 #endif
 #endif
 #ifdef WITH_TESTSUITE
+#ifndef __WINDOWS__
 	, Command.Test.def
+#endif
 #endif
 	]
 
