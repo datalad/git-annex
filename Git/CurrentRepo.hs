@@ -11,13 +11,13 @@ module Git.CurrentRepo where
 
 #ifndef __WINDOWS__
 import System.Posix.Directory (changeWorkingDirectory)
-import System.Posix.Env (getEnv, unsetEnv)
 #endif
 
 import Common
 import Git.Types
 import Git.Construct
 import qualified Git.Config
+import Utility.Env
 
 {- Gets the current git repository.
  -
@@ -51,7 +51,7 @@ get = do
 		v <- getEnv s
 		case v of
 			Just d -> do
-				unsetEnv s
+				void $ unsetEnv s
 				Just <$> absPath d
 			Nothing -> return Nothing
 #else

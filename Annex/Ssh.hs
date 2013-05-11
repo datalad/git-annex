@@ -14,9 +14,6 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
-#ifndef __WINDOWS__
-import System.Posix.Env
-#endif
 
 import Common.Annex
 import Annex.LockPool
@@ -24,6 +21,7 @@ import Annex.Perms
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
 import Config
+import Utility.Env
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
@@ -78,11 +76,7 @@ sshCacheDir
 		)
 	| otherwise = return Nothing
   where
-#ifndef __WINDOWS__
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
-#else
-	gettmpdir = return Nothing
-#endif
 	usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
 		createDirectoryIfMissing True tmpdir
 		return tmpdir

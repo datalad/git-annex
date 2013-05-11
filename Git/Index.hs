@@ -7,7 +7,7 @@
 
 module Git.Index where
 
-import System.Posix.Env (setEnv, unsetEnv, getEnv)
+import Utility.Env
 
 {- Forces git to use the specified index file.
  -

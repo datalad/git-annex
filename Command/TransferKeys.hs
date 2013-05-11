@@ -9,8 +9,6 @@
 
 module Command.TransferKeys where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import Annex.Content

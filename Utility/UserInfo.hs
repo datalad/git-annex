@@ -14,7 +14,6 @@ module Utility.UserInfo (
 ) where
 
 import Control.Applicative
-import System.Posix.Types
 import System.PosixCompat
 
 import Utility.Env

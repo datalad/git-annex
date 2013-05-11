@@ -32,10 +32,10 @@ import qualified Remote as Remote
 import Remote.List
 import Utility.FileMode
 import Utility.Shell
+import Utility.Env
 
 import Network.Protocol.XMPP
 import qualified Data.Text as T
-import System.Posix.Env
 import System.Posix.Types
 import System.Process (std_in, std_out, std_err)
 import Control.Concurrent

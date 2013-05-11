@@ -12,9 +12,10 @@ module Utility.FileMode where
 import Common
 
 import Control.Exception (bracket)
-import Utility.Exception
 import System.PosixCompat.Types
-import System.PosixCompat.Files
+#ifndef __WINDOWS__
+import System.Posix.Files
+#endif
 import Foreign (complement)
 
 {- Applies a conversion function to a file's mode. -}

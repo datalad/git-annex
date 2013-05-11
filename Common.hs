@@ -16,8 +16,8 @@ import "MissingH" System.Path as X
 import System.FilePath as X
 import System.Directory as X
 import System.IO as X hiding (FilePath)
+import System.PosixCompat.Files as X
 #ifndef mingw32_HOST_OS
-import System.Posix.Files as X
 import System.Posix.IO as X
 #endif
 import System.Exit as X

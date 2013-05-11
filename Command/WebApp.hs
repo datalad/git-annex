@@ -158,7 +158,11 @@ firstRun listenhost = do
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
+#ifdef __ANDROID__
 openBrowser mcmd htmlshim realurl outh errh = do
+#else
+openBrowser mcmd htmlshim _realurl outh errh = do
+#endif
 	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 	hFlush stdout
 	environ <- cleanEnvironment

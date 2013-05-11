@@ -14,8 +14,9 @@ import Utility.LogFile
 
 #ifndef __WINDOWS__
 import System.Posix
-#endif
+#else
 import System.Posix.Types
+#endif
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -

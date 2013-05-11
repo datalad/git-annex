@@ -20,7 +20,6 @@ import Utility.Percentage
 import Utility.QuickCheck
 
 import System.Posix.Types
-import System.PosixCompat.Files
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time

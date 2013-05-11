@@ -15,11 +15,9 @@ import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
 import Remote.Helper.Encryptable (remoteCipher, embedCreds)
+import Utility.Env (setEnv)
 
 import System.Environment
-#ifndef mingw32_HOST_OS
-import System.Posix.Env (setEnv)
-#endif
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Utility.Base64
@@ -115,7 +113,7 @@ setEnvCredPair (l, p) storage = do
 	set penv p
   where
 	(uenv, penv) = credPairEnvironment storage
-	set var val = setEnv var val True
+	set var val = void $ setEnv var val True
 #else
 setEnvCredPair _ _ = error "setEnvCredPair TODO"
 #endif

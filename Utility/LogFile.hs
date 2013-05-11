@@ -12,7 +12,6 @@ module Utility.LogFile where
 import Common
 
 import System.Posix.Types
-import System.PosixCompat.Files
 
 openLog :: FilePath -> IO Fd
 #ifndef __WINDOWS__

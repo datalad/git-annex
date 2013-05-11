@@ -11,9 +11,9 @@ module Utility.Lsof where
 
 import Common
 import Build.SysConfig as SysConfig
+import Utility.Env
 
 import System.Posix.Types
-import System.Posix.Env
 
 data LsofOpenMode = OpenReadWrite | OpenReadOnly | OpenWriteOnly | OpenUnknown
 	deriving (Show, Eq)
@@ -32,7 +32,7 @@ setupLsof = do
 	when (isAbsolute cmd) $ do
 		path <- getSearchPath
 		let path' = takeDirectory cmd : path
-		setEnv "PATH" (intercalate [searchPathSeparator] path') True
+		void $ setEnv "PATH" (intercalate [searchPathSeparator] path') True
 
 {- Checks each of the files in a directory to find open files.
  - Note that this will find hard links to files elsewhere that are open. -}

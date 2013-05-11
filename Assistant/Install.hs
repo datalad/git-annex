@@ -17,14 +17,13 @@ import Config.Files
 import Utility.FileMode
 import Utility.Shell
 import Utility.TempFile
+import Utility.Env
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
 #else
 import Utility.FreeDesktop
 #endif
-
-import System.Posix.Env
 
 standaloneAppBase :: IO (Maybe FilePath)
 standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"

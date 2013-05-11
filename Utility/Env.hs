@@ -10,26 +10,33 @@
 module Utility.Env where
 
 #ifdef __WINDOWS__
-import qualified System.Environment as E
 import Utility.Exception
+import qualified System.Environment as E
 #else
-import qualified System.Posix.Env as E
+import qualified System.Posix.Env as PE
 #endif
 
 {- Posix getEnv is faster than the one in System.Environment,
  - so use when available. -}
 getEnv :: String -> IO (Maybe String)
 #ifndef __WINDOWS__
-getEnv = E.getEnv
+getEnv = PE.getEnv
 #else
 getEnv = catchMaybeIO . E.getEnv
 #endif
 
 getEnvDefault :: String -> String -> IO String
 #ifndef __WINDOWS__
-getEnvDefault = E.getEnvDefault
+getEnvDefault = PE.getEnvDefault
 #else
 getEnvDefault var fallback = fromMaybe fallback <$> getEnv var
+#endif
+
+getEnvironment :: IO [(String, String)]
+#ifndef __WINDOWS__
+getEnvironment = PE.getEnvironment
+#else
+getEnvironment = E.getEnvironment
 #endif
 
 {- Returns True if it could successfully set the environment variable.
@@ -39,8 +46,18 @@ getEnvDefault var fallback = fromMaybe fallback <$> getEnv var
 setEnv :: String -> String -> Bool -> IO Bool
 #ifndef __WINDOWS__
 setEnv var val overwrite = do
-	E.setEnv var val overwrite
+	PE.setEnv var val overwrite
 	return True
 #else
 setEnv _ _ _ = return False
+#endif
+
+{- Returns True if it could successfully unset the environment variable. -}
+unsetEnv :: String -> IO Bool
+#ifndef __WINDOWS__
+unsetEnv var = do
+	PE.unsetEnv var
+	return True
+#else
+unsetEnv _ _ _ = return False
 #endif

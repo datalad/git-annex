@@ -24,11 +24,6 @@ module Annex.Branch (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
-#ifdef __ANDROID__
-import System.Posix.Env (getEnv)
-#else
-import System.Environment (getEnvironment)
-#endif
 
 import Common.Annex
 import Annex.BranchState
@@ -45,6 +40,7 @@ import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
 import qualified Annex
+import Utility.Env
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref

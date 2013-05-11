@@ -9,7 +9,6 @@ module Utility.InodeCache where
 
 import Common
 import System.PosixCompat.Types
-import System.PosixCompat.Files
 import Utility.QuickCheck
 
 data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime

@@ -13,7 +13,6 @@ import Test.QuickCheck.Test
 
 import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
-import System.Posix.Env
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
@@ -53,6 +52,7 @@ import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
+import qualified Utility.Env
 
 main :: IO ()
 main = do
@@ -726,7 +726,7 @@ test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ when Build.SysConfi
 test_crypto :: Test
 test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ do
 	-- force gpg into batch mode for the tests
-	setEnv "GPG_BATCH" "1" True
+	void $ Utility.Env.setEnv "GPG_BATCH" "1" True
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
@@ -947,20 +947,20 @@ prepare = do
 	-- and so does git_annex_output. Make sure that the just-built
 	-- git annex is used.
 	cwd <- getCurrentDirectory
-	p <- getEnvDefault  "PATH" ""
-	setEnv "PATH" (cwd ++ ":" ++ p) True
-	setEnv "TOPDIR" cwd True
+	p <- Utility.Env.getEnvDefault  "PATH" ""
+	void $ Utility.Env.setEnv "PATH" (cwd ++ ":" ++ p) True
+	void $Utility.Env.setEnv "TOPDIR" cwd True
 	-- Avoid git complaining if it cannot determine the user's email
 	-- address, or exploding if it doesn't know the user's name.
-	setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
-	setEnv "GIT_AUTHOR_NAME" "git-annex test" True
-	setEnv "GIT_COMMITTER_EMAIL" "test@example.com" True
-	setEnv "GIT_COMMITTER_NAME" "git-annex test" True
+	void $ Utility.Env.setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
+	void $ Utility.Env.setEnv "GIT_AUTHOR_NAME" "git-annex test" True
+	void $ Utility.Env.setEnv "GIT_COMMITTER_EMAIL" "test@example.com" True
+	void $ Utility.Env.setEnv "GIT_COMMITTER_NAME" "git-annex test" True
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
 	-- Hack alert. Threading state to here was too much bother.
-	topdir <- getEnvDefault "TOPDIR" ""
+	topdir <- Utility.Env.getEnvDefault "TOPDIR" ""
 	changeWorkingDirectory $ topdir ++ "/" ++ t
 
 tmpdir :: String

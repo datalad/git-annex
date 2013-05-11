@@ -13,11 +13,9 @@ import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception (bracket)
-#ifndef mingw32_HOST_OS
-import System.Posix.Env (setEnv, unsetEnv, getEnv)	
-#endif
 
 import Common
+import Utility.Env
 
 newtype KeyIds = KeyIds [String]
 	deriving (Ord, Eq)
@@ -229,7 +227,7 @@ testHarness a = do
 	setup = do
 		base <- getTemporaryDirectory
 		dir <- mktmpdir $ base </> "gpgtmpXXXXXX"
-		setEnv var dir True
+		void $ setEnv var dir True
 		_ <- pipeStrict [Params "--import -q"] $ unlines
 			[testSecretKey, testKey]
 		return dir
