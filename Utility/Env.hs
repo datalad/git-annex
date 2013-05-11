@@ -13,7 +13,7 @@ module Utility.Env where
 import qualified System.Environment as E
 import Utility.Exception
 #else
-import qualified System.Posix.Environment as E
+import qualified System.Posix.Env as E
 #endif
 
 {- Posix getEnv is faster than the one in System.Environment,
@@ -25,15 +25,22 @@ getEnv = E.getEnv
 getEnv = catchMaybeIO . E.getEnv
 #endif
 
+getEnvDefault :: String -> String -> IO String
+#ifndef __WINDOWS__
+getEnvDefault = E.getEnvDefault
+#else
+getEnvDefault var fallback = fromMaybe fallback <$> getEnv var
+#endif
+
 {- Returns True if it could successfully set the environment variable.
  -
  - There is, apparently, no way to do this in Windows. Instead,
  - environment varuables must be provided when running a new process. -}
-setEnv :: String -> String -> IO Bool
+setEnv :: String -> String -> Bool -> IO Bool
 #ifndef __WINDOWS__
-setEnv var val = do
-	E.setEnv var val
+setEnv var val overwrite = do
+	E.setEnv var val overwrite
 	return True
 #else
-setEnv _ _ = return False
+setEnv _ _ _ = return False
 #endif
