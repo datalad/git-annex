@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.HashObject where
 
 import Common
@@ -32,8 +34,15 @@ hashFile h file = CoProcess.query h send receive
   where
 	send to = do
 		fileEncoding to
+#ifdef __WINDOWS__
+		hSetNewlineMode to noNewlineTranslation
+#endif
 		hPutStrLn to file
-	receive from = getSha "hash-object" $ hGetLine from
+	receive from = getSha "hash-object" $ do
+#ifdef __WINDOWS__
+		hSetNewlineMode from noNewlineTranslation
+#endif
+		hGetLine from
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha

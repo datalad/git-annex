@@ -59,6 +59,9 @@ catObjectDetails h object = CoProcess.query h send receive
 		hPutStrLn to $ show object
 	receive from = do
 		fileEncoding from
+#ifdef __WINDOWS__
+		hSetNewlineMode from noNewlineTranslation
+#endif
 		header <- hGetLine from
 		case words header of
 			[sha, objtype, size]
@@ -73,13 +76,10 @@ catObjectDetails h object = CoProcess.query h send receive
 				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
 	readcontent bytes from sha = do
 		content <- S.hGet from bytes
-#ifdef __WINDOWS__
-		eatchar '\r' from
-#endif
 		eatchar '\n' from
 		return $ Just (L.fromChunks [content], Ref sha)
 	dne = return Nothing
 	eatchar expected from = do
 		c <- hGetChar from
 		when (c /= expected) $
-			error $ "missing " ++ (show c) ++ " from git cat-file"
+			error $ "missing " ++ (show expected) ++ " from git cat-file"
