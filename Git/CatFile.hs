@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
@@ -51,6 +53,9 @@ catObjectDetails h object = CoProcess.query h send receive
   where
 	send to = do
 		fileEncoding to
+#ifdef __WINDOWS__
+		hSetNewlineMode to noNewlineTranslation
+#endif
 		hPutStrLn to $ show object
 	receive from = do
 		fileEncoding from
@@ -68,8 +73,13 @@ catObjectDetails h object = CoProcess.query h send receive
 				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
 	readcontent bytes from sha = do
 		content <- S.hGet from bytes
-		c <- hGetChar from
-		when (c /= '\n') $
-			error "missing newline from git cat-file"
+#ifdef __WINDOWS__
+		eatchar '\r' from
+#endif
+		eatchar '\n' from
 		return $ Just (L.fromChunks [content], Ref sha)
 	dne = return Nothing
+	eatchar expected from = do
+		c <- hGetChar from
+		when (c /= expected) $
+			error $ "missing " ++ (show c) ++ " from git cat-file"
