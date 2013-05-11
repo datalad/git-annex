@@ -1,6 +1,8 @@
 git-annex (4.20130502) UNRELEASED; urgency=low
 
   * Android: The webapp is ported and working.
+  * Windows: There is a very rough Windows port. Do not trust it with
+    important data.
   * git-annex-shell: Ensure that received files can be read. Files
     transferred from some Android devices may have very broken permissions
     as received.
