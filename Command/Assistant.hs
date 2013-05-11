@@ -15,7 +15,6 @@ import Init
 import Config.Files
 
 import System.Environment
-import System.Posix.Directory
 
 def :: [Command]
 def = [noRepo checkAutoStart $ dontCheck repoExists $
@@ -64,5 +63,5 @@ autoStart = do
 			)
   where
 	go program dir = do
-		changeWorkingDirectory dir
+		setCurrentDirectory dir
 		boolSystem program [Param "assistant"]

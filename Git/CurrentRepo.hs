@@ -9,10 +9,6 @@
 
 module Git.CurrentRepo where
 
-#ifndef __WINDOWS__
-import System.Posix.Directory (changeWorkingDirectory)
-#endif
-
 import Common
 import Git.Types
 import Git.Construct
@@ -39,11 +35,9 @@ get = do
 	case wt of
 		Nothing -> return r
 		Just d -> do
-#ifndef __WINDOWS__
 			cwd <- getCurrentDirectory
 			unless (d `dirContains` cwd) $
-				changeWorkingDirectory d
-#endif
+				setCurrentDirectory d
 			return $ addworktree wt r
   where
 	pathenv s = do

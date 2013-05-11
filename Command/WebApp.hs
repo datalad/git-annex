@@ -28,7 +28,6 @@ import qualified Annex
 import Config.Files
 import qualified Option
 
-import System.Posix.Directory
 import Control.Concurrent
 import Control.Concurrent.STM
 import System.Process (env, std_out, std_err)
@@ -97,7 +96,7 @@ startNoRepo = do
 	case dirs of
 		[] -> firstRun listenhost
 		(d:_) -> do
-			changeWorkingDirectory d
+			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
 			void $ Annex.eval state $ doCommand $
 				start' False listenhost

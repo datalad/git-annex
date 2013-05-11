@@ -38,7 +38,6 @@ import Config
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
-import System.Posix.Directory
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -320,7 +319,7 @@ startFullAssistant path repogroup = do
 		u <- initRepo isnew True path Nothing
 		inDir path $ setStandardGroup u repogroup
 		addAutoStartFile path
-		changeWorkingDirectory path
+		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 

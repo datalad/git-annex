@@ -11,7 +11,6 @@ import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Test
 
-import System.Posix.Directory (changeWorkingDirectory)
 import System.Posix.Files
 import Control.Exception.Extensible
 import qualified Data.Map as M
@@ -199,7 +198,7 @@ test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		git_annex "add" ["dir"] @? "add of subdir failed"
 		createDirectory "dir2"
 		writeFile "dir2/foo" $ content annexedfile
-		changeWorkingDirectory "dir"
+		setCurrentDirectory "dir"
 		git_annex "add" ["../dir2"] @? "add of ../subdir failed"
 
 test_reinject :: Test
@@ -814,7 +813,7 @@ indir dir a = do
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to cwd before
 	-- rethrowing.
-	r <- bracket_ (changeToTmpDir dir) (changeWorkingDirectory cwd)
+	r <- bracket_ (changeToTmpDir dir) (setCurrentDirectory cwd)
 		(try (a)::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
@@ -949,7 +948,7 @@ prepare = do
 	cwd <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault  "PATH" ""
 	void $ Utility.Env.setEnv "PATH" (cwd ++ ":" ++ p) True
-	void $Utility.Env.setEnv "TOPDIR" cwd True
+	void $ Utility.Env.setEnv "TOPDIR" cwd True
 	-- Avoid git complaining if it cannot determine the user's email
 	-- address, or exploding if it doesn't know the user's name.
 	void $ Utility.Env.setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
@@ -961,7 +960,7 @@ changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
 	-- Hack alert. Threading state to here was too much bother.
 	topdir <- Utility.Env.getEnvDefault "TOPDIR" ""
-	changeWorkingDirectory $ topdir ++ "/" ++ t
+	setCurrentDirectory $ topdir ++ "/" ++ t
 
 tmpdir :: String
 tmpdir = ".t"
