@@ -22,7 +22,7 @@ type Attr = String
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	cwd <- getCurrentDirectory
-	h <- gitCoProcessStart params repo
+	h <- CoProcess.rawMode =<< gitCoProcessStart params repo
 	return (h, attrs, cwd)
   where
 	params =
@@ -43,11 +43,8 @@ checkAttr (h, attrs, cwd) want file = do
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
   where
-	send to = do
-		fileEncoding to
-		hPutStr to $ file' ++ "\0"
+	send to = hPutStr to $ file' ++ "\0"
 	receive from = forM attrs $ \attr -> do
-		fileEncoding from
 		l <- hGetLine from
 		return (attr, attrvalue attr l)
 	{- Before git 1.7.7, git check-attr worked best with
