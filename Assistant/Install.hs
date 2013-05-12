@@ -16,7 +16,7 @@ import Assistant.Ssh
 import Config.Files
 import Utility.FileMode
 import Utility.Shell
-import Utility.TempFile
+import Utility.Tmp
 import Utility.Env
 
 #ifdef darwin_HOST_OS

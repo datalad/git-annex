@@ -18,7 +18,7 @@ import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
 
 import Utility.SafeCommand
-import Utility.TempFile
+import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
 

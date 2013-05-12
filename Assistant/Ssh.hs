@@ -8,7 +8,7 @@
 module Assistant.Ssh where
 
 import Common.Annex
-import Utility.TempFile
+import Utility.Tmp
 import Utility.UserInfo
 import Utility.Shell
 import Git.Remote
@@ -146,7 +146,7 @@ authorizedKeysLine rsynconly dir pubkey
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair
-genSshKeyPair = withTempDir "git-annex-keygen" $ \dir -> do
+genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
 	ok <- boolSystem "ssh-keygen"
 		[ Param "-P", Param "" -- no password
 		, Param "-f", File $ dir </> "key"

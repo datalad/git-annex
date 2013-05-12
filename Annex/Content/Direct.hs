@@ -29,7 +29,7 @@ import Common.Annex
 import qualified Annex
 import Annex.Perms
 import qualified Git
-import Utility.TempFile
+import Utility.Tmp
 import Logs.Location
 import Utility.InodeCache
 
