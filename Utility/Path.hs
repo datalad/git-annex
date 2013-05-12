@@ -1,6 +1,6 @@
 {- path manipulation
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,14 +20,18 @@ import Control.Applicative
 import Utility.Monad
 import Utility.UserInfo
 
-{- Returns the parent directory of a path. Parent of / is "" -}
+{- Returns the parent directory of a path.
+ -
+ - To allow this to be easily used in loops, which terminate upon reaching the
+ - top, the parent of / is "" -}
 parentDir :: FilePath -> FilePath
 parentDir dir
-	| not $ null dirs = slash ++ join s (init dirs)
-	| otherwise = ""
+	| null dirs = ""
+	| otherwise = joinDrive drive (join s $ init dirs)
   where
-	dirs = filter (not . null) $ split s dir
-	slash = if isAbsolute dir then s else ""
+	-- on Unix, the drive will be "/" when the dir is absolute, otherwise ""
+	(drive, path) = splitDrive dir
+	dirs = filter (not . null) $ split s path
 	s = [pathSeparator]
 
 prop_parentDir_basics :: FilePath -> Bool
@@ -43,7 +47,7 @@ prop_parentDir_basics dir
  - are all equivilant.
  -}
 dirContains :: FilePath -> FilePath -> Bool
-dirContains a b = a == b || a' == b' || (a'++"/") `isPrefixOf` b'
+dirContains a b = a == b || a' == b' || (a'++[pathSeparator]) `isPrefixOf` b'
   where
 	norm p = fromMaybe "" $ absNormPath p "."
 	a' = norm a
@@ -108,7 +112,7 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 
 {- Given an original list of paths, and an expanded list derived from it,
  - generates a list of lists, where each sublist corresponds to one of the
- - original paths. When the original path is a direcotry, any items
+ - original paths. When the original path is a directory, any items
  - in the expanded list that are contained in that directory will appear in
  - its segment.
  -}
