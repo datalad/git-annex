@@ -22,11 +22,23 @@ import Utility.Env
  -
  - getpwent will fail on LDAP or NIS, so use HOME if set. -}
 myHomeDir :: IO FilePath
-myHomeDir = myVal ["HOME"] homeDirectory
+myHomeDir = myVal env homeDirectory
+  where
+#ifndef __WINDOWS__
+	env = ["HOME"]
+#else
+	env = ["USERPROFILE", "HOME"] -- HOME is used in Cygwin
+#endif
 
 {- Current user's user name. -}
 myUserName :: IO String
-myUserName = myVal ["USER", "LOGNAME"] userName
+myUserName = myVal env userName
+  where
+#ifndef __WINDOWS__
+	env = ["USER", "LOGNAME"]
+#else
+	env = ["USERNAME", "USER", "LOGNAME"]
+#endif
 
 myUserGecos :: IO String
 #ifdef __ANDROID__
