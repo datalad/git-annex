@@ -259,7 +259,7 @@ gitAnnexAssistantDefaultDir = "annex"
  - than .git to be used.
  -}
 isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = ('/':objectDir) `isInfixOf` s
+isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 
 {- Converts a key into a filename fragment without any directory.
  -
