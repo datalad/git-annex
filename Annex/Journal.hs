@@ -68,8 +68,8 @@ journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
   where
 	mangle c
 		| c == pathSeparator = "_"
-		| c == '_' = '__'
-		| otherwise = c
+		| c == '_' = "__"
+		| otherwise = [c]
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
