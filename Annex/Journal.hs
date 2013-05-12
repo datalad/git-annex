@@ -66,14 +66,16 @@ journalDirty = not . null <$> getJournalFiles
 journalFile :: FilePath -> Git.Repo -> FilePath
 journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
   where
-	mangle '/' = "_"
-	mangle '_' = "__"
-	mangle c = [c]
+	mangle c
+		| c == pathSeparator = "_"
+		| c == '_' = '__'
+		| otherwise = c
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
 fileJournal :: FilePath -> FilePath
-fileJournal = replace "//" "_" . replace "_" "/"
+fileJournal = replace [pathSeparator, pathSeparator] "_" .
+	replace "_" [pathSeparator]
 
 {- Runs an action that modifies the journal, using locking to avoid
  - contention with other git-annex processes. -}
