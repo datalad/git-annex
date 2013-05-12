@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJemqsekZTC5dvc-MAByUWaBvsYE-mFUo"
+ nickname="Gábor"
+ subject="Cabal dependencies"
+ date="2013-05-12T12:02:43Z"
+ content="""
+I would like to go the cabal way without knowing anything of Haskell, and assuming it is something like cpan for Perl. (Let me know if I'm wrong ;) )
+When I use the above command, I constantly experiencing failed installs because of missing packages. So far I had to install XML Sax, gsasl, c2hs, zlib (zlib1g-dev libghc-zlib-dev) with apt-get.
+I'm using Ubuntu, and the repo version is very old.
+
+Could someone please list the dependencies at least by project name (not package name, but this would be better)?
+Thanks in advance.
+"""]]
