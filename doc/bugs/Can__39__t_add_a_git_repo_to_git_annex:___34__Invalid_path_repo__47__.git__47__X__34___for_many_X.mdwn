@@ -2,7 +2,7 @@ I have some git repositories I don't edit often that I'd like to back up.  I'd l
 
 But when I try to add a .git directory to git annex, I get a bunch of errors of the form
 
-        git-annex: user error (xargs ["-0","git","--git-dir=/tmp/tmp.LhGN3nT9uM/annex/.git","--work-tree=/tmp/tmp.LhGN3nT9uM/annex","add","--"] exited 123)
+     git-annex: user error (xargs ["-0","git","--git-dir=/tmp/tmp.LhGN3nT9uM/annex/.git","--work-tree=/tmp/tmp.LhGN3nT9uM/annex","add","--"] exited 123)
     failed
     git-annex: add: 1 failed
     add repo/.git/hooks/pre-push.sample ok
