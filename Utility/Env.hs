@@ -9,31 +9,31 @@
 
 module Utility.Env where
 
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 import Utility.Exception
+import Control.Applicative
+import Data.Maybe
 import qualified System.Environment as E
 #else
 import qualified System.Posix.Env as PE
 #endif
 
-{- Posix getEnv is faster than the one in System.Environment,
- - so use when available. -}
 getEnv :: String -> IO (Maybe String)
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 getEnv = PE.getEnv
 #else
 getEnv = catchMaybeIO . E.getEnv
 #endif
 
 getEnvDefault :: String -> String -> IO String
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 getEnvDefault = PE.getEnvDefault
 #else
 getEnvDefault var fallback = fromMaybe fallback <$> getEnv var
 #endif
 
 getEnvironment :: IO [(String, String)]
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 getEnvironment = PE.getEnvironment
 #else
 getEnvironment = E.getEnvironment
@@ -44,7 +44,7 @@ getEnvironment = E.getEnvironment
  - There is, apparently, no way to do this in Windows. Instead,
  - environment varuables must be provided when running a new process. -}
 setEnv :: String -> String -> Bool -> IO Bool
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 setEnv var val overwrite = do
 	PE.setEnv var val overwrite
 	return True
@@ -54,10 +54,10 @@ setEnv _ _ _ = return False
 
 {- Returns True if it could successfully unset the environment variable. -}
 unsetEnv :: String -> IO Bool
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 unsetEnv var = do
 	PE.unsetEnv var
 	return True
 #else
-unsetEnv _ _ _ = return False
+unsetEnv _ = return False
 #endif
