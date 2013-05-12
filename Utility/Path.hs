@@ -5,12 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE PackageImports, CPP #-}
 
 module Utility.Path where
 
 import Data.String.Utils
-import "MissingH" System.Path
+import qualified "MissingH" System.Path as MissingH
 import System.FilePath
 import System.Directory
 import Data.List
@@ -19,6 +19,23 @@ import Control.Applicative
 
 import Utility.Monad
 import Utility.UserInfo
+
+{- Makes a path absolute if it's not already.
+ - The first parameter is a base directory (ie, the cwd) to use if the path
+ - is not already absolute.
+ -
+ - On Unix, collapses and normalizes ".." etc in the path. May return Nothing
+ - if the path cannot be normalized.
+ -
+ - MissingH's absNormPath does not work on Windows, so on Windows
+ - no normalization is done.
+ -}
+absNormPath :: FilePath -> FilePath -> Maybe FilePath
+#ifndef __WINDOWS__
+absNormPath dir path = MissingH.absNormPath dir path
+#else
+absNormPath dir path = Just $ combine dir path
+#endif
 
 {- Returns the parent directory of a path.
  -

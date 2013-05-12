@@ -12,7 +12,6 @@ import Data.Maybe as X
 import Data.List as X hiding (head, tail, init, last)
 import Data.String.Utils as X hiding (join)
 
-import "MissingH" System.Path as X
 import System.FilePath as X
 import System.Directory as X
 import System.IO as X hiding (FilePath)
