@@ -1,11 +1,11 @@
 {- git-update-index library
  -
- - Copyright 2011, 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, CPP #-}
 
 module Git.UpdateIndex (
 	Streamer,
@@ -59,13 +59,13 @@ lsTree (Ref x) repo streamer = do
  - a given file with a given sha. -}
 updateIndexLine :: Sha -> BlobType -> TopFilePath -> String
 updateIndexLine sha filetype file =
-	show filetype ++ " blob " ++ show sha ++ "\t" ++ getTopFilePath file
+	show filetype ++ " blob " ++ show sha ++ "\t" ++ indexPath file
 
 {- A streamer that removes a file from the index. -}
 unstageFile :: FilePath -> Repo -> IO Streamer
 unstageFile file repo = do
 	p <- toTopFilePath file repo
-	return $ pureStreamer $ "0 " ++ show nullSha ++ "\t" ++ getTopFilePath p
+	return $ pureStreamer $ "0 " ++ show nullSha ++ "\t" ++ indexPath p
 
 {- A streamer that adds a symlink to the index. -}
 stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer
@@ -75,3 +75,6 @@ stageSymlink file sha repo = do
 		<*> pure SymlinkBlob
 		<*> toTopFilePath file repo
 	return $ pureStreamer line
+
+indexPath :: TopFilePath -> InternalGitPath
+indexPath = toInternalGitPath . getTopFilePath

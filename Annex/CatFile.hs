@@ -21,6 +21,7 @@ import qualified Git
 import qualified Git.CatFile
 import qualified Annex
 import Git.Types
+import Git.FilePath
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -48,7 +49,7 @@ catFileHandle = maybe startup return =<< Annex.getState Annex.catfilehandle
 {- From the Sha or Ref of a symlink back to the key. -}
 catKey :: Ref -> Annex (Maybe Key)
 catKey ref = do
-	l <- encodeW8 . L.unpack  <$> catObject ref
+	l <- fromInternalGitPath . encodeW8 . L.unpack  <$> catObject ref
 	return $ if isLinkToAnnex l
 		then fileKey $ takeFileName l
 		else Nothing

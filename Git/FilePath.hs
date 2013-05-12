@@ -5,16 +5,21 @@
  - top of the repository even when run in a subdirectory. Adding some
  - types helps keep that straight.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Git.FilePath (
 	TopFilePath,
 	getTopFilePath,
 	toTopFilePath,
 	asTopFilePath,
+	InternalGitPath,
+	toInternalGitPath,
+	fromInternalGitPath
 ) where
 
 import Common
@@ -32,3 +37,22 @@ toTopFilePath file repo = TopFilePath <$>
  - repository -}
 asTopFilePath :: FilePath -> TopFilePath
 asTopFilePath file = TopFilePath file
+
+{- Git may use a different representation of a path when storing
+ - it internally. For example, on Windows, git uses '/' to separate paths
+ - stored in the repository, despite Windows using '\' -}
+type InternalGitPath = String
+
+toInternalGitPath :: FilePath -> InternalGitPath
+#ifndef __WINDOWS__
+toInternalGitPath = id
+#else
+toInternalGitPath = replace "\\" "/"
+#endif
+
+fromInternalGitPath :: InternalGitPath -> FilePath
+#ifndef __WINDOWS__
+fromInternalGitPath = id
+#else
+fromInternalGitPath = replace "/" "\\"
+#endif

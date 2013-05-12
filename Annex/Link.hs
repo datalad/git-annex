@@ -18,6 +18,7 @@ import qualified Git.HashObject
 import qualified Git.UpdateIndex
 import qualified Annex.Queue
 import Git.Types
+import Git.FilePath
 
 type LinkTarget = String
 
@@ -74,7 +75,8 @@ addAnnexLink linktarget file = do
 
 {- Injects a symlink target into git, returning its Sha. -}
 hashSymlink :: LinkTarget -> Annex Sha
-hashSymlink linktarget = inRepo $ Git.HashObject.hashObject BlobObject linktarget
+hashSymlink linktarget = inRepo $ Git.HashObject.hashObject BlobObject $ 
+	toInternalGitPath linktarget
 
 {- Stages a symlink to the annex, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()

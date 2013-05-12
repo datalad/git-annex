@@ -23,6 +23,7 @@ import Git
 import Git.Sha
 import Git.Command
 import Git.Types
+import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
 
 type CatFileHandle = CoProcess.CoProcessHandle
@@ -38,7 +39,8 @@ catFileStop = CoProcess.stop
 
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
-catFile h branch file = catObject h $ Ref $ show branch ++ ":" ++ file
+catFile h branch file = catObject h $ Ref $
+	show branch ++ ":" ++ toInternalGitPath file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
