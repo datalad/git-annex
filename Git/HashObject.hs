@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Git.HashObject where
 
 import Common
@@ -19,7 +17,7 @@ import qualified Utility.CoProcess as CoProcess
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = gitCoProcessStart
+hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"
@@ -32,23 +30,13 @@ hashObjectStop = CoProcess.stop
 hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
-	send to = do
-		fileEncoding to
-#ifdef __WINDOWS__
-		hSetNewlineMode to noNewlineTranslation
-#endif
-		hPutStrLn to file
-	receive from = getSha "hash-object" $ do
-#ifdef __WINDOWS__
-		hSetNewlineMode from noNewlineTranslation
-#endif
-		hGetLine from
+	send to = hPutStrLn to file
+	receive from = getSha "hash-object" $ hGetLine from
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha
-hashObject objtype content repo = getSha subcmd $ do
-	s <- pipeWriteRead (map Param params) content repo
-	return s
+hashObject objtype content repo = getSha subcmd $
+	pipeWriteRead (map Param params) content repo
   where
 	subcmd = "hash-object"
 	params = [subcmd, "-t", show objtype, "-w", "--stdin"]

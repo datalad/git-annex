@@ -6,11 +6,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.CoProcess (
 	CoProcessHandle,
 	start,
 	stop,
-	query
+	query,
+	rawMode
 ) where
 
 import Common
@@ -33,3 +36,15 @@ query (_, from, to, _) send receive = do
 	_ <- send to
 	hFlush to
 	receive from
+
+rawMode :: CoProcessHandle -> IO CoProcessHandle
+rawMode ch@(_, from, to, _) = do
+	raw from
+	raw to
+	return ch
+  where
+  	raw h = do
+		fileEncoding h
+#ifdef __WINDOWS__
+		hSetNewlineMode h noNewlineTranslation
+#endif

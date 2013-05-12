@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
@@ -30,7 +28,7 @@ import qualified Utility.CoProcess as CoProcess
 type CatFileHandle = CoProcess.CoProcessHandle
 
 catFileStart :: Repo -> IO CatFileHandle
-catFileStart = gitCoProcessStart
+catFileStart = CoProcess.rawMode <=< gitCoProcessStart
 	[ Param "cat-file"
 	, Param "--batch"
 	]
@@ -51,17 +49,8 @@ catObject h object = maybe L.empty fst <$> catObjectDetails h object
 catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha))
 catObjectDetails h object = CoProcess.query h send receive
   where
-	send to = do
-		fileEncoding to
-#ifdef __WINDOWS__
-		hSetNewlineMode to noNewlineTranslation
-#endif
-		hPutStrLn to $ show object
+	send to = hPutStrLn to $ show object
 	receive from = do
-		fileEncoding from
-#ifdef __WINDOWS__
-		hSetNewlineMode from noNewlineTranslation
-#endif
 		header <- hGetLine from
 		case words header of
 			[sha, objtype, size]
