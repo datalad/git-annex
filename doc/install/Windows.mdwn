@@ -1,0 +1,8 @@
+git-annex has recently been ported to Windows.
+
+This port is in an alpha state; many things will not work. See
+[[todo/windows_support]] for current status. Note especially that
+git-annex always uses [[direct_mode]] on Windows.
+
+To build git-annex from source on Windows, simply follow the instructions
+for [[using cabal|cabal]].

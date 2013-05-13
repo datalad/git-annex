@@ -14,6 +14,7 @@ exceptions:
 * Repositories on FAT and other less than stellar filesystems
   that don't support things like symlinks will be automatically put
   into direct mode.
+* Windows always uses direct mode.
 
 ## enabling (and disabling) direct mode
 

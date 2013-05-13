@@ -14,7 +14,7 @@ detailed instructions | quick install
 [[Gentoo]]            | `emerge git-annex`
 [[ScientificLinux5]]  | (and other RHEL5 clones like CentOS5)
 [[openSUSE]]          | 
-Windows               | [[sorry, Windows not supported yet|todo/windows_support]]
+[[Windows]]           | **alpha**
 """]]
 
 ## Using cabal
