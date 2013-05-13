@@ -8,13 +8,13 @@ Well, it would be possible to add a configuration setting in the repository that
 
 But maybe it would be better to not use `assistant --autostart` in your situation? That command is basically the same as this shell script:
 
-[[!format sh """
+[[!format sh "
 #!/bin/sh
 for dir in $(cat $HOME/.config/git-annex/autostart); do
     cd $dir
     git annex webapp &
 done
-"""]]
+"]]
 
 So you can write similar shell scripts that start the webapp with whatever options you like.
 """]]
