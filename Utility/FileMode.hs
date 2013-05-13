@@ -10,7 +10,6 @@ module Utility.FileMode where
 import Common
 
 import Control.Exception (bracket)
-import Utility.Exception
 import System.Posix.Types
 import Foreign (complement)
 

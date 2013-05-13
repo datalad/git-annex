@@ -14,7 +14,6 @@ import Utility.UserInfo
 import qualified Git.Config
 
 import System.Posix.Env
-import Network.BSD
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
