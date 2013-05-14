@@ -151,6 +151,14 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
 
+	{- Normally git disables core.symlinks itself when the filesystem does
+ 	 - not support them, but in Cygwin, git does support symlinks, while
+ 	 - git-annex, not linking with Cygwin, does not. -}
+	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
+		warning "Disabling core.symlinks."
+		setConfig (ConfigKey "core.symlinks")
+			(Git.Config.boolConfig False)
+
 	unlessM isDirect $ do
 		warning "Enabling direct mode."
 		top <- fromRepo Git.repoPath
@@ -160,14 +168,6 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		void $ liftIO clean
 		setDirect True
 	setVersion directModeVersion
-
-	{- Normally git disables core.symlinks itself when the filesystem does
- 	 - not support them, but in Cygwin, git does support symlinks, while
- 	 - git-annex, not linking with Cygwin, does not. -}
-	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
-		warning "Disabling core.symlinks."
-		setConfig (ConfigKey "core.symlinks")
-			(Git.Config.boolConfig False)
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
