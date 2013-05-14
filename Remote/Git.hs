@@ -20,6 +20,7 @@ import Common.Annex
 import Utility.CopyFile
 import Utility.Rsync
 import Remote.Helper.Ssh
+import Annex.Ssh
 import Types.Remote
 import Types.GitConfig
 import qualified Git

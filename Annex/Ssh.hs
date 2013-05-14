@@ -10,6 +10,7 @@
 module Annex.Ssh (
 	sshCachingOptions,
 	sshCleanup,
+	sshCacheDir,
 	sshReadPort,
 ) where
 
