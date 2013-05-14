@@ -110,7 +110,7 @@ goodContent key file = sameInodeCache file =<< recordedInodeCache key
 recordedInodeCache :: Key -> Annex [InodeCache]
 recordedInodeCache key = withInodeCacheFile key $ \f ->
 	liftIO $ catchDefaultIO [] $
-		mapMaybe readInodeCache . lines <$> readFile f
+		mapMaybe readInodeCache . lines <$> readFileStrict f
 
 {- Caches an inode for a file.
  -
