@@ -28,25 +28,27 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
 
 {- Gets the link target of a symlink.
  -
- - On a filesystem that does not support symlinks, get the link
- - target by looking inside the file. (Only return at first 8k of the file,
- - more than enough for any symlink target.)
+ - On a filesystem that does not support symlinks, fall back to getting the
+ - link target by looking inside the file. (Only return at first 8k of the
+ - file, more than enough for any symlink target.)
  -
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
 getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
-getAnnexLinkTarget file = do
-	v <- ifM (coreSymlinks <$> Annex.getGitConfig)
-		( liftIO $ catchMaybeIO $ readSymbolicLink file
-		, liftIO $ catchMaybeIO $ readfilestart file
-		)
-	case v of
-		Nothing -> return Nothing
-		Just l
-			| isLinkToAnnex l -> return v
-			| otherwise -> return Nothing
+getAnnexLinkTarget file =
+	check readSymbolicLink $
+		check readfilestart $
+			return Nothing
   where
+	check getlinktarget fallback = do
+		v <- liftIO $ catchMaybeIO $ getlinktarget file
+		case v of
+			Just l
+				| isLinkToAnnex l -> return v
+				| otherwise -> return Nothing
+			Nothing -> fallback
+
 	readfilestart f = do
 		h <- openFile f ReadMode
 		fileEncoding h
