@@ -3,11 +3,6 @@ now! --[[Joey]]
 
 ## status
 
-* git-annex fails to access a clone located on the local machine 
-  (including other drives). It thinks that `c:\clone` is a ssh remote.
-  (When Cygwin's build of git is used to make the clone, it puts the
-  slashes the other way around in .git/config, which also doesn't work
-  for git-annex.)
 * Does not work with Cygwin's build of git (that git does not consistently
   support use of DOS style paths, which git-annex uses on Windows). 
   Must use the upstream build of git for Windows.

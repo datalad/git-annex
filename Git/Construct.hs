@@ -21,6 +21,8 @@ module Git.Construct (
 	checkForRepo,
 ) where
 
+{-# LANGUAGE CPP #-}
+
 import System.Posix.User
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
@@ -139,6 +141,9 @@ fromRemoteLocation :: String -> Repo -> IO Repo
 fromRemoteLocation s repo = gen $ calcloc s
   where
 	gen v	
+#ifdef __WINDOWS__
+		| dosstyle v = fromRemotePath v repo
+#endif
 		| scpstyle v = fromUrl $ scptourl v
 		| urlstyle v = fromUrl v
 		| otherwise = fromRemotePath v repo
@@ -172,6 +177,11 @@ fromRemoteLocation s repo = gen $ calcloc s
 			| "/" `isPrefixOf` d = d
 			| "~" `isPrefixOf` d = '/':d
 			| otherwise = "/~/" ++ d
+#ifdef __WINDOWS__
+	-- git on Windows will write a path to .git/config with "drive:",
+	-- which is not to be confused with a "host:"
+	dosstyle = hasDrive
+#endif
 
 {- Constructs a Repo from the path specified in the git remotes of
  - another Repo. -}
