@@ -58,7 +58,7 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| "/" `isPrefixOf` dir =
+	| isAbsolute dir =
 		ifM (doesDirectoryExist dir') ( ret dir' , hunt )
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
@@ -71,7 +71,7 @@ fromAbsPath dir
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
 	hunt
-		| "/.git" `isSuffixOf` canondir =
+		| pathSeparator:".git" `isSuffixOf` canondir =
 			ifM (doesDirectoryExist $ dir </> ".git")
 				( ret dir
 				, ret $ takeDirectory canondir
