@@ -3,7 +3,11 @@ now! --[[Joey]]
 
 ## status
 
-* `git annex add` doesn't work
+* git-annex fails to access a clone located on the local machine 
+  (including other drives). It thinks that `c:\clone` is a ssh remote.
+  (When Cygwin's build of git is used to make the clone, it puts the
+  slashes the other way around in .git/config, which also doesn't work
+  for git-annex.)
 * test suite doesn't work
 * Bad file locking, it's probably not safe to run more than one git-annex
   process at the same time on Windows.
