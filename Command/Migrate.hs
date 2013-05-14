@@ -52,15 +52,20 @@ upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradab
 
 {- Store the old backend's key in the new backend
  - The old backend's key is not dropped from it, because there may
- - be other files still pointing at that key. -}
+ - be other files still pointing at that key.
+ -
+ - To ensure that the data we have for the old key is valid, it's
+ - fscked here. First we generate the new key. This ensures that the
+ - data cannot get corrupted after the fsck but before the new key is
+ - generated.
+ -}
 perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
-perform file oldkey oldbackend newbackend = do
-	ifM (Command.Fsck.checkBackend oldbackend oldkey (Just file))
-		( maybe stop go =<< genkey
-		, stop
-		)
+perform file oldkey oldbackend newbackend = go =<< genkey
   where
-	go newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
+  	go Nothing = stop
+	go (Just newkey) = stopUnless checkcontent $ finish newkey
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey $ Just file
+	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
 		next $ Command.ReKey.cleanup file oldkey newkey
 	genkey = do
 		content <- calcRepo $ gitAnnexLocation oldkey

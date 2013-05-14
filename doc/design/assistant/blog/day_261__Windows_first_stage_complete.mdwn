@@ -1,0 +1,29 @@
+After working on it all day, git-annex now builds on Windows!
+
+Even better, `git annex init` works. So does `git annex status`, and
+probably more. Not `git annex add` yet, so I wasn't able to try much more.
+
+I didn't have to add many stubs today, either. Many of the missing Windows
+features were only used in code paths that made git-annex faster, but I
+could fall back to a slower code path on Windows.
+
+The things that are most problimatic so far:
+
+* POSIX file locking. This is used in git-annex in several places to 
+  make it safe when multiple git-annex processes are running. I put in
+  really horrible dotfile type locking in the Windows code paths, but I
+  don't trust it at all of course.
+* There is, apparently, no way to set an environment variable in Windows
+  from Haskell. It is only possible to set up a new process' environment
+  before starting it. Luckily most of the really crucial environment
+  variable stuff in git-annex is of this latter sort, but there were
+  a few places I had to stub out code that tries to manipulate git-annex's
+  own environment.
+
+The `windows` branch has a diff of 2089 lines. It add 88 ifdefs to the code
+base. Only 12 functions are stubbed out on Windows. This could be so much
+worse.
+
+Next step: Get the test suite to build. Currently ifdefed out because it
+uses some stuff like `setEnv` and `changeWorkingDirectory` that I don't know
+how to do in Windows yet.

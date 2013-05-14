@@ -1,0 +1,46 @@
+Set up my Windows development environment. For future reference, I've
+installed:
+
+* haskell platform for windows
+* cygwin
+* gcc and a full C toolchain in cygwin
+* git from upstream (probably git-annex will use this)
+* git in cygwin (the other git was not visible inside cygwin)
+* vim in cygwin
+* vim from upstream, as the cygwin vim is not very pleasant to use
+* openssh in cygwin (seems to be missing a ssh server)
+* rsync in cygwin
+* Everything that `cabal install git-annex` is able to install successfully.  
+  This includes all the libraries needed to build regular git-annex,
+  but not the webapp. Good start though.
+
+Result basically feels like a linux system that can't decide which way
+slashes in paths go. :P I've never used Cygwin before (I last used a
+Windows machine in 2003 for that matter), and it's a fairly impressive hack.
+
+----
+
+Fixed up git-annex's configure program to run on Windows (or, at least, in
+Cygwin), and have started getting git-annex to build.
+
+For now, I'm mostly stubbing out functions that use unix stuff. Gotten the
+first 44 of 300 source files to build this way.
+
+Once I get it to build, if only with stubs, I'll have a good
+idea about all the things I need to find Windows equivilants of.
+Hopefully most of it will be provided by
+<http://hackage.haskell.org/package/unix-compat-0.3.0.1>.
+
+----
+
+So that's the plan. There is a possible shortcut, rather than doing a full
+port. It seems like it would probably not be too hard to rebuild ghc inside
+Cygwin, and the resulting ghc would probably have a full POSIX emulation
+layer going through cygwin. From ghc's documentation, it looks like that's
+how ghc used to be built at some point in the past, so it would probably
+not be too hard to build it that way. With such a cygwin ghc, git-annex
+would probably build with little or no changes. However, it would be a
+git-annex targeting Cygwin, and not really a native Windows port. So
+it'd see Cygwin's emulated POSIX filesystem paths, etc. That
+seems probably not ideal for most windows users.. but if I get really stuck
+I may go back and try this method.

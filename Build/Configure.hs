@@ -82,17 +82,15 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
-{- For release builds, VERSION_FROM_CHANGELOG makes it use just the most
- - recent version from the changelog. -}
 isReleaseBuild :: IO Bool
-isReleaseBuild = isJust <$> catchMaybeIO (getEnv "VERSION_FROM_CHANGELOG")
+isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
 
 {- Version is usually based on the major version from the changelog, 
  - plus the date of the last commit, plus the git rev of that commit.
  - This works for autobuilds, ad-hoc builds, etc.
  -
  - If git or a git repo is not available, or something goes wrong,
- - just use the version from the changelog. -}
+ - or this is a release build, just use the version from the changelog. -}
 getVersion :: Test
 getVersion = do
 	changelogversion <- getChangelogVersion

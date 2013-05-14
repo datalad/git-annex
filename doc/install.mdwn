@@ -14,19 +14,13 @@ detailed instructions | quick install
 [[Gentoo]]            | `emerge git-annex`
 [[ScientificLinux5]]  | (and other RHEL5 clones like CentOS5)
 [[openSUSE]]          | 
-Windows               | [[sorry, Windows not supported yet|todo/windows_support]]
+[[Windows]]           | **alpha**
 """]]
 
 ## Using cabal
 
-As a haskell package, git-annex can be installed using cabal.
-Start by installing the [Haskell Platform](http://hackage.haskell.org/platform/),
-and then:
-
-	cabal install git-annex --bindir=$HOME/bin
-
-That installs the latest release. Alternatively, you can [[download]]
-git-annex yourself and [[manually_build_with_cabal|install/cabal]].
+As a haskell package, git-annex can be installed from source pretty easily
+[[using cabal|cabal]].
 
 ## Installation from scratch
 

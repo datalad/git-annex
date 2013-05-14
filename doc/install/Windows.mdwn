@@ -1,0 +1,10 @@
+git-annex has recently been ported to Windows.
+
+This port is in an alpha state; many things will not work. See
+[[todo/windows_support]] for current status. Note especially that
+git-annex always uses [[direct_mode]] on Windows.
+
+To build git-annex from source on Windows, you need to install
+the Haskell Platform and Cygwin. When installing Cygwin, select
+to install gcc, make, rsync, and ssh. Then, within Cygwin, git-annex
+can be compiled following the instructions for [[using cabal|cabal]].

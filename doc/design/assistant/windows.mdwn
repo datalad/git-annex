@@ -8,10 +8,7 @@ Stackoverflow has some details.
 
 NTFS supports symbolic links two different ways: an [[!wikipedia NTFS symbolic link]] and an [[!wikipedia NTFS_junction_point]].  The former seems like the closest analogue to POSIX symlinks.
 
-Make git use them, as it (apparently) does not yet.
-
-Currently, on Windows, git checks out symlinks as files containing the symlink
-target as their contents.
+The windows port will not use symlinks. It will only support direct mode.
 
 ## POSIX
 
