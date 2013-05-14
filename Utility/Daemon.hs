@@ -15,6 +15,7 @@ import Utility.LogFile
 #ifndef __WINDOWS__
 import System.Posix
 #else
+import System.PosixCompat
 import System.Posix.Types
 #endif
 
@@ -48,16 +49,16 @@ daemonize logfd pidfile changedirectory a = do
 		out
 	out = exitImmediately ExitSuccess
 #else
-daemonize = error "daemonize TODO"
+daemonize = error "daemonize is not implemented on Windows" -- TODO
 #endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
  - Writes the pid to the file, fully atomically.
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
-#ifndef __WINDOWS__
 lockPidFile file = do
 	createDirectoryIfMissing True (parentDir file)
+#ifndef __WINDOWS__
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
@@ -68,13 +69,13 @@ lockPidFile file = do
 		(_, Nothing) -> alreadyRunning
 		_ -> do
 			_ <- fdWrite fd' =<< show <$> getProcessID
-			renameFile newfile file
 			closeFd fd
+#else
+	writeFile newfile "-1"
+#endif
+	renameFile newfile file
   where
 	newfile = file ++ ".new"
-#else
-lockPidFile = error "lockPidFile TODO"
-#endif
 
 alreadyRunning :: IO ()
 alreadyRunning = error "Daemon is already running."
@@ -104,7 +105,7 @@ checkDaemon pidfile = do
 			" (got " ++ show pid' ++ 
 			"; expected " ++ show pid ++ " )"
 #else
-checkDaemon = error "checkDaemon TODO"
+checkDaemon pidfile = maybe Nothing readish <$> catchMaybeIO (readFile pidfile)
 #endif
 
 {- Stops the daemon, safely. -}
@@ -115,5 +116,5 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
 	go Nothing = noop
 	go (Just pid) = signalProcess sigTERM pid
 #else
-stopDaemon = error "stopDaemon TODO"
+stopDaemon = error "stopDaemon is not implemented on Windows" -- TODO
 #endif

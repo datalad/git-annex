@@ -34,6 +34,7 @@ import Network.URI
 import Common
 import Git.Types
 import Git
+import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
 
@@ -58,8 +59,7 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| isAbsolute dir =
-		ifM (doesDirectoryExist dir') ( ret dir' , hunt )
+	| isAbsolute dir = ifM (doesDirectoryExist dir') ( ret dir' , hunt )
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
@@ -146,7 +146,7 @@ fromRemoteLocation s repo = gen $ calcloc s
   where
 	gen v	
 #ifdef __WINDOWS__
-		| dosstyle v = fromRemotePath v repo
+		| dosstyle v = fromRemotePath (dospath v) repo
 #endif
 		| scpstyle v = fromUrl $ scptourl v
 		| urlstyle v = fromUrl v
@@ -185,6 +185,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 	-- git on Windows will write a path to .git/config with "drive:",
 	-- which is not to be confused with a "host:"
 	dosstyle = hasDrive
+	dospath = fromInternalGitPath
 #endif
 
 {- Constructs a Repo from the path specified in the git remotes of
