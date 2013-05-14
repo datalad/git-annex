@@ -18,6 +18,7 @@ module Init (
 import Common.Annex
 import Utility.TempFile
 import Utility.Network
+import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Config
@@ -117,6 +118,8 @@ preCommitScript = unlines
 	, "git annex pre-commit ."
 	]
 
+{- A crippled filesystem is one that does not allow making symlinks,
+ - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
 #ifdef __WINDOWS__
@@ -147,6 +150,7 @@ checkCrippledFileSystem :: Annex ()
 checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
+
 	unlessM isDirect $ do
 		warning "Enabling direct mode."
 		top <- fromRepo Git.repoPath
@@ -156,6 +160,14 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		void $ liftIO clean
 		setDirect True
 	setVersion directModeVersion
+
+	{- Normally git disables core.symlinks itself when the filesystem does
+ 	 - not support them, but in Cygwin, git does support symlinks, while
+ 	 - git-annex, not linking with Cygwin, does not. -}
+	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
+		warning "Disabling core.symlinks."
+		setConfig (ConfigKey "core.symlinks")
+			(Git.Config.boolConfig False)
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
