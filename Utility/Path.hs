@@ -10,7 +10,6 @@
 module Utility.Path where
 
 import Data.String.Utils
-import qualified "MissingH" System.Path as MissingH
 import System.FilePath
 import System.Directory
 import Data.List
@@ -19,7 +18,9 @@ import Control.Applicative
 
 #ifdef __WINDOWS__
 import Data.Char
-import System.FilePath.Posix as Posix
+import qualified System.FilePath.Posix as Posix
+#else
+import qualified "MissingH" System.Path as MissingH
 #endif
 
 import Utility.Monad
