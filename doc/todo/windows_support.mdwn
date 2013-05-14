@@ -9,8 +9,10 @@ now! --[[Joey]]
   slashes the other way around in .git/config, which also doesn't work
   for git-annex.)
 * Does not work with Cygwin's build of git (that git does not consistently
-  support use of DOS style paths, which git-annex uses on Windows).
+  support use of DOS style paths, which git-annex uses on Windows). 
   Must use the upstream build of git for Windows.
+* OTOH, you do need to install Cygwin's build of rsync (unless you can
+  find another one), and Cygwin's build of ssh.
 * test suite doesn't work
 * Bad file locking, it's probably not safe to run more than one git-annex
   process at the same time on Windows.
