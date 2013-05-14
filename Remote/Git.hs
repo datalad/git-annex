@@ -308,6 +308,8 @@ copyFromRemote' r key file dest
 	 - git-annex-shell transferinfo at the same time
 	 - git-annex-shell sendkey is running.
 	 -
+	 - To avoid extra password prompts, this is only done when ssh
+	 - connection caching is supported.
 	 - Note that it actually waits for rsync to indicate
 	 - progress before starting transferinfo, in order
 	 - to ensure ssh connection caching works and reuses 
@@ -316,7 +318,10 @@ copyFromRemote' r key file dest
 	 - Also note that older git-annex-shell does not support
 	 - transferinfo, so stderr is dropped and failure ignored.
 	 -}
-	feedprogressback a = do
+	feedprogressback a = ifM (isJust <$> sshCacheDir)
+		( feedprogressback' a
+		, bracketIO noop (const noop) $ a const
+	feedprogressback' a = do
 		u <- getUUID
 		let fields = (Fields.remoteUUID, fromUUID u)
 			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
