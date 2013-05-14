@@ -1,4 +1,7 @@
-As a haskell package, git-annex can be installed using cabal. For example:
+As a haskell package, git-annex can be installed using cabal.
+
+Start by installing the [Haskell Platform](http://hackage.haskell.org/platform/),
+and then:
 
 	cabal update
 	PATH=$HOME/bin:$PATH

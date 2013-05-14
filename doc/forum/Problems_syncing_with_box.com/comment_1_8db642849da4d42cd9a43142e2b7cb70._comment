@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-13T17:56:35Z"
+ content="""
+From what you've described, the box.com special remote is the only remote you have connecting your two computers.
+
+But special remotes are only used to transfer the contents of files. They do not have the content of the git repository.
+
+You need to set up a git remote that both computers can access. Or you can use the webapp to set up XMPP to sync between the computers directly. If you start the webapp, it will detect you're missing a git remote, and suggest setting up XMPP. [[/assistant/xmppnudge.png]]
+"""]]

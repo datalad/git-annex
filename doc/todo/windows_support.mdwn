@@ -1,61 +1,14 @@
-Can it be built on Windows?
+The git-annex Windows port is not ready for prime time. But it does exist
+now! --[[Joey]] 
 
-short answer: not yet
+## status
 
-First, you need to get some unix utilities for windows. Git of course.
-Also rsync, and a `cp` command that understands at least `cp -p`, and
-`uuid`, and `xargs` and `sha1sum`. Note that some of these could be
-replaced with haskell libraries to some degree.
-
-There are probably still some places where it assumes / as a path
-separator, although I fixed probably almost all by now.
-
-Then windows versions of these functions could be found,
-which are all the ones that need POSIX, I think. A fair amount of this,
-the stuff to do with signals and users, could be empty stubs in windows.
-The file manipulation, particularly symlinks, would probably be the main
-challenge.
-
-<pre>
-addSignal
-blockSignals
-changeWorkingDirectory
-createLink
-createSymbolicLink
-emptySignalSet
-executeFile
-fileMode
-fileSize
-forkProcess
-getAnyProcessStatus
-getEffectiveUserID
-getEnvDefault
-getFileStatus
-getProcessID
-getProcessStatus
-getSignalMask
-getSymbolicLinkStatus
-getUserEntryForID
-getUserEntryForName
-groupWriteMode
-homeDirectory
-installHandler
-intersectFileModes
-isRegularFile
-isSymbolicLink
-modificationTime
-otherWriteMode
-ownerWriteMode
-readSymbolicLink
-setEnv
-setFileMode
-setSignalMask
-sigCHLD
-sigINT
-unionFileModes
-</pre>
-
-A good starting point is
-<http://hackage.haskell.org/package/unix-compat-0.3.0.1>. However, note
-that its implementations of stuff like `createSymbolicLink` are stubs.
---[[Joey]] 
+* Does not work with Cygwin's build of git (that git does not consistently
+  support use of DOS style paths, which git-annex uses on Windows). 
+  Must use the upstream build of git for Windows.
+* OTOH, you do need to install Cygwin's build of rsync (unless you can
+  find another one), and Cygwin's build of ssh.
+* test suite doesn't work
+* Bad file locking, it's probably not safe to run more than one git-annex
+  process at the same time on Windows.
+* No support for the assistant or webapp.

@@ -26,7 +26,7 @@ We are, approximately, here:
 
 * [[OSX]] port is in fairly good shape, but still has some room for improvement
 * [[android]] port is zooming along
-* Windows port does not exist yet
+* [[Windows]] port is barely getting started
 
 ## not yet on the map:
 

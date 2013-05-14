@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-13T18:39:59Z"
+ content="""
+Sorry it took so long to get back to you.
+
+You do not necessarily have to have git-annex installed on your web server. But it will open up one of the nicest ways to use git-annex with a server, which is to put a bare git repository on the server, and let git-annex send the contents of large files to that repository. It's fine to install any old version of git-annex on the server, they're all forwards and backwards compatable.
+
+In any case, you need git-annex installed on any computers where you want to access the repository, certainly.
+
+"""]]
