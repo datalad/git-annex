@@ -92,7 +92,7 @@ feedRead params passphrase feeder reader = do
 			hClose to
 		reader from
 #else
-feedRead = error "feedRead TODO"
+feedRead = error "gpg feedRead not implemented on Windows" -- TODO
 #endif
 
 {- Finds gpg public keys matching some string. (Could be an email address,
