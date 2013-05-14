@@ -1,6 +1,6 @@
 {- various rsync stuff
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -49,7 +49,16 @@ rsyncUseDestinationPermissions :: CommandParam
 rsyncUseDestinationPermissions = Param "--chmod=ugo=rwX"
 
 rsync :: [CommandParam] -> IO Bool
-rsync = boolSystem "rsync"
+rsync = boolSystem "rsync" . rsyncParamsFixup
+
+{- On Windows, rsync is from Cygwin, and expects to get Cygwin formatted
+ - paths to files. (It thinks that C:foo refers to a host named "C").
+ - Fix up all Files in the Params appropriately. -}
+rsyncParamsFixup :: [CommandParam] -> [CommandParam]
+rsyncParamsFixup = map fixup
+  where
+  	fixup (File f) = File (toCygPath f)
+	fixup p = p
 
 {- Runs rsync, but intercepts its progress output and updates a meter.
  - The progress output is also output to stdout. 
@@ -65,7 +74,7 @@ rsyncProgress meterupdate params = do
 	reapZombies
 	return r
   where
-	p = proc "rsync" (toCommand params)
+	p = proc "rsync" (toCommand $ rsyncParamsFixup params)
 	feedprogress prev buf h = do
 		s <- hGetSomeString h 80
 		if null s

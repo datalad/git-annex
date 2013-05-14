@@ -425,7 +425,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 			_ -> watchfilesize oldsz
 #endif
 	dorsync = rsyncHelper (Just p) $
-		rsyncparams ++ [Param src, Param dest]
+		rsyncparams ++ [File src, File dest]
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}

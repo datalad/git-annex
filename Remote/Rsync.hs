@@ -242,7 +242,7 @@ rsyncRetrieve o k dest callback =
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
-		, Param dest
+		, File dest
 		]
 
 rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
@@ -292,7 +292,7 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 			[ Param "--recursive"
 			, partialParams
 			-- tmp/ to send contents of tmp dir
-			, Param $ addTrailingPathSeparator tmp
+			, File $ addTrailingPathSeparator tmp
 			, Param $ rsyncUrl o
 			]
 		else return False
