@@ -16,6 +16,7 @@ import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
+import System.Path
 
 import Common
 

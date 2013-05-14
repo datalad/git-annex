@@ -13,6 +13,7 @@ import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception (bracket)
+import System.Path
 
 import Common
 import Utility.Env

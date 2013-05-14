@@ -26,6 +26,7 @@ import Types.StandardGroups
 import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
 import qualified Data.Map as M
+import System.Path
 
 notCurrentRepo :: UUID -> Handler RepHtml -> Handler RepHtml
 notCurrentRepo uuid a = go =<< liftAnnex (Remote.remoteFromUUID uuid)

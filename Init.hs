@@ -16,7 +16,7 @@ module Init (
 ) where
 
 import Common.Annex
-import Utility.TempFile
+import Utility.Tmp
 import Utility.Network
 import qualified Annex
 import qualified Git

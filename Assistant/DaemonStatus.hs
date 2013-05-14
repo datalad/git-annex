@@ -9,7 +9,7 @@ module Assistant.DaemonStatus where
 
 import Assistant.Common
 import Assistant.Alert.Utility
-import Utility.TempFile
+import Utility.Tmp
 import Assistant.Types.NetMessager
 import Utility.NotificationBroadcaster
 import Logs.Transfer

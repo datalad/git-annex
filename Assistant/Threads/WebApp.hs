@@ -33,7 +33,7 @@ import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
-import Utility.TempFile
+import Utility.Tmp
 import Utility.FileMode
 import Git
 
@@ -74,7 +74,7 @@ webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup
 		, return app
 		)
 	runWebApp listenhost app' $ \addr -> if noannex
-		then withTempFile "webapp.html" $ \tmpfile _ ->
+		then withTmpFile "webapp.html" $ \tmpfile _ ->
 			go addr webapp tmpfile Nothing
 		else do
 			let st = threadState assistantdata

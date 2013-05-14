@@ -1,11 +1,11 @@
-{- temp file functions
+{- Temporary files and directories.
  -
  - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.TempFile where
+module Utility.Tmp where
 
 import Control.Exception (bracket)
 import System.IO
@@ -31,15 +31,15 @@ viaTmp a file content = do
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
-withTempFile :: Template -> (FilePath -> Handle -> IO a) -> IO a
-withTempFile template a = do
+withTmpFile :: Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFile template a = do
 	tmpdir <- catchDefaultIO "." getTemporaryDirectory
-	withTempFileIn tmpdir template a
+	withTmpFileIn tmpdir template a
 
 {- Runs an action with a tmp file located in the specified directory,
  - then removes the file. -}
-withTempFileIn :: FilePath -> Template -> (FilePath -> Handle -> IO a) -> IO a
-withTempFileIn tmpdir template a = bracket create remove use
+withTmpFileIn :: FilePath -> Template -> (FilePath -> Handle -> IO a) -> IO a
+withTmpFileIn tmpdir template a = bracket create remove use
   where
 	create = openTempFile tmpdir template
 	remove (name, handle) = do
@@ -50,15 +50,15 @@ withTempFileIn tmpdir template a = bracket create remove use
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
  - directory and all its contents. -}
-withTempDir :: Template -> (FilePath -> IO a) -> IO a
-withTempDir template a = do
+withTmpDir :: Template -> (FilePath -> IO a) -> IO a
+withTmpDir template a = do
 	tmpdir <- catchDefaultIO "." getTemporaryDirectory
-	withTempDirIn tmpdir template a
+	withTmpDirIn tmpdir template a
 
 {- Runs an action with a tmp directory located within a specified directory,
  - then removes the tmp directory and all its contents. -}
-withTempDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
-withTempDirIn tmpdir template = bracket create remove
+withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
+withTmpDirIn tmpdir template = bracket create remove
   where
 	remove d = whenM (doesDirectoryExist d) $
 		removeDirectoryRecursive d

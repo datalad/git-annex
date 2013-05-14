@@ -10,7 +10,7 @@
 module Utility.WebApp where
 
 import Common
-import Utility.TempFile
+import Utility.Tmp
 import Utility.FileMode
 
 import qualified Yesod

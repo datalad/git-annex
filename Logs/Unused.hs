@@ -19,7 +19,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Command
 import Types.Key
-import Utility.TempFile
+import Utility.Tmp
 
 writeUnusedLog :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedLog prefix l = do

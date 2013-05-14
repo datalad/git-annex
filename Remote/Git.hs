@@ -35,7 +35,7 @@ import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
 import qualified Utility.Url as Url
-import Utility.TempFile
+import Utility.Tmp
 import Config
 import Config.Cost
 import Init
@@ -179,7 +179,7 @@ tryGitConfigRead r
 
 	geturlconfig headers = do
 		s <- Url.get (Git.repoLocation r ++ "/config") headers
-		withTempFile "git-annex.tmp" $ \tmpfile h -> do
+		withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hPutStr h s
 			hClose h
 			safely $ pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
