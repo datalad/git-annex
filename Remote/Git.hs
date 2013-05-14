@@ -321,6 +321,7 @@ copyFromRemote' r key file dest
 	feedprogressback a = ifM (isJust <$> sshCacheDir)
 		( feedprogressback' a
 		, bracketIO noop (const noop) $ a const
+		)
 	feedprogressback' a = do
 		u <- getUUID
 		let fields = (Fields.remoteUUID, fromUUID u)
