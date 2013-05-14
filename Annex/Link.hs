@@ -45,7 +45,7 @@ getAnnexLinkTarget file =
 		v <- liftIO $ catchMaybeIO $ getlinktarget file
 		case v of
 			Just l
-				| isLinkToAnnex l -> return v
+				| isLinkToAnnex (fromInternalGitPath l) -> return v
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
