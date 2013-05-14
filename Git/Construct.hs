@@ -71,7 +71,7 @@ fromAbsPath dir
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
 	hunt
-		| pathSeparator:".git" `isSuffixOf` canondir =
+		| (pathSeparator:".git") `isSuffixOf` canondir =
 			ifM (doesDirectoryExist $ dir </> ".git")
 				( ret dir
 				, ret $ takeDirectory canondir
