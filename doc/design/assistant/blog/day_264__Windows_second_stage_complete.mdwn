@@ -1,4 +1,4 @@
-The Windows port can now do everything in the [[walkthough]]. It can use
+The Windows port can now do everything in the [[walkthrough]]. It can use
 both local and remote git repositories. Some special remotes work
 (directory at least; probably rsync; likely any other special remote that
 can have its dependencies built). Missing features include most special
