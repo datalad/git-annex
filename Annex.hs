@@ -103,7 +103,7 @@ data AnnexState = AnnexState
 	, auto :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
-	, catfilehandle :: Maybe CatFileHandle
+	, catfilehandles :: M.Map FilePath CatFileHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
 	, limit :: Matcher (FileInfo -> Annex Bool)
@@ -133,7 +133,7 @@ newState gitrepo = AnnexState
 	, auto = False
 	, branchstate = startBranchState
 	, repoqueue = Nothing
-	, catfilehandle = Nothing
+	, catfilehandles = M.empty
 	, checkattrhandle = Nothing
 	, forcebackend = Nothing
 	, limit = Left []

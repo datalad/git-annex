@@ -6,6 +6,8 @@ git-annex (4.20130502) UNRELEASED; urgency=low
   * git-annex-shell: Ensure that received files can be read. Files
     transferred from some Android devices may have very broken permissions
     as received.
+  * direct mode: Direct mode commands now work on files staged in the index,
+    they do not need to be committed to git.
   * Temporarily add an upper bound to the version of yesod that can be built
     with, since yesod 1.2 has a great many changes that will require extensive
     work on the webapp.
