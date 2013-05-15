@@ -213,7 +213,7 @@ test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo en
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
 	git_annex env "reinject" [tmp, sha1annexedfile] @? "reinject failed"
-	git_annex env "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"
+	git_annex env "fromkey" [key, sha1annexedfiledup] @? "fromkey failed for dup"
 	annexed_present sha1annexedfiledup
   where
 	tmp = "tmpfile"
@@ -866,12 +866,10 @@ cleanup dir = do
 checklink :: FilePath -> Assertion
 checklink f = do
 	s <- getSymbolicLinkStatus f
-	ifM (annexeval Config.isDirect)
-		-- in direct mode, it may be a symlink, or not, depending
-		-- on whether the content is present.
-		( return ()
-		, isSymbolicLink s @? f ++ " is not a symlink"
-		)
+	-- in direct mode, it may be a symlink, or not, depending
+	-- on whether the content is present.
+	unlessM (annexeval Config.isDirect) $
+		isSymbolicLink s @? f ++ " is not a symlink"
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
@@ -882,21 +880,18 @@ checkregularfile f = do
 checkcontent :: FilePath -> Assertion
 checkcontent f = do
 	c <- readFile f
-	assertEqual ("checkcontent " ++ f) c (content f)
+	assertEqual ("checkcontent " ++ f) (content f) c
 
 checkunwritable :: FilePath -> Assertion
-checkunwritable f = ifM (annexeval Config.isDirect)
-	( return ()
-	, do
-		-- Look at permissions bits rather than trying to write or
-		-- using fileAccess because if run as root, any file can be
-		-- modified despite permissions.
-		s <- getFileStatus f
-		let mode = fileMode s
-		if (mode == mode `unionFileModes` ownerWriteMode)
-			then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
-			else return ()
-	)
+checkunwritable f = unlessM (annexeval Config.isDirect) $ do
+	-- Look at permissions bits rather than trying to write or
+	-- using fileAccess because if run as root, any file can be
+	-- modified despite permissions.
+	s <- getFileStatus f
+	let mode = fileMode s
+	if (mode == mode `unionFileModes` ownerWriteMode)
+		then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
+		else return ()
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
