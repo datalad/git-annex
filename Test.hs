@@ -41,6 +41,7 @@ import qualified Logs.Presence
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
+import qualified Config
 import qualified Config.Cost
 import qualified Crypto
 import qualified Utility.Path
@@ -865,7 +866,12 @@ cleanup dir = do
 checklink :: FilePath -> Assertion
 checklink f = do
 	s <- getSymbolicLinkStatus f
-	isSymbolicLink s @? f ++ " is not a symlink"
+	ifM (annexeval Config.isDirect)
+		-- in direct mode, it may be a symlink, or not, depending
+		-- on whether the content is present.
+		( return ()
+		, isSymbolicLink s @? f ++ " is not a symlink"
+		)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
@@ -879,15 +885,18 @@ checkcontent f = do
 	assertEqual ("checkcontent " ++ f) c (content f)
 
 checkunwritable :: FilePath -> Assertion
-checkunwritable f = do
-	-- Look at permissions bits rather than trying to write or using
-	-- fileAccess because if run as root, any file can be modified
-	-- despite permissions.
-	s <- getFileStatus f
-	let mode = fileMode s
-	if (mode == mode `unionFileModes` ownerWriteMode)
-		then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
-		else return ()
+checkunwritable f = ifM (annexeval Config.isDirect)
+	( return ()
+	, do
+		-- Look at permissions bits rather than trying to write or
+		-- using fileAccess because if run as root, any file can be
+		-- modified despite permissions.
+		s <- getFileStatus f
+		let mode = fileMode s
+		if (mode == mode `unionFileModes` ownerWriteMode)
+			then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
+			else return ()
+	)
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
