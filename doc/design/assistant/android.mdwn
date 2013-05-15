@@ -25,8 +25,7 @@ to improve it.
   and a few places use it. I have some horrible workarounds in place.
 * Get local pairing to work. network-multicast and network-info don't
   currently install.
-* Get test suite to pass. Current failure is because `git fetch` is somehow
-  broken with local repositories.
+* Get test suite to pass.
 * Make app autostart on boot, optionally. <http://stackoverflow.com/questions/1056570/how-to-autostart-an-android-application>
 * The app should be aware of power status, and avoid expensive background
   jobs when low on battery or run flat out when plugged in.

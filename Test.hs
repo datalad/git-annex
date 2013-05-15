@@ -188,7 +188,7 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
 		writeFile ingitfile $ content ingitfile
 		boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
-		boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
+		boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
 		git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
 		unannexed ingitfile
 	sha1dup = TestCase $ intmpclonerepo env $ do
@@ -373,7 +373,7 @@ test_edit env = "git-annex edit/commit" ~: TestList [t False, t True]
 			git_annex env "pre-commit" []
 				@? "pre-commit failed"
 		else do
-			boolSystem "git" [Params "commit -q -a -m contentchanged"]
+			boolSystem "git" [Params "commit -q -m contentchanged"]
 				@? "git commit of edited file failed"
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
@@ -906,11 +906,14 @@ checkwritable f = do
 		Right _ -> return ()
 
 checkdangling :: FilePath -> Assertion
-checkdangling f = do
-	r <- tryIO $ readFile f
-	case r of
-		Left _ -> return () -- expected; dangling link
-		Right _ -> assertFailure $ f ++ " was not a dangling link as expected"
+checkdangling f = ifM (annexeval Config.crippledFileSystem)
+	( return () -- probably no real symlinks to test
+	, do
+		r <- tryIO $ readFile f
+		case r of
+			Left _ -> return () -- expected; dangling link
+			Right _ -> assertFailure $ f ++ " was not a dangling link as expected"
+	)
 
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
