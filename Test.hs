@@ -54,6 +54,8 @@ import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
 
+type TestEnv = M.Map String String
+
 main :: IO ()
 main = do
 	divider
@@ -64,10 +66,10 @@ main = do
 	putStrLn "Now, some broader checks ..."
 	putStrLn "  (Do not be alarmed by odd output here; it's normal."
         putStrLn "   wait for the last line to see how it went.)"
-	prepare
+	env <- prepare
 	rs <- forM hunit $ \t -> do
 		divider
-		t
+		t env
 	cleanup tmpdir
 	divider
 	propigate rs qcok
@@ -119,7 +121,7 @@ quickcheck =
 		putStrLn desc
 		quickCheckResult prop
 
-hunit :: [IO Counts]
+hunit :: [TestEnv -> IO Counts]
 hunit =
 	-- test order matters, later tests may rely on state from earlier
 	[ check "init" test_init
@@ -155,210 +157,210 @@ hunit =
 	, check "crypto" test_crypto
 	]
   where
-	check desc t = do
+	check desc t env = do
 		putStrLn desc
-		runTestTT t
+		runTestTT (t env)
 
-test_init :: Test
-test_init = "git-annex init" ~: TestCase $ innewrepo $ do
-	git_annex "init" [reponame] @? "init failed"
+test_init :: TestEnv -> Test
+test_init env = "git-annex init" ~: TestCase $ innewrepo env $ do
+	git_annex env "init" [reponame] @? "init failed"
   where
 	reponame = "test repo"
 
-test_add :: Test
-test_add = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
+test_add :: TestEnv -> Test
+test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
   where
 	-- this test case runs in the main repo, to set up a basic
 	-- annexed file that later tests will use
-	basic = TestCase $ inmainrepo $ do
+	basic = TestCase $ inmainrepo env $ do
 		writeFile annexedfile $ content annexedfile
-		git_annex "add" [annexedfile] @? "add failed"
+		git_annex env "add" [annexedfile] @? "add failed"
 		annexed_present annexedfile
 		writeFile sha1annexedfile $ content sha1annexedfile
-		git_annex "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
+		git_annex env "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
 		annexed_present sha1annexedfile
 		checkbackend sha1annexedfile backendSHA1
 		writeFile wormannexedfile $ content wormannexedfile
-		git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+		git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 		annexed_present wormannexedfile
 		checkbackend wormannexedfile backendWORM
 		boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
 		writeFile ingitfile $ content ingitfile
 		boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 		boolSystem "git" [Params "commit -q -a -m commit"] @? "git commit failed"
-		git_annex "add" [ingitfile] @? "add ingitfile should be no-op"
+		git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
 		unannexed ingitfile
-	sha1dup = TestCase $ intmpclonerepo $ do
+	sha1dup = TestCase $ intmpclonerepo env $ do
 		writeFile sha1annexedfiledup $ content sha1annexedfiledup
-		git_annex "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
+		git_annex env "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
 		annexed_present sha1annexedfiledup
 		annexed_present sha1annexedfile
-	subdirs = TestCase $ intmpclonerepo $ do
+	subdirs = TestCase $ intmpclonerepo env $ do
 		createDirectory "dir"
 		writeFile "dir/foo" $ content annexedfile
-		git_annex "add" ["dir"] @? "add of subdir failed"
+		git_annex env "add" ["dir"] @? "add of subdir failed"
 		createDirectory "dir2"
 		writeFile "dir2/foo" $ content annexedfile
 		setCurrentDirectory "dir"
-		git_annex "add" ["../dir2"] @? "add of ../subdir failed"
+		git_annex env "add" ["../dir2"] @? "add of ../subdir failed"
 
-test_reinject :: Test
-test_reinject = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo $ do
-	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
+test_reinject :: TestEnv -> Test
+test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo env $ do
+	git_annex env "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 $
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
-	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
-	git_annex "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"
+	git_annex env "reinject" [tmp, sha1annexedfile] @? "reinject failed"
+	git_annex env "fromkey" [key, sha1annexedfiledup] @? "fromkey failed"
 	annexed_present sha1annexedfiledup
   where
 	tmp = "tmpfile"
 
-test_unannex :: Test
-test_unannex = "git-annex unannex" ~: TestList [nocopy, withcopy]
+test_unannex :: TestEnv -> Test
+test_unannex env = "git-annex unannex" ~: TestList [nocopy, withcopy]
   where
-	nocopy = "no content" ~: intmpclonerepo $ do
+	nocopy = "no content" ~: intmpclonerepo env $ do
 		annexed_notpresent annexedfile
-		git_annex "unannex" [annexedfile] @? "unannex failed with no copy"
+		git_annex env "unannex" [annexedfile] @? "unannex failed with no copy"
 		annexed_notpresent annexedfile
-	withcopy = "with content" ~: intmpclonerepo $ do
-		git_annex "get" [annexedfile] @? "get failed"
+	withcopy = "with content" ~: intmpclonerepo env $ do
+		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
-		git_annex "unannex" [annexedfile, sha1annexedfile] @? "unannex failed"
+		git_annex env "unannex" [annexedfile, sha1annexedfile] @? "unannex failed"
 		unannexed annexedfile
-		git_annex "unannex" [annexedfile] @? "unannex failed on non-annexed file"
+		git_annex env "unannex" [annexedfile] @? "unannex failed on non-annexed file"
 		unannexed annexedfile
-		git_annex "unannex" [ingitfile] @? "unannex ingitfile should be no-op"
+		git_annex env "unannex" [ingitfile] @? "unannex ingitfile should be no-op"
 		unannexed ingitfile
 
-test_drop :: Test
-test_drop = "git-annex drop" ~: TestList [noremote, withremote, untrustedremote]
+test_drop :: TestEnv -> Test
+test_drop env = "git-annex drop" ~: TestList [noremote, withremote, untrustedremote]
   where
-	noremote = "no remotes" ~: TestCase $ intmpclonerepo $ do
-		git_annex "get" [annexedfile] @? "get failed"
+	noremote = "no remotes" ~: TestCase $ intmpclonerepo env $ do
+		git_annex env "get" [annexedfile] @? "get failed"
 		boolSystem "git" [Params "remote rm origin"]
 			@? "git remote rm origin failed"
-		not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
+		not <$> git_annex env "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
 		annexed_present annexedfile
-		git_annex "drop" ["--force", annexedfile] @? "drop --force failed"
+		git_annex env "drop" ["--force", annexedfile] @? "drop --force failed"
 		annexed_notpresent annexedfile
-		git_annex "drop" [annexedfile] @? "drop of dropped file failed"
-		git_annex "drop" [ingitfile] @? "drop ingitfile should be no-op"
+		git_annex env "drop" [annexedfile] @? "drop of dropped file failed"
+		git_annex env "drop" [ingitfile] @? "drop ingitfile should be no-op"
 		unannexed ingitfile
-	withremote = "with remote" ~: TestCase $ intmpclonerepo $ do
-		git_annex "get" [annexedfile] @? "get failed"
+	withremote = "with remote" ~: TestCase $ intmpclonerepo env $ do
+		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
-		git_annex "drop" [annexedfile] @? "drop failed though origin has copy"
+		git_annex env "drop" [annexedfile] @? "drop failed though origin has copy"
 		annexed_notpresent annexedfile
-		inmainrepo $ annexed_present annexedfile
-	untrustedremote = "untrusted remote" ~: TestCase $ intmpclonerepo $ do
-		git_annex "untrust" ["origin"] @? "untrust of origin failed"
-		git_annex "get" [annexedfile] @? "get failed"
+		inmainrepo env $ annexed_present annexedfile
+	untrustedremote = "untrusted remote" ~: TestCase $ intmpclonerepo env $ do
+		git_annex env "untrust" ["origin"] @? "untrust of origin failed"
+		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
-		not <$> git_annex "drop" [annexedfile] @? "drop wrongly suceeded with only an untrusted copy of the file"
+		not <$> git_annex env "drop" [annexedfile] @? "drop wrongly suceeded with only an untrusted copy of the file"
 		annexed_present annexedfile
-		inmainrepo $ annexed_present annexedfile
+		inmainrepo env $ annexed_present annexedfile
 
-test_get :: Test
-test_get = "git-annex get" ~: TestCase $ intmpclonerepo $ do
-	inmainrepo $ annexed_present annexedfile
+test_get :: TestEnv -> Test
+test_get env = "git-annex get" ~: TestCase $ intmpclonerepo env $ do
+	inmainrepo env $ annexed_present annexedfile
 	annexed_notpresent annexedfile
-	git_annex "get" [annexedfile] @? "get of file failed"
-	inmainrepo $ annexed_present annexedfile
+	git_annex env "get" [annexedfile] @? "get of file failed"
+	inmainrepo env $ annexed_present annexedfile
 	annexed_present annexedfile
-	git_annex "get" [annexedfile] @? "get of file already here failed"
-	inmainrepo $ annexed_present annexedfile
+	git_annex env "get" [annexedfile] @? "get of file already here failed"
+	inmainrepo env $ annexed_present annexedfile
 	annexed_present annexedfile
-	inmainrepo $ unannexed ingitfile
+	inmainrepo env $ unannexed ingitfile
 	unannexed ingitfile
-	git_annex "get" [ingitfile] @? "get ingitfile should be no-op"
-	inmainrepo $ unannexed ingitfile
+	git_annex env "get" [ingitfile] @? "get ingitfile should be no-op"
+	inmainrepo env $ unannexed ingitfile
 	unannexed ingitfile
 
-test_move :: Test
-test_move = "git-annex move" ~: TestCase $ intmpclonerepo $ do
+test_move :: TestEnv -> Test
+test_move env = "git-annex move" ~: TestCase $ intmpclonerepo env $ do
 	annexed_notpresent annexedfile
-	inmainrepo $ annexed_present annexedfile
-	git_annex "move" ["--from", "origin", annexedfile] @? "move --from of file failed"
+	inmainrepo env $ annexed_present annexedfile
+	git_annex env "move" ["--from", "origin", annexedfile] @? "move --from of file failed"
 	annexed_present annexedfile
-	inmainrepo $ annexed_notpresent annexedfile
-	git_annex "move" ["--from", "origin", annexedfile] @? "move --from of file already here failed"
+	inmainrepo env $ annexed_notpresent annexedfile
+	git_annex env "move" ["--from", "origin", annexedfile] @? "move --from of file already here failed"
 	annexed_present annexedfile
-	inmainrepo $ annexed_notpresent annexedfile
-	git_annex "move" ["--to", "origin", annexedfile] @? "move --to of file failed"
-	inmainrepo $ annexed_present annexedfile
+	inmainrepo env $ annexed_notpresent annexedfile
+	git_annex env "move" ["--to", "origin", annexedfile] @? "move --to of file failed"
+	inmainrepo env $ annexed_present annexedfile
 	annexed_notpresent annexedfile
-	git_annex "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
-	inmainrepo $ annexed_present annexedfile
+	git_annex env "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
+	inmainrepo env $ annexed_present annexedfile
 	annexed_notpresent annexedfile
 	unannexed ingitfile
-	inmainrepo $ unannexed ingitfile
-	git_annex "move" ["--to", "origin", ingitfile] @? "move of ingitfile should be no-op"
+	inmainrepo env $ unannexed ingitfile
+	git_annex env "move" ["--to", "origin", ingitfile] @? "move of ingitfile should be no-op"
 	unannexed ingitfile
-	inmainrepo $ unannexed ingitfile
-	git_annex "move" ["--from", "origin", ingitfile] @? "move of ingitfile should be no-op"
+	inmainrepo env $ unannexed ingitfile
+	git_annex env "move" ["--from", "origin", ingitfile] @? "move of ingitfile should be no-op"
 	unannexed ingitfile
-	inmainrepo $ unannexed ingitfile
+	inmainrepo env $ unannexed ingitfile
 
-test_copy :: Test
-test_copy = "git-annex copy" ~: TestCase $ intmpclonerepo $ do
+test_copy :: TestEnv -> Test
+test_copy env = "git-annex copy" ~: TestCase $ intmpclonerepo env $ do
 	annexed_notpresent annexedfile
-	inmainrepo $ annexed_present annexedfile
-	git_annex "copy" ["--from", "origin", annexedfile] @? "copy --from of file failed"
+	inmainrepo env $ annexed_present annexedfile
+	git_annex env "copy" ["--from", "origin", annexedfile] @? "copy --from of file failed"
 	annexed_present annexedfile
-	inmainrepo $ annexed_present annexedfile
-	git_annex "copy" ["--from", "origin", annexedfile] @? "copy --from of file already here failed"
+	inmainrepo env $ annexed_present annexedfile
+	git_annex env "copy" ["--from", "origin", annexedfile] @? "copy --from of file already here failed"
 	annexed_present annexedfile
-	inmainrepo $ annexed_present annexedfile
-	git_annex "copy" ["--to", "origin", annexedfile] @? "copy --to of file already there failed"
+	inmainrepo env $ annexed_present annexedfile
+	git_annex env "copy" ["--to", "origin", annexedfile] @? "copy --to of file already there failed"
 	annexed_present annexedfile
-	inmainrepo $ annexed_present annexedfile
-	git_annex "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
+	inmainrepo env $ annexed_present annexedfile
+	git_annex env "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
 	annexed_notpresent annexedfile
-	inmainrepo $ annexed_present annexedfile
+	inmainrepo env $ annexed_present annexedfile
 	unannexed ingitfile
-	inmainrepo $ unannexed ingitfile
-	git_annex "copy" ["--to", "origin", ingitfile] @? "copy of ingitfile should be no-op"
+	inmainrepo env $ unannexed ingitfile
+	git_annex env "copy" ["--to", "origin", ingitfile] @? "copy of ingitfile should be no-op"
 	unannexed ingitfile
-	inmainrepo $ unannexed ingitfile
-	git_annex "copy" ["--from", "origin", ingitfile] @? "copy of ingitfile should be no-op"
+	inmainrepo env $ unannexed ingitfile
+	git_annex env "copy" ["--from", "origin", ingitfile] @? "copy of ingitfile should be no-op"
 	checkregularfile ingitfile
 	checkcontent ingitfile
 
-test_lock :: Test
-test_lock = "git-annex unlock/lock" ~: intmpclonerepo $ do
+test_lock :: TestEnv -> Test
+test_lock env = "git-annex unlock/lock" ~: intmpclonerepo env $ do
 	-- regression test: unlock of not present file should skip it
 	annexed_notpresent annexedfile
-	not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+	not <$> git_annex env "unlock" [annexedfile] @? "unlock failed to fail with not present file"
 	annexed_notpresent annexedfile
 
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "unlock" [annexedfile] @? "unlock failed"		
+	git_annex env "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	-- write different content, to verify that lock
 	-- throws it away
 	changecontent annexedfile
 	writeFile annexedfile $ content annexedfile ++ "foo"
-	git_annex "lock" [annexedfile] @? "lock failed"
+	git_annex env "lock" [annexedfile] @? "lock failed"
 	annexed_present annexedfile
-	git_annex "unlock" [annexedfile] @? "unlock failed"		
+	git_annex env "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
-	git_annex "add" [annexedfile] @? "add of modified file failed"
+	git_annex env "add" [annexedfile] @? "add of modified file failed"
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
-	r' <- git_annex "drop" [annexedfile]
+	r' <- git_annex env "drop" [annexedfile]
 	not r' @? "drop wrongly succeeded with no known copy of modified file"
 
-test_edit :: Test
-test_edit = "git-annex edit/commit" ~: TestList [t False, t True]
-  where t precommit = TestCase $ intmpclonerepo $ do
-	git_annex "get" [annexedfile] @? "get of file failed"
+test_edit :: TestEnv -> Test
+test_edit env = "git-annex edit/commit" ~: TestList [t False, t True]
+  where t precommit = TestCase $ intmpclonerepo env $ do
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "edit" [annexedfile] @? "edit failed"
+	git_annex env "edit" [annexedfile] @? "edit failed"
 	unannexed annexedfile
 	changecontent annexedfile
 	if precommit
@@ -367,7 +369,7 @@ test_edit = "git-annex edit/commit" ~: TestList [t False, t True]
 			-- staged, normally git commit does this
 			boolSystem "git" [Param "add", File annexedfile]
 				@? "git add of edited file failed"
-			git_annex "pre-commit" []
+			git_annex env "pre-commit" []
 				@? "pre-commit failed"
 		else do
 			boolSystem "git" [Params "commit -q -a -m contentchanged"]
@@ -375,21 +377,21 @@ test_edit = "git-annex edit/commit" ~: TestList [t False, t True]
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
+	not <$> git_annex env "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
 
-test_fix :: Test
-test_fix = "git-annex fix" ~: intmpclonerepo $ do
+test_fix :: TestEnv -> Test
+test_fix env = "git-annex fix" ~: intmpclonerepo env $ do
 	annexed_notpresent annexedfile
-	git_annex "fix" [annexedfile] @? "fix of not present failed"
+	git_annex env "fix" [annexedfile] @? "fix of not present failed"
 	annexed_notpresent annexedfile
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "fix" [annexedfile] @? "fix of present file failed"
+	git_annex env "fix" [annexedfile] @? "fix of present file failed"
 	annexed_present annexedfile
 	createDirectory subdir
 	boolSystem "git" [Param "mv", File annexedfile, File subdir]
 		@? "git mv failed"
-	git_annex "fix" [newfile] @? "fix of moved file failed"
+	git_annex env "fix" [newfile] @? "fix of moved file failed"
 	runchecks [checklink, checkunwritable] newfile
 	c <- readFile newfile
 	assertEqual "content of moved file" c (content annexedfile)
@@ -397,23 +399,23 @@ test_fix = "git-annex fix" ~: intmpclonerepo $ do
 	subdir = "s"
 	newfile = subdir ++ "/" ++ annexedfile
 
-test_trust :: Test
-test_trust = "git-annex trust/untrust/semitrust/dead" ~: intmpclonerepo $ do
-	git_annex "trust" [repo] @? "trust failed"
+test_trust :: TestEnv -> Test
+test_trust env = "git-annex trust/untrust/semitrust/dead" ~: intmpclonerepo env $ do
+	git_annex env "trust" [repo] @? "trust failed"
 	trustcheck Logs.Trust.Trusted "trusted 1"
-	git_annex "trust" [repo] @? "trust of trusted failed"
+	git_annex env "trust" [repo] @? "trust of trusted failed"
 	trustcheck Logs.Trust.Trusted "trusted 2"
-	git_annex "untrust" [repo] @? "untrust failed"
+	git_annex env "untrust" [repo] @? "untrust failed"
 	trustcheck Logs.Trust.UnTrusted "untrusted 1"
-	git_annex "untrust" [repo] @? "untrust of untrusted failed"
+	git_annex env "untrust" [repo] @? "untrust of untrusted failed"
 	trustcheck Logs.Trust.UnTrusted "untrusted 2"
-	git_annex "dead" [repo] @? "dead failed"
+	git_annex env "dead" [repo] @? "dead failed"
 	trustcheck Logs.Trust.DeadTrusted "deadtrusted 1"
-	git_annex "dead" [repo] @? "dead of dead failed"
+	git_annex env "dead" [repo] @? "dead of dead failed"
 	trustcheck Logs.Trust.DeadTrusted "deadtrusted 2"
-	git_annex "semitrust" [repo] @? "semitrust failed"
+	git_annex env "semitrust" [repo] @? "semitrust failed"
 	trustcheck Logs.Trust.SemiTrusted "semitrusted 1"
-	git_annex "semitrust" [repo] @? "semitrust of semitrusted failed"
+	git_annex env "semitrust" [repo] @? "semitrust of semitrusted failed"
 	trustcheck Logs.Trust.SemiTrusted "semitrusted 2"
   where
 	repo = "origin"
@@ -424,64 +426,64 @@ test_trust = "git-annex trust/untrust/semitrust/dead" ~: intmpclonerepo $ do
 			return $ u `elem` l
 		assertBool msg present
 
-test_fsck :: Test
-test_fsck = "git-annex fsck" ~: TestList [basicfsck, barefsck, withlocaluntrusted, withremoteuntrusted]
+test_fsck :: TestEnv -> Test
+test_fsck env = "git-annex fsck" ~: TestList [basicfsck, barefsck, withlocaluntrusted, withremoteuntrusted]
   where
-	basicfsck = TestCase $ intmpclonerepo $ do
-		git_annex "fsck" [] @? "fsck failed"
+	basicfsck = TestCase $ intmpclonerepo env $ do
+		git_annex env "fsck" [] @? "fsck failed"
 		boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
 		fsck_should_fail "numcopies unsatisfied"
 		boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
 		corrupt annexedfile
 		corrupt sha1annexedfile
-	barefsck = TestCase $ intmpbareclonerepo $ do
-		git_annex "fsck" [] @? "fsck failed"
-	withlocaluntrusted = TestCase $ intmpclonerepo $ do
-		git_annex "get" [annexedfile] @? "get failed"
-		git_annex "untrust" ["origin"] @? "untrust of origin repo failed"
-		git_annex "untrust" ["."] @? "untrust of current repo failed"
+	barefsck = TestCase $ intmpbareclonerepo env $ do
+		git_annex env "fsck" [] @? "fsck failed"
+	withlocaluntrusted = TestCase $ intmpclonerepo env $ do
+		git_annex env "get" [annexedfile] @? "get failed"
+		git_annex env "untrust" ["origin"] @? "untrust of origin repo failed"
+		git_annex env "untrust" ["."] @? "untrust of current repo failed"
 		fsck_should_fail "content only available in untrusted (current) repository"
-		git_annex "trust" ["."] @? "trust of current repo failed"
-		git_annex "fsck" [annexedfile] @? "fsck failed on file present in trusted repo"
-	withremoteuntrusted = TestCase $ intmpclonerepo $ do
+		git_annex env "trust" ["."] @? "trust of current repo failed"
+		git_annex env "fsck" [annexedfile] @? "fsck failed on file present in trusted repo"
+	withremoteuntrusted = TestCase $ intmpclonerepo env $ do
 		boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
-		git_annex "get" [annexedfile] @? "get failed"
-		git_annex "get" [sha1annexedfile] @? "get failed"
-		git_annex "fsck" [] @? "fsck failed with numcopies=2 and 2 copies"
-		git_annex "untrust" ["origin"] @? "untrust of origin failed"
+		git_annex env "get" [annexedfile] @? "get failed"
+		git_annex env "get" [sha1annexedfile] @? "get failed"
+		git_annex env "fsck" [] @? "fsck failed with numcopies=2 and 2 copies"
+		git_annex env "untrust" ["origin"] @? "untrust of origin failed"
 		fsck_should_fail "content not replicated to enough non-untrusted repositories"
 
 	corrupt f = do
-		git_annex "get" [f] @? "get of file failed"
+		git_annex env "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
 		writeFile f (changedcontent f)
-		not <$> git_annex "fsck" [] @? "fsck failed to fail with corrupted file content"
-		git_annex "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
+		not <$> git_annex env "fsck" [] @? "fsck failed to fail with corrupted file content"
+		git_annex env "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
 	fsck_should_fail m = do
-		not <$> git_annex "fsck" [] @? "fsck failed to fail with " ++ m
+		not <$> git_annex env "fsck" [] @? "fsck failed to fail with " ++ m
 
-test_migrate :: Test
-test_migrate = "git-annex migrate" ~: TestList [t False, t True]
-  where t usegitattributes = TestCase $ intmpclonerepo $ do
+test_migrate :: TestEnv -> Test
+test_migrate env = "git-annex migrate" ~: TestList [t False, t True]
+  where t usegitattributes = TestCase $ intmpclonerepo env $ do
 	annexed_notpresent annexedfile
 	annexed_notpresent sha1annexedfile
-	git_annex "migrate" [annexedfile] @? "migrate of not present failed"
-	git_annex "migrate" [sha1annexedfile] @? "migrate of not present failed"
-	git_annex "get" [annexedfile] @? "get of file failed"
-	git_annex "get" [sha1annexedfile] @? "get of file failed"
+	git_annex env "migrate" [annexedfile] @? "migrate of not present failed"
+	git_annex env "migrate" [sha1annexedfile] @? "migrate of not present failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
+	git_annex env "get" [sha1annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	annexed_present sha1annexedfile
 	if usegitattributes
 		then do
 			writeFile ".gitattributes" $ "* annex.backend=SHA1"
-			git_annex "migrate" [sha1annexedfile]
+			git_annex env "migrate" [sha1annexedfile]
 				@? "migrate sha1annexedfile failed"
-			git_annex "migrate" [annexedfile]
+			git_annex env "migrate" [annexedfile]
 				@? "migrate annexedfile failed"
 		else do
-			git_annex "migrate" [sha1annexedfile, "--backend", "SHA1"]
+			git_annex env "migrate" [sha1annexedfile, "--backend", "SHA1"]
 				@? "migrate sha1annexedfile failed"
-			git_annex "migrate" [annexedfile, "--backend", "SHA1"]
+			git_annex env "migrate" [annexedfile, "--backend", "SHA1"]
 				@? "migrate annexedfile failed"
 	annexed_present annexedfile
 	annexed_present sha1annexedfile
@@ -490,22 +492,22 @@ test_migrate = "git-annex migrate" ~: TestList [t False, t True]
 
 	-- check that reversing a migration works
 	writeFile ".gitattributes" $ "* annex.backend=SHA256"
-	git_annex "migrate" [sha1annexedfile]
+	git_annex env "migrate" [sha1annexedfile]
 		@? "migrate sha1annexedfile failed"
-	git_annex "migrate" [annexedfile]
+	git_annex env "migrate" [annexedfile]
 		@? "migrate annexedfile failed"
 	annexed_present annexedfile
 	annexed_present sha1annexedfile
 	checkbackend annexedfile backendSHA256
 	checkbackend sha1annexedfile backendSHA256
 
-test_unused :: Test
-test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
+test_unused :: TestEnv -> Test
+test_unused env = "git-annex unused/dropunused" ~: intmpclonerepo env $ do
 	-- keys have to be looked up before files are removed
 	annexedfilekey <- annexeval $ findkey annexedfile
 	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
-	git_annex "get" [annexedfile] @? "get of file failed"
-	git_annex "get" [sha1annexedfile] @? "get of file failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
+	git_annex env "get" [sha1annexedfile] @? "get of file failed"
 	checkunused [] "after get"
 	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
@@ -519,17 +521,17 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
-	git_annex "dropkey" ["--force", Types.Key.key2file annexedfilekey]
+	git_annex env "dropkey" ["--force", Types.Key.key2file annexedfilekey]
 		@? "dropkey failed"
 	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Types.Key.key2file annexedfilekey)
 
-	git_annex "dropunused" ["1", "2"] @? "dropunused failed"
+	git_annex env "dropunused" ["1", "2"] @? "dropunused failed"
 	checkunused [] "after dropunused"
-	git_annex "dropunused" ["10", "501"] @? "dropunused failed on bogus numbers"
+	git_annex env "dropunused" ["10", "501"] @? "dropunused failed on bogus numbers"
 
   where
 	checkunused expectedkeys desc = do
-		git_annex "unused" [] @? "unused failed"
+		git_annex env "unused" [] @? "unused failed"
 		unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
@@ -538,119 +540,119 @@ test_unused = "git-annex unused/dropunused" ~: intmpclonerepo $ do
 		r <- Backend.lookupFile f
 		return $ fst $ fromJust r
 
-test_describe :: Test
-test_describe = "git-annex describe" ~: intmpclonerepo $ do
-	git_annex "describe" [".", "this repo"] @? "describe 1 failed"
-	git_annex "describe" ["origin", "origin repo"] @? "describe 2 failed"
+test_describe :: TestEnv -> Test
+test_describe env = "git-annex describe" ~: intmpclonerepo env $ do
+	git_annex env "describe" [".", "this repo"] @? "describe 1 failed"
+	git_annex env "describe" ["origin", "origin repo"] @? "describe 2 failed"
 
-test_find :: Test
-test_find = "git-annex find" ~: intmpclonerepo $ do
+test_find :: TestEnv -> Test
+test_find env = "git-annex find" ~: intmpclonerepo env $ do
 	annexed_notpresent annexedfile
-	git_annex_expectoutput "find" [] []
-	git_annex "get" [annexedfile] @? "get failed"
+	git_annex_expectoutput env "find" [] []
+	git_annex env "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
 	annexed_notpresent sha1annexedfile
-	git_annex_expectoutput "find" [] [annexedfile]
-	git_annex_expectoutput "find" ["--exclude", annexedfile, "--and", "--exclude", sha1annexedfile] []
-	git_annex_expectoutput "find" ["--include", annexedfile] [annexedfile]
-	git_annex_expectoutput "find" ["--not", "--in", "origin"] []
-	git_annex_expectoutput "find" ["--copies", "1", "--and", "--not", "--copies", "2"] [sha1annexedfile]
-	git_annex_expectoutput "find" ["--inbackend", "SHA1"] [sha1annexedfile]
-	git_annex_expectoutput "find" ["--inbackend", "WORM"] []
+	git_annex_expectoutput env "find" [] [annexedfile]
+	git_annex_expectoutput env "find" ["--exclude", annexedfile, "--and", "--exclude", sha1annexedfile] []
+	git_annex_expectoutput env "find" ["--include", annexedfile] [annexedfile]
+	git_annex_expectoutput env "find" ["--not", "--in", "origin"] []
+	git_annex_expectoutput env "find" ["--copies", "1", "--and", "--not", "--copies", "2"] [sha1annexedfile]
+	git_annex_expectoutput env "find" ["--inbackend", "SHA1"] [sha1annexedfile]
+	git_annex_expectoutput env "find" ["--inbackend", "WORM"] []
 
 	{- --include=* should match files in subdirectories too,
 	 - and --exclude=* should exclude them. -}
 	createDirectory "dir"
 	writeFile "dir/subfile" "subfile"
-	git_annex "add" ["dir"] @? "add of subdir failed"
-	git_annex_expectoutput "find" ["--include", "*", "--exclude", annexedfile, "--exclude", sha1annexedfile] ["dir/subfile"]
-	git_annex_expectoutput "find" ["--exclude", "*"] []
+	git_annex env "add" ["dir"] @? "add of subdir failed"
+	git_annex_expectoutput env "find" ["--include", "*", "--exclude", annexedfile, "--exclude", sha1annexedfile] ["dir/subfile"]
+	git_annex_expectoutput env "find" ["--exclude", "*"] []
 
-test_merge :: Test
-test_merge = "git-annex merge" ~: intmpclonerepo $ do
-	git_annex "merge" [] @? "merge failed"
+test_merge :: TestEnv -> Test
+test_merge env = "git-annex merge" ~: intmpclonerepo env $ do
+	git_annex env "merge" [] @? "merge failed"
 
-test_status :: Test
-test_status = "git-annex status" ~: intmpclonerepo $ do
-	json <- git_annex_output "status" ["--json"]
+test_status :: TestEnv -> Test
+test_status env = "git-annex status" ~: intmpclonerepo env $ do
+	json <- git_annex_output env "status" ["--json"]
 	case Text.JSON.decodeStrict json :: Text.JSON.Result (Text.JSON.JSObject Text.JSON.JSValue) of
 		Text.JSON.Ok _ -> return ()
 		Text.JSON.Error e -> assertFailure e
 
-test_version :: Test
-test_version = "git-annex version" ~: intmpclonerepo $ do
-	git_annex "version" [] @? "version failed"
+test_version :: TestEnv -> Test
+test_version env = "git-annex version" ~: intmpclonerepo env $ do
+	git_annex env "version" [] @? "version failed"
 
-test_sync :: Test
-test_sync = "git-annex sync" ~: intmpclonerepo $ do
-	git_annex "sync" [] @? "sync failed"
+test_sync :: TestEnv -> Test
+test_sync env = "git-annex sync" ~: intmpclonerepo env $ do
+	git_annex env "sync" [] @? "sync failed"
 
 {- Regression test for sync merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
-test_sync_regression :: Test
-test_sync_regression = "git-annex sync_regression" ~:
+test_sync_regression :: TestEnv -> Test
+test_sync_regression env = "git-annex sync_regression" ~:
 	{- We need 3 repos to see this bug. -}
-	withtmpclonerepo False $ \r1 -> do
-		withtmpclonerepo False $ \r2 -> do
-			withtmpclonerepo False $ \r3 -> do
-				forM_ [r1, r2, r3] $ \r -> indir r $ do
+	withtmpclonerepo env False $ \r1 -> do
+		withtmpclonerepo env False $ \r2 -> do
+			withtmpclonerepo env False $ \r3 -> do
+				forM_ [r1, r2, r3] $ \r -> indir env r $ do
 					when (r /= r1) $
 						boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
 					when (r /= r2) $
 						boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
 					when (r /= r3) $
 						boolSystem "git" [Params "remote add r3", File ("../../" ++ r3)] @? "remote add"
-					git_annex "get" [annexedfile] @? "get failed"
+					git_annex env "get" [annexedfile] @? "get failed"
 					boolSystem "git" [Params "remote rm origin"] @? "remote rm"
-				forM_ [r3, r2, r1] $ \r -> indir r $
-					git_annex "sync" [] @? "sync failed"
-				forM_ [r3, r2] $ \r -> indir r $
-					git_annex "drop" ["--force", annexedfile] @? "drop failed"
-				indir r1 $ do
-					git_annex "sync" [] @? "sync failed in r1"
-					git_annex_expectoutput "find" ["--in", "r3"] []
+				forM_ [r3, r2, r1] $ \r -> indir env r $
+					git_annex env "sync" [] @? "sync failed"
+				forM_ [r3, r2] $ \r -> indir env r $
+					git_annex env "drop" ["--force", annexedfile] @? "drop failed"
+				indir env r1 $ do
+					git_annex env "sync" [] @? "sync failed in r1"
+					git_annex_expectoutput env "find" ["--in", "r3"] []
 					{- This was the bug. The sync
 					 - mangled location log data and it
 					 - thought the file was still in r2 -}
-					git_annex_expectoutput "find" ["--in", "r2"] []
+					git_annex_expectoutput env "find" ["--in", "r2"] []
 
-test_map :: Test
-test_map = "git-annex map" ~: intmpclonerepo $ do
+test_map :: TestEnv -> Test
+test_map env = "git-annex map" ~: intmpclonerepo env $ do
 	-- set descriptions, that will be looked for in the map
-	git_annex "describe" [".", "this repo"] @? "describe 1 failed"
-	git_annex "describe" ["origin", "origin repo"] @? "describe 2 failed"
+	git_annex env "describe" [".", "this repo"] @? "describe 1 failed"
+	git_annex env "describe" ["origin", "origin repo"] @? "describe 2 failed"
 	-- --fast avoids it running graphviz, not a build dependency
-	git_annex "map" ["--fast"] @? "map failed"
+	git_annex env "map" ["--fast"] @? "map failed"
 
-test_uninit :: Test
-test_uninit = "git-annex uninit" ~: intmpclonerepo $ do
-	git_annex "get" [] @? "get failed"
+test_uninit :: TestEnv -> Test
+test_uninit env = "git-annex uninit" ~: intmpclonerepo env $ do
+	git_annex env "get" [] @? "get failed"
 	annexed_present annexedfile
 	boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
-	not <$> git_annex "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
+	not <$> git_annex env "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 	boolSystem "git" [Params "checkout master"] @? "git checkout master"
-	_ <- git_annex "uninit" [] -- exit status not checked; does abnormal exit
+	_ <- git_annex env "uninit" [] -- exit status not checked; does abnormal exit
 	checkregularfile annexedfile
 	doesDirectoryExist ".git" @? ".git vanished in uninit"
 	not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
 
-test_upgrade :: Test
-test_upgrade = "git-annex upgrade" ~: intmpclonerepo $ do
-	git_annex "upgrade" [] @? "upgrade from same version failed"
+test_upgrade :: TestEnv -> Test
+test_upgrade env = "git-annex upgrade" ~: intmpclonerepo env $ do
+	git_annex env "upgrade" [] @? "upgrade from same version failed"
 
-test_whereis :: Test
-test_whereis = "git-annex whereis" ~: intmpclonerepo $ do
+test_whereis :: TestEnv -> Test
+test_whereis env = "git-annex whereis" ~: intmpclonerepo env $ do
 	annexed_notpresent annexedfile
-	git_annex "whereis" [annexedfile] @? "whereis on non-present file failed"
-	git_annex "untrust" ["origin"] @? "untrust failed"
-	not <$> git_annex "whereis" [annexedfile] @? "whereis on non-present file only present in untrusted repo failed to fail"
-	git_annex "get" [annexedfile] @? "get failed"
+	git_annex env "whereis" [annexedfile] @? "whereis on non-present file failed"
+	git_annex env "untrust" ["origin"] @? "untrust failed"
+	not <$> git_annex env "whereis" [annexedfile] @? "whereis on non-present file only present in untrusted repo failed to fail"
+	git_annex env "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
-	git_annex "whereis" [annexedfile] @? "whereis on present file failed"
+	git_annex env "whereis" [annexedfile] @? "whereis on present file failed"
 
-test_hook_remote :: Test
-test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
-	git_annex "initremote" (words "foo type=hook encryption=none hooktype=foo") @? "initremote failed"
+test_hook_remote :: TestEnv -> Test
+test_hook_remote env = "git-annex hook remote" ~: intmpclonerepo env $ do
+	git_annex env "initremote" (words "foo type=hook encryption=none hooktype=foo") @? "initremote failed"
 	createDirectory dir
 	git_config "annex.foo-store-hook" $
 		"cp $ANNEX_FILE " ++ loc
@@ -660,15 +662,15 @@ test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
 		"rm -f " ++ loc
 	git_config "annex.foo-checkpresent-hook" $
 		"if [ -e " ++ loc ++ " ]; then echo $ANNEX_KEY; fi"
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to hook remote failed"
+	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to hook remote failed"
 	annexed_present annexedfile
-	git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from hook remote failed"
+	git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from hook remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
   where
 	dir = "dir"
@@ -676,61 +678,59 @@ test_hook_remote = "git-annex hook remote" ~: intmpclonerepo $ do
 	git_config k v = boolSystem "git" [Param "config", Param k, Param v]
 		@? "git config failed"
 
-test_directory_remote :: Test
-test_directory_remote = "git-annex directory remote" ~: intmpclonerepo $ do
+test_directory_remote :: TestEnv -> Test
+test_directory_remote env = "git-annex directory remote" ~: intmpclonerepo env $ do
 	createDirectory "dir"
-	git_annex "initremote" (words $ "foo type=directory encryption=none directory=dir") @? "initremote failed"
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "initremote" (words $ "foo type=directory encryption=none directory=dir") @? "initremote failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to directory remote failed"
+	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to directory remote failed"
 	annexed_present annexedfile
-	git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from directory remote failed"
+	git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from directory remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 
-test_rsync_remote :: Test
-test_rsync_remote = "git-annex rsync remote" ~: intmpclonerepo $ do
+test_rsync_remote :: TestEnv -> Test
+test_rsync_remote env = "git-annex rsync remote" ~: intmpclonerepo env $ do
 	createDirectory "dir"
-	git_annex "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to rsync remote failed"
+	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to rsync remote failed"
 	annexed_present annexedfile
-	git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from rsync remote failed"
+	git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from rsync remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 
-test_bup_remote :: Test
-test_bup_remote = "git-annex bup remote" ~: intmpclonerepo $ when Build.SysConfig.bup $ do
+test_bup_remote :: TestEnv -> Test
+test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.SysConfig.bup $ do
 	dir <- absPath "dir" -- bup special remote needs an absolute path
 	createDirectory dir
-	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
-	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex env "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
-	git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to bup remote failed"
+	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to bup remote failed"
 	annexed_present annexedfile
-	git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-	git_annex "copy" [annexedfile, "--from", "foo"] @? "copy --from bup remote failed"
+	git_annex env "copy" [annexedfile, "--from", "foo"] @? "copy --from bup remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
+	not <$> git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from bup remote failed to fail"
 	annexed_present annexedfile
 
 -- gpg is not a build dependency, so only test when it's available
-test_crypto :: Test
-test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ do
-	-- force gpg into batch mode for the tests
-	void $ Utility.Env.setEnv "GPG_BATCH" "1" True
+test_crypto :: TestEnv -> Test
+test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfig.gpg $ do
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
-		let a cmd = git_annex cmd
+		let a cmd = git_annex env cmd
 			[ "foo"
 			, "type=directory"
 			, "encryption=" ++ Utility.Gpg.testKeyId
@@ -741,21 +741,24 @@ test_crypto = "git-annex crypto" ~: intmpclonerepo $ when Build.SysConfig.gpg $ 
 		not <$> a "initremote" @? "initremote failed to fail when run twice in a row"
 		a "enableremote" @? "enableremote failed"
 		a "enableremote" @? "enableremote failed when run twice in a row"
-		git_annex "get" [annexedfile] @? "get of file failed"
+		git_annex env "get" [annexedfile] @? "get of file failed"
 		annexed_present annexedfile
-		git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
+		git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
 		annexed_present annexedfile
-		git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
+		git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 		annexed_notpresent annexedfile
-		git_annex "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
+		git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
 		annexed_present annexedfile
-		not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+		not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 		annexed_present annexedfile	
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
-git_annex :: String -> [String] -> IO Bool
-git_annex command params = do
+git_annex :: TestEnv -> String -> [String] -> IO Bool
+git_annex env command params = do
+	forM_ (M.toList env) $ \(var, val) ->
+		Utility.Env.setEnv var val True
+
 	-- catch all errors, including normally fatal errors
 	r <- try (run)::IO (Either SomeException ())
 	case r of
@@ -765,18 +768,19 @@ git_annex command params = do
 	run = GitAnnex.run (command:"-q":params)
 
 {- Runs git-annex and returns its output. -}
-git_annex_output :: String -> [String] -> IO String
-git_annex_output command params = do
-	got <- Utility.Process.readProcess "git-annex" (command:params)
+git_annex_output :: TestEnv -> String -> [String] -> IO String
+git_annex_output env command params = do
+	got <- Utility.Process.readProcessEnv "git-annex" (command:params) $
+		Just $ M.toList env
 	-- XXX since the above is a separate process, code coverage stats are
 	-- not gathered for things run in it.
 	-- Run same command again, to get code coverage.
-	_ <- git_annex command params
+	_ <- git_annex env command params
 	return got
 
-git_annex_expectoutput :: String -> [String] -> [String] -> IO ()
-git_annex_expectoutput command params expected = do
-	got <- lines <$> git_annex_output command params
+git_annex_expectoutput :: TestEnv -> String -> [String] -> [String] -> IO ()
+git_annex_expectoutput env command params expected = do
+	got <- lines <$> git_annex_output env command params
 	got == expected @? ("unexpected value running " ++ command ++ " " ++ show params ++ " -- got: " ++ show got ++ " expected: " ++ show expected)
 
 -- Runs an action in the current annex. Note that shutdown actions
@@ -788,56 +792,57 @@ annexeval a = do
 		Annex.setOutput Types.Messages.QuietOutput
 		a
 
-innewrepo :: Assertion -> Assertion
-innewrepo a = withgitrepo $ \r -> indir r a
+innewrepo :: TestEnv -> Assertion -> Assertion
+innewrepo env a = withgitrepo env $ \r -> indir env r a
 
-inmainrepo :: Assertion -> Assertion
-inmainrepo a = indir mainrepodir a
+inmainrepo :: TestEnv -> Assertion -> Assertion
+inmainrepo env a = indir env mainrepodir a
 
-intmpclonerepo :: Assertion -> Assertion
-intmpclonerepo a = withtmpclonerepo False $ \r -> indir r a
+intmpclonerepo :: TestEnv -> Assertion -> Assertion
+intmpclonerepo env a = withtmpclonerepo env False $ \r -> indir env r a
 
-intmpbareclonerepo :: Assertion -> Assertion
-intmpbareclonerepo a = withtmpclonerepo True $ \r -> indir r a
+intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
+intmpbareclonerepo env a = withtmpclonerepo env True $ \r -> indir env r a
 
-withtmpclonerepo :: Bool -> (FilePath -> Assertion) -> Assertion
-withtmpclonerepo bare a = do
+withtmpclonerepo :: TestEnv -> Bool -> (FilePath -> Assertion) -> Assertion
+withtmpclonerepo env bare a = do
 	dir <- tmprepodir
-	bracket (clonerepo mainrepodir dir bare) cleanup a
+	bracket (clonerepo env mainrepodir dir bare) cleanup a
 
-withgitrepo :: (FilePath -> Assertion) -> Assertion
-withgitrepo = bracket (setuprepo mainrepodir) return
+withgitrepo :: TestEnv -> (FilePath -> Assertion) -> Assertion
+withgitrepo env = bracket (setuprepo env mainrepodir) return
 
-indir :: FilePath -> Assertion -> Assertion
-indir dir a = do
+indir :: TestEnv -> FilePath -> Assertion -> Assertion
+indir env dir a = do
 	cwd <- getCurrentDirectory
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to cwd before
 	-- rethrowing.
-	r <- bracket_ (changeToTmpDir dir) (setCurrentDirectory cwd)
+	r <- bracket_ (changeToTmpDir env dir) (setCurrentDirectory cwd)
 		(try (a)::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
 		Left e -> throw e
 
-setuprepo :: FilePath -> IO FilePath
-setuprepo dir = do
+setuprepo :: TestEnv -> FilePath -> IO FilePath
+setuprepo env dir = do
 	cleanup dir
 	ensuretmpdir
 	boolSystem "git" [Params "init -q", File dir] @? "git init failed"
-	indir dir $ do
+	indir env dir $ do
 		boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
 		boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
 	return dir
 
 -- clones are always done as local clones; we cannot test ssh clones
-clonerepo :: FilePath -> FilePath -> Bool -> IO FilePath
-clonerepo old new bare = do
+clonerepo :: TestEnv -> FilePath -> FilePath -> Bool -> IO FilePath
+clonerepo env old new bare = do
 	cleanup new
 	ensuretmpdir
 	let b = if bare then " --bare" else ""
 	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
-	indir new $ git_annex "init" ["-q", new] @? "git annex init failed"
+	indir env new $
+		git_annex env "init" ["-q", new] @? "git annex init failed"
 	return new
 	
 ensuretmpdir :: IO ()
@@ -938,29 +943,34 @@ annexed_present = runchecks
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-prepare :: IO ()
+prepare :: IO TestEnv
 prepare = do
 	whenM (doesDirectoryExist tmpdir) $
 		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
 
-	-- While PATH is mostly avoided, the commit hook does run it,
-	-- and so does git_annex_output. Make sure that the just-built
-	-- git annex is used.
 	cwd <- getCurrentDirectory
-	p <- Utility.Env.getEnvDefault  "PATH" ""
-	void $ Utility.Env.setEnv "PATH" (cwd ++ ":" ++ p) True
-	void $ Utility.Env.setEnv "TOPDIR" cwd True
-	-- Avoid git complaining if it cannot determine the user's email
-	-- address, or exploding if it doesn't know the user's name.
-	void $ Utility.Env.setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
-	void $ Utility.Env.setEnv "GIT_AUTHOR_NAME" "git-annex test" True
-	void $ Utility.Env.setEnv "GIT_COMMITTER_EMAIL" "test@example.com" True
-	void $ Utility.Env.setEnv "GIT_COMMITTER_NAME" "git-annex test" True
+	p <- Utility.Env.getEnvDefault "PATH" ""
 
-changeToTmpDir :: FilePath -> IO ()
-changeToTmpDir t = do
-	-- Hack alert. Threading state to here was too much bother.
-	topdir <- Utility.Env.getEnvDefault "TOPDIR" ""
+	let env =
+		-- Ensure that the just-built git annex is used.
+		[ ("PATH", cwd ++ ":" ++ p)
+		, ("TOPDIR", cwd)
+		-- Avoid git complaining if it cannot determine the user's
+		-- email address, or exploding if it doesn't know the user's
+		-- name.
+		, ("GIT_AUTHOR_EMAIL", "test@example.com")
+		, ("GIT_AUTHOR_NAME", "git-annex test")
+		, ("GIT_COMMITTER_EMAIL", "test@example.com")
+		, ("GIT_COMMITTER_NAME", "git-annex test")
+		-- force gpg into batch mode for the tests
+		, ("GPG_BATCH", "1")
+		]
+
+	return $ M.fromList env
+
+changeToTmpDir :: TestEnv -> FilePath -> IO ()
+changeToTmpDir env t = do
+	let topdir = fromMaybe "" $ M.lookup "TOPDIR" env
 	setCurrentDirectory $ topdir ++ "/" ++ t
 
 tmpdir :: String
