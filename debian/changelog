@@ -24,6 +24,7 @@ git-annex (4.20130502) UNRELEASED; urgency=low
     the destination's default file permissions, as the local ones can
     be arbitrarily broken. (Ie, ----rwxr-x for files on Android)
   * migrate: Detect if a file gets corrupted while it's being migrated.
+  * Debian: Add a menu file.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 02 May 2013 20:39:19 -0400
 
