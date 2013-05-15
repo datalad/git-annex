@@ -157,6 +157,8 @@ install_pkgs () {
 	unpatched SHA-1.6.1
 	onlycross unpatched data-endian-0.0.1
 	unpatched hinotify-0.3.5
+	patched iproute 1.2.11
+	unpatched DNS
 	
 	cd ..
 	rm -rf tmp
