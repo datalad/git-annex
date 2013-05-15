@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="It worked my second try"
+ date="2013-05-14T00:39:08Z"
+ content="""
+I enabled debug logging and tried again and this time the remote was successfully added! Maybe the first time I mistyped my password?
+
+Either way, it is working now and I created a file in my annex directory and the assistant successfully synced it to my box.com repo.
+"""]]

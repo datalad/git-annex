@@ -191,6 +191,7 @@ toDirectGen k f = do
 		{- Move content from annex to direct file. -}
 		thawContentDir loc
 		updateInodeCache k loc
+		addAssociatedFile k f
 		thawContent loc
 		replaceFile f $ liftIO . moveFile loc
 	fromdirect = do
