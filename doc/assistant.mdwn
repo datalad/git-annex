@@ -1,15 +1,15 @@
-The git-annex assistant creates a folder on each of your computers,
-Android devices, removable drives, and cloud services, which
-it keeps synchronised, so its contents are the same everywhere.
+The git-annex assistant creates a synchronised folder on each of your
+OSX and Linux  computers, Android devices, removable drives, and
+cloud services. The contents of the folder are the same everywhere.
 It's very easy to use, and has all the power of git and git-annex.
 
 ## installation
 
-The git-annex assistant comes as part of git-annex, starting with version
-3.20120924. See [[install]] to get it installed.
+The git-annex assistant comes as part of git-annex. 
+See [[install]] to get it installed.
 
-Note that the git-annex assistant is still beta quality code. See
-the [[release_notes]] for known infelicities and upgrade instructions.
+See the [[release_notes]] for an overview of the status, and upgrade
+instructions.
 
 ## intro screencast
 
