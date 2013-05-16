@@ -726,8 +726,8 @@ file contents are present at either of two repositories.
   copies, on remotes with the specified trust level. For example,
   "--copies=trusted:2"
 
-  To match any trust level at or higher than a given level, use
-  'trustlevel+'. For example, "--copies=semitrusted+:2"
+  To match any trust level at or higher than a given level,
+  use 'trustlevel+'. For example, "--copies=semitrusted+:2"
 
 * --copies=groupname:number
 
