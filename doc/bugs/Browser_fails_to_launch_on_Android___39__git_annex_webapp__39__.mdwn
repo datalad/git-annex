@@ -31,3 +31,5 @@ u0_a126@android:/sdcard/git-annex.home $
 
 # End of transcript or log.
 """]]
+
+[[done]], duplicate bug

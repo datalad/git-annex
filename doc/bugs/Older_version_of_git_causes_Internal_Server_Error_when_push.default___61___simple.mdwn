@@ -57,3 +57,6 @@ My .gitconfig is as follows:
 
 # End of transcript or log.
 """]]
+
+> Closing this because all autobuilders have been upgraded
+> to a more recent version of git. [[done]] --[[Joey]] 
