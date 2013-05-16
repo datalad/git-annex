@@ -1,0 +1,29 @@
+git-annex 4.20130516 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Android: The webapp is ported and working.
+   * Windows: There is a very rough Windows port. Do not trust it with
+     important data.
+   * git-annex-shell: Ensure that received files can be read. Files
+     transferred from some Android devices may have very broken permissions
+     as received.
+   * direct mode: Direct mode commands now work on files staged in the index,
+     they do not need to be committed to git.
+   * Temporarily add an upper bound to the version of yesod that can be built
+     with, since yesod 1.2 has a great many changes that will require extensive
+     work on the webapp.
+   * Disable building with the haskell threaded runtime when the assistant
+     is not built. This may fix builds on s390x and sparc, which are failing
+     to link -lHSrts\_thr
+   * Avoid depending on regex-tdfa on mips, mipsel, and s390, where it fails
+     to build.
+   * direct: Fix a bug that could cause some files to be left in indirect mode.
+   * When initializing a directory special remote with a relative path,
+     the path is made absolute.
+   * SHA: Add a runtime sanity check that sha commands output something
+     that appears to be a real sha.
+   * configure: Better checking that sha commands output in the desired format.
+   * rsync special remotes: When sending from a crippled filesystem, use
+     the destination's default file permissions, as the local ones can
+     be arbitrarily broken. (Ie, ----rwxr-x for files on Android)
+   * migrate: Detect if a file gets corrupted while it's being migrated.
+   * Debian: Add a menu file."""]]
