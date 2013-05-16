@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-16T02:29:10Z"
+ content="""
+You need to build from git master, which is fixed to not use unix on windows, or wait for tomorrow's release.
+
+(Cabal will also try to upgrade network as part of installing yesod. Since the webapp is not ported yet, you need to `cabal configure -f-Webapp` for now.)
+"""]]
