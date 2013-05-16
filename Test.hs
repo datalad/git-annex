@@ -364,17 +364,13 @@ test_edit env = "git-annex edit/commit" ~: TestList [t False, t True]
 	git_annex env "edit" [annexedfile] @? "edit failed"
 	unannexed annexedfile
 	changecontent annexedfile
+	boolSystem "git" [Param "add", File annexedfile]
+		@? "git add of edited file failed"
 	if precommit
-		then do
-			-- pre-commit depends on the file being
-			-- staged, normally git commit does this
-			boolSystem "git" [Param "add", File annexedfile]
-				@? "git add of edited file failed"
-			git_annex env "pre-commit" []
-				@? "pre-commit failed"
-		else do
-			boolSystem "git" [Params "commit -q -m contentchanged"]
-				@? "git commit of edited file failed"
+		then git_annex env "pre-commit" []
+			@? "pre-commit failed"
+		else boolSystem "git" [Params "commit -q -m contentchanged"]
+			@? "git commit of edited file failed"
 	runchecks [checklink, checkunwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
