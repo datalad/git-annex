@@ -294,8 +294,7 @@ withIndex' bootstrapping a = do
 	 - Use getEnv to get some key environment variables that
 	 - git expects to have. -}
 	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
-	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> 
-		catchMaybeIO (getEnv k)
+	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
 	e <- liftIO $ catMaybes <$> forM keyenv getEnvPair
 #else
 	e <- liftIO getEnvironment
