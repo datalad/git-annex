@@ -20,7 +20,7 @@ for [[using cabal|cabal]].
 Once git-annex is built, the NullSoft installer can be built, as follows:
 
 <pre>
-	cabal install ncis
+	cabal install nsis
 	ghc --make Build/NullSoftInstaller.hs
 	Build/NullSoftInstaller.exe
 </pre>
