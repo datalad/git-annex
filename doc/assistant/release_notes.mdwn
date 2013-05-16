@@ -1,3 +1,20 @@
+## version 4.20130516
+
+This version contains numerous bug fixes, and improvements.
+
+This is the first release with a fully usable Android app. No command-line
+typing needed to set up syncing to your Android phone or tablet!
+A few of the more advanced features may not work (or not work reliably)
+on Android. The Android app is still beta quality.
+
+There is a known problem with android 4.2.2 that prevents the webapp
+from opening. See [[Android_app_permission_denial_on_startup]] for a
+workaround.
+
+This is also the first release with a Windows port! The Windows port
+is in an alpha quality state, and is missing many features.
+It does not yet include the assistant.
+
 ## version 4.20130501
 
 This version contains numerous bug fixes, and improvements.
