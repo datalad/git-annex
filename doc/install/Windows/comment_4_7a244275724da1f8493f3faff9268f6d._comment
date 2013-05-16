@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-05-16T16:17:52Z"
+ content="""
+You should probably run `cabal install` from outside cygwin. You definitely do not want to end up with libraries installed that link cygwin.dll into git-annex. mingw should provide enough stuff to run `configure` scripts. Still investigating how to get all the libraries best installed.
+"""]]
