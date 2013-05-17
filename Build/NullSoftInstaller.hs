@@ -37,7 +37,7 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		extrafiles <- forM (cygwinPrograms ++ cygwinDlls) $ \f ->
+		extrafiles <- forM (cygwinPrograms ++ cygwinDlls) $ \f -> do
 			p <- searchPath f
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
