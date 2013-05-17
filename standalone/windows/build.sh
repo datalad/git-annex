@@ -38,3 +38,6 @@ incygwin cabal build
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
 incygwin Build/NullSoftInstaller.exe
+
+# Test git-annex
+dist/build/git-annex/git-annex.exe test
