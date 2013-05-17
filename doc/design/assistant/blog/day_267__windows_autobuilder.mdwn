@@ -4,6 +4,6 @@ half of today setting up the build.
 
 Got the test suite to pass in direct mode, and indeed in direct mode
 on a FAT filesystem. Had to fix one corner case in direct mode `git annex
-add`. Unofrtunatly it still doesn't work on Android; somehow `git clone` 
+add`. Unfortunately it still doesn't work on Android; somehow `git clone` 
 of a local repository is broken there. Also got the test suite to build,
 and run on Windows, though it fails pretty miserably.
