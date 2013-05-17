@@ -13,7 +13,7 @@ on Windows.
 A daily build is also available, thanks to Yury V. Zaytsev and
 [NEST](http://nest-initiative.org/).
 
-* [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
+* [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex-installer.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
 
 ## building it yourself
 
