@@ -11,9 +11,10 @@ FLAGS="-Webapp -Assistant -XMPP"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
-# Run a command in the cygwin environment.
-incygwin () {
-	PATH="/c/cygwin/bin:$PATH" "$@"
+# Run a command with the cygwin environment available.
+# However, programs not from cygwin are preferred.
+withcyg () {
+	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
 # Don't allow build artifact from a past successfuly build to be extracted
@@ -28,20 +29,20 @@ cabal update
 rm -rf MissingH-1.2.0.0
 cabal unpack MissingH
 cd MissingH-1.2.0.0
-incygwin patch -p1 <../standalone/windows/haskell-patches/MissingH_1.2.0.0-0001-hack-around-strange-build-problem-in-jenkins-autobui.patch
+withcyg patch -p1 <../standalone/windows/haskell-patches/MissingH_1.2.0.0-0001-hack-around-strange-build-problem-in-jenkins-autobui.patch
 cabal install || true
 cd ..
 
 cabal install --only-dependencies -f"$FLAGS"
 
 # Build git-annex
-incygwin cabal configure -f"$FLAGS"
-incygwin cabal build
+withcyg cabal configure -f"$FLAGS"
+withcyg cabal build
 
 # Build the installer
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
-incygwin Build/NullSoftInstaller.exe
+withcyg Build/NullSoftInstaller.exe
 
 # Test git-annex
-dist/build/git-annex/git-annex.exe test
+withcyg dist/build/git-annex/git-annex.exe test
