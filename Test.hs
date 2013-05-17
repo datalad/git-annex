@@ -455,7 +455,10 @@ test_fsck env = "git-annex fsck" ~: TestList [basicfsck, barefsck, withlocaluntr
 		git_annex env "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
 		writeFile f (changedcontent f)
-		not <$> git_annex env "fsck" [] @? "fsck failed to fail with corrupted file content"
+		ifM (annexeval Config.isDirect)
+			( git_annex env "fsck" [] @? "fsck failed in direct mode with changed file content"
+			, not <$> git_annex env "fsck" [] @? "fsck failed to fail with corrupted file content"
+			)
 		git_annex env "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
 	fsck_should_fail m = do
 		not <$> git_annex env "fsck" [] @? "fsck failed to fail with " ++ m
