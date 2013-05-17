@@ -6,7 +6,9 @@
 set -x
 set -e
 
-PATH="/c/Program Files (x86)/Haskell Platform/2012.4.0.0/bin:$PATH"
+HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
+
+PATH="$HP/bin:$HP/lib/extralibs/bin:$PATH"
 
 # Run a command in the cygwin environment.
 incygwin () {
