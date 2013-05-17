@@ -16,6 +16,10 @@ incygwin () {
 	PATH="/c/cygwin/bin:$PATH" "$@"
 }
 
+# Don't allow build artifact from a past successfuly build to be extracted
+# if we fail.
+rm -f git-annex-installer.exe
+
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
