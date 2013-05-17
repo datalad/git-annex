@@ -759,7 +759,7 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfi
 		not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 		annexed_present annexedfile
 #else
-		print "gpg testing not implemented on Windows"
+		putStrLn "gpg testing not implemented on Windows"
 #endif
 
 -- This is equivilant to running git-annex, but it's all run in-process
