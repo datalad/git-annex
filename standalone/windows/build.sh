@@ -25,7 +25,7 @@ rm -rf MissingH-1.2.0.0
 cabal unpack MissingH
 cd MissingH-1.2.0.0
 incygwin patch -p1 <../standalone/windows/haskell-patches/MissingH_1.2.0.0-0001-hack-around-strange-build-problem-in-jenkins-autobui.patch
-cabal install --reinstall
+cabal install || true
 cd ..
 
 cabal install --only-dependencies -f"$FLAGS"

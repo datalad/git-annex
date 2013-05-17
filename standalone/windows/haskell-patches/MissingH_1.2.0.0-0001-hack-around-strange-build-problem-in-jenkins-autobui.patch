@@ -38,8 +38,8 @@ index 473490d..0eea21b 100644
 -                                  accessTime = fromInteger epochtime,
 -                                  modificationTime = fromInteger epochtime,
 -                                  statusChangeTime = fromInteger epochtime
-+                                  accessTime = undefined -- fromInteger epochtime,
-+                                  modificationTime = undefined -- fromInteger epochtime,
++                                  accessTime = undefined, -- fromInteger epochtime,
++                                  modificationTime = undefined, -- fromInteger epochtime,
 +                                  statusChangeTime = undefined -- fromInteger epochtime
                                   }
  #endif
