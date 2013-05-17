@@ -33,7 +33,6 @@ import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
-import qualified GitAnnex
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -49,7 +48,6 @@ import qualified Crypto
 import qualified Init
 import qualified Utility.Path
 import qualified Utility.FileMode
-import qualified Utility.Gpg
 import qualified Build.SysConfig
 import qualified Utility.Format
 import qualified Utility.Verifiable
@@ -57,6 +55,10 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
+#ifndef __WINDOWS__
+import qualified GitAnnex
+import qualified Utility.Gpg
+#endif
 
 type TestEnv = M.Map String String
 
