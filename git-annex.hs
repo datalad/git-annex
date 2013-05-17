@@ -13,10 +13,7 @@ import System.FilePath
 import qualified GitAnnex
 import qualified GitAnnexShell
 #ifdef WITH_TESTSUITE
-#ifndef __WINDOWS__
 import qualified Test
-#define CHECK_TEST
-#endif
 #endif
 
 main :: IO ()
@@ -28,7 +25,7 @@ main = run =<< getProgName
 	isshell n = takeFileName n == "git-annex-shell"
 	go a = do
 		ps <- getArgs
-#ifdef CHECK_TEST
+#ifdef WITH_TESTSUITE
 		if ps == ["test"]
 			then Test.main
 			else a ps

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Test where
 
 import Test.HUnit
@@ -755,9 +757,10 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfi
 		annexed_present annexedfile	
 
 -- This is equivilant to running git-annex, but it's all run in-process
--- so test coverage collection works.
+-- (when the OS allows) so test coverage collection works.
 git_annex :: TestEnv -> String -> [String] -> IO Bool
 git_annex env command params = do
+#ifndef __WINDOWS__
 	forM_ (M.toList env) $ \(var, val) ->
 		Utility.Env.setEnv var val True
 
@@ -768,12 +771,17 @@ git_annex env command params = do
 		Left _ -> return False
   where
 	run = GitAnnex.run (command:"-q":params)
+#else
+	Utility.SafeCommand.boolSystemEnv "git-annex"
+		(map Param $ command : params)
+		(Just $ M.toList env)
+#endif
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: TestEnv -> String -> [String] -> IO String
 git_annex_output env command params = do
-	got <- Utility.Process.readProcessEnv "git-annex" (command:params) $
-		Just $ M.toList env
+	got <- Utility.Process.readProcessEnv "git-annex" (command:params)
+		(Just $ M.toList env)
 	-- XXX since the above is a separate process, code coverage stats are
 	-- not gathered for things run in it.
 	-- Run same command again, to get code coverage.
