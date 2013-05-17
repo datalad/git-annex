@@ -731,6 +731,7 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
 test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfig.gpg $ do
+#ifndef __WINDOWS__
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
@@ -754,7 +755,10 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfi
 		git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
 		annexed_present annexedfile
 		not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
-		annexed_present annexedfile	
+		annexed_present annexedfile
+#else
+		print "gpg testing not implemented on Windows"
+#endif
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- (when the OS allows) so test coverage collection works.
