@@ -13,14 +13,6 @@ incygwin () {
 	PATH="/c/cygwin/bin:$PATH" "$@"
 }
 
-# Uses git from cygwin to checkout git-annex, because the repository
-# contains ":" in filenames.
-if ! [ -d "git-annex" ]; then
-	incygwin git clone git://git-annex.branchable.com git-annex
-fi
-cd git-annex
-incygwin git pull origin master
-
 # Build git-annex
 cabal update
 # cabal install is not run in cygwin, because we don't want configure scripts
