@@ -76,7 +76,7 @@ makeInstaller gitannex license = nsis $ do
 	
 	-- Pages to display
 	page Directory                   -- Pick where to install
-	page $ License license
+	page (License license)
 	page InstFiles                   -- Give a progress bar while installing
 	-- Groups of files to install
 	section "programs" [] $ do
@@ -84,9 +84,15 @@ makeInstaller gitannex license = nsis $ do
 		addfile gitannex
 		addfile license
 		mapM_ addcygfile cygwinPrograms
+		writeUninstaller "git-annex-uninstall.exe"
 	section "libraries" [] $ do
 		setOutPath "$INSTDIR"
 		mapM_ addcygfile cygwinDlls
+	uninstall $
+		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f)
+			[ gitannex
+			, license
+			] ++ cygwinPrograms ++ cygwinDlls
   where
 	addfile f = file [] (str f)
 	addcygfile f = addfile $ "C:\\cygwin\\bin" </> f
