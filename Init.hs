@@ -87,7 +87,7 @@ gitPreCommitHookWrite = unlessBare $ do
 	hook <- preCommitHook
 	ifM (liftIO $ doesFileExist hook)
 		( do
-			content <- readFile hook
+			content <- liftIO $ readFile hook
 			when (content /= preCommitScript) $
 				warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
 		, unlessM crippledFileSystem $
