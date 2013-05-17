@@ -10,6 +10,7 @@ import System.FilePath
 import System.Environment
 import Data.Maybe
 import Control.Monad.IfElse
+import Data.Char
 
 import Build.TestConfig
 import Utility.SafeCommand
@@ -129,7 +130,8 @@ getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 {- Set up cabal file with version. -}
 cabalSetup :: IO ()
 cabalSetup = do
-	version <- takeWhile (/= '~') <$> getChangelogVersion
+	version <- takeWhile (\c -> isDigit c || c == '.')
+		<$> getChangelogVersion
 	cabal <- readFile cabalfile
 	writeFile tmpcabalfile $ unlines $ 
 		map (setfield "Version" version) $
