@@ -33,7 +33,9 @@ main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> "git-annex.exe"
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
-		writeFile nsifile $ makeInstaller gitannex
+		let license = tmpdir </> "git-annex-licenses.txt"
+		mustSucceed "sh" [Param "-c", Param "zcat standalone/licences.gz >" ++ license]
+		writeFile nsifile $ makeInstaller gitannex license
 		mustSucceed "C:\\Program Files\\NSIS\\makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
@@ -59,8 +61,8 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> String
-makeInstaller gitannex = nsis $ do
+makeInstaller :: FilePath -> FilePath -> String
+makeInstaller gitannex license = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -74,13 +76,15 @@ makeInstaller gitannex = nsis $ do
 	
 	-- Pages to display
 	page Directory                   -- Pick where to install
+	page License license
 	page InstFiles                   -- Give a progress bar while installing
 	-- Groups of files to install
 	section "programs" [] $ do
 		setOutPath "$INSTDIR"
 		addfile gitannex
+		addfile license
 		mapM_ addcygfile cygwinPrograms
-	section "DLLS" [] $ do
+	section "libraries" [] $ do
 		setOutPath "$INSTDIR"
 		mapM_ addcygfile cygwinDlls
   where
