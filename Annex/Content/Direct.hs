@@ -190,9 +190,10 @@ compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 addContentWhenNotPresent :: Key -> FilePath -> FilePath -> Annex ()
 addContentWhenNotPresent key contentfile associatedfile = do
 	v <- isAnnexLink associatedfile
-	when (Just key == v) $
+	when (Just key == v) $ do
 		replaceFile associatedfile $
 			liftIO . void . copyFileExternal contentfile
+	updateInodeCache key associatedfile	
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect
