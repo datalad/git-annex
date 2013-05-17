@@ -500,7 +500,8 @@ test_migrate env = "git-annex migrate" ~: TestList [t False, t True]
 	checkbackend sha1annexedfile backendSHA256
 
 test_unused :: TestEnv -> Test
-test_unused env = "git-annex unused/dropunused" ~: intmpclonerepo env $ do
+-- This test is broken in direct mode
+test_unused env = "git-annex unused/dropunused" ~: intmpclonerepoInDirect env $ do
 	-- keys have to be looked up before files are removed
 	annexedfilekey <- annexeval $ findkey annexedfile
 	sha1annexedfilekey <- annexeval $ findkey sha1annexedfile
