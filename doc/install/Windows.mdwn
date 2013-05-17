@@ -10,7 +10,8 @@ on Windows.
 
 ## autobuilds
 
-A daily build is also available.
+A daily build is also available, thanks to Yury V. Zaytsev and
+[NEST](http://nest-initiative.org/).
 
 * [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
 

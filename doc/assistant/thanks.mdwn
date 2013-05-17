@@ -50,8 +50,9 @@ Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin,
 Sherif Abouseda, Ben Strawbridge, chee rabbits, Pedro Côrte-Real
 
 And special thanks to Kevin McKenzie, who also gave me a login to a Mac OSX
-machine, which has proven invaluable, and Jimmy Tang who has helped
-with Mac OSX autobuilding and packaging.
+machine, which has proven invaluable, Jimmy Tang who has helped
+with Mac OSX autobuilding and packaging, and Yury V. Zaytsev who
+provides the Windows autobuilder.
 
 ## Other Backers
 
