@@ -21,6 +21,7 @@ quite a lot.
   * [SafeSemaphore](http://hackage.haskell.org/package/SafeSemaphore)
   * [UUID](http://hackage.haskell.org/package/uuid)
   * [regex-tdfa](http://hackage.haskell.org/package/regex-tdfa)
+  * [extensible-exceptions](http://hackage.haskell.org/package/extensible-exceptions)
 * Optional haskell stuff, used by the [[assistant]] and its webapp
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
