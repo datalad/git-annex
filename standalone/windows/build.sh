@@ -9,7 +9,7 @@ set -e
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 FLAGS="-Webapp -Assistant -XMPP"
 
-PATH="$HP/bin:$HP/lib/extralibs/bin:$PATH"
+PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
 # Run a command in the cygwin environment.
 incygwin () {

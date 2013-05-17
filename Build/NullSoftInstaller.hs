@@ -36,7 +36,7 @@ main = do
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		writeFile nsifile $ makeInstaller gitannex license
-		mustSucceed "C:\\Program Files\\NSIS\\makensis" [File nsifile]
+		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
 	nsifile = "git-annex.nsi"
