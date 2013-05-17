@@ -17,10 +17,17 @@ incygwin () {
 }
 
 # Install haskell dependencies.
-cabal update
-cabal list --installed
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
+cabal update
+
+rm -rf MissingH-1.2.0.0
+cabal unpack MissingH
+cd MissingH-1.2.0.0
+incygwin patch -p1 <../standalone/windows/haskell-patches/MissingH_1.2.0.0-0001-hack-around-strange-build-problem-in-jenkins-autobui.patch
+cabal install --reinstall
+cd ..
+
 cabal install --only-dependencies -f"$FLAGS"
 
 # Build git-annex
