@@ -19,16 +19,6 @@ diff --git a/src/System/IO/WindowsCompat.hs b/src/System/IO/WindowsCompat.hs
 index 473490d..0eea21b 100644
 --- a/src/System/IO/WindowsCompat.hs
 +++ b/src/System/IO/WindowsCompat.hs
-@@ -44,8 +44,7 @@ Or, to avoid having to use CPP and make things even easier, just import
- -}
- 
- module System.IO.WindowsCompat
--#if 1
--!(defined(mingw32_HOST_OS) || defined(mingw32_TARGET_OS) || defined(__MINGW32__))
-+#if !(defined(mingw32_HOST_OS) || defined(mingw32_TARGET_OS) || defined(__MINGW32__))
- where
- #else
-        (module System.IO.StatCompat, module System.IO.WindowsCompat)
 @@ -120,8 +119,10 @@ getFileStatus fp =
      do isfile <- doesFileExist fp
         isdir <- doesDirectoryExist fp
