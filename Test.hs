@@ -44,6 +44,7 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
+import qualified Init
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Utility.Gpg
@@ -206,7 +207,7 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		git_annex env "add" ["../dir2"] @? "add of ../subdir failed"
 
 test_reinject :: TestEnv -> Test
-test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo env $ do
+test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepoInDirect env $ do
 	git_annex env "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
 	r <- annexeval $ Types.Backend.getKey backendSHA1 $
@@ -221,11 +222,11 @@ test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepo en
 test_unannex :: TestEnv -> Test
 test_unannex env = "git-annex unannex" ~: TestList [nocopy, withcopy]
   where
-	nocopy = "no content" ~: intmpclonerepo env $ do
+	nocopy = "no content" ~: intmpclonerepoInDirect env $ do
 		annexed_notpresent annexedfile
 		git_annex env "unannex" [annexedfile] @? "unannex failed with no copy"
 		annexed_notpresent annexedfile
-	withcopy = "with content" ~: intmpclonerepo env $ do
+	withcopy = "with content" ~: intmpclonerepoInDirect env $ do
 		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
 		git_annex env "unannex" [annexedfile, sha1annexedfile] @? "unannex failed"
@@ -330,7 +331,7 @@ test_copy env = "git-annex copy" ~: TestCase $ intmpclonerepo env $ do
 	checkcontent ingitfile
 
 test_lock :: TestEnv -> Test
-test_lock env = "git-annex unlock/lock" ~: intmpclonerepo env $ do
+test_lock env = "git-annex unlock/lock" ~: intmpclonerepoInDirect env $ do
 	-- regression test: unlock of not present file should skip it
 	annexed_notpresent annexedfile
 	not <$> git_annex env "unlock" [annexedfile] @? "unlock failed to fail with not present file"
@@ -358,7 +359,7 @@ test_lock env = "git-annex unlock/lock" ~: intmpclonerepo env $ do
 
 test_edit :: TestEnv -> Test
 test_edit env = "git-annex edit/commit" ~: TestList [t False, t True]
-  where t precommit = TestCase $ intmpclonerepo env $ do
+  where t precommit = TestCase $ intmpclonerepoInDirect env $ do
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "edit" [annexedfile] @? "edit failed"
@@ -377,7 +378,7 @@ test_edit env = "git-annex edit/commit" ~: TestList [t False, t True]
 	not <$> git_annex env "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
 
 test_fix :: TestEnv -> Test
-test_fix env = "git-annex fix" ~: intmpclonerepo env $ do
+test_fix env = "git-annex fix" ~: intmpclonerepoInDirect env $ do
 	annexed_notpresent annexedfile
 	git_annex env "fix" [annexedfile] @? "fix of not present failed"
 	annexed_notpresent annexedfile
@@ -461,7 +462,7 @@ test_fsck env = "git-annex fsck" ~: TestList [basicfsck, barefsck, withlocaluntr
 
 test_migrate :: TestEnv -> Test
 test_migrate env = "git-annex migrate" ~: TestList [t False, t True]
-  where t usegitattributes = TestCase $ intmpclonerepo env $ do
+  where t usegitattributes = TestCase $ intmpclonerepoInDirect env $ do
 	annexed_notpresent annexedfile
 	annexed_notpresent sha1annexedfile
 	git_annex env "migrate" [annexedfile] @? "migrate of not present failed"
@@ -506,14 +507,14 @@ test_unused env = "git-annex unused/dropunused" ~: intmpclonerepo env $ do
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	git_annex env "get" [sha1annexedfile] @? "get of file failed"
 	checkunused [] "after get"
-	boolSystem "git" [Params "rm -q", File annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "rm -fq", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
 	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
 	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
 	boolSystem "git" [Params "remote rm origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey] "after origin branches are gone"
-	boolSystem "git" [Params "rm -q", File sha1annexedfile] @? "git rm failed"
+	boolSystem "git" [Params "rm -fq", File sha1annexedfile] @? "git rm failed"
 	boolSystem "git" [Params "commit -q -m foo"] @? "git commit failed"
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
@@ -622,7 +623,7 @@ test_map env = "git-annex map" ~: intmpclonerepo env $ do
 	git_annex env "map" ["--fast"] @? "map failed"
 
 test_uninit :: TestEnv -> Test
-test_uninit env = "git-annex uninit" ~: intmpclonerepo env $ do
+test_uninit env = "git-annex uninit" ~: intmpclonerepoInDirect env $ do
 	git_annex env "get" [] @? "get failed"
 	annexed_present annexedfile
 	boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
@@ -797,6 +798,17 @@ inmainrepo env a = indir env mainrepodir a
 
 intmpclonerepo :: TestEnv -> Assertion -> Assertion
 intmpclonerepo env a = withtmpclonerepo env False $ \r -> indir env r a
+
+intmpclonerepoInDirect :: TestEnv -> Assertion -> Assertion
+intmpclonerepoInDirect env a = intmpclonerepo env $
+	ifM isdirect
+		( putStrLn "not supported in direct mode; skipping"
+		, a
+		)
+  where
+  	isdirect = annexeval $ do
+		Init.initialize Nothing
+		Config.isDirect
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
 intmpbareclonerepo env a = withtmpclonerepo env True $ \r -> indir env r a
