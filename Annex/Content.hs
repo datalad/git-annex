@@ -245,25 +245,40 @@ moveAnnex :: Key -> FilePath -> Annex ()
 moveAnnex key src = withObjectLoc key storeobject storedirect
   where
 	storeobject dest = ifM (liftIO $ doesFileExist dest)
-		( liftIO $ removeFile src
+		( alreadyhave
 		, do
 			createContentDir dest
 			liftIO $ moveFile src dest
 			freezeContent dest
 			freezeContentDir dest
 		)
-	storedirect fs = storedirect' =<< filterM validsymlink fs
-	validsymlink f = (==) (Just key) <$> isAnnexLink f
+	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
-	storedirect' [] = storeobject =<< calcRepo (gitAnnexLocation key)
-	storedirect' (f:fs) = do
+	{- In direct mode, the associated file's content may be locally
+	 - modified. In that case, it's preserved. However, the content
+	 - we're moving into the annex may be the only extant copy, so
+	 - it's important we not lose it. So, when the key's content
+	 - cannot be moved to any associated file, it's stored in indirect
+	 - mode.
+	 -}
+	storedirect = storedirect' storeindirect
+	storedirect' fallback [] = fallback
+	storedirect' fallback (f:fs) = do
 		thawContentDir =<< calcRepo (gitAnnexLocation key)
-		updateInodeCache key src
 		thawContent src
-		replaceFile f $ liftIO . moveFile src
-		{- Copy to any other locations. -}
-		forM_ fs $
-			addContentWhenNotPresent key f
+		v <- isAnnexLink f
+		if (Just key == v)
+			then do
+				updateInodeCache key src
+				replaceFile f $ liftIO . moveFile src
+				forM_ fs $
+					addContentWhenNotPresent key f
+			else ifM (goodContent key f)
+				( storedirect' alreadyhave fs
+				, storedirect' fallback fs
+				)
+	
+	alreadyhave = liftIO $ removeFile src
 
 {- Runs an action to transfer an object's content.
  -
