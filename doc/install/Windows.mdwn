@@ -8,19 +8,18 @@ git-annex, many things will not work. See [[todo/windows_support]] for
 current status. Note especially that git-annex always uses [[direct_mode]]
 on Windows.
 
+## autobuilds
+
+A daily build is also available.
+
+* [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
+
 ## building it yourself
 
 To build git-annex from source on Windows, you need to install
-the Haskell Platform and Cygwin. Use Cygwin to install gcc, rsync, git,
-ssh, and gpg.
+the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install
+gcc, rsync, git, wget, ssh, and gpg.
 
-Then, within Cygwin, git-annex can be compiled following the instructions
-for [[using cabal|cabal]].
-
-Once git-annex is built, the NullSoft installer can be built, as follows:
-
-<pre>
-	cabal install nsis
-	ghc --make Build/NullSoftInstaller.hs
-	Build/NullSoftInstaller.exe
-</pre>
+There is a shell script `standalone/windows/build.sh` that can be
+used to build git-annex. Note that this shell script cannot be run
+in Cygwin; run it with the Mingw sh.
