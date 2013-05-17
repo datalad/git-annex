@@ -6,6 +6,7 @@ to improve it.
 * [[bugs/Android_app_permission_denial_on_startup]]
 * S3 doesn't work (at least to Internet Archive: 
   "connect: does not exist (connection refused)")
+* Get app into Goole Play and/or FDroid
 
 ## TODO
 
@@ -25,7 +26,8 @@ to improve it.
   and a few places use it. I have some horrible workarounds in place.
 * Get local pairing to work. network-multicast and network-info don't
   currently install.
-* Get test suite to pass.
+* Get test suite to pass. `git clone` of a local repo fails on android
+  for some reason.
 * Make app autostart on boot, optionally. <http://stackoverflow.com/questions/1056570/how-to-autostart-an-android-application>
 * The app should be aware of power status, and avoid expensive background
   jobs when low on battery or run flat out when plugged in.
