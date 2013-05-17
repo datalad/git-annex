@@ -19,12 +19,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Development.NSIS
+import System.Directory
 import System.FilePath
 import Control.Monad
-import System.Directory
 import Data.String
+import Data.Maybe
 
 import Utility.Tmp
+import Utility.Path
 import Utility.CopyFile
 import Utility.SafeCommand
 import Build.BundledPrograms
@@ -35,7 +37,13 @@ main = do
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
-		writeFile nsifile $ makeInstaller gitannex license
+		extrafiles <- forM (cygwinPrograms ++ cygwinDlls) $ \f ->
+			p <- searchPath f
+			when (isNothing p) $
+				print ("unable to find in PATH", f)
+			return p
+		writeFile nsifile $ makeInstaller gitannex license $
+			catMaybes extrafiles
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
@@ -70,8 +78,8 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> String
-makeInstaller gitannex license = nsis $ do
+makeInstaller :: FilePath -> FilePath -> [FilePath] -> String
+makeInstaller gitannex license extrafiles = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -88,15 +96,12 @@ makeInstaller gitannex license = nsis $ do
 	page (License license)
 	page InstFiles                   -- Give a progress bar while installing
 	-- Groups of files to install
-	section "programs" [] $ do
+	section "main" [] $ do
 		setOutPath "$INSTDIR"
 		addfile gitannex
 		addfile license
-		mapM_ addcygfile cygwinPrograms
+		mapM_ addfile extrafiles
 		writeUninstaller $ str uninstaller
-	section "libraries" [] $ do
-		setOutPath "$INSTDIR"
-		mapM_ addcygfile cygwinDlls
 	uninstall $
 		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
 			[ gitannexprogram
@@ -105,7 +110,6 @@ makeInstaller gitannex license = nsis $ do
 			] ++ cygwinPrograms ++ cygwinDlls
   where
 	addfile f = file [] (str f)
-	addcygfile f = addfile $ "C:\\cygwin\\bin" </> f
 
 cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms

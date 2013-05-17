@@ -39,4 +39,4 @@ incygwin cabal build
 # Build the installer
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
-Build/NullSoftInstaller.exe
+incygwin Build/NullSoftInstaller.exe
