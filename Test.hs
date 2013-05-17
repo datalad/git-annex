@@ -13,7 +13,7 @@ import Test.HUnit
 import Test.QuickCheck
 import Test.QuickCheck.Test
 
-import System.Posix.Files
+import System.PosixCompat.Files
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
