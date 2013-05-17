@@ -34,7 +34,7 @@ main = do
 		let gitannex = tmpdir </> "git-annex.exe"
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
 		let license = tmpdir </> "git-annex-licenses.txt"
-		mustSucceed "sh" [Param "-c", Param "zcat standalone/licences.gz >" ++ license]
+		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		writeFile nsifile $ makeInstaller gitannex license
 		mustSucceed "C:\\Program Files\\NSIS\\makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -44,7 +44,7 @@ main = do
 		r <- boolSystem cmd params
 		case r of
 			True -> return ()
-			False -> error $ cmd ++ "failed"
+			False -> error $ cmd ++ " failed"
 
 installer :: FilePath
 installer = "git-annex-installer.exe"
@@ -76,7 +76,7 @@ makeInstaller gitannex license = nsis $ do
 	
 	-- Pages to display
 	page Directory                   -- Pick where to install
-	page License license
+	page $ License license
 	page InstFiles                   -- Give a progress bar while installing
 	-- Groups of files to install
 	section "programs" [] $ do
