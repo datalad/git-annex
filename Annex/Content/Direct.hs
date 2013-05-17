@@ -23,6 +23,7 @@ module Annex.Content.Direct (
 	toInodeCache,
 	inodesChanged,
 	createInodeSentinalFile,
+	addContentWhenNotPresent,
 ) where
 
 import Common.Annex
@@ -32,6 +33,9 @@ import qualified Git
 import Utility.Tmp
 import Logs.Location
 import Utility.InodeCache
+import Utility.CopyFile
+import Annex.ReplaceFile
+import Annex.Link
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
@@ -179,6 +183,16 @@ elemInodeCaches c (l:ls) = ifM (compareInodeCaches c l)
 
 compareInodeCachesWith :: Annex InodeComparisonType
 compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
+
+{- Copies the contentfile to the associated file, if the associated
+ - file has not content. If the associated file does have content,
+ - even if the content differs, it's left unchanged. -}
+addContentWhenNotPresent :: Key -> FilePath -> FilePath -> Annex ()
+addContentWhenNotPresent key contentfile associatedfile = do
+	v <- isAnnexLink associatedfile
+	when (Just key == v) $
+		replaceFile associatedfile $
+			liftIO . void . copyFileExternal contentfile
 
 {- Some filesystems get new inodes each time they are mounted.
  - In order to work on such a filesystem, a sentinal file is used to detect

@@ -30,6 +30,7 @@ import Utility.FileMode
 import Config
 import Utility.InodeCache
 import Annex.FileMatcher
+import Annex.ReplaceFile
 
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek SectionCommon
@@ -154,6 +155,11 @@ finishIngestDirect key source = do
 		liftIO $ allowWrite $ keyFilename source
 	when (contentLocation source /= keyFilename source) $
 		liftIO $ nukeFile $ contentLocation source
+
+	{- Copy to any other locations using the same key. -}
+	otherfs <- filter (/= keyFilename source) <$> associatedFiles key
+	forM_ otherfs $
+		addContentWhenNotPresent key (keyFilename source)
 
 perform :: FilePath -> CommandPerform
 perform file = 

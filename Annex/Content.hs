@@ -28,7 +28,6 @@ module Annex.Content (
 	preseedTmp,
 	freezeContent,
 	thawContent,
-	replaceFile,
 	cleanObjectLoc,
 ) where
 
@@ -53,6 +52,7 @@ import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
+import Annex.ReplaceFile
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -256,38 +256,14 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	validsymlink f = (==) (Just key) <$> isAnnexLink f
 
 	storedirect' [] = storeobject =<< calcRepo (gitAnnexLocation key)
-	storedirect' (dest:fs) = do
+	storedirect' (f:fs) = do
 		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		updateInodeCache key src
 		thawContent src
-		replaceFile dest $ liftIO . moveFile src
+		replaceFile f $ liftIO . moveFile src
 		{- Copy to any other locations. -}
-		forM_ fs $ \f -> replaceFile f $
-			liftIO . void . copyFileExternal dest
-
-{- Replaces a possibly already existing file with a new version, 
- - atomically, by running an action.
-
- - The action is passed a temp file, which it can write to, and once
- - done the temp file is moved into place.
- -}
-replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
-replaceFile file a = do
-	tmpdir <- fromRepo gitAnnexTmpDir
-	createAnnexDirectory tmpdir
-	tmpfile <- liftIO $ do
-		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir $
-			takeFileName file
-		hClose h
-		return tmpfile
-	a tmpfile
-	liftIO $ do
-		r <- tryIO $ rename tmpfile file
-		case r of
-			Left _ -> do
-				createDirectoryIfMissing True $ parentDir file
-				rename tmpfile file
-			_ -> noop
+		forM_ fs $
+			addContentWhenNotPresent key f
 
 {- Runs an action to transfer an object's content.
  -

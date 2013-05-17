@@ -30,12 +30,12 @@ import qualified Git
 import qualified Git.UpdateIndex
 import qualified Git.LsFiles as LsFiles
 import qualified Backend
-import Annex.Content
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Link
 import Annex.FileMatcher
+import Annex.ReplaceFile
 import Git.Types
 import Config
 import Utility.ThreadScheduler
