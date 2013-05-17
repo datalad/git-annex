@@ -14,8 +14,6 @@ PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 # Run a command in the cygwin environment.
 incygwin () {
 	PATH="/c/cygwin/bin:$PATH" "$@"
-	nodosfilewarning=1
-	export nodosfilewarning
 }
 
 # Install haskell dependencies.
