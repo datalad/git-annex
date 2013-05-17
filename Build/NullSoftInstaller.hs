@@ -31,9 +31,9 @@ import Build.BundledPrograms
 
 main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
-		let gitannex = tmpdir </> "git-annex.exe"
+		let gitannex = tmpdir </> gitannexprogram
 		mustSucceed "ln" [File "dist/build/git-annex/git-annex.exe", File gitannex]
-		let license = tmpdir </> "git-annex-licenses.txt"
+		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		writeFile nsifile $ makeInstaller gitannex license
 		mustSucceed "C:\\Program Files\\NSIS\\makensis" [File nsifile]
@@ -46,8 +46,17 @@ main = do
 			True -> return ()
 			False -> error $ cmd ++ " failed"
 
+gitannexprogram :: FilePath
+gitannexprogram = "git-annex.exe"
+
+licensefile :: FilePath
+licensefile = "git-annex-licenses.txt"
+
 installer :: FilePath
 installer = "git-annex-installer.exe"
+
+uninstaller :: FilePath
+uninstaller = "git-annex-uninstall.exe"
 
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git\\cmd"
@@ -84,14 +93,15 @@ makeInstaller gitannex license = nsis $ do
 		addfile gitannex
 		addfile license
 		mapM_ addcygfile cygwinPrograms
-		writeUninstaller "git-annex-uninstall.exe"
+		writeUninstaller $ str uninstaller
 	section "libraries" [] $ do
 		setOutPath "$INSTDIR"
 		mapM_ addcygfile cygwinDlls
 	uninstall $
-		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f)
-			[ gitannex
-			, license
+		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
+			[ gitannexprogram
+			, licensefile
+			, uninstaller
 			] ++ cygwinPrograms ++ cygwinDlls
   where
 	addfile f = file [] (str f)
