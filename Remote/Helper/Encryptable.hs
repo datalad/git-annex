@@ -35,12 +35,13 @@ encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
 		=<< highRandomQuality
 	(Just keyid, Nothing) -> use "encryption setup" . genEncryptedCipher keyid
 		=<< highRandomQuality
-	(Just keyid, Just v) -> use "encryption updated" $ updateEncryptedCipher keyid v
+	(Just keyid, Just v) -> use "encryption update" $ updateEncryptedCipher keyid v
   where
 	cannotchange = error "Cannot change encryption type of existing remote."
 	use m a = do
+		showNote m
 		cipher <- liftIO a
-		showNote $ m ++ " " ++ describeCipher cipher
+		showNote $ describeCipher cipher
 		return $ M.delete "encryption" $ M.delete "highRandomQuality" $
 				storeCipher c cipher
 	highRandomQuality = 
