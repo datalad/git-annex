@@ -1,22 +1,26 @@
+## Saucy
+
+	sudo apt-get install git-annex
+
 ## Raring
 
 	sudo apt-get install git-annex
 
-Note: This version does not have the WebApp/[[assistant]] enabled (see [here](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1084693)), but is otherwise
+Note: This version does not have the WebApp enabled (see [here](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1084693)), but is otherwise
 usable.
 
 ## Precise
 
 	sudo apt-get install git-annex
 
-Note: This version is too old to include the [[assistant]], but is otherwise
-usable.
+Note: This version is too old to include the [[assistant]] or its WebApp,
+but is otherwise usable.
 
 ## Precise PPA
 
 <https://launchpad.net/~fmarier/+archive/ppa>
 
-A newer version of git-annex, including the [[assistant]].
+A newer version of git-annex, including the [[assistant]] and WebApp.
 (Maintained by François Marier)
 
 	sudo add-apt-repository ppa:fmarier/ppa
