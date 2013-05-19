@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-19T21:09:54Z"
+ content="""
+I'm seeing some indications (this bug and also the [[git_annex_fork_bombs_on_gpg_file]] bug) that gpg is somehow broken on OSX.
+
+Aha. I just tried on my build box, and:
+
+<pre>
+oberon:~ joeyh$ gpg
+dyld: warning, LC_RPATH @loader_path/../lib in /usr/local/bin/gpg being ignored in restricted program because of @loader_path
+dyld: Library not loaded: @rpath/libz.1.2.7.dylib
+  Referenced from: /usr/local/bin/gpg
+  Reason: image not found
+</pre>
+
+So, I'm packing up a broken gpg. Need to fix that then..
+
+"""]]
