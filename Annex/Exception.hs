@@ -18,7 +18,11 @@ import Control.Exception hiding (handle, try, throw)
 
 import Common.Annex
 
-{- Runs an Annex action, with setup and cleanup both in the IO monad. -}
+{- Runs an Annex action, with setup and cleanup both in the IO monad.
+ -
+ - Warning: Currently if the Annex action fails, any changes it has made
+ - to Annex state are discarded.
+ -}
 bracketIO :: IO c -> (c -> IO b) -> Annex a -> Annex a
 bracketIO setup cleanup go =
 	liftBaseOp (Control.Exception.bracket setup cleanup) (const go)
