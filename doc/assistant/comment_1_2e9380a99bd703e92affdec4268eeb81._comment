@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnFjuvfPpi1kf6l54bxfFUm0Aw_Gf_IO0o"
- nickname="Aaron"
- subject="Official Raring build also does not have the Assistant enabled"
- date="2013-05-19T21:52:57Z"
- content="""
-It seems that the Raring build does not have the WebApp enabled and will need a PPA as well, though this will apparently be included in Saucy:
-https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1084693
-"""]]

@@ -2,6 +2,9 @@
 
 	sudo apt-get install git-annex
 
+Note: This version does not have the WebApp/[[assistant]] enabled (see [here](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/1084693)), but is otherwise
+usable.
+
 ## Precise
 
 	sudo apt-get install git-annex
