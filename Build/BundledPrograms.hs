@@ -30,7 +30,7 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif
-	, ifset SysConfig.gpg "gpg"
+	, SysConfig.gpg
 	, ifset SysConfig.curl "curl"
 	, ifset SysConfig.wget "wget"
 	, ifset SysConfig.bup "bup"

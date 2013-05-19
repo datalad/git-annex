@@ -732,7 +732,7 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
-test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ when Build.SysConfig.gpg $ do
+test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
 #ifndef __WINDOWS__
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do

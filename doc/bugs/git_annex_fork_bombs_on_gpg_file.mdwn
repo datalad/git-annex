@@ -21,3 +21,5 @@ add tinco.gpg
 .. (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) (gpg) ..etc
 
 recv (resource unavailable or something) ..
+
+> [[done]]; fixed 3 bugs! --[[Joey]]

@@ -17,9 +17,15 @@ import System.Path
 
 import Common
 import Utility.Env
+import qualified Build.SysConfig as SysConfig
 
 newtype KeyIds = KeyIds [String]
 	deriving (Ord, Eq)
+
+{- If a specific gpg command was found at configure time, use it.
+ - Otherwise, try to run gpg. -}
+gpgcmd :: FilePath
+gpgcmd = fromMaybe "gpg" SysConfig.gpg
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do
@@ -44,7 +50,7 @@ stdParams params = do
 readStrict :: [CommandParam] -> IO String
 readStrict params = do
 	params' <- stdParams params
-	withHandle StdoutHandle createProcessSuccess (proc "gpg" params') $ \h -> do
+	withHandle StdoutHandle createProcessSuccess (proc gpgcmd params') $ \h -> do
 		hSetBinaryMode h True
 		hGetContentsStrict h
 
@@ -53,7 +59,7 @@ readStrict params = do
 pipeStrict :: [CommandParam] -> String -> IO String
 pipeStrict params input = do
 	params' <- stdParams params
-	withBothHandles createProcessSuccess (proc "gpg" params') $ \(to, from) -> do
+	withBothHandles createProcessSuccess (proc gpgcmd params') $ \(to, from) -> do
 		hSetBinaryMode to True
 		hSetBinaryMode from True
 		hPutStr to input
@@ -84,7 +90,7 @@ feedRead params passphrase feeder reader = do
 
 	params' <- stdParams $ [Param "--batch"] ++ passphrasefd ++ params
 	closeFd frompipe `after`
-		withBothHandles createProcessSuccess (proc "gpg" params') go
+		withBothHandles createProcessSuccess (proc gpgcmd params') go
   where
 	go (to, from) = do
 		void $ forkIO $ do

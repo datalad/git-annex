@@ -6,6 +6,7 @@ git-annex (4.20130517) UNRELEASED; urgency=low
     catching exceptions.
   * Fix a zombie that could result when running a process like gpg to
     read and write to it.
+  * Allow building with gpg2.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
 
