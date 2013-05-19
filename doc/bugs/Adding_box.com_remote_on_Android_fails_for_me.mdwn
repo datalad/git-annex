@@ -15,3 +15,6 @@ Fill in the box.com add remote form. Username=username, password=password, "shar
 ### Please provide any additional information below.
 
 Didn't find a .git/annex/debug.log
+
+> This error seems entirely consistent with you entering the wrong password.
+> [[done]] --[[Joey]]
