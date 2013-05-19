@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-19T20:18:11Z"
+ content="""
+Essentially, you want to run this:
+
+<pre>
+git annex add
+git annex sync
+for remote in $(git remote); do
+    git annex copy --auto --to $remote
+    git annex get --auto --from $remote
+done
+git annex drop --auto
+</pre>
+
+Of course this cannot sync with XMPP remotes. Otherwise it will get you to essentially the same place as the assistant.
+"""]]
