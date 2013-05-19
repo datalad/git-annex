@@ -474,7 +474,7 @@ getFsckTime key = do
 			then Just $ modificationTime s
 			else Nothing
 
-{- Records the start time of an interactive fsck.
+{- Records the start time of an incremental fsck.
  -
  - To guard against time stamp damange (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
