@@ -321,7 +321,7 @@ copyFromRemote' r key file dest
 	 -}
 	feedprogressback a = ifM (isJust <$> sshCacheDir)
 		( feedprogressback' a
-		, bracketIO noop (const noop) (a $ const noop)
+		, a $ const noop
 		)
 	feedprogressback' a = do
 		u <- getUUID
