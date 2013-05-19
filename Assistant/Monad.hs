@@ -26,7 +26,6 @@ module Assistant.Monad (
 ) where
 
 import "mtl" Control.Monad.Reader
-import Control.Monad.Base (liftBase, MonadBase)
 import System.Log.Logger
 
 import Common.Annex
@@ -52,9 +51,6 @@ newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 		Functor,
 		Applicative
 	)
-
-instance MonadBase IO Assistant where
-	liftBase = Assistant . liftBase
 
 data AssistantData = AssistantData
 	{ threadName :: ThreadName

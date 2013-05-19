@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,6 @@ module Annex (
 	newState,
 	run,
 	eval,
-	exec,
 	getState,
 	changeState,
 	setFlag,
@@ -35,10 +34,10 @@ module Annex (
 	withCurrentState,
 ) where
 
-import "mtl" Control.Monad.State.Strict
-import Control.Monad.Trans.Control (StM, MonadBaseControl, liftBaseWith, restoreM)
-import Control.Monad.Base (liftBase, MonadBase)
+import "mtl" Control.Monad.Reader
+import "MonadCatchIO-transformers" Control.Monad.CatchIO
 import System.Posix.Types (Fd)
+import Control.Concurrent
 
 import Common
 import qualified Git
@@ -56,31 +55,23 @@ import Types.TrustLevel
 import Types.Group
 import Types.Messages
 import Types.UUID
-import Utility.State
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
 
--- git-annex's monad
-newtype Annex a = Annex { runAnnex :: StateT AnnexState IO a }
+{- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
+ - This allows modifying the state in an exception-safe fashion.
+ - The MVar is not exposed outside this module.
+ -}
+newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 	deriving (
 		Monad,
 		MonadIO,
-		MonadState AnnexState,
+		MonadReader (MVar AnnexState),
+		MonadCatchIO,
 		Functor,
 		Applicative
 	)
-
-instance MonadBase IO Annex where
-	liftBase = Annex . liftBase
-
-instance MonadBaseControl IO Annex where
-	newtype StM Annex a = StAnnex (StM (StateT AnnexState IO) a)
-	liftBaseWith f = Annex $ liftBaseWith $ \runInIO ->
-		f $ liftM StAnnex . runInIO . runAnnex
-	restoreM = Annex . restoreM . unStAnnex
-	  where
-		unStAnnex (StAnnex st) = st
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
 
@@ -156,13 +147,32 @@ newState gitrepo = AnnexState
 new :: Git.Repo -> IO AnnexState
 new = newState <$$> Git.Config.read
 
-{- performs an action in the Annex monad -}
+{- Performs an action in the Annex monad from a starting state,
+ - returning a new state. -}
 run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = runStateT (runAnnex a) s
+run s a = do
+	mvar <- newMVar s
+	r <- runReaderT (runAnnex a) mvar
+	s' <- takeMVar mvar
+	return (r, s')
+
+{- Performs an action in the Annex monad from a starting state, 
+ - and throws away the new state. -}
 eval :: AnnexState -> Annex a -> IO a
-eval s a = evalStateT (runAnnex a) s
-exec :: AnnexState -> Annex a -> IO AnnexState
-exec s a = execStateT (runAnnex a) s
+eval s a = do
+	mvar <- newMVar s
+	runReaderT (runAnnex a) mvar
+
+getState :: (AnnexState -> v) -> Annex v
+getState selector = do
+	mvar <- ask
+	s <- liftIO $ readMVar mvar
+	return $ selector s
+
+changeState :: (AnnexState -> AnnexState) -> Annex ()
+changeState modifier = do
+	mvar <- ask
+	liftIO $ modifyMVar_ mvar $ return . modifier
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()
@@ -204,6 +214,7 @@ inRepo a = liftIO . a =<< gitRepo
 fromRepo :: (Git.Repo -> a) -> Annex a
 fromRepo a = a <$> gitRepo
 
+{- Calculates a value from an annex's git repository and its GitConfig. -}
 calcRepo :: (Git.Repo -> GitConfig -> IO a) -> Annex a
 calcRepo a = do
 	s <- getState id

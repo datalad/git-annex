@@ -9,7 +9,6 @@ quite a lot.
   * [SHA](http://hackage.haskell.org/package/SHA)
   * [dataenc](http://hackage.haskell.org/package/dataenc)
   * [monad-control](http://hackage.haskell.org/package/monad-control)
-  * [lifted-base](http://hackage.haskell.org/package/lifted-base)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [json](http://hackage.haskell.org/package/json)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
@@ -34,7 +33,6 @@ quite a lot.
   * [data-default](http://hackage.haskell.org/package/data-default)
   * [case-insensitive](http://hackage.haskell.org/package/case-insensitive)
   * [http-types](http://hackage.haskell.org/package/http-types)
-  * [transformers](http://hackage.haskell.org/package/transformers)
   * [wai](http://hackage.haskell.org/package/wai)
   * [wai-logger](http://hackage.haskell.org/package/wai-logger)
   * [warp](http://hackage.haskell.org/package/warp)
@@ -50,6 +48,7 @@ quite a lot.
   * [async](http://hackage.haskell.org/package/async)
   * [HTTP](http://hackage.haskell.org/package/HTTP)
   * [unix-compat](http://hackage.haskell.org/package/unix-compat)
+  * [MonadCatchIO-transformers](http://hackage.haskell.org/package/MonadCatchIO-transformers)
 * Shell commands
   * [git](http://git-scm.com/)
   * [xargs](http://savannah.gnu.org/projects/findutils/)

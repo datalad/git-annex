@@ -130,8 +130,8 @@ ingest (Just source) = do
 	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
 
 	goindirect (Just (key, _)) _ = do
-		handle (undo (keyFilename source) key) $
-			moveAnnex key $ contentLocation source
+		catchAnnex (moveAnnex key $ contentLocation source)
+			(undo (keyFilename source) key)
 		liftIO $ nukeFile $ keyFilename source
 		return $ Just key
 	goindirect Nothing _ = failure "failed to generate a key"
@@ -172,7 +172,7 @@ undo :: FilePath -> Key -> IOException -> Annex a
 undo file key e = do
 	whenM (inAnnex key) $ do
 		liftIO $ nukeFile file
-		handle tryharder $ fromAnnex key file
+		catchAnnex (fromAnnex key file) tryharder
 		logStatus key InfoMissing
 	throw e
   where
@@ -184,7 +184,7 @@ undo file key e = do
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 link :: FilePath -> Key -> Bool -> Annex String
-link file key hascontent = handle (undo file key) $ do
+link file key hascontent = flip catchAnnex (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 

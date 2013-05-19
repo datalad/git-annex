@@ -1,36 +1,37 @@
 {- exception handling in the git-annex monad
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Note that when an Annex action fails and the exception is handled
+ - by these functions, any changes the action has made to the
+ - AnnexState are retained. This works because the Annex monad
+ - internally stores the AnnexState in a MVar.
+ -
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Annex.Exception (
 	bracketIO,
-	handle,
 	tryAnnex,
 	throw,
+	catchAnnex,
 ) where
 
-import Control.Exception.Lifted (handle, try)
-import Control.Monad.Trans.Control (liftBaseOp)
-import Control.Exception hiding (handle, try, throw)
+import Prelude hiding (catch)
+import "MonadCatchIO-transformers" Control.Monad.CatchIO (bracket, try, throw, catch)
+import Control.Exception hiding (handle, try, throw, bracket, catch)
 
 import Common.Annex
 
-{- Runs an Annex action, with setup and cleanup both in the IO monad.
- -
- - Warning: Currently if the Annex action fails, any changes it has made
- - to Annex state are discarded.
- -}
+{- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO c -> (c -> IO b) -> Annex a -> Annex a
 bracketIO setup cleanup go =
-	liftBaseOp (Control.Exception.bracket setup cleanup) (const go)
+	bracket (liftIO setup) (liftIO . cleanup) (const go)
 
 {- try in the Annex monad -}
 tryAnnex :: Annex a -> Annex (Either SomeException a)
 tryAnnex = try
 
-{- Throws an exception in the Annex monad. -}
-throw :: Control.Exception.Exception e => e -> Annex a
-throw = liftIO . throwIO
+{- catch in the Annex monad -}
+catchAnnex :: Exception e => Annex a -> (e -> Annex a) -> Annex a
+catchAnnex = catch
