@@ -47,6 +47,7 @@ import System.Posix.IO
 #endif
 
 import Utility.Misc
+import Utility.Exception
 
 type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO a) -> IO a
 
@@ -141,13 +142,13 @@ createProcessSuccess :: CreateProcessRunner
 createProcessSuccess p a = createProcessChecked (forceSuccessProcess p) p a
 
 {- Runs createProcess, then an action on its handles, and then
- - an action on its exit code. -}
+ - a checker action on its exit code, which must wait for the process. -}
 createProcessChecked :: (ProcessHandle -> IO b) -> CreateProcessRunner
 createProcessChecked checker p a = do
 	t@(_, _, _, pid) <- createProcess p
-	r <- a t
+	r <- tryNonAsync $ a t
 	_ <- checker pid
-	return r
+	either E.throw return r
 
 {- Leaves the process running, suitable for lazy streaming.
  - Note: Zombies will result, and must be waited on. -}
