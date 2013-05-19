@@ -28,3 +28,15 @@ I expect it to confirm the file is committed, instead I get the error message:
 
 Ubuntu 13.04, using the PPA by marcier linked on the branchable website.
 
+> I don't think this is something I want to change.. `git-annex init`
+> installs a pre-commit hook that runs `git annex fix`. If git-annex
+> is removed that hook is left behind to fail. However, if you were really
+> using git-annex in the repo, that's the least of your troubles. If you were
+> using git-annex in the repo and stopped, then you should run `git annex uninit` to remove the hook.
+>
+> The only change I could make is to have the hook check if git-annex
+> is in PATH before trying to run it. But this adds time and complexity
+> to the usual case for a edge case. And keeps cruft around in the edge case
+> rather than informing you of the problem. 
+> 
+> [[done]] --[[Joey]] 
