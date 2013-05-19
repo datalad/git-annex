@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnu1NYw8UF-NoDbKu8YKVGxi8FoZLH7JPs"
+ nickname="Chris"
+ subject="Not starting browser on Nexus 7, Android 4.2.2"
+ date="2013-05-19T14:04:28Z"
+ content="""
+I just tried to run this on my Nexus 7 which has Android 4.2.2, and I received the following: <http://hodapple.com/files/Screenshot_2013-05-19-09-49-53.png> <http://hodapple.com/files/git-annex-error.txt>
+
+In spite of that, though, the URL provided still worked.
+"""]]
