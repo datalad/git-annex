@@ -11,3 +11,6 @@ What I'm missing here is some setting to tell the assistant "sync the contents o
 ### What version of git-annex are you using? On what operating system?
 
 My basic setup for testing is two Ubuntu 12.04 LTS machines running git-annex 4.20130501
+
+> [[done]], broken ~/.config/git-annex/program file, which is now detected
+> and worked around. --[[Joey]]
