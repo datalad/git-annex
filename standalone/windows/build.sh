@@ -36,6 +36,8 @@ cd ..
 cabal install --only-dependencies -f"$FLAGS"
 
 runbuild () {
+	set -e
+
 	# Build git-annex
 	withcyg cabal configure -f"$FLAGS"
 	withcyg cabal build
