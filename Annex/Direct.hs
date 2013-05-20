@@ -198,9 +198,10 @@ toDirectGen k f = do
 		locs <- filterM (\loc -> isNothing <$> getAnnexLinkTarget loc) =<<
 			(filter (/= absf) <$> addAssociatedFile k f)
 		case locs of
-			(loc:_) -> return $ Just $
+			(loc:_) -> return $ Just $ do
 				replaceFile f $
 					liftIO . void . copyFileExternal loc
+				updateInodeCache k f
 			_ -> return Nothing
 
 {- Removes a direct mode file, while retaining its content in the annex
