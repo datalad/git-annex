@@ -7,6 +7,11 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * Fix a zombie that could result when running a process like gpg to
     read and write to it.
   * Allow building with gpg2.
+  * Disable building with the haskell threaded runtime when the webapp
+    is not built. This may fix builds on mips, s390x and sparc, which are
+    failing to link -lHSrts_thr
+  * Temporarily build without webapp on kfreebsd-i386, until yesod is
+    installable there again.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
 

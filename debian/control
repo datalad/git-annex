@@ -30,7 +30,7 @@ Build-Depends:
 	libghc-dbus-dev (>= 0.10.3) [linux-any],
 	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
 	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-yesod-default-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
+	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64],
 	libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
 	libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
 	libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
