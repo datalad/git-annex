@@ -15,6 +15,8 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * Direct mode bug fix: After a conflicted merge was automatically resolved,
     the content of a file that was already present could incorrectly
     be replaced with a symlink.
+  * Fix a bug in the git-annex branch handling code that could
+    cause info from a remote to not be merged and take effect immediately.
   * Direct mode is now fully tested by the test suite.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400

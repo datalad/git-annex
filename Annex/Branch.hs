@@ -151,33 +151,30 @@ updateTo pairs = do
 				(nub $ fullname:refs)
 		liftIO cleanjournal
 
-{- Gets the content of a file, which may be in the journal, or committed
- - to the branch. Due to limitatons of git cat-file, does *not* get content
- - that has only been staged to the index.
+{- Gets the content of a file, which may be in the journal, or in the index
+ - (and committed to the branch).
  - 
  - Updates the branch if necessary, to ensure the most up-to-date available
  - content is available.
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
-get = get' False
+get file = do
+	update
+	get' file
 
 {- Like get, but does not merge the branch, so the info returned may not
- - reflect changes in remotes. (Changing the value this returns, and then
- - merging is always the same as using get, and then changing its value.) -}
+ - reflect changes in remotes.
+ - (Changing the value this returns, and then merging is always the
+ - same as using get, and then changing its value.) -}
 getStale :: FilePath -> Annex String
-getStale = get' True
+getStale = get'
 
-get' :: Bool -> FilePath -> Annex String
-get' staleok file = fromjournal =<< getJournalFile file
+get' :: FilePath -> Annex String
+get' file = go =<< getJournalFile file
   where
-	fromjournal (Just content) = return content
-	fromjournal Nothing
-		| staleok = withIndex frombranch
-		| otherwise = do
-			update
-			frombranch
-	frombranch = withIndex $ L.unpack <$> catFile fullname file
+	go (Just journalcontent) = return journalcontent
+	go Nothing = withIndex $ L.unpack <$> catFile fullname file
 
 {- Applies a function to modifiy the content of a file.
  -
