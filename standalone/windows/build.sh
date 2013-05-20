@@ -35,26 +35,21 @@ cd ..
 
 cabal install --only-dependencies -f"$FLAGS"
 
-runbuild () {
-	set -e
-
-	# Build git-annex
-	withcyg cabal configure -f"$FLAGS"
-	withcyg cabal build
-	
-	# Build the installer
-	cabal install nsis
-	ghc --make Build/NullSoftInstaller.hs
-	withcyg Build/NullSoftInstaller.exe
-}
-
-# Incremental build sometimes may fail, possibly because the configure
-# script has changed but cabal neglects to re-build it on Windows
-if ! runbuild; then
-	echo "Retrying after cabal clean"
+if ! -e last-incremental-failed; then
 	cabal clean
-	runbuild
 fi
+touch last-incremental-failed
+
+# Build git-annex
+withcyg cabal configure -f"$FLAGS"
+withcyg cabal build
+	
+# Build the installer
+cabal install nsis
+ghc --make Build/NullSoftInstaller.hs
+withcyg Build/NullSoftInstaller.exe
+
+rm -f last-incremental-failed
 
 # Test git-annex
 rm -rf .t
