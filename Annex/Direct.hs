@@ -206,9 +206,10 @@ toDirectGen k f = do
 {- Removes a direct mode file, while retaining its content in the annex. -}
 removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
-	locs <- removeAssociatedFile k f
-	unlessM (inAnnex k) $
-		moveAnnex k f
+	otherlocs <- removeAssociatedFile k f
+	unless (null otherlocs) $
+		unlessM (inAnnex k) $
+			moveAnnex k f
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
