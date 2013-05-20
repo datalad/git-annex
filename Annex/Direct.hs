@@ -158,13 +158,10 @@ mergeDirectCleanup d oldsha newsha = do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
 	
-	{- The symlink is created from the key, rather than moving in the
-	 - symlink created in the temp directory by the merge. This because
-	 - a conflicted merge will write to some other file in the temp
-	 - directory.
-	 -
- 	 - Symlinks are replaced with their content, if it's available. -}
-	movein k f = do
+	{- If the file is already present, with the right content for the
+	 - key, it's left alone. Otherwise, create the symlink and then
+	 - if possible, replace it with the content. -}
+	movein k f = unlessM (goodContent k f) $ do
 		l <- inRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
@@ -206,13 +203,12 @@ toDirectGen k f = do
 					liftIO . void . copyFileExternal loc
 			_ -> return Nothing
 
-{- Removes a direct mode file, while retaining its content. -}
+{- Removes a direct mode file, while retaining its content in the annex. -}
 removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
 	locs <- removeAssociatedFile k f
-	when (null locs) $
-		whenM (isNothing <$> getAnnexLinkTarget f) $
-			moveAnnex k f
+	unlessM (inAnnex k) $
+		moveAnnex k f
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
