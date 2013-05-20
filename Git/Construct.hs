@@ -34,7 +34,6 @@ import Network.URI
 import Common
 import Git.Types
 import Git
-import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
 
