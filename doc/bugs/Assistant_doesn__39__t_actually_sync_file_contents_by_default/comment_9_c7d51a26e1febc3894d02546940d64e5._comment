@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 9"
+ date="2013-05-20T21:43:04Z"
+ content="""
+Based on the log, it appears that you have a `~/.config/git-annex/program` file that contains \"/home/pedrocr/software/git-annex/git-annex.linux/git-annex\", but that is either not where git-annex is actually installed, or running that program
+(which git-annex does when it needs to transfer a file contents) fails.
+
+I am able to exactly replicate the failure to transfer file content, and the log output, when I set things up in that way.
+
+This would be consistent with you, for example, having previously installed git-annex from the standalone tarball, used it at least once, and then deleted that installation, and installed it from, say, a Ubuntu repository.
+
+I've put in a fix so if the programfile is wrong, git-annex just tries PATH.
+
+(BTW, I do not advocate storing config files in the git annex. Small files that you want to have fully versioned are best stored in git. The git-annex assistant can still be used for syncing files that are checked into git in the regular way. See [[tips/replacing_Sparkleshare_or_dvcs-autosync_with_the_assistant]].)
+
+(git annex assistant --foreground intentionally logs to the log file, because otherwise the \"view logs\" page in the webapp can't show any logs.)
+"""]]
