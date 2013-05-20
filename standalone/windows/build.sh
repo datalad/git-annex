@@ -35,8 +35,13 @@ cd ..
 
 cabal install --only-dependencies -f"$FLAGS"
 
-if ! -e last-incremental-failed; then
-	cabal clean
+# Detect when the last build was an incremental build and failed, 
+# and try a full build. Done this way because this shell seems a bit
+# broken.
+if [ -e last-incremental-failed ]; then
+	cabal clean || true
+	# windows breakage..
+	rm -rf dist
 fi
 touch last-incremental-failed
 
