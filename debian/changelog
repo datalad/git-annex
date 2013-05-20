@@ -18,6 +18,7 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * Fix a bug in the git-annex branch handling code that could
     cause info from a remote to not be merged and take effect immediately.
   * Direct mode is now fully tested by the test suite.
+  * Detect bad content in ~/.config/git-annex/program and look in PATH instead.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
 

@@ -46,7 +46,7 @@ removeAutoStartFile path = modifyAutoStartFile $
 	filter (not . equalFilePath path)
 
 {- The path to git-annex is written here; which is useful when cabal
- - has installed it to some aweful non-PATH location. -}
+ - has installed it to some awful non-PATH location. -}
 programFile :: IO FilePath
 programFile = userConfigFile "program"
 
@@ -54,7 +54,14 @@ programFile = userConfigFile "program"
 readProgramFile :: IO FilePath
 readProgramFile = do
 	programfile <- programFile
-	catchDefaultIO cmd $ 
+	p <- catchDefaultIO cmd $ 
 		fromMaybe cmd . headMaybe . lines <$> readFile programfile
+	ifM (inPath p)
+		( return p
+		, ifM (inPath cmd)
+			( return cmd
+			, error $ "cannot find git-annex program in PATH or in the location listed in " ++ programfile
+			)
+		)
   where
   	cmd = "git-annex"
