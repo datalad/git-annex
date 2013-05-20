@@ -55,9 +55,9 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
+import qualified Utility.Gpg
 #ifndef __WINDOWS__
 import qualified GitAnnex
-import qualified Utility.Gpg
 #endif
 
 type TestEnv = M.Map String String
