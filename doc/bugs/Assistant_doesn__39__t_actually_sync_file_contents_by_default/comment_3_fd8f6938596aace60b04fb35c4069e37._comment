@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-20T16:06:50Z"
+ content="""
+If git-annex did not update its working tree until all files referenced in it had been downloaded, then it would be possible, if you have a lot of files, for changes to take a long time, or forever, to show up. I prefer the current behavior. 
+
+In any case, is this bug report about the mechanics of how the assistant choses to update its working tree, or is it about your configuration of two repositories that are not syncing with one-another? Conflating two entirely separate issues in one bug report is a good way to add so much noise to it that nothing gets done.
+"""]]
