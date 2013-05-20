@@ -154,7 +154,8 @@ hunit =
 	, check "status" test_status
 	, check "version" test_version
 	, check "sync" test_sync
-	, check "sync regression" test_sync_regression
+	, check "union merge regression" test_union_merge_regression
+	, check "conflict resolution" test_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "upgrade" test_upgrade
@@ -597,10 +598,10 @@ test_sync :: TestEnv -> Test
 test_sync env = "git-annex sync" ~: intmpclonerepo env $ do
 	git_annex env "sync" [] @? "sync failed"
 
-{- Regression test for sync merge bug fixed in
+{- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
-test_sync_regression :: TestEnv -> Test
-test_sync_regression env = "git-annex sync_regression" ~:
+test_union_merge_regression :: TestEnv -> Test
+test_union_merge_regression env = "union merge regression" ~:
 	{- We need 3 repos to see this bug. -}
 	withtmpclonerepo env False $ \r1 -> do
 		withtmpclonerepo env False $ \r2 -> do
@@ -625,6 +626,47 @@ test_sync_regression env = "git-annex sync_regression" ~:
 					 - mangled location log data and it
 					 - thought the file was still in r2 -}
 					git_annex_expectoutput env "find" ["--in", "r2"] []
+
+{- Regression test for the automatic conflict resolution bug fixed
+ - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
+test_conflict_resolution :: TestEnv -> Test
+test_conflict_resolution env = "automatic conflict resolution" ~:
+	withtmpclonerepo env False $ \r1 -> do
+		withtmpclonerepo env False $ \r2 -> do
+			let rname r = if r == r1 then "r1" else "r2"
+			forM_ [r1, r2] $ \r -> indir env r $ do
+				{- Get all files, see check below. -}
+				git_annex env "get" [] @? "get failed"
+				{- Set up repos as remotes of each other;
+				 - remove origin since we're going to sync
+				 - some changes to a file. -}
+				when (r /= r1) $
+					boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+				when (r /= r2) $
+					boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+				boolSystem "git" [Params "remote rm origin"] @? "remote rm"
+
+				{- Set up a conflict. -}
+				let newcontent = content annexedfile ++ rname r
+				ifM (annexeval Config.isDirect)
+					( writeFile annexedfile newcontent
+					, do
+						git_annex env "unlock" [annexedfile] @? "unlock failed"		
+						writeFile annexedfile newcontent
+					)
+			{- Sync twice in r1 so it gets the conflict resolution
+			 - update from r2 -}
+			forM_ [r1, r2, r1] $ \r -> indir env r $ do
+				git_annex env "sync" [] @? "sync failed in " ++ rname r
+			{- After the sync, it should be possible to get all
+			 - files. This includes both sides of the conflict,
+			 - although the filenames are not easily predictable.
+			 -
+			 - The bug caused, in direct mode, one repo to
+			 - be missing the content of the file that had
+			 - been put in it. -}
+			forM_ [r1, r2] $ \r -> indir env r $ do
+			 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
 test_map :: TestEnv -> Test
 test_map env = "git-annex map" ~: intmpclonerepo env $ do
