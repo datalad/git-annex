@@ -203,13 +203,16 @@ toDirectGen k f = do
 					liftIO . void . copyFileExternal loc
 			_ -> return Nothing
 
-{- Removes a direct mode file, while retaining its content in the annex. -}
+{- Removes a direct mode file, while retaining its content in the annex
+ - (unless its content has already been changed). -}
 removeDirect :: Key -> FilePath -> Annex ()
 removeDirect k f = do
-	otherlocs <- removeAssociatedFile k f
-	unless (null otherlocs) $
-		unlessM (inAnnex k) $
-			moveAnnex k f
+	void $ removeAssociatedFileUnchecked k f
+	unlessM (inAnnex k) $
+		ifM (goodContent k f)
+			( moveAnnex k f
+			, logStatus k InfoMissing
+			)
 	liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f

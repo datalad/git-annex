@@ -8,6 +8,7 @@
 module Annex.Content.Direct (
 	associatedFiles,
 	removeAssociatedFile,
+	removeAssociatedFileUnchecked,
 	addAssociatedFile,
 	goodContent,
 	recordedInodeCache,
@@ -73,14 +74,21 @@ changeAssociatedFiles key transform = do
  		hPutStr h content
 		hClose h
 
-{- Removes an associated file. Returns new associatedFiles value. -}
+{- Removes an associated file. Returns new associatedFiles value.
+ - Checks if this was the last copy of the object, and updates location
+ - log. -}
 removeAssociatedFile :: Key -> FilePath -> Annex [FilePath]
 removeAssociatedFile key file = do
-	file' <- normaliseAssociatedFile file
-	fs <- changeAssociatedFiles key $ filter (/= file')
+	fs <- removeAssociatedFileUnchecked key file
 	when (null fs) $
 		logStatus key InfoMissing
 	return fs
+
+{- Removes an associated file. Returns new associatedFiles value. -}
+removeAssociatedFileUnchecked :: Key -> FilePath -> Annex [FilePath]
+removeAssociatedFileUnchecked key file = do
+	file' <- normaliseAssociatedFile file
+	changeAssociatedFiles key $ filter (/= file')
 
 {- Adds an associated file. Returns new associatedFiles value. -}
 addAssociatedFile :: Key -> FilePath -> Annex [FilePath]
