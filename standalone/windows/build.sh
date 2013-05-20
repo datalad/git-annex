@@ -24,7 +24,7 @@ rm -f git-annex-installer.exe
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
 # for haskell libraries to link them with the cygwin library.
-cabal update
+cabal update || true
 
 rm -rf MissingH-1.2.0.0
 cabal unpack MissingH
