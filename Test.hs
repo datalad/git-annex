@@ -72,15 +72,18 @@ main = do
 	putStrLn "Now, some broader checks ..."
 	putStrLn "  (Do not be alarmed by odd output here; it's normal."
         putStrLn "   wait for the last line to see how it went.)"
-	env <- prepare
-	rs <- forM hunit $ \t -> do
-		divider
-		t env
-	cleanup tmpdir
+	rs <- runhunit =<< prepare False
+	directrs <- runhunit =<< prepare True
 	divider
-	propigate rs qcok
+	propigate (rs++directrs) qcok
   where
 	divider = putStrLn $ replicate 70 '-'
+	runhunit env = do
+		r <- forM hunit $ \t -> do
+			divider
+			t env
+		cleanup tmpdir
+		return r
 
 propigate :: [Counts] -> Bool -> IO ()
 propigate cs qcok
@@ -170,6 +173,7 @@ hunit =
 test_init :: TestEnv -> Test
 test_init env = "git-annex init" ~: TestCase $ innewrepo env $ do
 	git_annex env "init" [reponame] @? "init failed"
+	handleforcedirect env
   where
 	reponame = "test repo"
 
@@ -870,7 +874,14 @@ clonerepo env old new bare = do
 	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
 	indir env new $
 		git_annex env "init" ["-q", new] @? "git annex init failed"
+	when (not bare) $
+		indir env new $
+			handleforcedirect env
 	return new
+
+handleforcedirect :: TestEnv -> IO ()
+handleforcedirect env = when (M.lookup "FORCEDIRECT" env == Just "1") $
+	git_annex env "direct" ["-q"] @? "git annex direct failed"
 	
 ensuretmpdir :: IO ()
 ensuretmpdir = do
@@ -976,8 +987,8 @@ annexed_present = runchecks
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-prepare :: IO TestEnv
-prepare = do
+prepare :: Bool -> IO TestEnv
+prepare forcedirect = do
 	whenM (doesDirectoryExist tmpdir) $
 		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
 
@@ -997,6 +1008,7 @@ prepare = do
 		, ("GIT_COMMITTER_NAME", "git-annex test")
 		-- force gpg into batch mode for the tests
 		, ("GPG_BATCH", "1")
+		, ("FORCEDIRECT", if forcedirect then "1" else "")
 		]
 
 	return $ M.fromList env
