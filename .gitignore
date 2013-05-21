@@ -25,3 +25,4 @@ cabal-dev
 .DS_Store
 .virthualenv
 tags
+Setup
