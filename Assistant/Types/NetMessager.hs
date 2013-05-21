@@ -85,13 +85,16 @@ logClientID c = T.concat [T.take 1 c, T.pack $ show $ T.length c]
 
 {- Things that initiate either side of a push, but do not actually send data. -}
 isPushInitiation :: PushStage -> Bool
-isPushInitiation (CanPush _) = True
 isPushInitiation (PushRequest _) = True
 isPushInitiation (StartingPush _) = True
 isPushInitiation _ = False
 
+isPushNotice :: PushStage -> Bool
+isPushNotice (CanPush _) = True
+isPushNotice _ = False
+
 data PushSide = SendPack | ReceivePack
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 pushDestinationSide :: PushStage -> PushSide
 pushDestinationSide (CanPush _) = ReceivePack

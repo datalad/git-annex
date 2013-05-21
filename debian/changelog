@@ -23,6 +23,8 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * Linux standalone: Back to being built with glibc 2.13 for maximum
     portability.
   * XMPP: Ignore duplicate messages received when pushing.
+  * XMPP: Be better at responding to CanPush messages when busy with
+    something else.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
 

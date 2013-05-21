@@ -107,6 +107,7 @@ xmppClient urlrenderer d creds =
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
+		| isPushNotice pushstage = inAssistant $ handlePushNotice m
 		| isPushInitiation pushstage = inAssistant $
 			unlessM (queueNetPushMessage m) $ do
 				let checker = checkCloudRepos urlrenderer

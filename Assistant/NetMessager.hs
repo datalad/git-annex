@@ -110,8 +110,8 @@ queueNetPushMessage m@(Pushing clientid stage) = do
 		case v of
 			Nothing -> return False
 			(Just runningclientid)
-				| runningclientid == clientid -> queue nm
 				| isPushInitiation stage -> defer nm
+				| runningclientid == clientid -> queue nm
 				| otherwise -> discard
   where
 	side = pushDestinationSide stage
