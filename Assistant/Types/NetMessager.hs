@@ -18,6 +18,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.DList as D
 
 {- Messages that can be sent out of band by a network messager. -}
 data NetMessage 
@@ -117,6 +118,8 @@ mkSideMap gen = do
 getSide :: PushSide -> SideMap a -> a
 getSide side m = m side
 
+type Inboxes = TVar (M.Map ClientID (Int, D.DList NetMessage))
+
 data NetMessager = NetMessager
 	-- outgoing messages
 	{ netMessages :: TChan NetMessage
@@ -127,11 +130,11 @@ data NetMessager = NetMessager
 	-- write to this to restart the net messager
 	, netMessagerRestart :: MSampleVar ()
 	-- only one side of a push can be running at a time
-	, netMessagerPushRunning :: SideMap (TMVar (Maybe ClientID))
-	-- incoming messages related to a running push
-	, netMessagesPush :: SideMap (TChan NetMessage)
-	-- incoming push messages, deferred to be processed later
-	, netMessagesPushDeferred :: SideMap (TMVar (S.Set NetMessage))
+	-- the TMVars are empty when nothing is running
+	, netMessagerPushRunning :: SideMap (TMVar ClientID)
+	-- incoming messages containing data for a push,
+	-- on a per-client and per-side basis
+	, netMessagesInboxes :: SideMap Inboxes
 	}
 
 newNetMessager :: IO NetMessager
@@ -140,6 +143,5 @@ newNetMessager = NetMessager
 	<*> atomically (newTMVar M.empty)
 	<*> atomically (newTMVar M.empty)
 	<*> newEmptySV
-	<*> mkSideMap (newTMVar Nothing)
-	<*> mkSideMap newTChan
-	<*> mkSideMap (newTMVar S.empty)
+	<*> mkSideMap newEmptyTMVar
+	<*> mkSideMap (newTVar M.empty)

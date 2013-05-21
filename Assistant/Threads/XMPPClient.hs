@@ -108,11 +108,10 @@ xmppClient urlrenderer d creds =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
 		| isPushNotice pushstage = inAssistant $ handlePushNotice m
-		| isPushInitiation pushstage = inAssistant $
-			unlessM (queueNetPushMessage m) $ do
-				let checker = checkCloudRepos urlrenderer
-				void $ forkIO <~> handlePushInitiation checker m
-		| otherwise = void $ inAssistant $ queueNetPushMessage m
+		| isPushInitiation pushstage = inAssistant $ do
+			let checker = checkCloudRepos urlrenderer
+			void $ forkIO <~> handlePushInitiation checker m
+		| otherwise = void $ inAssistant $ storeInbox m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop

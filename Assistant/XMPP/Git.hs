@@ -99,8 +99,8 @@ makeXMPPGitRemote buddyname jid u = do
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
-xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> (NetMessage -> Assistant ()) -> Assistant Bool
-xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
+xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
+xmppPush cid gitpush = runPush SendPack cid $ do
 	u <- liftAnnex getUUID
 	sendNetMessage $ Pushing cid (StartingPush u)
 
@@ -149,7 +149,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 					SendPackOutput seqnum' b
 				toxmpp seqnum' inh
 	
-	fromxmpp outh controlh = withPushMessagesInSequence SendPack handle
+	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handle
 	  where
 	  	handle (Just (Pushing _ (ReceivePackOutput _ b))) = 
 			liftIO $ writeChunk outh b
@@ -236,8 +236,8 @@ xmppGitRelay = do
 
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
-xmppReceivePack :: ClientID -> (NetMessage -> Assistant ()) -> Assistant Bool
-xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
+xmppReceivePack :: ClientID -> Assistant Bool
+xmppReceivePack cid = runPush ReceivePack cid $ do
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -262,7 +262,7 @@ xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 			let seqnum' = succ seqnum
 			sendNetMessage $ Pushing cid $ ReceivePackOutput seqnum' b
 			relaytoxmpp seqnum' outh
-	relayfromxmpp inh = withPushMessagesInSequence ReceivePack handle
+	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handle
 	  where
 	  	handle (Just (Pushing _ (SendPackOutput _ b))) =
 			liftIO $ writeChunk inh b
@@ -301,15 +301,13 @@ handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
 		forM_ rs $ \r -> do
 			void $ alertWhile (syncAlert [r]) $
-				xmppPush cid
-					(taggedPush u selfjid branch r)
-					(handleDeferred checkcloudrepos)
+				xmppPush cid (taggedPush u selfjid branch r)
 			checkcloudrepos r
 handlePushInitiation checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 	rs <- xmppRemotes cid theiruuid
 	unless (null rs) $ do
 		void $ alertWhile (syncAlert rs) $
-			xmppReceivePack cid (handleDeferred checkcloudrepos)
+			xmppReceivePack cid
 		mapM_ checkcloudrepos rs
 handlePushInitiation _ _ = noop
 
@@ -319,9 +317,6 @@ handlePushNotice (Pushing cid (CanPush theiruuid)) =
 		u <- liftAnnex getUUID
 		sendNetMessage $ Pushing cid (PushRequest u)
 handlePushNotice _ = noop
-
-handleDeferred :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
-handleDeferred checkcloudrepos m = handlePushInitiation checkcloudrepos m
 
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do
@@ -335,11 +330,11 @@ writeChunk h b = do
  - Does not currently reorder messages, but does ensure that any 
  - duplicate messages, or messages not in the sequence, are discarded.
  -}
-withPushMessagesInSequence :: PushSide -> (Maybe NetMessage -> Assistant ()) -> Assistant ()
-withPushMessagesInSequence side a = loop 0
+withPushMessagesInSequence :: ClientID -> PushSide -> (Maybe NetMessage -> Assistant ()) -> Assistant ()
+withPushMessagesInSequence cid side a = loop 0
   where
   	loop seqnum = do
-		m <- timeout xmppTimeout <~> waitNetPushMessage side
+		m <- timeout xmppTimeout <~> waitInbox cid side
 	  	let go s = a m >> loop s
 		case extractSequence =<< m of
 			Just seqnum'
