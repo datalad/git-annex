@@ -96,8 +96,7 @@ one or more chat messages, directed to the receiver:
 
 The value of rp and sp used to be empty, but now it's a sequence number.
 This indicates the sequence of this packet, counting from 1. The receiver
-and sender each have their own sequence numbers. These sequence numbers
-are not really used yet, but are available for debugging.
+and sender each have their own sequence numbers.
 
 When `git receive-pack` exits, the receiver indicates its exit
 status with a chat message, directed at the sender:

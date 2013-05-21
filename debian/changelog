@@ -22,6 +22,7 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * OSX: Fixed gpg included in dmg.
   * Linux standalone: Back to being built with glibc 2.13 for maximum
     portability.
+  * XMPP: Ignore duplicate messages received when pushing.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
 
