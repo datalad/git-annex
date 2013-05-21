@@ -98,7 +98,7 @@ case "$ANNEX_ACTION" in
 			echo "$ANNEX_KEY"
 		fi
 	*)
-		echo "unkown ANNEX_ACTION: $ANNEX_ACTION" >&2
+		echo "unknown ANNEX_ACTION: $ANNEX_ACTION" >&2
 		exit 1
 	;;
 esac
