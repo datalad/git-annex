@@ -1,6 +1,6 @@
 {- core xmpp support
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Assistant.XMPP where
 import Assistant.Common
 import Assistant.Types.NetMessager
 import Assistant.Pairing
+import Git.Sha (extractSha)
 
 import Network.Protocol.XMPP hiding (Node)
 import Data.Text (Text)
@@ -131,8 +132,9 @@ decodePairingNotification m = parse . words . T.unpack . tagValue
 pushMessage :: PushStage -> JID -> JID -> Message
 pushMessage = gitAnnexMessage . encode
   where
-	encode (CanPush u) =
-		gitAnnexTag canPushAttr $ T.pack $ fromUUID u
+	encode (CanPush u shas) =
+		gitAnnexTag canPushAttr $ T.pack $ unwords $
+			fromUUID u : map show shas
 	encode (PushRequest u) =
 		gitAnnexTag pushRequestAttr $ T.pack $ fromUUID u
 	encode (StartingPush u) =
@@ -160,7 +162,7 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 		, receivePackDoneAttr
 		]
 		[ decodePairingNotification
-		, pushdecoder $ gen CanPush
+		, pushdecoder $ shasgen CanPush
 		, pushdecoder $ gen PushRequest
 		, pushdecoder $ gen StartingPush
 		, pushdecoder $ seqgen ReceivePackOutput
@@ -172,11 +174,14 @@ decodeMessage m = decode =<< gitAnnexTagInfo m
 	pushdecoder a m' i = Pushing
 		<$> (formatJID <$> messageFrom m')
 		<*> a i
-	gen c = Just . c . toUUID . T.unpack . tagValue
+	gen c i = c . toUUID <$> headMaybe (words (T.unpack (tagValue i)))
 	seqgen c i = do
 	  	packet <- decodeTagContent $ tagElement i
 		let seqnum = fromMaybe 0 $ readish $ T.unpack $ tagValue i
 		return $ c seqnum packet
+	shasgen c i = do
+		let (u:shas) = words $ T.unpack $ tagValue i
+		return $ c (toUUID u) (mapMaybe extractSha shas)
 
 decodeExitCode :: Int -> ExitCode
 decodeExitCode 0 = ExitSuccess
@@ -245,3 +250,6 @@ sendPackAttr = "sp"
 
 receivePackDoneAttr :: Name
 receivePackDoneAttr = "rpdone"
+
+shasAttr :: Name
+shasAttr = "shas"

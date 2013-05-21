@@ -41,7 +41,7 @@ data Repo = Repo
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
 newtype Ref = Ref String
-	deriving (Eq)
+	deriving (Eq, Ord)
 
 instance Show Ref where
 	show (Ref v) = v

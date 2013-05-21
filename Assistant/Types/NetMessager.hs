@@ -9,6 +9,7 @@ module Assistant.Types.NetMessager where
 
 import Common.Annex
 import Assistant.Pairing
+import Git.Types
 
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
@@ -38,7 +39,7 @@ type ClientID = Text
 
 data PushStage
 	-- indicates that we have data to push over the out of band network
-	= CanPush UUID
+	= CanPush UUID [Sha]
 	-- request that a git push be sent over the out of band network
 	| PushRequest UUID
 	-- indicates that a push is starting
@@ -59,7 +60,7 @@ type SequenceNum = Int
 {- NetMessages that are important (and small), and should be stored to be
  - resent when new clients are seen. -}
 isImportantNetMessage :: NetMessage -> Maybe ClientID
-isImportantNetMessage (Pushing c (CanPush _)) = Just c
+isImportantNetMessage (Pushing c (CanPush _ _)) = Just c
 isImportantNetMessage (Pushing c (PushRequest _)) = Just c
 isImportantNetMessage _ = Nothing
 
@@ -91,14 +92,14 @@ isPushInitiation (StartingPush _) = True
 isPushInitiation _ = False
 
 isPushNotice :: PushStage -> Bool
-isPushNotice (CanPush _) = True
+isPushNotice (CanPush _ _) = True
 isPushNotice _ = False
 
 data PushSide = SendPack | ReceivePack
 	deriving (Eq, Ord, Show)
 
 pushDestinationSide :: PushStage -> PushSide
-pushDestinationSide (CanPush _) = ReceivePack
+pushDestinationSide (CanPush _ _) = ReceivePack
 pushDestinationSide (PushRequest _) = SendPack
 pushDestinationSide (StartingPush _) = ReceivePack
 pushDestinationSide (ReceivePackOutput _ _) = SendPack

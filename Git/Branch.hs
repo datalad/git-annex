@@ -13,6 +13,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
+import Git.Ref (headRef)
 
 {- The currently checked out branch.
  -
@@ -35,7 +36,7 @@ current r = do
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Git.Ref)
 currentUnsafe r = parse . firstLine
-	<$> pipeReadStrict [Param "symbolic-ref", Param "HEAD"] r
+	<$> pipeReadStrict [Param "symbolic-ref", Param $ show headRef] r
   where
 	parse l
 		| null l = Nothing

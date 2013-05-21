@@ -1,6 +1,6 @@
 {- git ref stuff
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,9 @@ import Git
 import Git.Command
 
 import Data.Char (chr)
+
+headRef :: Ref
+headRef = Ref "HEAD"
 
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
@@ -54,18 +57,18 @@ sha branch repo = process <$> showref repo
 	process [] = Nothing
 	process s = Just $ Ref $ firstLine s
 
-{- List of (refs, branches) matching a given ref spec. -}
-matching :: Ref -> Repo -> IO [(Ref, Branch)]
-matching ref repo = map gen . lines <$> 
-	pipeReadStrict [Param "show-ref", Param $ show ref] repo
+{- List of (shas, branches) matching a given ref or refs. -}
+matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
+matching refs repo = map gen . lines <$> 
+	pipeReadStrict (Param "show-ref" : map (Param . show) refs) repo
   where
 	gen l = let (r, b) = separate (== ' ') l
 		in (Ref r, Ref b)
 
-{- List of (refs, branches) matching a given ref spec.
- - Duplicate refs are filtered out. -}
-matchingUniq :: Ref -> Repo -> IO [(Ref, Branch)]
-matchingUniq ref repo = nubBy uniqref <$> matching ref repo
+{- List of (shas, branches) matching a given ref spec.
+ - Duplicate shas are filtered out. -}
+matchingUniq :: [Ref] -> Repo -> IO [(Sha, Branch)]
+matchingUniq refs repo = nubBy uniqref <$> matching refs repo
   where
 	uniqref (a, _) (b, _) = a == b
 

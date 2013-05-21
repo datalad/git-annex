@@ -66,7 +66,11 @@ containing:
 To indicate that we could push over XMPP, a chat message is sent,
 to each known client of each XMPP remote.
 
-	<git-annex xmlns='git-annex' canpush="myuuid" />
+	<git-annex xmlns='git-annex' canpush="myuuid" shas="sha1 sha1" />
+
+The shas are omitted by old clients. If present, they are the git shas of
+the head and git-annex branches that are available to be pushed. This lets
+the receiver check if it's already got them.
 
 To request that a remote push to us, a chat message can be sent.
 

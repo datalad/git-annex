@@ -1,3 +1,12 @@
+git-annex (4.20130522) UNRELEASED; urgency=low
+
+  * XMPP: Made much more robust.
+  * XMPP: Avoid redundant and unncessary pushes. Note that this breaks
+    compatibility with previous versions of git-annex, which will refuse
+    to accept any XMPP pushes from this version.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
+
 git-annex (4.20130521) unstable; urgency=low
 
   * Sanitize debian changelog version before putting it into cabal file.

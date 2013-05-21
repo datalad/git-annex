@@ -65,7 +65,7 @@ hasSibling = not . null <$> siblingBranches
 {- List of git-annex (refs, branches), including the main one and any
  - from remotes. Duplicate refs are filtered out. -}
 siblingBranches :: Annex [(Git.Ref, Git.Branch)]
-siblingBranches = inRepo $ Git.Ref.matchingUniq name
+siblingBranches = inRepo $ Git.Ref.matchingUniq [name]
 
 {- Creates the branch, if it does not already exist. -}
 create :: Annex ()

@@ -23,6 +23,7 @@ import qualified Annex.Branch
 import Annex.UUID
 import Logs.UUID
 import Annex.TaggedPush
+import Annex.CatFile
 import Config
 import Git
 import qualified Git.Branch
@@ -311,11 +312,27 @@ handlePushInitiation checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 		mapM_ checkcloudrepos rs
 handlePushInitiation _ _ = noop
 
+{- Check if any of the shas that can be pushed are ones we do not
+ - have.
+ -
+ - (Older clients send no shas, so when there are none, always
+ - request a push.)
+ -}
 handlePushNotice :: NetMessage -> Assistant ()
-handlePushNotice (Pushing cid (CanPush theiruuid)) =
-	unlessM (null <$> xmppRemotes cid theiruuid) $ do
+handlePushNotice (Pushing cid (CanPush theiruuid shas)) =
+	unlessM (null <$> xmppRemotes cid theiruuid) $
+		if null shas
+			then go
+			else ifM (haveall shas)
+				( debug ["ignoring CanPush with known shas"]
+				, go
+				)
+  where
+  	go = do
 		u <- liftAnnex getUUID
 		sendNetMessage $ Pushing cid (PushRequest u)
+	haveall l = liftAnnex $ not <$> anyM donthave l
+	donthave sha = isNothing <$> catObjectDetails sha
 handlePushNotice _ = noop
 
 writeChunk :: Handle -> B.ByteString -> IO ()

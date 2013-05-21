@@ -46,7 +46,10 @@ diffTreeRecursive src dst = getdiff (Param "diff-tree")
 diffIndex :: Repo -> IO ([DiffTreeItem], IO Bool)
 diffIndex repo = do
 	ifM (Git.Ref.headExists repo)
-		( getdiff (Param "diff-index") [Param "--cached", Param "HEAD"] repo
+		( getdiff (Param "diff-index")
+			[ Param "--cached"
+			, Param $ show Git.Ref.headRef
+			] repo
 		, return ([], return True)
 		)
 
