@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Directory where
 
 import System.IO.Error
@@ -85,9 +87,14 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
 
-{- Removes a file, which may or may not exist.
+{- Removes a file, which may or may not exist, and does not have to
+ - be a regular file.
  -
  - Note that an exception is thrown if the file exists but
  - cannot be removed. -}
 nukeFile :: FilePath -> IO ()
-nukeFile file = whenM (doesFileExist file) $ removeFile file
+#ifndef mingw32_HOST_OS
+nukeFile = removeLink
+#else
+nukeFile = removeFile
+#endif
