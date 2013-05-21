@@ -27,6 +27,8 @@ module Git.Construct (
 
 #ifndef __WINDOWS__
 import System.Posix.User
+#else
+import Git.FilePath
 #endif
 import qualified Data.Map as M hiding (map, split)
 import Network.URI

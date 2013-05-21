@@ -93,8 +93,10 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
  - Note that an exception is thrown if the file exists but
  - cannot be removed. -}
 nukeFile :: FilePath -> IO ()
+nukeFile file = void $ tryWhenExists go
+  where
 #ifndef mingw32_HOST_OS
-nukeFile = removeLink
+	go = removeLink file
 #else
-nukeFile = removeFile
+	go = removeFile file
 #endif

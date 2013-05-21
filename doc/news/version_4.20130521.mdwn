@@ -1,0 +1,24 @@
+git-annex 4.20130521 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Sanitize debian changelog version before putting it into cabal file.
+     Closes: #[708619](http://bugs.debian.org/708619)
+   * Switch to MonadCatchIO-transformers for better handling of state while
+     catching exceptions.
+   * Fix a zombie that could result when running a process like gpg to
+     read and write to it.
+   * Allow building with gpg2.
+   * Disable building with the haskell threaded runtime when the webapp
+     is not built. This may fix builds on mips, s390x and sparc, which are
+     failing to link -lHSrts\_thr
+   * Temporarily build without webapp on kfreebsd-i386, until yesod is
+     installable there again.
+   * Direct mode bug fix: After a conflicted merge was automatically resolved,
+     the content of a file that was already present could incorrectly
+     be replaced with a symlink.
+   * Fix a bug in the git-annex branch handling code that could
+     cause info from a remote to not be merged and take effect immediately.
+   * Direct mode is now fully tested by the test suite.
+   * Detect bad content in ~/.config/git-annex/program and look in PATH instead.
+   * OSX: Fixed gpg included in dmg.
+   * Linux standalone: Back to being built with glibc 2.13 for maximum
+     portability."""]]

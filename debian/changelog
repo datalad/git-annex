@@ -1,4 +1,4 @@
-git-annex (4.20130517) UNRELEASED; urgency=low
+git-annex (4.20130521) unstable; urgency=low
 
   * Sanitize debian changelog version before putting it into cabal file.
     Closes: #708619
@@ -22,11 +22,8 @@ git-annex (4.20130517) UNRELEASED; urgency=low
   * OSX: Fixed gpg included in dmg.
   * Linux standalone: Back to being built with glibc 2.13 for maximum
     portability.
-  * XMPP: Ignore duplicate messages received when pushing.
-  * XMPP: Be better at responding to CanPush messages when busy with
-    something else.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 17 May 2013 11:17:03 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 13:10:26 -0400
 
 git-annex (4.20130516) unstable; urgency=low
 
