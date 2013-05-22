@@ -18,12 +18,12 @@ queuing other messages, seems to be just wrong. This is code I wrote in the
 fall, and have basically not touched since. And it shows. Spent 4 hours
 this morning rewriting it. Went all Erlang and implemented message inboxes
 using STM. I'm much more confident it won't drop messages on the
-floor, which the old code certianly did do sometimes.
+floor, which the old code certainly did do sometimes.
 
-Added a check to avoid unncessary pushes over XMPP. Unfortunately, this
+Added a check to avoid unnecessary pushes over XMPP. Unfortunately, this
 required changing the protocol in a way that will make previous versions of
 git-annex refuse to accept any pushes advertised by this version. Could not
-find a way around that, but there were so many unncessary pushes happening
+find a way around that, but there were so many unnecessary pushes happening
 (and possibly contributing to other problems) that it seemed worth the
 upgrade pain.
 

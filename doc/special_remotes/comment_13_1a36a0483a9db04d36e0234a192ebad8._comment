@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="Remote costs"
+ date="2013-05-22T14:15:03Z"
+ content="""
+This should be implemented with costs
+
+I refer you too: http://git-annex.branchable.com/design/assistant/blog/day_213__costs/
+
+This has been implemented in the assistant, so if you use that, changing priority should be as simple as changing the order of the remotes on the web interface. Whichever remote is highest on the list, is the one your client will fetch from.
+"""]]
