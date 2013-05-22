@@ -9,6 +9,8 @@ who share a repository, that is stored in the [[cloud]].
 * Do git-annex clients sharing an account with regular clients cause confusing
   things to happen? 
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
+* Support registering with XMPP provider from within the webapp, 
+  as clients like pidgin are able to do.
 
 ## design goals
 
