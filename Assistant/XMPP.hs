@@ -84,6 +84,18 @@ gitAnnexPresence = insertGitAnnexTag $ emptyPresence PresenceAvailable
 gitAnnexSignature :: Presence
 gitAnnexSignature = gitAnnexPresence $ Element gitAnnexTagName [] []
 
+{- XMPP client to server ping -}
+xmppPing :: JID -> IQ
+xmppPing selfjid = (emptyIQ IQGet)
+	{ iqID = Just "c2s1"
+	, iqFrom = Just selfjid
+	, iqTo = Just $ JID Nothing (jidDomain selfjid) Nothing
+	, iqPayload = Just $ Element xmppPingTagName [] []
+	}
+
+xmppPingTagName :: Name
+xmppPingTagName = "{urn:xmpp}ping"
+
 {- A message with a git-annex tag in it. -}
 gitAnnexMessage :: Element -> JID -> JID -> Message
 gitAnnexMessage elt tojid fromjid = (insertGitAnnexTag silentMessage elt)

@@ -4,8 +4,6 @@ who share a repository, that is stored in the [[cloud]].
 
 ### TODO
 
-* Prevent idle disconnection. Probably means sending or receiving pings,
-  but would prefer to avoid eg pinging every 60 seconds as some clients do.
 * Do git-annex clients sharing an account with regular clients cause confusing
   things to happen? 
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
