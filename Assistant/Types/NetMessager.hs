@@ -133,6 +133,9 @@ data NetMessager = NetMessager
 	-- only one side of a push can be running at a time
 	-- the TMVars are empty when nothing is running
 	, netMessagerPushRunning :: SideMap (TMVar ClientID)
+	-- number of threads trying to push to the same client 
+	-- at the same time (either running, or waiting to run)
+	, netMessagerPushThreadCount :: SideMap (TVar (M.Map ClientID Int))
 	-- incoming messages containing data for a push,
 	-- on a per-client and per-side basis
 	, netMessagesInboxes :: SideMap Inboxes
@@ -145,4 +148,5 @@ newNetMessager = NetMessager
 	<*> atomically (newTMVar M.empty)
 	<*> newEmptySV
 	<*> mkSideMap newEmptyTMVar
+	<*> mkSideMap (newTVar M.empty)
 	<*> mkSideMap (newTVar M.empty)
