@@ -115,7 +115,8 @@ pushToRemotes' now notifypushes remotes = do
 	ret <- go True branch g u normalremotes
 	unless (null xmppremotes) $ do
 		shas <- liftAnnex $ map fst <$>
-			inRepo (Git.Ref.matching [Annex.Branch.fullname, Git.Ref.headRef])
+			inRepo (Git.Ref.matchingWithHEAD
+				[Annex.Branch.fullname, Git.Ref.headRef])
 		forM_ xmppremotes $ \r -> sendNetMessage $
 			Pushing (getXMPPClientID r) (CanPush u shas)
 	return ret

@@ -59,8 +59,16 @@ sha branch repo = process <$> showref repo
 
 {- List of (shas, branches) matching a given ref or refs. -}
 matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
-matching refs repo = map gen . lines <$> 
-	pipeReadStrict (Param "show-ref" : map (Param . show) refs) repo
+matching refs repo =  matching' (map show refs) repo
+
+{- Includes HEAD in the output, if asked for it. -}
+matchingWithHEAD :: [Ref] -> Repo -> IO [(Sha, Branch)]
+matchingWithHEAD refs repo = matching' ("--head" : map show refs) repo
+
+{- List of (shas, branches) matching a given ref or refs. -}
+matching' :: [String] -> Repo -> IO [(Sha, Branch)]
+matching' ps repo = map gen . lines <$> 
+	pipeReadStrict (Param "show-ref" : map Param ps) repo
   where
 	gen l = let (r, b) = separate (== ' ') l
 		in (Ref r, Ref b)
