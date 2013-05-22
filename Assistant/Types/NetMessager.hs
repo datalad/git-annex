@@ -11,15 +11,15 @@ import Common.Annex
 import Assistant.Pairing
 import Git.Types
 
+import qualified Data.Text as T
+import qualified Data.Set as S
+import qualified Data.Map as M
+import qualified Data.DList as D
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B8
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Set as S
-import qualified Data.Map as M
-import qualified Data.DList as D
 
 {- Messages that can be sent out of band by a network messager. -}
 data NetMessage 
@@ -130,15 +130,11 @@ data NetMessager = NetMessager
 	, sentImportantNetMessages :: TMVar (M.Map ClientID (S.Set NetMessage))
 	-- write to this to restart the net messager
 	, netMessagerRestart :: MSampleVar ()
-	-- only one side of a push can be running at a time
-	-- the TMVars are empty when nothing is running
-	, netMessagerPushRunning :: SideMap (TMVar ClientID)
-	-- number of threads trying to push to the same client 
-	-- at the same time (either running, or waiting to run)
-	, netMessagerPushThreadCount :: SideMap (TVar (M.Map ClientID Int))
-	-- incoming messages containing data for a push,
-	-- on a per-client and per-side basis
-	, netMessagesInboxes :: SideMap Inboxes
+	-- queue of incoming messages that request the initiation of pushes
+	, netMessagerPushInitiations :: SideMap (TMVar [NetMessage])
+	-- incoming messages containing data for a running
+	-- (or not yet started) push
+	, netMessagerInboxes :: SideMap Inboxes
 	}
 
 newNetMessager :: IO NetMessager
@@ -148,5 +144,4 @@ newNetMessager = NetMessager
 	<*> atomically (newTMVar M.empty)
 	<*> newEmptySV
 	<*> mkSideMap newEmptyTMVar
-	<*> mkSideMap (newTVar M.empty)
 	<*> mkSideMap (newTVar M.empty)

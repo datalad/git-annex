@@ -37,6 +37,7 @@ import Assistant.Threads.PairListener
 #endif
 #ifdef WITH_XMPP
 import Assistant.Threads.XMPPClient
+import Assistant.Threads.XMPPPusher
 #endif
 #else
 #warning Building without the webapp. You probably need to install Yesod..
@@ -111,6 +112,8 @@ startDaemon assistant foreground listenhost startbrowser = do
 #endif
 #ifdef WITH_XMPP
 			, assist $ xmppClientThread urlrenderer
+			, assist $ xmppSendPackThread urlrenderer
+			, assist $ xmppReceivePackThread urlrenderer
 #endif
 #endif
 			, assist $ pushThread

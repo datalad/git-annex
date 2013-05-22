@@ -101,7 +101,7 @@ makeXMPPGitRemote buddyname jid u = do
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
 xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
-xmppPush cid gitpush = runPush SendPack cid $ do
+xmppPush cid gitpush = do
 	u <- liftAnnex getUUID
 	sendNetMessage $ Pushing cid (StartingPush u)
 
@@ -239,7 +239,7 @@ xmppGitRelay = do
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
 xmppReceivePack :: ClientID -> Assistant Bool
-xmppReceivePack cid = runPush ReceivePack cid $ do
+xmppReceivePack cid = do
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -288,11 +288,12 @@ xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
 	matching loc r = repoIsUrl r && repoLocation r == loc
 	knownuuid um r = Remote.uuid r == theiruuid || M.member theiruuid um
 
-handlePushInitiation :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
-handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
+{- Returns the ClientID that it pushed to. -}
+runPush :: (Remote -> Assistant ()) -> NetMessage -> Assistant (Maybe ClientID)
+runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
-	go Nothing = noop
+	go Nothing = return Nothing
 	go (Just branch) = do
 		rs <- xmppRemotes cid theiruuid
 		liftAnnex $ Annex.Branch.commit "update"
@@ -301,17 +302,24 @@ handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
-		forM_ rs $ \r -> do
-			void $ alertWhile (syncAlert [r]) $
-				xmppPush cid (taggedPush u selfjid branch r)
-			checkcloudrepos r
-handlePushInitiation checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
+		if null rs
+			then return Nothing
+			else do
+				forM_ rs $ \r -> do
+					void $ alertWhile (syncAlert [r]) $
+						xmppPush cid (taggedPush u selfjid branch r)
+					checkcloudrepos r
+				return $ Just cid
+runPush checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 	rs <- xmppRemotes cid theiruuid
-	unless (null rs) $ do
-		void $ alertWhile (syncAlert rs) $
-			xmppReceivePack cid
-		mapM_ checkcloudrepos rs
-handlePushInitiation _ _ = noop
+	if null rs
+		then return Nothing
+		else do
+			void $ alertWhile (syncAlert rs) $
+				xmppReceivePack cid
+			mapM_ checkcloudrepos rs
+			return $ Just cid
+runPush _ _ = return Nothing
 
 {- Check if any of the shas that can be pushed are ones we do not
  - have.
@@ -370,4 +378,3 @@ extractSequence :: NetMessage -> Maybe Int
 extractSequence (Pushing _ (ReceivePackOutput seqnum _)) = Just seqnum
 extractSequence (Pushing _ (SendPackOutput seqnum _)) = Just seqnum
 extractSequence _ = Nothing
-
