@@ -31,7 +31,7 @@ After the setup has finished, it will print the git-annex configure lines.
 ### Unencrypted mode
 The photo name on flickr is currently the GPGHMACSHA1 version.
 
-The real name of the pictures and/or videos will be in the description.
+The real name of the picture will be in the description.
 
 ### Encrypted mode
 The current version base64 encodes all the data, which results in ~35% larger filesize.
