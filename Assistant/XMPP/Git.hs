@@ -137,7 +137,7 @@ xmppPush cid gitpush = runPush SendPack cid $ do
 	liftIO $ do
 		mapM_ killThread [t1, t2]
 		mapM_ hClose [inh, outh, controlh]
-
+	
 	return r
   where
 	toxmpp seqnum inh = do
@@ -167,6 +167,7 @@ xmppPush cid gitpush = runPush SendPack cid $ do
 			liftIO $ do
 				hPrint controlh (ExitFailure 1)
 				hFlush controlh
+				killThread =<< myThreadId
 	
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
