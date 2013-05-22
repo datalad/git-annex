@@ -64,6 +64,14 @@ isImportantNetMessage (Pushing c (CanPush _ _)) = Just c
 isImportantNetMessage (Pushing c (PushRequest _)) = Just c
 isImportantNetMessage _ = Nothing
 
+{- Checks if two important NetMessages are equivilant.
+ - That is to say, assuming they were sent to the same client,
+ - would it do the same thing for one as for the other? -}
+equivilantImportantNetMessages :: NetMessage -> NetMessage -> Bool
+equivilantImportantNetMessages (Pushing _ (CanPush _ _)) (Pushing _ (CanPush _ _)) = True
+equivilantImportantNetMessages (Pushing _ (PushRequest _)) (Pushing _ (PushRequest _)) = True
+equivilantImportantNetMessages _ _ = False
+
 readdressNetMessage :: NetMessage -> ClientID -> NetMessage
 readdressNetMessage (PairingNotification stage _ uuid) c = PairingNotification stage c uuid
 readdressNetMessage (Pushing _ stage) c = Pushing c stage
