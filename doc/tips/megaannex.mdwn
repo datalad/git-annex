@@ -30,10 +30,7 @@ Note: The folder option in the megaannex.conf file isn't yet used.
 
 ## Configuring git-annex
 
-	git config annex.mega-store-hook 'python2 ~/megaannex/megaannex.py store --subject $ANNEX_KEY --file $ANNEX_FILE'
-	git config annex.mega-retrieve-hook 'python2 ~/megaannex/megaannex.py  getfile --subject $ANNEX_KEY --file $ANNEX_FILE'
-	git config annex.mega-checkpresent-hook 'python2 ~/megaannex/megaannex.py fileexists --subject $ANNEX_KEY'
-	git config annex.mega-remove-hook 'python2 ~/megaannex/megaannex.py delete --subject $ANNEX_KEY'
+        git config annex.mega-hook '/usr/bin/python2 ~/megaannex/megaannex.py'
 
 	git annex initremote mega type=hook hooktype=mega encryption=shared
 	git annex describe mega "the mega.co.nz library"
