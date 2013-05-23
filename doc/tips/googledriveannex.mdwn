@@ -26,3 +26,11 @@ Run the program once to make an empty config file
     git config annex.googledrive-hook '/usr/bin/python2 ~/googledriveannex/googledriveannex.py'
     git annex initremote googledrive type=hook hooktype=googledrive encryption=shared
     git annex describe googledrive "the googledrive library"
+
+## Bugs
+I currently have to two test files i have uploaded, that i can't delete from my Google Drive, either through the hook program, or through the web interface.
+
+Other files have deleted as they should.
+
+I'm not sure if this error is caused by the hook, but others have experienced this issue as well so i'm guessing it is more generic. The hook could still potentially trigger it somehow.
+
