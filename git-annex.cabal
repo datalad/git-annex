@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20130521
+Version: 4.20130521.1
 Cabal-Version: >= 1.8
 License: GPL
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -132,10 +132,11 @@ Executable git-annex
     CPP-Options: -DWITH_DBUS
 
   if flag(Webapp)
-    Build-Depends: yesod (< 1.2), yesod-static, case-insensitive,
-     http-types, transformers, wai, wai-logger, warp, blaze-builder,
-     crypto-api, hamlet, clientsession, aeson, yesod-form,
-     template-haskell, yesod-default, data-default
+    Build-Depends:
+     yesod (< 1.2), yesod-default (< 1.2), yesod-static, yesod-form,
+     case-insensitive, http-types, transformers, wai, wai-logger, warp,
+     blaze-builder, crypto-api, hamlet, clientsession, aeson,
+     template-haskell, data-default
     CPP-Options: -DWITH_WEBAPP
     GHC-Options: -threaded
 
