@@ -75,9 +75,7 @@ import qualified Command.XMPPGit
 #endif
 #endif
 #ifdef WITH_TESTSUITE
-#ifndef __WINDOWS__
 import qualified Command.Test
-#endif
 #endif
 
 cmds :: [Command]
@@ -143,9 +141,7 @@ cmds = concat
 #endif
 #endif
 #ifdef WITH_TESTSUITE
-#ifndef __WINDOWS__
 	, Command.Test.def
-#endif
 #endif
 	]
 
