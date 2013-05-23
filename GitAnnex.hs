@@ -76,6 +76,7 @@ import qualified Command.XMPPGit
 #endif
 #ifdef WITH_TESTSUITE
 import qualified Command.Test
+import qualified Command.FuzzTest
 #endif
 
 cmds :: [Command]
@@ -142,6 +143,7 @@ cmds = concat
 #endif
 #ifdef WITH_TESTSUITE
 	, Command.Test.def
+	, Command.FuzzTest.def
 #endif
 	]
 

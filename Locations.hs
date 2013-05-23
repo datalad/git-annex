@@ -36,6 +36,7 @@ module Locations (
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
+	gitAnnexFuzzTestLogFile,
 	gitAnnexHtmlShim,
 	gitAnnexUrlFile,
 	gitAnnexTmpCfgFile,
@@ -226,6 +227,10 @@ gitAnnexDaemonStatusFile r = gitAnnexDir r </> "daemon.status"
 {- Log file for daemon mode. -}
 gitAnnexLogFile :: Git.Repo -> FilePath
 gitAnnexLogFile r = gitAnnexDir r </> "daemon.log"
+
+{- Log file for fuzz test. -}
+gitAnnexFuzzTestLogFile :: Git.Repo -> FilePath
+gitAnnexFuzzTestLogFile r = gitAnnexDir r </> "fuzztest.log"
 
 {- Html shim file used to launch the webapp. -}
 gitAnnexHtmlShim :: Git.Repo -> FilePath
