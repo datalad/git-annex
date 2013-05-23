@@ -1,0 +1,36 @@
+googledriveannex
+=========
+
+Hook program for gitannex to use Google Drive as backend
+
+# Requirements:
+
+    python2
+
+Credit for the googledrive api interface goes to google
+
+## Install
+Clone the git repository in your home folder.
+
+    git clone git://github.com/TobiasTheViking/googledriveannex.git 
+
+This should make a ~/googledriveannex folder
+
+## Setup
+Run the program once to make an empty config file
+
+    cd ~/googledriveannex; python2 googledriveannex.py
+
+## Commands for gitannex:
+
+    git config annex.googledrive-hook '/usr/bin/python2 ~/googledriveannex/googledriveannex.py'
+    git annex initremote googledrive type=hook hooktype=googledrive encryption=shared
+    git annex describe googledrive "the googledrive library"
+
+## Bugs
+I currently have to two test files i have uploaded, that i can't delete from my Google Drive, either through the hook program, or through the web interface.
+
+Other files have deleted as they should. Interestingly the hook program can't find the two test files either. They are only visible on the web interface(and maybe other interfaces).
+
+I'm not sure if this error is caused by the hook, but others have experienced this issue as well so i'm guessing it is more generic. The hook could still potentially trigger it somehow.
+
