@@ -64,7 +64,7 @@ build: start
 		$(GITTREE)/libexec/git-core/git-web--browse
 	# Most of git is in one multicall binary, but a few important
 	# commands are still shell scripts. Those are put into
-	# a tarball, along with a list of all the hard links that should be
+	# a tarball, along with a list of all the links that should be
 	# set up.
 	cd $(GITTREE) && mkdir -p links
 	cd $(GITTREE) && find -samefile bin/git -not -wholename ./bin/git > links/git

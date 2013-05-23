@@ -47,11 +47,15 @@ main () {
 		}
 	}
 
-	/* If this is the first run, set up busybox link. */
+	/* If this is the first run, set up busybox symlink,
+	 * which allows busybox to run. */
 	if (stat("busybox", &st_buf) != 0) {
-		if (link("lib/lib.busybox.so", "busybox") != 0) {
-			perror("link busybox");
-			exit(1);
+		if (symlink("lib/lib.busybox.so", "busybox") != 0) {
+			/* Just in case! */
+			if (link("lib/lib.busybox.so", "busybox") != 0) {
+				perror("link busybox");
+				exit(1);
+			}
 		}
 	}
 
