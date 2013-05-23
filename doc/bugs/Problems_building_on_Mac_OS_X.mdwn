@@ -57,3 +57,6 @@ rejecting: yesod-0.3.1.1, 0.3.1, 0.3.0, 0.2.0, 0.0.0.2, 0.0.0.1, 0.0.0
 (conflict: cookie => time==1.4/installed-d61..., yesod => time>=1.1.3 && <1.2)
 # End of transcript or log.
 """]]
+
+> Not OSX specific. I have added a version hint that makes cabal work and uploaded
+> a point release with this fix. [[done]] --[[Joey]]
