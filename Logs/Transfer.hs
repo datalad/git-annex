@@ -119,7 +119,7 @@ runTransfer t file shouldretry a = do
 	mode <- annexFileMode
 	fd <- liftIO $ prep tfile mode info
 	ok <- retry info metervar $
-		bracketIO (return fd) (cleanup tfile) (a meter)
+		bracketIO (return fd) (cleanup tfile) (const $ a meter)
 	unless ok $ recordFailedTransfer t info
 	return ok
   where

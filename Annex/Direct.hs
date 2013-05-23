@@ -173,7 +173,8 @@ mergeDirectCleanup d oldsha newsha = do
 		void $ tryIO $ rename (d </> f) f
 
 {- If possible, converts a symlink in the working tree into a direct
- - mode file. -}
+ - mode file. If the content is not available, leaves the symlink
+ - unchanged. -}
 toDirect :: Key -> FilePath -> Annex ()
 toDirect k f = fromMaybe noop =<< toDirectGen k f
 
@@ -181,28 +182,30 @@ toDirectGen :: Key -> FilePath -> Annex (Maybe (Annex ()))
 toDirectGen k f = do
 	loc <- calcRepo $ gitAnnexLocation k
 	ifM (liftIO $ doesFileExist loc)
-		( fromindirect loc
-		, fromdirect
+		( return $ Just $ fromindirect loc
+		, do
+			{- Copy content from another direct file. -}
+			absf <- liftIO $ absPath f
+			locs <- filterM (\l -> isNothing <$> getAnnexLinkTarget l) =<<
+				(filter (/= absf) <$> addAssociatedFile k f)		
+			return $ Just $ fromdirect locs
 		)
   where
-  	fromindirect loc = return $ Just $ do
+  	fromindirect loc = do
 		{- Move content from annex to direct file. -}
 		thawContentDir loc
 		updateInodeCache k loc
 		void $ addAssociatedFile k f
 		thawContent loc
 		replaceFile f $ liftIO . moveFile loc
-	fromdirect = do
-		{- Copy content from another direct file. -}
-		absf <- liftIO $ absPath f
-		locs <- filterM (\loc -> isNothing <$> getAnnexLinkTarget loc) =<<
-			(filter (/= absf) <$> addAssociatedFile k f)
-		case locs of
-			(loc:_) -> return $ Just $ do
-				replaceFile f $
-					liftIO . void . copyFileExternal loc
-				updateInodeCache k f
-			_ -> return Nothing
+	fromdirect (loc:locs) = ifM (goodContent k loc)
+		( do
+			replaceFile f $
+				liftIO . void . copyFileExternal loc
+			updateInodeCache k f
+		, fromdirect locs
+		)
+	fromdirect [] = noop
 
 {- Removes a direct mode file, while retaining its content in the annex
  - (unless its content has already been changed). -}

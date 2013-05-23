@@ -24,9 +24,8 @@ import Control.Exception hiding (handle, try, throw, bracket, catch)
 import Common.Annex
 
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
-bracketIO :: IO c -> (c -> IO b) -> Annex a -> Annex a
-bracketIO setup cleanup go =
-	bracket (liftIO setup) (liftIO . cleanup) (const go)
+bracketIO :: IO v -> (v -> IO b) -> (v -> Annex a) -> Annex a
+bracketIO setup cleanup go = bracket (liftIO setup) (liftIO . cleanup) go
 
 {- try in the Annex monad -}
 tryAnnex :: Annex a -> Annex (Either SomeException a)

@@ -115,7 +115,7 @@ lockContent key a = do
 	a
 #else
 	file <- calcRepo $ gitAnnexLocation key
-	bracketIO (openforlock file >>= lock) unlock a
+	bracketIO (openforlock file >>= lock) unlock (const a)
   where
 	{- Since files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
