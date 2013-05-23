@@ -1,0 +1,37 @@
+The Android app should work on some more devices now, where hard linking to
+busybox didn't work. Now it installs itself using symlinks.
+
+Pushed a point release so `cabal install git-annex` works again. And,
+I'm really happy to see that the 4.20130521 release has autobuilt on all
+Debian architectures, and will soon be replacing the old 3.20120629 version
+in testing. (Well, once a libffi transition completes..)
+
+TobiasTheMachine has done it again: [[tips/googledriveannex]]  
+
+-----
+
+I spent most of today building a fuzz tester for the assistant. `git annex
+fuzztest` will (once you find the special runes to allow it to run) create
+random files in the repository, move them around, delete them, move
+directory trees around, etc. The plan is to use this to run some long
+duration tests with eg, XMPP, to make sure the assistant keeps things
+in shape after a lot of activity. It logs in machine-readable format, 
+so if it turns up a bug I may even be able to use it to reproduce the same
+bug (fingers crossed).
+
+I was able to use QuickCheck to generate random data for some parts of the fuzz
+tester. (Though the actual file names it uses are not generated using
+QuickCheck.) Liked this part:
+
+[[!format haskell """
+instance Arbitrary FuzzAction where
+        arbitrary = frequency
+                [ (100, FuzzAdd <$> arbitrary)
+                , (10, FuzzDelete <$> arbitrary)
+                , (10, FuzzMove <$> arbitrary <*> arbitrary)
+                , (10, FuzzModify <$> arbitrary)
+                , (10, FuzzDeleteDir <$> arbitrary)
+                , (10, FuzzMoveDir <$> arbitrary <*> arbitrary)
+                , (10, FuzzPause <$> arbitrary)
+                ]
+"""]]
