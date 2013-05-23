@@ -21,16 +21,16 @@ The above special remotes can be used to tie git-annex
 into many cloud services. Here are specific instructions
 for various cloud things:
 
-* [[tips/using_Amazon_S3]]
-* [[tips/using_Amazon_Glacier]]
+* [[Amazon_S3|tips/using_Amazon_S3]]
+* [[Amazon_Glacier|tips/using_Amazon_Glacier]]
 * [[tips/Internet_Archive_via_S3]]
 * [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]]
-* [[tips/using_box.com_as_a_special_remote]]
-* [[tips/using_Google_drive_as_a_special_remote|tips/googledriveannex]]
-* [[tips/using_mega.co.nz_as_a_special_remote|tips/megaannex]]
-* [[tips/using_Flickr_as_a_special_remote|tips/flickrannex]]
-* [[forum/special_remote_for_IMAP]]
-* [[forum/nntp__47__usenet special remote]]
+* [[Box.com|tips/using_box.com_as_a_special_remote]]
+* [[Google drive|tips/using_Google_drive_as_a_special_remote|tips/googledriveannex]]
+* [[Mega.co.nz|tips/megaannex]]
+* [[Flickr|tips/flickrannex]]
+* [[IMAP|forum/special_remote_for_IMAP]]
+* [[Usenet|forum/nntp__47__usenet special remote]]
 
 ## Unused content on special remotes
 
