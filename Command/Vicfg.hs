@@ -21,6 +21,7 @@ import Types.Group
 import Logs.Trust
 import Logs.Group
 import Logs.PreferredContent
+import Types.StandardGroups
 import Remote
 
 def :: [Command]
@@ -94,20 +95,23 @@ genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 	trust = settings cfgTrustMap
 		[ ""
 		, com "Repository trust configuration"
-		, com "(Valid trust levels: " ++
-		  unwords (map showTrustLevel [Trusted .. DeadTrusted]) ++
-		  ")"
+		, com "(Valid trust levels: " ++ trustlevels ++ ")"
 		]
 		(\(t, u) -> line "trust" u $ showTrustLevel t)
 		(\u -> lcom $ line "trust" u $ showTrustLevel SemiTrusted)
+	  where
+	  	trustlevels = unwords $ map showTrustLevel [Trusted .. DeadTrusted]
 
 	groups = settings cfgGroupMap
 		[ ""
 		, com "Repository groups"
+		, com $ "(Standard groups: " ++ grouplist ++ ")"
 		, com "(Separate group names with spaces)"
 		]
 		(\(s, u) -> line "group" u $ unwords $ S.toList s)
 		(\u -> lcom $ line "group" u "")
+	  where
+	  	grouplist = unwords $ map fromStandardGroup [minBound..]
 
 	preferredcontent = settings cfgPreferredContentMap
 		[ ""
