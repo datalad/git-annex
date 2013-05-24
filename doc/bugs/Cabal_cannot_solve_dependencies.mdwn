@@ -31,3 +31,6 @@ yesod-core>=0.9.4 && <0.10)
 rejecting: yesod-default-0.4.1, 0.4.0, 0.3.1 (conflict: yesod-core==1.2.1,
 yesod-default => yesod-core>=0.9 && <0.10
 """]]
+
+> At the risk of closing early again, I have uploaded a .2 with
+> hints for the version of yesod-form and yesod-static. [[done]] --[[Joey]] 
