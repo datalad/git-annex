@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="It starts after uninstall/install"
+ date="2013-05-24T23:29:52Z"
+ content="""
+Hi Joey -- there is success here... previous installation was \"updated\" by installing the new package without uninstalling previous one, and that apparently didn't work correctly (I didn't even have bin/ directory you mentioned).  So I have removed previous installation and reinstalled it again -- it starts now!  Thanks ;)
+"""]]
