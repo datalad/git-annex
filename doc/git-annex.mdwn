@@ -247,6 +247,11 @@ subdirectories).
   (or encryption=emailaddress) to specify a gpg key that can access
   the encrypted special remote.
 
+  Note that with encryption enabled, a gpg key is created. This requires
+  sufficient entropy. If initremote seems to hang or take a long time
+  while generating the key, you may want to ctrl-c it and re-run with --fast,
+  which causes it to use a lower-quality source of randomness.
+
   Example Amazon S3 remote:
 
 	git annex initremote mys3 type=S3 encryption=me@example.com datacenter=EU
