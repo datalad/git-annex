@@ -11,7 +11,7 @@
 
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
 
 
 # End of transcript or log.
