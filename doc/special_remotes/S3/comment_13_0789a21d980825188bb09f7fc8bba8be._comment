@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="basak"
+ ip="2001:8b0:1c8::2"
+ subject="comment 13"
+ date="2013-05-24T15:47:14Z"
+ content="""
+That's not what the documentation here says! It even warns me: \"Think carefully about who can access your repository before using embedcreds without gpg encryption.\"
+
+My use case:
+
+Occasional use of EC2, and a desire to store some persistent stuff in S3, since the dataset is large and I have limited bandwidth. I want to destroy the EC2 instance when I'm not using it, leaving the data in S3 for later.
+
+If I use git-annex to manage the S3 store, then I get the ability to clone the repository and destroy the instance. Later, I can start a new instance, push the repo back up, and would like to be able to then pull the data back out of S3 again.
+
+I'd really like the login credentials to persist in the repository (as the documentation here says it should). Even if I have to add a --yes-i-know-my-s3-credentials-will-end-up-available-to-anyone-who-can-see-my-git-repo flag. This is because I use some of my git repos to store private data, too.
+
+If I use an Amazon IAM policy as follows, I can generate a set of credentials that are limited to access to a particular prefix of a specific S3 bucket only - effectively creating a sandboxed area just for git-annex:
+
+    { 
+      \"Statement\": [{\"Sid\": \"Stmt1368780615583\",
+                     \"Action\": [\"s3:GetObject\", \"s3:PutObject\", \"s3:DeleteObject\"],
+                     \"Effect\": \"Allow\",
+                     \"Resource\": [\"arn:aws:s3:::bucketname/prefix/*\"]}
+                    ],
+      \"Statement\": [{\"Sid\": \"Stmt1368781573129\",
+                    \"Action\": [\"s3:GetBucketLocation\"],
+                    \"Effect\": \"Allow\",
+                    \"Resource\": [\"arn:aws:s3:::bucketname\"]}
+                   ]
+    }
+
+Doing this means that I have a different set of credentials for every annex, so it would be really useful to be able have these stored and managed within the repository itself. Each set is limited to what the annex stores, so there is no bigger compromise I have to worry about apart from the compromise of the data that the annex itself manages.
+"""]]
