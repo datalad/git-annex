@@ -56,6 +56,7 @@ import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
 import qualified Utility.Gpg
+import qualified Utility.Matcher
 #ifndef __WINDOWS__
 import qualified GitAnnex
 #endif
@@ -114,6 +115,7 @@ quickcheck =
 	, check "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
 	, check "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
 	, check "prop_cost_sane" Config.Cost.prop_cost_sane
+	, check "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, check "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
 	, check "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
 	, check "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane

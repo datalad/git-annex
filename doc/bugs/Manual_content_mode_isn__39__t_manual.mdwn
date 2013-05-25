@@ -82,3 +82,8 @@ To /home/valorin/workspace/tmp/test2
 Everything up-to-date
 Everything up-to-date
 """]]
+
+> It turns out there was a bug in the preferred content expression parser,
+> that made it parse the expression for manual mode (but I think no other standard
+> expression) quite wrong, as if it had parens in the wrong place. This explains
+> the broken behavior. [[fixed|done]] --[[Joey]]

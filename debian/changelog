@@ -9,6 +9,8 @@ git-annex (4.20130522) UNRELEASED; urgency=low
   * hook special remote: Added combined hook program support.
   * Android app: Avoid using hard links to app's lib directory, which
     is sometimes on a different filesystem than the data directory.
+  * Fix bug in parsing of parens in some preferred content expressions.
+    This fixes the behavior of the manual mode group.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
 
