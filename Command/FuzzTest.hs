@@ -222,11 +222,11 @@ existingFile n top = maybe (return Nothing) (go . toFilePath) =<< existingDir
 				if null dirs
 					then return Nothing
 					else do
-						n <- getStdRandom $ randomR (0, length dirs - 1)
-						existingFile (n - 1) (top </> dirs !! n)
+						i <- getStdRandom $ randomR (0, length dirs - 1)
+						existingFile (n - 1) (top </> dirs !! i)
 			else do
-				n <- getStdRandom $ randomR (0, length files - 1)
-				return $ Just $ FuzzFile $ top </> dir </> files !! n
+				i <- getStdRandom $ randomR (0, length files - 1)
+				return $ Just $ FuzzFile $ top </> dir </> files !! i
 	
 existingDir :: IO (Maybe FuzzDir)
 existingDir = do
