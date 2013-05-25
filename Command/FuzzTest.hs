@@ -53,17 +53,18 @@ guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
 fuzz :: Handle -> Annex ()
 fuzz logh = do
 	action <- genFuzzAction
-	liftIO $ do
-		now <- getCurrentTime
-		hPrint logh $ Started now action
-		hFlush logh
+	record logh $ flip Started action
 	result <- tryAnnex $ runFuzzAction action
-	liftIO $ do
-		now <- getCurrentTime
-		hPrint logh $ 
-			Finished now $
-				either (const False) (const True) result
-		hFlush logh
+	record logh $ flip Finished $
+		either (const False) (const True) result
+
+record :: Handle -> (UTCTime -> TimeStampedFuzzAction) -> Annex ()
+record h tmpl = liftIO $ do
+	now <- getCurrentTime
+	let s = show $ tmpl now
+	print s
+	hPrint h s
+	hFlush h
 
 {- Delay for either a fraction of a second, or a few seconds, or up
  - to 1 minute. -}
