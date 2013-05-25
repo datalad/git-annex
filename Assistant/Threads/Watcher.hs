@@ -226,7 +226,6 @@ onAddDirect symlinkssupported matcher file fs = do
 		| symlinkssupported = a
 		| otherwise = do
 			linktarget <- liftAnnex $ getAnnexLinkTarget file
-			liftIO $ print (file, linktarget)
 			case linktarget of
 				Nothing -> a
 				Just lt -> do
