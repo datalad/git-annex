@@ -16,6 +16,7 @@ import System.PosixCompat.Files
 import Common.Annex
 import Types.Command
 import Types.Key
+import Types.FileMatcher
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -126,7 +127,7 @@ prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = ifM (matcher $ Annex.FileInfo f f)
+	process matcher f = ifM (matcher $ FileInfo f f)
 		( a f , return Nothing )
 
 notSymlink :: FilePath -> IO Bool

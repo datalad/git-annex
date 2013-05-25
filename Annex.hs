@@ -10,7 +10,6 @@
 module Annex (
 	Annex,
 	AnnexState(..),
-	FileInfo(..),
 	PreferredContentMap,
 	new,
 	newState,
@@ -55,6 +54,7 @@ import Types.TrustLevel
 import Types.Group
 import Types.Messages
 import Types.UUID
+import Types.FileMatcher
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -74,12 +74,6 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 	)
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
-
-data FileInfo = FileInfo
-	{ relFile :: FilePath -- may be relative to cwd
-	, matchFile :: FilePath -- filepath to match on; may be relative to top
-	}
-
 type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FileInfo -> Annex Bool))
 
 -- internal state storage

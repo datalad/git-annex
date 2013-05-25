@@ -17,6 +17,7 @@ import Logs.Group
 import Logs.Remote
 import Annex.UUID
 import qualified Annex
+import Types.FileMatcher
 import Git.FilePath
 import Types.Remote (RemoteConfig)
 
@@ -33,9 +34,9 @@ checkFileMatcher' matcher file notpresent def
 	| isEmpty matcher = return def
 	| otherwise = do
 		matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
-		let fi = Annex.FileInfo
-			{ Annex.matchFile = matchfile
-			, Annex.relFile = file
+		let fi = FileInfo
+			{ matchFile = matchfile
+			, relFile = file
 			}
 		matchMrun matcher $ \a -> a notpresent fi
 

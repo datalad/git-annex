@@ -35,6 +35,7 @@ import Config
 import Utility.Percentage
 import Logs.Transfer
 import Types.TrustLevel
+import Types.FileMatcher
 import qualified Limit
 
 -- a named computation that produces a statistic
@@ -286,7 +287,7 @@ getLocalStatInfo dir = do
   where
 	initial = (emptyKeyData, emptyKeyData)
 	update matcher key file vs@(presentdata, referenceddata) =
-		ifM (matcher $ Annex.FileInfo file file)
+		ifM (matcher $ FileInfo file file)
 			( (,)
 				<$> ifM (inAnnex key)
 					( return $ addKey key presentdata

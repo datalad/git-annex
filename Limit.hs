@@ -32,11 +32,12 @@ import Logs.Trust
 import Types.TrustLevel
 import Types.Key
 import Types.Group
+import Types.FileMatcher
 import Logs.Group
 import Utility.HumanTime
 import Utility.DataUnits
 
-type MatchFiles = AssumeNotPresent -> Annex.FileInfo -> Annex Bool
+type MatchFiles = AssumeNotPresent -> FileInfo -> Annex Bool
 type MkLimit = String -> Either String MatchFiles
 type AssumeNotPresent = S.Set UUID
 
@@ -46,10 +47,10 @@ limited = (not . Utility.Matcher.isEmpty) <$> getMatcher'
 
 {- Gets a matcher for the user-specified limits. The matcher is cached for
  - speed; once it's obtained the user-specified limits can't change. -}
-getMatcher :: Annex (Annex.FileInfo -> Annex Bool)
+getMatcher :: Annex (FileInfo -> Annex Bool)
 getMatcher = Utility.Matcher.matchM <$> getMatcher'
 
-getMatcher' :: Annex (Utility.Matcher.Matcher (Annex.FileInfo -> Annex Bool))
+getMatcher' :: Annex (Utility.Matcher.Matcher (FileInfo -> Annex Bool))
 getMatcher' = do
 	m <- Annex.getState Annex.limit
 	case m of
@@ -61,7 +62,7 @@ getMatcher' = do
 			return matcher
 
 {- Adds something to the limit list, which is built up reversed. -}
-add :: Utility.Matcher.Token (Annex.FileInfo -> Annex Bool) -> Annex ()
+add :: Utility.Matcher.Token (FileInfo -> Annex Bool) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
   where
 	prepend (Left ls) = Left $ l:ls
@@ -92,11 +93,11 @@ limitExclude glob = Right $ const $ return . not . matchglob glob
 {- Could just use wildCheckCase, but this way the regex is only compiled
  - once. Also, we use regex-TDFA when available, because it's less buggy
  - in its support of non-unicode characters. -}
-matchglob :: String -> Annex.FileInfo -> Bool
+matchglob :: String -> FileInfo -> Bool
 matchglob glob fi =
 #ifdef WITH_TDFA
 	case cregex of
-		Right r -> case execute r (Annex.matchFile fi) of
+		Right r -> case execute r (matchFile fi) of
 			Right (Just _) -> True
 			_ -> False
 		Left _ -> error $ "failed to compile regex: " ++ regex
@@ -150,7 +151,7 @@ limitPresent u _ = Right $ const $ check $ \key -> do
 {- Limit to content that is in a directory, anywhere in the repository tree -}
 limitInDir :: FilePath -> MkLimit
 limitInDir dir = const $ Right $ const $ \fi -> return $
-	any (== dir) $ splitPath $ takeDirectory $ Annex.matchFile fi
+	any (== dir) $ splitPath $ takeDirectory $ matchFile fi
 
 {- Adds a limit to skip files not believed to have the specified number
  - of copies. -}
@@ -228,7 +229,7 @@ limitSize vs s = case readSize dataUnits s of
 	check fi sz Nothing = do
 		filesize <- liftIO $ catchMaybeIO $
 			fromIntegral . fileSize
-				<$> getFileStatus (Annex.relFile fi)
+				<$> getFileStatus (relFile fi)
 		return $ filesize `vs` Just sz
 
 addTimeLimit :: String -> Annex ()
@@ -244,5 +245,5 @@ addTimeLimit s = do
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
 
-lookupFile :: Annex.FileInfo -> Annex (Maybe (Key, Backend))
-lookupFile = Backend.lookupFile . Annex.relFile
+lookupFile :: FileInfo -> Annex (Maybe (Key, Backend))
+lookupFile = Backend.lookupFile . relFile
