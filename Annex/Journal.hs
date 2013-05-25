@@ -84,7 +84,7 @@ lockJournal a = do
 	lockfile <- fromRepo gitAnnexJournalLock
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock a
+	bracketIO (lock lockfile mode) unlock (const a)
   where
 	lock lockfile mode = do
 #ifndef __WINDOWS__

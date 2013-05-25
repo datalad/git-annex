@@ -354,7 +354,7 @@ copyFromRemote' r key file dest
 			forever $
 				send =<< readSV v
 		let feeder = writeSV v . fromBytesProcessed
-		bracketIO noop (const $ tryIO $ killThread tid) (a feeder)
+		bracketIO noop (const $ tryIO $ killThread tid) (const $ a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file

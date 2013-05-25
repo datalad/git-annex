@@ -193,7 +193,7 @@ compareInodeCachesWith :: Annex InodeComparisonType
 compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Copies the contentfile to the associated file, if the associated
- - file has not content. If the associated file does have content,
+ - file has no content. If the associated file does have content,
  - even if the content differs, it's left unchanged. -}
 addContentWhenNotPresent :: Key -> FilePath -> FilePath -> Annex ()
 addContentWhenNotPresent key contentfile associatedfile = do
