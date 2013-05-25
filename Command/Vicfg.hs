@@ -117,8 +117,8 @@ genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 		[ ""
 		, com "Repository preferred contents"
 		]
-		(\(s, u) -> line "preferred-content" u s)
-		(\u -> line "preferred-content" u "")
+		(\(s, u) -> line "content" u s)
+		(\u -> line "content" u "")
 
 	settings field desc showvals showdefaults = concat
 		[ desc
@@ -167,7 +167,7 @@ parseCfg curcfg = go [] curcfg . lines
 		| setting == "group" =
 			let m = M.insert u (S.fromList $ words value) (cfgGroupMap cfg)
 			in Right $ cfg { cfgGroupMap = m }
-		| setting == "preferred-content" = 
+		| setting == "content" = 
 			case checkPreferredContentExpression value of
 				Just e -> Left e
 				Nothing ->

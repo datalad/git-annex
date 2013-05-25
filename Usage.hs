@@ -93,6 +93,8 @@ paramFile :: String
 paramFile = "FILE"
 paramGroup :: String
 paramGroup = "GROUP"
+paramExpression :: String
+paramExpression = "EXPR"
 paramSize :: String
 paramSize = "SIZE"
 paramAddress :: String

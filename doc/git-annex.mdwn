@@ -306,6 +306,14 @@ subdirectories).
 
   Removes a repository from a group.
 
+* content repository [expression]
+
+  When run with an expression, configures the content that is preferred
+  to be held in the archive. See PREFERRED CONTENT below.
+
+  Without an expression, displays the current preferred content setting
+  of the repository.
+
 * vicfg
 
   Opens EDITOR on a temp file containing most of the above configuration

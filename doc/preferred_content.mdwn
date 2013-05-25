@@ -6,10 +6,10 @@ control over which repositories prefer to have which content. Configuring
 this allows `git annex get --auto`, `git annex drop --auto`, etc to do
 smarter things.
 
-Currently, preferred content settings can only be edited using `git
-annex vicfg`. Each repository can have its own settings, and other
-repositories may also try to honor those settings. So there's no local
-`.git/config` setting it.
+Preferred content settings can be edited using `git
+annex vicfg`, or viewed and set at the command line with `git annex content`.
+Each repository can have its own settings, and other repositories may also
+try to honor those settings. So there's no local `.git/config` setting it.
 
 The idea is that you write an expression that files are matched against.
 If a file matches, it's preferred to have its content stored in the

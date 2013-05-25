@@ -17,7 +17,7 @@ import qualified Data.Set as S
 
 def :: [Command]
 def = [command "group" (paramPair paramRemote paramDesc) seek
-	SectionCommon "add a repository to a group"]
+	SectionSetup "add a repository to a group"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

@@ -52,6 +52,7 @@ import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
+import qualified Command.Content
 import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
@@ -105,6 +106,7 @@ cmds = concat
 	, Command.Semitrust.def
 	, Command.Dead.def
 	, Command.Group.def
+	, Command.Content.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
 	, Command.FromKey.def
