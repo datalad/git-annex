@@ -151,8 +151,8 @@ data FuzzAction
 
 instance Arbitrary FuzzAction where
 	arbitrary = frequency
-		[ (100, FuzzAdd <$> arbitrary)
-		, (10, FuzzDelete <$> arbitrary)
+		[ (50, FuzzAdd <$> arbitrary)
+		, (50, FuzzDelete <$> arbitrary)
 		, (10, FuzzMove <$> arbitrary <*> arbitrary)
 		, (10, FuzzModify <$> arbitrary)
 		, (10, FuzzDeleteDir <$> arbitrary)
