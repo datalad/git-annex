@@ -141,7 +141,7 @@ tryGitConfigRead :: Git.Repo -> Annex Git.Repo
 tryGitConfigRead r 
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = store $ do
-		v <- onRemote r (pipedsshconfig, Left undefined) "configlist" [] []
+		v <- onRemote r (pipedconfig, Left undefined) "configlist" [] []
 		case v of
 			Right r'
 				| haveconfig r' -> return r'
@@ -149,7 +149,7 @@ tryGitConfigRead r
 			Left _ -> configlist_failed
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
-		store $ safely $ geturlconfig headers
+		store $ geturlconfig headers
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
@@ -162,8 +162,9 @@ tryGitConfigRead r
 	safely a = either (const $ return r) return
 			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-	pipedconfig cmd params =
-		withHandle StdoutHandle createProcessSuccess p $ \h -> do
+	pipedconfig cmd params = try run :: IO (Either SomeException Git.Repo)
+	  where
+	  	run = withHandle StdoutHandle createProcessSuccess p $ \h -> do
  			fileEncoding h
 			val <- hGetContentsStrict h
 			r' <- Git.Config.store val r
@@ -172,18 +173,20 @@ tryGitConfigRead r
 				warningIO $ "Instead, got: " ++ show val
 				warningIO $ "This is unexpected; please check the network transport!"
 			return r'
-	  where
 		p = proc cmd $ toCommand params
 
-	pipedsshconfig cmd params =
-		liftIO (try (pipedconfig cmd params) :: IO (Either SomeException Git.Repo))
-
 	geturlconfig headers = do
-		s <- Url.get (Git.repoLocation r ++ "/config") headers
-		withTmpFile "git-annex.tmp" $ \tmpfile h -> do
-			hPutStr h s
+		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
-			safely $ pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers [] tmpfile)
+				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				, return $ Left undefined
+				)
+		case v of
+			Left _ -> do
+				set_ignore "not usable by git-annex"
+				return r
+			Right r' -> return r'
 
 	store = observe $ \r' -> do
 		g <- gitRepo
@@ -204,11 +207,16 @@ tryGitConfigRead r
 	configlist_failed = case Git.remoteName r of
 		Nothing -> return r
 		Just n -> do
-			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
-				let k = "remote." ++ n ++ ".annex-ignore"
-				warning $ "Remote " ++ n ++ " does not have git-annex installed; setting " ++ k
-				inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
+			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $
+				set_ignore $ "does not have git-annex installed"
 			return r
+	
+	set_ignore msg = case Git.remoteName r of
+		Nothing -> noop
+		Just n -> do
+			let k = "remote." ++ n ++ ".annex-ignore"
+			warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+			inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine

@@ -13,6 +13,8 @@ git-annex (4.20130522) UNRELEASED; urgency=low
     This fixes the behavior of the manual mode group.
   * assistant: Work around git-cat-file's not reloading the index after files
     are staged.
+  * Improve error handling when getting uuid of http remotes to auto-ignore,
+    like with ssh remotes.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
 

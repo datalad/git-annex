@@ -10,3 +10,5 @@ is requesting `https://git.example.com/jim/annex.git/config`.  My server returns
 Forbidden and an error page for that URL, but git-annex tries to use the response as a config file anyway.
 
 Jim
+
+> [[fixed|done]] --[[Joey]] 
