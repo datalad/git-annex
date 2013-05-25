@@ -40,6 +40,7 @@ brew install haskell-platform git ossp-uuid md5sha1sum coreutils libgsasl gnutls
 brew link libxml2
 cabal update
 PATH=$HOME/bin:$PATH
+cabal install gnuidn
 cabal install c2hs git-annex --bindir=$HOME/bin
 </pre>
 
