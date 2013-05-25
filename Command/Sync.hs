@@ -28,6 +28,7 @@ import qualified Types.Remote
 import qualified Remote.Git
 import Types.Key
 import Config
+import Annex.ReplaceFile
 
 import Data.Hash.MD5
 
@@ -270,8 +271,7 @@ resolveMerge' u
 	makelink (Just key) = do
 		let dest = mergeFile file key
 		l <- inRepo $ gitAnnexLink dest key
-		liftIO $ nukeFile dest
-		addAnnexLink l dest
+		replaceFile dest $ addAnnexLink l
 		whenM (isDirect) $
 			toDirect key dest
 	makelink _ = noop
