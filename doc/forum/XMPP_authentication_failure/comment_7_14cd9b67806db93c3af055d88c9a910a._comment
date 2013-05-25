@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkF8_uQjLYm5Mf5F_JuVW-BxlvzpWjvR_o"
+ nickname="Andrew"
+ subject="comment 7"
+ date="2013-05-25T20:27:32Z"
+ content="""
+Ah ha, so it is. I've installed ejabberd from Jessie onto my Wheezy box and now git-annex can authenticate.
+
+Thank you!
+"""]]
