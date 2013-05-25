@@ -86,6 +86,7 @@ data AnnexState = AnnexState
 	, force :: Bool
 	, fast :: Bool
 	, auto :: Bool
+	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
 	, catfilehandles :: M.Map FilePath CatFileHandle
@@ -116,6 +117,7 @@ newState gitrepo = AnnexState
 	, force = False
 	, fast = False
 	, auto = False
+	, daemon = False
 	, branchstate = startBranchState
 	, repoqueue = Nothing
 	, catfilehandles = M.empty

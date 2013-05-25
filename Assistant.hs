@@ -9,6 +9,7 @@
 
 module Assistant where
 
+import qualified Annex
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.NamedThread
@@ -61,6 +62,7 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  - stdout and stderr descriptors. -}
 startDaemon :: Bool -> Bool -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground listenhost startbrowser = do
+	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	logfd <- liftIO $ openLog logfile

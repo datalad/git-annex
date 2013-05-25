@@ -11,6 +11,8 @@ git-annex (4.20130522) UNRELEASED; urgency=low
     is sometimes on a different filesystem than the data directory.
   * Fix bug in parsing of parens in some preferred content expressions.
     This fixes the behavior of the manual mode group.
+  * assistant: Work around git-cat-file's not reloading the index after files
+    are staged.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
 
