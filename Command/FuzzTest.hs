@@ -211,31 +211,37 @@ genFuzzAction = do
 
 existingFile :: Int -> FilePath -> IO (Maybe FuzzFile)
 existingFile 0 _ = return Nothing
-existingFile n top = maybe (return Nothing) (go . toFilePath) =<< existingDir
-  where
-  	go dir = do
-		contents <- catchDefaultIO [] (getDirectoryContents dir)
-		let files = filter isFuzzFile contents
-		if null files
-			then do
-				let dirs = filter isFuzzDir contents
-				if null dirs
-					then return Nothing
-					else do
-						i <- getStdRandom $ randomR (0, length dirs - 1)
-						existingFile (n - 1) (top </> dirs !! i)
-			else do
-				i <- getStdRandom $ randomR (0, length files - 1)
-				return $ Just $ FuzzFile $ top </> dir </> files !! i
-	
-existingDir :: IO (Maybe FuzzDir)
-existingDir = do
+existingFile n top = do
+	dir <- existingDirIncludingTop
+	contents <- catchDefaultIO [] (getDirectoryContents dir)
+	let files = filter isFuzzFile contents
+	if null files
+		then do
+			let dirs = filter isFuzzDir contents
+			if null dirs
+				then return Nothing
+				else do
+					i <- getStdRandom $ randomR (0, length dirs - 1)
+					existingFile (n - 1) (top </> dirs !! i)
+		else do
+			i <- getStdRandom $ randomR (0, length files - 1)
+			return $ Just $ FuzzFile $ top </> dir </> files !! i
+
+existingDirIncludingTop :: IO FilePath
+existingDirIncludingTop = do
 	dirs <- filter isFuzzDir <$> getDirectoryContents "."
 	if null dirs
-		then return Nothing
+		then return "."
 		else do
 			n <- getStdRandom $ randomR (0, length dirs)
-			return $ Just $ FuzzDir $ ("." : dirs) !! n
+			return $ ("." : dirs) !! n
+
+existingDir :: IO (Maybe FuzzDir)
+existingDir = do
+	d <- existingDirIncludingTop
+	return $ if isFuzzDir d
+		then Just $ FuzzDir d
+		else Nothing
 
 newFile :: IO (Maybe FuzzFile)
 newFile = go (100 :: Int)
