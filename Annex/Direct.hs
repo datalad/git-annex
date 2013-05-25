@@ -27,6 +27,7 @@ import Utility.InodeCache
 import Utility.CopyFile
 import Annex.Perms
 import Annex.ReplaceFile
+import Annex.Exception
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -139,8 +140,10 @@ mergeDirectCleanup d oldsha newsha = do
 	liftIO $ removeDirectoryRecursive d
   where
 	updated item = do
-		go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
-		go DiffTree.dstsha DiffTree.dstmode movein movein_raw
+		void $ tryAnnex $
+			go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+		void $ tryAnnex $ 
+			go DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	  where
 		go getsha getmode a araw
 			| getsha item == nullSha = noop
