@@ -178,66 +178,84 @@ runFuzzAction (FuzzMoveDir (FuzzDir src) (FuzzDir dest)) = liftIO $
 runFuzzAction (FuzzPause d) = liftIO $ randomDelay d
 
 genFuzzAction :: Annex FuzzAction
-genFuzzAction = liftIO $ do
-	tmpl <- Prelude.head <$> sample' (arbitrary :: Gen FuzzAction)
+genFuzzAction = do
+	tmpl <- liftIO $ Prelude.head <$> sample' (arbitrary :: Gen FuzzAction)
 	-- Fix up template action to make sense in the current repo tree.
 	case tmpl of
-		FuzzAdd _ -> FuzzAdd <$> newFile
-		FuzzDelete _ -> FuzzDelete <$> existingFile ""
-		FuzzMove _ _ -> FuzzMove <$> existingFile "" <*> newFile
+		FuzzAdd _ -> do
+			f <- liftIO newFile
+			maybe genFuzzAction (return . FuzzAdd) f
+		FuzzDelete _ -> do
+			f <- liftIO $ existingFile 0 ""
+			maybe genFuzzAction (return . FuzzDelete) f
+		FuzzMove _ _ -> do
+			src <- liftIO $ existingFile 0 ""
+			dest <- liftIO newFile
+			case (src, dest) of
+				(Just s, Just d) -> return $ FuzzMove s d
+				_ -> genFuzzAction
 		FuzzMoveDir _ _ -> do
-			d <- existingDir
-			newd <- newDir (parentDir $ toFilePath d)
-			return $ FuzzMoveDir d newd
-		FuzzDeleteDir _ -> FuzzDeleteDir <$> existingDir
-		FuzzModify _ -> FuzzModify <$> existingFile ""
+			md <- liftIO existingDir
+			case md of
+				Nothing -> genFuzzAction
+				Just d -> do
+					newd <- liftIO $ newDir (parentDir $ toFilePath d)
+					maybe genFuzzAction (return . FuzzMoveDir d) newd
+		FuzzDeleteDir _ -> do
+			d <- liftIO existingDir
+			maybe genFuzzAction (return . FuzzDeleteDir) d
+		FuzzModify _ -> do
+			f <- liftIO $ existingFile 0 ""
+			maybe genFuzzAction (return . FuzzModify) f
 		FuzzPause _ -> return tmpl
 
-existingFile :: FilePath -> IO FuzzFile
-existingFile top = do
-	dir <- toFilePath <$> existingDir
-	contents <- catchDefaultIO [] (getDirectoryContents dir)
-	let files = filter isFuzzFile contents
-	if null files
-		then do
-			let dirs = filter isFuzzDir contents
-			if null dirs
-				then return $ FuzzFile ""
-				else do
-					n <- getStdRandom $ randomR (0, length dirs - 1)
-					existingFile (top </> dirs !! n)
-		else do
-			n <- getStdRandom $ randomR (0, length files - 1)
-			return $ FuzzFile $ top </> dir </> files !! n
+existingFile :: Int -> FilePath -> IO (Maybe FuzzFile)
+existingFile 0 _ = return Nothing
+existingFile n top = maybe (return Nothing) (go . toFilePath) =<< existingDir
+  where
+  	go dir = do
+		contents <- catchDefaultIO [] (getDirectoryContents dir)
+		let files = filter isFuzzFile contents
+		if null files
+			then do
+				let dirs = filter isFuzzDir contents
+				if null dirs
+					then return Nothing
+					else do
+						n <- getStdRandom $ randomR (0, length dirs - 1)
+						existingFile (n - 1) (top </> dirs !! n)
+			else do
+				n <- getStdRandom $ randomR (0, length files - 1)
+				return $ Just $ FuzzFile $ top </> dir </> files !! n
 	
-existingDir :: IO FuzzDir
+existingDir :: IO (Maybe FuzzDir)
 existingDir = do
 	dirs <- filter isFuzzDir <$> getDirectoryContents "."
 	if null dirs
-		then return $ FuzzDir ""
+		then return Nothing
 		else do
 			n <- getStdRandom $ randomR (0, length dirs)
-			return $ FuzzDir $ ("." : dirs) !! n
+			return $ Just $ FuzzDir $ ("." : dirs) !! n
 
-newFile :: IO FuzzFile
+newFile :: IO (Maybe FuzzFile)
 newFile = go (100 :: Int)
   where
-  	go 0 = return $ FuzzFile ""
+  	go 0 = return Nothing
 	go n = do
 		f <- genFuzzFile
 		ifM (doesnotexist (toFilePath f))
-			( return f
+			( return $ Just f
 			, go (n - 1)
 			)
 
-newDir :: FilePath -> IO FuzzDir
+newDir :: FilePath -> IO (Maybe FuzzDir)
 newDir parent = go (100 :: Int)
   where
-  	go 0 = return $ FuzzDir ""
+  	go 0 = return Nothing
 	go n = do
 		(FuzzDir d) <- genFuzzDir
 		ifM (doesnotexist (parent </> d))
-			( return $ FuzzDir d
+			( return $ Just $ FuzzDir d
 			, go (n - 1)
 			)
 
