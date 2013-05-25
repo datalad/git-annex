@@ -64,13 +64,17 @@ generate = simplify . process MAny . tokenGroups
 	process m [] = m
 	process m ts = uncurry process $ consume m ts
 
-	consume m ((One And):y:rest) = (m `MAnd` process MAny [y], rest)
-	consume m ((One Or):y:rest) = (m `MOr` process MAny [y], rest)
-	consume m ((One Not):x:rest) = (m `MAnd` MNot (process MAny [x]), rest)
+	consume m ((One And):rest) = term (m `MAnd`) rest
+	consume m ((One Or):rest) = term (m `MOr`) rest
+	consume m ((One Not):rest) = term (\p -> m `MAnd` (MNot p)) rest
 	consume m ((One (Operation o)):rest) = (m `MAnd` MOp o, rest)
 	consume m (Group g:rest) = (process m g, rest)
 	consume m (_:rest) = consume m rest
 	consume m [] = (m, [])
+
+	term a l = 
+		let (p, l') = consume MAny l
+		in (a p, l')
 
 	simplify (MAnd MAny x) = simplify x
 	simplify (MAnd x MAny) = simplify x
@@ -148,6 +152,18 @@ prop_matcher_sane = all (\m -> match dummy m ()) $ map generate
 	, [Not, Open, Operation True, And, Operation False, Close]
 	, [Not, Open, Not, Open, Not, Operation False, Close, Close]
 	, [Not, Open, Not, Open, Not, Open, Not, Operation True, Close, Close]
+	, [Operation True, And, Not, Operation False]
+	, [Operation True, Not, Operation False]
+	, [Operation True, Not, Not, Not, Operation False]
+	, [Operation True, Not, Not, Not, Operation False, And, Operation True]
+	, [Operation True, Not, Not, Not, Operation False, Operation True]
+	, [Not, Open, Operation True, And, Operation False, Close, 
+		And, Open, 
+			Open, Operation True, And, Operation False, Close,
+			Or,
+			Open, Operation True, And, Open, Not, Operation False, Close, Close,
+		Close, And,
+			Open, Not, Operation False, Close]
 	]
   where
 	dummy b _ = b
