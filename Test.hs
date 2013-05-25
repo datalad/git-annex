@@ -57,6 +57,7 @@ import qualified Utility.InodeCache
 import qualified Utility.Env
 import qualified Utility.Gpg
 import qualified Utility.Matcher
+import qualified Utility.Exception
 #ifndef __WINDOWS__
 import qualified GitAnnex
 #endif
@@ -167,6 +168,7 @@ hunit =
 	, check "rsync remote" test_rsync_remote
 	, check "bup remote" test_bup_remote
 	, check "crypto" test_crypto
+	, check "preferred content" test_preferred_content
 	]
   where
 	check desc t env = do
@@ -340,6 +342,40 @@ test_copy env = "git-annex copy" ~: TestCase $ intmpclonerepo env $ do
 	git_annex env "copy" ["--from", "origin", ingitfile] @? "copy of ingitfile should be no-op"
 	checkregularfile ingitfile
 	checkcontent ingitfile
+
+test_preferred_content :: TestEnv -> Test
+test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpclonerepo env $ do
+	annexed_notpresent annexedfile
+	-- get --auto only looks at numcopies when preferred content is not
+	-- set, and with 1 copy existing, does not get the file.
+	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed with default preferred content"
+	annexed_notpresent annexedfile
+
+	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "group" [".", "client"] @? "set group to standard failed"
+	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed for client"
+	annexed_present annexedfile
+	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
+
+	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "group" [".", "manual"] @? "set group to manual failed"
+	-- drop --auto with manual leaves the file where it is
+	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with manual preferred content"
+	annexed_present annexedfile
+	git_annex env "drop" [annexedfile] @? "drop of file failed"
+	annexed_notpresent annexedfile
+	-- get --auto with manual does not get the file
+	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed with manual preferred content"
+	annexed_notpresent annexedfile
+	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
+	
+	git_annex env "content" [".", "exclude=*"] @? "set expression to exclude=* failed"
+	git_annex env "get" [annexedfile] @? "get of file failed"
+	annexed_present annexedfile
+	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with exclude=*"
+	annexed_notpresent annexedfile
+	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed with exclude=*"
+	annexed_notpresent annexedfile
 
 test_lock :: TestEnv -> Test
 test_lock env = "git-annex unlock/lock" ~: intmpclonerepoInDirect env $ do
@@ -960,7 +996,7 @@ checkregularfile f = do
 
 checkcontent :: FilePath -> Assertion
 checkcontent f = do
-	c <- readFile f
+	c <- Utility.Exception.catchDefaultIO "could not read file" $ readFile f
 	assertEqual ("checkcontent " ++ f) (content f) c
 
 checkunwritable :: FilePath -> Assertion
