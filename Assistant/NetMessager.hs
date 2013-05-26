@@ -32,8 +32,9 @@ notifyNetMessagerRestart =
 waitNetMessagerRestart :: Assistant ()
 waitNetMessagerRestart = readSV <<~ (netMessagerRestart . netMessager)
 
-{- Store an important NetMessage for a client, and if an equivilant
- - message was already sent, remove it from sentImportantNetMessages. -}
+{- Store a new important NetMessage for a client, and if an equivilant
+ - older message is already stored, remove it from both importantNetMessages
+ - and sentImportantNetMessages. -}
 storeImportantNetMessage :: NetMessage -> ClientID -> (ClientID -> Bool) -> Assistant ()
 storeImportantNetMessage m client matchingclient = go <<~ netMessager
   where
@@ -41,7 +42,8 @@ storeImportantNetMessage m client matchingclient = go <<~ netMessager
 		q <- takeTMVar $ importantNetMessages nm
 		sent <- takeTMVar $ sentImportantNetMessages nm
 		putTMVar (importantNetMessages nm) $
-			M.alter (Just . maybe (S.singleton m) (S.insert m)) client q
+			M.alter (Just . maybe (S.singleton m) (S.insert m)) client $
+				M.mapWithKey removematching sent q
 		putTMVar (sentImportantNetMessages nm) $
 			M.mapWithKey removematching sent
 	removematching someclient s
