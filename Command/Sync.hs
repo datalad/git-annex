@@ -271,7 +271,8 @@ resolveMerge' u
 	makelink (Just key) = do
 		let dest = mergeFile file key
 		l <- inRepo $ gitAnnexLink dest key
-		replaceFile dest $ addAnnexLink l
+		replaceFile dest $ makeAnnexLink l
+		stageSymlink dest =<< hashSymlink l
 		whenM (isDirect) $
 			toDirect key dest
 	makelink _ = noop
