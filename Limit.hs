@@ -13,12 +13,6 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 import System.Path.WildMatch
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
-#else
-import System.Path.WildMatch
-#endif
 import System.PosixCompat.Files
 
 import Common.Annex
@@ -36,6 +30,14 @@ import Types.FileMatcher
 import Logs.Group
 import Utility.HumanTime
 import Utility.DataUnits
+
+#ifdef WITH_TDFA
+import Text.Regex.TDFA
+import Text.Regex.TDFA.String
+#else
+import System.Path.WildMatch
+import Types.FileMatcher
+#endif
 
 type MatchFiles = AssumeNotPresent -> FileInfo -> Annex Bool
 type MkLimit = String -> Either String MatchFiles
@@ -105,7 +107,7 @@ matchglob glob fi =
 	cregex = compile defaultCompOpt defaultExecOpt regex
 	regex = '^':wildToRegex glob
 #else
-	wildCheckCase glob (Annex.matchFile fi)
+	wildCheckCase glob (matchFile fi)
 #endif
 
 {- Adds a limit to skip files not believed to be present
