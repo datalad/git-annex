@@ -17,6 +17,7 @@ import System.Posix.Signals
 #ifndef __ANDROID__
 #ifndef __WINDOWS__
 import System.Posix.Terminal
+#endif
 #else
 #endif
 
