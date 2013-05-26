@@ -8,11 +8,13 @@
 module Command.FuzzTest where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
 import Annex.Exception
+import Utility.DiskFree
 
 import Data.Time.Clock
 import System.Random (getStdRandom, random, randomR)
@@ -67,18 +69,30 @@ record h tmpl = liftIO $ do
 	hFlush h
 
 {- Delay for either a fraction of a second, or a few seconds, or up
- - to 1 minute. -}
-randomDelay :: Delay -> IO ()
-randomDelay TinyDelay = threadDelay =<< getStdRandom (randomR (10000, 1000000))
-randomDelay SecondsDelay = threadDelaySeconds =<< Seconds <$> getStdRandom (randomR (1, 10))
-randomDelay MinutesDelay = threadDelaySeconds =<< Seconds <$> getStdRandom (randomR (1, 60))
-randomDelay NoDelay = noop
+ - to 1 minute.
+ -
+ - The MinutesDelay is used as an opportunity to do housekeeping tasks.
+ -}
+randomDelay :: Delay -> Annex ()
+randomDelay TinyDelay = liftIO $
+	threadDelay =<< getStdRandom (randomR (10000, 1000000))
+randomDelay SecondsDelay = liftIO $ 
+	threadDelaySeconds =<< Seconds <$> getStdRandom (randomR (1, 10))
+randomDelay MinutesDelay = do
+	liftIO $ threadDelaySeconds =<< Seconds <$> getStdRandom (randomR (1, 60))
+	reserve <- annexDiskReserve <$> Annex.getGitConfig
+	free <- liftIO $ getDiskFree "."
+	case free of
+		Just have | have < reserve -> do
+			warning "Low disk space; fuzz test paused."
+			liftIO $ threadDelaySeconds (Seconds 60)
+			randomDelay MinutesDelay
+		_  -> noop
 
 data Delay
 	= TinyDelay
 	| SecondsDelay
 	| MinutesDelay
-	| NoDelay
 	deriving (Read, Show, Eq)
 
 instance Arbitrary Delay where
@@ -175,7 +189,7 @@ runFuzzAction (FuzzDeleteDir (FuzzDir d)) = liftIO $
 	removeDirectoryRecursive d
 runFuzzAction (FuzzMoveDir (FuzzDir src) (FuzzDir dest)) = liftIO $
 	rename src dest
-runFuzzAction (FuzzPause d) = liftIO $ randomDelay d
+runFuzzAction (FuzzPause d) = randomDelay d
 
 genFuzzAction :: Annex FuzzAction
 genFuzzAction = do
