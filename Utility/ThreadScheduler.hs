@@ -55,12 +55,12 @@ waitForTermination :: IO ()
 waitForTermination = do
 	lock <- newEmptyMVar
 #ifndef __WINDOWS__
-	let check sig lock = void $
+	let check sig = void $
 		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
-	check softwareTermination lock
+	check softwareTermination
 #ifndef __ANDROID__
 	whenM (queryTerminal stdInput) $
-		check keyboardSignal lock
+		check keyboardSignal
 #endif
 #endif
 	takeMVar lock
