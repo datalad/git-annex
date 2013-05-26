@@ -17,6 +17,7 @@ git-annex (4.20130522) UNRELEASED; urgency=low
     like with ssh remotes.
   * content: New command line way to view and configure a repository's
     preferred content settings.
+  * sync: Fix double merge conflict resolution handling.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
 

@@ -302,7 +302,7 @@ mergeFile file key
 	| otherwise = go $ shortHash $ key2file key
   where
 	varmarker = ".variant-"
-	doubleconflict = varmarker `isSuffixOf` (dropExtension file)
+	doubleconflict = varmarker `isInfixOf` file
 	go v = takeDirectory file
 		</> dropExtension (takeFileName file)
 		++ varmarker ++ v
