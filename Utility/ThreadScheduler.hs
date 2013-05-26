@@ -15,7 +15,9 @@ import Common
 import Control.Concurrent
 import System.Posix.Signals
 #ifndef __ANDROID__
+#ifndef __WINDOWS__
 import System.Posix.Terminal
+#else
 #endif
 
 newtype Seconds = Seconds { fromSeconds :: Int }
@@ -54,8 +56,10 @@ waitForTermination = do
 	lock <- newEmptyMVar
 	check softwareTermination lock
 #ifndef __ANDROID__
+#ifndef __WINDOWS__
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal lock
+#endif
 #endif
 	takeMVar lock
   where
