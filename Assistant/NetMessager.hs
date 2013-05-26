@@ -43,7 +43,7 @@ storeImportantNetMessage m client matchingclient = go <<~ netMessager
 		sent <- takeTMVar $ sentImportantNetMessages nm
 		putTMVar (importantNetMessages nm) $
 			M.alter (Just . maybe (S.singleton m) (S.insert m)) client $
-				M.mapWithKey removematching sent q
+				M.mapWithKey removematching q
 		putTMVar (sentImportantNetMessages nm) $
 			M.mapWithKey removematching sent
 	removematching someclient s
