@@ -131,15 +131,20 @@ mkFuzzFile file dirs = FuzzFile $ joinPath (map toFilePath dirs) </> ("fuzzfile_
 mkFuzzDir :: Int -> FuzzDir
 mkFuzzDir n = FuzzDir $ "fuzzdir_" ++ show n
 
+{- File is placed inside a directory hierarchy up to 4 subdirectories deep. -}
 genFuzzFile :: IO FuzzFile
 genFuzzFile = do
-	n <- getStdRandom $ randomR (0, 5)
+	n <- getStdRandom $ randomR (0, 4)
 	dirs <- replicateM n genFuzzDir
 	file <- show <$> (getStdRandom random :: IO Int)
 	return $ mkFuzzFile file dirs
 
+{- Only 16 distinct subdirectories are used. When nested 4 deep, this
+ - yields 69904 total directories max, which is below the default Linux
+ - inotify limit of 81920. The goal is not to run the assistant out of
+ - inotify descriptors. -}
 genFuzzDir :: IO FuzzDir
-genFuzzDir = mkFuzzDir <$> (getStdRandom random :: IO Int)
+genFuzzDir = mkFuzzDir <$> (getStdRandom (randomR (1,16)) :: IO Int)
 
 localFile :: FilePath -> Bool
 localFile f
