@@ -187,24 +187,14 @@ jidField = checkBool (isJust . parseJID) bad textField
 validateForm :: XMPPForm -> IO (Either SomeException XMPPCreds)
 validateForm f = do
 	let jid = fromMaybe (error "bad JID") $ parseJID (formJID f)
-	let domain = T.unpack $ strDomain $ jidDomain jid
-	hostports <- lookupSRV $ mkSRVTcp "xmpp-client" domain
 	let username = fromMaybe "" (strNode <$> jidNode jid)
-	case hostports of
-		((h, PortNumber p):_) -> testXMPP $ XMPPCreds
-			{ xmppUsername = username
-			, xmppPassword = formPassword f
-			, xmppHostname = h
-			, xmppPort = fromIntegral p
-			, xmppJID = formJID f
-			}
-		_ -> testXMPP $ XMPPCreds
-			{ xmppUsername = username
-			, xmppPassword = formPassword f
-			, xmppHostname = T.unpack $ strDomain $ jidDomain jid
-			, xmppPort = 5222
-			, xmppJID = formJID f
-			}
+	testXMPP $ XMPPCreds
+		{ xmppUsername = username
+		, xmppPassword = formPassword f
+		, xmppHostname = T.unpack $ strDomain $ jidDomain jid
+		, xmppPort = 5222
+		, xmppJID = formJID f
+		}
 
 testXMPP :: XMPPCreds -> IO (Either SomeException XMPPCreds)
 testXMPP creds = either Left (const $ Right creds)
