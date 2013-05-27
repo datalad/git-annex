@@ -205,8 +205,7 @@ checkDiskSpace destination key alreadythere = do
 	case (free, keySize key) of
 		(Just have, Just need) -> do
 			let ok = (need + reserve <= have + alreadythere) || force
-			unless ok $ do
-				liftIO $ print (need, reserve, have, alreadythere)
+			unless ok $
 				needmorespace (need + reserve - have - alreadythere)
 			return ok
 		_ -> return True
