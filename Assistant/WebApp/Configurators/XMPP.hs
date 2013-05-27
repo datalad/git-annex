@@ -21,17 +21,15 @@ import Assistant.Types.Buddies
 import Assistant.NetMessager
 import Assistant.Alert
 import Assistant.DaemonStatus
-import Utility.SRV
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
 #endif
 
 #ifdef WITH_XMPP
-import Network
 import Network.Protocol.XMPP
+import Network
 import qualified Data.Text as T
-import Control.Exception (SomeException)
 #endif
 
 {- Displays an alert suggesting to configure XMPP. -}
@@ -118,7 +116,7 @@ xmppform next = xmppPage $ do
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
-		FormSuccess f -> either (showform . Just . show) (lift . storecreds)
+		FormSuccess f -> either (showform . Just) (lift . storecreds)
 			=<< liftIO (validateForm f)
 		_ -> showform Nothing
   where
@@ -184,7 +182,7 @@ jidField = checkBool (isJust . parseJID) bad textField
 	bad :: Text
 	bad = "This should look like an email address.."
 
-validateForm :: XMPPForm -> IO (Either SomeException XMPPCreds)
+validateForm :: XMPPForm -> IO (Either String XMPPCreds)
 validateForm f = do
 	let jid = fromMaybe (error "bad JID") $ parseJID (formJID f)
 	let username = fromMaybe "" (strNode <$> jidNode jid)
@@ -196,10 +194,26 @@ validateForm f = do
 		, xmppJID = formJID f
 		}
 
-testXMPP :: XMPPCreds -> IO (Either SomeException XMPPCreds)
-testXMPP creds = either Left (const $ Right creds)
-	<$> connectXMPP creds (const noop)
+testXMPP :: XMPPCreds -> IO (Either String XMPPCreds)
+testXMPP creds = do
+	(good, bad) <- partition (either (const False) (const True) . snd) 
+		<$> connectXMPP creds (const noop)
+	case good of
+		(((h, PortNumber p), _):_) -> return $ Right $ creds
+			{ xmppHostname = h
+			, xmppPort = fromIntegral p
+			}
+		(((h, _), _):_) -> return $ Right $ creds
+			{ xmppHostname = h
+			}
+		_ -> return $ Left $ intercalate "; " $ map formatlog bad
+  where
+  	formatlog ((h, p), Left e) = "host " ++ h ++ ":" ++ showport p ++ " failed: " ++ show e
+  	formatlog _ = ""
 
+	showport (PortNumber n) = show n
+	showport (Service s) = s
+	showport (UnixSocket s) = s
 #endif
 
 xmppPage :: Widget -> Handler RepHtml

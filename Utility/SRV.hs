@@ -15,6 +15,7 @@ module Utility.SRV (
 	mkSRV,
 	lookupSRV,
 	lookupSRVHost,
+	HostPort,
 ) where
 
 import Utility.Process
