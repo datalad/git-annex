@@ -93,7 +93,7 @@ checkDaemon pidfile = do
 		Just fd -> do
 			locked <- getLock fd (ReadLock, AbsoluteSeek, 0, 0)
 			p <- readish <$> readFile pidfile
-			return $ check locked p
+			closeFd fd `after` return (check locked p)
 		Nothing -> return Nothing
   where
 	check Nothing _ = Nothing
