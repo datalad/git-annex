@@ -137,6 +137,7 @@ xmppPush cid gitpush = do
 	liftIO $ do
 		mapM_ killThread [t1, t2]
 		mapM_ hClose [inh, outh, controlh]
+		closeFd writecontrol
 	
 	return r
   where
