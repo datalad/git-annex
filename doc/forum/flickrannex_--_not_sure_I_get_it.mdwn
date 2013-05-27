@@ -1,0 +1,7 @@
+flickrannex -- is it a way to upload your images to flickr by putting them in a git annex directory, and make them retrievable from it handily that way?
+
+Or is it a hack to exploit flickr's free storage, by allowing you to somehow wrap your files in images and uploading them?
+
+My python and knowledge of how git annex's hooks work is not good enough for me to be certain by reading the code.
+
+Thanks
