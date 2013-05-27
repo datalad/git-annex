@@ -171,7 +171,9 @@ logXMPPEvent :: XMPPEvent -> String
 logXMPPEvent (GotNetMessage m) = logNetMessage m
 logXMPPEvent (PresenceMessage p) = logPresence p
 logXMPPEvent (Ignorable (ReceivedPresence p)) = "Ignorable " ++ logPresence p
-logXMPPEvent v = show v
+logXMPPEvent (Ignorable _) = "Ignorable message"
+logXMPPEvent (Unknown _) = "Unknown message"
+logXMPPEvent (ProtocolError _) = "Protocol error message"
 
 logPresence :: Presence -> String
 logPresence (p@Presence { presenceFrom = Just jid }) = unwords
