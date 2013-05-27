@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-05-27T15:31:53Z"
+ content="""
+I tried, as an experiment, killing on of the `git cat-file` child processes of the assistant. As hypothesized, that led to the same thing I saw logged before.
+
+So, why might git commands be dying, and which commands? It would be pretty easy for git-annex to detect git cat-file dying, and restart it. Other commands would be more difficult. Still this might be a git bug which would best be fixed there. It would be good to get a core dump from git.
+"""]]
