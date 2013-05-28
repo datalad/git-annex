@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+When a repository is set in direct mode it will still replace files with symlinks when it becomes aware of a change but still hasn't been able to sync the file contents. This can create repositories that are temporarily unusable with files replaced with broken symlinks.
+
+### What steps will reproduce the problem?
+
+1. Create two repositories with each other as remotes
+2. Run the assistant on both
+3. Create some file changes in one and watch the directory in another.
+4. For a brief (or sometimes long) time the destination repository will have it's old version of the file replaced by a broken symlink
+
+This is particularly noticeable when using XMPP as it can often be the case that the two repositories can't connect to each other directly but can talk through XMPP. This breaks using git-annex in direct mode for things like having a synced config directory across machines. Something like having "~/.bashrc" linked into "~/annex-repository/bashrc", doesn't work as there will be times when a machine is broken because .bashrc is linked to a broken symlink while it fetches a new version. 
+
+The desired behavior would be to have git-annex in direct mode only replace older versions of files with newer versions of files.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+"""]]
