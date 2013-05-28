@@ -19,6 +19,8 @@ git-annex (4.20130522) UNRELEASED; urgency=low
     preferred content settings.
   * sync: Fix double merge conflict resolution handling.
   * XMPP: Fix a file descriptor leak.
+  * Android: Added an "Open WebApp" item to the terminal's menu.
+    Should work for Android devices that cannot auto-open the webapp on start.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
 

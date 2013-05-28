@@ -157,10 +157,12 @@ firstRun listenhost = do
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
-#ifdef __ANDROID__
-openBrowser mcmd htmlshim realurl outh errh = do
-#else
+#ifndef __ANDROID__
 openBrowser mcmd htmlshim _realurl outh errh = do
+#else
+openBrowser mcmd htmlshim realurl outh errh = do
+	{- The Android app has a menu item that opens this file. -}
+	writeFile "/sdcard/git-annex.home/.git-annex-url" realurl
 #endif
 	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 	hFlush stdout
@@ -171,8 +173,11 @@ openBrowser mcmd htmlshim _realurl outh errh = do
 		, std_err = maybe Inherit UseHandle errh
 		}
 	exitcode <- waitForProcess pid
-	unless (exitcode == ExitSuccess) $
+	unless (exitcode == ExitSuccess) $ do
 		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
+#ifdef __ANDROID__
+		hPutStrLn (fromMaybe stderr errh) "To open the WebApp, go to the menu and select \"Open WebApp\""
+#endif
   where
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
