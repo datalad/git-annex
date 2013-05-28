@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="donkeyicydragon"
+ subject="I should have read git annex unused first"
+ date="2013-05-28T22:14:46Z"
+ content="""
+Apparently \"git annex unused\" finds previous versions of the object that are not symlinked anymore. However, if a file is renamed then the oldest version before the rename is not marked as unused.
+
+
+"""]]
