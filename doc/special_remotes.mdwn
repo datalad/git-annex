@@ -28,6 +28,7 @@ for various cloud things:
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
 * [[Google drive|tips/googledriveannex]]
 * [[Mega.co.nz|tips/megaannex]]
+* [[SkyDrive|tips/skydrive]]
 * [[Flickr|tips/flickrannex]]
 * [[IMAP|forum/special_remote_for_IMAP]]
 * [[Usenet|forum/nntp__47__usenet special remote]]
