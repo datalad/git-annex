@@ -1,7 +1,7 @@
 skydriveannex
 =========
 
-Hook program for gitannex to use skydrive as backend
+Hook program for gitannex to use [skydrive](http://en.wikipedia.org/wiki/SkyDrive) (previously *Windows Live SkyDrive* and *Windows Live Folders*) as backend
 
 # Requirements:
 

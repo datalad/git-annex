@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-05-29T16:23:10Z"
+ content="""
+@mey.vn, Debian packages of git-annex, as uploaded to the Debian repositories, are built with whatever libc version the Debian autobuilder is running. You cannot, in general, install packages from Debian unstable into stable without upgrading your libc6.
+
+The release notes were not talking about the Debian packages, but about the [[Linux_standalone]] tarballs. Those are built with libc 2.13.
+"""]]
