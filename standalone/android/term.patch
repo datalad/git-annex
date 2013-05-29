@@ -45,6 +45,320 @@ index 064f833..fe5f3a3 100644
      <item android:id="@+id/menu_toggle_wakelock"
          android:title="@string/enable_wakelock" />
      <item android:id="@+id/menu_toggle_wifilock"
+diff --git a/res/values-cz/strings.xml b/res/values-cz/strings.xml
+index f3d19bc..882e19b 100644
+--- a/res/values-cz/strings.xml
++++ b/res/values-cz/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Predešlé okno</string>
+    <string name="next_window">Další okno</string>
+    <string name="reset">Reset terminálu</string>
+-   <string name="send_email">Napiš email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciální znaky</string>
+    <string name="toggle_soft_keyboard">Přepnout soft. klávesnici</string>
+    
+@@ -124,4 +124,4 @@
+   <string name="control_key_dialog_fn_disabled_text">Není nastaveno žádné tlačitko pro funkční klávesu.</string>
+ 
+   <string name="confirm_window_close_message">Zavřít okno?</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-de/strings.xml b/res/values-de/strings.xml
+index f6134a5..06d2e1f 100644
+--- a/res/values-de/strings.xml
++++ b/res/values-de/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Vorh. Fenster</string>
+    <string name="next_window">Nächst. Fenster</string>
+    <string name="reset">Zurücksetzen</string>
+-   <string name="send_email">Email schreiben</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Spezialtasten</string>
+    <string name="toggle_soft_keyboard">Tastatur an/aus</string>
+ 	
+@@ -124,4 +124,4 @@
+ 
+   <string name="perm_run_script">Beliebige Scripte im Terminal Emulator ausführen</string>
+   <string name="permdesc_run_script">Erlaubt Anwendungen, neue Fenster im Android Terminal Emulator zu öffnen und in diesen Befehle auszuführen. Dies schließt alle Berechtigungen von Android Terminal Emulator ein, inklusive Internetzugang und Schreib-/Leserechte auf der SD-Karte.</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-es/strings.xml b/res/values-es/strings.xml
+index 94553b2..92d9e2a 100644
+--- a/res/values-es/strings.xml
++++ b/res/values-es/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Ventana anterior</string>
+    <string name="next_window">Ventana posterior</string>
+    <string name="reset">Reiniciar consola</string>
+-   <string name="send_email">Enviar email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiales</string>
+    <string name="toggle_soft_keyboard">Ver/ocultar teclado</string>
+ 
+diff --git a/res/values-eu/strings.xml b/res/values-eu/strings.xml
+index b9f0586..92a16a0 100644
+--- a/res/values-eu/strings.xml
++++ b/res/values-eu/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Aurreko leihoa</string>
+    <string name="next_window">Hurrengo leihoa</string>
+    <string name="reset">Berrezarri terminala</string>
+-   <string name="send_email">Bidali eposta ...(r)i</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Tekla bereziak</string>
+    <string name="toggle_soft_keyboard">Txandakatu soft teklatua</string>
+ 
+diff --git a/res/values-fr/strings.xml b/res/values-fr/strings.xml
+index beab2be..529f720 100644
+--- a/res/values-fr/strings.xml
++++ b/res/values-fr/strings.xml
+@@ -24,7 +24,7 @@
+    <string name="prev_window">Fenêtre Préc.</string>
+    <string name="next_window">Fenêtre Suiv.</string>
+    <string name="reset">Terminal par défaut</string>
+-   <string name="send_email">Envoyer un e-mail</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Touches spéciales</string>
+    <string name="toggle_soft_keyboard">Afficher/Masquer Clavier</string>
+ 
+diff --git a/res/values-hu/strings.xml b/res/values-hu/strings.xml
+index 5dbecb5..ce917c5 100644
+--- a/res/values-hu/strings.xml
++++ b/res/values-hu/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Előző ablak</string>
+    <string name="next_window">Következő ablak</string>
+    <string name="reset">Alaphelyzet</string>
+-   <string name="send_email">Küldés emailben</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciális billentyűk</string>
+    <string name="toggle_soft_keyboard">Billentyűzet ki/be</string>
+ 
+@@ -148,4 +148,4 @@
+   <string name="alt_sends_esc">Az Alt billentyű ESC-et küld</string>
+   <string name="alt_sends_esc_summary_on">Az Alt billentyű ESC-et küld.</string>
+   <string name="alt_sends_esc_summary_off">Az Alt billentyű nem ESC-et küld.</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-it/strings.xml b/res/values-it/strings.xml
+index e6a7294..9d97869 100644
+--- a/res/values-it/strings.xml
++++ b/res/values-it/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Fin. successiva</string>
+    <string name="next_window">Fin. precedente</string>
+    <string name="reset">Reset terminale</string>
+-   <string name="send_email">Invia email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Tasti speciali</string>
+    <string name="toggle_soft_keyboard">Mostra/nascondi tastiera</string>
+ 
+diff --git a/res/values-ja/strings.xml b/res/values-ja/strings.xml
+index 502fa23..dbfe9fa 100644
+--- a/res/values-ja/strings.xml
++++ b/res/values-ja/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">前のウインドウ</string>
+    <string name="next_window">次のウインドウ</string>
+    <string name="reset">端末をリセット</string>
+-   <string name="send_email">メール送信</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特殊キー</string>
+    <string name="toggle_soft_keyboard">ソフトキーボード</string>
+ 
+diff --git a/res/values-ka/strings.xml b/res/values-ka/strings.xml
+index 06629d0..1d545b6 100644
+--- a/res/values-ka/strings.xml
++++ b/res/values-ka/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">წინა ფანჯარა</string>
+    <string name="next_window">შემდეგი ფანჯარა</string>
+    <string name="reset">ტერმინალის რესტარტი</string>
+-   <string name="send_email">ელ-ფოსტის გაგზავნა</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">სპეციალური ღილაკები</string>
+    <string name="toggle_soft_keyboard">პროგრამული კლავიატურის ჩართ./გამორთ.</string>
+ 
+diff --git a/res/values-nb/strings.xml b/res/values-nb/strings.xml
+index d81ee07..c370c6f 100644
+--- a/res/values-nb/strings.xml
++++ b/res/values-nb/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emulator</string>
+    <string name="preferences">Innstillinger</string>
+    <string name="reset">Tilbakestill terminal</string>
+-   <string name="send_email">Send epost til</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Spesielle tegn</string>
+    <string name="toggle_soft_keyboard">Veksle virtuelt tastatur</string>
+ 
+diff --git a/res/values-nl/strings.xml b/res/values-nl/strings.xml
+index 19fa3d0..e24fbf5 100644
+--- a/res/values-nl/strings.xml
++++ b/res/values-nl/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Vorig venster</string>
+    <string name="next_window">Volgend venster</string>
+    <string name="reset">Herstellen</string>
+-   <string name="send_email">E-mail sturen naar</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciale knoppen</string>
+    <string name="toggle_soft_keyboard">Toetsenbord aan/uit</string>
+ 
+diff --git a/res/values-pl/strings.xml b/res/values-pl/strings.xml
+index 25b3b43..2e0e651 100644
+--- a/res/values-pl/strings.xml
++++ b/res/values-pl/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Poprzednie okno</string>
+    <string name="next_window">Następne okno</string>
+    <string name="reset">Wyczyść terminal</string>
+-   <string name="send_email">Wyślij e-mail</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Przyciski specjalne</string>
+    <string name="toggle_soft_keyboard">Pokaż klawiaturę</string>
+ 
+diff --git a/res/values-pt-rPT/strings.xml b/res/values-pt-rPT/strings.xml
+index aa4ba54..aa3d735 100644
+--- a/res/values-pt-rPT/strings.xml
++++ b/res/values-pt-rPT/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emulator</string>
+    <string name="preferences">Preferências</string>
+    <string name="reset">Reset terminal</string>
+-   <string name="send_email">Email para</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiais</string>
+    <string name="toggle_soft_keyboard">Abrir teclado</string>
+ 
+diff --git a/res/values-pt/strings.xml b/res/values-pt/strings.xml
+index 2d992f9..e53a9ac 100644
+--- a/res/values-pt/strings.xml
++++ b/res/values-pt/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Anterior</string>
+    <string name="next_window">Seguinte</string>
+    <string name="reset">Repor terminal</string>
+-   <string name="send_email">Enviar mensagem para</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiais</string>
+    <string name="toggle_soft_keyboard">Mostrar/ocultar teclado</string>
+ 
+diff --git a/res/values-ro/strings.xml b/res/values-ro/strings.xml
+index 3c7ea06..7a072d0 100644
+--- a/res/values-ro/strings.xml
++++ b/res/values-ro/strings.xml
+@@ -21,7 +21,7 @@
+    <string name="prev_window">"Fereastra anterioră"</string>
+    <string name="next_window">"Fereastra următoare"</string>
+    <string name="reset">"Resetaţi "</string>
+-   <string name="send_email">"E-mail"</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">"Taste speciale"</string>
+    <string name="toggle_soft_keyboard">"Comutați tastatura"</string>
+ 
+@@ -123,4 +123,4 @@
+   <string name="alt_sends_esc">"Tasta Alt trimite ESC"</string>
+   <string name="alt_sends_esc_summary_on">"Tasta Alt trimite ESC."</string>
+   <string name="alt_sends_esc_summary_off">"Tasta Alt nu trimite ESC."</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-ru/strings.xml b/res/values-ru/strings.xml
+index 0e96360..762324e 100644
+--- a/res/values-ru/strings.xml
++++ b/res/values-ru/strings.xml
+@@ -8,7 +8,7 @@
+     <string name="prev_window">Предыдущее окно</string>
+     <string name="next_window">Следующее окно</string>
+     <string name="reset">Сбросить терминал</string>
+-    <string name="send_email">Отправить Email</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Специальные клавиши</string>
+     <string name="toggle_soft_keyboard">Экранная клавиатура</string>
+     <string name="reset_toast_notification">Терминальное состояние этого окна было сброшено.</string>
+diff --git a/res/values-sk/strings.xml b/res/values-sk/strings.xml
+index ef35366..cc31d80 100644
+--- a/res/values-sk/strings.xml
++++ b/res/values-sk/strings.xml
+@@ -23,7 +23,7 @@
+   <string name="prev_window">Dalšie okno</string>
+   <string name="next_window">Predch. okno</string>
+   <string name="reset">Obnoviť term.</string>
+-  <string name="send_email">Poslať e-mailom</string>
++  <string name="send_email">WebApp</string>
+   <string name="special_keys">Špec. klávesy</string>
+   <string name="toggle_soft_keyboard">Skryť/zobraziť klávesnicu</string>
+ 
+diff --git a/res/values-sv/strings.xml b/res/values-sv/strings.xml
+index 1aa9055..8de6c09 100644
+--- a/res/values-sv/strings.xml
++++ b/res/values-sv/strings.xml
+@@ -3,7 +3,7 @@
+     <string name="application_terminal">Terminalemulator</string>
+     <string name="preferences">Inställningar</string>
+     <string name="reset">Återställ terminal</string>
+-    <string name="send_email">E-posta till</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Special tangenter</string>
+     <string name="toggle_soft_keyboard">Växla till virtuellt tangentbord</string>
+     <string name="enable_wakelock">Aktivera VäckningsLås</string>
+diff --git a/res/values-tr/strings.xml b/res/values-tr/strings.xml
+index b45fa12..fb70f78 100644
+--- a/res/values-tr/strings.xml
++++ b/res/values-tr/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emülatörü</string>
+    <string name="preferences">Tercihler</string>
+    <string name="reset">Terminali yeniden başlat</string>
+-   <string name="send_email">Email olarak yolla</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Özel tuşlar</string>
+    <string name="toggle_soft_keyboard">Ekran klavyesine geç</string>
+ 
+diff --git a/res/values-uk/strings.xml b/res/values-uk/strings.xml
+index 2f267a9..d3622c4 100644
+--- a/res/values-uk/strings.xml
++++ b/res/values-uk/strings.xml
+@@ -8,7 +8,7 @@
+     <string name="prev_window">Попереднє вікно</string>
+     <string name="next_window">Наступне вікно</string>
+     <string name="reset">Скинути термінал</string>
+-    <string name="send_email">Відіслати Email</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Спеціальні клавіші</string>
+     <string name="toggle_soft_keyboard">Екранна клавіатура</string>
+     <string name="reset_toast_notification">"Термінальний стан цього вікна було скинуто."</string>
+diff --git a/res/values-zh-rCN/strings.xml b/res/values-zh-rCN/strings.xml
+index 6f47b4f..81316ec 100644
+--- a/res/values-zh-rCN/strings.xml
++++ b/res/values-zh-rCN/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">终端模拟器</string>
+    <string name="preferences">首选项</string>
+    <string name="reset">重置终端</string>
+-   <string name="send_email">发送电子邮件到...</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特殊键</string>
+    <string name="toggle_soft_keyboard">打开/关闭软键盘</string>
+ 
+diff --git a/res/values-zh-rTW/strings.xml b/res/values-zh-rTW/strings.xml
+index afda0f1..37d1b50 100644
+--- a/res/values-zh-rTW/strings.xml
++++ b/res/values-zh-rTW/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">模擬終端</string>
+    <string name="preferences">設定</string>
+    <string name="reset">結束</string>
+-   <string name="send_email">以電郵傳送</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特別按鍵</string>
+    <string name="toggle_soft_keyboard">顯示／隱藏鍵盤</string>
+ 
 diff --git a/res/values/defaults.xml b/res/values/defaults.xml
 index 67287b2..9b7cfcd 100644
 --- a/res/values/defaults.xml
