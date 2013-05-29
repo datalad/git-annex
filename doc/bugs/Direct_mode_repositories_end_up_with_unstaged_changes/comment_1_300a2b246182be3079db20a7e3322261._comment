@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-29T16:18:33Z"
+ content="""
+This does not indicate a problem. Nor are there any unstaged changes. `git status` simply does not know about git-annex's direct mode. Please see [[/direct_mode]] for caveats about this and other problems with using regular git commands with git-annex repositories in direct mode.
+"""]]
