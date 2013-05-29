@@ -195,14 +195,12 @@ checkPresent r k = do
 		, Param $ archive r k
 		]
 
-	untrusted = do
-		showLongNote $ unlines
+	untrusted = return $ Left $ unlines
 			[ "Glacier's inventory says it has a copy."
 			, "However, the inventory could be out of date, if it was recently removed."
 			, "(Use --trust-glacier if you're sure it's still in Glacier.)"
 			, ""
 			]
-		return $ Right False
 
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
 glacierAction r params = runGlacier (config r) (uuid r) params
