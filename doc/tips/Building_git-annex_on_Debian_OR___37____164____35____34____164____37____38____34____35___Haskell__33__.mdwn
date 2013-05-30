@@ -16,7 +16,7 @@ There appears to currently be two methods:
 
 ##Start off with a clean wheezy chroot
 
-    sudo debootstrap weezy debian-wheezy
+    sudo debootstrap wheezy debian-wheezy
     sudo chroot debian-wheezy
 
 ##Install some build tools
