@@ -6,3 +6,6 @@ I have a jabber account on `jabber.ccc.de`. When trying to log in to that accoun
     [2013-05-26 21:40:16 EDT] read: host ["-t","SRV","--","_xmpp-client._tcp.jabber.ccc.de"]
 
 It'd be great if this error were a wee bit more verbose.
+
+> The XMPP library has been updated to include the actual error message from the server.
+> [[done]] --[[Joey]]
