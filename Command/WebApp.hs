@@ -164,7 +164,7 @@ openBrowser mcmd htmlshim realurl outh errh = do
 	{- The Android app has a menu item that opens this file. -}
 	writeFile "/sdcard/git-annex.home/.git-annex-url" realurl
 #endif
-	toconsole $ "Launching web browser on " ++ url
+	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 	hFlush stdout
 	environ <- cleanEnvironment
 	(_, _, _, pid) <- createProcess p
@@ -174,12 +174,11 @@ openBrowser mcmd htmlshim realurl outh errh = do
 		}
 	exitcode <- waitForProcess pid
 	unless (exitcode == ExitSuccess) $ do
-		toconsole "failed to start web browser"
+		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
 #ifdef __ANDROID__
-		toconsole "To open the WebApp, go to the menu and select \"Open WebApp\""
+		hPutStrLn (fromMaybe stderr errh) "To open the WebApp, go to the menu and select \"Open WebApp\""
 #endif
   where
-	toconsole = hPutStrLn (fromMaybe stdout outh)
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
 		Nothing -> browserProc url
