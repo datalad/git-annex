@@ -109,8 +109,10 @@ leaveZombie :: (a, IO Bool) -> a
 leaveZombie = fst
 
 {- Runs a git command as a coprocess. -}
-gitCoProcessStart :: [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
-gitCoProcessStart params repo = CoProcess.start "git" (toCommand $ gitCommandLine params repo) (gitEnv repo)
+gitCoProcessStart :: Bool -> [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
+gitCoProcessStart restartable params repo = CoProcess.start restartable "git"
+	(toCommand $ gitCommandLine params repo)
+	(gitEnv repo)
 
 gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
 gitCreateProcess params repo =

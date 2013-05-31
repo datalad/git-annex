@@ -29,7 +29,7 @@ import qualified Utility.CoProcess as CoProcess
 type CatFileHandle = CoProcess.CoProcessHandle
 
 catFileStart :: Repo -> IO CatFileHandle
-catFileStart = CoProcess.rawMode <=< gitCoProcessStart
+catFileStart = CoProcess.rawMode <=< gitCoProcessStart True
 	[ Param "cat-file"
 	, Param "--batch"
 	]
