@@ -27,6 +27,7 @@ for various cloud things:
 * [[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]]
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
 * [[Google drive|tips/googledriveannex]]
+* [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [[Mega.co.nz|tips/megaannex]]
 * [[SkyDrive|tips/skydrive]]
 * [[Flickr|tips/flickrannex]]
