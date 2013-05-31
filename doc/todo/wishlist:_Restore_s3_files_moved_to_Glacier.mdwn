@@ -1,0 +1,7 @@
+I would like to use the automated AWS lifecycle rules to move the git annex files store on S3 to Glacier after a bit of time. Git annex need must support this kind of S3 files explicitly in order for it to work.
+
+This is different from the adding a Glacier remote to git annex because of the reasons explained in <http://aws.typepad.com/aws/2012/11/archive-s3-to-glacier.html>.
+
+Basically, the files moved by AWS from S3 to Glacier are not available under the normal Glacier API. In fact, the moved S3 files are listed as available but under the `GLACIER` storage class and need a RESTORE request before they can be GET like other S3 files. Trying to GET an S3 file that has been moved to Glacier will not restore it from Glacier and will result in an 403 error.
+
+I suppose DELETE needs special care as well.
