@@ -390,21 +390,65 @@ index f1464e9..b06ec9a 100644
     <string name="special_keys">Special keys</string>
     <string name="toggle_soft_keyboard">Toggle soft keyboard</string>
  
+diff --git a/src/jackpal/androidterm/ShellTermSession.java b/src/jackpal/androidterm/ShellTermSession.java
+index 501e7ab..0b43513 100644
+--- a/src/jackpal/androidterm/ShellTermSession.java
++++ b/src/jackpal/androidterm/ShellTermSession.java
+@@ -80,12 +80,12 @@ public class ShellTermSession extends TermSession {
+         }
+     };
+ 
+-    public ShellTermSession(TermSettings settings, String initialCommand) {
++    public ShellTermSession(TermSettings settings, String initialCommand, String webAppFifo) {
+         super();
+ 
+         updatePrefs(settings);
+ 
+-        initializeSession();
++        initializeSession(webAppFifo);
+         mInitialCommand = initialCommand;
+ 
+         mWatcherThread = new Thread() {
+@@ -106,7 +106,7 @@ public class ShellTermSession extends TermSession {
+         setDefaultUTF8Mode(settings.defaultToUTF8Mode());
+     }
+ 
+-    private void initializeSession() {
++    private void initializeSession(String webAppFifo) {
+         TermSettings settings = mSettings;
+ 
+         int[] processId = new int[1];
+@@ -128,9 +128,10 @@ public class ShellTermSession extends TermSession {
+         if (settings.verifyPath()) {
+             path = checkPath(path);
+         }
+-        String[] env = new String[2];
++        String[] env = new String[3];
+         env[0] = "TERM=" + settings.getTermType();
+         env[1] = "PATH=" + path;
++	env[2] = "FIFO=" + webAppFifo;
+ 
+         createSubprocess(processId, settings.getShell(), env);
+         mProcId = processId[0];
 diff --git a/src/jackpal/androidterm/Term.java b/src/jackpal/androidterm/Term.java
-index 8a3a4ac..af8d1ad 100644
+index 8a3a4ac..824025d 100644
 --- a/src/jackpal/androidterm/Term.java
 +++ b/src/jackpal/androidterm/Term.java
-@@ -21,6 +21,9 @@ import java.text.Collator;
+@@ -20,6 +20,13 @@ import java.io.UnsupportedEncodingException;
+ import java.text.Collator;
  import java.util.Arrays;
  import java.util.Locale;
- 
++import java.lang.Process;
++import java.lang.ProcessBuilder;
++import java.util.Map;
++
 +import java.io.FileReader;
 +import java.io.BufferedReader;
-+
++import java.io.File;
+ 
  import android.app.Activity;
  import android.app.AlertDialog;
- import android.content.ActivityNotFoundException;
-@@ -59,6 +62,11 @@ import android.view.inputmethod.InputMethodManager;
+@@ -59,6 +66,11 @@ import android.view.inputmethod.InputMethodManager;
  import android.widget.TextView;
  import android.widget.Toast;
  
@@ -416,7 +460,75 @@ index 8a3a4ac..af8d1ad 100644
  import jackpal.androidterm.emulatorview.ColorScheme;
  import jackpal.androidterm.emulatorview.EmulatorView;
  import jackpal.androidterm.emulatorview.TermSession;
-@@ -911,31 +919,15 @@ public class Term extends Activity implements UpdateCallback {
+@@ -107,6 +119,9 @@ public class Term extends Activity implements UpdateCallback {
+     public static final String EXTRA_WINDOW_ID = "jackpal.androidterm.window_id";
+     private int onResumeSelectWindow = -1;
+ 
++    public static String appDir;
++    public static String webAppFifo;
++
+     private PowerManager.WakeLock mWakeLock;
+     private WifiManager.WifiLock mWifiLock;
+     // Available on API 12 and later
+@@ -257,6 +272,48 @@ public class Term extends Activity implements UpdateCallback {
+     @Override
+     public void onCreate(Bundle icicle) {
+         super.onCreate(icicle);
++	
++	try {
++		appDir = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.dataDir;
++	} catch (Exception e) {
++		appDir = "/data/data/ga.androidterm";
++	}
++	webAppFifo = appDir + "/fifo";
++
++	/* webapp url opening thread */
++        new Thread() {
++            @Override
++            public void run() {
++		    try {
++			    /* First, set up the fifo that urls to open will be
++			     * read from. This is complicated by java not being
++			     * able to mkfifo. */
++			    File f = new File (webAppFifo);
++			    if (! f.exists()) {
++				    ProcessBuilder pb = new ProcessBuilder(appDir + "/lib/lib.start.so");
++				    Map<String, String> env = pb.environment();
++				    env.put("MKFIFO", webAppFifo);
++				    Process p = pb.start();
++				    p.waitFor();
++			    }
++           	 
++			    /* Reading from the fifo blocks until a url is written
++			     * to it. */
++			    BufferedReader buf = new BufferedReader(new FileReader(webAppFifo));
++			    while (true) {
++				    String s = buf.readLine();
++				    try {
++					    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(s));
++					    startActivity(intent);
++				    } catch (Exception e) {
++				    }
++
++			    }
++		    } catch (Exception e) {
++		    }
++	    }
++        }.start();
++
+         Log.e(TermDebug.LOG_TAG, "onCreate");
+         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+         mSettings = new TermSettings(getResources(), mPrefs);
+@@ -427,7 +484,7 @@ public class Term extends Activity implements UpdateCallback {
+     }
+ 
+     protected static TermSession createTermSession(Context context, TermSettings settings, String initialCommand) {
+-        ShellTermSession session = new ShellTermSession(settings, initialCommand);
++        ShellTermSession session = new ShellTermSession(settings, initialCommand, webAppFifo);
+         // XXX We should really be able to fetch this from within TermSession
+         session.setProcessExitMessage(context.getString(R.string.process_exit_message));
+ 
+@@ -911,31 +968,15 @@ public class Term extends Activity implements UpdateCallback {
      }
  
      private void doEmailTranscript() {

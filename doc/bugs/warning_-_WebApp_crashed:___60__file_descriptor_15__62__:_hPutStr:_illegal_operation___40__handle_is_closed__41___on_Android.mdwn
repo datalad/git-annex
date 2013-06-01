@@ -19,3 +19,6 @@ Git annex still syncs with `box.com` even if the warning is showing.
 I'm using a Nexus 4 (4.2.2)
 
 I didn't find `daemon.log`.
+
+> [[done]]; the android app no longer uses `am`, so no longer needs to 
+> display a message when `am` fails. --[[Joey]]

@@ -116,12 +116,17 @@ run () {
 	fi
 }
 
-if ! prep; then
-	$cmd echo "prep failed. Please report a bug."
-	read line
+if $cmd test -n "$MKFIFO"; then
+	# because java is insane
+	$cmd mkfifo "$MKFIFO"
+else
+	if ! prep; then
+		$cmd echo "prep failed. Please report a bug."
+		read line
+	fi
+	if ! install; then
+		$cmd echo "install failed. Please report a bug."
+		read line
+	fi
+	run
 fi
-if ! install; then
-	$cmd echo "install failed. Please report a bug."
-	read line
-fi
-run

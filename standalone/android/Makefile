@@ -11,7 +11,7 @@ PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 export ANDROID_SDK_ROOT?=$(HOME)/tmp/adt-bundle-linux-x86/sdk
 export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
-# Where to store the $(GIT_ANNEX_ANDROID_SOURCETREE)s to utilities. This
+# Where to store the source tree used to build utilities. This
 # directory will be created by `make source`.
 GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/tmp/android-sourcetree
 

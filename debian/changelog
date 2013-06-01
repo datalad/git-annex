@@ -20,7 +20,7 @@ git-annex (4.20130522) UNRELEASED; urgency=low
   * sync: Fix double merge conflict resolution handling.
   * XMPP: Fix a file descriptor leak.
   * Android: Added an "Open WebApp" item to the terminal's menu.
-    Should work for Android devices that cannot auto-open the webapp on start.
+  * Android: Work around Android devices where the `am` command doesn't work.
   * Can now restart certain long-running git processes if they crash, and
     continue working.
 

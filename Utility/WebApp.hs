@@ -49,6 +49,7 @@ browserProc :: String -> CreateProcess
 browserProc url = proc "open" [url]
 #else
 #ifdef __ANDROID__
+-- Warning: The `am` command does not work very reliably on Android.
 browserProc url = proc "am"
 	["start", "-a", "android.intent.action.VIEW", "-d", url]
 #else
