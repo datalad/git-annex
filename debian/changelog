@@ -1,4 +1,4 @@
-git-annex (4.20130522) UNRELEASED; urgency=low
+git-annex (4.20130601) unstable; urgency=medium
 
   * XMPP: Git push over xmpp made much more robust.
   * XMPP: Avoid redundant and unncessary pushes. Note that this breaks
@@ -24,7 +24,7 @@ git-annex (4.20130522) UNRELEASED; urgency=low
   * Can now restart certain long-running git processes if they crash, and
     continue working.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 18:22:46 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 01 Jun 2013 19:16:04 -0400
 
 git-annex (4.20130521) unstable; urgency=low
 
