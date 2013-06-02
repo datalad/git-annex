@@ -174,7 +174,7 @@ undo file key e = do
 		liftIO $ nukeFile file
 		catchAnnex (fromAnnex key file) tryharder
 		logStatus key InfoMissing
-	throw e
+	throwAnnex e
   where
 	-- fromAnnex could fail if the file ownership is weird
 	tryharder :: IOException -> Annex ()

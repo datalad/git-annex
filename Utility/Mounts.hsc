@@ -20,8 +20,6 @@ module Utility.Mounts (
 import Control.Monad
 import Foreign
 import Foreign.C
-import GHC.IO hiding (finally, bracket)
-import Prelude hiding (catch)
 #include "libmounts.h"
 #else
 import Utility.Exception

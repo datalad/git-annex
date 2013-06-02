@@ -13,24 +13,27 @@
 module Annex.Exception (
 	bracketIO,
 	tryAnnex,
-	throw,
+	throwAnnex,
 	catchAnnex,
 ) where
 
-import Prelude hiding (catch)
-import "MonadCatchIO-transformers" Control.Monad.CatchIO (bracket, try, throw, catch)
-import Control.Exception hiding (handle, try, throw, bracket, catch)
+import qualified "MonadCatchIO-transformers" Control.Monad.CatchIO as M
+import Control.Exception
 
 import Common.Annex
 
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO v -> (v -> IO b) -> (v -> Annex a) -> Annex a
-bracketIO setup cleanup go = bracket (liftIO setup) (liftIO . cleanup) go
+bracketIO setup cleanup go = M.bracket (liftIO setup) (liftIO . cleanup) go
 
 {- try in the Annex monad -}
 tryAnnex :: Annex a -> Annex (Either SomeException a)
-tryAnnex = try
+tryAnnex = M.try
+
+{- throw in the Annex monad -}
+throwAnnex :: Exception e => e -> Annex a
+throwAnnex = M.throw
 
 {- catch in the Annex monad -}
 catchAnnex :: Exception e => Annex a -> (e -> Annex a) -> Annex a
-catchAnnex = catch
+catchAnnex = M.catch
