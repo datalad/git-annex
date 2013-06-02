@@ -20,7 +20,9 @@ import Assistant.Install
 import Annex.Environment
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
+#ifdef __ANDROID__
 import Utility.Env
+#endif
 import Init
 import qualified Git
 import qualified Git.Config
