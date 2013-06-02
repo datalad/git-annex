@@ -46,7 +46,7 @@ data RepositoryPath = RepositoryPath Text
  -
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
-repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
+repositoryPathField :: forall (m :: * -> *). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
 repositoryPathField autofocus = Field
 #if ! MIN_VERSION_yesod_form(1,2,0)
 	{ fieldParse = parse
@@ -119,7 +119,7 @@ defaultRepositoryPath firstrun = do
 			)
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
-newRepositoryForm :: FilePath -> Form RepositoryPath
+newRepositoryForm :: FilePath -> Html -> Form RepositoryPath
 newRepositoryForm defpath msg = do
 	(pathRes, pathView) <- mreq (repositoryPathField True) ""
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
@@ -142,11 +142,11 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	let path = "/sdcard/annex"
 #else
 	let androidspecial = False
-	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
+	path <- liftIO . defaultRepositoryPath =<< handlerToWidget inFirstRun
 #endif
-	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm path
+	((res, form), enctype) <- handlerToWidget $ runFormPost $ newRepositoryForm path
 	case res of
-		FormSuccess (RepositoryPath p) -> lift $
+		FormSuccess (RepositoryPath p) -> handlerToWidget $
 			startFullAssistant (T.unpack p) ClientGroup
 		_ -> $(widgetFile "configurators/newrepository/first")
 
@@ -160,13 +160,13 @@ getNewRepositoryR = postNewRepositoryR
 postNewRepositoryR :: Handler RepHtml
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm home
+	((res, form), enctype) <- handlerToWidget $ runFormPost $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			isnew <- liftIO $ makeRepo path False
 			u <- liftIO $ initRepo isnew True path Nothing
-			lift $ liftAnnexOr () $ setStandardGroup u ClientGroup
+			handlerToWidget $ liftAnnexOr () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -174,7 +174,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
   where
 	askcombine newrepouuid newrepopath = do
 		newrepo <- liftIO $ relHome newrepopath
-		mainrepo <- fromJust . relDir <$> lift getYesod
+		mainrepo <- fromJust . relDir <$> handlerToWidget getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
 getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
@@ -185,7 +185,7 @@ getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
   where
 	remotename = takeFileName newrepopath
 
-selectDriveForm :: [RemovableDrive] -> Form RemovableDrive
+selectDriveForm :: [RemovableDrive] -> Html -> Form RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs) "Select drive:" Nothing
@@ -215,10 +215,10 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- lift $ runFormPost $
+	((res, form), enctype) <- handlerToWidget $ runFormPost $
 		selectDriveForm (sort writabledrives)
 	case res of
-		FormSuccess drive -> lift $ redirect $ ConfirmAddDriveR drive
+		FormSuccess drive -> handlerToWidget $ redirect $ ConfirmAddDriveR drive
 		_ -> $(widgetFile "configurators/adddrive")
 
 {- The repo may already exist, when adding removable media

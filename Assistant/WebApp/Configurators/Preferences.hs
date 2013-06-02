@@ -29,7 +29,7 @@ data PrefsForm = PrefsForm
 	, debugEnabled :: Bool
 	}
 
-prefsAForm :: PrefsForm -> AForm WebApp WebApp PrefsForm
+prefsAForm :: PrefsForm -> AForm Handler PrefsForm
 prefsAForm def = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
 		"Disk reserve" (Just $ diskReserve def)
@@ -86,11 +86,11 @@ getPreferencesR :: Handler RepHtml
 getPreferencesR = postPreferencesR
 postPreferencesR :: Handler RepHtml
 postPreferencesR = page "Preferences" (Just Configuration) $ do
-	((result, form), enctype) <- lift $ do
+	((result, form), enctype) <- handlerToWidget $ do
 		current <- liftAnnex getPrefs
 		runFormPost $ renderBootstrap $ prefsAForm current
 	case result of
-		FormSuccess new -> lift $ do
+		FormSuccess new -> handlerToWidget $ do
 			liftAnnex $ storePrefs new
 			redirect ConfigurationR
 		_ -> $(widgetFile "configurators/preferences")

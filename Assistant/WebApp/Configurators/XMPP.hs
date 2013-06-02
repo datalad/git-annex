@@ -110,13 +110,13 @@ postXMPPConfigForPairSelfR = xmppform StartXMPPPairSelfR
 xmppform :: Route WebApp -> Handler RepHtml
 #ifdef WITH_XMPP
 xmppform next = xmppPage $ do
-	((result, form), enctype) <- lift $ do
+	((result, form), enctype) <- handlerToWidget $ do
 		oldcreds <- liftAnnex getXMPPCreds
 		runFormPost $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
-		FormSuccess f -> either (showform . Just) (lift . storecreds)
+		FormSuccess f -> either (showform . Just) (handlerToWidget . storecreds)
 			=<< liftIO (validateForm f)
 		_ -> showform Nothing
   where
@@ -171,12 +171,12 @@ data XMPPForm = XMPPForm
 creds2Form :: XMPPCreds -> XMPPForm
 creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
-xmppAForm :: (Maybe XMPPForm) -> AForm WebApp WebApp XMPPForm
+xmppAForm :: (Maybe XMPPForm) -> AForm Handler XMPPForm
 xmppAForm def = XMPPForm
 	<$> areq jidField "Jabber address" (formJID <$> def)
 	<*> areq passwordField "Password" Nothing
 
-jidField :: Field WebApp WebApp Text
+jidField :: Field Handler Text
 jidField = checkBool (isJust . parseJID) bad textField
   where
 	bad :: Text

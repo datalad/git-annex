@@ -28,7 +28,7 @@ sideBarDisplay :: Widget
 sideBarDisplay = do
 	let content = do
 		{- Add newest alerts to the sidebar. -}
-		alertpairs <- lift $ M.toList . alertMap
+		alertpairs <- handlerToWidget $ M.toList . alertMap
 			<$> liftAssistant getDaemonStatus
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs
@@ -92,7 +92,7 @@ getClickAlert i = do
 			redirect $ buttonUrl b
 		_ -> redirectBack
 
-htmlIcon :: AlertIcon -> GWidget WebApp WebApp ()
+htmlIcon :: AlertIcon -> Widget
 htmlIcon ActivityIcon = [whamlet|<img src="@{StaticR activityicon_gif}" alt="">|]
 htmlIcon SyncIcon = [whamlet|<img src="@{StaticR syncicon_gif}" alt="">|]
 htmlIcon InfoIcon = bootstrapIcon "info-sign"
@@ -101,5 +101,5 @@ htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
 -- utf-8 umbrella (utf-8 cloud looks too stormy)
 htmlIcon TheCloud = [whamlet|&#9730;|]
 
-bootstrapIcon :: Text -> GWidget sub master ()
+bootstrapIcon :: Text -> Widget
 bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]

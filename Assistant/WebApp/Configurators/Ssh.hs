@@ -58,7 +58,7 @@ mkSshInput s = SshInput
 	, inputPort = sshPort s
 	}
 
-sshInputAForm :: (Field WebApp WebApp Text) -> SshInput -> AForm WebApp WebApp SshInput
+sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 sshInputAForm hostnamefield def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
 	<*> aopt check_username "User name" (Just $ inputUsername def)
@@ -107,7 +107,7 @@ getAddSshR = postAddSshR
 postAddSshR :: Handler RepHtml
 postAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just u) Nothing 22
 	case result of
@@ -115,7 +115,7 @@ postAddSshR = sshConfigurator $ do
 			s <- liftIO $ testServer sshinput
 			case s of
 				Left status -> showform form enctype status
-				Right sshdata -> lift $ redirect $ ConfirmSshR sshdata
+				Right sshdata -> handlerToWidget $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/ssh/add")
@@ -138,12 +138,12 @@ postEnableRsyncR u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
-			((result, form), enctype) <- lift $
+			((result, form), enctype) <- handlerToWidget $
 				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
-						void $ lift $ makeRsyncNet sshinput' reponame (const noop)
+						void $ handlerToWidget $ makeRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
@@ -156,7 +156,7 @@ postEnableRsyncR u = do
 	showform form enctype status = do
 		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
-	enable sshdata = lift $ redirect $ ConfirmSshR $
+	enable sshdata = handlerToWidget $ redirect $ ConfirmSshR $
 		sshdata { rsyncOnly = True }
 
 {- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync

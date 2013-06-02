@@ -22,12 +22,12 @@ import qualified Network.Wai as W
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.Text as T
 
-waitNotifier :: forall sub. (Assistant NotificationBroadcaster) -> NotificationId -> GHandler sub WebApp ()
+waitNotifier :: Assistant NotificationBroadcaster -> NotificationId -> Handler ()
 waitNotifier getbroadcaster nid = liftAssistant $ do
 	b <- getbroadcaster
 	liftIO $ waitNotification $ notificationHandleFromId b nid
 
-newNotifier :: forall sub. (Assistant NotificationBroadcaster) -> GHandler sub WebApp NotificationId
+newNotifier :: Assistant NotificationBroadcaster -> Handler NotificationId
 newNotifier getbroadcaster = liftAssistant $ do
 	b <- getbroadcaster
 	liftIO $ notificationHandleToId <$> newNotificationHandle True b
@@ -36,7 +36,7 @@ newNotifier getbroadcaster = liftAssistant $ do
  - every form. -}
 webAppFormAuthToken :: Widget
 webAppFormAuthToken = do
-	webapp <- lift getYesod
+	webapp <- handlerToWidget getYesod
 	[whamlet|<input type="hidden" name="auth" value="#{secretToken webapp}">|]
 
 {- A button with an icon, and maybe label or tooltip, that can be

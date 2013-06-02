@@ -72,14 +72,14 @@ postDeleteCurrentRepositoryR = deleteCurrentRepository
 
 deleteCurrentRepository :: Handler RepHtml
 deleteCurrentRepository = dangerPage $ do
-	reldir <- fromJust . relDir <$> lift getYesod
+	reldir <- fromJust . relDir <$> handlerToWidget getYesod
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ sanityVerifierAForm $
 			SanityVerifier magicphrase
 	case result of
-		FormSuccess _ -> lift $ do
+		FormSuccess _ -> handlerToWidget $ do
 			dir <- liftAnnex $ fromRepo Git.repoPath
 			liftIO $ removeAutoStartFile dir
 
@@ -107,7 +107,7 @@ deleteCurrentRepository = dangerPage $ do
 data SanityVerifier = SanityVerifier T.Text
 	deriving (Eq)
 
-sanityVerifierAForm :: SanityVerifier -> AForm WebApp WebApp SanityVerifier
+sanityVerifierAForm :: SanityVerifier -> AForm Handler SanityVerifier
 sanityVerifierAForm template = SanityVerifier
 	<$> areq checksanity "Confirm deletion?" Nothing
   where

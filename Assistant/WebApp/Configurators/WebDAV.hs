@@ -43,7 +43,7 @@ data WebDAVInput = WebDAVInput
 toCredPair :: WebDAVInput -> CredPair
 toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
-boxComAForm :: Maybe CredPair -> AForm WebApp WebApp WebDAVInput
+boxComAForm :: Maybe CredPair -> AForm Handler WebDAVInput
 boxComAForm defcreds = WebDAVInput
 	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
 	<*> areq passwordField "Box.com Password" (T.pack . snd <$> defcreds)
@@ -51,7 +51,7 @@ boxComAForm defcreds = WebDAVInput
 	<*> areq textField "Directory" (Just "annex")
 	<*> enableEncryptionField
 
-webDAVCredsAForm :: Maybe CredPair -> AForm WebApp WebApp WebDAVInput
+webDAVCredsAForm :: Maybe CredPair -> AForm Handler WebDAVInput
 webDAVCredsAForm defcreds = WebDAVInput
 	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
 	<*> areq passwordField "Password" (T.pack . snd <$> defcreds)
@@ -65,10 +65,10 @@ postAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ boxComAForm defcreds
 	case result of
-		FormSuccess input -> lift $ 
+		FormSuccess input -> handlerToWidget $ 
 			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
@@ -99,7 +99,7 @@ postEnableWebDAVR uuid = do
 	mcreds <- liftAnnex $
 		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
 	case mcreds of
-		Just creds -> webDAVConfigurator $ lift $
+		Just creds -> webDAVConfigurator $ handlerToWidget $
 			makeWebDavRemote name creds (const noop) M.empty
 		Nothing
 			| "box.com/" `isInfixOf` url ->
@@ -111,10 +111,10 @@ postEnableWebDAVR uuid = do
 		defcreds <- liftAnnex $ 
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
-		((result, form), enctype) <- lift $
+		((result, form), enctype) <- handlerToWidget $
 			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
-			FormSuccess input -> lift $
+			FormSuccess input -> handlerToWidget $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
 				description <- liftAnnex $

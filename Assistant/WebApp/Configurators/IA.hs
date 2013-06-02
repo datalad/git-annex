@@ -79,7 +79,7 @@ showMediaType MediaVideo = "videos & movies"
 showMediaType MediaAudio = "audio & music"
 showMediaType MediaOmitted = "other"
 
-iaInputAForm :: Maybe CredPair -> AForm WebApp WebApp IAInput
+iaInputAForm :: Maybe CredPair -> AForm Handler IAInput
 iaInputAForm defcreds = IAInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -99,7 +99,7 @@ itemNameHelp = [whamlet|
   will be uploaded to your Internet Archive item.
 |]
 
-iaCredsAForm :: Maybe CredPair -> AForm WebApp WebApp AWS.AWSCreds
+iaCredsAForm :: Maybe CredPair -> AForm Handler AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
         <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
         <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -110,7 +110,7 @@ previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 	AWS.isIARemoteConfig . Remote.config
 #endif
 
-accessKeyIDFieldWithHelp :: Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp :: Maybe Text -> AForm Handler Text
 accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   where
 	help = [whamlet|
@@ -125,10 +125,10 @@ postAddIAR :: Handler RepHtml
 #ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ iaInputAForm defcreds
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> handlerToWidget $ do
 			let name = escapeBucket $ T.unpack $ itemName input
 			AWS.makeAWSRemote S3.remote (extractCreds input) name setgroup $
 				M.fromList $ catMaybes
@@ -167,10 +167,10 @@ postEnableIAR _ = error "S3 not supported by this build"
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
-		FormSuccess creds -> lift $ do
+		FormSuccess creds -> handlerToWidget $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m

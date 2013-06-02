@@ -63,7 +63,7 @@ data AWSCreds = AWSCreds Text Text
 extractCreds :: AWSInput -> AWSCreds
 extractCreds i = AWSCreds (accessKeyID i) (secretAccessKey i)
 
-s3InputAForm :: Maybe CredPair -> AForm WebApp WebApp AWSInput
+s3InputAForm :: Maybe CredPair -> AForm Handler AWSInput
 s3InputAForm defcreds = AWSInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -78,7 +78,7 @@ s3InputAForm defcreds = AWSInput
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
-glacierInputAForm :: Maybe CredPair -> AForm WebApp WebApp AWSInput
+glacierInputAForm :: Maybe CredPair -> AForm Handler AWSInput
 glacierInputAForm defcreds = AWSInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -87,15 +87,15 @@ glacierInputAForm defcreds = AWSInput
 	<*> areq textField "Repository name" (Just "glacier")
 	<*> enableEncryptionField
 
-awsCredsAForm :: Maybe CredPair -> AForm WebApp WebApp AWSCreds
+awsCredsAForm :: Maybe CredPair -> AForm Handler AWSCreds
 awsCredsAForm defcreds = AWSCreds
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 
-accessKeyIDField :: Widget -> Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDField :: Widget -> Maybe Text -> AForm Handler Text
 accessKeyIDField help def = areq (textField `withNote` help) "Access Key ID" def
 
-accessKeyIDFieldWithHelp :: Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp :: Maybe Text -> AForm Handler Text
 accessKeyIDFieldWithHelp def = accessKeyIDField help def
   where
 	help = [whamlet|
@@ -103,10 +103,10 @@ accessKeyIDFieldWithHelp def = accessKeyIDField help def
   Get Amazon access keys
 |]
 
-secretAccessKeyField :: Maybe Text -> AForm WebApp WebApp Text
+secretAccessKeyField :: Maybe Text -> AForm Handler Text
 secretAccessKeyField def = areq passwordField "Secret Access Key" def
 
-datacenterField :: AWS.Service -> AForm WebApp WebApp Text
+datacenterField :: AWS.Service -> AForm Handler Text
 datacenterField service = areq (selectFieldList list) "Datacenter" defregion
   where
 	list = M.toList $ AWS.regionMap service
@@ -119,10 +119,10 @@ postAddS3R :: Handler RepHtml
 #ifdef WITH_S3
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ s3InputAForm defcreds
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> handlerToWidget $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote S3.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
@@ -145,10 +145,10 @@ postAddGlacierR :: Handler RepHtml
 #ifdef WITH_S3
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> handlerToWidget $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
@@ -191,10 +191,10 @@ enableAWSRemote :: RemoteType -> UUID -> Widget
 #ifdef WITH_S3
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
-		FormSuccess creds -> lift $ do
+		FormSuccess creds -> handlerToWidget $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m

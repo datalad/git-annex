@@ -81,29 +81,29 @@ instance RenderMessage WebApp FormMessage where
  - When the webapp is run outside a git-annex repository, the fallback
  - value is returned.
  -}
-liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
+liftAnnexOr :: forall a. a -> Annex a -> Handler a
 liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
 	( return fallback
 	, liftAssistant $ liftAnnex a
 	)
 
-instance LiftAnnex (GHandler sub WebApp) where
-	liftAnnex = liftAnnexOr $ error "internal runAnnex"
+instance LiftAnnex Handler where
+	liftAnnex = liftAnnexOr $ error "internal liftAnnex"
 
-instance LiftAnnex (GWidget WebApp WebApp) where
-	liftAnnex = lift . liftAnnex
+instance LiftAnnex (WidgetT WebApp IO) where
+	liftAnnex = handlerToWidget . liftAnnex
 
 class LiftAssistant m where
 	liftAssistant :: Assistant a -> m a
 
-instance LiftAssistant (GHandler sub WebApp) where
+instance LiftAssistant Handler where
 	liftAssistant a = liftIO . flip runAssistant a
 		=<< assistantData <$> getYesod
 
-instance LiftAssistant (GWidget WebApp WebApp) where
-	liftAssistant = lift . liftAssistant
+instance LiftAssistant (WidgetT WebApp IO) where
+	liftAssistant = handlerToWidget . liftAssistant
 
-type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
+type Form x = MForm Handler (FormResult x, Widget)
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool

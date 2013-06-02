@@ -110,7 +110,7 @@ repoListDisplay reposelector = do
 	addScript $ StaticR jquery_ui_mouse_js
 	addScript $ StaticR jquery_ui_sortable_js
 
-	repolist <- lift $ repoList reposelector
+	repolist <- handlerToWidget $ repoList reposelector
 	let addmore = nudgeAddMore reposelector
 	let nootherrepos = length repolist < 2
 

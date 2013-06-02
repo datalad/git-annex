@@ -178,7 +178,7 @@ lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
 
 {- Rather than storing a session key on disk, use a random key
  - that will only be valid for this run of the webapp. -}
-webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe (Yesod.SessionBackend y))
+webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe Yesod.SessionBackend)
 webAppSessionBackend _ = do
 	g <- newGenIO :: IO SystemRandom
 	case genBytes 96 g of
@@ -189,12 +189,17 @@ webAppSessionBackend _ = do
   where
 	timeout = 120 * 60 -- 120 minutes
 	use key =
+#if MIN_VERSION_yesod(1,2,0)
+		Just . Yesod.clientSessionBackend key . fst
+			<$> Yesod.clientSessionDateCacher timeout
+#else
 #if MIN_VERSION_yesod(1,1,7)
 		Just . Yesod.clientSessionBackend2 key . fst
 			<$> Yesod.clientSessionDateCacher timeout
 #else
 		return $ Just $
 			Yesod.clientSessionBackend key timeout
+#endif
 #endif
 
 {- Generates a random sha512 string, suitable to be used for an
@@ -213,7 +218,7 @@ genRandomToken = do
  - Note that the usual Yesod error page is bypassed on error, to avoid
  - possibly leaking the auth token in urls on that page!
  -}
-checkAuthToken :: forall t sub. (t -> T.Text) -> Yesod.GHandler sub t Yesod.AuthResult
+checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> T.Text) -> m Yesod.AuthResult
 checkAuthToken extractToken = do
 	webapp <- Yesod.getYesod
 	req <- Yesod.getRequest

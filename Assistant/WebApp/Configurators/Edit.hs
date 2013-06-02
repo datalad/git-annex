@@ -132,7 +132,7 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
+editRepositoryAForm :: RepoConfig -> AForm Handler RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
@@ -177,10 +177,10 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- handlerToWidget $
 		runFormPost $ renderBootstrap $ editRepositoryAForm curr
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> handlerToWidget $ do
 			setRepoConfig uuid mremote curr input
 			liftAnnex $ checkAssociatedDirectory input mremote
 			redirect DashboardR
