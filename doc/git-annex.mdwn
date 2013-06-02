@@ -311,6 +311,10 @@ subdirectories).
   When run with an expression, configures the content that is preferred
   to be held in the archive. See PREFERRED CONTENT below.
 
+  For example:
+
+	git annex content . "include(*.mp3) or include(*.ogg)"
+
   Without an expression, displays the current preferred content setting
   of the repository.
 
