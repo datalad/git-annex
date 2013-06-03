@@ -132,7 +132,7 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> AForm Handler RepoConfig
+editRepositoryAForm :: RepoConfig -> MkAForm RepoConfig
 editRepositoryAForm def = RepoConfig
 	<$> areq textField "Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)

@@ -133,7 +133,7 @@ Executable git-annex
 
   if flag(Webapp)
     Build-Depends:
-     yesod, yesod-default, yesod-static, yesod-form,
+     yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
      blaze-builder, crypto-api, hamlet, clientsession, aeson,
      template-haskell, data-default

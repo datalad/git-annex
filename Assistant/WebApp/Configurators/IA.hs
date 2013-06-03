@@ -79,7 +79,7 @@ showMediaType MediaVideo = "videos & movies"
 showMediaType MediaAudio = "audio & music"
 showMediaType MediaOmitted = "other"
 
-iaInputAForm :: Maybe CredPair -> AForm Handler IAInput
+iaInputAForm :: Maybe CredPair -> MkAForm IAInput
 iaInputAForm defcreds = IAInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -99,7 +99,7 @@ itemNameHelp = [whamlet|
   will be uploaded to your Internet Archive item.
 |]
 
-iaCredsAForm :: Maybe CredPair -> AForm Handler AWS.AWSCreds
+iaCredsAForm :: Maybe CredPair -> MkAForm AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
         <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
         <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -110,7 +110,7 @@ previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 	AWS.isIARemoteConfig . Remote.config
 #endif
 
-accessKeyIDFieldWithHelp :: Maybe Text -> AForm Handler Text
+accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
 accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   where
 	help = [whamlet|

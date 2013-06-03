@@ -43,7 +43,7 @@ data WebDAVInput = WebDAVInput
 toCredPair :: WebDAVInput -> CredPair
 toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
-boxComAForm :: Maybe CredPair -> AForm Handler WebDAVInput
+boxComAForm :: Maybe CredPair -> MkAForm WebDAVInput
 boxComAForm defcreds = WebDAVInput
 	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
 	<*> areq passwordField "Box.com Password" (T.pack . snd <$> defcreds)
@@ -51,7 +51,7 @@ boxComAForm defcreds = WebDAVInput
 	<*> areq textField "Directory" (Just "annex")
 	<*> enableEncryptionField
 
-webDAVCredsAForm :: Maybe CredPair -> AForm Handler WebDAVInput
+webDAVCredsAForm :: Maybe CredPair -> MkAForm WebDAVInput
 webDAVCredsAForm defcreds = WebDAVInput
 	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
 	<*> areq passwordField "Password" (T.pack . snd <$> defcreds)

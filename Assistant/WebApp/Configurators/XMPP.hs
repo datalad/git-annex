@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.XMPP where
@@ -171,12 +171,12 @@ data XMPPForm = XMPPForm
 creds2Form :: XMPPCreds -> XMPPForm
 creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
-xmppAForm :: (Maybe XMPPForm) -> AForm Handler XMPPForm
+xmppAForm :: (Maybe XMPPForm) -> MkAForm XMPPForm
 xmppAForm def = XMPPForm
 	<$> areq jidField "Jabber address" (formJID <$> def)
 	<*> areq passwordField "Password" Nothing
 
-jidField :: Field Handler Text
+jidField :: MkField Text
 jidField = checkBool (isJust . parseJID) bad textField
   where
 	bad :: Text

@@ -8,19 +8,20 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, RankNTypes #-}
+{-# LANGUAGE CPP, RankNTypes, FlexibleContexts #-}
 
 module Utility.Yesod where
 
+import Yesod
+#if MIN_VERSION_yesod_default(1,2,0)
+import Yesod.Core
+#endif
 #ifndef __ANDROID__
 import Yesod.Default.Util
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax (Q, Exp)
 #if MIN_VERSION_yesod_default(1,1,0)
 import Data.Default (def)
 import Text.Hamlet
-#endif
-#if MIN_VERSION_yesod_default(1,2,0)
-import Yesod.Core
 #endif
 
 widgetFile :: String -> Q Exp
@@ -39,10 +40,10 @@ hamletTemplate f = globFile "hamlet" f
 #endif
 
 {- Lift Handler to Widget -}
-#if ! MIN_VERSION_yesod(1,2,0)
-liftH :: forall t. Lift t => t -> Q Exp
-liftH = lift
-#else
+#if MIN_VERSION_yesod(1,2,0)
 liftH :: Monad m => HandlerT site m a -> WidgetT site m a
 liftH = liftH
+#else
+liftH :: MonadLift base m => base a -> m a
+liftH = lift
 #endif

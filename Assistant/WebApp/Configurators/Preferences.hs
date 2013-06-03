@@ -29,7 +29,7 @@ data PrefsForm = PrefsForm
 	, debugEnabled :: Bool
 	}
 
-prefsAForm :: PrefsForm -> AForm Handler PrefsForm
+prefsAForm :: PrefsForm -> MkAForm PrefsForm
 prefsAForm def = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
 		"Disk reserve" (Just $ diskReserve def)

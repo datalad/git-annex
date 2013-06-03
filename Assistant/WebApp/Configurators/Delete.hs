@@ -107,7 +107,7 @@ deleteCurrentRepository = dangerPage $ do
 data SanityVerifier = SanityVerifier T.Text
 	deriving (Eq)
 
-sanityVerifierAForm :: SanityVerifier -> AForm Handler SanityVerifier
+sanityVerifierAForm :: SanityVerifier -> MkAForm SanityVerifier
 sanityVerifierAForm template = SanityVerifier
 	<$> areq checksanity "Confirm deletion?" Nothing
   where

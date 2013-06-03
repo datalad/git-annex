@@ -46,7 +46,11 @@ data RepositoryPath = RepositoryPath Text
  -
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
+#if MIN_VERSION_yesod(1,2,0)
 repositoryPathField :: forall (m :: * -> *). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
+#else
+repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
+#endif
 repositoryPathField autofocus = Field
 #if ! MIN_VERSION_yesod_form(1,2,0)
 	{ fieldParse = parse
@@ -119,7 +123,7 @@ defaultRepositoryPath firstrun = do
 			)
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
-newRepositoryForm :: FilePath -> Html -> Form RepositoryPath
+newRepositoryForm :: FilePath -> Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
 	(pathRes, pathView) <- mreq (repositoryPathField True) ""
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
@@ -185,7 +189,7 @@ getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
   where
 	remotename = takeFileName newrepopath
 
-selectDriveForm :: [RemovableDrive] -> Html -> Form RemovableDrive
+selectDriveForm :: [RemovableDrive] -> Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs) "Select drive:" Nothing

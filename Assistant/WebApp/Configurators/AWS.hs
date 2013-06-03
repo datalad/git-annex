@@ -63,7 +63,7 @@ data AWSCreds = AWSCreds Text Text
 extractCreds :: AWSInput -> AWSCreds
 extractCreds i = AWSCreds (accessKeyID i) (secretAccessKey i)
 
-s3InputAForm :: Maybe CredPair -> AForm Handler AWSInput
+s3InputAForm :: Maybe CredPair -> MkAForm AWSInput
 s3InputAForm defcreds = AWSInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -78,7 +78,7 @@ s3InputAForm defcreds = AWSInput
 		, ("Reduced redundancy (costs less)", ReducedRedundancy)
 		]
 
-glacierInputAForm :: Maybe CredPair -> AForm Handler AWSInput
+glacierInputAForm :: Maybe CredPair -> MkAForm AWSInput
 glacierInputAForm defcreds = AWSInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -87,15 +87,15 @@ glacierInputAForm defcreds = AWSInput
 	<*> areq textField "Repository name" (Just "glacier")
 	<*> enableEncryptionField
 
-awsCredsAForm :: Maybe CredPair -> AForm Handler AWSCreds
+awsCredsAForm :: Maybe CredPair -> MkAForm AWSCreds
 awsCredsAForm defcreds = AWSCreds
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 
-accessKeyIDField :: Widget -> Maybe Text -> AForm Handler Text
+accessKeyIDField :: Widget -> Maybe Text -> MkAForm Text
 accessKeyIDField help def = areq (textField `withNote` help) "Access Key ID" def
 
-accessKeyIDFieldWithHelp :: Maybe Text -> AForm Handler Text
+accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
 accessKeyIDFieldWithHelp def = accessKeyIDField help def
   where
 	help = [whamlet|
@@ -103,10 +103,10 @@ accessKeyIDFieldWithHelp def = accessKeyIDField help def
   Get Amazon access keys
 |]
 
-secretAccessKeyField :: Maybe Text -> AForm Handler Text
+secretAccessKeyField :: Maybe Text -> MkAForm Text
 secretAccessKeyField def = areq passwordField "Secret Access Key" def
 
-datacenterField :: AWS.Service -> AForm Handler Text
+datacenterField :: AWS.Service -> MkAForm Text
 datacenterField service = areq (selectFieldList list) "Datacenter" defregion
   where
 	list = M.toList $ AWS.regionMap service

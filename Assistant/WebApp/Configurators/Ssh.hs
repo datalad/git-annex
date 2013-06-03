@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, FlexibleContexts #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Ssh where
@@ -58,7 +58,11 @@ mkSshInput s = SshInput
 	, inputPort = sshPort s
 	}
 
+#if MIN_VERSION_yesod(1,2,0)
 sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
+#else
+sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
+#endif
 sshInputAForm hostnamefield def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
 	<*> aopt check_username "User name" (Just $ inputUsername def)
