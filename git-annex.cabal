@@ -1,7 +1,7 @@
 Name: git-annex
 Version: 4.20130601
 Cabal-Version: >= 1.8
-License: GPL
+License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
 Author: Joey Hess
 Stability: Stable
