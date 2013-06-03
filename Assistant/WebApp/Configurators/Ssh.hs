@@ -107,7 +107,7 @@ getAddSshR = postAddSshR
 postAddSshR :: Handler RepHtml
 postAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just u) Nothing 22
 	case result of
@@ -115,7 +115,7 @@ postAddSshR = sshConfigurator $ do
 			s <- liftIO $ testServer sshinput
 			case s of
 				Left status -> showform form enctype status
-				Right sshdata -> handlerToWidget $ redirect $ ConfirmSshR sshdata
+				Right sshdata -> liftH $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/ssh/add")
@@ -138,12 +138,12 @@ postEnableRsyncR u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
-			((result, form), enctype) <- handlerToWidget $
+			((result, form), enctype) <- liftH $
 				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
-						void $ handlerToWidget $ makeRsyncNet sshinput' reponame (const noop)
+						void $ liftH $ makeRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
@@ -156,7 +156,7 @@ postEnableRsyncR u = do
 	showform form enctype status = do
 		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
-	enable sshdata = handlerToWidget $ redirect $ ConfirmSshR $
+	enable sshdata = liftH $ redirect $ ConfirmSshR $
 		sshdata { rsyncOnly = True }
 
 {- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync

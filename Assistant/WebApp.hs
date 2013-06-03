@@ -36,7 +36,7 @@ newNotifier getbroadcaster = liftAssistant $ do
  - every form. -}
 webAppFormAuthToken :: Widget
 webAppFormAuthToken = do
-	webapp <- handlerToWidget getYesod
+	webapp <- liftH getYesod
 	[whamlet|<input type="hidden" name="auth" value="#{secretToken webapp}">|]
 
 {- A button with an icon, and maybe label or tooltip, that can be

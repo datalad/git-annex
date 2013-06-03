@@ -28,7 +28,7 @@ sideBarDisplay :: Widget
 sideBarDisplay = do
 	let content = do
 		{- Add newest alerts to the sidebar. -}
-		alertpairs <- handlerToWidget $ M.toList . alertMap
+		alertpairs <- liftH $ M.toList . alertMap
 			<$> liftAssistant getDaemonStatus
 		mapM_ renderalert $
 			take displayAlerts $ reverse $ sortAlertPairs alertpairs

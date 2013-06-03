@@ -110,13 +110,13 @@ postXMPPConfigForPairSelfR = xmppform StartXMPPPairSelfR
 xmppform :: Route WebApp -> Handler RepHtml
 #ifdef WITH_XMPP
 xmppform next = xmppPage $ do
-	((result, form), enctype) <- handlerToWidget $ do
+	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
 		runFormPost $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
-		FormSuccess f -> either (showform . Just) (handlerToWidget . storecreds)
+		FormSuccess f -> either (showform . Just) (liftH . storecreds)
 			=<< liftIO (validateForm f)
 		_ -> showform Nothing
   where

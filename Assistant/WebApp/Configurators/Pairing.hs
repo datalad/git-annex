@@ -146,7 +146,7 @@ getFinishLocalPairR = postFinishLocalPairR
 postFinishLocalPairR :: PairMsg -> Handler RepHtml
 #ifdef WITH_PAIRING
 postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	repodir <- handlerToWidget $ repoPath <$> liftAnnex gitRepo
+	repodir <- liftH $ repoPath <$> liftAnnex gitRepo
 	liftIO $ setup repodir
 	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
   where
@@ -216,8 +216,8 @@ getRunningLocalPairR _ = noLocalPairing
  -}
 startLocalPairing :: PairStage -> IO () -> (AlertButton -> Alert) -> Maybe UUID -> Text -> Secret -> Widget
 startLocalPairing stage oncancel alert muuid displaysecret secret = do
-	urlrender <- handlerToWidget getUrlRender
-	reldir <- fromJust . relDir <$> handlerToWidget getYesod
+	urlrender <- liftH getUrlRender
+	reldir <- fromJust . relDir <$> liftH getYesod
 
 	sendrequests <- liftAssistant $ asIO2 $ mksendrequests urlrender
 	{- Generating a ssh key pair can take a while, so do it in the
@@ -235,7 +235,7 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 		startSending pip stage $ sendrequests sender
 	void $ liftIO $ forkIO thread
 
-	handlerToWidget $ redirect $ RunningLocalPairR $ toSecretReminder displaysecret
+	liftH $ redirect $ RunningLocalPairR $ toSecretReminder displaysecret
   where
 	{- Sends pairing messages until the thread is killed,
 	 - and shows an activity alert while doing it.
@@ -264,7 +264,7 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
  - that can validate it. -}
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler RepHtml
 promptSecret msg cont = pairPage $ do
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
 	case result of

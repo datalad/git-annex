@@ -86,11 +86,11 @@ getPreferencesR :: Handler RepHtml
 getPreferencesR = postPreferencesR
 postPreferencesR :: Handler RepHtml
 postPreferencesR = page "Preferences" (Just Configuration) $ do
-	((result, form), enctype) <- handlerToWidget $ do
+	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs
 		runFormPost $ renderBootstrap $ prefsAForm current
 	case result of
-		FormSuccess new -> handlerToWidget $ do
+		FormSuccess new -> liftH $ do
 			liftAnnex $ storePrefs new
 			redirect ConfigurationR
 		_ -> $(widgetFile "configurators/preferences")

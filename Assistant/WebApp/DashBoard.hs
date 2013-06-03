@@ -30,8 +30,8 @@ import Control.Concurrent
 {- A display of currently running and queued transfers. -}
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
-	webapp <- handlerToWidget getYesod
-	current <- handlerToWidget $ M.toList <$> getCurrentTransfers
+	webapp <- liftH getYesod
+	current <- liftH $ M.toList <$> getCurrentTransfers
 	queued <- take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued

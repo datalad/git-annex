@@ -177,10 +177,10 @@ editForm new uuid = page "Configure repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ editRepositoryAForm curr
 	case result of
-		FormSuccess input -> handlerToWidget $ do
+		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input
 			liftAnnex $ checkAssociatedDirectory input mremote
 			redirect DashboardR

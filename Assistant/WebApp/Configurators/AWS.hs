@@ -119,10 +119,10 @@ postAddS3R :: Handler RepHtml
 #ifdef WITH_S3
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ s3InputAForm defcreds
 	case result of
-		FormSuccess input -> handlerToWidget $ do
+		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote S3.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
@@ -145,10 +145,10 @@ postAddGlacierR :: Handler RepHtml
 #ifdef WITH_S3
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
-		FormSuccess input -> handlerToWidget $ do
+		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
@@ -191,10 +191,10 @@ enableAWSRemote :: RemoteType -> UUID -> Widget
 #ifdef WITH_S3
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
-		FormSuccess creds -> handlerToWidget $ do
+		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m

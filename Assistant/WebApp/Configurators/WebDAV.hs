@@ -65,10 +65,10 @@ postAddBoxComR :: Handler RepHtml
 #ifdef WITH_WEBDAV
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ boxComAForm defcreds
 	case result of
-		FormSuccess input -> handlerToWidget $ 
+		FormSuccess input -> liftH $ 
 			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
@@ -99,7 +99,7 @@ postEnableWebDAVR uuid = do
 	mcreds <- liftAnnex $
 		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
 	case mcreds of
-		Just creds -> webDAVConfigurator $ handlerToWidget $
+		Just creds -> webDAVConfigurator $ liftH $
 			makeWebDavRemote name creds (const noop) M.empty
 		Nothing
 			| "box.com/" `isInfixOf` url ->
@@ -111,10 +111,10 @@ postEnableWebDAVR uuid = do
 		defcreds <- liftAnnex $ 
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
-		((result, form), enctype) <- handlerToWidget $
+		((result, form), enctype) <- liftH $
 			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
-			FormSuccess input -> handlerToWidget $
+			FormSuccess input -> liftH $
 				makeWebDavRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
 				description <- liftAnnex $

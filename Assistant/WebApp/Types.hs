@@ -91,7 +91,7 @@ instance LiftAnnex Handler where
 	liftAnnex = liftAnnexOr $ error "internal liftAnnex"
 
 instance LiftAnnex (WidgetT WebApp IO) where
-	liftAnnex = handlerToWidget . liftAnnex
+	liftAnnex = liftH . liftAnnex
 
 class LiftAssistant m where
 	liftAssistant :: Assistant a -> m a
@@ -101,7 +101,7 @@ instance LiftAssistant Handler where
 		=<< assistantData <$> getYesod
 
 instance LiftAssistant (WidgetT WebApp IO) where
-	liftAssistant = handlerToWidget . liftAssistant
+	liftAssistant = liftH . liftAssistant
 
 type Form x = MForm Handler (FormResult x, Widget)
 

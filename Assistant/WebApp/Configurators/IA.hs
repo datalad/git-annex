@@ -125,10 +125,10 @@ postAddIAR :: Handler RepHtml
 #ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ iaInputAForm defcreds
 	case result of
-		FormSuccess input -> handlerToWidget $ do
+		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
 			AWS.makeAWSRemote S3.remote (extractCreds input) name setgroup $
 				M.fromList $ catMaybes
@@ -167,10 +167,10 @@ postEnableIAR _ = error "S3 not supported by this build"
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- handlerToWidget $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
-		FormSuccess creds -> handlerToWidget $ do
+		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m

@@ -142,11 +142,11 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	let path = "/sdcard/annex"
 #else
 	let androidspecial = False
-	path <- liftIO . defaultRepositoryPath =<< handlerToWidget inFirstRun
+	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
 #endif
-	((res, form), enctype) <- handlerToWidget $ runFormPost $ newRepositoryForm path
+	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm path
 	case res of
-		FormSuccess (RepositoryPath p) -> handlerToWidget $
+		FormSuccess (RepositoryPath p) -> liftH $
 			startFullAssistant (T.unpack p) ClientGroup
 		_ -> $(widgetFile "configurators/newrepository/first")
 
@@ -160,13 +160,13 @@ getNewRepositoryR = postNewRepositoryR
 postNewRepositoryR :: Handler RepHtml
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- handlerToWidget $ runFormPost $ newRepositoryForm home
+	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			isnew <- liftIO $ makeRepo path False
 			u <- liftIO $ initRepo isnew True path Nothing
-			handlerToWidget $ liftAnnexOr () $ setStandardGroup u ClientGroup
+			liftH $ liftAnnexOr () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -174,7 +174,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
   where
 	askcombine newrepouuid newrepopath = do
 		newrepo <- liftIO $ relHome newrepopath
-		mainrepo <- fromJust . relDir <$> handlerToWidget getYesod
+		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
 getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
@@ -215,10 +215,10 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- handlerToWidget $ runFormPost $
+	((res, form), enctype) <- liftH $ runFormPost $
 		selectDriveForm (sort writabledrives)
 	case res of
-		FormSuccess drive -> handlerToWidget $ redirect $ ConfirmAddDriveR drive
+		FormSuccess drive -> liftH $ redirect $ ConfirmAddDriveR drive
 		_ -> $(widgetFile "configurators/adddrive")
 
 {- The repo may already exist, when adding removable media
