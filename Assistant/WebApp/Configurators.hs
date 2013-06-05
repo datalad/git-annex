@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, CPP #-}
 
 module Assistant.WebApp.Configurators where
 
