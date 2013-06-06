@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="comment 6"
+ date="2013-06-06T09:44:11Z"
+ content="""
+That's weird...
+
+You could try adding \"--dbglevel 1 --stderr\" arguments to the hook command and give me the output. But the way i read the log it seems like it doesn't even launch the python intrepreter. I might be wrong though.
+
+
+"""]]
