@@ -16,3 +16,5 @@ Resolving deltas: 100% (52959/52959), done.
 fatal: cannot create directory at 'doc/bugs/3.20121112:_build_error_in_assistant': Invalid argument
 D:\tmp>
 """]]
+
+> [[wontfix|done]] --[[Joey]]
