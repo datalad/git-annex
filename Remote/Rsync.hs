@@ -264,7 +264,7 @@ rsyncRemote o callback params = do
  -
  - This would not be necessary if the hash directory structure used locally
  - was always the same as that used on the rsync remote. So if that's ever
- - unified, this gets nicer. Especially in the crippled filesystem case.
+ - unified, this gets nicer.
  - (When we have the right hash directory structure, we can just
  - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
  -}
@@ -272,20 +272,11 @@ rsyncSend :: RsyncOpts -> MeterUpdate -> Key -> Bool -> FilePath -> Annex Bool
 rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> Prelude.head (keyPaths k)
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
-	ok <- if canrename
+	ok <- liftIO $ if canrename
 		then do
-			liftIO $ renameFile src dest
+			renameFile src dest
 			return True
-		else ifM crippledFileSystem
-			( liftIO $ copyFileExternal src dest
-			, do
-#ifndef __WINDOWS__
-				liftIO $ createLink src dest
-				return True
-#else
-				liftIO $ copyFileExternal src dest
-#endif
-			)
+		else createLinkOrCopy src dest
 	ps <- sendParams
 	if ok
 		then rsyncRemote o (Just callback) $ ps ++

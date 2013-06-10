@@ -80,20 +80,21 @@ start file = ifAnnexed file addpresent add
 
 {- The file that's being added is locked down before a key is generated,
  - to prevent it from being modified in between. It's hard linked into a
- - temporary location, and its writable bits are removed. It could still be
- - written to by a process that already has it open for writing.
+ - temporary location (to prevent it being replaced with another file),
+ - and its writable bits are removed. It could still be written to by a
+ - process that already has it open for writing.
+ -
+ - On a crippled filesystem, no lock down is done; the file can be modified
+ - at any time, and the no hard link is made.
+ -
+ - On a filesystem without hard links, but not otherwise crippled,
+ - no hard link is made, but the write bit is still removed.
  -
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
 lockDown file = ifM (crippledFileSystem)
-	( liftIO $ catchMaybeIO $ do
-		cache <- genInodeCache file
-		return $ KeySource
-			{ keyFilename = file
-			, contentLocation = file
-			, inodeCache = cache
-			}
+	( liftIO $ catchMaybeIO nohardlink
 	, do
 		tmp <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory tmp
@@ -102,14 +103,24 @@ lockDown file = ifM (crippledFileSystem)
 			(tmpfile, h) <- openTempFile tmp (takeFileName file)
 			hClose h
 			nukeFile tmpfile
-			createLink file tmpfile
-			cache <- genInodeCache tmpfile
-			return $ KeySource
-				{ keyFilename = file
-				, contentLocation = tmpfile
-				, inodeCache = cache
-				}
+			withhardlink tmpfile `catchIO` const nohardlink
 	)
+  where
+  	nohardlink = do
+		cache <- genInodeCache file
+		return $ KeySource
+			{ keyFilename = file
+			, contentLocation = file
+			, inodeCache = cache
+			}
+	withhardlink tmpfile = do
+		createLink file tmpfile
+		cache <- genInodeCache tmpfile
+		return $ KeySource
+			{ keyFilename = file
+			, contentLocation = tmpfile
+			, inodeCache = cache
+			}
 
 {- Ingests a locked down file into the annex.
  -

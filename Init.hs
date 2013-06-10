@@ -140,8 +140,6 @@ probeCrippledFileSystem = do
 	probe f = catchBoolIO $ do
 		let f2 = f ++ "2"
 		nukeFile f2
-		createLink f f2
-		nukeFile f2
 		createSymbolicLink f f2
 		nukeFile f2
 		preventWrite f

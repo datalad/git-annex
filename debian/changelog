@@ -1,3 +1,11 @@
+git-annex (4.20130602) UNRELEASED; urgency=low
+
+  * Supports indirect mode on encfs in paranoia mode, and other
+    filesystems that do not support hard links, but do support
+    symlinks and other POSIX filesystem features.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
+
 git-annex (4.20130601) unstable; urgency=medium
 
   * XMPP: Git push over xmpp made much more robust.
