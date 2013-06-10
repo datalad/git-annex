@@ -18,3 +18,5 @@ Should I put the corresponding computers as a repositories of each other? I thou
 I hope this is enough information, I'm usually good at working out issues myself, however this is just frustrating me and the git-annex solution is so nearly perfect if it would work reliably that I can't bring myself to give up on it!
 
 Thanks!
+
+> [[done]], release notes updated; see my comment --[[Joey]]
