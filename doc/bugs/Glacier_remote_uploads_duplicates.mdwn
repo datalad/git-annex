@@ -29,3 +29,5 @@ However, whatever we do, it is impossible to map an "upload or overwrite on key 
 If the problem is as I think it is, always applying `--trust-glacier` should prevent the problem from occurring in most cases, since git-annex will run "checkpresent" and glacier-cli will confirm that the archive exists.
 
 To fix the problem after it has occurred, it should be sufficient to delete duplicates using glacier-cli, since they _should_ be identical to each other. Some enhancement of the `glacier-cli archive list` command would help here.
+
+Update 10 June 2013: I've pushed a `glacier-cli` update and helper script in commit `b68835`. This adds a `--force-ids` option to `glacier archive list`, with which the helper script `glacier-list-duplicates.sh` uses to identify duplicates that can be removed. If you're affected by this issue, I suggest that you use this helper to identify and fix your problem by removing the duplicates. Please do so carefully by checking that the output of the helper is correct before you use it to delete the duplicates. See the comments at the top of the helper script for usage information.
