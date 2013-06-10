@@ -160,15 +160,16 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		setConfig (ConfigKey "core.symlinks")
 			(Git.Config.boolConfig False)
 
-	unlessM isDirect $ do
-		warning "Enabling direct mode."
-		top <- fromRepo Git.repoPath
-		(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
-		forM_ l $ \f ->
-			maybe noop (`toDirect` f) =<< isAnnexLink f
-		void $ liftIO clean
-		setDirect True
-	setVersion directModeVersion
+	unlessBare $ do
+		unlessM isDirect $ do
+			warning "Enabling direct mode."
+			top <- fromRepo Git.repoPath
+			(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+			forM_ l $ \f ->
+				maybe noop (`toDirect` f) =<< isAnnexLink f
+			void $ liftIO clean
+			setDirect True
+		setVersion directModeVersion
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
