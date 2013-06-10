@@ -151,11 +151,18 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> liftH $
-			startFullAssistant (T.unpack p) ClientGroup
+			startFullAssistant (T.unpack p) ClientGroup Nothing
 		_ -> $(widgetFile "configurators/newrepository/first")
 
 getAndroidCameraRepositoryR :: Handler ()
-getAndroidCameraRepositoryR = startFullAssistant "/sdcard/DCIM" SourceGroup
+getAndroidCameraRepositoryR = 
+	startFullAssistant "/sdcard/DCIM" SourceGroup $ Just addignore	
+  where
+  	addignore = do
+		liftIO $ unlessM (doesFileExist ".gitignore") $
+			writeFile ".gitignore" ".thumbnails/*"
+		void $ inRepo $
+			Git.Command.runBool [Param "add", File ".gitignore"]
 
 {- Adding a new local repository, which may be entirely separate, or may
  - be connected to the current repository. -}
@@ -315,13 +322,15 @@ driveList = return []
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
  - url to the new webapp. -}
-startFullAssistant :: FilePath -> StandardGroup -> Handler ()
-startFullAssistant path repogroup = do
+startFullAssistant :: FilePath -> StandardGroup -> Maybe (Annex ())-> Handler ()
+startFullAssistant path repogroup setup = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
 		u <- initRepo isnew True path Nothing
-		inDir path $ setStandardGroup u repogroup
+		inDir path $ do
+			setStandardGroup u repogroup
+			maybe noop id setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp

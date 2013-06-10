@@ -21,3 +21,8 @@ Install git-annex on Android and choose the defaults for a camera repository.
 
 # End of transcript or log.
 """]]
+
+> I've [[done]] this, however the .gitignore file it writes will
+> not actually be used by the assistant until it gets support
+> for querying gitignore settings from git. There is already a
+> bug tracking that, and it's in process. --[[Joey]] 
