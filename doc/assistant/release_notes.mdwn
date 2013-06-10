@@ -3,6 +3,9 @@
 This is a bugfix release, featuring significant XMPP improvements and
 more robustness thanks to automated fuzz testing. Recommended upgrade.
 
+This version changes its XMPP protocol, so it will fail to sync with older
+git-annex versions over XMPP.
+
 ## version 4.20130521
 
 This is a bugfix release. Recommended upgrade.
