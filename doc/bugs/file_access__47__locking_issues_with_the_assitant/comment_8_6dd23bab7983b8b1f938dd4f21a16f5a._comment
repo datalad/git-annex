@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-06-11T15:17:56Z"
+ content="""
+I can reproduce the bug. Doesn't look likely to involve a race, since it happens every time.
+"""]]
