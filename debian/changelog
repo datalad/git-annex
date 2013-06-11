@@ -10,6 +10,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * webapp: When the user switches to display a different repository,
     that repository becomes the default repository to be displayed next time
     the webapp gets started.
+  * glacier: Better handling of the glacier inventory, which avoids
+    duplicate uploads to the same glacier repository by `git annex copy`.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
