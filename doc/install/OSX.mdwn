@@ -41,8 +41,9 @@ brew link libxml2
 cabal update
 PATH=$HOME/bin:$PATH
 PATH=$HOME/.cabal/bin:$PATH
+cabal install c2hs --bindir=$HOME/bin
 cabal install gnuidn
-cabal install c2hs git-annex --bindir=$HOME/bin
+cabal install git-annex --bindir=$HOME/bin
 </pre>
 
 ## using MacPorts
