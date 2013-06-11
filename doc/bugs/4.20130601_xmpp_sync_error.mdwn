@@ -119,3 +119,7 @@ Android daemon.log:
 
 
 thanks
+
+> Since this seems clearly a lack of box.com being configured 
+> to be used on the Android, I'm closing the bug: [[done]]. 
+> If I'm wrong, write back, and I'll reopen ;) --[[Joey]]
