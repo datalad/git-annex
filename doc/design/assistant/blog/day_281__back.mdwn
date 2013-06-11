@@ -1,4 +1,4 @@
-Slowly getting through the bugs that were opened file I was on vacation and
+Slowly getting through the bugs that were opened while I was on vacation and
 then I'll try to get to all the comments. 60+ messages to go.
 
 Got git-annex working better on encfs, which does not support hard links in
