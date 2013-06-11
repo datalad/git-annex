@@ -7,6 +7,7 @@
  -}
 import qualified Data.Monoid
 import qualified Data.Map
+import qualified Data.Map as Data.Map.Base
 import qualified Data.Foldable
 import qualified Data.Text
 import qualified Data.Text.Lazy.Builder
