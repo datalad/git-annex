@@ -36,3 +36,5 @@ add Camera/IMG_20130223_111411.jpg (checksum...) ok
 [...]
 [2013-06-01 17:14:17 EDT] Committer: Committing changes to git
 """]]
+
+> [[fixed|done]] --[[Joey]] 

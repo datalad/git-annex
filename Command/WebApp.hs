@@ -157,15 +157,25 @@ firstRun listenhost = do
 			Annex.eval state $
 				startDaemon True True listenhost $ Just $
 					sendurlback v
-	sendurlback v _origout _origerr url _htmlshim = putMVar v url
+	sendurlback v _origout _origerr url _htmlshim = do
+		recordUrl url
+		putMVar v url
+
+recordUrl :: String -> IO ()
+#ifdef __ANDROID__
+{- The Android app has a menu item that opens the url recorded
+ - in this file. -}
+recordUrl url = writeFile "/sdcard/git-annex.home/.git-annex-url" url
+#else
+recordUrl _ = noop
+#endif
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
 #ifndef __ANDROID__
 openBrowser mcmd htmlshim _realurl outh errh = runbrowser
 #else
 openBrowser mcmd htmlshim realurl outh errh = do
-	{- The Android app has a menu item that opens this file. -}
-	writeFile "/sdcard/git-annex.home/.git-annex-url" url
+	recordUrl url
 	{- Android's `am` command does not work reliably across the
 	 - wide range of Android devices. Intead, FIFO should be set to 
 	 - the filename of a fifo that we can write the URL to. -}

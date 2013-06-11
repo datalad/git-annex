@@ -51,7 +51,7 @@ webAppThread
 	-> UrlRenderer
 	-> Bool
 	-> Maybe HostName
-	-> Maybe (IO String)
+	-> Maybe (IO Url)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
 webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup = thread $ liftIO $ do
