@@ -7,6 +7,9 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     repository.
   * Android: Make the "Open webapp" menu item open the just created
     repository when a new repo is made.
+  * webapp: When the user switches to display a different repository,
+    that repository becomes the default repository to be displayed next time
+    the webapp gets started.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

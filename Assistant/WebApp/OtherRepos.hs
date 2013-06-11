@@ -43,6 +43,7 @@ listOtherRepos = do
 getSwitchToRepositoryR :: FilePath -> Handler RepHtml
 getSwitchToRepositoryR repo = do
 	liftIO $ startAssistant repo
+	liftIO $ addAutoStartFile repo -- make this the new default repo
 	redirect =<< liftIO geturl
   where
 	geturl = do
