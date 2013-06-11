@@ -82,9 +82,10 @@ validateSshPubKey pubkey = either error return $ check $ words pubkey
 	  where
 		(ssh, keytype) = separate (== '-') prefix
 
-	checkcomment comment
-		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.') comment = ok
-		| otherwise = err "bad comment in ssh public key"
+	checkcomment comment = case filter (not . safeincomment) comment of
+		[] -> ok
+		badstuff -> err $ "bad comment in ssh public key (contains: \"" ++ badstuff ++ "\")"
+	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
 addAuthorizedKeys rsynconly dir pubkey = boolSystem "sh"
