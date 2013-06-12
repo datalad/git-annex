@@ -64,7 +64,10 @@ sshTranscript opts input = processTranscript "ssh" opts input
 {- Ensure that the ssh public key doesn't include any ssh options, like
  - command=foo, or other weirdness -}
 validateSshPubKey :: SshPubKey -> IO ()
-validateSshPubKey pubkey = either error return $ check $ words pubkey
+validateSshPubKey pubkey
+	| length (lines pubkey) == 1 =
+		either error return $ check $ words pubkey
+	| otherwise = error "too many lines in ssh public key"
   where
 	check [prefix, _key, comment] = do
 		checkprefix prefix
