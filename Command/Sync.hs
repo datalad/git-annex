@@ -138,7 +138,8 @@ pullRemote remote branch = do
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
- - were committed, while the synced/master may have changes that some
+ - were committed (or pushed changes, if this is a bare remote),
+ - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
 mergeRemote :: Remote -> (Maybe Git.Ref) -> CommandCleanup
 mergeRemote remote b = case b of
@@ -163,15 +164,29 @@ pushRemote remote branch = go =<< needpush
 			showOutput
 			inRepo $ pushBranch remote branch
 
+{- If the remote is a bare git repository, it's best to push the branch
+ - directly to it. On the other hand, if it's not bare, pushing to the
+ - checked out branch will fail, and this is why we use the syncBranch.
+ -
+ - Git offers no way to tell if a remote is bare or not, so both methods
+ - are tried.
+ -
+ - The direct push is likely to spew an ugly error message, so stderr is
+ - elided. Since progress is output to stderr too, the sync push is done
+ - first, and actually sends the data. Then the direct push is tried,
+ - with stderr discarded, to update the branch ref on the remote.
+ -}
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
-pushBranch remote branch g =
-	Git.Command.runBool
+pushBranch remote branch g = tryIO directpush `after` syncpush
+  where
+	syncpush = Git.Command.runBool (pushparams (refspec branch)) g
+	directpush = Git.Command.runQuiet (pushparams (show $ Git.Ref.base branch)) g
+	pushparams b =
 		[ Param "push"
 		, Param $ Remote.name remote
 		, Param $ refspec Annex.Branch.name
-		, Param $ refspec branch
-		] g
-  where
+		, Param b
+		]
 	refspec b = concat 
 		[ show $ Git.Ref.base b
 		,  ":"

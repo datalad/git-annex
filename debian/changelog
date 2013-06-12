@@ -14,6 +14,10 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     duplicate uploads to the same glacier repository by `git annex copy`.
   * Direct mode: No longer temporarily remove write permission bit of files
     when adding them.
+  * sync: Better support for bare git remotes. Now pushes directly to the
+    master branch on such a remote, instead of to synced/master. This
+    makes it easier to clone from a bare git remote that has been populated
+    with git annex sync or by the assistant.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
