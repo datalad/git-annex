@@ -29,7 +29,7 @@ for various cloud things:
 * [[Google drive|tips/googledriveannex]]
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [[Mega.co.nz|tips/megaannex]]
-* [[SkyDrive|tips/skydrive]]
+* [[SkyDrive|tips/skydriveannex]]
 * [[OwnCloud|tips/owncloudannex]]
 * [[Flickr|tips/flickrannex]]
 * [[IMAP|forum/special_remote_for_IMAP]]
