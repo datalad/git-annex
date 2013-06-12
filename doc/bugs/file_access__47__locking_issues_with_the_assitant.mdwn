@@ -49,3 +49,6 @@ add www.cmt.mhs.man.ac.uk/admin_guide_cmt.log (checksum...) ok
 
 # End of transcript or log.
 """]]
+
+> Ok, I was able to remove the write bit fiddling in direct mode. [[done]]
+> --[[Joey]]

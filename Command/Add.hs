@@ -79,16 +79,20 @@ start file = ifAnnexed file addpresent add
 		next $ next $ cleanup file key =<< inAnnex key
 
 {- The file that's being added is locked down before a key is generated,
- - to prevent it from being modified in between. It's hard linked into a
- - temporary location (to prevent it being replaced with another file),
- - and its writable bits are removed. It could still be written to by a
- - process that already has it open for writing.
+ - to prevent it from being modified in between. This lock down is not
+ - perfect at best (and pretty weak at worst). For example, it does not
+ - guard against files that are already opened for write by another process.
+ - So a KeySource is returned. Its inodeCache can be used to detect any
+ - changes that might be made to the file after it was locked down.
  -
- - On a crippled filesystem, no lock down is done; the file can be modified
- - at any time, and the no hard link is made.
+ - In indirect mode, the write bit is removed from the file as part of lock
+ - down to guard against further writes, and because objects in the annex
+ - have their write bit disabled anyway. This is not done in direct mode,
+ - because files there need to remain writable at all times.
  -
- - On a filesystem without hard links, but not otherwise crippled,
- - no hard link is made, but the write bit is still removed.
+ - When possible, the file is hard linked to a temp directory. This guards
+ - against some changes, like deletion or overwrite of the file, and
+ - allows lsof checks to be done more efficiently when adding a lot of files.
  -
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
@@ -98,8 +102,9 @@ lockDown file = ifM (crippledFileSystem)
 	, do
 		tmp <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory tmp
+		unlessM (isDirect) $ liftIO $
+			void $ tryIO $ preventWrite file
 		liftIO $ catchMaybeIO $ do
-			preventWrite file
 			(tmpfile, h) <- openTempFile tmp (takeFileName file)
 			hClose h
 			nukeFile tmpfile
@@ -162,8 +167,6 @@ ingest (Just source) = do
 finishIngestDirect :: Key -> KeySource -> Annex ()
 finishIngestDirect key source = do
 	void $ addAssociatedFile key $ keyFilename source
-	unlessM crippledFileSystem $
-		liftIO $ allowWrite $ keyFilename source
 	when (contentLocation source /= keyFilename source) $
 		liftIO $ nukeFile $ contentLocation source
 

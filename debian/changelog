@@ -12,6 +12,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     the webapp gets started.
   * glacier: Better handling of the glacier inventory, which avoids
     duplicate uploads to the same glacier repository by `git annex copy`.
+  * Direct mode: No longer temporarily remove write permission bit of files
+    when adding them.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
