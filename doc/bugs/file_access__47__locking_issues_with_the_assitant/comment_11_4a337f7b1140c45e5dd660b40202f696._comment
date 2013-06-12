@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-06-12T17:03:07Z"
+ content="""
+There's an annex.delayadd git config setting you can use that makes it wait a specified number of seconds before committing. So it would indeed be a workaround to set: `git config annex.delayadd 2`
+
+However, I'm pretty confident I can entirely avoid this problem, safely.
+"""]]
