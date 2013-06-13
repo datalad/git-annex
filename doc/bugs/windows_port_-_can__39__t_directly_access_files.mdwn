@@ -1,5 +1,5 @@
 ### Please describe the problem.
-Using the windows port of git annex, I'm unable to directly access files that are retrieved from a remote ssh repository. 
+Using the windows port of git annex, I'm unable to directly access files that are retrieved from a remote ssh repository. Instead, the file contains a reference to ../.git/annex/objects....
 
 ### What steps will reproduce the problem?
 
