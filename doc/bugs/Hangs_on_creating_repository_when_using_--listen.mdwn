@@ -35,3 +35,12 @@ WebApp crashed: unable to bind to local socket
 
 # End of transcript or log.
 """]]
+
+> The problem is that, when a port is specified, it is used for each web
+> server started, and the process of making a new repository unavoidably
+> requires it to start a second web server instance. This would also affect
+> switching between existing repositories in the webapp. I don't see
+> any way to make it not crash here, except for ignoring the port it was told
+> to use when something else is already listening there. --[[Joey]] 
+
+[[!tag /design/assistant]]
