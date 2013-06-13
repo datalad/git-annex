@@ -33,6 +33,13 @@ textField = F.textField
 |]
 	}
 
+disabledTextField :: MkField Text
+disabledTextField = F.textField
+	{ fieldView = \theId name attrs val _isReq -> [whamlet|
+<input id="#{theId}" name="#{name}" *{attrs} type="text" value="#{either id id val}" disabled="true">
+|]
+	}
+
 {- Also without required attribute. -}
 passwordField :: MkField Text
 passwordField = F.passwordField

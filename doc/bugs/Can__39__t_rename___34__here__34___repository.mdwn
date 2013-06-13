@@ -28,3 +28,5 @@ Trying to rename the "here" repository fails
 
 # End of transcript or log.
 """]]
+
+> Made text field for this repository disabled. The current repository has no remote name to edit. [[done]] --[[Joey]]

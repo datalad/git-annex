@@ -132,9 +132,10 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm def = RepoConfig
-	<$> areq textField "Name" (Just $ repoName def)
+editRepositoryAForm :: Bool -> RepoConfig -> MkAForm RepoConfig
+editRepositoryAForm ishere def = RepoConfig
+	<$> areq (if ishere then disabledTextField else textField)
+		"Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
 	<*> associateddirectory
@@ -173,12 +174,12 @@ postEditNewCloudRepositoryR :: UUID -> Handler RepHtml
 postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
 editForm :: Bool -> UUID -> Handler RepHtml
-editForm new uuid = page "Configure repository" (Just Configuration) $ do
+editForm new uuid = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ editRepositoryAForm curr
+		runFormPost $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input
