@@ -3,13 +3,12 @@ git annex add hangs on the windows port when adding many files at once. It seems
 
 Running in debug, it hangs on this:
 
-[2013-06-14 13:59:46 Eastern Daylight Time] feed: git ["--git-dir=C:\\temp\\back
-up\\q10\\.git","--work-tree=C:\\temp\\backup\\q10","update-index","-z","--index-
-info"]
+    [2013-06-14 13:59:46 Eastern Daylight Time] feed: git ["--git-dir=C:\\temp\\backup\\q10\\.git","--work-tree=C:\\temp\\backup\\q10","update-index","-z","--index-info"]
 
 
 ### What steps will reproduce the problem?
 
+[[!format sh """
 git init t17
 cd t17
 git annex init
@@ -35,15 +34,19 @@ add 8.txt (checksum...) ok
 add 9.txt (checksum...) ok
 (Recording state in git...)
 
+** gets stuck here
+
+"""]]
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex version: 4.20130601-gc01f842
-build flags: Pairing Testsuite S3 WebDAV DNS
-local repository version: 4
-default repository version: 3
-supported repository versions: 3 4
-upgrade supported from repository versions: 2
+	git-annex version: 4.20130601-gc01f842
+	build flags: Pairing Testsuite S3 WebDAV DNS
+	local repository version: 4
+	default repository version: 3
+	supported repository versions: 3 4
+	upgrade supported from repository versions: 2
+
 
 
 ### Please provide any additional information below.
