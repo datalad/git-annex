@@ -44,6 +44,7 @@ streamUpdateIndex repo as = pipeWrite params repo $ \h -> do
 	streamer h s = do
 		hPutStr h s
 		hPutStr h "\0"
+		hFlush h
 
 {- A streamer that adds the current tree for a ref. Useful for eg, copying
  - and modifying branches. -}
