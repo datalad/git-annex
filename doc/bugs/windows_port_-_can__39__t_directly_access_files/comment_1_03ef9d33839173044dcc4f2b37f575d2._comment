@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhfodZquCI_EEl-f3h7HkROTszlsQL6yA"
+ nickname="Joe"
+ subject="Closed - not a bug"
+ date="2013-06-14T13:23:24Z"
+ content="""
+It was a user error. I needed to have git-shell in my path. I had added it to the end of .bashrc and it needed to be before the part that returned if not interactive: http://stackoverflow.com/questions/940533/how-do-i-set-path-such-that-ssh-userhost-command-works
+"""]]
