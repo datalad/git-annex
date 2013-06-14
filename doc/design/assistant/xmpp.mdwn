@@ -9,6 +9,28 @@ who share a repository, that is stored in the [[cloud]].
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
 * Support registering with XMPP provider from within the webapp, 
   as clients like pidgin are able to do.
+* Add an encryption layer that does not rely on trusting the XMPP server's
+  security (currently it's encrypted only to the server, not end-to-end).
+  There are a few options for how to generate the key for eg,
+  AES encryption:
+  * Do a simple Diffie-Hellman shared key generation when starting each XMPP
+    push session. Would not protect the users from active MITM by the
+    XMPP server, but would prevent passive data gathering attacks from
+    getting useful data. Since the key is ephemeral, would provide
+    Forward Security.
+  * Do D-H key generation, but at pairing, not push time. Allows for an
+    optional confirmation step, using eg, BubbleBabble to compare the
+    keys out of band. ("I see xebeb-dibyb-gycub-kacyb-modib-pudub-sefab-vifuc-bygoc-daguc-gohec-kuxax .. do you too?")
+  * Prompt both users for a passphrase when XMPP pairing, and 
+    use SPEKE (or similar methods like J-PAKE) to generate a shared key.
+    Avoids active MITM attacks. Makes pairing harder, especially pairing
+    between one's own devices, since the passphrase has to be entered on
+    all devices. Also problimatic when pairing more than 2 devices,
+    especially when adding a device to the set later, since there
+    would then be multiple different keys in use.
+  * Rely on the user's gpg key, and do gpg key verification during XMPP
+    pairing. Problimatic because who wants to put their gpg key on their
+    phone? Also, require the users be in the WOT and be gpg literate.
 
 ## design goals
 
@@ -109,9 +131,10 @@ status with a chat message, directed at the sender:
 
 ### security
 
-Data git-annex sends over XMPP will be visible to the XMPP
-account's buddies, to the XMPP server, and quite likely to other interested
-parties. So it's important to consider the security exposure of using it.
+Data git-annex sends over XMPP will be visible to the XMPP account's
+buddies, and to the XMPP server (and any attacker who has access to the
+XMPP server). So it's important to consider the security exposure of using
+it.
 
 Even if git-annex sends only a single bit notification, this lets attackers
 know when the user is active and changing files. Although the assistant's other
@@ -121,9 +144,11 @@ As soon as git-annex does anything unlike any other client, an attacker can
 see how many clients are connected for a user, and fingerprint the ones
 running git-annex, and determine how many clients are running git-annex.
 
-If git-annex sent the UUID of the remote it pushed to, this would let
-attackers determine how many different remotes are being used,
-and map some of the connections between clients and remotes.
+An attacker can observe the UUIDs used for pushes and pairing, and determine
+how many different remotes are being used.
 
 An attacker could replay push notification messages, reusing UUIDs it's
 observed. This would make clients pull repeatedly, perhaps as a DOS.
+
+The XMPP server, or an attacker with access to it can reconstruct the git 
+repository from data sent in pushes, in part or in whole.
