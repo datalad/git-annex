@@ -246,3 +246,5 @@ foo.txt
 
 # End of transcript or log.
 """]]
+
+> [[done]]; see my comment. --[[Joey]] 
