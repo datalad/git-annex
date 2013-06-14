@@ -180,3 +180,18 @@ info"]
 
 # End of transcript or log.
 """]]
+
+> Reproduced this, and git update-index was in fact not hanging. 
+> Instead, after that was done, it tried to stop the git hash-object
+> process, and this hung. 
+> 
+> It seems that the use of runInteractiveProcess is at fault somehow,
+> and I guess it must be due to it opening a pipe for stderr, which
+> I don't need or want. Perhaps I need to ensure I read from that pipe,
+> or windows keeps the process from terminating. (Unix would just toss the piped
+> data away.)
+> 
+> That was the only place runInteractiveProcess was used, so I replaced
+> it with an alternative that lets stderr be inherited. With this change,
+> I have successfully added 1000 files to the annex in one go, with no
+> hang. Provisionally [[done]]. --[[Joey]] 

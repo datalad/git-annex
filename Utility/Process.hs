@@ -26,7 +26,7 @@ module Utility.Process (
 	withBothHandles,
 	withQuietOutput,
 	createProcess,
-	runInteractiveProcess,
+	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
@@ -34,7 +34,7 @@ module Utility.Process (
 
 import qualified System.Process
 import System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import System.Process hiding (createProcess, runInteractiveProcess, readProcess)
+import System.Process hiding (createProcess, readProcess)
 import System.Exit
 import System.IO
 import System.Log.Logger
@@ -300,17 +300,19 @@ createProcess p = do
 	debugProcess p
 	System.Process.createProcess p
 
-runInteractiveProcess
-	:: FilePath	
-	-> [String]	
-	-> Maybe FilePath	
-	-> Maybe [(String, String)]	
-	-> IO (Handle, Handle, Handle, ProcessHandle)
-runInteractiveProcess f args c e = do
-	debugProcess $ (proc f args)
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = CreatePipe
-			, env = e
-			}
-	System.Process.runInteractiveProcess f args c e
+{- Starts an interactive process. Unlike runInteractiveProcess in
+ - System.Process, stderr is inherited. -}
+startInteractiveProcess
+	:: FilePath
+	-> [String]
+	-> Maybe [(String, String)]
+	-> IO (ProcessHandle, Handle, Handle)
+startInteractiveProcess cmd args environ = do
+	let p = (proc cmd args)
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		, env = environ
+		}
+	(Just from, Just to, _, pid) <- createProcess p
+	return (pid, to, from)

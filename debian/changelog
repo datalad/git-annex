@@ -20,6 +20,7 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     with git annex sync or by the assistant.
   * Android: Fix use of cp command to not try to use features present
     only on build system.
+  * Windows: Fix hang when adding several files at once.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

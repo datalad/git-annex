@@ -43,7 +43,7 @@ start restartable cmd params env = do
 
 start' :: CoProcessSpec -> IO CoProcessState
 start' s = do
-	(to, from, _err, pid) <- runInteractiveProcess (coProcessCmd s) (coProcessParams s) Nothing (coProcessEnv s)
+	(pid, to, from) <- startInteractiveProcess (coProcessCmd s) (coProcessParams s) (coProcessEnv s)
 	return $ CoProcessState pid to from s
 
 stop :: CoProcessHandle -> IO ()
