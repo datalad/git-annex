@@ -41,3 +41,7 @@ fixme:exec:SHELL_execute flags ignored: 0x00000100
 
 # End of transcript or log.
 """]]
+
+> [[done]]; this is a misconfigured system, not a git-annex bug, 
+> and git-annex honors git config web.browser to allow working around
+> this. --[[Joey]]
