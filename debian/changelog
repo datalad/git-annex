@@ -18,6 +18,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     master branch on such a remote, instead of to synced/master. This
     makes it easier to clone from a bare git remote that has been populated
     with git annex sync or by the assistant.
+  * Android: Fix use of cp command to not try to use features present
+    only on build system.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

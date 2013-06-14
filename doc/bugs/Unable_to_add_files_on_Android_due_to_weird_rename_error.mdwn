@@ -33,3 +33,5 @@ drwxrwxr-x    2 root     sdcard_r      4096 Jun 14 13:42 .
 drwxrwxr-x    6 root     sdcard_r      4096 Jun 14 13:35 ..
 u0_a141@android:/sdcard/git-annex.home/Documents $
 """]]
+
+> Should be [[fixed|done]] --[[Joey]]

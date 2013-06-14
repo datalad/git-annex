@@ -23,11 +23,15 @@ copyFileExternal src dest = do
 		removeFile dest
 	boolSystem "cp" $ params ++ [File src, File dest]
   where
+#ifndef __ANDROID__
 	params = map snd $ filter fst
 		[ (SysConfig.cp_reflink_auto, Param "--reflink=auto")
 		, (SysConfig.cp_a, Param "-a")
 		, (SysConfig.cp_p && not SysConfig.cp_a, Param "-p")
 		]
+#else
+	params = []
+#endif
 
 {- Create a hard link if the filesystem allows it, and fall back to copying
  - the file. -}
