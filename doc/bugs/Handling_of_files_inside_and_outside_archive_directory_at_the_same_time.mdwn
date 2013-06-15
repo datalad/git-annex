@@ -7,3 +7,11 @@ Karsten
 
 [[!tag /design/assistant]]
 [[!meta title="assistant preferred content handling of files inside and outside archive directory at the same time"]]
+
+> Update: Current status is this is fixed for direct mode.
+> 
+> In indirect mode, the startup scan will still download and then drop
+> content if a file outside and inside the archive directory has the
+> same content. It doesn't loop like it did in direct mode, only
+> happens once (or once per duplicate file, really). Is still potentially
+> annoying and a bug. --[[Joey]]

@@ -21,6 +21,12 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * Android: Fix use of cp command to not try to use features present
     only on build system.
   * Windows: Fix hang when adding several files at once.
+  * assistant: In direct mode, objects are now only dropped when all
+    associated files are unwanted. This avoids a repreated drop/get loop
+    of a file that has a copy in an archive directory, and a copy not in an
+    archive directory. (Indirect mode still has some buggy behavior in this
+    area, since it does not keep track of associated files.)
+    Closes: #712060
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

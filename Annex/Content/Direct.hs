@@ -7,6 +7,7 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
+	associatedFilesRelative,
 	removeAssociatedFile,
 	removeAssociatedFileUnchecked,
 	addAssociatedFile,
