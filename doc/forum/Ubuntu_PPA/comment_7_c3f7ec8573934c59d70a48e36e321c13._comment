@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="New location for my git-annex PPA"
+ date="2013-06-15T07:42:13Z"
+ content="""
+My Ubuntu Precise PPA has moved here: https://launchpad.net/~fmarier/+archive/git-annex
+
+It contains version 20130601 of git-annex.
+
+As Pedro suggested, it's now in a separate PPA with only git-annex and the 220 Haskell packages it depends on.
+"""]]
