@@ -1,0 +1,18 @@
+### Please describe the problem.
+I created a remote repo on ssh server with the same git-annex version, no personal ssh keys for the repo (password authentication). But I put ~ in front of the repo name so it created in different place than I wanted. I deleted it from assistant and then deleted the remote repo dir. When I added it with the correct path again it always asks for server password (it has some old annex pub key in authorized_keys, but not the new one; it might have been prompted for the password also with the initial repo). During the whole thing it failed to connect a few times due to wrong password or me realizing too late that it asks for yet another one and it generated keys few times, but ultimately didn't put the last one in remote's authorized_keys.
+
+### What steps will reproduce the problem?
+Create, delete and create again a new repo on remote ssh server with password auth.
+
+### What version of git-annex are you using? On what operating system?
+git-annex 4.20130601 Gentoo amd64
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
