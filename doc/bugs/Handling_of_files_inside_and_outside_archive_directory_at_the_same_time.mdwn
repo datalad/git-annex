@@ -6,7 +6,6 @@ Best
 Karsten
 
 [[!tag /design/assistant]]
-[[!meta title="assistant preferred content handling of files inside and outside archive directory at the same time"]]
 
 > Update: Current status is this is fixed for direct mode.
 > 
